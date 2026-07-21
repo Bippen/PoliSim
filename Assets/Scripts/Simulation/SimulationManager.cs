@@ -23,6 +23,12 @@ namespace PoliSim.Simulation
 
         public World World => _world;
 
+        /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>
+        public void SetWorld(World world)
+        {
+            _world = world;
+        }
+
         private void Awake()
         {
             if (_world == null)

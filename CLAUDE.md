@@ -48,23 +48,34 @@ theory, implemented in `MacroSystem` and `TaylorRule`, each concept as its own s
 named constants:
 
 - **National Accounts Identity** (`MacroSystem.ApplyNationalAccounts`): `GDP = Consumption +
-  Investment + Government + NetExports`. Consumption and Investment are each a share of the prior
-  turn's GDP (`BaseConsumptionRate`, `BaseInvestmentRate`), scaled down by the interest rate
-  (Investment is more rate-sensitive: `InvestmentInterestSensitivity` > `ConsumptionInterestSensitivity`)
-  and by `ConsumerConfidence`/`BusinessConfidence`. Government is the country's baseline
-  `GovernmentSpendingRate` share of GDP plus the turn's discretionary `PolicyDecision.GovernmentSpending`.
-  NetExports is `TradeBalance`, already computed by `TradeSystem` before this runs.
+  Investment + Government + NetExports`, reverted partway toward `PotentialGDP`
+  (`OutputGapReversionSpeed`) so a one-turn imbalance in the C+I+G shares (they don't sum to exactly
+  100% of GDP for every country) can't compound into runaway growth or shrinkage — the identity
+  result is a shock to trend output, not a full replacement of it, each turn. Consumption and
+  Investment are each a share of the prior turn's GDP (`BaseConsumptionRate`, `BaseInvestmentRate`),
+  scaled down by the interest rate *above* `TaylorRule.NeutralRealRate` — not above zero, since every
+  seeded country sits at a positive policy rate and shouldn't be permanently penalized just for being
+  at a normal rate — (Investment is more rate-sensitive: `InvestmentInterestSensitivity` >
+  `ConsumptionInterestSensitivity`) and by `ConsumerConfidence`/`BusinessConfidence`. Government is
+  the country's baseline `GovernmentSpendingRate` share of GDP plus the turn's discretionary
+  `PolicyDecision.GovernmentSpending`. NetExports is `TradeBalance`, already computed by
+  `TradeSystem` before this runs. GDP is floored at `MinGdp` (not exactly 0) so a country that
+  shrinks all the way down can still recover — at literal 0, every term of the identity that scales
+  with prior GDP would also be 0 forever.
 - **Okun's Law** (`MacroSystem.ApplyOkunsLaw`): unemployment moves opposite to the gap between
-  actual GDP growth this turn and the country's structural `PotentialGrowthRate` — growth below
-  potential raises unemployment, growth above potential lowers it, scaled by `OkunCoefficient`.
+  actual GDP growth this turn and the country's structural `PotentialGrowthRate`, scaled by
+  `OkunCoefficient`, plus mean-reversion pulling it back toward the country's NAIRU
+  (`UnemploymentReversionSpeed`) each turn absent a growth shock — unemployment drifts home to its
+  structural rate rather than accumulating a growth-gap delta indefinitely. Hard-clamped to
+  `[0, MaxUnemploymentPercent]` as a gameplay safety net.
 - **Phillips Curve, expectations-augmented** (`MacroSystem.ApplyPhillipsCurveInflation` +
   `ApplyInflationExpectations`): inflation = `InflationExpectations` minus the unemployment gap
-  versus the country's structural NAIRU (`NaturalUnemploymentRate`), scaled by `PhillipsCurveSlope`.
-  `InflationExpectations` itself adapts each turn partway toward realized inflation
-  (`ExpectationsAdaptationSpeed`) — standard adaptive-expectations formulation. Monetary policy no
-  longer touches inflation directly; the interest rate's effect flows through the real chain:
-  rate → Consumption/Investment → GDP growth → Okun's Law → unemployment → Phillips Curve →
-  inflation. That indirection is intentional, not a gap.
+  versus the country's structural NAIRU (`NaturalUnemploymentRate`), scaled by `PhillipsCurveSlope`,
+  hard-clamped to `[0, MaxInflationPercent]` as a gameplay safety net. `InflationExpectations` itself
+  adapts each turn partway toward realized inflation (`ExpectationsAdaptationSpeed`) — standard
+  adaptive-expectations formulation. Monetary policy no longer touches inflation directly; the
+  interest rate's effect flows through the real chain: rate → Consumption/Investment → GDP growth →
+  Okun's Law → unemployment → Phillips Curve → inflation. That indirection is intentional, not a gap.
 - **Taylor Rule** (`TaylorRule.GetSuggestedInterestRate`): `suggested rate = NeutralRealRate +
   Inflation + InflationGapWeight*(Inflation - InflationTarget) + OutputGapWeight*outputGap`, where
   `outputGap = (GDP - PotentialGDP) / PotentialGDP * 100` (`TaylorRule.GetOutputGapPercent`).
@@ -89,8 +100,13 @@ real mid-2026 policy rates/inflation/growth, shared/independent `CurrencyZone`s 
 interest rates, an EU `TradeBloc` with internal/external tariffs, a lightweight bilateral trade
 model with currency-strength-driven export competitiveness, and a theory-grounded core (national
 accounts identity, Okun's Law, Phillips Curve, plus a reference-only Taylor Rule) for GDP,
-unemployment, and inflation. `ConsumerConfidence`/`BusinessConfidence` exist and are read by the
-national accounts identity but nothing feeds them back yet (a natural next step). Approval rating,
-currency strength, and trade/tariff dampening remain simple, un-theorized heuristics. Still no UI,
-no save/load, no full market simulation (trade volumes are static inputs, not supply/demand-driven),
-and every constant is a starting-point placeholder meant to be tuned by playtesting.
+unemployment, and inflation. GDP reverts partway toward `PotentialGDP` each turn and is floored above
+0, and Okun's Law/the Phillips Curve mean-revert toward NAIRU and hard-clamp their outputs, so the
+no-policy-change baseline stays near equilibrium instead of drifting to an extreme over many turns
+(verified with `SimulationTestRunner`, a debug `MonoBehaviour` under `Assets/Scripts/Testing/` that
+runs 100 turns with no policy input and logs a per-turn/per-country sanity-check summary).
+`ConsumerConfidence`/`BusinessConfidence` exist and are read by the national accounts identity but
+nothing feeds them back yet (a natural next step). Approval rating, currency strength, and
+trade/tariff dampening remain simple, un-theorized heuristics. Still no UI, no save/load, no full
+market simulation (trade volumes are static inputs, not supply/demand-driven), and every constant is
+a starting-point placeholder meant to be tuned by playtesting.
