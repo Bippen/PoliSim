@@ -23,6 +23,20 @@ namespace PoliSim.Simulation
 
         public World World => _world;
 
+        // --- Fiscal accounting: automatic stabilizers + sovereign risk premium on debt ---
+
+        /// <summary>Conventional "safe" debt-to-GDP benchmark (the EU Stability & Growth Pact reference value) above which lenders start charging extra.</summary>
+        private const float RiskFreeDebtToGdpPercent = 60f;
+
+        /// <summary>Extra interest-rate points charged per point of debt-to-GDP above the risk-free threshold.</summary>
+        private const float DebtRiskPremiumRate = 0.02f;
+
+        /// <summary>Caps the risk premium - otherwise it scales with Debt/GDP while also multiplying Debt, making InterestOnDebt quadratic in Debt and able to diverge to infinity within a handful of turns.</summary>
+        private const float MaxDebtRiskPremium = 5f;
+
+        /// <summary>Hard ceiling on debt-to-GDP - a sustained structural deficit with no policy response (e.g. this turn's GovernmentSpendingRate exceeding TaxRate) shouldn't be able to grow without bound.</summary>
+        private const float MaxDebtToGdpPercent = 300f;
+
         /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>
         public void SetWorld(World world)
         {
@@ -84,7 +98,9 @@ namespace PoliSim.Simulation
 
             ApplyTaxRateChange(state, decision);
             float governmentSpending = GetGovernmentSpending(country, decision);
-            ApplyRevenueAndSpending(state, governmentSpending);
+            float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
+            float interestOnDebt = GetInterestOnDebt(country);
+            ApplyRevenueAndSpending(state, governmentSpending, unemploymentBenefitCost, interestOnDebt);
 
             MacroSystem.ApplyNationalAccounts(country, governmentSpending, interestRate);
             MacroSystem.ApplyPotentialGdpGrowth(country);
@@ -113,11 +129,49 @@ namespace PoliSim.Simulation
             return country.State.GDP * (country.GovernmentSpendingRate / 100f) + decision.GovernmentSpending;
         }
 
-        /// <summary>Government revenue comes from taxing GDP; budget balance is revenue minus total government spending.</summary>
-        private void ApplyRevenueAndSpending(EconomyState state, float governmentSpending)
+        /// <summary>
+        /// Automatic stabilizer: unemployment benefit spending that scales with the unemployment
+        /// rate with no player input, via the country's own BenefitRatePerUnemployed. Uses this
+        /// turn's starting (prior-turn) Unemployment, matching how GetGovernmentSpending uses prior
+        /// GDP - the value known at the start of the turn, before this turn's updates run.
+        /// </summary>
+        private float GetUnemploymentBenefitCost(Country country)
+        {
+            EconomyState state = country.State;
+            return country.BenefitRatePerUnemployed * state.Unemployment / 100f * state.GDP;
+        }
+
+        /// <summary>Sovereign risk premium: lenders charge more above a conventional "safe" debt-to-GDP benchmark, capped so it can't make InterestOnDebt quadratic in Debt.</summary>
+        private float GetDebtRiskPremium(EconomyState state)
+        {
+            float excessDebtToGdp = Mathf.Max(0f, state.DebtToGdpRatio - RiskFreeDebtToGdpPercent);
+            return Mathf.Min(MaxDebtRiskPremium, DebtRiskPremiumRate * excessDebtToGdp);
+        }
+
+        /// <summary>New spending line: interest on the country's existing debt stock, at its policy rate plus the risk premium.</summary>
+        private float GetInterestOnDebt(Country country)
+        {
+            EconomyState state = country.State;
+            float effectiveRate = country.CurrencyZone.InterestRate + GetDebtRiskPremium(state);
+            return state.GovernmentDebt * (effectiveRate / 100f);
+        }
+
+        /// <summary>
+        /// Government revenue comes from taxing GDP; this turn's budget balance is revenue minus
+        /// total spending (baseline+discretionary government spending, unemployment benefits, and
+        /// interest on debt - benefits and interest are transfers, not purchases, so they're
+        /// deliberately excluded from MacroSystem's national accounts G term). A deficit adds to
+        /// GovernmentDebt, a surplus reduces it, hard-clamped to a sane debt-to-GDP range.
+        /// </summary>
+        private void ApplyRevenueAndSpending(EconomyState state, float governmentSpending, float unemploymentBenefitCost, float interestOnDebt)
         {
             float revenue = state.GDP * (state.TaxRate / 100f);
-            state.Budget += revenue - governmentSpending;
+            float totalSpending = governmentSpending + unemploymentBenefitCost + interestOnDebt;
+            float budgetBalance = revenue - totalSpending;
+
+            state.Budget += budgetBalance;
+            float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
+            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt);
         }
 
         /// <summary>

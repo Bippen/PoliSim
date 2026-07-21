@@ -42,11 +42,20 @@ namespace PoliSim.Data
         /// </summary>
         public float GovernmentSpendingRate;
 
+        /// <summary>
+        /// Automatic stabilizer: unemployment benefit cost as a percentage of GDP per percentage
+        /// point of unemployment (e.g. 0.20 means 1 point of unemployment costs 0.20% of GDP in
+        /// benefits) - a structural per-country constant reflecting how generous the welfare state
+        /// is. See SimulationManager.GetUnemploymentBenefitCost.
+        /// </summary>
+        public float BenefitRatePerUnemployed;
+
         public Country() { }
 
         public Country(
             CountryId id, string name, EconomyState state, CurrencyZone currencyZone, float baseTariffRate = 0f,
-            float naturalUnemploymentRate = 4f, float potentialGrowthRate = 2f, float governmentSpendingRate = 20f)
+            float naturalUnemploymentRate = 4f, float potentialGrowthRate = 2f, float governmentSpendingRate = 20f,
+            float benefitRatePerUnemployed = 0.15f)
         {
             Id = id;
             Name = name;
@@ -56,6 +65,7 @@ namespace PoliSim.Data
             NaturalUnemploymentRate = naturalUnemploymentRate;
             PotentialGrowthRate = potentialGrowthRate;
             GovernmentSpendingRate = governmentSpendingRate;
+            BenefitRatePerUnemployed = benefitRatePerUnemployed;
         }
     }
 }

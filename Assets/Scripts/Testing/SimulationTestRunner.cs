@@ -23,6 +23,7 @@ namespace PoliSim.Testing
             public float Unemployment;
             public float Inflation;
             public float InterestRate;
+            public float DebtToGdpRatio;
         }
 
         private void Start()
@@ -53,7 +54,8 @@ namespace PoliSim.Testing
 
                     Debug.Log($"Turn {turn} | {country.Name}: GDP={state.GDP:F1} ({growthPercent:+0.00;-0.00}%), " +
                         $"Unemployment={state.Unemployment:F2}%, Inflation={state.Inflation:F2}%, " +
-                        $"InterestRate={country.CurrencyZone.InterestRate:F2}%");
+                        $"InterestRate={country.CurrencyZone.InterestRate:F2}%, " +
+                        $"GovernmentDebt={state.GovernmentDebt:F1}, DebtToGdpRatio={state.DebtToGdpRatio:F1}%");
 
                     CheckAnomalies(turn, country, state, prev, anomalies);
 
@@ -71,7 +73,8 @@ namespace PoliSim.Testing
                 GDP = country.State.GDP,
                 Unemployment = country.State.Unemployment,
                 Inflation = country.State.Inflation,
-                InterestRate = country.CurrencyZone.InterestRate
+                InterestRate = country.CurrencyZone.InterestRate,
+                DebtToGdpRatio = country.State.DebtToGdpRatio
             };
         }
 
@@ -92,6 +95,11 @@ namespace PoliSim.Testing
                 anomalies.Add($"Turn {turn} {country.Name}: inflation out of range ({state.Inflation:F2}%)");
             }
 
+            if (state.GovernmentDebt < 0f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: negative GovernmentDebt ({state.GovernmentDebt:F1})");
+            }
+
             CheckFinite(turn, country, "GDP", state.GDP, anomalies);
             CheckFinite(turn, country, "Inflation", state.Inflation, anomalies);
             CheckFinite(turn, country, "Unemployment", state.Unemployment, anomalies);
@@ -107,11 +115,14 @@ namespace PoliSim.Testing
             CheckFinite(turn, country, "ConsumerConfidence", state.ConsumerConfidence, anomalies);
             CheckFinite(turn, country, "BusinessConfidence", state.BusinessConfidence, anomalies);
             CheckFinite(turn, country, "InterestRate", country.CurrencyZone.InterestRate, anomalies);
+            CheckFinite(turn, country, "GovernmentDebt", state.GovernmentDebt, anomalies);
+            CheckFinite(turn, country, "DebtToGdpRatio", state.DebtToGdpRatio, anomalies);
 
             CheckSwing(turn, country, "GDP", previous.GDP, state.GDP, anomalies);
             CheckSwing(turn, country, "Unemployment", previous.Unemployment, state.Unemployment, anomalies);
             CheckSwing(turn, country, "Inflation", previous.Inflation, state.Inflation, anomalies);
             CheckSwing(turn, country, "InterestRate", previous.InterestRate, country.CurrencyZone.InterestRate, anomalies);
+            CheckSwing(turn, country, "DebtToGdpRatio", previous.DebtToGdpRatio, state.DebtToGdpRatio, anomalies);
         }
 
         private static void CheckFinite(int turn, Country country, string field, float value, List<string> anomalies)

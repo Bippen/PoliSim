@@ -28,14 +28,14 @@ Assets/
 As the project grows, expect additional folders such as `Scripts/UI`, `Scripts/Policies`, `Scripts/Events` — keep simulation logic (state + rules) decoupled from Unity `MonoBehaviour`/UI concerns where practical, so the simulation can be tested independently of the engine.
 
 ## Core Concepts
-- **EconomyState**: plain C# data class holding one country's economic/political indicators for a turn — GDP, inflation, unemployment, approval rating, budget, tax rate, trade balance, currency strength, plus the macro-theory fields: `Consumption`, `Investment`, `PotentialGDP`, `InflationExpectations`, `ConsumerConfidence`, `BusinessConfidence`.
-- **Country**: identity (`CountryId` enum) + `EconomyState` + the `CurrencyZone` it belongs to + its list of `TradePartner` links + structural (non-turn-mutated) constants: `BaseTariffRate` (used only when it isn't in a trade bloc), `NaturalUnemploymentRate` (NAIRU), `PotentialGrowthRate` (trend GDP growth, %/turn), and `GovernmentSpendingRate` (baseline government consumption as % of GDP).
+- **EconomyState**: plain C# data class holding one country's economic/political indicators for a turn — GDP, inflation, unemployment, approval rating, budget, tax rate, trade balance, currency strength, `GovernmentDebt`, plus the macro-theory fields: `Consumption`, `Investment`, `PotentialGDP`, `InflationExpectations`, `ConsumerConfidence`, `BusinessConfidence`. `DebtToGdpRatio` is a derived read-only property (`GovernmentDebt / GDP * 100`, expressed as a percentage like `Unemployment`/`Inflation`/`TaxRate`), not a stored field, so it's always consistent with the current GDP and debt.
+- **Country**: identity (`CountryId` enum) + `EconomyState` + the `CurrencyZone` it belongs to + its list of `TradePartner` links + structural (non-turn-mutated) constants: `BaseTariffRate` (used only when it isn't in a trade bloc), `NaturalUnemploymentRate` (NAIRU), `PotentialGrowthRate` (trend GDP growth, %/turn), `GovernmentSpendingRate` (baseline government consumption as % of GDP), and `BenefitRatePerUnemployed` (automatic-stabilizer generosity — % of GDP spent on unemployment benefits per point of unemployment).
 - **CurrencyZone**: a shared, settable interest rate. Countries that use the same currency (e.g. Germany/France/Italy) reference the *same* `CurrencyZone` instance, so a rate change affects all of them at once; independent-currency countries (USA, Sweden, Poland) each get their own instance and set their rate independently.
 - **TradeBloc**: a group of member countries (identified by `CountryId`) with a shared internal tariff rate (near zero) between members and one common external tariff rate applied by every member to non-member imports. The EU bloc is built from Germany, France, Italy, Sweden, and Poland.
 - **TradePartner**: one bilateral trade relationship from a country's point of view — static export/import volumes (not a full market simulation) that tariffs and currency strength act on each turn.
 - **World**: the top-level container — all `Country` instances plus all `TradeBloc` instances. `WorldFactory.CreateDefault()` builds the standard six-country scenario with a small hand-authored trade network.
 - **PolicyDecision**: per-country turn inputs — tax rate change, `InterestRateChange` (summed across countries sharing a `CurrencyZone` into one shared-zone change), and `GovernmentSpending` — a *discretionary delta* layered on top of the country's baseline `GovernmentSpendingRate`, not the total spending figure.
-- **SimulationManager**: orchestrates turn order only — the macro theory itself lives in `MacroSystem`/`TaylorRule`. Per turn: `CurrencySystem` applies interest rate changes and drifts currency strength, `TradeSystem` resolves trade/tariffs (setting `TradeBalance`), then each country's domestic policy runs — tax, fiscal spending/budget, `MacroSystem`'s national accounts identity (GDP), Okun's Law (unemployment), the Phillips Curve (inflation), and approval.
+- **SimulationManager**: orchestrates turn order only — the macro theory itself lives in `MacroSystem`/`TaylorRule`. Per turn: `CurrencySystem` applies interest rate changes and drifts currency strength, `TradeSystem` resolves trade/tariffs (setting `TradeBalance`), then each country's domestic policy runs — tax, fiscal spending/budget/debt (see "Fiscal Accounting" below), `MacroSystem`'s national accounts identity (GDP), Okun's Law (unemployment), the Phillips Curve (inflation), and approval.
 - **MacroSystem**: the macroeconomic theory — see "Economic Theory" below.
 - **TaylorRule**: reference-only suggested interest rate (see "Economic Theory" below) — never applied automatically; intended for a future UI hint or an AI-controlled country's decision logic.
 - **CurrencySystem**: applies summed interest rate changes per `CurrencyZone`; for countries that don't share their `CurrencyZone` with anyone else, drifts `EconomyState.CurrencyStrength` (index, 100 = neutral) toward a target based on how their interest rate compares to the average rate among their trade partners — relatively higher rate pulls strength up, relatively lower pulls it down. Shared-currency countries (Eurozone) skip this, since there's no single national currency to strengthen or weaken. This heuristic (and the export-competitiveness effect it feeds into `TradeSystem`) is still a simplified placeholder, not modeled on a specific theory.
@@ -88,6 +88,30 @@ When extending the economic core, keep new relationships anchored to a named the
 add a comment naming the concept, and keep every coefficient a named constant next to the method
 that uses it, not an inline magic number.
 
+## Fiscal Accounting
+Government debt/deficit tracking and automatic stabilizers live in `SimulationManager` (not
+`MacroSystem`), since — matching real national-accounts theory — they're transfers/debt-service, not
+government *purchases*, and are deliberately excluded from the GDP identity's G term; they only
+affect the budget and debt stock, with no feedback into GDP/unemployment/inflation (yet):
+
+- **Automatic stabilizer** (`SimulationManager.GetUnemploymentBenefitCost`): unemployment benefit
+  spending that scales with the unemployment rate with no player input — `BenefitRatePerUnemployed *
+  Unemployment/100 * GDP` — using this turn's starting (prior-turn) `Unemployment`, the same timing
+  convention `GetGovernmentSpending` uses for prior GDP.
+- **Interest on debt** (`SimulationManager.GetInterestOnDebt`): `GovernmentDebt * (CurrencyZone.InterestRate
+  + riskPremium) / 100`, a new spending line. The risk premium
+  (`SimulationManager.GetDebtRiskPremium`) is `DebtRiskPremiumRate` per point of `DebtToGdpRatio`
+  above `RiskFreeDebtToGdpPercent` (60%, the conventional EU Stability & Growth Pact benchmark),
+  capped at `MaxDebtRiskPremium` — uncapped, the premium (which itself scales with Debt/GDP)
+  multiplying Debt again makes `InterestOnDebt` quadratic in Debt, which can diverge to float
+  infinity within a couple dozen turns rather than just running up a large-but-finite number.
+- **Budget balance and debt** (`SimulationManager.ApplyRevenueAndSpending`): `BudgetBalance = Revenue
+  − (GovernmentSpending + UnemploymentBenefitCost + InterestOnDebt)`. `GovernmentDebt` grows by the
+  deficit and shrinks by any surplus each turn, hard-clamped to `[0, MaxDebtToGdpPercent]` (300%) —
+  a structural primary deficit (a country's `GovernmentSpendingRate` exceeding its `TaxRate`) with no
+  policy response for many turns is a real, not-a-bug scenario this model can produce, and the ceiling
+  keeps it a bounded fiscal-stress signal instead of an unbounded one.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -106,7 +130,11 @@ no-policy-change baseline stays near equilibrium instead of drifting to an extre
 (verified with `SimulationTestRunner`, a debug `MonoBehaviour` under `Assets/Scripts/Testing/` that
 runs 100 turns with no policy input and logs a per-turn/per-country sanity-check summary).
 `ConsumerConfidence`/`BusinessConfidence` exist and are read by the national accounts identity but
-nothing feeds them back yet (a natural next step). Approval rating, currency strength, and
-trade/tariff dampening remain simple, un-theorized heuristics. Still no UI, no save/load, no full
-market simulation (trade volumes are static inputs, not supply/demand-driven), and every constant is
-a starting-point placeholder meant to be tuned by playtesting.
+nothing feeds them back yet (a natural next step). Government debt/deficit tracking and an
+unemployment-benefit automatic stabilizer are now in place (see "Fiscal Accounting" above), seeded
+with real approximate starting debt-to-GDP ratios (USA ~124%, Italy ~138%, France ~116%, Germany
+~63%, Poland ~59%, Sweden ~35%); debt/interest don't feed back into GDP/unemployment/inflation yet.
+Approval rating, currency strength, and trade/tariff dampening remain simple, un-theorized
+heuristics. Still no UI, no save/load, no full market simulation (trade volumes are static inputs,
+not supply/demand-driven), and every constant is a starting-point placeholder meant to be tuned by
+playtesting.

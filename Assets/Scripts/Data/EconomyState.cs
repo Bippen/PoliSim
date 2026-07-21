@@ -59,12 +59,23 @@ namespace PoliSim.Data
         /// <summary>Business confidence index, 1.0 = neutral. Scales Investment; nothing currently feeds this back.</summary>
         public float BusinessConfidence;
 
+        /// <summary>Outstanding government debt, in the same currency units as GDP. Grows by this turn's deficit, shrinks by any surplus - see SimulationManager.ApplyRevenueAndSpending.</summary>
+        public float GovernmentDebt;
+
+        /// <summary>
+        /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
+        /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
+        /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
+        /// </summary>
+        public float DebtToGdpRatio => GDP > 0f ? GovernmentDebt / GDP * 100f : 0f;
+
         public EconomyState() { }
 
         public EconomyState(
             float gdp, float inflation, float unemployment, float approvalRating, float budget, float taxRate,
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
-            float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f)
+            float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
+            float governmentDebt = 0f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -80,6 +91,7 @@ namespace PoliSim.Data
             InflationExpectations = inflationExpectations > 0f ? inflationExpectations : inflation;
             ConsumerConfidence = consumerConfidence;
             BusinessConfidence = businessConfidence;
+            GovernmentDebt = governmentDebt;
         }
 
         /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
@@ -88,7 +100,8 @@ namespace PoliSim.Data
             return new EconomyState(
                 GDP, Inflation, Unemployment, ApprovalRating, Budget, TaxRate,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
-                PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence);
+                PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
+                GovernmentDebt);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>
