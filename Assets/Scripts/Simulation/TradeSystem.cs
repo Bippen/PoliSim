@@ -69,9 +69,11 @@ namespace PoliSim.Simulation
         /// that export demand actually lands; tariffs on our imports (charged by us) generate
         /// government revenue. Sets TradeBalance (the NX term MacroSystem's national accounts
         /// identity reads as this turn's net exports) and adjusts the budget with tariff revenue.
-        /// Does not touch GDP directly - MacroSystem.ApplyNationalAccounts owns that.
+        /// Does not touch GDP directly - MacroSystem.ApplyNationalAccounts owns that. Returns the
+        /// tariff revenue collected so callers (e.g. SimulationManager's fiscal report) can show it
+        /// without re-deriving it.
         /// </summary>
-        public static void ApplyTradeEffects(Country country, World world)
+        public static float ApplyTradeEffects(Country country, World world)
         {
             float netTradeBalance = 0f;
             float tariffRevenue = 0f;
@@ -97,6 +99,7 @@ namespace PoliSim.Simulation
 
             country.State.TradeBalance = netTradeBalance;
             country.State.Budget += tariffRevenue;
+            return tariffRevenue;
         }
     }
 }

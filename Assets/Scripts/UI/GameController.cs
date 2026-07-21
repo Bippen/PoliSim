@@ -14,6 +14,12 @@ namespace PoliSim.UI
     /// </summary>
     public class GameController : MonoBehaviour
     {
+        private enum RightPanelTab
+        {
+            RecentTurns,
+            TradeAndSpending
+        }
+
         private const CountryId PlayerCountryId = CountryId.USA;
         private const int MaxLogEntries = 10;
 
@@ -42,6 +48,9 @@ namespace PoliSim.UI
         private readonly List<string> _turnLog = new List<string>();
         private Vector2 _logScrollPosition;
 
+        private RightPanelTab _rightPanelTab = RightPanelTab.RecentTurns;
+        private Vector2 _tradeAndSpendingScrollPosition;
+
         private bool _stylesInitialized;
         private GUIStyle _headerStyle;
         private GUIStyle _labelStyle;
@@ -49,6 +58,8 @@ namespace PoliSim.UI
         private GUIStyle _sliderStyle;
         private GUIStyle _sliderThumbStyle;
         private GUIStyle _boxStyle;
+        private GUIStyle _tabButtonStyle;
+        private GUIStyle _tabButtonSelectedStyle;
 
         private void Start()
         {
@@ -89,7 +100,19 @@ namespace PoliSim.UI
             GUILayout.Space(columnSpacing);
 
             GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
-            DrawTurnLog(areaHeight);
+            DrawRightColumnTabs();
+            GUILayout.Space(sectionSpacing * 0.5f);
+
+            float tabContentHeight = areaHeight - _tabButtonStyle.fixedHeight - sectionSpacing * 0.5f;
+            if (_rightPanelTab == RightPanelTab.RecentTurns)
+            {
+                DrawTurnLog(tabContentHeight);
+            }
+            else
+            {
+                DrawTradeAndSpending(tabContentHeight);
+            }
+
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
@@ -109,6 +132,9 @@ namespace PoliSim.UI
             _sliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
             _sliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
             _boxStyle = new GUIStyle(GUI.skin.box);
+            _tabButtonStyle = new GUIStyle(GUI.skin.button);
+            _tabButtonSelectedStyle = new GUIStyle(GUI.skin.button) { fontStyle = FontStyle.Bold };
+            _tabButtonSelectedStyle.normal.textColor = Color.yellow;
 
             _stylesInitialized = true;
         }
@@ -119,9 +145,11 @@ namespace PoliSim.UI
             int headerFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.032f), 22, 42);
             int labelFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.022f), 16, 28);
             int buttonFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.032f), 22, 38);
+            int tabFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.024f), 18, 30);
             float sliderHeight = Mathf.Clamp(Screen.height * 0.035f, 26f, 50f);
             float sliderThumbWidth = Mathf.Clamp(Screen.width * 0.03f, 26f, 50f);
             float buttonHeight = Mathf.Clamp(Screen.height * 0.09f, 60f, 140f);
+            float tabButtonHeight = Mathf.Clamp(Screen.height * 0.05f, 36f, 70f);
 
             _headerStyle.fontSize = headerFontSize;
             _labelStyle.fontSize = labelFontSize;
@@ -133,6 +161,11 @@ namespace PoliSim.UI
             _sliderStyle.fixedHeight = sliderHeight;
             _sliderThumbStyle.fixedHeight = sliderHeight;
             _sliderThumbStyle.fixedWidth = sliderThumbWidth;
+
+            _tabButtonStyle.fontSize = tabFontSize;
+            _tabButtonStyle.fixedHeight = tabButtonHeight;
+            _tabButtonSelectedStyle.fontSize = tabFontSize;
+            _tabButtonSelectedStyle.fixedHeight = tabButtonHeight;
         }
 
         private void DrawDashboard()
@@ -235,12 +268,31 @@ namespace PoliSim.UI
             }
         }
 
-        private void DrawTurnLog(float areaHeight)
+        /// <summary>Tab/toggle pair for the right column - "Recent Turns" | "Trade &amp; Spending". The selected tab gets a distinct (bold, colored) style so it's visibly different from the skin's default button look.</summary>
+        private void DrawRightColumnTabs()
+        {
+            GUILayout.BeginHorizontal();
+
+            GUIStyle recentTurnsStyle = _rightPanelTab == RightPanelTab.RecentTurns ? _tabButtonSelectedStyle : _tabButtonStyle;
+            if (GUILayout.Button("Recent Turns", recentTurnsStyle))
+            {
+                _rightPanelTab = RightPanelTab.RecentTurns;
+            }
+
+            GUIStyle tradeAndSpendingStyle = _rightPanelTab == RightPanelTab.TradeAndSpending ? _tabButtonSelectedStyle : _tabButtonStyle;
+            if (GUILayout.Button("Trade & Spending", tradeAndSpendingStyle))
+            {
+                _rightPanelTab = RightPanelTab.TradeAndSpending;
+            }
+
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawTurnLog(float availableHeight)
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Recent Turns", _headerStyle);
 
-            float scrollHeight = areaHeight - _headerStyle.fontSize * 3f;
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _logScrollPosition = GUILayout.BeginScrollView(_logScrollPosition, GUILayout.Height(scrollHeight));
             foreach (string entry in _turnLog)
             {
@@ -250,6 +302,76 @@ namespace PoliSim.UI
             GUILayout.EndScrollView();
 
             GUILayout.EndVertical();
+        }
+
+        private void DrawTradeAndSpending(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _tradeAndSpendingScrollPosition = GUILayout.BeginScrollView(_tradeAndSpendingScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawTradeSection();
+            GUILayout.Space(16f);
+            DrawSpendingSection();
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        private void DrawTradeSection()
+        {
+            EconomyState state = _playerCountry.State;
+
+            GUILayout.Label("Trade", _headerStyle);
+            GUILayout.Label($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle);
+            GUILayout.Space(6f);
+
+            foreach (TradePartner link in _playerCountry.TradePartners)
+            {
+                Country partner = _world.GetCountry(link.PartnerId);
+                if (partner == null)
+                {
+                    continue;
+                }
+
+                // Tariffs are asymmetric: the partner charges its own rate on what we export to
+                // them, and we charge our own rate on what we import from them - the same two
+                // GetTariffRate calls TradeSystem.ApplyTradeEffects itself makes for this link.
+                float tariffOnOurExports = TradeSystem.GetTariffRate(partner, _playerCountry, _world.TradeBlocs);
+                float tariffOnOurImports = TradeSystem.GetTariffRate(_playerCountry, partner, _world.TradeBlocs);
+
+                GUILayout.Label(
+                    $"{partner.Name}: Exports={link.ExportVolume:F1}, Imports={link.ImportVolume:F1}, " +
+                    $"Tariff on our exports={tariffOnOurExports:F2}%, Tariff on our imports={tariffOnOurImports:F2}%",
+                    _labelStyle);
+                GUILayout.Space(4f);
+            }
+        }
+
+        private void DrawSpendingSection()
+        {
+            GUILayout.Label("Spending (Last Turn)", _headerStyle);
+
+            FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+            if (report == null)
+            {
+                GUILayout.Label("No turn advanced yet.", _labelStyle);
+                return;
+            }
+
+            float net = report.Revenue + report.TariffRevenue
+                - report.BaselineGovernmentSpending - report.DiscretionarySpending
+                - report.UnemploymentBenefitCost - report.InterestOnDebt;
+
+            GUILayout.Label($"Revenue (Tax): {report.Revenue:F1}", _labelStyle);
+            GUILayout.Label($"Baseline Government Spending: {report.BaselineGovernmentSpending:F1}", _labelStyle);
+            GUILayout.Label($"Discretionary Spending: {report.DiscretionarySpending:F1}", _labelStyle);
+            GUILayout.Label($"Unemployment Benefit Cost: {report.UnemploymentBenefitCost:F1}", _labelStyle);
+            GUILayout.Label($"Interest On Debt: {report.InterestOnDebt:F1}", _labelStyle);
+            GUILayout.Label($"Tariff Revenue Collected: {report.TariffRevenue:F1}", _labelStyle);
+            GUILayout.Space(6f);
+            GUILayout.Label($"Net (matches this turn's Budget change): {net:+0.0;-0.0;0}", _headerStyle);
         }
     }
 }

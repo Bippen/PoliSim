@@ -3,7 +3,7 @@
 ## Overview
 PoliSim is a turn-based political/economic simulation game built in Unity (C#). The player governs a country — starting with six real-world-seeded countries (USA, Sweden, Germany, France, Italy, Poland) — and makes policy decisions (taxation, spending, interest rates, regulation, etc.) each turn. The core of the economy (GDP, unemployment, inflation) is driven by named macroeconomic theory rather than tuned-by-feel curves; a handful of surrounding mechanics (approval rating, currency strength, trade/tariff dampening) are still intentionally simple heuristics. The player must balance economic performance against public approval to stay in power.
 
-This is an early scaffold: core data model and a minimal simulation loop, not final game content or UI.
+This is an early scaffold: core data model and a minimal simulation loop, plus a first functional (unstyled) play loop - not final game content or polished UI.
 
 ## Genre & Scope
 - Turn-based (not real-time). One "turn" = one simulated period (e.g. a quarter or year — exact cadence still TBD).
@@ -24,8 +24,12 @@ Assets/
     Simulation/   -- simulation loop, turn advancement, macro theory, feedback rules
                      (SimulationManager, MacroSystem, TaylorRule, TradeSystem, CurrencySystem)
     Data/         -- core state/data classes (EconomyState, Country, CurrencyZone, TradeBloc, TradePartner, World, WorldFactory)
+    Testing/      -- debug tools, not production code (SimulationTestRunner)
+    UI/           -- player-facing MonoBehaviours (GameController)
 ```
-As the project grows, expect additional folders such as `Scripts/UI`, `Scripts/Policies`, `Scripts/Events` — keep simulation logic (state + rules) decoupled from Unity `MonoBehaviour`/UI concerns where practical, so the simulation can be tested independently of the engine.
+As the project grows, expect additional folders such as `Scripts/Policies`, `Scripts/Events` — keep
+simulation logic (state + rules) decoupled from Unity `MonoBehaviour`/UI concerns where practical, so
+the simulation can be tested independently of the engine.
 
 ## Core Concepts
 - **EconomyState**: plain C# data class holding one country's economic/political indicators for a turn — GDP, inflation, unemployment, approval rating, budget, tax rate, trade balance, currency strength, `GovernmentDebt`, plus the macro-theory fields: `Consumption`, `Investment`, `PotentialGDP`, `InflationExpectations`, `ConsumerConfidence`, `BusinessConfidence`. `DebtToGdpRatio` is a derived read-only property (`GovernmentDebt / GDP * 100`, expressed as a percentage like `Unemployment`/`Inflation`/`TaxRate`), not a stored field, so it's always consistent with the current GDP and debt.
@@ -135,6 +139,10 @@ unemployment-benefit automatic stabilizer are now in place (see "Fiscal Accounti
 with real approximate starting debt-to-GDP ratios (USA ~124%, Italy ~138%, France ~116%, Germany
 ~63%, Poland ~59%, Sweden ~35%); debt/interest don't feed back into GDP/unemployment/inflation yet.
 Approval rating, currency strength, and trade/tariff dampening remain simple, un-theorized
-heuristics. Still no UI, no save/load, no full market simulation (trade volumes are static inputs,
-not supply/demand-driven), and every constant is a starting-point placeholder meant to be tuned by
-playtesting.
+heuristics. A first playable loop exists: `GameController` (`Assets/Scripts/UI/`), an unstyled
+immediate-mode (`OnGUI`) dashboard/policy panel for the player's country (USA, hardcoded) — shows
+its `EconomyState`, takes this turn's `PolicyDecision` via sliders (interest-rate control only shown
+when the country doesn't share its `CurrencyZone`), and advances the turn on a button press, with
+every other country getting `PolicyDecision.None()`. No save/load, no full market simulation (trade
+volumes are static inputs, not supply/demand-driven), and every constant is a starting-point
+placeholder meant to be tuned by playtesting.

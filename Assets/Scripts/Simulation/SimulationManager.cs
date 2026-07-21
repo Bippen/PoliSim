@@ -5,6 +5,22 @@ using UnityEngine;
 namespace PoliSim.Simulation
 {
     /// <summary>
+    /// Snapshot of one country's fiscal computation for a single turn - the revenue/spending
+    /// breakdown behind that turn's change to Budget/GovernmentDebt. Exposed for tools/UI (e.g.
+    /// GameController's Trade &amp; Spending panel) that want to show where the money went without
+    /// duplicating SimulationManager's formulas.
+    /// </summary>
+    public class FiscalTurnReport
+    {
+        public float Revenue;
+        public float BaselineGovernmentSpending;
+        public float DiscretionarySpending;
+        public float UnemploymentBenefitCost;
+        public float InterestOnDebt;
+        public float TariffRevenue;
+    }
+
+    /// <summary>
     /// Drives the turn-based simulation loop for every country in the world: currency/trade
     /// effects resolve first, then each country's domestic policy - fiscal (tax/spending),
     /// the national accounts identity (GDP), Okun's Law (unemployment), and the Phillips Curve
@@ -37,6 +53,14 @@ namespace PoliSim.Simulation
         /// <summary>Hard ceiling on debt-to-GDP - a sustained structural deficit with no policy response (e.g. this turn's GovernmentSpendingRate exceeding TaxRate) shouldn't be able to grow without bound.</summary>
         private const float MaxDebtToGdpPercent = 300f;
 
+        private readonly Dictionary<CountryId, FiscalTurnReport> _lastFiscalReports = new Dictionary<CountryId, FiscalTurnReport>();
+
+        /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
+        public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
+        {
+            return _lastFiscalReports.TryGetValue(countryId, out FiscalTurnReport report) ? report : null;
+        }
+
         /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>
         public void SetWorld(World world)
         {
@@ -68,9 +92,10 @@ namespace PoliSim.Simulation
                 CurrencySystem.ApplyCurrencyStrength(country, _world);
             }
 
+            var tariffRevenueByCountry = new Dictionary<CountryId, float>();
             foreach (Country country in _world.Countries)
             {
-                TradeSystem.ApplyTradeEffects(country, _world);
+                tariffRevenueByCountry[country.Id] = TradeSystem.ApplyTradeEffects(country, _world);
             }
 
             foreach (Country country in _world.Countries)
@@ -79,7 +104,7 @@ namespace PoliSim.Simulation
                     ? d
                     : PolicyDecision.None();
 
-                ApplyDomesticPolicy(country, decision);
+                ApplyDomesticPolicy(country, decision, tariffRevenueByCountry[country.Id]);
             }
 
             CurrentTurn++;
@@ -88,19 +113,32 @@ namespace PoliSim.Simulation
         /// <summary>
         /// Applies one country's domestic feedback rules for the turn, in place: fiscal policy,
         /// the national accounts identity (GDP), Okun's Law (unemployment), the Phillips Curve
-        /// (inflation), and approval.
+        /// (inflation), and approval. <paramref name="tariffRevenue"/> was already collected (and
+        /// already added to Budget) by TradeSystem earlier this same turn - it's threaded through
+        /// only to record it on this turn's FiscalTurnReport, not applied again here.
         /// </summary>
-        private void ApplyDomesticPolicy(Country country, PolicyDecision decision)
+        private void ApplyDomesticPolicy(Country country, PolicyDecision decision, float tariffRevenue)
         {
             EconomyState state = country.State;
             float interestRate = country.CurrencyZone.InterestRate;
             float gdpBeforeThisTurn = state.GDP;
 
             ApplyTaxRateChange(state, decision);
-            float governmentSpending = GetGovernmentSpending(country, decision);
+            float baselineGovernmentSpending = GetBaselineGovernmentSpending(country);
+            float governmentSpending = baselineGovernmentSpending + decision.GovernmentSpending;
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
             float interestOnDebt = GetInterestOnDebt(country);
-            ApplyRevenueAndSpending(state, governmentSpending, unemploymentBenefitCost, interestOnDebt);
+            float revenue = ApplyRevenueAndSpending(state, governmentSpending, unemploymentBenefitCost, interestOnDebt);
+
+            _lastFiscalReports[country.Id] = new FiscalTurnReport
+            {
+                Revenue = revenue,
+                BaselineGovernmentSpending = baselineGovernmentSpending,
+                DiscretionarySpending = decision.GovernmentSpending,
+                UnemploymentBenefitCost = unemploymentBenefitCost,
+                InterestOnDebt = interestOnDebt,
+                TariffRevenue = tariffRevenue
+            };
 
             MacroSystem.ApplyNationalAccounts(country, governmentSpending, interestRate);
             MacroSystem.ApplyPotentialGdpGrowth(country);
@@ -120,20 +158,21 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// This turn's total government consumption expenditure - the country's structural baseline
-        /// share of GDP, plus the player's discretionary PolicyDecision.GovernmentSpending on top.
-        /// This is the G used both for the budget and for MacroSystem's national accounts identity.
+        /// This turn's baseline government consumption expenditure - the country's structural share
+        /// of GDP, before the player's discretionary PolicyDecision.GovernmentSpending is added on
+        /// top by the caller. Split out (rather than returning the combined total) so callers can
+        /// report baseline and discretionary spending as separate line items.
         /// </summary>
-        private float GetGovernmentSpending(Country country, PolicyDecision decision)
+        private float GetBaselineGovernmentSpending(Country country)
         {
-            return country.State.GDP * (country.GovernmentSpendingRate / 100f) + decision.GovernmentSpending;
+            return country.State.GDP * (country.GovernmentSpendingRate / 100f);
         }
 
         /// <summary>
         /// Automatic stabilizer: unemployment benefit spending that scales with the unemployment
         /// rate with no player input, via the country's own BenefitRatePerUnemployed. Uses this
-        /// turn's starting (prior-turn) Unemployment, matching how GetGovernmentSpending uses prior
-        /// GDP - the value known at the start of the turn, before this turn's updates run.
+        /// turn's starting (prior-turn) Unemployment, matching how GetBaselineGovernmentSpending
+        /// uses prior GDP - the value known at the start of the turn, before this turn's updates run.
         /// </summary>
         private float GetUnemploymentBenefitCost(Country country)
         {
@@ -161,9 +200,10 @@ namespace PoliSim.Simulation
         /// total spending (baseline+discretionary government spending, unemployment benefits, and
         /// interest on debt - benefits and interest are transfers, not purchases, so they're
         /// deliberately excluded from MacroSystem's national accounts G term). A deficit adds to
-        /// GovernmentDebt, a surplus reduces it, hard-clamped to a sane debt-to-GDP range.
+        /// GovernmentDebt, a surplus reduces it, hard-clamped to a sane debt-to-GDP range. Returns
+        /// the revenue computed so the caller can record it on this turn's FiscalTurnReport.
         /// </summary>
-        private void ApplyRevenueAndSpending(EconomyState state, float governmentSpending, float unemploymentBenefitCost, float interestOnDebt)
+        private float ApplyRevenueAndSpending(EconomyState state, float governmentSpending, float unemploymentBenefitCost, float interestOnDebt)
         {
             float revenue = state.GDP * (state.TaxRate / 100f);
             float totalSpending = governmentSpending + unemploymentBenefitCost + interestOnDebt;
@@ -172,6 +212,8 @@ namespace PoliSim.Simulation
             state.Budget += budgetBalance;
             float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
             state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt);
+
+            return revenue;
         }
 
         /// <summary>
