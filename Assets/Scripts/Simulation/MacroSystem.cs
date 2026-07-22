@@ -471,6 +471,19 @@ namespace PoliSim.Simulation
         private const float InfrastructureApprovalMultiplier = 1.0f;
 
         /// <summary>
+        /// Phase 2 (see "Detailed Spending Portfolio Phase 2" in CLAUDE.md) - four more categories
+        /// join the weighted-spending approval term. Justice/energy sit at the baseline (like
+        /// Infrastructure); homeland security sits between Defense's low popularity and the
+        /// baseline (broad, if not universal, appeal for border/disaster-response spending); housing
+        /// is relatively popular (like Healthcare/Education, though slightly less so) - illustrative,
+        /// gameplay-tuning judgment calls, the same as the original four's own multipliers.
+        /// </summary>
+        private const float JusticeApprovalMultiplier = 1.0f;
+        private const float HomelandSecurityApprovalMultiplier = 0.7f;
+        private const float EnergyApprovalMultiplier = 1.0f;
+        private const float HousingApprovalMultiplier = 1.3f;
+
+        /// <summary>
         /// Distinctly higher than any Discretionary category's multiplier above - entitlement
         /// programs (Social Security, Medicare, Medicaid, etc.) are politically far more sensitive
         /// than an equivalent-percentage change to a Discretionary line, so the same relative-size
@@ -578,6 +591,10 @@ namespace PoliSim.Simulation
                 DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.GDP) +
                 InfrastructureApprovalMultiplier * PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP) +
                 EducationApprovalMultiplier * PercentOfGdp(decision.EducationSpendingChange, state.GDP) +
+                JusticeApprovalMultiplier * PercentOfGdp(decision.JusticeSpendingChange, state.GDP) +
+                HomelandSecurityApprovalMultiplier * PercentOfGdp(decision.HomelandSecuritySpendingChange, state.GDP) +
+                EnergyApprovalMultiplier * PercentOfGdp(decision.EnergySpendingChange, state.GDP) +
+                HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.GDP) +
                 MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.GDP);
 
             float spendingEffect;
@@ -610,6 +627,23 @@ namespace PoliSim.Simulation
         /// <summary>BusinessConfidence gained per percentage-point-of-GDP spent on education - a better-skilled workforce modeled as business confidence.</summary>
         private const float EducationConfidenceSensitivity = 0.002f;
 
+        /// <summary>
+        /// Phase 2 (see "Detailed Spending Portfolio Phase 2" in CLAUDE.md) - three more categories
+        /// get their own persistent, lasting effect, mirroring Infrastructure/Healthcare/Education's
+        /// own "one-turn spending change permanently nudges a structural value" pattern exactly
+        /// (HomelandSecurity deliberately gets none, mirroring Defense's own "approval only" pattern).
+        /// CrimeIndex points reduced (permanently, off Country.BaselineCrimeIndex) per
+        /// percentage-point-of-GDP spent on justice - court/prosecution capacity genuinely affects
+        /// case backlogs and enforcement outcomes.
+        /// </summary>
+        private const float JusticeCrimeIndexSensitivity = 0.02f;
+
+        /// <summary>BusinessConfidence gained per percentage-point-of-GDP spent on energy - lower/stabler energy costs for businesses, distinct from Education's own BusinessConfidence nudge.</summary>
+        private const float EnergyConfidenceSensitivity = 0.0015f;
+
+        /// <summary>PovertyRate baseline points reduced (permanently, off Country.BaselinePovertyRate) per percentage-point-of-GDP spent on housing - HUD-style baseline federal housing support, smaller than the dedicated player-adjustable WelfareProgramType.HousingAssistance's own sensitivity since this is a much narrower, less-targeted budget line.</summary>
+        private const float HousingPovertyReductionSensitivity = 0.015f;
+
         /// <summary>Ceiling on PotentialGrowthRate - repeated infrastructure spending over many turns shouldn't be able to push trend growth past a sane bound.</summary>
         private const float MaxPotentialGrowthRate = 8f;
 
@@ -618,10 +652,14 @@ namespace PoliSim.Simulation
         private const float MaxConfidence = 1.3f;
 
         /// <summary>
-        /// Defense spending has no growth/confidence side-effect (only the approval effect in
-        /// ApplyApprovalRating) - it's pure consumption in the G identity. Infrastructure nudges
-        /// PotentialGrowthRate; healthcare nudges ConsumerConfidence; education nudges
-        /// BusinessConfidence - each small and independently clamped.
+        /// Defense and HomelandSecurity spending have no growth/confidence/CrimeIndex/PovertyRate
+        /// side-effect (only the approval effect in ApplyApprovalRating) - both are pure consumption
+        /// in the G identity. Infrastructure nudges PotentialGrowthRate; healthcare nudges
+        /// ConsumerConfidence; education and energy nudge BusinessConfidence; justice nudges
+        /// Country.BaselineCrimeIndex down; housing nudges Country.BaselinePovertyRate down - each
+        /// small, independently clamped, and PERSISTENT (a one-turn spending change permanently
+        /// shifts the structural value, the same "lasting trend" idiom Infrastructure's own
+        /// PotentialGrowthRate nudge already established - not a one-turn shock that fades).
         /// </summary>
         public static void ApplyCategorySpendingEffects(Country country, PolicyDecision decision)
         {
@@ -635,6 +673,15 @@ namespace PoliSim.Simulation
 
             float educationPercent = PercentOfGdp(decision.EducationSpendingChange, state.GDP);
             state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EducationConfidenceSensitivity * educationPercent, MinConfidence, MaxConfidence);
+
+            float justicePercent = PercentOfGdp(decision.JusticeSpendingChange, state.GDP);
+            country.BaselineCrimeIndex = Mathf.Clamp(country.BaselineCrimeIndex - JusticeCrimeIndexSensitivity * justicePercent, 0f, MaxCrimeIndexPercent);
+
+            float energyPercent = PercentOfGdp(decision.EnergySpendingChange, state.GDP);
+            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EnergyConfidenceSensitivity * energyPercent, MinConfidence, MaxConfidence);
+
+            float housingPercent = PercentOfGdp(decision.HousingSpendingChange, state.GDP);
+            country.BaselinePovertyRate = Mathf.Clamp(country.BaselinePovertyRate - HousingPovertyReductionSensitivity * housingPercent, 0f, MaxPovertyRatePercent);
         }
 
         // --- Welfare program side-effects: small, separable per-program profiles, mirroring the category spending effects above ---

@@ -17,11 +17,11 @@ namespace PoliSim.Testing
     /// Validation is the Standard Path" for why this replaced the standalone harness as the primary
     /// validation tool):
     /// -turns=N (default 100) - how many turns to run.
-    /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress (default
-    /// baseline) - baseline is PolicyDecision.None() for every country every turn (the original
-    /// behavior, unchanged); the other five mirror the standalone harness's own same-named scenarios
-    /// byte-for-byte (same targets, same rates, same turn timing) so both tools exercise identical
-    /// policy sequences against the real game code.
+    /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress|
+    /// phase2stress (default baseline) - baseline is PolicyDecision.None() for every country every
+    /// turn (the original behavior, unchanged); the other six mirror the standalone harness's own
+    /// same-named scenarios byte-for-byte (same targets, same rates, same turn timing) so both tools
+    /// exercise identical policy sequences against the real game code.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
@@ -38,7 +38,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -156,6 +156,8 @@ namespace PoliSim.Testing
                     return BuildWelfareStressDecision(usa, turn);
                 case "swfstress":
                     return BuildSwfStressDecision(usa, turn, world);
+                case "phase2stress":
+                    return BuildPhase2StressDecision();
                 default:
                     return PolicyDecision.None();
             }
@@ -256,6 +258,28 @@ namespace PoliSim.Testing
                     { SpendingCategory.HHSDiscretionary, -30f },
                     { SpendingCategory.SocialSecurity, 15f },
                     { SpendingCategory.Medicare, 15f },
+                }
+            };
+        }
+
+        /// <summary>
+        /// Pushes all 4 new Phase 2 categories (Justice/HomelandSecurity/Energy/Housing - see
+        /// CLAUDE.md's "Detailed Spending Portfolio Phase 2") to their max +30%/turn every turn,
+        /// sustained for the whole run - the same "sustained extreme, no reset" stress pattern that
+        /// originally found the SpendingLine compounding-growth bug, now confirming the new effects
+        /// (BaselineCrimeIndex, BaselinePovertyRate, an extra BusinessConfidence nudge) stay bounded.
+        /// Mirrors the standalone harness's own --phase2stress scenario exactly.
+        /// </summary>
+        private static PolicyDecision BuildPhase2StressDecision()
+        {
+            return new PolicyDecision
+            {
+                SpendingLineChanges = new Dictionary<SpendingCategory, float>
+                {
+                    { SpendingCategory.Justice, 30f },
+                    { SpendingCategory.HomelandSecurity, 30f },
+                    { SpendingCategory.Energy, 30f },
+                    { SpendingCategory.Housing, 30f },
                 }
             };
         }
@@ -396,6 +420,9 @@ namespace PoliSim.Testing
             {
                 anomalies.Add($"Turn {turn} {country.Name}: CrimeIndex out of range ({state.CrimeIndex:F2})");
             }
+
+            CheckFinite(turn, country, "BaselineCrimeIndex", country.BaselineCrimeIndex, anomalies);
+            CheckFinite(turn, country, "BaselinePovertyRate", country.BaselinePovertyRate, anomalies);
 
             foreach (Sector sector in country.Sectors)
             {

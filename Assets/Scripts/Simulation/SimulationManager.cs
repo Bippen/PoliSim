@@ -1044,9 +1044,11 @@ namespace PoliSim.Simulation
         /// now that Mandatory categories are player-adjustable, doing so would double-count Medicaid's
         /// effect through both this legacy bucket AND the new, distinctly-weighted Mandatory approval
         /// term (see MacroSystem.MandatorySpendingApprovalMultiplier) that now covers it uniformly with
-        /// every other Mandatory category. Every other new Discretionary category deliberately gets
-        /// zero effect in this pass (Phase 1) - see CLAUDE.md's "Detailed Spending Portfolio" for the
-        /// planned Phase 2.
+        /// every other Mandatory category. Four more categories (Justice/HomelandSecurity/Energy/
+        /// Housing) were given their own effects in Phase 2 (see CLAUDE.md's "Detailed Spending
+        /// Portfolio Phase 2") and are mapped here the same way - every other Discretionary category
+        /// still gets zero effect, since Phase 2 only extended 4 of the remaining 15 effect-less
+        /// categories, not an exhaustive list.
         /// </summary>
         private static PolicyDecision BuildEffectiveDecisionForDetailedSpending(PolicyDecision decision, SpendingLineChangeResult changeResult)
         {
@@ -1058,7 +1060,11 @@ namespace PoliSim.Simulation
                 InfrastructureSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Transportation),
                 HealthcareSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.HHSDiscretionary),
                 EducationSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Education),
-                DefenseSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Defense)
+                DefenseSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Defense),
+                JusticeSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Justice),
+                HomelandSecuritySpendingChange = GetActualDollarChange(changeResult, SpendingCategory.HomelandSecurity),
+                EnergySpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Energy),
+                HousingSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Housing)
             };
         }
 

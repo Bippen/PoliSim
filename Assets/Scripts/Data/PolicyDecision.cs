@@ -67,6 +67,18 @@ namespace PoliSim.Data
         /// <summary>Discretionary education spending change this turn - nudges BusinessConfidence over time; see MacroSystem.ApplyCategorySpendingEffects. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Education) rather than set directly by the player.</summary>
         public float EducationSpendingChange;
 
+        /// <summary>Discretionary justice spending change this turn (Phase 2 - see CLAUDE.md's "Detailed Spending Portfolio Phase 2") - nudges CrimeIndex down over time; see MacroSystem.ApplyCrimeIndex. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Justice) rather than set directly by the player.</summary>
+        public float JusticeSpendingChange;
+
+        /// <summary>Discretionary homeland security spending change this turn (Phase 2) - no growth/confidence/CrimeIndex side-effect, only a (moderate) approval effect, mirroring DefenseSpendingChange's own "approval only" pattern. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (HomelandSecurity) rather than set directly by the player.</summary>
+        public float HomelandSecuritySpendingChange;
+
+        /// <summary>Discretionary energy spending change this turn (Phase 2) - nudges BusinessConfidence over time (distinct from Education's own BusinessConfidence nudge - lower/stabler energy costs for businesses); see MacroSystem.ApplyCategorySpendingEffects. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Energy) rather than set directly by the player.</summary>
+        public float EnergySpendingChange;
+
+        /// <summary>Discretionary housing spending change this turn (Phase 2) - nudges PovertyRate down over time (distinct from the player-adjustable WelfareProgramType.HousingAssistance - this represents HUD's baseline federal housing-support spending); see MacroSystem.ApplyPovertyRate. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Housing) rather than set directly by the player.</summary>
+        public float HousingSpendingChange;
+
         /// <summary>
         /// Change to this country's CurrencyZone interest rate this turn, in percentage points.
         /// If multiple countries share a CurrencyZone (e.g. Germany/France/Italy), their changes

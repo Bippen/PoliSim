@@ -339,9 +339,12 @@ tracked line items using real approximate FY2025 federal budget data, replacing 
 `GovernmentSpendingRate` baseline + four generic category-delta sliders *for USA only* — Sweden,
 Germany, France, Italy, and Poland are untouched and keep the legacy mechanic exactly as before
 (an empty `Country.SpendingLines` list is the switch `SimulationManager.ResolveSpendingForTurn`
-checks). **Phase 2** (a deliberately separate future task, not started here): give the 21 categories
-that get no economic effect in Phase 1 their own effect, the same way Infrastructure/Healthcare/
-Education/Defense already have one.
+checks). **Phase 2** (originally a deliberately separate future task, not started at the time this
+section was written): give the categories that get no economic effect in Phase 1 their own effect,
+the same way Infrastructure/Healthcare/Education/Defense already have one. **Now partially done** -
+see "Detailed Spending Portfolio Phase 2" below, which gave Justice/HomelandSecurity/Energy/Housing
+their own effects (Round 2 item 2); the remaining categories still have none, by the same
+not-an-exhaustive-list scoping this section originally called for.
 
 - **`SpendingCategory`** (`SpendingCategory.cs`): the enum of individual line items — 6 Mandatory
   (`SocialSecurity`, `Medicare`, `Medicaid`, `IncomeSecurity`, `VeteransBenefitsMandatory`,
@@ -1849,6 +1852,55 @@ validated in Round 1.
   scenarios' elevated-but-explained anomaly counts confirmed no regression; the extended `swfstress`
   scenario (now stressing USA AND Germany simultaneously) confirmed the growth-ceiling fix
   generalizes across countries, not just USA.
+
+## Detailed Spending Portfolio Phase 2
+Round 2 item 2 of `ROADMAP_BRIEF.md` - wires real economic effects into 4 more of USA's still
+effect-less Discretionary spending categories, following "Detailed Spending Portfolio"'s own
+Phase 1 precedent exactly (a one-turn spending change permanently nudges a structural value, the
+same "lasting trend" idiom `PotentialGrowthRate`'s own Infrastructure nudge established).
+
+- **Justice -> `Country.BaselineCrimeIndex`** (down): court/prosecution funding genuinely affects
+  case backlogs and enforcement capacity - `MacroSystem.JusticeCrimeIndexSensitivity` (0.02 per
+  percentage-point-of-GDP) permanently lowers the structural crime baseline, distinct from and
+  complementary to `PoliceFundingLevel`'s own larger, dial-based effect (Crime & Justice Basics) -
+  federal DOJ/courts funding and state/local police funding are different real things, so this
+  doesn't duplicate that mechanic.
+- **HomelandSecurity -> `ApprovalRating` only** (`HomelandSecurityApprovalMultiplier` = 0.7,
+  between Defense's 0.5 and the 1.0 baseline): mirrors Defense's own "approval only, no growth/
+  confidence side-effect" pattern exactly - border security/disaster response/TSA spending is pure
+  consumption in the G identity with no additional structural effect in this pass.
+- **Energy -> `BusinessConfidence`** (`EnergyConfidenceSensitivity` = 0.0015): lower/stabler energy
+  costs for businesses - a distinct nudge from Education's own `BusinessConfidence` effect (a
+  different real mechanism, workforce skill vs. input-cost stability), smaller in magnitude than
+  Education's 0.002 since the connection is a bit more indirect.
+- **Housing -> `Country.BaselinePovertyRate`** (down, `HousingPovertyReductionSensitivity` = 0.015):
+  represents HUD's baseline federal housing-support spending, deliberately distinct from and much
+  smaller than the player-adjustable `WelfareProgramType.HousingAssistance`'s own dedicated
+  poverty-reduction sensitivity (3 points per 100% generosity) - this is a much narrower, less-
+  targeted budget line, not a substitute for the dedicated welfare program.
+- **Approval multipliers for all 4** (`JusticeApprovalMultiplier`/`EnergyApprovalMultiplier` = 1.0,
+  baseline like Infrastructure; `HousingApprovalMultiplier` = 1.3, fairly popular like Healthcare/
+  Education though slightly less so) added to the existing weighted-spending approval term
+  alongside the original four - illustrative, gameplay-tuning judgment calls, the same as the
+  original four categories' own multipliers (never claimed as precisely researched either).
+- **Wiring**: `PolicyDecision` gained 4 new fields (`JusticeSpendingChange`/
+  `HomelandSecuritySpendingChange`/`EnergySpendingChange`/`HousingSpendingChange`), mapped from the
+  corresponding `SpendingCategory` in `BuildEffectiveDecisionForDetailedSpending` the same way the
+  original four are. No changes to `ApplyCrimeIndex`/`ApplyPovertyRate`'s signatures were needed -
+  the new effects live entirely in `ApplyCategorySpendingEffects` (which already took `PolicyDecision`),
+  mutating `Country.BaselineCrimeIndex`/`BaselinePovertyRate` directly, the same place Infrastructure's
+  own `PotentialGrowthRate` nudge already lives.
+- **Validated in the standalone harness first** (100/500-turn baseline, plus a new `--phase2stress`
+  scenario pushing all 4 new categories to their max +30%/turn every turn, sustained for the whole
+  run - the same "no reset" stress pattern that originally found the `SpendingLine` compounding bug):
+  stayed fully bounded, with anomaly counts in the SAME range as the other scenarios (unlike
+  `swfstress`'s elevated count) - confirming these four new effects don't introduce their own
+  volatility source the way the SWF's market returns do.
+- **Validated: 2026-07-23, 100/500 turns, real Unity, full 14-combination matrix (7 scenarios x 2
+  turn counts), zero NaN/negative/out-of-range/divergence anywhere** - the six pre-existing
+  scenarios showed no regression; `phase2stress` landed in the same anomaly-count range as
+  `stress`/`sustainedexploit`/`tariffoverride`/`welfarestress` (60-211 across both turn counts),
+  confirming the 4 new effects are appropriately small and don't destabilize anything.
 
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
