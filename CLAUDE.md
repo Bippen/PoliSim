@@ -1618,6 +1618,66 @@ police funding and sentencing policy, per the brief's own suggestion - with effe
   mechanic never touches the fiscal system, so this is the expected, confirmed result, not a
   coincidence).
 
+## Economic Sectors
+Queue item 4 of `ROADMAP_BRIEF.md` - explicitly framed there as a proof-of-pattern pass, not the
+full theoretical sector system: four sectors (`SectorType`: Manufacturing, Technology, Agriculture,
+Finance - the brief's own suggested list, chosen for clear, distinct real-world profiles), each
+tracking Output (% of GDP), Employment (% of workforce), and one sector-specific metric, plus two
+sector policies (subsidy, regulation - a deliberate reduction from the brief's three suggested
+categories; see below for why tariffs was dropped).
+
+- **`Sector`/`SectorType`** (mirrors `TaxLine`/`WelfareProgram`'s pattern): every country has all
+  four `Sector`s always (`Country.Sectors`, no implement/remove - unlike `TaxLines`/
+  `WelfarePrograms`, sectors aren't optional). Each has `OutputShareOfGdp`, `EmploymentShare`,
+  `SectorMetric` (meaning varies by `Type`: Manufacturing -> Capacity Utilization %, Technology -> a
+  stylized Innovation Index 0-100, Agriculture -> Export Share % of sector output, Finance -> a
+  stylized annual Credit Growth Rate %), plus `SubsidyLevel`/`RegulationLevel` (0-100, both start
+  neutral at 50 for every sector/country - the same uniform-placeholder reasoning
+  `PoliceFundingLevel`/`SentencingSeverity` already established) and `BaselineX` anchors for all
+  three tracked stats (seeded equal to the starting value, the same "avoid a turn-1 shock" idiom
+  used throughout this session's work).
+- **Real-data grounding, varying by sector** (all disclosed honestly in `WorldFactory`'s seeding
+  comment, not glossed over): Manufacturing/Agriculture Output is real World Bank value-added data
+  (Manufacturing: USA 10%, Sweden 12.6%, Germany 19.9%, France 10.7%, Italy 16.6%, Poland 18.1%;
+  Agriculture: all low single digits, Poland/Italy notably higher among the six). Finance Output is
+  partially grounded (USA ~8%, confirmed; the other five are directional estimates). Technology has
+  **no clean standard national-accounts category comparable across countries** and is entirely
+  stylized, informed by general knowledge of relative tech-sector size (USA/Sweden highest - the
+  latter well known for an outsized startup/tech scene relative to its population). Every
+  Employment % and sector-specific metric is likewise illustrative throughout, EXCEPT Poland's
+  Agriculture Employment (8%), which is real and well-documented - Poland has one of the EU's
+  highest shares of agricultural employment relative to its output share, reflecting its more
+  fragmented, smallholder farm structure.
+- **`MacroSystem.ApplySectorEffects`**: each sector's three tracked stats mean-revert toward their
+  own baseline, adjusted by that sector's own Subsidy/Regulation gap versus their shared neutral 50
+  (subsidy nudges up, regulation nudges down - applied uniformly to all three stats in this first
+  pass rather than a bespoke formula per sector type, keeping the mechanic simple and consistent).
+  **Deliberately isolated from GDP/Unemployment/Inflation/ApprovalRating/Confidence entirely** - a
+  real, escalated design decision, not an oversight; see `ROADMAP_BRIEF.md`'s Open Questions #1 for
+  the full reasoning (in short: avoids double-counting risk against the existing C+I+G+NX identity,
+  matches the brief's own "proof-of-pattern" framing, and makes the four named failure patterns
+  essentially unreachable by construction - confirmed by validation below).
+- **Only 2 of the brief's 3 suggested policy categories implemented** (subsidy, regulation - tariffs
+  dropped): country-level tariffs already exist in this model (`Country.BaseTariffRate`,
+  per-partner overrides); extending to PER-SECTOR tariffs would require deeper `TradeSystem`
+  changes (tariffs currently resolve per country-PAIR, not per-sector) than this proof-of-pattern
+  pass's scope - a candidate for a later pass if this validates cleanly, not attempted here.
+- **UI** (`GameController`'s new "Economic Sectors" tab): each sector shows its current Output/
+  Employment/SectorMetric (read-only, descriptive) plus two always-adjustable sliders (Subsidy/
+  Regulation, absolute targets like `TaxLine.Rate` - no implement/remove needed, matching the
+  minimum-wage/crime-policy precedent of "every country always has this").
+- **Validated in the standalone harness first** (100/500-turn baseline, plus a new `--sectorstress`
+  scenario pushing Manufacturing/Technology to max Subsidy + min Regulation and Agriculture/Finance
+  to min Subsidy + max Regulation, all simultaneously at turn 1, held): as expected given the
+  deliberate isolation, GDP/Unemployment/Approval/etc. were statistically indistinguishable from an
+  equivalent-seed baseline run - the stress only moved the sectors' own tracked stats, which stayed
+  bounded by construction (linear reversion toward a policy-bounded target - the math cannot diverge
+  regardless of dial settings, since the target itself is bounded to baseline ± a fixed maximum).
+- **Validated: 2026-07-22, 100/500 turns, real Unity, 23/80 anomalies (all known swing
+  false-positives, zero NaN/negative/out-of-range/divergence)** - `DebtToGdpRatio` equilibria
+  unchanged from the pre-existing "Fiscal Reaction Function" baseline, exactly as expected given
+  this mechanic never touches the fiscal or core simulation loop at all.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -1757,6 +1817,9 @@ effects on `Unemployment`/`PovertyRate` - Sweden and Italy have none, matching r
 country also tracks a stylized `CrimeIndex` (informed by real relative homicide-rate rankings, not a
 literal transformation of any single indicator - see "Crime & Justice Basics" above) and has two
 policy dials - Police Funding and Sentencing Severity - with small effects on `ApprovalRating` and
-`BusinessConfidence`. No save/load, no full market simulation (trade volumes are static inputs, not
-supply/demand-driven), and every constant is a starting-point placeholder meant to be tuned by
-playtesting.
+`BusinessConfidence`. Every country also has four economic sectors (Manufacturing, Technology,
+Agriculture, Finance - see "Economic Sectors" above) tracking Output/Employment/one sector-specific
+metric each, adjustable via Subsidy/Regulation dials - deliberately isolated from the core GDP/
+Unemployment/Approval loop in this proof-of-pattern pass (see `ROADMAP_BRIEF.md`'s Open Questions).
+No save/load, no full market simulation (trade volumes are static inputs, not supply/demand-driven),
+and every constant is a starting-point placeholder meant to be tuned by playtesting.

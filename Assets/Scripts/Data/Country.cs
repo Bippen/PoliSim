@@ -28,6 +28,14 @@ namespace PoliSim.Data
         public List<WelfareProgram> WelfarePrograms = new List<WelfareProgram>();
 
         /// <summary>
+        /// This country's economic sector breakdown (Manufacturing/Technology/Agriculture/Finance) -
+        /// a small proof-of-pattern slice, present for all six countries (unlike TaxLines/
+        /// WelfarePrograms, there's no implement/remove - every country has all four sectors always).
+        /// See Sector.cs and MacroSystem.ApplySectorEffects.
+        /// </summary>
+        public List<Sector> Sectors = new List<Sector>();
+
+        /// <summary>
         /// This country's detailed spending portfolio (Phase 1: USA only - see CLAUDE.md's "Detailed
         /// Spending Portfolio"). Empty for a country means it still uses the legacy
         /// GovernmentSpendingRate + PolicyDecision's four category-delta fields mechanism unchanged -

@@ -127,6 +127,10 @@ namespace PoliSim.Simulation
         private const float MinPolicyDialLevel = 0f;
         private const float MaxPolicyDialLevel = 100f;
 
+        /// <summary>Bounds for Sector.SubsidyLevel/RegulationLevel - reuses the same [0,100] range as the crime/justice dials, since there's likewise no per-sector real-world figure to bound them against.</summary>
+        private const float MinSectorDialLevel = 0f;
+        private const float MaxSectorDialLevel = 100f;
+
         /// <summary>Bounds for this turn's requested PERCENTAGE change to a Discretionary SpendingLine (see PolicyDecision.SpendingLineChanges).</summary>
         private const float DiscretionaryPercentChangeRange = 30f;
 
@@ -256,6 +260,7 @@ namespace PoliSim.Simulation
             ApplyWelfareGenerosityChanges(country, decision);
             ApplyMinimumWageChange(country, decision);
             ApplyCrimePolicyChanges(country, decision);
+            ApplySectorPolicyChanges(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(country);
@@ -288,6 +293,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyLaborForceParticipationRate(country);
             MacroSystem.ApplyCrimeIndex(country);
             MacroSystem.ApplyCrimeEffects(country);
+            MacroSystem.ApplySectorEffects(country);
 
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -338,6 +344,7 @@ namespace PoliSim.Simulation
             ApplyWelfareGenerosityChanges(previewCountry, decision);
             ApplyMinimumWageChange(previewCountry, decision);
             ApplyCrimePolicyChanges(previewCountry, decision);
+            ApplySectorPolicyChanges(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
@@ -365,6 +372,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
             MacroSystem.ApplyCrimeIndex(previewCountry);
             MacroSystem.ApplyCrimeEffects(previewCountry);
+            MacroSystem.ApplySectorEffects(previewCountry);
 
             MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -421,6 +429,7 @@ namespace PoliSim.Simulation
                 TaxLines = ClonePreviewTaxLines(country.TaxLines),
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
+                Sectors = ClonePreviewSectors(country.Sectors),
                 CollectionEfficiency = country.CollectionEfficiency,
                 BaseDebtInterestRateOverride = country.BaseDebtInterestRateOverride,
                 RiskPremiumSensitivity = country.RiskPremiumSensitivity,
@@ -453,6 +462,16 @@ namespace PoliSim.Simulation
             foreach (TaxLine taxLine in taxLines)
             {
                 clones.Add(taxLine.Clone());
+            }
+            return clones;
+        }
+
+        private static List<Sector> ClonePreviewSectors(List<Sector> sectors)
+        {
+            var clones = new List<Sector>(sectors.Count);
+            foreach (Sector sector in sectors)
+            {
+                clones.Add(sector.Clone());
             }
             return clones;
         }
@@ -609,6 +628,28 @@ namespace PoliSim.Simulation
             if (decision.SentencingSeverityOverride >= 0f)
             {
                 country.SentencingSeverity = Mathf.Clamp(decision.SentencingSeverityOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+        }
+
+        /// <summary>
+        /// Sets each Sector's SubsidyLevel/RegulationLevel directly to this turn's requested
+        /// PolicyDecision overrides (clamped to [MinSectorDialLevel, MaxSectorDialLevel]) - a no-op
+        /// for any SectorType with no entry in the corresponding dictionary, the same "only requested
+        /// entries matter" pattern TaxRateOverrides/WelfareGenerosityOverrides already use.
+        /// </summary>
+        private void ApplySectorPolicyChanges(Country country, PolicyDecision decision)
+        {
+            foreach (Sector sector in country.Sectors)
+            {
+                if (decision.SectorSubsidyOverrides.TryGetValue(sector.Type, out float requestedSubsidy))
+                {
+                    sector.SubsidyLevel = Mathf.Clamp(requestedSubsidy, MinSectorDialLevel, MaxSectorDialLevel);
+                }
+
+                if (decision.SectorRegulationOverrides.TryGetValue(sector.Type, out float requestedRegulation))
+                {
+                    sector.RegulationLevel = Mathf.Clamp(requestedRegulation, MinSectorDialLevel, MaxSectorDialLevel);
+                }
             }
         }
 

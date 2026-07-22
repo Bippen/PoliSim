@@ -401,6 +401,43 @@ namespace PoliSim.Simulation
             state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence - CrimeBusinessConfidenceSensitivity * crimeGap, MinConfidence, MaxConfidence);
         }
 
+        // --- Economic Sectors: descriptive tracked breakdowns, isolated from the core GDP/unemployment/inflation loop (see CLAUDE.md's "Economic Sectors") ---
+
+        /// <summary>Fraction of the gap versus each sector stat's target that closes each turn on its own - matches PovertyRate/CrimeIndex's own moderate-slow reversion speed.</summary>
+        private const float SectorReversionSpeed = 0.15f;
+
+        /// <summary>Points added per point a sector's SubsidyLevel sits above its neutral 50 (and removed per point below) - applied uniformly to Output/Employment/SectorMetric in this first pass, deliberately not wired to the budget (see CLAUDE.md).</summary>
+        private const float SectorSubsidySensitivity = 0.04f;
+
+        /// <summary>Points removed per point a sector's RegulationLevel sits above its neutral 50 (and added per point below) - a compliance-cost tradeoff, deliberately smaller than nothing else competes with it in this isolated pass.</summary>
+        private const float SectorRegulationSensitivity = 0.04f;
+
+        /// <summary>
+        /// Each of a country's Sectors mean-reverts Output/Employment/SectorMetric toward its own
+        /// BaselineX anchor, adjusted by that sector's own SubsidyLevel/RegulationLevel gap versus
+        /// their shared neutral 50 (the same uniform-dial idiom Country.PoliceFundingLevel/
+        /// SentencingSeverity already use). Deliberately isolated from GDP/Unemployment/Inflation/
+        /// ApprovalRating/Confidence in this pass - a descriptive breakdown only, not a new driver of
+        /// the core simulation loop (see "Economic Sectors" in CLAUDE.md for why).
+        /// </summary>
+        public static void ApplySectorEffects(Country country)
+        {
+            foreach (Sector sector in country.Sectors)
+            {
+                float policyAdjustment = SectorSubsidySensitivity * (sector.SubsidyLevel - NeutralPolicyDialLevel)
+                    - SectorRegulationSensitivity * (sector.RegulationLevel - NeutralPolicyDialLevel);
+
+                float outputTarget = sector.BaselineOutputShareOfGdp + policyAdjustment;
+                sector.OutputShareOfGdp = Mathf.Max(0f, sector.OutputShareOfGdp + SectorReversionSpeed * (outputTarget - sector.OutputShareOfGdp));
+
+                float employmentTarget = sector.BaselineEmploymentShare + policyAdjustment;
+                sector.EmploymentShare = Mathf.Max(0f, sector.EmploymentShare + SectorReversionSpeed * (employmentTarget - sector.EmploymentShare));
+
+                float metricTarget = sector.BaselineSectorMetric + policyAdjustment;
+                sector.SectorMetric = Mathf.Max(0f, sector.SectorMetric + SectorReversionSpeed * (metricTarget - sector.SectorMetric));
+            }
+        }
+
         // --- Approval Rating: political-economy feedback, Phillips-curve-adjacent (misery index) ---
 
         /// <summary>Approval mean-reverts toward this absent any other effect - a "neutral" governing position, not an extreme.</summary>

@@ -121,6 +121,19 @@ namespace PoliSim.Data
         public float SentencingSeverityOverride = -1f;
 
         /// <summary>
+        /// This turn's requested ABSOLUTE subsidy level per SectorType (0-100, not a delta) - only
+        /// meaningful entries are read; see SimulationManager.ApplySectorPolicyChanges and
+        /// Sector.SubsidyLevel.
+        /// </summary>
+        public Dictionary<SectorType, float> SectorSubsidyOverrides = new Dictionary<SectorType, float>();
+
+        /// <summary>
+        /// This turn's requested ABSOLUTE regulation level per SectorType (0-100, not a delta) - see
+        /// SimulationManager.ApplySectorPolicyChanges and Sector.RegulationLevel.
+        /// </summary>
+        public Dictionary<SectorType, float> SectorRegulationOverrides = new Dictionary<SectorType, float>();
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,

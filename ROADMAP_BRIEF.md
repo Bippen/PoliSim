@@ -74,3 +74,37 @@ This is a fine, safe outcome — do not start inventing new scope. Instead: re-r
 ## Open Questions
 *(Claude Code: add entries here as they come up. Do not resolve these yourself — flag and move on.)*
 
+### 1. Should Economic Sectors feed back into aggregate GDP/Unemployment, or stay isolated?
+
+Queue item 4 ("Small slice of economic sectors") required a real design decision: the four new
+`Sector`s (Manufacturing/Technology/Agriculture/Finance) each track Output (% of GDP), Employment
+(% of workforce), and one sector-specific metric, adjustable via Subsidy/Regulation policy dials -
+but I deliberately made all three of those **descriptive only**, mean-reverting toward their own
+seeded baseline and responding to their own sector's policy dials, with **zero feedback into the
+core national accounts identity, Okun's Law, the Phillips Curve, ApprovalRating, or
+Consumer/BusinessConfidence**. A more theoretically complete version would have sector Output sum to
+(or at least meaningfully influence) aggregate GDP, and sector Employment feed into aggregate
+Unemployment.
+
+**Why I chose isolation for this pass**: (1) `ROADMAP_BRIEF.md`'s own ordering note flags that
+mechanics touching the fiscal/core-simulation system directly have historically needed far more
+debugging rounds than self-contained ones this project - wiring four new sector Output figures into
+the GDP identity risks double-counting against the existing C+I+G+NX terms (which already sum to
+GDP without any sector breakdown), a real risk of regressing already-validated, hard-won stability
+(Turn-1 GDP Consistency, the Fiscal Reaction Function's debt equilibria, etc.). (2) The brief calls
+this item "explicitly a proof-of-pattern pass" and explicitly invites a note here on "whether
+expanding further seems safe" - which reads as permission to keep this pass minimal. (3) Isolation
+makes the four failure patterns (turn-1 discontinuity, oscillation, unbounded growth, bimodal
+attractors) essentially unreachable by construction (linear mean-reversion toward a policy-bounded
+target), which the validation results confirm - zero anomalies attributable to sectors in either the
+100/500-turn baseline or a dedicated `--sectorstress` scenario maxing every sector's dials
+simultaneously.
+
+**Recommendation**: keep sectors isolated through the current queue (items 5, the Sovereign Wealth
+Fund, is the last, highest-risk item and doesn't depend on sectors). If a future task wants sectors
+to meaningfully affect the core simulation, I'd recommend a SEPARATE, carefully-scoped follow-up
+(not a retrofit) that redesigns the GDP identity's G/C/I terms around an explicit sector
+decomposition rather than layering a second, competing GDP-driver on top of the existing one -
+that's a bigger investigation than this pass's scope, consistent with how "Discretionary Spending
+Growth" and "Fiscal Reaction Function" each took a dedicated investigation to get right.
+

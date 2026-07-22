@@ -235,6 +235,55 @@ namespace PoliSim.Data
             SeedWelfarePrograms(italy);
             SeedWelfarePrograms(poland);
 
+            // Economic Sectors (see "Economic Sectors" in CLAUDE.md) - Output % of GDP is real World
+            // Bank data for Manufacturing/Agriculture (Manufacturing value added: USA 10%, Sweden
+            // 12.6%, Germany 19.9%, France 10.7%, Italy 16.6%, Poland 18.1%; Agriculture value added:
+            // all low single digits, USA ~1.0%, Sweden ~1.4%, Germany ~0.8%, France ~1.6%, Italy
+            // ~2.1%, Poland ~2.4% - Poland/Italy notably higher among the six). Finance (financial and
+            // insurance services value added) is partially grounded (USA ~8%, confirmed via search;
+            // the other five are directional estimates, not individually confirmed). Technology has NO
+            // clean standard national-accounts category comparable across countries and is entirely
+            // stylized, informed by general knowledge of relative tech-sector size/innovation ranking
+            // (USA and Sweden - the latter well known for an outsized startup/tech scene relative to
+            // its population - highest; Germany/France/Poland mid; Italy lowest). Employment % and
+            // every sector's one-off SectorMetric (Manufacturing: Capacity Utilization %; Technology:
+            // a stylized Innovation Index 0-100; Agriculture: Export Share % of sector output;
+            // Finance: a stylized annual Credit Growth Rate %) are illustrative estimates throughout,
+            // directionally reasonable but not individually sourced - except Poland's Agriculture
+            // Employment share (8%), which is real and well-documented: Poland has one of the EU's
+            // highest shares of agricultural employment relative to its output share, reflecting its
+            // more fragmented, smallholder farm structure.
+            SeedSectors(usa,
+                manufacturingOutput: 10.0f, manufacturingEmployment: 8.0f, manufacturingMetric: 77f,
+                technologyOutput: 10.0f, technologyEmployment: 4.0f, technologyMetric: 78f,
+                agricultureOutput: 1.0f, agricultureEmployment: 1.5f, agricultureMetric: 20f,
+                financeOutput: 8.0f, financeEmployment: 4.0f, financeMetric: 4f);
+            SeedSectors(sweden,
+                manufacturingOutput: 12.6f, manufacturingEmployment: 11.0f, manufacturingMetric: 78f,
+                technologyOutput: 8.0f, technologyEmployment: 5.0f, technologyMetric: 80f,
+                agricultureOutput: 1.4f, agricultureEmployment: 1.8f, agricultureMetric: 25f,
+                financeOutput: 6.0f, financeEmployment: 2.5f, financeMetric: 3.5f);
+            SeedSectors(germany,
+                manufacturingOutput: 19.9f, manufacturingEmployment: 18.0f, manufacturingMetric: 79f,
+                technologyOutput: 5.5f, technologyEmployment: 3.0f, technologyMetric: 70f,
+                agricultureOutput: 0.8f, agricultureEmployment: 1.2f, agricultureMetric: 30f,
+                financeOutput: 4.0f, financeEmployment: 2.5f, financeMetric: 3f);
+            SeedSectors(france,
+                manufacturingOutput: 10.7f, manufacturingEmployment: 10.0f, manufacturingMetric: 76f,
+                technologyOutput: 5.0f, technologyEmployment: 2.8f, technologyMetric: 68f,
+                agricultureOutput: 1.6f, agricultureEmployment: 2.5f, agricultureMetric: 35f,
+                financeOutput: 4.0f, financeEmployment: 2.8f, financeMetric: 3.5f);
+            SeedSectors(italy,
+                manufacturingOutput: 16.6f, manufacturingEmployment: 15.0f, manufacturingMetric: 75f,
+                technologyOutput: 3.5f, technologyEmployment: 2.0f, technologyMetric: 55f,
+                agricultureOutput: 2.1f, agricultureEmployment: 3.8f, agricultureMetric: 25f,
+                financeOutput: 5.5f, financeEmployment: 2.5f, financeMetric: 2.5f);
+            SeedSectors(poland,
+                manufacturingOutput: 18.1f, manufacturingEmployment: 17.0f, manufacturingMetric: 78f,
+                technologyOutput: 5.0f, technologyEmployment: 3.0f, technologyMetric: 58f,
+                agricultureOutput: 2.4f, agricultureEmployment: 8.0f, agricultureMetric: 40f,
+                financeOutput: 4.0f, financeEmployment: 2.0f, financeMetric: 5f);
+
             SeedUsaSpendingLines(usa);
 
             // Reserve-currency treatment (see "Reserve-Currency Debt Interest Treatment" in
@@ -349,6 +398,22 @@ namespace PoliSim.Data
                 new WelfareProgram(WelfareProgramType.UniversalHealthcare, DefaultWelfareGenerosity, isImplemented: false),
                 new WelfareProgram(WelfareProgramType.HousingAssistance, DefaultWelfareGenerosity, isImplemented: false),
                 new WelfareProgram(WelfareProgramType.ChildcareSubsidies, DefaultWelfareGenerosity, isImplemented: false),
+            });
+        }
+
+        /// <summary>Seeds all four Sectors for a country - see this class's call sites for the real-data-vs-stylized breakdown of each argument.</summary>
+        private static void SeedSectors(Country country,
+            float manufacturingOutput, float manufacturingEmployment, float manufacturingMetric,
+            float technologyOutput, float technologyEmployment, float technologyMetric,
+            float agricultureOutput, float agricultureEmployment, float agricultureMetric,
+            float financeOutput, float financeEmployment, float financeMetric)
+        {
+            country.Sectors.AddRange(new[]
+            {
+                new Sector(SectorType.Manufacturing, manufacturingOutput, manufacturingEmployment, manufacturingMetric),
+                new Sector(SectorType.Technology, technologyOutput, technologyEmployment, technologyMetric),
+                new Sector(SectorType.Agriculture, agricultureOutput, agricultureEmployment, agricultureMetric),
+                new Sector(SectorType.Finance, financeOutput, financeEmployment, financeMetric),
             });
         }
 

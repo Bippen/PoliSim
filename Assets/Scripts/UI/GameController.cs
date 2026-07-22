@@ -20,7 +20,8 @@ namespace PoliSim.UI
             TradeAndSpending,
             TaxPolicy,
             SpendingPolicy,
-            WelfarePolicy
+            WelfarePolicy,
+            SectorPolicy
         }
 
         private const CountryId PlayerCountryId = CountryId.USA;
@@ -76,6 +77,13 @@ namespace PoliSim.UI
         // drags it (see GetWelfareGenerosityInput). Not cleared by ResetPolicyInputs, for the exact
         // same reason _taxRateInputs isn't.
         private readonly Dictionary<WelfareProgramType, float> _welfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
+
+        // Draft ABSOLUTE Subsidy/Regulation levels per SectorType (not deltas) for the Economic
+        // Sectors tab's sliders - every country has all four Sectors (unlike TaxLines/
+        // WelfarePrograms), so no implement/remove fallback branch is needed. Not cleared by
+        // ResetPolicyInputs, for the same reason _taxRateInputs isn't.
+        private readonly Dictionary<SectorType, float> _sectorSubsidyInputs = new Dictionary<SectorType, float>();
+        private readonly Dictionary<SectorType, float> _sectorRegulationInputs = new Dictionary<SectorType, float>();
 
         // Draft PERCENTAGE change per SpendingCategory (both Mandatory and Discretionary, each
         // clamped to its own range in SimulationManager) - unlike _taxRateInputs, this IS cleared by
@@ -134,6 +142,8 @@ namespace PoliSim.UI
         private int _cachedPreviewTurn = -1;
         private readonly Dictionary<TaxType, float> _cachedTaxRateInputs = new Dictionary<TaxType, float>();
         private readonly Dictionary<WelfareProgramType, float> _cachedWelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
+        private readonly Dictionary<SectorType, float> _cachedSectorSubsidyInputs = new Dictionary<SectorType, float>();
+        private readonly Dictionary<SectorType, float> _cachedSectorRegulationInputs = new Dictionary<SectorType, float>();
         private readonly Dictionary<SpendingCategory, float> _cachedSpendingLineInputs = new Dictionary<SpendingCategory, float>();
         private readonly Dictionary<CountryId, float> _cachedPartnerTariffInputs = new Dictionary<CountryId, float>();
         private float _cachedInterestRateChangeInput;
@@ -159,6 +169,7 @@ namespace PoliSim.UI
         private Vector2 _taxPolicyScrollPosition;
         private Vector2 _spendingPolicyScrollPosition;
         private Vector2 _welfarePolicyScrollPosition;
+        private Vector2 _sectorPolicyScrollPosition;
 
         private bool _stylesInitialized;
         private GUIStyle _headerStyle;
@@ -261,6 +272,11 @@ namespace PoliSim.UI
                 case RightPanelTab.WelfarePolicy:
                     GUI.enabled = !_isGameOver;
                     DrawWelfarePolicy(tabContentHeight);
+                    GUI.enabled = true;
+                    break;
+                case RightPanelTab.SectorPolicy:
+                    GUI.enabled = !_isGameOver;
+                    DrawSectorPolicy(tabContentHeight);
                     GUI.enabled = true;
                     break;
             }
@@ -591,6 +607,15 @@ namespace PoliSim.UI
                 return true;
             }
 
+            foreach (Sector sector in _playerCountry.Sectors)
+            {
+                if (!Mathf.Approximately(GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel), GetCachedSectorSubsidyInput(sector.Type, sector.SubsidyLevel))
+                    || !Mathf.Approximately(GetSectorRegulationInput(sector.Type, sector.RegulationLevel), GetCachedSectorRegulationInput(sector.Type, sector.RegulationLevel)))
+                {
+                    return true;
+                }
+            }
+
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
             {
                 if (!Mathf.Approximately(GetTaxRateInput(taxLine.Type, taxLine.Rate), GetCachedTaxRateInput(taxLine.Type, taxLine.Rate)))
@@ -659,6 +684,18 @@ namespace PoliSim.UI
             _cachedMinimumWageInput = _minimumWageInput;
             _cachedPoliceFundingInput = _policeFundingInput;
             _cachedSentencingSeverityInput = _sentencingSeverityInput;
+
+            _cachedSectorSubsidyInputs.Clear();
+            foreach (KeyValuePair<SectorType, float> kvp in _sectorSubsidyInputs)
+            {
+                _cachedSectorSubsidyInputs[kvp.Key] = kvp.Value;
+            }
+
+            _cachedSectorRegulationInputs.Clear();
+            foreach (KeyValuePair<SectorType, float> kvp in _sectorRegulationInputs)
+            {
+                _cachedSectorRegulationInputs[kvp.Key] = kvp.Value;
+            }
 
             _cachedTaxRateInputs.Clear();
             foreach (KeyValuePair<TaxType, float> kvp in _taxRateInputs)
@@ -767,6 +804,28 @@ namespace PoliSim.UI
             return _cachedSentencingSeverityInput ?? fallbackLevel;
         }
 
+        /// <summary>The Economic Sectors tab's draft absolute Subsidy level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted SubsidyLevel) if the player hasn't touched that slider this turn.</summary>
+        private float GetSectorSubsidyInput(SectorType type, float fallbackLevel)
+        {
+            return _sectorSubsidyInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
+        }
+
+        private float GetCachedSectorSubsidyInput(SectorType type, float fallbackLevel)
+        {
+            return _cachedSectorSubsidyInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
+        }
+
+        /// <summary>The Economic Sectors tab's draft absolute Regulation level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted RegulationLevel) if the player hasn't touched that slider this turn.</summary>
+        private float GetSectorRegulationInput(SectorType type, float fallbackLevel)
+        {
+            return _sectorRegulationInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
+        }
+
+        private float GetCachedSectorRegulationInput(SectorType type, float fallbackLevel)
+        {
+            return _cachedSectorRegulationInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
+        }
+
         /// <summary>The Welfare Policy tab's draft absolute GenerosityLevel for a WelfareProgramType, or <paramref name="fallbackGenerosity"/> (the WelfareProgram's actual persisted GenerosityLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
         {
@@ -818,6 +877,12 @@ namespace PoliSim.UI
 
             decision.PoliceFundingOverride = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
             decision.SentencingSeverityOverride = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
+
+            foreach (Sector sector in _playerCountry.Sectors)
+            {
+                decision.SectorSubsidyOverrides[sector.Type] = GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel);
+                decision.SectorRegulationOverrides[sector.Type] = GetSectorRegulationInput(sector.Type, sector.RegulationLevel);
+            }
 
             // Only currently-implemented lines get an override - a stale draft left over from a since-
             // removed tax must never be sent (GetTaxRateInput's fallback already makes an untouched
@@ -928,6 +993,7 @@ namespace PoliSim.UI
             DrawRightColumnTabButton("Tax Policy", RightPanelTab.TaxPolicy);
             DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy);
             DrawRightColumnTabButton("Welfare Policy", RightPanelTab.WelfarePolicy);
+            DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy);
 
             GUILayout.EndHorizontal();
         }
@@ -1187,6 +1253,66 @@ namespace PoliSim.UI
             {
                 GUILayout.Label($"Not implemented (generosity on file: {welfareProgram.GenerosityLevel:F0}%)", _labelStyle);
             }
+        }
+
+        /// <summary>
+        /// Every Sector for the player's country: current Output/Employment/SectorMetric (read-only,
+        /// descriptive - see Sector.cs for why they don't feed back into GDP/Unemployment in this
+        /// pass) plus two always-adjustable sliders (Subsidy/Regulation, both absolute targets like
+        /// TaxLine.Rate - no implement/remove, every country has all four Sectors always).
+        /// </summary>
+        private void DrawSectorPolicy(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _sectorPolicyScrollPosition = GUILayout.BeginScrollView(_sectorPolicyScrollPosition, GUILayout.Height(scrollHeight));
+
+            GUILayout.Label("Economic Sectors", _headerStyle);
+            GUILayout.Label("Output/Employment/the sector's own metric are descriptive only in this pass - subsidy and regulation nudge them, but they don't feed back into GDP/Unemployment.", _labelStyle);
+            GUILayout.Space(8f);
+
+            foreach (Sector sector in _playerCountry.Sectors)
+            {
+                DrawSectorRow(sector);
+                GUILayout.Space(10f);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>The sector-specific metric's label, matching Sector.SectorMetric's per-Type real-world meaning (see Sector.cs).</summary>
+        private static string GetSectorMetricLabel(SectorType type)
+        {
+            switch (type)
+            {
+                case SectorType.Manufacturing: return "Capacity Utilization";
+                case SectorType.Technology: return "Innovation Index";
+                case SectorType.Agriculture: return "Export Share";
+                case SectorType.Finance: return "Credit Growth Rate";
+                default: return "Sector Metric";
+            }
+        }
+
+        private void DrawSectorRow(Sector sector)
+        {
+            float labelWidth = _labelStyle.fontSize * 10f;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(sector.Type.ToString(), _headerStyle, GUILayout.Width(labelWidth));
+            GUILayout.Label(
+                $"Output {sector.OutputShareOfGdp:F1}% of GDP | Employment {sector.EmploymentShare:F1}% | {GetSectorMetricLabel(sector.Type)} {sector.SectorMetric:F1}",
+                _labelStyle);
+            GUILayout.EndHorizontal();
+
+            float draftSubsidy = GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel);
+            GUILayout.Label($"Subsidy: {draftSubsidy:F0}", _labelStyle);
+            _sectorSubsidyInputs[sector.Type] = GUILayout.HorizontalSlider(draftSubsidy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftRegulation = GetSectorRegulationInput(sector.Type, sector.RegulationLevel);
+            GUILayout.Label($"Regulation: {draftRegulation:F0} (0 = light-touch, 100 = heavily regulated)", _labelStyle);
+            _sectorRegulationInputs[sector.Type] = GUILayout.HorizontalSlider(draftRegulation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
         }
 
         /// <summary>
