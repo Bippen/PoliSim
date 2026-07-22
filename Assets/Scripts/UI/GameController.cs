@@ -34,6 +34,10 @@ namespace PoliSim.UI
         private const float TariffRateChangeRange = 5f;
         private const float InterestRateChangeRange = 2f;
 
+        /// <summary>Bounds for the Minimum Wage slider (percent of median wage) - must match SimulationManager.MinMinimumWagePercent/MaxMinimumWagePercent.</summary>
+        private const float MinMinimumWagePercent = 0f;
+        private const float MaxMinimumWagePercent = 100f;
+
         /// <summary>Bounds for a per-partner tariff override slider - the same [0,50] range BaseTariffRate itself uses. Must match SimulationManager's MinBaseTariffRate/MaxBaseTariffRate.</summary>
         private const float PartnerTariffOverrideMin = 0f;
         private const float PartnerTariffOverrideMax = 50f;
@@ -77,6 +81,13 @@ namespace PoliSim.UI
         private float _interestRateChangeInput;
         private float _tariffRateChangeInput;
 
+        // Draft ABSOLUTE minimum-wage level (percent of median wage, not a delta) - defaults to
+        // Country.MinimumWagePercentOfMedian until the player drags it (see GetMinimumWageInput).
+        // Nullable rather than a Dictionary since there's only one lever (unlike _taxRateInputs).
+        // Not cleared by ResetPolicyInputs, for the same reason _taxRateInputs isn't - once committed,
+        // MinimumWagePercentOfMedian already equals whatever was in here.
+        private float? _minimumWageInput;
+
         // Draft ABSOLUTE per-partner tariff override rate for the Trade tab's sliders (only shown/
         // meaningful while that partner's TradePartner.HasPlayerTariffOverride is true - mirrors
         // _taxRateInputs' relationship to TaxLine.IsImplemented exactly). Not cleared by
@@ -116,12 +127,14 @@ namespace PoliSim.UI
         private readonly Dictionary<CountryId, float> _cachedPartnerTariffInputs = new Dictionary<CountryId, float>();
         private float _cachedInterestRateChangeInput;
         private float _cachedTariffRateChangeInput;
+        private float? _cachedMinimumWageInput;
         private string _cachedGdpGrowthText;
         private string _cachedUnemploymentText;
         private string _cachedInflationText;
         private string _cachedApprovalText;
         private string _cachedNetBudgetText;
         private string _cachedPovertyRateText;
+        private string _cachedLaborForceParticipationRateText;
 
         private readonly List<string> _turnLog = new List<string>();
         private Vector2 _logScrollPosition;
@@ -340,6 +353,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
             GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
             GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
+            GUILayout.Label($"Labor Force Participation: {state.LaborForceParticipationRate:F1}%", _labelStyle);
             GUILayout.Label($"Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
 
             if (hasIndependentCurrency)
@@ -452,9 +466,32 @@ namespace PoliSim.UI
                 _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
             }
 
+            DrawMinimumWageControl();
+
             DrawPolicyPreview();
 
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Minimum wage (percent of median wage) - a single always-visible lever, not its own tab
+        /// (unlike Tax/Spending/Welfare Policy's portfolios), since it's just one slider. Only shown
+        /// as adjustable if Country.MinimumWageImplemented (USA - see WorldFactory); Sweden and Italy
+        /// have no statutory minimum wage in reality, so this shows a read-only note for them instead
+        /// (the player's country is hardcoded to USA, so this branch is currently unreachable in
+        /// practice, but kept correct in case PlayerCountryId ever changes).
+        /// </summary>
+        private void DrawMinimumWageControl()
+        {
+            if (!_playerCountry.MinimumWageImplemented)
+            {
+                GUILayout.Label("Minimum Wage: no statutory minimum wage (relies on collective bargaining).", _labelStyle);
+                return;
+            }
+
+            float draftMinimumWage = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian);
+            GUILayout.Label($"Minimum Wage: {draftMinimumWage:F0}% of median wage", _labelStyle);
+            _minimumWageInput = GUILayout.HorizontalSlider(draftMinimumWage, MinMinimumWagePercent, MaxMinimumWagePercent, _sliderStyle, _sliderThumbStyle);
         }
 
         /// <summary>
@@ -482,6 +519,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Inflation: {_cachedInflationText}", _labelStyle);
             GUILayout.Label($"Approval: {_cachedApprovalText}", _labelStyle);
             GUILayout.Label($"Poverty Rate: {_cachedPovertyRateText}", _labelStyle);
+            GUILayout.Label($"Labor Force Participation: {_cachedLaborForceParticipationRateText}", _labelStyle);
             GUILayout.Label($"Net Budget Impact: {_cachedNetBudgetText}", _labelStyle);
         }
 
@@ -498,6 +536,14 @@ namespace PoliSim.UI
                 || !Mathf.Approximately(_tariffRateChangeInput, _cachedTariffRateChangeInput);
 
             if (nonTaxInputsChanged)
+            {
+                return true;
+            }
+
+            if (_playerCountry.MinimumWageImplemented
+                && !Mathf.Approximately(
+                    GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian),
+                    GetCachedMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian)))
             {
                 return true;
             }
@@ -562,9 +608,11 @@ namespace PoliSim.UI
             _cachedApprovalText = FormatEstimate(preview.ApprovalChange, " pts");
             _cachedNetBudgetText = FormatEstimate(preview.NetBudgetImpact, " units");
             _cachedPovertyRateText = FormatEstimate(preview.PovertyRateChange, " pts");
+            _cachedLaborForceParticipationRateText = FormatEstimate(preview.LaborForceParticipationRateChange, " pts");
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
             _cachedTariffRateChangeInput = _tariffRateChangeInput;
+            _cachedMinimumWageInput = _minimumWageInput;
 
             _cachedTaxRateInputs.Clear();
             foreach (KeyValuePair<TaxType, float> kvp in _taxRateInputs)
@@ -640,6 +688,17 @@ namespace PoliSim.UI
             return _cachedTaxRateInputs.TryGetValue(type, out float value) ? value : fallbackRate;
         }
 
+        /// <summary>The Minimum Wage slider's draft absolute level, or <paramref name="fallbackLevel"/> (the country's actual persisted MinimumWagePercentOfMedian) if the player hasn't touched it this turn.</summary>
+        private float GetMinimumWageInput(float fallbackLevel)
+        {
+            return _minimumWageInput ?? fallbackLevel;
+        }
+
+        private float GetCachedMinimumWageInput(float fallbackLevel)
+        {
+            return _cachedMinimumWageInput ?? fallbackLevel;
+        }
+
         /// <summary>The Welfare Policy tab's draft absolute GenerosityLevel for a WelfareProgramType, or <paramref name="fallbackGenerosity"/> (the WelfareProgram's actual persisted GenerosityLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
         {
@@ -680,6 +739,14 @@ namespace PoliSim.UI
                 InterestRateChange = _interestRateChangeInput,
                 TariffRateChange = _tariffRateChangeInput
             };
+
+            // Only meaningful if the country has a statutory minimum wage at all - GetMinimumWageInput's
+            // fallback already makes an untouched slider a no-op, so this can be included unconditionally
+            // whenever MinimumWageImplemented is true (mirrors TaxRateOverrides' "always safe" reasoning).
+            if (_playerCountry.MinimumWageImplemented)
+            {
+                decision.MinimumWageOverride = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian);
+            }
 
             // Only currently-implemented lines get an override - a stale draft left over from a since-
             // removed tax must never be sent (GetTaxRateInput's fallback already makes an untouched

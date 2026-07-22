@@ -36,6 +36,7 @@ namespace PoliSim.Simulation
         public float ApprovalChange;
         public float NetBudgetImpact;
         public float PovertyRateChange;
+        public float LaborForceParticipationRateChange;
     }
 
     /// <summary>
@@ -116,6 +117,10 @@ namespace PoliSim.Simulation
         /// <summary>Bounds for a WelfareProgram's GenerosityLevel - uniform across every WelfareProgramType (unlike TaxLine's per-type MinRate/MaxRate), since the task specifies a single 0-100% range for all six.</summary>
         private const float MinGenerosityLevel = 0f;
         private const float MaxGenerosityLevel = 100f;
+
+        /// <summary>Bounds for Country.MinimumWagePercentOfMedian (a Kaitz-index-style percent of median wage) - a gameplay ceiling above any real-world minimum wage's Kaitz index, not a researched maximum.</summary>
+        private const float MinMinimumWagePercent = 0f;
+        private const float MaxMinimumWagePercent = 100f;
 
         /// <summary>Bounds for this turn's requested PERCENTAGE change to a Discretionary SpendingLine (see PolicyDecision.SpendingLineChanges).</summary>
         private const float DiscretionaryPercentChangeRange = 30f;
@@ -244,6 +249,7 @@ namespace PoliSim.Simulation
 
             float totalTaxHike = ApplyTaxRateChanges(country, decision);
             ApplyWelfareGenerosityChanges(country, decision);
+            ApplyMinimumWageChange(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(country);
@@ -273,6 +279,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyPhillipsCurveInflation(country);
             MacroSystem.ApplyInflationExpectations(state);
             MacroSystem.ApplyPovertyRate(country);
+            MacroSystem.ApplyLaborForceParticipationRate(country);
 
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -312,6 +319,7 @@ namespace PoliSim.Simulation
             float approvalBefore = state.ApprovalRating;
             float budgetBefore = state.Budget;
             float povertyBefore = state.PovertyRate;
+            float laborForceParticipationBefore = state.LaborForceParticipationRate;
 
             ApplyTariffRateChange(previewCountry, decision);
             ApplyPartnerTariffOverrides(previewCountry, decision);
@@ -319,6 +327,7 @@ namespace PoliSim.Simulation
 
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
+            ApplyMinimumWageChange(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
@@ -343,6 +352,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyPhillipsCurveInflation(previewCountry);
             MacroSystem.ApplyInflationExpectations(state);
             MacroSystem.ApplyPovertyRate(previewCountry);
+            MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
 
             MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -353,7 +363,8 @@ namespace PoliSim.Simulation
                 InflationChange = state.Inflation - inflationBefore,
                 ApprovalChange = state.ApprovalRating - approvalBefore,
                 NetBudgetImpact = state.Budget - budgetBefore,
-                PovertyRateChange = state.PovertyRate - povertyBefore
+                PovertyRateChange = state.PovertyRate - povertyBefore,
+                LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore
             };
         }
 
@@ -372,6 +383,9 @@ namespace PoliSim.Simulation
         /// USA) whose real risk-premium sensitivity is near zero, misjudge GetFiscalReactionMultiplier
         /// for every country whose real comfort anchor isn't the 60f default, and misjudge
         /// ApplyPovertyRate's baseline for every country whose real baseline isn't the 10f default.
+        /// BaselineLaborForceParticipationRate, MinimumWageImplemented, MinimumWagePercentOfMedian, and
+        /// BaselineMinimumWagePercentOfMedian are copied for the same reason - none is a constructor
+        /// parameter, and ApplyMinimumWageChange mutates MinimumWagePercentOfMedian directly.
         /// SpendingLines is deep-cloned for the same reason TaxLines is -
         /// ApplySpendingLineChanges mutates SpendingLine.Amount, so these can't be shared references
         /// either. WelfarePrograms is ALSO deep-cloned (via WelfareProgram.Clone()) for the same reason -
@@ -399,6 +413,10 @@ namespace PoliSim.Simulation
                 RiskPremiumSensitivity = country.RiskPremiumSensitivity,
                 ComfortableDebtToGdpPercent = country.ComfortableDebtToGdpPercent,
                 BaselinePovertyRate = country.BaselinePovertyRate,
+                BaselineLaborForceParticipationRate = country.BaselineLaborForceParticipationRate,
+                MinimumWageImplemented = country.MinimumWageImplemented,
+                MinimumWagePercentOfMedian = country.MinimumWagePercentOfMedian,
+                BaselineMinimumWagePercentOfMedian = country.BaselineMinimumWagePercentOfMedian,
                 CurrentFedChair = country.CurrentFedChair
             };
         }
@@ -537,6 +555,25 @@ namespace PoliSim.Simulation
 
                 program.GenerosityLevel = Mathf.Clamp(requestedGenerosity, MinGenerosityLevel, MaxGenerosityLevel);
             }
+        }
+
+        /// <summary>
+        /// Sets Country.MinimumWagePercentOfMedian directly to this turn's requested
+        /// PolicyDecision.MinimumWageOverride value (clamped to [MinMinimumWagePercent,
+        /// MaxMinimumWagePercent]) - a no-op if the country has no statutory minimum wage
+        /// (Country.MinimumWageImplemented false, e.g. Sweden/Italy) or no request was made this
+        /// turn (the -1 sentinel). Mirrors ApplyTaxRateChanges/ApplyWelfareGenerosityChanges' "SET,
+        /// not delta" pattern - there is no implement/remove action, since whether a country has a
+        /// statutory minimum wage at all is a structural fact, not a player choice.
+        /// </summary>
+        private void ApplyMinimumWageChange(Country country, PolicyDecision decision)
+        {
+            if (!country.MinimumWageImplemented || decision.MinimumWageOverride < 0f)
+            {
+                return;
+            }
+
+            country.MinimumWagePercentOfMedian = Mathf.Clamp(decision.MinimumWageOverride, MinMinimumWagePercent, MaxMinimumWagePercent);
         }
 
         /// <summary>

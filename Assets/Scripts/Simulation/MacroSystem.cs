@@ -96,6 +96,39 @@ namespace PoliSim.Simulation
         private const float MinUnemploymentReversionSpeed = 0.3f;
 
         /// <summary>
+        /// Unemployment points added per point MinimumWagePercentOfMedian sits above the country's own
+        /// BaselineMinimumWagePercentOfMedian (its real seeded starting level, not a universal
+        /// constant - the same "gap versus a country-specific anchor" idiom ComfortableDebtToGdpPercent/
+        /// BaselinePovertyRate already use, chosen so a fresh game opens at zero gap rather than an
+        /// artificial turn-1 shock, and so this doesn't double-count against NAIRU, which already
+        /// reflects each country's real structural conditions including its actual minimum wage).
+        /// Small and directionally grounded (not precisely fitted) by the CBO's 2019 estimate that a
+        /// federal $15/hr minimum wage (raising the effective Kaitz index roughly 20-30 points) would
+        /// cost a median-estimate ~1.3 million jobs against a ~160 million labor force (~0.8%) - a
+        /// modest, debated, real-world-scale effect, not the dominant driver of Unemployment the
+        /// growth gap is.
+        /// </summary>
+        private const float MinimumWageEmploymentSensitivity = 1.5f;
+
+        /// <summary>
+        /// This turn's Unemployment nudge from how far Country.MinimumWagePercentOfMedian has moved
+        /// from its own seeded baseline, an ONGOING stock effect of the current level (like
+        /// WelfareProgram's approval term, not a one-time shock) - zero for a country with no
+        /// statutory minimum wage (Sweden, Italy - see Country.MinimumWageImplemented) and zero at
+        /// the seeded starting level for every other country.
+        /// </summary>
+        private static float GetMinimumWageUnemploymentAdjustment(Country country)
+        {
+            if (!country.MinimumWageImplemented)
+            {
+                return 0f;
+            }
+
+            float gap = country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian;
+            return MinimumWageEmploymentSensitivity * gap / 100f;
+        }
+
+        /// <summary>
         /// Okun's Law: unemployment rises when actual GDP growth runs below potential/trend growth,
         /// and falls when it runs above, plus mean-reversion pulling it back toward the country's
         /// NAIRU. <paramref name="actualGrowthRatePercent"/> is this turn's realized GDP growth,
@@ -110,6 +143,7 @@ namespace PoliSim.Simulation
             float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
             float unemploymentChange = -OkunCoefficient * growthGap;
             unemploymentChange += GetWelfareAdjustedReversionSpeed(country) * (country.NaturalUnemploymentRate - state.Unemployment);
+            unemploymentChange += GetMinimumWageUnemploymentAdjustment(country);
 
             state.Unemployment = Mathf.Clamp(state.Unemployment + unemploymentChange, 0f, MaxUnemploymentPercent);
         }
@@ -200,6 +234,17 @@ namespace PoliSim.Simulation
         private const float ChildcareSubsidiesPovertyReductionSensitivity = 3f;
 
         /// <summary>
+        /// Poverty-baseline points reduced per point MinimumWagePercentOfMedian sits above the
+        /// country's own BaselineMinimumWagePercentOfMedian (see GetMinimumWageUnemploymentAdjustment
+        /// for why the gap is versus a country-specific anchor, not a universal constant). Smaller
+        /// than the welfare programs' own sensitivities above - directionally grounded by the CBO's
+        /// 2019 finding that a federal $15/hr minimum wage would lift roughly as many people out of
+        /// poverty as it cost in jobs (~1.3 million each), a modest effect since a minimum wage only
+        /// reaches low-wage workers, not the whole poor population the way a direct transfer does.
+        /// </summary>
+        private const float MinimumWagePovertyReductionSensitivity = 5f;
+
+        /// <summary>
         /// PovertyRate-points-per-100%-GenerosityLevel each WelfareProgramType reduces the poverty
         /// baseline by. UBI/MeansTestedWelfare are the strongest (direct income transfers); NIT is
         /// nearly as strong as UBI but at less than half UBI's CostShareOfGdp - deliberately more
@@ -254,8 +299,50 @@ namespace PoliSim.Simulation
                 welfareReduction += GetPovertyReductionSensitivity(program.Type) * (program.GenerosityLevel / 100f);
             }
 
-            float target = baseline - welfareReduction;
+            float minimumWageReduction = 0f;
+            if (country.MinimumWageImplemented)
+            {
+                float minimumWageGap = country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian;
+                minimumWageReduction = MinimumWagePovertyReductionSensitivity * minimumWageGap / 100f;
+            }
+
+            float target = baseline - welfareReduction - minimumWageReduction;
             state.PovertyRate = Mathf.Clamp(state.PovertyRate + PovertyReversionSpeed * (target - state.PovertyRate), 0f, MaxPovertyRatePercent);
+        }
+
+        // --- Labor Force Participation Rate: a tracked stat, mean-reverting toward its own baseline ---
+
+        /// <summary>Fraction of the gap versus the baseline that closes each turn on its own - moderate-slow, matching PovertyRate's own reversion speed (real participation rates don't swing wildly turn to turn either).</summary>
+        private const float LaborForceParticipationReversionSpeed = 0.15f;
+
+        /// <summary>
+        /// LaborForceParticipationRate points reduced per percentage point Unemployment sits above
+        /// NaturalUnemploymentRate (and, symmetrically, added when Unemployment sits below it) - the
+        /// discouraged/encouraged-worker effect, reusing the same unemployment gap that already
+        /// drives ApplyApprovalRating's misery index and ApplyPovertyRate's baseline rather than
+        /// inventing a new driver.
+        /// </summary>
+        private const float DiscouragedWorkerSensitivity = 0.3f;
+
+        /// <summary>Gameplay bound - a percentage, like Unemployment/PovertyRate, not a raw 0-1 fraction.</summary>
+        private const float MaxLaborForceParticipationPercent = 100f;
+
+        /// <summary>
+        /// LaborForceParticipationRate mean-reverts toward Country.BaselineLaborForceParticipationRate
+        /// (the country's own structural, real-World-Bank/OECD-sourced "steady-state" rate), adjusted
+        /// by the same Unemployment-versus-NAIRU gap already used elsewhere (a proven driver - see
+        /// ApplyPovertyRate/ApplyApprovalRating) rather than a new one. A tracked stat only - nothing
+        /// currently targets it directly with a policy lever (see CLAUDE.md's "Labor Market Basics").
+        /// Hard-clamped to [0, 100].
+        /// </summary>
+        public static void ApplyLaborForceParticipationRate(Country country)
+        {
+            EconomyState state = country.State;
+            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float target = country.BaselineLaborForceParticipationRate - DiscouragedWorkerSensitivity * unemploymentGap;
+            state.LaborForceParticipationRate = Mathf.Clamp(
+                state.LaborForceParticipationRate + LaborForceParticipationReversionSpeed * (target - state.LaborForceParticipationRate),
+                0f, MaxLaborForceParticipationPercent);
         }
 
         // --- Approval Rating: political-economy feedback, Phillips-curve-adjacent (misery index) ---

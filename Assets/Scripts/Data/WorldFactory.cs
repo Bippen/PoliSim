@@ -44,6 +44,13 @@ namespace PoliSim.Data
     /// combined with real headline rates; CollectionEfficiency (modeling enforcement quality/the
     /// informal economy/evasion, not a researched figure itself) corrects the DEFAULT portfolio back
     /// down to each country's real tax-to-GDP target without changing any seeded rate.
+    ///
+    /// LaborForceParticipationRate/BaselineLaborForceParticipationRate use real World Bank/OECD
+    /// "total population ages 15+" figures per country; MinimumWagePercentOfMedian uses each
+    /// country's real approximate Kaitz index (minimum wage as a percent of median wage) for the
+    /// four countries that have a statutory minimum wage (USA/Germany/France/Poland) - Sweden and
+    /// Italy have none in reality (sector-level collective bargaining instead) - see "Labor Market
+    /// Basics" in CLAUDE.md.
     /// </summary>
     public static class WorldFactory
     {
@@ -79,42 +86,42 @@ namespace PoliSim.Data
             var usa = new Country(
                 CountryId.USA, "United States",
                 new EconomyState(gdp: 29000f, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
-                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f),
+                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f),
                 usDollarZone, baseTariffRate: 3f,
                 naturalUnemploymentRate: 4.0f, potentialGrowthRate: 2.0f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);
 
             var sweden = new Country(
                 CountryId.Sweden, "Sweden",
                 new EconomyState(gdp: 620f, inflation: 2.0f, unemployment: 8.0f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 620f * 0.35f, povertyRate: 9f),
+                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f),
                 swedishKronaZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 6.5f, potentialGrowthRate: 1.5f, governmentSpendingRate: 26f, benefitRatePerUnemployed: 0.25f);
 
             var germany = new Country(
                 CountryId.Germany, "Germany",
                 new EconomyState(gdp: 4700f, inflation: 3.0f, unemployment: 3.5f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 4700f * 0.63f, povertyRate: 11f),
+                    governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 3.3f, potentialGrowthRate: 0.8f, governmentSpendingRate: 21f, benefitRatePerUnemployed: 0.20f);
 
             var france = new Country(
                 CountryId.France, "France",
                 new EconomyState(gdp: 3200f, inflation: 3.0f, unemployment: 7.3f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 3200f * 1.16f, povertyRate: 8f),
+                    governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 7.5f, potentialGrowthRate: 0.8f, governmentSpendingRate: 24f, benefitRatePerUnemployed: 0.22f);
 
             var italy = new Country(
                 CountryId.Italy, "Italy",
                 new EconomyState(gdp: 2300f, inflation: 3.0f, unemployment: 7.8f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 2300f * 1.38f, povertyRate: 14f),
+                    governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 8.0f, potentialGrowthRate: 0.8f, governmentSpendingRate: 19f, benefitRatePerUnemployed: 0.18f);
 
             var poland = new Country(
                 CountryId.Poland, "Poland",
                 new EconomyState(gdp: 840f, inflation: 2.2f, unemployment: 5.4f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 840f * 0.59f, povertyRate: 10f),
+                    governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f),
                 polishZlotyZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 5.0f, potentialGrowthRate: 3.5f, governmentSpendingRate: 18f, benefitRatePerUnemployed: 0.12f);
 
@@ -169,6 +176,39 @@ namespace PoliSim.Data
             italy.BaselinePovertyRate = 14f;
             poland.BaselinePovertyRate = 10f;
             sweden.BaselinePovertyRate = 9f;
+
+            // MacroSystem.ApplyLaborForceParticipationRate's per-country structural anchor - the SAME
+            // real World Bank/OECD "total population ages 15+" figures EconomyState.
+            // LaborForceParticipationRate was just seeded to above, so a new game opens already at (or
+            // very near) its own baseline (see "Labor Market Basics" in CLAUDE.md).
+            usa.BaselineLaborForceParticipationRate = 62.5f;
+            germany.BaselineLaborForceParticipationRate = 61.7f;
+            france.BaselineLaborForceParticipationRate = 56.0f;
+            italy.BaselineLaborForceParticipationRate = 49.8f;
+            poland.BaselineLaborForceParticipationRate = 58.5f;
+            sweden.BaselineLaborForceParticipationRate = 72.6f;
+
+            // Minimum wage as a percent of median wage (the "Kaitz index" economists use for
+            // cross-country comparison) - real, illustrative-precision figures for the four countries
+            // with a statutory minimum wage; Sweden and Italy have none (they rely on sector-level
+            // collective bargaining instead), matching real-world fact - see
+            // Country.MinimumWageImplemented's doc comment and "Labor Market Basics" in CLAUDE.md.
+            // BaselineMinimumWagePercentOfMedian is seeded equal to the starting level for each, so a
+            // fresh game opens at zero gap (no employment/poverty effect) rather than a turn-1 shock.
+            usa.MinimumWageImplemented = true;
+            usa.MinimumWagePercentOfMedian = 29f;
+            usa.BaselineMinimumWagePercentOfMedian = 29f;
+            germany.MinimumWageImplemented = true;
+            germany.MinimumWagePercentOfMedian = 55f;
+            germany.BaselineMinimumWagePercentOfMedian = 55f;
+            france.MinimumWageImplemented = true;
+            france.MinimumWagePercentOfMedian = 66f;
+            france.BaselineMinimumWagePercentOfMedian = 66f;
+            poland.MinimumWageImplemented = true;
+            poland.MinimumWagePercentOfMedian = 52f;
+            poland.BaselineMinimumWagePercentOfMedian = 52f;
+            sweden.MinimumWageImplemented = false;
+            italy.MinimumWageImplemented = false;
 
             SeedWelfarePrograms(usa);
             SeedWelfarePrograms(sweden);

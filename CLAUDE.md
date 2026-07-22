@@ -1471,6 +1471,85 @@ explicit scope for this item (that's a separate, later task once this larger poo
 - **Validated: 2026-07-22, 100/500 turns, real Unity, 25-34/104 anomalies (all known swing
   false-positives, zero NaN/negative/out-of-range/divergence).**
 
+## Labor Market Basics
+Queue item 2 of `ROADMAP_BRIEF.md`: adds `LaborForceParticipationRate` as a tracked stat and a
+minimum-wage policy lever with small, real-world-grounded effects on `Unemployment` and
+`PovertyRate` (both already existed - reused, not duplicated). Deliberately does NOT build the full
+labor market system (union membership, gig economy, remote work) - out of scope for this pass.
+
+- **`EconomyState.LaborForceParticipationRate`**: seeded per country from real World Bank/OECD
+  "total population ages 15+" figures (USA 62.5%, Sweden 72.6%, Germany 61.7%, France 56.0%, Italy
+  49.8%, Poland 58.5% - Sweden highest and Italy lowest among the six, matching well-documented
+  OECD rankings). `Country.BaselineLaborForceParticipationRate` is a separate structural anchor
+  seeded to the same figures (the same "avoid a turn-1 shock" idiom `BaselinePovertyRate`/
+  `ComfortableDebtToGdpPercent` already established) - a new game opens with the stat already at (or
+  very near) its own baseline.
+- **`MacroSystem.ApplyLaborForceParticipationRate`**: mean-reverts toward
+  `Country.BaselineLaborForceParticipationRate`, adjusted by the SAME `Unemployment`-versus-NAIRU gap
+  that already drives `ApplyApprovalRating`'s misery index and `ApplyPovertyRate`'s baseline (a
+  discouraged/encouraged-worker effect) - reusing an already-proven driver rather than inventing a
+  new one, per the task's own instruction. A tracked stat only - nothing currently targets it
+  directly with a policy lever. Hard-clamped to `[0, 100]`.
+- **Minimum wage lever** (`Country.MinimumWageImplemented` / `MinimumWagePercentOfMedian`): expressed
+  as a percent of median wage (the "Kaitz index" economists use for cross-country comparison, e.g.
+  France's real minimum wage is ~66% of its median), not an absolute currency amount, so it's
+  comparable across countries with very different wage levels. Seeded real-approximate for the four
+  countries with a statutory minimum wage - USA 29%, Germany 55%, France 66%, Poland 52% - and
+  **not implemented at all for Sweden or Italy**, matching real-world fact (both rely on
+  sector-level collective bargaining instead of a legal minimum, per OECD/Eurostat sourcing). This
+  asymmetry mirrors existing precedent in this codebase (`CarbonTax` implemented only for Sweden,
+  `VAT` not implemented for the USA) rather than inventing a new pattern - not escalated to Open
+  Questions since it directly follows an established idiom, not a genuinely novel design choice.
+  `PolicyDecision.MinimumWageOverride` (an absolute target, the same "SET, not delta" semantics as
+  `TaxRateOverrides`) lets the player adjust the level turn to turn via
+  `SimulationManager.ApplyMinimumWageChange`, clamped to `[0, 100]` - there is no implement/remove
+  action (unlike `TaxLine`/`WelfareProgram`): whether a country has a statutory minimum wage at all
+  is a structural fact, not a player choice.
+- **Effects measured against each country's OWN seeded baseline, not a universal reference point**:
+  `Country.BaselineMinimumWagePercentOfMedian` is seeded equal to each country's own starting
+  `MinimumWagePercentOfMedian` (again mirroring `ComfortableDebtToGdpPercent`/`BaselinePovertyRate`).
+  Both new effects are driven by the GAP between the current level and this country-specific
+  baseline, not a single universal "neutral" percentage - deliberately, for two reasons: it avoids a
+  turn-1 discontinuity (a fresh game opens at zero gap), and it avoids double-counting against
+  `NaturalUnemploymentRate`, which already reflects each country's real structural conditions
+  including its actual minimum wage.
+  - **Unemployment** (`MacroSystem.GetMinimumWageUnemploymentAdjustment`, folded into
+    `ApplyOkunsLaw` as an ongoing stock effect of the current level, not a one-time shock): a
+    minimum wage above baseline nudges `Unemployment` up a little; below baseline, down a little.
+    Directionally grounded (not precisely fitted) by the CBO's 2019 estimate that a federal $15/hr
+    minimum wage - raising the effective Kaitz index roughly 20-30 points - would cost a
+    median-estimate ~1.3 million jobs against a ~160 million labor force (~0.8%), a modest, debated,
+    real-world-scale effect, not a dominant driver of `Unemployment` the way the growth gap is.
+  - **PovertyRate** (`MinimumWagePovertyReductionSensitivity`, folded into `ApplyPovertyRate`'s
+    baseline the same way a `WelfareProgram`'s reduction is): a minimum wage above baseline reduces
+    the poverty baseline; below it, increases it. Smaller than the welfare programs' own
+    sensitivities (5 vs. 7-8 for UBI/MeansTestedWelfare) - directionally grounded by the same CBO
+    citation, which found the $15/hr minimum wage would lift roughly as many people out of poverty
+    as it cost in jobs (~1.3 million each) - a modest effect since a minimum wage only reaches
+    low-wage workers, not the whole poor population the way a direct transfer does.
+- **UI** (`GameController`): `LaborForceParticipationRate` shown on the dashboard (and in the live
+  preview, via a new `PolicyPreview.LaborForceParticipationRateChange` field, for consistency with
+  every other tracked stat already getting one). The minimum wage slider lives directly in
+  `DrawPolicyControls` (left column, always visible) rather than its own tab - unlike Tax/Spending/
+  Welfare Policy's multi-item portfolios, this is a single lever, so a dedicated tab would be
+  disproportionate scope for one slider (per the brief's "scope small" rule). Shows a read-only note
+  instead of a slider for a country with no statutory minimum wage.
+- **Validated in the standalone harness first** (100/500-turn baseline, plus a new
+  `--minwagestress` scenario pushing USA's level from its 29% seed to 90% at turn 1 and holding):
+  the baseline stayed numerically identical in character to pre-existing runs (no new anomaly
+  pattern), and the stress scenario produced a real, bounded, one-time `Unemployment` jump (+1.57
+  points) and gradual `PovertyRate` decline (~1.7 points by turn 100) that settled rather than
+  diverging - the turn-1 jump is a deliberate, adversarial single-turn policy swing (29% to 90% Kaitz
+  index in one turn is not something a real government would do gradually), the same kind of
+  expected extreme-policy behavior already documented for tax hikes and welfare stress, not a bug -
+  the actual no-policy baseline (the real turn-1-discontinuity concern) opens at zero gap by
+  construction and shows no such jump.
+- **Validated: 2026-07-22, 100/500 turns, real Unity, 23/106 anomalies (all known swing
+  false-positives, zero NaN/negative/out-of-range/divergence)** - `DebtToGdpRatio` equilibria for
+  all six countries matched the pre-existing "Fiscal Reaction Function" baseline almost exactly
+  (USA ~142-143%, Sweden ~13%, Germany ~35%, France ~90%, Italy ~107%, Poland ~26%), confirming the
+  new mechanic introduced no interaction with the debt/fiscal-reaction system.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -1602,6 +1681,10 @@ per-partner tariff-override, and welfare-generosity sliders, and USA's Fed-chair
 cosmetic margin of error, before the player commits by pressing Advance Turn. Every country now also
 tracks `PovertyRate` (seeded from real OECD data, shown on the dashboard - see "Welfare Policy" above),
 mean-reverting toward a baseline driven by the same unemployment/inflation gaps that already drive
-approval, adjustable via any of the six implementable welfare programs. No save/load, no full
-market simulation (trade volumes are static inputs, not supply/demand-driven), and every constant is
-a starting-point placeholder meant to be tuned by playtesting.
+approval, adjustable via any of the six implementable welfare programs. Every country also now tracks
+`LaborForceParticipationRate` (real World Bank/OECD data, mean-reverting toward its own baseline via
+the same unemployment gap - see "Labor Market Basics" above), and four of the six (USA, Germany,
+France, Poland) have a player-adjustable minimum-wage lever (percent of median wage) with small
+effects on `Unemployment`/`PovertyRate` - Sweden and Italy have none, matching real-world fact. No
+save/load, no full market simulation (trade volumes are static inputs, not supply/demand-driven), and
+every constant is a starting-point placeholder meant to be tuned by playtesting.

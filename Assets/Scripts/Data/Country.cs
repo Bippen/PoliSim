@@ -124,6 +124,50 @@ namespace PoliSim.Data
         public float BaselinePovertyRate = 10f;
 
         /// <summary>
+        /// This country's structural "steady-state" labor force participation rate - the target
+        /// MacroSystem.ApplyLaborForceParticipationRate's mean-reversion moves EconomyState.
+        /// LaborForceParticipationRate toward when Unemployment sits exactly at NaturalUnemploymentRate
+        /// (i.e. the discouraged/encouraged-worker gap is zero). Seeded per country from real World
+        /// Bank/OECD data (see WorldFactory) - the same figure EconomyState.LaborForceParticipationRate
+        /// is seeded to, so a new game opens already at (or very near) its own baseline rather than an
+        /// artificial turn-1 jump, the same "avoid a one-time shock" lesson "Turn-1 GDP Consistency"
+        /// established for PovertyRate/BaselinePovertyRate.
+        /// </summary>
+        public float BaselineLaborForceParticipationRate = 62f;
+
+        /// <summary>
+        /// Whether this country has a statutory minimum wage at all - false for Sweden and Italy,
+        /// matching real-world fact (both rely on sector-level collective bargaining instead of a
+        /// legal minimum), true for the other four. A structural fact, not a player-togglable
+        /// implement/remove switch like TaxLine/WelfareProgram - the player can only adjust the LEVEL
+        /// where a statutory minimum already exists. See MinimumWagePercentOfMedian.
+        /// </summary>
+        public bool MinimumWageImplemented;
+
+        /// <summary>
+        /// This country's minimum wage expressed as a percentage of its median wage (the "Kaitz
+        /// index" economists commonly use for cross-country comparison, e.g. France ~66%) rather
+        /// than an absolute currency amount - keeps it comparable across countries with very
+        /// different wage levels. Only meaningful when MinimumWageImplemented is true. Persistent,
+        /// player-adjustable via PolicyDecision.MinimumWageOverride (an absolute target, the same
+        /// "SET, not delta" idiom as TaxLine.Rate) - see SimulationManager.ApplyMinimumWageChange.
+        /// </summary>
+        public float MinimumWagePercentOfMedian;
+
+        /// <summary>
+        /// This country's minimum wage level (percent of median wage) at the start of the game -
+        /// the anchor MacroSystem's minimum-wage employment/poverty effects measure the CURRENT
+        /// MinimumWagePercentOfMedian against, not a universal constant (the same "gap versus a
+        /// country-specific anchor" idiom ComfortableDebtToGdpPercent/BaselinePovertyRate already
+        /// use). Seeded equal to the country's own starting MinimumWagePercentOfMedian, so a fresh
+        /// game opens at zero gap (no effect) rather than an artificial turn-1 shock, and so the
+        /// effect doesn't double-count against NaturalUnemploymentRate, which already reflects each
+        /// country's real structural conditions including its actual minimum wage. 0 for a country
+        /// with no statutory minimum wage (MinimumWageImplemented false).
+        /// </summary>
+        public float BaselineMinimumWagePercentOfMedian;
+
+        /// <summary>
         /// This country's independent central bank chair, or null for a country that instead uses
         /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
         /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)

@@ -94,6 +94,19 @@ namespace PoliSim.Data
         public Dictionary<CountryId, float> PartnerTariffOverrides = new Dictionary<CountryId, float>();
 
         /// <summary>
+        /// This turn's requested ABSOLUTE minimum-wage level (percent of median wage, not a delta) -
+        /// e.g. 55f means "set the minimum wage to 55% of the median wage". -1 (the default) means
+        /// no change requested this turn - the same sentinel idiom Country.BaseDebtInterestRateOverride
+        /// uses. Only meaningful for a country where Country.MinimumWageImplemented is true;
+        /// SimulationManager.ApplyMinimumWageChange clamps the requested value to
+        /// [MinMinimumWagePercent, MaxMinimumWagePercent] and sets Country.MinimumWagePercentOfMedian
+        /// directly to the clamped result - the same pattern as TaxRateOverrides/TaxLine.Rate. There
+        /// is no implement/remove action for this one (unlike TaxLine/WelfareProgram) - whether a
+        /// country has a statutory minimum wage at all is a structural fact, not a player choice.
+        /// </summary>
+        public float MinimumWageOverride = -1f;
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,

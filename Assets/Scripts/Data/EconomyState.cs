@@ -70,6 +70,17 @@ namespace PoliSim.Data
         public float PovertyRate;
 
         /// <summary>
+        /// Share of the working-age population that is either employed or actively looking for work,
+        /// as a percentage (e.g. 62 means 62%, matching how Unemployment/PovertyRate are stored).
+        /// Seeded per country from real World Bank/OECD data (see WorldFactory); mean-reverts each
+        /// turn toward Country.BaselineLaborForceParticipationRate, adjusted by the same
+        /// unemployment gap already used elsewhere (a discouraged/encouraged-worker effect - see
+        /// MacroSystem.ApplyLaborForceParticipationRate). A tracked stat only - nothing currently
+        /// targets it directly with a policy lever.
+        /// </summary>
+        public float LaborForceParticipationRate;
+
+        /// <summary>
         /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
@@ -82,7 +93,7 @@ namespace PoliSim.Data
             float gdp, float inflation, float unemployment, float approvalRating, float budget,
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
             float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
-            float governmentDebt = 0f, float povertyRate = 10f)
+            float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -99,6 +110,7 @@ namespace PoliSim.Data
             BusinessConfidence = businessConfidence;
             GovernmentDebt = governmentDebt;
             PovertyRate = povertyRate;
+            LaborForceParticipationRate = laborForceParticipationRate;
         }
 
         /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
@@ -108,7 +120,7 @@ namespace PoliSim.Data
                 GDP, Inflation, Unemployment, ApprovalRating, Budget,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
-                GovernmentDebt, PovertyRate);
+                GovernmentDebt, PovertyRate, LaborForceParticipationRate);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>
