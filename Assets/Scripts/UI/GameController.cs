@@ -21,7 +21,8 @@ namespace PoliSim.UI
             TaxPolicy,
             SpendingPolicy,
             WelfarePolicy,
-            SectorPolicy
+            SectorPolicy,
+            SwfPolicy
         }
 
         private const CountryId PlayerCountryId = CountryId.USA;
@@ -42,6 +43,10 @@ namespace PoliSim.UI
         /// <summary>Bounds for the Police Funding / Sentencing Severity sliders - must match SimulationManager.MinPolicyDialLevel/MaxPolicyDialLevel.</summary>
         private const float MinPolicyDialLevel = 0f;
         private const float MaxPolicyDialLevel = 100f;
+
+        /// <summary>Bounds for the SWF Contribution Rate slider - must match SimulationManager.MinSwfContributionRate/MaxSwfContributionRate.</summary>
+        private const float MinSwfContributionRate = 0f;
+        private const float MaxSwfContributionRate = 10f;
 
         /// <summary>Bounds for a per-partner tariff override slider - the same [0,50] range BaseTariffRate itself uses. Must match SimulationManager's MinBaseTariffRate/MaxBaseTariffRate.</summary>
         private const float PartnerTariffOverrideMin = 0f;
@@ -84,6 +89,17 @@ namespace PoliSim.UI
         // ResetPolicyInputs, for the same reason _taxRateInputs isn't.
         private readonly Dictionary<SectorType, float> _sectorSubsidyInputs = new Dictionary<SectorType, float>();
         private readonly Dictionary<SectorType, float> _sectorRegulationInputs = new Dictionary<SectorType, float>();
+
+        // Draft ABSOLUTE Sovereign Wealth Fund settings (not deltas) - only meaningful while
+        // _playerCountry.SovereignWealthFund is non-null (Create/Dissolve is a separate, immediate
+        // action, mirroring TaxLine.IsImplemented). Not cleared by ResetPolicyInputs, for the same
+        // reason _minimumWageInput isn't.
+        private float? _swfContributionRateInput;
+        private float? _swfDomesticAllocationInput;
+        private float? _swfEquitiesWeightInput;
+        private float? _swfBondsWeightInput;
+        private float? _swfInfrastructureWeightInput;
+        private float? _swfRealEstateWeightInput;
 
         // Draft PERCENTAGE change per SpendingCategory (both Mandatory and Discretionary, each
         // clamped to its own range in SimulationManager) - unlike _taxRateInputs, this IS cleared by
@@ -144,6 +160,12 @@ namespace PoliSim.UI
         private readonly Dictionary<WelfareProgramType, float> _cachedWelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
         private readonly Dictionary<SectorType, float> _cachedSectorSubsidyInputs = new Dictionary<SectorType, float>();
         private readonly Dictionary<SectorType, float> _cachedSectorRegulationInputs = new Dictionary<SectorType, float>();
+        private float? _cachedSwfContributionRateInput;
+        private float? _cachedSwfDomesticAllocationInput;
+        private float? _cachedSwfEquitiesWeightInput;
+        private float? _cachedSwfBondsWeightInput;
+        private float? _cachedSwfInfrastructureWeightInput;
+        private float? _cachedSwfRealEstateWeightInput;
         private readonly Dictionary<SpendingCategory, float> _cachedSpendingLineInputs = new Dictionary<SpendingCategory, float>();
         private readonly Dictionary<CountryId, float> _cachedPartnerTariffInputs = new Dictionary<CountryId, float>();
         private float _cachedInterestRateChangeInput;
@@ -159,6 +181,8 @@ namespace PoliSim.UI
         private string _cachedPovertyRateText;
         private string _cachedLaborForceParticipationRateText;
         private string _cachedCrimeIndexText;
+        private string _cachedSwfContributionText;
+        private string _cachedSwfReturnsText;
 
         private readonly List<string> _turnLog = new List<string>();
         private Vector2 _logScrollPosition;
@@ -170,6 +194,7 @@ namespace PoliSim.UI
         private Vector2 _spendingPolicyScrollPosition;
         private Vector2 _welfarePolicyScrollPosition;
         private Vector2 _sectorPolicyScrollPosition;
+        private Vector2 _swfPolicyScrollPosition;
 
         private bool _stylesInitialized;
         private GUIStyle _headerStyle;
@@ -277,6 +302,11 @@ namespace PoliSim.UI
                 case RightPanelTab.SectorPolicy:
                     GUI.enabled = !_isGameOver;
                     DrawSectorPolicy(tabContentHeight);
+                    GUI.enabled = true;
+                    break;
+                case RightPanelTab.SwfPolicy:
+                    GUI.enabled = !_isGameOver;
+                    DrawSwfPolicy(tabContentHeight);
                     GUI.enabled = true;
                     break;
             }
@@ -395,6 +425,13 @@ namespace PoliSim.UI
             GUILayout.Label($"Tariff Rate: {_playerCountry.BaseTariffRate:F2}%", _labelStyle);
             GUILayout.Label($"Government Debt: {state.GovernmentDebt:F1}", _labelStyle);
             GUILayout.Label($"Debt-to-GDP: {state.DebtToGdpRatio:F1}%", _labelStyle);
+
+            if (_playerCountry.SovereignWealthFund != null)
+            {
+                float netGovernmentPosition = state.GovernmentDebt - _playerCountry.SovereignWealthFund.TotalAssets;
+                GUILayout.Label($"Sovereign Wealth Fund Assets: {_playerCountry.SovereignWealthFund.TotalAssets:F1}", _labelStyle);
+                GUILayout.Label($"Net Government Position (debt minus fund assets): {netGovernmentPosition:F1}", _labelStyle);
+            }
             GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
             GUILayout.EndVertical();
         }
@@ -616,6 +653,23 @@ namespace PoliSim.UI
                 }
             }
 
+            if (_playerCountry.SovereignWealthFund != null)
+            {
+                SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
+                bool swfInputsChanged =
+                    !Mathf.Approximately(GetSwfContributionRateInput(fund.ContributionRatePercent), GetCachedSwfContributionRateInput(fund.ContributionRatePercent))
+                    || !Mathf.Approximately(GetSwfDomesticAllocationInput(fund.DomesticAllocationPercent), GetCachedSwfDomesticAllocationInput(fund.DomesticAllocationPercent))
+                    || !Mathf.Approximately(GetSwfEquitiesWeightInput(fund.EquitiesWeight), GetCachedSwfEquitiesWeightInput(fund.EquitiesWeight))
+                    || !Mathf.Approximately(GetSwfBondsWeightInput(fund.BondsWeight), GetCachedSwfBondsWeightInput(fund.BondsWeight))
+                    || !Mathf.Approximately(GetSwfInfrastructureWeightInput(fund.InfrastructureWeight), GetCachedSwfInfrastructureWeightInput(fund.InfrastructureWeight))
+                    || !Mathf.Approximately(GetSwfRealEstateWeightInput(fund.RealEstateWeight), GetCachedSwfRealEstateWeightInput(fund.RealEstateWeight));
+
+                if (swfInputsChanged)
+                {
+                    return true;
+                }
+            }
+
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
             {
                 if (!Mathf.Approximately(GetTaxRateInput(taxLine.Type, taxLine.Rate), GetCachedTaxRateInput(taxLine.Type, taxLine.Rate)))
@@ -678,12 +732,20 @@ namespace PoliSim.UI
             _cachedPovertyRateText = FormatEstimate(preview.PovertyRateChange, " pts");
             _cachedLaborForceParticipationRateText = FormatEstimate(preview.LaborForceParticipationRateChange, " pts");
             _cachedCrimeIndexText = FormatEstimate(preview.CrimeIndexChange, " pts");
+            _cachedSwfContributionText = FormatEstimate(preview.SwfContributionEstimate, " units");
+            _cachedSwfReturnsText = FormatEstimate(preview.SwfReturnsEstimate, " units");
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
             _cachedTariffRateChangeInput = _tariffRateChangeInput;
             _cachedMinimumWageInput = _minimumWageInput;
             _cachedPoliceFundingInput = _policeFundingInput;
             _cachedSentencingSeverityInput = _sentencingSeverityInput;
+            _cachedSwfContributionRateInput = _swfContributionRateInput;
+            _cachedSwfDomesticAllocationInput = _swfDomesticAllocationInput;
+            _cachedSwfEquitiesWeightInput = _swfEquitiesWeightInput;
+            _cachedSwfBondsWeightInput = _swfBondsWeightInput;
+            _cachedSwfInfrastructureWeightInput = _swfInfrastructureWeightInput;
+            _cachedSwfRealEstateWeightInput = _swfRealEstateWeightInput;
 
             _cachedSectorSubsidyInputs.Clear();
             foreach (KeyValuePair<SectorType, float> kvp in _sectorSubsidyInputs)
@@ -826,6 +888,19 @@ namespace PoliSim.UI
             return _cachedSectorRegulationInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
         }
 
+        private float GetSwfContributionRateInput(float fallbackLevel) => _swfContributionRateInput ?? fallbackLevel;
+        private float GetCachedSwfContributionRateInput(float fallbackLevel) => _cachedSwfContributionRateInput ?? fallbackLevel;
+        private float GetSwfDomesticAllocationInput(float fallbackLevel) => _swfDomesticAllocationInput ?? fallbackLevel;
+        private float GetCachedSwfDomesticAllocationInput(float fallbackLevel) => _cachedSwfDomesticAllocationInput ?? fallbackLevel;
+        private float GetSwfEquitiesWeightInput(float fallbackLevel) => _swfEquitiesWeightInput ?? fallbackLevel;
+        private float GetCachedSwfEquitiesWeightInput(float fallbackLevel) => _cachedSwfEquitiesWeightInput ?? fallbackLevel;
+        private float GetSwfBondsWeightInput(float fallbackLevel) => _swfBondsWeightInput ?? fallbackLevel;
+        private float GetCachedSwfBondsWeightInput(float fallbackLevel) => _cachedSwfBondsWeightInput ?? fallbackLevel;
+        private float GetSwfInfrastructureWeightInput(float fallbackLevel) => _swfInfrastructureWeightInput ?? fallbackLevel;
+        private float GetCachedSwfInfrastructureWeightInput(float fallbackLevel) => _cachedSwfInfrastructureWeightInput ?? fallbackLevel;
+        private float GetSwfRealEstateWeightInput(float fallbackLevel) => _swfRealEstateWeightInput ?? fallbackLevel;
+        private float GetCachedSwfRealEstateWeightInput(float fallbackLevel) => _cachedSwfRealEstateWeightInput ?? fallbackLevel;
+
         /// <summary>The Welfare Policy tab's draft absolute GenerosityLevel for a WelfareProgramType, or <paramref name="fallbackGenerosity"/> (the WelfareProgram's actual persisted GenerosityLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
         {
@@ -882,6 +957,17 @@ namespace PoliSim.UI
             {
                 decision.SectorSubsidyOverrides[sector.Type] = GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel);
                 decision.SectorRegulationOverrides[sector.Type] = GetSectorRegulationInput(sector.Type, sector.RegulationLevel);
+            }
+
+            if (_playerCountry.SovereignWealthFund != null)
+            {
+                SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
+                decision.SwfContributionRateOverride = GetSwfContributionRateInput(fund.ContributionRatePercent);
+                decision.SwfDomesticAllocationOverride = GetSwfDomesticAllocationInput(fund.DomesticAllocationPercent);
+                decision.SwfEquitiesWeightOverride = GetSwfEquitiesWeightInput(fund.EquitiesWeight);
+                decision.SwfBondsWeightOverride = GetSwfBondsWeightInput(fund.BondsWeight);
+                decision.SwfInfrastructureWeightOverride = GetSwfInfrastructureWeightInput(fund.InfrastructureWeight);
+                decision.SwfRealEstateWeightOverride = GetSwfRealEstateWeightInput(fund.RealEstateWeight);
             }
 
             // Only currently-implemented lines get an override - a stale draft left over from a since-
@@ -994,6 +1080,7 @@ namespace PoliSim.UI
             DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy);
             DrawRightColumnTabButton("Welfare Policy", RightPanelTab.WelfarePolicy);
             DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy);
+            DrawRightColumnTabButton("Sovereign Wealth Fund", RightPanelTab.SwfPolicy);
 
             GUILayout.EndHorizontal();
         }
@@ -1313,6 +1400,80 @@ namespace PoliSim.UI
             float draftRegulation = GetSectorRegulationInput(sector.Type, sector.RegulationLevel);
             GUILayout.Label($"Regulation: {draftRegulation:F0} (0 = light-touch, 100 = heavily regulated)", _labelStyle);
             _sectorRegulationInputs[sector.Type] = GUILayout.HorizontalSlider(draftRegulation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+        }
+
+        /// <summary>
+        /// Sovereign Wealth Fund tab: a Create/Dissolve button (immediate, mirrors TaxLine.
+        /// IsImplemented's toggle pattern) plus, only while it exists, TotalAssets/this-turn estimated
+        /// contribution+returns (read-only) and sliders for every adjustable setting. Net Government
+        /// Position (GovernmentDebt minus fund TotalAssets) is shown ALONGSIDE, not instead of, the
+        /// raw GovernmentDebt figure already on the dashboard - per the task's explicit requirement
+        /// that fund assets must never be used to obscure a real fiscal problem. This is a
+        /// GameController-only display computation - it is never written back into EconomyState/
+        /// Country and never read by any simulation formula (GetDebtRiskPremium, GetFiscalReactionMultiplier,
+        /// etc. all keep reading the real, gross GovernmentDebt/DebtToGdpRatio exactly as before).
+        /// </summary>
+        private void DrawSwfPolicy(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _swfPolicyScrollPosition = GUILayout.BeginScrollView(_swfPolicyScrollPosition, GUILayout.Height(scrollHeight));
+
+            GUILayout.Label("Sovereign Wealth Fund", _headerStyle);
+
+            SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
+            string toggleLabel = fund == null ? "Create Fund" : "Dissolve Fund";
+            if (GUILayout.Button(toggleLabel, _tabButtonStyle))
+            {
+                _playerCountry.SovereignWealthFund = fund == null ? new SovereignWealthFund() : null;
+                RecomputePolicyPreview();
+            }
+
+            if (fund == null)
+            {
+                GUILayout.Label("No fund exists. Creating one starts a new budget expense (the contribution) in exchange for market returns on its growing assets.", _labelStyle);
+                GUILayout.EndScrollView();
+                GUILayout.EndVertical();
+                return;
+            }
+
+            GUILayout.Space(8f);
+            GUILayout.Label($"Total Assets: {fund.TotalAssets:F1}", _labelStyle);
+            float netGovernmentPosition = _playerCountry.State.GovernmentDebt - fund.TotalAssets;
+            GUILayout.Label($"Government Debt (gross): {_playerCountry.State.GovernmentDebt:F1}  |  Net Government Position (debt minus fund assets): {netGovernmentPosition:F1}", _labelStyle);
+            GUILayout.Label($"Estimated this turn - Contribution: {_cachedSwfContributionText}, Returns: {_cachedSwfReturnsText}", _labelStyle);
+            GUILayout.Space(8f);
+
+            float draftContributionRate = GetSwfContributionRateInput(fund.ContributionRatePercent);
+            GUILayout.Label($"Contribution Rate: {draftContributionRate:F1}% of GDP per turn", _labelStyle);
+            _swfContributionRateInput = GUILayout.HorizontalSlider(draftContributionRate, MinSwfContributionRate, MaxSwfContributionRate, _sliderStyle, _sliderThumbStyle);
+
+            float draftDomesticAllocation = GetSwfDomesticAllocationInput(fund.DomesticAllocationPercent);
+            GUILayout.Label($"Domestic Allocation: {draftDomesticAllocation:F0}% (rest international - this pass doesn't model differing returns by allocation)", _labelStyle);
+            _swfDomesticAllocationInput = GUILayout.HorizontalSlider(draftDomesticAllocation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            GUILayout.Space(8f);
+            GUILayout.Label("Asset Class Mix (weights, normalized automatically - don't need to sum to 100)", _labelStyle);
+
+            float draftEquities = GetSwfEquitiesWeightInput(fund.EquitiesWeight);
+            GUILayout.Label($"Equities: {draftEquities:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Equities) * 100f:F0}% of fund)", _labelStyle);
+            _swfEquitiesWeightInput = GUILayout.HorizontalSlider(draftEquities, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftBonds = GetSwfBondsWeightInput(fund.BondsWeight);
+            GUILayout.Label($"Bonds: {draftBonds:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Bonds) * 100f:F0}% of fund)", _labelStyle);
+            _swfBondsWeightInput = GUILayout.HorizontalSlider(draftBonds, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftInfrastructure = GetSwfInfrastructureWeightInput(fund.InfrastructureWeight);
+            GUILayout.Label($"Infrastructure: {draftInfrastructure:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure) * 100f:F0}% of fund)", _labelStyle);
+            _swfInfrastructureWeightInput = GUILayout.HorizontalSlider(draftInfrastructure, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftRealEstate = GetSwfRealEstateWeightInput(fund.RealEstateWeight);
+            GUILayout.Label($"Real Estate: {draftRealEstate:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate) * 100f:F0}% of fund)", _labelStyle);
+            _swfRealEstateWeightInput = GUILayout.HorizontalSlider(draftRealEstate, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
         }
 
         /// <summary>

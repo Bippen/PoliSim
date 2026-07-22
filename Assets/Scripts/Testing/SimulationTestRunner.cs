@@ -17,9 +17,9 @@ namespace PoliSim.Testing
     /// Validation is the Standard Path" for why this replaced the standalone harness as the primary
     /// validation tool):
     /// -turns=N (default 100) - how many turns to run.
-    /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress (default baseline) -
-    /// baseline is PolicyDecision.None() for every country every turn (the original behavior,
-    /// unchanged); the other four mirror the standalone harness's own same-named scenarios
+    /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress (default
+    /// baseline) - baseline is PolicyDecision.None() for every country every turn (the original
+    /// behavior, unchanged); the other five mirror the standalone harness's own same-named scenarios
     /// byte-for-byte (same targets, same rates, same turn timing) so both tools exercise identical
     /// policy sequences against the real game code.
     /// </summary>
@@ -38,7 +38,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -154,9 +154,35 @@ namespace PoliSim.Testing
                     return BuildStressDecision(usa, turn);
                 case "welfarestress":
                     return BuildWelfareStressDecision(usa, turn);
+                case "swfstress":
+                    return BuildSwfStressDecision(usa, turn);
                 default:
                     return PolicyDecision.None();
             }
+        }
+
+        /// <summary>
+        /// Creates USA's Sovereign Wealth Fund at turn 1 with the maximum contribution rate (10% of
+        /// GDP/turn) and a 100% Equities allocation (the highest-average-return, highest-variance
+        /// asset class) held for the entire run with no dissolution - the worst-case sustained
+        /// compounding-growth stress this mechanic can produce. Mirrors the standalone harness's
+        /// own --swfstress scenario exactly.
+        /// </summary>
+        private static PolicyDecision BuildSwfStressDecision(Country usa, int turn)
+        {
+            if (turn == 1)
+            {
+                usa.SovereignWealthFund = new SovereignWealthFund
+                {
+                    ContributionRatePercent = 10f,
+                    EquitiesWeight = 100f,
+                    BondsWeight = 0f,
+                    InfrastructureWeight = 0f,
+                    RealEstateWeight = 0f
+                };
+            }
+
+            return PolicyDecision.None();
         }
 
         private static PolicyDecision BuildWelfareStressDecision(Country usa, int turn)
@@ -344,6 +370,38 @@ namespace PoliSim.Testing
             foreach (WelfareProgram welfareProgram in country.WelfarePrograms)
             {
                 CheckFinite(turn, country, $"WelfareProgram[{welfareProgram.Type}].GenerosityLevel", welfareProgram.GenerosityLevel, anomalies);
+            }
+
+            CheckFinite(turn, country, "LaborForceParticipationRate", state.LaborForceParticipationRate, anomalies);
+            if (state.LaborForceParticipationRate < 0f || state.LaborForceParticipationRate > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: LaborForceParticipationRate out of range ({state.LaborForceParticipationRate:F2}%)");
+            }
+
+            CheckFinite(turn, country, "CrimeIndex", state.CrimeIndex, anomalies);
+            if (state.CrimeIndex < 0f || state.CrimeIndex > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: CrimeIndex out of range ({state.CrimeIndex:F2})");
+            }
+
+            foreach (Sector sector in country.Sectors)
+            {
+                CheckFinite(turn, country, $"Sector[{sector.Type}].OutputShareOfGdp", sector.OutputShareOfGdp, anomalies);
+                CheckFinite(turn, country, $"Sector[{sector.Type}].EmploymentShare", sector.EmploymentShare, anomalies);
+                CheckFinite(turn, country, $"Sector[{sector.Type}].SectorMetric", sector.SectorMetric, anomalies);
+                if (sector.OutputShareOfGdp < 0f)
+                {
+                    anomalies.Add($"Turn {turn} {country.Name}: Sector[{sector.Type}].OutputShareOfGdp is negative ({sector.OutputShareOfGdp:F2})");
+                }
+            }
+
+            if (country.SovereignWealthFund != null)
+            {
+                CheckFinite(turn, country, "SovereignWealthFund.TotalAssets", country.SovereignWealthFund.TotalAssets, anomalies);
+                if (country.SovereignWealthFund.TotalAssets < 0f)
+                {
+                    anomalies.Add($"Turn {turn} {country.Name}: SovereignWealthFund.TotalAssets is negative ({country.SovereignWealthFund.TotalAssets:F2})");
+                }
             }
 
             CheckSwing(turn, country, "GDP", previous.GDP, state.GDP, anomalies);

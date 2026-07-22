@@ -217,6 +217,15 @@ namespace PoliSim.Data
         /// </summary>
         public FedChair CurrentFedChair;
 
+        /// <summary>
+        /// This country's sovereign wealth fund, or null (the default - every country) if it doesn't
+        /// exist. The player creates/dissolves it via an immediate action (mirrors TaxLine.
+        /// IsImplemented's on/off pattern), the same way a non-null CurrentFedChair switches USA's
+        /// interest-rate mechanic. USA-first only in this pass - see "Sovereign Wealth Fund" in
+        /// CLAUDE.md.
+        /// </summary>
+        public SovereignWealthFund SovereignWealthFund;
+
         public Country() { }
 
         public Country(

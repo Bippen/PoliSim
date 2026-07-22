@@ -61,6 +61,18 @@ This document is a standing instruction set for autonomous work on PoliSim while
 
 This is a fine, safe outcome — do not start inventing new scope. Instead: re-run the full validation matrix one more time across everything built this session to confirm nothing has drifted, write a summary of all queue items completed and their validation status to CLAUDE.md, and stop.
 
+**Status: all 5 items completed (2026-07-22), not early — this is the full queue.** All five were
+implemented, validated (standalone harness first, then `BatchSimulationRunner` against real Unity at
+100/500 turns), and committed as their own commits, with validation results recorded in CLAUDE.md's
+own dedicated section for each ("Expanded Event Pool," "Labor Market Basics," "Crime & Justice
+Basics," "Economic Sectors," "Sovereign Wealth Fund"). Item 5's own extra-caution requirement (re-run
+the full existing matrix) was satisfied via `SimulationTestRunner`'s `-runmatrix`, extended with a
+new `swfstress` scenario (now 6 scenarios x 100/500 turns = 12 combinations) — zero regression in the
+five pre-existing scenarios, zero NaN/negative/out-of-range/divergence anywhere including the new
+scenario. One genuine design decision was escalated rather than resolved silently (see Open Questions
+#1 below) — Economic Sectors' deliberate isolation from the core GDP/Unemployment loop. No new scope
+was invented beyond the five items as specified.
+
 ---
 
 ## When Elias returns

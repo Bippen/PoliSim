@@ -20,6 +20,8 @@ namespace PoliSim.Simulation
         public float InterestOnDebt;
         public float TariffRevenue;
         public float WelfareCost;
+        public float SwfContribution;
+        public float SwfReturns;
     }
 
     /// <summary>
@@ -38,6 +40,8 @@ namespace PoliSim.Simulation
         public float PovertyRateChange;
         public float LaborForceParticipationRateChange;
         public float CrimeIndexChange;
+        public float SwfContributionEstimate;
+        public float SwfReturnsEstimate;
     }
 
     /// <summary>
@@ -130,6 +134,27 @@ namespace PoliSim.Simulation
         /// <summary>Bounds for Sector.SubsidyLevel/RegulationLevel - reuses the same [0,100] range as the crime/justice dials, since there's likewise no per-sector real-world figure to bound them against.</summary>
         private const float MinSectorDialLevel = 0f;
         private const float MaxSectorDialLevel = 100f;
+
+        /// <summary>Bounds for SovereignWealthFund.ContributionRatePercent - a gameplay ceiling (10% of GDP/turn is already an aggressive contribution rate for any country), not a researched maximum.</summary>
+        private const float MinSwfContributionRate = 0f;
+        private const float MaxSwfContributionRate = 10f;
+
+        /// <summary>Bounds for SovereignWealthFund's DomesticAllocationPercent and four asset-class weights - shares the same [0,100] range idiom as the other uniform policy dials in this session's work.</summary>
+        private const float MinSwfDialLevel = 0f;
+        private const float MaxSwfDialLevel = 100f;
+
+        /// <summary>
+        /// Ceiling on SovereignWealthFund.TotalAssets, as a percentage of GDP - matches
+        /// MaxDebtToGdpPercent's own number for consistency, a gameplay safety bound not a realistic
+        /// target (found necessary during validation: sustained maximum contribution (10% of GDP)
+        /// into 100% Equities, held for 500 turns with no rebalancing, compounds far faster than GDP
+        /// forever since the fund's average return (9%) structurally exceeds trend GDP growth - left
+        /// unclamped, this drove the budget's cumulative total to an astronomically large (still
+        /// finite, but unrealistic) figure within a few hundred turns. Mirrors GovernmentDebt's own
+        /// clamp exactly - the flow (this turn's contribution/returns) is still computed and reported
+        /// accurately even in a turn that hits the ceiling; only the STOCK stops compounding further.
+        /// </summary>
+        private const float MaxSwfToGdpPercent = 300f;
 
         /// <summary>Bounds for this turn's requested PERCENTAGE change to a Discretionary SpendingLine (see PolicyDecision.SpendingLineChanges).</summary>
         private const float DiscretionaryPercentChangeRange = 30f;
@@ -261,6 +286,7 @@ namespace PoliSim.Simulation
             ApplyMinimumWageChange(country, decision);
             ApplyCrimePolicyChanges(country, decision);
             ApplySectorPolicyChanges(country, decision);
+            ApplySwfPolicyChanges(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(country);
@@ -268,7 +294,18 @@ namespace PoliSim.Simulation
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
             float interestOnDebt = GetInterestOnDebt(country);
             float welfareCost = GetTotalWelfareCost(country);
-            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost);
+
+            float swfContribution = GetSwfContribution(country);
+            float swfReturns = 0f;
+            if (country.SovereignWealthFund != null)
+            {
+                country.SovereignWealthFund.TotalAssets += swfContribution;
+                swfReturns = SovereignWealthFundSystem.ApplyReturns(country.SovereignWealthFund);
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
+                country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+            }
+
+            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns);
 
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
@@ -279,7 +316,9 @@ namespace PoliSim.Simulation
                 UnemploymentBenefitCost = unemploymentBenefitCost,
                 InterestOnDebt = interestOnDebt,
                 TariffRevenue = tariffRevenue,
-                WelfareCost = welfareCost
+                WelfareCost = welfareCost,
+                SwfContribution = swfContribution,
+                SwfReturns = swfReturns
             };
 
             MacroSystem.ApplyNationalAccounts(country, spendingResult.GovernmentSpending, interestRate);
@@ -345,6 +384,7 @@ namespace PoliSim.Simulation
             ApplyMinimumWageChange(previewCountry, decision);
             ApplyCrimePolicyChanges(previewCountry, decision);
             ApplySectorPolicyChanges(previewCountry, decision);
+            ApplySwfPolicyChanges(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
@@ -352,7 +392,22 @@ namespace PoliSim.Simulation
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(previewCountry);
             float interestOnDebt = GetInterestOnDebt(previewCountry);
             float welfareCost = GetTotalWelfareCost(previewCountry);
-            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost);
+
+            // Preview uses the deterministic AVERAGE return, never an actual random draw - PreviewTurn
+            // is documented to be side-effect-free/deterministic (it never rolls an EventSystem event
+            // either), and rolling SovereignWealthFundSystem's real isolated RNG here would consume part
+            // of its sequence for a turn the player might not even commit to.
+            float swfContribution = GetSwfContribution(previewCountry);
+            float swfReturns = 0f;
+            if (previewCountry.SovereignWealthFund != null)
+            {
+                previewCountry.SovereignWealthFund.TotalAssets += swfContribution;
+                swfReturns = SovereignWealthFundSystem.GetAverageReturnEstimate(previewCountry.SovereignWealthFund);
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
+                previewCountry.SovereignWealthFund.TotalAssets = Mathf.Clamp(previewCountry.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+            }
+
+            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns);
 
             float previewedInterestRate = previewCountry.CurrentFedChair != null
                 ? Mathf.Clamp(
@@ -385,7 +440,9 @@ namespace PoliSim.Simulation
                 NetBudgetImpact = state.Budget - budgetBefore,
                 PovertyRateChange = state.PovertyRate - povertyBefore,
                 LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore,
-                CrimeIndexChange = state.CrimeIndex - crimeIndexBefore
+                CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
+                SwfContributionEstimate = swfContribution,
+                SwfReturnsEstimate = swfReturns
             };
         }
 
@@ -407,6 +464,10 @@ namespace PoliSim.Simulation
         /// BaselineLaborForceParticipationRate, MinimumWageImplemented, MinimumWagePercentOfMedian, and
         /// BaselineMinimumWagePercentOfMedian are copied for the same reason - none is a constructor
         /// parameter, and ApplyMinimumWageChange mutates MinimumWagePercentOfMedian directly.
+        /// SovereignWealthFund is deep-cloned (via SovereignWealthFund.Clone(), null-safe) for the
+        /// same reason TaxLines/SpendingLines/WelfarePrograms are - ApplySwfPolicyChanges and the
+        /// contribution/returns steps in PreviewTurn both mutate it, so it can't be a shared reference
+        /// the way CurrentFedChair is.
         /// SpendingLines is deep-cloned for the same reason TaxLines is -
         /// ApplySpendingLineChanges mutates SpendingLine.Amount, so these can't be shared references
         /// either. WelfarePrograms is ALSO deep-cloned (via WelfareProgram.Clone()) for the same reason -
@@ -442,7 +503,8 @@ namespace PoliSim.Simulation
                 BaselineCrimeIndex = country.BaselineCrimeIndex,
                 PoliceFundingLevel = country.PoliceFundingLevel,
                 SentencingSeverity = country.SentencingSeverity,
-                CurrentFedChair = country.CurrentFedChair
+                CurrentFedChair = country.CurrentFedChair,
+                SovereignWealthFund = country.SovereignWealthFund?.Clone()
             };
         }
 
@@ -651,6 +713,58 @@ namespace PoliSim.Simulation
                     sector.RegulationLevel = Mathf.Clamp(requestedRegulation, MinSectorDialLevel, MaxSectorDialLevel);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets SovereignWealthFund's contribution rate/allocation/asset weights directly to this
+        /// turn's requested PolicyDecision overrides (each clamped to its own range) - a no-op entirely
+        /// if the country has no fund (Country.SovereignWealthFund null) or for any individual field
+        /// with no request this turn (the -1 sentinel).
+        /// </summary>
+        private void ApplySwfPolicyChanges(Country country, PolicyDecision decision)
+        {
+            SovereignWealthFund fund = country.SovereignWealthFund;
+            if (fund == null)
+            {
+                return;
+            }
+
+            if (decision.SwfContributionRateOverride >= 0f)
+            {
+                fund.ContributionRatePercent = Mathf.Clamp(decision.SwfContributionRateOverride, MinSwfContributionRate, MaxSwfContributionRate);
+            }
+
+            if (decision.SwfDomesticAllocationOverride >= 0f)
+            {
+                fund.DomesticAllocationPercent = Mathf.Clamp(decision.SwfDomesticAllocationOverride, MinSwfDialLevel, MaxSwfDialLevel);
+            }
+
+            if (decision.SwfEquitiesWeightOverride >= 0f)
+            {
+                fund.EquitiesWeight = Mathf.Clamp(decision.SwfEquitiesWeightOverride, MinSwfDialLevel, MaxSwfDialLevel);
+            }
+
+            if (decision.SwfBondsWeightOverride >= 0f)
+            {
+                fund.BondsWeight = Mathf.Clamp(decision.SwfBondsWeightOverride, MinSwfDialLevel, MaxSwfDialLevel);
+            }
+
+            if (decision.SwfInfrastructureWeightOverride >= 0f)
+            {
+                fund.InfrastructureWeight = Mathf.Clamp(decision.SwfInfrastructureWeightOverride, MinSwfDialLevel, MaxSwfDialLevel);
+            }
+
+            if (decision.SwfRealEstateWeightOverride >= 0f)
+            {
+                fund.RealEstateWeight = Mathf.Clamp(decision.SwfRealEstateWeightOverride, MinSwfDialLevel, MaxSwfDialLevel);
+            }
+        }
+
+        /// <summary>This turn's sovereign-wealth-fund contribution - a new budget expense, GDP * ContributionRatePercent/100. 0 for a country with no fund.</summary>
+        private float GetSwfContribution(Country country)
+        {
+            SovereignWealthFund fund = country.SovereignWealthFund;
+            return fund == null ? 0f : country.State.GDP * (fund.ContributionRatePercent / 100f);
         }
 
         /// <summary>
@@ -1001,12 +1115,12 @@ namespace PoliSim.Simulation
         /// debt-to-GDP range. Returns the actual (post-efficiency, post-reaction) revenue so the caller
         /// can record it on this turn's FiscalTurnReport.
         /// </summary>
-        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost)
+        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns)
         {
             EconomyState state = country.State;
             float theoreticalRevenue = GetTotalTaxRevenue(country);
-            float actualRevenue = theoreticalRevenue * country.CollectionEfficiency * GetFiscalReactionMultiplier(country);
-            float totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost;
+            float actualRevenue = theoreticalRevenue * country.CollectionEfficiency * GetFiscalReactionMultiplier(country) + swfReturns;
+            float totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
             float budgetBalance = actualRevenue - totalSpending;
 
             state.Budget += budgetBalance;

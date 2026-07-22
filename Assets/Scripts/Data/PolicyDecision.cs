@@ -134,6 +134,18 @@ namespace PoliSim.Data
         public Dictionary<SectorType, float> SectorRegulationOverrides = new Dictionary<SectorType, float>();
 
         /// <summary>
+        /// This turn's requested ABSOLUTE sovereign-wealth-fund settings (each -1 = no change
+        /// requested this turn, the same sentinel idiom as MinimumWageOverride) - only meaningful if
+        /// Country.SovereignWealthFund is non-null. See SimulationManager.ApplySwfPolicyChanges.
+        /// </summary>
+        public float SwfContributionRateOverride = -1f;
+        public float SwfDomesticAllocationOverride = -1f;
+        public float SwfEquitiesWeightOverride = -1f;
+        public float SwfBondsWeightOverride = -1f;
+        public float SwfInfrastructureWeightOverride = -1f;
+        public float SwfRealEstateWeightOverride = -1f;
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,

@@ -1678,6 +1678,115 @@ categories; see below for why tariffs was dropped).
   unchanged from the pre-existing "Fiscal Reaction Function" baseline, exactly as expected given
   this mechanic never touches the fiscal or core simulation loop at all.
 
+## Sovereign Wealth Fund
+Queue item 5 of `ROADMAP_BRIEF.md` - the deliberately-last, highest-risk item, since it touches
+`GovernmentDebt`/the budget directly (the ordering note's own explicit reasoning: fiscal-touching
+mechanics have historically needed more debugging rounds in this project than self-contained ones -
+confirmed again by this item's own validation, see below). USA-first only, per the task's explicit
+permission - the mechanic itself (`SovereignWealthFund`/`SovereignWealthFundSystem`) is
+country-agnostic, so a later pass could enable it elsewhere with no code changes, only seeding.
+
+- **`Country.SovereignWealthFund`** (nullable, every country defaults to null/doesn't exist - the
+  same idiom `CurrentFedChair` already uses): the player creates/dissolves it via an immediate
+  action (`GameController`'s new "Sovereign Wealth Fund" tab, mirroring `TaxLine.IsImplemented`'s
+  toggle pattern), not a `PolicyDecision` field. Holds `TotalAssets` (the fund's size, same $B scale
+  as GDP), `ContributionRatePercent` (0-10%, of GDP per turn - a gameplay ceiling, not researched),
+  `DomesticAllocationPercent` (0-100%, tracked/displayed but this pass does NOT model differing
+  domestic-vs-international returns - a deliberate scope simplification, honestly disclosed, not a
+  gap), and four independently-adjustable asset-class weights (Equities/Bonds/Infrastructure/
+  RealEstate) that don't need to sum to 100 - `GetNormalizedWeight` divides each by their live sum.
+- **`SovereignWealthFundSystem`**: a simple market-return model - each asset class earns a small
+  random return per turn, centered on a real long-run average NOMINAL return sourced via web search
+  (equities ~9%, informed by developed-market real returns of 6-7% plus ~2-3% average inflation;
+  bonds ~4.5%; infrastructure ~7%; real estate ~6%, informed by Norway's GPFG real allocation
+  benchmarks and UBS's Global Investment Returns Yearbook), varying within a realistic range
+  (equities the most volatile of the four, matching real-world relative volatility ordering; bonds
+  the least). Its own isolated `System.Random` - separate from `EventSystem`'s, `UnityEngine.Random`,
+  and `GameController`'s `_previewRandom` - mirrors `FederalReserveSystem.GenerateCandidates`'s own
+  isolation precedent. `SimulationManager.PreviewTurn` uses the deterministic AVERAGE return instead
+  of an actual random draw (via `GetAverageReturnEstimate`), matching `PreviewTurn`'s own documented
+  "side-effect-free, deterministic" principle - it never rolls an `EventSystem` event either, for the
+  same reason.
+- **Real fiscal integration** (unlike "Economic Sectors"' deliberate isolation - this item's task
+  explicitly requires it): the contribution is a new budget EXPENSE, added into
+  `ApplyRevenueAndSpending`'s existing total outflow (alongside `UnemploymentBenefitCost`/
+  `InterestOnDebt`/`WelfareCost`) - the same, already-validated pathway, not a new one. Market
+  returns are INCOME, added into the same method's revenue figure. Both flow into `GovernmentDebt`
+  through the existing, unmodified deficit-accumulation mechanism - this item does NOT touch
+  `GetDebtRiskPremium` or `GetFiscalReactionMultiplier` at all, minimizing the risk of interacting
+  with those already-hard-won equilibria.
+- **Only 2 of the brief's suggested "Create/dissolve, contribution rate, allocation, asset mix,
+  market-return model, budget/debt interaction" list needed any real design choice**: the
+  domestic/international split (tracked but not differently modeled, see above) and the debt/asset
+  interaction (see next bullet).
+- **"Display both figures separately," not "net out the debt"** (the task's own explicit
+  requirement, to prevent the fund from being used to hide a real fiscal problem): `GovernmentDebt`/
+  `DebtToGdpRatio` are completely unchanged - every existing formula that reads them (risk premium,
+  fiscal reaction multiplier, the dashboard's own existing display) keeps reading the real, gross
+  figure exactly as before. A separate "Net Government Position" (`GovernmentDebt - fund
+  TotalAssets`) is computed ONLY in `GameController`, for display ALONGSIDE the gross figure (shown
+  on the dashboard and in the SWF tab) - it is never written back into `EconomyState`/`Country` and
+  never read by any simulation formula.
+- **A real, found-and-fixed unbounded-growth risk - the exact failure pattern the brief warns
+  about, caught during this item's own validation, not shipped silently**: a sustained-maximum stress
+  test (10% of GDP contributed every turn, 100% Equities allocation, held for 500 turns with no
+  rebalancing - `--swfstress` in both the harness and `SimulationTestRunner`) drove USA's cumulative
+  `Budget` to an ASTRONOMICALLY large figure (~10^23 - still finite, not NaN/Infinity, but wildly
+  unrealistic) within a few hundred turns. Root cause: the fund's average return (9% blended down
+  toward equities-heavy) structurally and permanently exceeds trend GDP growth (~2%/turn for USA), so
+  a fund compounding via both fresh contributions (scaled to a growing GDP) AND its own returns grows
+  UNBOUNDEDLY relative to GDP the longer the game runs - there is no natural equilibrium the way
+  `CrimeIndex`/`Sector` stats have (those mean-revert toward a fixed target; this compounds without
+  a ceiling). **Fix**: `TotalAssets` is now hard-clamped to `[0, MaxSwfToGdpPercent(300%) / 100 *
+  GDP]` every turn, immediately after contributions/returns are applied - mirrors
+  `GovernmentDebt`'s own clamp exactly (matching its 300% ceiling number for consistency, a gameplay
+  safety bound, not a realistic target) and the same principle behind "SpendingLine Amount Ceiling"'s
+  fix (the flow - this turn's contribution/return - is still computed and reported accurately even
+  in a turn that hits the ceiling; only the STOCK stops compounding further). Confirmed fixed: the
+  same 500-turn `--swfstress` scenario now settles `Budget` at a sane ~1.6-1.9 billion (a completely
+  reasonable scale relative to a ~$565B GDP) instead of ~10^23.
+- **A realistic (non-adversarial) use case was also checked, not just the adversarial stress test**
+  (`--swfmoderate` in the standalone harness: default diversified 40/30/15/15 weights, a modest 1.5%
+  contribution rate): stayed fully bounded over 500 turns with no elevated anomaly signature beyond
+  ordinary swing noise - confirming the fix doesn't just suppress the extreme case, ordinary play
+  was never at risk of the extreme figure either.
+- **Full existing regression matrix re-run, per this item's own extra-caution requirement**: the
+  brief specifically asked that this item re-run the FULL existing matrix (baseline/stress/
+  sustainedexploit/tariffoverride/welfarestress), not just a fund-specific scenario, to catch any
+  interaction with the fiscal reaction function or debt attractor. `SimulationTestRunner`'s
+  `-runmatrix` was extended with the new `swfstress` scenario (now 6 scenarios x 100/500 turns = 12
+  combinations) and re-run in full against real Unity: the five pre-existing scenarios' anomaly
+  counts (28/41/31/25/36 at 100 turns; 97/82/101/70/92 at 500) landed squarely within the same range
+  already documented for each in this file, confirming zero regression - completely expected, since
+  every SWF code path is gated behind `Country.SovereignWealthFund != null`, a no-op for any country/
+  scenario that never creates one. `swfstress` itself showed a much higher anomaly count (87 at 100
+  turns, 338 at 500) - entirely `DebtToGdpRatio`/`Inflation` percent-swing noise (the same
+  known-oversensitive-on-small-numbers pattern already documented in "Federal Reserve Rate Damping"),
+  not a single NaN/negative/out-of-range value anywhere across all 12 combinations - a real,
+  expected consequence of injecting a volatile, undiversified, maximum-leverage income source
+  directly into the fiscal system via deliberately adversarial policy, not a bug (matching the
+  Fiscal Reaction Function's own established precedent: "policy-driven extremes still reach 0%/300%,
+  by design").
+- **A genuinely useful validation shortcut found this session**: `dotnet build PoliSim.slnx` (from
+  the project root) compiles the real Unity C# files in seconds using Unity's own auto-generated
+  `.csproj`/`.slnx` (gitignored, regenerated by Unity on next open) - much faster than a full
+  `BatchSimulationRunner` launch for catching a plain compile error before investing in a real
+  simulation run. Newly-created files aren't in the `.csproj` until Unity itself re-syncs it, so a
+  brand-new file's own `<Compile Include=...>` entry may need adding by hand for this shortcut to
+  see it; Unity overwrites this file anyway on its next batch/Editor launch, so a manual addition is
+  harmless and temporary. This is a compile-check shortcut only - it does NOT replace
+  `BatchSimulationRunner`/`SimulationTestRunner` for validating actual simulation behavior.
+- **UI** (`GameController`'s new "Sovereign Wealth Fund" tab): Create/Dissolve button, then (while it
+  exists) `TotalAssets`, this-turn estimated contribution/returns, Net Government Position, and
+  sliders for every adjustable setting. Dashboard shows fund assets and Net Government Position too,
+  whenever a fund exists, so the "display both figures separately" requirement is visible without
+  needing to open the tab.
+- **Validated: 2026-07-22, 100/500 turns, real Unity, full 12-combination matrix (6 scenarios x 2
+  turn counts), zero NaN/negative/out-of-range/divergence anywhere** - the five pre-existing
+  scenarios confirmed regression-free; `swfstress` confirmed the unbounded-growth fix holds under
+  the worst-case sustained adversarial policy; a separate `swfmoderate` check confirmed ordinary,
+  realistic use was never at risk either.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -1821,5 +1930,18 @@ policy dials - Police Funding and Sentencing Severity - with small effects on `A
 Agriculture, Finance - see "Economic Sectors" above) tracking Output/Employment/one sector-specific
 metric each, adjustable via Subsidy/Regulation dials - deliberately isolated from the core GDP/
 Unemployment/Approval loop in this proof-of-pattern pass (see `ROADMAP_BRIEF.md`'s Open Questions).
-No save/load, no full market simulation (trade volumes are static inputs, not supply/demand-driven),
-and every constant is a starting-point placeholder meant to be tuned by playtesting.
+USA can also create a Sovereign Wealth Fund (see "Sovereign Wealth Fund" above) - a real, budget-
+integrated mechanic (contributions are an expense, market returns are income) with its own simple
+per-asset-class return model, hard-capped at 300% of GDP after a validation pass found and fixed a
+genuine unbounded-compounding-growth risk under sustained maximum-aggression play. No save/load, no
+full market simulation (trade volumes are static inputs, not supply/demand-driven), and every
+constant is a starting-point placeholder meant to be tuned by playtesting.
+
+**`ROADMAP_BRIEF.md`'s full 5-item queue is now complete** (2026-07-22): expanded event system,
+labor market basics, crime & justice basics, a small slice of economic sectors, and the Sovereign
+Wealth Fund - each implemented, grounded in real data where available (honestly labeled where not),
+validated via the standalone harness first and then `BatchSimulationRunner` against real Unity at
+100 and 500 turns, and committed as its own commit with validation results in CLAUDE.md. One design
+decision was escalated rather than resolved silently (`ROADMAP_BRIEF.md`'s Open Questions #1 - whether
+Economic Sectors should feed back into aggregate GDP/Unemployment). See `ROADMAP_BRIEF.md` for the
+full queue history and that escalated question.
