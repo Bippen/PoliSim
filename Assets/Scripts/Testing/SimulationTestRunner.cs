@@ -18,10 +18,11 @@ namespace PoliSim.Testing
     /// validation tool):
     /// -turns=N (default 100) - how many turns to run.
     /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress|
-    /// phase2stress (default baseline) - baseline is PolicyDecision.None() for every country every
-    /// turn (the original behavior, unchanged); the other six mirror the standalone harness's own
-    /// same-named scenarios byte-for-byte (same targets, same rates, same turn timing) so both tools
-    /// exercise identical policy sequences against the real game code.
+    /// phase2stress|laborstress|crimejusticestress (default baseline) - baseline is
+    /// PolicyDecision.None() for every country every turn (the original behavior, unchanged); the
+    /// other eight mirror the standalone harness's own same-named scenarios byte-for-byte (same
+    /// targets, same rates, same turn timing) so both tools exercise identical policy sequences
+    /// against the real game code.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
@@ -38,7 +39,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -160,6 +161,8 @@ namespace PoliSim.Testing
                     return BuildPhase2StressDecision();
                 case "laborstress":
                     return BuildLaborStressDecision(turn);
+                case "crimejusticestress":
+                    return BuildCrimeJusticeStressDecision(turn);
                 default:
                     return PolicyDecision.None();
             }
@@ -309,6 +312,23 @@ namespace PoliSim.Testing
             return PolicyDecision.None();
         }
 
+        /// <summary>
+        /// Pushes USA's Bail Reform to max (100, full reform) and Drug Policy to max (100, strictest
+        /// criminalization) simultaneously at turn 1, then holds - these two pull
+        /// PrisonPopulationRate in opposite directions, stress-testing both at once. Confirms
+        /// CrimeIndex/PrisonPopulationRate/ApprovalRating all stay bounded. Mirrors the standalone
+        /// harness's own --crimejusticestress scenario exactly.
+        /// </summary>
+        private static PolicyDecision BuildCrimeJusticeStressDecision(int turn)
+        {
+            if (turn == 1)
+            {
+                return new PolicyDecision { BailReformOverride = 100f, DrugPolicyOverride = 100f };
+            }
+
+            return PolicyDecision.None();
+        }
+
         private static PolicyDecision BuildStressDecision(Country usa, int turn)
         {
             if (turn == 10)
@@ -448,6 +468,13 @@ namespace PoliSim.Testing
 
             CheckFinite(turn, country, "BaselineCrimeIndex", country.BaselineCrimeIndex, anomalies);
             CheckFinite(turn, country, "BaselinePovertyRate", country.BaselinePovertyRate, anomalies);
+
+            CheckFinite(turn, country, "PrisonPopulationRate", state.PrisonPopulationRate, anomalies);
+            if (state.PrisonPopulationRate < 0f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: PrisonPopulationRate is negative ({state.PrisonPopulationRate:F2})");
+            }
+            CheckFinite(turn, country, "BaselinePrisonPopulationRate", country.BaselinePrisonPopulationRate, anomalies);
 
             foreach (Sector sector in country.Sectors)
             {

@@ -167,6 +167,14 @@ namespace PoliSim.Data
         public float RetrainingProgramOverride = -1f;
 
         /// <summary>
+        /// This turn's requested ABSOLUTE deeper-crime-and-justice settings (each -1 = no change
+        /// requested this turn, the same sentinel idiom as MinimumWageOverride). See
+        /// SimulationManager.ApplyCrimeJusticeDeeperChanges.
+        /// </summary>
+        public float BailReformOverride = -1f;
+        public float DrugPolicyOverride = -1f;
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,

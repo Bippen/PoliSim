@@ -137,6 +137,8 @@ namespace PoliSim.UI
         // _minimumWageInput isn't.
         private float? _policeFundingInput;
         private float? _sentencingSeverityInput;
+        private float? _bailReformInput;
+        private float? _drugPolicyInput;
 
         // Draft ABSOLUTE per-partner tariff override rate for the Trade tab's sliders (only shown/
         // meaningful while that partner's TradePartner.HasPlayerTariffOverride is true - mirrors
@@ -191,6 +193,8 @@ namespace PoliSim.UI
         private float? _cachedRetrainingProgramInput;
         private float? _cachedPoliceFundingInput;
         private float? _cachedSentencingSeverityInput;
+        private float? _cachedBailReformInput;
+        private float? _cachedDrugPolicyInput;
         private string _cachedGdpGrowthText;
         private string _cachedUnemploymentText;
         private string _cachedInflationText;
@@ -434,6 +438,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Labor Force Participation: {state.LaborForceParticipationRate:F1}%", _labelStyle);
             GUILayout.Label($"Crime Index: {state.CrimeIndex:F1}", _labelStyle);
             GUILayout.Label($"Paid Family Leave: {_playerCountry.PaidFamilyLeaveWeeks:F0} weeks", _labelStyle);
+            GUILayout.Label($"Incarceration Rate: {state.PrisonPopulationRate:F0} per 100,000", _labelStyle);
             GUILayout.Label($"Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
 
             if (hasIndependentCurrency)
@@ -576,6 +581,14 @@ namespace PoliSim.UI
             float draftSentencingSeverity = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
             GUILayout.Label($"Sentencing Severity: {draftSentencingSeverity:F0} (0 = lenient, 100 = harsh)", _labelStyle);
             _sentencingSeverityInput = GUILayout.HorizontalSlider(draftSentencingSeverity, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftBailReform = GetBailReformInput(_playerCountry.BailReformLevel);
+            GUILayout.Label($"Bail Reform: {draftBailReform:F0} (0 = traditional cash bail, 100 = full reform)", _labelStyle);
+            _bailReformInput = GUILayout.HorizontalSlider(draftBailReform, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftDrugPolicy = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel);
+            GUILayout.Label($"Drug Policy: {draftDrugPolicy:F0} (0 = decriminalized, 100 = strict criminalization)", _labelStyle);
+            _drugPolicyInput = GUILayout.HorizontalSlider(draftDrugPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
         }
 
         /// <summary>
@@ -680,6 +693,16 @@ namespace PoliSim.UI
                 || !Mathf.Approximately(
                     GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
                     GetCachedSentencingSeverityInput(_playerCountry.SentencingSeverity)))
+            {
+                return true;
+            }
+
+            if (!Mathf.Approximately(
+                    GetBailReformInput(_playerCountry.BailReformLevel),
+                    GetCachedBailReformInput(_playerCountry.BailReformLevel))
+                || !Mathf.Approximately(
+                    GetDrugPolicyInput(_playerCountry.DrugPolicyLevel),
+                    GetCachedDrugPolicyInput(_playerCountry.DrugPolicyLevel)))
             {
                 return true;
             }
@@ -793,6 +816,8 @@ namespace PoliSim.UI
             _cachedMinimumWageInput = _minimumWageInput;
             _cachedPoliceFundingInput = _policeFundingInput;
             _cachedSentencingSeverityInput = _sentencingSeverityInput;
+            _cachedBailReformInput = _bailReformInput;
+            _cachedDrugPolicyInput = _drugPolicyInput;
             _cachedPaidFamilyLeaveWeeksInput = _paidFamilyLeaveWeeksInput;
             _cachedOvertimeRegulationInput = _overtimeRegulationInput;
             _cachedRetrainingProgramInput = _retrainingProgramInput;
@@ -929,6 +954,11 @@ namespace PoliSim.UI
             return _cachedSentencingSeverityInput ?? fallbackLevel;
         }
 
+        private float GetBailReformInput(float fallbackLevel) => _bailReformInput ?? fallbackLevel;
+        private float GetCachedBailReformInput(float fallbackLevel) => _cachedBailReformInput ?? fallbackLevel;
+        private float GetDrugPolicyInput(float fallbackLevel) => _drugPolicyInput ?? fallbackLevel;
+        private float GetCachedDrugPolicyInput(float fallbackLevel) => _cachedDrugPolicyInput ?? fallbackLevel;
+
         /// <summary>The Economic Sectors tab's draft absolute Subsidy level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted SubsidyLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetSectorSubsidyInput(SectorType type, float fallbackLevel)
         {
@@ -1015,6 +1045,8 @@ namespace PoliSim.UI
 
             decision.PoliceFundingOverride = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
             decision.SentencingSeverityOverride = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
+            decision.BailReformOverride = GetBailReformInput(_playerCountry.BailReformLevel);
+            decision.DrugPolicyOverride = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel);
 
             decision.PaidFamilyLeaveWeeksOverride = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
             decision.OvertimeRegulationOverride = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel);

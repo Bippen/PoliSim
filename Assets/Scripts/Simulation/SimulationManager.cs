@@ -296,6 +296,7 @@ namespace PoliSim.Simulation
             ApplySectorPolicyChanges(country, decision);
             ApplySwfPolicyChanges(country, decision);
             ApplyLaborPolicyChanges(country, decision);
+            ApplyCrimeJusticeDeeperChanges(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(country);
@@ -341,6 +342,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyLaborForceParticipationRate(country);
             MacroSystem.ApplyCrimeIndex(country);
             MacroSystem.ApplyCrimeEffects(country);
+            MacroSystem.ApplyPrisonPopulationRate(country);
             MacroSystem.ApplySectorEffects(country);
 
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
@@ -395,6 +397,7 @@ namespace PoliSim.Simulation
             ApplySectorPolicyChanges(previewCountry, decision);
             ApplySwfPolicyChanges(previewCountry, decision);
             ApplyLaborPolicyChanges(previewCountry, decision);
+            ApplyCrimeJusticeDeeperChanges(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
@@ -437,6 +440,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
             MacroSystem.ApplyCrimeIndex(previewCountry);
             MacroSystem.ApplyCrimeEffects(previewCountry);
+            MacroSystem.ApplyPrisonPopulationRate(previewCountry);
             MacroSystem.ApplySectorEffects(previewCountry);
 
             MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
@@ -518,7 +522,10 @@ namespace PoliSim.Simulation
                 PaidFamilyLeaveWeeks = country.PaidFamilyLeaveWeeks,
                 BaselinePaidFamilyLeaveWeeks = country.BaselinePaidFamilyLeaveWeeks,
                 OvertimeRegulationLevel = country.OvertimeRegulationLevel,
-                RetrainingProgramLevel = country.RetrainingProgramLevel
+                RetrainingProgramLevel = country.RetrainingProgramLevel,
+                BaselinePrisonPopulationRate = country.BaselinePrisonPopulationRate,
+                BailReformLevel = country.BailReformLevel,
+                DrugPolicyLevel = country.DrugPolicyLevel
             };
         }
 
@@ -803,6 +810,25 @@ namespace PoliSim.Simulation
             if (decision.RetrainingProgramOverride >= 0f)
             {
                 country.RetrainingProgramLevel = Mathf.Clamp(decision.RetrainingProgramOverride, MinLaborDialLevel, MaxLaborDialLevel);
+            }
+        }
+
+        /// <summary>
+        /// Sets Country.BailReformLevel/DrugPolicyLevel directly to this turn's requested
+        /// PolicyDecision overrides (each clamped to [MinPolicyDialLevel, MaxPolicyDialLevel], the
+        /// same range Crime &amp; Justice Basics' own dials use) - a no-op for either with no request
+        /// this turn (the -1 sentinel).
+        /// </summary>
+        private void ApplyCrimeJusticeDeeperChanges(Country country, PolicyDecision decision)
+        {
+            if (decision.BailReformOverride >= 0f)
+            {
+                country.BailReformLevel = Mathf.Clamp(decision.BailReformOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+
+            if (decision.DrugPolicyOverride >= 0f)
+            {
+                country.DrugPolicyLevel = Mathf.Clamp(decision.DrugPolicyOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
             }
         }
 

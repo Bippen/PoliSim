@@ -1951,6 +1951,74 @@ routed through the three already-proven channels the brief named (`LaborForcePar
   non-SWF scenarios (69/220), confirming the three-ceiling cascade above is a correctly-bounded
   extreme, not runaway instability.
 
+## Deeper Crime & Justice
+Round 2 item 4 of `ROADMAP_BRIEF.md` - adds `EconomyState.PrisonPopulationRate` (a real,
+per-100,000 tracked stat, distinct from `CrimeIndex`'s stylized 0-100 scale) plus two more policy
+dials (`BailReformLevel`, `DrugPolicyLevel`), building on "Crime & Justice Basics"' existing
+`PoliceFundingLevel`/`SentencingSeverity` precedent.
+
+- **`EconomyState.PrisonPopulationRate`** / **`Country.BaselinePrisonPopulationRate`**: seeded from
+  real World Prison Brief / national-statistics incarceration-rate data, per-100,000 population -
+  USA 531 (confirmed - by a wide margin the highest of the six, matching the US's well-documented
+  status as a global outlier), Germany 72 (confirmed), France 111 (confirmed). Sweden 60 is an
+  estimate informed by proximity to its confirmed Nordic peers (Finland ~51, Norway ~57) rather than
+  independently confirmed; Italy 92 and Poland 185 are general-knowledge directional estimates, not
+  individually confirmed - disclosed honestly, the same "confirmed vs. estimated, stated plainly"
+  idiom `PaidFamilyLeaveWeeks` already established for France/Italy. `MacroSystem.
+  ApplyPrisonPopulationRate` mean-reverts toward `Country.BaselinePrisonPopulationRate`
+  (`PrisonPopulationReversionSpeed` = 0.15, matching `PovertyReversionSpeed`'s "moderate-slow, real
+  stats don't swing wildly turn to turn" reasoning), adjusted by the gap between
+  `BailReformLevel`/`DrugPolicyLevel` and their shared neutral 50, hard-clamped to `[0,
+  MaxPrisonPopulationRate]` (1000 - a generous gameplay ceiling, comfortably above any seeded value
+  or plausible drift).
+- **`Country.BailReformLevel`** (0 = traditional cash bail, 100 = full reform) and **`Country.
+  DrugPolicyLevel`** (0 = decriminalized, 100 = strict criminalization): both neutral-50 uniform
+  dials for every country (the same `PoliceFundingLevel`/`SentencingSeverity`/
+  `OvertimeRegulationLevel` precedent - no clean cross-country "how reformed is this country's bail
+  system" index exists to seed differently per country, even though cash bail is most directly a US
+  policy concept). `PolicyDecision.BailReformOverride`/`DrugPolicyOverride` (absolute targets, the
+  same "SET, not delta" semantics as every other policy dial) let the player adjust both via
+  `SimulationManager.ApplyCrimeJusticeDeeperChanges`, reusing the existing `MinPolicyDialLevel`/
+  `MaxPolicyDialLevel` bounds rather than adding new ones.
+- **Effects, both gaps versus the neutral 50** (the same idiom `PoliceFundingLevel`/
+  `SentencingSeverity` already use in `ApplyCrimeIndex`):
+  - `BailReformLevel` feeds BOTH `ApplyCrimeIndex` (a new `BailReformCrimeIndexSensitivity` = 0.02
+    term - more reform nudges `CrimeIndex` up slightly) AND `ApplyPrisonPopulationRate`
+    (`BailReformPrisonPopulationSensitivity` = 2.0 - more reform reduces incarceration, the direct,
+    well-documented mechanical effect of reducing pretrial detention). **The `CrimeIndex` effect is
+    HONESTLY DISCLOSED as one side of a genuinely contested real criminological debate, not a
+    settled fact** - mirroring the "Deeper Labor Market Policies" precedent for
+    `OvertimeRegulationLevel`'s unemployment effect: some real research finds bail reform has no
+    measurable effect on crime rates, while other studies (and the political arguments against
+    reform) claim an increase from releasing more defendants pretrial. The sensitivity is
+    deliberately small and clearly commented as contested, not presented as a confident modeling
+    choice.
+  - `DrugPolicyLevel` feeds `ApplyPrisonPopulationRate` (`DrugPolicyPrisonPopulationSensitivity` =
+    1.6 - stricter criminalization raises incarceration, the direct, well-documented effect of
+    drug-offense sentencing on prison populations) and `ApplyApprovalRating`
+    (`DrugPolicyApprovalSensitivity` = 0.02, an ongoing stock effect like every other policy dial's
+    approval term - deliberately small and directionless in framing, since real-world public opinion
+    on drug policy is itself split and country-dependent, not a one-sided popularity lever).
+- **UI** (`GameController`'s existing `DrawCrimeJusticeControls`, extended with 2 more sliders
+  alongside Police Funding/Sentencing Severity - the same "small dials belong in the left-column
+  policy panel, not a dedicated tab" reasoning already established for Minimum Wage/Crime & Justice
+  Basics): `PrisonPopulationRate` shown on the dashboard as "Incarceration Rate: X per 100,000".
+- **Validated in the standalone harness first** (100/500-turn baseline, plus a new
+  `--crimejusticestress` scenario pushing USA's `BailReformLevel` AND `DrugPolicyLevel` both to 100
+  simultaneously at turn 1 and holding - deliberately pulling `PrisonPopulationRate` in opposite
+  directions at once, since bail reform pushes it down while strict drug enforcement pushes it up,
+  stress-testing both effects and `CrimeIndex`/`ApprovalRating` interactions together): stayed fully
+  bounded, no NaN/negative/out-of-range values, no regression in the existing `sustainedexploit`
+  scenario.
+- **Validated: 2026-07-23, 100/500 turns, real Unity, full 18-combination matrix (9 scenarios x 2
+  turn counts), zero NaN/negative/out-of-range/divergence anywhere** - the eight pre-existing
+  scenarios showed no regression (anomaly counts consistent with their previously-documented ranges);
+  `crimejusticestress` landed at 65/178 anomalies, squarely within the same range as the other
+  non-SWF scenarios (51-72 at 100 turns, 178-215 at 500 turns) - confirming no new instability.
+  USA's `DebtToGdpRatio` settled at ~144-147% under `crimejusticestress`, matching the pre-existing
+  Fiscal Reaction Function equilibrium (~142%) almost exactly - expected, since neither
+  `BailReformLevel` nor `DrugPolicyLevel` touches the fiscal system at all.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -2090,7 +2158,10 @@ effects on `Unemployment`/`PovertyRate` - Sweden and Italy have none, matching r
 country also tracks a stylized `CrimeIndex` (informed by real relative homicide-rate rankings, not a
 literal transformation of any single indicator - see "Crime & Justice Basics" above) and has two
 policy dials - Police Funding and Sentencing Severity - with small effects on `ApprovalRating` and
-`BusinessConfidence`. Every country also has four economic sectors (Manufacturing, Technology,
+`BusinessConfidence`. Every country also tracks a real, per-100,000 `PrisonPopulationRate` (see
+"Deeper Crime & Justice" above) and has two more dials - Bail Reform and Drug Policy - affecting it
+directly, plus a small, honestly-disclosed-as-contested `CrimeIndex` effect from Bail Reform. Every
+country also has four economic sectors (Manufacturing, Technology,
 Agriculture, Finance - see "Economic Sectors" above) tracking Output/Employment/one sector-specific
 metric each, adjustable via Subsidy/Regulation dials - deliberately isolated from the core GDP/
 Unemployment/Approval loop in this proof-of-pattern pass (see `ROADMAP_BRIEF.md`'s Open Questions).

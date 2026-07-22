@@ -401,11 +401,21 @@ namespace PoliSim.Simulation
         private const float MaxCrimeIndexPercent = 100f;
 
         /// <summary>
+        /// CrimeIndex points added per point Country.BailReformLevel sits above its neutral 50 (Round
+        /// 2's "Deeper Crime &amp; Justice") - small and HONESTLY CONTESTED, the same "flag the real
+        /// debate, don't pretend it's settled" treatment OvertimeRegulationLevel's own Unemployment
+        /// effect already got in "Deeper Labor Market Policies": bail reform's real effect on crime is
+        /// genuinely disputed in criminology research, not a settled empirical fact.
+        /// </summary>
+        private const float BailReformCrimeIndexSensitivity = 0.02f;
+
+        /// <summary>
         /// CrimeIndex mean-reverts toward a target of Country.BaselineCrimeIndex, adjusted by the
-        /// Unemployment-versus-NAIRU gap (a modest, already-proven driver) and by how far
+        /// Unemployment-versus-NAIRU gap (a modest, already-proven driver), by how far
         /// PoliceFundingLevel/SentencingSeverity sit from their shared neutral 50 - higher police
         /// funding or harsher sentencing both reduce the target, funding more strongly than
-        /// sentencing (see PoliceFundingSensitivity/SentencingSensitivity). Hard-clamped to [0, 100].
+        /// sentencing (see PoliceFundingSensitivity/SentencingSensitivity) - and now by BailReformLevel
+        /// (see BailReformCrimeIndexSensitivity). Hard-clamped to [0, 100].
         /// </summary>
         public static void ApplyCrimeIndex(Country country)
         {
@@ -414,7 +424,8 @@ namespace PoliSim.Simulation
             float target = country.BaselineCrimeIndex
                 + CrimeUnemploymentSensitivity * unemploymentGap
                 - PoliceFundingSensitivity * (country.PoliceFundingLevel - NeutralPolicyDialLevel)
-                - SentencingSensitivity * (country.SentencingSeverity - NeutralPolicyDialLevel);
+                - SentencingSensitivity * (country.SentencingSeverity - NeutralPolicyDialLevel)
+                + BailReformCrimeIndexSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel);
 
             state.CrimeIndex = Mathf.Clamp(state.CrimeIndex + CrimeIndexReversionSpeed * (target - state.CrimeIndex), 0f, MaxCrimeIndexPercent);
         }
@@ -435,6 +446,35 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
             float crimeGap = state.CrimeIndex - country.BaselineCrimeIndex;
             state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence - CrimeBusinessConfidenceSensitivity * crimeGap, MinConfidence, MaxConfidence);
+        }
+
+        // --- Prison Population Rate: a real, per-100k tracked stat, mean-reverting toward its own baseline (Round 2's "Deeper Crime & Justice") ---
+
+        /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
+        private const float PrisonPopulationReversionSpeed = 0.15f;
+
+        /// <summary>PrisonPopulationRate points reduced per point Country.BailReformLevel sits above its neutral 50 (and added per point below) - bail reform's primary real-world goal is reducing pretrial detention, a direct and substantial real effect (pretrial detainees are a significant share of incarcerated populations, especially in the US).</summary>
+        private const float BailReformPrisonPopulationSensitivity = 2.0f;
+
+        /// <summary>PrisonPopulationRate points added per point Country.DrugPolicyLevel sits above its neutral 50 (and reduced per point below) - the well-documented real link between strict drug enforcement and mass incarceration (the US "war on drugs" being the clearest real-world example).</summary>
+        private const float DrugPolicyPrisonPopulationSensitivity = 1.6f;
+
+        /// <summary>Gameplay safety bound, comfortably above any real-world incarceration rate (the USA's real ~531 per 100k is already the highest among developed nations).</summary>
+        private const float MaxPrisonPopulationRate = 1000f;
+
+        /// <summary>
+        /// PrisonPopulationRate mean-reverts toward a target of Country.BaselinePrisonPopulationRate,
+        /// adjusted by BailReformLevel (reform reduces it) and DrugPolicyLevel (stricter enforcement
+        /// raises it) - both gaps versus their shared neutral 50. Hard-clamped to [0, 1000].
+        /// </summary>
+        public static void ApplyPrisonPopulationRate(Country country)
+        {
+            EconomyState state = country.State;
+            float target = country.BaselinePrisonPopulationRate
+                - BailReformPrisonPopulationSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel)
+                + DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
+
+            state.PrisonPopulationRate = Mathf.Clamp(state.PrisonPopulationRate + PrisonPopulationReversionSpeed * (target - state.PrisonPopulationRate), 0f, MaxPrisonPopulationRate);
         }
 
         // --- Economic Sectors: descriptive tracked breakdowns, isolated from the core GDP/unemployment/inflation loop (see CLAUDE.md's "Economic Sectors") ---
@@ -496,6 +536,9 @@ namespace PoliSim.Simulation
 
         /// <summary>Approval points gained per week Country.PaidFamilyLeaveWeeks sits above its own seeded BaselinePaidFamilyLeaveWeeks (and lost per week below) - a small, real political effect (paid-leave policy tends to be popular).</summary>
         private const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
+
+        /// <summary>Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
+        private const float DrugPolicyApprovalSensitivity = 0.02f;
 
         /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
         private const float TaxHikeApprovalSensitivity = 1.5f;
@@ -656,8 +699,14 @@ namespace PoliSim.Simulation
             // shock - paid-leave policy tends to be popular, a small, real political effect.
             float paidLeaveApprovalEffect = PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
 
+            // Drug policy (see "Deeper Crime & Justice" in CLAUDE.md) - stricter enforcement gives a
+            // small "tough on crime" approval boost, the same modest political framing
+            // PoliceFundingLevel's own crime-reduction effect implicitly carries, gap versus the
+            // shared neutral 50.
+            float drugPolicyApprovalEffect = DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
+
             float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - state.ApprovalRating);
-            float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect;
+            float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect + drugPolicyApprovalEffect;
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + delta, 0f, 100f);
         }
 

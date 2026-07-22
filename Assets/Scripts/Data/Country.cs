@@ -249,6 +249,41 @@ namespace PoliSim.Data
         public float SentencingSeverity = 50f;
 
         /// <summary>
+        /// This country's structural "steady-state" incarceration rate (per 100,000 population) -
+        /// the target MacroSystem.ApplyPrisonPopulationRate's mean-reversion moves EconomyState.
+        /// PrisonPopulationRate toward absent any policy input. Seeded per country from real World
+        /// Prison Brief data (see WorldFactory) - the same figure EconomyState.PrisonPopulationRate
+        /// is seeded to, so a new game opens already at (or very near) its own baseline.
+        /// </summary>
+        public float BaselinePrisonPopulationRate = 100f;
+
+        /// <summary>
+        /// This country's bail policy, 0-100 (0 = traditional cash bail, 100 = full bail reform/
+        /// no-cash-bail; 50 = neutral placeholder for every country - bail-bond systems as such are
+        /// most directly analogous to the US context, but this dial is kept universal, the same
+        /// uniform-dial idiom PoliceFundingLevel/SentencingSeverity already use). Persistent, player-
+        /// adjustable via PolicyDecision.BailReformOverride. Reduces PrisonPopulationRate (bail
+        /// reform's primary real-world goal - reducing pretrial detention) and modestly increases
+        /// CrimeIndex - a small, HONESTLY CONTESTED effect (see MacroSystem.ApplyCrimeIndex), the
+        /// same "flag the real debate, don't pretend it's settled" treatment
+        /// OvertimeRegulationLevel's own Unemployment effect already got in "Deeper Labor Market
+        /// Policies".
+        /// </summary>
+        public float BailReformLevel = 50f;
+
+        /// <summary>
+        /// This country's drug policy, 0-100 (0 = decriminalized/harm-reduction, 100 = strict
+        /// criminalization; 50 = neutral placeholder for every country - no clean cross-country
+        /// comparable index exists for this). Persistent, player-adjustable via
+        /// PolicyDecision.DrugPolicyOverride. Increases PrisonPopulationRate when stricter - the
+        /// well-documented real link between strict drug enforcement and mass incarceration (the US
+        /// "war on drugs" being the clearest real-world example) - and modestly increases
+        /// ApprovalRating (a "tough on crime" political dynamic, small like PoliceFundingLevel's own
+        /// political framing).
+        /// </summary>
+        public float DrugPolicyLevel = 50f;
+
+        /// <summary>
         /// This country's independent central bank chair, or null for a country that instead uses
         /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
         /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)

@@ -92,6 +92,15 @@ namespace PoliSim.Data
         public float CrimeIndex;
 
         /// <summary>
+        /// This country's incarceration rate, per 100,000 population - a real, well-documented World
+        /// Prison Brief statistic (see WorldFactory for per-country sourcing), unlike CrimeIndex's own
+        /// stylized scale. Mean-reverts toward Country.BaselinePrisonPopulationRate, adjusted by
+        /// BailReformLevel/DrugPolicyLevel - see MacroSystem.ApplyPrisonPopulationRate. Hard-clamped
+        /// to [0, 1000] (a generous gameplay safety bound, comfortably above any real-world value).
+        /// </summary>
+        public float PrisonPopulationRate;
+
+        /// <summary>
         /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
@@ -104,7 +113,8 @@ namespace PoliSim.Data
             float gdp, float inflation, float unemployment, float approvalRating, float budget,
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
             float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
-            float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f, float crimeIndex = 25f)
+            float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f, float crimeIndex = 25f,
+            float prisonPopulationRate = 100f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -123,6 +133,7 @@ namespace PoliSim.Data
             PovertyRate = povertyRate;
             LaborForceParticipationRate = laborForceParticipationRate;
             CrimeIndex = crimeIndex;
+            PrisonPopulationRate = prisonPopulationRate;
         }
 
         /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
@@ -132,7 +143,7 @@ namespace PoliSim.Data
                 GDP, Inflation, Unemployment, ApprovalRating, Budget,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
-                GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex);
+                GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>
