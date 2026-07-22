@@ -1406,6 +1406,70 @@ PoliSim.EditorTools.BatchSimulationRunner.Run -logFile <path> [-turns=N] [-scena
   against the PID Unity was launched with can return before the real work is done - Unity sometimes
   hands off to a second process; check `Get-Process -Name Unity` and its CPU-time growth if a launch
   seems to finish suspiciously fast with no matching log activity.
+- **Do not pass `-quit` alongside `-executeMethod ...BatchSimulationRunner.Run`**: `Run()` only
+  triggers Play mode asynchronously (`EditorApplication.isPlaying = true`) and returns immediately -
+  `-quit` was found (during the Expanded Event Pool validation below) to exit Unity right then, before
+  Play mode - and therefore `SimulationTestRunner.Start()` - ever actually runs, leaving the log with
+  no simulation output at all. `BatchSimulationRunner` calls `EditorApplication.Exit(0)` itself once
+  its post-Play wait completes - that's the only quit signal it needs.
+- **A real, reproducible post-simulation hang, found and worked around (not fixed) during the same
+  session**: after `SimulationTestRunner` finishes and logs its "Sanity check complete" summary,
+  returning to Edit mode triggers Unity's own asset/Search re-indexing ("Start Indexing on Editor
+  startup") - which was observed to hang indefinitely (CPU time climbing into the tens of minutes,
+  sometimes over an hour, with zero further indexing progress in the log) on this environment, twice
+  in a row, independent of which scenario/turn-count was run. Since the simulation results are fully
+  written to the log file well before this point, the practical workaround is to watch the log for
+  the "Sanity check complete" (or matrix-mode equivalent) line rather than waiting for the Unity
+  process to exit on its own, then force-close it once that line appears. This is a real, unresolved
+  limitation of running `BatchSimulationRunner` in this environment, not a simulation-code bug - it
+  has no bearing on the correctness of any validation result obtained this way.
+
+## Expanded Event Pool
+Queue item 1 of `ROADMAP_BRIEF.md` (the standing autonomous-work brief added this session): grows
+`EventSystem.EventPool` from 8 to 24 entries with real, varied economic/political events, keeping
+every new entry's `GdpShockPercent`/`InflationShockPoints`/`ApprovalEffect` within the existing 8's
+own envelope (`GdpShockPercent` in `[-2.5, +1.5]`, `InflationShockPoints` in `[-0.4, +1.5]`,
+`ApprovalEffect` in `[-5, +3]`) - deliberately not map/geographic/severity-tagged yet, per the brief's
+explicit scope for this item (that's a separate, later task once this larger pool is validated).
+
+- **The 16 new events**, grouped by real-world category (each a plain `EconomicEvent`, same shape as
+  the original 8 - no new fields, no tagging): financial/banking (Banking Sector Stress, Sovereign
+  Credit Rating Downgrade, Stock Market Rally), security (Major Cyberattack on Financial
+  Infrastructure, Regional Conflict Disrupts Trade Routes), climate/agriculture (Severe Drought Hits
+  Agricultural Output, Bumper Harvest), public health (Public Health Emergency, Medical Breakthrough -
+  distinct from the existing "Technology Breakthrough"), labor (Major Labor Strikes), housing (Housing
+  Market Correction), investment/trade (Major Foreign Investment Announcement, Tourism Boom, Natural
+  Resource Discovery, Successful Multilateral Trade Summit), and political (Corruption Scandal Rocks
+  Government - the largest approval-only hit, at the existing -5 floor, with a deliberately small GDP
+  effect since a scandal's damage is overwhelmingly reputational, not immediately economic).
+- **Real-data grounding for magnitude, not just event realism**: web research confirmed the 1973 oil
+  shock added roughly 9 percentage points to US inflation (1972's 3.4% to 1974's 12.3%) and the 2008
+  crisis contracted OECD GDP at a ~7-8% annualized rate in a single quarter - both far larger than
+  this game's existing event envelope. This confirms the original 8 events' "small and bounded" scale
+  was already a deliberate compression of real-world shock magnitudes for gameplay pacing, not an
+  attempt at 1:1 realism - so every new event was calibrated to match that same existing envelope
+  rather than the larger real-world magnitudes that inspired its *type*, consistent with how every
+  other illustrative/stylized figure in this codebase is honestly labeled as compressed-for-gameplay
+  rather than presented as researched-to-scale.
+- **Ported to the standalone harness first** (`SimHarness/Program.cs`, outside this repository) for
+  fast-iteration checking before real-Unity validation, per the brief's rule 1.
+- **Validated in real Unity** (`BatchSimulationRunner`, both 100 and 500 turns, no-policy baseline):
+  100 turns landed at 25-34 anomalies across two runs (re-run once after an unrelated Unity hang
+  required killing and relaunching the process - see the new practical-notes bullets in "Real-Unity
+  Validation is the Standard Path" above), 500 turns landed at 104 anomalies - every single one a
+  known inflation/unemployment/debt-ratio/interest-rate percent-swing false positive on a
+  small-magnitude value (the same false-positive pattern already documented in "Federal Reserve Rate
+  Damping" above), not a genuine divergence. Zero NaN, zero negative GDP, zero negative
+  GovernmentDebt, zero out-of-range Unemployment/Inflation/PovertyRate anywhere in either run. USA's
+  500-turn `DebtToGdpRatio` (143.4%) and every other country's (Sweden 13.3%, Germany 35.4%, France
+  91.8%, Italy 107.0%, Poland 25.9%) landed within a few tenths of a percentage point of the
+  standalone harness's own 500-turn figures, confirming the ported pool didn't disturb the
+  "Fiscal Reaction Function" equilibria. None of `ROADMAP_BRIEF.md`'s four named failure patterns
+  appeared: no turn-1 discontinuity beyond the pre-existing, already-documented one; no oscillation;
+  no unbounded/compounding growth (GDP growth rates at turn 500 ranged from -1.70% to +4.44%, all
+  ordinary); no bimodal attractors (six distinct, moderate debt-to-GDP levels, not two extremes).
+- **Validated: 2026-07-22, 100/500 turns, real Unity, 25-34/104 anomalies (all known swing
+  false-positives, zero NaN/negative/out-of-range/divergence).**
 
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
@@ -1456,8 +1520,9 @@ trade/tariff dampening remain simple, un-theorized heuristics; approval rating i
 Phillips-curve-adjacent formula with real mean-reversion (see "Political Layer"). A political layer
 exists: `ApprovalRating`-driven elections every 12 turns (`ElectionSystem`) with a simple game-over
 state on a loss, four separately-profiled discretionary spending categories plus a direct
-tariff-policy lever (`PolicyDecision`), and a small hardcoded random-event pool (`EventSystem`, 8
-events) that fires occasionally with a one-time GDP/inflation/approval shock. All of it was validated
+tariff-policy lever (`PolicyDecision`), and a small hardcoded random-event pool (`EventSystem`, grown
+from 8 to 24 real-world-grounded events - see "Expanded Event Pool" above) that fires occasionally
+with a one-time GDP/inflation/approval shock. All of it was validated
 in the same standalone harness used for the fiscal layer before being ported - baseline (no policy)
 and stress runs (sustained category spending + tariff changes; separately, implementing/removing
 taxes and adjusting several rates at once) all stayed bounded over 100 turns with no
