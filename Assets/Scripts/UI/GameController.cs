@@ -19,16 +19,24 @@ namespace PoliSim.UI
             RecentTurns,
             TradeAndSpending,
             TaxPolicy,
-            SpendingPolicy
+            SpendingPolicy,
+            WelfarePolicy
         }
 
         private const CountryId PlayerCountryId = CountryId.USA;
         private const int MaxLogEntries = 10;
 
-        /// <summary>Per-Discretionary-category this-turn slider range - a flat starting-point placeholder like every other constant here, not scaled per category (a $1B SBA line and an $850B Defense line share the same +-100 range for now).</summary>
-        private const float DiscretionaryLineChangeRange = 100f;
+        /// <summary>This-turn PERCENTAGE-change slider range for a Discretionary SpendingLine - the same range for every category, but a percentage of that line's OWN Amount, so a $1B SBA line and an $850B Defense line move by proportionally (not identically) different dollar amounts. Must match SimulationManager.DiscretionaryPercentChangeRange.</summary>
+        private const float DiscretionaryPercentChangeRange = 30f;
+
+        /// <summary>Narrower than DiscretionaryPercentChangeRange - reflects the real political difficulty of entitlement reform. Must match SimulationManager.MandatoryPercentChangeRange.</summary>
+        private const float MandatoryPercentChangeRange = 15f;
         private const float TariffRateChangeRange = 5f;
         private const float InterestRateChangeRange = 2f;
+
+        /// <summary>Bounds for a per-partner tariff override slider - the same [0,50] range BaseTariffRate itself uses. Must match SimulationManager's MinBaseTariffRate/MaxBaseTariffRate.</summary>
+        private const float PartnerTariffOverrideMin = 0f;
+        private const float PartnerTariffOverrideMax = 50f;
 
         // Cosmetic-only margin of error applied to the live policy preview - display layer, never
         // touches the actual PolicyPreview figures the preview math produces.
@@ -55,15 +63,38 @@ namespace PoliSim.UI
         // equals whatever was in here, so the slider keeps showing the same (now-persisted) value.
         private readonly Dictionary<TaxType, float> _taxRateInputs = new Dictionary<TaxType, float>();
 
-        // Draft dollar CHANGE per Discretionary SpendingCategory (a delta, like the legacy category
-        // sliders it replaces - unlike _taxRateInputs, this IS cleared by ResetPolicyInputs each turn,
-        // since SpendingLine.Amount itself is what persists, not this draft).
+        // Draft ABSOLUTE GenerosityLevel per WelfareProgramType (not a delta) for the Welfare Policy
+        // tab's sliders - defaults to that WelfareProgram's persisted GenerosityLevel until the player
+        // drags it (see GetWelfareGenerosityInput). Not cleared by ResetPolicyInputs, for the exact
+        // same reason _taxRateInputs isn't.
+        private readonly Dictionary<WelfareProgramType, float> _welfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
+
+        // Draft PERCENTAGE change per SpendingCategory (both Mandatory and Discretionary, each
+        // clamped to its own range in SimulationManager) - unlike _taxRateInputs, this IS cleared by
+        // ResetPolicyInputs each turn, since SpendingLine.Amount itself is what persists, not this
+        // draft.
         private readonly Dictionary<SpendingCategory, float> _spendingLineInputs = new Dictionary<SpendingCategory, float>();
         private float _interestRateChangeInput;
         private float _tariffRateChangeInput;
 
+        // Draft ABSOLUTE per-partner tariff override rate for the Trade tab's sliders (only shown/
+        // meaningful while that partner's TradePartner.HasPlayerTariffOverride is true - mirrors
+        // _taxRateInputs' relationship to TaxLine.IsImplemented exactly). Not cleared by
+        // ResetPolicyInputs after Advance Turn, for the same reason _taxRateInputs isn't - once
+        // committed, TradePartner.PlayerTariffOverride already equals whatever was in here.
+        private readonly Dictionary<CountryId, float> _partnerTariffInputs = new Dictionary<CountryId, float>();
+
         private bool _isGameOver;
         private string _gameOverReason;
+
+        // Federal Reserve (USA only - see CLAUDE.md's "Federal Reserve" section). _fedChairCandidates
+        // is non-null exactly while the player must pick a new chair before Advance Turn can proceed;
+        // _fedChairCandidatesForTurn records which upcoming turn they were generated for, so a pick
+        // already resolved for that turn doesn't immediately regenerate a fresh set next frame (the
+        // condition that triggers generation - "next turn is an election turn" - stays true for the
+        // rest of that same frame/turn window).
+        private List<FedChair> _fedChairCandidates;
+        private int _fedChairCandidatesForTurn = -1;
 
         // Isolated from UnityEngine.Random and from EventSystem's own System.Random - this instance
         // exists purely to jitter the preview's displayed margin of error, so drawing the preview
@@ -80,7 +111,9 @@ namespace PoliSim.UI
         private bool _hasCachedPreview;
         private int _cachedPreviewTurn = -1;
         private readonly Dictionary<TaxType, float> _cachedTaxRateInputs = new Dictionary<TaxType, float>();
+        private readonly Dictionary<WelfareProgramType, float> _cachedWelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
         private readonly Dictionary<SpendingCategory, float> _cachedSpendingLineInputs = new Dictionary<SpendingCategory, float>();
+        private readonly Dictionary<CountryId, float> _cachedPartnerTariffInputs = new Dictionary<CountryId, float>();
         private float _cachedInterestRateChangeInput;
         private float _cachedTariffRateChangeInput;
         private string _cachedGdpGrowthText;
@@ -88,6 +121,7 @@ namespace PoliSim.UI
         private string _cachedInflationText;
         private string _cachedApprovalText;
         private string _cachedNetBudgetText;
+        private string _cachedPovertyRateText;
 
         private readonly List<string> _turnLog = new List<string>();
         private Vector2 _logScrollPosition;
@@ -97,6 +131,7 @@ namespace PoliSim.UI
         private Vector2 _tradeAndSpendingScrollPosition;
         private Vector2 _taxPolicyScrollPosition;
         private Vector2 _spendingPolicyScrollPosition;
+        private Vector2 _welfarePolicyScrollPosition;
 
         private bool _stylesInitialized;
         private GUIStyle _headerStyle;
@@ -125,6 +160,7 @@ namespace PoliSim.UI
         {
             InitializeStylesIfNeeded();
             RescaleStylesToScreen();
+            bool hasPendingFedChairSelection = UpdateFedChairSelectionState();
 
             float marginX = Screen.width * ScreenMarginFraction;
             float marginY = Screen.height * ScreenMarginFraction;
@@ -156,13 +192,15 @@ namespace PoliSim.UI
             GUILayout.Space(sectionSpacing);
 
             GUI.enabled = !_isGameOver;
+            DrawFederalReservePanel();
+            GUILayout.Space(sectionSpacing);
             DrawPolicyControls();
             GUI.enabled = true;
             GUILayout.EndScrollView();
 
             GUILayout.Space(sectionSpacing);
 
-            GUI.enabled = !_isGameOver;
+            GUI.enabled = !_isGameOver && !hasPendingFedChairSelection;
             DrawAdvanceTurnButton();
             GUI.enabled = true;
 
@@ -191,6 +229,11 @@ namespace PoliSim.UI
                 case RightPanelTab.SpendingPolicy:
                     GUI.enabled = !_isGameOver;
                     DrawSpendingPolicy(tabContentHeight);
+                    GUI.enabled = true;
+                    break;
+                case RightPanelTab.WelfarePolicy:
+                    GUI.enabled = !_isGameOver;
+                    DrawWelfarePolicy(tabContentHeight);
                     GUI.enabled = true;
                     break;
             }
@@ -296,6 +339,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Unemployment: {state.Unemployment:F2}%", _labelStyle);
             GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
             GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
+            GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
             GUILayout.Label($"Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
 
             if (hasIndependentCurrency)
@@ -310,20 +354,99 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
+        /// <summary>
+        /// Generates 2-3 Fed chair candidates the first time the upcoming turn is detected as an
+        /// election turn (see ElectionSystem.IsElectionTurn), and remembers which turn they were
+        /// generated for so picking a candidate doesn't immediately regenerate a fresh set on the
+        /// next frame - only when that specific upcoming turn changes (i.e. the next election cycle)
+        /// does a new set get drawn. Returns true while a selection is still pending (blocks Advance
+        /// Turn - see OnGUI). No-op (returns false) for a country without an independent Fed chair.
+        /// </summary>
+        private bool UpdateFedChairSelectionState()
+        {
+            if (_playerCountry.CurrentFedChair == null)
+            {
+                return false;
+            }
+
+            int upcomingTurn = _simulationManager.CurrentTurn + 1;
+            if (!ElectionSystem.IsElectionTurn(upcomingTurn))
+            {
+                return false;
+            }
+
+            if (_fedChairCandidatesForTurn != upcomingTurn)
+            {
+                _fedChairCandidates = FederalReserveSystem.GenerateCandidates();
+                _fedChairCandidatesForTurn = upcomingTurn;
+            }
+
+            return _fedChairCandidates != null && _fedChairCandidates.Count > 0;
+        }
+
+        /// <summary>
+        /// USA's independent Federal Reserve (see CLAUDE.md's "Federal Reserve" section): always
+        /// shows the current chair's name/philosophy/description, and - on a turn where a new
+        /// presidential term begins - the 2-3 candidates as selectable buttons instead of a normal
+        /// slider. No-op for a country without an independent Fed chair (Sweden, Poland keep their
+        /// player-controlled Interest Rate Change slider in DrawPolicyControls instead).
+        /// </summary>
+        private void DrawFederalReservePanel()
+        {
+            if (_playerCountry.CurrentFedChair == null)
+            {
+                return;
+            }
+
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("Federal Reserve", _headerStyle);
+
+            FedChair chair = _playerCountry.CurrentFedChair;
+            GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
+            GUILayout.Label(chair.Description, _labelStyle);
+
+            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
+            {
+                GUILayout.Space(8f);
+                GUILayout.Label("A new presidential term begins next turn - choose the next Fed chair:", _labelStyle);
+                foreach (FedChair candidate in _fedChairCandidates)
+                {
+                    DrawFedChairCandidateButton(candidate);
+                }
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private void DrawFedChairCandidateButton(FedChair candidate)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
+            GUILayout.Label(candidate.Description, _labelStyle);
+            if (GUILayout.Button($"Appoint {candidate.Name}", _tabButtonStyle))
+            {
+                _playerCountry.CurrentFedChair = candidate;
+                _fedChairCandidates = null;
+                RecomputePolicyPreview();
+            }
+            GUILayout.EndVertical();
+        }
+
         private void DrawPolicyControls()
         {
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label("This Turn's Policy", _headerStyle);
             GUILayout.Label("Tax rates are set in the Tax Policy tab (implement/remove and adjust each tax there).", _labelStyle);
-            GUILayout.Label("Spending is set in the Spending Policy tab (Discretionary categories only - Mandatory programs aren't player-adjustable yet).", _labelStyle);
-
-            GUILayout.Label($"Tariff Rate Change: {_tariffRateChangeInput:+0.0;-0.0;0} pts", _labelStyle);
-            _tariffRateChangeInput = GUILayout.HorizontalSlider(_tariffRateChangeInput, -TariffRateChangeRange, TariffRateChangeRange, _sliderStyle, _sliderThumbStyle);
+            GUILayout.Label("Spending is set in the Spending Policy tab (percentage sliders, both Mandatory and Discretionary).", _labelStyle);
+            GUILayout.Label("Tariffs (both the general rate and any per-partner override) are set in the Trade & Spending tab's Trade section.", _labelStyle);
 
             // Shared-currency countries (e.g. Eurozone members) don't set their own rate - only show
-            // this control for a country with an independent CurrencyZone, same test CurrencySystem uses.
+            // this control for a country with an independent CurrencyZone AND no independent Fed chair
+            // (a Fed-chair country's rate is set by FederalReserveSystem instead - see
+            // DrawFederalReservePanel - bypassing this slider/PolicyDecision.InterestRateChange
+            // entirely; Sweden and Poland have no chair, so they're unaffected).
             bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
-            if (hasIndependentCurrency)
+            if (hasIndependentCurrency && _playerCountry.CurrentFedChair == null)
             {
                 GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                 _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
@@ -358,6 +481,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Unemployment: {_cachedUnemploymentText}", _labelStyle);
             GUILayout.Label($"Inflation: {_cachedInflationText}", _labelStyle);
             GUILayout.Label($"Approval: {_cachedApprovalText}", _labelStyle);
+            GUILayout.Label($"Poverty Rate: {_cachedPovertyRateText}", _labelStyle);
             GUILayout.Label($"Net Budget Impact: {_cachedNetBudgetText}", _labelStyle);
         }
 
@@ -388,12 +512,37 @@ namespace PoliSim.UI
 
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
-                if (spendingLine.IsMandatory)
+                if (!Mathf.Approximately(GetSpendingLineInput(spendingLine.Category), GetCachedSpendingLineInput(spendingLine.Category)))
+                {
+                    return true;
+                }
+            }
+
+            foreach (TradePartner tradePartner in _playerCountry.TradePartners)
+            {
+                if (!tradePartner.HasPlayerTariffOverride)
                 {
                     continue;
                 }
 
-                if (!Mathf.Approximately(GetSpendingLineInput(spendingLine.Category), GetCachedSpendingLineInput(spendingLine.Category)))
+                if (!Mathf.Approximately(
+                    GetPartnerTariffInput(tradePartner.PartnerId, tradePartner.PlayerTariffOverride),
+                    GetCachedPartnerTariffInput(tradePartner.PartnerId, tradePartner.PlayerTariffOverride)))
+                {
+                    return true;
+                }
+            }
+
+            foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
+            {
+                if (!welfareProgram.IsImplemented)
+                {
+                    continue;
+                }
+
+                if (!Mathf.Approximately(
+                    GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel),
+                    GetCachedWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel)))
                 {
                     return true;
                 }
@@ -412,6 +561,7 @@ namespace PoliSim.UI
             _cachedInflationText = FormatEstimate(preview.InflationChange, " pts");
             _cachedApprovalText = FormatEstimate(preview.ApprovalChange, " pts");
             _cachedNetBudgetText = FormatEstimate(preview.NetBudgetImpact, " units");
+            _cachedPovertyRateText = FormatEstimate(preview.PovertyRateChange, " pts");
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
             _cachedTariffRateChangeInput = _tariffRateChangeInput;
@@ -426,6 +576,18 @@ namespace PoliSim.UI
             foreach (KeyValuePair<SpendingCategory, float> kvp in _spendingLineInputs)
             {
                 _cachedSpendingLineInputs[kvp.Key] = kvp.Value;
+            }
+
+            _cachedPartnerTariffInputs.Clear();
+            foreach (KeyValuePair<CountryId, float> kvp in _partnerTariffInputs)
+            {
+                _cachedPartnerTariffInputs[kvp.Key] = kvp.Value;
+            }
+
+            _cachedWelfareGenerosityInputs.Clear();
+            foreach (KeyValuePair<WelfareProgramType, float> kvp in _welfareGenerosityInputs)
+            {
+                _cachedWelfareGenerosityInputs[kvp.Key] = kvp.Value;
             }
 
             _cachedPreviewTurn = _simulationManager.CurrentTurn;
@@ -478,7 +640,29 @@ namespace PoliSim.UI
             return _cachedTaxRateInputs.TryGetValue(type, out float value) ? value : fallbackRate;
         }
 
-        /// <summary>The Spending Policy tab's draft dollar CHANGE for a Discretionary SpendingCategory this turn, or 0 if the player hasn't touched that slider.</summary>
+        /// <summary>The Welfare Policy tab's draft absolute GenerosityLevel for a WelfareProgramType, or <paramref name="fallbackGenerosity"/> (the WelfareProgram's actual persisted GenerosityLevel) if the player hasn't touched that slider this turn.</summary>
+        private float GetWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
+        {
+            return _welfareGenerosityInputs.TryGetValue(type, out float value) ? value : fallbackGenerosity;
+        }
+
+        private float GetCachedWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
+        {
+            return _cachedWelfareGenerosityInputs.TryGetValue(type, out float value) ? value : fallbackGenerosity;
+        }
+
+        /// <summary>The Trade tab's draft absolute override rate for a partner, or <paramref name="fallbackRate"/> (the TradePartner's actual persisted PlayerTariffOverride) if the player hasn't touched that slider this turn.</summary>
+        private float GetPartnerTariffInput(CountryId partnerId, float fallbackRate)
+        {
+            return _partnerTariffInputs.TryGetValue(partnerId, out float value) ? value : fallbackRate;
+        }
+
+        private float GetCachedPartnerTariffInput(CountryId partnerId, float fallbackRate)
+        {
+            return _cachedPartnerTariffInputs.TryGetValue(partnerId, out float value) ? value : fallbackRate;
+        }
+
+        /// <summary>The Spending Policy tab's draft PERCENTAGE change for a SpendingCategory this turn (Mandatory or Discretionary), or 0 if the player hasn't touched that slider.</summary>
         private float GetSpendingLineInput(SpendingCategory category)
         {
             return _spendingLineInputs.TryGetValue(category, out float value) ? value : 0f;
@@ -510,20 +694,43 @@ namespace PoliSim.UI
                 decision.TaxRateOverrides[taxLine.Type] = GetTaxRateInput(taxLine.Type, taxLine.Rate);
             }
 
-            // Only Discretionary lines are player-adjustable in Phase 1 - Mandatory programs never
-            // get an entry here (see SpendingCategory's doc comment).
+            // Both Mandatory and Discretionary lines are adjustable - SimulationManager clamps each
+            // to its own percentage range (narrower for Mandatory).
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
-                if (spendingLine.IsMandatory)
+                float percent = GetSpendingLineInput(spendingLine.Category);
+                if (percent != 0f)
+                {
+                    decision.SpendingLineChanges[spendingLine.Category] = percent;
+                }
+            }
+
+            // Only a partner with an ACTIVE override gets an entry - mirrors "only currently-
+            // implemented tax lines get an override" above. A partner without one is left alone
+            // entirely (ApplyPartnerTariffOverrides is a no-op with no entry), so an untouched
+            // partner's tariff keeps resolving dynamically from bloc/base-rate logic rather than
+            // silently getting pinned to whatever its current effective rate happens to be.
+            foreach (TradePartner tradePartner in _playerCountry.TradePartners)
+            {
+                if (!tradePartner.HasPlayerTariffOverride)
                 {
                     continue;
                 }
 
-                float delta = GetSpendingLineInput(spendingLine.Category);
-                if (delta != 0f)
+                decision.PartnerTariffOverrides[tradePartner.PartnerId] = GetPartnerTariffInput(tradePartner.PartnerId, tradePartner.PlayerTariffOverride);
+            }
+
+            // Only currently-implemented programs get an override - same reasoning as TaxRateOverrides
+            // above (GetWelfareGenerosityInput's fallback already makes an untouched slider a no-op,
+            // so every implemented program can be included unconditionally).
+            foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
+            {
+                if (!welfareProgram.IsImplemented)
                 {
-                    decision.SpendingLineChanges[spendingLine.Category] = delta;
+                    continue;
                 }
+
+                decision.WelfareGenerosityOverrides[welfareProgram.Type] = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
             }
 
             return decision;
@@ -536,7 +743,10 @@ namespace PoliSim.UI
             // whatever was in the draft, so leaving it in place keeps the slider showing the same
             // (now-persisted) value instead of snapping back to 0. _spendingLineInputs IS cleared -
             // it's a this-turn delta (like the legacy category sliders it replaces), not an absolute
-            // setting; SpendingLine.Amount itself is what persists.
+            // setting; SpendingLine.Amount itself is what persists. _partnerTariffInputs is also
+            // deliberately NOT cleared, for the same reason as _taxRateInputs - it holds each
+            // overridden partner's absolute rate, which TradePartner.PlayerTariffOverride already
+            // equals once committed.
             _spendingLineInputs.Clear();
             _interestRateChangeInput = 0f;
             _tariffRateChangeInput = 0f;
@@ -570,7 +780,7 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Tab/toggle set for the right column - "Recent Turns" | "Trade &amp; Spending" | "Tax Policy" | "Spending Policy". The selected tab gets a distinct (bold, colored) style so it's visibly different from the skin's default button look.</summary>
+        /// <summary>Tab/toggle set for the right column - "Recent Turns" | "Trade &amp; Spending" | "Tax Policy" | "Spending Policy" | "Welfare Policy". The selected tab gets a distinct (bold, colored) style so it's visibly different from the skin's default button look.</summary>
         private void DrawRightColumnTabs()
         {
             GUILayout.BeginHorizontal();
@@ -579,6 +789,7 @@ namespace PoliSim.UI
             DrawRightColumnTabButton("Trade & Spending", RightPanelTab.TradeAndSpending);
             DrawRightColumnTabButton("Tax Policy", RightPanelTab.TaxPolicy);
             DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy);
+            DrawRightColumnTabButton("Welfare Policy", RightPanelTab.WelfarePolicy);
 
             GUILayout.EndHorizontal();
         }
@@ -631,6 +842,14 @@ namespace PoliSim.UI
             GUILayout.Label($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle);
             GUILayout.Space(6f);
 
+            GUILayout.Label($"General Base Tariff Rate: {_playerCountry.BaseTariffRate:F2}% (applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _labelStyle);
+            GUILayout.Label($"Tariff Rate Change: {_tariffRateChangeInput:+0.0;-0.0;0} pts", _labelStyle);
+            _tariffRateChangeInput = GUILayout.HorizontalSlider(_tariffRateChangeInput, -TariffRateChangeRange, TariffRateChangeRange, _sliderStyle, _sliderThumbStyle);
+            GUILayout.Space(10f);
+
+            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. Doesn't affect what that partner charges on our exports to them.", _labelStyle);
+            GUILayout.Space(6f);
+
             foreach (TradePartner link in _playerCountry.TradePartners)
             {
                 Country partner = _world.GetCountry(link.PartnerId);
@@ -639,18 +858,56 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                // Tariffs are asymmetric: the partner charges its own rate on what we export to
-                // them, and we charge our own rate on what we import from them - the same two
-                // GetTariffRate calls TradeSystem.ApplyTradeEffects itself makes for this link.
-                float tariffOnOurExports = TradeSystem.GetTariffRate(partner, _playerCountry, _world.TradeBlocs);
-                float tariffOnOurImports = TradeSystem.GetTariffRate(_playerCountry, partner, _world.TradeBlocs);
-
-                GUILayout.Label(
-                    $"{partner.Name}: Exports={link.ExportVolume:F1}, Imports={link.ImportVolume:F1}, " +
-                    $"Tariff on our exports={tariffOnOurExports:F2}%, Tariff on our imports={tariffOnOurImports:F2}%",
-                    _labelStyle);
-                GUILayout.Space(4f);
+                DrawTradePartnerRow(link, partner);
+                GUILayout.Space(10f);
             }
+        }
+
+        private void DrawTradePartnerRow(TradePartner link, Country partner)
+        {
+            // Tariffs are asymmetric: the partner charges its own rate on what we export to
+            // them, and we charge our own rate on what we import from them - the same two
+            // GetTariffRate calls TradeSystem.ApplyTradeEffects itself makes for this link.
+            float tariffOnOurExports = TradeSystem.GetTariffRate(partner, _playerCountry, _world.TradeBlocs);
+            float tariffOnOurImports = TradeSystem.GetTariffRate(_playerCountry, partner, _world.TradeBlocs);
+
+            GUILayout.Label(
+                $"{partner.Name}: Exports={link.ExportVolume:F1}, Imports={link.ImportVolume:F1}, " +
+                $"Tariff on our exports={tariffOnOurExports:F2}%, Tariff on our imports={tariffOnOurImports:F2}%" +
+                (link.HasPlayerTariffOverride ? " (override active)" : ""),
+                _labelStyle);
+
+            float buttonWidth = _labelStyle.fontSize * 8f;
+            GUILayout.BeginHorizontal();
+            if (link.HasPlayerTariffOverride)
+            {
+                if (GUILayout.Button("Reset to Default", _tabButtonStyle, GUILayout.Width(buttonWidth)))
+                {
+                    // Reset is immediate (a structural on/off, like TaxLine.IsImplemented), not a
+                    // this-turn delta - the preview cache is invalidated right away so it reflects
+                    // the reset the moment it happens, rather than waiting for the usual
+                    // slider-changed check to catch up.
+                    link.PlayerTariffOverride = -1f;
+                    RecomputePolicyPreview();
+                }
+
+                float draftRate = GetPartnerTariffInput(link.PartnerId, link.PlayerTariffOverride);
+                GUILayout.Label($"Override rate: {draftRate:F2}% (range {PartnerTariffOverrideMin:F0}-{PartnerTariffOverrideMax:F0}%)", _labelStyle);
+                float newRate = GUILayout.HorizontalSlider(draftRate, PartnerTariffOverrideMin, PartnerTariffOverrideMax, _sliderStyle, _sliderThumbStyle);
+                _partnerTariffInputs[link.PartnerId] = newRate;
+            }
+            else
+            {
+                if (GUILayout.Button("Set Override", _tabButtonStyle, GUILayout.Width(buttonWidth)))
+                {
+                    // Enabling is immediate too - starts the override at today's effective rate
+                    // (rather than 0) so turning it on never itself changes the tariff; the slider
+                    // then lets the player move it from there.
+                    link.PlayerTariffOverride = Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
+                    RecomputePolicyPreview();
+                }
+            }
+            GUILayout.EndHorizontal();
         }
 
         private void DrawSpendingSection()
@@ -666,7 +923,7 @@ namespace PoliSim.UI
 
             float net = report.Revenue + report.TariffRevenue
                 - report.BaselineGovernmentSpending - report.DiscretionarySpending - report.MandatorySpending
-                - report.UnemploymentBenefitCost - report.InterestOnDebt;
+                - report.UnemploymentBenefitCost - report.InterestOnDebt - report.WelfareCost;
 
             GUILayout.Label($"Revenue (Tax): {report.Revenue:F1}", _labelStyle);
             GUILayout.Label($"Baseline Government Spending: {report.BaselineGovernmentSpending:F1}", _labelStyle);
@@ -674,6 +931,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Mandatory Spending: {report.MandatorySpending:F1}", _labelStyle);
             GUILayout.Label($"Unemployment Benefit Cost: {report.UnemploymentBenefitCost:F1}", _labelStyle);
             GUILayout.Label($"Interest On Debt: {report.InterestOnDebt:F1}", _labelStyle);
+            GUILayout.Label($"Welfare Program Cost: {report.WelfareCost:F1}", _labelStyle);
             GUILayout.Label($"Tariff Revenue Collected: {report.TariffRevenue:F1}", _labelStyle);
             GUILayout.Space(6f);
             GUILayout.Label($"Net (matches this turn's Budget change): {net:+0.0;-0.0;0}", _headerStyle);
@@ -736,12 +994,71 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>Every WelfareProgramType for the player's country: an Implement/Remove toggle (immediate - see DrawWelfareProgramRow) plus, only while implemented, a slider that directly sets this turn's target GenerosityLevel. Mirrors DrawTaxPolicy/DrawTaxLineRow exactly.</summary>
+        private void DrawWelfarePolicy(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _welfarePolicyScrollPosition = GUILayout.BeginScrollView(_welfarePolicyScrollPosition, GUILayout.Height(scrollHeight));
+
+            GUILayout.Label("Welfare Policy", _headerStyle);
+            GUILayout.Label("Implement or remove a welfare program, and (while implemented) drag its generosity directly to the target you want.", _labelStyle);
+            GUILayout.Space(8f);
+
+            foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
+            {
+                DrawWelfareProgramRow(welfareProgram);
+                GUILayout.Space(10f);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        private void DrawWelfareProgramRow(WelfareProgram welfareProgram)
+        {
+            float labelWidth = _labelStyle.fontSize * 10f;
+            float buttonWidth = _labelStyle.fontSize * 6f;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(welfareProgram.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
+
+            string toggleLabel = welfareProgram.IsImplemented ? "Remove" : "Implement";
+            if (GUILayout.Button(toggleLabel, _tabButtonStyle, GUILayout.Width(buttonWidth)))
+            {
+                // Implement/Remove is immediate (a structural on/off, not a this-turn delta) - the
+                // preview cache is invalidated right away rather than waiting for the usual
+                // slider-changed check, so it reflects the toggle the moment it happens.
+                welfareProgram.IsImplemented = !welfareProgram.IsImplemented;
+                RecomputePolicyPreview();
+            }
+            GUILayout.EndHorizontal();
+
+            if (welfareProgram.IsImplemented)
+            {
+                // The slider IS the current setting (defaulting to the persisted GenerosityLevel until
+                // dragged), bounded 0-100% - not a small per-turn delta, so a meaningful policy shift
+                // is reachable in one turn.
+                float draftGenerosity = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
+                GUILayout.Label($"Generosity: {draftGenerosity:F0}%", _labelStyle);
+                float newGenerosity = GUILayout.HorizontalSlider(draftGenerosity, 0f, 100f, _sliderStyle, _sliderThumbStyle);
+                _welfareGenerosityInputs[welfareProgram.Type] = newGenerosity;
+            }
+            else
+            {
+                GUILayout.Label($"Not implemented (generosity on file: {welfareProgram.GenerosityLevel:F0}%)", _labelStyle);
+            }
+        }
+
         /// <summary>
         /// The player country's detailed spending portfolio (Phase 1: USA only - see CLAUDE.md's
         /// "Detailed Spending Portfolio"), grouped Mandatory / Discretionary, plus Interest on Debt
-        /// as a read-only automatic line. Mandatory lines show only their category name and current
-        /// Amount - no slider, since reforming an entitlement program is a future mechanic, not a
-        /// simple slider. Discretionary lines each get a this-turn dollar-change slider.
+        /// as a read-only automatic line. Both groups now get a this-turn PERCENTAGE-change slider
+        /// (SimulationManager.ApplySpendingLineChanges applies it to that line's own Amount) -
+        /// Mandatory's range is narrower, reflecting the real political difficulty of entitlement
+        /// reform, and a Mandatory change carries a distinctly higher approval-rating penalty per
+        /// relative size than a Discretionary one (see MacroSystem.MandatorySpendingApprovalMultiplier).
         /// </summary>
         private void DrawSpendingPolicy(float availableHeight)
         {
@@ -751,13 +1068,13 @@ namespace PoliSim.UI
             _spendingPolicyScrollPosition = GUILayout.BeginScrollView(_spendingPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
             GUILayout.Label("Spending Policy", _headerStyle);
-            GUILayout.Label("Mandatory programs are automatic and not yet player-adjustable. Discretionary categories take a this-turn dollar change.", _labelStyle);
+            GUILayout.Label("Each line's slider is a percentage change of its OWN current amount, not a flat dollar delta. Mandatory programs have a narrower range and hit approval harder per relative size - entitlement reform is politically costly.", _labelStyle);
             GUILayout.Space(8f);
 
             DrawInterestOnDebtRow();
             GUILayout.Space(10f);
 
-            GUILayout.Label("Mandatory (automatic)", _headerStyle);
+            GUILayout.Label("Mandatory (narrower range, higher approval cost)", _headerStyle);
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
                 if (!spendingLine.IsMandatory)
@@ -765,8 +1082,8 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawMandatorySpendingRow(spendingLine);
-                GUILayout.Space(6f);
+                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange);
+                GUILayout.Space(10f);
             }
 
             GUILayout.Space(10f);
@@ -778,7 +1095,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawDiscretionarySpendingRow(spendingLine);
+                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange);
                 GUILayout.Space(10f);
             }
 
@@ -794,17 +1111,16 @@ namespace PoliSim.UI
             GUILayout.Label($"Interest on Debt (automatic, last turn): {valueText}", _labelStyle);
         }
 
-        private void DrawMandatorySpendingRow(SpendingLine spendingLine)
+        /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size.</summary>
+        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent)
         {
-            GUILayout.Label($"{spendingLine.Category} (automatic): {spendingLine.Amount:F1}", _labelStyle);
-        }
-
-        private void DrawDiscretionarySpendingRow(SpendingLine spendingLine)
-        {
-            float draftChange = GetSpendingLineInput(spendingLine.Category);
-            GUILayout.Label($"{spendingLine.Category}: {spendingLine.Amount:F1}  Change: {draftChange:+0.0;-0.0;0}", _labelStyle);
-            float newChange = GUILayout.HorizontalSlider(draftChange, -DiscretionaryLineChangeRange, DiscretionaryLineChangeRange, _sliderStyle, _sliderThumbStyle);
-            _spendingLineInputs[spendingLine.Category] = newChange;
+            float draftPercent = GetSpendingLineInput(spendingLine.Category);
+            float impliedDollarChange = spendingLine.Amount * draftPercent / 100f;
+            GUILayout.Label(
+                $"{spendingLine.Category}: {spendingLine.Amount:F1}  Change: {draftPercent:+0.0;-0.0;0}% ({impliedDollarChange:+0.0;-0.0;0})",
+                _labelStyle);
+            float newPercent = GUILayout.HorizontalSlider(draftPercent, -rangePercent, rangePercent, _sliderStyle, _sliderThumbStyle);
+            _spendingLineInputs[spendingLine.Category] = newPercent;
         }
     }
 }

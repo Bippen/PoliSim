@@ -2,10 +2,12 @@ namespace PoliSim.Data
 {
     /// <summary>
     /// Individual government spending line items a country's budget can track (see
-    /// Country.SpendingLines/SpendingLine). Mandatory categories are automatic entitlement/transfer
-    /// programs, not player-sliderable in Phase 1 (see GameController's Tax... spending panel) -
-    /// only Discretionary categories take a this-turn delta via
-    /// PolicyDecision.SpendingLineChanges. InterestOnDebt is deliberately NOT a category here - it
+    /// Country.SpendingLines/SpendingLine). Both Mandatory and Discretionary categories take a
+    /// this-turn PERCENTAGE change via PolicyDecision.SpendingLineChanges - Mandatory categories
+    /// (entitlement/transfer programs) get a narrower range reflecting the real political difficulty
+    /// of entitlement reform, and a distinctly higher approval-rating penalty per relative size of
+    /// change - see SimulationManager.ApplySpendingLineChanges and MacroSystem.
+    /// MandatorySpendingApprovalMultiplier. InterestOnDebt is deliberately NOT a category here - it
     /// stays SimulationManager's existing automatic, non-editable GetInterestOnDebt calculation, not
     /// a seeded line.
     /// </summary>

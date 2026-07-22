@@ -17,6 +17,23 @@ namespace PoliSim.Data
         /// <summary>Goods/services this country buys from the partner, before tariff effects.</summary>
         public float ImportVolume;
 
+        /// <summary>
+        /// This country's own player-set tariff rate specifically for imports from this one partner,
+        /// or -1f (the default) if unset. -1f means "no override" - TradeSystem.GetTariffRate falls
+        /// through to its existing bloc/base-rate resolution unchanged. When set (>= 0), it is the
+        /// MOST specific rate and wins over even trade-bloc membership - see GetTariffRate's
+        /// precedence. Only ever set on the PLAYER'S own TradePartner links (via
+        /// SimulationManager.ApplyPartnerTariffOverrides/GameController's Trade tab); an AI-controlled
+        /// country's links are never touched and stay at the default forever, so this only ever
+        /// affects tariffs the owning country charges on ITS OWN imports from that partner - never
+        /// the reverse (the partner's own tariff on this country's exports is that partner's own
+        /// policy, resolved from the partner's own TradePartner link, untouched by this field).
+        /// </summary>
+        public float PlayerTariffOverride = -1f;
+
+        /// <summary>True if PlayerTariffOverride has been set to a specific rate (>= 0) rather than left at its "no override" default.</summary>
+        public bool HasPlayerTariffOverride => PlayerTariffOverride >= 0f;
+
         public TradePartner() { }
 
         public TradePartner(CountryId partnerId, float exportVolume, float importVolume)
@@ -24,6 +41,12 @@ namespace PoliSim.Data
             PartnerId = partnerId;
             ExportVolume = exportVolume;
             ImportVolume = importVolume;
+        }
+
+        /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - PlayerTariffOverride is mutated by ApplyPartnerTariffOverrides, so the preview needs its own copy, not a shared reference (the same reasoning TaxLines/SpendingLines already required).</summary>
+        public TradePartner Clone()
+        {
+            return new TradePartner(PartnerId, ExportVolume, ImportVolume) { PlayerTariffOverride = PlayerTariffOverride };
         }
     }
 }

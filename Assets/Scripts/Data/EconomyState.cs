@@ -60,6 +60,16 @@ namespace PoliSim.Data
         public float GovernmentDebt;
 
         /// <summary>
+        /// Share of the population below the poverty line, as a percentage (e.g. 18 means 18%,
+        /// matching how Unemployment/Inflation are stored, not a raw 0-1 fraction). Seeded per country
+        /// from real OECD relative-poverty-rate data (see WorldFactory); mean-reverts each turn toward
+        /// a baseline driven by Unemployment/Inflation gaps (both already-proven drivers elsewhere in
+        /// this model - see MacroSystem.ApplyPovertyRate), then adjusted by any implemented
+        /// Country.WelfarePrograms. Hard-clamped to [0, 100].
+        /// </summary>
+        public float PovertyRate;
+
+        /// <summary>
         /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
@@ -72,7 +82,7 @@ namespace PoliSim.Data
             float gdp, float inflation, float unemployment, float approvalRating, float budget,
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
             float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
-            float governmentDebt = 0f)
+            float governmentDebt = 0f, float povertyRate = 10f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -88,6 +98,7 @@ namespace PoliSim.Data
             ConsumerConfidence = consumerConfidence;
             BusinessConfidence = businessConfidence;
             GovernmentDebt = governmentDebt;
+            PovertyRate = povertyRate;
         }
 
         /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
@@ -97,7 +108,7 @@ namespace PoliSim.Data
                 GDP, Inflation, Unemployment, ApprovalRating, Budget,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
-                GovernmentDebt);
+                GovernmentDebt, PovertyRate);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

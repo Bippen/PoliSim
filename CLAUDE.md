@@ -23,30 +23,32 @@ Assets/
   Scripts/
     Simulation/   -- simulation loop, turn advancement, macro theory, feedback rules, political layer
                      (SimulationManager, MacroSystem, TaylorRule, TradeSystem, CurrencySystem,
-                     ElectionSystem, EventSystem)
+                     ElectionSystem, EventSystem, FederalReserveSystem)
     Data/         -- core state/data classes (EconomyState, Country, CurrencyZone, TradeBloc, TradePartner,
-                     TaxType, TaxLine, SpendingCategory, SpendingLine, World, WorldFactory)
+                     TaxType, TaxLine, SpendingCategory, SpendingLine, WelfareProgramType, WelfareProgram,
+                     FedChairPhilosophy, FedChair, World, WorldFactory)
     Testing/      -- debug tools, not production code (SimulationTestRunner)
     UI/           -- player-facing MonoBehaviours (GameController)
+    Editor/       -- Editor-only tooling, excluded from player builds automatically (BatchSimulationRunner)
 ```
 As the project grows, expect additional folders such as `Scripts/Policies`, `Scripts/Events` — keep
 simulation logic (state + rules) decoupled from Unity `MonoBehaviour`/UI concerns where practical, so
 the simulation can be tested independently of the engine.
 
 ## Core Concepts
-- **EconomyState**: plain C# data class holding one country's economic/political indicators for a turn — GDP, inflation, unemployment, approval rating, budget, trade balance, currency strength, `GovernmentDebt`, plus the macro-theory fields: `Consumption`, `Investment`, `PotentialGDP`, `InflationExpectations`, `ConsumerConfidence`, `BusinessConfidence`. No single tax-rate field — see `TaxType`/`TaxLine` below. `DebtToGdpRatio` is a derived read-only property (`GovernmentDebt / GDP * 100`, expressed as a percentage like `Unemployment`/`Inflation`), not a stored field, so it's always consistent with the current GDP and debt.
-- **Country**: identity (`CountryId` enum) + `EconomyState` + the `CurrencyZone` it belongs to + its list of `TradePartner` links + its `TaxLines` portfolio (see below) + its `SpendingLines` portfolio (empty for five of the six countries — see "Detailed Spending Portfolio" below) + structural (non-turn-mutated) constants: `BaseTariffRate` (used only when it isn't in a trade bloc), `NaturalUnemploymentRate` (NAIRU), `PotentialGrowthRate` (trend GDP growth, %/turn), `GovernmentSpendingRate` (baseline government consumption as % of GDP — ignored for a country with a non-empty `SpendingLines`), `BenefitRatePerUnemployed` (automatic-stabilizer generosity — % of GDP spent on unemployment benefits per point of unemployment), `CollectionEfficiency` (0.0-1.0, how much of the theoretical tax base is actually collected — enforcement quality/informal economy/evasion — see "Tax Collection Efficiency" below), `BaseDebtInterestRateOverride` (-1 = unset/use `CurrencyZone.InterestRate`, otherwise a country-specific real blended average rate on existing debt), and `RiskPremiumSensitivity` (1.0 = full market exposure, the default — see "Reserve-Currency Debt Interest Treatment" below).
-- **TaxType** / **TaxLine**: `TaxType` is the enum of individual tax instruments a country's fiscal portfolio can hold — `IncomeTax`, `CorporateTax`, `VAT`, `PayrollTax`, `CapitalGainsTax`, `SalesTax`, `ExciseTax`, `PropertyTax`, `EstateTax`, `WealthTax`, `CarbonTax`, `Tariffs`, `StampDuty`. `Tariffs` is listed for completeness but deliberately never gets a `TaxLine` — tariff revenue is already handled by `BaseTariffRate`/`TradeSystem`, not duplicated here (`TaxTypeBaseShares.GetBaseShareOfGdp` returns 0 for it as a defensive fallback, and `SimulationManager.GetTotalTaxRevenue` skips it explicitly too). A `TaxLine` is one instrument in a country's portfolio: `Type`, `Rate` (%, persistent — *set* turn to turn by `PolicyDecision.TaxRateOverrides`, not reset), `IsImplemented` (toggled *immediately* by the player, not deferred to Advance Turn — see `GameController`'s Tax Policy tab), a derived `BaseShareOfGdp` (looked up from `TaxTypeBaseShares` by `Type`, never stored per-instance, so every `TaxLine` of the same `Type` always agrees), and derived `MinRate`/`MaxRate` (looked up from `TaxTypeRateRanges` by `Type` — see "Tax Rate Ranges" below). `TaxLine.Clone()` exists because `PreviewTurn`'s throwaway country clone needs its own copies — `ApplyTaxRateChanges` mutates `Rate`, so these can't be shared references the way `TradePartners` is.
+- **EconomyState**: plain C# data class holding one country's economic/political indicators for a turn — GDP, inflation, unemployment, approval rating, budget, trade balance, currency strength, `GovernmentDebt`, `PovertyRate` (seeded from real OECD data, mean-reverts toward a baseline — see "Welfare Policy" below), plus the macro-theory fields: `Consumption`, `Investment`, `PotentialGDP`, `InflationExpectations`, `ConsumerConfidence`, `BusinessConfidence`. No single tax-rate field — see `TaxType`/`TaxLine` below. `DebtToGdpRatio` is a derived read-only property (`GovernmentDebt / GDP * 100`, expressed as a percentage like `Unemployment`/`Inflation`), not a stored field, so it's always consistent with the current GDP and debt.
+- **Country**: identity (`CountryId` enum) + `EconomyState` + the `CurrencyZone` it belongs to + its list of `TradePartner` links + its `TaxLines` portfolio (see below) + its `SpendingLines` portfolio (empty for five of the six countries — see "Detailed Spending Portfolio" below) + its `WelfarePrograms` portfolio (see "Welfare Policy" below - unlike `SpendingLines`, present and adjustable for all six countries) + structural (non-turn-mutated) constants: `BaseTariffRate` (used only when it isn't in a trade bloc), `NaturalUnemploymentRate` (NAIRU), `PotentialGrowthRate` (trend GDP growth, %/turn), `GovernmentSpendingRate` (baseline government consumption as % of GDP — ignored for a country with a non-empty `SpendingLines`), `BenefitRatePerUnemployed` (automatic-stabilizer generosity — % of GDP spent on unemployment benefits per point of unemployment), `CollectionEfficiency` (0.0-1.0, how much of the theoretical tax base is actually collected — enforcement quality/informal economy/evasion — see "Tax Collection Efficiency" below), `BaseDebtInterestRateOverride` (-1 = unset/use `CurrencyZone.InterestRate`, otherwise a country-specific real blended average rate on existing debt), `RiskPremiumSensitivity` (1.0 = full market exposure, the default — see "Reserve-Currency Debt Interest Treatment" below), `ComfortableDebtToGdpPercent` (see "Fiscal Reaction Function" below), and `BaselinePovertyRate` (see "Welfare Policy" below).
+- **TaxType** / **TaxLine**: `TaxType` is the enum of individual tax instruments a country's fiscal portfolio can hold — `IncomeTax`, `CorporateTax`, `VAT`, `PayrollTax`, `CapitalGainsTax`, `SalesTax`, `ExciseTax`, `PropertyTax`, `EstateTax`, `WealthTax`, `CarbonTax`, `Tariffs`, `StampDuty`. `Tariffs` is listed for completeness but deliberately never gets a `TaxLine` — tariff revenue is already handled by `BaseTariffRate`/`TradeSystem`, not duplicated here (`TaxTypeBaseShares.GetBaseShareOfGdp` returns 0 for it as a defensive fallback, and `SimulationManager.GetTotalTaxRevenue` skips it explicitly too). A `TaxLine` is one instrument in a country's portfolio: `Type`, `Rate` (%, persistent — *set* turn to turn by `PolicyDecision.TaxRateOverrides`, not reset), `IsImplemented` (toggled *immediately* by the player, not deferred to Advance Turn — see `GameController`'s Tax Policy tab), a derived `BaseShareOfGdp` (looked up from `TaxTypeBaseShares` by `Type`, never stored per-instance, so every `TaxLine` of the same `Type` always agrees), and derived `MinRate`/`MaxRate` (looked up from `TaxTypeRateRanges` by `Type` — see "Tax Rate Ranges" below). `TaxLine.Clone()` exists because `PreviewTurn`'s throwaway country clone needs its own copies — `ApplyTaxRateChanges` mutates `Rate`, so these can't be shared references the way the `CurrencyZone` reference is. `WelfareProgramType`/`WelfareProgram` (see "Welfare Policy" below) mirror this exact pattern for the country's welfare portfolio.
 - **CurrencyZone**: a shared, settable interest rate. Countries that use the same currency (e.g. Germany/France/Italy) reference the *same* `CurrencyZone` instance, so a rate change affects all of them at once; independent-currency countries (USA, Sweden, Poland) each get their own instance and set their rate independently.
 - **TradeBloc**: a group of member countries (identified by `CountryId`) with a shared internal tariff rate (near zero) between members and one common external tariff rate applied by every member to non-member imports. The EU bloc is built from Germany, France, Italy, Sweden, and Poland.
-- **TradePartner**: one bilateral trade relationship from a country's point of view — static export/import volumes (not a full market simulation) that tariffs and currency strength act on each turn.
+- **TradePartner**: one bilateral trade relationship from a country's point of view — static export/import volumes (not a full market simulation) that tariffs and currency strength act on each turn, plus `PlayerTariffOverride` (-1 = unset/no override, the default) — a player-set tariff rate specifically for imports from this one partner, which beats the usual trade-bloc/`BaseTariffRate` resolution for that relationship only; see "Per-Partner Tariff Overrides" below. `TradePartner.Clone()` exists for the same reason `TaxLine.Clone()`/`SpendingLine.Clone()` do — `PreviewTurn`'s throwaway country clone needs its own copies, since `SimulationManager.ApplyPartnerTariffOverrides` mutates `PlayerTariffOverride`.
 - **World**: the top-level container — all `Country` instances plus all `TradeBloc` instances. `WorldFactory.CreateDefault()` builds the standard six-country scenario with a small hand-authored trade network.
-- **PolicyDecision**: per-country turn inputs — `TaxRateOverrides` (a `Dictionary<TaxType, float>` of this turn's requested **absolute** rate per `TaxType` — e.g. `45f` means "set this tax's rate to 45%", not "raise it by 45 points" — only meaningful for `TaxType`s the country currently has implemented; implementing/removing a tax is a separate, immediate action on `TaxLine.IsImplemented`, not part of this dictionary), `InterestRateChange` (summed across countries sharing a `CurrencyZone` into one shared-zone change), `TariffRateChange` (a direct delta to the country's own `BaseTariffRate`, separate from trade-bloc tariffs), `SpendingLineChanges` (a `Dictionary<SpendingCategory, float>` of this turn's requested dollar **change** per `SpendingCategory` — a delta, unlike `TaxRateOverrides` — only meaningful for Discretionary categories on a country with a `SpendingLines` portfolio; see "Detailed Spending Portfolio" below), and four legacy category-specific discretionary spending deltas — `HealthcareSpendingChange`, `DefenseSpendingChange`, `InfrastructureSpendingChange`, `EducationSpendingChange` — each layered on top of the country's baseline `GovernmentSpendingRate`, not the total spending figure, for a country **without** a `SpendingLines` portfolio (five of the six). `TotalDiscretionarySpending` (their sum) is what such a country's G term uses; see "Political Layer" below for why each category is tracked separately rather than combined into one generic spending number.
-- **SimulationManager**: orchestrates turn order only — the macro theory and approval formula live in `MacroSystem`, elections in `ElectionSystem`, random events in `EventSystem`. Per turn: `CurrencySystem` applies interest rate changes and drifts currency strength, each country's own `TariffRateChange` is applied, `TradeSystem` resolves trade/tariffs (setting `TradeBalance`), then each country's domestic policy runs — `ApplyTaxRateChanges` (portfolio rate adjustments), `ResolveSpendingForTurn` (spending resolution — detailed `SpendingLines` or the legacy baseline+category-delta mechanic, see "Detailed Spending Portfolio" below), category spending effects, fiscal spending/budget/debt (see "Fiscal Accounting" below, including `GetTotalTaxRevenue`), `MacroSystem`'s national accounts identity (GDP), Okun's Law (unemployment), the Phillips Curve (inflation), `MacroSystem.ApplyApprovalRating`, and a random event roll (`EventSystem`). `PreviewTurn` reruns that same per-country pipeline against a throwaway `Country`/`EconomyState` clone (`ClonePreviewCountry`, including deep-cloned `TaxLines` and `SpendingLines`) to produce a `PolicyPreview` — an estimate for a not-yet-committed `PolicyDecision` (see "Live Policy Preview" below) — without mutating the real `World`, recording a `FiscalTurnReport`, or rolling an event.
-- **MacroSystem**: the macroeconomic theory and the approval-rating formula — see "Economic Theory" and "Political Layer" below.
+- **PolicyDecision**: per-country turn inputs — `TaxRateOverrides` (a `Dictionary<TaxType, float>` of this turn's requested **absolute** rate per `TaxType` — e.g. `45f` means "set this tax's rate to 45%", not "raise it by 45 points" — only meaningful for `TaxType`s the country currently has implemented; implementing/removing a tax is a separate, immediate action on `TaxLine.IsImplemented`, not part of this dictionary), `InterestRateChange` (summed across countries sharing a `CurrencyZone` into one shared-zone change), `TariffRateChange` (a direct delta to the country's own `BaseTariffRate`, separate from trade-bloc tariffs), `PartnerTariffOverrides` (a `Dictionary<CountryId, float>` of this turn's requested **absolute** tariff-override rate per trade partner — only meaningful for a partner with an *active* override, the same "only currently-implemented/active gets an entry" pattern `TaxRateOverrides` uses; see "Per-Partner Tariff Overrides" below), `WelfareGenerosityOverrides` (a `Dictionary<WelfareProgramType, float>` of this turn's requested **absolute** `GenerosityLevel` per welfare program, the exact same "SET, not delta" semantics as `TaxRateOverrides` — only meaningful for a program the country currently has implemented; see "Welfare Policy" below), `SpendingLineChanges` (a `Dictionary<SpendingCategory, float>` of this turn's requested dollar **change** per `SpendingCategory` — a delta, unlike `TaxRateOverrides` — only meaningful for Discretionary categories on a country with a `SpendingLines` portfolio; see "Detailed Spending Portfolio" below), and four legacy category-specific discretionary spending deltas — `HealthcareSpendingChange`, `DefenseSpendingChange`, `InfrastructureSpendingChange`, `EducationSpendingChange` — each layered on top of the country's baseline `GovernmentSpendingRate`, not the total spending figure, for a country **without** a `SpendingLines` portfolio (five of the six). `TotalDiscretionarySpending` (their sum) is what such a country's G term uses; see "Political Layer" below for why each category is tracked separately rather than combined into one generic spending number.
+- **SimulationManager**: orchestrates turn order only — the macro theory and approval formula live in `MacroSystem`, elections in `ElectionSystem`, random events in `EventSystem`. Per turn: `CurrencySystem` applies interest rate changes and drifts currency strength, each country's own `TariffRateChange` is applied, `TradeSystem` resolves trade/tariffs (setting `TradeBalance`), then each country's domestic policy runs — `ApplyTaxRateChanges` (portfolio rate adjustments), `ApplyWelfareGenerosityChanges` (welfare portfolio rate adjustments, mirroring `ApplyTaxRateChanges`), `ResolveSpendingForTurn` (spending resolution — detailed `SpendingLines` or the legacy baseline+category-delta mechanic, see "Detailed Spending Portfolio" below), category spending effects, `MacroSystem.ApplyWelfareProgramEffects` (welfare confidence effects), fiscal spending/budget/debt (see "Fiscal Accounting" below, including `GetTotalTaxRevenue` and `GetTotalWelfareCost` — see "Welfare Policy" below), `MacroSystem`'s national accounts identity (GDP), Okun's Law (unemployment, itself welfare-adjusted — see "Welfare Policy"), the Phillips Curve (inflation), `MacroSystem.ApplyPovertyRate`, `MacroSystem.ApplyApprovalRating`, and a random event roll (`EventSystem`). `PreviewTurn` reruns that same per-country pipeline against a throwaway `Country`/`EconomyState` clone (`ClonePreviewCountry`, including deep-cloned `TaxLines`, `SpendingLines`, `WelfarePrograms`, and `TradePartners`) to produce a `PolicyPreview` — an estimate for a not-yet-committed `PolicyDecision` (see "Live Policy Preview" below) — without mutating the real `World`, recording a `FiscalTurnReport`, or rolling an event.
+- **MacroSystem**: the macroeconomic theory and the approval-rating formula — see "Economic Theory" and "Political Layer" below. Also owns `PovertyRate`'s own mean-reversion and every `WelfareProgram`'s small per-type effect — see "Welfare Policy" below.
 - **TaylorRule**: reference-only suggested interest rate (see "Economic Theory" below) — never applied automatically; intended for a future UI hint or an AI-controlled country's decision logic.
 - **CurrencySystem**: applies summed interest rate changes per `CurrencyZone`; for countries that don't share their `CurrencyZone` with anyone else, drifts `EconomyState.CurrencyStrength` (index, 100 = neutral) toward a target based on how their interest rate compares to the average rate among their trade partners — relatively higher rate pulls strength up, relatively lower pulls it down. Shared-currency countries (Eurozone) skip this, since there's no single national currency to strengthen or weaken. This heuristic (and the export-competitiveness effect it feeds into `TradeSystem`) is still a simplified placeholder, not modeled on a specific theory.
-- **TradeSystem**: looks up the applicable tariff rate for an importer/exporter pair (shared-bloc internal rate → importer's bloc external rate → importer's own `BaseTariffRate`, in that precedence order); for non-shared-currency exporters, also scales effective exports by a currency-strength factor (stronger than neutral dampens exports, weaker boosts them; shared-currency exporters always get a neutral factor). Sets `TradeBalance` (the NX term `MacroSystem` reads for GDP) and tariff revenue (added to the budget, and returned so `SimulationManager` can record it on `FiscalTurnReport`) — it does **not** touch GDP directly anymore.
+- **TradeSystem**: looks up the applicable tariff rate for an importer/exporter pair, most-specific-wins — the importer's own `TradePartner.PlayerTariffOverride` for that exporter, if set, beats even trade-bloc membership; otherwise shared-bloc internal rate → importer's bloc external rate → importer's own `BaseTariffRate`, in that precedence order (see "Per-Partner Tariff Overrides" below); for non-shared-currency exporters, also scales effective exports by a currency-strength factor (stronger than neutral dampens exports, weaker boosts them; shared-currency exporters always get a neutral factor). Sets `TradeBalance` (the NX term `MacroSystem` reads for GDP) and tariff revenue (added to the budget, and returned so `SimulationManager` can record it on `FiscalTurnReport`) — it does **not** touch GDP directly anymore.
 - **ElectionSystem** and **EventSystem**: the rest of the political layer — see "Political Layer" below.
 
 ## Economic Theory
@@ -350,10 +352,10 @@ Education/Defense already have one.
   `SimulationManager`'s existing automatic, non-editable `GetInterestOnDebt` calculation, not a
   seeded line, exactly as the task required.
 - **`SpendingLine`** (`SpendingLine.cs`, mirrors `TaxLine`'s pattern): `Category`, `Amount` (in the
-  same $B-scale units as GDP, persistent — *added to* turn to turn by
-  `PolicyDecision.SpendingLineChanges` for Discretionary lines only, not reset), `IsMandatory`.
-  Mandatory lines aren't player-adjustable in Phase 1 (`SimulationManager.ApplySpendingLineChanges`
-  ignores any entry for one) — reforming an entitlement program is a future mechanic, not a slider.
+  same $B-scale units as GDP, persistent — adjusted turn to turn by
+  `PolicyDecision.SpendingLineChanges`, for **both** Mandatory and Discretionary lines — see
+  "Percentage-Based Spending Sliders" below for how that changed from the original flat-dollar,
+  Discretionary-only design), `IsMandatory`.
 - **Seeding** (`WorldFactory.SeedUsaSpendingLines`, USA only): real approximate FY2025 dollar figures
   — Mandatory: SocialSecurity $1,530B, Medicare $875B, Medicaid $620B, IncomeSecurity $700B,
   VeteransBenefitsMandatory $130B, FederalRetirement $155B (sum $4,010B). Discretionary: Defense
@@ -372,22 +374,27 @@ Education/Defense already have one.
   five), this is byte-for-byte the old `GetBaselineGovernmentSpending(country) +
   decision.TotalDiscretionarySpending` mechanic.
 - **Mapping the four existing effects** (`SimulationManager.BuildEffectiveDecisionForDetailedSpending`):
-  for USA, this turn's per-category `SpendingLineChanges` deltas are mapped onto the four legacy
-  `PolicyDecision` category-spending fields so `MacroSystem.ApplyCategorySpendingEffects`/
+  for USA, this turn's per-category actual dollar changes (see "Percentage-Based Spending Sliders"
+  below for how those are derived from the player's requested percentages) are mapped onto the four
+  legacy `PolicyDecision` category-spending fields so `MacroSystem.ApplyCategorySpendingEffects`/
   `ApplyApprovalRating` keep working completely unmodified — `Infrastructure` ← `Transportation`,
-  `Healthcare` ← `HHSDiscretionary` + `Medicaid`, `Education` ← `Education`, `Defense` ← `Defense`.
-  Every other Discretionary category (15 of the 19) gets zero economic effect in this pass — an
-  accurate, adjustable dollar amount only, per the task's explicit Phase 1 scope. `MacroSystem` itself
-  needed zero changes — it has no idea `SpendingCategory` exists.
+  `Healthcare` ← `HHSDiscretionary` **only** (Medicaid was originally also folded into this bucket,
+  but was removed once Mandatory categories became separately adjustable — see "Percentage-Based
+  Spending Sliders" below for why), `Education` ← `Education`, `Defense` ← `Defense`. Every other
+  Discretionary category (15 of the 19) gets zero economic effect in this pass — an accurate,
+  adjustable dollar amount only, per the task's explicit Phase 1 scope. `MacroSystem` itself needed
+  zero changes for Phase 1 — it has no idea `SpendingCategory` exists (it later gained a Mandatory-
+  specific approval term — see "Percentage-Based Spending Sliders" below — but still has no idea
+  `SpendingCategory` exists; that term is fed a plain dollar total).
 - **UI** (`GameController`'s new "Spending Policy" tab, a fourth right-column tab alongside Recent
   Turns/Trade & Spending/Tax Policy — mirroring how Tax Policy already got its own tab rather than
   being crammed into the left-column policy panel): Interest on Debt as a read-only line marked
-  "(automatic, last turn)"; a "Mandatory (automatic)" group listing each line's category and current
-  `Amount` with no slider; a "Discretionary" group where each line gets a this-turn dollar-change
-  slider (`DiscretionaryLineChangeRange`, ±100 — a flat starting-point placeholder, not scaled per
-  category). The left column's old four category sliders are gone entirely (dead code once USA always
-  has a `SpendingLines` portfolio, since `PlayerCountryId` is hardcoded to USA) — replaced by a short
-  note pointing at the new tab, matching how the Tax Policy tab is already referenced there.
+  "(automatic, last turn)"; a "Mandatory" group and a "Discretionary" group, each line now sliderable
+  (originally Mandatory was read-only with no slider and Discretionary used a flat ±$100 dollar-delta
+  slider — see "Percentage-Based Spending Sliders" below for the redesign). The left column's old four
+  category sliders are gone entirely (dead code once USA always has a `SpendingLines` portfolio, since
+  `PlayerCountryId` is hardcoded to USA) — replaced by a short note pointing at the new tab, matching
+  how the Tax Policy tab is already referenced there.
 - **Reconciliation**: the task's ~$7,010B target is real total FY2025 federal outlays (mandatory +
   discretionary + net interest). This restructuring's new lines alone (mandatory $4,010B +
   discretionary $1,751B = $5,761B) plus this game's own `GetInterestOnDebt` this turn (~$1,809B, at
@@ -408,7 +415,10 @@ Education/Defense already have one.
   at the first turn this ships, which the existing `OutputGapReversionSpeed` (50%) reversion halves
   rather than passing through in full — still enough to meaningfully lower USA's GDP level and spike
   Unemployment at turn 1 (Okun's Law reacting to the growth-gap shock) before both mean-revert over
-  subsequent turns. **Also**: USA's Mandatory total ($4,010B) is brand-new spending with no prior
+  subsequent turns. **This turn-1 shock was subsequently addressed** by "Turn-1 GDP Consistency"
+  below (USA's seeded `PotentialGDP` was recalibrated so the identity is already self-consistent at
+  turn 1) — GDP now moves by well under 0.1% on turn 1 instead of dropping ~9%. **Also**: USA's
+  Mandatory total ($4,010B) is brand-new spending with no prior
   analogue (previously the model had no transfer categories besides `UnemploymentBenefitCost`), added
   directly to total budget outflow — combined with the prior task's lower `CollectionEfficiency`, this
   made USA's structural deficit substantially worse at the time this shipped: over 100 turns of a
@@ -422,7 +432,141 @@ Education/Defense already have one.
 - **Validation**: re-validated in the standalone harness before porting — 100-turn baseline (no
   policy) and stress (heavy tax hikes/spending combined with the new mandatory drain) runs both stayed
   numerically bounded (no NaN, no negative GDP, no negative/non-finite `SpendingLine.Amount`) despite
-  the GDP-level and debt-trajectory consequences above.
+  the GDP-level and debt-trajectory consequences above. **The persistent negative output gap this
+  GDP-level drop caused was subsequently investigated and addressed** - see "Discretionary Spending
+  Growth" below.
+
+## Percentage-Based Spending Sliders
+A follow-up task replaced every Discretionary spending slider's flat-dollar delta with a
+**percentage-of-its-own-current-Amount** delta, and made Mandatory categories adjustable the same
+way (at a narrower range, with a distinctly higher approval cost) - closing the gap the original
+Phase 1 scope had deliberately left open ("Mandatory lines aren't player-adjustable in Phase 1").
+
+- **Why percentage, not flat dollar**: a flat ±$100 delta (the original placeholder) meant the same
+  slider swing was trivial for Defense ($850B) and enormous for SBA ($1B). `PolicyDecision.
+  SpendingLineChanges[category]` now stores a **percentage** (e.g. `15f` = "+15% of that line's own
+  current `Amount`", not an absolute target and not a flat delta) - so +15% on Defense is +$127.5B
+  while +15% on SBA is +$150M, proportional to each line's real size.
+- **Ranges** (`SimulationManager.DiscretionaryPercentChangeRange` / `MandatoryPercentChangeRange`,
+  mirrored in `GameController` for the sliders' bounds and must be kept in sync): Discretionary is
+  ±30%; Mandatory is a narrower ±15%, reflecting the real political/legal difficulty of touching
+  entitlement programs (Social Security, Medicare, Medicaid, etc.) versus a discretionary line item.
+  `SimulationManager.ApplySpendingLineChanges` clamps the requested percentage to the category-
+  appropriate range, converts it to a dollar change (`Amount * percent / 100`), and floors the
+  resulting `Amount` at 0 (same floor as before, now expressed as a percentage-derived delta rather
+  than a flat one).
+- **Mandatory's higher approval cost** (`MacroSystem.MandatorySpendingApprovalMultiplier = 3.0f`):
+  distinctly higher than any Discretionary category's approval multiplier (Healthcare/Education 1.5,
+  Infrastructure 1.0, Defense 0.5) - cutting Social Security by some percentage hurts approval
+  noticeably more than an equivalent-percentage cut to NASA, and (symmetrically) an equivalent-size
+  *increase* helps more too. Implemented as a new 5th parameter, `totalMandatorySpendingChange`, on
+  `MacroSystem.ApplyApprovalRating` - the aggregate actual dollar change summed across all 6 Mandatory
+  `SpendingLine`s this turn, run through the same `PercentOfGdp` normalization the other spending
+  terms use, then weighted by the multiplier. This is a separate, uniform term alongside the existing
+  four-category-bucket system, not folded into it.
+- **Medicaid double-counting fix**: Medicaid (Mandatory) was originally mapped into the legacy
+  "Healthcare" bucket (`HealthcareSpendingChange = HHSDiscretionary + Medicaid`) in
+  `BuildEffectiveDecisionForDetailedSpending`. That was harmless while Medicaid was never actually
+  adjustable (Phase 1), but now that Mandatory categories feed their own elevated-multiplier approval
+  term, leaving Medicaid in the Healthcare bucket too would double-count it (once at Healthcare's 1.5x,
+  once at the Mandatory aggregate's 3.0x). Fixed by removing Medicaid from the Healthcare bucket -
+  `HealthcareSpendingChange` is now driven by `HHSDiscretionary` alone. No other Mandatory category was
+  ever mapped into a legacy bucket, so this was the only fix needed.
+- **UI** (`GameController`'s Spending Policy tab): both the Mandatory and Discretionary groups now show
+  a single unified per-line slider (`DrawSpendingLineRow`) bounded by the category-appropriate range,
+  displaying both the requested percentage and the dollar amount it implies at the line's current
+  size. The Mandatory group's old "(automatic)" label and lack of a slider are gone; its section header
+  now reads "Mandatory (narrower range, higher approval cost)" to signal the asymmetry to the player.
+- **A real, inherent risk surfaced during validation - sustained compounding**: because each turn's
+  change is a percentage *of the current Amount*, holding a large percentage push in the same
+  direction on the same category for many turns in a row compounds **geometrically**, not linearly
+  (unlike the old flat-dollar sliders, which could only ever grow a line arithmetically). A stress
+  test that applied the same +30% push to several Discretionary lines *every single turn* for 100
+  turns produced runaway divergence - GDP reaching roughly 6.4 quadrillion by turn 100, inflation
+  pinned at its 30% ceiling, and a budget deficit around -27 trillion. This was not patched away at
+  the time - it was a direct, expected consequence of the percentage-of-current-value design the task
+  asked for, exactly analogous to how a fixed percentage interest rate compounds if never reset,
+  flagged honestly rather than hidden behind a stress scenario that avoided exercising it. The
+  harness's stress scenario was separately redesigned to apply large pushes only *periodically* (every
+  5th turn, alternating sign, mimicking a player making occasional deliberate policy changes rather
+  than pinning a slider) so that realistic-use validation wouldn't be contaminated by - or silently
+  hide - this finding; the periodic version stayed fully bounded even before the fix below existed.
+  **This was subsequently addressed** - see "SpendingLine Amount Ceiling" below, which closes off the
+  sustained-every-turn case too, not just the periodic one.
+- **Validation - explicit reliance disclosure**: this session had already found the standalone harness
+  to be an imperfect stand-in once (a stale swing-detection threshold - see "Federal Reserve Rate
+  Damping" below), so validation for this change went further than just running the harness. Before
+  trusting the harness's numbers, the two safety-critical formulas (`ApplySpendingLineChanges` and the
+  `MandatorySpendingApprovalMultiplier` wiring into `ApplyApprovalRating`) were diffed side-by-side
+  against the real files to confirm the harness's ported logic is identical, not just similarly-shaped.
+  With that check done, the harness reported: 100-turn baseline (events on/off) and the redesigned
+  periodic-stress scenario (events on/off) all stayed numerically bounded - no NaN, no negative GDP, no
+  negative/non-finite `SpendingLine.Amount` - with Mandatory categories pushed to their ±15% range
+  limits during the periodic pushes. **This environment has no Unity Editor install reachable for
+  headless/batch execution** (confirmed by filesystem search during an earlier task this session), so,
+  as with the Federal Reserve rate-damping fix, there is no independent real-Unity confirmation for
+  this change beyond the harness plus the side-by-side code-fidelity check above - running
+  `SimulationTestRunner` in the actual Unity Editor remains a follow-up step for whoever next opens the
+  project.
+
+## Discretionary Spending Growth
+A follow-up investigation into USA's persistently negative, slowly-widening output gap (flagged in
+the "Federal Reserve" section below, where it was masking Moderate/Dovish Fed chair differentiation)
+traced the root cause to this section's restructuring: unlike the legacy `GovernmentSpendingRate`
+mechanic (a *percentage of GDP*, so G automatically grows in step with the economy), USA's
+Discretionary `SpendingLine`s are *fixed dollar amounts* that never grow on their own. Every other
+country's G still scales with GDP; USA's doesn't, and that break is what the gap was really about -
+not a stale `PotentialGDP` value.
+
+**Two hypotheses were tested and ruled out before finding the real fix:**
+- **Recalibrating `PotentialGDP`'s seed** (scaling it down to match the smaller post-restructure G)
+  has **zero effect on the long-run gap**. The asymptotic gap is a fixed point of the recursive
+  identity dynamics (`GDP_t = 0.5·a·GDP_{t-1} + 0.5·G + 0.5·PotentialGDP_t`, where `a` is the
+  GDP-proportional consumption+investment share) - fixed points don't depend on initial conditions,
+  only on the structural coefficients. Confirmed empirically: rescaling the seed only moved the
+  transient path, converging to the identical ~-18% asymptote either way.
+- **Recalibrating `PotentialGrowthRate` downward** does shrink the gap, but nowhere near enough (even
+  freezing it at 0% only closed the gap to about -15%), and it directly reintroduces the
+  debt-to-GDP-near-ceiling problem from before (~286-299%) - slower `PotentialGDP` growth means
+  slower actual GDP growth, which means slower tax revenue growth against largely-fixed spending,
+  exactly the mechanism a prior task's debt fix depends on staying healthy. This lever moves the
+  output-gap goal and the debt-safety goal in opposite directions with no sweet spot; ruled out.
+
+**The actual fix** (`SimulationManager.ApplyDiscretionarySpendingGrowth`): every turn, before this
+turn's `PolicyDecision.SpendingLineChanges` are applied, each Discretionary line grows by the
+country's own `PotentialGrowthRate` - the same rate `PotentialGDP` itself compounds at. This restores
+the "G grows in step with trend GDP" property the legacy mechanic had (a no-op for the other five
+countries, whose `SpendingLines` list is empty). **This specific rate is the only stable choice**,
+confirmed by sweeping it in the harness: growing Discretionary spending *faster* than
+`PotentialGrowthRate` causes runaway divergence (the growing G term eventually dominates and GDP
+explodes exponentially faster than `PotentialGDP` - at +4%/turn the gap crosses zero only briefly
+around turn 75 before blowing through to +10% by turn 100 and beyond, with inflation spiraling past
+14% at +6%/turn); growing it *slower* reintroduces the widening-gap/debt-ceiling problem described
+above. Matching rates is the unique fixed point that keeps the ratio between actual and potential GDP
+constant rather than drifting to ±∞.
+
+**Validated in the standalone harness**: USA's output gap now **stabilizes** around -13% to -15%
+(confirmed flat from turn ~25 through turn 100, in both baseline and stress modes, with and without
+`EventSystem` noise) instead of **diverging** toward -18% and still widening at turn 100. Debt-to-GDP
+settles around 150% - up from the 0% the "Reserve-Currency Debt Interest Treatment" fix produced
+(G growing again means more total spending), but nowhere near the 300% ceiling, satisfying the
+explicit "don't reintroduce the near-ceiling issue" check. No NaN, negative GDP, or divergence in
+100-turn baseline or stress runs.
+
+**Honestly, this is a substantial improvement, not a complete fix.** A mathematically exact zero
+asymptotic gap turns out to be unreachable via `PotentialGDP`/`PotentialGrowthRate`/spending-growth
+calibration alone, given the National Accounts Identity's fixed `BaseConsumptionRate`/
+`BaseInvestmentRate` coefficients (out of this investigation's scope to touch - they're core,
+theory-anchored constants, not calibration placeholders): closing the remaining gap would require
+either inflating Discretionary spending back toward the old ~$4,930B general-government-scale figure
+(undoing the accurate FY2025 federal-only sourcing from "Detailed Spending Portfolio" above) or
+increasing those core identity coefficients. Concretely, this means **the Fed chair differentiation
+gap flagged in "Federal Reserve" below is improved but not resolved** - Hawkish still clears
+`TaylorRule`'s output-gap-driven floor and visibly differentiates, but a stable -13% to -15% gap is
+still deep enough that Moderate and Dovish both land on `CurrencySystem.MinInterestRate` (0%)
+identically, same as before this fix. Fully resolving that would mean revisiting `TaylorRule.
+OutputGapWeight` itself (a shared, cross-country constant, not a USA-specific calibration) - a
+separate decision, not made here.
 
 ## Political Layer
 Elections, richer policy levers, and random events - all game-rule heuristics layered on top of the
@@ -470,7 +614,8 @@ constants, no magic numbers):
   (35) and returns the margin either way. Deliberately country-agnostic — it doesn't know or care
   which country is "the player"; that association (and the resulting simple `IsGameOver`/reason
   state, since there's no full game-over UI yet) is a `GameController` (UI-layer) concern, matching
-  how `PlayerCountryId` is already hardcoded there and not in the simulation layer.
+  how `PlayerCountryId` is already hardcoded there and not in the simulation layer. The same
+  `ElectionCycle` cadence also gates USA's Fed chair selection — see "Federal Reserve" below.
 - **Events** (`EventSystem`): each turn, a small chance (`EventChancePerTurn`, 12%) per country that
   one of a hardcoded pool of `EconomicEvent`s (`EventPool`, 8 to start — e.g. "Recession in a Trading
   Partner", "Natural Disaster", "Technology Breakthrough") fires, applying a one-time
@@ -482,6 +627,712 @@ constants, no magic numbers):
   turn rather than carrying a delta forward. `SimulationManager.GetLastEvent(countryId)` exposes the
   turn's fired event (or null) for the UI to show as "BREAKING: ...".
 
+## Federal Reserve
+USA-only mechanic: an independent central bank replaces the player's direct Interest Rate Change
+slider (still unchanged for Sweden, Poland, and the Eurozone trio - see `CurrencySystem.
+ApplyInterestRateChanges` below). A `FedChair` (`FedChair.cs`) picked by the player every
+`ElectionSystem.ElectionCycle` turns drives USA's `CurrencyZone.InterestRate` every turn instead.
+
+- **`FedChairPhilosophy`** (`FedChairPhilosophy.cs`): `Hawkish` / `Moderate` / `Dovish` - a label
+  plus, on each `FedChair`, a numeric `RateBias` added on top of `TaylorRule.
+  GetSuggestedInterestRate` before clamping. Hawkish candidates carry a positive bias (effectively
+  overweighting the inflation gap - tighter policy); Dovish candidates carry a negative bias
+  (effectively overweighting the output/employment gap - looser policy); Moderate candidates sit
+  near 0 (tracks `TaylorRule` closely).
+- **`FedChair`** (`FedChair.cs`): `Name`, `Philosophy`, `Description` (flavor/UI text), `RateBias`
+  (the only field with mechanical effect). **Every `FedChair` - `FederalReserveSystem.
+  CandidatePool` and the turn-0 default seeded in `WorldFactory` - is an ORIGINAL FICTIONAL
+  character, never a real past or present Federal Reserve chair or any real person.** Keep this
+  constraint in mind for any future addition to the candidate pool.
+- **`FederalReserveSystem`** (`FederalReserveSystem.cs`): `CandidatePool` is a hardcoded list of 7
+  fictional candidates (2 Hawkish, 3 Moderate, 2 Dovish - e.g. Marcus Thackeray/Ines Kowalski
+  Hawkish, Theodore Voss/Priya Anand/Roland Kade Moderate, Simone Delacroix/Nathaniel Osei Dovish),
+  mirroring `EventSystem.EventPool`'s "plain hardcoded data, swappable later" pattern.
+  `GenerateCandidates()` draws 2-3 candidates with **distinct** philosophies (shuffles the three
+  `FedChairPhilosophy` values, then picks one random candidate per chosen philosophy) using its own
+  isolated `System.Random` - separate from `EventSystem`'s, `UnityEngine.Random`, and
+  `GameController`'s `_previewRandom`, so drawing candidates at an election boundary never perturbs
+  any other RNG consumer's sequence. `ApplyFedChairInterestRate(country)` moves `CurrencyZone.
+  InterestRate` partway (`RateAdjustmentSpeed`, 0.15) toward `Clamp(TaylorRule.
+  GetSuggestedInterestRate(country) + CurrentFedChair.RateBias, CurrencySystem.MinInterestRate,
+  CurrencySystem.MaxInterestRate)` each turn, rather than jumping straight there - see "Federal
+  Reserve Rate Damping" below for why the undamped version was a real bug, not just cosmetic.
+- **The switch** (`Country.CurrentFedChair`): non-null means this country's `CurrencyZone.
+  InterestRate` is Fed-driven (USA only, for now); null (every other country) means it still uses
+  `PolicyDecision.InterestRateChange` exactly as before. `WorldFactory` seeds USA's turn-0 default
+  as a distinct Moderate placeholder chair ("Harriet Ellsworth", `RateBias` 0), separate from
+  `FederalReserveSystem.CandidatePool` so the pool stays purely "election candidates."
+- **`CurrencySystem.ApplyInterestRateChanges`**: a Fed-chair country is handled in its own branch,
+  calling `FederalReserveSystem.ApplyFedChairInterestRate` and skipping the delta-sum-from-
+  `PolicyDecision.InterestRateChange` logic entirely - `PolicyDecision.InterestRateChange` is simply
+  never read for that country. Every other country's branch is byte-for-byte unchanged.
+- **UI** (`GameController`): a new "Federal Reserve" panel (left column, always visible like the
+  dashboard) shows the current chair's name, philosophy, and description. `UpdateFedChairSelectionState`
+  checks each frame whether `CurrentTurn + 1` is an election turn; the first time it detects this for
+  a given upcoming turn, it draws 2-3 candidates via `FederalReserveSystem.GenerateCandidates` and
+  remembers which turn they're for, so picking one doesn't immediately regenerate a fresh set before
+  the turn actually advances. While candidates are pending, they render as buttons ("Appoint
+  {name}") in the same panel and **Advance Turn is disabled** until one is chosen - picking sets
+  `CurrentFedChair` immediately (an immediate action, like Tax Policy's Implement/Remove, not a
+  this-turn draft) and forces a preview recompute. The Interest Rate Change slider in `DrawPolicyControls`
+  is hidden whenever `CurrentFedChair != null` (in addition to the existing shared-currency check),
+  so USA never shows a slider that CurrencySystem would ignore anyway.
+- **Live preview**: `SimulationManager.PreviewTurn` branches the same way `CurrencySystem` does -
+  for a Fed-chair country it computes the previewed interest rate from `TaylorRule.
+  GetSuggestedInterestRate` plus the current chair's `RateBias` instead of reading `decision.
+  InterestRateChange` (which is always 0 for USA, since the slider is hidden). `ClonePreviewCountry`
+  copies `CurrentFedChair` by reference (not deep-cloned like `TaxLines`/`SpendingLines` - nothing
+  ever mutates a `FedChair`'s own fields, only reads `RateBias`, so sharing the reference is safe).
+- **Validation** (standalone harness, `--fedchair=Hawkish|Moderate|Dovish` fixing USA's chair for
+  the full 100-turn run, `--noevents` to strip `EventSystem`'s per-run random shocks for a clean
+  comparison): all three philosophies stayed numerically bounded over 100 turns (no NaN, no negative
+  GDP, no divergence) in both baseline and stress modes. Averaged over turns 5-34: Hawkish
+  Inflation 0.86% vs. Moderate/Dovish ~0.93% - Hawkish does run measurably tighter/lower inflation,
+  the expected direction. **However**, Moderate and Dovish land on the *identical* `InterestRate`
+  (0.00%, the `CurrencySystem.MinInterestRate` floor) in this comparison, both early and late in the
+  run - not a bug in this mechanic, but `TaylorRule.GetSuggestedInterestRate`'s own internal
+  `Math.Max(0f, ...)` floor being hit by both, because USA's output gap was persistently and deeply
+  negative (originally diverging toward -18% to -20%, a consequence of the Detailed Spending
+  Portfolio task's G-term GDP-level drop - see that section above). A Hawkish chair's positive bias
+  is enough to clear the floor and show through; a 0 or negative bias from Moderate/Dovish isn't. **A
+  follow-up investigation ("Discretionary Spending Growth" above) found and fixed the root cause** -
+  USA's Discretionary spending had stopped scaling with GDP entirely, unlike every other country's G -
+  which turned the *diverging* gap into a *stable* one around -13% to -15%, a large improvement. This
+  remains **deep enough that Moderate and Dovish still both land on the 0% floor identically** -
+  closing the gap the rest of the way would mean either inflating Discretionary spending back toward
+  the old general-government-scale figure (undoing accurate FY2025 federal-only sourcing) or revising
+  `TaylorRule.OutputGapWeight` itself (a shared, cross-country constant). Neither was done here; the
+  mechanism is correct and Hawkish differentiation is real, but full three-way differentiation remains
+  a known, not-yet-resolved limitation.
+
+## Federal Reserve Rate Damping
+A real bug, distinct from the output-gap/Fed-chair-floor limitation above: `SimulationTestRunner` (run
+in the actual Unity Editor) reported 60 anomalies for the shipped Discretionary-Spending-Growth +
+Fed-Chair build, including USA's interest rate crashing from 5.05% to 0.00% in a single turn (Turn 2)
+and inflation swings of 20-75%+ recurring for every country as late as turns 92-99 - well past where
+the standalone harness's own validation had claimed the system "stabilizes" (around turn 25).
+
+**Investigating the harness/Unity discrepancy first**: `FederalReserveSystem.ApplyFedChairInterestRate`
+was confirmed byte-for-byte identical between the harness and the real files - the harness was not
+stale for this mechanic. It *was* stale in one real way: its swing-anomaly threshold was `25f`,
+looser than `SimulationTestRunner.MaxSingleTurnChangePercent`'s actual `20f`, silently under-counting
+anomalies for every run. Fixed to match exactly. But this threshold gap doesn't explain the
+qualitative issue - the deeper problem was that the harness's own default validation runs (using
+`EventSystem`'s fresh-seeded `System.Random` each process launch) simply hadn't happened to roll a
+random event late in *that* run's specific 100 turns; a different seed (like the one Unity's
+`SimulationTestRunner` happened to draw) rolls one later and exposes the same underlying flaw more
+visibly. The 51-91-anomaly range the harness had already been producing across earlier runs was this
+exact bug showing through the whole time - previously mischaracterized as "cosmetic near-zero-crossing
+swing-check false positives" rather than investigated as a real oscillation.
+
+**Root cause confirmed**: `ApplyFedChairInterestRate` set `CurrencyZone.InterestRate` to
+`TaylorRule.GetSuggestedInterestRate(country) + CurrentFedChair.RateBias` *directly* every turn - no
+smoothing at all, unlike every other feedback mechanic in this codebase (`CurrencyStrengthDamping`,
+`ApprovalReversionSpeed`, `OutputGapReversionSpeed`, `UnemploymentReversionSpeed`,
+`ExpectationsAdaptationSpeed` all move only *partway* toward a target each turn). A rate that jumps
+the full distance between two very different values creates a real discrete-control oscillation: a
+low rate boosts Consumption/Investment this turn, narrowing (or flipping) the output gap, which
+pushes next turn's suggested rate up; applying that new rate at full strength immediately cools
+Consumption/Investment back down, re-widening the gap, crashing the suggested rate back toward the
+floor - a self-sustaining overshoot-correction cycle with no damping to arrest it, especially once
+USA is already sitting at the `MinInterestRate` floor with zero cushion (see "Federal Reserve"
+above), where *any* perturbation (a random `EventSystem` shock, in particular) can kick off a fresh
+cycle.
+
+**This also explains the correlated inflation swings in Sweden, Germany, France, Italy, and Poland**
+despite none of them being touched by the Fed chair or Discretionary Spending Growth changes: USA's
+interest rate feeds into `CurrencySystem.ApplyCurrencyStrength` for every one of its trade partners
+(`averagePartnerRate` includes USA's rate), so a violently oscillating USA rate drives their
+`CurrencyStrength` targets to oscillate too - propagating through `TradeSystem`'s currency-driven
+export factor into their own `TradeBalance` (NX), then into their GDP, Okun's Law, and Phillips Curve.
+Confirmed empirically: with the undamped mechanic, the other five countries logged 62 swing anomalies
+over 100 turns; damping the source (below) cut that to 44 without touching anything in
+`TradeSystem`/`CurrencySystem` for those five countries directly - confirming the spillover channel
+and that fixing it at USA's rate was sufficient.
+
+**Fix**: `FederalReserveSystem.RateAdjustmentSpeed` (0.15 - matching `CurrencySystem.
+CurrencyStrengthDamping`'s value and role in the same file) - `ApplyFedChairInterestRate` now moves
+USA's rate only 15% of the way toward this turn's target each turn, the same "move gradually toward
+a moving target" pattern every other feedback mechanic in the codebase already uses. Swept in the
+harness (`--ratespeed=`) from 1.0 (undamped) down to 0.05: non-interest-rate anomalies (GDP/
+Unemployment/Inflation/DebtToGdpRatio swings, i.e. excluding the interest rate's own swing count,
+which is inherently noisy on percent-swing checks once a decaying rate gets very close to 0) dropped
+from 79 (undamped) to 59 at 0.15 - the best of the values tested, and shared with 0.05. 0.15 was kept
+for consistency with the existing `CurrencyStrengthDamping` precedent. This is a smoothing fix, not a
+fix for the output-gap-driven floor itself - Moderate/Dovish still settle at the same 0% floor in the
+long run (confirmed unchanged: 0.00% by turns 71-100 under all three philosophies), just reached
+gradually instead of in one jump, and with materially less turn-to-turn noise along the way.
+
+**Re-validated after the fix**: baseline (100 turns, events enabled) and stress runs both stayed
+numerically bounded (no NaN, no negative GDP) in the harness, with its swing threshold now matching
+`SimulationTestRunner.MaxSingleTurnChangePercent` exactly (see above) so its anomaly counts are a fair
+comparison against Unity's. **Actually re-running `SimulationTestRunner` inside the Unity Editor
+itself was not done as part of this fix** - the environment this work was done in has no Unity
+Editor install reachable for headless/batch execution, so "re-validate in the real Unity
+`SimulationTestRunner`" could not be carried out directly; the harness (now confirmed non-stale for
+the Fed-chair mechanic, and threshold-aligned) is the closest available substitute, not a substitute
+for actually pressing Play. Running `SimulationTestRunner` in the Editor to confirm the sharp
+single-turn rate crashes are gone and the anomaly count has dropped meaningfully from 60 is a
+follow-up step for whoever next opens the project in Unity.
+
+## Turn-1 GDP Consistency
+A follow-up investigation checked whether USA's seeded starting values (GDP, the implicit
+Consumption/Investment the national accounts identity would derive from them, the post-restructure
+G, TradeBalance/NX) were internally consistent with `MacroSystem.ApplyNationalAccounts`'s own
+`GDP = Consumption + Investment + Government + NetExports` identity - i.e. whether evaluating the
+identity with USA's real seed values reproduced the seeded 29000 GDP figure at turn 1, or produced
+something meaningfully different. They did not: evaluating C+I+G+NX with USA's actual turn-1
+inputs (Consumption/Investment derived from the seeded 29000 GDP, G = the accurate federal-only
+Discretionary total from "Detailed Spending Portfolio" above, NX from `TradeSystem`) came out to
+roughly **24,600** - about 15% below the seeded 29000 - and `ApplyNationalAccounts`'s 50%
+reversion-toward-`PotentialGDP` (which defaulted to 29000, same as GDP, since no country's
+`PotentialGDP` is seeded separately except USA now) only closed half that gap, producing a real,
+one-time **~9% GDP contraction (29000 -> ~26,800) on literally the first turn of any new game** -
+before the "Discretionary Spending Growth" fix's -13%-to-15% equilibrium gap even had a chance to
+develop gradually over the first ~25 turns the way it was designed to.
+
+**Root cause, confirmed**: this was introduced by "Detailed Spending Portfolio" rebasing G from the
+old `GovernmentSpendingRate` (17% of GDP, ≈$4,930B - close enough to `BaseConsumptionRate` +
+`BaseInvestmentRate`'s implied ~20% "everything else" share that the identity was roughly
+self-consistent before) down to the real federal-only Discretionary total (~$1,751B, ≈6% of GDP) -
+without re-deriving USA's seeded GDP or `PotentialGDP` to match the now much-smaller G. That task
+explicitly flagged the resulting GDP-level drop as a known, accepted consequence at the time (see
+"GDP-level consequence" in "Detailed Spending Portfolio" above) rather than a bug - this investigation
+revisits it because a sharp one-time turn-1 shock is a real, avoidable rough edge for a new game to
+open with, distinct from the already-accepted gradual equilibration.
+
+**Fix**: USA's seeded `PotentialGDP` is now **33260** (`WorldFactory.cs`), not left to default to GDP
+(29000) the way every other country's is. This value was found empirically via the standalone
+harness's `--usapotgdp=` sweep (added for this investigation), not a closed-form solve - the turn-1
+chain (TaylorRule's suggested rate depends on the output gap, which depends on `PotentialGDP`; the
+Fed-chair-driven interest rate then partially damps toward that suggested rate; the interest rate
+feeds back into Consumption/Investment's rate sensitivity) has no simple closed form, so the value
+was located by testing candidates until turn-1 GDP landed within a fraction of a percent of the
+29000 seed. At 33260, GDP moves from 29000 to **~28999-29019 (well under +/-0.1%)** on turn 1
+instead of dropping ~9%, and the output gap is already sitting at its long-run **~-14.2% to -14.5%**
+equilibrium from turn 1 onward, rather than opening at ~0% and sliding into that equilibrium over the
+first ~25 turns. This changes **only** `PotentialGDP` (the internal "trend output" reference value) -
+USA's headline GDP figure is still 29000, still on the same real-approximate-nominal-GDP scale as
+every other seeded figure (debt-to-GDP, `CollectionEfficiency`'s tax-to-GDP targets, trade volumes,
+etc.), none of which reference `PotentialGDP` directly and so are completely unaffected.
+
+**Fed-chair differentiation checked, not regressed**: because opening already at a deeply negative
+output gap could plausibly have collapsed Hawkish/Moderate/Dovish differentiation immediately (rather
+than just in the late game, as already documented in "Federal Reserve" above), this was checked
+directly. It is unaffected: `TaylorRule.GetSuggestedInterestRate` floors its raw (pre-bias) suggested
+rate at 0 *before* `FederalReserveSystem.ApplyFedChairInterestRate` adds the chair's `RateBias`, so
+Hawkish's target rate is simply `0 + 1.5 = 1.5%` regardless of how negative the underlying gap is -
+identical behavior whether the gap opens at -9% (old seed) or -14.5% (new seed) from turn 1. Verified
+in the harness across all three philosophies at the new seed: Hawkish settles near 1.5%,
+Moderate/Dovish both floor at 0% - the same pattern already documented, not a new regression.
+
+**Validation**: 100-turn baseline (events on/off) and stress runs at the new seed all stayed
+numerically bounded (no NaN, no negative GDP) in the harness - see "SpendingLine Amount Ceiling"
+below for the combined validation matrix run together with that fix. As with every other fix this
+session, there is no independent real-Unity confirmation beyond the harness - this environment has no
+reachable Unity Editor install for headless/batch execution.
+
+## SpendingLine Amount Ceiling
+A companion fix, requested alongside the turn-1 investigation above: "Percentage-Based Spending
+Sliders" (above) had already found and honestly flagged, but not fixed, a sustained-compounding
+exploit - holding the same large percentage push on a Discretionary line *every single turn* (rather
+than periodically) compounds geometrically and diverges (GDP reaching ~6.4 quadrillion by turn 100 in
+that finding's stress test). This closes that off.
+
+- **The mechanism**: `SpendingLine` gained a new field, `SeedAmount` - set once, at construction, to
+  that line's starting `Amount`, and never mutated afterward (its `Clone()` copies `SeedAmount`
+  explicitly from the source line rather than re-deriving it from the current, possibly-mutated
+  `Amount` - the same reasoning `TaxLine`/`SpendingLine.Amount` sharing already required elsewhere in
+  `SimulationManager.ClonePreviewCountry`). `SimulationManager.ApplySpendingLineChanges` and
+  `ApplyDiscretionarySpendingGrowth` both now clamp the resulting `Amount` to
+  `[MinSpendingLineAmountRatio, MaxSpendingLineAmountRatio]` x `SeedAmount` - **0.2x to 3.0x** of
+  where that line started, a fixed anchor rather than a moving one. Anchoring to the ORIGINAL seed
+  (not the line's current value) is what actually stops the compounding - a clamp expressed relative
+  to the current `Amount` would just get carried along by the same exponential growth it's meant to
+  bound, since "3x of whatever it is now" grows right along with it. This replaces the old
+  floor-at-0 in `ApplySpendingLineChanges` (0.2x `SeedAmount` is always a stricter, higher floor than
+  0 for every seeded line) and applies to **both** Mandatory and Discretionary categories, per the
+  task's explicit scope - not just Discretionary, even though the original runaway-divergence finding
+  happened to be a Discretionary-only stress scenario.
+- **Confirmed fixed**: a new harness mode (`--sustainedexploit`) re-runs the exact scenario that
+  previously produced the ~6.4-quadrillion-GDP runaway (+30%/turn held on Defense/Transportation/
+  Education every turn, -30%/turn on HHSDiscretionary, +15%/turn on SocialSecurity/Medicare, for the
+  full 100 turns, no periodic reset). With the clamp in place, GDP instead lands around **~200,000
+  -201,000 by turn 100** - comparable in scale to the periodic-stress scenario's own trajectory, not a
+  divergent one - with no NaN, no negative GDP, and every pushed line landing exactly on its 3.0x
+  ceiling (or 0.2x floor for HHSDiscretionary) rather than growing further, confirmed by direct
+  inspection of each `SpendingLine.Amount`/`SeedAmount` ratio at turn 100.
+- **A real, honestly-disclosed interaction with "Discretionary Spending Growth" (above), later found
+  to have a much bigger consequence than first described here**: that earlier fix deliberately grows
+  every Discretionary line at `PotentialGrowthRate` (2%/turn for USA) every turn, forever, with no
+  player input at all, specifically so G would keep pace with trend GDP. That passive growth is *also*
+  a repeated percentage-of-current-value change stacked over many turns - so it was *also* subject to
+  this same clamp, and 1.02^56 ≈ 3.0, meaning every Discretionary line hit the 3.0x ceiling by roughly
+  turn 56 purely from passive growth, even under a pure no-policy baseline with zero player input. At
+  the time this section was written, this was flagged only as "the output gap widens again a bit after
+  turn 56" - a follow-up investigation (see "SpendingLine Amount Ceiling - Debt-to-Zero Fix" below)
+  found the consequence was far more severe than that: freezing G in absolute-dollar terms produced an
+  ever-widening primary surplus (tax revenue keeps scaling with GDP; G stopped scaling entirely) that
+  paid USA's `GovernmentDebt` down to exactly 0 and flatlined it there for the rest of a 100-turn
+  run - not a cosmetic gap-widening, a real fiscal-outcome bug. **This has been fixed** - see that
+  section for the mechanism (SeedAmount itself now grows for a Discretionary line) and for the
+  additional, deeper structural driver that fix alone did not fully resolve.
+- **Validation matrix** (standalone harness, combined with "Turn-1 GDP Consistency" above since both
+  shipped together): 100-turn baseline (events on/off), the existing periodic-stress scenario (events
+  on/off, pushes categories to their +-15%/+-30% limits every 5th turn), and the new
+  `--sustainedexploit` scenario (events on/off, pushes held every turn with no reset) - six runs total,
+  all numerically bounded, no NaN, no negative GDP, no negative/non-finite `SpendingLine.Amount`
+  anywhere. **Explicit reliance disclosure**: before trusting these results, `SpendingLine`'s new
+  `SeedAmount` field/clamp logic and the `WorldFactory` seed change were diffed side-by-side against
+  the harness's ported versions to confirm identical logic, not just similarly-shaped code - the same
+  standard "Percentage-Based Spending Sliders" applied after the harness's swing-threshold staleness
+  was found earlier this session. **Correction to every earlier "no Unity Editor reachable" claim in
+  this document** (Federal Reserve Rate Damping, Percentage-Based Spending Sliders, Turn-1 GDP
+  Consistency, Per-Partner Tariff Overrides all said this): that claim was wrong - it reflected an
+  incomplete filesystem search that only checked the conventional `C:\Program Files\Unity` install
+  location. A later investigation (see "SpendingLine Amount Ceiling - Debt-to-Zero Fix" below) found
+  Unity Editor 6000.5.4f1 actually installed at `G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe`, with
+  this exact project already registered in Unity Hub. Every prior "no reachable Unity Editor" statement
+  in this file up to that point should be read as "wasn't found by an incomplete search," not "does not
+  exist."
+
+## SpendingLine Amount Ceiling - Debt-to-Zero Fix
+A follow-up investigation (re-opening a thread the "SpendingLine Amount Ceiling" section above had
+flagged but not resolved) into why USA's `DebtToGdpRatio` reaches exactly 0.00% and stays there for
+extended stretches of a 100-turn no-policy baseline - the hypothesis being that Discretionary
+`SpendingLine`s flatlining at the 3.0x `SeedAmount` ceiling around turn 56 breaks the "G tracks GDP"
+property "Discretionary Spending Growth" relies on, letting tax revenue (which keeps scaling with GDP)
+pull ever further ahead of total spending (which stops scaling once the ceiling engages) - an
+ever-widening primary surplus that pays the debt down to nothing.
+
+- **Root cause confirmed, via a per-turn fiscal trace**: a new harness diagnostic (`--debtlog`, logging
+  GDP/Debt/Revenue/Discretionary-total/each line's ratio-to-seed every turn) showed exactly this
+  mechanism - `SpendingLine.Amount` for every Discretionary line hit its `3.00x` `SeedAmount` ceiling
+  at turn 56 and stayed there, freezing the Discretionary total at a fixed $5,253B, while `Revenue`
+  kept climbing with GDP (from $5,220B at turn 1 to $35,421B at turn 100) - `GovernmentDebt` fell from
+  its turn-55 value of $86,079B to exactly $0 by turn 70 and stayed flat there for the remaining 30
+  turns.
+- **The fix**: `SpendingLine.SeedAmount` is no longer fixed at construction for a Discretionary line -
+  `SimulationManager.ApplyDiscretionarySpendingGrowth` now grows `SeedAmount` by the SAME factor as
+  `Amount`'s own automatic GDP-tracking growth, every turn (a Mandatory line's `SeedAmount` is
+  untouched, since Mandatory has no automatic growth mechanism to track in the first place - this fix
+  is Discretionary-only). Since both figures grow by an identical factor, their ratio is unchanged
+  whenever it started in `[0.2x, 3.0x]` range - a normal, un-pushed line's ratio stays exactly `1.00x`
+  forever (the ceiling never engages for it, exactly reproducing pre-"SpendingLine Amount Ceiling"
+  behavior), while a line a player has pushed to the ceiling stays pegged at exactly
+  `MaxSpendingLineAmountRatio` times a `SeedAmount` that itself keeps compounding - so even a
+  maxed-out/exploited line keeps tracking GDP instead of freezing in absolute dollar terms. Confirmed
+  via `--debtlog`: under the fixed code, `DiscMaxRatio` (the highest ratio across all Discretionary
+  lines) stays at `1.00x` for the entire 100-turn no-policy baseline (the ceiling never engages absent
+  player action), and the Discretionary total grows continuously (`$1,786B` at turn 1 to `$12,685B` by
+  turn 100) instead of freezing at `$5,253B`.
+- **Result: a real, measured improvement, but the explicit "settles well above 0" bar is NOT met** -
+  reported honestly, not glossed over. With the fix, USA's `GovernmentDebt` still reaches exactly $0 by
+  turn 100, but the decline is far more gradual (crossing zero around turn 80, not turn 70) and the
+  final approach is no longer a near-instant 14-turn wipeout (turn 56→70 previously) but a steadier
+  ~25-turn decline (turn ~55→80). This confirms the named hypothesis was a REAL, CONFIRMED contributing
+  cause, worth fixing on its own merits (a maxed-out spending line should track GDP, not freeze) - but
+  it is not the ONLY driver of the debt-to-zero outcome.
+- **A second, previously-unidentified structural driver, found while chasing the remaining gap**:
+  Mandatory `SpendingLine`s (`SocialSecurity`, `Medicare`, `Medicaid`, `IncomeSecurity`,
+  `VeteransBenefitsMandatory`, `FederalRetirement`, summing to a fixed $4,010B) have **no automatic
+  growth mechanism at all** - `ApplyDiscretionarySpendingGrowth` only ever touched Discretionary lines,
+  by design (Mandatory categories were only ever meant to change via the player's own
+  `PolicyDecision.SpendingLineChanges`, at their narrower +-15% range - see "Percentage-Based Spending
+  Sliders"). Left untouched over a 100-turn run, $4,010B of spending against an ever-growing GDP
+  shrinks from 13.8% of GDP at turn 1 to under 2% of GDP by turn 100 - a purely structural, guaranteed
+  improvement in the primary balance over a long enough game, independent of the Discretionary-ceiling
+  bug above and unrelated to any specific ceiling/clamp mechanism.
+- **A full calibration sweep was run (not shipped - the result is a negative finding, not a rate to
+  ship)**: a harness-only knob (`MandatoryGrowthRatePercent`, never ported to the real files) grows
+  Mandatory `SpendingLine`s at a configurable constant rate, mirroring `ApplyDiscretionarySpendingGrowth`
+  exactly (SeedAmount grows in lockstep, same reasoning as the Discretionary fix above). Sweeping this
+  rate from 0% to 5%/turn, at BOTH a 100-turn and a much longer 500-turn horizon (a new `--turns=`
+  harness flag), found that **every rate tested converges to one of exactly two attractors - 0% or
+  ~294.1% `DebtToGdpRatio` - never anything stable in between**, and which attractor a given rate
+  reaches depends on the time horizon, not just the rate itself:
+  - At the 100-turn horizon, rates up to ~0.5%/turn still reach 0% within the window; 0.6-0.9%/turn
+    land at plausible-looking intermediate values (e.g. 91.3% at 0.75%) that LOOK stable at turn 100
+    but are not - a 300-turn re-run at those same rates shows them still declining toward 0%, just more
+    slowly; 1.25%+/turn reaches ~294.1% by turn ~30-100.
+  - At a 500-turn horizon, the picture changes again: rates up to 1.3%/turn now ALSO settle at exactly
+    0% (including several that looked "high and stable" at 100 turns), while 2%/turn+ genuinely holds at
+    294.1% indefinitely (confirmed stable, not still declining).
+  - **Conclusion: there is no constant Mandatory growth rate that produces a genuine, lasting
+    equilibrium comfortably between 0% and the 300% ceiling.** The debt-to-GDP dynamics under this
+    model appear to be genuinely BISTABLE, not continuously tunable - unlike Discretionary spending
+    (where `PotentialGrowthRate` is "the unique fixed point" for the OUTPUT-GAP/GDP-identity balance,
+    a different, apparently well-behaved balance), the fiscal/debt balance here has no interior stable
+    fixed point at all for this lever. The likely mechanism (not confirmed by further investigation,
+    which was out of this task's scope): `SimulationManager.GetInterestOnDebt`'s risk premium scales
+    with `DebtToGdpRatio` itself (`DebtRiskPremiumRate` per point above `RiskFreeDebtToGdpPercent`),
+    creating a self-reinforcing loop - higher debt raises the premium, which raises interest cost,
+    which raises the deficit, which raises debt further - a classic unstable-interior/two-stable-
+    extremes dynamical signature, which no amount of retuning a SEPARATE lever (Mandatory's growth
+    rate) can fix, since it doesn't touch the loop itself.
+  - **Nothing from this sweep was shipped to the real files** - `SimulationManager.cs`'s Mandatory
+    lines are unchanged from before this investigation (still no automatic growth), since every tested
+    rate either still eventually reaches 0% (not meeting the task's bar) or reaches a near-ceiling 294%
+    (arguably a worse outcome, not a fix). Genuinely resolving this would mean addressing the
+    interest/risk-premium feedback loop directly (e.g. damping how strongly the premium responds to
+    `DebtToGdpRatio`, or capping how far debt can compound the premium against itself) - a materially
+    different, bigger investigation than "find the right Mandatory growth rate," and one this task did
+    not undertake.
+- **A genuinely new capability found mid-investigation: real Unity Editor access**. Every earlier
+  section this session that discussed validation limits stated flatly that no Unity Editor was
+  reachable in this environment. That was based on an incomplete search (checked only
+  `C:\Program Files\Unity`-style locations). This investigation found Unity Hub's own records
+  (`%APPDATA%\UnityHub\projects-v1.json`) showing this exact project registered against Unity
+  `6000.5.4f1`, installed at `G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe` - a real, working
+  install, just on a drive/path this session's earlier searches never checked. A new Editor-only
+  script, `Assets/Editor/BatchSimulationRunner.cs`, was added so `SimulationTestRunner` can be run
+  headlessly from the command line going forward
+  (`Unity.exe -batchmode -nographics -projectPath <path> -executeMethod
+  PoliSim.EditorTools.BatchSimulationRunner.Run -logFile <path>`) instead of requiring someone to
+  manually press Play in the Editor - it opens `SampleScene`, enters Play mode, waits ~15 frames (more
+  than enough for `SimulationTestRunner.Start()`'s single-frame 100-turn loop to finish and log its
+  summary), then exits.
+- **Clean, deliberately-triggered confirmation obtained**: this project was initially found already
+  open in three separate, pre-existing Unity Editor processes (not started by this session), which
+  blocked this session's own first `-executeMethod` attempt outright (Unity refuses a second instance
+  against an already-open project - confirmed: that attempt's dedicated log shows "Exiting without the
+  bug reporter... return code 1" within the same second it started, before any script compilation).
+  Before that was resolved, the project's own `Logs/Editor.log` already showed extensive genuine
+  `SimulationTestRunner` activity from those pre-existing windows (almost certainly manual Play-mode
+  testing during this session), including a turn-100 USA result closely matching the harness - useful
+  corroboration, but not a run this session could point to with full certainty about its exact code
+  version. The three pre-existing processes were subsequently closed (with explicit sign-off), and
+  `BatchSimulationRunner.Run` was re-invoked cleanly against the current code with no other Unity
+  instance competing for the project - **this run completed correctly and is the authoritative
+  confirmation**: `Turn 100 | United States: GDP=206734.6 (+2.00%), Unemployment=4.00%,
+  Inflation=2.45%, InterestRate=0.00%, GovernmentDebt=0.0, DebtToGdpRatio=0.0%`, with `65` anomalies
+  detected over the 100-turn run. This GDP figure matches the harness's own current-code run
+  (`206734.0`) to five significant figures, and the anomaly count sits squarely inside the harness's
+  own events-enabled range (53-71 across several runs) - real Unity and the harness agree, and **real
+  Unity directly confirms the debt-to-zero outcome is not resolved**: `DebtToGdpRatio` is exactly
+  `0.0%`, not "well above 0," at turn 100 of a no-policy baseline, exactly matching what the harness
+  investigation above found and matching the explicit validation bar this task set that was NOT met.
+  Also observed, but out of scope for this task and not investigated further: in the same log (and reproduced in the
+  harness's own events-enabled run), Sweden/Germany/France/Italy/Poland - none of which have a
+  `SpendingLines` portfolio, and none of which are touched by anything in this fix - ALSO show
+  `DebtToGdpRatio` at either exactly 0.0% or pinned near the 300% ceiling by turn 100 under
+  events-enabled runs. This suggests debt-to-GDP bimodality (settling at one hard clamp or the other
+  over a long enough run) may be a broader, pre-existing characteristic of the debt-clamping/reversion
+  system generally, not specific to USA's `SpendingLines`/`SeedAmount` mechanism - a real, separate
+  lead for a future investigation, not chased down here. **This lead was the correct one - see "Fiscal
+  Reaction Function" below**, which found and fixed the missing piece: the debt-to-GDP system had no
+  negative feedback at all, for any of the six countries, independent of `SpendingLines`/`SeedAmount`.
+
+## Fiscal Reaction Function
+Closes the bimodal debt-to-GDP finding from "SpendingLine Amount Ceiling - Debt-to-Zero Fix" above by
+adding the missing piece that investigation's own "separate lead" flagged but didn't chase down: every
+country's `DebtToGdpRatio` - not just USA's - was found to settle at either exactly 0% or pinned near
+the 300% ceiling given a long enough no-policy run, with nothing stable in between, however
+Discretionary/Mandatory spending growth was tuned. The missing ingredient was a NEGATIVE FEEDBACK on
+the government's own fiscal behavior - real governments tighten (raise revenue/cut spending) as debt
+becomes uncomfortable and loosen as it becomes ample; this game had no such mechanism at all, only
+`GetDebtRiskPremium` (the market's side - lenders charging more to an already-indebted borrower, which
+is itself a POSITIVE feedback once in motion: more debt -> more premium -> more interest cost -> more
+debt).
+
+- **`Country.ComfortableDebtToGdpPercent`**: a new per-country structural constant - the debt-to-GDP
+  level at which the reaction is neutral. Seeded in `WorldFactory` to each country's own already-seeded
+  starting debt-to-GDP ratio (USA 124, Germany 63, France 116, Italy 138, Poland 59, Sweden 35) -
+  reusing an already-researched figure rather than inventing a new one, on the reasoning that a
+  country's own fiscal history is a reasonable proxy for what level it's institutionally built to run.
+- **`SimulationManager.GetFiscalReactionMultiplier`**: `1 + FiscalReactionSensitivity * (DebtToGdpRatio
+  - ComfortableDebtToGdpPercent) / 100`, clamped to `[MinFiscalReactionMultiplier,
+  MaxFiscalReactionMultiplier]`. Applied as an extra multiplier on top of `CollectionEfficiency` in
+  `ApplyRevenueAndSpending` (`actualRevenue = theoreticalRevenue * CollectionEfficiency *
+  GetFiscalReactionMultiplier(country)`) - above the comfort level, effective revenue rises (tightening);
+  below it, effective revenue falls (loosening). This is explicitly NOT a substitute for
+  `GetDebtRiskPremium`, which stays completely unchanged (it represents the market's own, separate cost
+  of lending more to an indebted borrower) - this is the government's own countercyclical response,
+  layered on top.
+- **Calibration - "modest" wasn't sufficient, and the reason why is itself informative**: swept
+  `FiscalReactionSensitivity` from 0.05 to 5.0 in the standalone harness (both 100- and 500-turn no-policy
+  baselines, `--noevents`, all six countries). Every value from 0.05 to 0.3 (a single-digit-percent
+  revenue swing at realistic debt-gap magnitudes) failed to escape the pre-existing 0%/294% bimodality -
+  the underlying risk-premium-driven positive feedback loop is apparently strong enough that a truly
+  "modest" (small-magnitude) countervailing force can't out-compete it. **1.0-2.0, with multiplier bounds
+  widened to `[0.5, 1.5]` (a 2x range), is what actually stabilizes the system**: every one of the six
+  countries settles at a distinct, moderate, country-appropriate `DebtToGdpRatio` - e.g. at 1.5 (the
+  shipped value): USA ~142%, Sweden ~13%, Germany ~35%, France ~90%, Italy ~107%, Poland ~26% - none of
+  them at either extreme. Confirmed as a GENUINE equilibrium, not a slower transient toward one of the
+  old attractors: identical to four significant figures at turn 500, turn 1000, and turn 2000 in the
+  harness, and robust across multiple different random-event seeds (events enabled, three separate runs
+  landed within 0.2 percentage points of each other for every country). `FiscalReactionSensitivity = 1.5`
+  and bounds `[0.5, 1.5]` were shipped to the real files as the calibrated values - a "modest" magnitude
+  in the sense of being a smooth, gradual, always-on background force (never a player-visible lever,
+  never a single-turn shock), but not modest in absolute size, since the empirical sweep showed anything
+  smaller simply doesn't work.
+- **Mandatory spending also grows automatically now** (`SimulationManager.ApplyMandatorySpendingGrowth`,
+  mirroring `ApplyDiscretionarySpendingGrowth` exactly - same `PotentialGrowthRate`, same lockstep
+  `SeedAmount` growth so `MaxSpendingLineAmountRatio`'s ceiling tracks GDP for Mandatory lines too): real
+  entitlement spending (Social Security, Medicare, Medicaid, etc.) grows with the economy in reality too
+  - demographics and healthcare-cost growth don't pause just because a program is Mandatory rather than
+  Discretionary - and the previous complete freeze was a second, independent contributor to the
+  bimodality. **This alone was tried in isolation during the debt-to-zero investigation and found to
+  overshoot badly** (pegged near 294% within ~30 turns) - it only became viable paired with the fiscal
+  reaction function's negative feedback above, which is why both ship together, not as two independently
+  toggleable fixes.
+- **A real, honestly-flagged trade-off - policy-driven extremes still reach 0%/300%, by design**: the
+  reaction function stabilizes the NO-POLICY baseline; it does not (and is not intended to) make 0%/300%
+  unreachable under deliberate player policy. Confirmed in the full validation matrix below - the
+  `stress` scenario's aggressive repeated tax hikes still drive USA's debt to exactly 0% by late-game,
+  and the `sustainedexploit` scenario's sustained max-spending pushes still peg it at 294% - both
+  adversarial, deliberately extreme policy sequences, not baselines. This is the correct, expected
+  behavior: a player choosing sustained austerity or sustained deficit spending should still be able to
+  reach the historical extremes through their own choices; the fix targets the baseline's structural
+  bimodality, not the existence of the clamps themselves.
+- **Validation - the full matrix, confirmed directly in real Unity** (see "Real-Unity Validation is the
+  Standard Path" below for why this is now the primary check, not the harness): `Assets/Scripts/Testing/
+  SimulationTestRunner.cs` was extended with a `-runmatrix` command-line flag that runs baseline, stress,
+  sustainedexploit, and tariffoverride at both 100 and 500 turns (8 combinations, ported byte-for-byte
+  from the standalone harness's own same-named scenarios) in a single Play session, and
+  `BatchSimulationRunner.Run` was invoked with it directly against the real Unity Editor
+  (`6000.5.4f1`). Results, read straight from that run's own log (not the harness): at both 100 and 500
+  turns, baseline and tariffoverride (which barely perturbs USA's own fiscal balance) land USA at ~142%,
+  essentially flat between the two horizons (142.4% -> 143.6%/142.6%) confirming genuine stability, not a
+  slow drift; Sweden/Germany/France/Italy/Poland land at ~13%/~35%/~90%/~107%/~26% respectively at BOTH
+  horizons, matching the harness closely. The stress and sustainedexploit scenarios show USA at the two
+  historical extremes (0% and 294% respectively) exactly as expected for deliberately adversarial policy
+  (see the trade-off bullet above) - not a bug. Zero NaN/Infinity/negative-value anomalies anywhere
+  across all 8 combinations; anomaly counts (34-157, higher for the 500-turn runs simply because there
+  are more turns to accumulate them over) are all attributable to ordinary swing/misery-index noise, not
+  runaway divergence.
+
+## Per-Partner Tariff Overrides
+A player-settable tariff override per trade partner, extending `TradeSystem`/`TradePartner` rather
+than building a new mechanic alongside the existing `BaseTariffRate`/`TariffRateChange` lever:
+
+- **`TradePartner.PlayerTariffOverride`** (`float`, default `-1f` = unset/no override - the same
+  sentinel-value idiom `Country.BaseDebtInterestRateOverride` already uses, not a nullable `float?` or
+  a separate boolean flag): a `HasPlayerTariffOverride => PlayerTariffOverride >= 0f` derived property
+  reads it. When set, it is this country's own tariff rate specifically for imports from that one
+  partner, persisting turn to turn exactly like `TaxLine.Rate` does (once set, it stays until the
+  player changes or resets it - not a one-turn delta). `TradePartner.Clone()` was added (mirroring
+  `TaxLine.Clone()`/`SpendingLine.Clone()`) since `PreviewTurn`'s throwaway country clone needs its
+  own copy - `SimulationManager.ApplyPartnerTariffOverrides` mutates `PlayerTariffOverride`, so a
+  shared reference would leak a draft preview override into the real `World` (see "a real correctness
+  fix, found not asked-for" below).
+- **`TradeSystem.GetTariffRate` precedence** (most-specific-first): the importer's own
+  `TradePartner.PlayerTariffOverride` for this specific exporter, if set, is checked and returned
+  BEFORE the existing shared-bloc/external-bloc/`BaseTariffRate` resolution - an unset override (the
+  default, `-1f`) falls through to that existing logic completely unchanged. The lookup is keyed off
+  the *importer's own* `TradePartner` link to the exporter (`importer.TradePartners.Find(p =>
+  p.PartnerId == exporter.Id)`) - each side of a bilateral relationship has its own separate
+  `TradePartner` instance (per `WorldFactory.AddBilateralTrade`), so this can only ever reflect a rate
+  the importer itself set on its own imports.
+- **One-directional by construction, not by a special case**: the task required this to only affect
+  the player's own tariff on its own imports, never the reverse (a partner's tariff on the player's
+  exports staying that partner's own policy). This falls out of the existing model's shape with zero
+  extra logic - `TradeSystem.ApplyTradeEffects` already calls `GetTariffRate` twice per link, once
+  with the country as importer (`tariffOnOurImports`) and once with the partner as importer
+  (`tariffOnOurExports`, i.e. what THEY charge on what we sell them) - the override lookup for
+  `tariffOnOurExports` reads the PARTNER's own `TradePartner` list, not the player's, and since nothing
+  except the player's own `PolicyDecision.PartnerTariffOverrides` ever sets an override (an AI-
+  controlled country never receives one, since `PolicyDecision.None()` carries an empty dictionary),
+  every non-player country's links stay at the default forever and resolve exactly as before.
+- **`PolicyDecision.PartnerTariffOverrides`** (`Dictionary<CountryId, float>`, absolute target per
+  partner - same "SET, not delta" semantics as `TaxRateOverrides`): `SimulationManager.
+  ApplyPartnerTariffOverrides` clamps the requested rate to the same `[MinBaseTariffRate,
+  MaxBaseTariffRate]` (0-50%) range `BaseTariffRate` itself uses (reused directly, not duplicated) and
+  sets it straight onto that partner's `PlayerTariffOverride` - a no-op for any partner with no entry.
+  Runs in `AdvanceTurn` right alongside `ApplyTariffRateChange`, before `TradeSystem.ApplyTradeEffects`
+  resolves trade, so this turn's override is what this turn's trade actually sees. Only a partner with
+  an *already-active* override gets an entry from `GameController.BuildPlayerDecision` - deliberately
+  NOT every partner unconditionally (unlike `TaxRateOverrides`, where every implemented line's own
+  current `Rate` is always a safe, idempotent fallback): if every partner were unconditionally included
+  using today's *effective* (possibly bloc-resolved) rate as a fallback, an untouched partner would get
+  silently pinned to whatever its dynamic rate happened to be that turn, converting "no override,
+  tracks the bloc/base rate" into "a static override" without the player ever touching anything - a
+  real idempotency pitfall specific to this field (an override activates a fundamentally different
+  resolution path, unlike a tax rate reasserting its own current value).
+- **UI** (`GameController`'s Trade tab, `DrawTradePartnerRow`): each partner shows its current
+  effective tariff (both directions, as before) plus, mirroring `TaxLine`'s Implement/Remove +
+  Rate-slider pattern exactly: a "Set Override" button (shown while no override is active) that
+  IMMEDIATELY activates one at today's effective rate (so turning it on is itself a no-op on the
+  actual tariff - the player then moves it from there) and forces a preview recompute; while active, a
+  slider (bounded `[0,50]`, matching `MinBaseTariffRate`/`MaxBaseTariffRate`) shows and drafts the
+  requested override rate (sent via `PartnerTariffOverrides` on Advance Turn, same deferred-commit
+  timing as the tax-rate sliders), plus a "Reset to Default" button that IMMEDIATELY clears the
+  override back to `-1f` and forces a preview recompute - the same immediate-action pattern
+  Implement/Remove already established, not a new one invented for this feature.
+- **A real correctness fix, found not asked-for**: `SimulationManager.ClonePreviewCountry` previously
+  shared the real `Country.TradePartners` list reference with the preview clone (documented at the
+  time as safe, since nothing mutated it - "TradeSystem only ever reads it, never mutates it"). That
+  became false the moment `ApplyPartnerTariffOverrides` needed to run inside `PreviewTurn` too (to
+  preview a draft override's effect, per the task's point 5) - without deep-cloning, merely *previewing*
+  a partner tariff change (no Advance Turn needed) would have written the draft value directly onto the
+  real `TradePartner.PlayerTariffOverride`, leaking into actual game state. Fixed by adding
+  `TradePartner.Clone()` and a `ClonePreviewTradePartners` helper (mirroring `ClonePreviewTaxLines`/
+  `ClonePreviewSpendingLines` exactly) so `TradePartners` is now deep-cloned like every other
+  turn-mutated list on the preview country. This doesn't affect the REAL partner countries read via
+  `world.GetCountry(...)` inside `TradeSystem.ApplyTradeEffects` - those are only ever read (for the
+  `tariffOnOurExports` lookup against the partner's OWN unmodified list), never written, regardless of
+  whether the calling country is the real one or a preview clone.
+- **Validation - explicit fidelity re-check disclosure**: given the harness's fidelity was found
+  lacking twice already this session (the stale swing-threshold, and needing an explicit side-by-side
+  diff for the spending-sliders work), its `TradeSystem.GetTariffRate`/`TradePartner`/
+  `PolicyDecision.PartnerTariffOverrides`/`ApplyPartnerTariffOverrides` were freshly diffed line-by-line
+  against the real files for this task rather than assumed still-accurate - confirmed identical logic
+  (same override-first precedence, same `[MinBaseTariffRate, MaxBaseTariffRate]` clamp, same
+  find-by-`CountryId` lookup). A new `--tariffoverride` harness scenario sets a high (40%) override on
+  Germany (USA's largest direct partner) and a low (0%) override on France at turn 1 only, leaving
+  Sweden/Poland (USA's other two direct partners) untouched as a control group, then sends NO further
+  `PartnerTariffOverrides` entries for the remaining 99 turns - confirming persistence (both overrides
+  still read back correctly at turn 100 without being resent) as well as precedence (Germany resolves
+  to 40%, not its otherwise-applicable ~3% `BaseTariffRate`; France to 0%, not 3%; Sweden/Poland
+  unaffected at 3%). 100-turn runs (events on/off) stayed numerically bounded - no NaN, no negative
+  GDP - with GDP/output-gap trajectories identical to an otherwise-equivalent baseline run, and total
+  `Budget` measurably higher (~$5,280B more over 100 turns) than the same baseline without the
+  override, confirming the fiscal channel (tariff revenue) responds in the expected direction. **One
+  honestly-flagged, pre-existing model characteristic surfaced by this validation, not introduced by
+  it**: this game's `TradeSystem` only ever lets a country's OWN import tariff affect the REVENUE it
+  collects (`tariffRevenue += link.ImportVolume * (tariffOnOurImports / 100f)`) - `effectiveImports`
+  itself is never reduced by that tariff (trade volumes are static inputs, not demand-responsive - see
+  `TradeSystem`'s own doc comment), so a partner override moves the budget/debt path but does **not**
+  move `TradeBalance`/NX/GDP directly, the same way `BaseTariffRate`/`TariffRateChange` never did
+  either. This is not a gap introduced by adding per-partner overrides - it is how tariffs already
+  worked in this model before this task, now just reachable at finer (per-partner) granularity. At the
+  time this section was originally written, this said "this environment has no reachable Unity Editor
+  install" - that was based on an incomplete search; see "SpendingLine Amount Ceiling - Debt-to-Zero
+  Fix" below for the correction (a real, working Unity 6000.5.4f1 install exists at
+  `G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe`) and for what real-Unity confirmation was actually
+  obtained.
+- **A gap from this task's own requirements, found and fixed in a follow-up pass**: this section's
+  original UI bullet only covered the NEW per-partner override controls - the general Tariff Rate
+  Change slider (`PolicyDecision.TariffRateChange`, moving `Country.BaseTariffRate`) was supposed to
+  move out of the left-column policy panel into this same Trade tab (the task's own requirement #4),
+  but the slider was left in `DrawPolicyControls` by mistake. Fixed: `DrawPolicyControls` now only
+  shows a note pointing at the Trade tab (matching how Tax/Spending policy already point there);
+  `DrawTradeSection` draws the Tariff Rate Change slider itself (alongside a read-only display of the
+  current `BaseTariffRate`) right above the per-partner override rows, so every tariff-related control
+  - general and per-partner - now lives in one place. `_tariffRateChangeInput` and its
+  build/cache/reset wiring were untouched - only which method calls `GUILayout.HorizontalSlider` for it
+  moved.
+
+## Welfare Policy
+A player-settable welfare/anti-poverty portfolio, extending the model with a genuinely new
+`PovertyRate` metric plus six `WelfareProgramType`s a country can implement/adjust/remove - mirroring
+`TaxLine`'s implement/adjust/remove pattern exactly (same "an absolute target via `PolicyDecision`,
+implement/remove is a separate immediate action" idiom), all six for every country, per the task's
+explicit requirement:
+
+- **`EconomyState.PovertyRate`**: seeded per country from real OECD relative-poverty-rate data (USA
+  18%, Italy 14%, Poland 10%, Germany 11%, Sweden 9%, France 8%) - directionally realistic figures,
+  not precisely researched down to the decimal, matching every other real-data figure in this
+  codebase's own stated calibration philosophy. `Country.BaselinePovertyRate` is a separate structural
+  anchor seeded to the SAME figures (see `MacroSystem.ApplyPovertyRate` below) - the same "avoid a
+  turn-1 shock" reasoning `Country.ComfortableDebtToGdpPercent`/"Turn-1 GDP Consistency" already
+  established: a new game opens with `PovertyRate` already at (or very near) its own baseline, not an
+  artificial jump.
+- **`MacroSystem.ApplyPovertyRate`**: `PovertyRate` mean-reverts (at `PovertyReversionSpeed = 0.15`,
+  a moderate-slow speed - real poverty rates don't swing wildly turn to turn the way
+  unemployment/inflation can) toward a baseline of `Country.BaselinePovertyRate` adjusted by the SAME
+  unemployment/inflation GAPS (versus NAIRU/target, not absolute levels) that already drive
+  `ApplyApprovalRating`'s own misery index - reusing "already-proven drivers elsewhere in the model"
+  per the task's explicit instruction, rather than inventing new sensitivities from scratch. Any
+  implemented `WelfareProgram` further reduces the baseline (see `GetPovertyReductionSensitivity`)
+  before the reversion is applied. Hard-clamped to `[0, 100]`.
+- **`WelfareProgramType`** (`UBI`, `NegativeIncomeTax`, `MeansTestedWelfare`, `UniversalHealthcare`,
+  `HousingAssistance`, `ChildcareSubsidies`) / **`WelfareProgram`** (`WelfareProgram.cs`, mirrors
+  `TaxLine.cs`'s pattern precisely): `Type`, `GenerosityLevel` (0-100%, persistent - *set* turn to turn
+  by `PolicyDecision.WelfareGenerosityOverrides`, an absolute target exactly like `TaxLine.Rate`, not a
+  delta), `IsImplemented` (toggled *immediately* by the player, not deferred to Advance Turn - see
+  `GameController`'s Welfare Policy tab), and a derived `CostShareOfGdp` (looked up from
+  `WelfareProgramCostShares` by `Type`, the same `BaseShareOfGdp` idiom `TaxLine` already uses).
+  `WelfareProgram.Clone()` exists for the same reason `TaxLine.Clone()` does - `PreviewTurn`'s
+  throwaway country clone needs its own copies, since `ApplyWelfareGenerosityChanges` mutates
+  `GenerosityLevel`. None implemented by default for any country (`WorldFactory.SeedWelfarePrograms`) -
+  per the task's explicit requirement - each starting at a placeholder 50% `GenerosityLevel` for
+  whenever a player later implements it, matching the "modest/inactive" tax lines' own placeholder-rate
+  idiom.
+- **`WelfareProgramCostShares`** (illustrative real-world-scale, at FULL 100% `GenerosityLevel` -
+  gameplay-tuning constants, not precise budget figures, the same "rough illustrative weight" idiom as
+  `TaxTypeBaseShares`): `UBI` 18% (meaningfully expensive - paying every resident a flat amount,
+  universally, is the most expensive way to move the needle on poverty, per the task's own framing);
+  `NegativeIncomeTax` 8%, `MeansTestedWelfare` 6% (targeted/income-tested, so cost far less per point
+  of `GenerosityLevel`); `UniversalHealthcare` 10% (a large program in its own right - real
+  single-payer systems typically run 8-11% of GDP); `HousingAssistance` 1.5%, `ChildcareSubsidies` 1%
+  (narrow, much smaller programs, per the task's own "~1-2%" framing).
+- **Cost** (`SimulationManager.GetTotalWelfareCost`): the sum, over every implemented `WelfareProgram`,
+  of `GDP * (CostShareOfGdp / 100) * (GenerosityLevel / 100)` - a NEW spending category, added directly
+  into `ApplyRevenueAndSpending`'s total budget outflow alongside Mandatory/Discretionary/
+  `UnemploymentBenefitCost`/`InterestOnDebt`, deliberately NOT touching `IncomeSecurity` or any other
+  existing `SpendingLine` (per the task's explicit requirement). Treated as a transfer (excluded from
+  `MacroSystem`'s national accounts G term) - the same reasoning already applied to Mandatory
+  `SpendingLine`s/`UnemploymentBenefitCost`/`InterestOnDebt`: welfare programs (UBI, means-tested
+  transfers, healthcare/housing/childcare subsidies) are payments to individuals, not government
+  purchases of goods and services.
+- **Per-program effects** (kept small and separately named, per the task's explicit instruction,
+  mirroring `ApplyCategorySpendingEffects`'s own "small, separable per-category profile" style):
+  - **PovertyRate reduction** (`MacroSystem.GetPovertyReductionSensitivity`, points-per-100%-
+    `GenerosityLevel`): `UBI` 8 and `MeansTestedWelfare` 7.5 are the strongest (direct income
+    transfers); `NegativeIncomeTax` 7 is nearly as strong as `UBI` but at less than half `UBI`'s
+    `CostShareOfGdp` - deliberately more cost-efficient per point of poverty reduction (efficiency =
+    sensitivity/cost: `NegativeIncomeTax` 7/8=0.875 vs `UBI` 8/18=0.444 vs `MeansTestedWelfare`
+    7.5/6=1.25, the most cost-efficient of the three - consistent with real economic arguments that
+    targeting is the most efficient, if also the most politically contentious, lever); `Universal
+    Healthcare`/`HousingAssistance`/`ChildcareSubsidies` are modest (4/3/3), matching the task's own
+    framing.
+  - **ApprovalRating** (`MacroSystem.GetWelfareApprovalEffect`, threaded into `ApplyApprovalRating` as
+    a new additive term - `country` was already a parameter, so no signature change was needed beyond
+    that): an ONGOING STOCK effect of each program's CURRENT `GenerosityLevel` every turn (the same
+    idiom `TaxLine.Rate` affecting revenue every turn already uses), NOT a one-time "this-turn change"
+    shock like the tax-hike/spending-change terms. `UBI`/`UniversalHealthcare` are strongest (3.0 -
+    universal, highly visible programs); `NegativeIncomeTax` 2.0; `MeansTestedWelfare`/
+    `HousingAssistance`/`ChildcareSubsidies` 1.5 (more modest - targeted spending is politically less
+    visible than a universal program of similar poverty-reduction power).
+  - **Consumption/Confidence** (`MacroSystem.ApplyWelfareProgramEffects`, a new method mirroring
+    `ApplyCategorySpendingEffects`'s pattern, called right alongside it): `UBI` nudges
+    `ConsumerConfidence` up (the task's "modest Consumption/GDP boost", modeled the same way Healthcare
+    spending already nudges it); `UniversalHealthcare` nudges `BusinessConfidence` up (reduced employer
+    healthcare-cost burden, modeled the same way Education spending already nudges it). Both small and
+    clamped to `[MinConfidence, MaxConfidence]` alongside `ApplyCategorySpendingEffects`'s own nudges.
+    Every other `WelfareProgramType` deliberately has no confidence effect (only poverty-
+    reduction/approval) - narrow/targeted programs are modeled as NOT moving broad consumer/business
+    sentiment, per the task's "minimal broad GDP effect" framing for `MeansTestedWelfare`.
+  - **Unemployment** (`MacroSystem.GetWelfareAdjustedReversionSpeed`, adjusts Okun's Law's own
+    `UnemploymentReversionSpeed` rather than shocking `Unemployment` directly - `country` was already a
+    parameter to `ApplyOkunsLaw`, so again no signature change beyond that): `UBI` SLOWS reversion
+    toward NAIRU slightly at full generosity (the real, debated labor-supply effect - kept subtle
+    deliberately, since the real-world effect is itself unsettled, not a confident modeling choice);
+    `ChildcareSubsidies` SPEEDS it slightly (the labor-force-participation effect documented
+    specifically for parents). Both are small and the combined result is floored at
+    `MinUnemploymentReversionSpeed` (0.3) so neither can stall or reverse Okun's Law's own
+    mean-reversion, only tilt it.
+- **UI** (`GameController`'s new "Welfare Policy" tab, a fifth right-column tab alongside Recent
+  Turns/Trade & Spending/Tax Policy/Spending Policy): `DrawWelfarePolicy`/`DrawWelfareProgramRow`
+  mirror `DrawTaxPolicy`/`DrawTaxLineRow` line-for-line - an Implement/Remove toggle (immediate,
+  forces a preview recompute) plus, only while implemented, a slider that directly sets this turn's
+  target `GenerosityLevel` (0-100%, not a small per-turn delta). `PovertyRate` is shown on the
+  dashboard alongside the other headline stats, and the live preview gained a matching
+  `PovertyRateChange` line (`PolicyPreview.PovertyRateChange`) for consistency with every other
+  tracked dashboard stat already getting one.
+- **Validation - the full matrix, confirmed directly in real Unity** (per "Real-Unity Validation is
+  the Standard Path" below): a new `--welfarestress`/`welfarestress` scenario (added to both the
+  standalone harness and `SimulationTestRunner`/`BatchSimulationRunner`'s `-runmatrix`) implements ALL
+  SIX `WelfareProgramType`s simultaneously at 90% `GenerosityLevel` for USA at turn 1, then holds
+  (persistent, like a tax rate - no need to resend). This is a genuinely unrealistic combination in
+  practice (`UBI`/`NegativeIncomeTax`/`MeansTestedWelfare` are typically substitute approaches to the
+  same problem, not complements the model treats as mutually exclusive) - deliberately so, as a stress
+  test of the system's numeric bounds rather than a realistic policy scenario. Confirmed in the
+  standalone harness (100 and 500 turns, events on/off): `PovertyRate` correctly floors at exactly 0%
+  (the combined reduction sensitivity, ~29 points at 90% generosity, exceeds USA's ~18% baseline),
+  `ApprovalRating` correctly ceilings at 100%, `DebtToGdpRatio` settles at the same ~294% attractor
+  "Fiscal Reaction Function" already found for extreme sustained spending - all hard-bounded, none
+  diverging, confirmed flat at 500 turns (not just transiently bounded at 100). **Then confirmed
+  directly in real Unity**: the full 10-combination matrix (baseline/stress/sustainedexploit/
+  tariffoverride/welfarestress x 100/500 turns) ran with zero NaN/negative-value/out-of-range
+  anomalies across all ten - `welfarestress`'s anomaly count (45 at 100 turns, 136 at 500) was in the
+  same range as the other four scenarios, not dramatically higher, meaning the extreme multi-program
+  stress doesn't introduce a qualitatively different instability. `SimulationTestRunner.CheckAnomalies`
+  was extended with `PovertyRate`'s own finite/range check (alongside the existing GDP/Unemployment/
+  Inflation/etc. checks) and a finite check per `WelfareProgram.GenerosityLevel`, so this is a real,
+  checked-every-turn-for-every-country confirmation, not an incidental one.
+
 ## Live Policy Preview
 `GameController` shows an estimate of this turn's effect under the sliders' *current* (not yet
 committed) values, recomputed every `OnGUI` call:
@@ -492,11 +1343,14 @@ committed) values, recomputed every `OnGUI` call:
   the fiscal helpers including `GetTotalTaxRevenue`, `MacroSystem.ApplyNationalAccounts`/
   `ApplyOkunsLaw`/`ApplyPhillipsCurveInflation`/`ApplyInflationExpectations`/`ApplyApprovalRating`)
   against a throwaway clone (`ClonePreviewCountry`: its own `EconomyState.Clone()`, its own copies of
-  the structural fields those formulas mutate, and its own deep-cloned `TaxLines` — `Rate` is mutated
-  by `ApplyTaxRateChanges`, so these can't be shared references the way `TradePartners` is — but the
-  *same* `CurrencyZone` and `TradePartners` references, since those are read-only from `PreviewTurn`'s
-  perspective) — so the result stays grounded in the real model instead of a separately hand-rolled
-  estimate, and nothing it computes is ever written back to the real `World`. Deliberately never rolls an `EventSystem` event or
+  the structural fields those formulas mutate, and its own deep-cloned `TaxLines`, `SpendingLines`,
+  and `TradePartners` — `Rate`/`Amount`/`PlayerTariffOverride` are each mutated by
+  `ApplyTaxRateChanges`/`ApplySpendingLineChanges`/`ApplyPartnerTariffOverrides` respectively, so none
+  of these three can be shared references — but the *same* `CurrencyZone` reference, since it's
+  read-only from `PreviewTurn`'s perspective (see "Per-Partner Tariff Overrides" above for why
+  `TradePartners` moved from shared to deep-cloned)) — so the result stays grounded in the real model
+  instead of a separately hand-rolled estimate, and nothing it computes is ever written back to the
+  real `World`. Deliberately never rolls an `EventSystem` event or
   advances `CurrentTurn` — a preview should be side-effect-free and deterministic, not spend part of
   the event-roll randomness budget on a turn the player might not commit to. Two small
   simplifications, both to avoid mutating a `CurrencyZone` that can be shared across countries just
@@ -511,11 +1365,54 @@ committed) values, recomputed every `OnGUI` call:
   `System.Random` and from `UnityEngine.Random` — so viewing the preview or dragging a slider can
   never perturb the event roll or any other RNG consumer's sequence.
 
+## Real-Unity Validation is the Standard Path
+For most of this session, every validation writeup in this file said some version of "this
+environment has no reachable Unity Editor install" - that was wrong, based on an incomplete search
+(see "SpendingLine Amount Ceiling - Debt-to-Zero Fix" above for how and when that was found and
+corrected). Now that a working install is confirmed reachable
+(`G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe`, with this project already registered against it),
+**the standard, primary way to validate any change to simulation behavior is a real headless Unity
+run via `Assets/Editor/BatchSimulationRunner.cs`, not the standalone C# harness alone**, and not by
+asking a person to open the Editor and press Play manually:
+
+```
+Unity.exe -batchmode -nographics -projectPath <path> -executeMethod
+PoliSim.EditorTools.BatchSimulationRunner.Run -logFile <path> [-turns=N] [-scenario=X] [-runmatrix]
+```
+
+- **`-runmatrix`** runs the full baseline/stress/sustainedexploit/tariffoverride x 100/500-turn matrix
+  (8 combinations) in a single Play session - this is what "Fiscal Reaction Function" above was
+  validated against, and should be the default choice whenever a change could plausibly affect
+  long-run stability (spending/revenue/debt mechanics, growth rates, anything with a feedback loop).
+- **`-turns=N -scenario=baseline|stress|sustainedexploit|tariffoverride`** runs one specific
+  combination - useful for a faster spot-check once a change is already believed correct.
+- Omitting both defaults to a single 100-turn baseline run, matching the tool's original behavior.
+- `SimulationTestRunner.cs` reads these from `Environment.GetCommandLineArgs()` directly, so they
+  survive Unity's domain reload on entering Play mode - no separate build step or scene change needed.
+- **The standalone C# harness (`SimHarness/Program.cs`, outside this repository) is now a fast-iteration
+  tool, not the source of truth**: use it for rapid sweeps (many candidate values, many turn counts,
+  in seconds rather than minutes) while narrowing in on a fix, exactly as "Fiscal Reaction Function"
+  did to find `FiscalReactionSensitivity = 1.5` before it was ever ported - but treat a harness-only
+  result as provisional until confirmed with an actual `BatchSimulationRunner` run, the same way this
+  session already learned (twice, from the swing-threshold and spending-slider incidents) that the
+  harness's own fidelity can't be assumed without checking.
+- **Practical notes from getting this working**: a batch-mode Unity process can't open a project
+  that's already open in another Editor window - if `-executeMethod` exits immediately with "return
+  code 1" before any script compilation appears in the log, that's almost certainly why; check for
+  (and close, with permission) other Unity processes for this project first. A `-runmatrix` run's own
+  per-turn Debug.Log calls were found to be the dominant cost at scale (not the simulation math
+  itself) - `SimulationTestRunner` logs every turn for a single run but only every 25th turn (plus the
+  first and last) in matrix mode for exactly this reason. PowerShell's `Start-Process`/`Wait-Process`
+  against the PID Unity was launched with can return before the real work is done - Unity sometimes
+  hands off to a second process; check `Get-Process -Name Unity` and its CPU-time growth if a launch
+  seems to finish suspiciously fast with no matching log activity.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
 - Cross-references between countries (trade partners, bloc membership) go through the `CountryId` enum, never direct object references — avoids reference cycles and keeps the data model Unity-Inspector-serializable. Shared-currency membership is instead detected by *reference equality* on `CurrencyZone` (see `CurrencySystem.SharesCurrencyZoneWithOthers`), since that shared reference is exactly what "using the same currency" means in this model.
 - No comments explaining *what* code does; only note *why* when a rule's tuning or a non-obvious interaction needs explanation.
+- Validate simulation-affecting changes against real Unity via `BatchSimulationRunner`, not the standalone harness alone - see "Real-Unity Validation is the Standard Path" above.
 
 ## Status
 Multi-country scaffold: six countries (USA, Sweden, Germany, France, Italy, Poland) seeded with
@@ -567,19 +1464,79 @@ taxes and adjusting several rates at once) all stayed bounded over 100 turns wit
 NaN/negative/out-of-range values; the player's country won every simulated election in the fiscal-
 layer stress run but lost two toward the end of the tax-portfolio one (turns 84/96, after ~80 turns of
 sustained heavy spending plus repeated tax hikes) - a sensible emergent outcome of that policy
-combination, not an instability bug.
+combination, not an instability bug. USA also now has an independent Federal Reserve (see "Federal
+Reserve" above): a player-picked fictional `FedChair` (Hawkish/Moderate/Dovish, chosen every
+election cycle) drives USA's interest rate via `TaylorRule.GetSuggestedInterestRate` plus that
+chair's `RateBias`, bypassing the direct interest-rate slider entirely - Sweden, Poland, and the
+Eurozone trio are unaffected. Validated in the same harness across all three philosophies for a full
+100-turn run each: numerically bounded throughout, and Hawkish measurably runs tighter/lower
+inflation than Moderate/Dovish, though Moderate and Dovish currently land on the same
+`MinInterestRate` floor given USA's deeply-negative output gap. A follow-up investigation ("Discretionary
+Spending Growth" above) found the true root cause - USA's Discretionary `SpendingLine`s had stopped
+scaling with GDP entirely when they replaced the old GDP-proportional `GovernmentSpendingRate`
+mechanic - and fixed it by growing Discretionary spending at `PotentialGrowthRate` each turn, turning
+the previously-*diverging* output gap (toward -18% to -20%) into a *stable* one around -13% to -15%.
+Debt-to-GDP settles around 150% under this fix (up from 0%, but safely clear of the 300% ceiling).
+The gap is still deep enough that Moderate and Dovish continue to land on the same floor - full
+three-way Fed chair differentiation remains a known, unresolved limitation (see "Federal Reserve"
+above for the full explanation and why closing it further wasn't pursued here). USA's seeded
+`PotentialGDP` was subsequently recalibrated (see "Turn-1 GDP Consistency") so this -13% to -15%
+equilibrium gap is already in effect from turn 1, instead of opening near 0% and sliding into it over
+the first ~25 turns - closing off a real, one-time ~9% GDP contraction the very first turn of any new
+game previously produced. Every `SpendingLine`'s `Amount` (Mandatory and Discretionary) is now also
+hard-clamped to [0.2x, 3.0x] of its own fixed starting value (see "SpendingLine Amount Ceiling"),
+closing off the sustained-percentage-compounding runaway divergence "Percentage-Based Spending
+Sliders" had found and flagged but not yet fixed - with the honestly-disclosed side effect that the
+same clamp also caps the passive GDP-proportional Discretionary growth above once a line reaches 3x
+its start (around turn 56 at USA's growth rate). **That widening was subsequently found to be far more
+consequential than first described** - it produced an ever-widening primary surplus that paid USA's
+debt to exactly 0 and flatlined it there; see "SpendingLine Amount Ceiling - Debt-to-Zero Fix" for the
+fix (a Discretionary line's `SeedAmount` now grows alongside its `Amount`) and for the second driver
+found alongside it (Mandatory spending had no automatic growth mechanism at all, and naively giving it
+one overshot to the opposite extreme, ~294% debt-to-GDP). **Both are now resolved** by "Fiscal Reaction
+Function": every country's government now automatically tightens (raises effective revenue) as its own
+`DebtToGdpRatio` rises above a country-specific comfort anchor and loosens as it falls below - the
+missing negative feedback the debt-clamping system lacked entirely - shipped alongside giving Mandatory
+spending the same automatic growth Discretionary already had (safe now that the reaction function
+counterbalances it). All six countries settle at distinct, moderate, country-appropriate debt-to-GDP
+levels under a no-policy baseline (confirmed flat from turn 100 through turn 500 in a direct real-Unity
+run, not just the harness), rather than the previous two-extremes-only outcome - a deliberately extreme
+player policy (heavy sustained tax hikes, or holding spending sliders at max every turn) can still drive
+debt to 0% or the 300% ceiling, which is intended; only the passive/no-policy baseline was bimodal.
+Every country can also now set a player-specific tariff override on any
+one trade partner (see "Per-Partner Tariff Overrides"), extending `TradeSystem.GetTariffRate`'s
+existing precedence chain rather than adding a parallel mechanic - a set override beats even trade-
+bloc membership for that one relationship, persists turn to turn like a `TaxLine.Rate` does, and only
+ever affects the owning country's own tariff on its own imports from that partner, never the reverse -
+its own general Tariff Rate Change slider was also relocated from the left-column policy panel into
+this same Trade tab, alongside the per-partner controls. This session also found (later than it should
+have) that a working Unity Editor install (`6000.5.4f1`) IS reachable in this environment at
+`G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe` - every earlier "no Unity Editor reachable" statement
+in this file reflected an incomplete search, not a genuine absence; see "SpendingLine Amount Ceiling -
+Debt-to-Zero Fix" for the correction and for `Assets/Editor/BatchSimulationRunner.cs`, a new
+Editor-only script that lets `SimulationTestRunner` run headlessly from the command line.
 
 A first playable loop exists: `GameController` (`Assets/Scripts/UI/`), an unstyled immediate-mode
 (`OnGUI`) dashboard/policy panel for the player's country (USA, hardcoded) — shows its
-`EconomyState` including `ApprovalRating`, takes this turn's `PolicyDecision` via tariff and (when
-applicable) interest rate sliders on the left, a dedicated Tax Policy tab for implementing/removing/
-adjusting individual taxes, and a dedicated Spending Policy tab (see "Detailed Spending Portfolio"
-above) for USA's detailed Mandatory (read-only)/Discretionary (sliderable) spending lines plus a
-read-only Interest on Debt line, displays the current turn's event (if any) as a "BREAKING: ..."
-banner above the dashboard and a game-over banner if the player lost re-election, and advances the
-turn on a button press, with every other country getting `PolicyDecision.None()`. A live preview
-(see "Live Policy Preview" above) shows the sliders' (including tax-line and spending-line sliders')
-estimated single-turn effect, with a cosmetic margin of error, before the player commits by pressing
-Advance Turn. No save/load, no full market simulation (trade volumes are static inputs, not
-supply/demand-driven), and every constant is a starting-point placeholder meant to be tuned by
-playtesting.
+`EconomyState` including `ApprovalRating`, takes this turn's `PolicyDecision` via a tariff slider
+(and, for a country without an independent Fed chair, an interest rate slider) on the left, a
+Federal Reserve panel showing USA's current chair and (on an election-cycle turn) candidate buttons
+that must be resolved before Advance Turn is enabled, a dedicated Tax Policy tab for
+implementing/removing/adjusting individual taxes, a dedicated Spending Policy tab (see "Detailed
+Spending Portfolio" and "Percentage-Based Spending Sliders" above) for USA's detailed Mandatory and
+Discretionary spending lines - each a percentage-of-current-amount slider, Mandatory at a narrower
+range and higher approval cost - plus a read-only Interest on Debt line, a Trade tab (see
+"Per-Partner Tariff Overrides" above) where each trade partner can have its own tariff override
+enabled/adjusted/reset independently of the country's general `BaseTariffRate`, and a Welfare Policy
+tab (see "Welfare Policy" above) implementing/removing/adjusting each of the six welfare programs the
+same way tax lines work, displays the current turn's event (if any) as
+a "BREAKING: ..." banner above the dashboard and a game-over banner if the player lost re-election,
+and advances the turn on a button press, with every other country getting `PolicyDecision.None()`. A
+live preview (see "Live Policy Preview" above) shows the sliders' (including tax-line, spending-line,
+per-partner tariff-override, and welfare-generosity sliders, and USA's Fed-chair-driven rate) estimated single-turn effect, with a
+cosmetic margin of error, before the player commits by pressing Advance Turn. Every country now also
+tracks `PovertyRate` (seeded from real OECD data, shown on the dashboard - see "Welfare Policy" above),
+mean-reverting toward a baseline driven by the same unemployment/inflation gaps that already drive
+approval, adjustable via any of the six implementable welfare programs. No save/load, no full
+market simulation (trade volumes are static inputs, not supply/demand-driven), and every constant is
+a starting-point placeholder meant to be tuned by playtesting.

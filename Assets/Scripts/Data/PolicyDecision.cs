@@ -24,19 +24,38 @@ namespace PoliSim.Data
         public Dictionary<TaxType, float> TaxRateOverrides = new Dictionary<TaxType, float>();
 
         /// <summary>
-        /// This turn's requested dollar CHANGE per SpendingCategory (a delta, like the legacy
-        /// category-spending fields below, NOT an absolute target like TaxRateOverrides) - only
-        /// consumed for a country with a non-empty Country.SpendingLines (Phase 1: USA only), and
-        /// only meaningful for Discretionary categories (Mandatory lines aren't player-adjustable in
-        /// Phase 1 - see SimulationManager.ApplySpendingLineChanges, which ignores any entry for a
-        /// Mandatory category). For such a country, this REPLACES the four legacy fields below as the
-        /// player's actual spending input; SimulationManager derives equivalent values for those four
-        /// fields from specific categories here (see BuildEffectiveDecisionForDetailedSpending) so
-        /// MacroSystem's existing category-effect/approval formulas keep working unmodified.
+        /// This turn's requested ABSOLUTE GenerosityLevel per WelfareProgramType (not a delta) - e.g.
+        /// 40f means "set this program's generosity to 40%", not "raise it by 40 points". Only
+        /// meaningful for WelfareProgramTypes the country currently has implemented;
+        /// SimulationManager.ApplyWelfareGenerosityChanges clamps the requested value to [0, 100] and
+        /// sets WelfareProgram.GenerosityLevel directly to the clamped result - the exact same pattern
+        /// as TaxRateOverrides/TaxLine.Rate. Implementing/removing a welfare program is a separate,
+        /// immediate action (see Country.WelfarePrograms/WelfareProgram.IsImplemented), not part of
+        /// this dictionary.
+        /// </summary>
+        public Dictionary<WelfareProgramType, float> WelfareGenerosityOverrides = new Dictionary<WelfareProgramType, float>();
+
+        /// <summary>
+        /// This turn's requested PERCENTAGE change per SpendingCategory (e.g. 15f means "+15% of that
+        /// line's own current Amount", NOT a flat dollar delta and NOT an absolute target like
+        /// TaxRateOverrides) - only consumed for a country with a non-empty Country.SpendingLines
+        /// (Phase 1: USA only). Both Mandatory and Discretionary categories are adjustable;
+        /// SimulationManager.ApplySpendingLineChanges clamps the requested percentage to a
+        /// category-appropriate range before applying it (narrower for Mandatory - see
+        /// SimulationManager.MandatoryPercentChangeRange/DiscretionaryPercentChangeRange) and converts
+        /// it to that line's actual dollar change (Amount * percent / 100) before applying, so a +15%
+        /// slider on an $850B line and a +15% slider on a $1B line move by proportionally different
+        /// dollar amounts. For a country with a detailed portfolio, this REPLACES the four legacy
+        /// fields below as the player's actual spending input; SimulationManager derives equivalent
+        /// dollar values for those four fields from specific categories' actual applied change (see
+        /// BuildEffectiveDecisionForDetailedSpending) so MacroSystem's existing category-effect/
+        /// approval formulas keep working unmodified. Mandatory changes additionally feed
+        /// MacroSystem.ApplyApprovalRating's own, distinctly higher-weighted approval term - see
+        /// MandatorySpendingApprovalMultiplier.
         /// </summary>
         public Dictionary<SpendingCategory, float> SpendingLineChanges = new Dictionary<SpendingCategory, float>();
 
-        /// <summary>Discretionary healthcare spending change this turn - see MacroSystem.ApplyCategorySpendingEffects for its confidence/approval profile. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (HHSDiscretionary + Medicaid) rather than set directly by the player - see PolicyDecision.SpendingLineChanges.</summary>
+        /// <summary>Discretionary healthcare spending change this turn - see MacroSystem.ApplyCategorySpendingEffects for its confidence/approval profile. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (HHSDiscretionary alone - Medicaid is Mandatory and feeds its own approval term instead, see MacroSystem.MandatorySpendingApprovalMultiplier) rather than set directly by the player - see PolicyDecision.SpendingLineChanges.</summary>
         public float HealthcareSpendingChange;
 
         /// <summary>Discretionary defense spending change this turn - no growth/confidence side-effect, only a (smaller) approval effect. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Defense) rather than set directly by the player.</summary>
@@ -57,6 +76,22 @@ namespace PoliSim.Data
 
         /// <summary>Change to the country's own BaseTariffRate - only affects trade with countries it doesn't share a trade bloc with (see TradeSystem.GetTariffRate's precedence).</summary>
         public float TariffRateChange;
+
+        /// <summary>
+        /// This turn's requested ABSOLUTE tariff-rate override per trade-partner CountryId (not a
+        /// delta) - e.g. 25f means "set my tariff on imports from this partner to 25%", overriding
+        /// BaseTariffRate/trade-bloc resolution for that one relationship only. See
+        /// TradeSystem.GetTariffRate's precedence and TradePartner.PlayerTariffOverride.
+        /// SimulationManager.ApplyPartnerTariffOverrides clamps the requested rate (the same
+        /// [MinBaseTariffRate, MaxBaseTariffRate] range BaseTariffRate itself uses) and sets it
+        /// directly on that partner's TradePartner.PlayerTariffOverride, where it then persists turn
+        /// to turn like TaxLine.Rate does - a no-op for any partner with no entry here. Clearing an
+        /// override back to "no override" (default bloc/base-rate resolution) is a separate,
+        /// immediate action on TradePartner.PlayerTariffOverride itself (see GameController's Trade
+        /// tab Reset control), not something this dictionary does - matching how implementing/
+        /// removing a tax is a separate immediate action from TaxRateOverrides.
+        /// </summary>
+        public Dictionary<CountryId, float> PartnerTariffOverrides = new Dictionary<CountryId, float>();
 
         /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the

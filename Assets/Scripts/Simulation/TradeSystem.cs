@@ -19,12 +19,25 @@ namespace PoliSim.Simulation
         private const float MaxExportCurrencyFactor = 1.5f;
 
         /// <summary>
-        /// The tariff rate (as a percentage) the importer applies to goods coming from the exporter:
-        /// zero-ish if both share a trade bloc, the bloc's common external rate if only the importer
-        /// is a member, or the importer's own base tariff rate if it belongs to no bloc.
+        /// The tariff rate (as a percentage) the importer applies to goods coming from the exporter,
+        /// most-specific-wins: the importer's own player-set TradePartner.PlayerTariffOverride for
+        /// this specific exporter, if one is set; otherwise zero-ish if both share a trade bloc, the
+        /// bloc's common external rate if only the importer is a member, or the importer's own base
+        /// tariff rate if it belongs to no bloc. The override lookup is keyed off the importer's OWN
+        /// TradePartner link to the exporter (importer.TradePartners, found by CountryId - each side
+        /// of a bilateral relationship has its own TradePartner instance, per
+        /// WorldFactory.AddBilateralTrade), so it only ever reflects a rate the importer itself set on
+        /// its own imports - never a rate the exporter might have set on ITS imports from the
+        /// importer, which is an entirely separate TradePartner instance this lookup never touches.
         /// </summary>
         public static float GetTariffRate(Country importer, Country exporter, List<TradeBloc> tradeBlocs)
         {
+            TradePartner link = importer.TradePartners.Find(partner => partner.PartnerId == exporter.Id);
+            if (link != null && link.HasPlayerTariffOverride)
+            {
+                return link.PlayerTariffOverride;
+            }
+
             foreach (var bloc in tradeBlocs)
             {
                 if (bloc.IsMember(importer.Id) && bloc.IsMember(exporter.Id))

@@ -20,6 +20,14 @@ namespace PoliSim.Data
         public List<TaxLine> TaxLines = new List<TaxLine>();
 
         /// <summary>
+        /// This country's welfare portfolio - which anti-poverty programs are implemented and at what
+        /// GenerosityLevel, mirroring TaxLines' implement/adjust/remove pattern exactly. None
+        /// implemented by default for any country (see WorldFactory) - see WelfareProgram and
+        /// SimulationManager.GetTotalWelfareCost/ApplyWelfareGenerosityChanges.
+        /// </summary>
+        public List<WelfareProgram> WelfarePrograms = new List<WelfareProgram>();
+
+        /// <summary>
         /// This country's detailed spending portfolio (Phase 1: USA only - see CLAUDE.md's "Detailed
         /// Spending Portfolio"). Empty for a country means it still uses the legacy
         /// GovernmentSpendingRate + PolicyDecision's four category-delta fields mechanism unchanged -
@@ -93,6 +101,37 @@ namespace PoliSim.Data
         /// (not exactly) zero. See "Reserve-Currency Debt Interest Treatment" in CLAUDE.md.
         /// </summary>
         public float RiskPremiumSensitivity = 1f;
+
+        /// <summary>
+        /// This country's own fiscal-comfort anchor for SimulationManager.GetFiscalReactionMultiplier
+        /// - the debt-to-GDP level at which the automatic fiscal reaction (see that method) is
+        /// neutral. Above it, the reaction modestly tightens (raises effective revenue); below it, it
+        /// loosens. A structural per-country constant, seeded in WorldFactory to match each country's
+        /// own real-approximate starting debt-to-GDP ratio - reusing that already-researched figure,
+        /// not a separately-tuned new one. See "Fiscal Reaction Function" in CLAUDE.md.
+        /// </summary>
+        public float ComfortableDebtToGdpPercent = 60f;
+
+        /// <summary>
+        /// This country's structural "steady-state" poverty rate - the PovertyRate MacroSystem.
+        /// ApplyPovertyRate's baseline computes toward when Unemployment sits at NaturalUnemploymentRate
+        /// and Inflation sits at TaylorRule.InflationTarget (i.e. the gaps that otherwise move the
+        /// baseline are both zero). Seeded per country from real OECD relative-poverty-rate data (see
+        /// WorldFactory) - the same figure EconomyState.PovertyRate is seeded to, so a new game opens
+        /// with PovertyRate already at (or very near) its own baseline rather than an artificial
+        /// turn-1 jump, the same "avoid a one-time shock" lesson "Turn-1 GDP Consistency" established.
+        /// </summary>
+        public float BaselinePovertyRate = 10f;
+
+        /// <summary>
+        /// This country's independent central bank chair, or null for a country that instead uses
+        /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
+        /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)
+        /// means CurrencySystem bypasses PolicyDecision.InterestRateChange entirely and instead sets
+        /// InterestRate to TaylorRule.GetSuggestedInterestRate plus this chair's RateBias each turn -
+        /// see FederalReserveSystem and CLAUDE.md's "Federal Reserve" section.
+        /// </summary>
+        public FedChair CurrentFedChair;
 
         public Country() { }
 

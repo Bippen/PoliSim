@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using PoliSim.Data;
 using PoliSim.Simulation;
 using UnityEngine;
@@ -6,13 +8,23 @@ using UnityEngine;
 namespace PoliSim.Testing
 {
     /// <summary>
-    /// Debug tool: runs the default six-country World for a fixed number of turns with no player
-    /// input, logging per-turn/per-country state and a final summary flagging anything that looks
-    /// like a runaway feedback loop or invalid value. Not production code.
+    /// Debug tool: runs the default six-country World for a configurable number of turns, logging
+    /// per-turn/per-country state and a final summary flagging anything that looks like a runaway
+    /// feedback loop or invalid value. Not production code.
+    ///
+    /// Reads two optional command-line arguments (so `Assets/Editor/BatchSimulationRunner.cs` can
+    /// drive it headlessly without touching this file per run - see CLAUDE.md's "Real-Unity
+    /// Validation is the Standard Path" for why this replaced the standalone harness as the primary
+    /// validation tool):
+    /// -turns=N (default 100) - how many turns to run.
+    /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress (default baseline) -
+    /// baseline is PolicyDecision.None() for every country every turn (the original behavior,
+    /// unchanged); the other four mirror the standalone harness's own same-named scenarios
+    /// byte-for-byte (same targets, same rates, same turn timing) so both tools exercise identical
+    /// policy sequences against the real game code.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
-        private const int TurnsToRun = 100;
         private const float MaxUnemploymentPercent = 50f;
         private const float MaxInflationPercent = 50f;
         private const float MaxSingleTurnChangePercent = 20f;
@@ -26,7 +38,45 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress" };
+        private static readonly int[] MatrixTurnCounts = { 100, 500 };
+
         private void Start()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+
+            if (args.Contains("-runmatrix"))
+            {
+                // Runs every (scenario, turn count) combination in one Play session, each against its
+                // own fresh World/SimulationManager, instead of requiring a separate Unity process
+                // launch (and a full script recompile) per combination.
+                foreach (int turnsToRun in MatrixTurnCounts)
+                {
+                    foreach (string scenario in MatrixScenarios)
+                    {
+                        RunOne(turnsToRun, scenario, logEveryTurn: false);
+                    }
+                }
+                return;
+            }
+
+            int singleTurnsToRun = GetIntArg(args, "-turns=", 100);
+            string singleScenario = GetStringArg(args, "-scenario=", "baseline");
+            RunOne(singleTurnsToRun, singleScenario, logEveryTurn: true);
+        }
+
+        /// <summary>
+        /// <paramref name="logEveryTurn"/> is false for -runmatrix's 8 combinations (nobody reads
+        /// 14,000+ log lines live - anomalies and the final per-combination summary are what matter,
+        /// and Debug.Log's own overhead at that volume was making full 500-turn matrix runs
+        /// unreasonably slow/unreliable in batch mode) - only every 25th turn plus the first and last
+        /// get a full per-country log line then. CheckAnomalies still runs and Debug.LogWarning fires
+        /// EVERY turn an anomaly is actually found, regardless of this flag - reduced logging only
+        /// skips the routine, no-anomaly per-turn status lines. A single manual/-scenario= run keeps
+        /// logging every turn (true), matching the original behavior for someone reading the Console
+        /// live during interactive testing.
+        /// </summary>
+        private void RunOne(int turnsToRun, string scenario, bool logEveryTurn)
         {
             World world = WorldFactory.CreateDefault();
             SimulationManager simulationManager = gameObject.AddComponent<SimulationManager>();
@@ -41,10 +91,14 @@ namespace PoliSim.Testing
             }
 
             var anomalies = new List<string>();
+            Country usa = world.GetCountry(CountryId.USA);
 
-            for (int turn = 1; turn <= TurnsToRun; turn++)
+            for (int turn = 1; turn <= turnsToRun; turn++)
             {
+                decisions[CountryId.USA] = BuildUsaDecision(scenario, usa, turn);
                 simulationManager.AdvanceTurn(decisions);
+
+                bool shouldLogThisTurn = logEveryTurn || turn == 1 || turn == turnsToRun || turn % 25 == 0;
 
                 foreach (Country country in world.Countries)
                 {
@@ -52,10 +106,13 @@ namespace PoliSim.Testing
                     Snapshot prev = previous[country.Id];
                     float growthPercent = (state.GDP - prev.GDP) / Mathf.Max(prev.GDP, 1f) * 100f;
 
-                    Debug.Log($"Turn {turn} | {country.Name}: GDP={state.GDP:F1} ({growthPercent:+0.00;-0.00}%), " +
-                        $"Unemployment={state.Unemployment:F2}%, Inflation={state.Inflation:F2}%, " +
-                        $"InterestRate={country.CurrencyZone.InterestRate:F2}%, " +
-                        $"GovernmentDebt={state.GovernmentDebt:F1}, DebtToGdpRatio={state.DebtToGdpRatio:F1}%");
+                    if (shouldLogThisTurn)
+                    {
+                        Debug.Log($"[{scenario}/{turnsToRun}] Turn {turn} | {country.Name}: GDP={state.GDP:F1} ({growthPercent:+0.00;-0.00}%), " +
+                            $"Unemployment={state.Unemployment:F2}%, Inflation={state.Inflation:F2}%, " +
+                            $"InterestRate={country.CurrencyZone.InterestRate:F2}%, " +
+                            $"GovernmentDebt={state.GovernmentDebt:F1}, DebtToGdpRatio={state.DebtToGdpRatio:F1}%");
+                    }
 
                     CheckAnomalies(turn, country, state, prev, anomalies);
 
@@ -63,7 +120,158 @@ namespace PoliSim.Testing
                 }
             }
 
-            LogSummary(anomalies);
+            LogSummary(anomalies, turnsToRun, scenario);
+        }
+
+        private static int GetIntArg(string[] args, string prefix, int fallback)
+        {
+            string arg = args.FirstOrDefault(a => a.StartsWith(prefix));
+            return arg != null ? int.Parse(arg.Substring(prefix.Length)) : fallback;
+        }
+
+        private static string GetStringArg(string[] args, string prefix, string fallback)
+        {
+            string arg = args.FirstOrDefault(a => a.StartsWith(prefix));
+            return arg != null ? arg.Substring(prefix.Length) : fallback;
+        }
+
+        /// <summary>
+        /// USA's PolicyDecision for this turn under the requested scenario - every other country
+        /// always gets PolicyDecision.None(), matching the standalone harness's own convention. Ports
+        /// the harness's "stress"/"sustainedexploit"/"tariffoverride" scenarios verbatim (same targets,
+        /// rates, and turn timing) so BatchSimulationRunner exercises the identical policy sequences
+        /// against the real game code that the harness already validated them against.
+        /// </summary>
+        private static PolicyDecision BuildUsaDecision(string scenario, Country usa, int turn)
+        {
+            switch (scenario)
+            {
+                case "tariffoverride":
+                    return BuildTariffOverrideDecision(turn);
+                case "sustainedexploit":
+                    return BuildSustainedExploitDecision();
+                case "stress":
+                    return BuildStressDecision(usa, turn);
+                case "welfarestress":
+                    return BuildWelfareStressDecision(usa, turn);
+                default:
+                    return PolicyDecision.None();
+            }
+        }
+
+        private static PolicyDecision BuildWelfareStressDecision(Country usa, int turn)
+        {
+            if (turn != 1)
+            {
+                // No entries after turn 1 - GenerosityLevel persists on its own, like a tax rate.
+                return PolicyDecision.None();
+            }
+
+            foreach (WelfareProgram program in usa.WelfarePrograms)
+            {
+                program.IsImplemented = true;
+            }
+
+            return new PolicyDecision
+            {
+                WelfareGenerosityOverrides = new Dictionary<WelfareProgramType, float>
+                {
+                    { WelfareProgramType.UBI, 90f },
+                    { WelfareProgramType.NegativeIncomeTax, 90f },
+                    { WelfareProgramType.MeansTestedWelfare, 90f },
+                    { WelfareProgramType.UniversalHealthcare, 90f },
+                    { WelfareProgramType.HousingAssistance, 90f },
+                    { WelfareProgramType.ChildcareSubsidies, 90f },
+                }
+            };
+        }
+
+        private static PolicyDecision BuildTariffOverrideDecision(int turn)
+        {
+            if (turn != 1)
+            {
+                // No entries after turn 1 - confirms the override persists on its own
+                // (TradePartner.PlayerTariffOverride) without needing to be resent every turn.
+                return PolicyDecision.None();
+            }
+
+            return new PolicyDecision
+            {
+                PartnerTariffOverrides = new Dictionary<CountryId, float>
+                {
+                    { CountryId.Germany, 40f },
+                    { CountryId.France, 0f },
+                }
+            };
+        }
+
+        private static PolicyDecision BuildSustainedExploitDecision()
+        {
+            return new PolicyDecision
+            {
+                SpendingLineChanges = new Dictionary<SpendingCategory, float>
+                {
+                    { SpendingCategory.Defense, 30f },
+                    { SpendingCategory.Transportation, 30f },
+                    { SpendingCategory.Education, 30f },
+                    { SpendingCategory.HHSDiscretionary, -30f },
+                    { SpendingCategory.SocialSecurity, 15f },
+                    { SpendingCategory.Medicare, 15f },
+                }
+            };
+        }
+
+        private static PolicyDecision BuildStressDecision(Country usa, int turn)
+        {
+            if (turn == 10)
+            {
+                usa.TaxLines.First(t => t.Type == TaxType.WealthTax).IsImplemented = true;
+                usa.TaxLines.First(t => t.Type == TaxType.CarbonTax).IsImplemented = true;
+            }
+            if (turn == 20)
+            {
+                usa.TaxLines.First(t => t.Type == TaxType.EstateTax).IsImplemented = false;
+            }
+
+            float incomeTarget = Mathf.Min(TaxTypeRateRanges.IncomeTaxMax - 1f, 37f + turn * 0.4f);
+            float payrollTarget = Mathf.Min(TaxTypeRateRanges.PayrollTaxMax - 1f, 15.3f + turn * 0.6f);
+            float corporateTarget = Mathf.Min(TaxTypeRateRanges.CorporateTaxMax - 1f, 21f + turn * 0.3f);
+
+            var taxOverrides = new Dictionary<TaxType, float>
+            {
+                { TaxType.IncomeTax, incomeTarget },
+                { TaxType.CorporateTax, corporateTarget },
+                { TaxType.PayrollTax, payrollTarget },
+            };
+            if (turn >= 10)
+            {
+                taxOverrides[TaxType.WealthTax] = Mathf.Min(TaxTypeRateRanges.WealthTaxMax, turn * 0.05f);
+                taxOverrides[TaxType.CarbonTax] = Mathf.Min(TaxTypeRateRanges.CarbonTaxMax - 1f, 5f + turn * 0.9f);
+            }
+
+            int cyclePosition = (turn / 5) % 2;
+            float mandatorySign = cyclePosition == 0 ? 1f : -1f;
+            var spendingOverrides = new Dictionary<SpendingCategory, float>();
+            if (turn % 5 == 0)
+            {
+                spendingOverrides[SpendingCategory.SocialSecurity] = mandatorySign * 15f;
+                spendingOverrides[SpendingCategory.Medicare] = mandatorySign * 14f;
+                spendingOverrides[SpendingCategory.Medicaid] = mandatorySign * 15f;
+                spendingOverrides[SpendingCategory.IncomeSecurity] = -mandatorySign * 15f;
+                spendingOverrides[SpendingCategory.VeteransBenefitsMandatory] = -mandatorySign * 13f;
+                spendingOverrides[SpendingCategory.FederalRetirement] = mandatorySign * 15f;
+                spendingOverrides[SpendingCategory.Defense] = mandatorySign * 30f;
+                spendingOverrides[SpendingCategory.HHSDiscretionary] = -mandatorySign * 30f;
+                spendingOverrides[SpendingCategory.Transportation] = mandatorySign * 30f;
+                spendingOverrides[SpendingCategory.Education] = mandatorySign * 30f;
+            }
+
+            return new PolicyDecision
+            {
+                TaxRateOverrides = taxOverrides,
+                SpendingLineChanges = spendingOverrides,
+                TariffRateChange = (turn % 5 == 0) ? 1f : 0f
+            };
         }
 
         private static Snapshot SnapshotOf(Country country)
@@ -128,6 +336,15 @@ namespace PoliSim.Testing
             CheckFinite(turn, country, "InterestRate", country.CurrencyZone.InterestRate, anomalies);
             CheckFinite(turn, country, "GovernmentDebt", state.GovernmentDebt, anomalies);
             CheckFinite(turn, country, "DebtToGdpRatio", state.DebtToGdpRatio, anomalies);
+            CheckFinite(turn, country, "PovertyRate", state.PovertyRate, anomalies);
+            if (state.PovertyRate < 0f || state.PovertyRate > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: PovertyRate out of range ({state.PovertyRate:F2}%)");
+            }
+            foreach (WelfareProgram welfareProgram in country.WelfarePrograms)
+            {
+                CheckFinite(turn, country, $"WelfareProgram[{welfareProgram.Type}].GenerosityLevel", welfareProgram.GenerosityLevel, anomalies);
+            }
 
             CheckSwing(turn, country, "GDP", previous.GDP, state.GDP, anomalies);
             CheckSwing(turn, country, "Unemployment", previous.Unemployment, state.Unemployment, anomalies);
@@ -158,15 +375,15 @@ namespace PoliSim.Testing
             }
         }
 
-        private static void LogSummary(List<string> anomalies)
+        private static void LogSummary(List<string> anomalies, int turnsToRun, string scenario)
         {
             if (anomalies.Count == 0)
             {
-                Debug.Log($"Sanity check complete: {TurnsToRun} turns, no anomalies detected.");
+                Debug.Log($"Sanity check complete: {turnsToRun} turns ({scenario}), no anomalies detected.");
                 return;
             }
 
-            Debug.LogWarning($"Sanity check complete: {TurnsToRun} turns, {anomalies.Count} anomalies detected:");
+            Debug.LogWarning($"Sanity check complete: {turnsToRun} turns ({scenario}), {anomalies.Count} anomalies detected:");
             foreach (string anomaly in anomalies)
             {
                 Debug.LogWarning(anomaly);

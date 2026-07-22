@@ -28,9 +28,11 @@ namespace PoliSim.Simulation
         private const float CurrencyStrengthDamping = 0.15f;
 
         /// <summary>
-        /// Applies each turn's interest rate policy decisions. Countries sharing a CurrencyZone
-        /// (by reference) have their decisions summed into a single rate change for that zone, so
-        /// e.g. Germany/France/Italy move together as one Eurozone rate.
+        /// Applies each turn's interest rate policy decisions. A country with a non-null
+        /// Country.CurrentFedChair (USA, for now) bypasses PolicyDecision.InterestRateChange
+        /// entirely - see FederalReserveSystem.ApplyFedChairInterestRate. Every other country's
+        /// decisions are summed into a single rate change per CurrencyZone (by reference), so e.g.
+        /// Germany/France/Italy move together as one Eurozone rate.
         /// </summary>
         public static void ApplyInterestRateChanges(World world, Dictionary<CountryId, PolicyDecision> decisions)
         {
@@ -38,6 +40,13 @@ namespace PoliSim.Simulation
 
             foreach (Country country in world.Countries)
             {
+                if (country.CurrentFedChair != null)
+                {
+                    FederalReserveSystem.ApplyFedChairInterestRate(country);
+                    processedZones.Add(country.CurrencyZone);
+                    continue;
+                }
+
                 CurrencyZone zone = country.CurrencyZone;
                 if (!processedZones.Add(zone))
                 {

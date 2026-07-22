@@ -1,0 +1,76 @@
+# PoliSim — Standing Working Brief
+
+This document is a standing instruction set for autonomous work on PoliSim while Elias is away. It exists because every mechanic built this project so far needed real validation and, sometimes, a real human decision — this brief is meant to let work continue safely without either being skipped.
+
+**Read this in full before starting anything. Follow it for every item in the queue below.**
+
+---
+
+## Non-negotiable working discipline
+
+1. **Real Unity is the standard of truth, not the standalone harness.** The harness has been wrong about project state at least three times this session (a stale swing threshold, an interest-rate crash it mischaracterized as "settling noise," and a debt trajectory that flatly contradicted real Unity). Use it for fast iteration only. Before considering *anything* done, validate via `BatchSimulationRunner` against real Unity (`G:\UNITY\Unity Hub\6000.5.4f1\`) at both 100 and 500 turn horizons.
+
+2. **Watch for the specific failure patterns already seen in this project**, in every new mechanic:
+   - A turn-1 discontinuity (a value jumping the moment the simulation starts, rather than easing in)
+   - Oscillation (a value swinging back and forth turn over turn rather than settling)
+   - Unbounded/compounding growth (a value racing to an extreme with no ceiling)
+   - Bimodal attractors (a value that only ever settles at two extremes, never anywhere realistic in between)
+   
+   All four have happened before. Assume a new mechanic is guilty until the 500-turn batch run proves otherwise.
+
+3. **Commit per unit of work.** One feature, one commit, with a descriptive message. Never bundle unrelated changes. Confirm staged contents match the commit message before committing.
+
+4. **Escalate, don't guess, on genuine design decisions.** Examples of what counts: which real-world data source to trust when sources disagree, how to model something structurally ambiguous (like the EU's currency split was), whether a fix might regress previously-validated behavior, any modeling choice that trades accuracy for a hard technical constraint. When this comes up: **do not pick silently.** Add it to the "Open Questions" section at the bottom of this document with your recommendation and reasoning, and move to the next queue item instead of blocking on it.
+
+5. **Ground new mechanics in real data**, sourced via web search, the same way every prior mechanic was (tax rates, debt-to-GDP, spending categories, poverty rates). Label anything illustrative/stylized honestly in code comments and CLAUDE.md — never let a placeholder look like real data.
+
+6. **Scope every new system small on the first pass.** Plumbing plus 2-4 clearly-justified, separately-named effects — not the full theoretical richness the roadmap originally described. Each item below is already scoped this way; don't expand it further without a documented reason in Open Questions.
+
+7. **Update CLAUDE.md after every item**, including a brief "Validated: [date], 100/500 turns, real Unity, N anomalies" line so the history stays traceable.
+
+---
+
+## Queue (work top to bottom; do not skip ahead or parallelize)
+
+**Ordering note:** items are sequenced safest/most-proven-pattern first, riskiest last. Mechanics that touched the fiscal system directly (debt, spending, interest) have historically needed far more debugging rounds this project than self-contained ones — so the Sovereign Wealth Fund, which touches GovernmentDebt and the budget directly, is deliberately last. If time runs out before reaching it, that's the correct outcome, not a failure.
+
+### 1. Expand the event system
+- Grow the existing 8-event pool meaningfully (real, varied economic/political events — recessions abroad, commodity shocks, diplomatic incidents, scientific breakthroughs). Keep each event's effect small and bounded, same as the existing 8.
+- Do not build the map or geographic/severity tagging yet — that's a later, separate task once this larger pool is validated.
+
+### 2. Labor market basics
+- Add LaborForceParticipationRate as a tracked stat (real OECD data per country). Add a minimum wage policy lever with a small, real-world-grounded effect on Unemployment and PovertyRate (both already exist — reuse them).
+- Do not build the full labor market system (union membership, gig economy, remote work, etc.) yet.
+
+### 3. Crime & justice basics
+- Add one or two tracked stats (suggest: a general CrimeIndex, real data if findable, or a stylized 0-100 index if not — label honestly either way) and 2-3 policies (police funding, sentencing policy). Keep effects on ApprovalRating and BusinessConfidence (both proven).
+
+### 4. Small slice of economic sectors
+- 4-5 sectors only (suggest: Manufacturing, Technology/Software, Agriculture, Finance — pick ones with clear, distinct real-world profiles). Each tracks Output, Employment, and one sector-specific metric — not the full 10-metric roadmap list yet.
+- 2-3 sector policies max (subsidies, tariffs, regulation) — not all 14.
+- This is explicitly a proof-of-pattern pass. If it validates cleanly, note in Open Questions whether expanding further seems safe.
+
+### 5. Sovereign Wealth Fund (highest risk — see ordering note above)
+- Create/dissolve, annual contribution rate, domestic vs. international allocation, asset class mix (equities/bonds/infrastructure/real estate — keep to 4, not the full original list), a simple market-return model (small random return per asset class within a realistic historical range — source real average return figures), interaction with the budget (contributions are an expense, returns are income) and with GovernmentDebt (fund assets can offset net debt figures, but do not let this be used to hide a real fiscal problem — display both figures separately).
+- USA-first is fine for the initial implementation; only expand to all six if it validates cleanly.
+- Given this item's history of interactions elsewhere in the project, budget extra validation passes here specifically — re-run the full existing matrix (baseline/stress/exploit/tariff-override/welfarestress), not just a fund-specific scenario, to catch any interaction with the fiscal reaction function or debt attractor.
+
+---
+
+## If the queue finishes early
+
+This is a fine, safe outcome — do not start inventing new scope. Instead: re-run the full validation matrix one more time across everything built this session to confirm nothing has drifted, write a summary of all queue items completed and their validation status to CLAUDE.md, and stop.
+
+---
+
+## When Elias returns
+
+- Read this file's Open Questions section first.
+- Review the commit log — each item above should be its own commit(s) with validation results in the message or CLAUDE.md.
+- Do not assume everything queued got finished — pick up wherever the queue actually stopped.
+
+---
+
+## Open Questions
+*(Claude Code: add entries here as they come up. Do not resolve these yourself — flag and move on.)*
+

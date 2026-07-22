@@ -19,6 +19,7 @@ namespace PoliSim.Simulation
         public float UnemploymentBenefitCost;
         public float InterestOnDebt;
         public float TariffRevenue;
+        public float WelfareCost;
     }
 
     /// <summary>
@@ -34,6 +35,7 @@ namespace PoliSim.Simulation
         public float InflationChange;
         public float ApprovalChange;
         public float NetBudgetImpact;
+        public float PovertyRateChange;
     }
 
     /// <summary>
@@ -71,9 +73,87 @@ namespace PoliSim.Simulation
         /// <summary>Hard ceiling on debt-to-GDP - a sustained structural deficit with no policy response (e.g. this turn's GovernmentSpendingRate exceeding TaxRate) shouldn't be able to grow without bound.</summary>
         private const float MaxDebtToGdpPercent = 300f;
 
+        /// <summary>
+        /// The fiscal reaction function's slope: how much the effective-revenue multiplier moves per
+        /// point of gap between DebtToGdpRatio and the country's own ComfortableDebtToGdpPercent (see
+        /// GetFiscalReactionMultiplier). This is the missing NEGATIVE feedback the debt-to-GDP system
+        /// previously lacked - GetDebtRiskPremium is a real, separate mechanism (the market's own cost
+        /// of lending more to an already-indebted borrower) and stays completely unchanged; it was
+        /// never a substitute for a government's own countercyclical fiscal response, which is what
+        /// this represents. See "Fiscal Reaction Function" in CLAUDE.md for the empirical case this
+        /// value was calibrated against (every one of 0.05-0.3 failed to escape the pre-existing
+        /// bimodal 0%/~294% outcome; 1.0+ genuinely stabilizes all six countries at distinct,
+        /// country-appropriate levels, confirmed flat from turn 500 through turn 2000).
+        /// </summary>
+        private const float FiscalReactionSensitivity = 1.5f;
+
+        /// <summary>Bounds on GetFiscalReactionMultiplier's output - a 2x range (0.5x-1.5x effective revenue) is what the calibration above needed to actually overcome the debt-risk-premium's own reinforcing loop at realistic debt-to-GDP extremes, not a "modest" single-digit-percent cap that empirically failed to do so.</summary>
+        private const float MinFiscalReactionMultiplier = 0.5f;
+        private const float MaxFiscalReactionMultiplier = 1.5f;
+
+        /// <summary>
+        /// The missing negative feedback in the debt-to-GDP system: a country's own government
+        /// modestly tightens (collects relatively more of its theoretical tax revenue) as debt rises
+        /// above its ComfortableDebtToGdpPercent anchor, and loosens (collects relatively less) as debt
+        /// falls below it - independent of, and stacked on top of, CollectionEfficiency and
+        /// GetDebtRiskPremium (which represents the market's side of the equation, not the
+        /// government's). Without this, the system was found to be bimodal - every country's
+        /// DebtToGdpRatio eventually settled at either exactly 0% or pinned near the 300% ceiling,
+        /// never anything in between, however Discretionary/Mandatory spending growth was tuned (see
+        /// "SpendingLine Amount Ceiling - Debt-to-Zero Fix" in CLAUDE.md for that investigation).
+        /// </summary>
+        private float GetFiscalReactionMultiplier(Country country)
+        {
+            float debtGap = country.State.DebtToGdpRatio - country.ComfortableDebtToGdpPercent;
+            float multiplier = 1f + FiscalReactionSensitivity * debtGap / 100f;
+            return Mathf.Clamp(multiplier, MinFiscalReactionMultiplier, MaxFiscalReactionMultiplier);
+        }
+
         /// <summary>Sane bounds for a country's own tariff policy (see PolicyDecision.TariffRateChange).</summary>
         private const float MinBaseTariffRate = 0f;
         private const float MaxBaseTariffRate = 50f;
+
+        /// <summary>Bounds for a WelfareProgram's GenerosityLevel - uniform across every WelfareProgramType (unlike TaxLine's per-type MinRate/MaxRate), since the task specifies a single 0-100% range for all six.</summary>
+        private const float MinGenerosityLevel = 0f;
+        private const float MaxGenerosityLevel = 100f;
+
+        /// <summary>Bounds for this turn's requested PERCENTAGE change to a Discretionary SpendingLine (see PolicyDecision.SpendingLineChanges).</summary>
+        private const float DiscretionaryPercentChangeRange = 30f;
+
+        /// <summary>
+        /// Narrower than DiscretionaryPercentChangeRange - reflects the real political difficulty of
+        /// entitlement reform (Social Security, Medicare, Medicaid, etc. aren't cut or expanded as
+        /// freely, in one turn, as a Discretionary line).
+        /// </summary>
+        private const float MandatoryPercentChangeRange = 15f;
+
+        /// <summary>
+        /// Hard floor/ceiling on every SpendingLine's Amount, expressed as a multiple of that line's
+        /// own SpendingLine.SeedAmount - not of its current Amount. Percentage-of-current-value changes
+        /// compound geometrically if the same large percentage is held for many turns in a row (see
+        /// "Percentage-Based Spending Sliders" in CLAUDE.md for the runaway-divergence finding this
+        /// closes off); anchoring the clamp to SeedAmount, rather than letting it ride with the current
+        /// Amount, is what actually stops the compounding - a clamp relative to the current value would
+        /// just get carried along by the same exponential growth it's supposed to bound. Applies to
+        /// both Discretionary (ApplySpendingLineChanges) and Mandatory categories' PLAYER-driven
+        /// changes, regardless of how many turns of repeated changes are stacked.
+        ///
+        /// For a Discretionary line, SeedAmount is NOT frozen at construction - ApplyDiscretionarySpendingGrowth
+        /// grows it in lockstep with the automatic GDP-tracking growth applied to Amount (see that
+        /// method's doc comment for why this was necessary - an earlier version left SeedAmount fixed
+        /// forever, which silently froze this ceiling in absolute dollar terms and broke the "G tracks
+        /// GDP" property "Discretionary Spending Growth" depends on; see "SpendingLine Amount Ceiling
+        /// - Debt-to-Zero Fix" in CLAUDE.md). A Mandatory line's SeedAmount stays genuinely fixed at
+        /// construction, since Mandatory lines have no automatic growth mechanism to track in the
+        /// first place.
+        /// </summary>
+        private const float MinSpendingLineAmountRatio = 0.2f;
+        private const float MaxSpendingLineAmountRatio = 3.0f;
+
+        private static float ClampToSeedRange(SpendingLine line, float amount)
+        {
+            return Mathf.Clamp(amount, line.SeedAmount * MinSpendingLineAmountRatio, line.SeedAmount * MaxSpendingLineAmountRatio);
+        }
 
         private readonly Dictionary<CountryId, FiscalTurnReport> _lastFiscalReports = new Dictionary<CountryId, FiscalTurnReport>();
         private readonly Dictionary<CountryId, EconomicEvent> _lastEventsByCountry = new Dictionary<CountryId, EconomicEvent>();
@@ -128,6 +208,7 @@ namespace PoliSim.Simulation
                     : PolicyDecision.None();
 
                 ApplyTariffRateChange(country, tariffDecision);
+                ApplyPartnerTariffOverrides(country, tariffDecision);
             }
 
             var tariffRevenueByCountry = new Dictionary<CountryId, float>();
@@ -162,12 +243,15 @@ namespace PoliSim.Simulation
             float gdpBeforeThisTurn = state.GDP;
 
             float totalTaxHike = ApplyTaxRateChanges(country, decision);
+            ApplyWelfareGenerosityChanges(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
+            MacroSystem.ApplyWelfareProgramEffects(country);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
             float interestOnDebt = GetInterestOnDebt(country);
-            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt);
+            float welfareCost = GetTotalWelfareCost(country);
+            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost);
 
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
@@ -177,7 +261,8 @@ namespace PoliSim.Simulation
                 MandatorySpending = spendingResult.MandatorySpending,
                 UnemploymentBenefitCost = unemploymentBenefitCost,
                 InterestOnDebt = interestOnDebt,
-                TariffRevenue = tariffRevenue
+                TariffRevenue = tariffRevenue,
+                WelfareCost = welfareCost
             };
 
             MacroSystem.ApplyNationalAccounts(country, spendingResult.GovernmentSpending, interestRate);
@@ -187,8 +272,9 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyOkunsLaw(country, actualGrowthRate);
             MacroSystem.ApplyPhillipsCurveInflation(country);
             MacroSystem.ApplyInflationExpectations(state);
+            MacroSystem.ApplyPovertyRate(country);
 
-            MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike);
+            MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
             EconomicEvent economicEvent = EventSystem.TryRollEvent();
             _lastEventsByCountry[country.Id] = economicEvent;
@@ -225,21 +311,30 @@ namespace PoliSim.Simulation
             float inflationBefore = state.Inflation;
             float approvalBefore = state.ApprovalRating;
             float budgetBefore = state.Budget;
+            float povertyBefore = state.PovertyRate;
 
             ApplyTariffRateChange(previewCountry, decision);
+            ApplyPartnerTariffOverrides(previewCountry, decision);
             TradeSystem.ApplyTradeEffects(previewCountry, _world);
 
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
+            ApplyWelfareGenerosityChanges(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
+            MacroSystem.ApplyWelfareProgramEffects(previewCountry);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(previewCountry);
             float interestOnDebt = GetInterestOnDebt(previewCountry);
-            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt);
+            float welfareCost = GetTotalWelfareCost(previewCountry);
+            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost);
 
-            float previewedInterestRate = Mathf.Clamp(
-                previewCountry.CurrencyZone.InterestRate + decision.InterestRateChange,
-                CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+            float previewedInterestRate = previewCountry.CurrentFedChair != null
+                ? Mathf.Clamp(
+                    TaylorRule.GetSuggestedInterestRate(previewCountry) + previewCountry.CurrentFedChair.RateBias,
+                    CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate)
+                : Mathf.Clamp(
+                    previewCountry.CurrencyZone.InterestRate + decision.InterestRateChange,
+                    CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
             MacroSystem.ApplyNationalAccounts(previewCountry, spendingResult.GovernmentSpending, previewedInterestRate);
             MacroSystem.ApplyPotentialGdpGrowth(previewCountry);
 
@@ -247,8 +342,9 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyOkunsLaw(previewCountry, actualGrowthRate);
             MacroSystem.ApplyPhillipsCurveInflation(previewCountry);
             MacroSystem.ApplyInflationExpectations(state);
+            MacroSystem.ApplyPovertyRate(previewCountry);
 
-            MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike);
+            MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
             return new PolicyPreview
             {
@@ -256,7 +352,8 @@ namespace PoliSim.Simulation
                 UnemploymentChange = state.Unemployment - unemploymentBefore,
                 InflationChange = state.Inflation - inflationBefore,
                 ApprovalChange = state.ApprovalRating - approvalBefore,
-                NetBudgetImpact = state.Budget - budgetBefore
+                NetBudgetImpact = state.Budget - budgetBefore,
+                PovertyRateChange = state.PovertyRate - povertyBefore
             };
         }
 
@@ -265,16 +362,26 @@ namespace PoliSim.Simulation
         /// mutations never touch the real one), its own copy of the structural fields that
         /// MacroSystem.ApplyCategorySpendingEffects/ApplyTariffRateChange mutate (PotentialGrowthRate,
         /// BaseTariffRate), and its own deep-cloned TaxLines (ApplyTaxRateChanges mutates TaxLine.Rate,
-        /// so these can't be shared references the way TradePartners is) - but the SAME CurrencyZone
-        /// reference (read-only here - see PreviewTurn's remarks on why its InterestRate is never
-        /// written) and the SAME TradePartners list (TradeSystem only ever reads it, never mutates it).
-        /// CollectionEfficiency, BaseDebtInterestRateOverride, and RiskPremiumSensitivity are all
-        /// copied explicitly since none is a constructor parameter (each defaults the same as on a
-        /// real Country) - without this the preview would overstate revenue for every country whose
-        /// real CollectionEfficiency is below 1, and overstate InterestOnDebt for a reserve-currency
-        /// issuer (the USA) whose real risk-premium sensitivity is near zero. SpendingLines is
-        /// deep-cloned for the same reason TaxLines is - ApplySpendingLineChanges mutates
-        /// SpendingLine.Amount, so these can't be shared references either.
+        /// so these can't be shared references the way the CurrencyZone reference is) - but the SAME
+        /// CurrencyZone reference (read-only here - see PreviewTurn's remarks on why its InterestRate
+        /// is never written). CollectionEfficiency, BaseDebtInterestRateOverride,
+        /// RiskPremiumSensitivity, ComfortableDebtToGdpPercent, and BaselinePovertyRate are all copied
+        /// explicitly since none is a constructor parameter (each defaults the same as on a real
+        /// Country) - without this the preview would overstate revenue for every country whose real
+        /// CollectionEfficiency is below 1, overstate InterestOnDebt for a reserve-currency issuer (the
+        /// USA) whose real risk-premium sensitivity is near zero, misjudge GetFiscalReactionMultiplier
+        /// for every country whose real comfort anchor isn't the 60f default, and misjudge
+        /// ApplyPovertyRate's baseline for every country whose real baseline isn't the 10f default.
+        /// SpendingLines is deep-cloned for the same reason TaxLines is -
+        /// ApplySpendingLineChanges mutates SpendingLine.Amount, so these can't be shared references
+        /// either. WelfarePrograms is ALSO deep-cloned (via WelfareProgram.Clone()) for the same reason -
+        /// ApplyWelfareGenerosityChanges mutates WelfareProgram.GenerosityLevel. TradePartners is ALSO
+        /// deep-cloned (via TradePartner.Clone()) for the same reason -
+        /// ApplyPartnerTariffOverrides mutates TradePartner.PlayerTariffOverride, so a shared reference
+        /// would leak the preview's draft override into the real World the moment PreviewTurn ran, not
+        /// just when the player commits it. CurrentFedChair is a shared (not cloned) reference -
+        /// nothing in PreviewTurn or ApplyDomesticPolicy ever mutates a FedChair's own fields, only
+        /// reads RateBias, so this is safe unlike TaxLines/SpendingLines/TradePartners/WelfarePrograms.
         /// </summary>
         private static Country ClonePreviewCountry(Country country)
         {
@@ -283,13 +390,27 @@ namespace PoliSim.Simulation
                 country.NaturalUnemploymentRate, country.PotentialGrowthRate, country.GovernmentSpendingRate,
                 country.BenefitRatePerUnemployed)
             {
-                TradePartners = country.TradePartners,
+                TradePartners = ClonePreviewTradePartners(country.TradePartners),
                 TaxLines = ClonePreviewTaxLines(country.TaxLines),
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
+                WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
                 CollectionEfficiency = country.CollectionEfficiency,
                 BaseDebtInterestRateOverride = country.BaseDebtInterestRateOverride,
-                RiskPremiumSensitivity = country.RiskPremiumSensitivity
+                RiskPremiumSensitivity = country.RiskPremiumSensitivity,
+                ComfortableDebtToGdpPercent = country.ComfortableDebtToGdpPercent,
+                BaselinePovertyRate = country.BaselinePovertyRate,
+                CurrentFedChair = country.CurrentFedChair
             };
+        }
+
+        private static List<TradePartner> ClonePreviewTradePartners(List<TradePartner> tradePartners)
+        {
+            var clones = new List<TradePartner>(tradePartners.Count);
+            foreach (TradePartner tradePartner in tradePartners)
+            {
+                clones.Add(tradePartner.Clone());
+            }
+            return clones;
         }
 
         private static List<TaxLine> ClonePreviewTaxLines(List<TaxLine> taxLines)
@@ -312,10 +433,43 @@ namespace PoliSim.Simulation
             return clones;
         }
 
+        private static List<WelfareProgram> ClonePreviewWelfarePrograms(List<WelfareProgram> welfarePrograms)
+        {
+            var clones = new List<WelfareProgram>(welfarePrograms.Count);
+            foreach (WelfareProgram welfareProgram in welfarePrograms)
+            {
+                clones.Add(welfareProgram.Clone());
+            }
+            return clones;
+        }
+
         /// <summary>Direct tariff-policy control: the country's own BaseTariffRate moves by the requested change, clamped to a sane range.</summary>
         private void ApplyTariffRateChange(Country country, PolicyDecision decision)
         {
             country.BaseTariffRate = Mathf.Clamp(country.BaseTariffRate + decision.TariffRateChange, MinBaseTariffRate, MaxBaseTariffRate);
+        }
+
+        /// <summary>
+        /// Sets a per-partner tariff override directly (an absolute target, not a delta - same
+        /// semantics as ApplyTaxRateChanges) for every partner with an entry in
+        /// PolicyDecision.PartnerTariffOverrides, clamped to the same [MinBaseTariffRate,
+        /// MaxBaseTariffRate] range BaseTariffRate itself uses. A no-op for any partner with no entry
+        /// this turn - once set, TradePartner.PlayerTariffOverride persists turn to turn like
+        /// TaxLine.Rate does, until the player either changes it again or resets it back to "no
+        /// override" (a separate, immediate action - see TradePartner.PlayerTariffOverride's doc
+        /// comment). Runs before TradeSystem.ApplyTradeEffects each turn (same ordering as
+        /// ApplyTariffRateChange) so this turn's override is what this turn's trade actually resolves
+        /// against.
+        /// </summary>
+        private void ApplyPartnerTariffOverrides(Country country, PolicyDecision decision)
+        {
+            foreach (TradePartner tradePartner in country.TradePartners)
+            {
+                if (decision.PartnerTariffOverrides.TryGetValue(tradePartner.PartnerId, out float requestedRate))
+                {
+                    tradePartner.PlayerTariffOverride = Mathf.Clamp(requestedRate, MinBaseTariffRate, MaxBaseTariffRate);
+                }
+            }
         }
 
         /// <summary>
@@ -354,6 +508,62 @@ namespace PoliSim.Simulation
             }
 
             return totalTaxHike;
+        }
+
+        /// <summary>
+        /// Sets every currently-implemented WelfareProgram's GenerosityLevel directly to this turn's
+        /// requested PolicyDecision.WelfareGenerosityOverrides value (clamped to [MinGenerosityLevel,
+        /// MaxGenerosityLevel]), a no-op for any WelfareProgramType with no entry or that isn't
+        /// implemented - implementing/removing a welfare program is a separate, immediate action on
+        /// WelfareProgram.IsImplemented, not something this method does. Mirrors ApplyTaxRateChanges
+        /// exactly, minus the hike-tracking return value - welfare's approval effect is an ongoing
+        /// STOCK effect of the current GenerosityLevel (see MacroSystem.GetWelfareApprovalEffect), not
+        /// a one-time "this-turn change" penalty/bonus like the tax-hike term, so there's nothing
+        /// equivalent to thread through here.
+        /// </summary>
+        private void ApplyWelfareGenerosityChanges(Country country, PolicyDecision decision)
+        {
+            foreach (WelfareProgram program in country.WelfarePrograms)
+            {
+                if (!program.IsImplemented)
+                {
+                    continue;
+                }
+
+                if (!decision.WelfareGenerosityOverrides.TryGetValue(program.Type, out float requestedGenerosity))
+                {
+                    continue;
+                }
+
+                program.GenerosityLevel = Mathf.Clamp(requestedGenerosity, MinGenerosityLevel, MaxGenerosityLevel);
+            }
+        }
+
+        /// <summary>
+        /// This turn's total welfare cost: the sum, over every implemented WelfareProgram, of
+        /// GDP * (CostShareOfGdp / 100) * (GenerosityLevel / 100) - a new spending category alongside
+        /// Mandatory/Discretionary/UnemploymentBenefitCost/InterestOnDebt (see ApplyRevenueAndSpending),
+        /// deliberately NOT touching IncomeSecurity or any other existing SpendingLine. Treated as a
+        /// transfer (excluded from MacroSystem's national accounts G term), the same reasoning already
+        /// applied to Mandatory SpendingLines/UnemploymentBenefitCost/InterestOnDebt - welfare programs
+        /// (UBI, means-tested transfers, healthcare/housing/childcare subsidies) are payments to
+        /// individuals, not government purchases of goods and services.
+        /// </summary>
+        private float GetTotalWelfareCost(Country country)
+        {
+            float cost = 0f;
+            float gdp = country.State.GDP;
+            foreach (WelfareProgram program in country.WelfarePrograms)
+            {
+                if (!program.IsImplemented)
+                {
+                    continue;
+                }
+
+                cost += gdp * (program.CostShareOfGdp / 100f) * (program.GenerosityLevel / 100f);
+            }
+
+            return cost;
         }
 
         /// <summary>
@@ -400,7 +610,15 @@ namespace PoliSim.Simulation
             public float GovernmentSpending;
             public float DiscretionarySpendingChangeThisTurn;
             public float MandatorySpending;
+            public float MandatorySpendingChangeThisTurn;
             public PolicyDecision EffectiveDecision;
+        }
+
+        /// <summary>Per-category actual dollar change observed this turn (post-clamp against MinSpendingLineAmountRatio/MaxSpendingLineAmountRatio) from ApplySpendingLineChanges, plus the total across Mandatory lines.</summary>
+        private class SpendingLineChangeResult
+        {
+            public readonly Dictionary<SpendingCategory, float> ActualDollarChangeByCategory = new Dictionary<SpendingCategory, float>();
+            public float MandatoryDollarChangeTotal;
         }
 
         /// <summary>
@@ -411,7 +629,8 @@ namespace PoliSim.Simulation
         /// MandatorySpending is reported separately for ApplyRevenueAndSpending to add to total
         /// budget outflow. BaselineGovernmentSpending/DiscretionarySpendingChangeThisTurn are split
         /// as before-this-turn's-total / actual-net-change-observed (not the raw requested delta sum,
-        /// since ApplySpendingLineChanges' floor-at-0 can clip an individual line's requested cut) so
+        /// since ApplySpendingLineChanges' seed-ratio clamp can clip an individual line's requested
+        /// change) so
         /// their SUM always equals GovernmentSpending, matching the legacy mechanic's semantics below
         /// exactly - callers (e.g. GameController's "net" display) can keep subtracting both without
         /// double-counting this turn's change. EffectiveDecision maps this turn's per-category deltas
@@ -425,8 +644,10 @@ namespace PoliSim.Simulation
         {
             if (country.SpendingLines.Count > 0)
             {
+                ApplyDiscretionarySpendingGrowth(country);
+                ApplyMandatorySpendingGrowth(country);
                 float discretionaryTotalBefore = GetSpendingLineTotal(country, mandatory: false);
-                ApplySpendingLineChanges(country, decision);
+                SpendingLineChangeResult changeResult = ApplySpendingLineChanges(country, decision);
                 float discretionaryTotalAfter = GetSpendingLineTotal(country, mandatory: false);
                 float mandatoryTotal = GetSpendingLineTotal(country, mandatory: true);
 
@@ -436,7 +657,8 @@ namespace PoliSim.Simulation
                     GovernmentSpending = discretionaryTotalAfter,
                     DiscretionarySpendingChangeThisTurn = discretionaryTotalAfter - discretionaryTotalBefore,
                     MandatorySpending = mandatoryTotal,
-                    EffectiveDecision = BuildEffectiveDecisionForDetailedSpending(decision)
+                    MandatorySpendingChangeThisTurn = changeResult.MandatoryDollarChangeTotal,
+                    EffectiveDecision = BuildEffectiveDecisionForDetailedSpending(decision, changeResult)
                 };
             }
 
@@ -447,12 +669,36 @@ namespace PoliSim.Simulation
                 GovernmentSpending = baselineGovernmentSpending + decision.TotalDiscretionarySpending,
                 DiscretionarySpendingChangeThisTurn = decision.TotalDiscretionarySpending,
                 MandatorySpending = 0f,
+                MandatorySpendingChangeThisTurn = 0f,
                 EffectiveDecision = decision
             };
         }
 
-        /// <summary>Applies this turn's requested dollar CHANGE to every Discretionary SpendingLine (Mandatory lines are ignored - not player-adjustable in Phase 1), floored at 0 so a line can be cut to zero but not negative.</summary>
-        private void ApplySpendingLineChanges(Country country, PolicyDecision decision)
+        /// <summary>
+        /// Every Discretionary line drifts up each turn at the country's own PotentialGrowthRate -
+        /// the same rate PotentialGDP itself compounds at - restoring the property the old
+        /// GDP-proportional GovernmentSpendingRate mechanic had (G growing in step with trend GDP),
+        /// which a fixed-dollar SpendingLines portfolio otherwise loses entirely. See "Discretionary
+        /// Spending Growth" in CLAUDE.md for why this specific rate is the only stable choice - a
+        /// faster rate causes runaway divergence (the growing G term eventually dominates and GDP
+        /// explodes), a slower one reintroduces a widening gap. A no-op for a country without a
+        /// detailed SpendingLines portfolio (the loop body never runs against an empty list).
+        ///
+        /// SeedAmount grows by this SAME factor, right alongside Amount - this is what stops the
+        /// MaxSpendingLineAmountRatio ceiling (see that constant) from silently freezing G in absolute
+        /// dollar terms. An earlier version left SeedAmount fixed at construction forever, so this
+        /// passive growth alone reached the 3x ceiling after ~56 turns with zero player input and then
+        /// flattened Amount there for the rest of the game - which broke the very "G tracks GDP"
+        /// property this method exists to provide: G stopped growing while tax revenue (proportional to
+        /// GDP) kept climbing, producing an ever-widening primary surplus that paid USA's debt to
+        /// exactly 0 by turn ~70 and flatlined it there - see "SpendingLine Amount Ceiling -
+        /// Debt-to-Zero Fix" in CLAUDE.md. Growing both figures by the identical factor leaves their
+        /// ratio unchanged when it started in range (so a previously-uncapped line is unaffected), and
+        /// still lets ClampToSeedRange correct anything that drifted out - a maxed-out (player-exploited)
+        /// line now stays pegged at exactly MaxSpendingLineAmountRatio times a SeedAmount that itself
+        /// keeps compounding, so even the exploited case keeps tracking GDP instead of freezing.
+        /// </summary>
+        private void ApplyDiscretionarySpendingGrowth(Country country)
         {
             foreach (SpendingLine line in country.SpendingLines)
             {
@@ -461,13 +707,82 @@ namespace PoliSim.Simulation
                     continue;
                 }
 
-                if (!decision.SpendingLineChanges.TryGetValue(line.Category, out float delta) || delta == 0f)
+                float growthFactor = 1f + country.PotentialGrowthRate / 100f;
+                line.SeedAmount *= growthFactor;
+                line.Amount = ClampToSeedRange(line, line.Amount * growthFactor);
+            }
+        }
+
+        /// <summary>
+        /// Every Mandatory line ALSO drifts up each turn at the country's own PotentialGrowthRate,
+        /// mirroring ApplyDiscretionarySpendingGrowth exactly (same growth rate, same lockstep
+        /// SeedAmount growth so MaxSpendingLineAmountRatio's ceiling tracks GDP rather than freezing).
+        /// Real mandatory/entitlement spending (Social Security, Medicare, Medicaid, etc.) grows with
+        /// the economy too - demographics and healthcare-cost growth don't stop just because a program
+        /// is Mandatory rather than Discretionary - and its previous fixed-dollar freeze was a second,
+        /// separate contributor (alongside the debt-risk-premium feedback loop) to the debt-to-GDP
+        /// bimodality "SpendingLine Amount Ceiling - Debt-to-Zero Fix" investigated. Growing Mandatory
+        /// at this same rate was tried in isolation during that investigation and found to overshoot
+        /// badly (DebtToGdpRatio pegged near 294%) - it only became viable once paired with
+        /// GetFiscalReactionMultiplier's negative feedback (see "Fiscal Reaction Function" in
+        /// CLAUDE.md), which is the fix that actually closed the gap; this growth is shipped alongside
+        /// it, not in isolation. A no-op for a country without a detailed SpendingLines portfolio.
+        /// </summary>
+        private void ApplyMandatorySpendingGrowth(Country country)
+        {
+            foreach (SpendingLine line in country.SpendingLines)
+            {
+                if (!line.IsMandatory)
                 {
                     continue;
                 }
 
-                line.Amount = Mathf.Max(0f, line.Amount + delta);
+                float growthFactor = 1f + country.PotentialGrowthRate / 100f;
+                line.SeedAmount *= growthFactor;
+                line.Amount = ClampToSeedRange(line, line.Amount * growthFactor);
             }
+        }
+
+        /// <summary>
+        /// Applies this turn's requested PERCENTAGE change (PolicyDecision.SpendingLineChanges) to
+        /// every SpendingLine - both Mandatory and Discretionary are adjustable, but the requested
+        /// percentage is clamped to a narrower range for Mandatory (MandatoryPercentChangeRange) than
+        /// Discretionary (DiscretionaryPercentChangeRange) before being applied to that line's OWN
+        /// current Amount (not a flat dollar figure - a +15% slider on an $850B line and a +15%
+        /// slider on a $1B line move by proportionally different dollar amounts). The result is then
+        /// clamped to [MinSpendingLineAmountRatio, MaxSpendingLineAmountRatio] of the line's own fixed
+        /// SeedAmount (replacing the old floor-at-0 - 0.2x SeedAmount is always a stricter, higher
+        /// floor than 0) - this is what actually stops the sustained-compounding exploit (see
+        /// "Percentage-Based Spending Sliders" in CLAUDE.md): holding a slider at its max every turn
+        /// for 100 turns previously produced a ~geometric blowup, and now flattens out once the line
+        /// hits 3x its starting size, however many turns that took. Returns the actual dollar change
+        /// observed per category (post-clamp) and the total across Mandatory lines, so callers can
+        /// feed the real applied effect into MacroSystem's category-effect/approval formulas rather
+        /// than the raw requested percentage.
+        /// </summary>
+        private SpendingLineChangeResult ApplySpendingLineChanges(Country country, PolicyDecision decision)
+        {
+            var result = new SpendingLineChangeResult();
+            foreach (SpendingLine line in country.SpendingLines)
+            {
+                float amountBefore = line.Amount;
+
+                if (decision.SpendingLineChanges.TryGetValue(line.Category, out float requestedPercent) && requestedPercent != 0f)
+                {
+                    float maxRange = line.IsMandatory ? MandatoryPercentChangeRange : DiscretionaryPercentChangeRange;
+                    float clampedPercent = Mathf.Clamp(requestedPercent, -maxRange, maxRange);
+                    line.Amount = ClampToSeedRange(line, line.Amount * (1f + clampedPercent / 100f));
+                }
+
+                float actualChange = line.Amount - amountBefore;
+                result.ActualDollarChangeByCategory[line.Category] = actualChange;
+                if (line.IsMandatory)
+                {
+                    result.MandatoryDollarChangeTotal += actualChange;
+                }
+            }
+
+            return result;
         }
 
         private static float GetSpendingLineTotal(Country country, bool mandatory)
@@ -483,32 +798,39 @@ namespace PoliSim.Simulation
             return total;
         }
 
-        private static float GetSpendingLineChangeDelta(PolicyDecision decision, SpendingCategory category)
+        private static float GetActualDollarChange(SpendingLineChangeResult changeResult, SpendingCategory category)
         {
-            return decision.SpendingLineChanges.TryGetValue(category, out float value) ? value : 0f;
+            return changeResult.ActualDollarChangeByCategory.TryGetValue(category, out float value) ? value : 0f;
         }
 
         /// <summary>
-        /// Maps this turn's per-category deltas onto the four legacy category-spending-effect fields
-        /// (Infrastructure -&gt; Transportation, Healthcare -&gt; HHSDiscretionary + Medicaid,
+        /// Maps this turn's ACTUAL dollar change per Discretionary category (not the raw requested
+        /// percentage - PolicyDecision.SpendingLineChanges is now a percentage of that line's own
+        /// Amount, so it must be converted through ApplySpendingLineChanges' real, clamped effect
+        /// before it means anything in dollar terms) onto the four legacy category-spending-effect
+        /// fields (Infrastructure -&gt; Transportation, Healthcare -&gt; HHSDiscretionary,
         /// Education -&gt; Education, Defense -&gt; Defense) so MacroSystem.ApplyCategorySpendingEffects/
-        /// ApplyApprovalRating (unmodified) still read a meaningful this-turn delta for each of their
-        /// four existing effects, without MacroSystem needing to know about SpendingCategory at all.
-        /// Every other new category deliberately gets zero effect in this pass (Phase 1) - see
-        /// CLAUDE.md's "Detailed Spending Portfolio" for the planned Phase 2.
+        /// ApplyApprovalRating (unmodified) still read a meaningful this-turn dollar delta for each of
+        /// their four existing effects, without MacroSystem needing to know about SpendingCategory at
+        /// all. Medicaid (Mandatory) is deliberately NOT folded into the Healthcare bucket here anymore -
+        /// now that Mandatory categories are player-adjustable, doing so would double-count Medicaid's
+        /// effect through both this legacy bucket AND the new, distinctly-weighted Mandatory approval
+        /// term (see MacroSystem.MandatorySpendingApprovalMultiplier) that now covers it uniformly with
+        /// every other Mandatory category. Every other new Discretionary category deliberately gets
+        /// zero effect in this pass (Phase 1) - see CLAUDE.md's "Detailed Spending Portfolio" for the
+        /// planned Phase 2.
         /// </summary>
-        private static PolicyDecision BuildEffectiveDecisionForDetailedSpending(PolicyDecision decision)
+        private static PolicyDecision BuildEffectiveDecisionForDetailedSpending(PolicyDecision decision, SpendingLineChangeResult changeResult)
         {
             return new PolicyDecision
             {
                 TaxRateOverrides = decision.TaxRateOverrides,
                 InterestRateChange = decision.InterestRateChange,
                 TariffRateChange = decision.TariffRateChange,
-                InfrastructureSpendingChange = GetSpendingLineChangeDelta(decision, SpendingCategory.Transportation),
-                HealthcareSpendingChange = GetSpendingLineChangeDelta(decision, SpendingCategory.HHSDiscretionary)
-                    + GetSpendingLineChangeDelta(decision, SpendingCategory.Medicaid),
-                EducationSpendingChange = GetSpendingLineChangeDelta(decision, SpendingCategory.Education),
-                DefenseSpendingChange = GetSpendingLineChangeDelta(decision, SpendingCategory.Defense)
+                InfrastructureSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Transportation),
+                HealthcareSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.HHSDiscretionary),
+                EducationSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Education),
+                DefenseSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Defense)
             };
         }
 
@@ -554,20 +876,23 @@ namespace PoliSim.Simulation
         /// <summary>
         /// Government revenue is GetTotalTaxRevenue's theoretical figure scaled down by the country's
         /// CollectionEfficiency (enforcement quality/informal economy/evasion - see Country's doc
-        /// comment); this turn's budget balance is that actual revenue minus total spending
-        /// (government spending, Mandatory SpendingLine total (0 for a country without a detailed
-        /// portfolio), unemployment benefits, and interest on debt - benefits, mandatory transfers,
-        /// and interest are transfers, not purchases, so they're deliberately excluded from
-        /// MacroSystem's national accounts G term). A deficit adds to GovernmentDebt, a surplus
-        /// reduces it, hard-clamped to a sane debt-to-GDP range. Returns the actual (post-efficiency)
-        /// revenue so the caller can record it on this turn's FiscalTurnReport.
+        /// comment) and then by GetFiscalReactionMultiplier (the automatic fiscal-tightening/-loosening
+        /// response to this country's own debt-to-GDP gap - see that method and "Fiscal Reaction
+        /// Function" in CLAUDE.md); this turn's budget balance is that actual revenue minus total
+        /// spending (government spending, Mandatory SpendingLine total (0 for a country without a
+        /// detailed portfolio), unemployment benefits, interest on debt, and welfare program cost - see
+        /// GetTotalWelfareCost - benefits, mandatory transfers, interest, and welfare are all transfers,
+        /// not purchases, so they're deliberately excluded from MacroSystem's national accounts G
+        /// term). A deficit adds to GovernmentDebt, a surplus reduces it, hard-clamped to a sane
+        /// debt-to-GDP range. Returns the actual (post-efficiency, post-reaction) revenue so the caller
+        /// can record it on this turn's FiscalTurnReport.
         /// </summary>
-        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt)
+        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost)
         {
             EconomyState state = country.State;
             float theoreticalRevenue = GetTotalTaxRevenue(country);
-            float actualRevenue = theoreticalRevenue * country.CollectionEfficiency;
-            float totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt;
+            float actualRevenue = theoreticalRevenue * country.CollectionEfficiency * GetFiscalReactionMultiplier(country);
+            float totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost;
             float budgetBalance = actualRevenue - totalSpending;
 
             state.Budget += budgetBalance;
