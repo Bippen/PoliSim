@@ -105,7 +105,18 @@ namespace PoliSim.Testing
             CheckFinite(turn, country, "Unemployment", state.Unemployment, anomalies);
             CheckFinite(turn, country, "ApprovalRating", state.ApprovalRating, anomalies);
             CheckFinite(turn, country, "Budget", state.Budget, anomalies);
-            CheckFinite(turn, country, "TaxRate", state.TaxRate, anomalies);
+            foreach (TaxLine taxLine in country.TaxLines)
+            {
+                CheckFinite(turn, country, $"TaxLine[{taxLine.Type}].Rate", taxLine.Rate, anomalies);
+            }
+            foreach (SpendingLine spendingLine in country.SpendingLines)
+            {
+                CheckFinite(turn, country, $"SpendingLine[{spendingLine.Category}].Amount", spendingLine.Amount, anomalies);
+                if (spendingLine.Amount < 0f)
+                {
+                    anomalies.Add($"Turn {turn} {country.Name}: SpendingLine[{spendingLine.Category}].Amount is negative ({spendingLine.Amount:F1})");
+                }
+            }
             CheckFinite(turn, country, "TradeBalance", state.TradeBalance, anomalies);
             CheckFinite(turn, country, "CurrencyStrength", state.CurrencyStrength, anomalies);
             CheckFinite(turn, country, "Consumption", state.Consumption, anomalies);

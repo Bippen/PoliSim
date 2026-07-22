@@ -11,8 +11,9 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class CurrencySystem
     {
-        private const float MinInterestRate = 0f;
-        private const float MaxInterestRate = 15f;
+        /// <summary>Sane bounds for any CurrencyZone's interest rate. Public so GameController's policy preview can clamp its own estimated rate the same way.</summary>
+        public const float MinInterestRate = 0f;
+        public const float MaxInterestRate = 15f;
 
         /// <summary>Currency strength index value representing a country neither strong nor weak relative to its peers.</summary>
         public const float NeutralCurrencyStrength = 100f;

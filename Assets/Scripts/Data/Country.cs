@@ -16,6 +16,17 @@ namespace PoliSim.Data
         public CurrencyZone CurrencyZone;
         public List<TradePartner> TradePartners = new List<TradePartner>();
 
+        /// <summary>This country's fiscal portfolio - which taxes are implemented and at what rate. See TaxLine and SimulationManager.GetTotalTaxRevenue.</summary>
+        public List<TaxLine> TaxLines = new List<TaxLine>();
+
+        /// <summary>
+        /// This country's detailed spending portfolio (Phase 1: USA only - see CLAUDE.md's "Detailed
+        /// Spending Portfolio"). Empty for a country means it still uses the legacy
+        /// GovernmentSpendingRate + PolicyDecision's four category-delta fields mechanism unchanged -
+        /// see SimulationManager.ApplyDomesticPolicy's hasDetailedSpending branch.
+        /// </summary>
+        public List<SpendingLine> SpendingLines = new List<SpendingLine>();
+
         /// <summary>
         /// This country's own tariff policy toward imports, used only when it is not a member of
         /// any trade bloc (bloc members instead apply their bloc's common external/internal rates).
@@ -37,8 +48,9 @@ namespace PoliSim.Data
 
         /// <summary>
         /// Baseline government consumption expenditure, as a percentage of GDP - the structural
-        /// share of the G term in GDP = C + I + G + NX. PolicyDecision.GovernmentSpending is added
-        /// on top of this as a discretionary delta, not used in place of it.
+        /// share of the G term in GDP = C + I + G + NX. PolicyDecision.TotalDiscretionarySpending
+        /// (the sum of the four spending categories) is added on top of this as a discretionary
+        /// delta, not used in place of it.
         /// </summary>
         public float GovernmentSpendingRate;
 
@@ -49,6 +61,38 @@ namespace PoliSim.Data
         /// is. See SimulationManager.GetUnemploymentBenefitCost.
         /// </summary>
         public float BenefitRatePerUnemployed;
+
+        /// <summary>
+        /// How much of the theoretical tax base is actually collected (0.0-1.0), reflecting
+        /// enforcement quality, the size of the informal economy, and evasion - a structural
+        /// per-country constant. Applied as a multiplier in SimulationManager.ApplyRevenueAndSpending
+        /// (ActualRevenue = GetTotalTaxRevenue() * CollectionEfficiency), not inside
+        /// GetTotalTaxRevenue itself, so that method still returns the theoretical figure. Calibrated
+        /// per country in WorldFactory so the default tax portfolio's actual revenue-to-GDP lands
+        /// close to that country's real-world tax-to-GDP ratio - see WorldFactory's doc comment for
+        /// the derivation.
+        /// </summary>
+        public float CollectionEfficiency = 1f;
+
+        /// <summary>
+        /// Overrides SimulationManager.GetInterestOnDebt's base rate (in place of CurrencyZone.
+        /// InterestRate) with this country's real blended average interest rate on existing debt,
+        /// for a country where today's policy rate is a poor proxy for the average rate across its
+        /// entire (long-duration, accumulated-over-many-years) debt stock - see
+        /// "Reserve-Currency Debt Interest Treatment" in CLAUDE.md. -1 (the default) means unset -
+        /// use CurrencyZone.InterestRate, unchanged behavior.
+        /// </summary>
+        public float BaseDebtInterestRateOverride = -1f;
+
+        /// <summary>
+        /// Scales GetDebtRiskPremium's output before it's added to the effective debt interest rate
+        /// (1 = full market exposure, the default - unchanged behavior for every country except a
+        /// reserve-currency issuer). A reserve-currency issuer (the USA) doesn't face the same market
+        /// risk premium as other sovereigns at an equivalent debt-to-GDP ratio - who holds the debt
+        /// and in what currency matters as much as the ratio itself - so its sensitivity is set near
+        /// (not exactly) zero. See "Reserve-Currency Debt Interest Treatment" in CLAUDE.md.
+        /// </summary>
+        public float RiskPremiumSensitivity = 1f;
 
         public Country() { }
 

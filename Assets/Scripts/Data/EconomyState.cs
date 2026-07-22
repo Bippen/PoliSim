@@ -24,9 +24,6 @@ namespace PoliSim.Data
         /// <summary>Current government budget balance, in the same currency units as GDP. Negative values indicate deficit.</summary>
         public float Budget;
 
-        /// <summary>Current tax rate, as a percentage of income/output taxed.</summary>
-        public float TaxRate;
-
         /// <summary>Net exports (exports minus imports, after tariff effects) for the most recent turn.</summary>
         public float TradeBalance;
 
@@ -72,7 +69,7 @@ namespace PoliSim.Data
         public EconomyState() { }
 
         public EconomyState(
-            float gdp, float inflation, float unemployment, float approvalRating, float budget, float taxRate,
+            float gdp, float inflation, float unemployment, float approvalRating, float budget,
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
             float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
             float governmentDebt = 0f)
@@ -82,7 +79,6 @@ namespace PoliSim.Data
             Unemployment = unemployment;
             ApprovalRating = approvalRating;
             Budget = budget;
-            TaxRate = taxRate;
             TradeBalance = tradeBalance;
             CurrencyStrength = currencyStrength;
             Consumption = consumption;
@@ -98,7 +94,7 @@ namespace PoliSim.Data
         public EconomyState Clone()
         {
             return new EconomyState(
-                GDP, Inflation, Unemployment, ApprovalRating, Budget, TaxRate,
+                GDP, Inflation, Unemployment, ApprovalRating, Budget,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
                 GovernmentDebt);
@@ -112,8 +108,7 @@ namespace PoliSim.Data
                 inflation: 2.0f,
                 unemployment: 5.0f,
                 approvalRating: 50f,
-                budget: 0f,
-                taxRate: 25f
+                budget: 0f
             );
         }
     }
