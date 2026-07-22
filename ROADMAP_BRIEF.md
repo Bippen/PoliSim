@@ -75,6 +75,74 @@ was invented beyond the five items as specified.
 
 ---
 
+## Round 2 Queue
+
+Same standing brief, same non-negotiable working discipline above (real-Unity validation via
+`BatchSimulationRunner` at 100/500 turns, one commit per item, escalate genuine design judgment
+calls to Open Questions rather than deciding silently, ground new mechanics in real data, keep scope
+small on the first pass) — none of it is superseded or relaxed for this round. Work through in order,
+same as Round 1; do not skip ahead or parallelize. If the round finishes early, do not invent new
+scope — re-run the full validation matrix across everything built (both rounds) and stop.
+
+**Do not revisit Round 1's Open Questions #1.** Economic Sectors stay isolated from the core
+GDP/Unemployment/Approval loop exactly as Round 1 shipped them — that call is still pending Elias's
+own decision, not something to resolve or integrate further during this round, even incidentally
+while touching a related area (e.g. item 5's Infrastructure system connects to the existing
+Infrastructure *spending category*, not to Economic Sectors).
+
+**Ordering note:** items are sequenced by how directly they build on already-validated Round 1
+foundations versus how much genuinely new territory they open. Items 1-4 extend mechanisms that
+already exist and are already validated (the SWF's growth-ceiling fix, LaborForceParticipationRate/
+minimum wage, CrimeIndex); item 5 (Infrastructure) is the most novel — a new decay/maintenance
+mechanic with no direct Round 1 precedent — so it's deliberately last. If time runs out before
+reaching it, that's the correct outcome, not a failure.
+
+### 1. Expand the Sovereign Wealth Fund to all six countries
+- Primarily a seeding/calibration task, not new mechanism design — `SovereignWealthFund`/
+  `SovereignWealthFundSystem` are already country-agnostic; the USA-first mechanic and its
+  300%-of-GDP growth ceiling are already validated.
+- Source real (or honestly-labeled illustrative) starting contribution rates, domestic/international
+  allocation splits, and asset-class mixes per country — Norway's real GPFG allocation benchmarks
+  (already used to inform the original return-rate calibration) are a reasonable reference point for
+  at least one other country, but do not assume every country's real posture matches Norway's.
+- Re-run the full validation matrix (not just a fund-specific scenario) at 100/500 turns given this
+  item's fiscal-integration history, the same extra caution Round 1's SWF item required.
+
+### 2. Detailed spending "Phase 2"
+- Wire real economic effects into 4-5 more of the still-effect-less USA discretionary spending
+  categories from "Detailed Spending Portfolio" (suggest: Justice, HomelandSecurity, Energy,
+  Housing) — 15 of the 19 Discretionary categories currently have zero economic effect by original
+  Phase 1 design.
+- Follow the exact same pattern as the four categories that already have one (Transportation ->
+  PotentialGrowthRate, Healthcare -> ConsumerConfidence, Education -> BusinessConfidence, Defense ->
+  approval only) — one or two small, clearly-justified, separately-named effects per category, not
+  an exhaustive list per category.
+
+### 3. Deeper labor market policies
+- Building on LaborForceParticipationRate/the minimum-wage lever: paid family leave, overtime/
+  working-hour regulation, workforce retraining programs.
+- Real data where findable (e.g. real paid-leave policy differences across the six countries - some
+  have statutory paid leave, some don't, mirroring how minimum wage's own real-world asymmetry was
+  handled in Round 1). Small effects on LaborForceParticipationRate/Unemployment/ApprovalRating (all
+  already proven) - do not build the full theoretical labor-policy list.
+
+### 4. Deeper crime & justice
+- Building on CrimeIndex: bail reform, drug enforcement vs. decriminalization as a policy axis,
+  prison population as a new tracked stat.
+- Keep effects routed through ApprovalRating/BusinessConfidence/CrimeIndex (all already proven) -
+  do not invent a new outcome channel for this pass.
+
+### 5. Infrastructure system (most novel this round — see ordering note above)
+- Road/rail/power-grid/broadband condition tracking with a maintenance/decay mechanic - deferred
+  maintenance should degrade the metric over time, investment should improve it.
+- Keep to 3-4 infrastructure types, not the full original list.
+- Connect to the EXISTING Infrastructure spending category and its existing PotentialGrowthRate
+  effect rather than inventing a parallel system - this is new territory (a decay mechanic has no
+  direct Round 1 precedent to mirror), so budget real attention to the failure patterns above,
+  especially unbounded growth/decay with no floor or ceiling.
+
+---
+
 ## When Elias returns
 
 - Read this file's Open Questions section first.
