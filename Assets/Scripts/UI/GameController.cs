@@ -48,6 +48,14 @@ namespace PoliSim.UI
         private const float MinSwfContributionRate = 0f;
         private const float MaxSwfContributionRate = 10f;
 
+        /// <summary>Bounds for the Paid Family Leave slider (weeks) - must match SimulationManager.MinPaidFamilyLeaveWeeks/MaxPaidFamilyLeaveWeeks.</summary>
+        private const float MinPaidFamilyLeaveWeeks = 0f;
+        private const float MaxPaidFamilyLeaveWeeks = 104f;
+
+        /// <summary>Bounds for the Overtime Regulation / Retraining Program sliders - must match SimulationManager.MinLaborDialLevel/MaxLaborDialLevel.</summary>
+        private const float MinLaborDialLevel = 0f;
+        private const float MaxLaborDialLevel = 100f;
+
         /// <summary>Bounds for a per-partner tariff override slider - the same [0,50] range BaseTariffRate itself uses. Must match SimulationManager's MinBaseTariffRate/MaxBaseTariffRate.</summary>
         private const float PartnerTariffOverrideMin = 0f;
         private const float PartnerTariffOverrideMax = 50f;
@@ -116,6 +124,13 @@ namespace PoliSim.UI
         // MinimumWagePercentOfMedian already equals whatever was in here.
         private float? _minimumWageInput;
 
+        // Draft ABSOLUTE Paid Family Leave (weeks) / Overtime Regulation / Retraining Program levels
+        // (not deltas) - every country has all three (unlike MinimumWage's country-specific
+        // asymmetry). Not cleared by ResetPolicyInputs, for the same reason _minimumWageInput isn't.
+        private float? _paidFamilyLeaveWeeksInput;
+        private float? _overtimeRegulationInput;
+        private float? _retrainingProgramInput;
+
         // Draft ABSOLUTE Police Funding / Sentencing Severity levels (0-100, not deltas) - every
         // country has both dials (unlike minimum wage's country-specific asymmetry), so no fallback-
         // to-"not implemented" branch is needed. Not cleared by ResetPolicyInputs, for the same reason
@@ -171,6 +186,9 @@ namespace PoliSim.UI
         private float _cachedInterestRateChangeInput;
         private float _cachedTariffRateChangeInput;
         private float? _cachedMinimumWageInput;
+        private float? _cachedPaidFamilyLeaveWeeksInput;
+        private float? _cachedOvertimeRegulationInput;
+        private float? _cachedRetrainingProgramInput;
         private float? _cachedPoliceFundingInput;
         private float? _cachedSentencingSeverityInput;
         private string _cachedGdpGrowthText;
@@ -415,6 +433,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
             GUILayout.Label($"Labor Force Participation: {state.LaborForceParticipationRate:F1}%", _labelStyle);
             GUILayout.Label($"Crime Index: {state.CrimeIndex:F1}", _labelStyle);
+            GUILayout.Label($"Paid Family Leave: {_playerCountry.PaidFamilyLeaveWeeks:F0} weeks", _labelStyle);
             GUILayout.Label($"Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
 
             if (hasIndependentCurrency)
@@ -536,6 +555,7 @@ namespace PoliSim.UI
 
             DrawMinimumWageControl();
             DrawCrimeJusticeControls();
+            DrawLaborPolicyControls();
 
             DrawPolicyPreview();
 
@@ -556,6 +576,26 @@ namespace PoliSim.UI
             float draftSentencingSeverity = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
             GUILayout.Label($"Sentencing Severity: {draftSentencingSeverity:F0} (0 = lenient, 100 = harsh)", _labelStyle);
             _sentencingSeverityInput = GUILayout.HorizontalSlider(draftSentencingSeverity, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+        }
+
+        /// <summary>
+        /// Paid Family Leave (weeks) / Overtime Regulation / Retraining Program (0-100 dials) - three
+        /// small always-visible levers, not their own tab, same reasoning as Minimum Wage/Crime &amp;
+        /// Justice's own controls.
+        /// </summary>
+        private void DrawLaborPolicyControls()
+        {
+            float draftPaidLeave = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
+            GUILayout.Label($"Paid Family Leave: {draftPaidLeave:F0} weeks", _labelStyle);
+            _paidFamilyLeaveWeeksInput = GUILayout.HorizontalSlider(draftPaidLeave, MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, _sliderStyle, _sliderThumbStyle);
+
+            float draftOvertimeRegulation = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel);
+            GUILayout.Label($"Overtime/Working-Hour Regulation: {draftOvertimeRegulation:F0} (0 = unregulated, 100 = strict caps)", _labelStyle);
+            _overtimeRegulationInput = GUILayout.HorizontalSlider(draftOvertimeRegulation, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftRetraining = GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel);
+            GUILayout.Label($"Workforce Retraining Programs: {draftRetraining:F0}", _labelStyle);
+            _retrainingProgramInput = GUILayout.HorizontalSlider(draftRetraining, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
         }
 
         /// <summary>
@@ -640,6 +680,19 @@ namespace PoliSim.UI
                 || !Mathf.Approximately(
                     GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
                     GetCachedSentencingSeverityInput(_playerCountry.SentencingSeverity)))
+            {
+                return true;
+            }
+
+            if (!Mathf.Approximately(
+                    GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks),
+                    GetCachedPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks))
+                || !Mathf.Approximately(
+                    GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel),
+                    GetCachedOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel))
+                || !Mathf.Approximately(
+                    GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel),
+                    GetCachedRetrainingProgramInput(_playerCountry.RetrainingProgramLevel)))
             {
                 return true;
             }
@@ -740,6 +793,9 @@ namespace PoliSim.UI
             _cachedMinimumWageInput = _minimumWageInput;
             _cachedPoliceFundingInput = _policeFundingInput;
             _cachedSentencingSeverityInput = _sentencingSeverityInput;
+            _cachedPaidFamilyLeaveWeeksInput = _paidFamilyLeaveWeeksInput;
+            _cachedOvertimeRegulationInput = _overtimeRegulationInput;
+            _cachedRetrainingProgramInput = _retrainingProgramInput;
             _cachedSwfContributionRateInput = _swfContributionRateInput;
             _cachedSwfDomesticAllocationInput = _swfDomesticAllocationInput;
             _cachedSwfEquitiesWeightInput = _swfEquitiesWeightInput;
@@ -843,6 +899,13 @@ namespace PoliSim.UI
         {
             return _cachedMinimumWageInput ?? fallbackLevel;
         }
+
+        private float GetPaidFamilyLeaveWeeksInput(float fallbackLevel) => _paidFamilyLeaveWeeksInput ?? fallbackLevel;
+        private float GetCachedPaidFamilyLeaveWeeksInput(float fallbackLevel) => _cachedPaidFamilyLeaveWeeksInput ?? fallbackLevel;
+        private float GetOvertimeRegulationInput(float fallbackLevel) => _overtimeRegulationInput ?? fallbackLevel;
+        private float GetCachedOvertimeRegulationInput(float fallbackLevel) => _cachedOvertimeRegulationInput ?? fallbackLevel;
+        private float GetRetrainingProgramInput(float fallbackLevel) => _retrainingProgramInput ?? fallbackLevel;
+        private float GetCachedRetrainingProgramInput(float fallbackLevel) => _cachedRetrainingProgramInput ?? fallbackLevel;
 
         /// <summary>The Police Funding slider's draft absolute level, or <paramref name="fallbackLevel"/> (the country's actual persisted PoliceFundingLevel) if the player hasn't touched it this turn.</summary>
         private float GetPoliceFundingInput(float fallbackLevel)
@@ -952,6 +1015,10 @@ namespace PoliSim.UI
 
             decision.PoliceFundingOverride = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
             decision.SentencingSeverityOverride = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
+
+            decision.PaidFamilyLeaveWeeksOverride = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
+            decision.OvertimeRegulationOverride = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel);
+            decision.RetrainingProgramOverride = GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel);
 
             foreach (Sector sector in _playerCountry.Sectors)
             {

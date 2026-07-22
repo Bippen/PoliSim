@@ -129,6 +129,29 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// Unemployment points removed per point Country.OvertimeRegulationLevel sits above its
+        /// neutral 50 (added per point below) - the "work-sharing" argument behind France's 35-hour
+        /// week (stricter hour caps spread the same total work across more workers). A GENUINELY
+        /// CONTESTED real economic claim, not a settled fact - some empirical studies find the
+        /// 35-hour week didn't meaningfully reduce French unemployment as intended - so this is
+        /// deliberately small, representing one side of that debate, not a confident modeling choice.
+        /// </summary>
+        private const float OvertimeUnemploymentSensitivity = 0.008f;
+
+        private static float GetOvertimeUnemploymentAdjustment(Country country)
+        {
+            return -OvertimeUnemploymentSensitivity * (country.OvertimeRegulationLevel - NeutralPolicyDialLevel);
+        }
+
+        /// <summary>Unemployment points removed per point Country.RetrainingProgramLevel sits above its neutral 50 (added per point below) - the well-established real economic rationale that retraining eases job transitions, smaller than the overtime effect since it's a more indirect mechanism.</summary>
+        private const float RetrainingUnemploymentSensitivity = 0.006f;
+
+        private static float GetRetrainingUnemploymentAdjustment(Country country)
+        {
+            return -RetrainingUnemploymentSensitivity * (country.RetrainingProgramLevel - NeutralPolicyDialLevel);
+        }
+
+        /// <summary>
         /// Okun's Law: unemployment rises when actual GDP growth runs below potential/trend growth,
         /// and falls when it runs above, plus mean-reversion pulling it back toward the country's
         /// NAIRU. <paramref name="actualGrowthRatePercent"/> is this turn's realized GDP growth,
@@ -144,6 +167,8 @@ namespace PoliSim.Simulation
             float unemploymentChange = -OkunCoefficient * growthGap;
             unemploymentChange += GetWelfareAdjustedReversionSpeed(country) * (country.NaturalUnemploymentRate - state.Unemployment);
             unemploymentChange += GetMinimumWageUnemploymentAdjustment(country);
+            unemploymentChange += GetOvertimeUnemploymentAdjustment(country);
+            unemploymentChange += GetRetrainingUnemploymentAdjustment(country);
 
             state.Unemployment = Mathf.Clamp(state.Unemployment + unemploymentChange, 0f, MaxUnemploymentPercent);
         }
@@ -331,15 +356,26 @@ namespace PoliSim.Simulation
         /// LaborForceParticipationRate mean-reverts toward Country.BaselineLaborForceParticipationRate
         /// (the country's own structural, real-World-Bank/OECD-sourced "steady-state" rate), adjusted
         /// by the same Unemployment-versus-NAIRU gap already used elsewhere (a proven driver - see
-        /// ApplyPovertyRate/ApplyApprovalRating) rather than a new one. A tracked stat only - nothing
-        /// currently targets it directly with a policy lever (see CLAUDE.md's "Labor Market Basics").
-        /// Hard-clamped to [0, 100].
+        /// ApplyPovertyRate/ApplyApprovalRating) rather than a new one. Now also targeted by two
+        /// deeper-labor-market policy levers (see "Deeper Labor Market Policies" in CLAUDE.md):
+        /// paid family leave (a gap versus the country's own seeded baseline, the same idiom
+        /// MinimumWage's employment effect uses) and workforce retraining (a gap versus the shared
+        /// neutral 50, the same idiom Police Funding/Sentencing Severity use). Hard-clamped to
+        /// [0, 100].
         /// </summary>
+        private const float PaidFamilyLeaveParticipationSensitivity = 0.02f;
+        private const float RetrainingParticipationSensitivity = 0.01f;
+
         public static void ApplyLaborForceParticipationRate(Country country)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
-            float target = country.BaselineLaborForceParticipationRate - DiscouragedWorkerSensitivity * unemploymentGap;
+            float paidLeaveGap = country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks;
+            float retrainingGap = country.RetrainingProgramLevel - NeutralPolicyDialLevel;
+            float target = country.BaselineLaborForceParticipationRate
+                - DiscouragedWorkerSensitivity * unemploymentGap
+                + PaidFamilyLeaveParticipationSensitivity * paidLeaveGap
+                + RetrainingParticipationSensitivity * retrainingGap;
             state.LaborForceParticipationRate = Mathf.Clamp(
                 state.LaborForceParticipationRate + LaborForceParticipationReversionSpeed * (target - state.LaborForceParticipationRate),
                 0f, MaxLaborForceParticipationPercent);
@@ -457,6 +493,9 @@ namespace PoliSim.Simulation
 
         /// <summary>Approval points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - smaller than Unemployment/InflationApprovalSensitivity since CrimeIndex gaps tend to run larger in absolute point terms on its 0-100 scale.</summary>
         private const float CrimeApprovalSensitivity = 0.2f;
+
+        /// <summary>Approval points gained per week Country.PaidFamilyLeaveWeeks sits above its own seeded BaselinePaidFamilyLeaveWeeks (and lost per week below) - a small, real political effect (paid-leave policy tends to be popular).</summary>
+        private const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
 
         /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
         private const float TaxHikeApprovalSensitivity = 1.5f;
@@ -611,8 +650,14 @@ namespace PoliSim.Simulation
 
             float welfareApprovalEffect = GetWelfareApprovalEffect(country);
 
+            // Paid family leave (see "Deeper Labor Market Policies" in CLAUDE.md) - an ONGOING stock
+            // effect of the gap versus the country's own seeded baseline (the same idiom
+            // welfareApprovalEffect/GetMinimumWageUnemploymentAdjustment already use), not a one-time
+            // shock - paid-leave policy tends to be popular, a small, real political effect.
+            float paidLeaveApprovalEffect = PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
+
             float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - state.ApprovalRating);
-            float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect;
+            float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect;
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + delta, 0f, 100f);
         }
 

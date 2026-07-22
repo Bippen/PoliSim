@@ -143,6 +143,14 @@ namespace PoliSim.Simulation
         private const float MinSwfDialLevel = 0f;
         private const float MaxSwfDialLevel = 100f;
 
+        /// <summary>Bounds for Country.PaidFamilyLeaveWeeks - a gameplay ceiling (104 weeks = 2 years, comfortably above Sweden's real ~69-week benchmark), not a researched maximum.</summary>
+        private const float MinPaidFamilyLeaveWeeks = 0f;
+        private const float MaxPaidFamilyLeaveWeeks = 104f;
+
+        /// <summary>Bounds for Country.OvertimeRegulationLevel/RetrainingProgramLevel - shares the same [0,100] uniform-dial idiom as PoliceFundingLevel/SentencingSeverity.</summary>
+        private const float MinLaborDialLevel = 0f;
+        private const float MaxLaborDialLevel = 100f;
+
         /// <summary>
         /// Ceiling on SovereignWealthFund.TotalAssets, as a percentage of GDP - matches
         /// MaxDebtToGdpPercent's own number for consistency, a gameplay safety bound not a realistic
@@ -287,6 +295,7 @@ namespace PoliSim.Simulation
             ApplyCrimePolicyChanges(country, decision);
             ApplySectorPolicyChanges(country, decision);
             ApplySwfPolicyChanges(country, decision);
+            ApplyLaborPolicyChanges(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(country);
@@ -385,6 +394,7 @@ namespace PoliSim.Simulation
             ApplyCrimePolicyChanges(previewCountry, decision);
             ApplySectorPolicyChanges(previewCountry, decision);
             ApplySwfPolicyChanges(previewCountry, decision);
+            ApplyLaborPolicyChanges(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
@@ -504,7 +514,11 @@ namespace PoliSim.Simulation
                 PoliceFundingLevel = country.PoliceFundingLevel,
                 SentencingSeverity = country.SentencingSeverity,
                 CurrentFedChair = country.CurrentFedChair,
-                SovereignWealthFund = country.SovereignWealthFund?.Clone()
+                SovereignWealthFund = country.SovereignWealthFund?.Clone(),
+                PaidFamilyLeaveWeeks = country.PaidFamilyLeaveWeeks,
+                BaselinePaidFamilyLeaveWeeks = country.BaselinePaidFamilyLeaveWeeks,
+                OvertimeRegulationLevel = country.OvertimeRegulationLevel,
+                RetrainingProgramLevel = country.RetrainingProgramLevel
             };
         }
 
@@ -765,6 +779,31 @@ namespace PoliSim.Simulation
         {
             SovereignWealthFund fund = country.SovereignWealthFund;
             return fund == null ? 0f : country.State.GDP * (fund.ContributionRatePercent / 100f);
+        }
+
+        /// <summary>
+        /// Sets Country.PaidFamilyLeaveWeeks/OvertimeRegulationLevel/RetrainingProgramLevel directly
+        /// to this turn's requested PolicyDecision overrides (each clamped to its own range) - a
+        /// no-op for any individual field with no request this turn (the -1 sentinel). Every country
+        /// has all three (unlike MinimumWage's country-specific asymmetry) - these are universal
+        /// government policy levers, even for a country with 0 weeks of paid leave today.
+        /// </summary>
+        private void ApplyLaborPolicyChanges(Country country, PolicyDecision decision)
+        {
+            if (decision.PaidFamilyLeaveWeeksOverride >= 0f)
+            {
+                country.PaidFamilyLeaveWeeks = Mathf.Clamp(decision.PaidFamilyLeaveWeeksOverride, MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks);
+            }
+
+            if (decision.OvertimeRegulationOverride >= 0f)
+            {
+                country.OvertimeRegulationLevel = Mathf.Clamp(decision.OvertimeRegulationOverride, MinLaborDialLevel, MaxLaborDialLevel);
+            }
+
+            if (decision.RetrainingProgramOverride >= 0f)
+            {
+                country.RetrainingProgramLevel = Mathf.Clamp(decision.RetrainingProgramOverride, MinLaborDialLevel, MaxLaborDialLevel);
+            }
         }
 
         /// <summary>

@@ -38,7 +38,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -158,6 +158,8 @@ namespace PoliSim.Testing
                     return BuildSwfStressDecision(usa, turn, world);
                 case "phase2stress":
                     return BuildPhase2StressDecision();
+                case "laborstress":
+                    return BuildLaborStressDecision(turn);
                 default:
                     return PolicyDecision.None();
             }
@@ -282,6 +284,29 @@ namespace PoliSim.Testing
                     { SpendingCategory.Housing, 30f },
                 }
             };
+        }
+
+        /// <summary>
+        /// Pushes USA's Paid Family Leave to max (104 weeks), Overtime Regulation to max (100,
+        /// strictest), and Retraining Program to max (100) simultaneously at turn 1, then holds -
+        /// confirms LaborForceParticipationRate/Unemployment/ApprovalRating (and, transitively via
+        /// the existing Phillips Curve, Inflation) all stay bounded under the largest possible
+        /// simultaneous labor-policy push. Mirrors the standalone harness's own --laborstress
+        /// scenario exactly.
+        /// </summary>
+        private static PolicyDecision BuildLaborStressDecision(int turn)
+        {
+            if (turn == 1)
+            {
+                return new PolicyDecision
+                {
+                    PaidFamilyLeaveWeeksOverride = 104f,
+                    OvertimeRegulationOverride = 100f,
+                    RetrainingProgramOverride = 100f
+                };
+            }
+
+            return PolicyDecision.None();
         }
 
         private static PolicyDecision BuildStressDecision(Country usa, int turn)

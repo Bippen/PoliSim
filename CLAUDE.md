@@ -1902,6 +1902,55 @@ same "lasting trend" idiom `PotentialGrowthRate`'s own Infrastructure nudge esta
   `stress`/`sustainedexploit`/`tariffoverride`/`welfarestress` (60-211 across both turn counts),
   confirming the 4 new effects are appropriately small and don't destabilize anything.
 
+## Deeper Labor Market Policies
+Round 2 item 3 of `ROADMAP_BRIEF.md` - three more labor policies building on
+`LaborForceParticipationRate`/the minimum-wage lever from "Labor Market Basics," with small effects
+routed through the three already-proven channels the brief named (`LaborForceParticipationRate`/
+`Unemployment`/`ApprovalRating`).
+
+- **`Country.PaidFamilyLeaveWeeks`** (real per-country data, weeks): USA 0 (confirmed - the USA is
+  the only OECD country with no national statutory paid parental leave), Sweden 69 (confirmed - 480
+  days, ~390 at ~80% pay), Germany 58 (confirmed - 14 weeks maternity + 44 weeks parental), Poland 20
+  (confirmed, the full-pay portion specifically). France (16) and Italy (22) are directionally-
+  informed estimates from general knowledge of each country's real statutory maternity-leave system,
+  not individually confirmed to the same search-verified precision as the other four.
+  `Country.BaselinePaidFamilyLeaveWeeks` is a structural anchor seeded to the same figures (the same
+  "avoid a turn-1 shock" idiom used throughout this session). Unlike MinimumWage's country asymmetry,
+  no boolean "implemented" flag was needed - 0 weeks already honestly represents the USA's real
+  situation without a separate existence switch.
+- **Effects, both gaps versus the country's own seeded baseline** (the same idiom MinimumWage's
+  employment effect already established): `PaidFamilyLeaveParticipationSensitivity` (0.02 per week of
+  gap) added to `ApplyLaborForceParticipationRate`'s target, and `PaidFamilyLeaveApprovalSensitivity`
+  (0.05 per week of gap) added to `ApplyApprovalRating`'s delta as an ongoing stock effect (like
+  `GetWelfareApprovalEffect`) - paid leave tends to be popular policy.
+- **`Country.OvertimeRegulationLevel`** (0-100, neutral 50 for every country - a uniform placeholder,
+  matching `PoliceFundingLevel`'s own precedent, since no clean cross-country "regulation strictness"
+  index exists): its `Unemployment` effect (`GetOvertimeUnemploymentAdjustment`, gap versus the
+  shared neutral 50) represents the "work-sharing" argument behind France's real 35-hour week -
+  **honestly flagged as one side of a genuinely contested real economic debate**, not a settled fact
+  (some empirical studies find the 35-hour week didn't meaningfully reduce French unemployment as
+  intended), so the sensitivity (0.008) is deliberately small.
+- **`Country.RetrainingProgramLevel`** (0-100, neutral 50, same uniform-placeholder reasoning):
+  reduces `Unemployment` (`GetRetrainingUnemploymentAdjustment`, sensitivity 0.006, smaller than the
+  overtime effect since it's a more indirect mechanism) and modestly increases
+  `LaborForceParticipationRate` (`RetrainingParticipationSensitivity` = 0.01) - the well-established
+  real economic rationale that retraining eases job transitions and re-engages discouraged workers.
+- **A real, honestly-disclosed cascade found during validation, not a bug**: a `--laborstress`
+  scenario (Paid Family Leave to its 104-week ceiling, Overtime Regulation and Retraining both to
+  100, simultaneously, held for the whole run) pushed Unemployment down enough (to ~2.9%, well below
+  NAIRU) that the ALREADY-EXISTING Phillips Curve correctly drove Inflation to its 30% ceiling, which
+  in turn drove USA's Fed-chair-driven interest rate (via the Taylor Rule) to its own 15% ceiling -
+  a three-ceiling cascade, confirmed in both the harness and real Unity, that stayed fully bounded at
+  every stage (no NaN, no divergence past the existing clamps). This is the correct, expected
+  consequence of deliberately stacking three separate unemployment-reducing policies at maximum
+  strength simultaneously - matching the Fiscal Reaction Function's own established precedent that
+  adversarial policy combinations reaching existing extremes is by design, not an instability bug.
+- **Validated: 2026-07-23, 100/500 turns, real Unity, full 16-combination matrix (8 scenarios x 2
+  turn counts), zero NaN/negative/out-of-range/divergence anywhere** - the seven pre-existing
+  scenarios showed no regression; `laborstress` landed in the same anomaly-count range as the other
+  non-SWF scenarios (69/220), confirming the three-ceiling cascade above is a correctly-bounded
+  extreme, not runaway instability.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

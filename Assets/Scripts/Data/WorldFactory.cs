@@ -210,6 +210,28 @@ namespace PoliSim.Data
             sweden.MinimumWageImplemented = false;
             italy.MinimumWageImplemented = false;
 
+            // Deeper Labor Market Policies (Round 2 item 3 - see "Deeper Labor Market Policies" in
+            // CLAUDE.md) - PaidFamilyLeaveWeeks is real, sourced via web search: USA 0 weeks
+            // (confirmed - the USA is the only OECD country with no national statutory paid parental
+            // leave), Sweden 69 weeks (confirmed - 480 days, ~390 at ~80% pay), Germany 58 weeks
+            // (confirmed - 14 weeks maternity + 44 weeks parental), Poland 20 weeks (confirmed, the
+            // full-pay portion specifically - Poland's total leave system extends further at partial
+            // pay, not counted here). France (16 weeks) and Italy (22 weeks) are directionally-
+            // informed estimates from general knowledge of each country's real statutory maternity-
+            // leave system, not individually confirmed to the same precision as the other four.
+            // BaselinePaidFamilyLeaveWeeks is seeded equal to the starting value for every country
+            // (the same "avoid a turn-1 shock" anchor idiom used throughout this session).
+            // OvertimeRegulationLevel/RetrainingProgramLevel are left at Country's own default (50,
+            // neutral) for every country - uniform placeholders, since there's no real-world figure
+            // to seed them differently by country (matching PoliceFundingLevel/SentencingSeverity's
+            // own precedent).
+            usa.PaidFamilyLeaveWeeks = 0f; usa.BaselinePaidFamilyLeaveWeeks = 0f;
+            sweden.PaidFamilyLeaveWeeks = 69f; sweden.BaselinePaidFamilyLeaveWeeks = 69f;
+            germany.PaidFamilyLeaveWeeks = 58f; germany.BaselinePaidFamilyLeaveWeeks = 58f;
+            france.PaidFamilyLeaveWeeks = 16f; france.BaselinePaidFamilyLeaveWeeks = 16f;
+            italy.PaidFamilyLeaveWeeks = 22f; italy.BaselinePaidFamilyLeaveWeeks = 22f;
+            poland.PaidFamilyLeaveWeeks = 20f; poland.BaselinePaidFamilyLeaveWeeks = 20f;
+
             // MacroSystem.ApplyCrimeIndex's per-country structural anchor - the SAME stylized 0-100
             // figures EconomyState.CrimeIndex was just seeded to above, so a new game opens already at
             // (or very near) its own baseline. NOT a literal transformation of any single real

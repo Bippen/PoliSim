@@ -176,6 +176,47 @@ namespace PoliSim.Data
         public float BaselineMinimumWagePercentOfMedian;
 
         /// <summary>
+        /// This country's real statutory paid family/parental leave, in weeks (see WorldFactory for
+        /// per-country sourcing - USA 0/Sweden 69/Germany 58 are directly confirmed via web search;
+        /// France/Italy/Poland are directionally-informed estimates from general knowledge of each
+        /// country's real statutory system, not individually confirmed to the same precision).
+        /// Persistent, player-adjustable via PolicyDecision.PaidFamilyLeaveWeeksOverride (an absolute
+        /// target, the same "SET, not delta" idiom as TaxLine.Rate) - see
+        /// SimulationManager.ApplyLaborPolicyChanges.
+        /// </summary>
+        public float PaidFamilyLeaveWeeks;
+
+        /// <summary>
+        /// This country's paid-family-leave level at the start of the game - the anchor
+        /// MacroSystem's paid-leave LaborForceParticipationRate/ApprovalRating effects measure the
+        /// CURRENT PaidFamilyLeaveWeeks against, not a universal constant (the same "gap versus a
+        /// country-specific anchor" idiom MinimumWage's own BaselineMinimumWagePercentOfMedian
+        /// already uses). Seeded equal to the country's own starting PaidFamilyLeaveWeeks, so a fresh
+        /// game opens at zero gap (no effect) rather than an artificial turn-1 shock.
+        /// </summary>
+        public float BaselinePaidFamilyLeaveWeeks;
+
+        /// <summary>
+        /// This country's overtime/working-hour regulation strictness, 0-100 (0 = unregulated/long
+        /// hours allowed, 100 = strict caps; 50 = neutral - a uniform placeholder for every country,
+        /// the same reasoning Country.PoliceFundingLevel already uses, since there's no single clean
+        /// cross-country comparable "regulation strictness" index). Persistent, player-adjustable via
+        /// PolicyDecision.OvertimeRegulationOverride. Its Unemployment effect (see
+        /// MacroSystem.GetOvertimeUnemploymentAdjustment) represents ONE side of a genuinely contested
+        /// real economic debate (the "work-sharing" argument behind France's 35-hour week) - honestly
+        /// simplified, not a settled empirical fact.
+        /// </summary>
+        public float OvertimeRegulationLevel = 50f;
+
+        /// <summary>
+        /// This country's workforce retraining program level, 0-100 (50 = neutral placeholder for
+        /// every country - no real cross-country comparable figure exists for this). Persistent,
+        /// player-adjustable via PolicyDecision.RetrainingProgramOverride. Reduces Unemployment - the
+        /// well-established real economic rationale that retraining eases job transitions.
+        /// </summary>
+        public float RetrainingProgramLevel = 50f;
+
+        /// <summary>
         /// This country's structural "steady-state" CrimeIndex - the target MacroSystem.
         /// ApplyCrimeIndex's mean-reversion moves EconomyState.CrimeIndex toward absent any policy
         /// input (the same "avoid a turn-1 shock" anchor idiom BaselinePovertyRate/

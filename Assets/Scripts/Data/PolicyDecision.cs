@@ -158,6 +158,15 @@ namespace PoliSim.Data
         public float SwfRealEstateWeightOverride = -1f;
 
         /// <summary>
+        /// This turn's requested ABSOLUTE deeper-labor-market settings (each -1 = no change
+        /// requested this turn, the same sentinel idiom as MinimumWageOverride). See
+        /// SimulationManager.ApplyLaborPolicyChanges.
+        /// </summary>
+        public float PaidFamilyLeaveWeeksOverride = -1f;
+        public float OvertimeRegulationOverride = -1f;
+        public float RetrainingProgramOverride = -1f;
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,
