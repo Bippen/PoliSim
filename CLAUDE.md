@@ -1787,6 +1787,69 @@ country-agnostic, so a later pass could enable it elsewhere with no code changes
   the worst-case sustained adversarial policy; a separate `swfmoderate` check confirmed ordinary,
   realistic use was never at risk either.
 
+## Sovereign Wealth Fund Expansion to All Six Countries
+Round 2 item 1 of `ROADMAP_BRIEF.md` - "primarily a seeding/calibration task, not new mechanism
+design" per the brief's own framing, since `SovereignWealthFund`/`SovereignWealthFundSystem` were
+already country-agnostic and the USA-first mechanic's 300%-of-GDP growth ceiling was already
+validated in Round 1.
+
+- **A real-world fact drove the seeding split, not a uniform rollout**: none of the six countries
+  has a "classic" Norway/Gulf-state-style oil-revenue sovereign wealth fund. Research found exactly
+  two real, if more modest, partial analogs worth seeding directly - Sweden's AP pension buffer funds
+  (AP1-AP4, AP6 combined) held ~$195B at end of 2024 (~31% of Sweden's real GDP, matching this game's
+  Sweden GDP scale) and France's FRR (Fonds de reserve pour les retraites) held ~EUR21-24B (under 1%
+  of France's real GDP). `Country.SovereignWealthFund` is now seeded non-null for Sweden and France
+  from turn 1; USA, Germany, Italy, and Poland honestly stay null (no real major fund) - USA's is
+  still player-creatable via the existing `GameController` tab, unchanged from Round 1. This mirrors
+  the exact precedent Round 1's own minimum-wage asymmetry established (Sweden/Italy have no
+  statutory minimum wage, matching reality) rather than inventing a new pattern, so it wasn't
+  escalated to Open Questions - a research question with a clear answer, not a structurally
+  ambiguous one.
+- **Allocation mapped from each fund's real, publicly-reported mandate** (illustrative sub-splits
+  where the source didn't break out all four of this game's asset classes individually): Sweden -
+  real mandate is "equities, fixed-income securities, and a small share of unlisted assets" ->
+  Equities 55/Bonds 35/Infrastructure 5/RealEstate 5. France - real allocation is ~46% unhedged
+  equities, ~15% unlisted, ~18%+ investment-grade fixed income -> Equities 50/Bonds 35/
+  Infrastructure 8/RealEstate 7.
+- **Contribution rates are honestly labeled as illustrative, not individually sourced** - Sweden's
+  AP funds are a mature, largely stable pension buffer (0.3%/turn, a small illustrative figure, not
+  a fast-growing new fund); France's FRR is actually in a real NET DRAWDOWN phase (it stopped
+  receiving material new contributions around 2011 and now pays OUT to pension funds annually) -
+  since `ContributionRatePercent` can only be non-negative in this model, that real drawdown dynamic
+  isn't representable in this pass; a near-zero rate (0.1%) is the closest honest approximation, not
+  a claim that FRR is still growing via contributions the way it once did.
+- **Market-return assumptions were deliberately NOT forked per country** - a given asset class's
+  real long-run return doesn't meaningfully depend on which country's fund holds it (both Sweden's
+  and France's real funds invest substantially in global, not purely domestic, markets), so country
+  differentiation belongs in ALLOCATION and CONTRIBUTION RATE, which now vary by country, not in
+  `SovereignWealthFundSystem`'s return-rate model itself, which stays a single global reference per
+  asset class.
+- **Validation generalized beyond USA, per this item's own explicit requirement**: the existing
+  `swfstress` scenario (both the standalone harness and `SimulationTestRunner`) now ALSO creates an
+  equally-maxed fund (10% contribution, 100% Equities) for Germany simultaneously with USA's -
+  a Eurozone shared-currency country with a different GDP scale and `ComfortableDebtToGdpPercent`
+  anchor than USA's independent-currency setup. Confirmed in real Unity: Germany's `DebtToGdpRatio`
+  settles cleanly at exactly 0.0% under the 500-turn max-stress scenario (not negative, not
+  divergent), the same correctly-bounded behavior the 300%-of-GDP ceiling fix already produced for
+  USA in Round 1 - confirming the ceiling generalizes, not a USA-specific coincidence.
+- **A new, now-permanent characteristic of the baseline (not a bug)**: since Sweden and France now
+  carry an active, real-data-seeded fund from turn 1 onward, EVERY validation run (not just
+  SWF-specific stress scenarios) now exercises live fund contribution/return dynamics for two
+  countries. This raised baseline anomaly counts across the board (e.g. 100-turn baseline: 28 anomalies
+  before this item -> 59 after; 500-turn baseline: 97 -> 191) - confirmed to be entirely
+  `DebtToGdpRatio`/`Inflation` percent-swing noise (the same known-oversensitive-on-small-numbers
+  pattern documented since "Federal Reserve Rate Damping"), not a single NaN/negative/out-of-range
+  value anywhere. Both Sweden and France settle at `DebtToGdpRatio` = 0.0% by turn 500 even under a
+  no-policy baseline (their modest-but-real fund returns still compound enough over 500 turns to pay
+  down debt entirely) - the same "fund returns exceed trend GDP growth over a long horizon" dynamic
+  Round 1 already established and accepted for USA, now visibly reproducing for two more countries
+  under ordinary (non-adversarial) settings.
+- **Validated: 2026-07-23, 100/500 turns, real Unity, full 12-combination matrix (6 scenarios x 2
+  turn counts), zero NaN/negative/out-of-range/divergence anywhere** - the five pre-existing
+  scenarios' elevated-but-explained anomaly counts confirmed no regression; the extended `swfstress`
+  scenario (now stressing USA AND Germany simultaneously) confirmed the growth-ceiling fix
+  generalizes across countries, not just USA.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -1933,7 +1996,10 @@ Unemployment/Approval loop in this proof-of-pattern pass (see `ROADMAP_BRIEF.md`
 USA can also create a Sovereign Wealth Fund (see "Sovereign Wealth Fund" above) - a real, budget-
 integrated mechanic (contributions are an expense, market returns are income) with its own simple
 per-asset-class return model, hard-capped at 300% of GDP after a validation pass found and fixed a
-genuine unbounded-compounding-growth risk under sustained maximum-aggression play. No save/load, no
+genuine unbounded-compounding-growth risk under sustained maximum-aggression play. Sweden and France
+now start the game WITH an active fund (see "Sovereign Wealth Fund Expansion to All Six Countries"
+above), seeded from their own real partial analogs (Sweden's AP pension buffer funds, France's FRR) -
+USA/Germany/Italy/Poland honestly stay without one, matching real-world fact. No save/load, no
 full market simulation (trade volumes are static inputs, not supply/demand-driven), and every
 constant is a starting-point placeholder meant to be tuned by playtesting.
 

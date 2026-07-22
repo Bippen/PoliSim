@@ -284,6 +284,58 @@ namespace PoliSim.Data
                 agricultureOutput: 2.4f, agricultureEmployment: 8.0f, agricultureMetric: 40f,
                 financeOutput: 4.0f, financeEmployment: 2.0f, financeMetric: 5f);
 
+            // Sovereign Wealth Fund (see "Sovereign Wealth Fund" in CLAUDE.md) - none of the six
+            // countries has a "classic" Norway/Gulf-state-style oil-revenue sovereign wealth fund;
+            // Country.SovereignWealthFund honestly stays null (no fund) for USA, Germany, Italy, and
+            // Poland, matching real-world fact (the USA mechanic is still player-creatable via
+            // GameController's tab - this seeding doesn't change that). Sweden and France DO have a
+            // real, if more modest, partial analog worth seeding directly:
+            //  - Sweden's AP pension buffer funds (AP1-AP4, AP6 combined) held ~$195B (~SEK 2.1
+            //    trillion) at end of 2024 - against Sweden's real GDP (~$620B, matching this game's
+            //    Sweden GDP scale of 620), that's ~31% of GDP, seeded directly (TotalAssets: 195).
+            //    Their real mandate is public equities + fixed income + a smaller unlisted-assets
+            //    share - EquitiesWeight/BondsWeight/InfrastructureWeight/RealEstateWeight below split
+            //    that illustratively (not individually sourced per sub-asset-class). A modest
+            //    ContributionRatePercent (0.3%) reflects the funds' real role as a mature, largely
+            //    stable pension buffer, not a fast-growing new fund - the exact net contribution rate
+            //    isn't individually sourced, an illustrative small figure honestly labeled as such.
+            //  - France's FRR (Fonds de reserve pour les retraites) held ~EUR21-24B (~$24-27B) as of
+            //    recent reporting - against France's real GDP (~$3T, matching this game's France GDP
+            //    scale of 3200), that's under 1% of GDP, seeded as TotalAssets: 27. Real allocation:
+            //    ~46% unhedged equities, ~15% unlisted, ~18%+ investment-grade fixed income - mapped
+            //    illustratively onto the four asset classes below. The FRR's real recent history is
+            //    a NET DRAWDOWN phase (it stopped receiving material new contributions around 2011 and
+            //    now pays OUT to pension funds annually) - this model's ContributionRatePercent can
+            //    only be non-negative, so that real drawdown dynamic isn't representable in this pass;
+            //    a near-zero rate (0.1%) is the closest honest approximation, not a claim that FRR is
+            //    still growing via contributions the way it once did.
+            //  - Market-return assumptions (SovereignWealthFundSystem's average return per asset
+            //    class) are DELIBERATELY NOT forked per country - a given asset class's real long-run
+            //    return doesn't meaningfully depend on which country's fund holds it (both Sweden's
+            //    and France's funds invest substantially in global, not purely domestic, markets), so
+            //    country differentiation belongs in ALLOCATION and CONTRIBUTION RATE, not in the
+            //    return-rate model itself.
+            sweden.SovereignWealthFund = new SovereignWealthFund
+            {
+                TotalAssets = 195f,
+                ContributionRatePercent = 0.3f,
+                DomesticAllocationPercent = 35f,
+                EquitiesWeight = 55f,
+                BondsWeight = 35f,
+                InfrastructureWeight = 5f,
+                RealEstateWeight = 5f
+            };
+            france.SovereignWealthFund = new SovereignWealthFund
+            {
+                TotalAssets = 27f,
+                ContributionRatePercent = 0.1f,
+                DomesticAllocationPercent = 50f,
+                EquitiesWeight = 50f,
+                BondsWeight = 35f,
+                InfrastructureWeight = 8f,
+                RealEstateWeight = 7f
+            };
+
             SeedUsaSpendingLines(usa);
 
             // Reserve-currency treatment (see "Reserve-Currency Debt Interest Treatment" in

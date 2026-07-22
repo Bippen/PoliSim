@@ -95,7 +95,7 @@ namespace PoliSim.Testing
 
             for (int turn = 1; turn <= turnsToRun; turn++)
             {
-                decisions[CountryId.USA] = BuildUsaDecision(scenario, usa, turn);
+                decisions[CountryId.USA] = BuildUsaDecision(scenario, usa, turn, world);
                 simulationManager.AdvanceTurn(decisions);
 
                 bool shouldLogThisTurn = logEveryTurn || turn == 1 || turn == turnsToRun || turn % 25 == 0;
@@ -142,7 +142,7 @@ namespace PoliSim.Testing
         /// rates, and turn timing) so BatchSimulationRunner exercises the identical policy sequences
         /// against the real game code that the harness already validated them against.
         /// </summary>
-        private static PolicyDecision BuildUsaDecision(string scenario, Country usa, int turn)
+        private static PolicyDecision BuildUsaDecision(string scenario, Country usa, int turn, World world)
         {
             switch (scenario)
             {
@@ -155,7 +155,7 @@ namespace PoliSim.Testing
                 case "welfarestress":
                     return BuildWelfareStressDecision(usa, turn);
                 case "swfstress":
-                    return BuildSwfStressDecision(usa, turn);
+                    return BuildSwfStressDecision(usa, turn, world);
                 default:
                     return PolicyDecision.None();
             }
@@ -165,14 +165,27 @@ namespace PoliSim.Testing
         /// Creates USA's Sovereign Wealth Fund at turn 1 with the maximum contribution rate (10% of
         /// GDP/turn) and a 100% Equities allocation (the highest-average-return, highest-variance
         /// asset class) held for the entire run with no dissolution - the worst-case sustained
-        /// compounding-growth stress this mechanic can produce. Mirrors the standalone harness's
-        /// own --swfstress scenario exactly.
+        /// compounding-growth stress this mechanic can produce. ALSO creates an equally-maxed fund for
+        /// Germany (a Eurozone shared-currency, non-USA country with a different GDP scale/
+        /// ComfortableDebtToGdpPercent anchor) at the same time, to confirm the mechanism - especially
+        /// the 300%-of-GDP ceiling - generalizes beyond USA (Round 2 item 1's "expand to all six
+        /// countries" own validation requirement). Mirrors the standalone harness's own --swfstress
+        /// scenario exactly.
         /// </summary>
-        private static PolicyDecision BuildSwfStressDecision(Country usa, int turn)
+        private static PolicyDecision BuildSwfStressDecision(Country usa, int turn, World world)
         {
             if (turn == 1)
             {
                 usa.SovereignWealthFund = new SovereignWealthFund
+                {
+                    ContributionRatePercent = 10f,
+                    EquitiesWeight = 100f,
+                    BondsWeight = 0f,
+                    InfrastructureWeight = 0f,
+                    RealEstateWeight = 0f
+                };
+                Country germany = world.GetCountry(CountryId.Germany);
+                germany.SovereignWealthFund = new SovereignWealthFund
                 {
                     ContributionRatePercent = 10f,
                     EquitiesWeight = 100f,
