@@ -1550,6 +1550,74 @@ labor market system (union membership, gig economy, remote work) - out of scope 
   (USA ~142-143%, Sweden ~13%, Germany ~35%, France ~90%, Italy ~107%, Poland ~26%), confirming the
   new mechanic introduced no interaction with the debt/fiscal-reaction system.
 
+## Crime & Justice Basics
+Queue item 3 of `ROADMAP_BRIEF.md`: adds a stylized `CrimeIndex` tracked stat plus two policies -
+police funding and sentencing policy, per the brief's own suggestion - with effects kept to
+`ApprovalRating` and `BusinessConfidence` (both already proven elsewhere in this model).
+
+- **`EconomyState.CrimeIndex`** (0-100, higher = more crime): a **stylized index, NOT a literal
+  transformation of any single real indicator** - "crime" as a broad concept has no single clean
+  cross-country comparable metric the way poverty/labor-participation rates do (homicide rate,
+  victimization surveys, and recorded-offense rates all measure different things and aren't
+  mutually consistent across these six countries). Seeded **informed by** real relative
+  intentional-homicide-rate rankings (UNODC/Eurostat/national sourcing): USA 5.76/100k (clearly
+  highest of the six) -> `CrimeIndex` 45; Sweden and France both notably elevated and roughly
+  comparable (Sweden's recent, well-documented gang-violence-driven rise; France ~1.34/100k) ->
+  both 30; Germany ~0.91/100k -> 25; Poland ~0.68/100k -> 20; Italy ~0.57/100k, the lowest of the
+  six -> 18. `Country.BaselineCrimeIndex` is a separate structural anchor seeded to the same
+  figures (the same "avoid a turn-1 shock" idiom `BaselinePovertyRate`/
+  `BaselineLaborForceParticipationRate` already use).
+- **`MacroSystem.ApplyCrimeIndex`**: mean-reverts toward a target of `Country.BaselineCrimeIndex`,
+  adjusted by (a) the same Unemployment-versus-NAIRU gap already reused elsewhere (property crime's
+  real, well-documented link to joblessness - a modest sensitivity, smaller than the policy levers
+  below), and (b) how far `PoliceFundingLevel`/`SentencingSeverity` sit from their shared neutral 50.
+  **Police funding's effect is deliberately double sentencing severity's** (0.16 vs. 0.08 points per
+  point of gap) - the well-established criminology finding (Nagin and others) that the CERTAINTY of
+  enforcement deters crime more reliably than the SEVERITY of punishment, which has a smaller, more
+  debated effect. Hard-clamped to `[0, 100]`.
+- **Two policy dials, uniform across all six countries** (unlike the minimum wage's country-specific
+  asymmetry - there's no real-world "relative policing effort" figure to seed differently per
+  country, so both start at a neutral 50 for every country): `Country.PoliceFundingLevel` (0-100)
+  and `Country.SentencingSeverity` (0 = lenient/rehabilitation-focused, 100 = harsh/punitive).
+  `PolicyDecision.PoliceFundingOverride`/`SentencingSeverityOverride` (absolute targets, the same
+  "SET, not delta" semantics as `TaxRateOverrides`) let the player adjust both turn to turn via
+  `SimulationManager.ApplyCrimePolicyChanges`, each clamped to `[0, 100]`. Deliberately NOT wired
+  into the budget/fiscal system at all - the brief's explicit scope for this item is `ApprovalRating`/
+  `BusinessConfidence` only, keeping this self-contained ahead of the riskier, fiscal-touching
+  Sovereign Wealth Fund item still to come.
+- **Effects, both GAPS versus `Country.BaselineCrimeIndex` (not absolute levels)** - the same "gaps,
+  not levels" idiom `ApplyApprovalRating`/`ApplyPovertyRate` already use, so a country with a
+  structurally higher real-world baseline (the USA) isn't penalized just for sitting at its own
+  normal equilibrium:
+  - **`ApplyApprovalRating`** gained a new `CrimeApprovalSensitivity` (0.2) term in the existing
+    misery-penalty calculation - smaller than `UnemploymentApprovalSensitivity`/
+    `InflationApprovalSensitivity` (both 0.4) since `CrimeIndex` gaps tend to run larger in absolute
+    point terms on its 0-100 scale. `country` was already a parameter, so no signature change was
+    needed.
+  - **`MacroSystem.ApplyCrimeEffects`** (a new method, called alongside
+    `ApplyCategorySpendingEffects`/`ApplyWelfareProgramEffects`): nudges `BusinessConfidence` down as
+    `CrimeIndex` rises above baseline (and up as it falls below) - higher-than-baseline crime
+    deterring investment is a real, well-documented effect. Small (`CrimeBusinessConfidenceSensitivity`
+    = 0.0015 per point of gap) and clamped to `[MinConfidence, MaxConfidence]` alongside every other
+    confidence nudge in this model.
+- **UI** (`GameController`): `CrimeIndex` shown on the dashboard and in the live preview (a new
+  `PolicyPreview.CrimeIndexChange` field). Both sliders live directly in `DrawPolicyControls`
+  (`DrawCrimeJusticeControls`), the same "single/small lever(s), not a whole tab" reasoning the
+  Minimum Wage slider already established - two sliders is still disproportionately small scope for
+  a dedicated tab.
+- **Validated in the standalone harness first** (100/500-turn baseline, plus a new `--crimestress`
+  scenario pushing USA's Police Funding AND Sentencing Severity to their maximum (100) simultaneously
+  at turn 1 and holding): the baseline stayed consistent with pre-existing runs (no new anomaly
+  pattern), and the stress scenario produced a real, bounded, sensible outcome - Approval rose
+  substantially (to 84.1 by turn 100, vs. 26.7 in the equivalent-seed baseline run) and GDP was
+  measurably higher too (via the `BusinessConfidence` channel feeding Investment) - both moved in the
+  economically sensible direction and settled rather than diverging.
+- **Validated: 2026-07-22, 100/500 turns, real Unity, 32/86 anomalies (all known swing
+  false-positives, zero NaN/negative/out-of-range/divergence)** - `DebtToGdpRatio` equilibria for all
+  six countries matched the pre-existing "Fiscal Reaction Function" baseline almost exactly (this
+  mechanic never touches the fiscal system, so this is the expected, confirmed result, not a
+  coincidence).
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -1685,6 +1753,10 @@ approval, adjustable via any of the six implementable welfare programs. Every co
 `LaborForceParticipationRate` (real World Bank/OECD data, mean-reverting toward its own baseline via
 the same unemployment gap - see "Labor Market Basics" above), and four of the six (USA, Germany,
 France, Poland) have a player-adjustable minimum-wage lever (percent of median wage) with small
-effects on `Unemployment`/`PovertyRate` - Sweden and Italy have none, matching real-world fact. No
-save/load, no full market simulation (trade volumes are static inputs, not supply/demand-driven), and
-every constant is a starting-point placeholder meant to be tuned by playtesting.
+effects on `Unemployment`/`PovertyRate` - Sweden and Italy have none, matching real-world fact. Every
+country also tracks a stylized `CrimeIndex` (informed by real relative homicide-rate rankings, not a
+literal transformation of any single indicator - see "Crime & Justice Basics" above) and has two
+policy dials - Police Funding and Sentencing Severity - with small effects on `ApprovalRating` and
+`BusinessConfidence`. No save/load, no full market simulation (trade volumes are static inputs, not
+supply/demand-driven), and every constant is a starting-point placeholder meant to be tuned by
+playtesting.

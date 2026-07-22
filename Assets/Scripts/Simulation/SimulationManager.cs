@@ -37,6 +37,7 @@ namespace PoliSim.Simulation
         public float NetBudgetImpact;
         public float PovertyRateChange;
         public float LaborForceParticipationRateChange;
+        public float CrimeIndexChange;
     }
 
     /// <summary>
@@ -121,6 +122,10 @@ namespace PoliSim.Simulation
         /// <summary>Bounds for Country.MinimumWagePercentOfMedian (a Kaitz-index-style percent of median wage) - a gameplay ceiling above any real-world minimum wage's Kaitz index, not a researched maximum.</summary>
         private const float MinMinimumWagePercent = 0f;
         private const float MaxMinimumWagePercent = 100f;
+
+        /// <summary>Bounds for Country.PoliceFundingLevel/SentencingSeverity - both share one uniform 0-100 range (unlike TaxLine's per-type ranges), since there's no per-country real-world figure to bound them against.</summary>
+        private const float MinPolicyDialLevel = 0f;
+        private const float MaxPolicyDialLevel = 100f;
 
         /// <summary>Bounds for this turn's requested PERCENTAGE change to a Discretionary SpendingLine (see PolicyDecision.SpendingLineChanges).</summary>
         private const float DiscretionaryPercentChangeRange = 30f;
@@ -250,6 +255,7 @@ namespace PoliSim.Simulation
             float totalTaxHike = ApplyTaxRateChanges(country, decision);
             ApplyWelfareGenerosityChanges(country, decision);
             ApplyMinimumWageChange(country, decision);
+            ApplyCrimePolicyChanges(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(country);
@@ -280,6 +286,8 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyInflationExpectations(state);
             MacroSystem.ApplyPovertyRate(country);
             MacroSystem.ApplyLaborForceParticipationRate(country);
+            MacroSystem.ApplyCrimeIndex(country);
+            MacroSystem.ApplyCrimeEffects(country);
 
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -320,6 +328,7 @@ namespace PoliSim.Simulation
             float budgetBefore = state.Budget;
             float povertyBefore = state.PovertyRate;
             float laborForceParticipationBefore = state.LaborForceParticipationRate;
+            float crimeIndexBefore = state.CrimeIndex;
 
             ApplyTariffRateChange(previewCountry, decision);
             ApplyPartnerTariffOverrides(previewCountry, decision);
@@ -328,6 +337,7 @@ namespace PoliSim.Simulation
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
             ApplyMinimumWageChange(previewCountry, decision);
+            ApplyCrimePolicyChanges(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
@@ -353,6 +363,8 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyInflationExpectations(state);
             MacroSystem.ApplyPovertyRate(previewCountry);
             MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
+            MacroSystem.ApplyCrimeIndex(previewCountry);
+            MacroSystem.ApplyCrimeEffects(previewCountry);
 
             MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -364,7 +376,8 @@ namespace PoliSim.Simulation
                 ApprovalChange = state.ApprovalRating - approvalBefore,
                 NetBudgetImpact = state.Budget - budgetBefore,
                 PovertyRateChange = state.PovertyRate - povertyBefore,
-                LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore
+                LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore,
+                CrimeIndexChange = state.CrimeIndex - crimeIndexBefore
             };
         }
 
@@ -417,6 +430,9 @@ namespace PoliSim.Simulation
                 MinimumWageImplemented = country.MinimumWageImplemented,
                 MinimumWagePercentOfMedian = country.MinimumWagePercentOfMedian,
                 BaselineMinimumWagePercentOfMedian = country.BaselineMinimumWagePercentOfMedian,
+                BaselineCrimeIndex = country.BaselineCrimeIndex,
+                PoliceFundingLevel = country.PoliceFundingLevel,
+                SentencingSeverity = country.SentencingSeverity,
                 CurrentFedChair = country.CurrentFedChair
             };
         }
@@ -574,6 +590,26 @@ namespace PoliSim.Simulation
             }
 
             country.MinimumWagePercentOfMedian = Mathf.Clamp(decision.MinimumWageOverride, MinMinimumWagePercent, MaxMinimumWagePercent);
+        }
+
+        /// <summary>
+        /// Sets Country.PoliceFundingLevel/SentencingSeverity directly to this turn's requested
+        /// PolicyDecision overrides (each clamped to [MinPolicyDialLevel, MaxPolicyDialLevel]) - a
+        /// no-op for either dial with no request this turn (the -1 sentinel). Every country has both
+        /// dials (unlike minimum wage's country-specific asymmetry) - police funding and sentencing
+        /// policy are universal government functions.
+        /// </summary>
+        private void ApplyCrimePolicyChanges(Country country, PolicyDecision decision)
+        {
+            if (decision.PoliceFundingOverride >= 0f)
+            {
+                country.PoliceFundingLevel = Mathf.Clamp(decision.PoliceFundingOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+
+            if (decision.SentencingSeverityOverride >= 0f)
+            {
+                country.SentencingSeverity = Mathf.Clamp(decision.SentencingSeverityOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
         }
 
         /// <summary>

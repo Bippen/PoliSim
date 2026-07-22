@@ -38,6 +38,10 @@ namespace PoliSim.UI
         private const float MinMinimumWagePercent = 0f;
         private const float MaxMinimumWagePercent = 100f;
 
+        /// <summary>Bounds for the Police Funding / Sentencing Severity sliders - must match SimulationManager.MinPolicyDialLevel/MaxPolicyDialLevel.</summary>
+        private const float MinPolicyDialLevel = 0f;
+        private const float MaxPolicyDialLevel = 100f;
+
         /// <summary>Bounds for a per-partner tariff override slider - the same [0,50] range BaseTariffRate itself uses. Must match SimulationManager's MinBaseTariffRate/MaxBaseTariffRate.</summary>
         private const float PartnerTariffOverrideMin = 0f;
         private const float PartnerTariffOverrideMax = 50f;
@@ -88,6 +92,13 @@ namespace PoliSim.UI
         // MinimumWagePercentOfMedian already equals whatever was in here.
         private float? _minimumWageInput;
 
+        // Draft ABSOLUTE Police Funding / Sentencing Severity levels (0-100, not deltas) - every
+        // country has both dials (unlike minimum wage's country-specific asymmetry), so no fallback-
+        // to-"not implemented" branch is needed. Not cleared by ResetPolicyInputs, for the same reason
+        // _minimumWageInput isn't.
+        private float? _policeFundingInput;
+        private float? _sentencingSeverityInput;
+
         // Draft ABSOLUTE per-partner tariff override rate for the Trade tab's sliders (only shown/
         // meaningful while that partner's TradePartner.HasPlayerTariffOverride is true - mirrors
         // _taxRateInputs' relationship to TaxLine.IsImplemented exactly). Not cleared by
@@ -128,6 +139,8 @@ namespace PoliSim.UI
         private float _cachedInterestRateChangeInput;
         private float _cachedTariffRateChangeInput;
         private float? _cachedMinimumWageInput;
+        private float? _cachedPoliceFundingInput;
+        private float? _cachedSentencingSeverityInput;
         private string _cachedGdpGrowthText;
         private string _cachedUnemploymentText;
         private string _cachedInflationText;
@@ -135,6 +148,7 @@ namespace PoliSim.UI
         private string _cachedNetBudgetText;
         private string _cachedPovertyRateText;
         private string _cachedLaborForceParticipationRateText;
+        private string _cachedCrimeIndexText;
 
         private readonly List<string> _turnLog = new List<string>();
         private Vector2 _logScrollPosition;
@@ -354,6 +368,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
             GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
             GUILayout.Label($"Labor Force Participation: {state.LaborForceParticipationRate:F1}%", _labelStyle);
+            GUILayout.Label($"Crime Index: {state.CrimeIndex:F1}", _labelStyle);
             GUILayout.Label($"Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
 
             if (hasIndependentCurrency)
@@ -467,10 +482,27 @@ namespace PoliSim.UI
             }
 
             DrawMinimumWageControl();
+            DrawCrimeJusticeControls();
 
             DrawPolicyPreview();
 
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Police Funding / Sentencing Severity (0-100 dials, both start at a neutral 50 for every
+        /// country) - two small always-visible levers, not their own tab, for the same "disproportionate
+        /// scope for this few controls" reasoning as the Minimum Wage slider.
+        /// </summary>
+        private void DrawCrimeJusticeControls()
+        {
+            float draftPoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
+            GUILayout.Label($"Police Funding: {draftPoliceFunding:F0}", _labelStyle);
+            _policeFundingInput = GUILayout.HorizontalSlider(draftPoliceFunding, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftSentencingSeverity = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
+            GUILayout.Label($"Sentencing Severity: {draftSentencingSeverity:F0} (0 = lenient, 100 = harsh)", _labelStyle);
+            _sentencingSeverityInput = GUILayout.HorizontalSlider(draftSentencingSeverity, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
         }
 
         /// <summary>
@@ -520,6 +552,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Approval: {_cachedApprovalText}", _labelStyle);
             GUILayout.Label($"Poverty Rate: {_cachedPovertyRateText}", _labelStyle);
             GUILayout.Label($"Labor Force Participation: {_cachedLaborForceParticipationRateText}", _labelStyle);
+            GUILayout.Label($"Crime Index: {_cachedCrimeIndexText}", _labelStyle);
             GUILayout.Label($"Net Budget Impact: {_cachedNetBudgetText}", _labelStyle);
         }
 
@@ -544,6 +577,16 @@ namespace PoliSim.UI
                 && !Mathf.Approximately(
                     GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian),
                     GetCachedMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian)))
+            {
+                return true;
+            }
+
+            if (!Mathf.Approximately(
+                    GetPoliceFundingInput(_playerCountry.PoliceFundingLevel),
+                    GetCachedPoliceFundingInput(_playerCountry.PoliceFundingLevel))
+                || !Mathf.Approximately(
+                    GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
+                    GetCachedSentencingSeverityInput(_playerCountry.SentencingSeverity)))
             {
                 return true;
             }
@@ -609,10 +652,13 @@ namespace PoliSim.UI
             _cachedNetBudgetText = FormatEstimate(preview.NetBudgetImpact, " units");
             _cachedPovertyRateText = FormatEstimate(preview.PovertyRateChange, " pts");
             _cachedLaborForceParticipationRateText = FormatEstimate(preview.LaborForceParticipationRateChange, " pts");
+            _cachedCrimeIndexText = FormatEstimate(preview.CrimeIndexChange, " pts");
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
             _cachedTariffRateChangeInput = _tariffRateChangeInput;
             _cachedMinimumWageInput = _minimumWageInput;
+            _cachedPoliceFundingInput = _policeFundingInput;
+            _cachedSentencingSeverityInput = _sentencingSeverityInput;
 
             _cachedTaxRateInputs.Clear();
             foreach (KeyValuePair<TaxType, float> kvp in _taxRateInputs)
@@ -699,6 +745,28 @@ namespace PoliSim.UI
             return _cachedMinimumWageInput ?? fallbackLevel;
         }
 
+        /// <summary>The Police Funding slider's draft absolute level, or <paramref name="fallbackLevel"/> (the country's actual persisted PoliceFundingLevel) if the player hasn't touched it this turn.</summary>
+        private float GetPoliceFundingInput(float fallbackLevel)
+        {
+            return _policeFundingInput ?? fallbackLevel;
+        }
+
+        private float GetCachedPoliceFundingInput(float fallbackLevel)
+        {
+            return _cachedPoliceFundingInput ?? fallbackLevel;
+        }
+
+        /// <summary>The Sentencing Severity slider's draft absolute level, or <paramref name="fallbackLevel"/> (the country's actual persisted SentencingSeverity) if the player hasn't touched it this turn.</summary>
+        private float GetSentencingSeverityInput(float fallbackLevel)
+        {
+            return _sentencingSeverityInput ?? fallbackLevel;
+        }
+
+        private float GetCachedSentencingSeverityInput(float fallbackLevel)
+        {
+            return _cachedSentencingSeverityInput ?? fallbackLevel;
+        }
+
         /// <summary>The Welfare Policy tab's draft absolute GenerosityLevel for a WelfareProgramType, or <paramref name="fallbackGenerosity"/> (the WelfareProgram's actual persisted GenerosityLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
         {
@@ -747,6 +815,9 @@ namespace PoliSim.UI
             {
                 decision.MinimumWageOverride = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian);
             }
+
+            decision.PoliceFundingOverride = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
+            decision.SentencingSeverityOverride = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
 
             // Only currently-implemented lines get an override - a stale draft left over from a since-
             // removed tax must never be sent (GetTaxRateInput's fallback already makes an untouched

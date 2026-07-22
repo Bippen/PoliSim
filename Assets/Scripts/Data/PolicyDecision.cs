@@ -107,6 +107,20 @@ namespace PoliSim.Data
         public float MinimumWageOverride = -1f;
 
         /// <summary>
+        /// This turn's requested ABSOLUTE police funding level (0-100, not a delta) - -1 (the
+        /// default) means no change requested this turn. See SimulationManager.ApplyCrimePolicyChanges
+        /// and Country.PoliceFundingLevel.
+        /// </summary>
+        public float PoliceFundingOverride = -1f;
+
+        /// <summary>
+        /// This turn's requested ABSOLUTE sentencing-policy level (0-100, not a delta) - -1 (the
+        /// default) means no change requested this turn. See SimulationManager.ApplyCrimePolicyChanges
+        /// and Country.SentencingSeverity.
+        /// </summary>
+        public float SentencingSeverityOverride = -1f;
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,

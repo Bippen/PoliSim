@@ -86,42 +86,42 @@ namespace PoliSim.Data
             var usa = new Country(
                 CountryId.USA, "United States",
                 new EconomyState(gdp: 29000f, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
-                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f),
+                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f),
                 usDollarZone, baseTariffRate: 3f,
                 naturalUnemploymentRate: 4.0f, potentialGrowthRate: 2.0f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);
 
             var sweden = new Country(
                 CountryId.Sweden, "Sweden",
                 new EconomyState(gdp: 620f, inflation: 2.0f, unemployment: 8.0f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f),
+                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f),
                 swedishKronaZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 6.5f, potentialGrowthRate: 1.5f, governmentSpendingRate: 26f, benefitRatePerUnemployed: 0.25f);
 
             var germany = new Country(
                 CountryId.Germany, "Germany",
                 new EconomyState(gdp: 4700f, inflation: 3.0f, unemployment: 3.5f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f),
+                    governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f, crimeIndex: 25f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 3.3f, potentialGrowthRate: 0.8f, governmentSpendingRate: 21f, benefitRatePerUnemployed: 0.20f);
 
             var france = new Country(
                 CountryId.France, "France",
                 new EconomyState(gdp: 3200f, inflation: 3.0f, unemployment: 7.3f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f),
+                    governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f, crimeIndex: 30f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 7.5f, potentialGrowthRate: 0.8f, governmentSpendingRate: 24f, benefitRatePerUnemployed: 0.22f);
 
             var italy = new Country(
                 CountryId.Italy, "Italy",
                 new EconomyState(gdp: 2300f, inflation: 3.0f, unemployment: 7.8f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f),
+                    governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f, crimeIndex: 18f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 8.0f, potentialGrowthRate: 0.8f, governmentSpendingRate: 19f, benefitRatePerUnemployed: 0.18f);
 
             var poland = new Country(
                 CountryId.Poland, "Poland",
                 new EconomyState(gdp: 840f, inflation: 2.2f, unemployment: 5.4f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f),
+                    governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f, crimeIndex: 20f),
                 polishZlotyZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 5.0f, potentialGrowthRate: 3.5f, governmentSpendingRate: 18f, benefitRatePerUnemployed: 0.12f);
 
@@ -209,6 +209,24 @@ namespace PoliSim.Data
             poland.BaselineMinimumWagePercentOfMedian = 52f;
             sweden.MinimumWageImplemented = false;
             italy.MinimumWageImplemented = false;
+
+            // MacroSystem.ApplyCrimeIndex's per-country structural anchor - the SAME stylized 0-100
+            // figures EconomyState.CrimeIndex was just seeded to above, so a new game opens already at
+            // (or very near) its own baseline. NOT a literal transformation of any single real
+            // indicator - informed by real relative homicide-rate rankings (USA highest of the six;
+            // Sweden elevated due to well-documented recent gang violence, comparable to France;
+            // Germany and Poland lower; Italy lowest, per UNODC/Eurostat/national reporting) but
+            // "crime" as a broad concept has no single clean cross-country comparable metric the way
+            // poverty/labor-participation rates do - see "Crime & Justice Basics" in CLAUDE.md.
+            // PoliceFundingLevel/SentencingSeverity are left at Country's own default (50, neutral)
+            // for every country - a uniform placeholder, since there's no real-world figure to seed
+            // them differently by country.
+            usa.BaselineCrimeIndex = 45f;
+            sweden.BaselineCrimeIndex = 30f;
+            germany.BaselineCrimeIndex = 25f;
+            france.BaselineCrimeIndex = 30f;
+            italy.BaselineCrimeIndex = 18f;
+            poland.BaselineCrimeIndex = 20f;
 
             SeedWelfarePrograms(usa);
             SeedWelfarePrograms(sweden);

@@ -81,6 +81,17 @@ namespace PoliSim.Data
         public float LaborForceParticipationRate;
 
         /// <summary>
+        /// A stylized 0-100 crime index (higher = more crime), NOT a literal transformation of any
+        /// single real indicator - "crime" as a broad concept has no single clean cross-country
+        /// comparable metric the way poverty/labor-participation rates do. Seeded per country
+        /// informed by real relative homicide-rate rankings (see WorldFactory), honestly labeled as
+        /// illustrative. Mean-reverts each turn toward Country.BaselineCrimeIndex, adjusted by
+        /// PoliceFundingLevel/SentencingSeverity and the same unemployment gap already used
+        /// elsewhere - see MacroSystem.ApplyCrimeIndex. Hard-clamped to [0, 100].
+        /// </summary>
+        public float CrimeIndex;
+
+        /// <summary>
         /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
@@ -93,7 +104,7 @@ namespace PoliSim.Data
             float gdp, float inflation, float unemployment, float approvalRating, float budget,
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
             float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
-            float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f)
+            float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f, float crimeIndex = 25f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -111,6 +122,7 @@ namespace PoliSim.Data
             GovernmentDebt = governmentDebt;
             PovertyRate = povertyRate;
             LaborForceParticipationRate = laborForceParticipationRate;
+            CrimeIndex = crimeIndex;
         }
 
         /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
@@ -120,7 +132,7 @@ namespace PoliSim.Data
                 GDP, Inflation, Unemployment, ApprovalRating, Budget,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
-                GovernmentDebt, PovertyRate, LaborForceParticipationRate);
+                GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

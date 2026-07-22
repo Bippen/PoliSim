@@ -168,6 +168,38 @@ namespace PoliSim.Data
         public float BaselineMinimumWagePercentOfMedian;
 
         /// <summary>
+        /// This country's structural "steady-state" CrimeIndex - the target MacroSystem.
+        /// ApplyCrimeIndex's mean-reversion moves EconomyState.CrimeIndex toward absent any policy
+        /// input (the same "avoid a turn-1 shock" anchor idiom BaselinePovertyRate/
+        /// BaselineLaborForceParticipationRate already use). Seeded per country from a STYLIZED 0-100
+        /// scale informed by real relative homicide-rate rankings (see WorldFactory) - not a literal
+        /// transformation of any single real indicator, since "crime" as a broad concept has no single
+        /// clean cross-country comparable metric the way poverty/labor-participation rates do.
+        /// </summary>
+        public float BaselineCrimeIndex = 25f;
+
+        /// <summary>
+        /// This country's relative police funding effort, 0-100 (50 = neutral/baseline for every
+        /// country - a uniform placeholder, since there's no clean real-world cross-country "relative
+        /// policing effort" figure to seed differently per country, unlike CrimeIndex itself).
+        /// Persistent, player-adjustable via PolicyDecision.PoliceFundingOverride (an absolute target,
+        /// the same "SET, not delta" idiom as TaxLine.Rate) - see
+        /// SimulationManager.ApplyCrimePolicyChanges. Higher funding reduces CrimeIndex - see
+        /// MacroSystem.ApplyCrimeIndex.
+        /// </summary>
+        public float PoliceFundingLevel = 50f;
+
+        /// <summary>
+        /// This country's sentencing policy, 0-100 (0 = lenient/rehabilitation-focused, 100 = harsh/
+        /// punitive; 50 = neutral, the same uniform-placeholder reasoning as PoliceFundingLevel).
+        /// Persistent, player-adjustable via PolicyDecision.SentencingSeverityOverride. Its effect on
+        /// CrimeIndex is deliberately smaller than PoliceFundingLevel's - criminology research
+        /// consistently finds the CERTAINTY of enforcement matters more for deterrence than the
+        /// SEVERITY of punishment (see MacroSystem.ApplyCrimeIndex's doc comment).
+        /// </summary>
+        public float SentencingSeverity = 50f;
+
+        /// <summary>
         /// This country's independent central bank chair, or null for a country that instead uses
         /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
         /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)

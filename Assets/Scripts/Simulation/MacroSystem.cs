@@ -345,6 +345,62 @@ namespace PoliSim.Simulation
                 0f, MaxLaborForceParticipationPercent);
         }
 
+        // --- Crime & Justice: a stylized CrimeIndex, mean-reverting toward its own baseline ---
+
+        /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches PovertyRate/LaborForceParticipationRate's own moderate-slow reversion speed.</summary>
+        private const float CrimeIndexReversionSpeed = 0.15f;
+
+        /// <summary>CrimeIndex points added per point Unemployment sits above NaturalUnemploymentRate - reuses an already-proven driver (the same gap PovertyRate/ApplyApprovalRating already use) rather than inventing a new one; property crime's real-world link to joblessness is well documented, though modest relative to policy's own effect below.</summary>
+        private const float CrimeUnemploymentSensitivity = 0.3f;
+
+        /// <summary>CrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - a real, well-documented deterrence/response-capacity effect. The larger of the two policy sensitivities - see SentencingSensitivity.</summary>
+        private const float PoliceFundingSensitivity = 0.16f;
+
+        /// <summary>CrimeIndex points reduced per point Country.SentencingSeverity sits above its neutral 50 - deliberately HALF of PoliceFundingSensitivity, reflecting the well-established criminology finding (Nagin and others) that the CERTAINTY of enforcement deters crime more reliably than the SEVERITY of punishment, which has a smaller, more debated effect.</summary>
+        private const float SentencingSensitivity = 0.08f;
+
+        /// <summary>Neutral reference point for both policy dials - both start here for every country (a uniform placeholder, unlike CrimeIndex's own per-country baseline), so a gap versus this constant (not a country-specific anchor) is the correct comparison.</summary>
+        private const float NeutralPolicyDialLevel = 50f;
+
+        private const float MaxCrimeIndexPercent = 100f;
+
+        /// <summary>
+        /// CrimeIndex mean-reverts toward a target of Country.BaselineCrimeIndex, adjusted by the
+        /// Unemployment-versus-NAIRU gap (a modest, already-proven driver) and by how far
+        /// PoliceFundingLevel/SentencingSeverity sit from their shared neutral 50 - higher police
+        /// funding or harsher sentencing both reduce the target, funding more strongly than
+        /// sentencing (see PoliceFundingSensitivity/SentencingSensitivity). Hard-clamped to [0, 100].
+        /// </summary>
+        public static void ApplyCrimeIndex(Country country)
+        {
+            EconomyState state = country.State;
+            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float target = country.BaselineCrimeIndex
+                + CrimeUnemploymentSensitivity * unemploymentGap
+                - PoliceFundingSensitivity * (country.PoliceFundingLevel - NeutralPolicyDialLevel)
+                - SentencingSensitivity * (country.SentencingSeverity - NeutralPolicyDialLevel);
+
+            state.CrimeIndex = Mathf.Clamp(state.CrimeIndex + CrimeIndexReversionSpeed * (target - state.CrimeIndex), 0f, MaxCrimeIndexPercent);
+        }
+
+        /// <summary>BusinessConfidence points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - higher-than-baseline crime deters investment, a real and well-documented effect, kept small since Confidence directly multiplies Investment.</summary>
+        private const float CrimeBusinessConfidenceSensitivity = 0.0015f;
+
+        /// <summary>
+        /// CrimeIndex's ongoing effect on BusinessConfidence - a GAP versus Country.BaselineCrimeIndex
+        /// (not an absolute level), the same "gaps, not levels" idiom ApplyApprovalRating/
+        /// ApplyPovertyRate already use, so a country with a structurally higher baseline (e.g. the
+        /// USA) isn't penalized just for sitting at its own normal equilibrium. Clamped to
+        /// [MinConfidence, MaxConfidence] alongside ApplyCategorySpendingEffects/
+        /// ApplyWelfareProgramEffects' own nudges.
+        /// </summary>
+        public static void ApplyCrimeEffects(Country country)
+        {
+            EconomyState state = country.State;
+            float crimeGap = state.CrimeIndex - country.BaselineCrimeIndex;
+            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence - CrimeBusinessConfidenceSensitivity * crimeGap, MinConfidence, MaxConfidence);
+        }
+
         // --- Approval Rating: political-economy feedback, Phillips-curve-adjacent (misery index) ---
 
         /// <summary>Approval mean-reverts toward this absent any other effect - a "neutral" governing position, not an extreme.</summary>
@@ -361,6 +417,9 @@ namespace PoliSim.Simulation
 
         /// <summary>Approval points lost per percentage point inflation sits away from the Taylor Rule's inflation target (either direction - deflation hurts too).</summary>
         private const float InflationApprovalSensitivity = 0.4f;
+
+        /// <summary>Approval points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - smaller than Unemployment/InflationApprovalSensitivity since CrimeIndex gaps tend to run larger in absolute point terms on its 0-100 scale.</summary>
+        private const float CrimeApprovalSensitivity = 0.2f;
 
         /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
         private const float TaxHikeApprovalSensitivity = 1.5f;
@@ -470,7 +529,10 @@ namespace PoliSim.Simulation
 
             float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
             float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget);
-            float miseryPenalty = UnemploymentApprovalSensitivity * unemploymentPenaltyGap + InflationApprovalSensitivity * inflationPenaltyGap;
+            float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
+            float miseryPenalty = UnemploymentApprovalSensitivity * unemploymentPenaltyGap
+                + InflationApprovalSensitivity * inflationPenaltyGap
+                + CrimeApprovalSensitivity * crimePenaltyGap;
 
             float taxHikePenalty = TaxHikeApprovalSensitivity * totalTaxHike;
 
