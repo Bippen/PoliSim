@@ -2019,6 +2019,91 @@ dials (`BailReformLevel`, `DrugPolicyLevel`), building on "Crime & Justice Basic
   Fiscal Reaction Function equilibrium (~142%) almost exactly - expected, since neither
   `BailReformLevel` nor `DrugPolicyLevel` touches the fiscal system at all.
 
+## Infrastructure System
+Round 2 item 5 of `ROADMAP_BRIEF.md` - the deliberately-last, most novel item this round (a
+decay/maintenance mechanic has no direct Round 1 precedent to mirror). Adds `InfrastructureAsset`
+(Roads/Rail/PowerGrid/Broadband - the brief's own suggested 4-type list), a 0-100 `ConditionIndex`
+per type per country, always present for all six countries (the same "no implement/remove" idiom
+`Sector` already established).
+
+- **A stock model, not a gap-to-baseline model** (`InfrastructureAsset.cs`): unlike `CrimeIndex`/
+  `PovertyRate`/`Sector` (which mean-revert toward a seeded baseline anchor), `ConditionIndex` moves
+  via two flows every turn - a small constant decay (`InfrastructureDecayRatePerTurn` = 0.08,
+  representing deferred maintenance: infrastructure needs growing real investment merely to hold
+  steady, so a flat spending level still implies gradual real degradation) minus an investment term
+  (`InfrastructureInvestmentSensitivity` = 6, points gained per percentage-point-of-GDP this turn's
+  Infrastructure spending change represents) - then hard-clamped to `[0, 100]` every turn. This
+  mirrors "SpendingLine Amount Ceiling"'s own precedent (a stock that moves via flows, hard-clamped to
+  a fixed range) more closely than the mean-reversion idiom used elsewhere this session, since a
+  decay/investment mechanic is fundamentally a stock, not an equilibrium-seeking value - the hard
+  clamp is what directly satisfies this round's own ordering note, which asked for real attention to
+  "unbounded growth/decay with no floor or ceiling" specifically for this item.
+- **No new player-facing lever** (`MacroSystem.ApplyInfrastructureCondition`): the investment signal
+  reuses `decision.InfrastructureSpendingChange` - the EXACT same `PercentOfGdp` figure
+  `ApplyCategorySpendingEffects` already computes for its `PotentialGrowthRate` nudge - per the task's
+  explicit "connect to the existing category... rather than inventing a parallel system" instruction.
+  For USA this is the Transportation `SpendingLine`'s this-turn change; for the other five countries
+  it's the legacy Infrastructure category-delta slider, exactly as `PotentialGrowthRate`'s own nudge
+  already reads it. No new `PolicyDecision` field was needed for this item.
+- **Real-data grounding** (`WorldFactory.SeedInfrastructure`): `ConditionIndex` is seeded from the IMD
+  World Competitiveness Ranking's Infrastructure factor (0-100 scale, 2026 edition, confirmed via web
+  search) as each country's overall anchor - USA 73.7, Sweden 81.8, Germany 67.7, Italy 58.1, Poland
+  57.3; France's overall score wasn't found in the same source and is a directional estimate (66)
+  positioned between Germany and Italy, honestly disclosed as such. Per-type values are illustrative
+  estimates anchored to that real country-level score, except a handful of well-documented real
+  divergences called out explicitly: USA Roads 55 (ASCE's 2025 Infrastructure Report Card grades US
+  roads D+) and Rail 80 (ASCE grades rail B-, particularly strong freight) both diverge from USA's own
+  anchor; USA PowerGrid 62 reflects ASCE's Energy grade (D+, citing capacity constraints from
+  electrification and data-center demand); Sweden Broadband 90 reflects its real, well-documented
+  OECD/ITU leadership in fiber/broadband penetration; Germany Rail 62 reflects Deutsche Bahn's real,
+  widely-reported reliability decline, and Germany Broadband 68 reflects Germany's real, widely-
+  reported lag in fiber rollout relative to its economic strength; France Rail 78 reflects the TGV
+  network's real international reputation. Italy and Poland have no single well-documented divergence
+  found for any one type - all four illustrative, anchored near each country's own real overall score
+  (Poland Roads 60 reflects its real, well-documented major highway investment since EU accession).
+  The full 6x4 matrix isn't independently sourced cell-by-cell - the same "confirmed anchor,
+  illustrative breakdown" honesty standard Economic Sectors already established for Finance/
+  Technology.
+- **UI** (`GameController.GetInfrastructureSummaryLine`): a single dashboard line ("Infrastructure
+  Condition: Roads 55 | Rail 80 | PowerGrid 62 | Broadband 74") - no dedicated tab or new sliders,
+  since this stat has no new player-facing dial of its own (it's driven entirely by the existing
+  Infrastructure spending category), the same "no dedicated tab needed for a lever with no new
+  control" reasoning already applied to Minimum Wage/Crime & Justice's smaller additions.
+- **Deliberately isolated from GDP/Unemployment/ApprovalRating/Confidence, escalated to Open
+  Questions rather than decided silently** (`ROADMAP_BRIEF.md`'s Open Questions #2): `ConditionIndex`
+  has zero feedback into the core simulation loop in this pass, mirroring Economic Sectors' own
+  Round 1 isolation decision (Open Questions #1) for the same reason - a `ConditionIndex ->
+  PotentialGrowthRate` (or `-> BusinessConfidence`) effect would double-count the exact same
+  Infrastructure-spending signal that already nudges `PotentialGrowthRate` directly. Not resolved
+  here; flagged for Elias alongside Open Questions #1, since both mechanics now face the identical
+  "stay isolated to avoid double-counting" design fork.
+- **Validated in the standalone harness first** (100/500-turn baseline, plus a new
+  `--infrastructurestress` scenario pushing USA's Transportation spending DOWN 30%/turn EVERY turn,
+  sustained for the whole run with no reset - the worst-case "zero investment, pure decay" path,
+  deliberately covering the case the existing `sustainedexploit` scenario's sustained +30%
+  Transportation push doesn't, since that already exercises the opposite, ceiling-bound case): stayed
+  fully bounded, zero `InfrastructureAsset` anomalies (finite/range) across the full 500-turn run, no
+  regression in the existing `sustainedexploit` scenario.
+- **Validated: 2026-07-23, 100/500 turns, real Unity, full 20-combination matrix (10 scenarios x 2
+  turn counts), zero NaN/negative/out-of-range/divergence anywhere** - the nine pre-existing scenarios
+  showed no regression (anomaly counts consistent with their previously-documented ranges);
+  `infrastructurestress` landed at 65/215 anomalies, squarely within the same range as the other
+  non-SWF scenarios (58-72 at 100 turns, 150-232 at 500 turns) - confirming no new instability, and
+  zero `InfrastructureAsset.ConditionIndex` anomalies specifically anywhere in the matrix. USA's
+  `DebtToGdpRatio` settled at ~140-142% under `infrastructurestress`, matching the pre-existing Fiscal
+  Reaction Function equilibrium almost exactly - confirming the sustained Transportation spending cut
+  doesn't meaningfully disturb the fiscal system beyond what the reaction function already absorbs.
+
+**`ROADMAP_BRIEF.md`'s Round 2 queue is now complete** (2026-07-23): Sovereign Wealth Fund expansion
+to all six countries, detailed spending Phase 2, deeper labor market policies, deeper crime &
+justice, and the Infrastructure system - each implemented, grounded in real data where available
+(honestly labeled where not), validated via the standalone harness first and then
+`BatchSimulationRunner` against real Unity at 100 and 500 turns, and committed as its own commit with
+validation results in CLAUDE.md. A second design decision was escalated rather than resolved
+silently (`ROADMAP_BRIEF.md`'s Open Questions #2 - whether Infrastructure Condition should feed back
+into the core simulation loop, the same class of question Open Questions #1 already raised for
+Economic Sectors). See `ROADMAP_BRIEF.md` for the full queue history and both escalated questions.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -2161,6 +2246,11 @@ policy dials - Police Funding and Sentencing Severity - with small effects on `A
 `BusinessConfidence`. Every country also tracks a real, per-100,000 `PrisonPopulationRate` (see
 "Deeper Crime & Justice" above) and has two more dials - Bail Reform and Drug Policy - affecting it
 directly, plus a small, honestly-disclosed-as-contested `CrimeIndex` effect from Bail Reform. Every
+country also tracks a `ConditionIndex` for four infrastructure types - Roads, Rail, PowerGrid,
+Broadband (see "Infrastructure System" above) - a decay/investment stock hard-clamped to [0, 100],
+driven entirely by the existing Infrastructure spending category's already-established
+`PotentialGrowthRate` signal rather than a new player-facing lever, and likewise deliberately isolated
+from the core GDP/Unemployment/Approval loop (see `ROADMAP_BRIEF.md`'s Open Questions #2). Every
 country also has four economic sectors (Manufacturing, Technology,
 Agriculture, Finance - see "Economic Sectors" above) tracking Output/Employment/one sector-specific
 metric each, adjustable via Subsidy/Regulation dials - deliberately isolated from the core GDP/

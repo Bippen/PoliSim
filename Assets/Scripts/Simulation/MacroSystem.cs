@@ -514,6 +514,33 @@ namespace PoliSim.Simulation
             }
         }
 
+        // --- Infrastructure Condition: a decay/investment stock model (Round 2's "Infrastructure system") ---
+
+        /// <summary>ConditionIndex points lost per turn to deferred maintenance, absent any incremental Infrastructure spending increase this turn - infrastructure needs growing real investment merely to hold steady (rising usage, materials aging, tech obsolescence), so a flat spending level still implies gradual real degradation. Deliberately small, and hard-clamped below so it can never diverge - see InfrastructureAsset.cs for why this is a stock model, not a gap-to-baseline one.</summary>
+        private const float InfrastructureDecayRatePerTurn = 0.08f;
+
+        /// <summary>ConditionIndex points gained per percentage-point-of-GDP this turn's Infrastructure spending change represents - reuses the exact same PercentOfGdp(decision.InfrastructureSpendingChange, GDP) signal ApplyCategorySpendingEffects already computes for its PotentialGrowthRate nudge, per the task's explicit "connect to the existing category, don't invent a parallel system" instruction. Deliberately NOT wired back into GDP/Unemployment/Approval in this pass - see CLAUDE.md's "Infrastructure System" and ROADMAP_BRIEF.md's Open Questions #2 for why (would double-count the same spending signal's economic effect against the already-existing PotentialGrowthRate channel).</summary>
+        private const float InfrastructureInvestmentSensitivity = 6f;
+
+        /// <summary>
+        /// Every InfrastructureAsset's ConditionIndex moves via two flows this turn - constant decay
+        /// minus investment - and is hard-clamped to [0, 100] immediately after, so it can never grow
+        /// or decay past its bounds regardless of how extreme spending gets in either direction (the
+        /// same principle "SpendingLine Amount Ceiling"/the Sovereign Wealth Fund's 300%-of-GDP
+        /// ceiling already established for this session's other stock-like values).
+        /// </summary>
+        public static void ApplyInfrastructureCondition(Country country, PolicyDecision decision)
+        {
+            EconomyState state = country.State;
+            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP);
+            foreach (InfrastructureAsset asset in country.InfrastructureAssets)
+            {
+                asset.ConditionIndex = Mathf.Clamp(
+                    asset.ConditionIndex - InfrastructureDecayRatePerTurn + InfrastructureInvestmentSensitivity * infrastructurePercent,
+                    0f, 100f);
+            }
+        }
+
         // --- Approval Rating: political-economy feedback, Phillips-curve-adjacent (misery index) ---
 
         /// <summary>Approval mean-reverts toward this absent any other effect - a "neutral" governing position, not an extreme.</summary>

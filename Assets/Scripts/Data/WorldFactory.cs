@@ -324,6 +324,43 @@ namespace PoliSim.Data
                 agricultureOutput: 2.4f, agricultureEmployment: 8.0f, agricultureMetric: 40f,
                 financeOutput: 4.0f, financeEmployment: 2.0f, financeMetric: 5f);
 
+            // Infrastructure System (Round 2 item 5, see "Infrastructure System" in CLAUDE.md) -
+            // ConditionIndex (0-100, higher = better) is seeded from the IMD World Competitiveness
+            // Ranking's Infrastructure factor (0-100 scale, 2026 edition), used as each country's
+            // overall anchor: USA 73.7, Sweden 81.8, Germany 67.7, Italy 58.1, Poland 57.3 - all
+            // confirmed via web search. France's overall infrastructure score was not found in the
+            // same source and is a directional estimate (66) positioned between Germany and Italy,
+            // honestly disclosed as such. Per-type values are illustrative estimates ANCHORED to that
+            // real country-level score, except for a handful of well-documented, real divergences from
+            // a country's own overall anchor, called out per country below - the full 6x4 matrix isn't
+            // independently sourced cell-by-cell, the same "confirmed anchor, illustrative breakdown"
+            // honesty standard Economic Sectors already established for Finance/Technology.
+            //  - USA: Roads 55 (well below its own anchor - ASCE's 2025 Infrastructure Report Card
+            //    gives US roads a D+, a well-documented weak point) and Rail 80 (above anchor - ASCE
+            //    gives rail a B-, relatively strong, particularly freight); PowerGrid 62 (below anchor -
+            //    ASCE's Energy category also graded D+, citing capacity constraints from electrification
+            //    and data-center demand); Broadband 74 (roughly matches the anchor - solid but uneven
+            //    urban/rural coverage, not confirmed to the same ASCE-grade precision).
+            //  - Sweden: Broadband 90 (above anchor - Sweden is real and well-documented as an OECD/ITU
+            //    leader in fiber/broadband penetration and digital infrastructure). Roads/Rail/PowerGrid
+            //    all illustrative, anchored near its high 81.8 overall score.
+            //  - Germany: Rail 62 (below anchor - Deutsche Bahn's real, widely-reported punctuality and
+            //    reliability decline in recent years) and Broadband 68 (below anchor - Germany is real
+            //    and widely-reported as lagging in fiber/broadband rollout relative to its overall
+            //    economic strength, a recurring OECD talking point). Roads/PowerGrid illustrative.
+            //  - France: Rail 78 (above its estimated anchor - France's TGV high-speed rail network is
+            //    real and internationally well-regarded). Roads/PowerGrid/Broadband illustrative.
+            //  - Italy and Poland: no single well-documented divergence found for any one type: all
+            //    four illustrative, anchored near each country's own real overall score (Poland's Roads
+            //    at 60 reflects its real, well-documented major highway investment since EU accession,
+            //    improving substantially from a low base - a directional, not precisely sourced, figure).
+            SeedInfrastructure(usa, roads: 55f, rail: 80f, powerGrid: 62f, broadband: 74f);
+            SeedInfrastructure(sweden, roads: 80f, rail: 85f, powerGrid: 78f, broadband: 90f);
+            SeedInfrastructure(germany, roads: 70f, rail: 62f, powerGrid: 65f, broadband: 68f);
+            SeedInfrastructure(france, roads: 68f, rail: 78f, powerGrid: 70f, broadband: 66f);
+            SeedInfrastructure(italy, roads: 55f, rail: 58f, powerGrid: 60f, broadband: 60f);
+            SeedInfrastructure(poland, roads: 60f, rail: 55f, powerGrid: 58f, broadband: 62f);
+
             // Sovereign Wealth Fund (see "Sovereign Wealth Fund" in CLAUDE.md) - none of the six
             // countries has a "classic" Norway/Gulf-state-style oil-revenue sovereign wealth fund;
             // Country.SovereignWealthFund honestly stays null (no fund) for USA, Germany, Italy, and
@@ -490,6 +527,18 @@ namespace PoliSim.Data
                 new WelfareProgram(WelfareProgramType.UniversalHealthcare, DefaultWelfareGenerosity, isImplemented: false),
                 new WelfareProgram(WelfareProgramType.HousingAssistance, DefaultWelfareGenerosity, isImplemented: false),
                 new WelfareProgram(WelfareProgramType.ChildcareSubsidies, DefaultWelfareGenerosity, isImplemented: false),
+            });
+        }
+
+        /// <summary>Seeds all four InfrastructureAssets for a country - see this class's call site for the real-data-vs-stylized breakdown of each argument.</summary>
+        private static void SeedInfrastructure(Country country, float roads, float rail, float powerGrid, float broadband)
+        {
+            country.InfrastructureAssets.AddRange(new[]
+            {
+                new InfrastructureAsset(InfrastructureType.Roads, roads),
+                new InfrastructureAsset(InfrastructureType.Rail, rail),
+                new InfrastructureAsset(InfrastructureType.PowerGrid, powerGrid),
+                new InfrastructureAsset(InfrastructureType.Broadband, broadband),
             });
         }
 

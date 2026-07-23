@@ -439,6 +439,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Crime Index: {state.CrimeIndex:F1}", _labelStyle);
             GUILayout.Label($"Paid Family Leave: {_playerCountry.PaidFamilyLeaveWeeks:F0} weeks", _labelStyle);
             GUILayout.Label($"Incarceration Rate: {state.PrisonPopulationRate:F0} per 100,000", _labelStyle);
+            GUILayout.Label(GetInfrastructureSummaryLine(), _labelStyle);
             GUILayout.Label($"Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
 
             if (hasIndependentCurrency)
@@ -458,6 +459,17 @@ namespace PoliSim.UI
             }
             GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
             GUILayout.EndVertical();
+        }
+
+        /// <summary>Infrastructure Condition is a purely descriptive stat driven entirely by the existing Infrastructure spending category (see MacroSystem.ApplyInfrastructureCondition) - no new player-facing dial, so a single dashboard line is enough, the same "no dedicated tab needed" reasoning already applied to Minimum Wage/Crime & Justice's own small levers.</summary>
+        private string GetInfrastructureSummaryLine()
+        {
+            var parts = new List<string>(_playerCountry.InfrastructureAssets.Count);
+            foreach (InfrastructureAsset asset in _playerCountry.InfrastructureAssets)
+            {
+                parts.Add($"{asset.Type} {asset.ConditionIndex:F0}");
+            }
+            return "Infrastructure Condition: " + string.Join(" | ", parts);
         }
 
         /// <summary>

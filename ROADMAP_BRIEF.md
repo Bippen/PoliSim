@@ -188,3 +188,36 @@ decomposition rather than layering a second, competing GDP-driver on top of the 
 that's a bigger investigation than this pass's scope, consistent with how "Discretionary Spending
 Growth" and "Fiscal Reaction Function" each took a dedicated investigation to get right.
 
+### 2. Should InfrastructureAsset.ConditionIndex feed back into the economy, or stay isolated?
+
+Round 2 item 5 ("Infrastructure system") raised the same class of question Open Question #1 already
+raised for Economic Sectors, and I resolved it the same way for the same reasons: `ConditionIndex`
+(Roads/Rail/PowerGrid/Broadband, 0-100 per country) is **descriptive only** - driven by a decay/
+investment stock model (see CLAUDE.md's "Infrastructure System"), but with **zero feedback into
+PotentialGrowthRate, GDP, Unemployment, ApprovalRating, or BusinessConfidence**. A more complete
+version might have crumbling infrastructure drag on PotentialGrowthRate or BusinessConfidence, or
+well-maintained infrastructure boost them further.
+
+**Why I chose isolation for this pass**: (1) the task's own wording - "connect to the EXISTING
+Infrastructure spending category and its existing PotentialGrowthRate effect rather than inventing a
+parallel system" - reads most naturally as reusing the INPUT signal (`decision.
+InfrastructureSpendingChange`, the same `PercentOfGdp` figure that already drives
+`PotentialGrowthRate`), not as a mandate to add a second, new OUTPUT effect. (2) A ConditionIndex ->
+PotentialGrowthRate feedback would double-count the exact same underlying spending signal that
+already nudges `PotentialGrowthRate` directly in `ApplyCategorySpendingEffects` - the same
+double-counting risk Open Question #1 flagged for Sector Output vs. the C+I+G+NX identity. (3) This
+round's own ordering note asked for "real attention to the failure patterns... especially unbounded
+growth/decay with no floor or ceiling" for this specific item - keeping ConditionIndex isolated (a
+plain, hard-clamped stock with no downstream consumers) makes it trivially easy to reason about in
+isolation, which the validation results confirm (a dedicated `--infrastructurestress` scenario -
+sustained maximum spending cuts, the worst-case "zero investment, pure decay" path - produced zero
+ConditionIndex anomalies across 500 turns, real Unity-confirmed).
+
+**Recommendation**: same as Open Question #1 - if a future task wants infrastructure condition to
+meaningfully affect the economy (e.g. crumbling roads/grid dragging on Business/ConsumerConfidence
+or PotentialGrowthRate), scope it as a dedicated follow-up that explicitly reasons about
+double-counting against the existing Infrastructure-spending-to-PotentialGrowthRate channel, rather
+than bolting a feedback term on incidentally. Given Sectors (Open Question #1) and Infrastructure
+(this question) are now two separate mechanics facing the identical "stay isolated to avoid
+double-counting" design fork, Elias may want to decide both at once rather than one at a time.
+

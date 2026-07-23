@@ -36,6 +36,13 @@ namespace PoliSim.Data
         public List<Sector> Sectors = new List<Sector>();
 
         /// <summary>
+        /// This country's four tracked infrastructure types (Roads/Rail/PowerGrid/Broadband) -
+        /// present for all six countries always (the same "no implement/remove" idiom Sectors
+        /// already established). See InfrastructureAsset.cs and MacroSystem.ApplyInfrastructureCondition.
+        /// </summary>
+        public List<InfrastructureAsset> InfrastructureAssets = new List<InfrastructureAsset>();
+
+        /// <summary>
         /// This country's detailed spending portfolio (Phase 1: USA only - see CLAUDE.md's "Detailed
         /// Spending Portfolio"). Empty for a country means it still uses the legacy
         /// GovernmentSpendingRate + PolicyDecision's four category-delta fields mechanism unchanged -

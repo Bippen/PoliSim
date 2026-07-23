@@ -18,11 +18,11 @@ namespace PoliSim.Testing
     /// validation tool):
     /// -turns=N (default 100) - how many turns to run.
     /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress|
-    /// phase2stress|laborstress|crimejusticestress (default baseline) - baseline is
-    /// PolicyDecision.None() for every country every turn (the original behavior, unchanged); the
-    /// other eight mirror the standalone harness's own same-named scenarios byte-for-byte (same
-    /// targets, same rates, same turn timing) so both tools exercise identical policy sequences
-    /// against the real game code.
+    /// phase2stress|laborstress|crimejusticestress|infrastructurestress (default baseline) -
+    /// baseline is PolicyDecision.None() for every country every turn (the original behavior,
+    /// unchanged); the other nine mirror the standalone harness's own same-named scenarios
+    /// byte-for-byte (same targets, same rates, same turn timing) so both tools exercise identical
+    /// policy sequences against the real game code.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
@@ -39,7 +39,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -163,6 +163,8 @@ namespace PoliSim.Testing
                     return BuildLaborStressDecision(turn);
                 case "crimejusticestress":
                     return BuildCrimeJusticeStressDecision(turn);
+                case "infrastructurestress":
+                    return BuildInfrastructureStressDecision();
                 default:
                     return PolicyDecision.None();
             }
@@ -329,6 +331,28 @@ namespace PoliSim.Testing
             return PolicyDecision.None();
         }
 
+        /// <summary>
+        /// Pushes USA's Transportation spending DOWN 30%/turn EVERY turn, sustained for the whole run
+        /// with no reset - the line hits its own 0.2x-of-SeedAmount floor within ~9 turns and stays
+        /// there, so InfrastructureSpendingChange (the investment signal
+        /// MacroSystem.ApplyInfrastructureCondition reads) craters to ~0 for the rest of the run,
+        /// leaving only passive decay acting on every InfrastructureAsset.ConditionIndex - the
+        /// worst-case "zero investment, pure decay" test. The existing sustainedexploit scenario
+        /// already covers the opposite case (sustained +30% Transportation, ceiling-bound), so this
+        /// deliberately covers the case it doesn't. Mirrors the standalone harness's own
+        /// --infrastructurestress scenario exactly.
+        /// </summary>
+        private static PolicyDecision BuildInfrastructureStressDecision()
+        {
+            return new PolicyDecision
+            {
+                SpendingLineChanges = new Dictionary<SpendingCategory, float>
+                {
+                    { SpendingCategory.Transportation, -30f },
+                }
+            };
+        }
+
         private static PolicyDecision BuildStressDecision(Country usa, int turn)
         {
             if (turn == 10)
@@ -484,6 +508,15 @@ namespace PoliSim.Testing
                 if (sector.OutputShareOfGdp < 0f)
                 {
                     anomalies.Add($"Turn {turn} {country.Name}: Sector[{sector.Type}].OutputShareOfGdp is negative ({sector.OutputShareOfGdp:F2})");
+                }
+            }
+
+            foreach (InfrastructureAsset asset in country.InfrastructureAssets)
+            {
+                CheckFinite(turn, country, $"InfrastructureAsset[{asset.Type}].ConditionIndex", asset.ConditionIndex, anomalies);
+                if (asset.ConditionIndex < 0f || asset.ConditionIndex > 100f)
+                {
+                    anomalies.Add($"Turn {turn} {country.Name}: InfrastructureAsset[{asset.Type}].ConditionIndex out of range ({asset.ConditionIndex:F2})");
                 }
             }
 

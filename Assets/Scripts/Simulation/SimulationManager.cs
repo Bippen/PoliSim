@@ -299,6 +299,7 @@ namespace PoliSim.Simulation
             ApplyCrimeJusticeDeeperChanges(country, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
+            MacroSystem.ApplyInfrastructureCondition(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(country);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
@@ -400,6 +401,7 @@ namespace PoliSim.Simulation
             ApplyCrimeJusticeDeeperChanges(previewCountry, decision);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
+            MacroSystem.ApplyInfrastructureCondition(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(previewCountry);
@@ -505,6 +507,7 @@ namespace PoliSim.Simulation
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
                 Sectors = ClonePreviewSectors(country.Sectors),
+                InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,
                 BaseDebtInterestRateOverride = country.BaseDebtInterestRateOverride,
                 RiskPremiumSensitivity = country.RiskPremiumSensitivity,
@@ -545,6 +548,16 @@ namespace PoliSim.Simulation
             foreach (TaxLine taxLine in taxLines)
             {
                 clones.Add(taxLine.Clone());
+            }
+            return clones;
+        }
+
+        private static List<InfrastructureAsset> ClonePreviewInfrastructureAssets(List<InfrastructureAsset> infrastructureAssets)
+        {
+            var clones = new List<InfrastructureAsset>(infrastructureAssets.Count);
+            foreach (InfrastructureAsset asset in infrastructureAssets)
+            {
+                clones.Add(asset.Clone());
             }
             return clones;
         }
