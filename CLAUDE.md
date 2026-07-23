@@ -2104,6 +2104,100 @@ silently (`ROADMAP_BRIEF.md`'s Open Questions #2 - whether Infrastructure Condit
 into the core simulation loop, the same class of question Open Questions #1 already raised for
 Economic Sectors). See `ROADMAP_BRIEF.md` for the full queue history and both escalated questions.
 
+## Infrastructure Feedback
+A follow-up task, once Elias resolved `ROADMAP_BRIEF.md`'s Open Questions #2 ("Resolved by Elias:
+FEED BACK — ConditionIndex should nudge PotentialGrowthRate"). Explicit design constraint from the
+task: do NOT decompose the GDP identity or labor/unemployment accounting to literally incorporate
+Infrastructure/Sector values (the approach that caused turn-1 mismatches, the PotentialGDP
+recalibration, and the bimodal debt problems earlier this project) — instead, work as a small,
+bounded nudge onto an EXISTING proven variable (`PotentialGrowthRate`), the same pattern every
+mechanic since has used.
+
+- **A refactor from direct mutation to a recomputed-every-turn value**: `PotentialGrowthRate` was
+  previously mutated directly and permanently by the Infrastructure-spending nudge in
+  `ApplyCategorySpendingEffects` (`country.PotentialGrowthRate = Clamp(country.PotentialGrowthRate +
+  sensitivity * spendingPercent, 0, 8)`) - the only ceiling was the shared, generous global
+  `MaxPotentialGrowthRate` (8). This task required a SECOND source (ConditionIndex) to also affect
+  the same variable, with an explicit combined ceiling on the TOTAL infrastructure-related effect -
+  not reachable by two independent, separately-clamped mutations of the same field. Fixed by
+  splitting the concept into three pieces:
+  - **`Country.BasePotentialGrowthRate`**: the country's ORIGINAL, immutable, seeded trend growth
+    rate (seeded in `WorldFactory` equal to each country's real `potentialGrowthRate` constructor
+    argument - USA 2.0%, Sweden 1.5%, Germany/France/Italy 0.8%, Poland 3.5%) - never mutated by any
+    policy/condition effect, the fixed reference point every adjustment is measured against.
+  - **`Country.InfrastructureSpendingGrowthAdjustment`**: the accumulator the OLD mechanic used to
+    mutate `PotentialGrowthRate` directly now targets instead - a lasting, ratcheting investment
+    effect (only ever non-negative, since spending can only ever help, never hurt, this specific
+    channel), clamped to its own `[0, MaxInfrastructureSpendingBoost]` (0 to 1 point) range.
+  - **A live, non-accumulating condition-drag**, computed fresh every turn from the CURRENT average
+    `ConditionIndex` across all four `InfrastructureAsset`s versus `InfrastructureConditionGrowthThreshold`
+    (50 - the natural midpoint of the 0-100 `ConditionIndex` scale, and the same "50 = neutral"
+    convention already used throughout this codebase's policy dials (`PoliceFundingLevel`,
+    `SentencingSeverity`, `OvertimeRegulationLevel`, etc.) - chosen so no country's seeded
+    `ConditionIndex` (all >= 55) starts below it, avoiding a turn-1 shock, the same idiom "Turn-1 GDP
+    Consistency" established): `drag = Clamp(-InfrastructureConditionDragSensitivity *
+    Max(0, threshold - averageCondition), -MaxInfrastructureConditionDrag, 0)` (drag capped at -0.5).
+    Unlike the spending boost, this EASES AUTOMATICALLY (and can disappear entirely) if
+    `ConditionIndex` later recovers back above the threshold - a genuinely different kind of effect
+    from the accumulator, which is why the two are computed separately rather than merged into one
+    variable.
+  - **`MacroSystem.ApplyInfrastructureGrowthEffect`** (a new method, run after both
+    `ApplyInfrastructureCondition` and `ApplyCategorySpendingEffects` so it sees this turn's freshly-
+    updated `ConditionIndex` and accumulator) combines the two under ONE shared ceiling -
+    `MaxCombinedInfrastructureGrowthAdjustment` (0.75 - deliberately tighter than the sum of the two
+    individual caps, 0.5 + 1.0 = 1.5, so this ceiling is a genuinely active constraint, not a dead
+    safety net that never binds) - then recomputes `PotentialGrowthRate = Clamp(BasePotentialGrowthRate
+    + combinedAdjustment, 0, MaxPotentialGrowthRate)`. This is the piece that actually satisfies the
+    task's explicit "reconcile the two sources, don't just cap each individually" requirement.
+- **`ClonePreviewCountry` updated**: `BasePotentialGrowthRate`/`InfrastructureSpendingGrowthAdjustment`
+  are both copied explicitly (mutated during a turn, the same reasoning every other turn-mutated field
+  in that method already follows).
+- **A real, checked interaction with "Discretionary Spending Growth"**: `ApplyDiscretionarySpendingGrowth`
+  reads `country.PotentialGrowthRate` to grow every Discretionary `SpendingLine` (and its `SeedAmount`)
+  each turn, and runs BEFORE this turn's `ApplyInfrastructureGrowthEffect` recomputes it (same relative
+  ordering as the OLD mechanic, which also mutated `PotentialGrowthRate` after `ResolveSpendingForTurn`
+  ran) - so no NEW timing bug was introduced; the growth-rate value that mechanic reads is still "as of
+  the end of last turn," exactly as before this refactor.
+- **Validated in the standalone harness first** (100/500-turn baseline, the full pre-existing 9-scenario
+  regression matrix, plus a new `--deferredmaintenance` scenario - directly forces every USA
+  `InfrastructureAsset.ConditionIndex` to 0 at turn 1 (a 50-point gap below threshold, an order of
+  magnitude past where the drag's own individual cap already binds) and sustains a -30%/turn
+  Transportation cut for the whole run so nothing can recover it, isolating and maximally stressing the
+  NEW growth-rate feedback specifically - distinct from the existing `infrastructurestress` scenario,
+  which stresses the `ConditionIndex` STOCK bound via a slower ~9-turn decay-to-floor path, not this
+  new growth-rate channel): zero real anomalies (finite/range) for `PotentialGrowthRate`/
+  `BasePotentialGrowthRate`/`InfrastructureSpendingGrowthAdjustment` across every run. USA's 500-turn
+  `deferredmaintenance` GDP (49,052,176) came in substantially lower than the equivalent baseline
+  (311,333,824) - a real, bounded, and expected consequence of holding the worst-case condition/
+  spending-cut combination for the ENTIRE run (a small persistent per-turn drag compounds
+  significantly over 500 turns, the same way a small persistent boost would) - not a divergence: no
+  NaN, no negative GDP, output gap settled at -13.8% (matching the pre-existing -13% to -15%
+  equilibrium "Discretionary Spending Growth" already established) and `DebtToGdpRatio` at 143.5%
+  (matching the Fiscal Reaction Function's ~142% equilibrium) - confirming the mechanism produces a
+  real, direction-correct, but fully bounded outcome even under sustained worst-case stress. The full
+  pre-existing 9-scenario matrix (`stress`/`sustainedexploit`/`tariffoverride`/`welfarestress`/
+  `swfstress`/`phase2stress`/`laborstress`/`crimejusticestress`/`infrastructurestress`) showed zero
+  regression - anomaly counts stayed within each scenario's own previously-documented range, and a
+  dedicated re-check confirmed zero finite/negative/out-of-range anomalies for any of the three new
+  fields across all of them at 500 turns.
+- **Real-Unity confirmation NOT YET OBTAINED - an honest, currently-open gap, not a silent skip**:
+  four consecutive `BatchSimulationRunner` launch attempts (two via PowerShell `Start-Process`, two via
+  a direct Bash exec after PowerShell itself began failing to start new threads) all failed BEFORE any
+  script compilation or simulation code ran - three of the four hit the identical failure
+  (`UnityPackageManager.exe`'s local IPC server failing to come up within Unity's own 30-second
+  timeout), the fourth a different Editor window-initialization crash. Stale Unity Hub processes left
+  over from earlier in this session were cleared between attempts with no change in outcome; Windows
+  Defender's threat-detection log showed no blocks against any Unity binary (only unrelated historical
+  flags on an unconnected file); disk space was not the constraint (1.7TB free). This looks like a
+  genuine, reproducible Unity Editor/Package-Manager-server instability in this environment, not
+  something caused by this task's code changes (which compile cleanly via `dotnet build PoliSim.slnx`
+  and pass the standalone harness in full). Per Elias's explicit direction after being asked, this
+  item is committed on the strength of the harness validation above alone - **the real-Unity
+  confirmation this project's own "Real-Unity Validation is the Standard Path" section calls for is
+  still outstanding for this specific change** and should be obtained (e.g. after manually opening
+  Unity Hub/the Editor once to let the Package Manager server state repair itself) before being
+  treated as equivalent to every other change in this file that DOES carry that confirmation.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

@@ -156,6 +156,11 @@ reaching it, that's the correct outcome, not a failure.
 
 ### 1. Should Economic Sectors feed back into aggregate GDP/Unemployment, or stay isolated?
 
+**Resolved by Elias: INTEGRATE — Sector Output/Employment should feed back into the core economy,
+not stay isolated.** Implemented as small, bounded nudges onto existing proven variables
+(PotentialGrowthRate, Unemployment) rather than decomposing the GDP/labor identities themselves -
+see "Sector Integration" in CLAUDE.md for the mechanism and validation.
+
 Queue item 4 ("Small slice of economic sectors") required a real design decision: the four new
 `Sector`s (Manufacturing/Technology/Agriculture/Finance) each track Output (% of GDP), Employment
 (% of workforce), and one sector-specific metric, adjustable via Subsidy/Regulation policy dials -
@@ -189,6 +194,12 @@ that's a bigger investigation than this pass's scope, consistent with how "Discr
 Growth" and "Fiscal Reaction Function" each took a dedicated investigation to get right.
 
 ### 2. Should InfrastructureAsset.ConditionIndex feed back into the economy, or stay isolated?
+
+**Resolved by Elias: FEED BACK — ConditionIndex should nudge PotentialGrowthRate (not stay purely
+observational).** Implemented as a small, bounded, threshold-based drag when condition sits below a
+real-world-grounded healthy level, explicitly reconciled with the existing Infrastructure-spending
+growth nudge under one combined ceiling so the two sources can't stack unboundedly - see
+"Infrastructure Feedback" in CLAUDE.md for the mechanism and validation.
 
 Round 2 item 5 ("Infrastructure system") raised the same class of question Open Question #1 already
 raised for Economic Sectors, and I resolved it the same way for the same reasons: `ConditionIndex`

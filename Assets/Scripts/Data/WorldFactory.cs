@@ -125,6 +125,20 @@ namespace PoliSim.Data
                 polishZlotyZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 5.0f, potentialGrowthRate: 3.5f, governmentSpendingRate: 18f, benefitRatePerUnemployed: 0.12f);
 
+            // BasePotentialGrowthRate (see "Infrastructure Feedback" in CLAUDE.md) - the immutable
+            // structural anchor PotentialGrowthRate is now recomputed from each turn, seeded equal to
+            // each country's own real potentialGrowthRate constructor argument above (not a
+            // constructor parameter itself, since ClonePreviewCountry passes the CURRENT, possibly-
+            // already-adjusted PotentialGrowthRate into that same constructor parameter for a preview
+            // clone - deriving BasePotentialGrowthRate from it there would wrongly re-baseline the
+            // preview to whatever the real country's adjusted rate happens to be that turn).
+            usa.BasePotentialGrowthRate = usa.PotentialGrowthRate;
+            sweden.BasePotentialGrowthRate = sweden.PotentialGrowthRate;
+            germany.BasePotentialGrowthRate = germany.PotentialGrowthRate;
+            france.BasePotentialGrowthRate = france.PotentialGrowthRate;
+            italy.BasePotentialGrowthRate = italy.PotentialGrowthRate;
+            poland.BasePotentialGrowthRate = poland.PotentialGrowthRate;
+
             SeedTaxLines(usa, incomeTax: 37f, corporateTax: 21f, vat: 0f, vatImplemented: false,
                 payrollTax: 15.3f, capitalGainsTax: 20f, salesTax: 7f, salesTaxImplemented: true,
                 estateTax: 40f, estateTaxImplemented: true, carbonTax: 5f, carbonTaxImplemented: false);

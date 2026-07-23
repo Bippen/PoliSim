@@ -519,7 +519,7 @@ namespace PoliSim.Simulation
         /// <summary>ConditionIndex points lost per turn to deferred maintenance, absent any incremental Infrastructure spending increase this turn - infrastructure needs growing real investment merely to hold steady (rising usage, materials aging, tech obsolescence), so a flat spending level still implies gradual real degradation. Deliberately small, and hard-clamped below so it can never diverge - see InfrastructureAsset.cs for why this is a stock model, not a gap-to-baseline one.</summary>
         private const float InfrastructureDecayRatePerTurn = 0.08f;
 
-        /// <summary>ConditionIndex points gained per percentage-point-of-GDP this turn's Infrastructure spending change represents - reuses the exact same PercentOfGdp(decision.InfrastructureSpendingChange, GDP) signal ApplyCategorySpendingEffects already computes for its PotentialGrowthRate nudge, per the task's explicit "connect to the existing category, don't invent a parallel system" instruction. Deliberately NOT wired back into GDP/Unemployment/Approval in this pass - see CLAUDE.md's "Infrastructure System" and ROADMAP_BRIEF.md's Open Questions #2 for why (would double-count the same spending signal's economic effect against the already-existing PotentialGrowthRate channel).</summary>
+        /// <summary>ConditionIndex points gained per percentage-point-of-GDP this turn's Infrastructure spending change represents - reuses the exact same PercentOfGdp(decision.InfrastructureSpendingChange, GDP) signal ApplyCategorySpendingEffects already computes for its PotentialGrowthRate nudge, per the task's explicit "connect to the existing category, don't invent a parallel system" instruction.</summary>
         private const float InfrastructureInvestmentSensitivity = 6f;
 
         /// <summary>
@@ -539,6 +539,65 @@ namespace PoliSim.Simulation
                     asset.ConditionIndex - InfrastructureDecayRatePerTurn + InfrastructureInvestmentSensitivity * infrastructurePercent,
                     0f, 100f);
             }
+        }
+
+        // --- Infrastructure Feedback: ConditionIndex/spending nudge PotentialGrowthRate, combined under one ceiling (resolves ROADMAP_BRIEF.md's Open Questions #2 - "Resolved by Elias: FEED BACK") ---
+
+        /// <summary>ConditionIndex value at/above which infrastructure condition is considered "healthy" and applies no growth penalty. 50 - the natural midpoint of the 0-100 ConditionIndex scale, and the same "50 = neutral" convention already used throughout this codebase's policy dials (PoliceFundingLevel, SentencingSeverity, OvertimeRegulationLevel, etc.). Chosen so that no country's seeded ConditionIndex (all >= 55 - see WorldFactory) starts below it, avoiding a turn-1 shock, the same "avoid discontinuity" idiom established since "Turn-1 GDP Consistency."</summary>
+        private const float InfrastructureConditionGrowthThreshold = 50f;
+
+        /// <summary>PotentialGrowthRate points lost per point the average ConditionIndex sits below InfrastructureConditionGrowthThreshold - a LIVE, recomputed-every-turn penalty, not an accumulator: unlike the spending-driven boost below, this eases automatically (and can disappear entirely) if condition later recovers back above the threshold.</summary>
+        private const float InfrastructureConditionDragSensitivity = 0.02f;
+
+        /// <summary>Cap on the condition-drag component alone (always non-positive), before combining with the spending boost.</summary>
+        private const float MaxInfrastructureConditionDrag = 0.5f;
+
+        /// <summary>Cap on the spending-boost accumulator alone (Country.InfrastructureSpendingGrowthAdjustment, always non-negative) - see ApplyCategorySpendingEffects, which increments it.</summary>
+        private const float MaxInfrastructureSpendingBoost = 1f;
+
+        /// <summary>
+        /// Combined-effect ceiling on the TOTAL infrastructure-related adjustment to
+        /// PotentialGrowthRate. The spending-driven boost (a lasting accumulator) and the
+        /// condition-driven drag (a live, non-accumulating penalty) both push the SAME variable in
+        /// principle, so they are combined and clamped TOGETHER here, not just individually - this is
+        /// what actually prevents the two Infrastructure-related sources from stacking past a single
+        /// sane bound in the same direction, rather than each independently walking up to its own
+        /// separate cap and only being checked in isolation. Deliberately tighter than the sum of the
+        /// two individual caps (0.5 + 1.0 = 1.5) so this ceiling is a genuinely active constraint, not
+        /// a dead safety net that never binds.
+        /// </summary>
+        private const float MaxCombinedInfrastructureGrowthAdjustment = 0.75f;
+
+        /// <summary>
+        /// Recomputes PotentialGrowthRate from Country.BasePotentialGrowthRate (the immutable
+        /// structural seed) plus the combined, ceilinged infrastructure adjustment - the spending-
+        /// driven boost (InfrastructureSpendingGrowthAdjustment, only ever non-negative) and the
+        /// condition-driven drag (live, only ever non-positive). Must run AFTER
+        /// ApplyInfrastructureCondition (so the drag reflects this turn's just-updated ConditionIndex)
+        /// and AFTER ApplyCategorySpendingEffects (so the accumulator reflects this turn's spending
+        /// change).
+        /// </summary>
+        public static void ApplyInfrastructureGrowthEffect(Country country)
+        {
+            float averageCondition = 0f;
+            if (country.InfrastructureAssets.Count > 0)
+            {
+                foreach (InfrastructureAsset asset in country.InfrastructureAssets)
+                {
+                    averageCondition += asset.ConditionIndex;
+                }
+                averageCondition /= country.InfrastructureAssets.Count;
+            }
+
+            float conditionDrag = Mathf.Clamp(
+                -InfrastructureConditionDragSensitivity * Mathf.Max(0f, InfrastructureConditionGrowthThreshold - averageCondition),
+                -MaxInfrastructureConditionDrag, 0f);
+
+            float combinedInfrastructureAdjustment = Mathf.Clamp(
+                country.InfrastructureSpendingGrowthAdjustment + conditionDrag,
+                -MaxCombinedInfrastructureGrowthAdjustment, MaxCombinedInfrastructureGrowthAdjustment);
+
+            country.PotentialGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + combinedInfrastructureAdjustment, 0f, MaxPotentialGrowthRate);
         }
 
         // --- Approval Rating: political-economy feedback, Phillips-curve-adjacent (misery index) ---
@@ -739,7 +798,7 @@ namespace PoliSim.Simulation
 
         // --- Category spending side-effects: small, separable per-category profiles (v1, not a full policy tree) ---
 
-        /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP spent on infrastructure - a lasting (if small) trend-growth boost.</summary>
+        /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP spent on infrastructure - a lasting, ratcheting investment effect, accumulated in Country.InfrastructureSpendingGrowthAdjustment rather than mutating PotentialGrowthRate directly (see ApplyInfrastructureGrowthEffect - Infrastructure now has two growth-related sources, spending and condition, combined under one dedicated ceiling there).</summary>
         private const float InfrastructureGrowthSensitivity = 0.01f;
 
         /// <summary>ConsumerConfidence gained per percentage-point-of-GDP spent on healthcare - "long-run productivity/wellbeing" modeled as consumer confidence.</summary>
@@ -787,7 +846,7 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
 
             float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP);
-            country.PotentialGrowthRate = Mathf.Clamp(country.PotentialGrowthRate + InfrastructureGrowthSensitivity * infrastructurePercent, 0f, MaxPotentialGrowthRate);
+            country.InfrastructureSpendingGrowthAdjustment = Mathf.Clamp(country.InfrastructureSpendingGrowthAdjustment + InfrastructureGrowthSensitivity * infrastructurePercent, 0f, MaxInfrastructureSpendingBoost);
 
             float healthcarePercent = PercentOfGdp(decision.HealthcareSpendingChange, state.GDP);
             state.ConsumerConfidence = Mathf.Clamp(state.ConsumerConfidence + HealthcareConfidenceSensitivity * healthcarePercent, MinConfidence, MaxConfidence);

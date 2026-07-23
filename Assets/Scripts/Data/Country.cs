@@ -64,10 +64,34 @@ namespace PoliSim.Data
         public float NaturalUnemploymentRate;
 
         /// <summary>
-        /// Trend/potential GDP growth rate, in percent per turn. A structural per-country constant
-        /// used by Okun's Law (actual vs. potential growth) and to grow PotentialGDP each turn.
+        /// Trend/potential GDP growth rate, in percent per turn, used by Okun's Law (actual vs.
+        /// potential growth) and to grow PotentialGDP each turn. Recomputed every turn as
+        /// BasePotentialGrowthRate plus the combined, separately-ceilinged Infrastructure/Sector
+        /// growth adjustments (see MacroSystem.ApplyInfrastructureGrowthEffect /
+        /// ApplySectorGrowthEffect) - not itself a structural constant any more, though it behaves
+        /// like one absent any active adjustment.
         /// </summary>
         public float PotentialGrowthRate;
+
+        /// <summary>
+        /// The country's ORIGINAL, un-adjusted trend GDP growth rate, exactly as seeded in
+        /// WorldFactory - never mutated by any policy/condition/performance effect. PotentialGrowthRate
+        /// itself is recomputed each turn as this base plus the combined infrastructure/sector
+        /// adjustments - keeping the true structural anchor separate from those adjustments is what
+        /// lets each adjustment's own combined ceiling be enforced against a fixed reference point
+        /// rather than a value the adjustments themselves could otherwise drift.
+        /// </summary>
+        public float BasePotentialGrowthRate;
+
+        /// <summary>
+        /// Accumulated PotentialGrowthRate boost earned from sustained Infrastructure-category
+        /// spending increases (see MacroSystem.ApplyInfrastructureGrowthEffect) - a lasting,
+        /// ratcheting investment effect, only ever non-negative, clamped to its own
+        /// [0, MaxInfrastructureSpendingBoost] range. Combined with the live, non-accumulating
+        /// Infrastructure-condition drag under one shared ceiling before being added to
+        /// BasePotentialGrowthRate - see "Infrastructure Feedback" in CLAUDE.md.
+        /// </summary>
+        public float InfrastructureSpendingGrowthAdjustment;
 
         /// <summary>
         /// Baseline government consumption expenditure, as a percentage of GDP - the structural

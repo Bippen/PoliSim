@@ -300,6 +300,7 @@ namespace PoliSim.Simulation
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyInfrastructureCondition(country, spendingResult.EffectiveDecision);
+            MacroSystem.ApplyInfrastructureGrowthEffect(country);
             MacroSystem.ApplyWelfareProgramEffects(country);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
@@ -402,6 +403,7 @@ namespace PoliSim.Simulation
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyInfrastructureCondition(previewCountry, spendingResult.EffectiveDecision);
+            MacroSystem.ApplyInfrastructureGrowthEffect(previewCountry);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(previewCountry);
@@ -528,7 +530,9 @@ namespace PoliSim.Simulation
                 RetrainingProgramLevel = country.RetrainingProgramLevel,
                 BaselinePrisonPopulationRate = country.BaselinePrisonPopulationRate,
                 BailReformLevel = country.BailReformLevel,
-                DrugPolicyLevel = country.DrugPolicyLevel
+                DrugPolicyLevel = country.DrugPolicyLevel,
+                BasePotentialGrowthRate = country.BasePotentialGrowthRate,
+                InfrastructureSpendingGrowthAdjustment = country.InfrastructureSpendingGrowthAdjustment
             };
         }
 

@@ -18,11 +18,11 @@ namespace PoliSim.Testing
     /// validation tool):
     /// -turns=N (default 100) - how many turns to run.
     /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress|
-    /// phase2stress|laborstress|crimejusticestress|infrastructurestress (default baseline) -
-    /// baseline is PolicyDecision.None() for every country every turn (the original behavior,
-    /// unchanged); the other nine mirror the standalone harness's own same-named scenarios
-    /// byte-for-byte (same targets, same rates, same turn timing) so both tools exercise identical
-    /// policy sequences against the real game code.
+    /// phase2stress|laborstress|crimejusticestress|infrastructurestress|deferredmaintenance
+    /// (default baseline) - baseline is PolicyDecision.None() for every country every turn (the
+    /// original behavior, unchanged); the other ten mirror the standalone harness's own same-named
+    /// scenarios byte-for-byte (same targets, same rates, same turn timing) so both tools exercise
+    /// identical policy sequences against the real game code.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
@@ -39,7 +39,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -165,6 +165,8 @@ namespace PoliSim.Testing
                     return BuildCrimeJusticeStressDecision(turn);
                 case "infrastructurestress":
                     return BuildInfrastructureStressDecision();
+                case "deferredmaintenance":
+                    return BuildDeferredMaintenanceDecision(usa, turn);
                 default:
                     return PolicyDecision.None();
             }
@@ -353,6 +355,36 @@ namespace PoliSim.Testing
             };
         }
 
+        /// <summary>
+        /// Infrastructure Feedback follow-up: directly forces every USA InfrastructureAsset.
+        /// ConditionIndex to 0 at turn 1 (the theoretical worst case - a 50-point gap below
+        /// MacroSystem.InfrastructureConditionGrowthThreshold, well past where the condition-drag's
+        /// own individual cap already binds), THEN sustains a -30%/turn Transportation cut every turn
+        /// for the whole run so nothing can recover it - isolating and maximally stressing the
+        /// ConditionIndex -&gt; PotentialGrowthRate drag specifically (distinct from
+        /// infrastructurestress above, which stresses the ConditionIndex STOCK bound via a slower
+        /// ~9-turn decay-to-floor path, not the growth-rate feedback). Mirrors the standalone
+        /// harness's own --deferredmaintenance scenario exactly.
+        /// </summary>
+        private static PolicyDecision BuildDeferredMaintenanceDecision(Country usa, int turn)
+        {
+            if (turn == 1)
+            {
+                foreach (InfrastructureAsset asset in usa.InfrastructureAssets)
+                {
+                    asset.ConditionIndex = 0f;
+                }
+            }
+
+            return new PolicyDecision
+            {
+                SpendingLineChanges = new Dictionary<SpendingCategory, float>
+                {
+                    { SpendingCategory.Transportation, -30f },
+                }
+            };
+        }
+
         private static PolicyDecision BuildStressDecision(Country usa, int turn)
         {
             if (turn == 10)
@@ -499,6 +531,18 @@ namespace PoliSim.Testing
                 anomalies.Add($"Turn {turn} {country.Name}: PrisonPopulationRate is negative ({state.PrisonPopulationRate:F2})");
             }
             CheckFinite(turn, country, "BaselinePrisonPopulationRate", country.BaselinePrisonPopulationRate, anomalies);
+
+            CheckFinite(turn, country, "PotentialGrowthRate", country.PotentialGrowthRate, anomalies);
+            if (country.PotentialGrowthRate < 0f || country.PotentialGrowthRate > 8f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: PotentialGrowthRate out of range ({country.PotentialGrowthRate:F2})");
+            }
+            CheckFinite(turn, country, "BasePotentialGrowthRate", country.BasePotentialGrowthRate, anomalies);
+            CheckFinite(turn, country, "InfrastructureSpendingGrowthAdjustment", country.InfrastructureSpendingGrowthAdjustment, anomalies);
+            if (country.InfrastructureSpendingGrowthAdjustment < 0f || country.InfrastructureSpendingGrowthAdjustment > 1f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: InfrastructureSpendingGrowthAdjustment out of range ({country.InfrastructureSpendingGrowthAdjustment:F2})");
+            }
 
             foreach (Sector sector in country.Sectors)
             {
