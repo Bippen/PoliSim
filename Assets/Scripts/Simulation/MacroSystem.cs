@@ -169,6 +169,7 @@ namespace PoliSim.Simulation
             unemploymentChange += GetMinimumWageUnemploymentAdjustment(country);
             unemploymentChange += GetOvertimeUnemploymentAdjustment(country);
             unemploymentChange += GetRetrainingUnemploymentAdjustment(country);
+            unemploymentChange += GetSectorUnemploymentAdjustment(country);
 
             state.Unemployment = Mathf.Clamp(state.Unemployment + unemploymentChange, 0f, MaxUnemploymentPercent);
         }
@@ -569,15 +570,18 @@ namespace PoliSim.Simulation
         private const float MaxCombinedInfrastructureGrowthAdjustment = 0.75f;
 
         /// <summary>
-        /// Recomputes PotentialGrowthRate from Country.BasePotentialGrowthRate (the immutable
-        /// structural seed) plus the combined, ceilinged infrastructure adjustment - the spending-
-        /// driven boost (InfrastructureSpendingGrowthAdjustment, only ever non-negative) and the
-        /// condition-driven drag (live, only ever non-positive). Must run AFTER
+        /// Returns the combined, ceilinged Infrastructure-related adjustment to PotentialGrowthRate -
+        /// the spending-driven boost (Country.InfrastructureSpendingGrowthAdjustment, only ever
+        /// non-negative) plus the condition-driven drag (live, only ever non-positive), clamped
+        /// TOGETHER to MaxCombinedInfrastructureGrowthAdjustment. Does NOT itself write
+        /// PotentialGrowthRate any more (see "Sector Integration" in CLAUDE.md) - ApplySectorGrowthEffect
+        /// is now the single method that combines THIS value with Sector's own contribution under one
+        /// further, all-sources ceiling and performs the actual assignment. Must run AFTER
         /// ApplyInfrastructureCondition (so the drag reflects this turn's just-updated ConditionIndex)
         /// and AFTER ApplyCategorySpendingEffects (so the accumulator reflects this turn's spending
         /// change).
         /// </summary>
-        public static void ApplyInfrastructureGrowthEffect(Country country)
+        public static float ApplyInfrastructureGrowthEffect(Country country)
         {
             float averageCondition = 0f;
             if (country.InfrastructureAssets.Count > 0)
@@ -593,11 +597,76 @@ namespace PoliSim.Simulation
                 -InfrastructureConditionDragSensitivity * Mathf.Max(0f, InfrastructureConditionGrowthThreshold - averageCondition),
                 -MaxInfrastructureConditionDrag, 0f);
 
-            float combinedInfrastructureAdjustment = Mathf.Clamp(
+            return Mathf.Clamp(
                 country.InfrastructureSpendingGrowthAdjustment + conditionDrag,
                 -MaxCombinedInfrastructureGrowthAdjustment, MaxCombinedInfrastructureGrowthAdjustment);
+        }
 
-            country.PotentialGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + combinedInfrastructureAdjustment, 0f, MaxPotentialGrowthRate);
+        // --- Sector Integration: Output/Employment performance nudge PotentialGrowthRate/Unemployment, combined with Infrastructure under one all-sources ceiling (resolves ROADMAP_BRIEF.md's Open Questions #1 - "Resolved by Elias: INTEGRATE") ---
+
+        /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP the aggregate Sector Output (summed gap vs. each sector's own BaselineOutputShareOfGdp, across all four sectors) sits above its own trend - strong sector performance nudges trend growth up, weak performance drags it down.</summary>
+        private const float SectorGrowthSensitivity = 0.05f;
+
+        /// <summary>Cap on the sector-performance growth adjustment alone, before combining with Infrastructure's own contribution.</summary>
+        private const float MaxSectorGrowthAdjustment = 0.5f;
+
+        /// <summary>
+        /// Combined-effect ceiling across ALL THREE PotentialGrowthRate sources (Infrastructure
+        /// spending, Infrastructure condition, and Sector performance) - not just Infrastructure's own
+        /// sub-ceiling and Sector's own sub-ceiling checked independently. This is the single most
+        /// important safeguard in this mechanism: three simultaneous nudges onto one variable, each
+        /// already individually bounded, could still in principle stack toward 0.75 + 0.5 = 1.25 if
+        /// only checked separately - clamping their SUM here to 1.0 (tighter than that combined
+        /// theoretical max, so this ceiling is a genuinely active constraint under worst-case stacking,
+        /// not a dead safety net) is what actually prevents that.
+        /// </summary>
+        private const float MaxTotalPotentialGrowthAdjustment = 1f;
+
+        /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP the aggregate Sector Output sits above its own trend.</summary>
+        private static float GetSectorGrowthAdjustment(Country country)
+        {
+            float aggregateOutputGap = 0f;
+            foreach (Sector sector in country.Sectors)
+            {
+                aggregateOutputGap += sector.OutputShareOfGdp - sector.BaselineOutputShareOfGdp;
+            }
+
+            return Mathf.Clamp(SectorGrowthSensitivity * aggregateOutputGap, -MaxSectorGrowthAdjustment, MaxSectorGrowthAdjustment);
+        }
+
+        /// <summary>
+        /// The single method that finalizes PotentialGrowthRate each turn - combines Infrastructure's
+        /// own already-ceilinged contribution (ApplyInfrastructureGrowthEffect) with Sector's own
+        /// already-ceilinged contribution (GetSectorGrowthAdjustment) under the further, all-sources
+        /// MaxTotalPotentialGrowthAdjustment ceiling, then sets PotentialGrowthRate = Clamp
+        /// (BasePotentialGrowthRate + total, 0, MaxPotentialGrowthRate). Must run AFTER ApplySectorEffects
+        /// (so Sector's contribution reflects this turn's just-updated Output) and after
+        /// ApplyInfrastructureCondition/ApplyCategorySpendingEffects (see ApplyInfrastructureGrowthEffect's
+        /// own ordering requirement).
+        /// </summary>
+        public static void ApplySectorGrowthEffect(Country country)
+        {
+            float infrastructureAdjustment = ApplyInfrastructureGrowthEffect(country);
+            float sectorAdjustment = GetSectorGrowthAdjustment(country);
+            float totalAdjustment = Mathf.Clamp(infrastructureAdjustment + sectorAdjustment, -MaxTotalPotentialGrowthAdjustment, MaxTotalPotentialGrowthAdjustment);
+            country.PotentialGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + totalAdjustment, 0f, MaxPotentialGrowthRate);
+        }
+
+        /// <summary>Unemployment points removed per point the aggregate Sector Employment (summed gap vs. each sector's own BaselineEmploymentShare) sits above its own trend - sector employment growth nudges economy-wide Unemployment down, contraction nudges it up. Mirrors GetMinimumWageUnemploymentAdjustment/GetOvertimeUnemploymentAdjustment's own "small, additive term inside ApplyOkunsLaw" pattern exactly.</summary>
+        private const float SectorUnemploymentSensitivity = 0.03f;
+
+        /// <summary>Cap on the sector-employment unemployment adjustment.</summary>
+        private const float MaxSectorUnemploymentAdjustment = 0.3f;
+
+        private static float GetSectorUnemploymentAdjustment(Country country)
+        {
+            float aggregateEmploymentGap = 0f;
+            foreach (Sector sector in country.Sectors)
+            {
+                aggregateEmploymentGap += sector.EmploymentShare - sector.BaselineEmploymentShare;
+            }
+
+            return Mathf.Clamp(-SectorUnemploymentSensitivity * aggregateEmploymentGap, -MaxSectorUnemploymentAdjustment, MaxSectorUnemploymentAdjustment);
         }
 
         // --- Approval Rating: political-economy feedback, Phillips-curve-adjacent (misery index) ---

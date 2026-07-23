@@ -18,11 +18,11 @@ namespace PoliSim.Testing
     /// validation tool):
     /// -turns=N (default 100) - how many turns to run.
     /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress|
-    /// phase2stress|laborstress|crimejusticestress|infrastructurestress|deferredmaintenance
-    /// (default baseline) - baseline is PolicyDecision.None() for every country every turn (the
-    /// original behavior, unchanged); the other ten mirror the standalone harness's own same-named
-    /// scenarios byte-for-byte (same targets, same rates, same turn timing) so both tools exercise
-    /// identical policy sequences against the real game code.
+    /// phase2stress|laborstress|crimejusticestress|infrastructurestress|deferredmaintenance|
+    /// growthstackstress (default baseline) - baseline is PolicyDecision.None() for every country
+    /// every turn (the original behavior, unchanged); the other eleven mirror the standalone
+    /// harness's own same-named scenarios byte-for-byte (same targets, same rates, same turn timing)
+    /// so both tools exercise identical policy sequences against the real game code.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
@@ -39,7 +39,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -167,6 +167,8 @@ namespace PoliSim.Testing
                     return BuildInfrastructureStressDecision();
                 case "deferredmaintenance":
                     return BuildDeferredMaintenanceDecision(usa, turn);
+                case "growthstackstress":
+                    return BuildGrowthStackStressDecision(usa, turn);
                 default:
                     return PolicyDecision.None();
             }
@@ -381,6 +383,48 @@ namespace PoliSim.Testing
                 SpendingLineChanges = new Dictionary<SpendingCategory, float>
                 {
                     { SpendingCategory.Transportation, -30f },
+                }
+            };
+        }
+
+        /// <summary>
+        /// Sector Integration follow-up: worst-case SAME-DIRECTION stacking test for
+        /// MacroSystem.MaxTotalPotentialGrowthAdjustment - the single most important safeguard added
+        /// alongside Sector Integration. Forces every USA InfrastructureAsset.ConditionIndex to 0 at
+        /// turn 1 (max condition drag) AND pushes all four Sectors to their weakest simultaneous
+        /// performance (min Subsidy/max Regulation - the largest possible negative Output/Employment
+        /// gap) - both Infrastructure's and Sector's contributions push PotentialGrowthRate DOWN at
+        /// the same time, the genuinely dangerous case for an additive combined ceiling (distinct from
+        /// deferredmaintenance above, which only stresses Infrastructure's own sub-ceiling in
+        /// isolation). Also sustains -30%/turn Transportation cuts to keep ConditionIndex pinned at 0
+        /// for the whole run. Mirrors the standalone harness's own --growthstackstress scenario
+        /// exactly.
+        /// </summary>
+        private static PolicyDecision BuildGrowthStackStressDecision(Country usa, int turn)
+        {
+            if (turn == 1)
+            {
+                foreach (InfrastructureAsset asset in usa.InfrastructureAssets)
+                {
+                    asset.ConditionIndex = 0f;
+                }
+            }
+
+            return new PolicyDecision
+            {
+                SpendingLineChanges = new Dictionary<SpendingCategory, float>
+                {
+                    { SpendingCategory.Transportation, -30f },
+                },
+                SectorSubsidyOverrides = new Dictionary<SectorType, float>
+                {
+                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
+                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
+                },
+                SectorRegulationOverrides = new Dictionary<SectorType, float>
+                {
+                    { SectorType.Manufacturing, 100f }, { SectorType.Technology, 100f },
+                    { SectorType.Agriculture, 100f }, { SectorType.Finance, 100f },
                 }
             };
         }

@@ -2198,6 +2198,92 @@ mechanic since has used.
   Unity Hub/the Editor once to let the Package Manager server state repair itself) before being
   treated as equivalent to every other change in this file that DOES carry that confirmation.
 
+## Sector Integration
+A follow-up task, once Elias resolved Round 1's Open Questions #1 ("Resolved by Elias: INTEGRATE —
+Sector Output/Employment should feed back into the core economy"). Same explicit design constraint
+as "Infrastructure Feedback" above: no GDP-identity or labor-accounting decomposition - a small,
+bounded nudge onto `PotentialGrowthRate`/`Unemployment`, the same existing-variable pattern every
+mechanic since has used. Explicitly flagged by the task as needing the most care: `PotentialGrowthRate`
+now has THREE simultaneous sources (Infrastructure spending, Infrastructure condition, Sector
+performance), not two.
+
+- **`MacroSystem.ApplyInfrastructureGrowthEffect` refactored from a `void` mutator into a pure
+  `float` getter**: it still computes Infrastructure's own combined (spending + condition) adjustment
+  exactly as "Infrastructure Feedback" shipped it, but no longer writes `PotentialGrowthRate` itself -
+  that responsibility moved to a new single method, `ApplySectorGrowthEffect`, so there is exactly ONE
+  place in the codebase that ever assigns `PotentialGrowthRate`, no matter how many sources feed into
+  it.
+- **`GetSectorGrowthAdjustment`** (new): sums, across all four `Sector`s, the gap between current
+  `OutputShareOfGdp` and each sector's own `BaselineOutputShareOfGdp` ("relative to its own trend",
+  per the task's wording) - strong aggregate performance nudges `PotentialGrowthRate` up, weak
+  performance drags it down. `SectorGrowthSensitivity` (0.05 points of `PotentialGrowthRate` per
+  aggregate percentage-point-of-GDP gap) and its own cap, `MaxSectorGrowthAdjustment` (0.5), are
+  calibrated so that even the largest realistic aggregate gap (~16 points of GDP-share, if all four
+  sectors were pushed to max Subsidy/min Regulation simultaneously - `SectorSubsidySensitivity`/
+  `SectorRegulationSensitivity`'s own existing 0.04-per-point formula, reversion-adjusted) meaningfully
+  exceeds the cap (raw 0.8 vs. cap 0.5), confirming the cap is a genuinely active constraint, not a
+  dead one - the same "actively binds, not just theoretically present" standard "Infrastructure
+  Feedback" already established.
+- **`GetSectorUnemploymentAdjustment`** (new): the same aggregate-gap idea applied to `EmploymentShare`
+  vs. `BaselineEmploymentShare` - sector employment GROWTH (above baseline) nudges Unemployment DOWN;
+  CONTRACTION (below baseline) nudges it UP. Wired into `ApplyOkunsLaw` as a new additive term,
+  mirroring `GetMinimumWageUnemploymentAdjustment`/`GetOvertimeUnemploymentAdjustment`/
+  `GetRetrainingUnemploymentAdjustment`'s own exact pattern (a small term added directly to
+  `unemploymentChange`, not a reversion-speed nudge like the welfare-program idiom). `SectorUnemploymentSensitivity`
+  (0.03) and `MaxSectorUnemploymentAdjustment` (0.3) are calibrated the same way, and to the same
+  rough order of magnitude as the existing labor-policy adjustments.
+- **`MacroSystem.ApplySectorGrowthEffect`** (new, the single method that now writes `PotentialGrowthRate`):
+  calls `ApplyInfrastructureGrowthEffect` (Infrastructure's own already-ceilinged contribution) and
+  `GetSectorGrowthAdjustment` (Sector's own already-ceilinged contribution), sums them, clamps the SUM
+  to a new **`MaxTotalPotentialGrowthAdjustment` (1.0) - the all-sources combined ceiling the task
+  explicitly called "the single most important thing to get right here"** - then sets
+  `PotentialGrowthRate = Clamp(BasePotentialGrowthRate + total, 0, MaxPotentialGrowthRate)`. Without
+  this outer ceiling, Infrastructure's own sub-total (practical range roughly `[-0.5, +0.75]` - see
+  below for why the negative side never actually reaches its nominal `-0.75`) and Sector's own
+  sub-total (`[-0.5, +0.5]`) could combine toward a theoretical `-1.0` to `+1.25` - clamping the SUM to
+  `±1.0` is what actually prevents three simultaneous nudges on one variable from stacking past a
+  single sane bound, not each source's own cap checked in isolation.
+  - **A subtlety found while calibrating, worth recording**: Infrastructure's own combined adjustment
+    can never actually reach its nominal `-0.75` floor on the negative side, because the spending-boost
+    accumulator is always `>= 0` and the condition-drag alone floors at `-0.5` - so Infrastructure's
+    real practical range is `[-0.5, +0.75]`, asymmetric around zero. This doesn't weaken the new
+    all-sources ceiling's protection (confirmed by the stress scenario below, which drives the
+    negative-side combination to exactly its analytical worst case, `-0.5 + -0.5 = -1.0`, right at the
+    new ceiling's boundary) - it's simply an honestly-disclosed calibration detail, not a bug.
+- **`SimulationManager` reordering**: `ApplySectorEffects` moved EARLIER in `ApplyDomesticPolicy`/
+  `PreviewTurn` (immediately after `ApplyInfrastructureCondition`, before `ApplySectorGrowthEffect`),
+  from its old position much later in the pipeline (right before `ApplyApprovalRating`) - necessary so
+  `GetSectorGrowthAdjustment`/`GetSectorUnemploymentAdjustment` (called from `ApplySectorGrowthEffect`/
+  `ApplyOkunsLaw`, both of which need to run BEFORE `ApplyPotentialGdpGrowth`/`ApplyOkunsLaw` consume
+  `PotentialGrowthRate`) see THIS turn's freshly-updated Sector Output/Employment, the same "must see
+  this turn's just-updated value" timing requirement `ApplyInfrastructureGrowthEffect`'s own condition-
+  drag already established. Confirmed safe: nothing between the sector dials' own policy-change step
+  (`ApplySectorPolicyChanges`, already early) and the new earlier position depends on Sector state
+  (Sector was originally isolated specifically so nothing else read it), so moving it earlier changes
+  nothing else's behavior.
+- **Validated in the standalone harness first** (100/500-turn baseline, the full pre-existing
+  11-scenario regression matrix including the ORIGINAL Round 1 `sectorstress` scenario, plus a new
+  `--growthstackstress` scenario - forces every USA `ConditionIndex` to 0 AND pushes all four Sectors
+  to min Subsidy/max Regulation simultaneously, the worst-case SAME-DIRECTION stacking test:
+  Infrastructure's condition-drag and Sector's performance-drag both pushing `PotentialGrowthRate` down
+  at once, the genuinely dangerous case for an additive combined ceiling, distinct from
+  `deferredmaintenance`'s Infrastructure-only isolation test): zero real anomalies (finite/negative/
+  out-of-range) anywhere, including the pre-existing `sectorstress` scenario (confirming the
+  `ApplySectorEffects` reordering introduced no regression). USA's 500-turn `growthstackstress` GDP
+  (4,178,690) landed well below baseline, output gap settled at -14.3% (matching the pre-existing
+  -13%-to-15% equilibrium) and `DebtToGdpRatio` at 147.0% (matching the Fiscal Reaction Function's
+  ~142% equilibrium) - a real, bounded, and expected consequence of compounding two simultaneous
+  negative growth-rate sources over many turns, not a divergence.
+- **Real-Unity confirmation NOT YET OBTAINED for this item either** - the same reproducible
+  `UnityPackageManager.exe` IPC-server failure documented in "Infrastructure Feedback" above recurred
+  on this item's own launch attempt, before any script compilation or simulation code ran. Consistent
+  with the precedent Elias already set for that exact failure mode, this item is likewise committed on
+  the strength of the harness validation alone - **real-Unity confirmation remains an outstanding
+  follow-up for BOTH this item and "Infrastructure Feedback"** and should be obtained together (e.g.
+  after manually opening Unity Hub/the Editor once to let the Package Manager server state repair
+  itself) before either is treated as equivalent to every other change in this file that DOES carry
+  that confirmation.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

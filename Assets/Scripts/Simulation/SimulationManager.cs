@@ -300,7 +300,8 @@ namespace PoliSim.Simulation
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyInfrastructureCondition(country, spendingResult.EffectiveDecision);
-            MacroSystem.ApplyInfrastructureGrowthEffect(country);
+            MacroSystem.ApplySectorEffects(country);
+            MacroSystem.ApplySectorGrowthEffect(country);
             MacroSystem.ApplyWelfareProgramEffects(country);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
@@ -345,7 +346,6 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyCrimeIndex(country);
             MacroSystem.ApplyCrimeEffects(country);
             MacroSystem.ApplyPrisonPopulationRate(country);
-            MacroSystem.ApplySectorEffects(country);
 
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -403,7 +403,8 @@ namespace PoliSim.Simulation
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyInfrastructureCondition(previewCountry, spendingResult.EffectiveDecision);
-            MacroSystem.ApplyInfrastructureGrowthEffect(previewCountry);
+            MacroSystem.ApplySectorEffects(previewCountry);
+            MacroSystem.ApplySectorGrowthEffect(previewCountry);
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(previewCountry);
@@ -445,7 +446,6 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyCrimeIndex(previewCountry);
             MacroSystem.ApplyCrimeEffects(previewCountry);
             MacroSystem.ApplyPrisonPopulationRate(previewCountry);
-            MacroSystem.ApplySectorEffects(previewCountry);
 
             MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
