@@ -17,6 +17,7 @@ namespace PoliSim.UI
         private enum RightPanelTab
         {
             RecentTurns,
+            WorldMap,
             Trade,
             TaxPolicy,
             SpendingPolicy,
@@ -78,6 +79,9 @@ namespace PoliSim.UI
 
         /// <summary>Vertical gap between the right column's two tab-button rows (see DrawRightColumnTabs) - 11 tabs no longer fit legibly in one row.</summary>
         private const float TabRowSpacing = 4f;
+
+        /// <summary>Fixed display height (px) for the World Map tab's map rect - the map itself stretches to whatever width the tab gives it (see MapRenderer.Draw's ScaleMode.StretchToFill), so only the height needs pinning to keep its aspect roughly sane.</summary>
+        private const float WorldMapHeight = 260f;
 
         private World _world;
         private SimulationManager _simulationManager;
@@ -237,6 +241,16 @@ namespace PoliSim.UI
         private readonly GraphRenderer _tradeBalanceGraph = new GraphRenderer();
         private readonly GraphRenderer _debtToGdpGraph = new GraphRenderer();
         private readonly GraphRenderer _povertyRateGraph = new GraphRenderer();
+
+        // Phase 5 of the UI revamp: the World Map tab. Event markers are tracked here (not in
+        // SimulationManager, which only ever exposes the CURRENT turn's event via GetLastEvent) so a
+        // fired event's map dot can fade out over several turns instead of vanishing the instant the
+        // next turn advances - see AdvanceTurn for where this list is appended to and pruned.
+        private const int EventMarkerFadeTurns = 6;
+        private readonly MapRenderer _mapRenderer = new MapRenderer();
+        private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
+        private CountryId? _selectedMapCountry;
+        private MapEventMarker? _selectedMapEvent;
         private string _cachedNetBudgetText;
         private string _cachedPovertyRateText;
         private string _cachedLaborForceParticipationRateText;
@@ -249,6 +263,7 @@ namespace PoliSim.UI
         private Vector2 _leftColumnScrollPosition;
 
         private RightPanelTab _rightPanelTab = RightPanelTab.RecentTurns;
+        private Vector2 _worldMapScrollPosition;
         private Vector2 _tradeScrollPosition;
         private Vector2 _taxPolicyScrollPosition;
         private Vector2 _spendingPolicyScrollPosition;
@@ -362,7 +377,7 @@ namespace PoliSim.UI
             GUILayout.Space(columnSpacing);
 
             GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
-            DrawRightColumnTabs();
+            DrawRightColumnTabs(rightColumnWidth);
             GUILayout.Space(sectionSpacing * 0.5f);
 
             // Two tab rows now (see DrawRightColumnTabs) - reserve both rows' height plus the
@@ -374,6 +389,9 @@ namespace PoliSim.UI
             {
                 case RightPanelTab.RecentTurns:
                     DrawTurnLog(tabContentHeight);
+                    break;
+                case RightPanelTab.WorldMap:
+                    DrawWorldMapTab(tabContentHeight);
                     break;
                 case RightPanelTab.Trade:
                     DrawTrade(tabContentHeight);
@@ -442,7 +460,12 @@ namespace PoliSim.UI
             _sliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
             _sliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
             _boxStyle = new GUIStyle(GUI.skin.box);
-            _tabButtonStyle = new GUIStyle(GUI.skin.button);
+            // wordWrap so a long label (e.g. "Sovereign Wealth Fund") degrades to two lines at a
+            // narrow per-button width instead of being hard-clipped - safe alongside the fixedHeight
+            // RescaleStylesToScreen sets below, since a fixed height forces the control to that exact
+            // height regardless of how many lines its content wraps to, so this can never push the
+            // tab-content area underneath it out of its own reserved space.
+            _tabButtonStyle = new GUIStyle(GUI.skin.button) { wordWrap = true };
             _eventBannerStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = true };
             _eventBannerStyle.normal.textColor = new Color(1f, 0.65f, 0f);
             _gameOverStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = true };
@@ -496,6 +519,7 @@ namespace PoliSim.UI
         {
             switch (tab)
             {
+                case RightPanelTab.WorldMap: return UiPalette.SystemArea.Global;
                 case RightPanelTab.Trade: return UiPalette.SystemArea.Trade;
                 case RightPanelTab.TaxPolicy: return UiPalette.SystemArea.Fiscal;
                 case RightPanelTab.SpendingPolicy: return UiPalette.SystemArea.Fiscal;
@@ -1133,8 +1157,29 @@ namespace PoliSim.UI
             _prevGdp = state.GDP;
 
             AppendLogEntry(state);
+            RecordMapEventMarkers();
             ResetPolicyInputs();
             CheckElection();
+        }
+
+        /// <summary>
+        /// Records this turn's fired event (if any) for every country as a MapEventMarker for the
+        /// World Map tab, then prunes any marker old enough to have fully faded (see
+        /// EventMarkerFadeTurns) - SimulationManager.GetLastEvent only ever exposes the CURRENT
+        /// turn's event, so this is the only place a rolling, fading history exists.
+        /// </summary>
+        private void RecordMapEventMarkers()
+        {
+            foreach (Country country in _world.Countries)
+            {
+                EconomicEvent economicEvent = _simulationManager.GetLastEvent(country.Id);
+                if (economicEvent != null)
+                {
+                    _mapEventMarkers.Add(new MapEventMarker(country.Id, economicEvent, _simulationManager.CurrentTurn));
+                }
+            }
+
+            _mapEventMarkers.RemoveAll(marker => _simulationManager.CurrentTurn - marker.TurnFired >= EventMarkerFadeTurns);
         }
 
         /// <summary>The tax-policy tab's draft absolute rate for a TaxType, or <paramref name="fallbackRate"/> (the TaxLine's actual persisted Rate) if the player hasn't touched that slider this turn.</summary>
@@ -1410,35 +1455,51 @@ namespace PoliSim.UI
         /// uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-
         /// open tab reads as visibly "lit up" in its own area's hue.
         /// </summary>
-        private void DrawRightColumnTabs()
+        private const int TabsPerRow = 6;
+
+        /// <summary>
+        /// Each button previously auto-sized to its own label content (no explicit width), which
+        /// GUILayout never shrinks to fit - 6 buttons per row summing wider than the actual available
+        /// column width (a real risk at smaller window sizes, since column width is itself only a
+        /// FRACTION of Screen.width, not a fixed budget) just overflowed silently past the panel/
+        /// screen edge instead of wrapping. Now explicitly divided evenly across
+        /// <paramref name="availableWidth"/> - the SAME rightColumnWidth OnGUI already computes fresh
+        /// from Screen.width every frame - so the row can never exceed its actual budget at any
+        /// window size, matching the screen-relative approach already used everywhere else in this
+        /// class.
+        /// </summary>
+        private void DrawRightColumnTabs(float availableWidth)
         {
+            float buttonWidth = availableWidth / TabsPerRow;
+
             GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Recent Turns", RightPanelTab.RecentTurns);
-            DrawRightColumnTabButton("Trade", RightPanelTab.Trade);
-            DrawRightColumnTabButton("Tax Policy", RightPanelTab.TaxPolicy);
-            DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy);
-            DrawRightColumnTabButton("Federal Reserve", RightPanelTab.FederalReserve);
-            DrawRightColumnTabButton("Welfare Policy", RightPanelTab.WelfarePolicy);
+            DrawRightColumnTabButton("Recent Turns", RightPanelTab.RecentTurns, buttonWidth);
+            DrawRightColumnTabButton("World Map", RightPanelTab.WorldMap, buttonWidth);
+            DrawRightColumnTabButton("Trade", RightPanelTab.Trade, buttonWidth);
+            DrawRightColumnTabButton("Tax Policy", RightPanelTab.TaxPolicy, buttonWidth);
+            DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy, buttonWidth);
+            DrawRightColumnTabButton("Federal Reserve", RightPanelTab.FederalReserve, buttonWidth);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(TabRowSpacing);
 
             GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Labor Market", RightPanelTab.LaborMarket);
-            DrawRightColumnTabButton("Crime & Justice", RightPanelTab.CrimeJustice);
-            DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy);
-            DrawRightColumnTabButton("Infrastructure", RightPanelTab.Infrastructure);
-            DrawRightColumnTabButton("Sovereign Wealth Fund", RightPanelTab.SwfPolicy);
+            DrawRightColumnTabButton("Welfare Policy", RightPanelTab.WelfarePolicy, buttonWidth);
+            DrawRightColumnTabButton("Labor Market", RightPanelTab.LaborMarket, buttonWidth);
+            DrawRightColumnTabButton("Crime & Justice", RightPanelTab.CrimeJustice, buttonWidth);
+            DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy, buttonWidth);
+            DrawRightColumnTabButton("Infrastructure", RightPanelTab.Infrastructure, buttonWidth);
+            DrawRightColumnTabButton("Sovereign Wealth Fund", RightPanelTab.SwfPolicy, buttonWidth);
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>Each tab is tinted by its own SystemArea (see UiPalette/GetTabArea) - selected uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab reads as visibly "lit up" in its own area's hue rather than just bold+yellow text.</summary>
-        private void DrawRightColumnTabButton(string label, RightPanelTab tab)
+        /// <summary>Each tab is tinted by its own SystemArea (see UiPalette/GetTabArea) - selected uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab reads as visibly "lit up" in its own area's hue rather than just bold+yellow text. Width is now explicit (see DrawRightColumnTabs) and the style word-wraps (see InitializeStylesIfNeeded) so a long label like "Sovereign Wealth Fund" degrades to two lines at a narrow width instead of being hard-clipped.</summary>
+        private void DrawRightColumnTabButton(string label, RightPanelTab tab, float width)
         {
             UiPalette.SystemArea area = GetTabArea(tab);
             bool selected = _rightPanelTab == tab;
             GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
-            if (GUILayout.Button(label, style))
+            if (GUILayout.Button(label, style, GUILayout.Width(width)))
             {
                 _rightPanelTab = tab;
             }
@@ -1457,6 +1518,113 @@ namespace PoliSim.UI
             }
             GUILayout.EndScrollView();
 
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// World Map tab (Phase 5): a stylized, non-geographic map (see MapRenderer) showing all six
+        /// countries as clickable markers plus fading event dots. Clicking a marker/dot pins a detail
+        /// panel below the map - clicking a country clears any pinned event and vice versa, so
+        /// exactly one detail panel shows at a time. Every stat and event description shown here is
+        /// read straight from existing SimulationManager/EconomyState/EconomicEvent data - no new
+        /// simulation data of any kind.
+        /// </summary>
+        private void DrawWorldMapTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _worldMapScrollPosition = GUILayout.BeginScrollView(_worldMapScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("World Map", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Label("Hover a marker for a quick readout, click to pin it below. Colored dots are recent events - green helped, red hurt; size reflects how big a shock it was, and dots fade out over a few turns.", _labelStyle);
+            GUILayout.Space(6f);
+
+            Rect mapRect = GUILayoutUtility.GetRect(10f, WorldMapHeight, GUILayout.ExpandWidth(true));
+            _mapRenderer.Draw(
+                mapRect,
+                _world.Countries,
+                PlayerCountryId,
+                _mapEventMarkers,
+                _simulationManager.CurrentTurn,
+                EventMarkerFadeTurns,
+                _labelStyle,
+                out CountryId? clickedCountry,
+                out MapEventMarker? clickedEvent);
+
+            if (clickedCountry.HasValue)
+            {
+                _selectedMapCountry = clickedCountry;
+                _selectedMapEvent = null;
+            }
+            else if (clickedEvent.HasValue)
+            {
+                _selectedMapEvent = clickedEvent;
+                _selectedMapCountry = null;
+            }
+
+            GUILayout.Space(10f);
+
+            if (_selectedMapEvent.HasValue)
+            {
+                DrawSelectedMapEventPanel(_selectedMapEvent.Value);
+            }
+            else if (_selectedMapCountry.HasValue)
+            {
+                DrawSelectedMapCountryPanel(_selectedMapCountry.Value);
+            }
+            else
+            {
+                GUILayout.Label("Click a country marker or an event dot for details.", _labelStyle);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>Read-only headline readout for the five non-player countries; the full dashboard-level detail set for USA (the player's own country) - matches the task's explicit "read-only for the five, full detail for USA" split.</summary>
+        private void DrawSelectedMapCountryPanel(CountryId countryId)
+        {
+            Country country = _world.GetCountry(countryId);
+            if (country == null)
+            {
+                return;
+            }
+
+            EconomyState state = country.State;
+            bool isPlayer = countryId == PlayerCountryId;
+
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label(isPlayer ? $"{country.Name} (your country)" : $"{country.Name} (read-only)", _headerStyle);
+            GUILayout.Label($"GDP: {state.GDP:F1}", _labelStyle);
+            GUILayout.Label($"Unemployment: {state.Unemployment:F2}%", _labelStyle);
+            GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
+            GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
+            GUILayout.Label($"Debt-to-GDP: {state.DebtToGdpRatio:F1}%", _labelStyle);
+
+            if (isPlayer)
+            {
+                GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
+                GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
+                GUILayout.Label($"Currency Strength: {state.CurrencyStrength:F1}", _labelStyle);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>Same effect-description format as the dashboard's own "BREAKING" event banner (see DrawTopBanner) - deliberately not a separate wording.</summary>
+        private void DrawSelectedMapEventPanel(MapEventMarker marker)
+        {
+            Country country = _world.GetCountry(marker.CountryId);
+            string countryName = country != null ? country.Name : marker.CountryId.ToString();
+
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel($"{countryName}: {marker.Event.Name}", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Label(marker.Event.Description, _labelStyle);
+            GUILayout.Label(
+                $"Effects: GDP {marker.Event.GdpShockPercent:+0.0;-0.0}%, Inflation {marker.Event.InflationShockPoints:+0.0;-0.0} pts, Approval {marker.Event.ApprovalEffect:+0.0;-0.0}",
+                _labelStyle);
+            GUILayout.Label($"Turn {marker.TurnFired} (this turn: {_simulationManager.CurrentTurn})", _labelStyle);
             GUILayout.EndVertical();
         }
 

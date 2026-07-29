@@ -26,7 +26,9 @@ namespace PoliSim.UI
             CrimeJustice,
             Sectors,
             Infrastructure,
-            SovereignWealth
+            SovereignWealth,
+            /// <summary>The world map tab (Phase 5) - a cross-cutting overview, not owned by any one policy area, so it gets its own distinct hue rather than reusing Neutral or borrowing another area's.</summary>
+            Global
         }
 
         public enum ButtonKind
@@ -83,7 +85,8 @@ namespace PoliSim.UI
             { SystemArea.CrimeJustice, new Color(0.65f, 0.29f, 0.29f) },  // brick - crime & justice
             { SystemArea.Sectors, new Color(0.48f, 0.29f, 0.84f) },       // indigo - economic sectors
             { SystemArea.Infrastructure, new Color(0.29f, 0.56f, 0.65f) },// slate - infrastructure
-            { SystemArea.SovereignWealth, new Color(0.65f, 0.56f, 0.18f) }// bronze - sovereign wealth fund
+            { SystemArea.SovereignWealth, new Color(0.65f, 0.56f, 0.18f) },// bronze - sovereign wealth fund
+            { SystemArea.Global, new Color(0.42f, 0.68f, 0.88f) }         // sky blue - world map overview
         };
 
         public static Color GetAreaColor(SystemArea area) => AreaColors[area];
