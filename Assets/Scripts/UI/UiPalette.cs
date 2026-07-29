@@ -109,6 +109,29 @@ namespace PoliSim.UI
         private static Color Lighten(Color c, float amount) => Color.Lerp(c, Color.white, amount);
         private static Color Darken(Color c, float amount) => Color.Lerp(c, Color.black, amount);
 
+        private static readonly Color BarTrackColor = new Color(0.22f, 0.22f, 0.24f);
+
+        /// <summary>
+        /// Proportionally-sized bar for breakdown/comparison data (Phase 4 of the UI revamp) - a
+        /// dark track the full available width, with a colored fill sized to <paramref name="fraction"/>
+        /// (already clamped to [0,1] by the caller's own normalization, e.g. value/maxValue or an
+        /// already-0-1 weight) - reads better than a line graph for "how do these N things compare
+        /// right now" data (spending categories, trade partner volumes, asset-class mix, per-asset
+        /// condition), where a graph's trend-over-time framing doesn't apply.
+        /// </summary>
+        public static void DrawBar(float fraction, Color fillColor, float height = 14f)
+        {
+            fraction = Mathf.Clamp01(fraction);
+            Rect rect = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
+            GUI.DrawTexture(rect, GetSolidTexture(BarTrackColor), ScaleMode.StretchToFill);
+
+            if (fraction > 0f)
+            {
+                var fillRect = new Rect(rect.x, rect.y, rect.width * fraction, rect.height);
+                GUI.DrawTexture(fillRect, GetSolidTexture(fillColor), ScaleMode.StretchToFill);
+            }
+        }
+
         /// <summary>
         /// Builds a button style with a solid-color background per state (normal/hover/active) -
         /// Unity's IMGUI applies these automatically based on real mouse position/press state during

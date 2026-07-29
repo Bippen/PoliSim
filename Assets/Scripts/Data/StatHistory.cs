@@ -24,6 +24,14 @@ namespace PoliSim.Data
         public readonly List<float> PovertyRate = new List<float>();
         public readonly List<float> InterestRate = new List<float>();
 
+        // Added for Phase 4 of the UI revamp's per-tab graph rollout (Trade/Labor Market/Crime &
+        // Justice tabs) - all four already exist as EconomyState fields computed every turn by the
+        // real simulation, so recording them here is purely additive bookkeeping, not new logic.
+        public readonly List<float> TradeBalance = new List<float>();
+        public readonly List<float> LaborForceParticipationRate = new List<float>();
+        public readonly List<float> CrimeIndex = new List<float>();
+        public readonly List<float> PrisonPopulationRate = new List<float>();
+
         /// <summary>
         /// Appends this turn's already-settled values. <paramref name="interestRate"/> is passed
         /// separately (not read from <paramref name="state"/>) since the rate lives on the country's
@@ -38,6 +46,10 @@ namespace PoliSim.Data
             AppendBounded(DebtToGdpRatio, state.DebtToGdpRatio);
             AppendBounded(PovertyRate, state.PovertyRate);
             AppendBounded(InterestRate, interestRate);
+            AppendBounded(TradeBalance, state.TradeBalance);
+            AppendBounded(LaborForceParticipationRate, state.LaborForceParticipationRate);
+            AppendBounded(CrimeIndex, state.CrimeIndex);
+            AppendBounded(PrisonPopulationRate, state.PrisonPopulationRate);
         }
 
         private static void AppendBounded(List<float> buffer, float value)

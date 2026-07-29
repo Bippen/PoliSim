@@ -17,11 +17,15 @@ namespace PoliSim.UI
         private enum RightPanelTab
         {
             RecentTurns,
-            TradeAndSpending,
+            Trade,
             TaxPolicy,
             SpendingPolicy,
+            FederalReserve,
             WelfarePolicy,
+            LaborMarket,
+            CrimeJustice,
             SectorPolicy,
+            Infrastructure,
             SwfPolicy
         }
 
@@ -71,6 +75,9 @@ namespace PoliSim.UI
         private const float ColumnSpacingFraction = 0.02f;
         private const float LeftColumnWidthFraction = 0.45f;
         private const float SectionSpacingFraction = 0.03f;
+
+        /// <summary>Vertical gap between the right column's two tab-button rows (see DrawRightColumnTabs) - 11 tabs no longer fit legibly in one row.</summary>
+        private const float TabRowSpacing = 4f;
 
         private World _world;
         private SimulationManager _simulationManager;
@@ -220,6 +227,16 @@ namespace PoliSim.UI
         private readonly GraphRenderer _gdpGraph = new GraphRenderer();
         private readonly GraphRenderer _unemploymentGraph = new GraphRenderer();
         private readonly GraphRenderer _approvalGraph = new GraphRenderer();
+
+        // Phase 4's per-tab graph rollout - one GraphRenderer per newly-homed stat, same "never
+        // shared across stats" reasoning as the three headline instances above.
+        private readonly GraphRenderer _interestRateGraph = new GraphRenderer();
+        private readonly GraphRenderer _crimeIndexGraph = new GraphRenderer();
+        private readonly GraphRenderer _prisonPopulationGraph = new GraphRenderer();
+        private readonly GraphRenderer _laborForceParticipationGraph = new GraphRenderer();
+        private readonly GraphRenderer _tradeBalanceGraph = new GraphRenderer();
+        private readonly GraphRenderer _debtToGdpGraph = new GraphRenderer();
+        private readonly GraphRenderer _povertyRateGraph = new GraphRenderer();
         private string _cachedNetBudgetText;
         private string _cachedPovertyRateText;
         private string _cachedLaborForceParticipationRateText;
@@ -232,11 +249,15 @@ namespace PoliSim.UI
         private Vector2 _leftColumnScrollPosition;
 
         private RightPanelTab _rightPanelTab = RightPanelTab.RecentTurns;
-        private Vector2 _tradeAndSpendingScrollPosition;
+        private Vector2 _tradeScrollPosition;
         private Vector2 _taxPolicyScrollPosition;
         private Vector2 _spendingPolicyScrollPosition;
+        private Vector2 _federalReserveScrollPosition;
         private Vector2 _welfarePolicyScrollPosition;
+        private Vector2 _laborMarketScrollPosition;
+        private Vector2 _crimeJusticeScrollPosition;
         private Vector2 _sectorPolicyScrollPosition;
+        private Vector2 _infrastructureScrollPosition;
         private Vector2 _swfPolicyScrollPosition;
 
         private bool _stylesInitialized;
@@ -305,8 +326,6 @@ namespace PoliSim.UI
             GUILayout.Space(sectionSpacing);
 
             GUI.enabled = !_isGameOver;
-            DrawFederalReservePanel();
-            GUILayout.Space(sectionSpacing);
             DrawPolicyControls();
             GUI.enabled = true;
             GUILayout.EndScrollView();
@@ -325,14 +344,18 @@ namespace PoliSim.UI
             DrawRightColumnTabs();
             GUILayout.Space(sectionSpacing * 0.5f);
 
-            float tabContentHeight = areaHeight - _tabButtonStyle.fixedHeight - sectionSpacing * 0.5f;
+            // Two tab rows now (see DrawRightColumnTabs) - reserve both rows' height plus the
+            // spacing between them, not just one, or the second row would silently eat into the
+            // tab-content area below and this whole panel would creep past its allotted height.
+            float tabRowsHeight = _tabButtonStyle.fixedHeight * 2f + TabRowSpacing;
+            float tabContentHeight = areaHeight - tabRowsHeight - sectionSpacing * 0.5f;
             switch (_rightPanelTab)
             {
                 case RightPanelTab.RecentTurns:
                     DrawTurnLog(tabContentHeight);
                     break;
-                case RightPanelTab.TradeAndSpending:
-                    DrawTradeAndSpending(tabContentHeight);
+                case RightPanelTab.Trade:
+                    DrawTrade(tabContentHeight);
                     break;
                 case RightPanelTab.TaxPolicy:
                     GUI.enabled = !_isGameOver;
@@ -344,15 +367,33 @@ namespace PoliSim.UI
                     DrawSpendingPolicy(tabContentHeight);
                     GUI.enabled = true;
                     break;
+                case RightPanelTab.FederalReserve:
+                    GUI.enabled = !_isGameOver;
+                    DrawFederalReserveTab(tabContentHeight);
+                    GUI.enabled = true;
+                    break;
                 case RightPanelTab.WelfarePolicy:
                     GUI.enabled = !_isGameOver;
                     DrawWelfarePolicy(tabContentHeight);
+                    GUI.enabled = true;
+                    break;
+                case RightPanelTab.LaborMarket:
+                    GUI.enabled = !_isGameOver;
+                    DrawLaborMarketTab(tabContentHeight);
+                    GUI.enabled = true;
+                    break;
+                case RightPanelTab.CrimeJustice:
+                    GUI.enabled = !_isGameOver;
+                    DrawCrimeJusticeTab(tabContentHeight);
                     GUI.enabled = true;
                     break;
                 case RightPanelTab.SectorPolicy:
                     GUI.enabled = !_isGameOver;
                     DrawSectorPolicy(tabContentHeight);
                     GUI.enabled = true;
+                    break;
+                case RightPanelTab.Infrastructure:
+                    DrawInfrastructureTab(tabContentHeight);
                     break;
                 case RightPanelTab.SwfPolicy:
                     GUI.enabled = !_isGameOver;
@@ -434,11 +475,15 @@ namespace PoliSim.UI
         {
             switch (tab)
             {
-                case RightPanelTab.TradeAndSpending: return UiPalette.SystemArea.Trade;
+                case RightPanelTab.Trade: return UiPalette.SystemArea.Trade;
                 case RightPanelTab.TaxPolicy: return UiPalette.SystemArea.Fiscal;
                 case RightPanelTab.SpendingPolicy: return UiPalette.SystemArea.Fiscal;
+                case RightPanelTab.FederalReserve: return UiPalette.SystemArea.Political;
                 case RightPanelTab.WelfarePolicy: return UiPalette.SystemArea.Welfare;
+                case RightPanelTab.LaborMarket: return UiPalette.SystemArea.Labor;
+                case RightPanelTab.CrimeJustice: return UiPalette.SystemArea.CrimeJustice;
                 case RightPanelTab.SectorPolicy: return UiPalette.SystemArea.Sectors;
+                case RightPanelTab.Infrastructure: return UiPalette.SystemArea.Infrastructure;
                 case RightPanelTab.SwfPolicy: return UiPalette.SystemArea.SovereignWealth;
                 default: return UiPalette.SystemArea.Neutral;
             }
@@ -485,6 +530,11 @@ namespace PoliSim.UI
             EconomyState state = _playerCountry.State;
             bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
 
+            // Phase 4 trims this down to true headline indicators only - Labor Force Participation,
+            // Crime Index, Paid Family Leave, Incarceration Rate, Infrastructure Condition, Interest
+            // Rate, Tariff Rate, and Sovereign Wealth Fund detail all moved to their own dedicated
+            // tabs (see DrawRightColumnTabs) and would just be redundant duplication here now - the
+            // "compact home view" the task asked for, not everything at once.
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label($"{_playerCountry.Name} - Turn {_simulationManager.CurrentTurn}", _headerStyle);
             DrawColoredLabel($"GDP: {state.GDP:F1}  ({_lastGrowthPercent:+0.00;-0.00;0}%)", _labelStyle, UiPalette.GetDeltaColor(_lastGrowthPercent, higherIsBetter: true));
@@ -492,28 +542,14 @@ namespace PoliSim.UI
             GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
             GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
             GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
-            GUILayout.Label($"Labor Force Participation: {state.LaborForceParticipationRate:F1}%", _labelStyle);
-            GUILayout.Label($"Crime Index: {state.CrimeIndex:F1}", _labelStyle);
-            GUILayout.Label($"Paid Family Leave: {_playerCountry.PaidFamilyLeaveWeeks:F0} weeks", _labelStyle);
-            GUILayout.Label($"Incarceration Rate: {state.PrisonPopulationRate:F0} per 100,000", _labelStyle);
-            GUILayout.Label(GetInfrastructureSummaryLine(), _labelStyle);
-            GUILayout.Label($"Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
 
             if (hasIndependentCurrency)
             {
                 GUILayout.Label($"Currency Strength: {state.CurrencyStrength:F1}", _labelStyle);
             }
 
-            GUILayout.Label($"Tariff Rate: {_playerCountry.BaseTariffRate:F2}%", _labelStyle);
             GUILayout.Label($"Government Debt: {state.GovernmentDebt:F1}", _labelStyle);
             GUILayout.Label($"Debt-to-GDP: {state.DebtToGdpRatio:F1}%", _labelStyle);
-
-            if (_playerCountry.SovereignWealthFund != null)
-            {
-                float netGovernmentPosition = state.GovernmentDebt - _playerCountry.SovereignWealthFund.TotalAssets;
-                GUILayout.Label($"Sovereign Wealth Fund Assets: {_playerCountry.SovereignWealthFund.TotalAssets:F1}", _labelStyle);
-                GUILayout.Label($"Net Government Position (debt minus fund assets): {netGovernmentPosition:F1}", _labelStyle);
-            }
             GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
 
             GUILayout.Space(10f);
@@ -549,17 +585,6 @@ namespace PoliSim.UI
             _approvalGraph.Draw("Approval Rating (last 50 turns; dashed = next-turn estimate)", history.ApprovalRating, projectedApproval, _labelStyle, higherIsBetter: true);
         }
 
-        /// <summary>Infrastructure Condition is a purely descriptive stat driven entirely by the existing Infrastructure spending category (see MacroSystem.ApplyInfrastructureCondition) - no new player-facing dial, so a single dashboard line is enough, the same "no dedicated tab needed" reasoning already applied to Minimum Wage/Crime & Justice's own small levers.</summary>
-        private string GetInfrastructureSummaryLine()
-        {
-            var parts = new List<string>(_playerCountry.InfrastructureAssets.Count);
-            foreach (InfrastructureAsset asset in _playerCountry.InfrastructureAssets)
-            {
-                parts.Add($"{asset.Type} {asset.ConditionIndex:F0}");
-            }
-            return "Infrastructure Condition: " + string.Join(" | ", parts);
-        }
-
         /// <summary>
         /// Generates 2-3 Fed chair candidates the first time the upcoming turn is detected as an
         /// election turn (see ElectionSystem.IsElectionTurn), and remembers which turn they were
@@ -591,36 +616,61 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// USA's independent Federal Reserve (see CLAUDE.md's "Federal Reserve" section): always
-        /// shows the current chair's name/philosophy/description, and - on a turn where a new
-        /// presidential term begins - the 2-3 candidates as selectable buttons instead of a normal
-        /// slider. No-op for a country without an independent Fed chair (Sweden, Poland keep their
-        /// player-controlled Interest Rate Change slider in DrawPolicyControls instead).
+        /// Federal Reserve tab (Phase 4 - moved off the dashboard into its own home). For USA's
+        /// independent chair (see CLAUDE.md's "Federal Reserve" section): current chair's name/
+        /// philosophy/description, and - on a turn where a new presidential term begins - the 2-3
+        /// candidates as selectable buttons. For a country with no independent chair (Sweden, Poland),
+        /// shows the player-controlled Interest Rate Change slider instead - this tab is that
+        /// control's home regardless of which mechanic the player's country actually uses.
         /// </summary>
-        private void DrawFederalReservePanel()
+        private void DrawFederalReserveTab(float availableHeight)
         {
-            if (_playerCountry.CurrentFedChair == null)
-            {
-                return;
-            }
-
             GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _federalReserveScrollPosition = GUILayout.BeginScrollView(_federalReserveScrollPosition, GUILayout.Height(scrollHeight));
+
             DrawColoredLabel("Federal Reserve", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
 
-            FedChair chair = _playerCountry.CurrentFedChair;
-            GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
-            GUILayout.Label(chair.Description, _labelStyle);
-
-            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
+            if (_playerCountry.CurrentFedChair != null)
             {
-                GUILayout.Space(8f);
-                GUILayout.Label("A new presidential term begins next turn - choose the next Fed chair:", _labelStyle);
-                foreach (FedChair candidate in _fedChairCandidates)
+                FedChair chair = _playerCountry.CurrentFedChair;
+                GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
+                GUILayout.Label(chair.Description, _labelStyle);
+
+                if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
                 {
-                    DrawFedChairCandidateButton(candidate);
+                    GUILayout.Space(8f);
+                    GUILayout.Label("A new presidential term begins next turn - choose the next Fed chair:", _labelStyle);
+                    foreach (FedChair candidate in _fedChairCandidates)
+                    {
+                        DrawFedChairCandidateButton(candidate);
+                    }
+                }
+            }
+            else
+            {
+                // Shared-currency countries (e.g. Eurozone members) don't set their own rate - only
+                // show this for a country with an independent CurrencyZone (Sweden, Poland; the
+                // Eurozone trio share one CurrencyZone.InterestRate that none of them set alone).
+                bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
+                if (hasIndependentCurrency)
+                {
+                    GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
+                    _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
+                }
+                else
+                {
+                    GUILayout.Label("This currency zone's interest rate is shared - see the Eurozone member setting it.", _labelStyle);
                 }
             }
 
+            GUILayout.Space(10f);
+            // Neutral (no green/red judgment) - which direction of rate change is "good" depends
+            // entirely on the current inflation/growth situation, not a fixed convention.
+            _interestRateGraph.DrawNeutral("Interest Rate (last 50 turns)", _playerCountry.History.InterestRate, null, _labelStyle);
+
+            GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
 
@@ -638,43 +688,22 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        private void DrawPolicyControls()
+        /// <summary>
+        /// Crime &amp; Justice tab (Phase 4 - moved off the dashboard into its own home): Police
+        /// Funding / Sentencing Severity / Bail Reform / Drug Policy sliders, plus CrimeIndex (a
+        /// clear direction - lower is better) and PrisonPopulationRate (deliberately neutral - see
+        /// PrisonPopulationRate's own doc comment on BailReformLevel/DrugPolicyLevel's honestly-
+        /// contested effects) history graphs.
+        /// </summary>
+        private void DrawCrimeJusticeTab(float availableHeight)
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("This Turn's Policy", _headerStyle);
-            GUILayout.Label("Tax rates are set in the Tax Policy tab (implement/remove and adjust each tax there).", _labelStyle);
-            GUILayout.Label("Spending is set in the Spending Policy tab (percentage sliders, both Mandatory and Discretionary).", _labelStyle);
-            GUILayout.Label("Tariffs (both the general rate and any per-partner override) are set in the Trade & Spending tab's Trade section.", _labelStyle);
 
-            // Shared-currency countries (e.g. Eurozone members) don't set their own rate - only show
-            // this control for a country with an independent CurrencyZone AND no independent Fed chair
-            // (a Fed-chair country's rate is set by FederalReserveSystem instead - see
-            // DrawFederalReservePanel - bypassing this slider/PolicyDecision.InterestRateChange
-            // entirely; Sweden and Poland have no chair, so they're unaffected).
-            bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
-            if (hasIndependentCurrency && _playerCountry.CurrentFedChair == null)
-            {
-                GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
-                _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
-            }
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _crimeJusticeScrollPosition = GUILayout.BeginScrollView(_crimeJusticeScrollPosition, GUILayout.Height(scrollHeight));
 
-            DrawMinimumWageControl();
-            DrawCrimeJusticeControls();
-            DrawLaborPolicyControls();
-
-            DrawPolicyPreview();
-
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// Police Funding / Sentencing Severity (0-100 dials, both start at a neutral 50 for every
-        /// country) - two small always-visible levers, not their own tab, for the same "disproportionate
-        /// scope for this few controls" reasoning as the Minimum Wage slider.
-        /// </summary>
-        private void DrawCrimeJusticeControls()
-        {
-            DrawColoredLabel("Crime & Justice", _labelStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
+            DrawColoredLabel("Crime & Justice", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
+            GUILayout.Space(8f);
 
             float draftPoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
             GUILayout.Label($"Police Funding: {draftPoliceFunding:F0}", _labelStyle);
@@ -691,16 +720,32 @@ namespace PoliSim.UI
             float draftDrugPolicy = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel);
             GUILayout.Label($"Drug Policy: {draftDrugPolicy:F0} (0 = decriminalized, 100 = strict criminalization)", _labelStyle);
             _drugPolicyInput = GUILayout.HorizontalSlider(draftDrugPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            GUILayout.Space(10f);
+            _crimeIndexGraph.Draw("Crime Index (last 50 turns)", _playerCountry.History.CrimeIndex, null, _labelStyle, higherIsBetter: false);
+            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k (last 50 turns)", _playerCountry.History.PrisonPopulationRate, null, _labelStyle);
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
         }
 
         /// <summary>
-        /// Paid Family Leave (weeks) / Overtime Regulation / Retraining Program (0-100 dials) - three
-        /// small always-visible levers, not their own tab, same reasoning as Minimum Wage/Crime &amp;
-        /// Justice's own controls.
+        /// Labor Market tab (Phase 4 - moved off the dashboard into its own home, now also including
+        /// Minimum Wage since it's a labor-market lever like the other three): Minimum Wage / Paid
+        /// Family Leave / Overtime Regulation / Retraining Program, plus a LaborForceParticipationRate
+        /// history graph.
         /// </summary>
-        private void DrawLaborPolicyControls()
+        private void DrawLaborMarketTab(float availableHeight)
         {
-            DrawColoredLabel("Labor Policy", _labelStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _laborMarketScrollPosition = GUILayout.BeginScrollView(_laborMarketScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Labor Market", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
+            GUILayout.Space(8f);
+
+            DrawMinimumWageControl();
 
             float draftPaidLeave = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
             GUILayout.Label($"Paid Family Leave: {draftPaidLeave:F0} weeks", _labelStyle);
@@ -713,15 +758,20 @@ namespace PoliSim.UI
             float draftRetraining = GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel);
             GUILayout.Label($"Workforce Retraining Programs: {draftRetraining:F0}", _labelStyle);
             _retrainingProgramInput = GUILayout.HorizontalSlider(draftRetraining, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            GUILayout.Space(10f);
+            _laborForceParticipationGraph.Draw("Labor Force Participation (last 50 turns)", _playerCountry.History.LaborForceParticipationRate, null, _labelStyle, higherIsBetter: true);
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
         }
 
         /// <summary>
-        /// Minimum wage (percent of median wage) - a single always-visible lever, not its own tab
-        /// (unlike Tax/Spending/Welfare Policy's portfolios), since it's just one slider. Only shown
-        /// as adjustable if Country.MinimumWageImplemented (USA - see WorldFactory); Sweden and Italy
-        /// have no statutory minimum wage in reality, so this shows a read-only note for them instead
-        /// (the player's country is hardcoded to USA, so this branch is currently unreachable in
-        /// practice, but kept correct in case PlayerCountryId ever changes).
+        /// Minimum wage (percent of median wage) - only shown as adjustable if
+        /// Country.MinimumWageImplemented (USA - see WorldFactory); Sweden and Italy have no
+        /// statutory minimum wage in reality, so this shows a read-only note for them instead (the
+        /// player's country is hardcoded to USA, so this branch is currently unreachable in practice,
+        /// but kept correct in case PlayerCountryId ever changes).
         /// </summary>
         private void DrawMinimumWageControl()
         {
@@ -734,6 +784,53 @@ namespace PoliSim.UI
             float draftMinimumWage = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian);
             GUILayout.Label($"Minimum Wage: {draftMinimumWage:F0}% of median wage", _labelStyle);
             _minimumWageInput = GUILayout.HorizontalSlider(draftMinimumWage, MinMinimumWagePercent, MaxMinimumWagePercent, _sliderStyle, _sliderThumbStyle);
+        }
+
+        /// <summary>
+        /// Infrastructure tab (Phase 4 - new, replacing the old single dashboard summary line):
+        /// descriptive only, no player-facing dial (Infrastructure Condition is driven entirely by
+        /// the existing Infrastructure spending category - see MacroSystem.ApplyInfrastructureCondition
+        /// and GetInfrastructureSummaryLine's own original doc comment for why). Proportional bars,
+        /// not a line graph - this is "how do these four assets compare right now" breakdown data,
+        /// not a trend-over-time reading, matching the task's own bar-vs-graph guidance.
+        /// </summary>
+        private void DrawInfrastructureTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _infrastructureScrollPosition = GUILayout.BeginScrollView(_infrastructureScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Infrastructure", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure));
+            GUILayout.Label("Condition Index (0-100) per asset type - driven by the Infrastructure spending category in the Spending Policy tab, not a dial here.", _labelStyle);
+            GUILayout.Space(8f);
+
+            foreach (InfrastructureAsset asset in _playerCountry.InfrastructureAssets)
+            {
+                GUILayout.Label($"{asset.Type}: {asset.ConditionIndex:F0} / 100", _labelStyle);
+                UiPalette.DrawBar(asset.ConditionIndex / 100f, UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure));
+                GUILayout.Space(8f);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Phase 4's compact dashboard "home view": routing text pointing at every tab (kept brief
+        /// since there are now 11 of them) plus the live Policy Preview panel - the preview is
+        /// deliberately NOT tab-owned, since it summarizes the draft PolicyDecision across every tab
+        /// at once, letting the player gauge this turn's effect without tab-hopping.
+        /// </summary>
+        private void DrawPolicyControls()
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("This Turn's Policy", _headerStyle);
+            GUILayout.Label("Every system now has its own tab (Tax/Spending/Federal Reserve/Welfare/Labor Market/Crime & Justice/Economic Sectors/Infrastructure/Sovereign Wealth Fund/Trade) - the estimate below reflects your current draft across all of them at once.", _labelStyle);
+
+            DrawPolicyPreview();
+
+            GUILayout.EndVertical();
         }
 
         /// <summary>
@@ -1284,19 +1381,33 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Tab/toggle set for the right column - "Recent Turns" | "Trade &amp; Spending" | "Tax Policy" | "Spending Policy" | "Welfare Policy". The selected tab gets a distinct (bold, colored) style so it's visibly different from the skin's default button look.</summary>
+        /// <summary>
+        /// Tab/toggle set for the right column - 11 tabs now (Phase 4 gave Federal Reserve/Labor
+        /// Market/Crime &amp; Justice/Infrastructure their own homes, split out of the dashboard and
+        /// the old combined Trade &amp; Spending tab), split into two rows since that many no longer
+        /// fit legibly in one. Each tab is tinted by its own SystemArea (see GetTabArea) - selected
+        /// uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-
+        /// open tab reads as visibly "lit up" in its own area's hue.
+        /// </summary>
         private void DrawRightColumnTabs()
         {
             GUILayout.BeginHorizontal();
-
             DrawRightColumnTabButton("Recent Turns", RightPanelTab.RecentTurns);
-            DrawRightColumnTabButton("Trade & Spending", RightPanelTab.TradeAndSpending);
+            DrawRightColumnTabButton("Trade", RightPanelTab.Trade);
             DrawRightColumnTabButton("Tax Policy", RightPanelTab.TaxPolicy);
             DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy);
+            DrawRightColumnTabButton("Federal Reserve", RightPanelTab.FederalReserve);
             DrawRightColumnTabButton("Welfare Policy", RightPanelTab.WelfarePolicy);
-            DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy);
-            DrawRightColumnTabButton("Sovereign Wealth Fund", RightPanelTab.SwfPolicy);
+            GUILayout.EndHorizontal();
 
+            GUILayout.Space(TabRowSpacing);
+
+            GUILayout.BeginHorizontal();
+            DrawRightColumnTabButton("Labor Market", RightPanelTab.LaborMarket);
+            DrawRightColumnTabButton("Crime & Justice", RightPanelTab.CrimeJustice);
+            DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy);
+            DrawRightColumnTabButton("Infrastructure", RightPanelTab.Infrastructure);
+            DrawRightColumnTabButton("Sovereign Wealth Fund", RightPanelTab.SwfPolicy);
             GUILayout.EndHorizontal();
         }
 
@@ -1328,27 +1439,25 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        private void DrawTradeAndSpending(float availableHeight)
+        /// <summary>
+        /// Trade tab (Phase 4 - split off the old combined "Trade &amp; Spending" tab; the spending
+        /// report half moved into the Spending Policy tab instead, where it belongs alongside the
+        /// spending sliders it reports on). Adds a TradeBalance history graph and, per partner,
+        /// proportional bars for Export/Import volume - "how do these partners compare right now"
+        /// breakdown data, exactly the case the task calls out for bars over a line graph.
+        /// </summary>
+        private void DrawTrade(float availableHeight)
         {
             GUILayout.BeginVertical(_boxStyle);
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _tradeAndSpendingScrollPosition = GUILayout.BeginScrollView(_tradeAndSpendingScrollPosition, GUILayout.Height(scrollHeight));
+            _tradeScrollPosition = GUILayout.BeginScrollView(_tradeScrollPosition, GUILayout.Height(scrollHeight));
 
-            DrawTradeSection();
-            GUILayout.Space(16f);
-            DrawSpendingSection();
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        private void DrawTradeSection()
-        {
             EconomyState state = _playerCountry.State;
 
             DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             DrawColoredLabel($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
+            _tradeBalanceGraph.Draw("Trade Balance (last 50 turns)", _playerCountry.History.TradeBalance, null, _labelStyle, higherIsBetter: true);
             GUILayout.Space(6f);
 
             GUILayout.Label($"General Base Tariff Rate: {_playerCountry.BaseTariffRate:F2}% (applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _labelStyle);
@@ -1359,6 +1468,15 @@ namespace PoliSim.UI
             GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. Doesn't affect what that partner charges on our exports to them.", _labelStyle);
             GUILayout.Space(6f);
 
+            // Bars are sized relative to the largest volume across every partner (both directions
+            // share one scale) so the bars themselves stay comparable to each other, not just within
+            // one partner's own row.
+            float maxVolume = 1f;
+            foreach (TradePartner link in _playerCountry.TradePartners)
+            {
+                maxVolume = Mathf.Max(maxVolume, link.ExportVolume, link.ImportVolume);
+            }
+
             foreach (TradePartner link in _playerCountry.TradePartners)
             {
                 Country partner = _world.GetCountry(link.PartnerId);
@@ -1367,12 +1485,15 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawTradePartnerRow(link, partner);
+                DrawTradePartnerRow(link, partner, maxVolume);
                 GUILayout.Space(10f);
             }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
         }
 
-        private void DrawTradePartnerRow(TradePartner link, Country partner)
+        private void DrawTradePartnerRow(TradePartner link, Country partner, float maxVolume)
         {
             // Tariffs are asymmetric: the partner charges its own rate on what we export to
             // them, and we charge our own rate on what we import from them - the same two
@@ -1385,6 +1506,11 @@ namespace PoliSim.UI
                 $"Tariff on our exports={tariffOnOurExports:F2}%, Tariff on our imports={tariffOnOurImports:F2}%" +
                 (link.HasPlayerTariffOverride ? " (override active)" : ""),
                 _labelStyle);
+
+            GUILayout.Label("Exports:", _labelStyle);
+            UiPalette.DrawBar(link.ExportVolume / maxVolume, UiPalette.PositiveChangeColor, 10f);
+            GUILayout.Label("Imports:", _labelStyle);
+            UiPalette.DrawBar(link.ImportVolume / maxVolume, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade), 10f);
 
             float buttonWidth = _labelStyle.fontSize * 8f;
             GUILayout.BeginHorizontal();
@@ -1514,6 +1640,7 @@ namespace PoliSim.UI
 
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
             GUILayout.Label("Implement or remove a welfare program, and (while implemented) drag its generosity directly to the target you want.", _labelStyle);
+            _povertyRateGraph.Draw("Poverty Rate (last 50 turns)", _playerCountry.History.PovertyRate, null, _labelStyle, higherIsBetter: false);
             GUILayout.Space(8f);
 
             foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
@@ -1695,20 +1822,28 @@ namespace PoliSim.UI
             GUILayout.Space(8f);
             GUILayout.Label("Asset Class Mix (weights, normalized automatically - don't need to sum to 100)", _labelStyle);
 
+            // Each bar's fraction IS the already-normalized weight (0-1) - no further scaling needed,
+            // unlike the spending-line/trade-volume bars above which normalize against a group max.
+            Color swfColor = UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth);
+
             float draftEquities = GetSwfEquitiesWeightInput(fund.EquitiesWeight);
             GUILayout.Label($"Equities: {draftEquities:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Equities) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.Equities), swfColor, 8f);
             _swfEquitiesWeightInput = GUILayout.HorizontalSlider(draftEquities, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftBonds = GetSwfBondsWeightInput(fund.BondsWeight);
             GUILayout.Label($"Bonds: {draftBonds:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Bonds) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.Bonds), swfColor, 8f);
             _swfBondsWeightInput = GUILayout.HorizontalSlider(draftBonds, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftInfrastructure = GetSwfInfrastructureWeightInput(fund.InfrastructureWeight);
             GUILayout.Label($"Infrastructure: {draftInfrastructure:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure), swfColor, 8f);
             _swfInfrastructureWeightInput = GUILayout.HorizontalSlider(draftInfrastructure, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftRealEstate = GetSwfRealEstateWeightInput(fund.RealEstateWeight);
             GUILayout.Label($"Real Estate: {draftRealEstate:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate), swfColor, 8f);
             _swfRealEstateWeightInput = GUILayout.HorizontalSlider(draftRealEstate, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.EndScrollView();
@@ -1735,8 +1870,31 @@ namespace PoliSim.UI
             GUILayout.Label("Each line's slider is a percentage change of its OWN current amount, not a flat dollar delta. Mandatory programs have a narrower range and hit approval harder per relative size - entitlement reform is politically costly.", _labelStyle);
             GUILayout.Space(8f);
 
+            // Moved here from the old combined "Trade & Spending" tab (Phase 4) - the last-turn
+            // fiscal report belongs next to the sliders it explains, not bolted onto Trade.
+            DrawSpendingSection();
+            _debtToGdpGraph.Draw("Debt-to-GDP (last 50 turns)", _playerCountry.History.DebtToGdpRatio, null, _labelStyle, higherIsBetter: false);
+            GUILayout.Space(16f);
+
             DrawInterestOnDebtRow();
             GUILayout.Space(10f);
+
+            // Bars are scaled within their own group (Mandatory vs. Discretionary), not against each
+            // other - the two groups differ by orders of magnitude (e.g. Social Security vs. SBA), so
+            // one shared scale would flatten every Discretionary bar to nothing.
+            float maxMandatory = 1f;
+            float maxDiscretionary = 1f;
+            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
+            {
+                if (spendingLine.IsMandatory)
+                {
+                    maxMandatory = Mathf.Max(maxMandatory, spendingLine.Amount);
+                }
+                else
+                {
+                    maxDiscretionary = Mathf.Max(maxDiscretionary, spendingLine.Amount);
+                }
+            }
 
             GUILayout.Label("Mandatory (narrower range, higher approval cost)", _headerStyle);
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
@@ -1746,7 +1904,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange);
+                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange, maxMandatory);
                 GUILayout.Space(10f);
             }
 
@@ -1759,7 +1917,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange);
+                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, maxDiscretionary);
                 GUILayout.Space(10f);
             }
 
@@ -1775,14 +1933,15 @@ namespace PoliSim.UI
             GUILayout.Label($"Interest on Debt (automatic, last turn): {valueText}", _labelStyle);
         }
 
-        /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size.</summary>
-        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent)
+        /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size, plus a bar sized relative to <paramref name="maxAmountInGroup"/> (its own Mandatory/Discretionary group's largest line) for an at-a-glance size comparison.</summary>
+        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent, float maxAmountInGroup)
         {
             float draftPercent = GetSpendingLineInput(spendingLine.Category);
             float impliedDollarChange = spendingLine.Amount * draftPercent / 100f;
             GUILayout.Label(
                 $"{spendingLine.Category}: {spendingLine.Amount:F1}  Change: {draftPercent:+0.0;-0.0;0}% ({impliedDollarChange:+0.0;-0.0;0})",
                 _labelStyle);
+            UiPalette.DrawBar(spendingLine.Amount / maxAmountInGroup, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), 8f);
             float newPercent = GUILayout.HorizontalSlider(draftPercent, -rangePercent, rangePercent, _sliderStyle, _sliderThumbStyle);
             _spendingLineInputs[spendingLine.Category] = newPercent;
         }

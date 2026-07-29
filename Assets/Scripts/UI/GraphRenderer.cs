@@ -45,9 +45,13 @@ namespace PoliSim.UI
         /// further as a lighter, dashed segment - the same "PreviewTurn estimate, not a guarantee"
         /// spirit as GameController's existing live policy preview. <paramref name="higherIsBetter"/>
         /// picks the green/red direction for the title-row change summary (true for GDP/Approval,
-        /// false for Unemployment - a rising line is bad there).
+        /// false for Unemployment - a rising line is bad there) - null for a stat where "good
+        /// direction" is genuinely ambiguous/contested (e.g. an interest rate, or incarceration rate
+        /// per PrisonPopulationRate's own honestly-contested framing elsewhere in this codebase),
+        /// which always shows the neutral gray rather than inventing a judgment call. Prefer the
+        /// DrawNeutral convenience overload below at call sites for that null case.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool higherIsBetter)
+        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter)
         {
             EnsureOverlayStylesInitialized(labelStyle);
             DrawTitleRow(title, history, higherIsBetter, labelStyle);
@@ -71,6 +75,12 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>Convenience wrapper for a stat with no clear "good direction" - see Draw's higherIsBetter remarks.</summary>
+        public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle)
+        {
+            Draw(title, history, projectedValue, labelStyle, higherIsBetter: null);
+        }
+
         /// <summary>Lazily builds the two small overlay styles from the caller's own label style (font/skin already resolved by GameController's RescaleStylesToScreen) rather than GUI.skin directly, so they stay proportionate to the rest of the panel without GraphRenderer needing its own screen-size-aware rescaling logic.</summary>
         private void EnsureOverlayStylesInitialized(GUIStyle referenceStyle)
         {
@@ -87,7 +97,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>Title plus a "first-to-last visible value" percentage change, computed straight from the same history buffer the graph itself plots (not a separate calculation) - matches GameController's existing signed-delta number format (see FormatEstimate) rather than inventing a new one.</summary>
-        private void DrawTitleRow(string title, IReadOnlyList<float> history, bool higherIsBetter, GUIStyle labelStyle)
+        private void DrawTitleRow(string title, IReadOnlyList<float> history, bool? higherIsBetter, GUIStyle labelStyle)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label(title, labelStyle);
@@ -100,7 +110,9 @@ namespace PoliSim.UI
                     ? (Mathf.Approximately(last, 0f) ? 0f : 100f * Mathf.Sign(last))
                     : (last - first) / Mathf.Abs(first) * 100f;
 
-                _changeLabelStyle.normal.textColor = UiPalette.GetDeltaColor(percentChange, higherIsBetter);
+                _changeLabelStyle.normal.textColor = higherIsBetter.HasValue
+                    ? UiPalette.GetDeltaColor(percentChange, higherIsBetter.Value)
+                    : UiPalette.NeutralChangeColor;
                 GUILayout.Label($"{percentChange:+0.0;-0.0;0}%", _changeLabelStyle, GUILayout.ExpandWidth(false));
             }
 
