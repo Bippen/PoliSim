@@ -2180,23 +2180,18 @@ mechanic since has used.
   regression - anomaly counts stayed within each scenario's own previously-documented range, and a
   dedicated re-check confirmed zero finite/negative/out-of-range anomalies for any of the three new
   fields across all of them at 500 turns.
-- **Real-Unity confirmation NOT YET OBTAINED - an honest, currently-open gap, not a silent skip**:
-  four consecutive `BatchSimulationRunner` launch attempts (two via PowerShell `Start-Process`, two via
-  a direct Bash exec after PowerShell itself began failing to start new threads) all failed BEFORE any
-  script compilation or simulation code ran - three of the four hit the identical failure
-  (`UnityPackageManager.exe`'s local IPC server failing to come up within Unity's own 30-second
-  timeout), the fourth a different Editor window-initialization crash. Stale Unity Hub processes left
-  over from earlier in this session were cleared between attempts with no change in outcome; Windows
-  Defender's threat-detection log showed no blocks against any Unity binary (only unrelated historical
-  flags on an unconnected file); disk space was not the constraint (1.7TB free). This looks like a
-  genuine, reproducible Unity Editor/Package-Manager-server instability in this environment, not
-  something caused by this task's code changes (which compile cleanly via `dotnet build PoliSim.slnx`
-  and pass the standalone harness in full). Per Elias's explicit direction after being asked, this
-  item is committed on the strength of the harness validation above alone - **the real-Unity
-  confirmation this project's own "Real-Unity Validation is the Standard Path" section calls for is
-  still outstanding for this specific change** and should be obtained (e.g. after manually opening
-  Unity Hub/the Editor once to let the Package Manager server state repair itself) before being
-  treated as equivalent to every other change in this file that DOES carry that confirmation.
+- **Real-Unity confirmation OBTAINED (2026-07-29)** - closing the gap left open above. The
+  `UnityPackageManager.exe` IPC-server failure was resolved by opening Unity Hub/the Editor normally
+  once (full GUI load, then closed) to let the Package Manager server state repair itself, exactly the
+  workaround anticipated when this gap was first recorded. `BatchSimulationRunner -runmatrix` (all 12
+  scenarios x 100/500 turns, 24 combinations total, including `deferredmaintenance`) then ran clean on
+  the first attempt: zero finite/negative/out-of-range anomalies anywhere - every flagged anomaly across
+  all 24 combinations was the same pre-existing small-magnitude "swung X% in one turn" false positive
+  documented elsewhere in this file (e.g. Sweden's `DebtToGdpRatio` settling turn-1-through-7 toward
+  equilibrium), unrelated to this change. `deferredmaintenance` at 500 turns landed at GDP 48,639,590
+  and `DebtToGdpRatio` 144.1% - within a fraction of a percent of the harness's own 49,052,176/143.5%
+  figures above, confirming the ported logic's fidelity. **This item now carries the same real-Unity
+  confirmation as every other change in this file.**
 
 ## Sector Integration
 A follow-up task, once Elias resolved Round 1's Open Questions #1 ("Resolved by Elias: INTEGRATE —
@@ -2274,15 +2269,17 @@ performance), not two.
   -13%-to-15% equilibrium) and `DebtToGdpRatio` at 147.0% (matching the Fiscal Reaction Function's
   ~142% equilibrium) - a real, bounded, and expected consequence of compounding two simultaneous
   negative growth-rate sources over many turns, not a divergence.
-- **Real-Unity confirmation NOT YET OBTAINED for this item either** - the same reproducible
-  `UnityPackageManager.exe` IPC-server failure documented in "Infrastructure Feedback" above recurred
-  on this item's own launch attempt, before any script compilation or simulation code ran. Consistent
-  with the precedent Elias already set for that exact failure mode, this item is likewise committed on
-  the strength of the harness validation alone - **real-Unity confirmation remains an outstanding
-  follow-up for BOTH this item and "Infrastructure Feedback"** and should be obtained together (e.g.
-  after manually opening Unity Hub/the Editor once to let the Package Manager server state repair
-  itself) before either is treated as equivalent to every other change in this file that DOES carry
-  that confirmation.
+- **Real-Unity confirmation OBTAINED (2026-07-29), together with "Infrastructure Feedback" above** -
+  same `BatchSimulationRunner -runmatrix` run (all 12 scenarios x 100/500 turns, including
+  `growthstackstress`), same clean result: zero finite/negative/out-of-range anomalies anywhere, every
+  flagged anomaly the same pre-existing small-magnitude swing false positive, unrelated to this change.
+  `growthstackstress` at 500 turns landed at GDP 4,180,200 and `DebtToGdpRatio` 147.1% - within a
+  fraction of a percent of the harness's own 4,178,690/147.0% figures above - and its growth rate was
+  observed pinned at essentially exactly `+1.00%`/turn from roughly turn 50 through turn 500, direct
+  real-Unity evidence that `MaxTotalPotentialGrowthAdjustment` (1.0) binds correctly under the
+  worst-case same-direction stack rather than merely appearing bounded in aggregate GDP. **Both this
+  item and "Infrastructure Feedback" now carry the same real-Unity confirmation as every other change
+  in this file.**
 
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.

@@ -28,6 +28,8 @@ This document is a standing instruction set for autonomous work on PoliSim while
 
 7. **Update CLAUDE.md after every item**, including a brief "Validated: [date], 100/500 turns, real Unity, N anomalies" line so the history stays traceable.
 
+8. **Closing the Unity Editor window doesn't always mean the process has actually exited (confirmed twice now).** A `BatchSimulationRunner` launch will fail (or silently fight for the project lock) if a stale `Unity.exe`/`UnityPackageManager.exe` is still alive, even after its window is gone. Before assuming Unity is closed and it's safe to start a batch run, verify with `Get-Process Unity*,UnityPackageManager -ErrorAction SilentlyContinue` in PowerShell (or `Get-CimInstance Win32_Process -Filter "Name='Unity.exe'"` for command-line detail) — don't rely on the window having disappeared.
+
 ---
 
 ## Queue (work top to bottom; do not skip ahead or parallelize)
