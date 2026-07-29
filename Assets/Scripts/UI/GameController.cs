@@ -281,6 +281,8 @@ namespace PoliSim.UI
 
         private void Start()
         {
+            SetupCameraBackground();
+
             _world = WorldFactory.CreateDefault();
             _simulationManager = gameObject.AddComponent<SimulationManager>();
             _simulationManager.SetWorld(_world);
@@ -288,6 +290,25 @@ namespace PoliSim.UI
             _playerCountry = _world.GetCountry(PlayerCountryId);
             _prevGdp = _playerCountry.State.GDP;
             _previewRandom = new System.Random();
+        }
+
+        /// <summary>
+        /// This is an IMGUI-only game (see the class doc comment) - nothing is ever meant to render
+        /// behind the UI, so Unity's default Skybox clear (visible as sky/horizon in any gap the UI
+        /// doesn't cover) is just visual noise, not a deliberate scene. Solid dark color instead,
+        /// matching GraphRenderer's own background tone for a consistent dark theme - no new assets
+        /// needed, just a clear-flags/color change on whatever camera is tagged MainCamera.
+        /// </summary>
+        private static void SetupCameraBackground()
+        {
+            Camera camera = Camera.main;
+            if (camera == null)
+            {
+                return;
+            }
+
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
         }
 
         private void OnGUI()
