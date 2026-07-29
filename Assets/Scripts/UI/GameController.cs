@@ -200,13 +200,20 @@ namespace PoliSim.UI
         private string _cachedInflationText;
         private string _cachedApprovalText;
 
-        // Raw (unformatted, no cosmetic margin) numeric counterparts of the three headline preview
-        // figures above, kept only for the Phase 2 dashboard graphs' projected-point calculation -
+        // Raw (unformatted, no cosmetic margin) numeric counterparts of every preview figure -
         // FormatEstimate's margin is a display-only flourish that has no business perturbing what a
-        // graph draws. Set alongside the formatted text fields in RecomputePolicyPreview.
+        // graph draws or which way UiPalette.GetDeltaColor colors a line. The first three exist for
+        // the Phase 2 dashboard graphs' projected-point calculation; all eight are used by Phase 3's
+        // policy-preview coloring. Set alongside the formatted text fields in RecomputePolicyPreview.
         private float _cachedGdpGrowthPercentRaw;
         private float _cachedUnemploymentChangeRaw;
         private float _cachedApprovalChangeRaw;
+        private float _cachedInflationChangeRaw;
+        private float _cachedPovertyRateChangeRaw;
+        private float _cachedLaborForceParticipationRateChangeRaw;
+        private float _cachedCrimeIndexChangeRaw;
+        private float _cachedNetBudgetImpactRaw;
+        private float _cachedSwfReturnsEstimateRaw;
 
         // One GraphRenderer per headline dashboard stat - see GraphRenderer.cs. Each auto-scales its
         // own Y-axis, so instances are never shared across stats with different natural ranges.
@@ -240,9 +247,16 @@ namespace PoliSim.UI
         private GUIStyle _sliderThumbStyle;
         private GUIStyle _boxStyle;
         private GUIStyle _tabButtonStyle;
-        private GUIStyle _tabButtonSelectedStyle;
         private GUIStyle _eventBannerStyle;
         private GUIStyle _gameOverStyle;
+
+        // Phase 3 of the UI revamp: action-type-coded button styles (see UiPalette), rebuilt every
+        // frame in RescaleStylesToScreen alongside the base styles they're cloned from, so their
+        // font size/fixed height always stay in sync with the current screen size too.
+        private GUIStyle _implementButtonStyle;
+        private GUIStyle _removeButtonStyle;
+        private GUIStyle _neutralActionButtonStyle;
+        private GUIStyle _primaryButtonStyle;
 
         private void Start()
         {
@@ -367,8 +381,6 @@ namespace PoliSim.UI
             _sliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
             _boxStyle = new GUIStyle(GUI.skin.box);
             _tabButtonStyle = new GUIStyle(GUI.skin.button);
-            _tabButtonSelectedStyle = new GUIStyle(GUI.skin.button) { fontStyle = FontStyle.Bold };
-            _tabButtonSelectedStyle.normal.textColor = Color.yellow;
             _eventBannerStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = true };
             _eventBannerStyle.normal.textColor = new Color(1f, 0.65f, 0f);
             _gameOverStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = true };
@@ -403,11 +415,42 @@ namespace PoliSim.UI
 
             _tabButtonStyle.fontSize = tabFontSize;
             _tabButtonStyle.fixedHeight = tabButtonHeight;
-            _tabButtonSelectedStyle.fontSize = tabFontSize;
-            _tabButtonSelectedStyle.fixedHeight = tabButtonHeight;
 
             _eventBannerStyle.fontSize = bannerFontSize;
             _gameOverStyle.fontSize = bannerFontSize;
+
+            // Rebuilt every frame (cheap - a handful of GUIStyle clones reusing cached swatch
+            // textures, not per-frame texture allocation) so they always match _tabButtonStyle/
+            // _buttonStyle's just-updated size above, rather than drifting stale from whatever size
+            // they happened to be cloned at in InitializeStylesIfNeeded.
+            _implementButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Implement);
+            _removeButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Remove);
+            _neutralActionButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Neutral);
+            _primaryButtonStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
+        }
+
+        /// <summary>Maps a right-column tab to the system area whose hue it should be tinted with (see UiPalette.SystemArea) - Recent Turns is informational, not a system area, so it stays Neutral.</summary>
+        private static UiPalette.SystemArea GetTabArea(RightPanelTab tab)
+        {
+            switch (tab)
+            {
+                case RightPanelTab.TradeAndSpending: return UiPalette.SystemArea.Trade;
+                case RightPanelTab.TaxPolicy: return UiPalette.SystemArea.Fiscal;
+                case RightPanelTab.SpendingPolicy: return UiPalette.SystemArea.Fiscal;
+                case RightPanelTab.WelfarePolicy: return UiPalette.SystemArea.Welfare;
+                case RightPanelTab.SectorPolicy: return UiPalette.SystemArea.Sectors;
+                case RightPanelTab.SwfPolicy: return UiPalette.SystemArea.SovereignWealth;
+                default: return UiPalette.SystemArea.Neutral;
+            }
+        }
+
+        /// <summary>One-off tinted label (GUI.color multiplies the style's own text color, restored immediately after) - used for every signed-delta readout in the UI so its color always reflects UiPalette.GetDeltaColor rather than a hand-picked one-time color.</summary>
+        private static void DrawColoredLabel(string text, GUIStyle style, Color color)
+        {
+            Color previous = GUI.color;
+            GUI.color = color;
+            GUILayout.Label(text, style);
+            GUI.color = previous;
         }
 
         /// <summary>Above the dashboard: a game-over banner takes priority (the game has effectively ended), otherwise the current turn's event (if any) as "BREAKING: ...".</summary>
@@ -444,7 +487,7 @@ namespace PoliSim.UI
 
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label($"{_playerCountry.Name} - Turn {_simulationManager.CurrentTurn}", _headerStyle);
-            GUILayout.Label($"GDP: {state.GDP:F1}  ({_lastGrowthPercent:+0.00;-0.00;0}%)", _labelStyle);
+            DrawColoredLabel($"GDP: {state.GDP:F1}  ({_lastGrowthPercent:+0.00;-0.00;0}%)", _labelStyle, UiPalette.GetDeltaColor(_lastGrowthPercent, higherIsBetter: true));
             GUILayout.Label($"Unemployment: {state.Unemployment:F2}%", _labelStyle);
             GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
             GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
@@ -562,7 +605,7 @@ namespace PoliSim.UI
             }
 
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Federal Reserve", _headerStyle);
+            DrawColoredLabel("Federal Reserve", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
 
             FedChair chair = _playerCountry.CurrentFedChair;
             GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
@@ -586,7 +629,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
-            if (GUILayout.Button($"Appoint {candidate.Name}", _tabButtonStyle))
+            if (GUILayout.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
             {
                 _playerCountry.CurrentFedChair = candidate;
                 _fedChairCandidates = null;
@@ -631,6 +674,8 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawCrimeJusticeControls()
         {
+            DrawColoredLabel("Crime & Justice", _labelStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
+
             float draftPoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
             GUILayout.Label($"Police Funding: {draftPoliceFunding:F0}", _labelStyle);
             _policeFundingInput = GUILayout.HorizontalSlider(draftPoliceFunding, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
@@ -655,6 +700,8 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawLaborPolicyControls()
         {
+            DrawColoredLabel("Labor Policy", _labelStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
+
             float draftPaidLeave = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
             GUILayout.Label($"Paid Family Leave: {draftPaidLeave:F0} weeks", _labelStyle);
             _paidFamilyLeaveWeeksInput = GUILayout.HorizontalSlider(draftPaidLeave, MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, _sliderStyle, _sliderThumbStyle);
@@ -709,14 +756,17 @@ namespace PoliSim.UI
             GUILayout.Label("Estimated Effects This Turn (±5-10% margin of error)", _headerStyle);
             GUILayout.Label("Projection only, not a guarantee - actual results after you Advance Turn may differ.", _labelStyle);
 
-            GUILayout.Label($"GDP Growth: {_cachedGdpGrowthText}", _labelStyle);
-            GUILayout.Label($"Unemployment: {_cachedUnemploymentText}", _labelStyle);
-            GUILayout.Label($"Inflation: {_cachedInflationText}", _labelStyle);
-            GUILayout.Label($"Approval: {_cachedApprovalText}", _labelStyle);
-            GUILayout.Label($"Poverty Rate: {_cachedPovertyRateText}", _labelStyle);
-            GUILayout.Label($"Labor Force Participation: {_cachedLaborForceParticipationRateText}", _labelStyle);
-            GUILayout.Label($"Crime Index: {_cachedCrimeIndexText}", _labelStyle);
-            GUILayout.Label($"Net Budget Impact: {_cachedNetBudgetText}", _labelStyle);
+            // Each line's color follows UiPalette's single green-good/red-bad convention, honoring
+            // which direction is actually good for that specific stat (e.g. Unemployment/Inflation/
+            // Poverty/Crime falling is the GOOD direction, the opposite of GDP/Approval/LFP rising).
+            DrawColoredLabel($"GDP Growth: {_cachedGdpGrowthText}", _labelStyle, UiPalette.GetDeltaColor(_cachedGdpGrowthPercentRaw, higherIsBetter: true));
+            DrawColoredLabel($"Unemployment: {_cachedUnemploymentText}", _labelStyle, UiPalette.GetDeltaColor(_cachedUnemploymentChangeRaw, higherIsBetter: false));
+            DrawColoredLabel($"Inflation: {_cachedInflationText}", _labelStyle, UiPalette.GetDeltaColor(_cachedInflationChangeRaw, higherIsBetter: false));
+            DrawColoredLabel($"Approval: {_cachedApprovalText}", _labelStyle, UiPalette.GetDeltaColor(_cachedApprovalChangeRaw, higherIsBetter: true));
+            DrawColoredLabel($"Poverty Rate: {_cachedPovertyRateText}", _labelStyle, UiPalette.GetDeltaColor(_cachedPovertyRateChangeRaw, higherIsBetter: false));
+            DrawColoredLabel($"Labor Force Participation: {_cachedLaborForceParticipationRateText}", _labelStyle, UiPalette.GetDeltaColor(_cachedLaborForceParticipationRateChangeRaw, higherIsBetter: true));
+            DrawColoredLabel($"Crime Index: {_cachedCrimeIndexText}", _labelStyle, UiPalette.GetDeltaColor(_cachedCrimeIndexChangeRaw, higherIsBetter: false));
+            DrawColoredLabel($"Net Budget Impact: {_cachedNetBudgetText}", _labelStyle, UiPalette.GetDeltaColor(_cachedNetBudgetImpactRaw, higherIsBetter: true));
         }
 
         /// <summary>True if no preview has been computed yet, the turn has advanced since the last one was, or any slider's value (including any tax line's requested rate change) differs from the snapshot the cached preview was computed from.</summary>
@@ -870,6 +920,12 @@ namespace PoliSim.UI
             _cachedCrimeIndexText = FormatEstimate(preview.CrimeIndexChange, " pts");
             _cachedSwfContributionText = FormatEstimate(preview.SwfContributionEstimate, " units");
             _cachedSwfReturnsText = FormatEstimate(preview.SwfReturnsEstimate, " units");
+            _cachedInflationChangeRaw = preview.InflationChange;
+            _cachedPovertyRateChangeRaw = preview.PovertyRateChange;
+            _cachedLaborForceParticipationRateChangeRaw = preview.LaborForceParticipationRateChange;
+            _cachedCrimeIndexChangeRaw = preview.CrimeIndexChange;
+            _cachedNetBudgetImpactRaw = preview.NetBudgetImpact;
+            _cachedSwfReturnsEstimateRaw = preview.SwfReturnsEstimate;
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
             _cachedTariffRateChangeInput = _tariffRateChangeInput;
@@ -938,7 +994,7 @@ namespace PoliSim.UI
 
         private void DrawAdvanceTurnButton()
         {
-            if (GUILayout.Button("Advance Turn", _buttonStyle))
+            if (GUILayout.Button("Advance Turn", _primaryButtonStyle))
             {
                 AdvanceTurn();
             }
@@ -1244,9 +1300,12 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
         }
 
+        /// <summary>Each tab is tinted by its own SystemArea (see UiPalette/GetTabArea) - selected uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab reads as visibly "lit up" in its own area's hue rather than just bold+yellow text.</summary>
         private void DrawRightColumnTabButton(string label, RightPanelTab tab)
         {
-            GUIStyle style = _rightPanelTab == tab ? _tabButtonSelectedStyle : _tabButtonStyle;
+            UiPalette.SystemArea area = GetTabArea(tab);
+            bool selected = _rightPanelTab == tab;
+            GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
             if (GUILayout.Button(label, style))
             {
                 _rightPanelTab = tab;
@@ -1288,8 +1347,8 @@ namespace PoliSim.UI
         {
             EconomyState state = _playerCountry.State;
 
-            GUILayout.Label("Trade", _headerStyle);
-            GUILayout.Label($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle);
+            DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
+            DrawColoredLabel($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
             GUILayout.Space(6f);
 
             GUILayout.Label($"General Base Tariff Rate: {_playerCountry.BaseTariffRate:F2}% (applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _labelStyle);
@@ -1331,7 +1390,7 @@ namespace PoliSim.UI
             GUILayout.BeginHorizontal();
             if (link.HasPlayerTariffOverride)
             {
-                if (GUILayout.Button("Reset to Default", _tabButtonStyle, GUILayout.Width(buttonWidth)))
+                if (GUILayout.Button("Reset to Default", _removeButtonStyle, GUILayout.Width(buttonWidth)))
                 {
                     // Reset is immediate (a structural on/off, like TaxLine.IsImplemented), not a
                     // this-turn delta - the preview cache is invalidated right away so it reflects
@@ -1348,7 +1407,7 @@ namespace PoliSim.UI
             }
             else
             {
-                if (GUILayout.Button("Set Override", _tabButtonStyle, GUILayout.Width(buttonWidth)))
+                if (GUILayout.Button("Set Override", _implementButtonStyle, GUILayout.Width(buttonWidth)))
                 {
                     // Enabling is immediate too - starts the override at today's effective rate
                     // (rather than 0) so turning it on never itself changes the tariff; the slider
@@ -1384,7 +1443,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Welfare Program Cost: {report.WelfareCost:F1}", _labelStyle);
             GUILayout.Label($"Tariff Revenue Collected: {report.TariffRevenue:F1}", _labelStyle);
             GUILayout.Space(6f);
-            GUILayout.Label($"Net (matches this turn's Budget change): {net:+0.0;-0.0;0}", _headerStyle);
+            DrawColoredLabel($"Net (matches this turn's Budget change): {net:+0.0;-0.0;0}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
         }
 
         /// <summary>Every TaxType for the player's country: an Implement/Remove toggle (immediate - see DrawTaxLineRow) plus, only while implemented, a slider that directly sets this turn's target rate.</summary>
@@ -1395,7 +1454,7 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _taxPolicyScrollPosition = GUILayout.BeginScrollView(_taxPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
-            GUILayout.Label("Tax Policy", _headerStyle);
+            DrawColoredLabel("Tax Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             GUILayout.Label("Implement or remove a tax, and (while implemented) drag its rate directly to the target you want.", _labelStyle);
             GUILayout.Space(8f);
 
@@ -1418,7 +1477,8 @@ namespace PoliSim.UI
             GUILayout.Label(taxLine.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
 
             string toggleLabel = taxLine.IsImplemented ? "Remove" : "Implement";
-            if (GUILayout.Button(toggleLabel, _tabButtonStyle, GUILayout.Width(buttonWidth)))
+            GUIStyle toggleStyle = taxLine.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
+            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth)))
             {
                 // Implement/Remove is immediate (a structural on/off, not a this-turn delta) - the
                 // preview cache is invalidated right away rather than waiting for the usual
@@ -1452,7 +1512,7 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _welfarePolicyScrollPosition = GUILayout.BeginScrollView(_welfarePolicyScrollPosition, GUILayout.Height(scrollHeight));
 
-            GUILayout.Label("Welfare Policy", _headerStyle);
+            DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
             GUILayout.Label("Implement or remove a welfare program, and (while implemented) drag its generosity directly to the target you want.", _labelStyle);
             GUILayout.Space(8f);
 
@@ -1475,7 +1535,8 @@ namespace PoliSim.UI
             GUILayout.Label(welfareProgram.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
 
             string toggleLabel = welfareProgram.IsImplemented ? "Remove" : "Implement";
-            if (GUILayout.Button(toggleLabel, _tabButtonStyle, GUILayout.Width(buttonWidth)))
+            GUIStyle toggleStyle = welfareProgram.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
+            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth)))
             {
                 // Implement/Remove is immediate (a structural on/off, not a this-turn delta) - the
                 // preview cache is invalidated right away rather than waiting for the usual
@@ -1514,18 +1575,35 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _sectorPolicyScrollPosition = GUILayout.BeginScrollView(_sectorPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
-            GUILayout.Label("Economic Sectors", _headerStyle);
+            DrawColoredLabel("Economic Sectors", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
             GUILayout.Label("Output/Employment/the sector's own metric are descriptive only in this pass - subsidy and regulation nudge them, but they don't feed back into GDP/Unemployment.", _labelStyle);
             GUILayout.Space(8f);
 
+            // Measured (not guessed) against _headerStyle - the style the name column is actually
+            // drawn in - since _headerStyle's font is both bigger and bolder than _labelStyle's, a
+            // width budget borrowed from _labelStyle's own metrics (the original bug here) undersizes
+            // the column for the longest name ("Manufacturing"), which then wraps and collides with
+            // the adjacent stats text sharing the same horizontal row.
+            float sectorNameColumnWidth = GetSectorNameColumnWidth();
             foreach (Sector sector in _playerCountry.Sectors)
             {
-                DrawSectorRow(sector);
+                DrawSectorRow(sector, sectorNameColumnWidth);
                 GUILayout.Space(10f);
             }
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>Widest SectorType name as rendered in _headerStyle (the style DrawSectorRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached) since _headerStyle's font size itself changes every frame in RescaleStylesToScreen as the window resizes.</summary>
+        private float GetSectorNameColumnWidth()
+        {
+            float widest = 0f;
+            foreach (SectorType type in System.Enum.GetValues(typeof(SectorType)))
+            {
+                widest = Mathf.Max(widest, _headerStyle.CalcSize(new GUIContent(type.ToString())).x);
+            }
+            return widest + 12f;
         }
 
         /// <summary>The sector-specific metric's label, matching Sector.SectorMetric's per-Type real-world meaning (see Sector.cs).</summary>
@@ -1541,12 +1619,10 @@ namespace PoliSim.UI
             }
         }
 
-        private void DrawSectorRow(Sector sector)
+        private void DrawSectorRow(Sector sector, float nameColumnWidth)
         {
-            float labelWidth = _labelStyle.fontSize * 10f;
-
             GUILayout.BeginHorizontal();
-            GUILayout.Label(sector.Type.ToString(), _headerStyle, GUILayout.Width(labelWidth));
+            GUILayout.Label(sector.Type.ToString(), _headerStyle, GUILayout.Width(nameColumnWidth));
             GUILayout.Label(
                 $"Output {sector.OutputShareOfGdp:F1}% of GDP | Employment {sector.EmploymentShare:F1}% | {GetSectorMetricLabel(sector.Type)} {sector.SectorMetric:F1}",
                 _labelStyle);
@@ -1579,11 +1655,12 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _swfPolicyScrollPosition = GUILayout.BeginScrollView(_swfPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
-            GUILayout.Label("Sovereign Wealth Fund", _headerStyle);
+            DrawColoredLabel("Sovereign Wealth Fund", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth));
 
             SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
             string toggleLabel = fund == null ? "Create Fund" : "Dissolve Fund";
-            if (GUILayout.Button(toggleLabel, _tabButtonStyle))
+            GUIStyle toggleStyle = fund == null ? _implementButtonStyle : _removeButtonStyle;
+            if (GUILayout.Button(toggleLabel, toggleStyle))
             {
                 _playerCountry.SovereignWealthFund = fund == null ? new SovereignWealthFund() : null;
                 RecomputePolicyPreview();
@@ -1601,7 +1678,10 @@ namespace PoliSim.UI
             GUILayout.Label($"Total Assets: {fund.TotalAssets:F1}", _labelStyle);
             float netGovernmentPosition = _playerCountry.State.GovernmentDebt - fund.TotalAssets;
             GUILayout.Label($"Government Debt (gross): {_playerCountry.State.GovernmentDebt:F1}  |  Net Government Position (debt minus fund assets): {netGovernmentPosition:F1}", _labelStyle);
-            GUILayout.Label($"Estimated this turn - Contribution: {_cachedSwfContributionText}, Returns: {_cachedSwfReturnsText}", _labelStyle);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Estimated this turn - Contribution: {_cachedSwfContributionText}, Returns: ", _labelStyle, GUILayout.ExpandWidth(false));
+            DrawColoredLabel(_cachedSwfReturnsText, _labelStyle, UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true));
+            GUILayout.EndHorizontal();
             GUILayout.Space(8f);
 
             float draftContributionRate = GetSwfContributionRateInput(fund.ContributionRatePercent);
@@ -1651,7 +1731,7 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _spendingPolicyScrollPosition = GUILayout.BeginScrollView(_spendingPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
-            GUILayout.Label("Spending Policy", _headerStyle);
+            DrawColoredLabel("Spending Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             GUILayout.Label("Each line's slider is a percentage change of its OWN current amount, not a flat dollar delta. Mandatory programs have a narrower range and hit approval harder per relative size - entitlement reform is politically costly.", _labelStyle);
             GUILayout.Space(8f);
 

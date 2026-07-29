@@ -26,14 +26,7 @@ namespace PoliSim.UI
         /// <summary>Lighter/translucent, drawn dashed - the projected segment must read as "estimate, not committed" the same way the existing live policy preview text already does, not as a real recorded data point.</summary>
         private static readonly Color ProjectedLineColor = new Color(0.35f, 0.85f, 0.45f, 0.45f);
 
-        /// <summary>Same green/red convention as the rest of GameController's directional coloring (e.g. approval up = green, debt up = red) - which raw sign counts as "good" is caller-supplied per stat via Draw's higherIsBetter, since a rising line means opposite things for GDP versus Unemployment.</summary>
-        private static readonly Color PositiveChangeColor = new Color(0.35f, 0.85f, 0.45f, 1f);
-        private static readonly Color NegativeChangeColor = new Color(0.9f, 0.35f, 0.35f, 1f);
-        private static readonly Color NeutralChangeColor = new Color(0.75f, 0.75f, 0.75f, 1f);
         private static readonly Color AxisLabelColor = new Color(0.65f, 0.65f, 0.65f, 1f);
-
-        /// <summary>Below this absolute percent, a first-to-last change reads as "no real change" (neutral gray) rather than an arbitrarily-signed green/red on essentially noise.</summary>
-        private const float NeutralChangeThresholdPercent = 0.05f;
 
         private Texture2D _texture;
         private readonly List<float> _drawnHistory = new List<float>();
@@ -107,19 +100,7 @@ namespace PoliSim.UI
                     ? (Mathf.Approximately(last, 0f) ? 0f : 100f * Mathf.Sign(last))
                     : (last - first) / Mathf.Abs(first) * 100f;
 
-                Color color;
-                if (Mathf.Abs(percentChange) < NeutralChangeThresholdPercent)
-                {
-                    color = NeutralChangeColor;
-                }
-                else
-                {
-                    bool isPositiveChange = percentChange > 0f;
-                    bool isGoodChange = higherIsBetter ? isPositiveChange : !isPositiveChange;
-                    color = isGoodChange ? PositiveChangeColor : NegativeChangeColor;
-                }
-
-                _changeLabelStyle.normal.textColor = color;
+                _changeLabelStyle.normal.textColor = UiPalette.GetDeltaColor(percentChange, higherIsBetter);
                 GUILayout.Label($"{percentChange:+0.0;-0.0;0}%", _changeLabelStyle, GUILayout.ExpandWidth(false));
             }
 
