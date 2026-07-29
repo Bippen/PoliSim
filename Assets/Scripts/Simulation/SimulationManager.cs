@@ -271,6 +271,12 @@ namespace PoliSim.Simulation
                     : PolicyDecision.None();
 
                 ApplyDomesticPolicy(country, decision, tariffRevenueByCountry[country.Id]);
+
+                // Recorded here (once per real, committed turn) rather than inside
+                // ApplyDomesticPolicy itself, so PreviewTurn's throwaway clone - which calls
+                // ApplyDomesticPolicy's constituent steps directly, not this loop - never appends a
+                // phantom data point into the real history.
+                country.History.Append(country.State, country.CurrencyZone.InterestRate);
             }
 
             CurrentTurn++;

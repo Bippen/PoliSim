@@ -333,6 +333,13 @@ namespace PoliSim.Data
         /// </summary>
         public SovereignWealthFund SovereignWealthFund;
 
+        /// <summary>
+        /// Rolling numeric history of this country's key tracked stats, for UI graphs - see
+        /// StatHistory.cs. Appended once per turn by SimulationManager.AdvanceTurn, kept entirely
+        /// separate from the existing Recent Turns text log.
+        /// </summary>
+        public StatHistory History = new StatHistory();
+
         public Country() { }
 
         public Country(
