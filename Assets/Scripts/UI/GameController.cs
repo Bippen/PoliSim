@@ -199,6 +199,20 @@ namespace PoliSim.UI
         private string _cachedUnemploymentText;
         private string _cachedInflationText;
         private string _cachedApprovalText;
+
+        // Raw (unformatted, no cosmetic margin) numeric counterparts of the three headline preview
+        // figures above, kept only for the Phase 2 dashboard graphs' projected-point calculation -
+        // FormatEstimate's margin is a display-only flourish that has no business perturbing what a
+        // graph draws. Set alongside the formatted text fields in RecomputePolicyPreview.
+        private float _cachedGdpGrowthPercentRaw;
+        private float _cachedUnemploymentChangeRaw;
+        private float _cachedApprovalChangeRaw;
+
+        // One GraphRenderer per headline dashboard stat - see GraphRenderer.cs. Each auto-scales its
+        // own Y-axis, so instances are never shared across stats with different natural ranges.
+        private readonly GraphRenderer _gdpGraph = new GraphRenderer();
+        private readonly GraphRenderer _unemploymentGraph = new GraphRenderer();
+        private readonly GraphRenderer _approvalGraph = new GraphRenderer();
         private string _cachedNetBudgetText;
         private string _cachedPovertyRateText;
         private string _cachedLaborForceParticipationRateText;
@@ -458,7 +472,38 @@ namespace PoliSim.UI
                 GUILayout.Label($"Net Government Position (debt minus fund assets): {netGovernmentPosition:F1}", _labelStyle);
             }
             GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
+
+            GUILayout.Space(10f);
+            DrawHeadlineGraphs(state);
+
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Phase 2 of the UI revamp's dashboard graphs - proves the GraphRenderer pattern on the
+        /// three headline stats before rolling it out further. Each graph reads its country's own
+        /// StatHistory (Phase 1) and, once a policy preview has been computed at least once this
+        /// session, extends one point further using that PreviewTurn estimate - not a separate
+        /// hand-rolled forecast, the same "reuse the real preview math" idiom the existing text
+        /// preview already established.
+        /// </summary>
+        private void DrawHeadlineGraphs(EconomyState state)
+        {
+            float? projectedGdp = null;
+            float? projectedUnemployment = null;
+            float? projectedApproval = null;
+
+            if (_hasCachedPreview)
+            {
+                projectedGdp = state.GDP * (1f + _cachedGdpGrowthPercentRaw / 100f);
+                projectedUnemployment = state.Unemployment + _cachedUnemploymentChangeRaw;
+                projectedApproval = state.ApprovalRating + _cachedApprovalChangeRaw;
+            }
+
+            StatHistory history = _playerCountry.History;
+            _gdpGraph.Draw("GDP (last 50 turns; dashed = next-turn estimate)", history.Gdp, projectedGdp, _labelStyle, higherIsBetter: true);
+            _unemploymentGraph.Draw("Unemployment (last 50 turns; dashed = next-turn estimate)", history.Unemployment, projectedUnemployment, _labelStyle, higherIsBetter: false);
+            _approvalGraph.Draw("Approval Rating (last 50 turns; dashed = next-turn estimate)", history.ApprovalRating, projectedApproval, _labelStyle, higherIsBetter: true);
         }
 
         /// <summary>Infrastructure Condition is a purely descriptive stat driven entirely by the existing Infrastructure spending category (see MacroSystem.ApplyInfrastructureCondition) - no new player-facing dial, so a single dashboard line is enough, the same "no dedicated tab needed" reasoning already applied to Minimum Wage/Crime & Justice's own small levers.</summary>
@@ -816,6 +861,9 @@ namespace PoliSim.UI
             _cachedUnemploymentText = FormatEstimate(preview.UnemploymentChange, " pts");
             _cachedInflationText = FormatEstimate(preview.InflationChange, " pts");
             _cachedApprovalText = FormatEstimate(preview.ApprovalChange, " pts");
+            _cachedGdpGrowthPercentRaw = preview.GdpGrowthPercent;
+            _cachedUnemploymentChangeRaw = preview.UnemploymentChange;
+            _cachedApprovalChangeRaw = preview.ApprovalChange;
             _cachedNetBudgetText = FormatEstimate(preview.NetBudgetImpact, " units");
             _cachedPovertyRateText = FormatEstimate(preview.PovertyRateChange, " pts");
             _cachedLaborForceParticipationRateText = FormatEstimate(preview.LaborForceParticipationRateChange, " pts");
