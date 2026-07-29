@@ -1426,6 +1426,18 @@ PoliSim.EditorTools.BatchSimulationRunner.Run -logFile <path> [-turns=N] [-scena
   process to exit on its own, then force-close it once that line appears. This is a real, unresolved
   limitation of running `BatchSimulationRunner` in this environment, not a simulation-code bug - it
   has no bearing on the correctness of any validation result obtained this way.
+- **A plausible contributing factor, noted but not yet investigated**: force-killing a hung Unity
+  process (the workaround above) leaves a `Temp/__Backupscenes/0.backup` behind, which the next
+  launch reloads on startup - observed during the UI revamp's Phase 2 screenshot attempts (automated
+  windowed, non-batch Play-mode runs, driven via a temporary Editor script), where the same "Start
+  Indexing on Editor startup" hang recurred across five consecutive attempts, at inconsistent points
+  in the lifecycle (sometimes before Play mode even started), independent of scenario workload -
+  including a run seeded with only 1 turn instead of 100, which hung at the identical point, ruling
+  out log/data volume as the cause. Whether the repeated force-kill -> backup-scene-reload cycle is
+  actually contributing (versus coincidence) is unconfirmed - worth investigating if automated
+  (non-batch, windowed) screenshot capture is needed again later. Not blocking: manual screenshots
+  taken by opening the Editor normally work fine, and this has no bearing on `BatchSimulationRunner`'s
+  own batch-mode validation runs, which don't exhibit this issue.
 
 ## Expanded Event Pool
 Queue item 1 of `ROADMAP_BRIEF.md` (the standing autonomous-work brief added this session): grows
