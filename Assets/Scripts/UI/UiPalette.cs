@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PoliSim.Data;
 using UnityEngine;
 
 namespace PoliSim.UI
@@ -90,6 +91,27 @@ namespace PoliSim.UI
         };
 
         public static Color GetAreaColor(SystemArea area) => AreaColors[area];
+
+        /// <summary>
+        /// Per-country identity color, single source of truth (moved here from MapRenderer so the
+        /// country-selection screen and the World Map tab can never drift apart on which color means
+        /// which country). USA reuses the Political hue - already established (the Federal Reserve/
+        /// elections tab). The other five have no individual tab of their own to reuse, so each is
+        /// assigned one of the remaining existing hues - an arbitrary but consistent pairing, not a
+        /// pre-existing one, chosen when the World Map first shipped.
+        /// </summary>
+        private static readonly Dictionary<CountryId, SystemArea> CountryAreas = new Dictionary<CountryId, SystemArea>
+        {
+            { CountryId.USA, SystemArea.Political },
+            { CountryId.Sweden, SystemArea.Trade },
+            { CountryId.Germany, SystemArea.Welfare },
+            { CountryId.France, SystemArea.Labor },
+            { CountryId.Italy, SystemArea.Sectors },
+            { CountryId.Poland, SystemArea.SovereignWealth },
+        };
+
+        public static SystemArea GetCountryArea(CountryId countryId) => CountryAreas[countryId];
+        public static Color GetCountryColor(CountryId countryId) => GetAreaColor(CountryAreas[countryId]);
 
         private static readonly Dictionary<Color, Texture2D> SwatchCache = new Dictionary<Color, Texture2D>();
 

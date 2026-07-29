@@ -77,23 +77,6 @@ namespace PoliSim.UI
             { CountryId.Italy, new Vector2(0.66f, 0.70f) },
         };
 
-        /// <summary>
-        /// Per-country node color - USA reuses the Political hue (already established: the Federal
-        /// Reserve/elections tab, and both earlier map iterations' own player-country marker). The
-        /// other five have no individual tab of their own to reuse, so each keeps the SAME pairing
-        /// assigned in the previous map iteration (an arbitrary but now-consistent choice, not a
-        /// pre-existing one) rather than picking again.
-        /// </summary>
-        private static readonly Dictionary<CountryId, UiPalette.SystemArea> CountryHighlightAreas = new Dictionary<CountryId, UiPalette.SystemArea>
-        {
-            { CountryId.USA, UiPalette.SystemArea.Political },
-            { CountryId.Sweden, UiPalette.SystemArea.Trade },
-            { CountryId.Germany, UiPalette.SystemArea.Welfare },
-            { CountryId.France, UiPalette.SystemArea.Labor },
-            { CountryId.Italy, UiPalette.SystemArea.Sectors },
-            { CountryId.Poland, UiPalette.SystemArea.SovereignWealth },
-        };
-
         private Texture2D _backgroundTexture;
         private Texture2D _circleTexture;
         private Texture2D _lineTexture;
@@ -170,7 +153,7 @@ namespace PoliSim.UI
             foreach (Country country in countries)
             {
                 Vector2 pixel = ToPixel(rect, CountryMapPositions[country.Id]);
-                Color nodeColor = UiPalette.GetAreaColor(CountryHighlightAreas[country.Id]);
+                Color nodeColor = UiPalette.GetCountryColor(country.Id);
                 float diameter = nodeDiameters[country.Id];
 
                 var nodeRect = new Rect(pixel.x - diameter * 0.5f, pixel.y - diameter * 0.5f, diameter, diameter);

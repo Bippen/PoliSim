@@ -30,7 +30,17 @@ namespace PoliSim.UI
             SwfPolicy
         }
 
-        private const CountryId PlayerCountryId = CountryId.USA;
+        // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
+        // player picks their country on a selector screen shown before the dashboard (see
+        // DrawCountrySelector/SelectPlayerCountry). Kept as a property with the SAME name every
+        // existing call site already used, so none of them needed to change - only the declaration
+        // itself did. _selectedPlayerCountryId is the actual source of truth for "has selection
+        // happened yet" (OnGUI gates the whole dashboard behind it); the property's fallback to USA
+        // is never actually observed by anything, since nothing that reads PlayerCountryId runs
+        // before selection.
+        private CountryId? _selectedPlayerCountryId;
+        private CountryId PlayerCountryId => _selectedPlayerCountryId ?? CountryId.USA;
+
         private const int MaxLogEntries = 10;
 
         /// <summary>This-turn PERCENTAGE-change slider range for a Discretionary SpendingLine - the same range for every category, but a percentage of that line's OWN Amount, so a $1B SBA line and an $850B Defense line move by proportionally (not identically) different dollar amounts. Must match SimulationManager.DiscretionaryPercentChangeRange.</summary>
@@ -298,13 +308,60 @@ namespace PoliSim.UI
         {
             SetupCameraBackground();
 
+            // World/SimulationManager are created immediately (the selector screen needs every
+            // country's Name/Id to exist) - only _playerCountry/_prevGdp wait for SelectPlayerCountry,
+            // since which country those refer to isn't known until the player picks.
             _world = WorldFactory.CreateDefault();
             _simulationManager = gameObject.AddComponent<SimulationManager>();
             _simulationManager.SetWorld(_world);
-
-            _playerCountry = _world.GetCountry(PlayerCountryId);
-            _prevGdp = _playerCountry.State.GDP;
             _previewRandom = new System.Random();
+        }
+
+        /// <summary>Commits the player's country choice from DrawCountrySelector - the one place _selectedPlayerCountryId is ever set.</summary>
+        private void SelectPlayerCountry(CountryId countryId)
+        {
+            _selectedPlayerCountryId = countryId;
+            _playerCountry = _world.GetCountry(countryId);
+            _prevGdp = _playerCountry.State.GDP;
+        }
+
+        /// <summary>
+        /// Country-selection task, Part 1: shown once, before the dashboard ever renders (see OnGUI's
+        /// gate). One button per country, colored with that country's own already-established
+        /// UiPalette identity (see UiPalette.GetCountryArea) - the SAME color the World Map tab uses
+        /// for that country's node, so a player's choice here reads consistently everywhere else in
+        /// the game. No turn has advanced yet at this point (AdvanceTurn is only ever reachable from
+        /// the post-selection dashboard), so picking a country has no cost/commitment beyond the
+        /// choice itself.
+        /// </summary>
+        private void DrawCountrySelector()
+        {
+            GUILayout.BeginArea(new Rect(0f, 0f, Screen.width, Screen.height));
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginVertical(GUILayout.Width(Screen.width * 0.4f));
+            GUILayout.Label("PoliSim", _headerStyle);
+            GUILayout.Label("Choose your country", _labelStyle);
+            GUILayout.Space(20f);
+
+            foreach (Country country in _world.Countries)
+            {
+                UiPalette.SystemArea area = UiPalette.GetCountryArea(country.Id);
+                GUIStyle style = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.TabSelected, area);
+                if (GUILayout.Button(country.Name, style))
+                {
+                    SelectPlayerCountry(country.Id);
+                }
+                GUILayout.Space(10f);
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndArea();
         }
 
         /// <summary>
@@ -330,6 +387,13 @@ namespace PoliSim.UI
         {
             InitializeStylesIfNeeded();
             RescaleStylesToScreen();
+
+            if (!_selectedPlayerCountryId.HasValue)
+            {
+                DrawCountrySelector();
+                return;
+            }
+
             bool hasPendingFedChairSelection = UpdateFedChairSelectionState();
 
             float marginX = Screen.width * ScreenMarginFraction;
@@ -706,7 +770,16 @@ namespace PoliSim.UI
                 }
                 else
                 {
-                    GUILayout.Label("This currency zone's interest rate is shared - see the Eurozone member setting it.", _labelStyle);
+                    // Country-selection task, Part 1: with PlayerCountryId now runtime-selectable, a
+                    // player CAN end up here as Germany/France/Italy, not just observe it as a read-
+                    // only note about someone else - the message names the OTHER Eurozone members
+                    // dynamically (excluding whichever one the player is currently playing), read-only
+                    // by design (per the task's explicit "don't change the shared-rate mechanic, it's
+                    // correct" direction) rather than looking broken or missing a control.
+                    GUILayout.Label(
+                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()} - no single member state can set it unilaterally, the same way the real ECB sets one rate for the whole currency union. This is read-only by design, not a missing feature.",
+                        _labelStyle);
+                    GUILayout.Label($"Current Eurozone Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
                 }
             }
 
@@ -717,6 +790,20 @@ namespace PoliSim.UI
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>Every OTHER country sharing the player's own CurrencyZone (reference equality, matching CurrencySystem.SharesCurrencyZoneWithOthers' own idiom - see that method), comma-joined - only meaningful when DrawFederalReserveTab has already confirmed the player's country is in a shared zone.</summary>
+        private string GetOtherEurozoneMemberNames()
+        {
+            var otherNames = new List<string>();
+            foreach (Country country in _world.Countries)
+            {
+                if (country.Id != _playerCountry.Id && country.CurrencyZone == _playerCountry.CurrencyZone)
+                {
+                    otherNames.Add(country.Name);
+                }
+            }
+            return string.Join(" and ", otherNames);
         }
 
         private void DrawFedChairCandidateButton(FedChair candidate)
