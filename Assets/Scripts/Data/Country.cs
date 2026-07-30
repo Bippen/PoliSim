@@ -488,6 +488,17 @@ namespace PoliSim.Data
         public Dictionary<CabinetPortfolio, CabinetMinister> CabinetMinisters = new Dictionary<CabinetPortfolio, CabinetMinister>();
 
         /// <summary>
+        /// Political Systems Overhaul Part B (Parliament), Master Sequence step 4: this country's
+        /// hemicycle seat count per PartyArchetype, summing to ParliamentConstants.TotalSeats. Seeded
+        /// at construction from PartyArchetypeData.GetInitialSeats() (WorldFactory), then updated once
+        /// per turn by ParliamentSystem.UpdateSeats for EVERY country (not player-gated like
+        /// CabinetMinisters - seat composition is derived purely from each country's own
+        /// ApprovalRating, not a player action, so there's no "doesn't exist until acted on" reason to
+        /// leave NPC countries empty the way Cabinet appointments do).
+        /// </summary>
+        public Dictionary<PartyArchetype, int> ParliamentSeats = new Dictionary<PartyArchetype, int>();
+
+        /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see
         /// StatHistory.cs. Appended once per turn by SimulationManager.AdvanceTurn, kept entirely
         /// separate from the existing Recent Turns text log.

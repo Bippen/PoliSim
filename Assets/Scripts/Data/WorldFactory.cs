@@ -640,6 +640,15 @@ namespace PoliSim.Data
             var world = new World();
             world.Countries.AddRange(new[] { usa, sweden, germany, france, italy, poland });
             world.TradeBlocs.Add(europeanUnion);
+
+            // Political Systems Overhaul Part B (Parliament), Master Sequence step 4: every country
+            // starts at ApprovalRating 50, so PartyArchetypeData.GetInitialSeats() (which assumes
+            // exactly that) is a correct seed for all six, not just a convenient shortcut for one.
+            foreach (Country country in world.Countries)
+            {
+                country.ParliamentSeats = PartyArchetypeData.GetInitialSeats();
+            }
+
             return world;
         }
 

@@ -27,7 +27,8 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 - **Master Sequence step 2 (Political Systems Overhaul Part C — UI/graph restyling and political visualization): DONE (2026-07-30).** Graph threshold/target lines (NAIRU, comfortable debt level) and "last N changes" pagination (`StatHistory.MaxEntries` raised 50 → 250), a political compass (auto-scaled to observed variance after a first-pass clustering bug), and five demographic pie charts — see "UI/Graph Restyling and Political Visualization" in `CLAUDE.md` for the full writeup, the two bugs found and fixed during the UI smoke test, and validation (single-scenario smoke check, zero new anomaly types).
 - **Master Sequence step 3 (Continuous Time Migration Phase 0 — calendar, speed control, short-term gameplay scaffolding): DONE (2026-07-30).** Real in-game calendar with Pause/1x/2x/3x speed controls automatically firing the existing, unchanged 121-day turn cadence; a selectable-horizon live Policy Preview; multi-resolution `StatHistory`; and one small Foreign Policy Meetings interrupt slice (law-passing and "ongoing-process budgets" both explicitly deferred/superseded) — see "Continuous Time Migration Phase 0 (Master Sequence step 3)" in `CLAUDE.md` for the full writeup, the tick-equivalence proof, and validation (100-turn smoke check, UI screenshot smoke test).
 - **Continuous Time Migration Phases 1-5: not started.** Full plan below.
-- **Political Systems Overhaul Part B: not started.** Full plan below.
+- **Master Sequence step 4 (Political Systems Overhaul Part B, PILOT — Tax Policy tab only): DONE (2026-07-30).** Four generic fictional party archetypes with seats derived from ApprovalRating (bounded inertia plus jitter — a stated proposal resolving this item's own Open Question); the full draft → introduce → 21-day wait → pass/fail flow gates Tax Policy specifically (a passed TaxBill becomes the new standing rates, a failed one costs a modest approval hit and isn't lost); pass/fail scored via seat-weighted FiscalStance alignment against the bill's net direction (a second stated proposal). Federal Reserve/Eurozone exemption needed zero new code. Validated via the full 30-combination real-Unity matrix (15 scenarios × 100/500 turns, including a new worst-case `parliamentstress` scenario — zero hard anomalies, zero USA-specific anomalies) plus a screenshot smoke test — see "Parliament PILOT (Political Systems Overhaul Part B), Master Sequence step 4" in `CLAUDE.md` for the full writeup.
+- **Political Systems Overhaul Part B, full rollout (Master Sequence step 5): not started.** Full plan below.
 - **No Round 4 has been scoped.** Per the sequencing below, don't scope one yet — new features should be built against the post-Parliament interaction model, not the current one, to avoid retrofitting.
 
 ---
@@ -39,7 +40,7 @@ This is the one authoritative order, replacing whatever each original document s
 1. **Political Systems Overhaul — Part A (Cabinet). DONE (2026-07-30) — see "Cabinet (Political Systems Overhaul Part A)" in `CLAUDE.md`.** No dependencies. Full spec in Part A below.
 2. **Political Systems Overhaul — Part C (UI/graph restyling). DONE (2026-07-30) — see "UI/Graph Restyling and Political Visualization" in `CLAUDE.md`.** No dependencies. Full spec in Part C below.
 3. **Continuous Time Migration — Phase 0 (calendar, speed control, short-term gameplay scaffolding). DONE (2026-07-30) — see "Continuous Time Migration Phase 0 (Master Sequence step 3)" in `CLAUDE.md`.** No dependencies beyond what already exists. Full spec below. Keeps all existing economic math at its current cadence — this phase is purely the calendar/UI layer.
-4. **Political Systems Overhaul — Part B, PILOT ONLY (Tax Policy tab).** Depends on step 3. Prove the full draft → introduce → vote → pass/fail flow end-to-end on one tab before touching any other. Full spec below.
+4. **Political Systems Overhaul — Part B, PILOT ONLY (Tax Policy tab). DONE (2026-07-30) — see "Parliament PILOT (Political Systems Overhaul Part B), Master Sequence step 4" in `CLAUDE.md`.** Depends on step 3. Prove the full draft → introduce → vote → pass/fail flow end-to-end on one tab before touching any other. Full spec below.
 5. **Political Systems Overhaul — Part B, full rollout** to the remaining seven tabs, only once step 4 is validated.
 6. **Resume Roadmap work (a new Round 4)** — only scope this once step 5 is done, so anything new is built directly against the gated-legislation model from day one.
 7. **Continuous Time Migration — Phases 1 through 5** (the actual daily-granularity conversion of each system's math, safest-first, core macro engine last). This is deliberately positioned after the political-systems work — it's a separate concern (simulation granularity, not who can change policy) and touching the same files for two unrelated reasons in the same window is worth avoiding.
@@ -158,6 +159,15 @@ Each portfolio's competence effect lands on an existing system, folded into that
 
 ## Part B — Parliament (MASTER SEQUENCE STEPS 4 and 5; BLOCKED until Continuous Time Phase 0)
 
+**Step 4 (PILOT, Tax Policy only) result: DONE (2026-07-30).** Both Open Questions below resolved as
+stated proposals, not silent guesses: seats derive from ApprovalRating (bounded inertia + jitter, see
+CLAUDE.md for the exact per-archetype constants) and pass/fail is scored via seat-weighted FiscalStance
+alignment against the bill's net direction. The gated-legislation model (draft → introduce → 21-day
+wait → pass/fail) is live on Tax Policy only; Fed/Eurozone exemption required no code (the interest-rate
+lever was never a gated tab). Validated via the full 30-combination real-Unity matrix plus a screenshot
+smoke test — full writeup: "Parliament PILOT (Political Systems Overhaul Part B), Master Sequence step
+4" in `CLAUDE.md`. Step 5 (full rollout to the remaining seven tabs) has NOT started.
+
 **Parties**: small number of original, generic, clearly-fictional archetypes per country (e.g. "Progressive Alliance," "Conservative Union") — never real party names.
 
 **Seats**: derive from ApprovalRating plus bounded inertia/randomness — exact formula is an Open Question, worth designing once the pilot's overall flow is proven rather than guessed at now.
@@ -208,7 +218,6 @@ real rendering defect, before any unnecessary fix was attempted.
 
 ## Open Questions (live — add new entries here as they come up; do not resolve silently)
 
-- **Parliament seat calculation formula** — deferred by design; worth a real pass once the pilot's overall flow is proven.
 - **Cabinet appointment confirmation** — should appointing a minister also require a parliamentary vote, or does the player retain unilateral appointment power? Not yet decided.
 - **SWF emergency drawdown fast-track** — if SWF drawdown becomes subject to the same gating as everything else, a genuine emergency response could get stuck behind a multi-week process, undermining its purpose. Worth an exemption similar to the Fed/Eurozone carve-out. Not yet decided.
 - **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not required for a first pass.

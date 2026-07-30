@@ -41,7 +41,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress", "demographicpolicystress", "cabinetstress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress", "demographicpolicystress", "cabinetstress", "parliamentstress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -113,6 +113,29 @@ namespace PoliSim.Testing
                         .OrderByDescending(o => Mathf.Abs(o.CrimeIndexShock) + Mathf.Abs(o.PovertyRateShock) + Mathf.Abs(o.BudgetImpact) + Mathf.Abs(o.ApprovalEffect))
                         .First();
                     simulationManager.ResolveCabinetDecision(CountryId.USA, portfolio, decision, worstCaseOption);
+                }
+
+                // Political Systems Overhaul Part B PILOT: TaxBill resolution is day-driven
+                // (SimulationManager.AdvanceLegislativeDay), not turn-driven, so this harness's own
+                // turn-only loop (unlike GameController's real Update() day loop) has to explicitly
+                // step it - CurrentDate itself is deliberately NOT advanced here (AdvanceLegislativeDay
+                // doesn't read it, only DaysRemaining), keeping every other scenario's behavior
+                // byte-for-byte unchanged. Worst-case sustained stress: always keep a maximal
+                // every-tax-at-its-own-ceiling bill in flight for the whole 121-day turn, immediately
+                // re-introducing the instant the previous one resolves (pass or fail) - repeatedly
+                // stacking the largest possible one-time tax-hike approval penalty and revenue swing
+                // this mechanic can produce, the same "always the most extreme option" stress
+                // philosophy cabinetstress already established for Cabinet's own interactive channel.
+                if (scenario == "parliamentstress")
+                {
+                    for (int day = 0; day < SimulationManager.DaysPerTurn; day++)
+                    {
+                        if (simulationManager.GetPendingTaxBill(CountryId.USA) == null)
+                        {
+                            simulationManager.IntroduceTaxBill(CountryId.USA, BuildParliamentStressBillLines(usa));
+                        }
+                        simulationManager.AdvanceLegislativeDay(CountryId.USA);
+                    }
                 }
 
                 bool shouldLogThisTurn = logEveryTurn || turn == 1 || turn == turnsToRun || turn % 25 == 0;
@@ -190,6 +213,13 @@ namespace PoliSim.Testing
                     return BuildDemographicPolicyStressDecision(turn);
                 case "cabinetstress":
                     return BuildCabinetStressDecision(usa, turn);
+                case "parliamentstress":
+                    // Political Systems Overhaul Part B PILOT: this scenario's actual stress is
+                    // applied via TaxBill (see RunOne's parliamentstress-only day-driving block, since
+                    // Tax Policy no longer flows through PolicyDecision.TaxRateOverrides at all once
+                    // gated) - no other lever is touched, so PolicyDecision.None() here is correct,
+                    // not a placeholder.
+                    return PolicyDecision.None();
                 default:
                     return PolicyDecision.None();
             }
@@ -257,6 +287,17 @@ namespace PoliSim.Testing
             }
 
             return PolicyDecision.None();
+        }
+
+        /// <summary>Every TaxType implemented at its own TaxTypeRateRanges maximum - see RunOne's parliamentstress-only day-driving block for why this is submitted as a TaxBill rather than a PolicyDecision.</summary>
+        private static Dictionary<TaxType, TaxBillLine> BuildParliamentStressBillLines(Country usa)
+        {
+            var lines = new Dictionary<TaxType, TaxBillLine>();
+            foreach (TaxLine taxLine in usa.TaxLines)
+            {
+                lines[taxLine.Type] = new TaxBillLine(true, taxLine.MaxRate);
+            }
+            return lines;
         }
 
         private static PolicyDecision BuildWelfareStressDecision(Country usa, int turn)

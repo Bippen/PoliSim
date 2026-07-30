@@ -31,7 +31,8 @@ namespace PoliSim.UI
             PolicyWeb,
             Cabinet,
             CompassAndDemographics,
-            ForeignPolicy
+            ForeignPolicy,
+            Parliament
         }
 
         // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
@@ -109,6 +110,17 @@ namespace PoliSim.UI
         // cleared by ResetPolicyInputs after Advance Turn: once committed, TaxLine.Rate already
         // equals whatever was in here, so the slider keeps showing the same (now-persisted) value.
         private readonly Dictionary<TaxType, float> _taxRateInputs = new Dictionary<TaxType, float>();
+
+        // Political Systems Overhaul Part B PILOT (Master Sequence step 4): draft Implement/Remove
+        // state per TaxType - defaults to that TaxLine's persisted (standing) IsImplemented until the
+        // player toggles it (see GetTaxImplementDraft). Unlike the pre-Parliament version of this tab,
+        // toggling this is NO LONGER immediate - it only ever reaches TaxLine.IsImplemented via a
+        // PASSED TaxBill (see BuildTaxBillFromDrafts/DrawTaxPolicy's Introduce Bill button). Not
+        // cleared by ResetPolicyInputs, for the same reason _taxRateInputs isn't - once a bill passes,
+        // TaxLine.IsImplemented already equals whatever was in here.
+        private readonly Dictionary<TaxType, bool> _taxImplementDrafts = new Dictionary<TaxType, bool>();
+
+        private Vector2 _parliamentScrollPosition;
 
         // Draft ABSOLUTE GenerosityLevel per WelfareProgramType (not a delta) for the Welfare Policy
         // tab's sliders - defaults to that WelfareProgram's persisted GenerosityLevel until the player
@@ -399,6 +411,7 @@ namespace PoliSim.UI
         private readonly PieChartRenderer _spendingAllocationPieChart = new PieChartRenderer();
         private readonly PieChartRenderer _taxRevenuePieChart = new PieChartRenderer();
         private readonly PieChartRenderer _populationPieChart = new PieChartRenderer();
+        private readonly HemicycleRenderer _hemicycleRenderer = new HemicycleRenderer();
         private Vector2 _compassAndDemographicsScrollPosition;
 
         private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
@@ -508,6 +521,12 @@ namespace PoliSim.UI
                 // Short-term gameplay scaffolding (Phase 0): rolled every simulated day, independent
                 // of the 121-day turn cadence, since these are explicitly meant to land BETWEEN turns.
                 _simulationManager.TryRollForeignPolicyMeeting(PlayerCountryId);
+
+                // Political Systems Overhaul Part B PILOT (Master Sequence step 4): a pending TaxBill
+                // counts down daily too, independent of the turn boundary - unlike the two calls
+                // above, this never needs a gate re-check afterward, since resolving a bill doesn't
+                // pause time (it's a deterministic countdown, not something needing a player response).
+                _simulationManager.AdvanceLegislativeDay(PlayerCountryId);
 
                 if (turnBoundaryCrossed)
                 {
@@ -668,7 +687,7 @@ namespace PoliSim.UI
             // DrawRightColumnTabs) - reserve all four rows' height plus the spacing between them, not
             // just some, or a later row would silently eat into the tab-content area below and this
             // whole panel would creep past its allotted height.
-            float tabRowsHeight = _tabButtonStyle.fixedHeight * 4f + TabRowSpacing * 3f;
+            float tabRowsHeight = _tabButtonStyle.fixedHeight * 5f + TabRowSpacing * 4f;
             float tabContentHeight = areaHeight - tabRowsHeight - sectionSpacing * 0.5f;
             switch (_rightPanelTab)
             {
@@ -734,6 +753,9 @@ namespace PoliSim.UI
                     GUI.enabled = !_isGameOver;
                     DrawForeignPolicyTab(tabContentHeight);
                     GUI.enabled = true;
+                    break;
+                case RightPanelTab.Parliament:
+                    DrawParliamentTab(tabContentHeight);
                     break;
                 case RightPanelTab.SwfPolicy:
                     GUI.enabled = !_isGameOver;
@@ -835,6 +857,7 @@ namespace PoliSim.UI
                 case RightPanelTab.Cabinet: return UiPalette.SystemArea.Political;
                 case RightPanelTab.CompassAndDemographics: return UiPalette.SystemArea.Global;
                 case RightPanelTab.ForeignPolicy: return UiPalette.SystemArea.Trade;
+                case RightPanelTab.Parliament: return UiPalette.SystemArea.Political;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -1488,13 +1511,10 @@ namespace PoliSim.UI
                 }
             }
 
-            foreach (TaxLine taxLine in _playerCountry.TaxLines)
-            {
-                if (!Mathf.Approximately(GetTaxRateInput(taxLine.Type, taxLine.Rate), GetCachedTaxRateInput(taxLine.Type, taxLine.Rate)))
-                {
-                    return true;
-                }
-            }
+            // Political Systems Overhaul Part B PILOT: a draft tax-rate change (unlike every other
+            // input checked here) no longer changes what the preview would show at all - it only ever
+            // reaches the simulation via a passed TaxBill - so this loop no longer needs a
+            // GetTaxRateInput/GetCachedTaxRateInput change check.
 
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
@@ -1762,6 +1782,11 @@ namespace PoliSim.UI
             return _taxRateInputs.TryGetValue(type, out float value) ? value : fallbackRate;
         }
 
+        private bool GetTaxImplementDraft(TaxType type, bool fallbackIsImplemented)
+        {
+            return _taxImplementDrafts.TryGetValue(type, out bool value) ? value : fallbackIsImplemented;
+        }
+
         private float GetCachedTaxRateInput(TaxType type, float fallbackRate)
         {
             return _cachedTaxRateInputs.TryGetValue(type, out float value) ? value : fallbackRate;
@@ -1971,18 +1996,12 @@ namespace PoliSim.UI
                 decision.SwfRealEstateWeightOverride = GetSwfRealEstateWeightInput(fund.RealEstateWeight);
             }
 
-            // Only currently-implemented lines get an override - a stale draft left over from a since-
-            // removed tax must never be sent (GetTaxRateInput's fallback already makes an untouched
-            // slider a no-op, so every implemented line can be included unconditionally).
-            foreach (TaxLine taxLine in _playerCountry.TaxLines)
-            {
-                if (!taxLine.IsImplemented)
-                {
-                    continue;
-                }
-
-                decision.TaxRateOverrides[taxLine.Type] = GetTaxRateInput(taxLine.Type, taxLine.Rate);
-            }
+            // Political Systems Overhaul Part B PILOT (Master Sequence step 4): Tax Policy no longer
+            // feeds PolicyDecision.TaxRateOverrides at all - draft tax changes only ever reach the
+            // simulation via a PASSED TaxBill (see ParliamentSystem.ApplyBillResult, which writes
+            // directly to TaxLine.Rate/IsImplemented). This is the ONE call site both AdvanceTurn and
+            // the live preview share, so removing it here makes the preview honest too (it no longer
+            // shows a tax-driven effect that won't actually happen until a bill passes).
 
             // Both Mandatory and Discretionary lines are adjustable - SimulationManager clamps each
             // to its own percentage range (narrower for Mandatory).
@@ -2187,6 +2206,15 @@ namespace PoliSim.UI
             GUILayout.BeginHorizontal();
             DrawRightColumnTabButton("Compass & Demographics", RightPanelTab.CompassAndDemographics, availableWidth * 0.5f);
             DrawRightColumnTabButton("Foreign Policy", RightPanelTab.ForeignPolicy, availableWidth * 0.5f);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(TabRowSpacing);
+
+            // Fifth row: just Parliament (Political Systems Overhaul Part B PILOT, Master Sequence
+            // step 4, the 17th tab) - full-width, same "one new tab alone in its own row" precedent
+            // Policy Web's original third row established.
+            GUILayout.BeginHorizontal();
+            DrawRightColumnTabButton("Parliament", RightPanelTab.Parliament, availableWidth);
             GUILayout.EndHorizontal();
         }
 
@@ -2553,6 +2581,43 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
+        /// <summary>
+        /// Parliament tab (Political Systems Overhaul Part B PILOT, Master Sequence step 4): the
+        /// hemicycle (HemicycleRenderer) plus a pending-bill summary. Only Tax Policy is gated this
+        /// pilot, so this tab only ever shows a Tax bill - the roadmap's own "every gated tab needs a
+        /// visible Standing/Draft value" instruction applies fully once step 5 rolls Parliament out to
+        /// the remaining seven tabs, not yet.
+        /// </summary>
+        private void DrawParliamentTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _parliamentScrollPosition = GUILayout.BeginScrollView(_parliamentScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Parliament", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            GUILayout.Label("Seats shift gradually with your ApprovalRating. Only Tax Policy is gated by Parliament this pass - see the Tax Policy tab to introduce a bill.", _labelStyle);
+            GUILayout.Space(6f);
+
+            _hemicycleRenderer.Draw($"{_playerCountry.Name} - {ParliamentConstants.TotalSeats} seats", _playerCountry.ParliamentSeats, _labelStyle);
+
+            GUILayout.Space(10f);
+            GUILayout.Label("Pending Legislation", _headerStyle);
+            TaxBill pendingBill = _simulationManager.GetPendingTaxBill(PlayerCountryId);
+            if (pendingBill != null)
+            {
+                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, pendingBill);
+                GUILayout.Label($"Tax bill - resolves in {pendingBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.", _labelStyle);
+            }
+            else
+            {
+                GUILayout.Label("No bill currently before Parliament.", _labelStyle);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
         private void DrawCabinetPortfolioPanel(CabinetPortfolio portfolio)
         {
             GUILayout.BeginVertical(_boxStyle);
@@ -2828,6 +2893,12 @@ namespace PoliSim.UI
         }
 
         /// <summary>Every TaxType for the player's country: an Implement/Remove toggle (immediate - see DrawTaxLineRow) plus, only while implemented, a slider that directly sets this turn's target rate.</summary>
+        /// <summary>
+        /// Political Systems Overhaul Part B PILOT (Master Sequence step 4): the Tax Policy tab is now
+        /// the gated-legislation pilot. Sliders/toggles below remain DRAFT values (adjusting costs
+        /// nothing, no vote needed) - the "Introduce Bill" button is the only way a draft ever reaches
+        /// Parliament, and a PASSED bill is the only way it ever reaches the real, standing TaxLines.
+        /// </summary>
         private void DrawTaxPolicy(float availableHeight)
         {
             GUILayout.BeginVertical(_boxStyle);
@@ -2836,7 +2907,10 @@ namespace PoliSim.UI
             _taxPolicyScrollPosition = GUILayout.BeginScrollView(_taxPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Tax Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            GUILayout.Label("Implement or remove a tax, and (while implemented) drag its rate directly to the target you want.", _labelStyle);
+            GUILayout.Label("Adjusting implement/remove or a rate below only changes your DRAFT - nothing happens until you introduce it as a bill and Parliament votes. See the Parliament tab for seat composition.", _labelStyle);
+            GUILayout.Space(8f);
+
+            DrawTaxBillStatus();
             GUILayout.Space(8f);
 
             float taxTypeNameColumnWidth = GetTaxTypeNameColumnWidth();
@@ -2850,6 +2924,29 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
+        /// <summary>Pending-bill status plus the "Introduce Bill" action - disabled while a bill is already before Parliament, since only one may be pending at a time (see SimulationManager.IntroduceTaxBill).</summary>
+        private void DrawTaxBillStatus()
+        {
+            TaxBill pendingBill = _simulationManager.GetPendingTaxBill(PlayerCountryId);
+            if (pendingBill != null)
+            {
+                GUILayout.Label($"A tax bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle);
+                return;
+            }
+
+            if (GUILayout.Button("Introduce Bill", _neutralActionButtonStyle, GUILayout.Width(_labelStyle.fontSize * 12f)))
+            {
+                var lines = new Dictionary<TaxType, TaxBillLine>();
+                foreach (TaxLine taxLine in _playerCountry.TaxLines)
+                {
+                    bool draftImplemented = GetTaxImplementDraft(taxLine.Type, taxLine.IsImplemented);
+                    float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+                    lines[taxLine.Type] = new TaxBillLine(draftImplemented, draftRate);
+                }
+                _simulationManager.IntroduceTaxBill(PlayerCountryId, lines);
+            }
+        }
+
         /// <summary>Widest TaxType name as rendered in _labelStyle (the style DrawTaxLineRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached), same reasoning as GetSectorNameColumnWidth. The original fixed "_labelStyle.fontSize * 8f" heuristic here undersized the column for the longest name ("CapitalGainsTax"), the same label-truncation root cause found in the Sector/World-Map/Policy-Web labels.</summary>
         private float GetTaxTypeNameColumnWidth()
         {
@@ -2861,38 +2958,39 @@ namespace PoliSim.UI
             return widest + 12f;
         }
 
+        /// <summary>Political Systems Overhaul Part B PILOT: the Implement/Remove toggle now edits DRAFT state only (_taxImplementDrafts) - it no longer mutates taxLine.IsImplemented directly. Both the standing (legislated) value and the draft are shown, so it's always clear whether an unpassed change is pending.</summary>
         private void DrawTaxLineRow(TaxLine taxLine, float labelWidth)
         {
             float buttonWidth = _labelStyle.fontSize * 6f;
+            bool draftImplemented = GetTaxImplementDraft(taxLine.Type, taxLine.IsImplemented);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(taxLine.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
 
-            string toggleLabel = taxLine.IsImplemented ? "Remove" : "Implement";
-            GUIStyle toggleStyle = taxLine.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
-            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth)))
+            string toggleLabel = draftImplemented ? "Remove (draft)" : "Implement (draft)";
+            GUIStyle toggleStyle = draftImplemented ? _removeButtonStyle : _implementButtonStyle;
+            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth * 1.6f)))
             {
-                // Implement/Remove is immediate (a structural on/off, not a this-turn delta) - the
-                // preview cache is invalidated right away rather than waiting for the usual
-                // slider-changed check, so it reflects the toggle the moment it happens.
-                taxLine.IsImplemented = !taxLine.IsImplemented;
+                _taxImplementDrafts[taxLine.Type] = !draftImplemented;
                 RecomputePolicyPreview();
             }
             GUILayout.EndHorizontal();
 
-            if (taxLine.IsImplemented)
+            GUILayout.Label($"Standing: {(taxLine.IsImplemented ? $"{taxLine.Rate:F2}%" : "not implemented")}", _labelStyle);
+
+            if (draftImplemented)
             {
-                // The slider IS the current setting (defaulting to the persisted Rate until dragged),
+                // The slider IS the current draft (defaulting to the standing Rate until dragged),
                 // bounded by this TaxType's own TaxTypeRateRanges - not a small per-turn delta, so a
-                // meaningful policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one turn.
+                // meaningful policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one bill.
                 float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
-                GUILayout.Label($"Rate: {draftRate:F2}%  (range {taxLine.MinRate:F0}-{taxLine.MaxRate:F0}%)", _labelStyle);
+                GUILayout.Label($"Draft: {draftRate:F2}%  (range {taxLine.MinRate:F0}-{taxLine.MaxRate:F0}%)", _labelStyle);
                 float newRate = GUILayout.HorizontalSlider(draftRate, taxLine.MinRate, taxLine.MaxRate, _sliderStyle, _sliderThumbStyle);
                 _taxRateInputs[taxLine.Type] = newRate;
             }
             else
             {
-                GUILayout.Label($"Not implemented (rate on file: {taxLine.Rate:F2}%)", _labelStyle);
+                GUILayout.Label("Draft: not implemented", _labelStyle);
             }
         }
 

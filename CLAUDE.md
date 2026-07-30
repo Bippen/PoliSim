@@ -3634,6 +3634,117 @@ explicitly defer "ongoing-process budgets" as a named open item rather than inve
   investigated further since it didn't block validation; worth a look if `BatchSimulationRunner` hangs
   again in a future session.
 
+## Parliament PILOT (Political Systems Overhaul Part B), Master Sequence step 4
+`POLISIM_MASTER_ROADMAP.md` Master Sequence step 4 - the largest single architectural change in the
+project's history by the roadmap's own framing (Parliament gates all eight policy tabs once fully
+rolled out), deliberately proven on ONE tab first. Piloted on Tax Policy specifically (well-understood,
+already-isolated implement/adjust/remove semantics - one list of `TaxLine`s, one apply function) rather
+than all eight tabs at once, so any problem with the gating MODEL itself (bill timing, seat inertia,
+the pass/fail formula) surfaces against a single well-understood lever shape, not entangled with eight
+different lever shapes simultaneously. Confirmed with Elias before starting. Full rollout to the other
+seven tabs is step 5, not attempted here.
+
+- **Parties** (`PartyArchetype`, `PartyArchetypeData` - `Assets/Scripts/Data/PartyArchetype.cs`): four
+  original, generic, clearly-fictional archetypes (Progressive Alliance, Conservative Union, Centrist
+  Coalition, Nationalist Front), per the roadmap's own "never a real party name" instruction. A SHARED
+  taxonomy applied identically across all six countries (mirroring `CabinetMinisterPhilosophy`'s own
+  single shared taxonomy) - "per country" means each country tracks its own seat DISTRIBUTION across
+  this same archetype set, not that each country has differently-named parties.
+- **Seats** (`ParliamentSystem.UpdateSeats`, `Country.ParliamentSeats`) - the roadmap's own Open
+  Question, resolved here as a STATED proposal, not a silent guess:
+  - `ParliamentConstants.TotalSeats` = 200 per country (an arbitrary round number for a clean
+    visualization, not modeled on any one real chamber's size).
+  - Each archetype has three fixed constants: `BaseSupportShare` (floor/starting weight, sums to 1.0),
+    `ApprovalSensitivity` (how the archetype's target share moves with the sitting government's
+    `ApprovalRating`), and `FiscalStance` (-1 to +1, used for bill alignment - see below).
+    Progressive/Conservative/Centrist are ESTABLISHMENT-coded and gain modestly as approval rises
+    (political stability favors mainstream parties broadly - this game never assigns the player's own
+    government a party identity, so approval reads as benefiting establishment stability generally,
+    not one specific party); NationalistFront is the PROTEST archetype, strongly INVERSE (a classic
+    anti-incumbent backlash pattern, surging as approval falls).
+  - Recomputed once per turn, for EVERY country (not player-gated like `CabinetMinisters` - seat
+    composition derives purely from each country's own `ApprovalRating`, no player action needed):
+    target share = `BaseSupportShare + ApprovalSensitivity * (ApprovalRating - 50) / 100`, floored at
+    2% and renormalized, converted to a target seat count, then actual seats move toward that target by
+    a BOUNDED step (at most 6 seats/turn) plus small (±1) random jitter - the same "gap-based target +
+    bounded reversion rate" idiom this codebase already uses for `ApprovalRating`/`CrimeIndex`/
+    `PovertyRate`, never snapping instantly. Seeded at world creation from `BaseSupportShare` alone
+    (every country starts at `ApprovalRating` 50, where the sensitivity term is exactly 0).
+- **The gated-legislation flow, Tax Policy only** (`TaxBill`, `ParliamentSystem`,
+  `SimulationManager.IntroduceTaxBill`/`GetPendingTaxBill`/`AdvanceLegislativeDay`): sliders/toggles on
+  the Tax Policy tab are now DRAFT-only (`_taxImplementDrafts` joins the existing `_taxRateInputs`) -
+  adjusting them costs nothing and no longer reaches `TaxLine.Rate`/`IsImplemented` at all.
+  `BuildPlayerDecision` (the ONE method both `AdvanceTurn` and the live preview share) no longer
+  populates `PolicyDecision.TaxRateOverrides`, so the preview is honest too - it no longer shows a
+  tax-driven effect that won't actually happen until a bill passes. Pressing "Introduce Bill" bundles
+  EVERY `TaxType`'s current draft state into ONE omnibus `TaxBill` (a real tax bill touches many lines
+  at once - simpler than one bill per line, and matches the roadmap's own "introduce the current draft"
+  framing) and submits it via `SimulationManager.IntroduceTaxBill` - a no-op if one is already pending
+  (only one bill per country at a time, mirroring Cabinet/Foreign-Policy-Meeting's own single-slot
+  pattern). The bill counts down `ParliamentSystem.BillDurationDays` (21, a placeholder like Phase 0's
+  own `GameSpeed` pacing) real in-game DAYS - not turns - via `SimulationManager.AdvanceLegislativeDay`,
+  called once per simulated day from `GameController.Update`'s existing day-processing loop (stands in
+  for the roadmap's introduction/committee/debate stages without modeling them separately, a
+  deliberately simple first pass). Unlike Cabinet decisions/Foreign Policy meetings, a pending bill
+  never pauses time - it's a deterministic countdown, not something needing a player response.
+- **Pass/fail formula** (`ParliamentSystem.WouldBillPass`/`GetBillDirection`) - the roadmap's second
+  Open Question, also resolved here as a stated proposal: the bill's net fiscal direction (sum of
+  requested-effective-rate minus standing-effective-rate across every line, positive = net tax
+  increase) is compared against each archetype's `FiscalStance`, weighted by that archetype's CURRENT
+  seat share (read at resolution time, not introduction time - seats can shift mid-flight if a bill's
+  21 days happen to cross a turn boundary, which is the more realistic and simpler design). A
+  genuinely neutral bill (direction exactly 0) auto-passes - nothing to contest; otherwise the bill
+  passes if the seat-weighted alignment sums positive, fails (including an exact tie) otherwise.
+- **Applying the result** (`ParliamentSystem.ApplyBillResult`): PASS writes every bill line's
+  Rate/IsImplemented directly onto the real `TaxLine`s (clamped to each `TaxType`'s own range, the same
+  clamp `ApplyTaxRateChanges` already applies) and charges a one-time `ApprovalRating` penalty for any
+  net rate increase, reusing `MacroSystem.TaxHikeApprovalSensitivity` - the SAME coefficient a direct
+  tax hike already cost before this pilot, applied as a single immediate shock (Cabinet/Foreign-Policy's
+  own idiom) rather than threaded through the turn-scoped `ApplyApprovalRating` formula, since a bill
+  can resolve on any day, not just a turn boundary. FAIL leaves standing values untouched and charges a
+  flat, smaller `ParliamentSystem.BillFailedApprovalCost` (1.5, vs Cabinet Reshuffle's 2 - failure here
+  is Parliament's decision, not a player misstep); the draft is never lost either way (nothing clears
+  `_taxRateInputs`/`_taxImplementDrafts`), matching the roadmap's own "can revise and reintroduce."
+- **Federal Reserve/Eurozone exemption**: implemented as the default with ZERO new code - the
+  interest-rate lever was never one of the eight tabs Parliament gates (Tax, Spending, Welfare, Labor,
+  Crime & Justice, Sectors, Infrastructure, SWF), so leaving it untouched by this pilot already IS the
+  exemption, not something requiring a special-case carve-out.
+- **UI**: new Parliament tab (17th tab, 5th tab row, full-width - the same "one new tab alone in its
+  own row" precedent Policy Web's own original third row established), `UiPalette.SystemArea.Political`
+  (the same area Cabinet/Federal Reserve use). Shows `HemicycleRenderer` (new,
+  `Assets/Scripts/UI/HemicycleRenderer.cs`) - a generic half-circle seat visualization reusing
+  `PolicyWebRenderer`'s own "point on a circle via cos/sin" node-placement math per the roadmap's
+  explicit instruction, just swept across 180 degrees instead of 360, across 5 concentric rows with
+  seats-per-row roughly proportional to radius (a simple approximation, not a rigorous real-world
+  packing algorithm) - plus a legend (seat count/share per archetype) and the pending bill's status
+  (days remaining, and a live PASS/FAIL lean computed against the CURRENT seat composition). The Tax
+  Policy tab itself now shows both "Standing" (legislated) and "Draft" (proposed) values per line, plus
+  the Introduce Bill action/pending-bill status - the roadmap's own "every gated tab needs a visible
+  Standing/Draft value" instruction, applied to the one tab actually gated this pass.
+- **Validated - full real-Unity matrix** (`BatchSimulationRunner -runmatrix`, all 15 scenarios (14
+  pre-existing plus a new `parliamentstress`) x 100/500 turns, 30 combinations): `parliamentstress`
+  (`SimulationTestRunner`) keeps a maximal every-tax-at-its-own-ceiling `TaxBill` permanently in flight
+  for USA all game (introduces a fresh one the instant the previous resolves, pass or fail - the same
+  "always the most extreme option" stress philosophy `cabinetstress` already established for Cabinet's
+  own interactive channel) - zero hard anomalies (no negative/NaN/out-of-range values) and, notably,
+  ZERO USA-specific anomalies of any kind at either turn count; its total anomaly count (86 at 100
+  turns, 434 at 500) lands squarely in the same range as every other scenario (74-99 / 398-471,
+  excluding `swfstress`'s own already-documented outlier), confirming every anomaly present is the same
+  pre-existing ambient "swung X% in one turn" noise from unrelated countries, not something new. Since
+  `TaxBill` resolution is day-driven (`AdvanceLegislativeDay`) rather than turn-driven,
+  `SimulationTestRunner.RunOne` gained a `parliamentstress`-only inner loop stepping 121 legislative
+  days per turn (`CurrentDate` itself deliberately NOT advanced, since `AdvanceLegislativeDay` doesn't
+  read it - every other scenario's own execution path is completely unchanged).
+- **UI smoke test** (screenshot-driven): confirmed the Tax Policy tab's Standing/Draft split renders
+  correctly (a drafted `IncomeTax` 37% -> 55% change and a drafted `VAT` implement both showed
+  correctly against their unchanged Standing values), the "Introduce Bill" flow correctly shows "A tax
+  bill is before Parliament - resolves in 21 day(s)" once submitted, and the Parliament tab renders a
+  legible hemicycle (four correctly-colored, correctly-proportioned seat blocks: 64/48/24/64 at the
+  turn-0 seed) with an accurate legend and a live PASS/FAIL lean that - independently confirmed by
+  hand against the seat/stance numbers - correctly read FAIL for a net-tax-increase bill against that
+  specific seat split, real evidence the pass/fail math is doing genuine work, not just displaying a
+  static label.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -3857,6 +3968,17 @@ storage, though Phase 0 itself can't yet make the four resolutions diverge; and 
 Meetings interrupt slice proves the "decisions that land between turn boundaries" pattern Political
 Systems Overhaul Part B will eventually need for law-passing specifically (deliberately not built
 here, since Part B's design is authoritative for that). Master Sequence step 4 (Political Systems
-Overhaul Part B, Parliament pilot on the Tax Policy tab) is next; Round 4 of the original Roadmap
-stays unscoped until step 5 (Parliament's full rollout) is done, so new features get designed against
-the gated-legislation model from day one rather than retrofitted onto it later.
+Overhaul Part B, Parliament PILOT on the Tax Policy tab) is also done - see "Parliament PILOT
+(Political Systems Overhaul Part B), Master Sequence step 4" above - four generic fictional party
+archetypes with seats derived from ApprovalRating (bounded inertia plus jitter, a stated proposal for
+the roadmap's own Open Question) now gate Tax Policy specifically: sliders are draft-only, an
+"Introduce Bill" action submits an omnibus TaxBill that takes 21 real in-game days to resolve
+pass/fail against seat-weighted party alignment (also a stated proposal), a passed bill becomes the
+new standing rates, a failed one leaves them untouched and costs a modest approval hit. The Federal
+Reserve/Eurozone exemption needed no new code, since the interest-rate lever was never one of the
+eight tabs Parliament gates. Validated via the full 30-combination real-Unity matrix (zero hard
+anomalies, zero USA-specific anomalies from the new worst-case parliamentstress scenario) plus a
+screenshot smoke test confirming the pass/fail math visibly working correctly against a real seat
+split. Master Sequence step 5 (Political Systems Overhaul Part B full rollout to the remaining seven
+tabs) is next; Round 4 of the original Roadmap stays unscoped until step 5 is done, so new features
+get designed against the gated-legislation model from day one rather than retrofitted onto it later.

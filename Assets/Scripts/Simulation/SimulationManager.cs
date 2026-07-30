@@ -263,6 +263,16 @@ namespace PoliSim.Simulation
         private readonly Dictionary<CountryId, ForeignPolicyMeeting> _pendingForeignPolicyMeetingByCountry =
             new Dictionary<CountryId, ForeignPolicyMeeting>();
 
+        /// <summary>
+        /// Political Systems Overhaul Part B PILOT (Tax Policy tab only), Master Sequence step 4: at
+        /// most one pending TaxBill per country, mirroring _pendingForeignPolicyMeetingByCountry's own
+        /// single-slot pattern. Counts down via AdvanceLegislativeDay (called once per simulated day,
+        /// independent of the 121-day turn boundary) rather than TryRollForeignPolicyMeeting's
+        /// probabilistic roll - a bill's duration is deterministic, not a chance event.
+        /// </summary>
+        private readonly Dictionary<CountryId, TaxBill> _pendingTaxBillByCountry =
+            new Dictionary<CountryId, TaxBill>();
+
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
         {
@@ -329,6 +339,50 @@ namespace PoliSim.Simulation
             _pendingForeignPolicyMeetingByCountry.Remove(countryId);
         }
 
+        /// <summary>The pending TaxBill for this country, or null if none is currently before Parliament (the common case).</summary>
+        public TaxBill GetPendingTaxBill(CountryId countryId)
+        {
+            return _pendingTaxBillByCountry.TryGetValue(countryId, out TaxBill bill) ? bill : null;
+        }
+
+        /// <summary>Submits a new TaxBill for this country - a no-op (returns false) if one is already pending, since only one bill may be before Parliament at a time (see _pendingTaxBillByCountry's own doc comment). DaysRemaining is set here, not by the caller, so GameController never has to know ParliamentSystem.BillDurationDays itself.</summary>
+        public bool IntroduceTaxBill(CountryId countryId, Dictionary<TaxType, TaxBillLine> lines)
+        {
+            if (_pendingTaxBillByCountry.ContainsKey(countryId))
+            {
+                return false;
+            }
+
+            _pendingTaxBillByCountry[countryId] = new TaxBill(lines, ParliamentSystem.BillDurationDays);
+            return true;
+        }
+
+        /// <summary>
+        /// Counts down the pending bill (if any) by one day, resolving it PASS/FAIL via
+        /// ParliamentSystem once DaysRemaining reaches 0 - called once per simulated day from
+        /// GameController.Update's day-processing loop, independent of the 121-day turn boundary
+        /// (unlike Cabinet/ForeignPolicy, resolving a bill never pauses time - it's a deterministic
+        /// countdown, not something needing a player response).
+        /// </summary>
+        public void AdvanceLegislativeDay(CountryId countryId)
+        {
+            if (!_pendingTaxBillByCountry.TryGetValue(countryId, out TaxBill bill))
+            {
+                return;
+            }
+
+            bill.DaysRemaining--;
+            if (bill.DaysRemaining > 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            bool passed = ParliamentSystem.WouldBillPass(country, bill);
+            ParliamentSystem.ApplyBillResult(country, bill, passed);
+            _pendingTaxBillByCountry.Remove(countryId);
+        }
+
         /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>
         public void SetWorld(World world)
         {
@@ -383,6 +437,12 @@ namespace PoliSim.Simulation
                     : PolicyDecision.None();
 
                 ApplyDomesticPolicy(country, decision, tariffRevenueByCountry[country.Id]);
+
+                // Political Systems Overhaul Part B (Parliament), Master Sequence step 4: recomputed
+                // for EVERY country every turn (not just the player's - see ParliamentSeats' own doc
+                // comment), after ApplyDomesticPolicy so this turn's freshly-updated ApprovalRating is
+                // what the seat-share formula actually reads, not last turn's stale value.
+                ParliamentSystem.UpdateSeats(country);
 
                 // Recorded here (once per real, committed turn) rather than inside
                 // ApplyDomesticPolicy itself, so PreviewTurn's throwaway clone - which calls
