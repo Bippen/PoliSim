@@ -112,7 +112,8 @@ namespace PoliSim.Testing
                         Debug.Log($"[{scenario}/{turnsToRun}] Turn {turn} | {country.Name}: GDP={state.GDP:F1} ({growthPercent:+0.00;-0.00}%), " +
                             $"Unemployment={state.Unemployment:F2}%, Inflation={state.Inflation:F2}%, " +
                             $"InterestRate={country.CurrencyZone.InterestRate:F2}%, " +
-                            $"GovernmentDebt={state.GovernmentDebt:F1}, DebtToGdpRatio={state.DebtToGdpRatio:F1}%");
+                            $"GovernmentDebt={state.GovernmentDebt:F1}, DebtToGdpRatio={state.DebtToGdpRatio:F1}%, " +
+                            $"Population={state.Population:F3}, DependencyRatio={state.DependencyRatio:F2}");
                     }
 
                     CheckAnomalies(turn, country, state, prev, anomalies);

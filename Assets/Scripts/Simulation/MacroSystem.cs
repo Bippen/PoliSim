@@ -375,15 +375,30 @@ namespace PoliSim.Simulation
         private const float NetMigrationParticipationSensitivity = 0.03f;
 
         /// <summary>
-        /// Round 3 item 5, Part A: combined ceiling on the SUM of paid leave + retraining + the two new
-        /// demographic terms (dependency ratio, net migration) - this variable was already stacked with
-        /// two policy-lever terms before this task, and demographics adds two more, so this needed the
-        /// same seriousness PotentialGrowthRate's own MaxTotalPotentialGrowthAdjustment ceiling got in
-        /// "Sector Integration": clamp the SUM, not each source individually, so no combination of
-        /// levers (now or once Part B's Immigration Policy makes the migration term genuinely large)
-        /// can stack past one sane bound. The already-established Unemployment-gap term is deliberately
-        /// OUTSIDE this ceiling, mirroring how PotentialGrowthRate's own ceiling leaves
-        /// BasePotentialGrowthRate itself outside it.
+        /// Round 3 item 5, Part A: combined ceiling on the SUM of every term that writes to
+        /// LaborForceParticipationRate's target DIRECTLY - paid leave, retraining, and the two new
+        /// demographic terms (dependency ratio, net migration). Verified by direct audit (not assumed)
+        /// that this is the COMPLETE set of direct writers: minimum wage, overtime regulation, and
+        /// childcare subsidies do NOT write to this variable at all, direct or otherwise - all three
+        /// only affect Unemployment (GetMinimumWageUnemploymentAdjustment/GetOvertimeUnemploymentAdjustment/
+        /// GetWelfareAdjustedReversionSpeed in ApplyOkunsLaw), a genuinely separate variable with its
+        /// own independent hard clamp ([0, MaxUnemploymentPercent]). This ceiling clamps the SUM of the
+        /// four DIRECT terms, not each source individually, the same seriousness PotentialGrowthRate's
+        /// own MaxTotalPotentialGrowthAdjustment ceiling got in "Sector Integration" - so no combination
+        /// of the FOUR DIRECT levers (now or once Part B's Immigration Policy makes the migration term
+        /// genuinely large) can stack past one sane bound. The Unemployment-gap term (DiscouragedWorkerSensitivity)
+        /// is deliberately OUTSIDE this ceiling, mirroring how PotentialGrowthRate's own ceiling leaves
+        /// BasePotentialGrowthRate itself outside it - it is not itself a policy lever, it's a
+        /// pass-through of whatever Unemployment level results from ALL of Unemployment's own drivers
+        /// (growth gap, minimum wage, overtime, retraining's OWN separate Unemployment term, UBI/
+        /// childcare's reversion-speed nudge, sector employment), each already bounded by Unemployment's
+        /// own [0, MaxUnemploymentPercent] clamp rather than needing a second, redundant ceiling here -
+        /// the same "each variable owns its own hard bound" pattern this project uses throughout, not a
+        /// gap in this ceiling's coverage. Note RetrainingProgramLevel specifically feeds
+        /// LaborForceParticipationRate through BOTH this direct term AND, independently, its own
+        /// pre-existing Unemployment term (GetRetrainingUnemploymentAdjustment, from "Deeper Labor
+        /// Market Policies," predating this task) - a real second-order reinforcement of the same lever
+        /// through two channels, but not something this task introduced or that requires fixing here.
         /// </summary>
         private const float MaxLaborForceParticipationAdjustment = 1.0f;
 

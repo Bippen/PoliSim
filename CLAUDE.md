@@ -3002,32 +3002,81 @@ age-cohort/population-pyramid model - one scalar per demographic concept per cou
   Fund both already established (not escalated as a design fork - it directly matches this
   already-repeated pattern, not a novel judgment call).
 - **Labor force participation, given the same seriousness `PotentialGrowthRate`'s own combined
-  ceiling got in "Sector Integration"**: `MacroSystem.ApplyLaborForceParticipationRate` already had
-  two direct policy terms (paid family leave, workforce retraining) stacked with NO combined bound
-  before this task - demographics adds two more (`DependencyRatio` gap, negative - aging shrinks the
-  working-age share; `NetMigrationRate` gap versus its own baseline, positive - immigrants skew
-  working-age). All four are now summed and clamped as ONE `MaxLaborForceParticipationAdjustment`
-  (1.0) before being added to the target - the already-established Unemployment-gap term (the
-  discouraged/encouraged-worker effect) stays deliberately OUTSIDE this ceiling, mirroring how
-  `PotentialGrowthRate`'s own ceiling leaves `BasePotentialGrowthRate` itself outside it. Confirmed
-  genuinely binding, not just theoretical: the pre-existing `laborstress` scenario (paid leave +
-  retraining both maxed) already exceeds this ceiling's raw sum before clamping.
+  ceiling got in "Sector Integration" - audited by direct code search, not assumed**:
+  `MacroSystem.ApplyLaborForceParticipationRate` already had two direct policy terms (paid family
+  leave, workforce retraining) stacked with NO combined bound before this task - demographics adds
+  two more (`DependencyRatio` gap, negative - aging shrinks the working-age share; `NetMigrationRate`
+  gap versus its own baseline, positive - immigrants skew working-age). All four are now summed and
+  clamped as ONE `MaxLaborForceParticipationAdjustment` (1.0) before being added to the target - the
+  already-established Unemployment-gap term (the discouraged/encouraged-worker effect) stays
+  deliberately OUTSIDE this ceiling, mirroring how `PotentialGrowthRate`'s own ceiling leaves
+  `BasePotentialGrowthRate` itself outside it. Confirmed genuinely binding, not just theoretical: the
+  pre-existing `laborstress` scenario (paid leave + retraining both maxed) already exceeds this
+  ceiling's raw sum before clamping.
+  - **Verified this is the COMPLETE set of direct writers, not a subset**: a full grep audit of every
+    reference to `LaborForceParticipationRate` confirms `ApplyLaborForceParticipationRate` is the
+    SOLE method that ever writes it, and it has exactly these four direct terms plus the one
+    Unemployment-gap pass-through - no other direct writer exists anywhere in the codebase. Minimum
+    wage, overtime regulation, and childcare subsidies (three of the five sources this item's own
+    brief named) do NOT write to `LaborForceParticipationRate` directly at all, and never did before
+    this task - all three only affect `Unemployment` (`GetMinimumWageUnemploymentAdjustment`/
+    `GetOvertimeUnemploymentAdjustment` add directly to it in `ApplyOkunsLaw`; UBI/childcare instead
+    nudge its reversion SPEED via `GetWelfareAdjustedReversionSpeed`), a genuinely separate tracked
+    variable with its own independent hard clamp (`[0, MaxUnemploymentPercent]`). Their influence on
+    `LaborForceParticipationRate` is therefore always INDIRECT, mediated entirely through
+    `Unemployment`'s own already-bounded value and the single discouraged-worker pass-through term -
+    already covered by Unemployment's own clamp, the same "each variable owns its own hard bound"
+    pattern this project uses throughout, not a gap in this ceiling's coverage. This ceiling correctly
+    bounds every term that is actually direct; it does not (and structurally could not, without
+    duplicating Unemployment's own clamp) bound contributions transmitted through a different variable
+    first - exactly how `PotentialGrowthRate`'s own ceiling also only governs its direct writers, not
+    every upstream influence reaching it through GDP or Unemployment.
+  - **One real, pre-existing (not newly introduced) double-channel effect surfaced by this audit**:
+    `RetrainingProgramLevel` feeds `LaborForceParticipationRate` through BOTH this direct term AND,
+    independently, its own separate `Unemployment` term (`GetRetrainingUnemploymentAdjustment`, from
+    "Deeper Labor Market Policies," predating this task) - a real second-order reinforcement of the
+    same lever through two channels. Not introduced by this task and not fixed here (out of this
+    item's scope), but worth recording honestly now that it's been found.
 - **Anomaly-checking apparatus extended** for all five new fields (`Population` can't go
   non-positive; `BirthRate`/`DeathRate` can't go negative; `DependencyRatio` range-checked to
   `[0, 100]`; all five checked for finiteness) - the same discipline every other tracked stat in this
   project already gets.
 - **Validated - full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
   100/500 turns, 24 combinations), required since this is fiscal-touching (pension/healthcare
-  pressure touch `SpendingLine.Amount`)**: zero finite/negative/out-of-range anomalies anywhere for
-  `Population`/`BirthRate`/`DeathRate`/`NetMigrationRate`/`DependencyRatio` or any pre-existing field;
-  anomaly counts (69-173 at 100 turns, 401-978 at 500) landed within the same range already
-  established. **No double-counted drift from either reconciliation point**: the baseline scenario's
-  turn-500 `DebtToGdpRatio` for all six countries landed consistent with their own already-documented
-  equilibria (USA ~144%, Germany ~44%, Italy ~122%, Poland ~32% - a new but unremarkable, explicably
-  higher figure given Poland's own already-higher seeded `PotentialGrowthRate` compounding further
-  over 500 turns, unrelated to demographics; Sweden/France showing their own already-documented
-  SWF-driven low/bimodal pattern) - no sign of the pension/healthcare pressure stacking unexpectedly
-  with the automatic Mandatory-spending growth mechanism.
+  pressure touch `SpendingLine.Amount`), RE-RUN after the LaborForceParticipationRate audit above
+  with `Population`/`DependencyRatio` added to `SimulationTestRunner`'s own per-turn log line (a
+  permanent addition, not a throwaway diagnostic this time) so the real per-country trajectory is
+  directly readable from the same authoritative run, not inferred**: zero finite/negative/
+  out-of-range anomalies anywhere across all 6,964 flagged lines, for `Population`/`BirthRate`/
+  `DeathRate`/`NetMigrationRate`/`DependencyRatio` or any pre-existing field - every single one the
+  already-established small-magnitude swing false positive; anomaly counts (60-183 at 100 turns,
+  406-960 at 500) landed within the same range already established. **All six countries' `Population`
+  stayed positive and growth-bounded at turn 500 in the baseline scenario** (USA 1,299.4M, up from
+  341.8 on sustained immigration; Sweden 9.9M, down slightly from its own turn-~200 peak of ~14M -
+  the plausible rise-then-decline hump already found in the pre-tuning diagnostic; Germany 7.8M, Italy
+  7.0M, France 36.7M, Poland 2.1M, all declining smoothly from their much larger starting points) -
+  every figure comfortably inside `[MinPopulation, MaxPopulation]` with no discontinuity. **`DependencyRatio`
+  stayed sane for all six** (USA 28.96 - barely moved from its 28.0 baseline, since USA's birth rate
+  hadn't yet crossed below its death rate by turn 500; Sweden 34.08; France 34.88; Germany 40.41;
+  Poland 32.98; Italy 44.66, the highest, consistent with its own highest starting baseline of 40) -
+  every figure well inside `[MinDependencyRatio, MaxDependencyRatio]` (`[15, 70]`), nowhere near
+  either bound. **Germany and Poland specifically show a smooth, gradual, immigration-tempered
+  decline, not a divergence or crash**: both `Population` series decline monotonically with no
+  discontinuity turn-to-turn (Germany 83.4 -> 78.9 -> 73.9 -> 63.7 -> ... -> 7.8M at turns
+  1/25/50/100/.../500; Poland 37.4 -> 33.8 -> 30.3 -> 23.8 -> ... -> 2.1M on the same schedule), while
+  `NetMigrationRate` rises gently alongside `DependencyRatio` for both (the "aging economies lean more
+  on immigration" drift term doing exactly what it's designed to - partially, not fully, offsetting
+  the underlying natural-decrease pressure) - the large cumulative decline by turn 500 is the expected,
+  bounded arithmetic consequence of a genuinely realistic sustained negative natural-growth rate
+  compounding over a 500-TURN (effectively 500-year) horizon, the same "large but internally
+  consistent at this extreme horizon" standard already accepted for this project's GDP/debt figures,
+  not evidence of instability. **No double-counted drift from either reconciliation point**: the
+  baseline scenario's turn-500 `DebtToGdpRatio` for all six countries landed consistent with their own
+  already-documented equilibria (USA ~145%, Germany ~43%, Italy ~120%, Poland ~32% - a new but
+  unremarkable, explicably higher figure given Poland's own already-higher seeded
+  `PotentialGrowthRate` compounding further over 500 turns, unrelated to demographics; Sweden/France
+  showing their own already-documented SWF-driven low/bimodal pattern) - no sign of the pension/
+  healthcare pressure stacking unexpectedly with the automatic Mandatory-spending growth mechanism.
 - **Part A stops here, deliberately** - no Family Policy/Immigration Policy levers yet (Part B),
   per this item's own explicit two-part sequencing and "validate Part A fully before starting Part B"
   instruction. UI display for the five new fields is also deferred to Part B, where it will sit
