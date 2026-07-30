@@ -145,6 +145,61 @@ reaching it, that's the correct outcome, not a failure.
 
 ---
 
+## Round 3 Queue
+
+Same standing brief, same non-negotiable working discipline above (real-Unity validation via
+`BatchSimulationRunner` at 100/500 turns, one commit per item, escalate genuine design judgment
+calls to Open Questions rather than deciding silently, ground new mechanics in real data, keep scope
+small on the first pass) — none of it is superseded or relaxed for this round.
+
+**Not started — queued for future work, no timeline.** Added 2026-07-30, after Round 2 and the
+UI revamp / country-selection / SWF-return-model work that followed it had all landed.
+
+### 1. Demographic system (population aging, birth/death rates, immigration)
+- **Large, independent system — do not treat this as a small addition.** Unlike most items above,
+  this doesn't extend an existing proven mechanic; it's new plumbing (an age-structure/population
+  model) that several OTHER systems then read from. Scope the first pass with the same "small,
+  bounded effects" discipline as every item above, but budget it as its own multi-part effort, not a
+  single quick pass — expect it to take longer than any single item in Rounds 1-2.
+- **Core plumbing (first pass)**: per-country tracked demographic stats, each seeded from real
+  per-country data (UN World Population Prospects / OECD are the obvious sources — the same caliber
+  of source this project already used for tax rates, debt-to-GDP, poverty rates, etc.; label
+  anything stylized honestly, the same rule every prior mechanic followed). Suggest starting with an
+  old-age-dependency-ratio-style figure (or MedianAge), BirthRatePer1000, DeathRatePer1000, and
+  NetMigrationRate — not a full age-cohort pyramid.
+- **Feeds into exactly three things on the first pass, not the full theoretical richness "a
+  demographic system" suggests**:
+  1. **Pension sustainability** — a small, bounded upward-cost pressure on the existing Social-
+     Security-equivalent Mandatory `SpendingLine` (USA has one directly; the other five countries'
+     generic `SocialPrograms` line from "Country Selection" Part 2 is the closest analog for them),
+     following the same "small, separately-named effect" pattern every spending-category effect in
+     this project already uses (see "Detailed Spending Portfolio Phase 2").
+  2. **Labor force size** — a small, bounded nudge on the existing `LaborForceParticipationRate`
+     (see "Labor Market Basics"), not a new parallel labor-supply model.
+  3. **Healthcare cost pressure** — a small, bounded nudge on the existing Healthcare-equivalent
+     spending line's cost (USA's `HHSDiscretionary`, which already has a real economic effect — see
+     "Detailed Spending Portfolio").
+- **This is fiscal-touching, like the Sovereign Wealth Fund was** — pension/healthcare cost pressure
+  feeds Mandatory spending, which feeds `GovernmentDebt` and the Fiscal Reaction Function's already
+  hard-won equilibria. Budget the same extra validation caution the SWF item required: re-run the
+  FULL existing matrix (all 12 scenarios, not just a demographics-specific one) at both 100 and 500
+  turns before considering this done — every established failure pattern (turn-1 discontinuity,
+  oscillation, unbounded growth, bimodal attractors) applies here, and this is exactly the class of
+  fiscal-system-touching change that has historically needed the most debugging rounds in this
+  project.
+- **Two genuine design decisions to expect — escalate to Open Questions rather than resolving
+  silently if they come up**: (1) whether demographic drift should be slow/monotonic (population
+  aging gradually over hundreds of turns) or meaningfully shiftable by policy levers (immigration
+  policy, family/childcare incentives) on this first pass; (2) how immigration should interact with
+  the existing `LaborForceParticipationRate`/`Unemployment` figures without double-counting against
+  effects "Labor Market Basics"/"Deeper Labor Market Policies" already established.
+- Do not build the full theoretical richness a "demographic system" implies (detailed age-cohort
+  pyramids, migration flows between the six modeled countries specifically, generational
+  wealth/inequality effects) on this first pass — plumbing plus the three bounded effects above,
+  matching every other item's scoping discipline.
+
+---
+
 ## When Elias returns
 
 - Read this file's Open Questions section first.
