@@ -758,10 +758,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// Sets each Sector's SubsidyLevel/RegulationLevel directly to this turn's requested
-        /// PolicyDecision overrides (clamped to [MinSectorDialLevel, MaxSectorDialLevel]) - a no-op
-        /// for any SectorType with no entry in the corresponding dictionary, the same "only requested
-        /// entries matter" pattern TaxRateOverrides/WelfareGenerosityOverrides already use.
+        /// Sets each Sector's SubsidyLevel/RegulationLevel/TaxCreditLevel/ResearchGrantsLevel/
+        /// DeregulationNationalizationLevel directly to this turn's requested PolicyDecision overrides
+        /// (clamped to [MinSectorDialLevel, MaxSectorDialLevel]) - a no-op for any SectorType with no
+        /// entry in the corresponding dictionary, the same "only requested entries matter" pattern
+        /// TaxRateOverrides/WelfareGenerosityOverrides already use.
         /// </summary>
         private void ApplySectorPolicyChanges(Country country, PolicyDecision decision)
         {
@@ -775,6 +776,21 @@ namespace PoliSim.Simulation
                 if (decision.SectorRegulationOverrides.TryGetValue(sector.Type, out float requestedRegulation))
                 {
                     sector.RegulationLevel = Mathf.Clamp(requestedRegulation, MinSectorDialLevel, MaxSectorDialLevel);
+                }
+
+                if (decision.SectorTaxCreditOverrides.TryGetValue(sector.Type, out float requestedTaxCredit))
+                {
+                    sector.TaxCreditLevel = Mathf.Clamp(requestedTaxCredit, MinSectorDialLevel, MaxSectorDialLevel);
+                }
+
+                if (decision.SectorResearchGrantsOverrides.TryGetValue(sector.Type, out float requestedResearchGrants))
+                {
+                    sector.ResearchGrantsLevel = Mathf.Clamp(requestedResearchGrants, MinSectorDialLevel, MaxSectorDialLevel);
+                }
+
+                if (decision.SectorDeregulationNationalizationOverrides.TryGetValue(sector.Type, out float requestedDeregulation))
+                {
+                    sector.DeregulationNationalizationLevel = Mathf.Clamp(requestedDeregulation, MinSectorDialLevel, MaxSectorDialLevel);
                 }
             }
         }

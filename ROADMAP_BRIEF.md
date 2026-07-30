@@ -188,12 +188,23 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   equilibrium instead of the floor. Full 24-combination matrix re-validated: zero finite/negative/
   out-of-range anomalies, no regression under any existing scenario.
 
-### 2. Expand sector-specific policies
+### 2. Expand sector-specific policies — DONE (2026-07-30)
 - Add 3-4 more of the original roadmap's sector policy types (suggest: Tax Credits,
   Deregulation/Nationalization as a single axis, Research Grants) to the 4 existing sectors
   (Manufacturing/Technology/Agriculture/Finance).
 - **Low risk** — same integration pattern already proven (Subsidy/Regulation dials), no new tracked
   stats. Single-scenario smoke check is acceptable here — UI/policy-only, no new tracked feedback.
+- **Result: implemented exactly the three suggested dials, low-risk framing confirmed true** - see
+  "Expanded Sector-Specific Policies" in CLAUDE.md. Tax Credits and Research Grants mostly mirror
+  Subsidy's existing uniform shape; Deregulation/Nationalization deliberately diverges (Output/
+  SectorMetric up, Employment down for more deregulated - the real state-owned-enterprise tradeoff),
+  the one exception to keeping it a duplicate of the existing Regulation dial. `growthstackstress`
+  extended to also stress all three new dials at once - full 24-combination matrix re-validated (ran
+  the full matrix rather than just a smoke check, no extra cost with the tooling already in place):
+  zero finite/negative/out-of-range anomalies, and the extended stress scenario landed at essentially
+  the SAME GDP/DebtToGdpRatio equilibrium as the original 2-lever version, direct confirmation
+  `MaxTotalPotentialGrowthAdjustment` was already fully saturated and correctly absorbs the extra
+  stress.
 
 ### 3. Deeper crime & justice
 - Building on the existing CrimeIndex/Incarceration Rate: add Organized Crime and Corruption as new

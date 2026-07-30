@@ -145,6 +145,15 @@ namespace PoliSim.Data
         /// </summary>
         public Dictionary<SectorType, float> SectorRegulationOverrides = new Dictionary<SectorType, float>();
 
+        /// <summary>Round 3 item 2: this turn's requested ABSOLUTE tax credit level per SectorType (0-100, not a delta) - see SimulationManager.ApplySectorPolicyChanges and Sector.TaxCreditLevel.</summary>
+        public Dictionary<SectorType, float> SectorTaxCreditOverrides = new Dictionary<SectorType, float>();
+
+        /// <summary>Round 3 item 2: this turn's requested ABSOLUTE research grants level per SectorType (0-100, not a delta) - see SimulationManager.ApplySectorPolicyChanges and Sector.ResearchGrantsLevel.</summary>
+        public Dictionary<SectorType, float> SectorResearchGrantsOverrides = new Dictionary<SectorType, float>();
+
+        /// <summary>Round 3 item 2: this turn's requested ABSOLUTE deregulation/nationalization level per SectorType (0-100, not a delta) - see SimulationManager.ApplySectorPolicyChanges and Sector.DeregulationNationalizationLevel.</summary>
+        public Dictionary<SectorType, float> SectorDeregulationNationalizationOverrides = new Dictionary<SectorType, float>();
+
         /// <summary>
         /// This turn's requested ABSOLUTE sovereign-wealth-fund settings (each -1 = no change
         /// requested this turn, the same sentinel idiom as MinimumWageOverride) - only meaningful if

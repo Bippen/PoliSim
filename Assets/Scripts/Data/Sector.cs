@@ -46,6 +46,27 @@ namespace PoliSim.Data
         /// </summary>
         public float RegulationLevel = 50f;
 
+        /// <summary>Round 3 item 2: this sector's tax credit generosity, 0-100 (50 = neutral). Higher nudges Output/Employment/SectorMetric up, the same broad "boosts everything" shape as SubsidyLevel - a tax credit and a direct subsidy have a similar practical effect in this stylized model, just a different fiscal mechanism (this pass doesn't distinguish their budget treatment - see MacroSystem.ApplySectorEffects). Player-adjustable via PolicyDecision.SectorTaxCreditOverrides.</summary>
+        public float TaxCreditLevel = 50f;
+
+        /// <summary>Round 3 item 2: this sector's R&D/research funding level, 0-100 (50 = neutral). Higher nudges Output/SectorMetric up at full sensitivity but Employment up only at half sensitivity - grants fund research and output, not broad hiring, a deliberately smaller Employment effect than SubsidyLevel's (see MacroSystem.ApplySectorEffects). Player-adjustable via PolicyDecision.SectorResearchGrantsOverrides.</summary>
+        public float ResearchGrantsLevel = 50f;
+
+        /// <summary>
+        /// Round 3 item 2's "Deregulation/Nationalization as a single axis" lever, 0-100 (0 = fully
+        /// nationalized/state-controlled, 100 = fully deregulated/privatized, 50 = current/neutral
+        /// status quo) - a genuinely DIFFERENT real-world question from RegulationLevel above
+        /// (ownership structure, not regulatory stringency; a state-owned firm and a private one can
+        /// each be lightly or heavily regulated in principle). The one deliberate divergence from this
+        /// mechanic's otherwise-uniform-across-stats shape: higher (more deregulated/private) nudges
+        /// Output/SectorMetric UP but Employment DOWN, and lower (more nationalized) does the reverse -
+        /// the real, well-documented state-owned-enterprise tradeoff (privatization/deregulation
+        /// typically gains efficiency by shedding excess labor; nationalization typically preserves
+        /// jobs at an efficiency cost) - see MacroSystem.ApplySectorEffects. Player-adjustable via
+        /// PolicyDecision.SectorDeregulationNationalizationOverrides.
+        /// </summary>
+        public float DeregulationNationalizationLevel = 50f;
+
         public Sector() { }
 
         public Sector(SectorType type, float outputShareOfGdp, float employmentShare, float sectorMetric)
@@ -59,7 +80,7 @@ namespace PoliSim.Data
             BaselineSectorMetric = sectorMetric;
         }
 
-        /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - SubsidyLevel/RegulationLevel/the three tracked stats are all mutated during a turn, so the preview needs its own copies, not shared references.</summary>
+        /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - SubsidyLevel/RegulationLevel/TaxCreditLevel/ResearchGrantsLevel/DeregulationNationalizationLevel/the three tracked stats are all mutated during a turn, so the preview needs its own copies, not shared references.</summary>
         public Sector Clone()
         {
             return new Sector(Type, OutputShareOfGdp, EmploymentShare, SectorMetric)
@@ -68,7 +89,10 @@ namespace PoliSim.Data
                 BaselineEmploymentShare = BaselineEmploymentShare,
                 BaselineSectorMetric = BaselineSectorMetric,
                 SubsidyLevel = SubsidyLevel,
-                RegulationLevel = RegulationLevel
+                RegulationLevel = RegulationLevel,
+                TaxCreditLevel = TaxCreditLevel,
+                ResearchGrantsLevel = ResearchGrantsLevel,
+                DeregulationNationalizationLevel = DeregulationNationalizationLevel
             };
         }
     }

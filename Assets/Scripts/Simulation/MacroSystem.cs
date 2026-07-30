@@ -489,28 +489,53 @@ namespace PoliSim.Simulation
         /// <summary>Points removed per point a sector's RegulationLevel sits above its neutral 50 (and added per point below) - a compliance-cost tradeoff, deliberately smaller than nothing else competes with it in this isolated pass.</summary>
         private const float SectorRegulationSensitivity = 0.04f;
 
+        /// <summary>Round 3 item 2: points added per point a sector's TaxCreditLevel sits above its neutral 50 - same magnitude and uniform-across-stats shape as SectorSubsidySensitivity, since a tax credit and a direct subsidy have a similar practical effect in this stylized model.</summary>
+        private const float SectorTaxCreditSensitivity = 0.04f;
+
+        /// <summary>Round 3 item 2: points added to Output/SectorMetric per point a sector's ResearchGrantsLevel sits above its neutral 50 - same magnitude as SectorSubsidySensitivity, since R&D funding most directly targets output/innovation.</summary>
+        private const float SectorResearchGrantsSensitivity = 0.04f;
+
+        /// <summary>Round 3 item 2: points added to Employment per point a sector's ResearchGrantsLevel sits above its neutral 50 - HALF SectorResearchGrantsSensitivity, deliberately smaller: grants fund research projects and output, not broad hiring, unlike a direct Subsidy.</summary>
+        private const float SectorResearchGrantsEmploymentSensitivity = 0.02f;
+
+        /// <summary>Round 3 item 2: points added to Output/SectorMetric (and REMOVED from Employment - see ApplySectorEffects) per point a sector's DeregulationNationalizationLevel sits above its neutral 50 - the real, well-documented state-owned-enterprise tradeoff (privatization/deregulation gains efficiency by shedding excess labor; nationalization preserves jobs at an efficiency cost).</summary>
+        private const float SectorDeregulationSensitivity = 0.04f;
+
         /// <summary>
         /// Each of a country's Sectors mean-reverts Output/Employment/SectorMetric toward its own
-        /// BaselineX anchor, adjusted by that sector's own SubsidyLevel/RegulationLevel gap versus
-        /// their shared neutral 50 (the same uniform-dial idiom Country.PoliceFundingLevel/
-        /// SentencingSeverity already use). Deliberately isolated from GDP/Unemployment/Inflation/
-        /// ApprovalRating/Confidence in this pass - a descriptive breakdown only, not a new driver of
-        /// the core simulation loop (see "Economic Sectors" in CLAUDE.md for why).
+        /// BaselineX anchor, adjusted by that sector's five policy dials' gaps versus their shared
+        /// neutral 50 (the same uniform-dial idiom Country.PoliceFundingLevel/SentencingSeverity
+        /// already use). Subsidy/Regulation/TaxCredit/DeregulationNationalization all push Output and
+        /// SectorMetric the same direction as each other; ResearchGrants does too, just at a smaller
+        /// weight for Employment specifically (see the sensitivity constants above) -
+        /// DeregulationNationalization is the one deliberate divergence, flipping sign for Employment
+        /// (see Sector.DeregulationNationalizationLevel's own doc comment for why). Deliberately
+        /// isolated from GDP/Unemployment/Inflation/ApprovalRating/Confidence in this pass - a
+        /// descriptive breakdown only, not a new driver of the core simulation loop (see "Economic
+        /// Sectors" in CLAUDE.md for why).
         /// </summary>
         public static void ApplySectorEffects(Country country)
         {
             foreach (Sector sector in country.Sectors)
             {
-                float policyAdjustment = SectorSubsidySensitivity * (sector.SubsidyLevel - NeutralPolicyDialLevel)
-                    - SectorRegulationSensitivity * (sector.RegulationLevel - NeutralPolicyDialLevel);
+                float subsidyAdjustment = SectorSubsidySensitivity * (sector.SubsidyLevel - NeutralPolicyDialLevel);
+                float regulationAdjustment = -SectorRegulationSensitivity * (sector.RegulationLevel - NeutralPolicyDialLevel);
+                float taxCreditAdjustment = SectorTaxCreditSensitivity * (sector.TaxCreditLevel - NeutralPolicyDialLevel);
+                float deregulationAdjustment = SectorDeregulationSensitivity * (sector.DeregulationNationalizationLevel - NeutralPolicyDialLevel);
+                float researchGrantsGap = sector.ResearchGrantsLevel - NeutralPolicyDialLevel;
 
-                float outputTarget = sector.BaselineOutputShareOfGdp + policyAdjustment;
+                float outputAndMetricAdjustment = subsidyAdjustment + regulationAdjustment + taxCreditAdjustment
+                    + deregulationAdjustment + SectorResearchGrantsSensitivity * researchGrantsGap;
+                float employmentAdjustment = subsidyAdjustment + regulationAdjustment + taxCreditAdjustment
+                    - deregulationAdjustment + SectorResearchGrantsEmploymentSensitivity * researchGrantsGap;
+
+                float outputTarget = sector.BaselineOutputShareOfGdp + outputAndMetricAdjustment;
                 sector.OutputShareOfGdp = Mathf.Max(0f, sector.OutputShareOfGdp + SectorReversionSpeed * (outputTarget - sector.OutputShareOfGdp));
 
-                float employmentTarget = sector.BaselineEmploymentShare + policyAdjustment;
+                float employmentTarget = sector.BaselineEmploymentShare + employmentAdjustment;
                 sector.EmploymentShare = Mathf.Max(0f, sector.EmploymentShare + SectorReversionSpeed * (employmentTarget - sector.EmploymentShare));
 
-                float metricTarget = sector.BaselineSectorMetric + policyAdjustment;
+                float metricTarget = sector.BaselineSectorMetric + outputAndMetricAdjustment;
                 sector.SectorMetric = Mathf.Max(0f, sector.SectorMetric + SectorReversionSpeed * (metricTarget - sector.SectorMetric));
             }
         }

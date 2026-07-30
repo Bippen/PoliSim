@@ -2737,6 +2737,66 @@ emergency, rather than only ever being able to contribute to the fund.
   change introduced no regression under any of the already-validated conditions, not that the new
   lever itself is exercised by the standard matrix (that's what the dedicated diagnostic above was for).
 
+## Expanded Sector-Specific Policies
+`ROADMAP_BRIEF.md` Round 3 item 2 - adds the three suggested policy dials (Tax Credits, Deregulation/
+Nationalization as a single axis, Research Grants) to all four existing Sectors, on top of the
+already-proven Subsidy/Regulation pair (see "Economic Sectors"). Flagged low risk by the roadmap
+itself - same integration pattern already proven, no new tracked stats - confirmed true: no new
+`Sector` fields beyond the three dials themselves, `OutputShareOfGdp`/`EmploymentShare`/`SectorMetric`
+unchanged.
+
+- **`Sector.TaxCreditLevel`/`ResearchGrantsLevel`/`DeregulationNationalizationLevel`** (0-100, 50 =
+  neutral, the same uniform-dial idiom every policy level in this project uses): Tax Credits and
+  Research Grants mostly mirror Subsidy's existing shape (a broad, uniform positive nudge to
+  Output/Employment/SectorMetric) - Tax Credits at the same sensitivity as Subsidy (a tax credit and a
+  direct subsidy have a similar practical effect in this stylized model, just a different fiscal
+  mechanism this pass doesn't distinguish); Research Grants at the same sensitivity for Output/
+  SectorMetric but HALF for Employment specifically, since grants fund research and output, not broad
+  hiring.
+- **Deregulation/Nationalization is the one deliberate divergence from the "uniform across all three
+  stats" shape every other sector dial (old and new) uses** - and deliberately so, to avoid it being a
+  redundant duplicate of the existing RegulationLevel (a genuinely different real-world question:
+  ownership structure, not regulatory stringency - a state-owned firm and a private one can each be
+  lightly or heavily regulated in principle). Higher (more deregulated/private) nudges Output/
+  SectorMetric UP but Employment DOWN; lower (more nationalized) does the reverse - the real,
+  well-documented state-owned-enterprise tradeoff (privatization/deregulation typically gains
+  efficiency by shedding excess labor; nationalization typically preserves jobs at an efficiency
+  cost). `MacroSystem.ApplySectorEffects` computes one `outputAndMetricAdjustment` (all five dials,
+  Deregulation's own gap added directly) and one `employmentAdjustment` (same four, Deregulation's gap
+  SUBTRACTED instead, Research Grants at its own smaller weight) rather than a single shared
+  `policyAdjustment` term - a small, explicit divergence, not a full bespoke-per-sector-type formula
+  (the same formula shape still applies identically to Manufacturing/Technology/Agriculture/Finance).
+- **`PolicyDecision.SectorTaxCreditOverrides`/`SectorResearchGrantsOverrides`/
+  `SectorDeregulationNationalizationOverrides`** (three new `Dictionary<SectorType, float>` fields,
+  same "only requested entries matter" pattern as the existing two) and `SimulationManager.
+  ApplySectorPolicyChanges`'s three new clamped `TryGetValue` blocks - byte-for-byte the same
+  integration pattern as Subsidy/Regulation, confirming the roadmap's own "low risk" framing.
+- **UI** (`GameController`'s Economic Sectors tab): three more sliders per sector (12 more controls
+  total across the four sectors), same draft/cache/dirty-check/decision-building wiring already
+  established for Subsidy/Regulation, duplicated exactly - no new UI pattern invented.
+- **`growthstackstress` extended, not left behind**: this scenario's whole purpose is stressing
+  `MacroSystem.MaxTotalPotentialGrowthAdjustment` (the all-sources combined ceiling - see "Sector
+  Integration") with every available downward-pushing sector lever at once, so leaving the three new
+  dials untested here would have been a real gap - extended to also push min Tax Credits/Research
+  Grants and full Nationalization (Output-worst-case for all three) alongside the original min
+  Subsidy/max Regulation. Honestly disclosed in the scenario's own doc comment: full Nationalization is
+  worst-case for OUTPUT but pushes Employment the OPPOSITE direction (nationalization preserves jobs),
+  so this remains a worst-case test for `MaxTotalPotentialGrowthAdjustment` specifically, not
+  simultaneously for `MaxSectorUnemploymentAdjustment`/Okun's Law - exactly as it was before this
+  extension, not a new gap introduced by it.
+- **Validated**: full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations - chosen over the roadmap's own "single-scenario smoke check is
+  acceptable" allowance, since the full matrix was no more effort with the tooling already in place) -
+  zero finite/negative/out-of-range anomalies anywhere; anomaly counts (69-177 at 100 turns, 384-987
+  at 500) landed within the same range already established for the equivalent matrix run just before
+  this change. **Direct confirmation the combined ceiling absorbs the extra stress correctly**: the
+  extended `growthstackstress` (now 5 simultaneous downward-pushing sources instead of 2) landed at
+  turn-500 GDP 4,141,425 and `DebtToGdpRatio` 147.3% - essentially the SAME equilibrium as the
+  original 2-lever version's already-documented 4,178,690/147.0% (harness) and 4,180,200/147.1%
+  (real-Unity) figures in "Sector Integration" - direct evidence `MaxTotalPotentialGrowthAdjustment`
+  was already fully saturated under the old 2-lever stack, so three more downward-pushing sources
+  correctly produce no further movement, not a coincidental match.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

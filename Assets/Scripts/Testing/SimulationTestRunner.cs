@@ -400,6 +400,17 @@ namespace PoliSim.Testing
         /// for the whole run. Mirrors the standalone harness's own --growthstackstress scenario
         /// exactly.
         /// </summary>
+        /// <remarks>
+        /// Round 3 item 2 extended this to also push all three new sector policy dials to their own
+        /// Output-worst-case setting (min Tax Credits/Research Grants, fully NATIONALIZED - see
+        /// Sector.DeregulationNationalizationLevel) - now five simultaneous downward-pushing sources
+        /// feed the SAME MaxTotalPotentialGrowthAdjustment ceiling, an even harder stress than the
+        /// original two. Honest caveat: DeregulationNationalizationLevel=0 (full nationalization) is
+        /// worst-case for OUTPUT but pushes Employment the OPPOSITE direction (nationalization
+        /// preserves jobs - see Sector.cs) - this scenario is not simultaneously worst-case for
+        /// MacroSystem.MaxSectorUnemploymentAdjustment/Okun's Law the way it is for
+        /// MaxTotalPotentialGrowthAdjustment, which remains its primary target exactly as before.
+        /// </remarks>
         private static PolicyDecision BuildGrowthStackStressDecision(Country usa, int turn)
         {
             if (turn == 1)
@@ -425,6 +436,21 @@ namespace PoliSim.Testing
                 {
                     { SectorType.Manufacturing, 100f }, { SectorType.Technology, 100f },
                     { SectorType.Agriculture, 100f }, { SectorType.Finance, 100f },
+                },
+                SectorTaxCreditOverrides = new Dictionary<SectorType, float>
+                {
+                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
+                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
+                },
+                SectorResearchGrantsOverrides = new Dictionary<SectorType, float>
+                {
+                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
+                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
+                },
+                SectorDeregulationNationalizationOverrides = new Dictionary<SectorType, float>
+                {
+                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
+                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
                 }
             };
         }
