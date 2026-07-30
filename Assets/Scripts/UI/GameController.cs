@@ -294,6 +294,9 @@ namespace PoliSim.UI
         private Vector2 _logScrollPosition;
         private Vector2 _leftColumnScrollPosition;
 
+        /// <summary>Collapsed by default - the "every system has its own tab" routing text is a one-time onboarding note, not something that needs to keep costing vertical space in the dashboard on every turn once a player already knows the layout.</summary>
+        private bool _showTabGuide;
+
         private RightPanelTab _rightPanelTab = RightPanelTab.PolicyWeb;
         private Vector2 _worldMapScrollPosition;
         private Vector2 _policyWebScrollPosition;
@@ -682,20 +685,30 @@ namespace PoliSim.UI
             // "compact home view" the task asked for, not everything at once.
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label($"{_playerCountry.Name} - Turn {_simulationManager.CurrentTurn}", _headerStyle);
+
+            // Two columns instead of one long vertical list - halves this block's own height, which
+            // matters since it's one of the biggest single contributors to the left column needing to
+            // scroll at all. Split is just "first half / second half" of the same headline set, not a
+            // meaningful grouping - there's no natural pairing among these nine values worth encoding.
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical();
             DrawColoredLabel($"GDP: {state.GDP:F1}  ({_lastGrowthPercent:+0.00;-0.00;0}%)", _labelStyle, UiPalette.GetDeltaColor(_lastGrowthPercent, higherIsBetter: true));
             GUILayout.Label($"Unemployment: {state.Unemployment:F2}%", _labelStyle);
             GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
             GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
-            GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
-
             if (hasIndependentCurrency)
             {
                 GUILayout.Label($"Currency Strength: {state.CurrencyStrength:F1}", _labelStyle);
             }
+            GUILayout.EndVertical();
 
+            GUILayout.BeginVertical();
+            GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
             GUILayout.Label($"Government Debt: {state.GovernmentDebt:F1}", _labelStyle);
             GUILayout.Label($"Debt-to-GDP: {state.DebtToGdpRatio:F1}%", _labelStyle);
             GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
 
             GUILayout.Space(10f);
             DrawHeadlineGraphs(state);
@@ -1068,8 +1081,20 @@ namespace PoliSim.UI
         private void DrawPolicyControls()
         {
             GUILayout.BeginVertical(_boxStyle);
+
+            GUILayout.BeginHorizontal();
             GUILayout.Label("This Turn's Policy", _headerStyle);
-            GUILayout.Label("Every system now has its own tab (Tax/Spending/Federal Reserve/Welfare/Labor Market/Crime & Justice/Economic Sectors/Infrastructure/Sovereign Wealth Fund/Trade) - the estimate below reflects your current draft across all of them at once.", _labelStyle);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(_showTabGuide ? "Hide tab guide" : "Show tab guide", GUILayout.ExpandWidth(false)))
+            {
+                _showTabGuide = !_showTabGuide;
+            }
+            GUILayout.EndHorizontal();
+
+            if (_showTabGuide)
+            {
+                GUILayout.Label("Every system now has its own tab (Tax/Spending/Federal Reserve/Welfare/Labor Market/Crime & Justice/Economic Sectors/Infrastructure/Sovereign Wealth Fund/Trade) - the estimate below reflects your current draft across all of them at once.", _labelStyle);
+            }
 
             DrawPolicyPreview();
 
@@ -1099,14 +1124,23 @@ namespace PoliSim.UI
             // Each line's color follows UiPalette's single green-good/red-bad convention, honoring
             // which direction is actually good for that specific stat (e.g. Unemployment/Inflation/
             // Poverty/Crime falling is the GOOD direction, the opposite of GDP/Approval/LFP rising).
+            // Two columns, same "first half / second half" split as the dashboard's own headline
+            // stats - halves this list's own height too.
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical();
             DrawColoredLabel($"GDP Growth: {_cachedGdpGrowthText}", _labelStyle, UiPalette.GetDeltaColor(_cachedGdpGrowthPercentRaw, higherIsBetter: true));
             DrawColoredLabel($"Unemployment: {_cachedUnemploymentText}", _labelStyle, UiPalette.GetDeltaColor(_cachedUnemploymentChangeRaw, higherIsBetter: false));
             DrawColoredLabel($"Inflation: {_cachedInflationText}", _labelStyle, UiPalette.GetDeltaColor(_cachedInflationChangeRaw, higherIsBetter: false));
             DrawColoredLabel($"Approval: {_cachedApprovalText}", _labelStyle, UiPalette.GetDeltaColor(_cachedApprovalChangeRaw, higherIsBetter: true));
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical();
             DrawColoredLabel($"Poverty Rate: {_cachedPovertyRateText}", _labelStyle, UiPalette.GetDeltaColor(_cachedPovertyRateChangeRaw, higherIsBetter: false));
             DrawColoredLabel($"Labor Force Participation: {_cachedLaborForceParticipationRateText}", _labelStyle, UiPalette.GetDeltaColor(_cachedLaborForceParticipationRateChangeRaw, higherIsBetter: true));
             DrawColoredLabel($"Crime Index: {_cachedCrimeIndexText}", _labelStyle, UiPalette.GetDeltaColor(_cachedCrimeIndexChangeRaw, higherIsBetter: false));
             DrawColoredLabel($"Net Budget Impact: {_cachedNetBudgetText}", _labelStyle, UiPalette.GetDeltaColor(_cachedNetBudgetImpactRaw, higherIsBetter: true));
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
         }
 
         /// <summary>True if no preview has been computed yet, the turn has advanced since the last one was, or any slider's value (including any tax line's requested rate change) differs from the snapshot the cached preview was computed from.</summary>

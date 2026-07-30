@@ -67,7 +67,12 @@ namespace PoliSim.UI
                 Regenerate(history, projectedValue);
             }
 
-            Rect rect = GUILayoutUtility.GetRect(TextureWidth, TextureHeight, GUILayout.ExpandWidth(true));
+            // Display height is decoupled from the texture's own pixel resolution (StretchToFill below
+            // handles that) - a Screen.height fraction, clamped, so three stacked graphs cost
+            // meaningfully less of the dashboard's vertical budget on a typical window than the old
+            // fixed TextureHeight (90px) did, without losing plot resolution.
+            float displayHeight = Mathf.Clamp(Screen.height * 0.075f, 50f, TextureHeight);
+            Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture != null)
             {
                 GUI.DrawTexture(rect, _texture, ScaleMode.StretchToFill);
