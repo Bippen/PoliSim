@@ -357,6 +357,10 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyInflationExpectations(state);
             MacroSystem.ApplyPovertyRate(country);
             MacroSystem.ApplyLaborForceParticipationRate(country);
+            // Round 3 item 3: must run BEFORE ApplyCrimeIndex, which reads this turn's freshly-updated
+            // OrganizedCrimeIndex.
+            MacroSystem.ApplyOrganizedCrimeIndex(country);
+            MacroSystem.ApplyCorruptionIndex(country);
             MacroSystem.ApplyCrimeIndex(country);
             MacroSystem.ApplyCrimeEffects(country);
             MacroSystem.ApplyPrisonPopulationRate(country);
@@ -469,6 +473,8 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyInflationExpectations(state);
             MacroSystem.ApplyPovertyRate(previewCountry);
             MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
+            MacroSystem.ApplyOrganizedCrimeIndex(previewCountry);
+            MacroSystem.ApplyCorruptionIndex(previewCountry);
             MacroSystem.ApplyCrimeIndex(previewCountry);
             MacroSystem.ApplyCrimeEffects(previewCountry);
             MacroSystem.ApplyPrisonPopulationRate(previewCountry);
@@ -557,6 +563,10 @@ namespace PoliSim.Simulation
                 BaselinePrisonPopulationRate = country.BaselinePrisonPopulationRate,
                 BailReformLevel = country.BailReformLevel,
                 DrugPolicyLevel = country.DrugPolicyLevel,
+                BaselineOrganizedCrimeIndex = country.BaselineOrganizedCrimeIndex,
+                BaselineCorruptionIndex = country.BaselineCorruptionIndex,
+                JudicialFundingLevel = country.JudicialFundingLevel,
+                BorderEnforcementLevel = country.BorderEnforcementLevel,
                 BasePotentialGrowthRate = country.BasePotentialGrowthRate,
                 InfrastructureSpendingGrowthAdjustment = country.InfrastructureSpendingGrowthAdjustment
             };
@@ -884,10 +894,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// Sets Country.BailReformLevel/DrugPolicyLevel directly to this turn's requested
-        /// PolicyDecision overrides (each clamped to [MinPolicyDialLevel, MaxPolicyDialLevel], the
-        /// same range Crime &amp; Justice Basics' own dials use) - a no-op for either with no request
-        /// this turn (the -1 sentinel).
+        /// Sets Country.BailReformLevel/DrugPolicyLevel/JudicialFundingLevel/BorderEnforcementLevel
+        /// directly to this turn's requested PolicyDecision overrides (each clamped to
+        /// [MinPolicyDialLevel, MaxPolicyDialLevel], the same range Crime &amp; Justice Basics' own
+        /// dials use) - a no-op for any with no request this turn (the -1 sentinel). The last two were
+        /// added in Round 3 item 3.
         /// </summary>
         private void ApplyCrimeJusticeDeeperChanges(Country country, PolicyDecision decision)
         {
@@ -899,6 +910,16 @@ namespace PoliSim.Simulation
             if (decision.DrugPolicyOverride >= 0f)
             {
                 country.DrugPolicyLevel = Mathf.Clamp(decision.DrugPolicyOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+
+            if (decision.JudicialFundingOverride >= 0f)
+            {
+                country.JudicialFundingLevel = Mathf.Clamp(decision.JudicialFundingOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+
+            if (decision.BorderEnforcementOverride >= 0f)
+            {
+                country.BorderEnforcementLevel = Mathf.Clamp(decision.BorderEnforcementOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
             }
         }
 

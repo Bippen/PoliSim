@@ -325,11 +325,27 @@ namespace PoliSim.Testing
         /// CrimeIndex/PrisonPopulationRate/ApprovalRating all stay bounded. Mirrors the standalone
         /// harness's own --crimejusticestress scenario exactly.
         /// </summary>
+        /// <remarks>
+        /// Round 3 item 3 extended this to also push Judicial Funding and Border Enforcement to their
+        /// OWN worst case (0, minimum - both REDUCE OrganizedCrimeIndex/CorruptionIndex/
+        /// PrisonPopulationRate when higher, so 0 maximizes all three) alongside the original two -
+        /// now stress-testing all six Crime &amp; Justice dials and both new tracked stats
+        /// (OrganizedCrimeIndex/CorruptionIndex) at once, confirming BusinessConfidence (their shared
+        /// new output channel) and ApprovalRating (CorruptionIndex's new channel) both stay bounded
+        /// too. PoliceFundingLevel is deliberately left at its neutral default here, isolating the two
+        /// genuinely NEW levers rather than re-testing the already-proven PoliceFundingLevel.
+        /// </remarks>
         private static PolicyDecision BuildCrimeJusticeStressDecision(int turn)
         {
             if (turn == 1)
             {
-                return new PolicyDecision { BailReformOverride = 100f, DrugPolicyOverride = 100f };
+                return new PolicyDecision
+                {
+                    BailReformOverride = 100f,
+                    DrugPolicyOverride = 100f,
+                    JudicialFundingOverride = 0f,
+                    BorderEnforcementOverride = 0f
+                };
             }
 
             return PolicyDecision.None();
@@ -594,6 +610,20 @@ namespace PoliSim.Testing
 
             CheckFinite(turn, country, "BaselineCrimeIndex", country.BaselineCrimeIndex, anomalies);
             CheckFinite(turn, country, "BaselinePovertyRate", country.BaselinePovertyRate, anomalies);
+
+            CheckFinite(turn, country, "OrganizedCrimeIndex", state.OrganizedCrimeIndex, anomalies);
+            if (state.OrganizedCrimeIndex < 0f || state.OrganizedCrimeIndex > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: OrganizedCrimeIndex out of range ({state.OrganizedCrimeIndex:F2})");
+            }
+            CheckFinite(turn, country, "BaselineOrganizedCrimeIndex", country.BaselineOrganizedCrimeIndex, anomalies);
+
+            CheckFinite(turn, country, "CorruptionIndex", state.CorruptionIndex, anomalies);
+            if (state.CorruptionIndex < 0f || state.CorruptionIndex > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: CorruptionIndex out of range ({state.CorruptionIndex:F2})");
+            }
+            CheckFinite(turn, country, "BaselineCorruptionIndex", country.BaselineCorruptionIndex, anomalies);
 
             CheckFinite(turn, country, "PrisonPopulationRate", state.PrisonPopulationRate, anomalies);
             if (state.PrisonPopulationRate < 0f)

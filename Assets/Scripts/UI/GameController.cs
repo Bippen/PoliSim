@@ -163,6 +163,8 @@ namespace PoliSim.UI
         private float? _sentencingSeverityInput;
         private float? _bailReformInput;
         private float? _drugPolicyInput;
+        private float? _judicialFundingInput;
+        private float? _borderEnforcementInput;
 
         // Draft ABSOLUTE per-partner tariff override rate for the Trade tab's sliders (only shown/
         // meaningful while that partner's TradePartner.HasPlayerTariffOverride is true - mirrors
@@ -222,6 +224,8 @@ namespace PoliSim.UI
         private float? _cachedSentencingSeverityInput;
         private float? _cachedBailReformInput;
         private float? _cachedDrugPolicyInput;
+        private float? _cachedJudicialFundingInput;
+        private float? _cachedBorderEnforcementInput;
         private string _cachedGdpGrowthText;
         private string _cachedUnemploymentText;
         private string _cachedInflationText;
@@ -253,6 +257,8 @@ namespace PoliSim.UI
         private readonly GraphRenderer _interestRateGraph = new GraphRenderer();
         private readonly GraphRenderer _crimeIndexGraph = new GraphRenderer();
         private readonly GraphRenderer _prisonPopulationGraph = new GraphRenderer();
+        private readonly GraphRenderer _organizedCrimeGraph = new GraphRenderer();
+        private readonly GraphRenderer _corruptionGraph = new GraphRenderer();
         private readonly GraphRenderer _laborForceParticipationGraph = new GraphRenderer();
         private readonly GraphRenderer _tradeBalanceGraph = new GraphRenderer();
         private readonly GraphRenderer _debtToGdpGraph = new GraphRenderer();
@@ -835,10 +841,11 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Crime &amp; Justice tab (Phase 4 - moved off the dashboard into its own home): Police
-        /// Funding / Sentencing Severity / Bail Reform / Drug Policy sliders, plus CrimeIndex (a
-        /// clear direction - lower is better) and PrisonPopulationRate (deliberately neutral - see
-        /// PrisonPopulationRate's own doc comment on BailReformLevel/DrugPolicyLevel's honestly-
-        /// contested effects) history graphs.
+        /// Funding / Sentencing Severity / Bail Reform / Drug Policy / Judicial Funding / Border
+        /// Enforcement sliders (the last two added in Round 3 item 3), plus CrimeIndex/
+        /// OrganizedCrimeIndex/CorruptionIndex (a clear direction - lower is better for all three) and
+        /// PrisonPopulationRate (deliberately neutral - see PrisonPopulationRate's own doc comment on
+        /// BailReformLevel/DrugPolicyLevel's honestly-contested effects) history graphs.
         /// </summary>
         private void DrawCrimeJusticeTab(float availableHeight)
         {
@@ -866,8 +873,18 @@ namespace PoliSim.UI
             GUILayout.Label($"Drug Policy: {draftDrugPolicy:F0} (0 = decriminalized, 100 = strict criminalization)", _labelStyle);
             _drugPolicyInput = GUILayout.HorizontalSlider(draftDrugPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
+            float draftJudicialFunding = GetJudicialFundingInput(_playerCountry.JudicialFundingLevel);
+            GUILayout.Label($"Judicial Funding: {draftJudicialFunding:F0}", _labelStyle);
+            _judicialFundingInput = GUILayout.HorizontalSlider(draftJudicialFunding, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftBorderEnforcement = GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel);
+            GUILayout.Label($"Border Enforcement: {draftBorderEnforcement:F0} (0 = open/lenient, 100 = strict)", _labelStyle);
+            _borderEnforcementInput = GUILayout.HorizontalSlider(draftBorderEnforcement, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
             GUILayout.Space(10f);
             _crimeIndexGraph.Draw("Crime Index (last 50 turns)", _playerCountry.History.CrimeIndex, null, _labelStyle, higherIsBetter: false);
+            _organizedCrimeGraph.Draw("Organized Crime Index (last 50 turns)", _playerCountry.History.OrganizedCrimeIndex, null, _labelStyle, higherIsBetter: false);
+            _corruptionGraph.Draw("Corruption Index (last 50 turns)", _playerCountry.History.CorruptionIndex, null, _labelStyle, higherIsBetter: false);
             _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k (last 50 turns)", _playerCountry.History.PrisonPopulationRate, null, _labelStyle);
 
             GUILayout.EndScrollView();
@@ -1057,6 +1074,16 @@ namespace PoliSim.UI
             }
 
             if (!Mathf.Approximately(
+                    GetJudicialFundingInput(_playerCountry.JudicialFundingLevel),
+                    GetCachedJudicialFundingInput(_playerCountry.JudicialFundingLevel))
+                || !Mathf.Approximately(
+                    GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel),
+                    GetCachedBorderEnforcementInput(_playerCountry.BorderEnforcementLevel)))
+            {
+                return true;
+            }
+
+            if (!Mathf.Approximately(
                     GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks),
                     GetCachedPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks))
                 || !Mathf.Approximately(
@@ -1179,6 +1206,8 @@ namespace PoliSim.UI
             _cachedSentencingSeverityInput = _sentencingSeverityInput;
             _cachedBailReformInput = _bailReformInput;
             _cachedDrugPolicyInput = _drugPolicyInput;
+            _cachedJudicialFundingInput = _judicialFundingInput;
+            _cachedBorderEnforcementInput = _borderEnforcementInput;
             _cachedPaidFamilyLeaveWeeksInput = _paidFamilyLeaveWeeksInput;
             _cachedOvertimeRegulationInput = _overtimeRegulationInput;
             _cachedRetrainingProgramInput = _retrainingProgramInput;
@@ -1358,6 +1387,10 @@ namespace PoliSim.UI
         private float GetCachedBailReformInput(float fallbackLevel) => _cachedBailReformInput ?? fallbackLevel;
         private float GetDrugPolicyInput(float fallbackLevel) => _drugPolicyInput ?? fallbackLevel;
         private float GetCachedDrugPolicyInput(float fallbackLevel) => _cachedDrugPolicyInput ?? fallbackLevel;
+        private float GetJudicialFundingInput(float fallbackLevel) => _judicialFundingInput ?? fallbackLevel;
+        private float GetCachedJudicialFundingInput(float fallbackLevel) => _cachedJudicialFundingInput ?? fallbackLevel;
+        private float GetBorderEnforcementInput(float fallbackLevel) => _borderEnforcementInput ?? fallbackLevel;
+        private float GetCachedBorderEnforcementInput(float fallbackLevel) => _cachedBorderEnforcementInput ?? fallbackLevel;
 
         /// <summary>The Economic Sectors tab's draft absolute Subsidy level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted SubsidyLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetSectorSubsidyInput(SectorType type, float fallbackLevel)
@@ -1480,6 +1513,8 @@ namespace PoliSim.UI
             decision.SentencingSeverityOverride = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
             decision.BailReformOverride = GetBailReformInput(_playerCountry.BailReformLevel);
             decision.DrugPolicyOverride = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel);
+            decision.JudicialFundingOverride = GetJudicialFundingInput(_playerCountry.JudicialFundingLevel);
+            decision.BorderEnforcementOverride = GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel);
 
             decision.PaidFamilyLeaveWeeksOverride = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
             decision.OvertimeRegulationOverride = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel);

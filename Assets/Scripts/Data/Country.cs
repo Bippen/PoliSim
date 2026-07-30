@@ -315,6 +315,59 @@ namespace PoliSim.Data
         public float DrugPolicyLevel = 50f;
 
         /// <summary>
+        /// Round 3 item 3: this country's structural "steady-state" OrganizedCrimeIndex - the target
+        /// MacroSystem.ApplyOrganizedCrimeIndex's mean-reversion moves EconomyState.OrganizedCrimeIndex
+        /// toward absent any policy input (the same "avoid a turn-1 shock" anchor idiom
+        /// BaselineCrimeIndex already uses). Seeded per country informed by the real Global Organized
+        /// Crime Index (GI-TOC) - Italy's historic, extremely well-documented organized-crime
+        /// organizations (Cosa Nostra, Camorra, 'Ndrangheta) give it high confidence as the clear
+        /// highest of the six; Sweden's real, well-documented recent gang-violence surge (the same
+        /// fact already informing its elevated BaselineCrimeIndex) justifies its own elevated figure.
+        /// The remaining relative ordering (USA/France/Poland/Germany) is a directional, stylized
+        /// estimate, not independently confirmed against a specific index-year - see WorldFactory.
+        /// </summary>
+        public float BaselineOrganizedCrimeIndex = 25f;
+
+        /// <summary>
+        /// Round 3 item 3: this country's structural "steady-state" CorruptionIndex - the target
+        /// MacroSystem.ApplyCorruptionIndex's mean-reversion moves EconomyState.CorruptionIndex toward
+        /// absent any policy input (the same anchor idiom BaselineCrimeIndex already uses). Higher =
+        /// MORE corrupt (matching this project's own "higher = worse" convention for CrimeIndex/
+        /// PrisonPopulationRate) - seeded as roughly 100 minus the real Transparency International
+        /// Corruption Perceptions Index (CPI, itself 0-100 with higher = cleaner), not a literal
+        /// year-specific score. Nordic/German clean-government reputation and Italy's comparatively
+        /// lower CPI standing among Western European/G7 peers are both real and well-documented, high
+        /// confidence; the exact relative ordering of Italy versus Poland specifically is a directional
+        /// estimate, not confirmed against one index-year - see WorldFactory.
+        /// </summary>
+        public float BaselineCorruptionIndex = 30f;
+
+        /// <summary>
+        /// Round 3 item 3: this country's judicial system funding level, 0-100 (50 = neutral placeholder
+        /// for every country - no clean real-world cross-country "relative judicial funding" figure
+        /// exists to seed differently per country, the same uniform-dial idiom PoliceFundingLevel
+        /// already uses). Persistent, player-adjustable via PolicyDecision.JudicialFundingOverride.
+        /// Reduces OrganizedCrimeIndex (better prosecution capacity disrupts organized-crime networks)
+        /// and CorruptionIndex (an independent, well-funded judiciary is a canonical real-world
+        /// anti-corruption mechanism), and modestly reduces PrisonPopulationRate (well-funded courts
+        /// process cases faster, reducing pretrial-detention backlog - a real, well-documented driver
+        /// of high incarceration in underfunded systems) - see MacroSystem.
+        /// </summary>
+        public float JudicialFundingLevel = 50f;
+
+        /// <summary>
+        /// Round 3 item 3: this country's border enforcement strictness, 0-100 (0 = open/lenient, 100
+        /// = strict; 50 = neutral placeholder for every country, the same uniform-dial idiom
+        /// PoliceFundingLevel already uses). Persistent, player-adjustable via
+        /// PolicyDecision.BorderEnforcementOverride. Reduces OrganizedCrimeIndex - stricter enforcement
+        /// disrupts cross-border smuggling/trafficking, organized crime's real, well-documented core
+        /// activity - see MacroSystem.ApplyOrganizedCrimeIndex. Deliberately scoped to this ONE channel
+        /// for this pass, not a new labor-supply/immigration effect (keeping effects routed through
+        /// already-proven channels, per this item's own explicit instruction).
+        /// </summary>
+        public float BorderEnforcementLevel = 50f;
+
+        /// <summary>
         /// This country's independent central bank chair, or null for a country that instead uses
         /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
         /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)

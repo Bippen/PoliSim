@@ -101,6 +101,28 @@ namespace PoliSim.Data
         public float PrisonPopulationRate;
 
         /// <summary>
+        /// Round 3 item 3: a stylized 0-100 index (higher = more organized crime), NOT a literal
+        /// transformation of any single real indicator - informed by the real Global Organized Crime
+        /// Index (GI-TOC), with Italy's historic, extremely well-documented organized-crime
+        /// organizations (Cosa Nostra, Camorra, 'Ndrangheta) as the clear, high-confidence highest of
+        /// the six (see Country.BaselineOrganizedCrimeIndex for full sourcing). Mean-reverts each turn
+        /// toward Country.BaselineOrganizedCrimeIndex, adjusted by PoliceFundingLevel/
+        /// JudicialFundingLevel/BorderEnforcementLevel - see MacroSystem.ApplyOrganizedCrimeIndex.
+        /// Hard-clamped to [0, 100].
+        /// </summary>
+        public float OrganizedCrimeIndex;
+
+        /// <summary>
+        /// Round 3 item 3: a stylized 0-100 index (higher = MORE corrupt, matching this project's own
+        /// "higher = worse" convention), informed by (roughly 100 minus) the real Transparency
+        /// International Corruption Perceptions Index, not a literal year-specific score (see
+        /// Country.BaselineCorruptionIndex for full sourcing). Mean-reverts each turn toward
+        /// Country.BaselineCorruptionIndex, adjusted by JudicialFundingLevel - see
+        /// MacroSystem.ApplyCorruptionIndex. Hard-clamped to [0, 100].
+        /// </summary>
+        public float CorruptionIndex;
+
+        /// <summary>
         /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
@@ -114,7 +136,7 @@ namespace PoliSim.Data
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
             float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
             float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f, float crimeIndex = 25f,
-            float prisonPopulationRate = 100f)
+            float prisonPopulationRate = 100f, float organizedCrimeIndex = 25f, float corruptionIndex = 30f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -134,6 +156,8 @@ namespace PoliSim.Data
             LaborForceParticipationRate = laborForceParticipationRate;
             CrimeIndex = crimeIndex;
             PrisonPopulationRate = prisonPopulationRate;
+            OrganizedCrimeIndex = organizedCrimeIndex;
+            CorruptionIndex = corruptionIndex;
         }
 
         /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
@@ -143,7 +167,8 @@ namespace PoliSim.Data
                 GDP, Inflation, Unemployment, ApprovalRating, Budget,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
-                GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate);
+                GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate,
+                OrganizedCrimeIndex, CorruptionIndex);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

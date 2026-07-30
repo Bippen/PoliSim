@@ -206,7 +206,7 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   `MaxTotalPotentialGrowthAdjustment` was already fully saturated and correctly absorbs the extra
   stress.
 
-### 3. Deeper crime & justice
+### 3. Deeper crime & justice — DONE (2026-07-30)
 - Building on the existing CrimeIndex/Incarceration Rate: add Organized Crime and Corruption as new
   tracked stats (real data if findable, honestly labeled stylized if not — the same rule
   "Crime & Justice Basics" already followed), plus Judicial Funding and Border Enforcement as
@@ -214,6 +214,16 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
 - Same risk profile as Round 2's crime depth work ("Deeper Crime & Justice") — keep effects routed
   through already-proven channels (ApprovalRating/BusinessConfidence/CrimeIndex/Incarceration Rate),
   don't invent a new outcome channel for this pass.
+- **Result: implemented exactly as scoped** - see "Deeper Crime & Justice II" in CLAUDE.md.
+  OrganizedCrimeIndex informed by the real Global Organized Crime Index (Italy's well-documented
+  mafia history, Sweden's real recent gang-violence surge - both high confidence; the rest
+  directional); CorruptionIndex informed by (inverted) Transparency International CPI. Judicial
+  Funding reduces both new stats plus PrisonPopulationRate (court-backlog channel); Border
+  Enforcement reduces OrganizedCrimeIndex only - no new outcome channel invented, exactly the four
+  named channels used. `crimejusticestress` extended to also stress the two new dials. Full
+  24-combination matrix re-validated: zero finite/negative/out-of-range anomalies; the scenario's own
+  higher anomaly count traced to ambient Sweden/France SWF-driven noise (already documented to vary
+  run-to-run), not a new instability - confirmed via USA's own bounded turn-500 figures.
 
 ### 4. Expand economic sectors
 - Add 3-4 more sectors beyond the initial Manufacturing/Technology/Agriculture/Finance (suggest:

@@ -86,42 +86,42 @@ namespace PoliSim.Data
             var usa = new Country(
                 CountryId.USA, "United States",
                 new EconomyState(gdp: 29000f, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
-                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f),
+                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f, organizedCrimeIndex: 35f, corruptionIndex: 31f),
                 usDollarZone, baseTariffRate: 3f,
                 naturalUnemploymentRate: 4.0f, potentialGrowthRate: 2.0f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);
 
             var sweden = new Country(
                 CountryId.Sweden, "Sweden",
                 new EconomyState(gdp: 620f, inflation: 2.0f, unemployment: 8.0f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f, prisonPopulationRate: 60f),
+                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f, prisonPopulationRate: 60f, organizedCrimeIndex: 32f, corruptionIndex: 18f),
                 swedishKronaZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 6.5f, potentialGrowthRate: 1.5f, governmentSpendingRate: 26f, benefitRatePerUnemployed: 0.25f);
 
             var germany = new Country(
                 CountryId.Germany, "Germany",
                 new EconomyState(gdp: 4700f, inflation: 3.0f, unemployment: 3.5f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f, crimeIndex: 25f, prisonPopulationRate: 72f),
+                    governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f, crimeIndex: 25f, prisonPopulationRate: 72f, organizedCrimeIndex: 20f, corruptionIndex: 22f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 3.3f, potentialGrowthRate: 0.8f, governmentSpendingRate: 21f, benefitRatePerUnemployed: 0.20f);
 
             var france = new Country(
                 CountryId.France, "France",
                 new EconomyState(gdp: 3200f, inflation: 3.0f, unemployment: 7.3f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f, crimeIndex: 30f, prisonPopulationRate: 111f),
+                    governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f, crimeIndex: 30f, prisonPopulationRate: 111f, organizedCrimeIndex: 28f, corruptionIndex: 30f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 7.5f, potentialGrowthRate: 0.8f, governmentSpendingRate: 24f, benefitRatePerUnemployed: 0.22f);
 
             var italy = new Country(
                 CountryId.Italy, "Italy",
                 new EconomyState(gdp: 2300f, inflation: 3.0f, unemployment: 7.8f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f, crimeIndex: 18f, prisonPopulationRate: 92f),
+                    governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f, crimeIndex: 18f, prisonPopulationRate: 92f, organizedCrimeIndex: 55f, corruptionIndex: 44f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 8.0f, potentialGrowthRate: 0.8f, governmentSpendingRate: 19f, benefitRatePerUnemployed: 0.18f);
 
             var poland = new Country(
                 CountryId.Poland, "Poland",
                 new EconomyState(gdp: 840f, inflation: 2.2f, unemployment: 5.4f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f, crimeIndex: 20f, prisonPopulationRate: 185f),
+                    governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f, crimeIndex: 20f, prisonPopulationRate: 185f, organizedCrimeIndex: 22f, corruptionIndex: 40f),
                 polishZlotyZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 5.0f, potentialGrowthRate: 3.5f, governmentSpendingRate: 18f, benefitRatePerUnemployed: 0.12f);
 
@@ -281,6 +281,40 @@ namespace PoliSim.Data
             france.BaselineCrimeIndex = 30f;
             italy.BaselineCrimeIndex = 18f;
             poland.BaselineCrimeIndex = 20f;
+
+            // Round 3 item 3: MacroSystem.ApplyOrganizedCrimeIndex's per-country structural anchor -
+            // the SAME stylized 0-100 figures EconomyState.OrganizedCrimeIndex was just seeded to
+            // above. Informed by the real Global Organized Crime Index (GI-TOC): Italy's historic,
+            // extremely well-documented organized-crime organizations (Cosa Nostra, Camorra,
+            // 'Ndrangheta) give it high confidence as the clear highest of the six; Sweden's real,
+            // well-documented recent gang-violence surge (the same fact already informing its
+            // elevated BaselineCrimeIndex above) justifies its own elevated figure. USA/France/Poland/
+            // Germany's relative ordering beyond those two is a directional, stylized estimate, not
+            // independently confirmed against a specific index-year.
+            usa.BaselineOrganizedCrimeIndex = 35f;
+            sweden.BaselineOrganizedCrimeIndex = 32f;
+            germany.BaselineOrganizedCrimeIndex = 20f;
+            france.BaselineOrganizedCrimeIndex = 28f;
+            italy.BaselineOrganizedCrimeIndex = 55f;
+            poland.BaselineOrganizedCrimeIndex = 22f;
+
+            // Round 3 item 3: MacroSystem.ApplyCorruptionIndex's per-country structural anchor - the
+            // SAME stylized 0-100 figures EconomyState.CorruptionIndex was just seeded to above.
+            // Higher = MORE corrupt (this project's own "higher = worse" convention), informed by
+            // roughly 100 minus the real Transparency International Corruption Perceptions Index
+            // (itself 0-100, higher = cleaner) - not a literal year-specific score. Nordic/German
+            // clean-government reputation and Italy's comparatively lower CPI standing among Western
+            // European/G7 peers are both real and well-documented, high confidence; the exact relative
+            // ordering of Italy versus Poland specifically is a directional estimate, not confirmed
+            // against one index-year. JudicialFundingLevel/BorderEnforcementLevel are left at
+            // Country's own default (50, neutral) for every country - the same uniform-placeholder
+            // reasoning PoliceFundingLevel/SentencingSeverity already established.
+            usa.BaselineCorruptionIndex = 31f;
+            sweden.BaselineCorruptionIndex = 18f;
+            germany.BaselineCorruptionIndex = 22f;
+            france.BaselineCorruptionIndex = 30f;
+            italy.BaselineCorruptionIndex = 44f;
+            poland.BaselineCorruptionIndex = 40f;
 
             SeedWelfarePrograms(usa);
             SeedWelfarePrograms(sweden);

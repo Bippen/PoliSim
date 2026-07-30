@@ -32,6 +32,11 @@ namespace PoliSim.Data
         public readonly List<float> CrimeIndex = new List<float>();
         public readonly List<float> PrisonPopulationRate = new List<float>();
 
+        // Round 3 item 3: two more Crime & Justice tab stats, same "already an EconomyState field,
+        // purely additive bookkeeping" reasoning as the four above.
+        public readonly List<float> OrganizedCrimeIndex = new List<float>();
+        public readonly List<float> CorruptionIndex = new List<float>();
+
         /// <summary>
         /// Appends this turn's already-settled values. <paramref name="interestRate"/> is passed
         /// separately (not read from <paramref name="state"/>) since the rate lives on the country's
@@ -50,6 +55,8 @@ namespace PoliSim.Data
             AppendBounded(LaborForceParticipationRate, state.LaborForceParticipationRate);
             AppendBounded(CrimeIndex, state.CrimeIndex);
             AppendBounded(PrisonPopulationRate, state.PrisonPopulationRate);
+            AppendBounded(OrganizedCrimeIndex, state.OrganizedCrimeIndex);
+            AppendBounded(CorruptionIndex, state.CorruptionIndex);
         }
 
         private static void AppendBounded(List<float> buffer, float value)

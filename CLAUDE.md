@@ -2797,6 +2797,82 @@ unchanged.
   was already fully saturated under the old 2-lever stack, so three more downward-pushing sources
   correctly produce no further movement, not a coincidental match.
 
+## Deeper Crime & Justice II
+`ROADMAP_BRIEF.md` Round 3 item 3 - adds two more tracked stats (`OrganizedCrimeIndex`,
+`CorruptionIndex`) and two more policy dials (`JudicialFundingLevel`, `BorderEnforcementLevel`),
+building on "Crime & Justice Basics"/"Deeper Crime & Justice"'s existing precedent. Effects kept
+routed through the four channels the roadmap named explicitly - `ApprovalRating`, `BusinessConfidence`,
+`CrimeIndex`, `PrisonPopulationRate` (Incarceration Rate) - no new outcome channel invented.
+
+- **`EconomyState.OrganizedCrimeIndex`** (0-100, higher = more organized crime, the same stylized
+  scale `CrimeIndex` uses): informed by the real Global Organized Crime Index (GI-TOC) - Italy's
+  historic, extremely well-documented organized-crime organizations (Cosa Nostra, Camorra,
+  'Ndrangheta) give it high confidence as the clear highest of the six (seeded 55); Sweden's real,
+  well-documented recent gang-violence surge (the SAME fact already informing its elevated
+  `BaselineCrimeIndex`) justifies its own elevated figure (32). USA (35)/France (28)/Poland (22)/
+  Germany (20)'s relative ordering beyond those two is a directional, stylized estimate, honestly
+  NOT independently confirmed against a specific index-year.
+- **`EconomyState.CorruptionIndex`** (0-100, higher = MORE corrupt - inverted from the real
+  Transparency International Corruption Perceptions Index, which runs the opposite direction, higher
+  = cleaner, so this project's own "higher = worse" convention could stay consistent with
+  `CrimeIndex`/`PrisonPopulationRate`): Nordic/German clean-government reputation (Sweden 18, Germany
+  22) and Italy's comparatively lower CPI standing among Western European/G7 peers (44, the highest
+  of the six) are both real and well-documented, high confidence; France (30)/USA (31)/Poland (40)'s
+  exact relative ordering, and Italy-versus-Poland specifically, is a directional estimate, not
+  confirmed against one index-year.
+- **`Country.JudicialFundingLevel`** (0-100, 50 = neutral, the same uniform-dial idiom
+  `PoliceFundingLevel` established) reduces BOTH new stats (better prosecution capacity disrupts
+  organized crime; an independent, well-funded judiciary is a canonical real-world anti-corruption
+  mechanism) AND `PrisonPopulationRate` (well-funded courts process cases faster, reducing the
+  pretrial-detention backlog that swells incarceration in underfunded systems - a real, well-
+  documented indirect channel, deliberately smaller than `BailReformLevel`'s own direct mechanical
+  effect). **`Country.BorderEnforcementLevel`** (0-100, 50 = neutral, 0 = open/lenient, 100 = strict)
+  reduces ONLY `OrganizedCrimeIndex` - stricter enforcement disrupts cross-border smuggling/
+  trafficking, organized crime's real, well-documented core activity - deliberately scoped to this
+  one channel, not a new labor-supply/immigration effect, per the item's own "don't invent a new
+  outcome channel" instruction. `PoliceFundingLevel` (existing dial) also contributes a smaller,
+  secondary reduction to `OrganizedCrimeIndex` - policing already fights organized crime in reality,
+  reusing an existing lever rather than requiring a brand-new one for this one link.
+- **`MacroSystem.ApplyOrganizedCrimeIndex`/`ApplyCorruptionIndex`** (new methods, mean-reverting
+  toward `Country.BaselineOrganizedCrimeIndex`/`BaselineCorruptionIndex` the same way `ApplyCrimeIndex`
+  already does) must run BEFORE `ApplyCrimeIndex`, which now reads `OrganizedCrimeIndex` fresh (a new
+  `OrganizedCrimeIndexSensitivity` term - organized crime is a real, direct contributor to overall
+  crime levels in most criminological frameworks) - the same "must see this turn's just-updated
+  value" timing requirement Infrastructure Feedback's condition-drag already established.
+- **Output channels, all GAPS versus each stat's own baseline** (the same idiom every prior crime
+  effect uses): `ApplyCrimeEffects` (BusinessConfidence) gained `OrganizedCrimeBusinessConfidenceSensitivity`
+  and `CorruptionBusinessConfidenceSensitivity` terms (both the same magnitude as the existing
+  `CrimeBusinessConfidenceSensitivity` - organized crime and corruption both deter legitimate
+  investment, real and well-documented, per World Bank/IMF governance literature for corruption
+  specifically); `ApplyApprovalRating`'s misery penalty gained a `CorruptionApprovalSensitivity` term
+  (0.15, slightly smaller than `CrimeApprovalSensitivity`'s 0.2 - corruption's political salience
+  varies more by country/culture than crime's does, an honestly-disclosed stylized judgment call, not
+  a precisely-fitted figure).
+- **UI** (`GameController`'s existing Crime & Justice tab): two more sliders (Judicial Funding,
+  Border Enforcement) alongside the existing four, plus two more `GraphRenderer` history graphs
+  (Organized Crime Index, Corruption Index - both `higherIsBetter: false`, the same clear-direction
+  convention `CrimeIndex`'s own graph uses). `StatHistory` gained matching buffers, purely additive
+  bookkeeping like its four existing crime-related buffers.
+- **`crimejusticestress` extended, not left behind**: pushed `JudicialFundingOverride`/
+  `BorderEnforcementOverride` to 0 (their own worst case - both REDUCE the two new stats when higher,
+  so 0 maximizes both) alongside the original `BailReformOverride`/`DrugPolicyOverride` = 100, now
+  stress-testing all six Crime & Justice dials and both new tracked stats at once, confirming
+  `BusinessConfidence`/`ApprovalRating` (their new output channels) stay bounded too.
+  `PoliceFundingLevel` deliberately left at its neutral default, isolating the two genuinely NEW
+  levers rather than re-testing the already-proven one.
+- **Validated**: full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations) - zero finite/negative/out-of-range anomalies anywhere for
+  `OrganizedCrimeIndex`/`CorruptionIndex` or any pre-existing field; every flagged anomaly (6,787
+  total) was the already-established small-magnitude swing false positive. `crimejusticestress`'s own
+  anomaly count ran higher than Round 2's documented range (424 vs. 178-215 at 500 turns), traced to
+  the ambient Sweden/France SWF-driven `DebtToGdpRatio` swing noise (already established to vary
+  significantly run-to-run given its own unseeded randomness - see "Sovereign Wealth Fund Return-Model
+  Rebalance") dominating the count for this specific run's random draw, NOT a new instability from
+  this change - confirmed by isolating the scenario's own flagged fields (`DebtToGdpRatio`/`Inflation`/
+  `Unemployment`/`InterestRate` only, none of them new to this item) and by USA's own turn-500 figures
+  under the extended stress (GDP still growing at +1.55%/turn, `DebtToGdpRatio` 148.5% - within the
+  already-established ~142-150% equilibrium range, not a divergence).
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

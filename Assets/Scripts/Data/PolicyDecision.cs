@@ -192,6 +192,14 @@ namespace PoliSim.Data
         public float DrugPolicyOverride = -1f;
 
         /// <summary>
+        /// Round 3 item 3: this turn's requested ABSOLUTE Judicial Funding/Border Enforcement settings
+        /// (each -1 = no change requested this turn, the same sentinel idiom as MinimumWageOverride).
+        /// See SimulationManager.ApplyCrimeJusticeDeeperChanges.
+        /// </summary>
+        public float JudicialFundingOverride = -1f;
+        public float BorderEnforcementOverride = -1f;
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,
