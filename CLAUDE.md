@@ -1721,7 +1721,8 @@ country-agnostic, so a later pass could enable it elsewhere with no code changes
   isolation precedent. `SimulationManager.PreviewTurn` uses the deterministic AVERAGE return instead
   of an actual random draw (via `GetAverageReturnEstimate`), matching `PreviewTurn`'s own documented
   "side-effect-free, deterministic" principle - it never rolls an `EventSystem` event either, for the
-  same reason.
+  same reason. **This return model was later rebalanced against real Norway GPFG data and given
+  genuine downside volatility - see "Sovereign Wealth Fund Return-Model Rebalance" below.**
 - **Real fiscal integration** (unlike "Economic Sectors"' deliberate isolation - this item's task
   explicitly requires it): the contribution is a new budget EXPENSE, added into
   `ApplyRevenueAndSpending`'s existing total outflow (alongside `UnemploymentBenefitCost`/
@@ -2528,6 +2529,76 @@ spending data to swing on for the first time, not a regression - the full stress
 single baseline scenario) was run here specifically because, unlike the UI-only phases above, Part 2
 does touch `SimulationManager`.
 
+## Sovereign Wealth Fund Return-Model Rebalance
+A follow-up to the Sweden/France debt-floor investigation above (see "Country Selection") and the
+known-limitation note it produced (see "Status" below) - rebalances `SovereignWealthFundSystem`'s
+return model against real-world data and gives it genuine downside volatility, without touching the
+debt floor clamp, the Fiscal Reaction Function, or any of the six countries' own calibration
+(`PotentialGDP`, `CollectionEfficiency`, debt seeds) - the brief for this item was explicit that the
+fix should come from making SWF returns realistic, not from adjusting anything else to compensate.
+
+- **Real per-asset-class means, re-anchored to Norway's GPFG**: Equities 8% (global long-run average,
+  down from 9%), Bonds 4% (down from 4.5%), Infrastructure unchanged at 7%, Real Estate 7% (up from
+  6%). At this game's default 40/30/15/15 weighting these blend to ~6.5%/turn - close to Norway's
+  Government Pension Fund Global's own real long-run nominal average (~6-6.6% since 1998, source:
+  NBIM's published annual returns), despite this game's default mix being materially more conservative
+  than GPFG's own (~70% equities) - a similar-or-lower blended figure for a more conservative mix is
+  the expected, correct direction, not a precise target.
+- **The player's own Asset Class Mix weights were already driving the weighted-average return before
+  this task** - `SovereignWealthFundSystem.ApplyReturns`/`GetAverageReturnEstimate` both already read
+  `SovereignWealthFund.GetNormalizedWeight` per asset class, so a more equity-heavy player mix already
+  earned (and swung) more than a bond-heavy one. Verified directly before assuming otherwise. The
+  fund's own UI text disclaiming "this pass doesn't model differing returns by allocation" refers
+  specifically to the separate Domestic Allocation slider (domestic vs. international), which
+  genuinely remains unmodeled (both draw from the same asset-class return model) - left in place,
+  not removed, since removing it would now overstate what this pass does.
+- **Genuine downside volatility, replacing a uniform ± band with a normal distribution**: each asset
+  class's return is now a Gaussian draw (Box-Muller transform off the same shared, isolated
+  `System.Random`) with its own real-world-grounded standard deviation (Equities 16%, Bonds 6%,
+  Infrastructure 10%, Real Estate 10% - real estate's damped somewhat below listed-REIT volatility
+  since a sovereign fund's real estate book is typically unlisted/appraisal-based, matching GPFG's
+  own), rather than a fixed [average-variance, average+variance] band that made a genuinely negative
+  BLENDED turn possible only in an astronomically narrow tail (confirmed by direct calculation before
+  changing anything: under the old model, only equities could go negative at all - down to -3% - and
+  every other class's band was entirely positive, so a negative blended turn required equities
+  simultaneously near its own worst case AND the other three simultaneously near theirs, in a
+  continuous-uniform, effectively never-observed tail).
+- **Validated exactly as specified - the same per-turn `[SWFDIAG]` diagnostic approach used for the
+  original Sweden/France investigation, re-run at 500 turns, before AND after this change, on the same
+  code otherwise unmodified**:
+  - **Before** (old model): both countries' `DebtToGdpRatio` reaches and then stays pinned at almost
+    exactly 0% for the great majority of the 500-turn run - Sweden from turn ~30 onward, France from
+    turn ~80 onward - matching the original investigation's finding, just confirmed at the longer
+    horizon.
+  - **After** (new model): genuine negative `SwfReturns` turns are now directly observed and frequent
+    (e.g. Sweden: -34.1 at turn 30, -725.7 at turn 80, -3,694.9 at turn 250; France: -173.7 at turn 50,
+    -3,642.7 at turn 300) and produce real, sustained excursions away from the floor that did not exist
+    under the old model - France's `DebtToGdpRatio` oscillates between roughly 7% and 90% from turn 80
+    through turn 200 (versus permanently pinned at 0% over the same span before), and Sweden bounces up
+    to 24.6% at turn 200 (versus never exceeding ~3% before at that point in the run).
+  - **Honest disclosure: this does NOT fully resolve the debt-floor limitation at a 500-turn horizon**
+    - by turn 500, both countries still land back at exactly 0% `DebtToGdpRatio` in this run, same
+    nominal end-state as before. Root cause, confirmed by cross-referencing `SwfAssets` between the
+    before/after runs: both converge to almost the exact same figure by turn 500 (Sweden: ~3.06M before
+    vs. ~3.06M after; France: ~328.5K in both) - the fund's `TotalAssets` reaches its own pre-existing,
+    untouched 300%-of-GDP ceiling (see "Sovereign Wealth Fund"'s `MaxSwfToGdpPercent`) well before turn
+    500 in both models, and once there, even a realistic ~6.5% mean return generates an absolute-dollar
+    income stream (~6.5% of 3x GDP, i.e. ~19.5% of GDP per turn on average) large enough to still pay
+    debt down to zero given enough remaining turns - genuine down years slow this and produce real,
+    multi-decade-scale excursions away from the floor (a real, meaningful improvement to the PATH), but
+    don't structurally prevent the long-run END STATE, because the dominant driver is fund SIZE against
+    its own cap, not return-model smoothness. This is exactly the situation the "known limitation" note
+    below anticipated, and this validation confirms - rather than contradicts - that a returns-only fix
+    (as this task was explicitly scoped) cannot close the gap alone; doing so would need one of the two
+    directions already flagged there (an SWF drawdown lever, or debt-floor slack), neither pursued here
+    per this task's own explicit constraint not to adjust anything else to compensate.
+- **Full real-Unity matrix re-validation** (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations): 6,445 total flagged anomalies (up from Part 2's 3,445, expected
+  given genuinely more turn-to-turn volatility is the explicit goal here) - every single one is the
+  already-established small-magnitude swing false positive (4,860 `DebtToGdpRatio`, 924 `Inflation`,
+  71 `Unemployment`), concentrated on Sweden (2,942) and France (1,917) as expected - zero finite/
+  negative/out-of-range anomalies anywhere across the full matrix.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -2609,12 +2680,18 @@ country's Sovereign Wealth Fund returns compounding against the fiscal reaction 
 zone (`fiscalReactionMultiplier` floored at 0.5) faster than that negative feedback can offset it -
 confirmed not a crash or genuine anomaly (real-Unity matrix validation: zero finite/negative/
 out-of-range anomalies for either country), but a real gap against the "six distinct, realistic fiscal
-personalities" goal "Fiscal Reaction Function" otherwise achieved. Worth a future look, not urgent -
-two plausible directions, neither pursued here: giving the Sovereign Wealth Fund a countercyclical
-drawdown lever (there is currently no mechanic of any kind for a fund to shrink - `ContributionRatePercent`
-only ever adds to it, so a fund's returns compound unchecked regardless of the domestic business cycle),
-or giving the debt floor itself a small amount of slack instead of a hard clamp at exactly 0%. USA's
-seeded
+personalities" goal "Fiscal Reaction Function" otherwise achieved. **Update**: the return model itself
+was subsequently rebalanced against real Norway GPFG data and given genuine downside volatility (see
+"Sovereign Wealth Fund Return-Model Rebalance" above) - real down years now produce genuine, sustained
+multi-decade excursions away from the floor (a real improvement to the PATH), but a 500-turn no-policy
+baseline still lands both countries back at exactly 0% by the end, confirming the root cause is fund
+SIZE against its own pre-existing 300%-of-GDP cap, not return-model smoothness - a returns-only fix
+cannot close this gap alone. Still worth a future look, not urgent - the same two directions, neither
+pursued yet, now confirmed necessary rather than just plausible: giving the Sovereign Wealth Fund a
+countercyclical drawdown lever (there is currently no mechanic of any kind for a fund to shrink -
+`ContributionRatePercent` only ever adds to it, so a fund's returns compound unchecked regardless of
+the domestic business cycle), or giving the debt floor itself a small amount of slack instead of a
+hard clamp at exactly 0%. USA's seeded
 `PotentialGDP` was subsequently recalibrated (see "Turn-1 GDP Consistency") so this -13% to -15%
 equilibrium gap is already in effect from turn 1, instead of opening near 0% and sliding into it over
 the first ~25 turns - closing off a real, one-time ~9% GDP contraction the very first turn of any new
