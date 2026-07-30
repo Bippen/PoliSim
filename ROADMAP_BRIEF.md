@@ -150,12 +150,66 @@ reaching it, that's the correct outcome, not a failure.
 Same standing brief, same non-negotiable working discipline above (real-Unity validation via
 `BatchSimulationRunner` at 100/500 turns, one commit per item, escalate genuine design judgment
 calls to Open Questions rather than deciding silently, ground new mechanics in real data, keep scope
-small on the first pass) — none of it is superseded or relaxed for this round.
+small on the first pass) — none of it is superseded or relaxed for this round. Full validation
+matrix required for anything fiscal-touching (items 1, 4, and 5 explicitly) — a single-scenario smoke
+check is acceptable only for item 2 (UI/policy-only, no new tracked feedback).
 
 **Not started — queued for future work, no timeline.** Added 2026-07-30, after Round 2 and the
 UI revamp / country-selection / SWF-return-model work that followed it had all landed.
 
-### 1. Demographic system (population aging, birth/death rates, immigration)
+**Ordering note:** items are sequenced safest/most-proven-pattern first, riskiest/most novel last —
+the same principle Round 2's own ordering note used. Item 1 (SWF drawdown) extends an already-built,
+already-validated system rather than inventing one, so it leads. Items 2-4 each extend an existing,
+proven integration pattern (sector policies, crime stats/policies, more sectors), with item 4 flagged
+moderate-risk given it adds MORE contributors into an already-shared, already-near-its-ceiling
+combined growth adjustment. Item 5 (Demographics) is deliberately last: brand-new tracked data
+feeding three existing systems simultaneously, the same reasoning that put the Sovereign Wealth Fund
+last in Round 2. If time runs out before reaching it, that's the correct outcome, not a failure.
+
+### 1. Sovereign Wealth Fund drawdown mechanic
+- Directly closes the gap identified in the just-finished SWF-returns rebalance task (see "Sovereign
+  Wealth Fund Return-Model Rebalance" in CLAUDE.md and the known-limitation note in "Status"): allow
+  withdrawing fund assets during a recession/emergency — a policy lever, not automatic — reducing
+  `SwfAssets` and correspondingly reducing the fund's ability to pay debt to zero purely through
+  unconstrained growth against its own 300%-of-GDP ceiling.
+- **Lower risk than starting something new** — this extends an already-built, already-validated
+  system (`SovereignWealthFund`/`SovereignWealthFundSystem`) rather than inventing one.
+- Full validation matrix required (fiscal-touching, same extra caution every SWF-adjacent item has
+  needed) — specifically re-test Sweden/France's 500-turn trajectory (the same per-turn diagnostic
+  approach used for the original debt-floor investigation and its returns-rebalance follow-up) to
+  confirm this, combined with the realistic-returns fix already shipped, actually RESOLVES the
+  debt-floor pinning rather than just slowing/delaying it further.
+
+### 2. Expand sector-specific policies
+- Add 3-4 more of the original roadmap's sector policy types (suggest: Tax Credits,
+  Deregulation/Nationalization as a single axis, Research Grants) to the 4 existing sectors
+  (Manufacturing/Technology/Agriculture/Finance).
+- **Low risk** — same integration pattern already proven (Subsidy/Regulation dials), no new tracked
+  stats. Single-scenario smoke check is acceptable here — UI/policy-only, no new tracked feedback.
+
+### 3. Deeper crime & justice
+- Building on the existing CrimeIndex/Incarceration Rate: add Organized Crime and Corruption as new
+  tracked stats (real data if findable, honestly labeled stylized if not — the same rule
+  "Crime & Justice Basics" already followed), plus Judicial Funding and Border Enforcement as
+  policies.
+- Same risk profile as Round 2's crime depth work ("Deeper Crime & Justice") — keep effects routed
+  through already-proven channels (ApprovalRating/BusinessConfidence/CrimeIndex/Incarceration Rate),
+  don't invent a new outcome channel for this pass.
+
+### 4. Expand economic sectors
+- Add 3-4 more sectors beyond the initial Manufacturing/Technology/Agriculture/Finance (suggest:
+  Energy, Construction, Retail, Telecommunications), using the now-proven integrated pattern (Output/
+  Employment/one sector-specific metric, Subsidy/Regulation dials, feeding `PotentialGrowthRate`/
+  Unemployment per "Sector Integration").
+- **Moderate risk**: `PotentialGrowthRate` already has THREE stacked nudge sources (Infrastructure
+  spending, Infrastructure condition, Sector performance — see "Sector Integration"). Adding more
+  sectors means MORE contributions into that same combined ceiling, not a fourth independent one —
+  re-confirm the ceiling still holds with a larger sector count via a DEDICATED stress scenario
+  (all new and existing sectors pushed to their Subsidy/Regulation extremes simultaneously), not just
+  the standard matrix, the same "actively binds, not just theoretically present" standard
+  "Infrastructure Feedback"/"Sector Integration" already established.
+
+### 5. Demographic system (population aging, birth/death rates, immigration)
 - **Large, independent system — do not treat this as a small addition.** Unlike most items above,
   this doesn't extend an existing proven mechanic; it's new plumbing (an age-structure/population
   model) that several OTHER systems then read from. Scope the first pass with the same "small,
