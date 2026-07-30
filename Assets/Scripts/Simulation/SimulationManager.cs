@@ -213,6 +213,16 @@ namespace PoliSim.Simulation
         private readonly Dictionary<CountryId, FiscalTurnReport> _lastFiscalReports = new Dictionary<CountryId, FiscalTurnReport>();
         private readonly Dictionary<CountryId, EconomicEvent> _lastEventsByCountry = new Dictionary<CountryId, EconomicEvent>();
 
+        /// <summary>
+        /// Political Systems Overhaul Part A: cabinet decisions rolled but not yet resolved by a
+        /// player-picked response, per country - unlike EconomicEvent (auto-applied, so only ever
+        /// this turn's single result needs remembering), these persist across frames until
+        /// ResolveCabinetDecision clears them, since GameController blocks Advance Turn while any
+        /// remain (mirrors the existing hasPendingFedChairSelection gate - see OnGUI).
+        /// </summary>
+        private readonly Dictionary<CountryId, List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>> _pendingCabinetDecisionsByCountry =
+            new Dictionary<CountryId, List<(CabinetPortfolio, CabinetDecision)>>();
+
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
         {
@@ -223,6 +233,24 @@ namespace PoliSim.Simulation
         public EconomicEvent GetLastEvent(CountryId countryId)
         {
             return _lastEventsByCountry.TryGetValue(countryId, out EconomicEvent economicEvent) ? economicEvent : null;
+        }
+
+        /// <summary>Every cabinet decision rolled for this country that the player hasn't responded to yet (usually empty) - see GameController's Cabinet tab and hasPendingCabinetDecisions gate.</summary>
+        public List<(CabinetPortfolio Portfolio, CabinetDecision Decision)> GetPendingCabinetDecisions(CountryId countryId)
+        {
+            return _pendingCabinetDecisionsByCountry.TryGetValue(countryId, out var pending) ? pending : new List<(CabinetPortfolio, CabinetDecision)>();
+        }
+
+        /// <summary>Applies the player's chosen response to one pending cabinet decision and clears it from the pending list - called once per response, from GameController.</summary>
+        public void ResolveCabinetDecision(CountryId countryId, CabinetPortfolio portfolio, CabinetDecision decision, CabinetDecisionOption chosenOption)
+        {
+            Country country = _world.GetCountry(countryId);
+            CabinetSystem.ApplyDecisionOption(country, chosenOption);
+
+            if (_pendingCabinetDecisionsByCountry.TryGetValue(countryId, out var pending))
+            {
+                pending.RemoveAll(p => p.Portfolio == portfolio && p.Decision == decision);
+            }
         }
 
         /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>
@@ -378,6 +406,17 @@ namespace PoliSim.Simulation
             EconomicEvent economicEvent = EventSystem.TryRollEvent();
             _lastEventsByCountry[country.Id] = economicEvent;
             EventSystem.ApplyEvent(country, economicEvent);
+
+            // Political Systems Overhaul Part A: unlike EconomicEvent, a fired decision needs a
+            // player-picked response before its effect lands (see ResolveCabinetDecision) - appended,
+            // not overwritten, though in practice this list is always empty going in, since
+            // GameController blocks Advance Turn while any previous decision is still unresolved.
+            if (!_pendingCabinetDecisionsByCountry.TryGetValue(country.Id, out var pendingDecisions))
+            {
+                pendingDecisions = new List<(CabinetPortfolio, CabinetDecision)>();
+                _pendingCabinetDecisionsByCountry[country.Id] = pendingDecisions;
+            }
+            pendingDecisions.AddRange(CabinetSystem.TryRollDecisions(country));
         }
 
         /// <summary>
@@ -1404,23 +1443,30 @@ namespace PoliSim.Simulation
         /// <summary>
         /// Government revenue is GetTotalTaxRevenue's theoretical figure scaled down by the country's
         /// CollectionEfficiency (enforcement quality/informal economy/evasion - see Country's doc
-        /// comment) and then by GetFiscalReactionMultiplier (the automatic fiscal-tightening/-loosening
-        /// response to this country's own debt-to-GDP gap - see that method and "Fiscal Reaction
-        /// Function" in CLAUDE.md); this turn's budget balance is that actual revenue minus total
-        /// spending (government spending, Mandatory SpendingLine total (0 for a country without a
-        /// detailed portfolio), unemployment benefits, interest on debt, and welfare program cost - see
-        /// GetTotalWelfareCost - benefits, mandatory transfers, interest, and welfare are all transfers,
-        /// not purchases, so they're deliberately excluded from MacroSystem's national accounts G
-        /// term). A deficit adds to GovernmentDebt, a surplus reduces it, hard-clamped to a sane
-        /// debt-to-GDP range. Returns the actual (post-efficiency, post-reaction) revenue so the caller
-        /// can record it on this turn's FiscalTurnReport.
+        /// comment), nudged by the Finance/Treasury Cabinet minister's passive competence bias if one
+        /// is appointed (Political Systems Overhaul Part A - see CabinetSystem.GetCompetenceBias,
+        /// applied at point-of-use here rather than mutating the stored CollectionEfficiency field,
+        /// since that field has no reversion mechanism of its own to correct a permanent drift - the
+        /// same "may be safer to land somewhere more contained" reasoning the Master Roadmap's own
+        /// Part A spec calls for), and then by GetFiscalReactionMultiplier (the automatic
+        /// fiscal-tightening/-loosening response to this country's own debt-to-GDP gap - see that
+        /// method and "Fiscal Reaction Function" in CLAUDE.md); this turn's budget balance is that
+        /// actual revenue minus total spending (government spending, Mandatory SpendingLine total (0
+        /// for a country without a detailed portfolio), unemployment benefits, interest on debt, and
+        /// welfare program cost - see GetTotalWelfareCost - benefits, mandatory transfers, interest,
+        /// and welfare are all transfers, not purchases, so they're deliberately excluded from
+        /// MacroSystem's national accounts G term). A deficit adds to GovernmentDebt, a surplus
+        /// reduces it, hard-clamped to a sane debt-to-GDP range. Returns the actual (post-efficiency,
+        /// post-reaction) revenue so the caller can record it on this turn's FiscalTurnReport.
         /// </summary>
         private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns)
         {
             EconomyState state = country.State;
             float theoreticalRevenue = GetTotalTaxRevenue(country);
             float fiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
-            float actualRevenue = theoreticalRevenue * country.CollectionEfficiency * fiscalReactionMultiplier + swfReturns;
+            float financeTreasuryCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.FinanceTreasury);
+            float effectiveCollectionEfficiency = Mathf.Clamp01(country.CollectionEfficiency + financeTreasuryCompetenceBias);
+            float actualRevenue = theoreticalRevenue * effectiveCollectionEfficiency * fiscalReactionMultiplier + swfReturns;
             float totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
             float budgetBalance = actualRevenue - totalSpending;
 

@@ -41,7 +41,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress", "demographicpolicystress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress", "demographicpolicystress", "cabinetstress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -100,6 +100,20 @@ namespace PoliSim.Testing
             {
                 decisions[CountryId.USA] = BuildUsaDecision(scenario, usa, turn, world);
                 simulationManager.AdvanceTurn(decisions);
+
+                // Political Systems Overhaul Part A: no player is present to click a response, so any
+                // cabinet decision that fired this turn is auto-resolved by always picking whichever
+                // option has the largest absolute combined effect - see BuildCabinetStressDecision's
+                // own doc comment for why this is the correct worst-case stress for the interactive
+                // decision channel specifically. Harmless no-op for every other scenario, since none of
+                // them ever appoint a minister, so GetPendingCabinetDecisions is always empty there.
+                foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in simulationManager.GetPendingCabinetDecisions(CountryId.USA).ToList())
+                {
+                    CabinetDecisionOption worstCaseOption = decision.Options
+                        .OrderByDescending(o => Mathf.Abs(o.CrimeIndexShock) + Mathf.Abs(o.PovertyRateShock) + Mathf.Abs(o.BudgetImpact) + Mathf.Abs(o.ApprovalEffect))
+                        .First();
+                    simulationManager.ResolveCabinetDecision(CountryId.USA, portfolio, decision, worstCaseOption);
+                }
 
                 bool shouldLogThisTurn = logEveryTurn || turn == 1 || turn == turnsToRun || turn % 25 == 0;
 
@@ -174,6 +188,8 @@ namespace PoliSim.Testing
                     return BuildGrowthStackStressDecision(usa, turn);
                 case "demographicpolicystress":
                     return BuildDemographicPolicyStressDecision(turn);
+                case "cabinetstress":
+                    return BuildCabinetStressDecision(usa, turn);
                 default:
                     return PolicyDecision.None();
             }
@@ -211,6 +227,33 @@ namespace PoliSim.Testing
                     InfrastructureWeight = 0f,
                     RealEstateWeight = 0f
                 };
+            }
+
+            return PolicyDecision.None();
+        }
+
+        /// <summary>
+        /// Political Systems Overhaul Part A: appoints the HIGHEST-CompetenceBias candidate available
+        /// for each of the three implemented portfolios at turn 1 and never reshuffles - the worst-case
+        /// SUSTAINED stress on each portfolio's passive competence bias (see CabinetSystem.
+        /// GetCompetenceBias and its three point-of-use call sites), which only ever pushes its target
+        /// in one beneficial direction, so "worst case for the ceiling" here means "largest possible
+        /// bias, held for the whole run," not a symmetric slider extreme. RunOne's own per-turn loop
+        /// (see the ResolveCabinetDecision call there) additionally auto-resolves every decision this
+        /// appointment roster fires by always picking whichever response option has the largest
+        /// absolute combined effect - the worst-case stress on the INTERACTIVE decision channel too,
+        /// so both of Cabinet's two independent mechanics get genuinely exercised, not just the passive
+        /// one.
+        /// </summary>
+        private static PolicyDecision BuildCabinetStressDecision(Country usa, int turn)
+        {
+            if (turn == 1)
+            {
+                foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
+                {
+                    List<CabinetMinister> candidates = CabinetSystem.GenerateCandidates(portfolio);
+                    usa.CabinetMinisters[portfolio] = candidates.OrderByDescending(c => c.CompetenceBias).First();
+                }
             }
 
             return PolicyDecision.None();

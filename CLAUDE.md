@@ -1456,6 +1456,18 @@ PoliSim.EditorTools.BatchSimulationRunner.Run -logFile <path> [-turns=N] [-scena
   (non-batch, windowed) screenshot capture is needed again later. Not blocking: manual screenshots
   taken by opening the Editor normally work fine, and this has no bearing on `BatchSimulationRunner`'s
   own batch-mode validation runs, which don't exhibit this issue.
+- **Standing note: a recurring stale/duplicate scheduled-wakeup prompt pattern, now seen twice, both
+  caught correctly** - not a Unity issue, a session-tooling one. A `ScheduleWakeup` prompt scheduled to
+  check on some in-flight background work can arrive again, verbatim, AFTER that work has already been
+  completed and reported (once during the circular Policy Web/central-bank-identity round, once during
+  Cabinet's own `cabinetstress` diagnostic comparison) - indistinguishable at a glance from a genuine
+  new request, since the text is identical to a real instruction. **Standard response**: before acting
+  on an incoming prompt that reads like "check task X, then do Y," check whether task X's result has
+  already been reported in this same conversation - if so, it's the stale duplicate, not new work.
+  Recap what was already found/done in a sentence or two rather than silently re-running the checks or
+  (worse) fabricating a second, possibly-different-sounding result. Do not treat the duplicate as
+  authorization to redo already-validated work, and do not skip acknowledging it either - a brief,
+  accurate recap is the correct response both times this has occurred so far.
 
 ## Expanded Event Pool
 Queue item 1 of `ROADMAP_BRIEF.md` (the standing autonomous-work brief added this session): grows
@@ -3318,6 +3330,113 @@ pipeline from the two Part A corrections above, not bypass it.
   effects, corrected twice for the growth-rate reversion and turn-year-conversion bugs) and Part B (the
   two policy levers, corrected once for the ratchet-to-ceiling bug) are done and validated.
 
+## Cabinet (Political Systems Overhaul Part A)
+`POLISIM_MASTER_ROADMAP.md` Master Sequence step 1 - the first item under the new master roadmap
+that consolidated `ROADMAP_BRIEF.md`, `CONTINUOUS_TIME_MIGRATION.md`, and
+`POLITICAL_SYSTEMS_OVERHAUL.md`. Two independent mechanics per appointed cabinet minister: a passive,
+always-on competence effect landing on an existing audited channel, and an interactive decision layer
+(short scenario + 2-3 response options) reusing `EventSystem`'s overall shape but requiring a
+player-picked response rather than auto-applying.
+
+- **Only 3 of the confirmed 6 portfolios implemented this pass** (`CabinetPortfolio`: FinanceTreasury,
+  InteriorJustice, HealthSocialAffairs) - the Master Roadmap's own content-authoring warning ("6-8
+  roles x 2-3 candidates x multiple decisions each is a real content burden - build 2-3 portfolios
+  with real, fully-realized content first... then expand") called for this explicitly, mirroring
+  `SectorType`'s own history (4 sectors at launch, 4 more only added when Round 3 item 4 actually built
+  them - never defined upfront as unused placeholders). ForeignAffairs/Defense/EconomyTradeIndustry are
+  deliberately not yet defined in the enum itself, not just hidden in the UI.
+- **Data model**: `CabinetMinister` (name/portfolio/philosophy/description/`CompetenceBias`, an
+  ORIGINAL FICTIONAL character - never a real person, the same rule `FedChair` already established) and
+  `CabinetDecision`/`CabinetDecisionOption` (scenario text plus a small flat set of possible one-time
+  shock fields - `CrimeIndexShock`/`PovertyRateShock`/`BudgetImpact`/`ApprovalEffect` - mirroring
+  `EconomicEvent`'s own shape, most options only setting 1-2 of them). `Country.CabinetMinisters`
+  (`Dictionary<CabinetPortfolio, CabinetMinister>`) is empty by default for every country, the same
+  "doesn't exist until the player acts" idiom `SovereignWealthFund`/`CurrentFedChair` already use - the
+  Cabinet UI only ever lets the player appoint into their OWN country, so no NPC/player branching is
+  needed anywhere `CabinetSystem` or its effect-landing call sites read this dictionary; every other
+  country's dictionary just stays empty forever and an empty-dictionary lookup naturally contributes
+  zero effect.
+- **`CabinetMinisterPhilosophy` (Reformist/Pragmatic/Traditionalist) is a SEPARATE axis from
+  `CompetenceBias`** - unlike `FedChairPhilosophy` (where Hawkish/Dovish directly signs `RateBias`),
+  philosophy here only selects which `DecisionPool` a minister draws scenarios from ("a Reformist vs.
+  Hardline Interior Minister should generate genuinely different scenarios, not just a different
+  number" - the Master Roadmap's own explicit instruction), while `CompetenceBias` is always a small,
+  bounded, BENEFICIAL magnitude regardless of philosophy (a weaker candidate has a smaller bias, not a
+  harmful one - "hire someone actively bad at governing" isn't a real candidate archetype the way
+  Hawkish vs. Dovish is a real, symmetric monetary-policy axis).
+- **Passive competence effect, one per portfolio, each folded into an already-audited channel** (see
+  `CabinetSystem.GetCompetenceBias`, applied at point-of-use every turn, never mutating a stored
+  structural field - the same idiom `FederalReserveSystem.ApplyFedChairInterestRate` already
+  established for `RateBias`):
+  - **FinanceTreasury -> effective `CollectionEfficiency`** (`SimulationManager.
+    ApplyRevenueAndSpending`): `Mathf.Clamp01(country.CollectionEfficiency + bias)`, deliberately NOT
+    mutating the stored `CollectionEfficiency` field - that field has no reversion mechanism of its own
+    to correct a permanent drift, the specific risk the Master Roadmap's own "may be safer to land
+    somewhere more contained" guidance for this portfolio was flagging.
+  - **InteriorJustice -> `CrimeIndex` target** (`MacroSystem.ApplyCrimeIndex`): one more gap-based
+    subtraction term alongside PoliceFunding/Sentencing/BailReform/OrganizedCrimeIndex, landing inside
+    the SAME final `Clamp(0, 100)` that already serves as this stat's combined ceiling - no separate
+    ceiling needed since it's structurally the same pattern as every existing sensitivity term there.
+  - **HealthSocialAffairs -> `PovertyRate` target** (`MacroSystem.ApplyPovertyRate`): one more
+    reduction term alongside `welfareReduction`/`minimumWageReduction`, same reasoning.
+- **Interactive decisions**: `CabinetSystem.TryRollDecisions` rolls independently per appointed
+  minister each turn (~12%/minister, matching `EventSystem.EventChancePerTurn`'s own baseline), called
+  from `SimulationManager.ApplyDomesticPolicy` right alongside `EventSystem.TryRollEvent`. Unlike
+  `EconomicEvent`, nothing auto-applies - fired decisions accumulate in a new
+  `_pendingCabinetDecisionsByCountry` dictionary until `ResolveCabinetDecision` (called from
+  `GameController` once the player picks a response) applies the chosen option's one-time shock via
+  `CabinetSystem.ApplyDecisionOption` and clears it. `GameController` blocks Advance Turn while any
+  decision is pending (`hasPendingCabinetDecisions`, OR'd into the existing gate alongside
+  `hasPendingFedChairSelection`) - the same "must resolve before advancing" idiom Fed Chair candidate
+  selection already established, not something silently skippable by racing ahead.
+- **Content this pass**: 3 candidates per portfolio (one per philosophy, `CabinetSystem.
+  GenerateCandidates` returns all 3 shuffled - simpler than `FederalReserveSystem`'s own sampling,
+  since the pool is already exactly "2-3 candidates" without needing to draw a subset), 2 decisions per
+  (portfolio, philosophy) = 18 decisions total, each with 2 response options - 9 x (portfolio,
+  philosophy) combinations, genuinely different scenario text per philosophy, not the same text with a
+  different number.
+- **Reshuffle**: player can replace a minister anytime, costs a flat `CabinetSystem.
+  ReshuffleApprovalCost` (2 points) - the same small magnitude class as `EventSystem`'s own
+  `ApprovalEffect` range (-2 to -5), not a separately invented scale.
+- **UI**: new Cabinet tab (14th tab, sharing row 3 with Policy Web at half-width each, `UiPalette.
+  SystemArea.Political` - the same area Federal Reserve uses, matching the existing "shared area across
+  related tabs" precedent Tax Policy/Spending Policy already set for Fiscal). One panel per portfolio
+  (minister name/philosophy/description + Reshuffle, or a candidate picker if vacant, mirroring
+  `DrawFedChairCandidateButton`'s own pattern); any pending decision renders above the portfolio panels
+  with the same visual weight as the dashboard's own "BREAKING" event banner (`_eventBannerStyle`),
+  scenario text plus response-option buttons.
+- **A syntax discovery worth recording**: `Dictionary<TKey,TValue>`'s `{ key, value }`
+  collection-initializer shorthand doesn't parse reliably when `TKey` is itself a value tuple (here,
+  `(CabinetPortfolio, CabinetMinisterPhilosophy)`) - hit `CS1525: Invalid expression term '}'` at every
+  entry's closing brace. Fixed by switching to index-initializer syntax (`[key] = value`), which
+  sidesteps the ambiguity entirely and is equally valid for a static readonly dictionary.
+- **UI smoke test** (screenshot-driven, matching this project's established `UiScreenshotDriverN`/
+  `UiScreenshotRunnerN` throwaway pattern): confirmed the vacant-portfolio candidate-search flow, a
+  fully-appointed Cabinet (three named ministers with philosophy/description/Reshuffle), and - after
+  advancing turns until one fired naturally - a decision modal rendering correctly with the
+  BREAKING-banner-style header, scenario text, and both response buttons, AND the Advance Turn button
+  visibly disabled while it was pending, confirming the blocking gate works end-to-end.
+- **Validated - full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 14 scenarios x
+  100/500 turns, 28 combinations, including a new `cabinetstress` scenario)**: zero new anomaly TYPES
+  anywhere - `cabinetstress`'s own anomalies (99 at 100 turns, 444 at 500) are exclusively the
+  pre-existing "swung X% in one turn" pattern already documented as ambient Sweden/France SWF-driven
+  noise (and near-zero-base percentage swings, e.g. USA's `InterestRate` 0.02 -> 0.03), landing in the
+  SAME range as `baseline`'s own 86/433 and every other scenario (410-506 at 500 turns) - not an
+  outlier, and no `CrimeIndex`/`PovertyRate`/`Budget`-related anomaly among them anywhere. The other 13
+  pre-existing scenarios showed no regression (`GetCompetenceBias` returns 0 for every country in every
+  scenario except `cabinetstress`, since none of them ever appoint a minister). `cabinetstress` appoints
+  the HIGHEST-`CompetenceBias` candidate in each of the 3 portfolios at turn 1 and holds them for the
+  whole run (worst-case SUSTAINED stress on the passive effect, which only ever pushes its target in one
+  beneficial direction, unlike a symmetric slider extreme) and auto-resolves every fired decision by
+  always picking whichever response option has the largest absolute combined effect (worst-case stress
+  on the interactive channel too, since no player is present to click a response).
+- **Directional confirmation via a targeted diagnostic** (temporary `CrimeIndex=`/`PovertyRate=`
+  logging added to `SimulationTestRunner`'s per-turn line, two quick single-scenario 500-turn runs, then
+  reverted): USA's turn-500 figures under `cabinetstress` vs. `baseline` - `CrimeIndex` 41.42 vs. 45.01
+  (-3.59), `PovertyRate` 17.44 vs. 19.28 (-1.84), `DebtToGdpRatio` 138.2% vs. 146.1% (-7.9pp) - all three
+  channels show a real, felt, correctly-directioned, clearly bounded improvement, not just "technically
+  in range."
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -3515,3 +3634,17 @@ validated via the standalone harness first and then `BatchSimulationRunner` agai
 decision was escalated rather than resolved silently (`ROADMAP_BRIEF.md`'s Open Questions #1 - whether
 Economic Sectors should feed back into aggregate GDP/Unemployment). See `ROADMAP_BRIEF.md` for the
 full queue history and that escalated question.
+
+**`ROADMAP_BRIEF.md`, `CONTINUOUS_TIME_MIGRATION.md`, and `POLITICAL_SYSTEMS_OVERHAUL.md` are now
+superseded by `POLISIM_MASTER_ROADMAP.md`** (2026-07-30), which coordinates all three into one
+authoritative Master Sequence (see that file's own "why the sequence is different from each source
+document's own plan" reasoning - Parliament depends on Continuous Time's Phase 0 calendar mechanic,
+and the daily-granularity conversion is deliberately kept out of the same window as the Parliament
+rollout). Master Sequence step 1 (Cabinet, Political Systems Overhaul Part A) is done - see "Cabinet
+(Political Systems Overhaul Part A)" above - the player's country can now appoint ministers to 3 of
+the 6 confirmed portfolios (Finance/Treasury, Interior/Justice, Health & Social Affairs; the other
+three deliberately deferred per the Master Roadmap's own content-authoring warning), each with a
+passive competence effect on an existing channel and an interactive decision layer. Master Sequence
+step 2 (UI/graph restyling) is next; Round 4 of the original Roadmap stays unscoped until step 5
+(Parliament's full rollout) is done, so new features get designed against the gated-legislation model
+from day one rather than retrofitted onto it later.

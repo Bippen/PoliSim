@@ -476,6 +476,18 @@ namespace PoliSim.Data
         public SovereignWealthFund SovereignWealthFund;
 
         /// <summary>
+        /// Political Systems Overhaul Part A (Cabinet): this country's currently-appointed ministers,
+        /// keyed by portfolio - empty for every country by default (the same "doesn't exist until the
+        /// player acts" idiom SovereignWealthFund/CurrentFedChair already use). No NPC/player
+        /// distinction is needed anywhere CabinetSystem or its three effect-landing call sites read
+        /// this dictionary: the Cabinet UI only ever lets the player appoint into their OWN country, so
+        /// every other country's dictionary simply stays empty forever, and an empty-dictionary lookup
+        /// naturally contributes zero effect - the same structural no-op SovereignWealthFund's null
+        /// check already gets for free, just via TryGetValue instead of a null check.
+        /// </summary>
+        public Dictionary<CabinetPortfolio, CabinetMinister> CabinetMinisters = new Dictionary<CabinetPortfolio, CabinetMinister>();
+
+        /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see
         /// StatHistory.cs. Appended once per turn by SimulationManager.AdvanceTurn, kept entirely
         /// separate from the existing Recent Turns text log.

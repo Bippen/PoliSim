@@ -303,7 +303,11 @@ namespace PoliSim.Simulation
         /// versus NAIRU/target, not absolute levels - a healthy economy at its own structural
         /// equilibrium shouldn't show elevated poverty just for having nonzero unemployment/inflation),
         /// minus the combined reduction from any implemented Country.WelfarePrograms (see
-        /// GetPovertyReductionSensitivity). Hard-clamped to [0, 100].
+        /// GetPovertyReductionSensitivity), minus the Health &amp; Social Affairs Cabinet minister's
+        /// passive competence bias, if one is appointed (Political Systems Overhaul Part A - see
+        /// CabinetSystem.GetCompetenceBias; folded in as one more reduction term alongside
+        /// welfareReduction/minimumWageReduction, landing inside the SAME final Clamp(0, 100) that
+        /// already serves as this stat's combined ceiling). Hard-clamped to [0, 100].
         /// </summary>
         public static void ApplyPovertyRate(Country country)
         {
@@ -332,7 +336,9 @@ namespace PoliSim.Simulation
                 minimumWageReduction = MinimumWagePovertyReductionSensitivity * minimumWageGap / 100f;
             }
 
-            float target = baseline - welfareReduction - minimumWageReduction;
+            float healthSocialAffairsCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.HealthSocialAffairs);
+
+            float target = baseline - welfareReduction - minimumWageReduction - healthSocialAffairsCompetenceBias;
             state.PovertyRate = Mathf.Clamp(state.PovertyRate + PovertyReversionSpeed * (target - state.PovertyRate), 0f, MaxPovertyRatePercent);
         }
 
@@ -746,19 +752,25 @@ namespace PoliSim.Simulation
         /// funding or harsher sentencing both reduce the target, funding more strongly than
         /// sentencing (see PoliceFundingSensitivity/SentencingSensitivity) - by BailReformLevel (see
         /// BailReformCrimeIndexSensitivity), and now by the OrganizedCrimeIndex gap versus its own
-        /// baseline (Round 3 item 3 - see OrganizedCrimeIndexSensitivity). Hard-clamped to [0, 100].
+        /// baseline (Round 3 item 3 - see OrganizedCrimeIndexSensitivity), and by the Interior/Justice
+        /// Cabinet minister's passive competence bias, if one is appointed (Political Systems
+        /// Overhaul Part A - see CabinetSystem.GetCompetenceBias; a folded-in gap-based term exactly
+        /// like every other lever here, landing inside the SAME final Clamp(0, 100) that already
+        /// serves as this stat's combined ceiling). Hard-clamped to [0, 100].
         /// </summary>
         public static void ApplyCrimeIndex(Country country)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
             float organizedCrimeGap = state.OrganizedCrimeIndex - country.BaselineOrganizedCrimeIndex;
+            float interiorJusticeCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.InteriorJustice);
             float target = country.BaselineCrimeIndex
                 + CrimeUnemploymentSensitivity * unemploymentGap
                 - PoliceFundingSensitivity * (country.PoliceFundingLevel - NeutralPolicyDialLevel)
                 - SentencingSensitivity * (country.SentencingSeverity - NeutralPolicyDialLevel)
                 + BailReformCrimeIndexSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel)
-                + OrganizedCrimeIndexSensitivity * organizedCrimeGap;
+                + OrganizedCrimeIndexSensitivity * organizedCrimeGap
+                - interiorJusticeCompetenceBias;
 
             state.CrimeIndex = Mathf.Clamp(state.CrimeIndex + CrimeIndexReversionSpeed * (target - state.CrimeIndex), 0f, MaxCrimeIndexPercent);
         }

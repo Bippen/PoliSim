@@ -28,7 +28,8 @@ namespace PoliSim.UI
             SectorPolicy,
             Infrastructure,
             SwfPolicy,
-            PolicyWeb
+            PolicyWeb,
+            Cabinet
         }
 
         // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
@@ -302,6 +303,14 @@ namespace PoliSim.UI
         private Vector2 _policyWebScrollPosition;
         private PolicyNodeId? _selectedPolicyWebPolicyNode;
         private StatNodeId? _selectedPolicyWebStatNode;
+
+        // Political Systems Overhaul Part A (Cabinet). _cabinetCandidatesByPortfolio holds generated
+        // candidates awaiting an appointment pick for a currently-vacant (or just-reshuffled)
+        // portfolio - absent entry means "no search underway," present-but-not-yet-picked means
+        // "candidates are shown, waiting for a click," mirroring _fedChairCandidates' own null-vs-set
+        // idiom just keyed per portfolio instead of a single global slot.
+        private Vector2 _cabinetScrollPosition;
+        private readonly Dictionary<CabinetPortfolio, List<CabinetMinister>> _cabinetCandidatesByPortfolio = new Dictionary<CabinetPortfolio, List<CabinetMinister>>();
         private Vector2 _tradeScrollPosition;
         private Vector2 _taxPolicyScrollPosition;
         private Vector2 _spendingPolicyScrollPosition;
@@ -429,6 +438,10 @@ namespace PoliSim.UI
             }
 
             bool hasPendingFedChairSelection = UpdateFedChairSelectionState();
+            // Political Systems Overhaul Part A: same "must resolve before advancing" idiom as Fed
+            // Chair selection - a fired cabinet decision needs a player-picked response, not something
+            // that should be silently skippable by racing ahead to the next turn.
+            bool hasPendingCabinetDecisions = _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0;
 
             float marginX = Screen.width * ScreenMarginFraction;
             float marginY = Screen.height * ScreenMarginFraction;
@@ -466,7 +479,7 @@ namespace PoliSim.UI
 
             GUILayout.Space(sectionSpacing);
 
-            GUI.enabled = !_isGameOver && !hasPendingFedChairSelection;
+            GUI.enabled = !_isGameOver && !hasPendingFedChairSelection && !hasPendingCabinetDecisions;
             DrawAdvanceTurnButton();
             GUI.enabled = true;
 
@@ -535,6 +548,11 @@ namespace PoliSim.UI
                     break;
                 case RightPanelTab.PolicyWeb:
                     DrawPolicyWebTab(tabContentHeight);
+                    break;
+                case RightPanelTab.Cabinet:
+                    GUI.enabled = !_isGameOver;
+                    DrawCabinetTab(tabContentHeight);
+                    GUI.enabled = true;
                     break;
                 case RightPanelTab.SwfPolicy:
                     GUI.enabled = !_isGameOver;
@@ -633,6 +651,7 @@ namespace PoliSim.UI
                 case RightPanelTab.Infrastructure: return UiPalette.SystemArea.Infrastructure;
                 case RightPanelTab.SwfPolicy: return UiPalette.SystemArea.SovereignWealth;
                 case RightPanelTab.PolicyWeb: return UiPalette.SystemArea.Global;
+                case RightPanelTab.Cabinet: return UiPalette.SystemArea.Political;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -1873,10 +1892,12 @@ namespace PoliSim.UI
 
             GUILayout.Space(TabRowSpacing);
 
-            // Third row: just Policy Web (the 13th tab) - full-width rather than squeezed to
-            // buttonWidth alone in an otherwise-empty row, which would look like a sizing bug.
+            // Third row: Policy Web plus Cabinet (Political Systems Overhaul Part A, the 14th tab) -
+            // half-width each rather than Policy Web alone stretched full-width, which would look like
+            // a sizing bug now that the row has two tabs again.
             GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Policy Web", RightPanelTab.PolicyWeb, availableWidth);
+            DrawRightColumnTabButton("Policy Web", RightPanelTab.PolicyWeb, availableWidth * 0.5f);
+            DrawRightColumnTabButton("Cabinet", RightPanelTab.Cabinet, availableWidth * 0.5f);
             GUILayout.EndHorizontal();
         }
 
@@ -2128,6 +2149,117 @@ namespace PoliSim.UI
                 _policyWebStatGraphs[node] = graph;
             }
             return graph;
+        }
+
+        /// <summary>Display name per CabinetPortfolio - kept separate from the enum's own C# identifier since "FinanceTreasury"/"InteriorJustice"/"HealthSocialAffairs" read awkwardly as UI text, the same "enum identifier vs. display string" separation PolicyWebRenderer.GetPolicyName/GetStatName already established.</summary>
+        private static string GetPortfolioName(CabinetPortfolio portfolio)
+        {
+            switch (portfolio)
+            {
+                case CabinetPortfolio.FinanceTreasury: return "Finance & Treasury";
+                case CabinetPortfolio.InteriorJustice: return "Interior & Justice";
+                case CabinetPortfolio.HealthSocialAffairs: return "Health & Social Affairs";
+                default: return portfolio.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Cabinet tab (Political Systems Overhaul Part A, Master Sequence step 1): one panel per
+        /// implemented portfolio (see CabinetPortfolio's own doc comment for why only three of the
+        /// confirmed six exist yet) showing the appointed minister (or a candidate picker if vacant),
+        /// plus any pending interactive decisions at the top, presented with the same visual weight as
+        /// the dashboard's own "BREAKING" event banner (see DrawTopBanner) per the Master Roadmap's own
+        /// spec - reusing _eventBannerStyle rather than inventing a separate modal style.
+        /// </summary>
+        private void DrawCabinetTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _cabinetScrollPosition = GUILayout.BeginScrollView(_cabinetScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Cabinet", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            GUILayout.Label("Each appointed minister quietly nudges their own portfolio's existing channels every turn just by serving, and occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime.", _labelStyle);
+            GUILayout.Space(6f);
+
+            foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in _simulationManager.GetPendingCabinetDecisions(PlayerCountryId))
+            {
+                DrawCabinetDecisionModal(portfolio, decision);
+                GUILayout.Space(8f);
+            }
+
+            foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                DrawCabinetPortfolioPanel(portfolio);
+                GUILayout.Space(8f);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        private void DrawCabinetDecisionModal(CabinetPortfolio portfolio, CabinetDecision decision)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label($"DECISION - {GetPortfolioName(portfolio)}: {decision.Name}", _eventBannerStyle);
+            GUILayout.Label(decision.Description, _labelStyle);
+            foreach (CabinetDecisionOption option in decision.Options)
+            {
+                if (GUILayout.Button(option.Label, _neutralActionButtonStyle))
+                {
+                    _simulationManager.ResolveCabinetDecision(PlayerCountryId, portfolio, decision, option);
+                }
+            }
+            GUILayout.EndVertical();
+        }
+
+        private void DrawCabinetPortfolioPanel(CabinetPortfolio portfolio)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel(GetPortfolioName(portfolio), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+
+            if (_playerCountry.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister minister))
+            {
+                GUILayout.Label($"{minister.Name} ({minister.Philosophy})", _labelStyle);
+                GUILayout.Label(minister.Description, _labelStyle);
+                if (GUILayout.Button("Reshuffle", _neutralActionButtonStyle))
+                {
+                    _playerCountry.CabinetMinisters.Remove(portfolio);
+                    _playerCountry.State.ApprovalRating = Mathf.Clamp(_playerCountry.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost, 0f, 100f);
+                    _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
+                }
+            }
+            else
+            {
+                GUILayout.Label("Vacant.", _labelStyle);
+                if (_cabinetCandidatesByPortfolio.TryGetValue(portfolio, out List<CabinetMinister> candidates))
+                {
+                    foreach (CabinetMinister candidate in candidates)
+                    {
+                        DrawCabinetCandidateButton(portfolio, candidate);
+                    }
+                }
+                else if (GUILayout.Button("Search for candidates", _neutralActionButtonStyle))
+                {
+                    _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
+                }
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private void DrawCabinetCandidateButton(CabinetPortfolio portfolio, CabinetMinister candidate)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
+            GUILayout.Label(candidate.Description, _labelStyle);
+            if (GUILayout.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
+            {
+                _playerCountry.CabinetMinisters[portfolio] = candidate;
+                _cabinetCandidatesByPortfolio.Remove(portfolio);
+                RecomputePolicyPreview();
+            }
+            GUILayout.EndVertical();
         }
 
         /// <summary>
