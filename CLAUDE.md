@@ -2873,6 +2873,60 @@ routed through the four channels the roadmap named explicitly - `ApprovalRating`
   under the extended stress (GDP still growing at +1.55%/turn, `DebtToGdpRatio` 148.5% - within the
   already-established ~142-150% equilibrium range, not a divergence).
 
+## Expanded Economic Sectors II
+`ROADMAP_BRIEF.md` Round 3 item 4 - doubles the tracked sector count from four to eight
+(Manufacturing/Technology/Agriculture/Finance plus Energy/Construction/Retail/Telecommunications),
+using the exact same integrated pattern "Economic Sectors"/"Sector Integration" already proved out -
+no new mechanism, just more instances of the existing one. Flagged **moderate risk** by the roadmap
+itself (not low, unlike "Expanded Sector-Specific Policies") specifically because `PotentialGrowthRate`
+already has three stacked nudge sources feeding through `MacroSystem.GetSectorGrowthAdjustment`'s
+aggregate-gap sum, and doubling the sector count doubles how many terms feed that same sum - required
+a dedicated stress scenario, not just the standard matrix, to re-confirm the combined ceiling still
+actively binds rather than just theoretically existing.
+
+- **`SectorType`** gains Energy/Construction/Retail/Telecommunications - chosen for the same "clear,
+  distinct real-world profile" reasoning the original four used: Energy and Construction are real,
+  standard value-added categories with genuine country differentiation (Poland's real, well-documented
+  coal-heavy energy sector and EU-funded construction boom give it the clear highest Output in both
+  among the six); Retail and Telecommunications round out the mix as a labor-intensive consumer-facing
+  sector and a capital-intensive, low-employment one, mirroring the original four's own Manufacturing/
+  Agriculture vs. Technology/Finance contrast. SectorMetric per new type: Energy -> Renewable Share %
+  (Germany's real Energiewende push and Poland's real status as the EU's most coal-dependent economy
+  are both confirmed, high confidence; the rest directional); Construction -> a stylized 0-100
+  Building Activity Index (entirely stylized, mirrors Technology's own Innovation Index); Retail ->
+  E-Commerce Share % (directional estimate); Telecommunications -> Broadband Penetration % (a real,
+  OECD-documented pattern - all six are high-broadband developed nations, Nordic countries typically
+  highest, though exact figures are directional).
+- **`WorldFactory.SeedSectors` refactored from 12 flat positional floats to a
+  `params (SectorType, float Output, float Employment, float Metric)[]`** - a genuine maintainability
+  necessity, not a stylistic choice: doubling the sector count would have pushed the old signature to
+  24 same-typed positional floats, where a single misplaced argument silently seeds the wrong sector
+  with no compiler error. Every call site (one per country) now passes a readable tuple list instead.
+- **Zero simulation-logic changes needed for the new sectors to fully participate** in `Sector
+  Integration`'s existing feedback: `MacroSystem.GetSectorGrowthAdjustment`/
+  `GetSectorUnemploymentAdjustment` (which feed `PotentialGrowthRate`/`Unemployment`) and every UI
+  drawing method already iterate `country.Sectors` generically (`foreach`), never hardcoded to four -
+  confirmed directly before assuming so, the same "verify, don't assume" discipline "Country Selection"
+  Part 1 already established when checking for USA-specific conditionals.
+- **`growthstackstress` refactored from five hand-listed 4-entry dictionaries to a loop over EVERY
+  `SectorType`** (`System.Enum.GetValues`) - both so the stress scenario genuinely covers "all new and
+  existing sectors" (the task's own explicit wording) without relying on remembering to hand-add each
+  new sector, and so it automatically keeps covering any sector this project adds in the future. Same
+  worst-case settings as before (min Subsidy/Tax Credits/Research Grants, max Regulation, fully
+  Nationalized), now applied to all eight sectors simultaneously instead of four.
+- **Validated - the dedicated stress scenario this item explicitly required, not just the standard
+  matrix**: full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x 100/500
+  turns, 24 combinations) - zero finite/negative/out-of-range anomalies anywhere; anomaly counts
+  (69-176 at 100 turns, 400-916 at 500) landed within the same range already established. **Direct
+  confirmation the combined ceiling still actively binds with double the sector count**: the
+  8-sector `growthstackstress` landed at turn-500 GDP 4,121,293 and `DebtToGdpRatio` 147.3% -
+  essentially the SAME equilibrium as both the original 4-sector 2-lever version (4,178,690/147.0%
+  harness, 4,180,200/147.1% real-Unity) and "Expanded Sector-Specific Policies"' 4-sector 5-lever
+  version (4,141,425/147.3%) - direct evidence `MaxTotalPotentialGrowthAdjustment` was already fully
+  saturated before this change and correctly absorbs twice as many downward-pushing sectors without
+  producing any further divergence, confirming the ceiling "actively binds, not just theoretically
+  present" at the larger sector count exactly as this item required.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

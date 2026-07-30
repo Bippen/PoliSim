@@ -407,10 +407,10 @@ namespace PoliSim.Testing
         /// Sector Integration follow-up: worst-case SAME-DIRECTION stacking test for
         /// MacroSystem.MaxTotalPotentialGrowthAdjustment - the single most important safeguard added
         /// alongside Sector Integration. Forces every USA InfrastructureAsset.ConditionIndex to 0 at
-        /// turn 1 (max condition drag) AND pushes all four Sectors to their weakest simultaneous
-        /// performance (min Subsidy/max Regulation - the largest possible negative Output/Employment
-        /// gap) - both Infrastructure's and Sector's contributions push PotentialGrowthRate DOWN at
-        /// the same time, the genuinely dangerous case for an additive combined ceiling (distinct from
+        /// turn 1 (max condition drag) AND pushes EVERY Sector to its weakest simultaneous performance
+        /// (min Subsidy/max Regulation - the largest possible negative Output/Employment gap) - both
+        /// Infrastructure's and Sector's contributions push PotentialGrowthRate DOWN at the same time,
+        /// the genuinely dangerous case for an additive combined ceiling (distinct from
         /// deferredmaintenance above, which only stresses Infrastructure's own sub-ceiling in
         /// isolation). Also sustains -30%/turn Transportation cuts to keep ConditionIndex pinned at 0
         /// for the whole run. Mirrors the standalone harness's own --growthstackstress scenario
@@ -419,13 +419,20 @@ namespace PoliSim.Testing
         /// <remarks>
         /// Round 3 item 2 extended this to also push all three new sector policy dials to their own
         /// Output-worst-case setting (min Tax Credits/Research Grants, fully NATIONALIZED - see
-        /// Sector.DeregulationNationalizationLevel) - now five simultaneous downward-pushing sources
-        /// feed the SAME MaxTotalPotentialGrowthAdjustment ceiling, an even harder stress than the
-        /// original two. Honest caveat: DeregulationNationalizationLevel=0 (full nationalization) is
-        /// worst-case for OUTPUT but pushes Employment the OPPOSITE direction (nationalization
-        /// preserves jobs - see Sector.cs) - this scenario is not simultaneously worst-case for
+        /// Sector.DeregulationNationalizationLevel) - five simultaneous downward-pushing sources per
+        /// sector, feeding the SAME MaxTotalPotentialGrowthAdjustment ceiling. Honest caveat:
+        /// DeregulationNationalizationLevel=0 (full nationalization) is worst-case for OUTPUT but
+        /// pushes Employment the OPPOSITE direction (nationalization preserves jobs - see Sector.cs) -
+        /// this scenario is not simultaneously worst-case for
         /// MacroSystem.MaxSectorUnemploymentAdjustment/Okun's Law the way it is for
         /// MaxTotalPotentialGrowthAdjustment, which remains its primary target exactly as before.
+        ///
+        /// Round 3 item 4 doubled the sector count (Manufacturing/Technology/Agriculture/Finance plus
+        /// Energy/Construction/Retail/Telecommunications) - this method was refactored from five
+        /// hand-listed 4-entry dictionaries to a loop over EVERY SectorType, both so the stress
+        /// scenario genuinely covers "all new and existing sectors" (the task's own explicit wording)
+        /// without relying on someone remembering to hand-add each new sector here, and so it
+        /// automatically keeps covering every sector this project adds in the future.
         /// </remarks>
         private static PolicyDecision BuildGrowthStackStressDecision(Country usa, int turn)
         {
@@ -437,37 +444,31 @@ namespace PoliSim.Testing
                 }
             }
 
+            var subsidyOverrides = new Dictionary<SectorType, float>();
+            var regulationOverrides = new Dictionary<SectorType, float>();
+            var taxCreditOverrides = new Dictionary<SectorType, float>();
+            var researchGrantsOverrides = new Dictionary<SectorType, float>();
+            var deregulationOverrides = new Dictionary<SectorType, float>();
+            foreach (SectorType type in System.Enum.GetValues(typeof(SectorType)))
+            {
+                subsidyOverrides[type] = 0f;
+                regulationOverrides[type] = 100f;
+                taxCreditOverrides[type] = 0f;
+                researchGrantsOverrides[type] = 0f;
+                deregulationOverrides[type] = 0f;
+            }
+
             return new PolicyDecision
             {
                 SpendingLineChanges = new Dictionary<SpendingCategory, float>
                 {
                     { SpendingCategory.Transportation, -30f },
                 },
-                SectorSubsidyOverrides = new Dictionary<SectorType, float>
-                {
-                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
-                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
-                },
-                SectorRegulationOverrides = new Dictionary<SectorType, float>
-                {
-                    { SectorType.Manufacturing, 100f }, { SectorType.Technology, 100f },
-                    { SectorType.Agriculture, 100f }, { SectorType.Finance, 100f },
-                },
-                SectorTaxCreditOverrides = new Dictionary<SectorType, float>
-                {
-                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
-                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
-                },
-                SectorResearchGrantsOverrides = new Dictionary<SectorType, float>
-                {
-                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
-                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
-                },
-                SectorDeregulationNationalizationOverrides = new Dictionary<SectorType, float>
-                {
-                    { SectorType.Manufacturing, 0f }, { SectorType.Technology, 0f },
-                    { SectorType.Agriculture, 0f }, { SectorType.Finance, 0f },
-                }
+                SectorSubsidyOverrides = subsidyOverrides,
+                SectorRegulationOverrides = regulationOverrides,
+                SectorTaxCreditOverrides = taxCreditOverrides,
+                SectorResearchGrantsOverrides = researchGrantsOverrides,
+                SectorDeregulationNationalizationOverrides = deregulationOverrides
             };
         }
 

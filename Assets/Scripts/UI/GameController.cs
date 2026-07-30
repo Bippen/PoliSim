@@ -2124,6 +2124,10 @@ namespace PoliSim.UI
                 case SectorType.Technology: return "Innovation Index";
                 case SectorType.Agriculture: return "Export Share";
                 case SectorType.Finance: return "Credit Growth Rate";
+                case SectorType.Energy: return "Renewable Share";
+                case SectorType.Construction: return "Building Activity Index";
+                case SectorType.Retail: return "E-Commerce Share";
+                case SectorType.Telecommunications: return "Broadband Penetration";
                 default: return "Sector Metric";
             }
         }

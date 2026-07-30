@@ -225,7 +225,7 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   higher anomaly count traced to ambient Sweden/France SWF-driven noise (already documented to vary
   run-to-run), not a new instability - confirmed via USA's own bounded turn-500 figures.
 
-### 4. Expand economic sectors
+### 4. Expand economic sectors — DONE (2026-07-30)
 - Add 3-4 more sectors beyond the initial Manufacturing/Technology/Agriculture/Finance (suggest:
   Energy, Construction, Retail, Telecommunications), using the now-proven integrated pattern (Output/
   Employment/one sector-specific metric, Subsidy/Regulation dials, feeding `PotentialGrowthRate`/
@@ -237,6 +237,15 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   (all new and existing sectors pushed to their Subsidy/Regulation extremes simultaneously), not just
   the standard matrix, the same "actively binds, not just theoretically present" standard
   "Infrastructure Feedback"/"Sector Integration" already established.
+- **Result: all four suggested sectors added, ceiling re-confirmed to actively bind at the larger
+  count** - see "Expanded Economic Sectors II" in CLAUDE.md. `GetSectorGrowthAdjustment`/
+  `GetSectorUnemploymentAdjustment` and every UI method already iterated `Sectors` generically, so no
+  simulation-logic changes were needed for the new sectors to fully participate. `growthstackstress`
+  refactored to loop over every `SectorType` (not hand-listed) and re-run with all eight sectors at
+  their worst case: landed at essentially the SAME GDP/DebtToGdpRatio equilibrium as both the
+  original 4-sector version and item 2's 5-lever version - direct confirmation
+  `MaxTotalPotentialGrowthAdjustment` was already fully saturated and correctly absorbs double the
+  sector count. Full 24-combination matrix re-validated: zero finite/negative/out-of-range anomalies.
 
 ### 5. Demographic system (population aging, birth/death rates, immigration)
 - **Large, independent system — do not treat this as a small addition.** Unlike most items above,

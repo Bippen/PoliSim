@@ -341,36 +341,81 @@ namespace PoliSim.Data
             // Employment share (8%), which is real and well-documented: Poland has one of the EU's
             // highest shares of agricultural employment relative to its output share, reflecting its
             // more fragmented, smallholder farm structure.
+            //
+            // Round 3 item 4 added four more sectors, same real-vs-stylized honesty standard. Energy
+            // and Construction are real, standard value-added categories with genuine country
+            // differentiation: Poland's coal-heavy energy sector and EU-funded construction boom are
+            // both real and well-documented, giving it the clear highest Output in both among the six;
+            // the other five countries' figures are directional estimates, not individually confirmed.
+            // Retail and Telecommunications Output are directional estimates throughout (no single
+            // country stands out clearly enough to flag as confirmed). SectorMetric: Energy ->
+            // Renewable Share % (Germany's real, well-documented Energiewende renewable push and
+            // Poland's real, well-documented status as the EU's most coal-dependent economy are both
+            // confirmed; the rest are directional); Construction -> a stylized 0-100 Building Activity
+            // Index (entirely stylized, mirrors Technology's Innovation Index); Retail -> E-Commerce
+            // Share % (directional estimate); Telecommunications -> Broadband Penetration % (real
+            // OECD-documented pattern - all six are high-broadband developed nations with Nordic
+            // countries typically at the very top, though exact figures are directional). Employment %
+            // for all four follows the same real-world labor-intensity pattern already established for
+            // the original four (Construction/Retail more labor-intensive than their Output share,
+            // matching real-world convention; Energy/Telecommunications less so, mirroring Finance's
+            // own low employment-to-output ratio) - illustrative, not individually sourced, except
+            // Poland's elevated Energy employment share (coal-sector jobs are a real, well-documented
+            // political and economic concentration in Poland specifically).
             SeedSectors(usa,
-                manufacturingOutput: 10.0f, manufacturingEmployment: 8.0f, manufacturingMetric: 77f,
-                technologyOutput: 10.0f, technologyEmployment: 4.0f, technologyMetric: 78f,
-                agricultureOutput: 1.0f, agricultureEmployment: 1.5f, agricultureMetric: 20f,
-                financeOutput: 8.0f, financeEmployment: 4.0f, financeMetric: 4f);
+                (SectorType.Manufacturing, 10.0f, 8.0f, 77f),
+                (SectorType.Technology, 10.0f, 4.0f, 78f),
+                (SectorType.Agriculture, 1.0f, 1.5f, 20f),
+                (SectorType.Finance, 8.0f, 4.0f, 4f),
+                (SectorType.Energy, 3.5f, 1.0f, 22f),
+                (SectorType.Construction, 4.5f, 5.0f, 52f),
+                (SectorType.Retail, 5.8f, 10.0f, 16f),
+                (SectorType.Telecommunications, 2.0f, 0.8f, 90f));
             SeedSectors(sweden,
-                manufacturingOutput: 12.6f, manufacturingEmployment: 11.0f, manufacturingMetric: 78f,
-                technologyOutput: 8.0f, technologyEmployment: 5.0f, technologyMetric: 80f,
-                agricultureOutput: 1.4f, agricultureEmployment: 1.8f, agricultureMetric: 25f,
-                financeOutput: 6.0f, financeEmployment: 2.5f, financeMetric: 3.5f);
+                (SectorType.Manufacturing, 12.6f, 11.0f, 78f),
+                (SectorType.Technology, 8.0f, 5.0f, 80f),
+                (SectorType.Agriculture, 1.4f, 1.8f, 25f),
+                (SectorType.Finance, 6.0f, 2.5f, 3.5f),
+                (SectorType.Energy, 2.5f, 0.8f, 65f),
+                (SectorType.Construction, 6.0f, 7.0f, 55f),
+                (SectorType.Retail, 4.5f, 8.0f, 15f),
+                (SectorType.Telecommunications, 2.3f, 1.0f, 96f));
             SeedSectors(germany,
-                manufacturingOutput: 19.9f, manufacturingEmployment: 18.0f, manufacturingMetric: 79f,
-                technologyOutput: 5.5f, technologyEmployment: 3.0f, technologyMetric: 70f,
-                agricultureOutput: 0.8f, agricultureEmployment: 1.2f, agricultureMetric: 30f,
-                financeOutput: 4.0f, financeEmployment: 2.5f, financeMetric: 3f);
+                (SectorType.Manufacturing, 19.9f, 18.0f, 79f),
+                (SectorType.Technology, 5.5f, 3.0f, 70f),
+                (SectorType.Agriculture, 0.8f, 1.2f, 30f),
+                (SectorType.Finance, 4.0f, 2.5f, 3f),
+                (SectorType.Energy, 3.0f, 1.0f, 48f),
+                (SectorType.Construction, 5.5f, 6.0f, 50f),
+                (SectorType.Retail, 4.8f, 9.0f, 14f),
+                (SectorType.Telecommunications, 1.8f, 0.8f, 93f));
             SeedSectors(france,
-                manufacturingOutput: 10.7f, manufacturingEmployment: 10.0f, manufacturingMetric: 76f,
-                technologyOutput: 5.0f, technologyEmployment: 2.8f, technologyMetric: 68f,
-                agricultureOutput: 1.6f, agricultureEmployment: 2.5f, agricultureMetric: 35f,
-                financeOutput: 4.0f, financeEmployment: 2.8f, financeMetric: 3.5f);
+                (SectorType.Manufacturing, 10.7f, 10.0f, 76f),
+                (SectorType.Technology, 5.0f, 2.8f, 68f),
+                (SectorType.Agriculture, 1.6f, 2.5f, 35f),
+                (SectorType.Finance, 4.0f, 2.8f, 3.5f),
+                (SectorType.Energy, 2.5f, 0.9f, 25f),
+                (SectorType.Construction, 5.5f, 6.5f, 50f),
+                (SectorType.Retail, 5.0f, 9.5f, 12f),
+                (SectorType.Telecommunications, 1.9f, 0.8f, 90f));
             SeedSectors(italy,
-                manufacturingOutput: 16.6f, manufacturingEmployment: 15.0f, manufacturingMetric: 75f,
-                technologyOutput: 3.5f, technologyEmployment: 2.0f, technologyMetric: 55f,
-                agricultureOutput: 2.1f, agricultureEmployment: 3.8f, agricultureMetric: 25f,
-                financeOutput: 5.5f, financeEmployment: 2.5f, financeMetric: 2.5f);
+                (SectorType.Manufacturing, 16.6f, 15.0f, 75f),
+                (SectorType.Technology, 3.5f, 2.0f, 55f),
+                (SectorType.Agriculture, 2.1f, 3.8f, 25f),
+                (SectorType.Finance, 5.5f, 2.5f, 2.5f),
+                (SectorType.Energy, 2.5f, 0.8f, 35f),
+                (SectorType.Construction, 4.5f, 5.5f, 45f),
+                (SectorType.Retail, 5.2f, 9.0f, 10f),
+                (SectorType.Telecommunications, 1.7f, 0.7f, 85f));
             SeedSectors(poland,
-                manufacturingOutput: 18.1f, manufacturingEmployment: 17.0f, manufacturingMetric: 78f,
-                technologyOutput: 5.0f, technologyEmployment: 3.0f, technologyMetric: 58f,
-                agricultureOutput: 2.4f, agricultureEmployment: 8.0f, agricultureMetric: 40f,
-                financeOutput: 4.0f, financeEmployment: 2.0f, financeMetric: 5f);
+                (SectorType.Manufacturing, 18.1f, 17.0f, 78f),
+                (SectorType.Technology, 5.0f, 3.0f, 58f),
+                (SectorType.Agriculture, 2.4f, 8.0f, 40f),
+                (SectorType.Finance, 4.0f, 2.0f, 5f),
+                (SectorType.Energy, 4.5f, 1.5f, 18f),
+                (SectorType.Construction, 7.0f, 8.0f, 62f),
+                (SectorType.Retail, 5.5f, 10.0f, 11f),
+                (SectorType.Telecommunications, 1.6f, 0.9f, 87f));
 
             // Infrastructure System (Round 2 item 5, see "Infrastructure System" in CLAUDE.md) -
             // ConditionIndex (0-100, higher = better) is seeded from the IMD World Competitiveness
@@ -612,20 +657,21 @@ namespace PoliSim.Data
             });
         }
 
-        /// <summary>Seeds all four Sectors for a country - see this class's call sites for the real-data-vs-stylized breakdown of each argument.</summary>
-        private static void SeedSectors(Country country,
-            float manufacturingOutput, float manufacturingEmployment, float manufacturingMetric,
-            float technologyOutput, float technologyEmployment, float technologyMetric,
-            float agricultureOutput, float agricultureEmployment, float agricultureMetric,
-            float financeOutput, float financeEmployment, float financeMetric)
+        /// <summary>
+        /// Seeds every Sector for a country from a (Type, Output, Employment, Metric) tuple per
+        /// sector - see this class's call sites for the real-data-vs-stylized breakdown of each one.
+        /// Round 3 item 4 refactored this from 12 flat positional float parameters (one triplet per
+        /// sector) to a tuple array specifically because doubling the sector count to eight would have
+        /// pushed that flat-parameter signature to 24 same-typed floats - a genuine maintainability
+        /// problem, not a stylistic preference, since a single misplaced argument in a 24-float call
+        /// would silently seed the wrong sector with no compiler error.
+        /// </summary>
+        private static void SeedSectors(Country country, params (SectorType Type, float Output, float Employment, float Metric)[] sectors)
         {
-            country.Sectors.AddRange(new[]
+            foreach (var sector in sectors)
             {
-                new Sector(SectorType.Manufacturing, manufacturingOutput, manufacturingEmployment, manufacturingMetric),
-                new Sector(SectorType.Technology, technologyOutput, technologyEmployment, technologyMetric),
-                new Sector(SectorType.Agriculture, agricultureOutput, agricultureEmployment, agricultureMetric),
-                new Sector(SectorType.Finance, financeOutput, financeEmployment, financeMetric),
-            });
+                country.Sectors.Add(new Sector(sector.Type, sector.Output, sector.Employment, sector.Metric));
+            }
         }
 
         /// <summary>
