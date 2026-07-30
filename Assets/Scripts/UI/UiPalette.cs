@@ -157,6 +157,32 @@ namespace PoliSim.UI
             }
         }
 
+        private static readonly Color ThresholdMarkerColor = Color.white;
+
+        /// <summary>
+        /// Same track+fill as DrawBar, plus a thin vertical marker at <paramref name="thresholdFraction"/>
+        /// - the election reveal screen's own "approval bar with a win/lose line" needs a reference
+        /// point DrawBar alone can't show, and a dedicated marker overlay is simpler and more legible
+        /// than trying to encode it as a second bar.
+        /// </summary>
+        public static void DrawBarWithThreshold(float fraction, float thresholdFraction, Color fillColor, float height = 14f)
+        {
+            fraction = Mathf.Clamp01(fraction);
+            thresholdFraction = Mathf.Clamp01(thresholdFraction);
+            Rect rect = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
+            GUI.DrawTexture(rect, GetSolidTexture(BarTrackColor), ScaleMode.StretchToFill);
+
+            if (fraction > 0f)
+            {
+                var fillRect = new Rect(rect.x, rect.y, rect.width * fraction, rect.height);
+                GUI.DrawTexture(fillRect, GetSolidTexture(fillColor), ScaleMode.StretchToFill);
+            }
+
+            float markerX = rect.x + rect.width * thresholdFraction;
+            var markerRect = new Rect(markerX - 1f, rect.y, 2f, rect.height);
+            GUI.DrawTexture(markerRect, GetSolidTexture(ThresholdMarkerColor), ScaleMode.StretchToFill);
+        }
+
         /// <summary>
         /// Builds a button style with a solid-color background per state (normal/hover/active) -
         /// Unity's IMGUI applies these automatically based on real mouse position/press state during

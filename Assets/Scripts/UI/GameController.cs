@@ -27,7 +27,8 @@ namespace PoliSim.UI
             CrimeJustice,
             SectorPolicy,
             Infrastructure,
-            SwfPolicy
+            SwfPolicy,
+            PolicyWeb
         }
 
         // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
@@ -178,6 +179,8 @@ namespace PoliSim.UI
         private readonly Dictionary<CountryId, float> _partnerTariffInputs = new Dictionary<CountryId, float>();
 
         private bool _isGameOver;
+        private ElectionResult _pendingElectionResult;
+        private int _pendingElectionTurn;
         private string _gameOverReason;
 
         // Federal Reserve (USA only - see CLAUDE.md's "Federal Reserve" section). _fedChairCandidates
@@ -276,6 +279,7 @@ namespace PoliSim.UI
         // next turn advances - see AdvanceTurn for where this list is appended to and pruned.
         private const int EventMarkerFadeTurns = 6;
         private readonly MapRenderer _mapRenderer = new MapRenderer();
+        private readonly PolicyWebRenderer _policyWebRenderer = new PolicyWebRenderer();
         private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
         private CountryId? _selectedMapCountry;
         private MapEventMarker? _selectedMapEvent;
@@ -290,8 +294,11 @@ namespace PoliSim.UI
         private Vector2 _logScrollPosition;
         private Vector2 _leftColumnScrollPosition;
 
-        private RightPanelTab _rightPanelTab = RightPanelTab.RecentTurns;
+        private RightPanelTab _rightPanelTab = RightPanelTab.PolicyWeb;
         private Vector2 _worldMapScrollPosition;
+        private Vector2 _policyWebScrollPosition;
+        private PolicyNodeId? _selectedPolicyWebPolicyNode;
+        private StatNodeId? _selectedPolicyWebStatNode;
         private Vector2 _tradeScrollPosition;
         private Vector2 _taxPolicyScrollPosition;
         private Vector2 _spendingPolicyScrollPosition;
@@ -412,6 +419,12 @@ namespace PoliSim.UI
                 return;
             }
 
+            if (_pendingElectionResult != null)
+            {
+                DrawElectionResultsScreen(_pendingElectionResult);
+                return;
+            }
+
             bool hasPendingFedChairSelection = UpdateFedChairSelectionState();
 
             float marginX = Screen.width * ScreenMarginFraction;
@@ -462,10 +475,11 @@ namespace PoliSim.UI
             DrawRightColumnTabs(rightColumnWidth);
             GUILayout.Space(sectionSpacing * 0.5f);
 
-            // Two tab rows now (see DrawRightColumnTabs) - reserve both rows' height plus the
-            // spacing between them, not just one, or the second row would silently eat into the
-            // tab-content area below and this whole panel would creep past its allotted height.
-            float tabRowsHeight = _tabButtonStyle.fixedHeight * 2f + TabRowSpacing;
+            // Three tab rows now (Policy Web added a 13th tab, needing a third row - see
+            // DrawRightColumnTabs) - reserve all three rows' height plus the spacing between them,
+            // not just some, or a later row would silently eat into the tab-content area below and
+            // this whole panel would creep past its allotted height.
+            float tabRowsHeight = _tabButtonStyle.fixedHeight * 3f + TabRowSpacing * 2f;
             float tabContentHeight = areaHeight - tabRowsHeight - sectionSpacing * 0.5f;
             switch (_rightPanelTab)
             {
@@ -515,6 +529,9 @@ namespace PoliSim.UI
                     break;
                 case RightPanelTab.Infrastructure:
                     DrawInfrastructureTab(tabContentHeight);
+                    break;
+                case RightPanelTab.PolicyWeb:
+                    DrawPolicyWebTab(tabContentHeight);
                     break;
                 case RightPanelTab.SwfPolicy:
                     GUI.enabled = !_isGameOver;
@@ -612,6 +629,7 @@ namespace PoliSim.UI
                 case RightPanelTab.SectorPolicy: return UiPalette.SystemArea.Sectors;
                 case RightPanelTab.Infrastructure: return UiPalette.SystemArea.Infrastructure;
                 case RightPanelTab.SwfPolicy: return UiPalette.SystemArea.SovereignWealth;
+                case RightPanelTab.PolicyWeb: return UiPalette.SystemArea.Global;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -743,6 +761,39 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// This tab's real institution name per country - previously hardcoded to "Federal Reserve"
+        /// for all six (both here and in the tab bar's own button label), even though the underlying
+        /// mechanic already correctly varies per country (independent Fed chair for USA, a shared ECB
+        /// rate with a national push for the Eurozone trio, a fully independent rate for Sweden/
+        /// Poland - see DrawFederalReserveTab). This was a text/branding gap, not a behavior gap.
+        /// </summary>
+        private static string GetCentralBankName(CountryId countryId)
+        {
+            switch (countryId)
+            {
+                case CountryId.USA: return "Federal Reserve";
+                case CountryId.Germany:
+                case CountryId.France:
+                case CountryId.Italy:
+                    return "European Central Bank (ECB)";
+                case CountryId.Sweden: return "Sveriges Riksbank";
+                case CountryId.Poland: return "Narodowy Bank Polski (NBP)";
+                default: return "Central Bank";
+            }
+        }
+
+        /// <summary>A short real flavor line for the two countries whose central bank has a notable, concrete real-world fact worth surfacing - null for USA/Eurozone, which already have their own descriptive text below this point.</summary>
+        private static string GetCentralBankFlavorText(CountryId countryId)
+        {
+            switch (countryId)
+            {
+                case CountryId.Sweden: return "Founded 1668 - the world's oldest central bank still in operation.";
+                case CountryId.Poland: return "Founded 1945, headquartered in Warsaw.";
+                default: return null;
+            }
+        }
+
+        /// <summary>
         /// Federal Reserve tab (Phase 4 - moved off the dashboard into its own home). For USA's
         /// independent chair (see CLAUDE.md's "Federal Reserve" section): current chair's name/
         /// philosophy/description, and - on a turn where a new presidential term begins - the 2-3
@@ -750,7 +801,9 @@ namespace PoliSim.UI
         /// independent currency (Sweden, Poland), shows the player-controlled Interest Rate Change
         /// slider. For a Eurozone member (Germany/France/Italy), shows a much narrower National Rate
         /// Push slider instead - see CLAUDE.md's "Eurozone Rate Voice" - this tab is that control's
-        /// home regardless of which mechanic the player's country actually uses.
+        /// home regardless of which mechanic the player's country actually uses. The tab's own
+        /// displayed name (both here and the tab bar button) now reflects the real institution per
+        /// country too - see GetCentralBankName.
         /// </summary>
         private void DrawFederalReserveTab(float availableHeight)
         {
@@ -759,7 +812,12 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _federalReserveScrollPosition = GUILayout.BeginScrollView(_federalReserveScrollPosition, GUILayout.Height(scrollHeight));
 
-            DrawColoredLabel("Federal Reserve", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            DrawColoredLabel(GetCentralBankName(PlayerCountryId), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            string centralBankFlavorText = GetCentralBankFlavorText(PlayerCountryId);
+            if (centralBankFlavorText != null)
+            {
+                GUILayout.Label(centralBankFlavorText, _labelStyle);
+            }
 
             if (_playerCountry.CurrentFedChair != null)
             {
@@ -1653,7 +1711,7 @@ namespace PoliSim.UI
             _tariffRateChangeInput = 0f;
         }
 
-        /// <summary>Checks the player's country against ElectionSystem on election turns; a loss sets the simple game-over state (no restart flow yet, matching the brief).</summary>
+        /// <summary>Checks the player's country against ElectionSystem on election turns and, if this is one, stores the result for DrawElectionResultsScreen to reveal (see OnGUI's gate) rather than resolving the game-over state silently in the background - the actual game-rule check (ElectionSystem.RunElection) is unchanged, this just gives it a real presentation.</summary>
         private void CheckElection()
         {
             if (!ElectionSystem.IsElectionTurn(_simulationManager.CurrentTurn))
@@ -1661,13 +1719,66 @@ namespace PoliSim.UI
                 return;
             }
 
-            ElectionResult result = ElectionSystem.RunElection(_playerCountry.State);
-            if (!result.Won)
+            _pendingElectionResult = ElectionSystem.RunElection(_playerCountry.State);
+            _pendingElectionTurn = _simulationManager.CurrentTurn;
+        }
+
+        /// <summary>Called when the player dismisses the election reveal screen - only NOW does a loss actually set the game-over state (a win just returns to the dashboard).</summary>
+        private void DismissElectionResult()
+        {
+            if (_pendingElectionResult != null && !_pendingElectionResult.Won)
             {
                 _isGameOver = true;
-                _gameOverReason = $"Lost re-election at turn {_simulationManager.CurrentTurn} with {result.ApprovalAtElection:F1} approval " +
+                _gameOverReason = $"Lost re-election at turn {_pendingElectionTurn} with {_pendingElectionResult.ApprovalAtElection:F1} approval " +
                     $"(needed at least {ElectionSystem.LosingThreshold:F0}).";
             }
+            _pendingElectionResult = null;
+        }
+
+        /// <summary>
+        /// Election reveal screen: a real full-screen presentation of ElectionSystem's own existing
+        /// win/lose logic (unchanged - see CheckElection/ElectionSystem.RunElection), replacing the
+        /// previous silent background check. Mirrors DrawCountrySelector's own full-screen centered
+        /// layout for consistency. The approval bar reuses UiPalette.DrawBar with a threshold marker
+        /// (see UiPalette.DrawBarWithThreshold) rather than inventing a new bar primitive.
+        /// </summary>
+        private void DrawElectionResultsScreen(ElectionResult result)
+        {
+            GUILayout.BeginArea(new Rect(0f, 0f, Screen.width, Screen.height));
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginVertical(GUILayout.Width(Screen.width * 0.4f));
+
+            Color outcomeColor = result.Won ? UiPalette.PositiveChangeColor : UiPalette.NegativeChangeColor;
+            // _gameOverStyle's own base text color is a hardcoded Color.red (see its declaration) -
+            // DrawColoredLabel's GUI.color trick MULTIPLIES against that base color, so tinting it
+            // green for a win would multiply red x green and produce a muddy dark red, not green.
+            // Cloning the style and overriding its text color directly (not multiplicatively) avoids
+            // that, while still reusing _gameOverStyle's own large/bold banner sizing.
+            var electionBannerStyle = new GUIStyle(_gameOverStyle) { };
+            electionBannerStyle.normal.textColor = outcomeColor;
+            GUILayout.Label(result.Won ? "RE-ELECTED" : "ELECTION LOST", electionBannerStyle);
+            GUILayout.Label($"Turn {_pendingElectionTurn} Election - {_playerCountry.Name}", _labelStyle);
+            GUILayout.Space(16f);
+
+            GUILayout.Label($"Approval Rating: {result.ApprovalAtElection:F1} (needed {ElectionSystem.LosingThreshold:F0} to win)", _labelStyle);
+            UiPalette.DrawBarWithThreshold(result.ApprovalAtElection / 100f, ElectionSystem.LosingThreshold / 100f, outcomeColor, 24f);
+            GUILayout.Label($"Margin: {result.Margin:+0.0;-0.0}", _labelStyle);
+
+            GUILayout.Space(24f);
+            GUIStyle continueStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
+            if (GUILayout.Button("Continue", continueStyle))
+            {
+                DismissElectionResult();
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndArea();
         }
 
         private void AppendLogEntry(EconomyState state)
@@ -1712,7 +1823,7 @@ namespace PoliSim.UI
             DrawRightColumnTabButton("Trade", RightPanelTab.Trade, buttonWidth);
             DrawRightColumnTabButton("Tax Policy", RightPanelTab.TaxPolicy, buttonWidth);
             DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy, buttonWidth);
-            DrawRightColumnTabButton("Federal Reserve", RightPanelTab.FederalReserve, buttonWidth);
+            DrawRightColumnTabButton(GetCentralBankName(PlayerCountryId), RightPanelTab.FederalReserve, buttonWidth);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(TabRowSpacing);
@@ -1724,6 +1835,14 @@ namespace PoliSim.UI
             DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy, buttonWidth);
             DrawRightColumnTabButton("Infrastructure", RightPanelTab.Infrastructure, buttonWidth);
             DrawRightColumnTabButton("Sovereign Wealth Fund", RightPanelTab.SwfPolicy, buttonWidth);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(TabRowSpacing);
+
+            // Third row: just Policy Web (the 13th tab) - full-width rather than squeezed to
+            // buttonWidth alone in an otherwise-empty row, which would look like a sizing bug.
+            GUILayout.BeginHorizontal();
+            DrawRightColumnTabButton("Policy Web", RightPanelTab.PolicyWeb, availableWidth);
             GUILayout.EndHorizontal();
         }
 
@@ -1860,6 +1979,121 @@ namespace PoliSim.UI
                 _labelStyle);
             GUILayout.Label($"Turn {marker.TurnFired} (this turn: {_simulationManager.CurrentTurn})", _labelStyle);
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Policy Web tab: a node/connecting-line diagram of which policy levers affect which stats
+        /// (see PolicyWebRenderer for the full node/edge data and rendering technique - reuses
+        /// MapRenderer's own node+line approach). Clicking a node pins a detail panel below, the same
+        /// "click pins a panel, exactly one at a time" idiom the World Map tab already established.
+        /// </summary>
+        private void DrawPolicyWebTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _policyWebScrollPosition = GUILayout.BeginScrollView(_policyWebScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Policy Web", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Label("The ~9 category headers around the ring are always shown. Hover a node (or click to pin it, and its details below, even after you move away) to reveal its own name and ONLY its own connections - too many of the ~73 nodes to label them all at once legibly. Colored by area; line color follows this game's usual green/red convention (from that STAT's own perspective), thickness reflects relative effect strength where that's meaningfully comparable, uniform otherwise.", _labelStyle);
+            GUILayout.Space(6f);
+
+            // Sized off the tab's own actual panel space, not a fixed pixel canvas (see
+            // PolicyWebRenderer's own class doc comment) - width matches the column's real available
+            // width via ExpandWidth, height is a large majority of what's left in the scroll viewport
+            // after the header text above, floored/ceilinged in Screen.height terms so a very short or
+            // very tall window still gets something reasonable. This is what keeps the diagram itself
+            // from ever needing its own scrollbar - it always renders at exactly the size it's given.
+            float diagramHeight = Mathf.Clamp(scrollHeight - _labelStyle.fontSize * 4f, Screen.height * 0.5f, Screen.height * 0.92f);
+            Rect webRect = GUILayoutUtility.GetRect(10f, diagramHeight, GUILayout.ExpandWidth(true));
+            _policyWebRenderer.Draw(webRect, _labelStyle, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat);
+
+            if (clickedPolicy.HasValue)
+            {
+                _selectedPolicyWebPolicyNode = clickedPolicy;
+                _selectedPolicyWebStatNode = null;
+            }
+            else if (clickedStat.HasValue)
+            {
+                _selectedPolicyWebStatNode = clickedStat;
+                _selectedPolicyWebPolicyNode = null;
+            }
+
+            GUILayout.Space(10f);
+
+            if (_selectedPolicyWebPolicyNode.HasValue)
+            {
+                DrawSelectedPolicyWebPolicyPanel(_selectedPolicyWebPolicyNode.Value);
+            }
+            else if (_selectedPolicyWebStatNode.HasValue)
+            {
+                DrawSelectedPolicyWebStatPanel(_selectedPolicyWebStatNode.Value);
+            }
+            else
+            {
+                GUILayout.Label("Click a policy or stat node for details.", _labelStyle);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        private void DrawSelectedPolicyWebPolicyPanel(PolicyNodeId node)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel(PolicyWebRenderer.GetPolicyName(node), _headerStyle, UiPalette.GetAreaColor(PolicyWebRenderer.GetPolicyArea(node)));
+            GUILayout.Label(PolicyWebRenderer.GetPolicyDescription(node), _labelStyle);
+            GUILayout.Space(4f);
+
+            GUILayout.Label("Current effects:", _labelStyle);
+            foreach (string line in PolicyWebRenderer.GetCurrentEffectSummary(node, _playerCountry))
+            {
+                GUILayout.Label($"  {line}", _labelStyle);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private void DrawSelectedPolicyWebStatPanel(StatNodeId node)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel(PolicyWebRenderer.GetStatName(node), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral));
+
+            List<PolicyWebEdge> incoming = PolicyWebRenderer.GetEdgesForTarget(node);
+            if (incoming.Count > 0)
+            {
+                GUILayout.Label("Affected by:", _labelStyle);
+                foreach (PolicyWebEdge edge in incoming)
+                {
+                    GUILayout.Label($"  {PolicyWebRenderer.GetPolicyName(edge.Source)}", _labelStyle);
+                }
+            }
+
+            IReadOnlyList<float> history = PolicyWebRenderer.GetHistory(node, _playerCountry.History);
+            if (history != null)
+            {
+                GraphRenderer graph = GetOrCreatePolicyWebStatGraph(node);
+                GUILayout.Space(6f);
+                graph.DrawNeutral($"{PolicyWebRenderer.GetStatName(node)} (last 50 turns)", history, null, _labelStyle);
+            }
+            else
+            {
+                GUILayout.Label("No trend history tracked for this stat yet.", _labelStyle);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private readonly Dictionary<StatNodeId, GraphRenderer> _policyWebStatGraphs = new Dictionary<StatNodeId, GraphRenderer>();
+
+        private GraphRenderer GetOrCreatePolicyWebStatGraph(StatNodeId node)
+        {
+            if (!_policyWebStatGraphs.TryGetValue(node, out GraphRenderer graph))
+            {
+                graph = new GraphRenderer();
+                _policyWebStatGraphs[node] = graph;
+            }
+            return graph;
         }
 
         /// <summary>
@@ -2007,9 +2241,10 @@ namespace PoliSim.UI
             GUILayout.Label("Implement or remove a tax, and (while implemented) drag its rate directly to the target you want.", _labelStyle);
             GUILayout.Space(8f);
 
+            float taxTypeNameColumnWidth = GetTaxTypeNameColumnWidth();
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
             {
-                DrawTaxLineRow(taxLine);
+                DrawTaxLineRow(taxLine, taxTypeNameColumnWidth);
                 GUILayout.Space(10f);
             }
 
@@ -2017,9 +2252,19 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        private void DrawTaxLineRow(TaxLine taxLine)
+        /// <summary>Widest TaxType name as rendered in _labelStyle (the style DrawTaxLineRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached), same reasoning as GetSectorNameColumnWidth. The original fixed "_labelStyle.fontSize * 8f" heuristic here undersized the column for the longest name ("CapitalGainsTax"), the same label-truncation root cause found in the Sector/World-Map/Policy-Web labels.</summary>
+        private float GetTaxTypeNameColumnWidth()
         {
-            float labelWidth = _labelStyle.fontSize * 8f;
+            float widest = 0f;
+            foreach (TaxType type in System.Enum.GetValues(typeof(TaxType)))
+            {
+                widest = Mathf.Max(widest, _labelStyle.CalcSize(new GUIContent(type.ToString())).x);
+            }
+            return widest + 12f;
+        }
+
+        private void DrawTaxLineRow(TaxLine taxLine, float labelWidth)
+        {
             float buttonWidth = _labelStyle.fontSize * 6f;
 
             GUILayout.BeginHorizontal();
@@ -2066,9 +2311,10 @@ namespace PoliSim.UI
             _povertyRateGraph.Draw("Poverty Rate (last 50 turns)", _playerCountry.History.PovertyRate, null, _labelStyle, higherIsBetter: false);
             GUILayout.Space(8f);
 
+            float welfareTypeNameColumnWidth = GetWelfareProgramNameColumnWidth();
             foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
             {
-                DrawWelfareProgramRow(welfareProgram);
+                DrawWelfareProgramRow(welfareProgram, welfareTypeNameColumnWidth);
                 GUILayout.Space(10f);
             }
 
@@ -2076,9 +2322,19 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        private void DrawWelfareProgramRow(WelfareProgram welfareProgram)
+        /// <summary>Widest WelfareProgramType name as rendered in _labelStyle, plus a small right-side pad - recomputed each call, same reasoning as GetSectorNameColumnWidth/GetTaxTypeNameColumnWidth. The original fixed "_labelStyle.fontSize * 10f" heuristic here undersized the column for the longest name ("MeansTestedWelfare").</summary>
+        private float GetWelfareProgramNameColumnWidth()
         {
-            float labelWidth = _labelStyle.fontSize * 10f;
+            float widest = 0f;
+            foreach (WelfareProgramType type in System.Enum.GetValues(typeof(WelfareProgramType)))
+            {
+                widest = Mathf.Max(widest, _labelStyle.CalcSize(new GUIContent(type.ToString())).x);
+            }
+            return widest + 12f;
+        }
+
+        private void DrawWelfareProgramRow(WelfareProgram welfareProgram, float labelWidth)
+        {
             float buttonWidth = _labelStyle.fontSize * 6f;
 
             GUILayout.BeginHorizontal();

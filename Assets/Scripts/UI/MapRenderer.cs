@@ -110,8 +110,15 @@ namespace PoliSim.UI
 
             Dictionary<CountryId, float> nodeDiameters = GetNodeDiameters(countries);
 
+            // Measured against labelStyle (the style country names actually render in below), not a
+            // fixed guess - recomputed every call since labelStyle's own font size changes every frame
+            // in GameController.RescaleStylesToScreen as the window resizes. The original fixed 90f
+            // LabelReserveWidth undersized this for "Sweden"/"Germany" at some window sizes, the same
+            // label-truncation root cause found in the Sector/TaxLine/WelfareProgram/Policy-Web labels.
+            float labelReserveWidth = GetLabelReserveWidth(countries, labelStyle);
+
             // Trade lines render first (underneath the nodes) - real TradePartner data, not decoration.
-            DrawTradeLines(rect, countries);
+            DrawTradeLines(rect, countries, labelReserveWidth);
 
             Vector2 mousePosition = Event.current.mousePosition;
             bool isClick = Event.current.type == EventType.MouseDown && Event.current.button == 0;
@@ -128,7 +135,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                Vector2 pixel = ToPixel(rect, CountryMapPositions[marker.CountryId]);
+                Vector2 pixel = ToPixel(rect, CountryMapPositions[marker.CountryId], labelReserveWidth);
                 float nodeDiameter = nodeDiameters[marker.CountryId];
                 pixel += new Vector2(nodeDiameter * 0.6f, -nodeDiameter * 0.6f);
 
@@ -152,14 +159,14 @@ namespace PoliSim.UI
 
             foreach (Country country in countries)
             {
-                Vector2 pixel = ToPixel(rect, CountryMapPositions[country.Id]);
+                Vector2 pixel = ToPixel(rect, CountryMapPositions[country.Id], labelReserveWidth);
                 Color nodeColor = UiPalette.GetCountryColor(country.Id);
                 float diameter = nodeDiameters[country.Id];
 
                 var nodeRect = new Rect(pixel.x - diameter * 0.5f, pixel.y - diameter * 0.5f, diameter, diameter);
                 DrawCircle(nodeRect, nodeColor);
 
-                var nameRect = new Rect(pixel.x + diameter * 0.5f + 3f, pixel.y - labelStyle.fontSize * 0.5f, 90f, labelStyle.fontSize + 4f);
+                var nameRect = new Rect(pixel.x + diameter * 0.5f + 3f, pixel.y - labelStyle.fontSize * 0.5f, labelReserveWidth, labelStyle.fontSize + 4f);
                 GUI.Label(nameRect, country.Name, labelStyle);
 
                 if (nodeRect.Contains(mousePosition))
@@ -212,7 +219,7 @@ namespace PoliSim.UI
         /// import), normalized against the largest pair in the network - the same "proportional to
         /// what it's showing" principle GraphRenderer's own bars/axes already use.
         /// </summary>
-        private void DrawTradeLines(Rect rect, IReadOnlyList<Country> countries)
+        private void DrawTradeLines(Rect rect, IReadOnlyList<Country> countries, float labelReserveWidth)
         {
             var pairs = new List<(CountryId a, CountryId b, float volume)>();
             float maxVolume = 1f;
@@ -238,8 +245,8 @@ namespace PoliSim.UI
 
             foreach ((CountryId a, CountryId b, float volume) in pairs)
             {
-                Vector2 from = ToPixel(rect, CountryMapPositions[a]);
-                Vector2 to = ToPixel(rect, CountryMapPositions[b]);
+                Vector2 from = ToPixel(rect, CountryMapPositions[a], labelReserveWidth);
+                Vector2 to = ToPixel(rect, CountryMapPositions[b], labelReserveWidth);
                 float t = volume / maxVolume;
                 float thickness = Mathf.Lerp(MinLineThickness, MaxLineThickness, t);
                 float alpha = Mathf.Lerp(MinLineAlpha, MaxLineAlpha, t);
@@ -270,24 +277,34 @@ namespace PoliSim.UI
             GUI.color = previousColor;
         }
 
-        /// <summary>Reserved space (px) on every side so a node - and, on the right, its name label, which always renders to the right of the node - can never sit flush against or past the panel's actual edge, at any panel size. Matches the label rect's own width/gap (see the nameRect built in Draw) and the largest a node can ever be (BaseNodeDiameter, before the size-clamp shrinks smaller-GDP countries further).</summary>
+        /// <summary>Reserved space (px) on every side so a node - and, on the right, its name label, which always renders to the right of the node - can never sit flush against or past the panel's actual edge, at any panel size. The largest a node can ever be (BaseNodeDiameter, before the size-clamp shrinks smaller-GDP countries further); the label's own width is now measured (see GetLabelReserveWidth), not a fixed guess.</summary>
         private const float PanelMargin = 12f;
-        private const float LabelReserveWidth = 90f;
         private const float LabelGap = 3f;
+
+        /// <summary>Widest country Name as rendered in labelStyle (the style the name labels actually use in Draw), plus a small right-side pad - recomputed every Draw call, not cached, since labelStyle's own font size changes every frame in GameController.RescaleStylesToScreen as the window resizes. Replaces a fixed 90f constant that undersized this for "Sweden"/"Germany" at some window sizes (they truncated to "Swede"/"Germa") - the same label-truncation root cause found in the Sector/TaxLine/WelfareProgram/Policy-Web labels.</summary>
+        private static float GetLabelReserveWidth(IReadOnlyList<Country> countries, GUIStyle labelStyle)
+        {
+            float widest = 0f;
+            foreach (Country country in countries)
+            {
+                widest = Mathf.Max(widest, labelStyle.CalcSize(new GUIContent(country.Name)).x);
+            }
+            return widest + 6f;
+        }
 
         /// <summary>
         /// Maps a normalized (0-1) position to actual pixels within <paramref name="rect"/> - recomputed
         /// fresh every call from the panel's REAL current width/height (never a cached/stale value),
         /// same as the rest of this screen-relative UI. Insets the usable area by PanelMargin on every
-        /// side, plus extra on the right for the label width, so a normalized position near 1.0 (e.g.
-        /// Poland's) can never place a node or its label past the panel's actual boundary regardless
-        /// of window size - the bug this fixes (Poland pushed off the visible edge at smaller windows)
-        /// happened because the panel's real width was smaller than what the raw normalized*width
-        /// math assumed the label had room for.
+        /// side, plus extra on the right for <paramref name="labelReserveWidth"/>, so a normalized
+        /// position near 1.0 (e.g. Poland's) can never place a node or its label past the panel's actual
+        /// boundary regardless of window size - the bug this fixes (Poland pushed off the visible edge
+        /// at smaller windows) happened because the panel's real width was smaller than what the raw
+        /// normalized*width math assumed the label had room for.
         /// </summary>
-        private static Vector2 ToPixel(Rect rect, Vector2 normalized)
+        private static Vector2 ToPixel(Rect rect, Vector2 normalized, float labelReserveWidth)
         {
-            float rightInset = PanelMargin + LabelReserveWidth + LabelGap + BaseNodeDiameter * 0.5f;
+            float rightInset = PanelMargin + labelReserveWidth + LabelGap + BaseNodeDiameter * 0.5f;
             float usableWidth = Mathf.Max(1f, rect.width - PanelMargin - rightInset);
             float usableHeight = Mathf.Max(1f, rect.height - PanelMargin * 2f);
 

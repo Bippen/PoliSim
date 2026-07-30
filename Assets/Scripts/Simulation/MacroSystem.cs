@@ -108,7 +108,7 @@ namespace PoliSim.Simulation
         /// modest, debated, real-world-scale effect, not the dominant driver of Unemployment the
         /// growth gap is.
         /// </summary>
-        private const float MinimumWageEmploymentSensitivity = 1.5f;
+        internal const float MinimumWageEmploymentSensitivity = 1.5f;
 
         /// <summary>
         /// This turn's Unemployment nudge from how far Country.MinimumWagePercentOfMedian has moved
@@ -117,7 +117,7 @@ namespace PoliSim.Simulation
         /// statutory minimum wage (Sweden, Italy - see Country.MinimumWageImplemented) and zero at
         /// the seeded starting level for every other country.
         /// </summary>
-        private static float GetMinimumWageUnemploymentAdjustment(Country country)
+        internal static float GetMinimumWageUnemploymentAdjustment(Country country)
         {
             if (!country.MinimumWageImplemented)
             {
@@ -136,17 +136,17 @@ namespace PoliSim.Simulation
         /// 35-hour week didn't meaningfully reduce French unemployment as intended - so this is
         /// deliberately small, representing one side of that debate, not a confident modeling choice.
         /// </summary>
-        private const float OvertimeUnemploymentSensitivity = 0.008f;
+        internal const float OvertimeUnemploymentSensitivity = 0.008f;
 
-        private static float GetOvertimeUnemploymentAdjustment(Country country)
+        internal static float GetOvertimeUnemploymentAdjustment(Country country)
         {
             return -OvertimeUnemploymentSensitivity * (country.OvertimeRegulationLevel - NeutralPolicyDialLevel);
         }
 
         /// <summary>Unemployment points removed per point Country.RetrainingProgramLevel sits above its neutral 50 (added per point below) - the well-established real economic rationale that retraining eases job transitions, smaller than the overtime effect since it's a more indirect mechanism.</summary>
-        private const float RetrainingUnemploymentSensitivity = 0.006f;
+        internal const float RetrainingUnemploymentSensitivity = 0.006f;
 
-        private static float GetRetrainingUnemploymentAdjustment(Country country)
+        internal static float GetRetrainingUnemploymentAdjustment(Country country)
         {
             return -RetrainingUnemploymentSensitivity * (country.RetrainingProgramLevel - NeutralPolicyDialLevel);
         }
@@ -181,7 +181,7 @@ namespace PoliSim.Simulation
         /// and the result is floored so neither can meaningfully destabilize Okun's Law's own
         /// mean-reversion, only tilt it.
         /// </summary>
-        private static float GetWelfareAdjustedReversionSpeed(Country country)
+        internal static float GetWelfareAdjustedReversionSpeed(Country country)
         {
             float adjustment = 0f;
             foreach (WelfareProgram program in country.WelfarePrograms)
@@ -268,7 +268,7 @@ namespace PoliSim.Simulation
         /// poverty as it cost in jobs (~1.3 million each), a modest effect since a minimum wage only
         /// reaches low-wage workers, not the whole poor population the way a direct transfer does.
         /// </summary>
-        private const float MinimumWagePovertyReductionSensitivity = 5f;
+        internal const float MinimumWagePovertyReductionSensitivity = 5f;
 
         /// <summary>
         /// PovertyRate-points-per-100%-GenerosityLevel each WelfareProgramType reduces the poverty
@@ -282,7 +282,7 @@ namespace PoliSim.Simulation
         /// real welfare-policy debates raise). UniversalHealthcare/HousingAssistance/
         /// ChildcareSubsidies are modest, matching the task's own framing.
         /// </summary>
-        private static float GetPovertyReductionSensitivity(WelfareProgramType type)
+        internal static float GetPovertyReductionSensitivity(WelfareProgramType type)
         {
             switch (type)
             {
@@ -365,14 +365,14 @@ namespace PoliSim.Simulation
         /// workforce retraining (a gap versus the shared neutral 50, the same idiom Police Funding/
         /// Sentencing Severity use). Hard-clamped to [0, 100].
         /// </summary>
-        private const float PaidFamilyLeaveParticipationSensitivity = 0.02f;
-        private const float RetrainingParticipationSensitivity = 0.01f;
+        internal const float PaidFamilyLeaveParticipationSensitivity = 0.02f;
+        internal const float RetrainingParticipationSensitivity = 0.01f;
 
         /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points reduced per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented effect: an aging population structurally shrinks the working-age share, lowering participation even with no change in any individual's own behavior.</summary>
-        private const float DependencyRatioParticipationSensitivity = 0.02f;
+        internal const float DependencyRatioParticipationSensitivity = 0.02f;
 
         /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points added per point NetMigrationRate sits above its own Country.BaselineNetMigrationRate - a real, well-documented effect: immigrants skew disproportionately working-age, so higher net migration than a country's own starting norm raises participation.</summary>
-        private const float NetMigrationParticipationSensitivity = 0.03f;
+        internal const float NetMigrationParticipationSensitivity = 0.03f;
 
         /// <summary>
         /// Round 3 item 5, Part A: combined ceiling on the SUM of every term that writes to
@@ -434,10 +434,10 @@ namespace PoliSim.Simulation
         private const float CrimeUnemploymentSensitivity = 0.3f;
 
         /// <summary>CrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - a real, well-documented deterrence/response-capacity effect. The larger of the two policy sensitivities - see SentencingSensitivity.</summary>
-        private const float PoliceFundingSensitivity = 0.16f;
+        internal const float PoliceFundingSensitivity = 0.16f;
 
         /// <summary>CrimeIndex points reduced per point Country.SentencingSeverity sits above its neutral 50 - deliberately HALF of PoliceFundingSensitivity, reflecting the well-established criminology finding (Nagin and others) that the CERTAINTY of enforcement deters crime more reliably than the SEVERITY of punishment, which has a smaller, more debated effect.</summary>
-        private const float SentencingSensitivity = 0.08f;
+        internal const float SentencingSensitivity = 0.08f;
 
         /// <summary>Neutral reference point for both policy dials - both start here for every country (a uniform placeholder, unlike CrimeIndex's own per-country baseline), so a gap versus this constant (not a country-specific anchor) is the correct comparison.</summary>
         private const float NeutralPolicyDialLevel = 50f;
@@ -454,13 +454,13 @@ namespace PoliSim.Simulation
         private const float OrganizedCrimeReversionSpeed = 0.15f;
 
         /// <summary>OrganizedCrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - policing already fights organized crime in reality, reusing this existing lever rather than requiring a brand-new one for this specific link. Smaller than its own primary levers below - a secondary contributor.</summary>
-        private const float PoliceFundingOrganizedCrimeSensitivity = 0.06f;
+        internal const float PoliceFundingOrganizedCrimeSensitivity = 0.06f;
 
         /// <summary>OrganizedCrimeIndex points reduced per point Country.BorderEnforcementLevel sits above its neutral 50 (and increased per point below) - stricter border enforcement disrupts cross-border smuggling/trafficking, organized crime's real, well-documented core activity. The primary lever for this stat.</summary>
-        private const float BorderEnforcementOrganizedCrimeSensitivity = 0.12f;
+        internal const float BorderEnforcementOrganizedCrimeSensitivity = 0.12f;
 
         /// <summary>OrganizedCrimeIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - better-funded prosecution capacity disrupts organized-crime networks, a real secondary contributor alongside BorderEnforcementLevel's more direct effect.</summary>
-        private const float JudicialFundingOrganizedCrimeSensitivity = 0.06f;
+        internal const float JudicialFundingOrganizedCrimeSensitivity = 0.06f;
 
         /// <summary>
         /// OrganizedCrimeIndex mean-reverts toward a target of Country.BaselineOrganizedCrimeIndex,
@@ -483,7 +483,7 @@ namespace PoliSim.Simulation
         private const float CorruptionReversionSpeed = 0.15f;
 
         /// <summary>CorruptionIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - an independent, well-funded judiciary is a canonical real-world anti-corruption mechanism. The sole lever for this stat in this pass.</summary>
-        private const float JudicialFundingCorruptionSensitivity = 0.14f;
+        internal const float JudicialFundingCorruptionSensitivity = 0.14f;
 
         /// <summary>
         /// CorruptionIndex mean-reverts toward a target of Country.BaselineCorruptionIndex, adjusted
@@ -526,7 +526,7 @@ namespace PoliSim.Simulation
         /// through the same (YearsPerTurn-scaled, capped/reverting) ApplyPopulationGrowth pipeline
         /// every other BirthRate driver already uses.
         /// </summary>
-        private const float FamilyPolicyBirthRateSensitivity = 0.03f;
+        internal const float FamilyPolicyBirthRateSensitivity = 0.03f;
 
         /// <summary>Points DeathRate rises per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented mechanical effect: an aging population structurally raises the crude death rate even with no change in age-specific mortality, since a larger share of the population is simply older.</summary>
         private const float DeathRateAgingDriftSensitivity = 0.003f;
@@ -555,7 +555,7 @@ namespace PoliSim.Simulation
         /// immigration-to-labor-force channel - avoiding the double-counting risk this item's own
         /// roadmap brief flagged structurally, not just by convention.
         /// </summary>
-        private const float ImmigrationPolicyNetMigrationSensitivity = 0.1f;
+        internal const float ImmigrationPolicyNetMigrationSensitivity = 0.1f;
 
         /// <summary>Points DependencyRatio rises per point the DeathRate-versus-BirthRate gap sits above zero (natural decrease - more deaths than births) - the single derived aging/dependency proxy's own drift mechanism, deliberately simple, not a full age-cohort/population-pyramid model. Never decreases in this pass - real developed-world aging trends are one-directional over any timescale this game's turns plausibly represent.</summary>
         private const float DependencyRatioDriftSensitivity = 0.0015f;
@@ -734,7 +734,7 @@ namespace PoliSim.Simulation
         /// effect already got in "Deeper Labor Market Policies": bail reform's real effect on crime is
         /// genuinely disputed in criminology research, not a settled empirical fact.
         /// </summary>
-        private const float BailReformCrimeIndexSensitivity = 0.02f;
+        internal const float BailReformCrimeIndexSensitivity = 0.02f;
 
         /// <summary>Round 3 item 3: CrimeIndex points added per point OrganizedCrimeIndex sits above Country.BaselineOrganizedCrimeIndex (and reduced per point below) - organized crime activity is a real, direct contributor to overall crime levels in most criminological frameworks. Deliberately modest so overall CrimeIndex isn't dominated by this one secondary contributor.</summary>
         private const float OrganizedCrimeIndexSensitivity = 0.1f;
@@ -799,13 +799,13 @@ namespace PoliSim.Simulation
         private const float PrisonPopulationReversionSpeed = 0.15f;
 
         /// <summary>PrisonPopulationRate points reduced per point Country.BailReformLevel sits above its neutral 50 (and added per point below) - bail reform's primary real-world goal is reducing pretrial detention, a direct and substantial real effect (pretrial detainees are a significant share of incarcerated populations, especially in the US).</summary>
-        private const float BailReformPrisonPopulationSensitivity = 2.0f;
+        internal const float BailReformPrisonPopulationSensitivity = 2.0f;
 
         /// <summary>PrisonPopulationRate points added per point Country.DrugPolicyLevel sits above its neutral 50 (and reduced per point below) - the well-documented real link between strict drug enforcement and mass incarceration (the US "war on drugs" being the clearest real-world example).</summary>
-        private const float DrugPolicyPrisonPopulationSensitivity = 1.6f;
+        internal const float DrugPolicyPrisonPopulationSensitivity = 1.6f;
 
         /// <summary>Round 3 item 3: PrisonPopulationRate points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and added per point below) - a real, well-documented indirect effect: well-funded courts process cases faster, reducing the pretrial-detention backlog that swells incarceration in underfunded systems. Deliberately smaller than BailReformPrisonPopulationSensitivity's direct mechanical effect, since this is a secondary, capacity-driven channel, not bail policy's own primary lever.</summary>
-        private const float JudicialFundingPrisonPopulationSensitivity = 0.8f;
+        internal const float JudicialFundingPrisonPopulationSensitivity = 0.8f;
 
         /// <summary>Gameplay safety bound, comfortably above any real-world incarceration rate (the USA's real ~531 per 100k is already the highest among developed nations).</summary>
         private const float MaxPrisonPopulationRate = 1000f;
@@ -833,22 +833,22 @@ namespace PoliSim.Simulation
         private const float SectorReversionSpeed = 0.15f;
 
         /// <summary>Points added per point a sector's SubsidyLevel sits above its neutral 50 (and removed per point below) - applied uniformly to Output/Employment/SectorMetric in this first pass, deliberately not wired to the budget (see CLAUDE.md).</summary>
-        private const float SectorSubsidySensitivity = 0.04f;
+        internal const float SectorSubsidySensitivity = 0.04f;
 
         /// <summary>Points removed per point a sector's RegulationLevel sits above its neutral 50 (and added per point below) - a compliance-cost tradeoff, deliberately smaller than nothing else competes with it in this isolated pass.</summary>
-        private const float SectorRegulationSensitivity = 0.04f;
+        internal const float SectorRegulationSensitivity = 0.04f;
 
         /// <summary>Round 3 item 2: points added per point a sector's TaxCreditLevel sits above its neutral 50 - same magnitude and uniform-across-stats shape as SectorSubsidySensitivity, since a tax credit and a direct subsidy have a similar practical effect in this stylized model.</summary>
-        private const float SectorTaxCreditSensitivity = 0.04f;
+        internal const float SectorTaxCreditSensitivity = 0.04f;
 
         /// <summary>Round 3 item 2: points added to Output/SectorMetric per point a sector's ResearchGrantsLevel sits above its neutral 50 - same magnitude as SectorSubsidySensitivity, since R&D funding most directly targets output/innovation.</summary>
-        private const float SectorResearchGrantsSensitivity = 0.04f;
+        internal const float SectorResearchGrantsSensitivity = 0.04f;
 
         /// <summary>Round 3 item 2: points added to Employment per point a sector's ResearchGrantsLevel sits above its neutral 50 - HALF SectorResearchGrantsSensitivity, deliberately smaller: grants fund research projects and output, not broad hiring, unlike a direct Subsidy.</summary>
-        private const float SectorResearchGrantsEmploymentSensitivity = 0.02f;
+        internal const float SectorResearchGrantsEmploymentSensitivity = 0.02f;
 
         /// <summary>Round 3 item 2: points added to Output/SectorMetric (and REMOVED from Employment - see ApplySectorEffects) per point a sector's DeregulationNationalizationLevel sits above its neutral 50 - the real, well-documented state-owned-enterprise tradeoff (privatization/deregulation gains efficiency by shedding excess labor; nationalization preserves jobs at an efficiency cost).</summary>
-        private const float SectorDeregulationSensitivity = 0.04f;
+        internal const float SectorDeregulationSensitivity = 0.04f;
 
         /// <summary>
         /// Each of a country's Sectors mean-reverts Output/Employment/SectorMetric toward its own
@@ -997,7 +997,7 @@ namespace PoliSim.Simulation
         private const float MaxTotalPotentialGrowthAdjustment = 1f;
 
         /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP the aggregate Sector Output sits above its own trend.</summary>
-        private static float GetSectorGrowthAdjustment(Country country)
+        internal static float GetSectorGrowthAdjustment(Country country)
         {
             float aggregateOutputGap = 0f;
             foreach (Sector sector in country.Sectors)
@@ -1032,7 +1032,7 @@ namespace PoliSim.Simulation
         /// <summary>Cap on the sector-employment unemployment adjustment.</summary>
         private const float MaxSectorUnemploymentAdjustment = 0.3f;
 
-        private static float GetSectorUnemploymentAdjustment(Country country)
+        internal static float GetSectorUnemploymentAdjustment(Country country)
         {
             float aggregateEmploymentGap = 0f;
             foreach (Sector sector in country.Sectors)
@@ -1067,22 +1067,22 @@ namespace PoliSim.Simulation
         private const float CorruptionApprovalSensitivity = 0.15f;
 
         /// <summary>Approval points gained per week Country.PaidFamilyLeaveWeeks sits above its own seeded BaselinePaidFamilyLeaveWeeks (and lost per week below) - a small, real political effect (paid-leave policy tends to be popular).</summary>
-        private const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
+        internal const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
 
         /// <summary>Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
-        private const float DrugPolicyApprovalSensitivity = 0.02f;
+        internal const float DrugPolicyApprovalSensitivity = 0.02f;
 
         /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
-        private const float TaxHikeApprovalSensitivity = 1.5f;
+        internal const float TaxHikeApprovalSensitivity = 1.5f;
 
         /// <summary>Approval points per percentage-point-of-GDP of (multiplier-weighted) net discretionary spending change.</summary>
-        private const float SpendingApprovalSensitivity = 0.8f;
+        internal const float SpendingApprovalSensitivity = 0.8f;
 
         /// <summary>Healthcare/education are relatively popular spending; defense is relatively less so; infrastructure is the baseline (no special bonus or penalty).</summary>
-        private const float HealthcareApprovalMultiplier = 1.5f;
-        private const float EducationApprovalMultiplier = 1.5f;
-        private const float DefenseApprovalMultiplier = 0.5f;
-        private const float InfrastructureApprovalMultiplier = 1.0f;
+        internal const float HealthcareApprovalMultiplier = 1.5f;
+        internal const float EducationApprovalMultiplier = 1.5f;
+        internal const float DefenseApprovalMultiplier = 0.5f;
+        internal const float InfrastructureApprovalMultiplier = 1.0f;
 
         /// <summary>
         /// Phase 2 (see "Detailed Spending Portfolio Phase 2" in CLAUDE.md) - four more categories
@@ -1092,10 +1092,10 @@ namespace PoliSim.Simulation
         /// is relatively popular (like Healthcare/Education, though slightly less so) - illustrative,
         /// gameplay-tuning judgment calls, the same as the original four's own multipliers.
         /// </summary>
-        private const float JusticeApprovalMultiplier = 1.0f;
-        private const float HomelandSecurityApprovalMultiplier = 0.7f;
-        private const float EnergyApprovalMultiplier = 1.0f;
-        private const float HousingApprovalMultiplier = 1.3f;
+        internal const float JusticeApprovalMultiplier = 1.0f;
+        internal const float HomelandSecurityApprovalMultiplier = 0.7f;
+        internal const float EnergyApprovalMultiplier = 1.0f;
+        internal const float HousingApprovalMultiplier = 1.3f;
 
         /// <summary>
         /// Distinctly higher than any Discretionary category's multiplier above - entitlement
@@ -1104,7 +1104,7 @@ namespace PoliSim.Simulation
         /// change to Mandatory spending moves approval by roughly double the strongest Discretionary
         /// multiplier, in either direction (a cut hurts more, but an increase also helps more).
         /// </summary>
-        private const float MandatorySpendingApprovalMultiplier = 3.0f;
+        internal const float MandatorySpendingApprovalMultiplier = 3.0f;
 
         /// <summary>Debt-to-GDP above this (the same "safe" benchmark SimulationManager's risk premium uses) starts discounting the approval benefit of new spending - fiscal-strain awareness.</summary>
         private const float DeficitAwarenessDebtToGdpThreshold = 60f;
@@ -1120,7 +1120,7 @@ namespace PoliSim.Simulation
         private const float HousingAssistanceApprovalSensitivity = 1.5f;
         private const float ChildcareSubsidiesApprovalSensitivity = 1.5f;
 
-        private static float GetWelfareApprovalSensitivity(WelfareProgramType type)
+        internal static float GetWelfareApprovalSensitivity(WelfareProgramType type)
         {
             switch (type)
             {
@@ -1135,7 +1135,7 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Sum over every implemented WelfareProgram of GetWelfareApprovalSensitivity(Type) * (GenerosityLevel / 100) - a direct approval delta, not weighted by PercentOfGdp like the spending-category term (welfare's political popularity tracks how generous/visible the program is to the public, not its share of GDP).</summary>
-        private static float GetWelfareApprovalEffect(Country country)
+        internal static float GetWelfareApprovalEffect(Country country)
         {
             float effect = 0f;
             foreach (WelfareProgram program in country.WelfarePrograms)
@@ -1247,13 +1247,13 @@ namespace PoliSim.Simulation
         // --- Category spending side-effects: small, separable per-category profiles (v1, not a full policy tree) ---
 
         /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP spent on infrastructure - a lasting, ratcheting investment effect, accumulated in Country.InfrastructureSpendingGrowthAdjustment rather than mutating PotentialGrowthRate directly (see ApplyInfrastructureGrowthEffect - Infrastructure now has two growth-related sources, spending and condition, combined under one dedicated ceiling there).</summary>
-        private const float InfrastructureGrowthSensitivity = 0.01f;
+        internal const float InfrastructureGrowthSensitivity = 0.01f;
 
         /// <summary>ConsumerConfidence gained per percentage-point-of-GDP spent on healthcare - "long-run productivity/wellbeing" modeled as consumer confidence.</summary>
-        private const float HealthcareConfidenceSensitivity = 0.002f;
+        internal const float HealthcareConfidenceSensitivity = 0.002f;
 
         /// <summary>BusinessConfidence gained per percentage-point-of-GDP spent on education - a better-skilled workforce modeled as business confidence.</summary>
-        private const float EducationConfidenceSensitivity = 0.002f;
+        internal const float EducationConfidenceSensitivity = 0.002f;
 
         /// <summary>
         /// Phase 2 (see "Detailed Spending Portfolio Phase 2" in CLAUDE.md) - three more categories
@@ -1264,13 +1264,13 @@ namespace PoliSim.Simulation
         /// percentage-point-of-GDP spent on justice - court/prosecution capacity genuinely affects
         /// case backlogs and enforcement outcomes.
         /// </summary>
-        private const float JusticeCrimeIndexSensitivity = 0.02f;
+        internal const float JusticeCrimeIndexSensitivity = 0.02f;
 
         /// <summary>BusinessConfidence gained per percentage-point-of-GDP spent on energy - lower/stabler energy costs for businesses, distinct from Education's own BusinessConfidence nudge.</summary>
-        private const float EnergyConfidenceSensitivity = 0.0015f;
+        internal const float EnergyConfidenceSensitivity = 0.0015f;
 
         /// <summary>PovertyRate baseline points reduced (permanently, off Country.BaselinePovertyRate) per percentage-point-of-GDP spent on housing - HUD-style baseline federal housing support, smaller than the dedicated player-adjustable WelfareProgramType.HousingAssistance's own sensitivity since this is a much narrower, less-targeted budget line.</summary>
-        private const float HousingPovertyReductionSensitivity = 0.015f;
+        internal const float HousingPovertyReductionSensitivity = 0.015f;
 
         /// <summary>Ceiling on PotentialGrowthRate - repeated infrastructure spending over many turns shouldn't be able to push trend growth past a sane bound.</summary>
         private const float MaxPotentialGrowthRate = 8f;
@@ -1315,10 +1315,10 @@ namespace PoliSim.Simulation
         // --- Welfare program side-effects: small, separable per-program profiles, mirroring the category spending effects above ---
 
         /// <summary>ConsumerConfidence gained per 100% GenerosityLevel of UBI - "modest Consumption/GDP boost" per the task's own framing, modeled as consumer confidence the same way Healthcare spending already is.</summary>
-        private const float UbiConsumerConfidenceSensitivity = 0.03f;
+        internal const float UbiConsumerConfidenceSensitivity = 0.03f;
 
         /// <summary>BusinessConfidence gained per 100% GenerosityLevel of UniversalHealthcare - reduced employer healthcare-cost burden, modeled as business confidence the same way Education spending already is.</summary>
-        private const float UniversalHealthcareBusinessConfidenceSensitivity = 0.03f;
+        internal const float UniversalHealthcareBusinessConfidenceSensitivity = 0.03f;
 
         /// <summary>
         /// UBI nudges ConsumerConfidence up; UniversalHealthcare nudges BusinessConfidence up - both
