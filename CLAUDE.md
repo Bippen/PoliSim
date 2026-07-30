@@ -2927,6 +2927,112 @@ actively binds rather than just theoretically existing.
   producing any further divergence, confirming the ceiling "actively binds, not just theoretically
   present" at the larger sector count exactly as this item required.
 
+## Demographics, Part A (Population, Drift, Reconciled Effects)
+`ROADMAP_BRIEF.md` Round 3 item 5, Part A - the largest, most novel item this round, deliberately
+split into two sequential parts and validated separately. Part A adds plumbing (`Population`,
+`BirthRate`, `DeathRate`, `NetMigrationRate`, a single `DependencyRatio` aging proxy) plus three
+bounded effects into existing systems - explicitly NO policy levers yet (Part B). Not the full
+age-cohort/population-pyramid model - one scalar per demographic concept per country, the same
+"not the full theoretical richness" discipline every first-pass system in this project has followed.
+
+- **`EconomyState.Population`** (millions, matching GDP's own human-readable scale): seeded from real
+  2024/2025 data (USA 341.8, Germany 83.6, France 69.1, Italy 58.9, Poland 37.5, Sweden 10.6).
+  **`BirthRate`/`DeathRate`/`NetMigrationRate`** (per-1,000 population per turn): seeded from real data
+  (USA 10.6/9.1/+3.7, Sweden 10.8/9.5/+1.1, France 9.7/9.5/+1.1, Germany 8.2/12.2/+1.8, Italy
+  6.3/10.4/+1.3, Poland 6.7/10.9/+0.2). **`DependencyRatio`** (old-age dependency ratio, 65+ as % of
+  working-age 15-64 - a real, standard World Bank/OECD statistic): real/well-documented for Italy
+  (40, highest of the six, among the highest in the world) and USA/Poland (28, lowest, both real);
+  Germany's figure (35) is informed by an ESTIMATED 65+ population share (~22-23%, full age-cohort
+  breakdown unavailable), honestly not directly sourced the way Italy/USA/Poland's are; Sweden/France
+  (33 each) are directional estimates.
+- **Drift, not a static constant repeated 500 turns**: `MacroSystem.ApplyDemographicRates` (must run
+  before `ApplyPopulationGrowth`, which reads its fresh output) evolves all four rate-like quantities
+  every turn. `BirthRate` declines on its own independent secular trend (a real, well-documented,
+  near-universal fertility decline across developed nations), floored at a realistic low-fertility
+  bound. `DependencyRatio` rises when `DeathRate` exceeds `BirthRate` (natural decrease) - the single
+  derived aging proxy's own drift mechanism. `DeathRate` and `NetMigrationRate` THEN both drift further
+  based on how far `DependencyRatio` has risen above its own baseline - a real mechanical effect
+  (aging structurally raises crude death rate) and a real, discussed phenomenon (aging economies lean
+  more on immigration over time), deliberately kept as a SEPARATE driver from `BirthRate`'s own
+  independent decline (fertility decline isn't itself "caused" by a country's current dependency
+  ratio the way the migration-reliance trend plausibly is). `Population` then evolves by the standard
+  demographic identity: `(BirthRate - DeathRate + NetMigrationRate)/1000 x Population`.
+- **A real tuning problem found and fixed before validation, not glossed over**: the first constant
+  pass (`DependencyRatioDriftSensitivity`=0.01, `DeathRateAgingDriftSensitivity`=0.02,
+  `MigrationAgingDriftSensitivity`=0.015) created an accelerating positive feedback loop (aging raises
+  death rate, which widens the birth-death gap, which accelerates aging further) that slammed
+  `DeathRate`/`DependencyRatio`/`NetMigrationRate` into their own safety ceilings within 200-300 turns
+  for Germany (the largest starting birth-death gap) and stayed pinned there for the remaining
+  turns - exactly the "bimodal attractor" failure pattern this project's own discipline explicitly
+  watches for, caught via a throwaway Edit-mode diagnostic (never committed, same pattern as the SWF
+  drawdown mechanic's own validation) BEFORE spending a full matrix run on unvalidated constants.
+  Reduced all three by roughly 7x (0.0015/0.003/0.002) and re-tested: every country now drifts
+  gently and stays comfortably inside its ceilings through turn 500, with genuinely differentiated,
+  plausible trajectories - Germany/Italy/Poland (all real negative-natural-growth countries) decline
+  gradually, USA grows (immigration plus an initially-favorable birth/death balance), Sweden shows a
+  plausible rise-then-decline hump as its own birth rate's secular decline eventually crosses below
+  its death rate. Population declines are large by turn 500 for the negative-natural-growth countries
+  (Poland reaches roughly 2.1M from a 37.5M start) - a real, expected consequence of compounding even
+  a modest sustained negative growth rate over a 500-TURN (effectively 500-year) horizon, the same
+  "large but internally consistent, non-alarming at this extreme horizon" standard this project
+  already accepts for GDP/debt figures, not evidence of a bug given the smooth, gradual, non-ceiling-
+  hitting path that produces it.
+- **Pension pressure, reconciled against the existing automatic Mandatory-spending growth
+  mechanism**: `SimulationManager.ApplyDemographicPensionPressure` nudges the pension-equivalent
+  `SpendingLine`'s `Amount` up as `DependencyRatio` rises above its own baseline - USA's Mandatory
+  `SocialSecurity` line, or (the other five countries have no Mandatory portfolio at all) their
+  Discretionary `SocialPrograms` line from "Country Selection" Part 2, the closest analog they have
+  (honestly an approximation - `SocialPrograms` is broader than pensions specifically). Reconciled by
+  nudging `Amount` ONLY, NEVER `SeedAmount` - the automatic growth mechanism (`ApplyMandatorySpendingGrowth`/
+  `ApplyDiscretionarySpendingGrowth`, both already run earlier in the same `ResolveSpendingForTurn`
+  call) is the sole thing that ever moves `SeedAmount` and therefore the `[0.2x, 3.0x]` ceiling's own
+  moving reference point - this can never itself become a SECOND source of ceiling drift the way
+  "SpendingLine Amount Ceiling - Debt-to-Zero Fix" once found and fixed for Discretionary spending.
+  Small and bounded (a fractional nudge capped at 0.5% of the line's own current Amount per turn,
+  reached only once `DependencyRatio` has drifted ~25 points above baseline) and re-clamped through
+  the existing `ClampToSeedRange`.
+- **Healthcare cost pressure, USA-only, honestly disclosed**: `ApplyDemographicHealthcarePressure`
+  nudges USA's Mandatory `Medicare` line the same reconciled way (Amount only, capped at 0.4%/turn) -
+  Medicare specifically serves the elderly population, the one existing line with a genuinely direct
+  real-world link to aging (Medicaid/`HHSDiscretionary` serve broader populations and were
+  deliberately left untouched). The other five countries have no Medicare-equivalent line at all
+  (Country Selection Part 2's generic decomposition has no healthcare-specific category) - left
+  without this effect entirely rather than forced onto an unrelated line, the same "USA-first, no
+  clean analog exists yet" precedent "Detailed Spending Portfolio" and the original Sovereign Wealth
+  Fund both already established (not escalated as a design fork - it directly matches this
+  already-repeated pattern, not a novel judgment call).
+- **Labor force participation, given the same seriousness `PotentialGrowthRate`'s own combined
+  ceiling got in "Sector Integration"**: `MacroSystem.ApplyLaborForceParticipationRate` already had
+  two direct policy terms (paid family leave, workforce retraining) stacked with NO combined bound
+  before this task - demographics adds two more (`DependencyRatio` gap, negative - aging shrinks the
+  working-age share; `NetMigrationRate` gap versus its own baseline, positive - immigrants skew
+  working-age). All four are now summed and clamped as ONE `MaxLaborForceParticipationAdjustment`
+  (1.0) before being added to the target - the already-established Unemployment-gap term (the
+  discouraged/encouraged-worker effect) stays deliberately OUTSIDE this ceiling, mirroring how
+  `PotentialGrowthRate`'s own ceiling leaves `BasePotentialGrowthRate` itself outside it. Confirmed
+  genuinely binding, not just theoretical: the pre-existing `laborstress` scenario (paid leave +
+  retraining both maxed) already exceeds this ceiling's raw sum before clamping.
+- **Anomaly-checking apparatus extended** for all five new fields (`Population` can't go
+  non-positive; `BirthRate`/`DeathRate` can't go negative; `DependencyRatio` range-checked to
+  `[0, 100]`; all five checked for finiteness) - the same discipline every other tracked stat in this
+  project already gets.
+- **Validated - full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations), required since this is fiscal-touching (pension/healthcare
+  pressure touch `SpendingLine.Amount`)**: zero finite/negative/out-of-range anomalies anywhere for
+  `Population`/`BirthRate`/`DeathRate`/`NetMigrationRate`/`DependencyRatio` or any pre-existing field;
+  anomaly counts (69-173 at 100 turns, 401-978 at 500) landed within the same range already
+  established. **No double-counted drift from either reconciliation point**: the baseline scenario's
+  turn-500 `DebtToGdpRatio` for all six countries landed consistent with their own already-documented
+  equilibria (USA ~144%, Germany ~44%, Italy ~122%, Poland ~32% - a new but unremarkable, explicably
+  higher figure given Poland's own already-higher seeded `PotentialGrowthRate` compounding further
+  over 500 turns, unrelated to demographics; Sweden/France showing their own already-documented
+  SWF-driven low/bimodal pattern) - no sign of the pension/healthcare pressure stacking unexpectedly
+  with the automatic Mandatory-spending growth mechanism.
+- **Part A stops here, deliberately** - no Family Policy/Immigration Policy levers yet (Part B),
+  per this item's own explicit two-part sequencing and "validate Part A fully before starting Part B"
+  instruction. UI display for the five new fields is also deferred to Part B, where it will sit
+  naturally alongside the two new policy sliders rather than being added twice.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

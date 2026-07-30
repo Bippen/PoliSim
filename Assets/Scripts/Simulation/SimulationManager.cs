@@ -311,6 +311,11 @@ namespace PoliSim.Simulation
             ApplySwfPolicyChanges(country, decision);
             ApplyLaborPolicyChanges(country, decision);
             ApplyCrimeJusticeDeeperChanges(country, decision);
+            // Round 3 item 5, Part A: must run BEFORE ResolveSpendingForTurn (pension/healthcare
+            // pressure read this turn's freshly-updated DependencyRatio) and before
+            // ApplyLaborForceParticipationRate below (reads DependencyRatio/NetMigrationRate).
+            MacroSystem.ApplyDemographicRates(country);
+            MacroSystem.ApplyPopulationGrowth(country);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplyInfrastructureCondition(country, spendingResult.EffectiveDecision);
@@ -418,6 +423,8 @@ namespace PoliSim.Simulation
             ApplySwfPolicyChanges(previewCountry, decision);
             ApplyLaborPolicyChanges(previewCountry, decision);
             ApplyCrimeJusticeDeeperChanges(previewCountry, decision);
+            MacroSystem.ApplyDemographicRates(previewCountry);
+            MacroSystem.ApplyPopulationGrowth(previewCountry);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplyInfrastructureCondition(previewCountry, spendingResult.EffectiveDecision);
@@ -567,6 +574,8 @@ namespace PoliSim.Simulation
                 BaselineCorruptionIndex = country.BaselineCorruptionIndex,
                 JudicialFundingLevel = country.JudicialFundingLevel,
                 BorderEnforcementLevel = country.BorderEnforcementLevel,
+                BaselineDependencyRatio = country.BaselineDependencyRatio,
+                BaselineNetMigrationRate = country.BaselineNetMigrationRate,
                 BasePotentialGrowthRate = country.BasePotentialGrowthRate,
                 InfrastructureSpendingGrowthAdjustment = country.InfrastructureSpendingGrowthAdjustment
             };
@@ -1030,6 +1039,8 @@ namespace PoliSim.Simulation
             {
                 ApplyDiscretionarySpendingGrowth(country);
                 ApplyMandatorySpendingGrowth(country);
+                ApplyDemographicPensionPressure(country);
+                ApplyDemographicHealthcarePressure(country);
                 float discretionaryTotalBefore = GetSpendingLineTotal(country, mandatory: false);
                 SpendingLineChangeResult changeResult = ApplySpendingLineChanges(country, decision);
                 float discretionaryTotalAfter = GetSpendingLineTotal(country, mandatory: false);
@@ -1125,6 +1136,93 @@ namespace PoliSim.Simulation
                 line.SeedAmount *= growthFactor;
                 line.Amount = ClampToSeedRange(line, line.Amount * growthFactor);
             }
+        }
+
+        /// <summary>First SpendingLine matching category, or null if the country has none - a plain linear search, matching this file's existing no-LINQ style.</summary>
+        private static SpendingLine FindSpendingLine(Country country, SpendingCategory category)
+        {
+            foreach (SpendingLine line in country.SpendingLines)
+            {
+                if (line.Category == category)
+                {
+                    return line;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>Fraction of the pension-equivalent line's own current Amount added per point DependencyRatio sits above its own Country.BaselineDependencyRatio, before MaxPensionPressureFraction caps the result.</summary>
+        private const float PensionPressureSensitivity = 0.0002f;
+
+        /// <summary>Cap on ApplyDemographicPensionPressure's per-turn fractional nudge - deliberately small ("small and bounded," the same standard this task set for healthcare cost pressure too), reached once DependencyRatio has drifted roughly 25 points above baseline.</summary>
+        private const float MaxPensionPressureFraction = 0.005f;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: nudges the pension-equivalent SpendingLine's Amount up as
+        /// DependencyRatio rises above its own baseline - real, rising old-age dependency mechanically
+        /// raises pension outlays. Targets USA's Mandatory SocialSecurity line, or (for the other five
+        /// countries, which have no Mandatory portfolio at all) their Discretionary SocialPrograms line
+        /// from "Country Selection" Part 2 - the closest analog they have, honestly an approximation
+        /// (SocialPrograms is broader than pensions specifically), not a precise pension-specific line.
+        ///
+        /// Reconciled against the ALREADY-EXISTING automatic growth mechanism (ApplyMandatorySpendingGrowth/
+        /// ApplyDiscretionarySpendingGrowth, both already run earlier this same call) by nudging Amount
+        /// ONLY, never SeedAmount - the automatic growth mechanism is the sole thing that ever moves
+        /// SeedAmount (and therefore the [0.2x, 3.0x] ceiling's own moving reference point), so this
+        /// can never itself become a SECOND source of ceiling drift the way "SpendingLine Amount
+        /// Ceiling - Debt-to-Zero Fix" once found and fixed for Discretionary spending. Re-clamped to
+        /// the line's existing ceiling via the same ClampToSeedRange every other spending-line mutation
+        /// already uses. Runs INSIDE ResolveSpendingForTurn (via the call just above) rather than after
+        /// it returns, so this turn's own fiscal totals already reflect the nudge, the same timing the
+        /// automatic growth mechanism itself already has - a no-op if neither line exists (shouldn't
+        /// happen given WorldFactory's seeding, but defensive).
+        /// </summary>
+        private void ApplyDemographicPensionPressure(Country country)
+        {
+            SpendingLine pensionLine = FindSpendingLine(country, SpendingCategory.SocialSecurity)
+                ?? FindSpendingLine(country, SpendingCategory.SocialPrograms);
+            if (pensionLine == null)
+            {
+                return;
+            }
+
+            float dependencyGap = Mathf.Max(0f, country.State.DependencyRatio - country.BaselineDependencyRatio);
+            float pressureFraction = Mathf.Clamp(PensionPressureSensitivity * dependencyGap, 0f, MaxPensionPressureFraction);
+            pensionLine.Amount = ClampToSeedRange(pensionLine, pensionLine.Amount * (1f + pressureFraction));
+        }
+
+        /// <summary>Fraction of Medicare's own current Amount added per point DependencyRatio sits above its own Country.BaselineDependencyRatio, before MaxHealthcarePressureFraction caps the result.</summary>
+        private const float HealthcarePressureSensitivity = 0.00015f;
+
+        /// <summary>Cap on ApplyDemographicHealthcarePressure's per-turn fractional nudge - small and bounded, per this item's own explicit framing.</summary>
+        private const float MaxHealthcarePressureFraction = 0.004f;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: nudges USA's Medicare SpendingLine's Amount up as DependencyRatio
+        /// rises above its own baseline - real, aging-driven healthcare cost pressure (Medicare
+        /// specifically serves the elderly population, the one existing line with a genuinely direct
+        /// real-world link to population aging - Medicaid/HHSDiscretionary serve broader populations
+        /// and were deliberately left untouched). USA-ONLY in this pass - the other five countries have
+        /// no Medicare-equivalent line ("Country Selection" Part 2's generic decomposition has no
+        /// healthcare-specific category), honestly disclosed rather than forced onto an unrelated line,
+        /// the same "USA-first, no clean analog exists yet" precedent "Detailed Spending Portfolio" and
+        /// the original Sovereign Wealth Fund both already established. Reconciled against the
+        /// automatic growth mechanism the exact same way ApplyDemographicPensionPressure is - Amount
+        /// only, never SeedAmount, re-clamped via ClampToSeedRange, run inside ResolveSpendingForTurn
+        /// so this turn's own totals already reflect it.
+        /// </summary>
+        private void ApplyDemographicHealthcarePressure(Country country)
+        {
+            SpendingLine medicareLine = FindSpendingLine(country, SpendingCategory.Medicare);
+            if (medicareLine == null)
+            {
+                return;
+            }
+
+            float dependencyGap = Mathf.Max(0f, country.State.DependencyRatio - country.BaselineDependencyRatio);
+            float pressureFraction = Mathf.Clamp(HealthcarePressureSensitivity * dependencyGap, 0f, MaxHealthcarePressureFraction);
+            medicareLine.Amount = ClampToSeedRange(medicareLine, medicareLine.Amount * (1f + pressureFraction));
         }
 
         /// <summary>

@@ -123,6 +123,61 @@ namespace PoliSim.Data
         public float CorruptionIndex;
 
         /// <summary>
+        /// Round 3 item 5, Part A: this country's total population, in MILLIONS (matching how GDP is
+        /// stored at a human-readable scale rather than raw units) - seeded from real 2024/2025 data
+        /// (USA 341.8, Germany 83.6, France 69.1, Italy 58.9, Poland 37.5, Sweden 10.6 - see
+        /// WorldFactory). Evolves each turn from (BirthRate - DeathRate + NetMigrationRate)/1000 x
+        /// Population - see MacroSystem.ApplyPopulationGrowth. Floored well above zero (MinPopulation)
+        /// so a shrinking population can still recover instead of locking at exactly 0, and hard-capped
+        /// at a generous gameplay safety bound (not a realistic constraint) - see MacroSystem for both.
+        /// </summary>
+        public float Population;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: crude birth rate, per 1,000 population per turn - seeded from real
+        /// data (see WorldFactory). Drifts down slowly on its own (a real, well-documented, near-
+        /// universal secular fertility decline across developed nations - see
+        /// MacroSystem.ApplyDemographicRates), floored well above zero at a realistic low-fertility
+        /// bound. No policy lever in Part A - Part B's Family Policy adjusts this, deliberately kept
+        /// modest given real-world evidence on pro-natalist policy's effect on fertility is itself
+        /// small and contested.
+        /// </summary>
+        public float BirthRate;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: crude death rate, per 1,000 population per turn - seeded from real
+        /// data (see WorldFactory). Drifts up slowly as DependencyRatio rises above its own baseline (a
+        /// real, well-documented mechanical effect - an aging population structurally raises the crude
+        /// death rate even with no change in age-specific mortality) - see
+        /// MacroSystem.ApplyDemographicRates. Hard-capped at a generous gameplay safety bound.
+        /// </summary>
+        public float DeathRate;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: net migration rate, per 1,000 population per turn (positive = net
+        /// inflow) - seeded from real data (see WorldFactory). Drifts up slowly as DependencyRatio rises
+        /// above its own baseline - a real, discussed phenomenon (aging developed economies leaning
+        /// more on immigration to offset a shrinking working-age population), distinct from BirthRate's
+        /// own independent secular-decline drift. No policy lever in Part A - Part B's Immigration
+        /// Policy adjusts this directly, a more responsive real-world lever than BirthRate so it can
+        /// have a comparatively larger (but still bounded) effect. See MacroSystem.ApplyDemographicRates.
+        /// </summary>
+        public float NetMigrationRate;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: old-age dependency ratio (65+ population as a percentage of
+        /// working-age 15-64 population) - the single derived aging/dependency proxy this pass uses,
+        /// deliberately NOT a full age-cohort/population-pyramid model (see Country.
+        /// BaselineDependencyRatio for full sourcing). Rises as the DeathRate-versus-BirthRate gap
+        /// persists (aging accelerates as natural decrease continues) - see
+        /// MacroSystem.ApplyDemographicRates. Hard-clamped to [Country.BaselineDependencyRatio's own
+        /// realistic floor via MinDependencyRatio, MaxDependencyRatio] - can rise, never assumed to
+        /// reverse in this pass (real developed-world aging trends are one-directional over any
+        /// timescale this game's turns plausibly represent).
+        /// </summary>
+        public float DependencyRatio;
+
+        /// <summary>
         /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
@@ -136,7 +191,9 @@ namespace PoliSim.Data
             float tradeBalance = 0f, float currencyStrength = 100f, float consumption = 0f, float investment = 0f,
             float potentialGdp = 0f, float inflationExpectations = 0f, float consumerConfidence = 1f, float businessConfidence = 1f,
             float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f, float crimeIndex = 25f,
-            float prisonPopulationRate = 100f, float organizedCrimeIndex = 25f, float corruptionIndex = 30f)
+            float prisonPopulationRate = 100f, float organizedCrimeIndex = 25f, float corruptionIndex = 30f,
+            float population = 50f, float birthRate = 10f, float deathRate = 10f, float netMigrationRate = 1f,
+            float dependencyRatio = 30f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -155,6 +212,11 @@ namespace PoliSim.Data
             PovertyRate = povertyRate;
             LaborForceParticipationRate = laborForceParticipationRate;
             CrimeIndex = crimeIndex;
+            Population = population;
+            BirthRate = birthRate;
+            DeathRate = deathRate;
+            NetMigrationRate = netMigrationRate;
+            DependencyRatio = dependencyRatio;
             PrisonPopulationRate = prisonPopulationRate;
             OrganizedCrimeIndex = organizedCrimeIndex;
             CorruptionIndex = corruptionIndex;
@@ -168,7 +230,8 @@ namespace PoliSim.Data
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
                 GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate,
-                OrganizedCrimeIndex, CorruptionIndex);
+                OrganizedCrimeIndex, CorruptionIndex, Population, BirthRate, DeathRate, NetMigrationRate,
+                DependencyRatio);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

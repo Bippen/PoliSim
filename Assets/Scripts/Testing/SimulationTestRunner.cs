@@ -626,6 +626,35 @@ namespace PoliSim.Testing
             }
             CheckFinite(turn, country, "BaselineCorruptionIndex", country.BaselineCorruptionIndex, anomalies);
 
+            // Round 3 item 5, Part A: Population/BirthRate/DeathRate/NetMigrationRate/DependencyRatio.
+            CheckFinite(turn, country, "Population", state.Population, anomalies);
+            if (state.Population <= 0f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: Population is non-positive ({state.Population:F3})");
+            }
+
+            CheckFinite(turn, country, "BirthRate", state.BirthRate, anomalies);
+            if (state.BirthRate < 0f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: BirthRate is negative ({state.BirthRate:F2})");
+            }
+
+            CheckFinite(turn, country, "DeathRate", state.DeathRate, anomalies);
+            if (state.DeathRate < 0f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: DeathRate is negative ({state.DeathRate:F2})");
+            }
+
+            CheckFinite(turn, country, "NetMigrationRate", state.NetMigrationRate, anomalies);
+
+            CheckFinite(turn, country, "DependencyRatio", state.DependencyRatio, anomalies);
+            if (state.DependencyRatio < 0f || state.DependencyRatio > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: DependencyRatio out of range ({state.DependencyRatio:F2})");
+            }
+            CheckFinite(turn, country, "BaselineDependencyRatio", country.BaselineDependencyRatio, anomalies);
+            CheckFinite(turn, country, "BaselineNetMigrationRate", country.BaselineNetMigrationRate, anomalies);
+
             CheckFinite(turn, country, "PrisonPopulationRate", state.PrisonPopulationRate, anomalies);
             if (state.PrisonPopulationRate < 0f)
             {

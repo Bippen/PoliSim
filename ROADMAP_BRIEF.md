@@ -289,6 +289,23 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   pyramids, migration flows between the six modeled countries specifically, generational
   wealth/inequality effects) on this first pass — plumbing plus the three bounded effects above,
   matching every other item's scoping discipline.
+- **Part A — DONE (2026-07-30), Part B (policy levers) not yet started.** See "Demographics, Part A"
+  in CLAUDE.md for the full writeup. Population/BirthRate/DeathRate/NetMigrationRate/DependencyRatio
+  implemented with real seeded data and a genuine drift mechanism (not a static constant); one real
+  tuning problem (an accelerating feedback loop slamming rates into their own ceilings within
+  200-300 turns) was found via a throwaway diagnostic and fixed (~7x smaller sensitivities) before the
+  full matrix ran. All three bounded effects implemented and reconciled: pension pressure and
+  healthcare cost pressure both nudge `SpendingLine.Amount` only (never `SeedAmount`, avoiding a
+  second source of the already-known ceiling-drift risk); labor force participation now has an
+  explicit combined ceiling across all its sources (two pre-existing policy terms plus two new
+  demographic ones), the same seriousness `PotentialGrowthRate`'s own ceiling got. One honest
+  deviation from this item's own suggested wording: healthcare cost pressure targets USA's `Medicare`
+  line specifically, not `HHSDiscretionary` as originally suggested - Medicare serves the elderly
+  population directly, a more genuine real-world link to aging than the broader HHSDiscretionary
+  category; not escalated as a design fork since it directly follows this project's own "pick the more
+  real-world-grounded option, document the reasoning" precedent rather than being a genuine toss-up.
+  Full 24-combination matrix re-validated: zero finite/negative/out-of-range anomalies, no
+  double-counted drift at either reconciliation point.
 
 ---
 

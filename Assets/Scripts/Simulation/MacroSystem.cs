@@ -356,16 +356,36 @@ namespace PoliSim.Simulation
         /// <summary>
         /// LaborForceParticipationRate mean-reverts toward Country.BaselineLaborForceParticipationRate
         /// (the country's own structural, real-World-Bank/OECD-sourced "steady-state" rate), adjusted
-        /// by the same Unemployment-versus-NAIRU gap already used elsewhere (a proven driver - see
-        /// ApplyPovertyRate/ApplyApprovalRating) rather than a new one. Now also targeted by two
-        /// deeper-labor-market policy levers (see "Deeper Labor Market Policies" in CLAUDE.md):
-        /// paid family leave (a gap versus the country's own seeded baseline, the same idiom
-        /// MinimumWage's employment effect uses) and workforce retraining (a gap versus the shared
-        /// neutral 50, the same idiom Police Funding/Sentencing Severity use). Hard-clamped to
-        /// [0, 100].
+        /// by the same Unemployment-versus-NAIRU gap already used elsewhere (a proven, ALREADY-
+        /// established driver - see ApplyPovertyRate/ApplyApprovalRating - kept OUTSIDE the combined
+        /// ceiling below, the same way PotentialGrowthRate's own combined ceiling leaves
+        /// BasePotentialGrowthRate itself outside it). Also targeted by two deeper-labor-market policy
+        /// levers (see "Deeper Labor Market Policies" in CLAUDE.md): paid family leave (a gap versus
+        /// the country's own seeded baseline, the same idiom MinimumWage's employment effect uses) and
+        /// workforce retraining (a gap versus the shared neutral 50, the same idiom Police Funding/
+        /// Sentencing Severity use). Hard-clamped to [0, 100].
         /// </summary>
         private const float PaidFamilyLeaveParticipationSensitivity = 0.02f;
         private const float RetrainingParticipationSensitivity = 0.01f;
+
+        /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points reduced per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented effect: an aging population structurally shrinks the working-age share, lowering participation even with no change in any individual's own behavior.</summary>
+        private const float DependencyRatioParticipationSensitivity = 0.02f;
+
+        /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points added per point NetMigrationRate sits above its own Country.BaselineNetMigrationRate - a real, well-documented effect: immigrants skew disproportionately working-age, so higher net migration than a country's own starting norm raises participation.</summary>
+        private const float NetMigrationParticipationSensitivity = 0.03f;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: combined ceiling on the SUM of paid leave + retraining + the two new
+        /// demographic terms (dependency ratio, net migration) - this variable was already stacked with
+        /// two policy-lever terms before this task, and demographics adds two more, so this needed the
+        /// same seriousness PotentialGrowthRate's own MaxTotalPotentialGrowthAdjustment ceiling got in
+        /// "Sector Integration": clamp the SUM, not each source individually, so no combination of
+        /// levers (now or once Part B's Immigration Policy makes the migration term genuinely large)
+        /// can stack past one sane bound. The already-established Unemployment-gap term is deliberately
+        /// OUTSIDE this ceiling, mirroring how PotentialGrowthRate's own ceiling leaves
+        /// BasePotentialGrowthRate itself outside it.
+        /// </summary>
+        private const float MaxLaborForceParticipationAdjustment = 1.0f;
 
         public static void ApplyLaborForceParticipationRate(Country country)
         {
@@ -373,10 +393,18 @@ namespace PoliSim.Simulation
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
             float paidLeaveGap = country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks;
             float retrainingGap = country.RetrainingProgramLevel - NeutralPolicyDialLevel;
+            float dependencyGap = state.DependencyRatio - country.BaselineDependencyRatio;
+            float netMigrationGap = state.NetMigrationRate - country.BaselineNetMigrationRate;
+
+            float combinedAdjustment = PaidFamilyLeaveParticipationSensitivity * paidLeaveGap
+                + RetrainingParticipationSensitivity * retrainingGap
+                - DependencyRatioParticipationSensitivity * dependencyGap
+                + NetMigrationParticipationSensitivity * netMigrationGap;
+            combinedAdjustment = Mathf.Clamp(combinedAdjustment, -MaxLaborForceParticipationAdjustment, MaxLaborForceParticipationAdjustment);
+
             float target = country.BaselineLaborForceParticipationRate
                 - DiscouragedWorkerSensitivity * unemploymentGap
-                + PaidFamilyLeaveParticipationSensitivity * paidLeaveGap
-                + RetrainingParticipationSensitivity * retrainingGap;
+                + combinedAdjustment;
             state.LaborForceParticipationRate = Mathf.Clamp(
                 state.LaborForceParticipationRate + LaborForceParticipationReversionSpeed * (target - state.LaborForceParticipationRate),
                 0f, MaxLaborForceParticipationPercent);
@@ -454,6 +482,80 @@ namespace PoliSim.Simulation
                 - JudicialFundingCorruptionSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
 
             state.CorruptionIndex = Mathf.Clamp(state.CorruptionIndex + CorruptionReversionSpeed * (target - state.CorruptionIndex), 0f, MaxCrimeIndexPercent);
+        }
+
+        // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
+
+        /// <summary>Points BirthRate declines per turn on its own - a real, well-documented, near-universal secular fertility decline across developed nations, not a country-specific policy response. Deliberately small (over a 500-turn run this alone would move BirthRate by 5 points, well before which the lower-starting countries hit MinBirthRate and stop).</summary>
+        private const float BirthRateSecularDeclineRate = 0.01f;
+
+        /// <summary>Realistic low-fertility floor, informed by the real world's own lowest-ever recorded national crude birth rates (some East Asian countries have fallen to roughly this range in recent years) - not literally zero, since no country's birth rate has realistically approached that.</summary>
+        private const float MinBirthRate = 5f;
+
+        /// <summary>Points DeathRate rises per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented mechanical effect: an aging population structurally raises the crude death rate even with no change in age-specific mortality, since a larger share of the population is simply older.</summary>
+        private const float DeathRateAgingDriftSensitivity = 0.003f;
+
+        /// <summary>Generous gameplay safety bound on DeathRate - comfortably above any real-world crude death rate this model's own DependencyRatio ceiling could mechanically produce.</summary>
+        private const float MaxDeathRate = 25f;
+
+        /// <summary>Points NetMigrationRate rises per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, discussed phenomenon: aging developed economies lean more on immigration over time to offset a shrinking working-age population. Deliberately a SEPARATE driver from BirthRate's own independent secular-decline drift - fertility decline isn't itself "caused" by a country's current dependency ratio the way this migration-reliance trend plausibly is.</summary>
+        private const float MigrationAgingDriftSensitivity = 0.002f;
+
+        /// <summary>Generous gameplay safety bounds on NetMigrationRate - wide enough for Part B's Immigration Policy lever to swing meaningfully in either direction (open vs. restrictive) without an artificial mid-range ceiling getting in the way first.</summary>
+        private const float MinNetMigrationRate = -15f;
+        private const float MaxNetMigrationRate = 15f;
+
+        /// <summary>Points DependencyRatio rises per point the DeathRate-versus-BirthRate gap sits above zero (natural decrease - more deaths than births) - the single derived aging/dependency proxy's own drift mechanism, deliberately simple, not a full age-cohort/population-pyramid model. Never decreases in this pass - real developed-world aging trends are one-directional over any timescale this game's turns plausibly represent.</summary>
+        private const float DependencyRatioDriftSensitivity = 0.0015f;
+
+        /// <summary>Sane floor - no real country's old-age dependency ratio has fallen meaningfully below this in the modern era, and this pass has no mechanism that would ever decrease DependencyRatio below its own seeded baseline anyway (this is defense-in-depth, not an actively-reachable bound).</summary>
+        private const float MinDependencyRatio = 15f;
+
+        /// <summary>Generous gameplay safety ceiling - well above even the most extreme real-world demographic projections for any of this game's six countries over any realistic time horizon.</summary>
+        private const float MaxDependencyRatio = 70f;
+
+        /// <summary>
+        /// Evolves BirthRate/DeathRate/NetMigrationRate/DependencyRatio for one turn - BirthRate
+        /// declines on its own secular trend; DependencyRatio rises when DeathRate exceeds BirthRate
+        /// (natural decrease); DeathRate and NetMigrationRate then both drift further based on how far
+        /// DependencyRatio has risen above its own baseline (population aging mechanically raises
+        /// crude death rate and, separately, developed economies' real-world reliance on immigration).
+        /// Must run BEFORE ApplyPopulationGrowth, which reads these same-turn freshly-updated rates -
+        /// the same "must see this turn's just-updated value" timing requirement Infrastructure
+        /// Feedback's condition-drag already established.
+        /// </summary>
+        public static void ApplyDemographicRates(Country country)
+        {
+            EconomyState state = country.State;
+
+            state.BirthRate = Mathf.Max(MinBirthRate, state.BirthRate - BirthRateSecularDeclineRate);
+
+            float birthDeathGap = state.DeathRate - state.BirthRate;
+            state.DependencyRatio = Mathf.Clamp(
+                state.DependencyRatio + DependencyRatioDriftSensitivity * Mathf.Max(0f, birthDeathGap),
+                MinDependencyRatio, MaxDependencyRatio);
+
+            float dependencyGap = Mathf.Max(0f, state.DependencyRatio - country.BaselineDependencyRatio);
+            state.DeathRate = Mathf.Clamp(state.DeathRate + DeathRateAgingDriftSensitivity * dependencyGap, 0f, MaxDeathRate);
+            state.NetMigrationRate = Mathf.Clamp(state.NetMigrationRate + MigrationAgingDriftSensitivity * dependencyGap, MinNetMigrationRate, MaxNetMigrationRate);
+        }
+
+        /// <summary>Small positive floor so a shrinking population can still recover instead of locking at exactly 0 (0 times anything is still 0) - mirrors MacroSystem.MinGdp's own reasoning.</summary>
+        private const float MinPopulation = 0.1f;
+
+        /// <summary>Generous gameplay safety ceiling, not a realistic constraint - comfortably above any real or plausible national population, ever.</summary>
+        private const float MaxPopulation = 10000f;
+
+        /// <summary>
+        /// Population evolves by (BirthRate - DeathRate + NetMigrationRate)/1000 x Population - the
+        /// standard demographic growth identity. Must run AFTER ApplyDemographicRates, which updates
+        /// the three rates this reads for the same turn.
+        /// </summary>
+        public static void ApplyPopulationGrowth(Country country)
+        {
+            EconomyState state = country.State;
+            float growthRate = (state.BirthRate - state.DeathRate + state.NetMigrationRate) / 1000f;
+            state.Population = Mathf.Clamp(state.Population * (1f + growthRate), MinPopulation, MaxPopulation);
         }
 
         /// <summary>

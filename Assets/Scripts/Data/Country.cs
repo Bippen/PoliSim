@@ -368,6 +368,32 @@ namespace PoliSim.Data
         public float BorderEnforcementLevel = 50f;
 
         /// <summary>
+        /// Round 3 item 5, Part A: this country's structural "steady-state" old-age dependency ratio
+        /// (65+ population as a percentage of working-age 15-64 population, a real, standard World
+        /// Bank/OECD demographic statistic - NOT the full age-cohort/population-pyramid breakdown,
+        /// deliberately a single scalar per the task's own "not the full theoretical richness"
+        /// discipline). Never mutated after seeding - the fixed anchor MacroSystem.ApplyDemographicRates'
+        /// drift and every gap-based effect (pension pressure, labor force participation) measure
+        /// against, the same "avoid a turn-1 shock" idiom BaselineCrimeIndex/BaselinePovertyRate
+        /// already use. Real/well-documented for Italy (highest of the six, among the highest in the
+        /// world) and the USA/Poland (lowest, both real); Germany's figure is informed by an ESTIMATED
+        /// 65+ population share (~22-23%, full age-cohort breakdown unavailable), honestly not a
+        /// directly-sourced dependency ratio - see WorldFactory's seeding comment.
+        /// </summary>
+        public float BaselineDependencyRatio = 30f;
+
+        /// <summary>
+        /// Round 3 item 5, Part A: this country's real, seeded starting NetMigrationRate (per-1000
+        /// population per turn) - the fixed anchor EconomyState.NetMigrationRate's own aging-driven
+        /// drift (see MacroSystem.ApplyDemographicRates) and its gap-based LaborForceParticipationRate
+        /// effect measure against, the same "avoid a turn-1 shock" idiom every other Baseline field
+        /// uses. Distinct from BirthRate/DeathRate, which have no baseline anchor of their own in this
+        /// pass - BirthRate's decline and DeathRate's rise are absolute drifts, not gap-based effects,
+        /// so no anchor is needed for either.
+        /// </summary>
+        public float BaselineNetMigrationRate = 1f;
+
+        /// <summary>
         /// This country's independent central bank chair, or null for a country that instead uses
         /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
         /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)

@@ -86,42 +86,48 @@ namespace PoliSim.Data
             var usa = new Country(
                 CountryId.USA, "United States",
                 new EconomyState(gdp: 29000f, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
-                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f, organizedCrimeIndex: 35f, corruptionIndex: 31f),
+                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f, organizedCrimeIndex: 35f, corruptionIndex: 31f,
+                    population: 341.8f, birthRate: 10.6f, deathRate: 9.1f, netMigrationRate: 3.7f, dependencyRatio: 28f),
                 usDollarZone, baseTariffRate: 3f,
                 naturalUnemploymentRate: 4.0f, potentialGrowthRate: 2.0f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);
 
             var sweden = new Country(
                 CountryId.Sweden, "Sweden",
                 new EconomyState(gdp: 620f, inflation: 2.0f, unemployment: 8.0f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f, prisonPopulationRate: 60f, organizedCrimeIndex: 32f, corruptionIndex: 18f),
+                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f, prisonPopulationRate: 60f, organizedCrimeIndex: 32f, corruptionIndex: 18f,
+                    population: 10.6f, birthRate: 10.8f, deathRate: 9.5f, netMigrationRate: 1.1f, dependencyRatio: 33f),
                 swedishKronaZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 6.5f, potentialGrowthRate: 1.5f, governmentSpendingRate: 26f, benefitRatePerUnemployed: 0.25f);
 
             var germany = new Country(
                 CountryId.Germany, "Germany",
                 new EconomyState(gdp: 4700f, inflation: 3.0f, unemployment: 3.5f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f, crimeIndex: 25f, prisonPopulationRate: 72f, organizedCrimeIndex: 20f, corruptionIndex: 22f),
+                    governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f, crimeIndex: 25f, prisonPopulationRate: 72f, organizedCrimeIndex: 20f, corruptionIndex: 22f,
+                    population: 83.6f, birthRate: 8.2f, deathRate: 12.2f, netMigrationRate: 1.8f, dependencyRatio: 35f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 3.3f, potentialGrowthRate: 0.8f, governmentSpendingRate: 21f, benefitRatePerUnemployed: 0.20f);
 
             var france = new Country(
                 CountryId.France, "France",
                 new EconomyState(gdp: 3200f, inflation: 3.0f, unemployment: 7.3f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f, crimeIndex: 30f, prisonPopulationRate: 111f, organizedCrimeIndex: 28f, corruptionIndex: 30f),
+                    governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f, crimeIndex: 30f, prisonPopulationRate: 111f, organizedCrimeIndex: 28f, corruptionIndex: 30f,
+                    population: 69.1f, birthRate: 9.7f, deathRate: 9.5f, netMigrationRate: 1.1f, dependencyRatio: 33f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 7.5f, potentialGrowthRate: 0.8f, governmentSpendingRate: 24f, benefitRatePerUnemployed: 0.22f);
 
             var italy = new Country(
                 CountryId.Italy, "Italy",
                 new EconomyState(gdp: 2300f, inflation: 3.0f, unemployment: 7.8f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f, crimeIndex: 18f, prisonPopulationRate: 92f, organizedCrimeIndex: 55f, corruptionIndex: 44f),
+                    governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f, crimeIndex: 18f, prisonPopulationRate: 92f, organizedCrimeIndex: 55f, corruptionIndex: 44f,
+                    population: 58.9f, birthRate: 6.3f, deathRate: 10.4f, netMigrationRate: 1.3f, dependencyRatio: 40f),
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 8.0f, potentialGrowthRate: 0.8f, governmentSpendingRate: 19f, benefitRatePerUnemployed: 0.18f);
 
             var poland = new Country(
                 CountryId.Poland, "Poland",
                 new EconomyState(gdp: 840f, inflation: 2.2f, unemployment: 5.4f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f, crimeIndex: 20f, prisonPopulationRate: 185f, organizedCrimeIndex: 22f, corruptionIndex: 40f),
+                    governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f, crimeIndex: 20f, prisonPopulationRate: 185f, organizedCrimeIndex: 22f, corruptionIndex: 40f,
+                    population: 37.5f, birthRate: 6.7f, deathRate: 10.9f, netMigrationRate: 0.2f, dependencyRatio: 28f),
                 polishZlotyZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 5.0f, potentialGrowthRate: 3.5f, governmentSpendingRate: 18f, benefitRatePerUnemployed: 0.12f);
 
@@ -315,6 +321,39 @@ namespace PoliSim.Data
             france.BaselineCorruptionIndex = 30f;
             italy.BaselineCorruptionIndex = 44f;
             poland.BaselineCorruptionIndex = 40f;
+
+            // Round 3 item 5, Part A: Population/BirthRate/DeathRate/NetMigrationRate seeded from real
+            // 2024/2025 data above (USA 341.8M, Germany 83.6M, France 69.1M, Italy 58.9M, Poland
+            // 37.5M, Sweden 10.6M population; birth/death/net-migration per-1000 figures per country -
+            // see EconomyState's own field-level doc comments for the full per-country figures). The
+            // real, standard old-age dependency ratio (65+ population as % of working-age 15-64) is
+            // the anchor MacroSystem.ApplyDemographicRates' drift and every gap-based effect (pension
+            // pressure, labor force participation) measure against - real/well-documented for Italy
+            // (highest of the six, among the highest in the world - its aging population is one of the
+            // most well-known real demographic facts globally) and USA/Poland (lowest, both real and
+            // consistent with USA's comparatively younger population among developed nations and
+            // Poland's historically younger post-WWII demographic structure, though rapidly aging).
+            // Germany's figure is informed by an ESTIMATED 65+ population share (~22-23%, full
+            // age-cohort breakdown unavailable), honestly not a directly-sourced dependency ratio the
+            // way Italy/USA/Poland's are. Sweden/France are directional estimates, informed by their
+            // real, well-documented status as moderately-aged (neither the youngest nor oldest)
+            // developed European nations. BaselineNetMigrationRate is set equal to each country's own
+            // seeded starting NetMigrationRate (the same "avoid a turn-1 shock" anchor idiom every
+            // other Baseline field uses) - no policy lever touches NetMigrationRate in Part A, so this
+            // anchor only matters once ambient aging-driven drift (see MacroSystem) or, later, Part
+            // B's Immigration Policy lever moves the actual rate away from it.
+            usa.BaselineDependencyRatio = 28f;
+            usa.BaselineNetMigrationRate = 3.7f;
+            sweden.BaselineDependencyRatio = 33f;
+            sweden.BaselineNetMigrationRate = 1.1f;
+            germany.BaselineDependencyRatio = 35f;
+            germany.BaselineNetMigrationRate = 1.8f;
+            france.BaselineDependencyRatio = 33f;
+            france.BaselineNetMigrationRate = 1.1f;
+            italy.BaselineDependencyRatio = 40f;
+            italy.BaselineNetMigrationRate = 1.3f;
+            poland.BaselineDependencyRatio = 28f;
+            poland.BaselineNetMigrationRate = 0.2f;
 
             SeedWelfarePrograms(usa);
             SeedWelfarePrograms(sweden);
