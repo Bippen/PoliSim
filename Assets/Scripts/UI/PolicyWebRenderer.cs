@@ -718,24 +718,24 @@ namespace PoliSim.UI
             return result;
         }
 
-        /// <summary>This stat's StatHistory buffer, if this stat is one of the 13 already tracked there - null otherwise (5 of the 18 stat nodes here have no history, e.g. PotentialGrowthRate/ConsumerConfidence/BusinessConfidence, matching the task's own "if one exists" instruction).</summary>
+        /// <summary>This stat's StatHistory buffer, if this stat is one of the 13 already tracked there - null otherwise (5 of the 18 stat nodes here have no history, e.g. PotentialGrowthRate/ConsumerConfidence/BusinessConfidence, matching the task's own "if one exists" instruction). Continuous Time Migration Phase 0: reads .Quarterly, matching every other graph call site's resolution choice.</summary>
         public static IReadOnlyList<float> GetHistory(StatNodeId id, StatHistory history)
         {
             switch (id)
             {
-                case StatNodeId.Gdp: return history.Gdp;
-                case StatNodeId.Unemployment: return history.Unemployment;
-                case StatNodeId.Inflation: return history.Inflation;
-                case StatNodeId.Approval: return history.ApprovalRating;
-                case StatNodeId.DebtToGdp: return history.DebtToGdpRatio;
-                case StatNodeId.Poverty: return history.PovertyRate;
-                case StatNodeId.InterestRate: return history.InterestRate;
-                case StatNodeId.TradeBalance: return history.TradeBalance;
-                case StatNodeId.Lfpr: return history.LaborForceParticipationRate;
-                case StatNodeId.Crime: return history.CrimeIndex;
-                case StatNodeId.PrisonPopulation: return history.PrisonPopulationRate;
-                case StatNodeId.OrganizedCrime: return history.OrganizedCrimeIndex;
-                case StatNodeId.Corruption: return history.CorruptionIndex;
+                case StatNodeId.Gdp: return history.Gdp.Quarterly;
+                case StatNodeId.Unemployment: return history.Unemployment.Quarterly;
+                case StatNodeId.Inflation: return history.Inflation.Quarterly;
+                case StatNodeId.Approval: return history.ApprovalRating.Quarterly;
+                case StatNodeId.DebtToGdp: return history.DebtToGdpRatio.Quarterly;
+                case StatNodeId.Poverty: return history.PovertyRate.Quarterly;
+                case StatNodeId.InterestRate: return history.InterestRate.Quarterly;
+                case StatNodeId.TradeBalance: return history.TradeBalance.Quarterly;
+                case StatNodeId.Lfpr: return history.LaborForceParticipationRate.Quarterly;
+                case StatNodeId.Crime: return history.CrimeIndex.Quarterly;
+                case StatNodeId.PrisonPopulation: return history.PrisonPopulationRate.Quarterly;
+                case StatNodeId.OrganizedCrime: return history.OrganizedCrimeIndex.Quarterly;
+                case StatNodeId.Corruption: return history.CorruptionIndex.Quarterly;
                 default: return null;
             }
         }

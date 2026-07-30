@@ -30,7 +30,8 @@ namespace PoliSim.UI
             SwfPolicy,
             PolicyWeb,
             Cabinet,
-            CompassAndDemographics
+            CompassAndDemographics,
+            ForeignPolicy
         }
 
         // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
@@ -185,6 +186,31 @@ namespace PoliSim.UI
         private int _pendingElectionTurn;
         private string _gameOverReason;
 
+        /// <summary>
+        /// Continuous Time Migration Phase 0 (Master Sequence step 3): replaces the manual "Advance
+        /// Turn" button. Real in-game days pass automatically while unpaused, driven by Update (not
+        /// OnGUI, which only runs on repaint) - Paused stops the calendar entirely (the same effect
+        /// the old disabled Advance Turn button had while a Fed Chair/Cabinet decision was pending,
+        /// now generalized to "time itself doesn't advance" rather than "one button doesn't work").
+        /// </summary>
+        private enum GameSpeed { Paused, Normal, Fast, VeryFast }
+        private GameSpeed _gameSpeed = GameSpeed.Normal;
+
+        /// <summary>Real seconds accumulated toward the next in-game day at the current speed - see Update.</summary>
+        private float _daySpeedTimer;
+
+        /// <summary>Real seconds per in-game day per speed setting - a first-pass placeholder pacing choice (2 real minutes per 121-day turn at 1x, ~30 real seconds at 3x), not deeply playtested, same "starting point meant to be tuned by playtesting" caveat every other constant in this project carries. Not itself part of the Continuous Time Migration's own economic-constant translation - this is pure UI pacing, never read by any simulation formula.</summary>
+        private static float GetSecondsPerDay(GameSpeed speed)
+        {
+            switch (speed)
+            {
+                case GameSpeed.Normal: return 1f;
+                case GameSpeed.Fast: return 0.5f;
+                case GameSpeed.VeryFast: return 0.25f;
+                default: return 1f;
+            }
+        }
+
         // Federal Reserve (USA only - see CLAUDE.md's "Federal Reserve" section). _fedChairCandidates
         // is non-null exactly while the player must pick a new chair before Advance Turn can proceed;
         // _fedChairCandidatesForTurn records which upcoming turn they were generated for, so a pick
@@ -237,10 +263,6 @@ namespace PoliSim.UI
         private float? _cachedBorderEnforcementInput;
         private float? _cachedFamilyPolicyInput;
         private float? _cachedImmigrationPolicyInput;
-        private string _cachedGdpGrowthText;
-        private string _cachedUnemploymentText;
-        private string _cachedInflationText;
-        private string _cachedApprovalText;
 
         // Raw (unformatted, no cosmetic margin) numeric counterparts of every preview figure -
         // FormatEstimate's margin is a display-only flourish that has no business perturbing what a
@@ -256,6 +278,93 @@ namespace PoliSim.UI
         private float _cachedCrimeIndexChangeRaw;
         private float _cachedNetBudgetImpactRaw;
         private float _cachedSwfReturnsEstimateRaw;
+
+        /// <summary>
+        /// Continuous Time Migration Phase 0: which horizon the live Policy Preview currently shows -
+        /// "effect-per-day plus a selectable-horizon projection," per the Master Roadmap's own Part
+        /// One spec. Defaults to OneDay (the "per-day" figure front and center); Week/Month/FullTurn
+        /// are the "selectable" part. This is a DISPLAY-ONLY re-scaling of the SAME full-turn
+        /// PreviewTurn output every horizon shares - Phase 0 doesn't simulate sub-turn granularity
+        /// (that's Phases 1-5), so there is no more "real" per-day number to show than this.
+        /// </summary>
+        private enum PreviewHorizon { OneDay, OneWeek, OneMonth, FullTurn }
+        private PreviewHorizon _previewHorizon = PreviewHorizon.OneDay;
+        private int _cachedPreviewHorizonDays = -1;
+
+        private static int GetHorizonDays(PreviewHorizon horizon)
+        {
+            switch (horizon)
+            {
+                case PreviewHorizon.OneWeek: return 7;
+                case PreviewHorizon.OneMonth: return 30;
+                case PreviewHorizon.FullTurn: return SimulationManager.DaysPerTurn;
+                default: return 1;
+            }
+        }
+
+        private static string GetHorizonLabel(PreviewHorizon horizon)
+        {
+            switch (horizon)
+            {
+                case PreviewHorizon.OneWeek: return "1 Week";
+                case PreviewHorizon.OneMonth: return "1 Month";
+                case PreviewHorizon.FullTurn: return $"Full Turn ({SimulationManager.DaysPerTurn} days)";
+                default: return "1 Day";
+            }
+        }
+
+        /// <summary>
+        /// Scales a full-turn (121-day) ADDITIVE/linear estimate (a "points changed" or dollar-amount
+        /// figure - Unemployment/Inflation/Approval/PovertyRate/LaborForceParticipation/CrimeIndex/
+        /// NetBudgetImpact) down to a shorter display horizon by simple proportion - a display-only
+        /// approximation, not a new simulation (Phase 0 doesn't compute genuine sub-turn values yet).
+        /// Matches the "linear/additive rates" category POLISIM_MASTER_ROADMAP.md's own translation
+        /// methodology describes, applied here purely for display rather than to a real constant.
+        /// </summary>
+        private static float ScaleLinearForDisplay(float fullTurnValue, int horizonDays)
+        {
+            return fullTurnValue * horizonDays / SimulationManager.DaysPerTurn;
+        }
+
+        /// <summary>
+        /// Same display-only horizon scaling as ScaleLinearForDisplay, but geometric/compounding -
+        /// the correct shape for a percentage GROWTH rate (GDP), matching the SAME "identify which
+        /// mathematical shape a constant is" distinction the translation methodology draws between
+        /// additive and compounding rates, applied here for display only.
+        /// </summary>
+        private static float ScaleCompoundingForDisplay(float fullTurnGrowthPercent, int horizonDays)
+        {
+            float fullTurnMultiplier = 1f + fullTurnGrowthPercent / 100f;
+            if (fullTurnMultiplier <= 0f)
+            {
+                return ScaleLinearForDisplay(fullTurnGrowthPercent, horizonDays);
+            }
+            float dailyMultiplier = Mathf.Pow(fullTurnMultiplier, 1f / SimulationManager.DaysPerTurn);
+            float horizonMultiplier = Mathf.Pow(dailyMultiplier, horizonDays);
+            return (horizonMultiplier - 1f) * 100f;
+        }
+
+        // Horizon-scaled counterparts of the Raw fields above, recomputed alongside them in
+        // RecomputePolicyPreview whenever the horizon selection itself changes (see
+        // PolicyInputsChangedSinceLastPreview) - kept SEPARATE from the Raw fields since those still
+        // need to stay full-turn (DrawHeadlineGraphs' next-turn dashed projection genuinely means
+        // "next turn," not "next day," regardless of what horizon the preview text panel shows).
+        private string _cachedGdpGrowthScaledText;
+        private string _cachedUnemploymentScaledText;
+        private string _cachedInflationScaledText;
+        private string _cachedApprovalScaledText;
+        private string _cachedPovertyRateScaledText;
+        private string _cachedLaborForceParticipationRateScaledText;
+        private string _cachedCrimeIndexScaledText;
+        private string _cachedNetBudgetScaledText;
+        private float _cachedGdpGrowthPercentScaled;
+        private float _cachedUnemploymentChangeScaled;
+        private float _cachedApprovalChangeScaled;
+        private float _cachedInflationChangeScaled;
+        private float _cachedPovertyRateChangeScaled;
+        private float _cachedLaborForceParticipationRateChangeScaled;
+        private float _cachedCrimeIndexChangeScaled;
+        private float _cachedNetBudgetImpactScaled;
 
         // One GraphRenderer per headline dashboard stat - see GraphRenderer.cs. Each auto-scales its
         // own Y-axis, so instances are never shared across stats with different natural ranges.
@@ -295,10 +404,6 @@ namespace PoliSim.UI
         private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
         private CountryId? _selectedMapCountry;
         private MapEventMarker? _selectedMapEvent;
-        private string _cachedNetBudgetText;
-        private string _cachedPovertyRateText;
-        private string _cachedLaborForceParticipationRateText;
-        private string _cachedCrimeIndexText;
         private string _cachedSwfContributionText;
         private string _cachedSwfReturnsText;
 
@@ -321,6 +426,7 @@ namespace PoliSim.UI
         // "candidates are shown, waiting for a click," mirroring _fedChairCandidates' own null-vs-set
         // idiom just keyed per portfolio instead of a single global slot.
         private Vector2 _cabinetScrollPosition;
+        private Vector2 _foreignPolicyScrollPosition;
         private readonly Dictionary<CabinetPortfolio, List<CabinetMinister>> _cabinetCandidatesByPortfolio = new Dictionary<CabinetPortfolio, List<CabinetMinister>>();
         private Vector2 _tradeScrollPosition;
         private Vector2 _taxPolicyScrollPosition;
@@ -363,6 +469,62 @@ namespace PoliSim.UI
             _simulationManager = gameObject.AddComponent<SimulationManager>();
             _simulationManager.SetWorld(_world);
             _previewRandom = new System.Random();
+        }
+
+        /// <summary>
+        /// Continuous Time Migration Phase 0: the real-time clock driving the calendar. Runs every
+        /// engine frame (unlike OnGUI, which Unity only calls on repaint) so time passes at a
+        /// consistent real-world rate regardless of how often the UI actually redraws. Paused while
+        /// there's nothing meaningful to advance into (no country selected yet, game over, an election
+        /// reveal showing) or nothing the player can safely advance past (a pending Fed Chair
+        /// selection or Cabinet decision) - the same set of gates OnGUI's own
+        /// hasPendingFedChairSelection/hasPendingCabinetDecisions checks already enforced for the old
+        /// Advance Turn button, generalized here to "time itself doesn't pass" rather than "one button
+        /// is disabled".
+        /// </summary>
+        private void Update()
+        {
+            if (!_selectedPlayerCountryId.HasValue || _isGameOver || _pendingElectionResult != null)
+            {
+                return;
+            }
+            if (_gameSpeed == GameSpeed.Paused)
+            {
+                return;
+            }
+            if (UpdateFedChairSelectionState() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
+                || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
+            {
+                return;
+            }
+
+            _daySpeedTimer += Time.deltaTime;
+            float secondsPerDay = GetSecondsPerDay(_gameSpeed);
+            while (_daySpeedTimer >= secondsPerDay)
+            {
+                _daySpeedTimer -= secondsPerDay;
+                bool turnBoundaryCrossed = _simulationManager.AdvanceDay();
+
+                // Short-term gameplay scaffolding (Phase 0): rolled every simulated day, independent
+                // of the 121-day turn cadence, since these are explicitly meant to land BETWEEN turns.
+                _simulationManager.TryRollForeignPolicyMeeting(PlayerCountryId);
+
+                if (turnBoundaryCrossed)
+                {
+                    AdvanceTurn();
+                }
+
+                // A newly-fired election reveal/Fed-Chair selection/Cabinet decision/foreign policy
+                // meeting (or game over) must stop the clock immediately, not keep draining
+                // _daySpeedTimer toward days/turns that can't happen yet - re-check every gate before
+                // this same frame's loop continues.
+                if (_isGameOver || _pendingElectionResult != null || UpdateFedChairSelectionState()
+                    || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
+                    || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
+                {
+                    break;
+                }
+            }
         }
 
         /// <summary>Commits the player's country choice from DrawCountrySelector - the one place _selectedPlayerCountryId is ever set.</summary>
@@ -469,13 +631,13 @@ namespace PoliSim.UI
 
             GUILayout.BeginVertical(GUILayout.Width(leftColumnWidth));
 
-            // Advance Turn is pinned outside/below the scroll view so it's always visible and
-            // clickable regardless of how tall the banner+dashboard+sliders+preview content gets -
-            // its height (plus the spacing before it) is reserved up front, never shared with the
-            // scrollable area, so the two can never overlap even in the worst case (event banner
-            // present, all sliders visible, preview expanded).
-            float advanceButtonAreaHeight = _buttonStyle.fixedHeight + sectionSpacing;
-            float leftScrollHeight = areaHeight - advanceButtonAreaHeight;
+            // Continuous Time Migration Phase 0: the calendar/speed control panel replaces the old
+            // Advance Turn button in this same pinned-outside-scroll-view slot, for the same reason -
+            // always visible and clickable regardless of how tall the banner/dashboard/sliders/
+            // preview content gets. One extra row taller than the single button it replaces (date +
+            // status line, then the speed button row).
+            float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight + sectionSpacing;
+            float leftScrollHeight = areaHeight - calendarAreaHeight;
 
             _leftColumnScrollPosition = GUILayout.BeginScrollView(_leftColumnScrollPosition, GUILayout.Height(leftScrollHeight));
             DrawTopBanner();
@@ -490,8 +652,8 @@ namespace PoliSim.UI
 
             GUILayout.Space(sectionSpacing);
 
-            GUI.enabled = !_isGameOver && !hasPendingFedChairSelection && !hasPendingCabinetDecisions;
-            DrawAdvanceTurnButton();
+            GUI.enabled = !_isGameOver;
+            DrawCalendarAndSpeedControls(hasPendingFedChairSelection, hasPendingCabinetDecisions);
             GUI.enabled = true;
 
             GUILayout.EndVertical();
@@ -567,6 +729,11 @@ namespace PoliSim.UI
                     break;
                 case RightPanelTab.CompassAndDemographics:
                     DrawCompassAndDemographicsTab(tabContentHeight);
+                    break;
+                case RightPanelTab.ForeignPolicy:
+                    GUI.enabled = !_isGameOver;
+                    DrawForeignPolicyTab(tabContentHeight);
+                    GUI.enabled = true;
                     break;
                 case RightPanelTab.SwfPolicy:
                     GUI.enabled = !_isGameOver;
@@ -667,6 +834,7 @@ namespace PoliSim.UI
                 case RightPanelTab.PolicyWeb: return UiPalette.SystemArea.Global;
                 case RightPanelTab.Cabinet: return UiPalette.SystemArea.Political;
                 case RightPanelTab.CompassAndDemographics: return UiPalette.SystemArea.Global;
+                case RightPanelTab.ForeignPolicy: return UiPalette.SystemArea.Trade;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -771,11 +939,15 @@ namespace PoliSim.UI
                 projectedApproval = state.ApprovalRating + _cachedApprovalChangeRaw;
             }
 
+            // Continuous Time Migration Phase 0: every graph reads the Quarterly resolution
+            // specifically - see StatHistory's own class doc comment for why this is the resolution
+            // that exactly matches this project's existing one-point-per-turn graph cadence with zero
+            // visual change, while Daily/Weekly/Monthly sit ready underneath for Phases 1-5.
             StatHistory history = _playerCountry.History;
-            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp, projectedGdp, _labelStyle, higherIsBetter: true);
-            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment, projectedUnemployment, _labelStyle, higherIsBetter: false,
+            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true);
+            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false,
                 thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
-            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating, projectedApproval, _labelStyle, higherIsBetter: true);
+            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true);
         }
 
         /// <summary>
@@ -917,7 +1089,7 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             // Neutral (no green/red judgment) - which direction of rate change is "good" depends
             // entirely on the current inflation/growth situation, not a fixed convention.
-            _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate, null, _labelStyle);
+            _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle);
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -994,10 +1166,10 @@ namespace PoliSim.UI
             _borderEnforcementInput = GUILayout.HorizontalSlider(draftBorderEnforcement, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
-            _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex, null, _labelStyle, higherIsBetter: false);
-            _organizedCrimeGraph.Draw("Organized Crime Index", _playerCountry.History.OrganizedCrimeIndex, null, _labelStyle, higherIsBetter: false);
-            _corruptionGraph.Draw("Corruption Index", _playerCountry.History.CorruptionIndex, null, _labelStyle, higherIsBetter: false);
-            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k", _playerCountry.History.PrisonPopulationRate, null, _labelStyle);
+            _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false);
+            _organizedCrimeGraph.Draw("Organized Crime Index", _playerCountry.History.OrganizedCrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false);
+            _corruptionGraph.Draw("Corruption Index", _playerCountry.History.CorruptionIndex.Quarterly, null, _labelStyle, higherIsBetter: false);
+            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k", _playerCountry.History.PrisonPopulationRate.Quarterly, null, _labelStyle);
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -1043,7 +1215,7 @@ namespace PoliSim.UI
             _immigrationPolicyInput = GUILayout.HorizontalSlider(draftImmigrationPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
-            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate, null, _labelStyle, higherIsBetter: true);
+            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true);
 
             GUILayout.Space(8f);
             EconomyState demographicState = _playerCountry.State;
@@ -1141,9 +1313,18 @@ namespace PoliSim.UI
         /// SimulationManager.PreviewTurn (reuses the real MacroSystem/SimulationManager formulas
         /// against a throwaway clone rather than a separate hand-rolled estimate) plus a cosmetic
         /// +-5-10% margin of error. Checked every OnGUI call but only actually recomputed (and the
-        /// margin re-rolled) when the draft has changed since last frame - see
-        /// PolicyInputsChangedSinceLastPreview - so it reads as one stable forecast rather than a
-        /// flickering number, while still updating live as the player drags a slider.
+        /// margin re-rolled) when the draft OR the selected horizon has changed since last frame -
+        /// see PolicyInputsChangedSinceLastPreview - so it reads as one stable forecast rather than a
+        /// flickering number, while still updating live as the player drags a slider or switches
+        /// horizon.
+        ///
+        /// Continuous Time Migration Phase 0: redesigned around a selectable horizon (1 Day/1 Week/1
+        /// Month/Full Turn - see PreviewHorizon), defaulting to 1 Day, per the Master Roadmap's own
+        /// "effect-per-day plus a selectable-horizon projection" spec. Every figure shown is a
+        /// DISPLAY-ONLY re-scaling of the same full-turn PreviewTurn output (see
+        /// ScaleLinearForDisplay/ScaleCompoundingForDisplay) - Phase 0 doesn't simulate genuine
+        /// sub-turn granularity yet (that's Phases 1-5), so this is honestly labeled as an estimate
+        /// derived from the full-turn projection, not a real per-day simulation.
         /// </summary>
         private void DrawPolicyPreview()
         {
@@ -1153,8 +1334,15 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(10f);
-            GUILayout.Label("Estimated Effects This Turn (±5-10% margin of error)", _headerStyle);
-            GUILayout.Label("Projection only, not a guarantee - actual results after you Advance Turn may differ.", _labelStyle);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Estimated Effects", _headerStyle);
+            GUILayout.FlexibleSpace();
+            DrawHorizonButton(PreviewHorizon.OneDay);
+            DrawHorizonButton(PreviewHorizon.OneWeek);
+            DrawHorizonButton(PreviewHorizon.OneMonth);
+            DrawHorizonButton(PreviewHorizon.FullTurn);
+            GUILayout.EndHorizontal();
+            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-turn value. Projection only, not a guarantee.", _labelStyle);
 
             // Each line's color follows UiPalette's single green-good/red-bad convention, honoring
             // which direction is actually good for that specific stat (e.g. Unemployment/Inflation/
@@ -1163,25 +1351,40 @@ namespace PoliSim.UI
             // stats - halves this list's own height too.
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            DrawColoredLabel($"GDP Growth: {_cachedGdpGrowthText}", _labelStyle, UiPalette.GetDeltaColor(_cachedGdpGrowthPercentRaw, higherIsBetter: true));
-            DrawColoredLabel($"Unemployment: {_cachedUnemploymentText}", _labelStyle, UiPalette.GetDeltaColor(_cachedUnemploymentChangeRaw, higherIsBetter: false));
-            DrawColoredLabel($"Inflation: {_cachedInflationText}", _labelStyle, UiPalette.GetDeltaColor(_cachedInflationChangeRaw, higherIsBetter: false));
-            DrawColoredLabel($"Approval: {_cachedApprovalText}", _labelStyle, UiPalette.GetDeltaColor(_cachedApprovalChangeRaw, higherIsBetter: true));
+            DrawColoredLabel($"GDP Growth: {_cachedGdpGrowthScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedGdpGrowthPercentScaled, higherIsBetter: true));
+            DrawColoredLabel($"Unemployment: {_cachedUnemploymentScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedUnemploymentChangeScaled, higherIsBetter: false));
+            DrawColoredLabel($"Inflation: {_cachedInflationScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedInflationChangeScaled, higherIsBetter: false));
+            DrawColoredLabel($"Approval: {_cachedApprovalScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedApprovalChangeScaled, higherIsBetter: true));
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
-            DrawColoredLabel($"Poverty Rate: {_cachedPovertyRateText}", _labelStyle, UiPalette.GetDeltaColor(_cachedPovertyRateChangeRaw, higherIsBetter: false));
-            DrawColoredLabel($"Labor Force Participation: {_cachedLaborForceParticipationRateText}", _labelStyle, UiPalette.GetDeltaColor(_cachedLaborForceParticipationRateChangeRaw, higherIsBetter: true));
-            DrawColoredLabel($"Crime Index: {_cachedCrimeIndexText}", _labelStyle, UiPalette.GetDeltaColor(_cachedCrimeIndexChangeRaw, higherIsBetter: false));
-            DrawColoredLabel($"Net Budget Impact: {_cachedNetBudgetText}", _labelStyle, UiPalette.GetDeltaColor(_cachedNetBudgetImpactRaw, higherIsBetter: true));
+            DrawColoredLabel($"Poverty Rate: {_cachedPovertyRateScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedPovertyRateChangeScaled, higherIsBetter: false));
+            DrawColoredLabel($"Labor Force Participation: {_cachedLaborForceParticipationRateScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedLaborForceParticipationRateChangeScaled, higherIsBetter: true));
+            DrawColoredLabel($"Crime Index: {_cachedCrimeIndexScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedCrimeIndexChangeScaled, higherIsBetter: false));
+            DrawColoredLabel($"Net Budget Impact: {_cachedNetBudgetScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedNetBudgetImpactScaled, higherIsBetter: true));
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
+        }
+
+        private void DrawHorizonButton(PreviewHorizon horizon)
+        {
+            bool selected = _previewHorizon == horizon;
+            GUIStyle style = UiPalette.BuildButtonStyle(_neutralActionButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
+            if (GUILayout.Button(GetHorizonLabel(horizon), style, GUILayout.ExpandWidth(false)))
+            {
+                _previewHorizon = horizon;
+            }
         }
 
         /// <summary>True if no preview has been computed yet, the turn has advanced since the last one was, or any slider's value (including any tax line's requested rate change) differs from the snapshot the cached preview was computed from.</summary>
         private bool PolicyInputsChangedSinceLastPreview()
         {
             if (!_hasCachedPreview || _simulationManager.CurrentTurn != _cachedPreviewTurn)
+            {
+                return true;
+            }
+
+            if (GetHorizonDays(_previewHorizon) != _cachedPreviewHorizonDays)
             {
                 return true;
             }
@@ -1339,25 +1542,46 @@ namespace PoliSim.UI
         {
             PolicyPreview preview = _simulationManager.PreviewTurn(PlayerCountryId, BuildPlayerDecision());
 
-            _cachedGdpGrowthText = FormatEstimate(preview.GdpGrowthPercent, "%");
-            _cachedUnemploymentText = FormatEstimate(preview.UnemploymentChange, " pts");
-            _cachedInflationText = FormatEstimate(preview.InflationChange, " pts");
-            _cachedApprovalText = FormatEstimate(preview.ApprovalChange, " pts");
+            // Raw fields stay full-turn, UNCHANGED - DrawHeadlineGraphs' next-turn dashed projection
+            // genuinely means "next turn" (121 days), independent of whatever horizon the preview
+            // text panel below currently shows.
             _cachedGdpGrowthPercentRaw = preview.GdpGrowthPercent;
             _cachedUnemploymentChangeRaw = preview.UnemploymentChange;
             _cachedApprovalChangeRaw = preview.ApprovalChange;
-            _cachedNetBudgetText = FormatEstimate(preview.NetBudgetImpact, " units");
-            _cachedPovertyRateText = FormatEstimate(preview.PovertyRateChange, " pts");
-            _cachedLaborForceParticipationRateText = FormatEstimate(preview.LaborForceParticipationRateChange, " pts");
-            _cachedCrimeIndexText = FormatEstimate(preview.CrimeIndexChange, " pts");
-            _cachedSwfContributionText = FormatEstimate(preview.SwfContributionEstimate, " units");
-            _cachedSwfReturnsText = FormatEstimate(preview.SwfReturnsEstimate, " units");
             _cachedInflationChangeRaw = preview.InflationChange;
             _cachedPovertyRateChangeRaw = preview.PovertyRateChange;
             _cachedLaborForceParticipationRateChangeRaw = preview.LaborForceParticipationRateChange;
             _cachedCrimeIndexChangeRaw = preview.CrimeIndexChange;
             _cachedNetBudgetImpactRaw = preview.NetBudgetImpact;
             _cachedSwfReturnsEstimateRaw = preview.SwfReturnsEstimate;
+
+            _cachedSwfContributionText = FormatEstimate(preview.SwfContributionEstimate, " units");
+            _cachedSwfReturnsText = FormatEstimate(preview.SwfReturnsEstimate, " units");
+
+            // Continuous Time Migration Phase 0: the live Policy Preview panel shows THIS horizon's
+            // display-only re-scaling of the same full-turn PreviewTurn output above - see
+            // ScaleLinearForDisplay/ScaleCompoundingForDisplay's own doc comments for why GDP growth
+            // gets the compounding treatment and everything else (already a "points changed" or
+            // dollar-amount figure) gets the linear one.
+            int horizonDays = GetHorizonDays(_previewHorizon);
+            _cachedGdpGrowthPercentScaled = ScaleCompoundingForDisplay(preview.GdpGrowthPercent, horizonDays);
+            _cachedUnemploymentChangeScaled = ScaleLinearForDisplay(preview.UnemploymentChange, horizonDays);
+            _cachedInflationChangeScaled = ScaleLinearForDisplay(preview.InflationChange, horizonDays);
+            _cachedApprovalChangeScaled = ScaleLinearForDisplay(preview.ApprovalChange, horizonDays);
+            _cachedPovertyRateChangeScaled = ScaleLinearForDisplay(preview.PovertyRateChange, horizonDays);
+            _cachedLaborForceParticipationRateChangeScaled = ScaleLinearForDisplay(preview.LaborForceParticipationRateChange, horizonDays);
+            _cachedCrimeIndexChangeScaled = ScaleLinearForDisplay(preview.CrimeIndexChange, horizonDays);
+            _cachedNetBudgetImpactScaled = ScaleLinearForDisplay(preview.NetBudgetImpact, horizonDays);
+
+            _cachedGdpGrowthScaledText = FormatEstimate(_cachedGdpGrowthPercentScaled, "%");
+            _cachedUnemploymentScaledText = FormatEstimate(_cachedUnemploymentChangeScaled, " pts");
+            _cachedInflationScaledText = FormatEstimate(_cachedInflationChangeScaled, " pts");
+            _cachedApprovalScaledText = FormatEstimate(_cachedApprovalChangeScaled, " pts");
+            _cachedPovertyRateScaledText = FormatEstimate(_cachedPovertyRateChangeScaled, " pts");
+            _cachedLaborForceParticipationRateScaledText = FormatEstimate(_cachedLaborForceParticipationRateChangeScaled, " pts");
+            _cachedCrimeIndexScaledText = FormatEstimate(_cachedCrimeIndexChangeScaled, " pts");
+            _cachedNetBudgetScaledText = FormatEstimate(_cachedNetBudgetImpactScaled, " units");
+            _cachedPreviewHorizonDays = horizonDays;
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
             _cachedTariffRateChangeInput = _tariffRateChangeInput;
@@ -1446,11 +1670,49 @@ namespace PoliSim.UI
             return $"{value:+0.00;-0.00;0}{unitSuffix} (±{marginAmount:0.00}{unitSuffix})";
         }
 
-        private void DrawAdvanceTurnButton()
+        /// <summary>
+        /// Continuous Time Migration Phase 0: replaces the old single "Advance Turn" button - a date
+        /// readout (plus a status line while the clock is paused for a reason other than the player's
+        /// own Pause choice) and Pause/1x/2x/3x speed buttons, mirroring the tab bar's own
+        /// selected-vs-unselected visual idiom (UiPalette.BuildButtonStyle's Primary kind for whichever
+        /// speed is currently active, Neutral for the rest) rather than inventing a new button-state
+        /// convention just for this row.
+        /// </summary>
+        private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions)
         {
-            if (GUILayout.Button("Advance Turn", _primaryButtonStyle))
+            GUILayout.BeginVertical();
+
+            string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
+            if (hasPendingFedChairSelection)
             {
-                AdvanceTurn();
+                GUILayout.Label($"{dateText} - paused: choose the next Fed chair to continue", _labelStyle);
+            }
+            else if (hasPendingCabinetDecisions)
+            {
+                GUILayout.Label($"{dateText} - paused: resolve the pending Cabinet decision to continue", _labelStyle);
+            }
+            else
+            {
+                GUILayout.Label(dateText, _labelStyle);
+            }
+
+            GUILayout.BeginHorizontal();
+            DrawSpeedButton("Pause", GameSpeed.Paused);
+            DrawSpeedButton("1x", GameSpeed.Normal);
+            DrawSpeedButton("2x", GameSpeed.Fast);
+            DrawSpeedButton("3x", GameSpeed.VeryFast);
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical();
+        }
+
+        private void DrawSpeedButton(string label, GameSpeed speed)
+        {
+            bool selected = _gameSpeed == speed;
+            GUIStyle style = UiPalette.BuildButtonStyle(_buttonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
+            if (GUILayout.Button(label, style))
+            {
+                _gameSpeed = speed;
             }
         }
 
@@ -1918,11 +2180,13 @@ namespace PoliSim.UI
 
             GUILayout.Space(TabRowSpacing);
 
-            // Fourth row: just Compass & Demographics (Political Systems Overhaul Part C, the 15th
-            // tab) - full-width, same "one new tab alone in its own row" precedent Policy Web's own
-            // original third row established.
+            // Fourth row: Compass & Demographics (Political Systems Overhaul Part C, the 15th tab)
+            // plus Foreign Policy (Continuous Time Migration Phase 0's short-term gameplay
+            // scaffolding, the 16th tab) - half-width each, same "two new tabs share a row" precedent
+            // the Policy Web/Cabinet row above already established.
             GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Compass & Demographics", RightPanelTab.CompassAndDemographics, availableWidth);
+            DrawRightColumnTabButton("Compass & Demographics", RightPanelTab.CompassAndDemographics, availableWidth * 0.5f);
+            DrawRightColumnTabButton("Foreign Policy", RightPanelTab.ForeignPolicy, availableWidth * 0.5f);
             GUILayout.EndHorizontal();
         }
 
@@ -2238,6 +2502,57 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
+        /// <summary>
+        /// Foreign Policy tab (Continuous Time Migration Phase 0 short-term gameplay scaffolding,
+        /// Master Sequence step 3): a single small proof-of-pattern interrupt slice reusing Cabinet's
+        /// own decision-modal pattern (DrawCabinetTab/DrawCabinetDecisionModal) - at most one pending
+        /// meeting at a time (see SimulationManager's own doc comment on
+        /// _pendingForeignPolicyMeetingByCountry), rolled per day rather than per turn since meetings
+        /// are meant to land between turn boundaries. Explicitly NOT a law-passing mechanic (that's
+        /// Political Systems Overhaul Part B's job) and explicitly NOT "ongoing-process budgets" (left
+        /// out of this pass's scope entirely, per the Master Roadmap's own Phase 0 spec being treated
+        /// as three candidate systems to choose from, not three mandatory builds).
+        /// </summary>
+        private void DrawForeignPolicyTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _foreignPolicyScrollPosition = GUILayout.BeginScrollView(_foreignPolicyScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Foreign Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
+            GUILayout.Label("Occasionally a foreign counterpart requests a meeting - a trade delegation, a disaster relief appeal, a joint exercise proposal. Each has a few response options with a small, immediate, one-time effect. Meetings can arrive on any day, not just turn boundaries, and pause time until you respond.", _labelStyle);
+            GUILayout.Space(6f);
+
+            ForeignPolicyMeeting pendingMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId);
+            if (pendingMeeting != null)
+            {
+                DrawForeignPolicyMeetingModal(pendingMeeting);
+            }
+            else
+            {
+                GUILayout.Label("No meeting currently pending.", _labelStyle);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        private void DrawForeignPolicyMeetingModal(ForeignPolicyMeeting meeting)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label($"MEETING: {meeting.Name}", _eventBannerStyle);
+            GUILayout.Label(meeting.Description, _labelStyle);
+            foreach (ForeignPolicyMeetingOption option in meeting.Options)
+            {
+                if (GUILayout.Button(option.Label, _neutralActionButtonStyle))
+                {
+                    _simulationManager.ResolveForeignPolicyMeeting(PlayerCountryId, option);
+                }
+            }
+            GUILayout.EndVertical();
+        }
+
         private void DrawCabinetPortfolioPanel(CabinetPortfolio portfolio)
         {
             GUILayout.BeginVertical(_boxStyle);
@@ -2397,7 +2712,7 @@ namespace PoliSim.UI
 
             DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             DrawColoredLabel($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
-            _tradeBalanceGraph.Draw("Trade Balance", _playerCountry.History.TradeBalance, null, _labelStyle, higherIsBetter: true);
+            _tradeBalanceGraph.Draw("Trade Balance", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true);
             GUILayout.Space(6f);
 
             GUILayout.Label($"General Base Tariff Rate: {_playerCountry.BaseTariffRate:F2}% (applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _labelStyle);
@@ -2591,7 +2906,7 @@ namespace PoliSim.UI
 
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
             GUILayout.Label("Implement or remove a welfare program, and (while implemented) drag its generosity directly to the target you want.", _labelStyle);
-            _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate, null, _labelStyle, higherIsBetter: false);
+            _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false);
             GUILayout.Space(8f);
 
             float welfareTypeNameColumnWidth = GetWelfareProgramNameColumnWidth();
@@ -2854,7 +3169,7 @@ namespace PoliSim.UI
             // Moved here from the old combined "Trade & Spending" tab (Phase 4) - the last-turn
             // fiscal report belongs next to the sliders it explains, not bolted onto Trade.
             DrawSpendingSection();
-            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio, null, _labelStyle, higherIsBetter: false,
+            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false,
                 thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable");
             GUILayout.Space(16f);
 

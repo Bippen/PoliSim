@@ -25,7 +25,8 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 - **Roadmap Rounds 1-3: fully complete.** 15 items, all implemented, validated, and committed. Full detail lives in `CLAUDE.md`'s per-item sections (Expanded Event Pool, Labor Market Basics, Crime & Justice Basics, Economic Sectors, Sovereign Wealth Fund, SWF Drawdown, Expanded Sector Policies, Deeper Crime & Justice II, Expanded Economic Sectors II, Demographics Parts A & B). Both prior Open Questions (Sector Integration, Infrastructure Feedback) are resolved — see the Resolved Open Questions section near the bottom of this document for the short version.
 - **Master Sequence step 1 (Political Systems Overhaul Part A — Cabinet): DONE (2026-07-30).** Only 3 of the 6 confirmed portfolios implemented this pass (Finance/Treasury, Interior/Justice, Health & Social Affairs), per Part A's own content-authoring warning — see "Cabinet (Political Systems Overhaul Part A)" in `CLAUDE.md` for the full writeup and real-Unity validation (28-combination matrix, zero new anomaly types, directional confirmation via a targeted diagnostic).
 - **Master Sequence step 2 (Political Systems Overhaul Part C — UI/graph restyling and political visualization): DONE (2026-07-30).** Graph threshold/target lines (NAIRU, comfortable debt level) and "last N changes" pagination (`StatHistory.MaxEntries` raised 50 → 250), a political compass (auto-scaled to observed variance after a first-pass clustering bug), and five demographic pie charts — see "UI/Graph Restyling and Political Visualization" in `CLAUDE.md` for the full writeup, the two bugs found and fixed during the UI smoke test, and validation (single-scenario smoke check, zero new anomaly types).
-- **Continuous Time Migration: not started.** Full plan below.
+- **Master Sequence step 3 (Continuous Time Migration Phase 0 — calendar, speed control, short-term gameplay scaffolding): DONE (2026-07-30).** Real in-game calendar with Pause/1x/2x/3x speed controls automatically firing the existing, unchanged 121-day turn cadence; a selectable-horizon live Policy Preview; multi-resolution `StatHistory`; and one small Foreign Policy Meetings interrupt slice (law-passing and "ongoing-process budgets" both explicitly deferred/superseded) — see "Continuous Time Migration Phase 0 (Master Sequence step 3)" in `CLAUDE.md` for the full writeup, the tick-equivalence proof, and validation (100-turn smoke check, UI screenshot smoke test).
+- **Continuous Time Migration Phases 1-5: not started.** Full plan below.
 - **Political Systems Overhaul Part B: not started.** Full plan below.
 - **No Round 4 has been scoped.** Per the sequencing below, don't scope one yet — new features should be built against the post-Parliament interaction model, not the current one, to avoid retrofitting.
 
@@ -37,7 +38,7 @@ This is the one authoritative order, replacing whatever each original document s
 
 1. **Political Systems Overhaul — Part A (Cabinet). DONE (2026-07-30) — see "Cabinet (Political Systems Overhaul Part A)" in `CLAUDE.md`.** No dependencies. Full spec in Part A below.
 2. **Political Systems Overhaul — Part C (UI/graph restyling). DONE (2026-07-30) — see "UI/Graph Restyling and Political Visualization" in `CLAUDE.md`.** No dependencies. Full spec in Part C below.
-3. **Continuous Time Migration — Phase 0 (calendar, speed control, short-term gameplay scaffolding).** No dependencies beyond what already exists. Full spec below. Keeps all existing economic math at its current cadence — this phase is purely the calendar/UI layer.
+3. **Continuous Time Migration — Phase 0 (calendar, speed control, short-term gameplay scaffolding). DONE (2026-07-30) — see "Continuous Time Migration Phase 0 (Master Sequence step 3)" in `CLAUDE.md`.** No dependencies beyond what already exists. Full spec below. Keeps all existing economic math at its current cadence — this phase is purely the calendar/UI layer.
 4. **Political Systems Overhaul — Part B, PILOT ONLY (Tax Policy tab).** Depends on step 3. Prove the full draft → introduce → vote → pass/fail flow end-to-end on one tab before touching any other. Full spec below.
 5. **Political Systems Overhaul — Part B, full rollout** to the remaining seven tabs, only once step 4 is validated.
 6. **Resume Roadmap work (a new Round 4)** — only scope this once step 5 is done, so anything new is built directly against the gated-legislation model from day one.
@@ -79,7 +80,7 @@ The internal simulation can evolve daily; the player-facing display should only 
 - **Election-cycle-based**: elections, Fed Chair appointment.
 Optional refinement (Open Question, not required for a first pass): real reporting lag between a period ending and its data being published.
 
-## Phase 0 — Calendar, speed control, short-term gameplay scaffolding (MASTER SEQUENCE STEP 3)
+## Phase 0 — Calendar, speed control, short-term gameplay scaffolding (MASTER SEQUENCE STEP 3) — DONE (2026-07-30)
 
 1. Real in-game calendar date, advancing daily. Pause/1x/2x/3x speed controls.
 2. The EXISTING turn-cadence economic tick fires automatically every 121 in-game days, unchanged internally. Proves the calendar layer works on trusted math before any translation begins.
@@ -87,6 +88,18 @@ Optional refinement (Open Question, not required for a first pass): real reporti
 4. StatHistory needs multi-resolution storage (raw daily + aggregated weekly/monthly/quarterly buckets) — daily data alone over "last 50 entries" would show nothing meaningful for GDP-scale trends.
 5. Build short-term gameplay scaffolding: ongoing-process budgets, a decisions/interrupts system, foreign policy meetings, and — **superseded by Political Systems Overhaul Part B once both are ready** — a law-passing mechanic where legislation takes real in-game days/weeks to move through stages. Do not build a competing version of this once Part B exists; Part B's design is authoritative for law-passing specifically.
 6. Validate: single-scenario smoke check (no economic math touched) plus direct confirmation the automatic 121-day tick matches a manually-clicked turn exactly.
+
+**Result**: items 1-4 built as scoped. Item 5 was treated as a menu of candidate systems, not three
+mandatory builds: law-passing was skipped entirely (per this item's own "supersedes"/"do not build a
+competing version" instruction), "ongoing-process budgets" was explicitly deferred as a named open
+item rather than invented on the spot, and exactly one small proof-of-pattern interrupt slice (Foreign
+Policy Meetings) was built, reusing Cabinet's decision-modal pattern. Item 6 validated: a 100-turn
+`BatchSimulationRunner` smoke check completed cleanly (pre-existing ambient warnings only, zero new
+anomaly types), and tick-equivalence was proven via `git diff` (confirming `AdvanceTurn()`'s body is
+byte-for-byte unchanged - only its call site moved) plus a throwaway Edit-mode diagnostic confirming
+the new `AdvanceDay()` boundary arithmetic fires at exactly every 121st day with zero economic side
+effects of its own. Full writeup: "Continuous Time Migration Phase 0 (Master Sequence step 3)" in
+`CLAUDE.md`.
 
 ## Phases 1-5 — daily-granularity conversion (MASTER SEQUENCE STEP 7, safest-first)
 
@@ -199,7 +212,7 @@ real rendering defect, before any unnecessary fix was attempted.
 - **Cabinet appointment confirmation** — should appointing a minister also require a parliamentary vote, or does the player retain unilateral appointment power? Not yet decided.
 - **SWF emergency drawdown fast-track** — if SWF drawdown becomes subject to the same gating as everything else, a genuine emergency response could get stuck behind a multi-week process, undermining its purpose. Worth an exemption similar to the Fed/Eurozone carve-out. Not yet decided.
 - **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not required for a first pass.
-- **Exact StatHistory bucket scheme** (Continuous Time Migration Phase 0) — multiple reasonable designs exist; decide during implementation.
+- **"Ongoing-process budgets"** (Continuous Time Migration Phase 0, item 5) — explicitly deferred rather than scoped during Phase 0; the pass built only Foreign Policy Meetings as a proof-of-pattern interrupt slice. Needs a fresh design pass whenever it's actually picked up, not a retrofit onto that slice's shape.
 
 ---
 

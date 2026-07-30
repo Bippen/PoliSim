@@ -3528,6 +3528,112 @@ compass, and demographic pie charts - all reading data this game already tracks,
   nothing here touches a simulation formula) - 74 anomalies, all the same pre-existing "swung X% in one
   turn" ambient-noise pattern already documented, zero new anomaly types.
 
+## Continuous Time Migration Phase 0 (Master Sequence step 3)
+`POLISIM_MASTER_ROADMAP.md` Master Sequence step 3 - the calendar/UI/scaffolding layer that Phases
+1-5 (the actual daily-granularity math conversion, step 7, deliberately much later) will build on.
+Confirmed with Elias before starting: this phase keeps ALL existing economic math at its current
+121-day turn cadence, unchanged internally - no constant translation happens yet. Scoping decisions
+made and stated up front for item 5's intentionally vague "short-term gameplay scaffolding" bullet:
+skip the law-passing mechanic entirely (the spec's own text says Political Systems Overhaul Part B
+supersedes it - building a competing version here would be wasted work), build ONE small
+proof-of-pattern interrupt slice (Foreign Policy Meetings) rather than three separate systems, and
+explicitly defer "ongoing-process budgets" as a named open item rather than invent scope for it.
+
+- **Calendar core** (`SimulationManager`): `CurrentDate` (a `System.DateTime`, starting at an
+  honestly-arbitrary epoch of 2026-01-01) plus `AdvanceDay()`, which advances one day and returns
+  `true` exactly when a `DaysPerTurn` (121) boundary is crossed since epoch. `AdvanceDay()` itself
+  never calls `AdvanceTurn()` - only the UI layer has visibility into the current draft policy
+  sliders needed to build a `PolicyDecision`, so the boundary signal is just that, a signal.
+- **Speed control and the day-processing loop** (`GameController`): a new `GameSpeed` enum
+  (Paused/Normal/Fast/VeryFast, ~2 minutes/turn at 1x down to ~30s/turn at 3x - an untested first-pass
+  pacing placeholder, not tuned against playtesting) drives a new `Update()` method (runs every engine
+  frame, unlike `OnGUI` which only fires on repaint) that accumulates `Time.deltaTime` against a
+  per-speed "seconds per in-game day" rate and calls `AdvanceDay()` in a loop. On a `true` return it
+  calls the EXISTING, byte-for-byte UNCHANGED private `AdvanceTurn()` method - the same one the old
+  "Advance Turn" button used to call, just with its call site moved. Time itself now pauses on every
+  gate that used to just disable that button (no country selected, game over, a pending election
+  reveal/Fed Chair selection/Cabinet decision) PLUS a new one this phase adds (a pending Foreign Policy
+  Meeting) - re-checked immediately after each `AdvanceTurn()` call too, so the loop can't drain
+  further simulated days against a state that just became blocked mid-frame.
+- **UI**: `DrawAdvanceTurnButton` removed entirely, replaced by `DrawCalendarAndSpeedControls` (date
+  label, a conditional "why time is paused" reason line, Pause/1x/2x/3x button row) in the same layout
+  slot.
+- **Live Policy Preview redesign**: a new `PreviewHorizon` enum (1 Day/1 Week/1 Month/Full Turn, 1 Day
+  default) with a selector row. Every displayed figure is a DISPLAY-ONLY re-scaling of the SAME
+  full-turn `PreviewTurn` output (no new simulation run) - additive/"points changed" values use
+  `ScaleLinearForDisplay` (`value * horizonDays / 121`), GDP growth % uses
+  `ScaleCompoundingForDisplay` (geometric: full-turn multiplier -> implied daily multiplier via
+  `Mathf.Pow(x, 1/121)` -> raised to `horizonDays`) - the same "identify which mathematical shape a
+  constant is" methodology the Master Roadmap's own translation section describes, applied here only
+  to a display transform, never a real simulated constant. A parallel "Raw" (always full-turn) set of
+  cached fields is kept deliberately separate from the new "Scaled" (horizon-dependent) set, so the
+  dashboard's own next-turn dashed graph projection - which always means "next turn," regardless of
+  which horizon the preview panel has selected - can never accidentally read a horizon-scaled value.
+- **Multi-resolution `StatHistory`** (`MultiResolutionSeries`, new): each of the 13 tracked stats is
+  now four independently-gated `List<float>` buffers (Daily/Weekly/Monthly/Quarterly, each period
+  1/7/30/91 days, each capped at `StatHistory.MaxEntries`) instead of one flat list. Honestly disclosed
+  in the class's own doc comment: Phase 0 itself can't yet make the four resolutions diverge - 121
+  days already exceeds even the 91-day quarterly period, so every resolution ends up holding IDENTICAL
+  one-point-per-turn data until Phases 1-5 give stats genuine day-to-day variation. Every existing
+  graph call site (`GameController`, `PolicyWebRenderer.GetHistory`) now reads `.Quarterly`
+  specifically, chosen because a 91-day period still only ever accepts one point per 121-day turn -
+  zero visual change to any existing graph from this migration.
+- **Foreign Policy Meetings** (the one short-term-scaffolding proof-of-pattern slice built this pass):
+  `ForeignPolicyMeeting`/`ForeignPolicyMeetingOption` (new, `Assets/Scripts/Data/`) mirror
+  `CabinetDecision`/`CabinetDecisionOption`'s shape - short scenario text plus 2-3 response options
+  with a small flat set of one-time shock fields (`ApprovalEffect`/`BudgetImpact`/`TradeBalanceShock`,
+  the last one new since a meeting with a foreign counterpart is the natural place for a
+  trade-relations nudge, landing on a stat that already mean-reverts every turn). `ForeignPolicySystem`
+  (new, `Assets/Scripts/Simulation/`) is deliberately a FLAT undifferentiated pool (no per-portfolio/
+  per-philosophy branching like Cabinet's own `DecisionPool` - there's only one "foreign ministry"
+  here), rolled at 1%/day (`MeetingChancePerDay`, targeting roughly one meeting per 121-day turn on
+  average) rather than Cabinet's once-per-turn cadence, since meetings are meant to land BETWEEN turn
+  boundaries now that the calendar advances continuously. `SimulationManager` tracks at most ONE
+  pending meeting per country (`_pendingForeignPolicyMeetingByCountry`, unlike Cabinet's per-minister
+  list) via `TryRollForeignPolicyMeeting`/`GetPendingForeignPolicyMeeting`/
+  `ResolveForeignPolicyMeeting`; `GameController.Update()` rolls it once per simulated day for the
+  player's country only (NPC countries have no UI to ever resolve one through). New "Foreign Policy"
+  tab (16th tab, shares row 4 with Compass & Demographics at half-width each, `UiPalette.SystemArea.
+  Trade`) shows the pending meeting (if any) with the same `_eventBannerStyle` visual weight Cabinet's
+  own decision modal uses, or "No meeting currently pending."
+- **Deferred, not silently dropped**: "ongoing-process budgets" (item 5's third named piece) is out of
+  scope for this pass - no design work was done on it here, and it should be scoped fresh (not
+  retrofitted onto Foreign Policy Meetings' shape) whenever it's actually picked up.
+- **Tick-equivalence validation** (explicit requirement: prove the automatic 121-day tick produces
+  results indistinguishable from the old manual "Advance Turn" button): a true byte-identical
+  "run twice and diff the output" comparison was deliberately NOT attempted - `EventSystem`/
+  `CabinetSystem`/`ForeignPolicySystem` each already kept their own unseeded, process-lifetime
+  `static readonly System.Random` before this phase, so two separate trigger paths draw from different
+  points in those streams and would legitimately diverge in which random event/decision/meeting fires,
+  for reasons that have nothing to do with the day/turn translation itself. Instead, two things were
+  proven directly: (1) `git diff` confirms `AdvanceTurn()`'s method body is byte-for-byte unchanged -
+  only its call site moved from the old button's `OnClick` handler to `Update()`'s day-boundary
+  branch, so identical inputs unconditionally produce identical output regardless of caller; (2) a
+  throwaway `TickEquivalenceDiagnostic1` (Edit-mode only, no Play-mode round-trip needed since
+  `SimulationManager.Awake()`/`SetWorld` both fire synchronously on `AddComponent`) confirmed the ONLY
+  new code in the path - `AdvanceDay()`'s boundary arithmetic - fires at EXACTLY day 121/242/363/
+  484/605 over 5 simulated turns, never off-by-one or double-fired, and that non-boundary `AdvanceDay()`
+  calls leave every tracked `EconomyState` field (GDP/Unemployment/Inflation/ApprovalRating/Budget)
+  completely untouched across 120 consecutive days - a pure calendar advance with zero economic side
+  effects of its own. PASS on both.
+- **Validated**: single-scenario smoke check (100-turn baseline, `BatchSimulationRunner`, matching this
+  phase's own "no economic math touched" validation bar) - completed cleanly with only the same
+  pre-existing "swung X% in one turn" ambient-noise warnings already documented elsewhere in this file,
+  zero new anomaly types, zero exceptions.
+- **UI smoke test** (screenshot-driven): confirmed the calendar date label, the conditional pause-
+  reason line, and the Pause/1x/2x/3x speed row all render correctly with 1x active by default; the
+  redesigned live preview's horizon button row (1 Day/1 Week/1 Month/Full Turn) renders with 1 Day
+  selected; and the new Foreign Policy tab renders correctly (teal `Trade`-area tint, description text,
+  "No meeting currently pending" in the no-meeting state).
+- **A tooling quirk worth recording, not a code regression**: `BatchSimulationRunner`'s own
+  post-Play-mode exit sequence (`EditorApplication.isPlaying = false;` immediately followed by
+  `EditorApplication.Exit(0);`) hung for 20+ minutes mid-domain-reload/asset-reindex on one run this
+  session, well past every prior run's normal exit time - the 100-turn scenario itself had already
+  completed cleanly (visible in the log before the hang) and the hang was killed and worked around by
+  building `TickEquivalenceDiagnostic1` as an Edit-mode-only script instead of a Play-mode one. Not
+  investigated further since it didn't block validation; worth a look if `BatchSimulationRunner` hangs
+  again in a future session.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -3741,6 +3847,16 @@ done - see "UI/Graph Restyling and Political Visualization" above - graphs can n
 target reference line and page back through up to 250 turns of retained history (`StatHistory.
 MaxEntries` raised from 50), and a new "Compass & Demographics" tab plots all six countries on a
 political compass (auto-scaled axes, grounded entirely in real tracked policy data) plus five
-demographic pie charts. Master Sequence step 3 (Continuous Time Migration Phase 0) is next; Round 4 of
-the original Roadmap stays unscoped until step 5 (Parliament's full rollout) is done, so new features
-get designed against the gated-legislation model from day one rather than retrofitted onto it later.
+demographic pie charts. Master Sequence step 3 (Continuous Time Migration Phase 0) is also done - see
+"Continuous Time Migration Phase 0 (Master Sequence step 3)" above - a real in-game calendar
+(`SimulationManager.CurrentDate`, advancing daily) with Pause/1x/2x/3x speed controls now drives the
+EXISTING, unchanged 121-day turn cadence automatically instead of a manual "Advance Turn" button; the
+live Policy Preview shows a selectable-horizon (1 Day/1 Week/1 Month/Full Turn) display-only rescaling
+of the same full-turn estimate; `StatHistory` gained multi-resolution (Daily/Weekly/Monthly/Quarterly)
+storage, though Phase 0 itself can't yet make the four resolutions diverge; and a small Foreign Policy
+Meetings interrupt slice proves the "decisions that land between turn boundaries" pattern Political
+Systems Overhaul Part B will eventually need for law-passing specifically (deliberately not built
+here, since Part B's design is authoritative for that). Master Sequence step 4 (Political Systems
+Overhaul Part B, Parliament pilot on the Tax Policy tab) is next; Round 4 of the original Roadmap
+stays unscoped until step 5 (Parliament's full rollout) is done, so new features get designed against
+the gated-legislation model from day one rather than retrofitted onto it later.

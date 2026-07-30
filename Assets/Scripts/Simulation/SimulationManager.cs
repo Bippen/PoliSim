@@ -60,6 +60,37 @@ namespace PoliSim.Simulation
     {
         public int CurrentTurn { get; private set; }
 
+        /// <summary>
+        /// Continuous Time Migration Phase 0 (Master Sequence step 3): 1 turn = 121 in-game days
+        /// (~4 months), the SAME conversion "Why this exists" in POLISIM_MASTER_ROADMAP.md's Part One
+        /// has used implicitly since ElectionCycle (12 turns = ~4 years, a real presidential term)
+        /// was first calibrated. Unchanged by this phase - no constant here gets translated to a daily
+        /// rate yet; that's Phases 1-5 (Master Sequence step 7), deliberately much later.
+        /// </summary>
+        public const int DaysPerTurn = 121;
+
+        /// <summary>The in-game calendar's epoch (Turn 0's date) - a clean, honestly-arbitrary flavor choice, not independently researched, chosen to roughly align with this project's own "seeded with real mid-2026 policy rates" starting data (see WorldFactory).</summary>
+        private static readonly System.DateTime EpochDate = new System.DateTime(2026, 1, 1);
+
+        /// <summary>Advances one day at a time via AdvanceDay, driven by GameController's own real-time speed-controlled Update loop - never touched by PreviewTurn's own throwaway clone, so a live slider drag can never leak a phantom day into the real calendar.</summary>
+        public System.DateTime CurrentDate { get; private set; } = EpochDate;
+
+        /// <summary>
+        /// Continuous Time Migration Phase 0: advances CurrentDate by exactly one in-game day.
+        /// Returns true on the day a turn boundary is crossed (every DaysPerTurn-th day since
+        /// EpochDate) - the caller (GameController's own Update loop) is still the one that actually
+        /// resolves the turn via the existing, UNCHANGED AdvanceTurn(decisions), since only the
+        /// caller has visibility into the player's current live PolicyDecision draft. This method
+        /// only tracks calendar time and signals when a resolution is due - it never calls
+        /// AdvanceTurn itself, and never touches any economic state.
+        /// </summary>
+        public bool AdvanceDay()
+        {
+            CurrentDate = CurrentDate.AddDays(1);
+            int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
+            return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
+        }
+
         [SerializeField]
         private World _world;
 
@@ -223,6 +254,15 @@ namespace PoliSim.Simulation
         private readonly Dictionary<CountryId, List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>> _pendingCabinetDecisionsByCountry =
             new Dictionary<CountryId, List<(CabinetPortfolio, CabinetDecision)>>();
 
+        /// <summary>
+        /// Continuous Time Migration Phase 0 short-term gameplay scaffolding: at most ONE pending
+        /// foreign policy meeting per country at a time (unlike Cabinet's per-minister list, there's
+        /// only one "foreign ministry" rolling here) - see TryRollForeignPolicyMeeting/
+        /// ResolveForeignPolicyMeeting and GameController.Update's own gate on it.
+        /// </summary>
+        private readonly Dictionary<CountryId, ForeignPolicyMeeting> _pendingForeignPolicyMeetingByCountry =
+            new Dictionary<CountryId, ForeignPolicyMeeting>();
+
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
         {
@@ -251,6 +291,42 @@ namespace PoliSim.Simulation
             {
                 pending.RemoveAll(p => p.Portfolio == portfolio && p.Decision == decision);
             }
+        }
+
+        /// <summary>The pending foreign policy meeting for this country, or null if none is currently awaiting a response (the common case) - see GameController's Foreign Policy tab and the Update() gate on it.</summary>
+        public ForeignPolicyMeeting GetPendingForeignPolicyMeeting(CountryId countryId)
+        {
+            return _pendingForeignPolicyMeetingByCountry.TryGetValue(countryId, out ForeignPolicyMeeting meeting) ? meeting : null;
+        }
+
+        /// <summary>
+        /// Rolls, once per simulated day, whether a new meeting fires for this country - a no-op if
+        /// one is already pending (single-slot, see _pendingForeignPolicyMeetingByCountry's own doc
+        /// comment), so GameController.Update can safely call this every day the loop advances without
+        /// checking first itself. Called only for the player's country - unlike Cabinet decisions
+        /// (rolled for every country every turn as part of AdvanceTurn), NPC countries have no UI to
+        /// ever resolve a meeting through, so there'd be nothing to roll for them.
+        /// </summary>
+        public void TryRollForeignPolicyMeeting(CountryId countryId)
+        {
+            if (_pendingForeignPolicyMeetingByCountry.ContainsKey(countryId))
+            {
+                return;
+            }
+
+            ForeignPolicyMeeting meeting = ForeignPolicySystem.TryRollMeeting();
+            if (meeting != null)
+            {
+                _pendingForeignPolicyMeetingByCountry[countryId] = meeting;
+            }
+        }
+
+        /// <summary>Applies the player's chosen response to the pending foreign policy meeting and clears it - called once per response, from GameController.</summary>
+        public void ResolveForeignPolicyMeeting(CountryId countryId, ForeignPolicyMeetingOption chosenOption)
+        {
+            Country country = _world.GetCountry(countryId);
+            ForeignPolicySystem.ApplyMeetingOption(country, chosenOption);
+            _pendingForeignPolicyMeetingByCountry.Remove(countryId);
         }
 
         /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>
@@ -312,7 +388,7 @@ namespace PoliSim.Simulation
                 // ApplyDomesticPolicy itself, so PreviewTurn's throwaway clone - which calls
                 // ApplyDomesticPolicy's constituent steps directly, not this loop - never appends a
                 // phantom data point into the real history.
-                country.History.Append(country.State, country.CurrencyZone.InterestRate);
+                country.History.Append(CurrentDate, country.State, country.CurrencyZone.InterestRate);
             }
 
             CurrentTurn++;
