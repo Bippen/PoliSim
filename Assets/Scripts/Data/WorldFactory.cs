@@ -429,6 +429,28 @@ namespace PoliSim.Data
 
             SeedUsaSpendingLines(usa);
 
+            // Country-selection task, Part 2: generic spending decomposition for the other five
+            // countries - a PURE decomposition of each country's existing GovernmentSpendingRate-
+            // derived total into 5 broad categories, not a recalibration (see SeedGenericSpendingLines
+            // for how the exact-sum guarantee works, and its own doc comment for why these percentage
+            // splits are honestly illustrative, not individually researched). Directionally-informed
+            // splits, not researched figures: Social Programs is the largest bucket everywhere
+            // (Nordic/Western European welfare states skew high); Defense is notably higher for Poland
+            // (real, well-documented - Poland has run one of NATO's highest defense-spending-to-GDP
+            // ratios in recent years given its frontline position) and somewhat higher for France (a
+            // larger standing military/nuclear deterrent than Germany/Italy/Sweden); the remainder
+            // (Infrastructure & Development / Public Services / Administration) fills out each
+            // country's own total. None of these five categories maps to this game's existing
+            // WelfarePrograms portfolio, which already separately covers each country's actual
+            // transfer/entitlement spending - Social Programs here represents broader discretionary
+            // social-sector spending (health/education/social-services infrastructure), not the same
+            // dollars WelfarePrograms tracks.
+            SeedGenericSpendingLines(sweden, socialPercent: 42f, defensePercent: 4f, infrastructurePercent: 14f, publicServicesPercent: 25f);
+            SeedGenericSpendingLines(germany, socialPercent: 40f, defensePercent: 5f, infrastructurePercent: 13f, publicServicesPercent: 24f);
+            SeedGenericSpendingLines(france, socialPercent: 38f, defensePercent: 7f, infrastructurePercent: 12f, publicServicesPercent: 25f);
+            SeedGenericSpendingLines(italy, socialPercent: 40f, defensePercent: 4f, infrastructurePercent: 11f, publicServicesPercent: 26f);
+            SeedGenericSpendingLines(poland, socialPercent: 34f, defensePercent: 10f, infrastructurePercent: 16f, publicServicesPercent: 22f);
+
             // Reserve-currency treatment (see "Reserve-Currency Debt Interest Treatment" in
             // CLAUDE.md): the USA doesn't face the same market risk premium as other sovereigns at an
             // equivalent debt-to-GDP ratio, and its effective interest rate on EXISTING debt reflects
@@ -617,6 +639,44 @@ namespace PoliSim.Data
                 new SpendingLine(SpendingCategory.NSF, 9f, isMandatory: false),
                 new SpendingLine(SpendingCategory.EPA, 10f, isMandatory: false),
                 new SpendingLine(SpendingCategory.SBA, 1f, isMandatory: false),
+            });
+        }
+
+        /// <summary>
+        /// Country-selection task, Part 2: a SMALL, generic 5-category spending decomposition for a
+        /// country that (unlike USA) keeps the legacy GovernmentSpendingRate mechanic as its source of
+        /// truth - mirrors USA's own original Phase 1 broad-categories stage, not the later detailed
+        /// work. CRITICAL invariant: this is a PURE decomposition, not a recalibration - the five
+        /// lines' Amounts are computed directly from the country's OWN CURRENT GDP *
+        /// GovernmentSpendingRate (read live at seed time, never a separately-hardcoded duplicate
+        /// figure that could drift out of sync), and Administration is deliberately the REMAINDER
+        /// (total minus the other four), not its own independently-rounded percentage - this
+        /// guarantees the five lines sum to EXACTLY the country's existing total regardless of
+        /// floating-point rounding in the other four percentages, not just approximately. All five
+        /// lines are Discretionary (feed G, like USA's own Discretionary lines) - no Mandatory/
+        /// Discretionary split was introduced for this small decomposition (see this method's call
+        /// site in CreateDefault for why). Only Defense and InfrastructureAndDevelopment feed an
+        /// existing economic effect (see SimulationManager.BuildEffectiveDecisionForDetailedSpending) -
+        /// SocialPrograms/PublicServices/Administration get zero effect for now, an accurate,
+        /// adjustable dollar amount only, deliberately mirroring how 15 of USA's own 19 Discretionary
+        /// categories still have no effect either.
+        /// </summary>
+        private static void SeedGenericSpendingLines(Country country, float socialPercent, float defensePercent, float infrastructurePercent, float publicServicesPercent)
+        {
+            float total = country.State.GDP * (country.GovernmentSpendingRate / 100f);
+            float social = total * socialPercent / 100f;
+            float defense = total * defensePercent / 100f;
+            float infrastructure = total * infrastructurePercent / 100f;
+            float publicServices = total * publicServicesPercent / 100f;
+            float administration = total - social - defense - infrastructure - publicServices;
+
+            country.SpendingLines.AddRange(new[]
+            {
+                new SpendingLine(SpendingCategory.SocialPrograms, social, isMandatory: false),
+                new SpendingLine(SpendingCategory.Defense, defense, isMandatory: false),
+                new SpendingLine(SpendingCategory.InfrastructureAndDevelopment, infrastructure, isMandatory: false),
+                new SpendingLine(SpendingCategory.PublicServices, publicServices, isMandatory: false),
+                new SpendingLine(SpendingCategory.Administration, administration, isMandatory: false),
             });
         }
     }

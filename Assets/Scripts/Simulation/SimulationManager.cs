@@ -1136,7 +1136,17 @@ namespace PoliSim.Simulation
         /// Housing) were given their own effects in Phase 2 (see CLAUDE.md's "Detailed Spending
         /// Portfolio Phase 2") and are mapped here the same way - every other Discretionary category
         /// still gets zero effect, since Phase 2 only extended 4 of the remaining 15 effect-less
-        /// categories, not an exhaustive list.
+        /// categories, not an exhaustive list. Country-selection task, Part 2: InfrastructureSpendingChange
+        /// now also checks SpendingCategory.InfrastructureAndDevelopment alongside Transportation - the
+        /// generic category Sweden/Germany/France/Italy/Poland's decomposition uses in place of USA's
+        /// own Transportation line (see WorldFactory.SeedGenericSpendingLines). Safe to simply ADD both
+        /// GetActualDollarChange calls rather than branch on which one applies: a given country's
+        /// SpendingLines can only ever contain one of the two (USA has Transportation, the other five
+        /// have InfrastructureAndDevelopment, never both), so the OTHER call always resolves to 0 via
+        /// GetActualDollarChange's own "not present in the dictionary" fallback. DefenseSpendingChange
+        /// needed NO change at all - SpendingCategory.Defense is reused directly (not a new category)
+        /// by the same five countries' portfolios, so this already-existing line picks it up
+        /// automatically.
         /// </summary>
         private static PolicyDecision BuildEffectiveDecisionForDetailedSpending(PolicyDecision decision, SpendingLineChangeResult changeResult)
         {
@@ -1145,7 +1155,8 @@ namespace PoliSim.Simulation
                 TaxRateOverrides = decision.TaxRateOverrides,
                 InterestRateChange = decision.InterestRateChange,
                 TariffRateChange = decision.TariffRateChange,
-                InfrastructureSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Transportation),
+                InfrastructureSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Transportation)
+                    + GetActualDollarChange(changeResult, SpendingCategory.InfrastructureAndDevelopment),
                 HealthcareSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.HHSDiscretionary),
                 EducationSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Education),
                 DefenseSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Defense),
@@ -1213,7 +1224,8 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float theoreticalRevenue = GetTotalTaxRevenue(country);
-            float actualRevenue = theoreticalRevenue * country.CollectionEfficiency * GetFiscalReactionMultiplier(country) + swfReturns;
+            float fiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
+            float actualRevenue = theoreticalRevenue * country.CollectionEfficiency * fiscalReactionMultiplier + swfReturns;
             float totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
             float budgetBalance = actualRevenue - totalSpending;
 

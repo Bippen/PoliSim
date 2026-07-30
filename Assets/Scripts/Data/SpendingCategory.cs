@@ -40,6 +40,18 @@ namespace PoliSim.Data
         TreasuryOps,
         NSF,
         EPA,
-        SBA
+        SBA,
+
+        // Country-selection task, Part 2: broad generic categories for Sweden/Germany/France/Italy/
+        // Poland's spending decomposition - deliberately NOT the granular USA-style breakdown above
+        // (this mirrors USA's own original Phase 1 broad-categories stage, not its later detailed
+        // work). All five are Discretionary for every country that uses them (see WorldFactory.
+        // SeedGenericSpendingLines) - no Mandatory/Discretionary split was introduced for this small
+        // decomposition, since these countries' actual transfer/entitlement spending is already
+        // covered by the separate, pre-existing WelfarePrograms portfolio, not by these lines.
+        SocialPrograms,
+        InfrastructureAndDevelopment,
+        PublicServices,
+        Administration
     }
 }
