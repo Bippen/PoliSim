@@ -319,7 +319,21 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   not diverging). Turn-500 populations sanity-checked explicitly against real Eurostat/UN long-run
   projections, with the ~500-year-vs-75-year horizon mismatch disclosed honestly rather than papered
   over. See "Demographics, Part A" correction section in CLAUDE.md for the full derivation and numbers.
-  **Part A is now genuinely done; Part B (Family/Immigration Policy levers) can proceed.**
+- **Second correction (same day): the plausibility check itself used the wrong turn-to-year
+  conversion, and the resulting fix needed was structural, not another cap/speed retune.** The above
+  correction's own sanity check used "1 turn ~= 1 year," but this project's actual established
+  convention (`ElectionSystem.ElectionCycle` = 12 turns per presidential term = 4 years) means 1 turn
+  = 1/3 year, so 500 turns is ~167 years, not 500. Redone correctly, every country's population change
+  ran 2-3x more extreme than a faithful real-world extrapolation over the true 167-year horizon
+  supports. Tightening the cap/reversion-speed further (tried first) barely moved the result -
+  the actual defect was that `Population` compounded a full annual-scale rate every TURN instead of
+  every YEAR, a structural ~3x over-application no amount of rate retuning could fix. Fixed by scaling
+  Population's per-turn update by the real turn-to-year fraction (`YearsPerTurn = 4 /
+  ElectionCycle`). Re-validated on the full 24-combination matrix: zero demographic anomalies, and
+  every country now lands within 0.55x-1.30x of its own correctly-time-converted real-world target
+  (comfortably inside "same order of magnitude, not double"). See CLAUDE.md's second correction
+  section for the full per-country numbers and derivation.
+  **Part A is now genuinely done (for real this time); Part B (Family/Immigration Policy levers) can proceed.**
 
 ---
 

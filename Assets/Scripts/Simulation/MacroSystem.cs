@@ -582,19 +582,26 @@ namespace PoliSim.Simulation
         /// so DeathRate/NetMigrationRate keep drifting for a very long transient (hundreds of turns) even
         /// though each is individually bounded - without this cap, that slow transient drift would keep
         /// dragging the TARGET further from the anchor for the entire 500-turn validation horizon, which
-        /// defeats the point of reverting toward a bounded steady state. 5 is wide enough to let a real,
-        /// sustained multi-generational birth/death/migration swing (e.g. a country's death rate rising
-        /// several points as it ages) show up as a real, felt pull, while guaranteeing the target itself
-        /// always stays within SteadyStateGrowthRate +/- (this x PopulationGrowthRateSensitivity). Set
-        /// to 2 (not a larger, more permissive figure) specifically so the cap actually ENGAGES within
-        /// this project's 500-turn validation horizon for the countries already running sustained
-        /// natural decrease (Germany/Italy/Poland) - DependencyRatio's one-directional drift means their
-        /// raw gap keeps widening past this point well before DependencyRatio itself approaches its own
-        /// ceiling, so a looser cap would leave PopulationGrowthRate still trending in one direction at
-        /// turn 500 rather than genuinely plateauing, unlike every other successfully-stabilized
-        /// variable in this model (Unemployment, Inflation, DebtToGdpRatio all visibly flatten out).
+        /// defeats the point of reverting toward a bounded steady state.
+        ///
+        /// NOTE on what this constant does and does NOT fix: an earlier pass at this correction (2, then
+        /// briefly 1.5/1 alone) treated the cap as the primary lever for matching real-world plausibility,
+        /// but empirically tightening it (and separately, reversion speed) barely moved the modeled
+        /// outcome - because the actual defect was structural, not a calibration problem with this
+        /// constant: `ApplyPopulationGrowth` was applying a full annual-scale rate every TURN, but this
+        /// project's own turn-to-calendar-time convention (`ElectionSystem.ElectionCycle` = 12 turns per
+        /// presidential term = 4 real years) means 500 turns is ~167 real years, not 500 - a structural
+        /// 3x over-compounding no cap or speed value could fix (see YearsPerTurn below, the actual fix).
+        /// With that fixed, 1 (not a looser value) brings the plateaued rate close enough to each
+        /// country's own SteadyStateGrowthRate anchor that the 500-turn/167-year outcome lands within
+        /// the same order of magnitude as a faithful extrapolation of each country's own anchor rate over
+        /// the correct 167-year horizon, for all six countries - see CLAUDE.md for the full per-country
+        /// comparison and derivation. Still non-zero (not simply removed) so PopulationGrowthRate
+        /// genuinely plateaus within the validation horizon rather than still trending in one direction
+        /// at turn 500, unlike every other successfully-stabilized variable in this model (Unemployment,
+        /// Inflation, DebtToGdpRatio all visibly flatten out).
         /// </summary>
-        private const float MaxPopulationGrowthRateDeviation = 2f;
+        private const float MaxPopulationGrowthRateDeviation = 1f;
 
         /// <summary>
         /// How fast PopulationGrowthRate itself reverts toward its target each turn - the same
@@ -607,26 +614,46 @@ namespace PoliSim.Simulation
         private const float PopulationGrowthReversionSpeed = 0.05f;
 
         /// <summary>
-        /// Population evolves by PopulationGrowthRate/1000 x Population each turn. PopulationGrowthRate
-        /// is itself a mean-reverting quantity - the FIX for this pass's original design, which applied
-        /// the raw (BirthRate - DeathRate + NetMigrationRate) figure to Population directly and
-        /// indefinitely. That raw figure is realistic at the individual-rate level (each of BirthRate/
-        /// DeathRate/NetMigrationRate is independently bounded - see ApplyDemographicRates) but, with no
-        /// pull back toward any long-run figure, compounds over a 500-turn horizon into implausible
-        /// aggregate outcomes (near-extinction for the countries already running more deaths than
-        /// births, near-quadrupling for the fastest-growing). Each turn the raw figure's gap versus
-        /// Country.SteadyStateGrowthRate is first hard-capped at +/-MaxPopulationGrowthRateDeviation
-        /// (bounding the aggregate pull itself, since DependencyRatio's own one-directional drift means
-        /// the raw figure can keep moving for far longer than 500 turns even though each of its own
-        /// inputs is individually clamped), then weighted by PopulationGrowthRateSensitivity to set this
-        /// turn's reversion TARGET; PopulationGrowthRate then reverts toward that target at
-        /// PopulationGrowthReversionSpeed - the same two-step "gap sets a target, state reverts toward
-        /// it" shape used throughout this model (e.g. Taylor Rule -> InterestRate). This still allows
-        /// genuine sustained long-run growth (USA) or decline (Germany/Poland/Italy) - SteadyStateGrowthRate
-        /// itself is not zero for any of the six - it just guarantees the actual growth rate permanently
-        /// stays within a bounded band around that plausible long-run figure, rather than drifting
-        /// further from it for as long as the underlying aging drift continues. Must run AFTER
-        /// ApplyDemographicRates, which updates the three rates this reads for the same turn.
+        /// Real years represented by one turn, derived from this project's own established
+        /// turn-to-calendar-time convention (`ElectionSystem.ElectionCycle` = 12 turns per presidential
+        /// term = 4 real years - NOT the looser "1 turn ~= 1 year" approximation this section originally
+        /// assumed). BirthRate/DeathRate/NetMigrationRate/SteadyStateGrowthRate are all real, per-1,000-
+        /// population-PER-YEAR figures (that's how the source data is expressed and how they're
+        /// documented) - applying them to Population UNSCALED on every turn would apply a full year's
+        /// worth of demographic change 3x too often relative to real elapsed time (500 turns is ~167
+        /// real years, not 500), which is exactly what the original version of this fix did: the growth
+        /// RATE itself plateaued correctly, but Population still ended up compounding roughly 3x more
+        /// cumulative change than a faithful real-world extrapolation over the correct 167-year horizon
+        /// supports. Scaling each turn's applied growth by this fraction is the actual fix - tightening
+        /// MaxPopulationGrowthRateDeviation/PopulationGrowthReversionSpeed alone was tried first and
+        /// confirmed (empirically, via a throwaway diagnostic) insufficient, since neither one addresses
+        /// the real defect (over-compounding via too many applications of an annual-scale rate), only how
+        /// far/fast the rate itself moves.
+        /// </summary>
+        private const float YearsPerTurn = 4f / ElectionSystem.ElectionCycle;
+
+        /// <summary>
+        /// Population evolves by PopulationGrowthRate/1000 x YearsPerTurn x Population each turn -
+        /// YearsPerTurn converts the annual-scale rate to this turn's actual real-time slice (see above).
+        /// PopulationGrowthRate is itself a mean-reverting quantity - the FIX for this pass's original
+        /// design, which applied the raw (BirthRate - DeathRate + NetMigrationRate) figure to Population
+        /// directly and indefinitely. That raw figure is realistic at the individual-rate level (each of
+        /// BirthRate/DeathRate/NetMigrationRate is independently bounded - see ApplyDemographicRates) but,
+        /// with no pull back toward any long-run figure, compounds without limit (near-extinction for the
+        /// countries already running more deaths than births, near-quadrupling for the fastest-growing).
+        /// Each turn the raw figure's gap versus Country.SteadyStateGrowthRate is first hard-capped at
+        /// +/-MaxPopulationGrowthRateDeviation (bounding the aggregate pull itself, since DependencyRatio's
+        /// own one-directional drift means the raw figure can keep moving for far longer than the 167-year
+        /// validation horizon even though each of its own inputs is individually clamped), then weighted
+        /// by PopulationGrowthRateSensitivity to set this turn's reversion TARGET; PopulationGrowthRate
+        /// then reverts toward that target at PopulationGrowthReversionSpeed - the same two-step "gap sets
+        /// a target, state reverts toward it" shape used throughout this model (e.g. Taylor Rule ->
+        /// InterestRate). This still allows genuine sustained long-run growth (USA) or decline (Germany/
+        /// Poland/Italy) - SteadyStateGrowthRate itself is not zero for any of the six - it just guarantees
+        /// the actual growth rate permanently stays within a bounded band around that plausible long-run
+        /// figure, rather than drifting further from it for as long as the underlying aging drift
+        /// continues. Must run AFTER ApplyDemographicRates, which updates the three rates this reads for
+        /// the same turn.
         /// </summary>
         public static void ApplyPopulationGrowth(Country country)
         {
@@ -635,7 +662,7 @@ namespace PoliSim.Simulation
             float boundedGap = Mathf.Clamp(impliedRate - country.SteadyStateGrowthRate, -MaxPopulationGrowthRateDeviation, MaxPopulationGrowthRateDeviation);
             float target = country.SteadyStateGrowthRate + PopulationGrowthRateSensitivity * boundedGap;
             state.PopulationGrowthRate += PopulationGrowthReversionSpeed * (target - state.PopulationGrowthRate);
-            state.Population = Mathf.Clamp(state.Population * (1f + state.PopulationGrowthRate / 1000f), MinPopulation, MaxPopulation);
+            state.Population = Mathf.Clamp(state.Population * (1f + state.PopulationGrowthRate / 1000f * YearsPerTurn), MinPopulation, MaxPopulation);
         }
 
         /// <summary>

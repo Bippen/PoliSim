@@ -3137,33 +3137,87 @@ horizon.
   flat from ~turn 200; USA is still gently decelerating toward its own +1.8 anchor at turn 500 (down
   from an initial +5.2, itself declining because `BirthRate`'s secular decline applies to every
   country, USA included) - genuinely converging, not diverging.
-- **Turn-500 baseline Population, all six countries, sanity-checked against real Eurostat/UN
-  long-run projections**: USA 341.8M -> 1,038.1M (+203.6%, decelerating growth, not runaway); Sweden
-  10.6M -> 18.4M (+73.2%, plateaued growth rate); Germany 83.6M -> 27.4M (-67.3%); France 69.1M ->
-  53.9M (-22.1%); Italy 58.9M -> 10.4M (-82.4%); Poland 37.5M -> 4.6M (-87.8%). Poland's figure is the
-  one most directly comparable to a real published benchmark (Eurostat's own -31.6%-by-2100 figure);
-  extrapolating Eurostat's own implied annual rate over the SAME 500-year span this validation uses
-  would itself produce ~92% decline (see the derivation above) - Poland's actual -87.8% here is
-  slightly LESS severe than that literal extrapolation, consistent with the deliberate damping applied
-  to the anchor. The headline honest takeaway: at a 500-year horizon (6.7x longer than Eurostat's own
-  75-year projection window), a real, bounded, Eurostat-consistent annual rate mechanically produces a
-  large cumulative percentage change - that is a fact about compounding over an extreme horizon this
-  project's own "1 turn ~= 1 year" convention creates for validation purposes, not evidence of an
-  unbounded or runaway mechanism. The mechanism itself is now provably bounded (`PopulationGrowthRate`
-  cannot sit further than `MaxPopulationGrowthRateDeviation x PopulationGrowthRateSensitivity` from
-  `SteadyStateGrowthRate` once the transient settles) and, for five of six countries, visibly plateaus
-  well before turn 500 - the specific property this correction was made to add.
-- **Matrix run's own operational note, unrelated to the simulation logic**: this validation run's
-  Unity batch process hung for 25+ minutes AFTER all 24 scenarios had already completed and logged
-  (confirmed via the log's own content and process CPU sampling: still consuming ~4 CPU-cores across
-  112 threads with zero new log output, i.e. genuinely stuck, not deadlocked) in Unity's own post-Play
-  "Start Indexing on Editor startup" step - a known Unity batchmode behavior, not a symptom of this
-  fix's C# code (`ApplyPopulationGrowth`/`ApplyDemographicRates` are O(1) per country per turn, no
-  loops, no allocations). Most likely trigger: a throwaway diagnostic script and its `.meta` file were
-  deleted immediately before this launch, and Unity had to reconcile that asset deletion during
-  startup indexing - no prior matrix run in this project's history was preceded by a script deletion
-  immediately before launch. The process was killed once the log confirmed all 24 scenarios had long
-  since completed with clean data; no orphaned processes remained after the kill.
+- **Turn-500 baseline Population, all six countries (superseded by the second correction below,
+  kept here only as a record of what the FIRST correction pass produced)**: USA 341.8M -> 1,038.1M
+  (+203.6%); Sweden 10.6M -> 18.4M (+73.2%); Germany 83.6M -> 27.4M (-67.3%); France 69.1M -> 53.9M
+  (-22.1%); Italy 58.9M -> 10.4M (-82.4%); Poland 37.5M -> 4.6M (-87.8%). These were sanity-checked at
+  the time against Eurostat/UN projections using this project's "1 turn ~= 1 year" approximation - the
+  SECOND correction below found that approximation itself was wrong.
+- **Matrix run's own operational note, unrelated to the simulation logic (recurred on every full
+  matrix run made this same day, including after the second correction below - see there for the full
+  finding)**: this validation run's Unity batch process hung for 25+ minutes AFTER all 24 scenarios had
+  already completed and logged (confirmed via the log's own content and process CPU sampling: still
+  consuming ~4 CPU-cores across 112 threads with zero new log output, i.e. genuinely stuck, not
+  deadlocked) in Unity's own post-Play "Start Indexing on Editor startup" step - a known Unity batchmode
+  behavior, not a symptom of this fix's C# code (`ApplyPopulationGrowth`/`ApplyDemographicRates` are
+  O(1) per country per turn, no loops, no allocations). The process was killed once the log confirmed
+  all 24 scenarios had long since completed with clean data; no orphaned processes remained after the
+  kill.
+### Second correction: the plausibility check itself used the wrong turn-to-year conversion
+The first correction's own sanity check was flawed. It compared 500 turns against real-world data
+using a "1 turn ~= 1 year" approximation - but this project's own ESTABLISHED convention
+(`ElectionSystem.ElectionCycle` = 12 turns per presidential term = 4 real years, confirmed elsewhere
+in this document) means 1 turn = 1/3 year, so 500 turns is ~167 real years, not 500. Redone with the
+correct conversion, every country's first-correction population change ran roughly 2-3x more extreme
+than a faithful extrapolation of its own real-world trend over the true ~167-year horizon supports
+(Poland -88% modeled vs. ~-43% implied; Germany -67% vs. ~-21%; France -22% vs. ~-11%; Sweden +73% vs.
+~+37% - implied rates derived by solving `(1+r)^166.7 = 1+target%` for each country's real,
+Eurostat/UN-grounded target).
+
+- **Tightening `MaxPopulationGrowthRateDeviation` alone (tried first, empirically insufficient)**:
+  reducing the cap from 2 to 1, and separately speeding up `PopulationGrowthReversionSpeed` from 0.05
+  to 0.15, barely moved the modeled outcome (USA +204% -> +183% -> +169%; confirmed via a throwaway
+  diagnostic before spending a full matrix run on it). This proved the cap/speed constants were not
+  the actual defect.
+- **Root cause found: `ApplyPopulationGrowth` was applying a full annual-scale rate every TURN, not
+  every YEAR**: `BirthRate`/`DeathRate`/`NetMigrationRate`/`SteadyStateGrowthRate` are all real,
+  per-1,000-population-PER-YEAR figures, but `Population *= 1 + PopulationGrowthRate/1000` ran once
+  per turn, unscaled. With 500 turns representing only ~167 real years, this applies 500 "doses" of an
+  annual rate where only ~167 should occur - a structural ~3x over-compounding matching the observed
+  2-3x excess almost exactly. No amount of retuning the rate's own reversion (cap or speed) could fix
+  an error in how many times the rate gets applied.
+- **Actual fix**: added `MacroSystem.YearsPerTurn = 4f / ElectionSystem.ElectionCycle` (~0.333) and
+  scaled Population's per-turn update by it: `Population *= 1 + PopulationGrowthRate/1000 x
+  YearsPerTurn`. Re-tested via the same throwaway diagnostic: this alone brought every country back
+  into the same order of magnitude as its real-world-grounded 167-year target. `MaxPopulationGrowthRateDeviation`
+  was then re-tuned from 1 back toward its post-fix optimum (1, as it turns out - 1.5 was also tried
+  and made Sweden/Germany's fit worse without meaningfully helping France, so 1 was kept);
+  `PopulationGrowthReversionSpeed` was reverted to 0.05 (with `YearsPerTurn` now correctly accounted
+  for, 0.05/turn corresponds to a genuinely generational, not merely multi-year, real-time half-life -
+  the ORIGINAL intent behind picking a "deliberately slow" value, which the flawed 1-turn~=1-year
+  assumption had accidentally undermined).
+- **Re-validated - full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations)**: zero `Population`/`PopulationGrowthRate`/`DependencyRatio`
+  anomalies anywhere; per-scenario anomaly totals (80-173 at 100 turns, 417-940 at 500) landed within
+  the same established range as every prior validation run - the same pre-existing swing-detector
+  noise, unrelated to demographics.
+- **Turn-500/167-year baseline Population, all six countries, checked explicitly against the
+  CORRECTLY-converted real-world extrapolation this time**: USA 341.8M -> 483.7M (+41.5% modeled vs.
+  ~+35% implied, ratio 1.19x); Sweden 10.6M -> 13.1M (+24.0% vs. ~+37%, ratio 0.65x); Germany 83.6M ->
+  60.8M (-27.2% vs. ~-21%, ratio 1.30x); France 69.1M -> 65.0M (-6.0% vs. ~-11%, ratio 0.55x); Italy
+  58.9M -> 33.9M (-42.5% vs. an anchor-implied ~-39%, ratio 1.09x); Poland 37.5M -> 19.6M (-47.8% vs.
+  ~-43%, ratio 1.11x). Every country now lands between 0.55x and 1.30x of its own real-world-grounded
+  167-year target - comfortably within "same order of magnitude, not double," the explicit bar this
+  correction was held to. Sweden and France sit on the conservative (undershooting) side rather than
+  the overshooting side the first correction had - a real but modest remaining gap attributable to
+  those two countries' own `SteadyStateGrowthRate` anchors being mildly under-tuned relative to their
+  implied real rates (France's anchor of -0.3 implies a real rate of only -0.7 over 167 years, versus
+  a target-implied rate of -0.70 almost exactly at the cap's edge; Sweden's anchor of +1.5 similarly
+  undershoots a target-implied +1.89) - not re-tuned further in this pass since the "not double" bar is
+  already comfortably met and Part B's Family/Immigration Policy levers will touch these same
+  countries' rates directly regardless.
+- **Operational note, recurred a third time**: the post-Play "Start Indexing on Editor startup" hang
+  recurred on this matrix run too, this time WITHOUT any script deletion immediately preceding launch
+  (the throwaway diagnostic was left in place through the run specifically to test that theory) -
+  ruling out "deleted asset reconciliation" as the trigger identified in the first correction's writeup
+  above. A naive watcher script also produced a false "process exited" signal here (bash `pgrep -f`
+  failed to match the Windows process's command line, and a looser mtime-based watcher was fooled by
+  Unity's own periodic "Scanning for USB devices" log noise, which continues even while genuinely
+  stuck) - corrected by checking actual `Get-Process` CPU accumulation directly via PowerShell instead
+  of trusting either method. The underlying hang itself remains unexplained (not this fix's C# code -
+  same reasoning as the first occurrence) and unresolved as a general Unity batchmode issue; the
+  practical workaround (confirm all scenarios logged complete, then kill and verify no orphaned
+  processes) is now exercised three times in this project's history.
 - **Part A stops here, deliberately** - no Family Policy/Immigration Policy levers yet (Part B),
   per this item's own explicit two-part sequencing and "validate Part A fully before starting Part B"
   instruction. UI display for the five new fields is also deferred to Part B, where it will sit
