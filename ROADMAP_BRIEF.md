@@ -268,78 +268,56 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
 ### 1. Should Economic Sectors feed back into aggregate GDP/Unemployment, or stay isolated?
 
 **Resolved by Elias: INTEGRATE — Sector Output/Employment should feed back into the core economy,
-not stay isolated.** Implemented as small, bounded nudges onto existing proven variables
-(PotentialGrowthRate, Unemployment) rather than decomposing the GDP/labor identities themselves -
-see "Sector Integration" in CLAUDE.md for the mechanism and validation.
+not stay isolated.** Implemented and shipped as commit 8235975 ("Integrate Sector Output/Employment
+into PotentialGrowthRate/Unemployment under an all-sources ceiling") — see "Sector Integration" in
+CLAUDE.md for the full mechanism and validation detail; summarized here.
 
-Queue item 4 ("Small slice of economic sectors") required a real design decision: the four new
-`Sector`s (Manufacturing/Technology/Agriculture/Finance) each track Output (% of GDP), Employment
-(% of workforce), and one sector-specific metric, adjustable via Subsidy/Regulation policy dials -
-but I deliberately made all three of those **descriptive only**, mean-reverting toward their own
-seeded baseline and responding to their own sector's policy dials, with **zero feedback into the
-core national accounts identity, Okun's Law, the Phillips Curve, ApprovalRating, or
-Consumer/BusinessConfidence**. A more theoretically complete version would have sector Output sum to
-(or at least meaningfully influence) aggregate GDP, and sector Employment feed into aggregate
-Unemployment.
+Built as small, bounded nudges onto existing proven variables (`PotentialGrowthRate`, `Unemployment`)
+rather than decomposing the GDP/labor identities themselves. `GetSectorGrowthAdjustment` sums each
+`Sector`'s current `OutputShareOfGdp` gap against its own `BaselineOutputShareOfGdp`, clamped to its
+own `MaxSectorGrowthAdjustment` (0.5); `GetSectorUnemploymentAdjustment` does the same for
+`EmploymentShare` vs. `BaselineEmploymentShare`, feeding `ApplyOkunsLaw` directly. Because
+`PotentialGrowthRate` now has three simultaneous sources (Infrastructure spending, Infrastructure
+condition, and this new Sector performance term), `MacroSystem.ApplySectorGrowthEffect` sums all
+three and clamps the TOTAL to a new all-sources ceiling, `MaxTotalPotentialGrowthAdjustment` (1.0) —
+the piece that actually prevents three separately-capped nudges from stacking past one sane bound.
 
-**Why I chose isolation for this pass**: (1) `ROADMAP_BRIEF.md`'s own ordering note flags that
-mechanics touching the fiscal/core-simulation system directly have historically needed far more
-debugging rounds than self-contained ones this project - wiring four new sector Output figures into
-the GDP identity risks double-counting against the existing C+I+G+NX terms (which already sum to
-GDP without any sector breakdown), a real risk of regressing already-validated, hard-won stability
-(Turn-1 GDP Consistency, the Fiscal Reaction Function's debt equilibria, etc.). (2) The brief calls
-this item "explicitly a proof-of-pattern pass" and explicitly invites a note here on "whether
-expanding further seems safe" - which reads as permission to keep this pass minimal. (3) Isolation
-makes the four failure patterns (turn-1 discontinuity, oscillation, unbounded growth, bimodal
-attractors) essentially unreachable by construction (linear mean-reversion toward a policy-bounded
-target), which the validation results confirm - zero anomalies attributable to sectors in either the
-100/500-turn baseline or a dedicated `--sectorstress` scenario maxing every sector's dials
-simultaneously.
-
-**Recommendation**: keep sectors isolated through the current queue (items 5, the Sovereign Wealth
-Fund, is the last, highest-risk item and doesn't depend on sectors). If a future task wants sectors
-to meaningfully affect the core simulation, I'd recommend a SEPARATE, carefully-scoped follow-up
-(not a retrofit) that redesigns the GDP identity's G/C/I terms around an explicit sector
-decomposition rather than layering a second, competing GDP-driver on top of the existing one -
-that's a bigger investigation than this pass's scope, consistent with how "Discretionary Spending
-Growth" and "Fiscal Reaction Function" each took a dedicated investigation to get right.
+**Validated**: standalone harness first (100/500-turn baseline, the full 11-scenario regression
+matrix, plus a new `--growthstackstress` scenario forcing Infrastructure condition to 0 AND all four
+Sectors to their worst-case settings simultaneously — the genuinely dangerous same-direction stacking
+case for an additive ceiling) — zero real anomalies anywhere; 500-turn `growthstackstress` GDP
+4,178,690, `DebtToGdpRatio` 147.0%, both matching established equilibria. **Real-Unity confirmed
+(2026-07-29)** via `BatchSimulationRunner -runmatrix` (all 12 scenarios x 100/500 turns): same clean
+result, `growthstackstress` at 500 turns landing at GDP 4,180,200 / `DebtToGdpRatio` 147.1% — within a
+fraction of a percent of the harness figures — and growth rate observed pinned at essentially exactly
+`+1.00%`/turn from roughly turn 50 through turn 500, direct evidence the 1.0 combined ceiling binds
+correctly under the worst-case stack.
 
 ### 2. Should InfrastructureAsset.ConditionIndex feed back into the economy, or stay isolated?
 
 **Resolved by Elias: FEED BACK — ConditionIndex should nudge PotentialGrowthRate (not stay purely
-observational).** Implemented as a small, bounded, threshold-based drag when condition sits below a
-real-world-grounded healthy level, explicitly reconciled with the existing Infrastructure-spending
-growth nudge under one combined ceiling so the two sources can't stack unboundedly - see
-"Infrastructure Feedback" in CLAUDE.md for the mechanism and validation.
+observational).** Implemented and shipped as commit d01632e ("Feed Infrastructure ConditionIndex back
+into PotentialGrowthRate under a combined ceiling") — see "Infrastructure Feedback" in CLAUDE.md for
+the full mechanism and validation detail; summarized here.
 
-Round 2 item 5 ("Infrastructure system") raised the same class of question Open Question #1 already
-raised for Economic Sectors, and I resolved it the same way for the same reasons: `ConditionIndex`
-(Roads/Rail/PowerGrid/Broadband, 0-100 per country) is **descriptive only** - driven by a decay/
-investment stock model (see CLAUDE.md's "Infrastructure System"), but with **zero feedback into
-PotentialGrowthRate, GDP, Unemployment, ApprovalRating, or BusinessConfidence**. A more complete
-version might have crumbling infrastructure drag on PotentialGrowthRate or BusinessConfidence, or
-well-maintained infrastructure boost them further.
+Built as a small, bounded, threshold-based drag rather than decomposing the GDP identity: split into
+`Country.BasePotentialGrowthRate` (the original, immutable, seeded trend rate), the pre-existing
+Infrastructure-spending accumulator (`InfrastructureSpendingGrowthAdjustment`, non-negative, clamped
+to `[0, MaxInfrastructureSpendingBoost]`), and a new live, non-accumulating condition-drag computed
+fresh every turn from the average `ConditionIndex` across all four `InfrastructureAsset`s versus a
+50-point threshold (`drag = Clamp(-InfrastructureConditionDragSensitivity * Max(0, threshold -
+averageCondition), -MaxInfrastructureConditionDrag, 0)`), which eases automatically if condition later
+recovers. `MacroSystem.ApplyInfrastructureGrowthEffect` combines both under ONE shared ceiling,
+`MaxCombinedInfrastructureGrowthAdjustment` (0.75 — deliberately tighter than the sum of the two
+individual caps, so it's a genuinely active constraint) — the piece that satisfies "reconcile the two
+sources, don't just cap each individually."
 
-**Why I chose isolation for this pass**: (1) the task's own wording - "connect to the EXISTING
-Infrastructure spending category and its existing PotentialGrowthRate effect rather than inventing a
-parallel system" - reads most naturally as reusing the INPUT signal (`decision.
-InfrastructureSpendingChange`, the same `PercentOfGdp` figure that already drives
-`PotentialGrowthRate`), not as a mandate to add a second, new OUTPUT effect. (2) A ConditionIndex ->
-PotentialGrowthRate feedback would double-count the exact same underlying spending signal that
-already nudges `PotentialGrowthRate` directly in `ApplyCategorySpendingEffects` - the same
-double-counting risk Open Question #1 flagged for Sector Output vs. the C+I+G+NX identity. (3) This
-round's own ordering note asked for "real attention to the failure patterns... especially unbounded
-growth/decay with no floor or ceiling" for this specific item - keeping ConditionIndex isolated (a
-plain, hard-clamped stock with no downstream consumers) makes it trivially easy to reason about in
-isolation, which the validation results confirm (a dedicated `--infrastructurestress` scenario -
-sustained maximum spending cuts, the worst-case "zero investment, pure decay" path - produced zero
-ConditionIndex anomalies across 500 turns, real Unity-confirmed).
-
-**Recommendation**: same as Open Question #1 - if a future task wants infrastructure condition to
-meaningfully affect the economy (e.g. crumbling roads/grid dragging on Business/ConsumerConfidence
-or PotentialGrowthRate), scope it as a dedicated follow-up that explicitly reasons about
-double-counting against the existing Infrastructure-spending-to-PotentialGrowthRate channel, rather
-than bolting a feedback term on incidentally. Given Sectors (Open Question #1) and Infrastructure
-(this question) are now two separate mechanics facing the identical "stay isolated to avoid
-double-counting" design fork, Elias may want to decide both at once rather than one at a time.
+**Validated**: standalone harness first (100/500-turn baseline, the full 9-scenario regression
+matrix, plus a new `--deferredmaintenance` scenario forcing every `ConditionIndex` to 0 at turn 1 and
+sustaining a -30%/turn Transportation cut for the whole run, isolating and maximally stressing this
+new growth-rate channel specifically) — zero real anomalies anywhere; 500-turn `deferredmaintenance`
+GDP 49,052,176, `DebtToGdpRatio` 143.5%, both matching established equilibria. **Real-Unity confirmed
+(2026-07-29)** via `BatchSimulationRunner -runmatrix` (all 12 scenarios x 100/500 turns): same clean
+result, `deferredmaintenance` at 500 turns landing at GDP 48,639,590 / `DebtToGdpRatio` 144.1% —
+within a fraction of a percent of the harness figures, confirming the ported logic's fidelity.
 
