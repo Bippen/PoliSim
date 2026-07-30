@@ -166,7 +166,7 @@ combined growth adjustment. Item 5 (Demographics) is deliberately last: brand-ne
 feeding three existing systems simultaneously, the same reasoning that put the Sovereign Wealth Fund
 last in Round 2. If time runs out before reaching it, that's the correct outcome, not a failure.
 
-### 1. Sovereign Wealth Fund drawdown mechanic
+### 1. Sovereign Wealth Fund drawdown mechanic — DONE (2026-07-30)
 - Directly closes the gap identified in the just-finished SWF-returns rebalance task (see "Sovereign
   Wealth Fund Return-Model Rebalance" in CLAUDE.md and the known-limitation note in "Status"): allow
   withdrawing fund assets during a recession/emergency — a policy lever, not automatic — reducing
@@ -179,6 +179,14 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   approach used for the original debt-floor investigation and its returns-rebalance follow-up) to
   confirm this, combined with the realistic-returns fix already shipped, actually RESOLVES the
   debt-floor pinning rather than just slowing/delaying it further.
+- **Result: implemented and confirmed to genuinely resolve the pinning, not just slow it** - see
+  "Sovereign Wealth Fund Drawdown Mechanic" in CLAUDE.md. `ContributionRatePercent`'s range simply
+  extends below zero (reusing 100% of the existing contribution/return/clamp plumbing, no new field
+  or code path beyond fixing one sentinel-value collision); a dedicated diagnostic confirmed a
+  sustained -3%/turn withdrawal drives both funds to 0 `SwfAssets` within ~20 turns and keeps them
+  there, after which Sweden and France each settle into a genuine, stable, non-zero `DebtToGdpRatio`
+  equilibrium instead of the floor. Full 24-combination matrix re-validated: zero finite/negative/
+  out-of-range anomalies, no regression under any existing scenario.
 
 ### 2. Expand sector-specific policies
 - Add 3-4 more of the original roadmap's sector policy types (suggest: Tax Credits,

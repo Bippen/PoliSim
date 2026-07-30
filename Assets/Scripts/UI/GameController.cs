@@ -59,8 +59,8 @@ namespace PoliSim.UI
         private const float MinPolicyDialLevel = 0f;
         private const float MaxPolicyDialLevel = 100f;
 
-        /// <summary>Bounds for the SWF Contribution Rate slider - must match SimulationManager.MinSwfContributionRate/MaxSwfContributionRate.</summary>
-        private const float MinSwfContributionRate = 0f;
+        /// <summary>Bounds for the SWF Contribution/Withdrawal Rate slider - must match SimulationManager.MinSwfContributionRate/MaxSwfContributionRate. Negative values withdraw from the fund (Round 3 item 1, the SWF drawdown mechanic) rather than contribute to it.</summary>
+        private const float MinSwfContributionRate = -10f;
         private const float MaxSwfContributionRate = 10f;
 
         /// <summary>Bounds for the Paid Family Leave slider (weeks) - must match SimulationManager.MinPaidFamilyLeaveWeeks/MaxPaidFamilyLeaveWeeks.</summary>
@@ -2050,13 +2050,15 @@ namespace PoliSim.UI
         /// <summary>
         /// Sovereign Wealth Fund tab: a Create/Dissolve button (immediate, mirrors TaxLine.
         /// IsImplemented's toggle pattern) plus, only while it exists, TotalAssets/this-turn estimated
-        /// contribution+returns (read-only) and sliders for every adjustable setting. Net Government
-        /// Position (GovernmentDebt minus fund TotalAssets) is shown ALONGSIDE, not instead of, the
-        /// raw GovernmentDebt figure already on the dashboard - per the task's explicit requirement
-        /// that fund assets must never be used to obscure a real fiscal problem. This is a
-        /// GameController-only display computation - it is never written back into EconomyState/
-        /// Country and never read by any simulation formula (GetDebtRiskPremium, GetFiscalReactionMultiplier,
-        /// etc. all keep reading the real, gross GovernmentDebt/DebtToGdpRatio exactly as before).
+        /// contribution-or-withdrawal+returns (read-only) and sliders for every adjustable setting,
+        /// including the Contribution/Withdrawal Rate slider that now goes negative to draw the fund
+        /// down (Round 3 item 1). Net Government Position (GovernmentDebt minus fund TotalAssets) is
+        /// shown ALONGSIDE, not instead of, the raw GovernmentDebt figure already on the dashboard -
+        /// per the task's explicit requirement that fund assets must never be used to obscure a real
+        /// fiscal problem. This is a GameController-only display computation - it is never written
+        /// back into EconomyState/Country and never read by any simulation formula
+        /// (GetDebtRiskPremium, GetFiscalReactionMultiplier, etc. all keep reading the real, gross
+        /// GovernmentDebt/DebtToGdpRatio exactly as before).
         /// </summary>
         private void DrawSwfPolicy(float availableHeight)
         {
@@ -2078,7 +2080,7 @@ namespace PoliSim.UI
 
             if (fund == null)
             {
-                GUILayout.Label("No fund exists. Creating one starts a new budget expense (the contribution) in exchange for market returns on its growing assets.", _labelStyle);
+                GUILayout.Label("No fund exists. Creating one starts a new budget expense (the contribution) in exchange for market returns on its growing assets - it can also be drawn down during a recession or emergency instead of borrowing, once it exists.", _labelStyle);
                 GUILayout.EndScrollView();
                 GUILayout.EndVertical();
                 return;
@@ -2089,13 +2091,13 @@ namespace PoliSim.UI
             float netGovernmentPosition = _playerCountry.State.GovernmentDebt - fund.TotalAssets;
             GUILayout.Label($"Government Debt (gross): {_playerCountry.State.GovernmentDebt:F1}  |  Net Government Position (debt minus fund assets): {netGovernmentPosition:F1}", _labelStyle);
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"Estimated this turn - Contribution: {_cachedSwfContributionText}, Returns: ", _labelStyle, GUILayout.ExpandWidth(false));
+            GUILayout.Label($"Estimated this turn - Contribution/Withdrawal: {_cachedSwfContributionText}, Returns: ", _labelStyle, GUILayout.ExpandWidth(false));
             DrawColoredLabel(_cachedSwfReturnsText, _labelStyle, UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true));
             GUILayout.EndHorizontal();
             GUILayout.Space(8f);
 
             float draftContributionRate = GetSwfContributionRateInput(fund.ContributionRatePercent);
-            GUILayout.Label($"Contribution Rate: {draftContributionRate:F1}% of GDP per turn", _labelStyle);
+            GUILayout.Label($"Contribution/Withdrawal Rate: {draftContributionRate:+0.0;-0.0;0}% of GDP per turn (negative draws the fund down - use during a recession or emergency instead of borrowing)", _labelStyle);
             _swfContributionRateInput = GUILayout.HorizontalSlider(draftContributionRate, MinSwfContributionRate, MaxSwfContributionRate, _sliderStyle, _sliderThumbStyle);
 
             float draftDomesticAllocation = GetSwfDomesticAllocationInput(fund.DomesticAllocationPercent);

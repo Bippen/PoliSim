@@ -135,8 +135,16 @@ namespace PoliSim.Simulation
         private const float MinSectorDialLevel = 0f;
         private const float MaxSectorDialLevel = 100f;
 
-        /// <summary>Bounds for SovereignWealthFund.ContributionRatePercent - a gameplay ceiling (10% of GDP/turn is already an aggressive contribution rate for any country), not a researched maximum.</summary>
-        private const float MinSwfContributionRate = 0f;
+        /// <summary>
+        /// Bounds for SovereignWealthFund.ContributionRatePercent - a gameplay ceiling (10% of GDP/
+        /// turn is already an aggressive contribution rate for any country), not a researched
+        /// maximum. The negative half of this range (Round 3 item 1, the SWF drawdown mechanic) is
+        /// the same magnitude as the positive half, deliberately - the player might reasonably want
+        /// to unwind an aggressive contribution habit just as quickly as they built it during a real
+        /// emergency, and this is a policy LEVER the player chooses to pull, not an automatic
+        /// recession-triggered drawdown, so no separate, narrower cap was invented for this pass.
+        /// </summary>
+        private const float MinSwfContributionRate = -10f;
         private const float MaxSwfContributionRate = 10f;
 
         /// <summary>Bounds for SovereignWealthFund's DomesticAllocationPercent and four asset-class weights - shares the same [0,100] range idiom as the other uniform policy dials in this session's work.</summary>
@@ -775,7 +783,8 @@ namespace PoliSim.Simulation
         /// Sets SovereignWealthFund's contribution rate/allocation/asset weights directly to this
         /// turn's requested PolicyDecision overrides (each clamped to its own range) - a no-op entirely
         /// if the country has no fund (Country.SovereignWealthFund null) or for any individual field
-        /// with no request this turn (the -1 sentinel).
+        /// with no request this turn (the -1 sentinel - SwfContributionRateOverride uses
+        /// float.MinValue instead, see PolicyDecision's own remarks on that field).
         /// </summary>
         private void ApplySwfPolicyChanges(Country country, PolicyDecision decision)
         {
@@ -785,7 +794,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
-            if (decision.SwfContributionRateOverride >= 0f)
+            if (decision.SwfContributionRateOverride > float.MinValue)
             {
                 fund.ContributionRatePercent = Mathf.Clamp(decision.SwfContributionRateOverride, MinSwfContributionRate, MaxSwfContributionRate);
             }
@@ -816,7 +825,17 @@ namespace PoliSim.Simulation
             }
         }
 
-        /// <summary>This turn's sovereign-wealth-fund contribution - a new budget expense, GDP * ContributionRatePercent/100. 0 for a country with no fund.</summary>
+        /// <summary>
+        /// This turn's sovereign-wealth-fund contribution - GDP * ContributionRatePercent/100. 0 for
+        /// a country with no fund. A NEW BUDGET EXPENSE when ContributionRatePercent is positive (the
+        /// original mechanic); when the player has set it negative (a drawdown - see
+        /// MinSwfContributionRate), this same figure is negative, which ApplyRevenueAndSpending's
+        /// plain sum already treats as a revenue offset rather than an expense - no separate
+        /// withdrawal code path was needed. Whichever sign it has, TotalAssets is adjusted by exactly
+        /// this amount (see AdvanceTurn/PreviewTurn), so a drawdown correctly shrinks the fund by the
+        /// withdrawn amount, clamped at 0 (see MaxSwfToGdpPercent's own clamp) - the fund can't be
+        /// drawn down past empty.
+        /// </summary>
         private float GetSwfContribution(Country country)
         {
             SovereignWealthFund fund = country.SovereignWealthFund;

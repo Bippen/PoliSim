@@ -150,7 +150,15 @@ namespace PoliSim.Data
         /// requested this turn, the same sentinel idiom as MinimumWageOverride) - only meaningful if
         /// Country.SovereignWealthFund is non-null. See SimulationManager.ApplySwfPolicyChanges.
         /// </summary>
-        public float SwfContributionRateOverride = -1f;
+        /// <remarks>
+        /// SwfContributionRateOverride is the one exception to the shared "-1 = no change" idiom
+        /// above (Round 3 item 1, the SWF drawdown mechanic): its valid range now extends BELOW zero
+        /// (a negative rate = withdrawing from the fund during a recession/emergency, a real policy
+        /// lever, not automatic - see SimulationManager.MinSwfContributionRate), so -1 is no longer
+        /// distinguishable from a legitimate small withdrawal. Uses float.MinValue instead, a value no
+        /// real percentage will ever produce.
+        /// </remarks>
+        public float SwfContributionRateOverride = float.MinValue;
         public float SwfDomesticAllocationOverride = -1f;
         public float SwfEquitiesWeightOverride = -1f;
         public float SwfBondsWeightOverride = -1f;

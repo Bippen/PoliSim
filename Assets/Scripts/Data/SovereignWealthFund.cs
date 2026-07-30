@@ -19,7 +19,13 @@ namespace PoliSim.Data
     {
         public float TotalAssets;
 
-        /// <summary>Percent of GDP contributed to the fund each turn - a new budget expense. Player-adjustable via PolicyDecision.SwfContributionRateOverride.</summary>
+        /// <summary>
+        /// Percent of GDP contributed to the fund each turn - a new budget expense when positive.
+        /// Can also go negative (Round 3 item 1, the SWF drawdown mechanic) - a real, player-chosen
+        /// withdrawal during a recession/emergency, not an automatic response, which shrinks
+        /// TotalAssets by that same amount instead of growing it (see SimulationManager.
+        /// GetSwfContribution). Player-adjustable via PolicyDecision.SwfContributionRateOverride.
+        /// </summary>
         public float ContributionRatePercent = 1f;
 
         /// <summary>Percent of the fund invested domestically (the rest, 100 minus this, is international) - tracked and displayed, but this pass does NOT model different domestic-vs-international returns (see CLAUDE.md); both draw from the same asset-class return model.</summary>

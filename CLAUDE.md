@@ -2673,6 +2673,70 @@ logged open item, so there was nothing to formally resolve there, just implement
   change. All three members always showed the identical `InterestRate` at any given turn across every
   scenario, confirming the shared-zone mechanic stayed intact throughout.
 
+## Sovereign Wealth Fund Drawdown Mechanic
+`ROADMAP_BRIEF.md` Round 3 item 1 - directly closes the gap the SWF-returns rebalance's own
+known-limitation note flagged (see "Sovereign Wealth Fund Return-Model Rebalance" above and the
+note in "Status"): a real, player-chosen policy lever to withdraw fund assets during a recession or
+emergency, rather than only ever being able to contribute to the fund.
+
+- **The minimal implementation**: `SovereignWealthFund.ContributionRatePercent`'s valid range simply
+  extends below zero (`SimulationManager.MinSwfContributionRate`: 0 -> -10, symmetric with the
+  existing +10 ceiling - a policy LEVER the player chooses to pull, not an automatic
+  recession-triggered response, so no separate, narrower cap was invented for this pass). No new
+  field, no new code path: `GetSwfContribution` (`GDP * ContributionRatePercent/100`) already goes
+  negative automatically, which `ApplyRevenueAndSpending`'s plain sum already treats as a revenue
+  offset rather than an expense, and `TotalAssets += swfContribution` (already existed, in both
+  `AdvanceTurn` and `PreviewTurn`) already shrinks the fund by exactly the withdrawn amount, clamped
+  at 0 by the pre-existing `Mathf.Clamp(..., 0f, maxSwfAssets)` - the fund can't be drawn down past
+  empty. Reusing 100% of the existing plumbing this way is exactly what "lower risk than starting
+  something new" meant for this item.
+- **The one real code change needed**: `PolicyDecision.SwfContributionRateOverride`'s "-1 = no change
+  requested" sentinel (shared with every other SWF override field) no longer works once negative
+  values are legitimate - a real -1% withdrawal request would be indistinguishable from "untouched."
+  Switched this ONE field's sentinel to `float.MinValue` (a value no real percentage will ever
+  produce), with a `<remarks>` doc comment explaining the deviation from its siblings' shared idiom -
+  every other SWF override field keeps the original -1 sentinel unchanged, since none of them have a
+  legitimate negative value.
+- **UI** (`GameController`'s Sovereign Wealth Fund tab): the existing Contribution Rate slider's range
+  widens the same way (`MinSwfContributionRate` kept in sync between both files, per the existing
+  "must match" comment convention), relabeled "Contribution/Withdrawal Rate" with an explicit
+  "negative draws the fund down - use during a recession or emergency instead of borrowing" note, and
+  the "Estimated this turn" line relabeled "Contribution/Withdrawal" - both already handle a negative
+  value's sign correctly via the pre-existing `{value:+0.00;-0.00;0}` format specifier used elsewhere,
+  no new formatting logic needed.
+- **Validated - the direct test this item asked for**: a throwaway Editor diagnostic (not committed -
+  mirrors the temporary `[DIAG]`/`[SWFDIAG]` precedent from the original debt-floor investigation and
+  its returns-rebalance follow-up, same reasoning: a real-turn Sweden/France withdrawal decision isn't
+  something any existing `SimulationTestRunner` scenario scripts, since every scenario only ever
+  builds a decision for USA) ran 500 turns with Sweden AND France both drawing down at a sustained
+  -3%/turn, logging `SwfAssets`/`GovernmentDebt`/`DebtToGdpRatio` every 10 turns. **Result: the
+  debt-floor pinning is genuinely RESOLVED, not just slowed** - both funds hit exactly 0 `SwfAssets`
+  within the first ~20 turns (Sweden) or immediately (France, whose smaller starting fund the first
+  withdrawal alone exhausts) and stay there for the rest of the run, and with `SwfReturns` reduced to
+  a permanent 0 alongside, both countries' `DebtToGdpRatio` settles into a genuine, STABLE, non-zero
+  equilibrium instead of the floor: Sweden at a steady ~8.2-8.5% from turn 40 onward, France at a
+  steady ~89.6-96% for the entire run - the same kind of stable equilibrium Germany (~35%) and Italy
+  (~108%) already had without any SWF-return complication, confirming the root cause really was fund
+  SIZE against the 300%-of-GDP ceiling (as the returns-rebalance investigation concluded), and
+  removing that size via a real withdrawal genuinely fixes it, not just masks it.
+- **A useful methodology finding, worth recording**: this diagnostic ran ENTIRELY in Edit mode - it
+  never set `EditorApplication.isPlaying = true` at all, calling `SimulationManager`/`WorldFactory`
+  directly via a plain static method and calling `EditorApplication.Exit(0)` itself when done, the
+  same "genuinely decoupled from SimulationTestRunner's pipeline" principle used to work around the
+  Editor indexing hang once before. Since the hang is specifically tied to the post-Play-mode return
+  to Edit mode (see "Real-Unity Validation is the Standard Path"), a diagnostic that never enters Play
+  mode at all can't trigger it - confirmed here: the process exited cleanly on its own with no stray
+  `Unity.exe` left running, no force-kill needed. Worth reaching for this pattern first for any future
+  one-off diagnostic that doesn't need `SimulationTestRunner`'s own scenario/logging machinery.
+- **Full real-Unity matrix re-validation** (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations - required since this is fiscal-touching, the same extra caution
+  every SWF-adjacent item has needed): zero finite/negative/out-of-range anomalies anywhere; anomaly
+  counts (76-193 at 100 turns, 400-897 at 500) landed within the same range already established for
+  the equivalent matrix run just before this change - expected, since no existing scenario actually
+  exercises a negative contribution rate, so this run confirms the widened range and the sentinel
+  change introduced no regression under any of the already-validated conditions, not that the new
+  lever itself is exercised by the standard matrix (that's what the dedicated diagnostic above was for).
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -2765,7 +2829,16 @@ pursued yet, now confirmed necessary rather than just plausible: giving the Sove
 countercyclical drawdown lever (there is currently no mechanic of any kind for a fund to shrink -
 `ContributionRatePercent` only ever adds to it, so a fund's returns compound unchecked regardless of
 the domestic business cycle), or giving the debt floor itself a small amount of slack instead of a
-hard clamp at exactly 0%. USA's seeded
+hard clamp at exactly 0%. **Resolved (Round 3 item 1)**: the first of those two directions shipped -
+see "Sovereign Wealth Fund Drawdown Mechanic" above - and a dedicated diagnostic confirmed it
+genuinely closes the gap, not just slows it: a sustained -3%/turn withdrawal drives both funds to
+exactly 0 `SwfAssets` within the first ~20 turns and keeps them there, after which Sweden and France
+each settle into their own genuine, stable, non-zero `DebtToGdpRatio` equilibrium (~8.2-8.5% and
+~89.6-96% respectively) instead of the floor - this limitation is no longer open, though it required
+the player (or a scripted policy) to actually use the new lever; the *passive*, no-withdrawal baseline
+still exhibits the original pinning exactly as before, which is expected and by design (a player-
+chosen lever that nobody pulls has no effect, the same as `ContributionRatePercent` itself defaulting
+to a small positive value rather than acting on its own). USA's seeded
 `PotentialGDP` was subsequently recalibrated (see "Turn-1 GDP Consistency") so this -13% to -15%
 equilibrium gap is already in effect from turn 1, instead of opening near 0% and sliding into it over
 the first ~25 turns - closing off a real, one-time ~9% GDP contraction the very first turn of any new
