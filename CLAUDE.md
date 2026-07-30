@@ -3437,6 +3437,97 @@ player-picked response rather than auto-applying.
   channels show a real, felt, correctly-directioned, clearly bounded improvement, not just "technically
   in range."
 
+## UI/Graph Restyling and Political Visualization (Political Systems Overhaul Part C)
+`POLISIM_MASTER_ROADMAP.md` Master Sequence step 2. Pure UI/visualization - no new simulation state
+or formula beyond `StatHistory.MaxEntries`' own bounded retention increase (still a fixed-size rolling
+window, just a bigger one). Three pieces: graph restyling (threshold lines + pagination), a political
+compass, and demographic pie charts - all reading data this game already tracks, per this item's own
+"grounded in real, already-tracked data" instruction.
+
+- **Threshold/target reference lines** (`GraphRenderer.Draw`'s new optional `thresholdValue`/
+  `thresholdLabel` parameters): a second, dashed, distinctly-colored (warm amber, vs. the plain gray
+  midline gridline) horizontal line, folded into the same auto-scale range calculation the data/
+  projected-value already use - a reference line stays visible even on a page where the data sits far
+  from it, the whole point of "how far from target are we." Wired into the two graphs with an obvious
+  single reference point: Unemployment -> `Country.NaturalUnemploymentRate` ("NAIRU"), Debt-to-GDP ->
+  `Country.ComfortableDebtToGdpPercent` ("Comfortable"). Every other graph left without one - GDP/
+  Approval/Trade Balance/etc. have no single natural target value the way NAIRU or a comfortable debt
+  level do.
+- **"Last N changes" pagination**: `StatHistory.MaxEntries` raised 50 -> 250 (5 pages of
+  `GraphRenderer`'s own 50-turn display window) - pagination needs real older data to page back into,
+  not just blank pages past the first. `GraphRenderer` now slices its own 50-turn window internally
+  from whatever history it's given (up to 250 entries) and exposes "< Older"/"Newer >" buttons plus a
+  "how far back" label; the title row's own percent-change figure and the next-turn projection both
+  correctly scope to the CURRENT PAGE (the projection only ever shows on the most recent page - it
+  makes no sense appended to an older window). Every one of the 12 existing graph call sites in
+  `GameController` needed their title text's hardcoded `"(last 50 turns)"` removed (now dynamic/
+  paginated, not a fixed window) - a small mechanical edit repeated at each site, not a design change.
+- **Political compass** (`PoliticalCompassRenderer`, new): a 2D scatter plot, one dot per country -
+  X axis blends each country's average implemented tax rate with its total government spending (%
+  of GDP, whichever mechanism it actually uses - detailed `SpendingLines` if present, else the legacy
+  `GovernmentSpendingRate` baseline); Y axis blends average `Sector.RegulationLevel` with average
+  implemented `WelfareProgram.GenerosityLevel`. Both axes are grounded entirely in this game's own
+  already-tracked policy dials - no invented ideology labels, matching this item's own explicit
+  instruction. Player's own country ringed in white.
+  - **Bug found and fixed before shipping**: a first pass used a FIXED 0-100 axis range (matching
+    every policy dial's own scale) - screenshotted with all six countries at turn 65, real-world
+    policy variance turned out modest enough that all six dots clustered into a tight, overlapping,
+    illegible clump with garbled overlapping name labels. Fixed by auto-scaling both axes to the
+    OBSERVED min/max across the given countries (padded 15%) - the exact same "zoom into whatever real
+    variance exists" philosophy `GraphRenderer`'s own Y-axis auto-scaling already uses - plus a light
+    vertical label-decluttering pass (push a label down just enough to clear the previous one, sorted
+    top to bottom) so labels can never overlap even if two dots land close together. Re-screenshotted:
+    all six countries clearly separated and legible. The verbose absolute-positioned axis corner labels
+    from the same first pass (e.g. "More regulated / generous welfare state") also collided with each
+    other and clipped at the panel edge - replaced with two short `GUILayout.Label` rows below the plot
+    (plain layout flow, not manually-positioned overlay text prone to the same class of collision)
+    showing the actual observed range per axis.
+- **Demographic pie charts** (`PieChartRenderer`, new, generic - reused five times): per-pixel angle
+  test against the circle's center (every pixel within radius colored by whichever slice's angular
+  range its angle falls into) - no polygon-fill logic needed, same "test every pixel" spirit
+  `PolicyWebRenderer.BuildCircleTexture` already uses for a plain filled disc. `UiPalette.
+  GetCategoricalColor` (new) provides one distinct color per slice for N-way breakdowns with no
+  existing per-category color (golden-angle hue spacing, so adjacent indices never look similar
+  regardless of N). Five charts, all on the player's own country except Population (inherently
+  comparative): Working-Age vs. Dependent Population (`100 - DependencyRatio` vs. `DependencyRatio`),
+  Employment Share by Sector, Spending Allocation (detailed `SpendingLines` where present - USA only
+  in this pass - else an honest "not tracked for this country yet" fallback message rather than a
+  fabricated breakdown), Theoretical Tax Revenue by Source (`GDP * Rate/100 * BaseShareOfGdp` per
+  implemented `TaxLine`, the same formula `SimulationManager.GetTotalTaxRevenue` already uses,
+  re-derived from PUBLIC fields rather than exposing that private method), and Population Share by
+  Country. Ethnicity/religion breakdowns explicitly OUT OF SCOPE per this item's own spec - not
+  tracked anywhere in this game's data model.
+  - **A screenshot ambiguity worth recording, resolved before it became a wasted fix**: an early
+    screenshot showed what looked like a half-filled circle (a plain dome shape) for the first pie
+    chart, right at the captured viewport's bottom edge - genuinely unclear whether this was a real
+    rendering bug (e.g. an angle-winding/coordinate-flip error between texture-array space and
+    screen space) or just the tab's own scroll position cropping the image before the circle's lower
+    half. Rather than guessing, a second screenshot with the tab's scroll position forced further
+    down (via reflection, the same throwaway-driver technique used throughout this project's UI
+    smoke tests) confirmed every pie renders as a genuine full circle with correctly-proportioned
+    wedges - the "half circle" was purely a cropped screenshot, not a defect. Worth the extra
+    verification step rather than either shipping unverified or spending time "fixing" nonexistent
+    coordinate-space code.
+- **UI**: new "Compass & Demographics" tab (15th tab, 4th tab row, full-width - the same "one new tab
+  alone in its own row" precedent Policy Web's original third row established), `UiPalette.SystemArea.
+  Global` (the same cross-cutting-overview area World Map uses, since this tab isn't owned by any one
+  policy area either).
+- **UI smoke test** (screenshot-driven): confirmed the NAIRU/Comfortable threshold lines render
+  correctly on their respective graphs, the pagination row appears once history exceeds 50 turns and
+  correctly shows a different, real older data window with an accurate "51-100 turns ago" label when
+  paged back, the political compass (after its fix) shows all six countries clearly separated and
+  legible, and all five pie charts render as genuine full circles with correct wedge proportions and
+  legends. One driver bug found and fixed along the way: advancing 65 turns crosses at least one
+  re-election boundary (`ElectionSystem.ElectionCycle` = 12 turns), which sets `_pendingElectionResult`
+  and makes `OnGUI` show the election reveal screen instead of any tab content until dismissed - the
+  driver now clears that field after each simulated turn (mirroring what clicking "Continue" does),
+  the same category of fix `UiScreenshotDriver3`'s duplicate-`GameController`-instance bug and
+  `UiScreenshotRunner`'s stale-backup-scene bug were earlier in this project's own UI-testing history.
+- **Validated**: single-scenario smoke check (100-turn baseline via `BatchSimulationRunner`, per this
+  item's own "pure UI/visual" validation bar, lighter than Cabinet's full-matrix requirement since
+  nothing here touches a simulation formula) - 74 anomalies, all the same pre-existing "swung X% in one
+  turn" ambient-noise pattern already documented, zero new anomaly types.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -3645,6 +3736,11 @@ rollout). Master Sequence step 1 (Cabinet, Political Systems Overhaul Part A) is
 the 6 confirmed portfolios (Finance/Treasury, Interior/Justice, Health & Social Affairs; the other
 three deliberately deferred per the Master Roadmap's own content-authoring warning), each with a
 passive competence effect on an existing channel and an interactive decision layer. Master Sequence
-step 2 (UI/graph restyling) is next; Round 4 of the original Roadmap stays unscoped until step 5
-(Parliament's full rollout) is done, so new features get designed against the gated-legislation model
-from day one rather than retrofitted onto it later.
+step 2 (UI/graph restyling and political visualization, Political Systems Overhaul Part C) is also
+done - see "UI/Graph Restyling and Political Visualization" above - graphs can now show a threshold/
+target reference line and page back through up to 250 turns of retained history (`StatHistory.
+MaxEntries` raised from 50), and a new "Compass & Demographics" tab plots all six countries on a
+political compass (auto-scaled axes, grounded entirely in real tracked policy data) plus five
+demographic pie charts. Master Sequence step 3 (Continuous Time Migration Phase 0) is next; Round 4 of
+the original Roadmap stays unscoped until step 5 (Parliament's full rollout) is done, so new features
+get designed against the gated-legislation model from day one rather than retrofitted onto it later.

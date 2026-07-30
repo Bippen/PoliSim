@@ -24,8 +24,9 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 
 - **Roadmap Rounds 1-3: fully complete.** 15 items, all implemented, validated, and committed. Full detail lives in `CLAUDE.md`'s per-item sections (Expanded Event Pool, Labor Market Basics, Crime & Justice Basics, Economic Sectors, Sovereign Wealth Fund, SWF Drawdown, Expanded Sector Policies, Deeper Crime & Justice II, Expanded Economic Sectors II, Demographics Parts A & B). Both prior Open Questions (Sector Integration, Infrastructure Feedback) are resolved — see the Resolved Open Questions section near the bottom of this document for the short version.
 - **Master Sequence step 1 (Political Systems Overhaul Part A — Cabinet): DONE (2026-07-30).** Only 3 of the 6 confirmed portfolios implemented this pass (Finance/Treasury, Interior/Justice, Health & Social Affairs), per Part A's own content-authoring warning — see "Cabinet (Political Systems Overhaul Part A)" in `CLAUDE.md` for the full writeup and real-Unity validation (28-combination matrix, zero new anomaly types, directional confirmation via a targeted diagnostic).
+- **Master Sequence step 2 (Political Systems Overhaul Part C — UI/graph restyling and political visualization): DONE (2026-07-30).** Graph threshold/target lines (NAIRU, comfortable debt level) and "last N changes" pagination (`StatHistory.MaxEntries` raised 50 → 250), a political compass (auto-scaled to observed variance after a first-pass clustering bug), and five demographic pie charts — see "UI/Graph Restyling and Political Visualization" in `CLAUDE.md` for the full writeup, the two bugs found and fixed during the UI smoke test, and validation (single-scenario smoke check, zero new anomaly types).
 - **Continuous Time Migration: not started.** Full plan below.
-- **Political Systems Overhaul Parts B and C: not started.** Full plan below.
+- **Political Systems Overhaul Part B: not started.** Full plan below.
 - **No Round 4 has been scoped.** Per the sequencing below, don't scope one yet — new features should be built against the post-Parliament interaction model, not the current one, to avoid retrofitting.
 
 ---
@@ -35,7 +36,7 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 This is the one authoritative order, replacing whatever each original document separately suggested. It exists because Political Systems Overhaul Part B depends on Continuous Time Phase 0, and because building new Roadmap features or converting existing systems to daily granularity while Parliament's gating is mid-rollout would mean touching the same code for two different reasons at once — exactly the kind of overlap this project's discipline exists to avoid.
 
 1. **Political Systems Overhaul — Part A (Cabinet). DONE (2026-07-30) — see "Cabinet (Political Systems Overhaul Part A)" in `CLAUDE.md`.** No dependencies. Full spec in Part A below.
-2. **Political Systems Overhaul — Part C (UI/graph restyling).** No dependencies. Full spec in Part C below.
+2. **Political Systems Overhaul — Part C (UI/graph restyling). DONE (2026-07-30) — see "UI/Graph Restyling and Political Visualization" in `CLAUDE.md`.** No dependencies. Full spec in Part C below.
 3. **Continuous Time Migration — Phase 0 (calendar, speed control, short-term gameplay scaffolding).** No dependencies beyond what already exists. Full spec below. Keeps all existing economic math at its current cadence — this phase is purely the calendar/UI layer.
 4. **Political Systems Overhaul — Part B, PILOT ONLY (Tax Policy tab).** Depends on step 3. Prove the full draft → introduce → vote → pass/fail flow end-to-end on one tab before touching any other. Full spec below.
 5. **Political Systems Overhaul — Part B, full rollout** to the remaining seven tabs, only once step 4 is validated.
@@ -162,13 +163,28 @@ Each portfolio's competence effect lands on an existing system, folded into that
 
 **Rollout discipline**: PILOT on Tax Policy only first (master sequence step 4) — well-understood, clean implement/adjust/remove semantics already in place. Full validation matrix on the pilot before touching any other tab. Only then (step 5) roll out to the remaining seven.
 
-## Part C — UI/graph restyling and political visualization (MASTER SEQUENCE STEP 2)
+## Part C — UI/graph restyling and political visualization (MASTER SEQUENCE STEP 2) — DONE (2026-07-30)
+
+**Result: implemented exactly as scoped** — see "UI/Graph Restyling and Political Visualization" in
+`CLAUDE.md` for the full writeup. `StatHistory.MaxEntries` raised 50 → 250 (a bounded retention
+increase, not new tracked data) so pagination has real older data to page into; `GraphRenderer` gained
+an optional dashed threshold-line parameter (wired into Unemployment → NAIRU and Debt-to-GDP →
+comfortable level, the two graphs with an obvious single reference value) and internal Prev/Next
+pagination slicing its own 50-turn window from the larger retained history. `PoliticalCompassRenderer`
+and `PieChartRenderer` (both new, procedurally-drawn) plot all six countries and five demographic
+breakdowns respectively, on a new "Compass & Demographics" tab. Two real bugs were found via
+screenshot smoke test and fixed before shipping: the compass's first pass used a fixed 0-100 axis
+range, which clustered all six countries' modest real policy variance into an illegible overlapping
+clump — fixed by auto-scaling both axes to the observed min/max (the same philosophy `GraphRenderer`'s
+own Y-axis auto-scaling already uses) plus a label-decluttering pass; and an apparent "half-circle" pie
+chart in one screenshot was verified (via a second, scrolled screenshot) to be scroll cropping, not a
+real rendering defect, before any unnecessary fix was attempted.
 
 - **Graph restyling**: clearer threshold/target lines where relevant (debt comfortable-level, NAIRU), "last N changes" pagination. Reuses GraphRenderer.
 - **Political compass**: grounded in this game's OWN real, already-tracked data, not invented ideology labels — e.g. one axis from average tax rate + spending level, another from average sector Regulation + Welfare generosity.
 - **Demographic pie charts**: build from data that already exists (Population, DependencyRatio, sector employment shares, spending/tax breakdowns, election vote share once Parliament exists). Ethnicity/religion breakdowns are explicitly OUT OF SCOPE — not tracked anywhere in this game's data model; would need its own real-data-sourcing decision as a separate future item, not a restyling task.
 
-**Validate**: single-scenario smoke check (pure UI/visual).
+**Validate**: single-scenario smoke check (pure UI/visual). **Done: 100-turn baseline via `BatchSimulationRunner`, 74 anomalies, all the pre-existing "swung X% in one turn" ambient-noise pattern, zero new anomaly types.**
 
 ---
 

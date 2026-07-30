@@ -113,6 +113,25 @@ namespace PoliSim.UI
         public static SystemArea GetCountryArea(CountryId countryId) => CountryAreas[countryId];
         public static Color GetCountryColor(CountryId countryId) => GetAreaColor(CountryAreas[countryId]);
 
+        /// <summary>
+        /// Political Systems Overhaul Part C: one distinct color per slice of an N-way categorical
+        /// breakdown (sector employment shares, spending categories, tax revenue sources) - none of
+        /// these have their own pre-assigned SystemArea/CountryId color the way a tab or a country
+        /// does, and N varies per call site (4-20+), so a fixed lookup table isn't practical. Evenly
+        /// spaced hues around the color wheel, golden-angle-offset (not a plain N-way even split) so
+        /// adjacent indices land far apart in hue even when N is small - a plain even split of, say,
+        /// 4 slices would put them at 0/90/180/270 degrees, which is fine, but the SAME formula at
+        /// N=5 (0/72/144/216/288) starts looking visually similar to N=4's spacing; the golden angle
+        /// avoids that ever regressing toward evenly-spaced-but-visually-clustered as index grows,
+        /// without needing a hand-picked table sized to the largest N any call site might ever pass.
+        /// </summary>
+        public static Color GetCategoricalColor(int index)
+        {
+            const float goldenAngle = 137.508f;
+            float hue = (index * goldenAngle % 360f) / 360f;
+            return Color.HSVToRGB(hue, 0.65f, 0.9f);
+        }
+
         private static readonly Dictionary<Color, Texture2D> SwatchCache = new Dictionary<Color, Texture2D>();
 
         /// <summary>A cached 2x2 solid-color texture for the given color - GUIStyle backgrounds need a Texture2D, not a raw Color, and this avoids allocating a new one every frame for the same color.</summary>

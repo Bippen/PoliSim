@@ -13,11 +13,23 @@ namespace PoliSim.UI
     /// drawn as an IMGUI overlay on top of the texture rect (not baked into the pixel buffer) -
     /// text-in-a-Texture2D would mean hand-rolled font rendering for no benefit, since GUI.Label
     /// already composites correctly over GUI.DrawTexture in the same layout rect.
+    ///
+    /// Political Systems Overhaul Part C ("Graph restyling"): two additions on top of the above,
+    /// both opt-in per call site. (1) An optional threshold/target reference line (debt
+    /// comfortable-level, NAIRU) - a second, distinctly-colored horizontal line alongside the
+    /// existing plain-gray midline gridline, folded into the auto-scale range so it's always
+    /// visible even when the data itself is far from it. (2) "Last N changes" pagination - the
+    /// caller can now pass up to StatHistory.MaxEntries (250) worth of history; this widget slices
+    /// its own 50-turn display window internally and exposes Prev/Next buttons to page back through
+    /// older data, rather than only ever being able to show the most recent 50 turns.
     /// </summary>
     public class GraphRenderer
     {
         private const int TextureWidth = 300;
         private const int TextureHeight = 90;
+
+        /// <summary>How many turns one page shows - unchanged from the graph's original fixed display window, just now one page of potentially several rather than the only page.</summary>
+        private const int WindowSize = 50;
 
         private static readonly Color BackgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
         private static readonly Color GridColor = new Color(0.28f, 0.28f, 0.28f, 1f);
@@ -28,43 +40,77 @@ namespace PoliSim.UI
 
         private static readonly Color AxisLabelColor = new Color(0.65f, 0.65f, 0.65f, 1f);
 
+        /// <summary>Distinct from GridColor (the plain midline) and from HistoryLineColor/ProjectedLineColor, so a threshold/target reference line is never confused with either - a warm amber reads as "reference marker," not "recorded data."</summary>
+        private static readonly Color ThresholdLineColor = new Color(0.90f, 0.70f, 0.25f, 0.9f);
+
         private Texture2D _texture;
         private readonly List<float> _drawnHistory = new List<float>();
         private bool _drawnHasProjection;
         private float _drawnProjectedValue;
+        private bool _drawnHasThreshold;
+        private float _drawnThresholdValue;
         private bool _neverDrawn = true;
         private float _lastMin;
         private float _lastMax;
 
+        /// <summary>0 = most recent window (the only page that can show a next-turn projection); increases going further back in time. Clamped to the valid range fresh every Draw call against the CURRENT history length, so a page index that's now out of range (e.g. right after a fresh game/country switch with less history) never gets stuck showing a blank page.</summary>
+        private int _pageFromEnd;
+
         private GUIStyle _axisLabelStyle;
         private GUIStyle _changeLabelStyle;
+        private GUIStyle _pageLabelStyle;
+        private GUIStyle _pageButtonStyle;
 
         /// <summary>
         /// Draws this graph via GUILayout, stretching to whatever width the current layout group
-        /// gives it. <paramref name="projectedValue"/>, when non-null, extends the line one point
-        /// further as a lighter, dashed segment - the same "PreviewTurn estimate, not a guarantee"
-        /// spirit as GameController's existing live policy preview. <paramref name="higherIsBetter"/>
-        /// picks the green/red direction for the title-row change summary (true for GDP/Approval,
-        /// false for Unemployment - a rising line is bad there) - null for a stat where "good
-        /// direction" is genuinely ambiguous/contested (e.g. an interest rate, or incarceration rate
-        /// per PrisonPopulationRate's own honestly-contested framing elsewhere in this codebase),
-        /// which always shows the neutral gray rather than inventing a judgment call. Prefer the
-        /// DrawNeutral convenience overload below at call sites for that null case.
+        /// gives it. <paramref name="history"/> may hold up to StatHistory.MaxEntries worth of
+        /// turns - only the current page's WindowSize-turn slice is actually plotted; Prev/Next
+        /// buttons let the player page back through the rest (see the class doc comment).
+        /// <paramref name="projectedValue"/>, when non-null, extends the line one point further as
+        /// a lighter, dashed segment on the MOST RECENT page only (paging back to older turns hides
+        /// it - a projection for "next turn" makes no sense appended to a window that isn't the most
+        /// recent one). <paramref name="higherIsBetter"/> picks the green/red direction for the
+        /// title-row change summary (true for GDP/Approval, false for Unemployment - a rising line
+        /// is bad there) - null for a stat where "good direction" is genuinely ambiguous/contested
+        /// (e.g. an interest rate, or incarceration rate per PrisonPopulationRate's own honestly-
+        /// contested framing elsewhere in this codebase), which always shows the neutral gray rather
+        /// than inventing a judgment call. Prefer the DrawNeutral convenience overload below at call
+        /// sites for that null case. <paramref name="thresholdValue"/>/<paramref
+        /// name="thresholdLabel"/> draw an optional reference line (e.g. a country's own
+        /// ComfortableDebtToGdpPercent, or NaturalUnemploymentRate/NAIRU) - omit both (leave
+        /// thresholdValue null) for a stat with no natural single reference point.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter)
+        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, float? thresholdValue = null, string thresholdLabel = null)
         {
             EnsureOverlayStylesInitialized(labelStyle);
-            DrawTitleRow(title, history, higherIsBetter, labelStyle);
 
             if (history == null || history.Count == 0)
             {
+                DrawTitleRow(title, null, higherIsBetter, labelStyle);
                 GUILayout.Label("No data yet - advance a turn.", labelStyle);
                 return;
             }
 
-            if (NeedsRedraw(history, projectedValue))
+            int totalPages = Mathf.Max(1, Mathf.CeilToInt(history.Count / (float)WindowSize));
+            _pageFromEnd = Mathf.Clamp(_pageFromEnd, 0, totalPages - 1);
+            bool isMostRecentPage = _pageFromEnd == 0;
+
+            int endExclusive = history.Count - _pageFromEnd * WindowSize;
+            int startInclusive = Mathf.Max(0, endExclusive - WindowSize);
+            var visibleWindow = new List<float>(endExclusive - startInclusive);
+            for (int i = startInclusive; i < endExclusive; i++)
             {
-                Regenerate(history, projectedValue);
+                visibleWindow.Add(history[i]);
+            }
+
+            float? visibleProjectedValue = isMostRecentPage ? projectedValue : null;
+
+            DrawTitleRow(title, visibleWindow, higherIsBetter, labelStyle);
+            DrawPageRow(totalPages);
+
+            if (NeedsRedraw(visibleWindow, visibleProjectedValue, thresholdValue))
+            {
+                Regenerate(visibleWindow, visibleProjectedValue, thresholdValue);
             }
 
             // Display height is decoupled from the texture's own pixel resolution (StretchToFill below
@@ -77,16 +123,20 @@ namespace PoliSim.UI
             {
                 GUI.DrawTexture(rect, _texture, ScaleMode.StretchToFill);
                 DrawAxisLabelOverlay(rect);
+                if (thresholdValue.HasValue && !string.IsNullOrEmpty(thresholdLabel))
+                {
+                    DrawThresholdLabelOverlay(rect, thresholdValue.Value, thresholdLabel);
+                }
             }
         }
 
         /// <summary>Convenience wrapper for a stat with no clear "good direction" - see Draw's higherIsBetter remarks.</summary>
-        public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle)
+        public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, float? thresholdValue = null, string thresholdLabel = null)
         {
-            Draw(title, history, projectedValue, labelStyle, higherIsBetter: null);
+            Draw(title, history, projectedValue, labelStyle, higherIsBetter: null, thresholdValue: thresholdValue, thresholdLabel: thresholdLabel);
         }
 
-        /// <summary>Lazily builds the two small overlay styles from the caller's own label style (font/skin already resolved by GameController's RescaleStylesToScreen) rather than GUI.skin directly, so they stay proportionate to the rest of the panel without GraphRenderer needing its own screen-size-aware rescaling logic.</summary>
+        /// <summary>Lazily builds the overlay styles from the caller's own label style (font/skin already resolved by GameController's RescaleStylesToScreen) rather than GUI.skin directly, so they stay proportionate to the rest of the panel without GraphRenderer needing its own screen-size-aware rescaling logic.</summary>
         private void EnsureOverlayStylesInitialized(GUIStyle referenceStyle)
         {
             if (_axisLabelStyle != null)
@@ -99,18 +149,21 @@ namespace PoliSim.UI
             _axisLabelStyle.normal.textColor = AxisLabelColor;
 
             _changeLabelStyle = new GUIStyle(referenceStyle) { wordWrap = false, fontStyle = FontStyle.Bold };
+
+            _pageLabelStyle = new GUIStyle(referenceStyle) { fontSize = axisFontSize, wordWrap = false, fontStyle = FontStyle.Normal, alignment = TextAnchor.MiddleCenter };
+            _pageButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = axisFontSize, fixedHeight = axisFontSize + 10f };
         }
 
-        /// <summary>Title plus a "first-to-last visible value" percentage change, computed straight from the same history buffer the graph itself plots (not a separate calculation) - matches GameController's existing signed-delta number format (see FormatEstimate) rather than inventing a new one.</summary>
-        private void DrawTitleRow(string title, IReadOnlyList<float> history, bool? higherIsBetter, GUIStyle labelStyle)
+        /// <summary>Title plus a "first-to-last visible value" percentage change, computed straight from the CURRENT PAGE's own visible window (not the full retained history) - matches GameController's existing signed-delta number format (see FormatEstimate) rather than inventing a new one.</summary>
+        private void DrawTitleRow(string title, IReadOnlyList<float> visibleWindow, bool? higherIsBetter, GUIStyle labelStyle)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label(title, labelStyle);
 
-            if (history != null && history.Count >= 2)
+            if (visibleWindow != null && visibleWindow.Count >= 2)
             {
-                float first = history[0];
-                float last = history[history.Count - 1];
+                float first = visibleWindow[0];
+                float last = visibleWindow[visibleWindow.Count - 1];
                 float percentChange = Mathf.Approximately(first, 0f)
                     ? (Mathf.Approximately(last, 0f) ? 0f : 100f * Mathf.Sign(last))
                     : (last - first) / Mathf.Abs(first) * 100f;
@@ -121,6 +174,36 @@ namespace PoliSim.UI
                 GUILayout.Label($"{percentChange:+0.0;-0.0;0}%", _changeLabelStyle, GUILayout.ExpandWidth(false));
             }
 
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary>Prev/Next page buttons plus a "how far back" label - only drawn when there's more than one page, so a graph with <=50 turns of history (most of a fresh game) looks exactly as it did before pagination existed.</summary>
+        private void DrawPageRow(int totalPages)
+        {
+            if (totalPages <= 1)
+            {
+                return;
+            }
+
+            GUILayout.BeginHorizontal();
+            GUI.enabled = _pageFromEnd < totalPages - 1;
+            if (GUILayout.Button("< Older", _pageButtonStyle, GUILayout.ExpandWidth(false)))
+            {
+                _pageFromEnd++;
+            }
+            GUI.enabled = true;
+
+            string rangeLabel = _pageFromEnd == 0
+                ? $"Last {WindowSize} turns"
+                : $"{_pageFromEnd * WindowSize + 1}-{(_pageFromEnd + 1) * WindowSize} turns ago";
+            GUILayout.Label(rangeLabel, _pageLabelStyle, GUILayout.ExpandWidth(true));
+
+            GUI.enabled = _pageFromEnd > 0;
+            if (GUILayout.Button("Newer >", _pageButtonStyle, GUILayout.ExpandWidth(false)))
+            {
+                _pageFromEnd--;
+            }
+            GUI.enabled = true;
             GUILayout.EndHorizontal();
         }
 
@@ -135,7 +218,19 @@ namespace PoliSim.UI
             GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height - labelHeight, rect.width - 4f, labelHeight), _lastMin.ToString("F1"), _axisLabelStyle);
         }
 
-        private bool NeedsRedraw(IReadOnlyList<float> history, float? projectedValue)
+        /// <summary>Right-aligned label at the threshold line's own Y position, in ThresholdLineColor so it visually pairs with the line it describes rather than blending into the plain axis labels on the left.</summary>
+        private void DrawThresholdLabelOverlay(Rect rect, float thresholdValue, string thresholdLabel)
+        {
+            float labelHeight = _axisLabelStyle.fontSize + 4f;
+            float normalized = _lastMax > _lastMin ? Mathf.InverseLerp(_lastMin, _lastMax, thresholdValue) : 0.5f;
+            float y = rect.y + rect.height * (1f - normalized);
+
+            var style = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.MiddleRight };
+            style.normal.textColor = ThresholdLineColor;
+            GUI.Label(new Rect(rect.x + 2f, y - labelHeight * 0.5f, rect.width - 4f, labelHeight), thresholdLabel, style);
+        }
+
+        private bool NeedsRedraw(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue)
         {
             if (_neverDrawn || _texture == null || history.Count != _drawnHistory.Count)
             {
@@ -155,11 +250,21 @@ namespace PoliSim.UI
             {
                 return true;
             }
+            if (hasProjection && !Mathf.Approximately(projectedValue.Value, _drawnProjectedValue))
+            {
+                return true;
+            }
 
-            return hasProjection && !Mathf.Approximately(projectedValue.Value, _drawnProjectedValue);
+            bool hasThreshold = thresholdValue.HasValue;
+            if (hasThreshold != _drawnHasThreshold)
+            {
+                return true;
+            }
+
+            return hasThreshold && !Mathf.Approximately(thresholdValue.Value, _drawnThresholdValue);
         }
 
-        private void Regenerate(IReadOnlyList<float> history, float? projectedValue)
+        private void Regenerate(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue)
         {
             if (_texture == null)
             {
@@ -176,11 +281,16 @@ namespace PoliSim.UI
                 pixels[i] = BackgroundColor;
             }
 
-            GetScaleRange(history, projectedValue, out float min, out float max);
+            GetScaleRange(history, projectedValue, thresholdValue, out float min, out float max);
             _lastMin = min;
             _lastMax = max;
 
             DrawHorizontalLine(pixels, TextureHeight / 2, GridColor);
+            if (thresholdValue.HasValue)
+            {
+                int thresholdY = Mathf.RoundToInt(Mathf.InverseLerp(min, max, thresholdValue.Value) * (TextureHeight - 1));
+                DrawDashedHorizontalLine(pixels, thresholdY, ThresholdLineColor);
+            }
             PlotSeries(pixels, history, projectedValue, min, max);
 
             _texture.SetPixels(pixels);
@@ -190,11 +300,13 @@ namespace PoliSim.UI
             _drawnHistory.AddRange(history);
             _drawnHasProjection = projectedValue.HasValue;
             _drawnProjectedValue = projectedValue ?? 0f;
+            _drawnHasThreshold = thresholdValue.HasValue;
+            _drawnThresholdValue = thresholdValue ?? 0f;
             _neverDrawn = false;
         }
 
-        /// <summary>This graph's own Y-axis range: its historical min/max (plus the projected point, if any), padded 10% so the series doesn't hug the top/bottom edge, with a flat-line fallback so a constant series doesn't divide by a zero range.</summary>
-        private static void GetScaleRange(IReadOnlyList<float> history, float? projectedValue, out float min, out float max)
+        /// <summary>This graph's own Y-axis range: its historical min/max (plus the projected point and/or threshold value, if given), padded 10% so the series doesn't hug the top/bottom edge, with a flat-line fallback so a constant series doesn't divide by a zero range. Folding the threshold into the range (not just clamping it into whatever range the data alone produces) is what keeps a reference line ALWAYS visible, even on a page where the data sits far from it - the whole point of a "how far from target are we" reference.</summary>
+        private static void GetScaleRange(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue, out float min, out float max)
         {
             min = history[0];
             max = history[0];
@@ -207,6 +319,11 @@ namespace PoliSim.UI
             {
                 min = Mathf.Min(min, projectedValue.Value);
                 max = Mathf.Max(max, projectedValue.Value);
+            }
+            if (thresholdValue.HasValue)
+            {
+                min = Mathf.Min(min, thresholdValue.Value);
+                max = Mathf.Max(max, thresholdValue.Value);
             }
 
             float range = max - min;
@@ -244,6 +361,19 @@ namespace PoliSim.UI
             for (int x = 0; x < TextureWidth; x++)
             {
                 pixels[y * TextureWidth + x] = color;
+            }
+        }
+
+        /// <summary>Same as DrawHorizontalLine but dashed (every 4th pixel skipped) - visually distinguishes the threshold reference line from the plain solid midline gridline at a glance, without needing a different color alone to carry that distinction.</summary>
+        private static void DrawDashedHorizontalLine(Color[] pixels, int y, Color color)
+        {
+            y = Mathf.Clamp(y, 0, TextureHeight - 1);
+            for (int x = 0; x < TextureWidth; x++)
+            {
+                if (x % 4 < 2)
+                {
+                    pixels[y * TextureWidth + x] = color;
+                }
             }
         }
 

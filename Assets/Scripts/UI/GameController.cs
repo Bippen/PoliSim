@@ -29,7 +29,8 @@ namespace PoliSim.UI
             Infrastructure,
             SwfPolicy,
             PolicyWeb,
-            Cabinet
+            Cabinet,
+            CompassAndDemographics
         }
 
         // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
@@ -281,6 +282,16 @@ namespace PoliSim.UI
         private const int EventMarkerFadeTurns = 6;
         private readonly MapRenderer _mapRenderer = new MapRenderer();
         private readonly PolicyWebRenderer _policyWebRenderer = new PolicyWebRenderer();
+
+        // Political Systems Overhaul Part C (UI/graph restyling and political visualization).
+        private readonly PoliticalCompassRenderer _politicalCompassRenderer = new PoliticalCompassRenderer();
+        private readonly PieChartRenderer _dependencyRatioPieChart = new PieChartRenderer();
+        private readonly PieChartRenderer _sectorEmploymentPieChart = new PieChartRenderer();
+        private readonly PieChartRenderer _spendingAllocationPieChart = new PieChartRenderer();
+        private readonly PieChartRenderer _taxRevenuePieChart = new PieChartRenderer();
+        private readonly PieChartRenderer _populationPieChart = new PieChartRenderer();
+        private Vector2 _compassAndDemographicsScrollPosition;
+
         private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
         private CountryId? _selectedMapCountry;
         private MapEventMarker? _selectedMapEvent;
@@ -491,11 +502,11 @@ namespace PoliSim.UI
             DrawRightColumnTabs(rightColumnWidth);
             GUILayout.Space(sectionSpacing * 0.5f);
 
-            // Three tab rows now (Policy Web added a 13th tab, needing a third row - see
-            // DrawRightColumnTabs) - reserve all three rows' height plus the spacing between them,
-            // not just some, or a later row would silently eat into the tab-content area below and
-            // this whole panel would creep past its allotted height.
-            float tabRowsHeight = _tabButtonStyle.fixedHeight * 3f + TabRowSpacing * 2f;
+            // Four tab rows now (Compass & Demographics added a 15th tab, needing a fourth row - see
+            // DrawRightColumnTabs) - reserve all four rows' height plus the spacing between them, not
+            // just some, or a later row would silently eat into the tab-content area below and this
+            // whole panel would creep past its allotted height.
+            float tabRowsHeight = _tabButtonStyle.fixedHeight * 4f + TabRowSpacing * 3f;
             float tabContentHeight = areaHeight - tabRowsHeight - sectionSpacing * 0.5f;
             switch (_rightPanelTab)
             {
@@ -553,6 +564,9 @@ namespace PoliSim.UI
                     GUI.enabled = !_isGameOver;
                     DrawCabinetTab(tabContentHeight);
                     GUI.enabled = true;
+                    break;
+                case RightPanelTab.CompassAndDemographics:
+                    DrawCompassAndDemographicsTab(tabContentHeight);
                     break;
                 case RightPanelTab.SwfPolicy:
                     GUI.enabled = !_isGameOver;
@@ -652,6 +666,7 @@ namespace PoliSim.UI
                 case RightPanelTab.SwfPolicy: return UiPalette.SystemArea.SovereignWealth;
                 case RightPanelTab.PolicyWeb: return UiPalette.SystemArea.Global;
                 case RightPanelTab.Cabinet: return UiPalette.SystemArea.Political;
+                case RightPanelTab.CompassAndDemographics: return UiPalette.SystemArea.Global;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -757,9 +772,10 @@ namespace PoliSim.UI
             }
 
             StatHistory history = _playerCountry.History;
-            _gdpGraph.Draw("GDP (last 50 turns; dashed = next-turn estimate)", history.Gdp, projectedGdp, _labelStyle, higherIsBetter: true);
-            _unemploymentGraph.Draw("Unemployment (last 50 turns; dashed = next-turn estimate)", history.Unemployment, projectedUnemployment, _labelStyle, higherIsBetter: false);
-            _approvalGraph.Draw("Approval Rating (last 50 turns; dashed = next-turn estimate)", history.ApprovalRating, projectedApproval, _labelStyle, higherIsBetter: true);
+            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp, projectedGdp, _labelStyle, higherIsBetter: true);
+            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment, projectedUnemployment, _labelStyle, higherIsBetter: false,
+                thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
+            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating, projectedApproval, _labelStyle, higherIsBetter: true);
         }
 
         /// <summary>
@@ -901,7 +917,7 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             // Neutral (no green/red judgment) - which direction of rate change is "good" depends
             // entirely on the current inflation/growth situation, not a fixed convention.
-            _interestRateGraph.DrawNeutral("Interest Rate (last 50 turns)", _playerCountry.History.InterestRate, null, _labelStyle);
+            _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate, null, _labelStyle);
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -978,10 +994,10 @@ namespace PoliSim.UI
             _borderEnforcementInput = GUILayout.HorizontalSlider(draftBorderEnforcement, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
-            _crimeIndexGraph.Draw("Crime Index (last 50 turns)", _playerCountry.History.CrimeIndex, null, _labelStyle, higherIsBetter: false);
-            _organizedCrimeGraph.Draw("Organized Crime Index (last 50 turns)", _playerCountry.History.OrganizedCrimeIndex, null, _labelStyle, higherIsBetter: false);
-            _corruptionGraph.Draw("Corruption Index (last 50 turns)", _playerCountry.History.CorruptionIndex, null, _labelStyle, higherIsBetter: false);
-            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k (last 50 turns)", _playerCountry.History.PrisonPopulationRate, null, _labelStyle);
+            _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex, null, _labelStyle, higherIsBetter: false);
+            _organizedCrimeGraph.Draw("Organized Crime Index", _playerCountry.History.OrganizedCrimeIndex, null, _labelStyle, higherIsBetter: false);
+            _corruptionGraph.Draw("Corruption Index", _playerCountry.History.CorruptionIndex, null, _labelStyle, higherIsBetter: false);
+            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k", _playerCountry.History.PrisonPopulationRate, null, _labelStyle);
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -1027,7 +1043,7 @@ namespace PoliSim.UI
             _immigrationPolicyInput = GUILayout.HorizontalSlider(draftImmigrationPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
-            _laborForceParticipationGraph.Draw("Labor Force Participation (last 50 turns)", _playerCountry.History.LaborForceParticipationRate, null, _labelStyle, higherIsBetter: true);
+            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate, null, _labelStyle, higherIsBetter: true);
 
             GUILayout.Space(8f);
             EconomyState demographicState = _playerCountry.State;
@@ -1899,6 +1915,15 @@ namespace PoliSim.UI
             DrawRightColumnTabButton("Policy Web", RightPanelTab.PolicyWeb, availableWidth * 0.5f);
             DrawRightColumnTabButton("Cabinet", RightPanelTab.Cabinet, availableWidth * 0.5f);
             GUILayout.EndHorizontal();
+
+            GUILayout.Space(TabRowSpacing);
+
+            // Fourth row: just Compass & Demographics (Political Systems Overhaul Part C, the 15th
+            // tab) - full-width, same "one new tab alone in its own row" precedent Policy Web's own
+            // original third row established.
+            GUILayout.BeginHorizontal();
+            DrawRightColumnTabButton("Compass & Demographics", RightPanelTab.CompassAndDemographics, availableWidth);
+            GUILayout.EndHorizontal();
         }
 
         /// <summary>Each tab is tinted by its own SystemArea (see UiPalette/GetTabArea) - selected uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab reads as visibly "lit up" in its own area's hue rather than just bold+yellow text. Width is now explicit (see DrawRightColumnTabs) and the style word-wraps (see InitializeStylesIfNeeded) so a long label like "Sovereign Wealth Fund" degrades to two lines at a narrow width instead of being hard-clipped.</summary>
@@ -2263,6 +2288,98 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// Compass &amp; Demographics tab (Political Systems Overhaul Part C, Master Sequence step 2):
+        /// pure visualization, no player-facing controls. The political compass plots all six
+        /// countries at once (see PoliticalCompassRenderer); the five pie charts below it are all
+        /// scoped to the player's own country except Population, which is inherently comparative.
+        /// Ethnicity/religion breakdowns are explicitly OUT OF SCOPE per the Master Roadmap's own
+        /// Part C spec - not tracked anywhere in this game's data model.
+        /// </summary>
+        private void DrawCompassAndDemographicsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _compassAndDemographicsScrollPosition = GUILayout.BeginScrollView(_compassAndDemographicsScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Compass & Demographics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Label("Grounded entirely in this game's own tracked policy data - no invented ideology labels, and no ethnicity/religion breakdown (not tracked anywhere in this game's data model).", _labelStyle);
+            GUILayout.Space(6f);
+
+            DrawColoredLabel("Political Compass", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Label("X: average implemented tax rate blended with total government spending (% of GDP) - further right means a bigger fiscal footprint. Y: average sector regulation blended with average implemented welfare generosity - higher means more market regulation and a more generous welfare state. Your own country is ringed in white.", _labelStyle);
+            float compassSize = Mathf.Clamp(Screen.height * 0.4f, 260f, 520f);
+            Rect compassRect = GUILayoutUtility.GetRect(compassSize, compassSize, GUILayout.ExpandWidth(false));
+            _politicalCompassRenderer.Draw(compassRect, _world.Countries, PlayerCountryId, _labelStyle);
+
+            GUILayout.Space(12f);
+
+            DrawColoredLabel("Demographics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Space(4f);
+
+            EconomyState state = _playerCountry.State;
+            _dependencyRatioPieChart.Draw(
+                $"{_playerCountry.Name}: Working-Age vs. Dependent Population",
+                new[]
+                {
+                    new PieSlice("Working-age", 100f - state.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor)),
+                    new PieSlice("Dependents", state.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral)),
+                },
+                _labelStyle, "F1");
+            GUILayout.Space(10f);
+
+            var sectorSlices = new List<PieSlice>();
+            int sectorIndex = 0;
+            foreach (Sector sector in _playerCountry.Sectors)
+            {
+                sectorSlices.Add(new PieSlice(sector.Type.ToString(), sector.EmploymentShare, UiPalette.GetCategoricalColor(sectorIndex)));
+                sectorIndex++;
+            }
+            _sectorEmploymentPieChart.Draw($"{_playerCountry.Name}: Employment Share by Sector", sectorSlices, _labelStyle, "F1");
+            GUILayout.Space(10f);
+
+            if (_playerCountry.SpendingLines.Count > 0)
+            {
+                var spendingSlices = new List<PieSlice>();
+                int spendingIndex = 0;
+                foreach (SpendingLine line in _playerCountry.SpendingLines)
+                {
+                    spendingSlices.Add(new PieSlice(line.Category.ToString(), line.Amount, UiPalette.GetCategoricalColor(spendingIndex)));
+                    spendingIndex++;
+                }
+                _spendingAllocationPieChart.Draw($"{_playerCountry.Name}: Spending Allocation", spendingSlices, _labelStyle, "F1");
+            }
+            else
+            {
+                GUILayout.Label($"{_playerCountry.Name}: Spending Allocation", _labelStyle);
+                GUILayout.Label("Detailed per-category spending breakdown not tracked for this country yet.", _labelStyle);
+            }
+            GUILayout.Space(10f);
+
+            var taxSlices = new List<PieSlice>();
+            int taxIndex = 0;
+            foreach (TaxLine taxLine in _playerCountry.TaxLines)
+            {
+                if (!taxLine.IsImplemented) continue;
+                float revenue = state.GDP * (taxLine.Rate / 100f) * taxLine.BaseShareOfGdp;
+                taxSlices.Add(new PieSlice(taxLine.Type.ToString(), revenue, UiPalette.GetCategoricalColor(taxIndex)));
+                taxIndex++;
+            }
+            _taxRevenuePieChart.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxSlices, _labelStyle, "F0");
+            GUILayout.Space(10f);
+
+            var populationSlices = new List<PieSlice>();
+            foreach (Country country in _world.Countries)
+            {
+                populationSlices.Add(new PieSlice(country.Name, country.State.Population, UiPalette.GetCountryColor(country.Id)));
+            }
+            _populationPieChart.Draw("Population Share by Country (millions)", populationSlices, _labelStyle, "F1");
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
         /// Trade tab (Phase 4 - split off the old combined "Trade &amp; Spending" tab; the spending
         /// report half moved into the Spending Policy tab instead, where it belongs alongside the
         /// spending sliders it reports on). Adds a TradeBalance history graph and, per partner,
@@ -2280,7 +2397,7 @@ namespace PoliSim.UI
 
             DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             DrawColoredLabel($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
-            _tradeBalanceGraph.Draw("Trade Balance (last 50 turns)", _playerCountry.History.TradeBalance, null, _labelStyle, higherIsBetter: true);
+            _tradeBalanceGraph.Draw("Trade Balance", _playerCountry.History.TradeBalance, null, _labelStyle, higherIsBetter: true);
             GUILayout.Space(6f);
 
             GUILayout.Label($"General Base Tariff Rate: {_playerCountry.BaseTariffRate:F2}% (applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _labelStyle);
@@ -2474,7 +2591,7 @@ namespace PoliSim.UI
 
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
             GUILayout.Label("Implement or remove a welfare program, and (while implemented) drag its generosity directly to the target you want.", _labelStyle);
-            _povertyRateGraph.Draw("Poverty Rate (last 50 turns)", _playerCountry.History.PovertyRate, null, _labelStyle, higherIsBetter: false);
+            _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate, null, _labelStyle, higherIsBetter: false);
             GUILayout.Space(8f);
 
             float welfareTypeNameColumnWidth = GetWelfareProgramNameColumnWidth();
@@ -2737,7 +2854,8 @@ namespace PoliSim.UI
             // Moved here from the old combined "Trade & Spending" tab (Phase 4) - the last-turn
             // fiscal report belongs next to the sliders it explains, not bolted onto Trade.
             DrawSpendingSection();
-            _debtToGdpGraph.Draw("Debt-to-GDP (last 50 turns)", _playerCountry.History.DebtToGdpRatio, null, _labelStyle, higherIsBetter: false);
+            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio, null, _labelStyle, higherIsBetter: false,
+                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable");
             GUILayout.Space(16f);
 
             DrawInterestOnDebtRow();

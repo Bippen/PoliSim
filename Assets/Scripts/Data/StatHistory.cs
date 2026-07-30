@@ -10,11 +10,16 @@ namespace PoliSim.Data
     /// SimulationManager.AdvanceTurn, for every country (not just the player's), after that turn's
     /// state is fully settled - never touched by PreviewTurn's throwaway clone, so a live slider drag
     /// can never leak a phantom data point into the real history.
+    ///
+    /// Political Systems Overhaul Part C ("last N changes" pagination): raised from 50 to 250 (5
+    /// pages of GraphRenderer's own 50-turn display window) so pagination has real older data to page
+    /// back into, not just blank pages past the first - a bounded, still-capped increase (still a
+    /// fixed-size rolling window, just a bigger one), not new tracked data or simulation logic.
     /// </summary>
     [Serializable]
     public class StatHistory
     {
-        public const int MaxEntries = 50;
+        public const int MaxEntries = 250;
 
         public readonly List<float> Gdp = new List<float>();
         public readonly List<float> Unemployment = new List<float>();
