@@ -2494,6 +2494,29 @@ bimodal debt-to-zero-or-ceiling tendency under a no-policy baseline is already i
 for USA in "SpendingLine Amount Ceiling - Debt-to-Zero Fix," so Sweden landing on the zero end of that
 same known spectrum is consistent with prior findings, not a new phenomenon.
 
+**France (also SWF-active from turn 1 - see "Sovereign Wealth Fund Expansion to All Six Countries")
+was checked with the same rigor and confirmed to hit the identical floor via the identical mechanism,
+not a distinct one.** Starting at 116% `DebtToGdpRatio` - over 3x further from the 0% floor than
+Sweden's 35% starting point - France's debt still declines to exactly 0% by turn ~80 of the same
+200-turn diagnostic run and stays pinned there through turn 200, just later than Sweden's turn ~50,
+because it had further to fall. The same compounding signature is directly visible in `SwfReturns`:
+$3.8B at turn 1, $74.9B at turn 50, then a 23.5x jump to $1,763.7B by turn 80 - the exact window
+`DebtToGdpRatio` collapses from 84.9% to 0% - continuing to $3,585B by turn 200, with
+`fiscalReactionMultiplier` floored at exactly 0.5000 throughout, same as Sweden's end state. Two
+alternative country-specific explanations were explicitly ruled out rather than assumed away: (1)
+France's `CollectionEfficiency` (0.7444) is not exceptional - it's actually the LOWEST of the four
+countries carrying `[DIAG]` logging (Germany 0.7799, Sweden 0.7671, Italy 0.9534), so it cannot be
+inflating France's revenue relative to the others; (2) France's own turn-1 structural primary surplus
+(before any SWF returns matter - 19.2% of GDP) is unremarkable next to Italy's 22.4%, the largest of
+the four - yet Italy is the clean control case that DISPROVES a plain revenue-to-spending-ratio
+explanation: Italy has `SwfReturns = 0` throughout (no fund, matching Germany), starts at 138%
+`DebtToGdpRatio`, and settles into its own genuine flat equilibrium (~108.0-108.7%, stable from turn 10
+through turn 200) despite having the largest structural surplus ratio of the four - confirming that a
+large primary surplus ALONE, without a compounding SWF-returns term on top, produces a stable non-zero
+equilibrium (as it does for both Italy and Germany), and it is specifically the SWF-returns compounding
+- present only in Sweden and France - that pushes a country's debt into the floor rather than to a
+stable resting point.
+
 Validated: full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x 100/500
 turns, 24 combinations) after removing the diagnostic logging - 3,445 total flagged anomalies across
 every combination, but **every single one** is the already-established small-magnitude swing false
