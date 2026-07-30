@@ -3077,6 +3077,93 @@ age-cohort/population-pyramid model - one scalar per demographic concept per cou
   `PotentialGrowthRate` compounding further over 500 turns, unrelated to demographics; Sweden/France
   showing their own already-documented SWF-driven low/bimodal pattern) - no sign of the pension/
   healthcare pressure stacking unexpectedly with the automatic Mandatory-spending growth mechanism.
+### Correction: Population growth-rate mean-reversion (same day, before Part B started)
+The validation above was accepted too quickly. The original design applied
+`(BirthRate - DeathRate + NetMigrationRate)/1000 x Population` directly, every turn, with no pull
+back toward any long-run figure - realistic at the level of each individual rate (each is
+independently bounded) but, unlike EVERY OTHER successfully-stabilized quantity in this model
+(`Unemployment` reverts toward `NaturalUnemploymentRate`, `Inflation` toward its target,
+`DebtToGdpRatio` toward each country's `ComfortableDebtToGdpPercent`), Population's own growth RATE
+had no reversion mechanism at all. A persistent birth/death/migration gap therefore compounded
+without limit, and "large decline over a 500-turn horizon" was the wrong frame for judging it - the
+actual defect was structural (no bounded long-run anchor), not just a large number at an extreme
+horizon.
+
+- **Fix - the growth RATE mean-reverts, not just Population itself**: added
+  `EconomyState.PopulationGrowthRate` (per-1,000/year, the quantity `Population` now actually evolves
+  by) and `Country.SteadyStateGrowthRate` (a fixed per-country long-run anchor). Each turn,
+  `MacroSystem.ApplyPopulationGrowth` computes the raw `impliedRate` (`BirthRate - DeathRate +
+  NetMigrationRate`, same as before), takes its gap versus `SteadyStateGrowthRate`, hard-clamps that
+  gap to +/-`MaxPopulationGrowthRateDeviation` (2, per-1,000/year) BEFORE weighting it by
+  `PopulationGrowthRateSensitivity` (0.4) to form this turn's reversion target, then reverts
+  `PopulationGrowthRate` toward that target at `PopulationGrowthReversionSpeed` (0.05 - deliberately
+  slower than this project's usual ~0.15 speeds, since real demographic momentum changes over
+  generations, not years). The gap is clamped BEFORE weighting - the same "bound the aggregate once"
+  idiom `PotentialGrowthRate`'s `MaxTotalPotentialGrowthAdjustment` already uses - because
+  `DependencyRatio`'s drift is explicitly one-directional and never reverts (see above), so
+  `DeathRate`/`NetMigrationRate` keep drifting for a transient lasting far longer than 500 turns even
+  though each is individually clamped; without capping the gap itself, the reversion target would keep
+  sliding for the entire validation horizon and never plateau, defeating the point of adding reversion.
+  This still allows genuine sustained long-run growth (USA) or decline (Germany/Poland/Italy) -
+  `SteadyStateGrowthRate` is non-zero for all six - it just guarantees `PopulationGrowthRate`
+  permanently sits within a bounded band around that anchor rather than drifting arbitrarily far from
+  it. `PopulationGrowthRate` is seeded at world-creation time equal to each country's own turn-1
+  implied rate, avoiding a turn-1 discontinuity (the same idiom every Baseline-anchored field uses).
+- **`SteadyStateGrowthRate` calibration, real-data-grounded, magnitude honestly damped**: USA +1.8,
+  Sweden +1.5, Germany -1.5, France -0.3, Italy -3.0, Poland -3.5 (all per-1,000/year). Directionally
+  real for all six (Poland/Italy: severe, well-documented sub-replacement decline; Germany: moderate
+  decline; France: the most fertility-resilient large EU economy, near-stable; Sweden/USA: modest
+  immigration-driven growth). Magnitudes are damped below a literal extrapolation of current trends,
+  disclosed honestly rather than presented as precise: this project's "1 turn ~= 1 year" convention
+  makes the 500-turn validation horizon a ~500-year span, ~6.7x Eurostat/UN's actual 2025-2100
+  (75-year) projection window. Poland's figure is anchored to Eurostat's own 2025-2100 projection
+  (-31.6% cumulative) via the implied constant annual rate solving `(1+r)^75 = 0.684`, i.e.
+  `r = 0.684^(1/75) - 1 ~= -5.05` per 1,000/year - and applying that literal real rate for a full 500
+  years would ITSELF compound to roughly a 92% decline (`(1 - 0.00505)^500 ~= e^-2.53 ~= 0.0795` of
+  the starting population), a mechanical consequence of the horizon length, not evidence the rate is
+  unrealistic. -3.5 is damped further below -5.05 specifically so the 500-turn outcome reads as
+  severe-but-plausible rather than a literal 500-year compound of a real 75-year rate.
+- **Re-validated - full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations)**: zero `Population`/`PopulationGrowthRate`/`DependencyRatio`
+  anomalies (non-positive, out-of-range, non-finite) anywhere across all 24 combinations; per-scenario
+  total anomaly counts (66-178 at 100 turns, 388-951 at 500) landed within the same range as the prior,
+  already-accepted validation run (60-183 / 406-960) - the already-established small-magnitude
+  swing false positives (`DebtToGdpRatio`/`Inflation`/`InterestRate`/`Unemployment`), unrelated to
+  demographics, not a new category this fix introduced. **`PopulationGrowthRate` now genuinely
+  plateaus within the validation horizon for most countries, unlike the pre-fix design, which was
+  still trending in one direction at turn 500**: Germany flattens at -2.30 by ~turn 250 and holds
+  there through turn 500; Poland flattens at -4.30 by ~turn 250; France flattens near -1.10 by ~turn
+  400; Sweden flattens at +0.70 by ~turn 350; Italy sits just past its own cap, near -3.79, essentially
+  flat from ~turn 200; USA is still gently decelerating toward its own +1.8 anchor at turn 500 (down
+  from an initial +5.2, itself declining because `BirthRate`'s secular decline applies to every
+  country, USA included) - genuinely converging, not diverging.
+- **Turn-500 baseline Population, all six countries, sanity-checked against real Eurostat/UN
+  long-run projections**: USA 341.8M -> 1,038.1M (+203.6%, decelerating growth, not runaway); Sweden
+  10.6M -> 18.4M (+73.2%, plateaued growth rate); Germany 83.6M -> 27.4M (-67.3%); France 69.1M ->
+  53.9M (-22.1%); Italy 58.9M -> 10.4M (-82.4%); Poland 37.5M -> 4.6M (-87.8%). Poland's figure is the
+  one most directly comparable to a real published benchmark (Eurostat's own -31.6%-by-2100 figure);
+  extrapolating Eurostat's own implied annual rate over the SAME 500-year span this validation uses
+  would itself produce ~92% decline (see the derivation above) - Poland's actual -87.8% here is
+  slightly LESS severe than that literal extrapolation, consistent with the deliberate damping applied
+  to the anchor. The headline honest takeaway: at a 500-year horizon (6.7x longer than Eurostat's own
+  75-year projection window), a real, bounded, Eurostat-consistent annual rate mechanically produces a
+  large cumulative percentage change - that is a fact about compounding over an extreme horizon this
+  project's own "1 turn ~= 1 year" convention creates for validation purposes, not evidence of an
+  unbounded or runaway mechanism. The mechanism itself is now provably bounded (`PopulationGrowthRate`
+  cannot sit further than `MaxPopulationGrowthRateDeviation x PopulationGrowthRateSensitivity` from
+  `SteadyStateGrowthRate` once the transient settles) and, for five of six countries, visibly plateaus
+  well before turn 500 - the specific property this correction was made to add.
+- **Matrix run's own operational note, unrelated to the simulation logic**: this validation run's
+  Unity batch process hung for 25+ minutes AFTER all 24 scenarios had already completed and logged
+  (confirmed via the log's own content and process CPU sampling: still consuming ~4 CPU-cores across
+  112 threads with zero new log output, i.e. genuinely stuck, not deadlocked) in Unity's own post-Play
+  "Start Indexing on Editor startup" step - a known Unity batchmode behavior, not a symptom of this
+  fix's C# code (`ApplyPopulationGrowth`/`ApplyDemographicRates` are O(1) per country per turn, no
+  loops, no allocations). Most likely trigger: a throwaway diagnostic script and its `.meta` file were
+  deleted immediately before this launch, and Unity had to reconcile that asset deletion during
+  startup indexing - no prior matrix run in this project's history was preceded by a script deletion
+  immediately before launch. The process was killed once the log confirmed all 24 scenarios had long
+  since completed with clean data; no orphaned processes remained after the kill.
 - **Part A stops here, deliberately** - no Family Policy/Immigration Policy levers yet (Part B),
   per this item's own explicit two-part sequencing and "validate Part A fully before starting Part B"
   instruction. UI display for the five new fields is also deferred to Part B, where it will sit

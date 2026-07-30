@@ -394,6 +394,36 @@ namespace PoliSim.Data
         public float BaselineNetMigrationRate = 1f;
 
         /// <summary>
+        /// Round 3 item 5, Part A (corrected): this country's structural long-run steady-state net
+        /// population growth rate (per-1000 population per turn/year), the fixed target
+        /// EconomyState.PopulationGrowthRate mean-reverts toward every turn (see
+        /// MacroSystem.ApplyPopulationGrowth) - the SAME reversion idiom NaturalUnemploymentRate,
+        /// the inflation target, and each country's ComfortableDebtToGdpPercent already use. Added
+        /// because the original design let BirthRate's secular decline (and the resulting
+        /// birth/death/migration gap) drive Population's growth rate directly and indefinitely, with
+        /// no pull back toward any bounded long-run figure - realistic at the individual-rate level
+        /// but producing implausible AGGREGATE outcomes (near-extinction for Germany/Poland/Italy,
+        /// near-quadrupling for the USA) over this project's 500-turn validation horizon.
+        ///
+        /// Directionally real and well-documented for all six countries (Poland/Italy: severe,
+        /// well-documented sub-replacement decline; Germany: moderate decline; France: near-stable,
+        /// historically the most fertility-resilient large EU economy; Sweden/USA: modest
+        /// immigration-driven growth). Magnitudes are HONESTLY DAMPED below a literal extrapolation
+        /// of current trends: this project's "1 turn ~= 1 year" convention means the 500-turn
+        /// validation horizon is a ~500-year span, roughly 6.7x longer than the 75-year 2025-2100
+        /// window Eurostat/UN actually project. Poland's figure is anchored to (but damped from) the
+        /// annual rate implied by Eurostat's own 2025-2100 population projection (-31.6% cumulative)
+        /// via (1+r)^75 = 0.684, i.e. r = 0.684^(1/75) - 1 = ~-5.05 per 1000/year; using that literal
+        /// rate for 500 years would itself compound to roughly a 92% decline ((1-0.00505)^500 =~
+        /// 0.0795), which is a mechanical consequence of the horizon length, not evidence the rate is
+        /// unrealistic - see CLAUDE.md for the full derivation. This constant is deliberately damped
+        /// further so the 500-turn outcome stays a plausible demographic trajectory rather than a
+        /// literal 500-year compounding of a real 75-year rate. Same "generous, honestly-labeled
+        /// bound rather than literal reality" idiom as MaxDebtToGdpPercent's 300% ceiling.
+        /// </summary>
+        public float SteadyStateGrowthRate = -1f;
+
+        /// <summary>
         /// This country's independent central bank chair, or null for a country that instead uses
         /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
         /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)

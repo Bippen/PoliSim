@@ -178,6 +178,21 @@ namespace PoliSim.Data
         public float DependencyRatio;
 
         /// <summary>
+        /// Round 3 item 5, Part A (corrected): this country's net population growth rate, per-1000
+        /// population per turn - the actual quantity Population evolves by (Population *= 1 +
+        /// PopulationGrowthRate/1000, see MacroSystem.ApplyPopulationGrowth). Distinct from the raw
+        /// (BirthRate - DeathRate + NetMigrationRate) figure: that raw figure is only ever a pull on
+        /// this rate, which itself mean-reverts each turn toward Country.SteadyStateGrowthRate - the
+        /// same reversion idiom Unemployment/Inflation/DebtToGdpRatio already use, added because the
+        /// original design let the raw birth/death/migration gap drive Population directly and
+        /// indefinitely, producing implausible aggregate outcomes over a 500-turn horizon despite each
+        /// individual rate staying within its own realistic bound. Seeded at world-creation time equal
+        /// to each country's own turn-1 raw implied rate (avoiding a turn-1 discontinuity, the same
+        /// idiom every other Baseline-anchored variable uses) - see WorldFactory.
+        /// </summary>
+        public float PopulationGrowthRate;
+
+        /// <summary>
         /// Government debt as a percentage of GDP (e.g. 124 means 124% of GDP) - matches how
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
@@ -193,7 +208,7 @@ namespace PoliSim.Data
             float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f, float crimeIndex = 25f,
             float prisonPopulationRate = 100f, float organizedCrimeIndex = 25f, float corruptionIndex = 30f,
             float population = 50f, float birthRate = 10f, float deathRate = 10f, float netMigrationRate = 1f,
-            float dependencyRatio = 30f)
+            float dependencyRatio = 30f, float populationGrowthRate = float.NaN)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -217,6 +232,9 @@ namespace PoliSim.Data
             DeathRate = deathRate;
             NetMigrationRate = netMigrationRate;
             DependencyRatio = dependencyRatio;
+            PopulationGrowthRate = float.IsNaN(populationGrowthRate)
+                ? birthRate - deathRate + netMigrationRate
+                : populationGrowthRate;
             PrisonPopulationRate = prisonPopulationRate;
             OrganizedCrimeIndex = organizedCrimeIndex;
             CorruptionIndex = corruptionIndex;
@@ -231,7 +249,7 @@ namespace PoliSim.Data
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
                 GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate,
                 OrganizedCrimeIndex, CorruptionIndex, Population, BirthRate, DeathRate, NetMigrationRate,
-                DependencyRatio);
+                DependencyRatio, PopulationGrowthRate);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

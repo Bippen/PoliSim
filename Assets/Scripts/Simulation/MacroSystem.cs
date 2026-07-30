@@ -562,15 +562,80 @@ namespace PoliSim.Simulation
         private const float MaxPopulation = 10000f;
 
         /// <summary>
-        /// Population evolves by (BirthRate - DeathRate + NetMigrationRate)/1000 x Population - the
-        /// standard demographic growth identity. Must run AFTER ApplyDemographicRates, which updates
-        /// the three rates this reads for the same turn.
+        /// How much weight the raw, unbounded (BirthRate - DeathRate + NetMigrationRate) signal gets
+        /// in pulling PopulationGrowthRate's own reversion TARGET away from Country.
+        /// SteadyStateGrowthRate, each turn. Deliberately well below 1.0 (moderate, not full weight) -
+        /// this is what keeps a persistent birth/death/migration gap from driving Population to an
+        /// extreme indefinitely, the exact failure this constant was added to fix, while still giving
+        /// Part B's future Family/Immigration Policy levers (which act through BirthRate/
+        /// NetMigrationRate) real, felt, but bounded influence.
+        /// </summary>
+        private const float PopulationGrowthRateSensitivity = 0.4f;
+
+        /// <summary>
+        /// Hard cap, per 1000 population per turn, on how far the raw (BirthRate - DeathRate +
+        /// NetMigrationRate) signal is allowed to pull PopulationGrowthRate's reversion TARGET away
+        /// from Country.SteadyStateGrowthRate, applied to the gap BEFORE PopulationGrowthRateSensitivity
+        /// weights it - the same "bound the aggregate once, don't just trust each input's own clamp"
+        /// idiom PotentialGrowthRate's MaxTotalPotentialGrowthAdjustment already uses. Necessary because
+        /// DependencyRatio (see ApplyDemographicRates) is explicitly one-directional and never reverts,
+        /// so DeathRate/NetMigrationRate keep drifting for a very long transient (hundreds of turns) even
+        /// though each is individually bounded - without this cap, that slow transient drift would keep
+        /// dragging the TARGET further from the anchor for the entire 500-turn validation horizon, which
+        /// defeats the point of reverting toward a bounded steady state. 5 is wide enough to let a real,
+        /// sustained multi-generational birth/death/migration swing (e.g. a country's death rate rising
+        /// several points as it ages) show up as a real, felt pull, while guaranteeing the target itself
+        /// always stays within SteadyStateGrowthRate +/- (this x PopulationGrowthRateSensitivity). Set
+        /// to 2 (not a larger, more permissive figure) specifically so the cap actually ENGAGES within
+        /// this project's 500-turn validation horizon for the countries already running sustained
+        /// natural decrease (Germany/Italy/Poland) - DependencyRatio's one-directional drift means their
+        /// raw gap keeps widening past this point well before DependencyRatio itself approaches its own
+        /// ceiling, so a looser cap would leave PopulationGrowthRate still trending in one direction at
+        /// turn 500 rather than genuinely plateauing, unlike every other successfully-stabilized
+        /// variable in this model (Unemployment, Inflation, DebtToGdpRatio all visibly flatten out).
+        /// </summary>
+        private const float MaxPopulationGrowthRateDeviation = 2f;
+
+        /// <summary>
+        /// How fast PopulationGrowthRate itself reverts toward its target each turn - the same
+        /// mean-reversion idiom Unemployment's reversion toward NaturalUnemploymentRate and Inflation's
+        /// reversion toward target already use, but deliberately SLOWER than this project's usual
+        /// ~0.15 reversion speeds: real demographic momentum (age structure, cultural/fertility norms)
+        /// changes over generations, not years, so a population growth rate should be one of the
+        /// slowest-moving reverting quantities in this model, not one of the fastest.
+        /// </summary>
+        private const float PopulationGrowthReversionSpeed = 0.05f;
+
+        /// <summary>
+        /// Population evolves by PopulationGrowthRate/1000 x Population each turn. PopulationGrowthRate
+        /// is itself a mean-reverting quantity - the FIX for this pass's original design, which applied
+        /// the raw (BirthRate - DeathRate + NetMigrationRate) figure to Population directly and
+        /// indefinitely. That raw figure is realistic at the individual-rate level (each of BirthRate/
+        /// DeathRate/NetMigrationRate is independently bounded - see ApplyDemographicRates) but, with no
+        /// pull back toward any long-run figure, compounds over a 500-turn horizon into implausible
+        /// aggregate outcomes (near-extinction for the countries already running more deaths than
+        /// births, near-quadrupling for the fastest-growing). Each turn the raw figure's gap versus
+        /// Country.SteadyStateGrowthRate is first hard-capped at +/-MaxPopulationGrowthRateDeviation
+        /// (bounding the aggregate pull itself, since DependencyRatio's own one-directional drift means
+        /// the raw figure can keep moving for far longer than 500 turns even though each of its own
+        /// inputs is individually clamped), then weighted by PopulationGrowthRateSensitivity to set this
+        /// turn's reversion TARGET; PopulationGrowthRate then reverts toward that target at
+        /// PopulationGrowthReversionSpeed - the same two-step "gap sets a target, state reverts toward
+        /// it" shape used throughout this model (e.g. Taylor Rule -> InterestRate). This still allows
+        /// genuine sustained long-run growth (USA) or decline (Germany/Poland/Italy) - SteadyStateGrowthRate
+        /// itself is not zero for any of the six - it just guarantees the actual growth rate permanently
+        /// stays within a bounded band around that plausible long-run figure, rather than drifting
+        /// further from it for as long as the underlying aging drift continues. Must run AFTER
+        /// ApplyDemographicRates, which updates the three rates this reads for the same turn.
         /// </summary>
         public static void ApplyPopulationGrowth(Country country)
         {
             EconomyState state = country.State;
-            float growthRate = (state.BirthRate - state.DeathRate + state.NetMigrationRate) / 1000f;
-            state.Population = Mathf.Clamp(state.Population * (1f + growthRate), MinPopulation, MaxPopulation);
+            float impliedRate = state.BirthRate - state.DeathRate + state.NetMigrationRate;
+            float boundedGap = Mathf.Clamp(impliedRate - country.SteadyStateGrowthRate, -MaxPopulationGrowthRateDeviation, MaxPopulationGrowthRateDeviation);
+            float target = country.SteadyStateGrowthRate + PopulationGrowthRateSensitivity * boundedGap;
+            state.PopulationGrowthRate += PopulationGrowthReversionSpeed * (target - state.PopulationGrowthRate);
+            state.Population = Mathf.Clamp(state.Population * (1f + state.PopulationGrowthRate / 1000f), MinPopulation, MaxPopulation);
         }
 
         /// <summary>

@@ -306,6 +306,20 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   real-world-grounded option, document the reasoning" precedent rather than being a genuine toss-up.
   Full 24-combination matrix re-validated: zero finite/negative/out-of-range anomalies, no
   double-counted drift at either reconciliation point.
+- **Correction (same day, before Part B started): Population's growth rate itself now mean-reverts.**
+  The above validation was accepted too quickly — Population's growth rate had no reversion mechanism
+  at all, unlike every other successfully-stabilized quantity in this project (Unemployment, Inflation,
+  DebtToGdpRatio all revert toward a bounded anchor). A persistent birth/death/migration gap compounded
+  without limit. Fixed: added `EconomyState.PopulationGrowthRate` and `Country.SteadyStateGrowthRate`
+  (real-data-grounded, honestly damped per-country anchors); the raw implied rate's gap versus the
+  anchor is now hard-capped before it can pull the reversion target, so `PopulationGrowthRate` provably
+  cannot drift arbitrarily far from its country's own steady state. Re-validated on the full
+  24-combination matrix: zero demographic anomalies, and the growth rate now genuinely plateaus within
+  the 500-turn horizon for five of six countries (USA is still gently decelerating toward its anchor,
+  not diverging). Turn-500 populations sanity-checked explicitly against real Eurostat/UN long-run
+  projections, with the ~500-year-vs-75-year horizon mismatch disclosed honestly rather than papered
+  over. See "Demographics, Part A" correction section in CLAUDE.md for the full derivation and numbers.
+  **Part A is now genuinely done; Part B (Family/Immigration Policy levers) can proceed.**
 
 ---
 

@@ -113,7 +113,7 @@ namespace PoliSim.Testing
                             $"Unemployment={state.Unemployment:F2}%, Inflation={state.Inflation:F2}%, " +
                             $"InterestRate={country.CurrencyZone.InterestRate:F2}%, " +
                             $"GovernmentDebt={state.GovernmentDebt:F1}, DebtToGdpRatio={state.DebtToGdpRatio:F1}%, " +
-                            $"Population={state.Population:F3}, DependencyRatio={state.DependencyRatio:F2}");
+                            $"Population={state.Population:F3}, PopulationGrowthRate={state.PopulationGrowthRate:F3}, DependencyRatio={state.DependencyRatio:F2}");
                     }
 
                     CheckAnomalies(turn, country, state, prev, anomalies);
@@ -655,6 +655,13 @@ namespace PoliSim.Testing
             }
             CheckFinite(turn, country, "BaselineDependencyRatio", country.BaselineDependencyRatio, anomalies);
             CheckFinite(turn, country, "BaselineNetMigrationRate", country.BaselineNetMigrationRate, anomalies);
+
+            CheckFinite(turn, country, "PopulationGrowthRate", state.PopulationGrowthRate, anomalies);
+            if (state.PopulationGrowthRate < -50f || state.PopulationGrowthRate > 50f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: PopulationGrowthRate out of a sane range ({state.PopulationGrowthRate:F3})");
+            }
+            CheckFinite(turn, country, "SteadyStateGrowthRate", country.SteadyStateGrowthRate, anomalies);
 
             CheckFinite(turn, country, "PrisonPopulationRate", state.PrisonPopulationRate, anomalies);
             if (state.PrisonPopulationRate < 0f)

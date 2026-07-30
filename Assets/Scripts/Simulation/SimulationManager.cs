@@ -576,6 +576,7 @@ namespace PoliSim.Simulation
                 BorderEnforcementLevel = country.BorderEnforcementLevel,
                 BaselineDependencyRatio = country.BaselineDependencyRatio,
                 BaselineNetMigrationRate = country.BaselineNetMigrationRate,
+                SteadyStateGrowthRate = country.SteadyStateGrowthRate,
                 BasePotentialGrowthRate = country.BasePotentialGrowthRate,
                 InfrastructureSpendingGrowthAdjustment = country.InfrastructureSpendingGrowthAdjustment
             };
