@@ -200,6 +200,14 @@ namespace PoliSim.Data
         public float BorderEnforcementOverride = -1f;
 
         /// <summary>
+        /// Round 3 item 5, Part B: this turn's requested ABSOLUTE Family Policy/Immigration Policy
+        /// settings (each -1 = no change requested this turn, the same sentinel idiom as
+        /// BorderEnforcementOverride). See SimulationManager.ApplyDemographicPolicyChanges.
+        /// </summary>
+        public float FamilyPolicyOverride = -1f;
+        public float ImmigrationPolicyOverride = -1f;
+
+        /// <summary>
         /// Sum of the four legacy spending categories - the discretionary delta layered on top of the
         /// country's baseline GovernmentSpendingRate share of GDP in the national accounts identity's
         /// G term (see SimulationManager.ApplyDomesticPolicy). Positive is net extra stimulus,

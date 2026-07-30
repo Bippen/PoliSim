@@ -166,6 +166,10 @@ namespace PoliSim.UI
         private float? _judicialFundingInput;
         private float? _borderEnforcementInput;
 
+        // Round 3 item 5, Part B: same "draft slider value, no lag" idiom as every dial above.
+        private float? _familyPolicyInput;
+        private float? _immigrationPolicyInput;
+
         // Draft ABSOLUTE per-partner tariff override rate for the Trade tab's sliders (only shown/
         // meaningful while that partner's TradePartner.HasPlayerTariffOverride is true - mirrors
         // _taxRateInputs' relationship to TaxLine.IsImplemented exactly). Not cleared by
@@ -226,6 +230,8 @@ namespace PoliSim.UI
         private float? _cachedDrugPolicyInput;
         private float? _cachedJudicialFundingInput;
         private float? _cachedBorderEnforcementInput;
+        private float? _cachedFamilyPolicyInput;
+        private float? _cachedImmigrationPolicyInput;
         private string _cachedGdpGrowthText;
         private string _cachedUnemploymentText;
         private string _cachedInflationText;
@@ -921,8 +927,25 @@ namespace PoliSim.UI
             GUILayout.Label($"Workforce Retraining Programs: {draftRetraining:F0}", _labelStyle);
             _retrainingProgramInput = GUILayout.HorizontalSlider(draftRetraining, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
 
+            GUILayout.Space(8f);
+            float draftFamilyPolicy = GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel);
+            GUILayout.Label($"Family Policy: {draftFamilyPolicy:F0} (0 = minimal support, 100 = maximal pro-natalist support)", _labelStyle);
+            _familyPolicyInput = GUILayout.HorizontalSlider(draftFamilyPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
+            float draftImmigrationPolicy = GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel);
+            GUILayout.Label($"Immigration Policy: {draftImmigrationPolicy:F0} (0 = maximally restrictive, 100 = maximally open)", _labelStyle);
+            _immigrationPolicyInput = GUILayout.HorizontalSlider(draftImmigrationPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+
             GUILayout.Space(10f);
             _laborForceParticipationGraph.Draw("Labor Force Participation (last 50 turns)", _playerCountry.History.LaborForceParticipationRate, null, _labelStyle, higherIsBetter: true);
+
+            GUILayout.Space(8f);
+            EconomyState demographicState = _playerCountry.State;
+            GUILayout.Label(
+                $"Population: {demographicState.Population:F1}M ({demographicState.PopulationGrowthRate:+0.0;-0.0}/1,000/yr) - " +
+                $"Birth {demographicState.BirthRate:F1}, Death {demographicState.DeathRate:F1}, Net Migration {demographicState.NetMigrationRate:+0.0;-0.0}, " +
+                $"Dependency Ratio {demographicState.DependencyRatio:F1}",
+                _labelStyle);
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -1084,6 +1107,16 @@ namespace PoliSim.UI
             }
 
             if (!Mathf.Approximately(
+                    GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel),
+                    GetCachedFamilyPolicyInput(_playerCountry.FamilyPolicyLevel))
+                || !Mathf.Approximately(
+                    GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel),
+                    GetCachedImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel)))
+            {
+                return true;
+            }
+
+            if (!Mathf.Approximately(
                     GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks),
                     GetCachedPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks))
                 || !Mathf.Approximately(
@@ -1208,6 +1241,8 @@ namespace PoliSim.UI
             _cachedDrugPolicyInput = _drugPolicyInput;
             _cachedJudicialFundingInput = _judicialFundingInput;
             _cachedBorderEnforcementInput = _borderEnforcementInput;
+            _cachedFamilyPolicyInput = _familyPolicyInput;
+            _cachedImmigrationPolicyInput = _immigrationPolicyInput;
             _cachedPaidFamilyLeaveWeeksInput = _paidFamilyLeaveWeeksInput;
             _cachedOvertimeRegulationInput = _overtimeRegulationInput;
             _cachedRetrainingProgramInput = _retrainingProgramInput;
@@ -1392,6 +1427,11 @@ namespace PoliSim.UI
         private float GetBorderEnforcementInput(float fallbackLevel) => _borderEnforcementInput ?? fallbackLevel;
         private float GetCachedBorderEnforcementInput(float fallbackLevel) => _cachedBorderEnforcementInput ?? fallbackLevel;
 
+        private float GetFamilyPolicyInput(float fallbackLevel) => _familyPolicyInput ?? fallbackLevel;
+        private float GetCachedFamilyPolicyInput(float fallbackLevel) => _cachedFamilyPolicyInput ?? fallbackLevel;
+        private float GetImmigrationPolicyInput(float fallbackLevel) => _immigrationPolicyInput ?? fallbackLevel;
+        private float GetCachedImmigrationPolicyInput(float fallbackLevel) => _cachedImmigrationPolicyInput ?? fallbackLevel;
+
         /// <summary>The Economic Sectors tab's draft absolute Subsidy level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted SubsidyLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetSectorSubsidyInput(SectorType type, float fallbackLevel)
         {
@@ -1515,6 +1555,8 @@ namespace PoliSim.UI
             decision.DrugPolicyOverride = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel);
             decision.JudicialFundingOverride = GetJudicialFundingInput(_playerCountry.JudicialFundingLevel);
             decision.BorderEnforcementOverride = GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel);
+            decision.FamilyPolicyOverride = GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel);
+            decision.ImmigrationPolicyOverride = GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel);
 
             decision.PaidFamilyLeaveWeeksOverride = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
             decision.OvertimeRegulationOverride = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel);

@@ -507,6 +507,27 @@ namespace PoliSim.Simulation
         /// <summary>Realistic low-fertility floor, informed by the real world's own lowest-ever recorded national crude birth rates (some East Asian countries have fallen to roughly this range in recent years) - not literally zero, since no country's birth rate has realistically approached that.</summary>
         private const float MinBirthRate = 5f;
 
+        /// <summary>
+        /// Round 3 item 5, Part B: generous upper safety bound on BirthRate - unreachable in Part A
+        /// (BirthRate only ever declined), but now needed since FamilyPolicyLevel can push it up.
+        /// Comfortably above any modern developed-nation crude birth rate (even historical baby-boom
+        /// peaks rarely exceeded the high teens) - a gameplay safety bound, not a realistic ceiling
+        /// this lever is expected to actually reach.
+        /// </summary>
+        private const float MaxBirthRate = 20f;
+
+        /// <summary>
+        /// Round 3 item 5, Part B: points BirthRate moves per point Country.FamilyPolicyLevel sits
+        /// away from its neutral 50 - at the slider's full extremes (0 or 100) this is +/-1.5 points,
+        /// deliberately SMALL: real-world evidence on pro-natalist policy's effect on fertility is
+        /// itself small and contested (already flagged honestly in EconomyState.BirthRate's own doc
+        /// comment when Part A was written). Feeds directly into the same BirthRate the secular-decline
+        /// drift below already updates - no separate channel, so this lever automatically flows
+        /// through the same (YearsPerTurn-scaled, capped/reverting) ApplyPopulationGrowth pipeline
+        /// every other BirthRate driver already uses.
+        /// </summary>
+        private const float FamilyPolicyBirthRateSensitivity = 0.03f;
+
         /// <summary>Points DeathRate rises per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented mechanical effect: an aging population structurally raises the crude death rate even with no change in age-specific mortality, since a larger share of the population is simply older.</summary>
         private const float DeathRateAgingDriftSensitivity = 0.003f;
 
@@ -519,6 +540,22 @@ namespace PoliSim.Simulation
         /// <summary>Generous gameplay safety bounds on NetMigrationRate - wide enough for Part B's Immigration Policy lever to swing meaningfully in either direction (open vs. restrictive) without an artificial mid-range ceiling getting in the way first.</summary>
         private const float MinNetMigrationRate = -15f;
         private const float MaxNetMigrationRate = 15f;
+
+        /// <summary>
+        /// Round 3 item 5, Part B: points NetMigrationRate moves per point Country.ImmigrationPolicyLevel
+        /// sits away from its neutral 50 - at the slider's full extremes (0 or 100) this is +/-5 points,
+        /// deliberately WIDER than FamilyPolicyBirthRateSensitivity's swing: immigration policy is a
+        /// genuinely more responsive real-world lever than fertility (visa/asylum/quota changes can move
+        /// actual migration flows within a single term, unlike birth rates) - see EconomyState.
+        /// NetMigrationRate's own doc comment from Part A, which anticipated exactly this. Feeds
+        /// directly into the same NetMigrationRate the aging-drift term below already updates - no
+        /// separate channel, so this lever automatically flows through the same (YearsPerTurn-scaled)
+        /// ApplyPopulationGrowth pipeline AND the existing NetMigrationRate-gap term in
+        /// ApplyLaborForceParticipationRate's combined ceiling, rather than adding a second, parallel
+        /// immigration-to-labor-force channel - avoiding the double-counting risk this item's own
+        /// roadmap brief flagged structurally, not just by convention.
+        /// </summary>
+        private const float ImmigrationPolicyNetMigrationSensitivity = 0.1f;
 
         /// <summary>Points DependencyRatio rises per point the DeathRate-versus-BirthRate gap sits above zero (natural decrease - more deaths than births) - the single derived aging/dependency proxy's own drift mechanism, deliberately simple, not a full age-cohort/population-pyramid model. Never decreases in this pass - real developed-world aging trends are one-directional over any timescale this game's turns plausibly represent.</summary>
         private const float DependencyRatioDriftSensitivity = 0.0015f;
@@ -535,15 +572,35 @@ namespace PoliSim.Simulation
         /// (natural decrease); DeathRate and NetMigrationRate then both drift further based on how far
         /// DependencyRatio has risen above its own baseline (population aging mechanically raises
         /// crude death rate and, separately, developed economies' real-world reliance on immigration).
-        /// Must run BEFORE ApplyPopulationGrowth, which reads these same-turn freshly-updated rates -
-        /// the same "must see this turn's just-updated value" timing requirement Infrastructure
-        /// Feedback's condition-drag already established.
+        ///
+        /// BirthRate/NetMigrationRate are each computed as a policy-INDEPENDENT "natural" trajectory
+        /// (EconomyState.NaturalBirthRate/NaturalNetMigrationRate, which only ever see the secular-
+        /// decline/aging-drift terms above) plus this turn's FamilyPolicyLevel/ImmigrationPolicyLevel
+        /// offset, recomputed FRESH each turn rather than compounded onto the stored rate directly
+        /// (Round 3 item 5, Part B). This is deliberate, not incidental: a first version applied the
+        /// policy term as a constant per-turn ADDITION to BirthRate/NetMigrationRate themselves, which
+        /// ratchets either rate to its hard ceiling within single-digit turns and parks it there for
+        /// the rest of the run whenever the slider sits away from neutral - reintroducing, one layer
+        /// upstream, the exact "no reversion, runs to an extreme and stays" failure pattern the
+        /// Population growth-rate corrections above (see CLAUDE.md) were written to fix. Recomputing
+        /// fresh from the natural trajectory instead means holding a slider at any fixed value produces
+        /// a constant, bounded shift from the underlying secular trend - not an ever-growing one - while
+        /// still being fully responsive if the player changes the slider mid-run.
+        ///
+        /// Both policy offsets land on BirthRate/NetMigrationRate themselves - the SAME quantities
+        /// every other driver here already updates - so they automatically inherit
+        /// ApplyPopulationGrowth's YearsPerTurn-scaled, capped/reverting pipeline with no separate
+        /// application path. Must run BEFORE ApplyPopulationGrowth, which reads these same-turn
+        /// freshly-updated rates - the same "must see this turn's just-updated value" timing
+        /// requirement Infrastructure Feedback's condition-drag already established.
         /// </summary>
         public static void ApplyDemographicRates(Country country)
         {
             EconomyState state = country.State;
 
-            state.BirthRate = Mathf.Max(MinBirthRate, state.BirthRate - BirthRateSecularDeclineRate);
+            state.NaturalBirthRate = Mathf.Clamp(state.NaturalBirthRate - BirthRateSecularDeclineRate, MinBirthRate, MaxBirthRate);
+            float familyPolicyEffect = FamilyPolicyBirthRateSensitivity * (country.FamilyPolicyLevel - 50f);
+            state.BirthRate = Mathf.Clamp(state.NaturalBirthRate + familyPolicyEffect, MinBirthRate, MaxBirthRate);
 
             float birthDeathGap = state.DeathRate - state.BirthRate;
             state.DependencyRatio = Mathf.Clamp(
@@ -552,7 +609,12 @@ namespace PoliSim.Simulation
 
             float dependencyGap = Mathf.Max(0f, state.DependencyRatio - country.BaselineDependencyRatio);
             state.DeathRate = Mathf.Clamp(state.DeathRate + DeathRateAgingDriftSensitivity * dependencyGap, 0f, MaxDeathRate);
-            state.NetMigrationRate = Mathf.Clamp(state.NetMigrationRate + MigrationAgingDriftSensitivity * dependencyGap, MinNetMigrationRate, MaxNetMigrationRate);
+
+            state.NaturalNetMigrationRate = Mathf.Clamp(
+                state.NaturalNetMigrationRate + MigrationAgingDriftSensitivity * dependencyGap,
+                MinNetMigrationRate, MaxNetMigrationRate);
+            float immigrationPolicyEffect = ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - 50f);
+            state.NetMigrationRate = Mathf.Clamp(state.NaturalNetMigrationRate + immigrationPolicyEffect, MinNetMigrationRate, MaxNetMigrationRate);
         }
 
         /// <summary>Small positive floor so a shrinking population can still recover instead of locking at exactly 0 (0 times anything is still 0) - mirrors MacroSystem.MinGdp's own reasoning.</summary>

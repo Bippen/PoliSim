@@ -3241,6 +3241,83 @@ Eurostat/UN-grounded target).
   instruction. UI display for the five new fields is also deferred to Part B, where it will sit
   naturally alongside the two new policy sliders rather than being added twice.
 
+## Demographics, Part B (Family Policy and Immigration Policy levers)
+Adds the two policy levers Part A deliberately deferred - `Country.FamilyPolicyLevel` (0-100, 50 =
+neutral, nudges `EconomyState.BirthRate`) and `Country.ImmigrationPolicyLevel` (0-100, 50 = neutral,
+nudges `EconomyState.NetMigrationRate`) - following the exact `PolicyDecision.XOverride` (-1 sentinel)
+/ `Country.XLevel` (persistent) / `SimulationManager.ApplyDemographicPolicyChanges` (clamp-and-set,
+called before `ApplyDemographicRates` the same "avoid a one-turn lag" way `ApplyCrimeJusticeDeeperChanges`
+already does) / GameController slider pattern every other policy dial in this project already uses.
+Explicitly required to flow through the ALREADY-CORRECTED `YearsPerTurn`-scaled `ApplyPopulationGrowth`
+pipeline from the two Part A corrections above, not bypass it.
+
+- **A real bug found and fixed before validation, not glossed over**: the first version applied each
+  lever's effect as a CONSTANT ADDITIVE TERM directly onto `BirthRate`/`NetMigrationRate` every turn
+  (`BirthRate = Clamp(BirthRate - decline + policyEffect, Min, Max)`). A throwaway diagnostic (neutral
+  vs. maxed vs. minned levers, 500 turns, USA) caught this immediately: holding either slider at 100
+  ratchets its target rate to its hard ceiling (`MaxBirthRate`/`MaxNetMigrationRate`) within
+  single-digit turns and parks it there for the rest of the run - reintroducing, one layer upstream,
+  the EXACT "no reversion, runs to an extreme and stays" failure pattern the Population growth-rate
+  corrections above were written to fix, and nowhere close to the "small, bounded... this lever moves
+  the needle, it does not reverse the trajectory" discipline this item was scoped under.
+- **Fix - policy effect as a fresh, non-compounding offset from a policy-independent trajectory**:
+  added `EconomyState.NaturalBirthRate`/`NaturalNetMigrationRate`, which evolve via ONLY the pre-existing
+  secular-decline/aging-drift terms (never touched by either lever). `BirthRate`/`NetMigrationRate`
+  (the fields everything else already reads) are recomputed FRESH each turn as `Clamp(Natural +
+  thisTurnsPolicyOffset, Min, Max)`, not accumulated onto themselves - so holding a slider at any fixed
+  value produces a constant, bounded shift from the underlying secular trend (which itself keeps
+  moving), not an ever-growing one, while staying fully responsive if the slider changes mid-run.
+  Re-tested via the same diagnostic: MAXED (both levers at 100) now shows `BirthRate`/`NetMigrationRate`
+  tracking "natural trajectory + constant offset" (e.g. USA `BirthRate` 12.09 -> 11.10 -> ... -> 7.10 at
+  turns 1/100/.../500, exactly the neutral run's own declining shape shifted up by +1.5 the whole time)
+  instead of pinning at the ceiling.
+- **Sensitivities, small and bounded per this item's own discipline**: `FamilyPolicyBirthRateSensitivity`
+  = 0.03 (+/-1.5 points on `BirthRate` at the slider's full extremes) - deliberately small, since
+  real-world evidence on pro-natalist policy's effect on fertility is itself small and contested (already
+  flagged honestly in `EconomyState.BirthRate`'s own doc comment when Part A was written).
+  `ImmigrationPolicyNetMigrationSensitivity` = 0.1 (+/-5 points on `NetMigrationRate`) - deliberately
+  WIDER, since immigration policy is a genuinely more responsive real-world lever than fertility (visa/
+  asylum/quota changes can move actual migration within a single term, unlike birth rates) - exactly
+  what `EconomyState.NetMigrationRate`'s own Part A doc comment anticipated. A new `MaxBirthRate` (20)
+  safety ceiling was added - unreachable in Part A (`BirthRate` only ever declined) but now needed
+  since `FamilyPolicyLevel` can push it up.
+- **No double-counting with `LaborForceParticipationRate`, verified structurally, not by convention**:
+  `ImmigrationPolicyLevel`'s effect lands on the SAME `NetMigrationRate` that Part A's
+  `ApplyLaborForceParticipationRate` combined ceiling already reads (the "NetMigrationRate gap vs.
+  Country.BaselineNetMigrationRate" term) - no second, parallel immigration-to-labor-force channel was
+  added. This is exactly the double-counting risk this item's own roadmap brief flagged as a "genuine
+  design decision to expect"; it's avoided because there is structurally only one variable and one
+  downstream channel, not because of a convention that could be violated later.
+- **New stress scenario**: `demographicpolicystress` pushes USA's `FamilyPolicyLevel` and
+  `ImmigrationPolicyLevel` both to 100 at turn 1 and holds - the worst-case simultaneous push toward
+  MORE population growth, exercising `MaxPopulationGrowthRateDeviation`'s cap and the LFPR ceiling's
+  `NetMigrationRate`-gap term at once, under the corrected `YearsPerTurn`-scaled pipeline. Added
+  directly to `SimulationTestRunner` (no standalone-harness equivalent, since the harness was already
+  superseded as the source of truth before this item started).
+- **UI**: two new sliders (Family Policy, Immigration Policy) added to the Labor Market tab -
+  immigration's connection to labor supply already lives there via the existing LFPR graph, and Family
+  Policy fits naturally alongside it rather than opening a new tab for two dials. A plain-text
+  demographic summary line (Population, growth rate, Birth/Death/Net Migration, Dependency Ratio) was
+  added below the existing LFPR graph too, so the levers are visibly connected to something - full
+  `StatHistory` graph tracking for the five demographic fields remains deferred (Part A didn't add it
+  either; out of scope for what this pass asked for).
+- **Validated - full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 13 scenarios x
+  100/500 turns, 26 combinations)**: zero anomalies for any demographic field (`Population`/
+  `PopulationGrowthRate`/`DependencyRatio`/`BirthRate`/`DeathRate`/`NetMigrationRate`/`NaturalBirthRate`/
+  `NaturalNetMigrationRate`/`FamilyPolicyLevel`/`ImmigrationPolicyLevel`) anywhere; per-scenario totals
+  (76-191 at 100 turns, 399-964 at 500) landed within the same established range, including the new
+  `demographicpolicystress` scenario itself (99/399) - not an outlier. `demographicpolicystress`'s
+  real-Unity USA results (Population 502.573M at turn 500, `PopulationGrowthRate` 2.200) matched the
+  throwaway diagnostic's MAXED run EXACTLY, confirming the diagnostic's fidelity before spending the
+  full matrix run on it. Compared to the baseline scenario (neutral 50/50 levers, Population 483.686M),
+  maxing both levers produces a real, felt, but bounded +3.9% higher Population at turn 500 - "moves
+  the needle," as intended, not a runaway divergence; GDP/Unemployment/Inflation/`DebtToGdpRatio` all
+  stayed within their own normal ranges too, confirming no unexpected interaction with the rest of the
+  fiscal/labor system.
+- **This concludes Round 3 item 5 (Demographics)** - both Part A (plumbing, drift, three reconciled
+  effects, corrected twice for the growth-rate reversion and turn-year-conversion bugs) and Part B (the
+  two policy levers, corrected once for the ratchet-to-ceiling bug) are done and validated.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

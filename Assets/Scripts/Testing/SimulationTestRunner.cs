@@ -19,10 +19,12 @@ namespace PoliSim.Testing
     /// -turns=N (default 100) - how many turns to run.
     /// -scenario=baseline|stress|sustainedexploit|tariffoverride|welfarestress|swfstress|
     /// phase2stress|laborstress|crimejusticestress|infrastructurestress|deferredmaintenance|
-    /// growthstackstress (default baseline) - baseline is PolicyDecision.None() for every country
-    /// every turn (the original behavior, unchanged); the other eleven mirror the standalone
-    /// harness's own same-named scenarios byte-for-byte (same targets, same rates, same turn timing)
-    /// so both tools exercise identical policy sequences against the real game code.
+    /// growthstackstress|demographicpolicystress (default baseline) - baseline is
+    /// PolicyDecision.None() for every country every turn (the original behavior, unchanged); most of
+    /// the rest mirror the standalone harness's own same-named scenarios byte-for-byte (same targets,
+    /// same rates, same turn timing) so both tools exercise identical policy sequences against the
+    /// real game code; demographicpolicystress (Round 3 item 5, Part B) has no harness equivalent -
+    /// added directly here, following the same pattern.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
@@ -39,7 +41,7 @@ namespace PoliSim.Testing
             public float DebtToGdpRatio;
         }
 
-        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress" };
+        private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress", "demographicpolicystress" };
         private static readonly int[] MatrixTurnCounts = { 100, 500 };
 
         private void Start()
@@ -170,6 +172,8 @@ namespace PoliSim.Testing
                     return BuildDeferredMaintenanceDecision(usa, turn);
                 case "growthstackstress":
                     return BuildGrowthStackStressDecision(usa, turn);
+                case "demographicpolicystress":
+                    return BuildDemographicPolicyStressDecision(turn);
                 default:
                     return PolicyDecision.None();
             }
@@ -313,6 +317,30 @@ namespace PoliSim.Testing
                     PaidFamilyLeaveWeeksOverride = 104f,
                     OvertimeRegulationOverride = 100f,
                     RetrainingProgramOverride = 100f
+                };
+            }
+
+            return PolicyDecision.None();
+        }
+
+        /// <summary>
+        /// Round 3 item 5, Part B: pushes USA's FamilyPolicyLevel and ImmigrationPolicyLevel both to
+        /// their maximum (100) at turn 1, then holds - the worst-case simultaneous push toward MORE
+        /// population growth, stress-testing MacroSystem.ApplyPopulationGrowth's
+        /// MaxPopulationGrowthRateDeviation cap and ApplyLaborForceParticipationRate's combined ceiling
+        /// (ImmigrationPolicyLevel's NetMigrationRate nudge feeds the SAME NetMigrationRate-gap term
+        /// laborstress above doesn't touch) at once, under this project's now-corrected
+        /// YearsPerTurn-scaled growth pipeline. No harness equivalent (added after the harness was
+        /// superseded as the source of truth - see "Real-Unity Validation is the Standard Path").
+        /// </summary>
+        private static PolicyDecision BuildDemographicPolicyStressDecision(int turn)
+        {
+            if (turn == 1)
+            {
+                return new PolicyDecision
+                {
+                    FamilyPolicyOverride = 100f,
+                    ImmigrationPolicyOverride = 100f
                 };
             }
 
@@ -647,6 +675,8 @@ namespace PoliSim.Testing
             }
 
             CheckFinite(turn, country, "NetMigrationRate", state.NetMigrationRate, anomalies);
+            CheckFinite(turn, country, "NaturalBirthRate", state.NaturalBirthRate, anomalies);
+            CheckFinite(turn, country, "NaturalNetMigrationRate", state.NaturalNetMigrationRate, anomalies);
 
             CheckFinite(turn, country, "DependencyRatio", state.DependencyRatio, anomalies);
             if (state.DependencyRatio < 0f || state.DependencyRatio > 100f)
@@ -662,6 +692,17 @@ namespace PoliSim.Testing
                 anomalies.Add($"Turn {turn} {country.Name}: PopulationGrowthRate out of a sane range ({state.PopulationGrowthRate:F3})");
             }
             CheckFinite(turn, country, "SteadyStateGrowthRate", country.SteadyStateGrowthRate, anomalies);
+
+            CheckFinite(turn, country, "FamilyPolicyLevel", country.FamilyPolicyLevel, anomalies);
+            if (country.FamilyPolicyLevel < 0f || country.FamilyPolicyLevel > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: FamilyPolicyLevel out of range ({country.FamilyPolicyLevel:F2})");
+            }
+            CheckFinite(turn, country, "ImmigrationPolicyLevel", country.ImmigrationPolicyLevel, anomalies);
+            if (country.ImmigrationPolicyLevel < 0f || country.ImmigrationPolicyLevel > 100f)
+            {
+                anomalies.Add($"Turn {turn} {country.Name}: ImmigrationPolicyLevel out of range ({country.ImmigrationPolicyLevel:F2})");
+            }
 
             CheckFinite(turn, country, "PrisonPopulationRate", state.PrisonPopulationRate, anomalies);
             if (state.PrisonPopulationRate < 0f)

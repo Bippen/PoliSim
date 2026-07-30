@@ -311,6 +311,9 @@ namespace PoliSim.Simulation
             ApplySwfPolicyChanges(country, decision);
             ApplyLaborPolicyChanges(country, decision);
             ApplyCrimeJusticeDeeperChanges(country, decision);
+            // Round 3 item 5, Part B: must run BEFORE ApplyDemographicRates, same reasoning as
+            // ApplyCrimeJusticeDeeperChanges above.
+            ApplyDemographicPolicyChanges(country, decision);
             // Round 3 item 5, Part A: must run BEFORE ResolveSpendingForTurn (pension/healthcare
             // pressure read this turn's freshly-updated DependencyRatio) and before
             // ApplyLaborForceParticipationRate below (reads DependencyRatio/NetMigrationRate).
@@ -423,6 +426,7 @@ namespace PoliSim.Simulation
             ApplySwfPolicyChanges(previewCountry, decision);
             ApplyLaborPolicyChanges(previewCountry, decision);
             ApplyCrimeJusticeDeeperChanges(previewCountry, decision);
+            ApplyDemographicPolicyChanges(previewCountry, decision);
             MacroSystem.ApplyDemographicRates(previewCountry);
             MacroSystem.ApplyPopulationGrowth(previewCountry);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
@@ -577,6 +581,8 @@ namespace PoliSim.Simulation
                 BaselineDependencyRatio = country.BaselineDependencyRatio,
                 BaselineNetMigrationRate = country.BaselineNetMigrationRate,
                 SteadyStateGrowthRate = country.SteadyStateGrowthRate,
+                FamilyPolicyLevel = country.FamilyPolicyLevel,
+                ImmigrationPolicyLevel = country.ImmigrationPolicyLevel,
                 BasePotentialGrowthRate = country.BasePotentialGrowthRate,
                 InfrastructureSpendingGrowthAdjustment = country.InfrastructureSpendingGrowthAdjustment
             };
@@ -930,6 +936,28 @@ namespace PoliSim.Simulation
             if (decision.BorderEnforcementOverride >= 0f)
             {
                 country.BorderEnforcementLevel = Mathf.Clamp(decision.BorderEnforcementOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+        }
+
+        /// <summary>
+        /// Round 3 item 5, Part B: sets Country.FamilyPolicyLevel/ImmigrationPolicyLevel directly to
+        /// this turn's requested PolicyDecision overrides (each clamped to [MinPolicyDialLevel,
+        /// MaxPolicyDialLevel]) - a no-op for either with no request this turn (the -1 sentinel), the
+        /// same pattern ApplyCrimeJusticeDeeperChanges already uses. Must run BEFORE
+        /// MacroSystem.ApplyDemographicRates, which reads these same-turn freshly-set levels - the
+        /// same "avoid a one-turn lag" timing requirement every other policy-apply method before it
+        /// already follows.
+        /// </summary>
+        private void ApplyDemographicPolicyChanges(Country country, PolicyDecision decision)
+        {
+            if (decision.FamilyPolicyOverride >= 0f)
+            {
+                country.FamilyPolicyLevel = Mathf.Clamp(decision.FamilyPolicyOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+
+            if (decision.ImmigrationPolicyOverride >= 0f)
+            {
+                country.ImmigrationPolicyLevel = Mathf.Clamp(decision.ImmigrationPolicyOverride, MinPolicyDialLevel, MaxPolicyDialLevel);
             }
         }
 

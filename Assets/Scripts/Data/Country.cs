@@ -408,20 +408,53 @@ namespace PoliSim.Data
         /// Directionally real and well-documented for all six countries (Poland/Italy: severe,
         /// well-documented sub-replacement decline; Germany: moderate decline; France: near-stable,
         /// historically the most fertility-resilient large EU economy; Sweden/USA: modest
-        /// immigration-driven growth). Magnitudes are HONESTLY DAMPED below a literal extrapolation
-        /// of current trends: this project's "1 turn ~= 1 year" convention means the 500-turn
-        /// validation horizon is a ~500-year span, roughly 6.7x longer than the 75-year 2025-2100
-        /// window Eurostat/UN actually project. Poland's figure is anchored to (but damped from) the
-        /// annual rate implied by Eurostat's own 2025-2100 population projection (-31.6% cumulative)
-        /// via (1+r)^75 = 0.684, i.e. r = 0.684^(1/75) - 1 = ~-5.05 per 1000/year; using that literal
-        /// rate for 500 years would itself compound to roughly a 92% decline ((1-0.00505)^500 =~
-        /// 0.0795), which is a mechanical consequence of the horizon length, not evidence the rate is
-        /// unrealistic - see CLAUDE.md for the full derivation. This constant is deliberately damped
-        /// further so the 500-turn outcome stays a plausible demographic trajectory rather than a
-        /// literal 500-year compounding of a real 75-year rate. Same "generous, honestly-labeled
-        /// bound rather than literal reality" idiom as MaxDebtToGdpPercent's 300% ceiling.
+        /// immigration-driven growth). Magnitudes were originally calibrated against a WRONG "1 turn
+        /// ~= 1 year" approximation - this project's actual convention (ElectionSystem.ElectionCycle
+        /// = 12 turns per presidential term = 4 years, so 1 turn = 1/3 year) makes the 500-turn
+        /// validation horizon ~167 real years, not 500. Corrected via MacroSystem.YearsPerTurn, which
+        /// scales Population's per-turn update to the real turn-to-year fraction rather than changing
+        /// these per-country figures themselves (they're real, per-1,000-population-PER-YEAR rates,
+        /// same scale as BirthRate/DeathRate/NetMigrationRate - only how often they get APPLIED was
+        /// wrong). Poland's figure is anchored to (but damped from) the annual rate implied by
+        /// Eurostat's own 2025-2100 population projection (-31.6% cumulative over 75 years) via
+        /// (1+r)^75 = 0.684, i.e. r = 0.684^(1/75) - 1 = ~-5.05 per 1000/year - see CLAUDE.md for the
+        /// full derivation and the resulting, correctly-time-converted 167-year validation numbers.
+        /// Same "generous, honestly-labeled bound rather than literal reality" idiom as
+        /// MaxDebtToGdpPercent's 300% ceiling.
         /// </summary>
         public float SteadyStateGrowthRate = -1f;
+
+        /// <summary>
+        /// Round 3 item 5, Part B: this country's family/childcare policy support intensity, 0-100
+        /// (0 = minimal support, 100 = maximal pro-natalist support; 50 = neutral, the same uniform-
+        /// dial idiom BorderEnforcementLevel already uses). Persistent, player-adjustable via
+        /// PolicyDecision.FamilyPolicyOverride - see SimulationManager.ApplyDemographicPolicyChanges.
+        /// Nudges EconomyState.BirthRate directly, feeding the SAME already-corrected
+        /// MacroSystem.ApplyPopulationGrowth pipeline (YearsPerTurn-scaled, capped/reverting
+        /// PopulationGrowthRate) every other BirthRate driver already uses - no separate, bypassing
+        /// channel into Population. Deliberately SMALL: real-world evidence on pro-natalist policy's
+        /// effect on fertility is itself small and contested (already flagged honestly in
+        /// EconomyState.BirthRate's own doc comment when Part A was written) - this lever nudges the
+        /// trajectory, it does not reverse a country's underlying demographic direction on its own.
+        /// </summary>
+        public float FamilyPolicyLevel = 50f;
+
+        /// <summary>
+        /// Round 3 item 5, Part B: this country's immigration policy openness, 0-100 (0 = maximally
+        /// restrictive, 100 = maximally open; 50 = neutral). Persistent, player-adjustable via
+        /// PolicyDecision.ImmigrationPolicyOverride - see SimulationManager.ApplyDemographicPolicyChanges.
+        /// Nudges EconomyState.NetMigrationRate directly, feeding the SAME already-corrected
+        /// MacroSystem.ApplyPopulationGrowth pipeline every other NetMigrationRate driver already uses.
+        /// A wider bound than FamilyPolicyLevel's BirthRate nudge - immigration flows are a genuinely
+        /// more responsive real-world lever than fertility (visa/asylum/quota policy can move actual
+        /// migration within a single term, unlike birth rates) - see MacroSystem.ApplyDemographicRates.
+        /// Deliberately reuses the EXISTING NetMigrationRate-gap term already in
+        /// ApplyLaborForceParticipationRate's combined ceiling (added in Part A) for this lever's
+        /// labor-force effect, rather than adding a second, parallel immigration-to-labor-force
+        /// channel - this is exactly the double-counting risk this item's own roadmap brief flagged,
+        /// and it's avoided structurally (one variable, one downstream channel), not by convention.
+        /// </summary>
+        public float ImmigrationPolicyLevel = 50f;
 
         /// <summary>
         /// This country's independent central bank chair, or null for a country that instead uses

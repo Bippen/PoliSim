@@ -165,6 +165,30 @@ namespace PoliSim.Data
         public float NetMigrationRate;
 
         /// <summary>
+        /// Round 3 item 5, Part B: BirthRate's policy-INDEPENDENT secular trajectory - evolves ONLY
+        /// via BirthRateSecularDeclineRate's own drift (see MacroSystem.ApplyDemographicRates), never
+        /// touched by Country.FamilyPolicyLevel. BirthRate itself is recomputed FRESH each turn as
+        /// Clamp(NaturalBirthRate + this turn's policy offset, ...) rather than accumulating the
+        /// policy offset onto itself turn after turn - necessary because a CONSTANT per-turn additive
+        /// policy term (the first version of this lever) ratchets BirthRate to its hard ceiling within
+        /// single-digit turns and parks it there, reintroducing the exact "no reversion, runs to an
+        /// extreme and stays" failure pattern the Population growth-rate corrections above were written
+        /// to fix - one layer upstream. Keeping FamilyPolicyLevel's effect as a bounded OFFSET from a
+        /// policy-independent trajectory, recomputed fresh rather than compounded, avoids that failure
+        /// mode entirely: holding the slider at any fixed value produces a constant (not ever-growing)
+        /// shift from the natural trend, so BirthRate keeps following its underlying secular decline
+        /// merely offset by the policy, not pinned at MaxBirthRate forever.
+        /// </summary>
+        public float NaturalBirthRate;
+
+        /// <summary>
+        /// Round 3 item 5, Part B: NetMigrationRate's policy-INDEPENDENT trajectory (aging-driven drift
+        /// only, never touched by Country.ImmigrationPolicyLevel) - same "fresh offset, not compounded"
+        /// reasoning as NaturalBirthRate above, see MacroSystem.ApplyDemographicRates.
+        /// </summary>
+        public float NaturalNetMigrationRate;
+
+        /// <summary>
         /// Round 3 item 5, Part A: old-age dependency ratio (65+ population as a percentage of
         /// working-age 15-64 population) - the single derived aging/dependency proxy this pass uses,
         /// deliberately NOT a full age-cohort/population-pyramid model (see Country.
@@ -208,7 +232,8 @@ namespace PoliSim.Data
             float governmentDebt = 0f, float povertyRate = 10f, float laborForceParticipationRate = 62f, float crimeIndex = 25f,
             float prisonPopulationRate = 100f, float organizedCrimeIndex = 25f, float corruptionIndex = 30f,
             float population = 50f, float birthRate = 10f, float deathRate = 10f, float netMigrationRate = 1f,
-            float dependencyRatio = 30f, float populationGrowthRate = float.NaN)
+            float dependencyRatio = 30f, float populationGrowthRate = float.NaN,
+            float naturalBirthRate = float.NaN, float naturalNetMigrationRate = float.NaN)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -235,6 +260,8 @@ namespace PoliSim.Data
             PopulationGrowthRate = float.IsNaN(populationGrowthRate)
                 ? birthRate - deathRate + netMigrationRate
                 : populationGrowthRate;
+            NaturalBirthRate = float.IsNaN(naturalBirthRate) ? birthRate : naturalBirthRate;
+            NaturalNetMigrationRate = float.IsNaN(naturalNetMigrationRate) ? netMigrationRate : naturalNetMigrationRate;
             PrisonPopulationRate = prisonPopulationRate;
             OrganizedCrimeIndex = organizedCrimeIndex;
             CorruptionIndex = corruptionIndex;
@@ -249,7 +276,7 @@ namespace PoliSim.Data
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
                 GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate,
                 OrganizedCrimeIndex, CorruptionIndex, Population, BirthRate, DeathRate, NetMigrationRate,
-                DependencyRatio, PopulationGrowthRate);
+                DependencyRatio, PopulationGrowthRate, NaturalBirthRate, NaturalNetMigrationRate);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

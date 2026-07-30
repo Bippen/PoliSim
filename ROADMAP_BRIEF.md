@@ -334,6 +334,26 @@ last in Round 2. If time runs out before reaching it, that's the correct outcome
   (comfortably inside "same order of magnitude, not double"). See CLAUDE.md's second correction
   section for the full per-country numbers and derivation.
   **Part A is now genuinely done (for real this time); Part B (Family/Immigration Policy levers) can proceed.**
+- **Part B — DONE (2026-07-30): Family Policy and Immigration Policy levers.** `Country.FamilyPolicyLevel`/
+  `ImmigrationPolicyLevel` (0-100, 50 = neutral) nudge `BirthRate`/`NetMigrationRate` respectively,
+  following the standard `PolicyDecision.XOverride` / `Country.XLevel` / slider pattern every other
+  policy dial uses. Both explicitly flow through the already-corrected `YearsPerTurn`-scaled
+  `ApplyPopulationGrowth` pipeline from Part A's two corrections - no bypass. A real bug was found and
+  fixed before validation: the first version applied each lever as a constant per-turn addition, which
+  ratchets `BirthRate`/`NetMigrationRate` to their hard ceiling within single-digit turns and parks them
+  there - the exact "no reversion, runs to an extreme" failure pattern the Part A corrections fixed,
+  reintroduced one layer upstream. Fixed via `EconomyState.NaturalBirthRate`/`NaturalNetMigrationRate` -
+  a policy-independent trajectory that `BirthRate`/`NetMigrationRate` are recomputed FRESH from each
+  turn (natural + a bounded, non-compounding policy offset), not accumulated onto directly. No
+  double-counting with `LaborForceParticipationRate`: `ImmigrationPolicyLevel` lands on the SAME
+  `NetMigrationRate` Part A's LFPR ceiling already reads, verified structurally (one variable, one
+  channel), not by convention - the exact risk this item's own brief flagged. Re-validated on the full
+  26-combination real-Unity matrix (added a new `demographicpolicystress` scenario maxing both levers):
+  zero demographic anomalies anywhere; maxing both levers produces a real, felt, bounded +3.9% higher
+  turn-500 Population than baseline - moves the needle, doesn't run away. UI: two sliders added to the
+  Labor Market tab plus a plain-text demographic summary line; full graph history for the five
+  demographic fields remains deferred (out of scope for this pass). See "Demographics, Part B" in
+  CLAUDE.md for the full writeup. **Round 3 item 5 (Demographics) is now fully complete.**
 
 ---
 
