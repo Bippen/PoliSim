@@ -2293,6 +2293,218 @@ performance), not two.
   item and "Infrastructure Feedback" now carry the same real-Unity confirmation as every other change
   in this file.**
 
+## UI Revamp (Phases 1-5)
+A UI-only revamp of `GameController` - explicitly no simulation/economic-logic changes in any of the
+five phases below (Part 2 of the later "Country Selection" work is the one exception that touches
+`SimulationManager`/`WorldFactory`, and even that is a pure data decomposition - see that section).
+Given as four phases plus an unplanned fifth (the World Map), one commit per phase, with an explicit
+pause after Phase 2 for a manual screenshot check before continuing.
+
+### Phase 1 - Rolling Stat History
+`Assets/Scripts/Data/StatHistory.cs`: a rolling `MaxEntries = 50`-turn buffer per country, one
+`List<float>` per tracked stat (GDP, Unemployment, Inflation, ApprovalRating, DebtToGdpRatio,
+PovertyRate, InterestRate - plus four more added in Phase 4, see below), appended once per turn by
+`SimulationManager.AdvanceTurn` right after `ApplyDomesticPolicy`, deliberately kept separate from
+the existing Recent Turns text log (a formatted string per turn, not raw numbers a graph can use) and
+never touched by `PreviewTurn`'s throwaway clone - a live slider drag can never leak a phantom data
+point into a country's real history.
+
+### Phase 2 - Reusable Graph Component
+`Assets/Scripts/UI/GraphRenderer.cs`: a `Texture2D`-based line-graph component, redrawn only when its
+underlying data changes (not every OnGUI frame), auto-scaling its Y-axis per stat, extending one turn
+forward via `PreviewTurn()`'s estimate rendered lighter/dashed so a policy change's projected effect is
+visible before the player commits. Applied first to GDP/Unemployment/ApprovalRating on the dashboard.
+Manually confirmed in the Editor - automated windowed screenshot capture was attempted repeatedly and
+consistently hit the Editor indexing hang documented in "Real-Unity Validation is the Standard Path"
+above, independent of workload (a 1-turn seed hung at the identical point as a 100-turn one), so manual
+confirmation became the reliable path for this entire UI revamp.
+
+Two follow-up additions, same UI-only constraint: **axis labels** (Y-axis min/max plus a midpoint
+gridline+label, drawn as `GUI.Label` overlays from the graph's own last-computed min/max, no separate
+source of truth) and a **colored change summary** next to each graph's title (first-to-last percentage
+change, reusing GameController's existing signed-number formatting rather than inventing a new one,
+green/red via the same convention every other stat delta already uses - see "Conventions" below -
+correctly direction-aware: Unemployment's green is a DECREASE, GDP/Approval's green is an INCREASE,
+never a naive "positive number = green").
+
+### Phase 3 - Color Palette and Action-Coded Buttons
+`Assets/Scripts/UI/UiPalette.cs`: one limited palette, a distinct hue per system area, applied to every
+right-column tab plus the Federal Reserve/Crime/Labor headers, and a single green-good/red-bad delta
+convention (direction-aware per stat, same rule Phase 2's change-summary reuses) applied to the policy
+preview, dashboard GDP growth, trade balance, spending net, and SWF returns - `GraphRenderer`'s own
+change-summary coloring was refactored to read from this shared palette instead of keeping its own
+separate copy, so the two can never drift apart. Every Implement/Remove-style button is now
+action-color-coded with real hover/pressed states (solid-color textures per `GUIStyle` state, confirmed
+via a temporary Editor-only check that all 6 button kinds produce genuinely distinct normal/hover/active
+textures, not just definitions that look different on paper). Also fixed the Economic Sectors tab: the
+sector-name column width was sized off `_labelStyle`'s font metrics while actually rendering in the
+larger, bolder `_headerStyle`, so "Manufacturing" wrapped and collided with the adjacent stats text -
+now measured against the style it's actually drawn in.
+
+Validated: 100-turn baseline in real Unity (`BatchSimulationRunner`), 53 anomalies, all the known
+small-magnitude swing false positive - zero finite/negative/out-of-range anomalies. UI-only change, so
+a single scenario was sufficient (not the full stress matrix).
+
+### Phase 4 - Per-System Tab Reorganization
+Federal Reserve, Labor Market, Crime & Justice, and Infrastructure - each previously either a
+bolted-on dashboard panel or plain always-visible sliders with no home of their own - move into their
+own tabs, each tinted with its own `UiPalette` hue. The old combined "Trade & Spending" tab splits into
+a standalone Trade tab; its spending report moves into Spending Policy, next to the sliders it actually
+reports on. Minimum Wage joins Labor Market (a labor-market lever, not a standalone dashboard line).
+The tab bar becomes two rows (11 tabs) so nothing gets squeezed illegibly.
+
+`StatHistory` gains four more buffers (`TradeBalance`, `LaborForceParticipationRate`, `CrimeIndex`,
+`PrisonPopulationRate` - all already-computed `EconomyState` fields, no new economic logic), and
+`GraphRenderer` gains a `DrawNeutral` overload for stats with no clear "good direction" (Interest Rate,
+Incarceration Rate - kept honestly neutral rather than inventing a judgment call). Per-tab rollout:
+Federal Reserve gets a neutral Interest Rate graph; Labor Market a colored Labor Force Participation
+graph; Crime & Justice a colored Crime Index graph plus a neutral Incarceration Rate graph;
+Infrastructure (new) proportional bars per asset's Condition Index (a "compare 4 things right now"
+snapshot, not a trend, per the task's own bar-vs-graph guidance); Trade a Trade Balance graph plus
+proportional export/import bars per partner; Spending Policy a Debt-to-GDP graph plus proportional bars
+per spending line (scaled within Mandatory/Discretionary separately, since they differ by orders of
+magnitude); Welfare Policy a Poverty Rate graph; Sovereign Wealth Fund proportional bars for the
+asset-class mix. The dashboard itself is trimmed to true headline indicators only (GDP/Unemployment/
+Inflation/Approval/Poverty/Currency/Debt/Budget plus the three Phase 2 graphs) - everything that moved
+to a dedicated tab was removed from here, the "compact home view" the original task asked for.
+
+**Advance Turn stays pinned in the left column, structurally independent of the right column's tab
+content** - the earlier scroll/pinned-button layout bug this task explicitly warned against
+reintroducing was not reintroduced; every new/restructured tab follows the same
+scrollview-height-constrained pattern the existing tabs already used.
+
+Validated: 100-turn baseline in real Unity, 56 anomalies, all the known small-magnitude swing false
+positive - zero finite/negative/out-of-range anomalies. Manually confirmed in the Editor.
+
+### Camera Skybox Fix
+An unplanned small fix noticed during the tab work: this is an IMGUI-only game, nothing is ever meant
+to render behind the UI, so Unity's default Skybox clear was just visual noise in any gap the UI
+doesn't cover. Replaced with a solid dark color matching `GraphRenderer`'s own background tone, set
+once on `Camera.main` in `GameController.Start()` - no new assets. Validated: 100-turn baseline, 76
+anomalies, all the known small-magnitude swing false positive - zero finite/negative/out-of-range
+anomalies.
+
+### Phase 5 - World Map Tab (unplanned)
+Not part of the original four-phase plan - added after Phase 4 as a natural extension once every
+system had its own tab. `Assets/Scripts/UI/MapRenderer.cs`: a scoped-down interactive map using only
+existing simulation data, no new geographic data of any kind. Went through several design iterations
+(a two-blob landmass backdrop, then six hand-plotted country-outline polygons, then a full
+six-continent silhouette - none committed) before landing on an intentionally abstract "network
+diagram" layout, since hand-plotting a recognizable coastline from guessed vertices doesn't scale and
+kept producing jagged/crowded results.
+
+- A flat dark panel (matching `GraphRenderer`'s tone) with a subtle grid - no ocean/landmass geography.
+- Six circular nodes, one per country, GDP-sized (clamped so the smallest is never below 60% of the
+  largest - legibility over strict proportionality) and colored by each country's own `UiPalette` hue
+  (USA reuses the already-established Political/gold; the other five get the remaining hues, an
+  arbitrary but now-consistent pairing). Positioned in two loose clusters (USA west, the five European
+  countries east in roughly their real relative order), no attempt at geographic accuracy.
+- Trade lines connecting every real bilateral `TradePartner` pair from `WorldFactory`'s network (10
+  pairs), thickness and opacity both scaled by that pair's actual trade volume - real data, not
+  decoration.
+- Event markers: a colored, severity-sized dot per fired event (severity derived from the existing
+  `GdpShockPercent`/`InflationShockPoints`/`ApprovalEffect` envelope - see "Expanded Event Pool" - no
+  new field invented), fading out over `EventMarkerFadeTurns` turns via a small rolling history
+  `GameController` now tracks (`SimulationManager.GetLastEvent` only ever exposes the current turn's
+  event).
+- Hover shows a compact GDP/Unemployment/Approval tooltip; click pins a detail panel below the map -
+  full dashboard-level detail for USA, a labeled read-only summary for the other five.
+
+Also fixed a layout overflow found after the map landed: the 11-tab (now 12) bar let each button
+auto-size to its own label with no explicit width, so at smaller window sizes 6 buttons per row could
+sum wider than the available column and overflow past the screen edge instead of wrapping - fixed by
+explicitly dividing the same screen-relative `rightColumnWidth` across 6 buttons per row, plus
+word-wrap so long labels degrade to two lines instead of clipping. The map's own node/label positions
+were already percentage-based but had no reserved margin for the label's fixed pixel width - fixed by
+insetting the usable drawing area by a margin sized to the label.
+
+Validated: single-scenario 100-turn baseline after every design iteration, zero finite/negative/
+out-of-range anomalies each time. Visual results manually confirmed in the Editor - this environment's
+automated windowed screenshot capture hit the same unresolved indexing hang on every attempt, so manual
+confirmation was the reliable path for this entire map subsystem.
+
+## Country Selection
+Two-part task making the player's country runtime-selectable, rather than `PlayerCountryId` staying a
+hardcoded USA constant forever.
+
+### Part 1 - Runtime-Selectable PlayerCountryId
+`PlayerCountryId` converted from a compile-time constant to a property backed by a nullable
+`_selectedPlayerCountryId` field, set once via a new pre-dashboard selector screen
+(`DrawCountrySelector`, gated at the top of `OnGUI` before any dashboard code runs). Every existing call
+site kept working unchanged - confirmed by grep before touching anything that only the old `const`
+declaration itself was hardcoded, every other reference already used the `PlayerCountryId` symbol.
+Six selector buttons, one per country, colored with that country's own `UiPalette` identity (the
+country-color mapping moved from `MapRenderer`-private into `UiPalette.GetCountryArea`/
+`GetCountryColor` so the selector and the World Map tab can never drift apart on which color means
+which country). Also improved the Eurozone shared-interest-rate message on the Federal Reserve tab to
+name the other two Eurozone members dynamically (excluding whichever is being played) now that a
+player can actually end up playing Germany/France/Italy rather than only ever observing USA.
+
+A scoped assumption going in turned out not to hold: `GameController` had no USA-specific conditionals
+left to generalize - every branch that mattered (SpendingLine existence, FedChair existence,
+shared-currency detection) was already written generically throughout the prior UI-revamp phases,
+confirmed directly rather than assumed.
+
+Validated: single-scenario 100-turn baseline, zero finite/negative/out-of-range anomalies - UI-only
+change. Selector screen manually confirmed in the Editor.
+
+### Part 2 - Generic Spending Decomposition for the Other Five Countries
+Part 1's own commit message noted this directly: Part 2 is what actually exercises the new generality
+for the first time, since the other five countries had no detailed `SpendingLines` portfolio at all
+before this. Adds a small, generic 5-category decomposition (`SocialPrograms`, `Defense` (reused, not
+new), `InfrastructureAndDevelopment`, `PublicServices`, `Administration`) for Sweden/Germany/France/
+Italy/Poland, mirroring USA's own original Phase 1 broad-categories stage, not its later detailed work.
+`WorldFactory.SeedGenericSpendingLines` computes the total directly from each country's OWN CURRENT
+`GDP * GovernmentSpendingRate/100` (read live at seed time, never a separately-hardcoded duplicate that
+could drift) and makes `Administration` the exact remainder of the other four, guaranteeing the five
+lines sum to EXACTLY that total regardless of floating-point rounding - a pure decomposition, not a
+recalibration, and confirmed unable to change any country's fiscal trajectory: `ResolveSpendingForTurn`
+branches purely on `SpendingLines.Count > 0`, and before this change these five countries had an empty
+list and fell through to the legacy `GetBaselineGovernmentSpending`, which computes the exact same
+`GDP * GovernmentSpendingRate/100` total - so the number feeding `ApplyRevenueAndSpending` is bit-for-bit
+unchanged, only its breakdown into visible categories is new. The percentage splits themselves are
+honestly illustrative, not individually researched, except Poland's higher Defense share (real and
+well-documented - Poland has run one of NATO's highest defense-spending-to-GDP ratios given its
+frontline position). Only `Defense` and `InfrastructureAndDevelopment` feed an existing economic effect
+(`SimulationManager.BuildEffectiveDecisionForDetailedSpending` now sums `GetActualDollarChange` for both
+`Transportation` and `InfrastructureAndDevelopment` into `InfrastructureSpendingChange`, safe as a plain
+addition since a given country's portfolio only ever contains one of the two) - the other three get zero
+effect for now, deliberately mirroring how 15 of USA's own 19 Discretionary categories still have none
+either.
+
+**A "Sweden vs. Germany debt-floor divergence" was flagged mid-task and investigated via temporary
+`[DIAG]` logging in `ApplyRevenueAndSpending` (removed before this commit) before Part 2 was committed.**
+Both countries showed large `DebtToGdpRatio` swings in their first several turns after getting real
+`SpendingLines` for the first time - Sweden's collapsing from 35% to a flat 0% by turn ~50 and staying
+there for long stretches (oscillating near zero for the rest of a 200-turn diagnostic run), Germany's
+settling into a genuinely flat, stable ~35.3-35.7% equilibrium from turn ~10 through turn 200. **Root
+cause: NOT a Part 2 bug** - confirmed above that Part 2 cannot change either country's G total. The
+actual driver is Sweden having an active Sovereign Wealth Fund (see "Sovereign Wealth Fund Expansion to
+All Six Countries") whose `SwfReturns` compound into revenue every turn (growing from ~$8B to over
+$3,400B across the 200-turn diagnostic run) on top of a structural Revenue-far-exceeds-spending
+imbalance both countries already share (Germany's own `TheoreticalRevenue` also runs roughly 2x its `G`
+from turn 1) - Germany has `SwfReturns = 0` throughout (no fund), so its primary surplus is smaller and
+it settles at a genuine non-zero equilibrium once `GetFiscalReactionMultiplier` stabilizes around 0.585-
+0.59, while Sweden's extra SWF-driven surplus is large enough to run its debt into the pre-existing,
+intentional `Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt)` floor and keep it pinned
+near zero. Both the debt floor and the `[0.5, 1.5]` `fiscalReactionMultiplier` clamp
+(`MinFiscalReactionMultiplier`/`MaxFiscalReactionMultiplier`) are pre-existing, intentional design
+constraints from "Fiscal Reaction Function," not anything introduced by this task - and this same
+bimodal debt-to-zero-or-ceiling tendency under a no-policy baseline is already independently documented
+for USA in "SpendingLine Amount Ceiling - Debt-to-Zero Fix," so Sweden landing on the zero end of that
+same known spectrum is consistent with prior findings, not a new phenomenon.
+
+Validated: full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x 100/500
+turns, 24 combinations) after removing the diagnostic logging - 3,445 total flagged anomalies across
+every combination, but **every single one** is the already-established small-magnitude swing false
+positive (1,798 `DebtToGdpRatio`, 971 `Inflation`, 70 `Unemployment` - all on the five newly-decomposed
+countries, concentrated on Sweden at 1,553 given the SWF-driven dynamic above) - zero finite/negative/
+out-of-range anomalies anywhere in the full matrix. The elevated anomaly count relative to earlier
+UI-only phases (53-76) is expected and specific to this change actually giving these five countries real
+spending data to swing on for the first time, not a regression - the full stress matrix (not just a
+single baseline scenario) was run here specifically because, unlike the UI-only phases above, Part 2
+does touch `SimulationManager`.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
