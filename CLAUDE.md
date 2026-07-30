@@ -2601,7 +2601,20 @@ the previously-*diverging* output gap (toward -18% to -20%) into a *stable* one 
 Debt-to-GDP settles around 150% under this fix (up from 0%, but safely clear of the 300% ceiling).
 The gap is still deep enough that Moderate and Dovish continue to land on the same floor - full
 three-way Fed chair differentiation remains a known, unresolved limitation (see "Federal Reserve"
-above for the full explanation and why closing it further wasn't pursued here). USA's seeded
+above for the full explanation and why closing it further wasn't pursued here). **A second, similarly
+unresolved limitation, alongside this one**: Sweden's and France's no-policy-baseline debt trajectory
+(see "Country Selection" above) settles permanently at the 0% debt floor rather than a moderate,
+country-appropriate equilibrium the way Germany's (~35%) and Italy's (~108%) do, driven by each
+country's Sovereign Wealth Fund returns compounding against the fiscal reaction function's saturation
+zone (`fiscalReactionMultiplier` floored at 0.5) faster than that negative feedback can offset it -
+confirmed not a crash or genuine anomaly (real-Unity matrix validation: zero finite/negative/
+out-of-range anomalies for either country), but a real gap against the "six distinct, realistic fiscal
+personalities" goal "Fiscal Reaction Function" otherwise achieved. Worth a future look, not urgent -
+two plausible directions, neither pursued here: giving the Sovereign Wealth Fund a countercyclical
+drawdown lever (there is currently no mechanic of any kind for a fund to shrink - `ContributionRatePercent`
+only ever adds to it, so a fund's returns compound unchecked regardless of the domestic business cycle),
+or giving the debt floor itself a small amount of slack instead of a hard clamp at exactly 0%. USA's
+seeded
 `PotentialGDP` was subsequently recalibrated (see "Turn-1 GDP Consistency") so this -13% to -15%
 equilibrium gap is already in effect from turn 1, instead of opening near 0% and sliding into it over
 the first ~25 turns - closing off a real, one-time ~9% GDP contraction the very first turn of any new
