@@ -30,9 +30,11 @@ namespace PoliSim.Simulation
         /// <summary>
         /// Applies each turn's interest rate policy decisions. A country with a non-null
         /// Country.CurrentFedChair (USA, for now) bypasses PolicyDecision.InterestRateChange
-        /// entirely - see FederalReserveSystem.ApplyFedChairInterestRate. Every other country's
-        /// decisions are summed into a single rate change per CurrencyZone (by reference), so e.g.
-        /// Germany/France/Italy move together as one Eurozone rate.
+        /// entirely - see FederalReserveSystem.ApplyFedChairInterestRate. A CurrencyZone shared by
+        /// more than one country (Germany/France/Italy, the Eurozone) uses EurozoneRateSystem's own
+        /// GDP-weighted, Taylor-Rule-blended mechanic instead - see that class. Every other country
+        /// (an independent, single-country zone - Sweden, Poland) has its own decision's
+        /// InterestRateChange applied directly as a raw rate delta, unchanged from before.
         /// </summary>
         public static void ApplyInterestRateChanges(World world, Dictionary<CountryId, PolicyDecision> decisions)
         {
@@ -50,6 +52,12 @@ namespace PoliSim.Simulation
                 CurrencyZone zone = country.CurrencyZone;
                 if (!processedZones.Add(zone))
                 {
+                    continue;
+                }
+
+                if (SharesCurrencyZoneWithOthers(country, world))
+                {
+                    EurozoneRateSystem.ApplyEurozoneRate(world, country, decisions);
                     continue;
                 }
 

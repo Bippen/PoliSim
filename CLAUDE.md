@@ -2599,6 +2599,80 @@ fix should come from making SWF returns realistic, not from adjusting anything e
   71 `Unemployment`), concentrated on Sweden (2,942) and France (1,917) as expected - zero finite/
   negative/out-of-range anomalies anywhere across the full matrix.
 
+## Eurozone Rate Voice
+Replaces the Eurozone's previous fully-shared, non-interactive rate (Germany/France/Italy's own
+`InterestRateChange` decisions were summed the same way Sweden/Poland's were, but every AI-controlled
+member always gets `PolicyDecision.None()`, so in practice only whichever member the player happened
+to be controlling could ever move the rate at all, and only via a raw manual delta, never in response
+to any member's actual economic conditions) with a lightweight EU-level "voice" mechanic, mirroring
+the real ECB Governing Council's structure at a stylized level. No formal `ROADMAP_BRIEF.md` Open
+Question existed for this - it was a known design gap (the country-selection Part 1 UI text explained
+this shared rate as read-only "by design," which was accurate under the old mechanic) rather than a
+logged open item, so there was nothing to formally resolve there, just implement.
+
+- **`EurozoneRateSystem`** (new file, `EurozoneRateSystem.cs`): `GetBlendedSuggestedRate(world,
+  zoneMember)` computes a GDP-weighted average of every member's own `TaylorRule.
+  GetSuggestedInterestRate` reading, sharing `zoneMember`'s `CurrencyZone` - a simplified version of
+  the real ECB's "capital key" concept (not a precise replica), recomputed fresh every turn since GDP
+  changes. A member with severe inflation or a large output gap pulls the shared rate more than a
+  smaller, calmer one, the same directional logic as the real ECB. `zoneMember` itself is used
+  directly for its own contribution (not re-read from `world`), so this works correctly for
+  `SimulationManager.PreviewTurn`'s throwaway clone too - the clone shares the same `CurrencyZone`
+  reference as the real country but isn't itself present in `world.Countries`, so the other members
+  are found there by excluding this one by `Id` rather than by reference.
+- **The player's push**: whichever Eurozone member the player is currently controlling gets a modest,
+  bounded push on top of the blend, via the SAME `PolicyDecision.InterestRateChange` field/slider
+  Sweden/Poland already use - reused rather than adding a new field, matching this task's own
+  "lightweight" framing. `MemberRatePushRange` (0.75) deliberately mirrors a Fed Chair's `RateBias` in
+  ORDER OF MAGNITUDE, not its exact range (`FederalReserveSystem.CandidatePool`'s own +-1.5) - half
+  that range, reflecting a national governor's real but limited sway over a currency-union-wide rate,
+  unlike USA's own unilateral Fed. Every other member's own decision is always `PolicyDecision.None()`
+  (`InterestRateChange` defaults to 0) whenever it isn't the player's country, the same convention
+  every other decision field already follows - so the other two members' contribution is always just
+  their own current-turn Taylor Rule reading, never influenced by any player input, exactly as asked.
+- **`ApplyEurozoneRate`**: sums every member's push (each clamped individually to
+  `[-MemberRatePushRange, +MemberRatePushRange]` before summing, defense-in-depth against the UI ever
+  sending an out-of-range value), adds it to the blended rate, clamps to `CurrencySystem`'s sane
+  bounds, then moves the zone's rate partway (`RateAdjustmentSpeed`, 0.15 - matching
+  `FederalReserveSystem`'s own damping value and role) toward that target rather than jumping straight
+  there, the same gradual-adjustment idiom "Federal Reserve Rate Damping" established.
+- **`CurrencySystem.ApplyInterestRateChanges`**: branches on `SharesCurrencyZoneWithOthers` (already
+  existed, unchanged) to route a multi-country zone through `EurozoneRateSystem.ApplyEurozoneRate`
+  instead of the old raw-additive-sum path - generic on "any zone shared by more than one country"
+  rather than hardcoding Germany/France/Italy by `CountryId`, since that's the only such zone in this
+  data model today. **Sweden/Poland's own independent-currency branch is byte-for-byte unchanged** -
+  a single-country zone never satisfies `SharesCurrencyZoneWithOthers`, so it always falls through to
+  the original code, exactly as this task required.
+- **`SimulationManager.PreviewTurn`**: gained a third branch (FedChair / shared-Eurozone-zone /
+  independent-currency) for `previewedInterestRate`, mirroring `CurrencySystem`'s own three-way split -
+  the Eurozone branch calls `GetBlendedSuggestedRate` plus the previewed decision's own clamped push,
+  without the real turn's damping term, the same "skip the damping, show the fuller target" cosmetic
+  approximation the pre-existing FedChair preview branch already used.
+- **UI** (`GameController.DrawFederalReserveTab`): a Eurozone-member player now sees a real "National
+  Rate Push" slider (reusing `_interestRateChangeInput`, just bounded to `EurozoneRateSystem.
+  MemberRatePushRange` instead of the generic `InterestRateChangeRange`), replacing the old read-only
+  framing - the explanatory text was rewritten to describe the GDP-weighted Taylor-Rule blend and the
+  player's own bounded push accurately, rather than the superseded "no single member state can set it
+  unilaterally... read-only by design" framing that predated this mechanic.
+- **Validated**: full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x
+  100/500 turns, 24 combinations) - zero finite/negative/out-of-range anomalies anywhere; every
+  flagged anomaly (6,941 total) was the already-established small-magnitude swing false positive,
+  including a newly-active `InterestRate` swing category (72 instances, e.g. USA's own FedChair-driven
+  rate moving `0.03 -> 0.08`, a tiny absolute move reading as a huge percentage off a near-zero base) -
+  confirmed this specific check (`CheckSwing(..., "InterestRate", ...)`) already existed in
+  `SimulationTestRunner` before this change, so its increased activity reflects genuinely more dynamic
+  rates now, not a new code path. Germany/France/Italy's baseline 500-turn trajectories stayed bounded
+  and consistent with previously-established patterns: the shared rate itself now correctly RISES in
+  response to rising inflation (2.74% at turn 1 to 9.86% by turn 500, versus staying frozen at a flat
+  2.25% for the entire 500 turns under the old mechanic in an equivalent prior run, direct evidence the
+  Taylor-Rule feedback is genuinely live) while GDP kept growing for all three (no collapse), Germany's
+  `DebtToGdpRatio` landed at 43.1% and Italy's at 126.1% (both the same order of magnitude as their
+  already-validated ~35%/~108% equilibria, not a runaway divergence), and France's landed at exactly
+  0% - within the ALREADY-DOCUMENTED bimodal range that country's SWF-return dynamic produces (see
+  "Sovereign Wealth Fund Return-Model Rebalance" above), not a new or worsened outcome caused by this
+  change. All three members always showed the identical `InterestRate` at any given turn across every
+  scenario, confirming the shared-zone mechanic stayed intact throughout.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.

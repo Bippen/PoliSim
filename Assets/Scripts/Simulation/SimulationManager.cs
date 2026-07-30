@@ -433,13 +433,25 @@ namespace PoliSim.Simulation
 
             ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns);
 
-            float previewedInterestRate = previewCountry.CurrentFedChair != null
-                ? Mathf.Clamp(
+            float previewedInterestRate;
+            if (previewCountry.CurrentFedChair != null)
+            {
+                previewedInterestRate = Mathf.Clamp(
                     TaylorRule.GetSuggestedInterestRate(previewCountry) + previewCountry.CurrentFedChair.RateBias,
-                    CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate)
-                : Mathf.Clamp(
+                    CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+            }
+            else if (CurrencySystem.SharesCurrencyZoneWithOthers(previewCountry, _world))
+            {
+                float blended = EurozoneRateSystem.GetBlendedSuggestedRate(_world, previewCountry);
+                float push = Mathf.Clamp(decision.InterestRateChange, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange);
+                previewedInterestRate = Mathf.Clamp(blended + push, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+            }
+            else
+            {
+                previewedInterestRate = Mathf.Clamp(
                     previewCountry.CurrencyZone.InterestRate + decision.InterestRateChange,
                     CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+            }
             MacroSystem.ApplyNationalAccounts(previewCountry, spendingResult.GovernmentSpending, previewedInterestRate);
             MacroSystem.ApplyPotentialGdpGrowth(previewCountry);
 

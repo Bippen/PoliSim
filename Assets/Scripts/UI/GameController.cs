@@ -728,9 +728,11 @@ namespace PoliSim.UI
         /// Federal Reserve tab (Phase 4 - moved off the dashboard into its own home). For USA's
         /// independent chair (see CLAUDE.md's "Federal Reserve" section): current chair's name/
         /// philosophy/description, and - on a turn where a new presidential term begins - the 2-3
-        /// candidates as selectable buttons. For a country with no independent chair (Sweden, Poland),
-        /// shows the player-controlled Interest Rate Change slider instead - this tab is that
-        /// control's home regardless of which mechanic the player's country actually uses.
+        /// candidates as selectable buttons. For a country with no independent chair and an
+        /// independent currency (Sweden, Poland), shows the player-controlled Interest Rate Change
+        /// slider. For a Eurozone member (Germany/France/Italy), shows a much narrower National Rate
+        /// Push slider instead - see CLAUDE.md's "Eurozone Rate Voice" - this tab is that control's
+        /// home regardless of which mechanic the player's country actually uses.
         /// </summary>
         private void DrawFederalReserveTab(float availableHeight)
         {
@@ -770,15 +772,20 @@ namespace PoliSim.UI
                 }
                 else
                 {
-                    // Country-selection task, Part 1: with PlayerCountryId now runtime-selectable, a
-                    // player CAN end up here as Germany/France/Italy, not just observe it as a read-
-                    // only note about someone else - the message names the OTHER Eurozone members
-                    // dynamically (excluding whichever one the player is currently playing), read-only
-                    // by design (per the task's explicit "don't change the shared-rate mechanic, it's
-                    // correct" direction) rather than looking broken or missing a control.
+                    // Eurozone Rate-Voice mechanic (see CLAUDE.md's "Eurozone Rate Voice"): the
+                    // shared rate is a GDP-weighted blend of all three members' own Taylor Rule
+                    // readings (EurozoneRateSystem.GetBlendedSuggestedRate), not something any one
+                    // member sets unilaterally - but whichever member the player is currently
+                    // controlling now gets a real, bounded push on top of that blend (reusing the
+                    // same InterestRateChange field/slider Sweden/Poland use, just with a much
+                    // narrower range - a national governor's real but limited sway, not unilateral
+                    // control). Superseded the original country-selection Part 1 framing, which
+                    // described this as fully read-only before this mechanic existed.
                     GUILayout.Label(
-                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()} - no single member state can set it unilaterally, the same way the real ECB sets one rate for the whole currency union. This is read-only by design, not a missing feature.",
+                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation/output-gap situation, weighted by its share of the three countries' combined GDP - a simplified version of the real ECB's \"capital key.\" As {_playerCountry.Name}'s governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
                         _labelStyle);
+                    GUILayout.Label($"National Rate Push: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
+                    _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, _sliderStyle, _sliderThumbStyle);
                     GUILayout.Label($"Current Eurozone Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
                 }
             }
