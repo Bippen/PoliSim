@@ -1426,6 +1426,24 @@ PoliSim.EditorTools.BatchSimulationRunner.Run -logFile <path> [-turns=N] [-scena
   process to exit on its own, then force-close it once that line appears. This is a real, unresolved
   limitation of running `BatchSimulationRunner` in this environment, not a simulation-code bug - it
   has no bearing on the correctness of any validation result obtained this way.
+- **Standing note: this hang has now recurred a 3rd time (during "Demographics, Part A"'s two
+  same-day corrections), with a DIFFERENT apparent trigger each time** - once with no preceding file
+  change at all, ruling out "deleted asset reconciliation" (a theory floated after the 2nd occurrence)
+  as any kind of reliable cause. Across all three occurrences the trigger has varied while the symptom
+  hasn't (post-Play "Start Indexing on Editor startup", CPU climbing with zero further log progress) -
+  this now looks like a genuinely intermittent Unity Editor behavior in this environment, not tied to
+  any single specific cause found so far. **Standard response going forward, to avoid re-diagnosing
+  this from scratch every time it recurs**: after any batch run, verify via `Get-Process -Name Unity`
+  (and `Unity.PackageManager`/`UnityPackageManager`) whether the process(es) actually exited before
+  assuming a hang needs investigating - don't trust a bash-side `pgrep`/process-name check alone, since
+  `pgrep -f` was found NOT to reliably match a Windows-launched process's command line (a false
+  "already exited" reading, corrected by checking `Get-Process` directly). Then check the log for
+  whether all scenarios already finished (`grep -c "Sanity check complete"` should equal the expected
+  count, e.g. 24 for a full `-runmatrix`) - the simulation data is written well before this hang point,
+  so it's very likely already fully present. If so, just kill the process(es), confirm via `Get-Process`
+  that nothing Unity-related is left running, and move on with the data already captured - do not spend
+  further time root-causing the hang itself each occurrence; that investigation has been repeated three
+  times now without converging on a single fixable cause.
 - **A plausible contributing factor, noted but not yet investigated**: force-killing a hung Unity
   process (the workaround above) leaves a `Temp/__Backupscenes/0.backup` behind, which the next
   launch reloads on startup - observed during the UI revamp's Phase 2 screenshot attempts (automated
