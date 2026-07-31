@@ -1378,6 +1378,16 @@ corrected). Now that a working install is confirmed reachable
 run via `Assets/Editor/BatchSimulationRunner.cs`, not the standalone C# harness alone**, and not by
 asking a person to open the Editor and press Play manually:
 
+**Editor version update (2026-08-01)**: the `6000.5.4f1` install referenced throughout this section
+and elsewhere in this file became corrupted (a partial Unity Hub update left `Data\BCLExtensions`,
+`Data\DotNetSdk`, `D3D12`, and `BugReporter` incomplete - `Unity.dll failed to load` on launch,
+`ERROR_FILE_NOT_FOUND` on every repair retry). Elias reinstalled clean via Unity Hub's own Uninstall
++ reinstall flow, which came back as **`6000.5.6f1`** instead of the same patch version - the current
+install is `G:\UNITY\Unity Hub\6000.5.6f1\Editor\Unity.exe`, confirmed healthy (analyzer DLL present,
+D3D12/BugReporter no longer empty). Every `6000.5.4f1` path elsewhere in this file is left as-is since
+it accurately describes what was true at the time it was written - read version numbers in historical
+narrative entries as of that entry's own date, not as current state.
+
 ```
 Unity.exe -batchmode -nographics -projectPath <path> -executeMethod
 PoliSim.EditorTools.BatchSimulationRunner.Run -logFile <path> [-turns=N] [-scenario=X] [-runmatrix]
