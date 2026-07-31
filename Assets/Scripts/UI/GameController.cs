@@ -2191,6 +2191,22 @@ namespace PoliSim.UI
         /// </summary>
         private const int ConsolidatedTabsPerRow = 7;
 
+        // Master Sequence step 5e, Phase C: the consolidated tab bar stacks its icon ABOVE its label
+        // rather than beside it. Beside-it was tried first (Phase B) and genuinely does not fit: the
+        // right column is ~55% of the window, so at 1080p each of the 7 tabs gets ~143px, while
+        // "Demographics" alone is ~175px of text at the 26px tab font - reserving a left gutter for an
+        // icon pushed labels to three lines and clipped them, and shrinking the icon to compensate put
+        // it back to the unreadable speck it started as. Stacking gives the label the full button width
+        // and the icon a size that actually reads. All five values below are deliberately expressed as
+        // multiples of the CURRENT tab font size (itself screen-height-derived, see RescaleStylesToScreen)
+        // rather than fixed pixels, so the whole arrangement scales with the window the same way every
+        // other control in this class already does.
+        private const float ConsolidatedTabIconTopPadding = 7f;
+        private const float ConsolidatedTabIconLabelGap = 3f;
+        private const float ConsolidatedTabLabelBottomPadding = 5f;
+        private const float ConsolidatedTabIconFontMultiple = 1.15f;
+        private const float ConsolidatedTabLabelFontScale = 0.72f;
+
         /// <summary>
         /// Explicitly divided evenly across <paramref name="availableWidth"/> - the SAME
         /// rightColumnWidth OnGUI already computes fresh from Screen.width every frame - so the row
@@ -2203,16 +2219,22 @@ namespace PoliSim.UI
             float buttonWidth = availableWidth / ConsolidatedTabsPerRow;
 
             GUILayout.BeginHorizontal();
-            // Master Sequence step 5e, Phase B pilot: ONLY Statistics gets its nav icon this phase -
-            // "Do NOT touch any other tab's rendering in this phase" - the other six stay text-only
-            // exactly as Phase A left them, rolled out in Phase C once this pilot is confirmed.
+            // Master Sequence step 5e, Phase C: all 7 tabs now carry their icon. The four icon_nav_*
+            // ones exist precisely because Statistics/Decisions/Demographics/Policy-Laws map to no
+            // single UiPalette.SystemArea; Tax, Spending and Politics instead reuse the existing area
+            // icons directly, exactly as CLAUDE_DESIGN_ASSET_REQUEST_5E.md's own manifest specifies
+            // ("Tax/Spending/Politics tabs reuse the existing icon_area_fiscal/icon_area_political
+            // icons directly - no new art needed"). Tax and Spending deliberately share one icon:
+            // both are GetConsolidatedTabArea -> Fiscal, and both are two differently-labeled entry
+            // points into the SAME Budget Process screen, so a shared mark is honest rather than a
+            // collision - flagged to Elias rather than silently substituted for something else.
             DrawConsolidatedTabButton("Statistics", ConsolidatedTab.Statistics, buttonWidth, "icon_nav_statistics");
-            DrawConsolidatedTabButton("Decisions", ConsolidatedTab.Decisions, buttonWidth);
-            DrawConsolidatedTabButton("Demographics", ConsolidatedTab.Demographics, buttonWidth);
-            DrawConsolidatedTabButton("Tax", ConsolidatedTab.Tax, buttonWidth);
-            DrawConsolidatedTabButton("Spending", ConsolidatedTab.Spending, buttonWidth);
-            DrawConsolidatedTabButton("Policy/Laws", ConsolidatedTab.PolicyLaws, buttonWidth);
-            DrawConsolidatedTabButton("Politics", ConsolidatedTab.Politics, buttonWidth);
+            DrawConsolidatedTabButton("Decisions", ConsolidatedTab.Decisions, buttonWidth, "icon_nav_decisions");
+            DrawConsolidatedTabButton("Demographics", ConsolidatedTab.Demographics, buttonWidth, "icon_nav_demographics");
+            DrawConsolidatedTabButton("Tax", ConsolidatedTab.Tax, buttonWidth, "icon_area_fiscal");
+            DrawConsolidatedTabButton("Spending", ConsolidatedTab.Spending, buttonWidth, "icon_area_fiscal");
+            DrawConsolidatedTabButton("Policy/Laws", ConsolidatedTab.PolicyLaws, buttonWidth, "icon_nav_policylaws");
+            DrawConsolidatedTabButton("Politics", ConsolidatedTab.Politics, buttonWidth, "icon_area_political");
             GUILayout.EndHorizontal();
         }
 
@@ -2225,33 +2247,59 @@ namespace PoliSim.UI
         /// button click does anything beyond changing which tab is selected, since Tax/Spending are two
         /// differently-labeled entry points into the exact same underlying screen, not two screens.
         ///
-        /// Master Sequence step 5e, Phase B: <paramref name="iconName"/> is optional and additive only
-        /// - the `GUILayout.Button` call itself is byte-for-byte unchanged from Phase A (same style,
-        /// same click handling), so the 6 tabs that pass null render EXACTLY as before. When an icon
-        /// name IS given, `GUILayoutUtility.GetLastRect()` reads back the rect the button JUST drew
-        /// itself into and overlays a small tinted icon in its left side - drawn AFTER, on top of,
-        /// never replacing the button, so this can never change what's clickable or where.
+        /// Master Sequence step 5e, Phase C: when <paramref name="iconName"/> is given, the icon is
+        /// stacked ABOVE the label (see the ConsolidatedTabIcon* constants for why beside-it was
+        /// abandoned). Crucially the space is RESERVED via `style.padding.top` BEFORE the button
+        /// draws, rather than the icon being overlaid on top afterwards - overlaying was the actual
+        /// cause of the icon-over-text collision Elias reported, since GUILayout centres the label in
+        /// whatever box it is given and neither party knew about the other. Padding makes the label's
+        /// own layout account for the icon, so they cannot collide at any window size or label length.
+        /// Every style change here is made on the per-call CLONE that BuildButtonStyle already returns,
+        /// never on `_tabButtonStyle` itself - that shared style also backs the sub-category buttons and
+        /// the Implement/Remove/Neutral action buttons, which must not inherit a taller tab bar's
+        /// geometry. A missing/failed-to-load texture degrades to the plain text-only button rather
+        /// than a gap, since the padding is only applied once the texture is known to be non-null.
         /// </summary>
         private void DrawConsolidatedTabButton(string label, ConsolidatedTab tab, float width, string iconName = null)
         {
             UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
             bool selected = _consolidatedTab == tab;
             GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
+
+            Texture2D icon = iconName != null ? IconLibrary.Get(iconName) : null;
+            float iconSize = 0f;
+            if (icon != null)
+            {
+                iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
+                int labelFontSize = Mathf.Max(11, Mathf.RoundToInt(_tabButtonStyle.fontSize * ConsolidatedTabLabelFontScale));
+                float labelBandHeight = labelFontSize + 6f;
+
+                style.fontSize = labelFontSize;
+                style.alignment = TextAnchor.MiddleCenter;
+                style.padding.top = Mathf.RoundToInt(ConsolidatedTabIconTopPadding + iconSize + ConsolidatedTabIconLabelGap);
+                style.padding.bottom = Mathf.RoundToInt(ConsolidatedTabLabelBottomPadding);
+                // Left/right trimmed to near-zero so the label gets the button's full width on one
+                // line - the whole point of stacking. Never smaller than the base height, so a very
+                // short window can't produce a tab bar shorter than the rest of the UI expects.
+                style.padding.left = 2;
+                style.padding.right = 2;
+                style.fixedHeight = Mathf.Max(
+                    _tabButtonStyle.fixedHeight,
+                    style.padding.top + labelBandHeight + ConsolidatedTabLabelBottomPadding);
+            }
+
             bool clicked = GUILayout.Button(label, style, GUILayout.Width(width));
 
-            if (iconName != null)
+            if (icon != null)
             {
-                // Sized off the tab's OWN font size (tabFontSize, screen-height-scaled 18-30px - see
-                // OnGUI's font block) rather than a fixed pixel constant, so the icon reads as
-                // "roughly text height plus a bit" at every resolution instead of shrinking to a
-                // speck next to 18-30pt text on a large window. This sizing rule is what Phase C
-                // reuses for the other 6 tabs' icons, so it needs to hold up across the full
-                // clamp range, not just look right at one window size.
                 Rect buttonRect = GUILayoutUtility.GetLastRect();
-                float iconSize = Mathf.Min(buttonRect.height - 10f, style.fontSize * 1.3f);
-                var iconRect = new Rect(buttonRect.x + 8f, buttonRect.y + (buttonRect.height - iconSize) * 0.5f, iconSize, iconSize);
+                var iconRect = new Rect(
+                    buttonRect.x + (buttonRect.width - iconSize) * 0.5f,
+                    buttonRect.y + ConsolidatedTabIconTopPadding,
+                    iconSize,
+                    iconSize);
                 Color iconTint = selected ? Color.white : new Color(1f, 1f, 1f, 0.6f);
-                UiPalette.DrawTintedIcon(iconRect, IconLibrary.Get(iconName), iconTint);
+                UiPalette.DrawTintedIcon(iconRect, icon, iconTint);
             }
 
             if (clicked)
