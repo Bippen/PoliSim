@@ -290,6 +290,42 @@ namespace PoliSim.Simulation
         private readonly Dictionary<CountryId, BudgetBill> _pendingBudgetBillByCountry =
             new Dictionary<CountryId, BudgetBill>();
 
+        /// <summary>
+        /// Master Sequence step 5d, tier 2: standalone program add/remove bills, keyed by CountryId
+        /// then by the specific TaxType/WelfareProgramType being added or removed - unlike
+        /// _pendingBudgetBillByCountry's single slot, MULTIPLE different program bills can be pending
+        /// for the same country at once (e.g. "add UBI" and "remove CarbonTax" simultaneously), just
+        /// never two for the SAME program at the same time. Introducible anytime, no mandatory pause -
+        /// counts down independently via AdvanceTaxProgramBillsDay/AdvanceWelfareProgramBillsDay, the
+        /// same non-blocking daily idiom _pendingBudgetBillByCountry's own Phase 2 already established.
+        /// </summary>
+        private readonly Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>> _pendingTaxProgramBillsByCountry =
+            new Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>>();
+
+        /// <summary>WelfareProgramType equivalent of _pendingTaxProgramBillsByCountry - see that field's own doc comment, same pattern.</summary>
+        private readonly Dictionary<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>> _pendingWelfareProgramBillsByCountry =
+            new Dictionary<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>>();
+
+        /// <summary>
+        /// Master Sequence step 5d, tier 3: at most one pending standalone bill per country per
+        /// non-budget policy tab (Labor Market/Crime &amp; Justice/Economic Sectors/Trade), mirroring
+        /// _pendingBudgetBillByCountry's own single-slot-per-country pattern - one bill per TAB, not
+        /// per dial (see the roadmap's own "one bill per tab" design confirmation). Introducible
+        /// anytime, no mandatory pause, same non-blocking daily countdown idiom as the tier-2
+        /// dictionaries above.
+        /// </summary>
+        private readonly Dictionary<CountryId, LaborPolicyBill> _pendingLaborBillByCountry =
+            new Dictionary<CountryId, LaborPolicyBill>();
+
+        private readonly Dictionary<CountryId, CrimeJusticePolicyBill> _pendingCrimeJusticeBillByCountry =
+            new Dictionary<CountryId, CrimeJusticePolicyBill>();
+
+        private readonly Dictionary<CountryId, SectorPolicyBill> _pendingSectorBillByCountry =
+            new Dictionary<CountryId, SectorPolicyBill>();
+
+        private readonly Dictionary<CountryId, TradePolicyBill> _pendingTradeBillByCountry =
+            new Dictionary<CountryId, TradePolicyBill>();
+
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
         {
@@ -447,6 +483,336 @@ namespace PoliSim.Simulation
                 SwfRealEstateWeightOverride = bill.SwfRealEstateWeight
             };
             ApplySwfPolicyChanges(country, swfDecision);
+        }
+
+        /// <summary>Every TaxProgramBill currently pending for this country, or an empty collection if none - see _pendingTaxProgramBillsByCountry's own doc comment.</summary>
+        public IEnumerable<TaxProgramBill> GetPendingTaxProgramBills(CountryId countryId)
+        {
+            return _pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var pending) ? pending.Values : System.Array.Empty<TaxProgramBill>();
+        }
+
+        /// <summary>Submits a new standalone TaxProgramBill - a no-op (returns false) if one is already pending for this SAME TaxType (different TaxTypes may all have their own bill pending at once - see _pendingTaxProgramBillsByCountry's own doc comment). No mandatory pause to close - unlike IntroduceBudgetBill, this tier never blocks time in the first place.</summary>
+        public bool IntroduceTaxProgramBill(CountryId countryId, TaxType type, bool isAdd)
+        {
+            if (!_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var pending))
+            {
+                pending = new Dictionary<TaxType, TaxProgramBill>();
+                _pendingTaxProgramBillsByCountry[countryId] = pending;
+            }
+
+            if (pending.ContainsKey(type))
+            {
+                return false;
+            }
+
+            pending[type] = new TaxProgramBill { Type = type, IsAdd = isAdd, DaysRemaining = ParliamentSystem.BillDurationDays };
+            return true;
+        }
+
+        /// <summary>Counts down every pending TaxProgramBill for this country by one day, resolving any that reach 0 - called once per simulated day, the same non-blocking idiom AdvanceBudgetBillDay already established.</summary>
+        public void AdvanceTaxProgramBillsDay(CountryId countryId)
+        {
+            if (!_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var pending) || pending.Count == 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            var resolved = new List<TaxType>();
+            foreach (TaxProgramBill bill in pending.Values)
+            {
+                bill.DaysRemaining--;
+                if (bill.DaysRemaining > 0)
+                {
+                    continue;
+                }
+
+                bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetTaxProgramBillDirection(country, bill));
+                ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed);
+                resolved.Add(bill.Type);
+            }
+
+            foreach (TaxType type in resolved)
+            {
+                pending.Remove(type);
+            }
+        }
+
+        /// <summary>WelfareProgramType equivalent of GetPendingTaxProgramBills - see that method's own doc comment, same pattern.</summary>
+        public IEnumerable<WelfareProgramBill> GetPendingWelfareProgramBills(CountryId countryId)
+        {
+            return _pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var pending) ? pending.Values : System.Array.Empty<WelfareProgramBill>();
+        }
+
+        /// <summary>WelfareProgramType equivalent of IntroduceTaxProgramBill - see that method's own doc comment, same pattern.</summary>
+        public bool IntroduceWelfareProgramBill(CountryId countryId, WelfareProgramType type, bool isAdd)
+        {
+            if (!_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var pending))
+            {
+                pending = new Dictionary<WelfareProgramType, WelfareProgramBill>();
+                _pendingWelfareProgramBillsByCountry[countryId] = pending;
+            }
+
+            if (pending.ContainsKey(type))
+            {
+                return false;
+            }
+
+            pending[type] = new WelfareProgramBill { Type = type, IsAdd = isAdd, DaysRemaining = ParliamentSystem.BillDurationDays };
+            return true;
+        }
+
+        /// <summary>WelfareProgramType equivalent of AdvanceTaxProgramBillsDay - see that method's own doc comment, same pattern.</summary>
+        public void AdvanceWelfareProgramBillsDay(CountryId countryId)
+        {
+            if (!_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var pending) || pending.Count == 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            var resolved = new List<WelfareProgramType>();
+            foreach (WelfareProgramBill bill in pending.Values)
+            {
+                bill.DaysRemaining--;
+                if (bill.DaysRemaining > 0)
+                {
+                    continue;
+                }
+
+                bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetWelfareProgramBillDirection(country, bill));
+                ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed);
+                resolved.Add(bill.Type);
+            }
+
+            foreach (WelfareProgramType type in resolved)
+            {
+                pending.Remove(type);
+            }
+        }
+
+        /// <summary>The pending standalone Labor Market bill for this country, or null if none is currently before Parliament.</summary>
+        public LaborPolicyBill GetPendingLaborBill(CountryId countryId)
+        {
+            return _pendingLaborBillByCountry.TryGetValue(countryId, out LaborPolicyBill bill) ? bill : null;
+        }
+
+        /// <summary>Submits a new standalone LaborPolicyBill - a no-op (returns false) if one is already pending, same single-slot pattern as IntroduceBudgetBill. No mandatory pause to close - this tier never blocks time.</summary>
+        public bool IntroduceLaborBill(CountryId countryId, LaborPolicyBill bill)
+        {
+            if (_pendingLaborBillByCountry.ContainsKey(countryId))
+            {
+                return false;
+            }
+
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingLaborBillByCountry[countryId] = bill;
+            return true;
+        }
+
+        /// <summary>Counts down the pending LaborPolicyBill (if any) by one day, resolving it once DaysRemaining reaches 0 - same non-blocking idiom as AdvanceBudgetBillDay.</summary>
+        public void AdvanceLaborBillDay(CountryId countryId)
+        {
+            if (!_pendingLaborBillByCountry.TryGetValue(countryId, out LaborPolicyBill bill))
+            {
+                return;
+            }
+
+            bill.DaysRemaining--;
+            if (bill.DaysRemaining > 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetLaborBillDirection(country, bill));
+            ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects);
+            _pendingLaborBillByCountry.Remove(countryId);
+        }
+
+        /// <summary>The Labor Market bill's apply delegate - reuses the existing ApplyMinimumWageChange/ApplyLaborPolicyChanges/ApplyDemographicPolicyChanges (private, clamp-owning) via a throwaway PolicyDecision, the same reuse pattern ApplyBudgetBillSpendingAndSwf already established.</summary>
+        private void ApplyLaborBillEffects(Country country, LaborPolicyBill bill)
+        {
+            var decision = new PolicyDecision
+            {
+                MinimumWageOverride = bill.MinimumWage,
+                PaidFamilyLeaveWeeksOverride = bill.PaidFamilyLeaveWeeks,
+                OvertimeRegulationOverride = bill.OvertimeRegulation,
+                RetrainingProgramOverride = bill.RetrainingProgram,
+                FamilyPolicyOverride = bill.FamilyPolicy,
+                ImmigrationPolicyOverride = bill.ImmigrationPolicy
+            };
+            ApplyMinimumWageChange(country, decision);
+            ApplyLaborPolicyChanges(country, decision);
+            ApplyDemographicPolicyChanges(country, decision);
+        }
+
+        /// <summary>The pending standalone Crime &amp; Justice bill for this country, or null if none is currently before Parliament.</summary>
+        public CrimeJusticePolicyBill GetPendingCrimeJusticeBill(CountryId countryId)
+        {
+            return _pendingCrimeJusticeBillByCountry.TryGetValue(countryId, out CrimeJusticePolicyBill bill) ? bill : null;
+        }
+
+        /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
+        public bool IntroduceCrimeJusticeBill(CountryId countryId, CrimeJusticePolicyBill bill)
+        {
+            if (_pendingCrimeJusticeBillByCountry.ContainsKey(countryId))
+            {
+                return false;
+            }
+
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingCrimeJusticeBillByCountry[countryId] = bill;
+            return true;
+        }
+
+        /// <summary>See AdvanceLaborBillDay's own doc comment - identical pattern.</summary>
+        public void AdvanceCrimeJusticeBillDay(CountryId countryId)
+        {
+            if (!_pendingCrimeJusticeBillByCountry.TryGetValue(countryId, out CrimeJusticePolicyBill bill))
+            {
+                return;
+            }
+
+            bill.DaysRemaining--;
+            if (bill.DaysRemaining > 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetCrimeJusticeBillDirection(country, bill));
+            ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects);
+            _pendingCrimeJusticeBillByCountry.Remove(countryId);
+        }
+
+        /// <summary>See ApplyLaborBillEffects' own doc comment - identical pattern, reuses ApplyCrimePolicyChanges/ApplyCrimeJusticeDeeperChanges.</summary>
+        private void ApplyCrimeJusticeBillEffects(Country country, CrimeJusticePolicyBill bill)
+        {
+            var decision = new PolicyDecision
+            {
+                PoliceFundingOverride = bill.PoliceFunding,
+                SentencingSeverityOverride = bill.SentencingSeverity,
+                BailReformOverride = bill.BailReform,
+                DrugPolicyOverride = bill.DrugPolicy,
+                JudicialFundingOverride = bill.JudicialFunding,
+                BorderEnforcementOverride = bill.BorderEnforcement
+            };
+            ApplyCrimePolicyChanges(country, decision);
+            ApplyCrimeJusticeDeeperChanges(country, decision);
+        }
+
+        /// <summary>The pending standalone Economic Sectors bill for this country, or null if none is currently before Parliament.</summary>
+        public SectorPolicyBill GetPendingSectorBill(CountryId countryId)
+        {
+            return _pendingSectorBillByCountry.TryGetValue(countryId, out SectorPolicyBill bill) ? bill : null;
+        }
+
+        /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
+        public bool IntroduceSectorBill(CountryId countryId, SectorPolicyBill bill)
+        {
+            if (_pendingSectorBillByCountry.ContainsKey(countryId))
+            {
+                return false;
+            }
+
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingSectorBillByCountry[countryId] = bill;
+            return true;
+        }
+
+        /// <summary>See AdvanceLaborBillDay's own doc comment - identical pattern.</summary>
+        public void AdvanceSectorBillDay(CountryId countryId)
+        {
+            if (!_pendingSectorBillByCountry.TryGetValue(countryId, out SectorPolicyBill bill))
+            {
+                return;
+            }
+
+            bill.DaysRemaining--;
+            if (bill.DaysRemaining > 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetSectorBillDirection(country, bill));
+            ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects);
+            _pendingSectorBillByCountry.Remove(countryId);
+        }
+
+        /// <summary>See ApplyLaborBillEffects' own doc comment - identical pattern, reuses ApplySectorPolicyChanges.</summary>
+        private void ApplySectorBillEffects(Country country, SectorPolicyBill bill)
+        {
+            var decision = new PolicyDecision
+            {
+                SectorSubsidyOverrides = bill.SubsidyLevels,
+                SectorRegulationOverrides = bill.RegulationLevels,
+                SectorTaxCreditOverrides = bill.TaxCreditLevels,
+                SectorResearchGrantsOverrides = bill.ResearchGrantsLevels,
+                SectorDeregulationNationalizationOverrides = bill.DeregulationLevels
+            };
+            ApplySectorPolicyChanges(country, decision);
+        }
+
+        /// <summary>The pending standalone Trade bill for this country, or null if none is currently before Parliament.</summary>
+        public TradePolicyBill GetPendingTradeBill(CountryId countryId)
+        {
+            return _pendingTradeBillByCountry.TryGetValue(countryId, out TradePolicyBill bill) ? bill : null;
+        }
+
+        /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
+        public bool IntroduceTradeBill(CountryId countryId, TradePolicyBill bill)
+        {
+            if (_pendingTradeBillByCountry.ContainsKey(countryId))
+            {
+                return false;
+            }
+
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingTradeBillByCountry[countryId] = bill;
+            return true;
+        }
+
+        /// <summary>See AdvanceLaborBillDay's own doc comment - identical pattern.</summary>
+        public void AdvanceTradeBillDay(CountryId countryId)
+        {
+            if (!_pendingTradeBillByCountry.TryGetValue(countryId, out TradePolicyBill bill))
+            {
+                return;
+            }
+
+            bill.DaysRemaining--;
+            if (bill.DaysRemaining > 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetTradeBillDirection(country, bill));
+            ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);
+            _pendingTradeBillByCountry.Remove(countryId);
+        }
+
+        /// <summary>
+        /// The Trade bill's apply delegate. NewBaseTariffRate is an ABSOLUTE target (see
+        /// TradePolicyBill's own doc comment), but the existing ApplyTariffRateChange only understands
+        /// a DELTA (PolicyDecision.TariffRateChange) - converted here as target-minus-current
+        /// immediately before applying, so ApplyTariffRateChange's own clamp
+        /// (Clamp(current + delta, min, max) = Clamp(target, min, max)) lands on exactly the bill's
+        /// requested target without duplicating its clamp bounds here. PartnerTariffOverrides is
+        /// already absolute (matches PolicyDecision.PartnerTariffOverrides' own semantics exactly), so
+        /// it's passed through unchanged.
+        /// </summary>
+        private void ApplyTradeBillEffects(Country country, TradePolicyBill bill)
+        {
+            var decision = new PolicyDecision
+            {
+                TariffRateChange = bill.NewBaseTariffRate - country.BaseTariffRate,
+                PartnerTariffOverrides = bill.PartnerTariffOverrides
+            };
+            ApplyTariffRateChange(country, decision);
+            ApplyPartnerTariffOverrides(country, decision);
         }
 
         /// <summary>

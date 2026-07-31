@@ -306,10 +306,17 @@ namespace PoliSim.Testing
         /// Every TaxType implemented at its own TaxTypeRateRanges maximum, every SpendingCategory
         /// pushed for the largest increase it'll accept, every WelfareProgramType implemented at max
         /// generosity, and a maxed-out SWF - see RunOne's parliamentstress-only day-driving block for
-        /// why this is submitted as a BudgetBill rather than a PolicyDecision. Spending/SWF requested
-        /// magnitudes are deliberately larger than any real range (SimulationManager's own
-        /// ApplySpendingLineChanges/ApplySwfPolicyChanges clamp internally), so this doesn't need to
-        /// duplicate those private range constants here.
+        /// why this is submitted as a BudgetBill rather than a PolicyDecision. Master Sequence step 5d
+        /// moved implement/remove out of BudgetBill (see BudgetBill's own doc comment) - a rate/
+        /// generosity entry here is only meaningful for an ALREADY-implemented program, so
+        /// IsImplemented is forced true directly first, bypassing the new standalone ProgramBill
+        /// mechanism entirely (this harness isn't stressing tier 2, only the annual bill's rate/
+        /// spending/SWF paths - same "always the most extreme option" philosophy as the rest of this
+        /// scenario, just applied via direct field access since ProgramBill's own 21-day wait would
+        /// defeat "worst case within one turn"). Spending/SWF requested magnitudes are deliberately
+        /// larger than any real range (SimulationManager's own ApplySpendingLineChanges/
+        /// ApplySwfPolicyChanges clamp internally), so this doesn't need to duplicate those private
+        /// range constants here.
         /// </summary>
         private static BudgetBill BuildParliamentStressBill(Country usa)
         {
@@ -317,7 +324,8 @@ namespace PoliSim.Testing
 
             foreach (TaxLine taxLine in usa.TaxLines)
             {
-                bill.TaxLines[taxLine.Type] = new TaxBillLine(true, taxLine.MaxRate);
+                taxLine.IsImplemented = true;
+                bill.TaxLines[taxLine.Type] = taxLine.MaxRate;
             }
 
             foreach (SpendingLine spendingLine in usa.SpendingLines)
@@ -327,7 +335,8 @@ namespace PoliSim.Testing
 
             foreach (WelfareProgram program in usa.WelfarePrograms)
             {
-                bill.WelfarePrograms[program.Type] = new WelfareBillLine(true, 100f);
+                program.IsImplemented = true;
+                bill.WelfarePrograms[program.Type] = 100f;
             }
 
             bill.SwfShouldExist = true;
