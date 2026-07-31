@@ -112,13 +112,13 @@ namespace PoliSim.UI
         // equals whatever was in here, so the slider keeps showing the same (now-persisted) value.
         private readonly Dictionary<TaxType, float> _taxRateInputs = new Dictionary<TaxType, float>();
 
-        // Political Systems Overhaul Part B PILOT (Master Sequence step 4): draft Implement/Remove
-        // state per TaxType - defaults to that TaxLine's persisted (standing) IsImplemented until the
-        // player toggles it (see GetTaxImplementDraft). Unlike the pre-Parliament version of this tab,
-        // toggling this is NO LONGER immediate - it only ever reaches TaxLine.IsImplemented via a
-        // PASSED TaxBill (see BuildTaxBillFromDrafts/DrawTaxPolicy's Introduce Bill button). Not
-        // cleared by ResetPolicyInputs, for the same reason _taxRateInputs isn't - once a bill passes,
-        // TaxLine.IsImplemented already equals whatever was in here.
+        // Political Systems Overhaul Part B, full rollout: draft Implement/Remove state per TaxType -
+        // defaults to that TaxLine's persisted (standing) IsImplemented until the player toggles it
+        // (see GetTaxImplementDraft). Toggling this is NOT immediate - it only ever reaches
+        // TaxLine.IsImplemented via a PASSED omnibus BudgetBill (see BuildBudgetBillFromDrafts/
+        // DrawBudgetBillStatusAndIntroduce's Introduce Budget Bill button, Master Sequence step 5c).
+        // Not cleared by ResetPolicyInputs, for the same reason _taxRateInputs isn't - once a bill
+        // passes, TaxLine.IsImplemented already equals whatever was in here.
         private readonly Dictionary<TaxType, bool> _taxImplementDrafts = new Dictionary<TaxType, bool>();
 
         private Vector2 _parliamentScrollPosition;
@@ -128,6 +128,15 @@ namespace PoliSim.UI
         // drags it (see GetWelfareGenerosityInput). Not cleared by ResetPolicyInputs, for the exact
         // same reason _taxRateInputs isn't.
         private readonly Dictionary<WelfareProgramType, float> _welfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
+
+        // Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): draft
+        // Implement/Remove state per WelfareProgramType - defaults to that WelfareProgram's persisted
+        // (standing) IsImplemented until the player toggles it (see GetWelfareImplementDraft). Before
+        // step 5c this toggle was immediate; now it only ever reaches WelfareProgram.IsImplemented via
+        // a PASSED BudgetBill (see BuildBudgetBillFromDrafts/DrawBudgetProcessTab's Introduce action),
+        // mirroring _taxImplementDrafts exactly. Not cleared by ResetPolicyInputs, for the same reason
+        // _taxImplementDrafts isn't.
+        private readonly Dictionary<WelfareProgramType, bool> _welfareImplementDrafts = new Dictionary<WelfareProgramType, bool>();
 
         // Draft ABSOLUTE Subsidy/Regulation levels per SectorType (not deltas) for the Economic
         // Sectors tab's sliders - every country has all four Sectors (unlike TaxLines/
@@ -139,10 +148,19 @@ namespace PoliSim.UI
         private readonly Dictionary<SectorType, float> _sectorResearchGrantsInputs = new Dictionary<SectorType, float>();
         private readonly Dictionary<SectorType, float> _sectorDeregulationInputs = new Dictionary<SectorType, float>();
 
-        // Draft ABSOLUTE Sovereign Wealth Fund settings (not deltas) - only meaningful while
-        // _playerCountry.SovereignWealthFund is non-null (Create/Dissolve is a separate, immediate
-        // action, mirroring TaxLine.IsImplemented). Not cleared by ResetPolicyInputs, for the same
-        // reason _minimumWageInput isn't.
+        // Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): draft
+        // Create/Dissolve state for the Sovereign Wealth Fund - defaults to whether
+        // _playerCountry.SovereignWealthFund is currently non-null until the player toggles it (see
+        // GetSwfExistsDraft). Before step 5c this toggle was immediate; now it only ever reaches
+        // Country.SovereignWealthFund via a PASSED BudgetBill, mirroring _taxImplementDrafts exactly.
+        // Nullable rather than a Dictionary since there's only one fund (unlike _taxImplementDrafts).
+        // Not cleared by ResetPolicyInputs, for the same reason _taxImplementDrafts isn't.
+        private bool? _swfExistsDraft;
+
+        // Draft ABSOLUTE Sovereign Wealth Fund settings (not deltas) - meaningful whenever the DRAFT
+        // says the fund should exist (GetSwfExistsDraft), not just while the real fund already does -
+        // see DrawSwfPolicyContent's stable-control-layout note for why this changed at step 5c. Not
+        // cleared by ResetPolicyInputs, for the same reason _minimumWageInput isn't.
         private float? _swfContributionRateInput;
         private float? _swfDomesticAllocationInput;
         private float? _swfEquitiesWeightInput;
@@ -530,15 +548,17 @@ namespace PoliSim.UI
                 // of the 121-day turn cadence, since these are explicitly meant to land BETWEEN turns.
                 _simulationManager.TryRollForeignPolicyMeeting(PlayerCountryId);
 
-                // Political Systems Overhaul Part B PILOT (Master Sequence step 4): a pending TaxBill
-                // counts down daily too, independent of the turn boundary - unlike the two calls
-                // above, this never needs a gate re-check afterward, since resolving a bill doesn't
-                // pause time (it's a deterministic countdown, not something needing a player response).
-                _simulationManager.AdvanceLegislativeDay(PlayerCountryId);
+                // Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): a pending
+                // omnibus BudgetBill counts down daily too, independent of the turn boundary - unlike
+                // the two calls above, this never needs a gate re-check afterward, since resolving a
+                // bill doesn't pause time (it's a deterministic countdown, not something needing a
+                // player response) - the same idiom the retired TaxBill/AdvanceLegislativeDay already
+                // established.
+                _simulationManager.AdvanceBudgetBillDay(PlayerCountryId);
 
                 // Master Sequence step 5a: same daily idiom as the two calls above - deterministic
-                // date check, not a chance roll, mirroring AdvanceLegislativeDay's own reasoning.
-                // Unlike AdvanceLegislativeDay, THIS one DOES need the gate re-check below, since
+                // date check, not a chance roll, mirroring AdvanceBudgetBillDay's own reasoning.
+                // Unlike AdvanceBudgetBillDay, THIS one DOES need the gate re-check below, since
                 // opening the budget process is a mandatory pause (see the revised Part B design).
                 _simulationManager.TryOpenBudgetProcess(PlayerCountryId, _simulationManager.CurrentDate);
 
@@ -678,10 +698,11 @@ namespace PoliSim.UI
             // Advance Turn button in this same pinned-outside-scroll-view slot, for the same reason -
             // always visible and clickable regardless of how tall the banner/dashboard/sliders/
             // preview content gets. One extra row taller than the single button it replaces (date +
-            // status line, then the speed button row). Master Sequence step 5a adds one more always-
-            // present row (the temporary Acknowledge budget process button, per DrawCalendarAndSpeedControls'
-            // own doc comment) - reserve _buttonStyle.fixedHeight again for it.
-            float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight * 2f + sectionSpacing;
+            // status line, then the speed button row). Master Sequence step 5a briefly reserved a
+            // second row for a temporary Acknowledge button (see git history) - removed now that step
+            // 5c's real Budget Process introduce-bill flow replaced it, back to the original one-row
+            // reservation.
+            float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight + sectionSpacing;
             float leftScrollHeight = areaHeight - calendarAreaHeight;
 
             _leftColumnScrollPosition = GUILayout.BeginScrollView(_leftColumnScrollPosition, GUILayout.Height(leftScrollHeight));
@@ -1530,35 +1551,14 @@ namespace PoliSim.UI
                 }
             }
 
-            if (_playerCountry.SovereignWealthFund != null)
-            {
-                SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
-                bool swfInputsChanged =
-                    !Mathf.Approximately(GetSwfContributionRateInput(fund.ContributionRatePercent), GetCachedSwfContributionRateInput(fund.ContributionRatePercent))
-                    || !Mathf.Approximately(GetSwfDomesticAllocationInput(fund.DomesticAllocationPercent), GetCachedSwfDomesticAllocationInput(fund.DomesticAllocationPercent))
-                    || !Mathf.Approximately(GetSwfEquitiesWeightInput(fund.EquitiesWeight), GetCachedSwfEquitiesWeightInput(fund.EquitiesWeight))
-                    || !Mathf.Approximately(GetSwfBondsWeightInput(fund.BondsWeight), GetCachedSwfBondsWeightInput(fund.BondsWeight))
-                    || !Mathf.Approximately(GetSwfInfrastructureWeightInput(fund.InfrastructureWeight), GetCachedSwfInfrastructureWeightInput(fund.InfrastructureWeight))
-                    || !Mathf.Approximately(GetSwfRealEstateWeightInput(fund.RealEstateWeight), GetCachedSwfRealEstateWeightInput(fund.RealEstateWeight));
-
-                if (swfInputsChanged)
-                {
-                    return true;
-                }
-            }
-
-            // Political Systems Overhaul Part B PILOT: a draft tax-rate change (unlike every other
-            // input checked here) no longer changes what the preview would show at all - it only ever
-            // reaches the simulation via a passed TaxBill - so this loop no longer needs a
-            // GetTaxRateInput/GetCachedTaxRateInput change check.
-
-            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
-            {
-                if (!Mathf.Approximately(GetSpendingLineInput(spendingLine.Category), GetCachedSpendingLineInput(spendingLine.Category)))
-                {
-                    return true;
-                }
-            }
+            // Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): draft
+            // Tax/Spending/Welfare/SWF changes (unlike every other input checked here) no longer
+            // change what the preview would show at all - they only ever reach the simulation via a
+            // passed omnibus BudgetBill - so this loop no longer needs GetTaxRateInput/
+            // GetSpendingLineInput/GetWelfareGenerosityInput/GetSwf*Input change checks. See
+            // BuildBudgetBillFromDrafts for where these same draft dictionaries/fields actually get
+            // read now, and DrawBudgetProcessTab's live vote estimate for the live feedback those
+            // drafts DO still drive.
 
             foreach (TradePartner tradePartner in _playerCountry.TradePartners)
             {
@@ -1570,21 +1570,6 @@ namespace PoliSim.UI
                 if (!Mathf.Approximately(
                     GetPartnerTariffInput(tradePartner.PartnerId, tradePartner.PlayerTariffOverride),
                     GetCachedPartnerTariffInput(tradePartner.PartnerId, tradePartner.PlayerTariffOverride)))
-                {
-                    return true;
-                }
-            }
-
-            foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
-            {
-                if (!welfareProgram.IsImplemented)
-                {
-                    continue;
-                }
-
-                if (!Mathf.Approximately(
-                    GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel),
-                    GetCachedWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel)))
                 {
                     return true;
                 }
@@ -1754,16 +1739,24 @@ namespace PoliSim.UI
         /// _eventBannerStyle (the same bold/orange weight as the dashboard's own BREAKING banner)
         /// whenever ANY of the three is true, always naming which one and which tab resolves it.
         ///
-        /// Master Sequence step 5a adds a fourth condition, hasPendingBudgetProcess, per the revised
+        /// Master Sequence step 5a added a fourth condition, hasPendingBudgetProcess, per the revised
         /// Part B design's explicit "extend the existing global banner, don't build a fourth ad-hoc
-        /// pause system" instruction. It also adds one ALWAYS-PRESENT "Acknowledge" button beneath the
-        /// status line - per DrawTaxPolicy's stable-control-layout pattern, the button itself is
-        /// emitted every frame regardless of hasPendingBudgetProcess (GUI.enabled gates whether it's
-        /// interactive, composed with the ambient enabled state), never conditionally added/removed,
-        /// since THIS specific screen (many sliders, a continuously-recomputing live vote estimate) is
-        /// exactly the shape the last real freeze came from. This button is a TEMPORARY 5a-only
-        /// placeholder (see SimulationManager.AcknowledgeBudgetProcess's own doc comment) - step 5c
-        /// must replace it with the real Budget Process screen entry point once that exists.
+        /// pause system" instruction - 5a's own temporary "Acknowledge" placeholder button (see git
+        /// history) is gone now that step 5c built the real Budget Process introduce-bill flow; this
+        /// banner now names the Budget Process tab exactly like the other three conditions name their
+        /// own tab, rather than trying to resolve the pause from inside the banner itself.
+        ///
+        /// BUG FOUND VIA LIVE PLAY (fixed here): the original if/else-if chain showed only ONE reason,
+        /// in a fixed priority order - if a Foreign Policy meeting became pending at the same time as
+        /// (or was already pending when) the annual budget pause opened, the banner showed ONLY the
+        /// Foreign Policy message, completely hiding that a budget bill also needed introducing -
+        /// Update's own gate correctly kept blocking on BOTH conditions underneath, but the player had
+        /// no visible way to know the budget process was one of the reasons. Fixed by listing EVERY
+        /// currently-true reason in one combined message, ordered Fed Chair/Cabinet (structural,
+        /// pre-existing) then Budget Process then Foreign Policy (an optional meeting is the least
+        /// consequential of the four) - "time is paused and here's why" must never be ambiguous. Still
+        /// exactly one Label control either way (per DrawTaxPolicy's stable-control-layout pattern -
+        /// content and style vary, the control itself never does).
         /// </summary>
         private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions, bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess)
         {
@@ -1772,34 +1765,29 @@ namespace PoliSim.UI
             string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
             bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
 
-            // Priority order matches Update's own pause-gate check order exactly, so this always names
-            // whichever reason is actually the one currently blocking AdvanceDay.
             string statusText = dateText;
-            if (hasPendingFedChairSelection)
+            if (isPaused)
             {
-                statusText = $"{dateText} - TIME PAUSED: choose the next Fed Chair (Federal Reserve tab) to continue.";
-            }
-            else if (hasPendingCabinetDecisions)
-            {
-                statusText = $"{dateText} - TIME PAUSED: resolve the pending Cabinet decision (Cabinet tab) to continue.";
-            }
-            else if (hasPendingForeignPolicyMeeting)
-            {
-                statusText = $"{dateText} - TIME PAUSED: respond to the pending Foreign Policy meeting (Foreign Policy tab) to continue.";
-            }
-            else if (hasPendingBudgetProcess)
-            {
-                statusText = $"{dateText} - TIME PAUSED: the annual budget process is open (Budget Process screen not built yet - acknowledge below to continue for now).";
+                var reasons = new List<string>();
+                if (hasPendingFedChairSelection)
+                {
+                    reasons.Add("choose the next Fed Chair (Federal Reserve tab)");
+                }
+                if (hasPendingCabinetDecisions)
+                {
+                    reasons.Add("resolve the pending Cabinet decision (Cabinet tab)");
+                }
+                if (hasPendingBudgetProcess)
+                {
+                    reasons.Add("introduce the annual budget bill (Budget Process tab)");
+                }
+                if (hasPendingForeignPolicyMeeting)
+                {
+                    reasons.Add("respond to the pending Foreign Policy meeting (Foreign Policy tab)");
+                }
+                statusText = $"{dateText} - TIME PAUSED: {string.Join("; ", reasons)} to continue.";
             }
             GUILayout.Label(statusText, isPaused ? _eventBannerStyle : _labelStyle);
-
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && hasPendingBudgetProcess;
-            if (GUILayout.Button("Acknowledge budget process (temporary - real screen lands in step 5b/5c)", _neutralActionButtonStyle))
-            {
-                _simulationManager.AcknowledgeBudgetProcess(PlayerCountryId);
-            }
-            GUI.enabled = ambientEnabled;
 
             GUILayout.BeginHorizontal();
             DrawSpeedButton("Pause", GameSpeed.Paused);
@@ -1870,6 +1858,16 @@ namespace PoliSim.UI
         private bool GetTaxImplementDraft(TaxType type, bool fallbackIsImplemented)
         {
             return _taxImplementDrafts.TryGetValue(type, out bool value) ? value : fallbackIsImplemented;
+        }
+
+        private bool GetWelfareImplementDraft(WelfareProgramType type, bool fallbackIsImplemented)
+        {
+            return _welfareImplementDrafts.TryGetValue(type, out bool value) ? value : fallbackIsImplemented;
+        }
+
+        private bool GetSwfExistsDraft(bool fallbackExists)
+        {
+            return _swfExistsDraft ?? fallbackExists;
         }
 
         private float GetCachedTaxRateInput(TaxType type, float fallbackRate)
@@ -2070,34 +2068,15 @@ namespace PoliSim.UI
                 decision.SectorDeregulationNationalizationOverrides[sector.Type] = GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel);
             }
 
-            if (_playerCountry.SovereignWealthFund != null)
-            {
-                SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
-                decision.SwfContributionRateOverride = GetSwfContributionRateInput(fund.ContributionRatePercent);
-                decision.SwfDomesticAllocationOverride = GetSwfDomesticAllocationInput(fund.DomesticAllocationPercent);
-                decision.SwfEquitiesWeightOverride = GetSwfEquitiesWeightInput(fund.EquitiesWeight);
-                decision.SwfBondsWeightOverride = GetSwfBondsWeightInput(fund.BondsWeight);
-                decision.SwfInfrastructureWeightOverride = GetSwfInfrastructureWeightInput(fund.InfrastructureWeight);
-                decision.SwfRealEstateWeightOverride = GetSwfRealEstateWeightInput(fund.RealEstateWeight);
-            }
-
-            // Political Systems Overhaul Part B PILOT (Master Sequence step 4): Tax Policy no longer
-            // feeds PolicyDecision.TaxRateOverrides at all - draft tax changes only ever reach the
-            // simulation via a PASSED TaxBill (see ParliamentSystem.ApplyBillResult, which writes
-            // directly to TaxLine.Rate/IsImplemented). This is the ONE call site both AdvanceTurn and
-            // the live preview share, so removing it here makes the preview honest too (it no longer
-            // shows a tax-driven effect that won't actually happen until a bill passes).
-
-            // Both Mandatory and Discretionary lines are adjustable - SimulationManager clamps each
-            // to its own percentage range (narrower for Mandatory).
-            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
-            {
-                float percent = GetSpendingLineInput(spendingLine.Category);
-                if (percent != 0f)
-                {
-                    decision.SpendingLineChanges[spendingLine.Category] = percent;
-                }
-            }
+            // Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): Tax
+            // (step 4 pilot), Spending, Welfare, and SWF no longer feed PolicyDecision at all here -
+            // draft changes to any of them only ever reach the simulation via a PASSED omnibus
+            // BudgetBill (see ParliamentSystem.ApplyBillResult, which writes Tax/Welfare directly and
+            // calls back into SimulationManager.ApplyBudgetBillSpendingAndSwf for Spending/SWF). This
+            // is the ONE call site both AdvanceTurn and the live preview share, so removing them here
+            // makes the preview honest too (it no longer shows an effect that won't actually happen
+            // until a bill passes) - see BuildBudgetBillFromDrafts for where these same draft
+            // dictionaries/fields actually get read now.
 
             // Only a partner with an ACTIVE override gets an entry - mirrors "only currently-
             // implemented tax lines get an override" above. A partner without one is left alone
@@ -2114,34 +2093,21 @@ namespace PoliSim.UI
                 decision.PartnerTariffOverrides[tradePartner.PartnerId] = GetPartnerTariffInput(tradePartner.PartnerId, tradePartner.PlayerTariffOverride);
             }
 
-            // Only currently-implemented programs get an override - same reasoning as TaxRateOverrides
-            // above (GetWelfareGenerosityInput's fallback already makes an untouched slider a no-op,
-            // so every implemented program can be included unconditionally).
-            foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
-            {
-                if (!welfareProgram.IsImplemented)
-                {
-                    continue;
-                }
-
-                decision.WelfareGenerosityOverrides[welfareProgram.Type] = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
-            }
-
             return decision;
         }
 
         private void ResetPolicyInputs()
         {
-            // _taxRateInputs is deliberately NOT cleared here - it holds each tax's absolute rate
-            // (not a per-turn delta), and after AdvanceTurn commits it, TaxLine.Rate already equals
-            // whatever was in the draft, so leaving it in place keeps the slider showing the same
-            // (now-persisted) value instead of snapping back to 0. _spendingLineInputs IS cleared -
-            // it's a this-turn delta (like the legacy category sliders it replaces), not an absolute
-            // setting; SpendingLine.Amount itself is what persists. _partnerTariffInputs is also
-            // deliberately NOT cleared, for the same reason as _taxRateInputs - it holds each
-            // overridden partner's absolute rate, which TradePartner.PlayerTariffOverride already
-            // equals once committed.
-            _spendingLineInputs.Clear();
+            // _taxRateInputs/_spendingLineInputs/_welfareGenerosityInputs and the SWF draft fields are
+            // all deliberately NOT cleared here (Master Sequence step 5c) - none of them are a
+            // this-turn delta anymore now that Tax/Spending/Welfare/SWF are all gated behind the
+            // omnibus BudgetBill rather than applied every AdvanceTurn; leaving them in place keeps
+            // each slider showing whatever the player last drafted instead of snapping back. Spending
+            // WAS cleared here before step 5c (it applied automatically every turn as a genuine
+            // this-turn delta before then) - no longer, now that it only ever applies once a bill
+            // passes. _partnerTariffInputs is also deliberately NOT cleared, for the same reason as
+            // _taxRateInputs - it holds each overridden partner's absolute rate, which
+            // TradePartner.PlayerTariffOverride already equals once committed.
             _interestRateChangeInput = 0f;
             _tariffRateChangeInput = 0f;
         }
@@ -2671,11 +2637,10 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Parliament tab (Political Systems Overhaul Part B PILOT, Master Sequence step 4): the
-        /// hemicycle (HemicycleRenderer) plus a pending-bill summary. Only Tax Policy is gated this
-        /// pilot, so this tab only ever shows a Tax bill - the roadmap's own "every gated tab needs a
-        /// visible Standing/Draft value" instruction applies fully once step 5 rolls Parliament out to
-        /// the remaining seven tabs, not yet.
+        /// Parliament tab (Political Systems Overhaul Part B, full rollout): the hemicycle
+        /// (HemicycleRenderer) plus a pending-bill summary. Master Sequence step 5c generalized the
+        /// pending bill from a Tax-only TaxBill to the omnibus BudgetBill (Tax+Spending+Welfare+SWF
+        /// together) - see the Budget Process tab to introduce one.
         /// </summary>
         private void DrawParliamentTab(float availableHeight)
         {
@@ -2685,18 +2650,18 @@ namespace PoliSim.UI
             _parliamentScrollPosition = GUILayout.BeginScrollView(_parliamentScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Parliament", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            GUILayout.Label("Seats shift gradually with your ApprovalRating. Only Tax Policy is gated by Parliament this pass - see the Tax Policy tab to introduce a bill.", _labelStyle);
+            GUILayout.Label("Seats shift gradually with your ApprovalRating. The annual budget bill and any standalone bills are gated by Parliament - see the Budget Process tab to introduce one.", _labelStyle);
             GUILayout.Space(6f);
 
             _hemicycleRenderer.Draw($"{_playerCountry.Name} - {ParliamentConstants.TotalSeats} seats", _playerCountry.ParliamentSeats, _labelStyle);
 
             GUILayout.Space(10f);
             GUILayout.Label("Pending Legislation", _headerStyle);
-            TaxBill pendingBill = _simulationManager.GetPendingTaxBill(PlayerCountryId);
+            BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             if (pendingBill != null)
             {
                 bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, pendingBill);
-                GUILayout.Label($"Tax bill - resolves in {pendingBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.", _labelStyle);
+                GUILayout.Label($"Annual budget bill - resolves in {pendingBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.", _labelStyle);
             }
             else
             {
@@ -3013,7 +2978,10 @@ namespace PoliSim.UI
             GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle, GUILayout.Width(availableWidth));
             GUILayout.Space(8f);
 
-            float headerAllowance = _labelStyle.fontSize * 5f + _headerStyle.fontSize + 16f;
+            DrawBudgetBillStatusAndIntroduce();
+            GUILayout.Space(8f);
+
+            float headerAllowance = _labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f;
             float columnsHeight = availableHeight - headerAllowance;
             float columnSpacing = 10f;
 
@@ -3073,6 +3041,8 @@ namespace PoliSim.UI
             GUILayout.Space(columnSpacing);
 
             GUILayout.BeginVertical(_boxStyle, GUILayout.Width(summaryColumnWidth));
+            DrawLegislativeSupportEstimate();
+            GUILayout.Space(10f);
             DrawPolicyPreview();
             GUILayout.EndVertical();
 
@@ -3092,10 +3062,111 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Political Systems Overhaul Part B PILOT (Master Sequence step 4): the Tax Policy tab is now
-        /// the gated-legislation pilot. Sliders/toggles below remain DRAFT values (adjusting costs
-        /// nothing, no vote needed) - the "Introduce Bill" button is the only way a draft ever reaches
-        /// Parliament, and a PASSED bill is the only way it ever reaches the real, standing TaxLines.
+        /// Master Sequence step 5c: pending-bill status plus the "Introduce Budget Bill" action -
+        /// enabled only while the mandatory pause (Master Sequence step 5a) is open and no bill is
+        /// already pending, since only one bill may be before Parliament at a time and introducing is
+        /// only ever meaningful on the country's own fiscal-year date (see SimulationManager.
+        /// IntroduceBudgetBill/GetPendingBudgetProcess). Follows DrawTaxPolicy's stable-control-layout
+        /// pattern: the status Label and the Button are BOTH emitted every frame regardless of state -
+        /// only the label's text and the button's GUI.enabled state vary.
+        /// </summary>
+        private void DrawBudgetBillStatusAndIntroduce()
+        {
+            BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            bool budgetProcessOpen = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
+
+            string statusText = pendingBill != null
+                ? $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
+                : budgetProcessOpen
+                    ? "The annual budget process is open - introduce your current draft as a bill below to continue."
+                    : "No budget bill currently before Parliament. One can only be introduced on your country's own fiscal-year date.";
+            GUILayout.Label(statusText, _labelStyle);
+
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
+            if (GUILayout.Button("Introduce Budget Bill", _neutralActionButtonStyle))
+            {
+                _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
+            }
+            GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>
+        /// Master Sequence step 5c's "live support estimate" - recomputes every OnGUI call (cheap:
+        /// BuildBudgetBillFromDrafts and ParliamentSystem's formulas are all O(a handful of items), no
+        /// cloning, unlike PreviewTurn/RecomputePolicyPreview's own caching, which exists specifically
+        /// because THAT computation is comparatively expensive) so it updates live as the player edits
+        /// ANY draft - budget or standalone - not just after introducing, per the revised Part B
+        /// design's own explicit instruction.
+        /// </summary>
+        private void DrawLegislativeSupportEstimate()
+        {
+            BudgetBill draftBill = BuildBudgetBillFromDrafts();
+            float direction = ParliamentSystem.GetBillDirection(_playerCountry, draftBill);
+            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, draftBill);
+
+            GUILayout.Label("Legislative Support (current draft)", _headerStyle);
+            string directionLabel = Mathf.Approximately(direction, 0f) ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
+            GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
+            DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
+                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+        }
+
+        /// <summary>
+        /// Bundles every current draft - Tax, Spending, Welfare, SWF - into one omnibus BudgetBill,
+        /// exactly as it stands at the moment of the call (used both for DrawLegislativeSupportEstimate's
+        /// live, continuously-recomputed estimate and for the real bill DrawBudgetBillStatusAndIntroduce
+        /// submits - the SAME snapshot logic either way, so the estimate the player saw is exactly what
+        /// gets introduced). Infrastructure has no direct lever of its own - see BudgetBill's own doc
+        /// comment - so it's covered here only via Spending's own "Infrastructure" category.
+        /// </summary>
+        private BudgetBill BuildBudgetBillFromDrafts()
+        {
+            var bill = new BudgetBill();
+
+            foreach (TaxLine taxLine in _playerCountry.TaxLines)
+            {
+                bool draftImplemented = GetTaxImplementDraft(taxLine.Type, taxLine.IsImplemented);
+                float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+                bill.TaxLines[taxLine.Type] = new TaxBillLine(draftImplemented, draftRate);
+            }
+
+            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
+            {
+                float percent = GetSpendingLineInput(spendingLine.Category);
+                if (percent != 0f)
+                {
+                    bill.SpendingPercentChanges[spendingLine.Category] = percent;
+                }
+            }
+
+            foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
+            {
+                bool draftImplemented = GetWelfareImplementDraft(welfareProgram.Type, welfareProgram.IsImplemented);
+                float draftGenerosity = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
+                bill.WelfarePrograms[welfareProgram.Type] = new WelfareBillLine(draftImplemented, draftGenerosity);
+            }
+
+            SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
+            SovereignWealthFund standingDefaults = fund ?? new SovereignWealthFund();
+            bill.SwfShouldExist = GetSwfExistsDraft(fund != null);
+            bill.SwfContributionRatePercent = GetSwfContributionRateInput(standingDefaults.ContributionRatePercent);
+            bill.SwfDomesticAllocationPercent = GetSwfDomesticAllocationInput(standingDefaults.DomesticAllocationPercent);
+            bill.SwfEquitiesWeight = GetSwfEquitiesWeightInput(standingDefaults.EquitiesWeight);
+            bill.SwfBondsWeight = GetSwfBondsWeightInput(standingDefaults.BondsWeight);
+            bill.SwfInfrastructureWeight = GetSwfInfrastructureWeightInput(standingDefaults.InfrastructureWeight);
+            bill.SwfRealEstateWeight = GetSwfRealEstateWeightInput(standingDefaults.RealEstateWeight);
+
+            return bill;
+        }
+
+        /// <summary>
+        /// Political Systems Overhaul Part B, full rollout: the Tax Policy tab's sliders/toggles remain
+        /// DRAFT values (adjusting costs nothing, no vote needed) - since Master Sequence step 5c, the
+        /// "Introduce Budget Bill" action lives centrally on the Budget Process tab (an omnibus bill
+        /// covering Tax+Spending+Welfare+SWF together, superseding the step 4 pilot's Tax-only
+        /// TaxBill), and a PASSED bill is the only way a draft here ever reaches the real, standing
+        /// TaxLines.
         ///
         /// STABLE CONTROL LAYOUT PATTERN (mandatory for every gated tab, not just this one - see
         /// "Background/timed state mutation vs. active UI interaction" in POLISIM_MASTER_ROADMAP.md's
@@ -3104,8 +3175,9 @@ namespace PoliSim.UI
         /// moment Master Sequence step 5 lands - it can mutate the exact standing value a slider on
         /// this tab is reading, on a day the player has an active multi-frame drag in progress on that
         /// slider. GUILayout allocates control IDs positionally (call order within OnGUI), not by a
-        /// stable key, so DrawTaxBillStatus and DrawTaxLineRow below must NEVER change which controls
-        /// they emit, in what order, based on live/mutable state (a bill pending or not, a TaxType
+        /// stable key, so DrawTaxLineRow below (and DrawBudgetBillStatusAndIntroduce, which follows the
+        /// exact same pattern for the omnibus bill's own status/introduce controls) must NEVER change
+        /// which controls they emit, in what order, based on live/mutable state (a bill pending or not, a TaxType
         /// drafted-implemented or not). Swapping a Button for a Label, or omitting a Slider some
         /// frames, changes the control count/sequence a currently-hot (mid-drag) control was allocated
         /// against, which is a documented Unity IMGUI hang/desync trigger inside a ScrollView - this
@@ -3137,10 +3209,7 @@ namespace PoliSim.UI
         private void DrawTaxPolicyContent()
         {
             DrawColoredLabel("Tax Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            GUILayout.Label("Adjusting implement/remove or a rate below only changes your DRAFT - nothing happens until you introduce it as a bill and Parliament votes. See the Parliament tab for seat composition.", _labelStyle);
-            GUILayout.Space(8f);
-
-            DrawTaxBillStatus();
+            GUILayout.Label("Adjusting implement/remove or a rate below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes. See the Budget Process tab to introduce it and the Parliament tab for seat composition.", _labelStyle);
             GUILayout.Space(8f);
 
             float taxTypeNameColumnWidth = GetTaxTypeNameColumnWidth();
@@ -3149,46 +3218,6 @@ namespace PoliSim.UI
                 DrawTaxLineRow(taxLine, taxTypeNameColumnWidth);
                 GUILayout.Space(10f);
             }
-        }
-
-        /// <summary>
-        /// Pending-bill status plus the "Introduce Bill" action - disabled while a bill is already
-        /// before Parliament, since only one may be pending at a time (see
-        /// SimulationManager.IntroduceTaxBill). Follows DrawTaxPolicy's stable-control-layout pattern:
-        /// the status Label and the "Introduce Bill" Button are BOTH emitted every frame regardless of
-        /// pendingBill - only the label's text and the button's GUI.enabled state vary. Previously this
-        /// returned early with just a Label while a bill was pending, which meant a bill resolving
-        /// (clearing pendingBill) changed the control COUNT this method emits from one frame to the
-        /// next; since this is drawn before every tax line row, that shift also renumbers every
-        /// row's own positional control IDs the instant it happens - dangerous for any slider on this
-        /// tab that's mid-drag that same frame, not just the one tied to the resolving bill.
-        /// </summary>
-        private void DrawTaxBillStatus()
-        {
-            TaxBill pendingBill = _simulationManager.GetPendingTaxBill(PlayerCountryId);
-
-            string statusText = pendingBill != null
-                ? $"A tax bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No tax bill currently before Parliament.";
-            GUILayout.Label(statusText, _labelStyle);
-
-            // Compose with, never clobber, whatever ambient GUI.enabled the caller already set (e.g.
-            // the tab-switch's own !_isGameOver gate) - restoring a hardcoded true here would
-            // incorrectly re-enable this button while the game is over.
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && pendingBill == null;
-            if (GUILayout.Button("Introduce Bill", _neutralActionButtonStyle, GUILayout.Width(_labelStyle.fontSize * 12f)))
-            {
-                var lines = new Dictionary<TaxType, TaxBillLine>();
-                foreach (TaxLine taxLine in _playerCountry.TaxLines)
-                {
-                    bool draftImplemented = GetTaxImplementDraft(taxLine.Type, taxLine.IsImplemented);
-                    float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
-                    lines[taxLine.Type] = new TaxBillLine(draftImplemented, draftRate);
-                }
-                _simulationManager.IntroduceTaxBill(PlayerCountryId, lines);
-            }
-            GUI.enabled = ambientEnabled;
         }
 
         /// <summary>Widest TaxType name as rendered in _labelStyle (the style DrawTaxLineRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached), same reasoning as GetSectorNameColumnWidth. The original fixed "_labelStyle.fontSize * 8f" heuristic here undersized the column for the longest name ("CapitalGainsTax"), the same label-truncation root cause found in the Sector/World-Map/Policy-Web labels.</summary>
@@ -3273,7 +3302,7 @@ namespace PoliSim.UI
         private void DrawWelfarePolicyContent()
         {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
-            GUILayout.Label("Implement or remove a welfare program, and (while implemented) drag its generosity directly to the target you want.", _labelStyle);
+            GUILayout.Label("Adjusting implement/remove or generosity below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes. See the Budget Process tab to introduce it.", _labelStyle);
             _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false);
             GUILayout.Space(8f);
 
@@ -3296,38 +3325,56 @@ namespace PoliSim.UI
             return widest + 12f;
         }
 
+        /// <summary>
+        /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): Implement/Remove
+        /// now edits DRAFT state only (_welfareImplementDrafts) - it no longer mutates
+        /// WelfareProgram.IsImplemented directly, mirroring DrawTaxLineRow exactly (both the standing
+        /// and draft generosity are shown, so it's always clear whether an unpassed change is pending).
+        ///
+        /// Follows DrawTaxPolicy's stable-control-layout pattern: the generosity slider is emitted
+        /// every frame regardless of draftImplemented - before step 5c it was omitted entirely while
+        /// not implemented, which was safe only because nothing but the player's own click could ever
+        /// flip WelfareProgram.IsImplemented. Now a BudgetBill can flip it in the background
+        /// (ParliamentSystem.ApplyBillResult) on any day the countdown reaches zero, including a day
+        /// the player has an active drag in progress on this exact slider - exactly the hazard class
+        /// this pattern exists for. Greyed out (GUI.enabled = false) and its value not written back to
+        /// the draft while not applicable, but always present at the same control position.
+        /// </summary>
         private void DrawWelfareProgramRow(WelfareProgram welfareProgram, float labelWidth)
         {
             float buttonWidth = _labelStyle.fontSize * 6f;
+            bool draftImplemented = GetWelfareImplementDraft(welfareProgram.Type, welfareProgram.IsImplemented);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(welfareProgram.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
 
-            string toggleLabel = welfareProgram.IsImplemented ? "Remove" : "Implement";
-            GUIStyle toggleStyle = welfareProgram.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
-            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth)))
+            string toggleLabel = draftImplemented ? "Remove (draft)" : "Implement (draft)";
+            GUIStyle toggleStyle = draftImplemented ? _removeButtonStyle : _implementButtonStyle;
+            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth * 1.6f)))
             {
-                // Implement/Remove is immediate (a structural on/off, not a this-turn delta) - the
-                // preview cache is invalidated right away rather than waiting for the usual
-                // slider-changed check, so it reflects the toggle the moment it happens.
-                welfareProgram.IsImplemented = !welfareProgram.IsImplemented;
+                _welfareImplementDrafts[welfareProgram.Type] = !draftImplemented;
                 RecomputePolicyPreview();
             }
             GUILayout.EndHorizontal();
 
-            if (welfareProgram.IsImplemented)
+            GUILayout.Label($"Standing: {(welfareProgram.IsImplemented ? $"{welfareProgram.GenerosityLevel:F0}%" : "not implemented")}", _labelStyle);
+
+            // The slider IS the current draft (defaulting to the standing GenerosityLevel until
+            // dragged), bounded 0-100% - not a small per-turn delta, so a meaningful policy shift is
+            // reachable in one bill.
+            float draftGenerosity = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
+            string draftLabel = draftImplemented
+                ? $"Draft: {draftGenerosity:F0}%"
+                : "Draft: not implemented";
+            GUILayout.Label(draftLabel, _labelStyle);
+
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && draftImplemented;
+            float newGenerosity = GUILayout.HorizontalSlider(draftGenerosity, 0f, 100f, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
+            if (draftImplemented)
             {
-                // The slider IS the current setting (defaulting to the persisted GenerosityLevel until
-                // dragged), bounded 0-100% - not a small per-turn delta, so a meaningful policy shift
-                // is reachable in one turn.
-                float draftGenerosity = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
-                GUILayout.Label($"Generosity: {draftGenerosity:F0}%", _labelStyle);
-                float newGenerosity = GUILayout.HorizontalSlider(draftGenerosity, 0f, 100f, _sliderStyle, _sliderThumbStyle);
                 _welfareGenerosityInputs[welfareProgram.Type] = newGenerosity;
-            }
-            else
-            {
-                GUILayout.Label($"Not implemented (generosity on file: {welfareProgram.GenerosityLevel:F0}%)", _labelStyle);
             }
         }
 
@@ -3447,70 +3494,137 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        /// <summary>Content-only version of DrawSwfPolicy, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
+        /// <summary>
+        /// Content-only version of DrawSwfPolicy, reused by DrawBudgetProcessTab's center column
+        /// (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split
+        /// exists.
+        ///
+        /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): Create/Dissolve
+        /// now edits DRAFT state only (_swfExistsDraft) - it no longer mutates
+        /// Country.SovereignWealthFund directly, mirroring DrawTaxLineRow/DrawWelfareProgramRow.
+        /// Follows the SAME stable-control-layout pattern: every control below (both info labels, all
+        /// six sliders) is emitted every frame regardless of whether a real fund currently exists - a
+        /// BudgetBill can create/dissolve the fund in the background (ParliamentSystem.ApplyBillResult
+        /// / SimulationManager.ApplyBudgetBillSpendingAndSwf) on any day the countdown reaches zero,
+        /// including a day the player has an active drag in progress on one of these sliders. Before
+        /// step 5c, the whole rest of this method was behind an early `if (fund == null) return;` -
+        /// exactly the omitted-control-block hazard this pattern exists to prevent, now that the
+        /// underlying state is genuinely background-mutable. A throwaway SovereignWealthFund
+        /// (standingDefaults) supplies fallback "standing" values for the sliders/labels while no real
+        /// fund exists, so there's always something sensible to show and edit.
+        /// </summary>
         private void DrawSwfPolicyContent()
         {
             DrawColoredLabel("Sovereign Wealth Fund", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth));
 
             SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
-            string toggleLabel = fund == null ? "Create Fund" : "Dissolve Fund";
-            GUIStyle toggleStyle = fund == null ? _implementButtonStyle : _removeButtonStyle;
+            bool draftExists = GetSwfExistsDraft(fund != null);
+
+            string toggleLabel = draftExists ? "Dissolve Fund (draft)" : "Create Fund (draft)";
+            GUIStyle toggleStyle = draftExists ? _removeButtonStyle : _implementButtonStyle;
             if (GUILayout.Button(toggleLabel, toggleStyle))
             {
-                _playerCountry.SovereignWealthFund = fund == null ? new SovereignWealthFund() : null;
+                _swfExistsDraft = !draftExists;
                 RecomputePolicyPreview();
             }
 
-            if (fund == null)
+            string standingText = fund != null
+                ? $"Standing: fund exists. Total Assets: {fund.TotalAssets:F1}  |  Government Debt (gross): {_playerCountry.State.GovernmentDebt:F1}  |  Net Government Position: {_playerCountry.State.GovernmentDebt - fund.TotalAssets:F1}"
+                : "Standing: no fund exists. Creating one (once the annual budget bill passes) starts a new budget expense (the contribution) in exchange for market returns on its growing assets - it can also be drawn down during a recession or emergency instead of borrowing.";
+            GUILayout.Label(standingText, _labelStyle);
+
+            string estimateText = fund != null
+                ? $"Estimated this turn - Contribution/Withdrawal: {_cachedSwfContributionText}, Returns: {_cachedSwfReturnsText}"
+                : "Estimated this turn - not applicable (no fund).";
+            DrawColoredLabel(estimateText, _labelStyle, fund != null
+                ? UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true)
+                : UiPalette.GetDeltaColor(0f, higherIsBetter: true));
+            GUILayout.Label(draftExists ? "Draft: fund drafted to exist." : "Draft: not implemented.", _labelStyle);
+            GUILayout.Space(8f);
+
+            SovereignWealthFund standingDefaults = fund ?? new SovereignWealthFund();
+            bool ambientEnabled = GUI.enabled;
+
+            float draftContributionRate = GetSwfContributionRateInput(standingDefaults.ContributionRatePercent);
+            GUILayout.Label($"Contribution/Withdrawal Rate: {draftContributionRate:+0.0;-0.0;0}% of GDP per turn (negative draws the fund down - use during a recession or emergency instead of borrowing)", _labelStyle);
+            GUI.enabled = ambientEnabled && draftExists;
+            float newContributionRate = GUILayout.HorizontalSlider(draftContributionRate, MinSwfContributionRate, MaxSwfContributionRate, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
+            if (draftExists)
             {
-                GUILayout.Label("No fund exists. Creating one starts a new budget expense (the contribution) in exchange for market returns on its growing assets - it can also be drawn down during a recession or emergency instead of borrowing, once it exists.", _labelStyle);
-                return;
+                _swfContributionRateInput = newContributionRate;
             }
 
-            GUILayout.Space(8f);
-            GUILayout.Label($"Total Assets: {fund.TotalAssets:F1}", _labelStyle);
-            float netGovernmentPosition = _playerCountry.State.GovernmentDebt - fund.TotalAssets;
-            GUILayout.Label($"Government Debt (gross): {_playerCountry.State.GovernmentDebt:F1}  |  Net Government Position (debt minus fund assets): {netGovernmentPosition:F1}", _labelStyle);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label($"Estimated this turn - Contribution/Withdrawal: {_cachedSwfContributionText}, Returns: ", _labelStyle, GUILayout.ExpandWidth(false));
-            DrawColoredLabel(_cachedSwfReturnsText, _labelStyle, UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true));
-            GUILayout.EndHorizontal();
-            GUILayout.Space(8f);
-
-            float draftContributionRate = GetSwfContributionRateInput(fund.ContributionRatePercent);
-            GUILayout.Label($"Contribution/Withdrawal Rate: {draftContributionRate:+0.0;-0.0;0}% of GDP per turn (negative draws the fund down - use during a recession or emergency instead of borrowing)", _labelStyle);
-            _swfContributionRateInput = GUILayout.HorizontalSlider(draftContributionRate, MinSwfContributionRate, MaxSwfContributionRate, _sliderStyle, _sliderThumbStyle);
-
-            float draftDomesticAllocation = GetSwfDomesticAllocationInput(fund.DomesticAllocationPercent);
+            float draftDomesticAllocation = GetSwfDomesticAllocationInput(standingDefaults.DomesticAllocationPercent);
             GUILayout.Label($"Domestic Allocation: {draftDomesticAllocation:F0}% (rest international - this pass doesn't model differing returns by allocation)", _labelStyle);
-            _swfDomesticAllocationInput = GUILayout.HorizontalSlider(draftDomesticAllocation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled && draftExists;
+            float newDomesticAllocation = GUILayout.HorizontalSlider(draftDomesticAllocation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
+            if (draftExists)
+            {
+                _swfDomesticAllocationInput = newDomesticAllocation;
+            }
 
             GUILayout.Space(8f);
             GUILayout.Label("Asset Class Mix (weights, normalized automatically - don't need to sum to 100)", _labelStyle);
 
             // Each bar's fraction IS the already-normalized weight (0-1) - no further scaling needed,
             // unlike the spending-line/trade-volume bars above which normalize against a group max.
+            // Normalized against the DRAFT weights (a throwaway SovereignWealthFund, never the real
+            // one) via the same GetNormalizedWeight the real fund uses, rather than duplicating its
+            // sum-and-divide logic here.
             Color swfColor = UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth);
+            float draftEquities = GetSwfEquitiesWeightInput(standingDefaults.EquitiesWeight);
+            float draftBonds = GetSwfBondsWeightInput(standingDefaults.BondsWeight);
+            float draftInfrastructure = GetSwfInfrastructureWeightInput(standingDefaults.InfrastructureWeight);
+            float draftRealEstate = GetSwfRealEstateWeightInput(standingDefaults.RealEstateWeight);
+            var draftWeights = new SovereignWealthFund
+            {
+                EquitiesWeight = draftEquities,
+                BondsWeight = draftBonds,
+                InfrastructureWeight = draftInfrastructure,
+                RealEstateWeight = draftRealEstate
+            };
 
-            float draftEquities = GetSwfEquitiesWeightInput(fund.EquitiesWeight);
-            GUILayout.Label($"Equities: {draftEquities:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Equities) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.Equities), swfColor, 8f);
-            _swfEquitiesWeightInput = GUILayout.HorizontalSlider(draftEquities, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUILayout.Label($"Equities: {draftEquities:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Equities) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Equities), swfColor, 8f);
+            GUI.enabled = ambientEnabled && draftExists;
+            float newEquities = GUILayout.HorizontalSlider(draftEquities, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
+            if (draftExists)
+            {
+                _swfEquitiesWeightInput = newEquities;
+            }
 
-            float draftBonds = GetSwfBondsWeightInput(fund.BondsWeight);
-            GUILayout.Label($"Bonds: {draftBonds:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Bonds) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.Bonds), swfColor, 8f);
-            _swfBondsWeightInput = GUILayout.HorizontalSlider(draftBonds, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUILayout.Label($"Bonds: {draftBonds:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Bonds) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Bonds), swfColor, 8f);
+            GUI.enabled = ambientEnabled && draftExists;
+            float newBonds = GUILayout.HorizontalSlider(draftBonds, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
+            if (draftExists)
+            {
+                _swfBondsWeightInput = newBonds;
+            }
 
-            float draftInfrastructure = GetSwfInfrastructureWeightInput(fund.InfrastructureWeight);
-            GUILayout.Label($"Infrastructure: {draftInfrastructure:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure), swfColor, 8f);
-            _swfInfrastructureWeightInput = GUILayout.HorizontalSlider(draftInfrastructure, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUILayout.Label($"Infrastructure: {draftInfrastructure:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure), swfColor, 8f);
+            GUI.enabled = ambientEnabled && draftExists;
+            float newInfrastructure = GUILayout.HorizontalSlider(draftInfrastructure, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
+            if (draftExists)
+            {
+                _swfInfrastructureWeightInput = newInfrastructure;
+            }
 
-            float draftRealEstate = GetSwfRealEstateWeightInput(fund.RealEstateWeight);
-            GUILayout.Label($"Real Estate: {draftRealEstate:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate), swfColor, 8f);
-            _swfRealEstateWeightInput = GUILayout.HorizontalSlider(draftRealEstate, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUILayout.Label($"Real Estate: {draftRealEstate:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate) * 100f:F0}% of fund)", _labelStyle);
+            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate), swfColor, 8f);
+            GUI.enabled = ambientEnabled && draftExists;
+            float newRealEstate = GUILayout.HorizontalSlider(draftRealEstate, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
+            if (draftExists)
+            {
+                _swfRealEstateWeightInput = newRealEstate;
+            }
         }
 
         /// <summary>
@@ -3537,7 +3651,7 @@ namespace PoliSim.UI
         private void DrawSpendingPolicyContent()
         {
             DrawColoredLabel("Spending Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            GUILayout.Label("Each line's slider is a percentage change of its OWN current amount, not a flat dollar delta. Mandatory programs have a narrower range and hit approval harder per relative size - entitlement reform is politically costly.", _labelStyle);
+            GUILayout.Label("Each line's slider is a DRAFT percentage change of its OWN current amount, not a flat dollar delta - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Mandatory programs have a narrower range and hit approval harder per relative size - entitlement reform is politically costly.", _labelStyle);
             GUILayout.Space(8f);
 
             // Moved here from the old combined "Trade & Spending" tab (Phase 4) - the last-turn

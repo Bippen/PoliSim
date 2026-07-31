@@ -126,26 +126,28 @@ namespace PoliSim.Testing
                     simulationManager.ResolveCabinetDecision(CountryId.USA, portfolio, decision, worstCaseOption);
                 }
 
-                // Political Systems Overhaul Part B PILOT: TaxBill resolution is day-driven
-                // (SimulationManager.AdvanceLegislativeDay), not turn-driven, so this harness's own
+                // Political Systems Overhaul Part B, full rollout: BudgetBill resolution is day-driven
+                // (SimulationManager.AdvanceBudgetBillDay), not turn-driven, so this harness's own
                 // turn-only loop (unlike GameController's real Update() day loop) has to explicitly
-                // step it - CurrentDate itself is deliberately NOT advanced here (AdvanceLegislativeDay
+                // step it - CurrentDate itself is deliberately NOT advanced here (AdvanceBudgetBillDay
                 // doesn't read it, only DaysRemaining), keeping every other scenario's behavior
                 // byte-for-byte unchanged. Worst-case sustained stress: always keep a maximal
-                // every-tax-at-its-own-ceiling bill in flight for the whole 121-day turn, immediately
+                // every-lever-at-its-own-ceiling omnibus bill in flight for the whole 121-day turn
+                // (Tax+Spending+Welfare+SWF together, generalized from the Master Sequence step 4
+                // pilot's Tax-only version once step 5c folded them into one bill), immediately
                 // re-introducing the instant the previous one resolves (pass or fail) - repeatedly
-                // stacking the largest possible one-time tax-hike approval penalty and revenue swing
-                // this mechanic can produce, the same "always the most extreme option" stress
+                // stacking the largest possible one-time tax-hike approval penalty and revenue/spending
+                // swing this mechanic can produce, the same "always the most extreme option" stress
                 // philosophy cabinetstress already established for Cabinet's own interactive channel.
                 if (scenario == "parliamentstress")
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++)
                     {
-                        if (simulationManager.GetPendingTaxBill(CountryId.USA) == null)
+                        if (simulationManager.GetPendingBudgetBill(CountryId.USA) == null)
                         {
-                            simulationManager.IntroduceTaxBill(CountryId.USA, BuildParliamentStressBillLines(usa));
+                            simulationManager.IntroduceBudgetBill(CountryId.USA, BuildParliamentStressBill(usa));
                         }
-                        simulationManager.AdvanceLegislativeDay(CountryId.USA);
+                        simulationManager.AdvanceBudgetBillDay(CountryId.USA);
                     }
                 }
 
@@ -225,11 +227,11 @@ namespace PoliSim.Testing
                 case "cabinetstress":
                     return BuildCabinetStressDecision(usa, turn);
                 case "parliamentstress":
-                    // Political Systems Overhaul Part B PILOT: this scenario's actual stress is
-                    // applied via TaxBill (see RunOne's parliamentstress-only day-driving block, since
-                    // Tax Policy no longer flows through PolicyDecision.TaxRateOverrides at all once
-                    // gated) - no other lever is touched, so PolicyDecision.None() here is correct,
-                    // not a placeholder.
+                    // Political Systems Overhaul Part B, full rollout: this scenario's actual stress is
+                    // applied via the omnibus BudgetBill (see RunOne's parliamentstress-only day-driving
+                    // block, since Tax/Spending/Welfare/SWF no longer flow through PolicyDecision at all
+                    // once gated - Master Sequence step 5c) - no lever is touched via PolicyDecision, so
+                    // PolicyDecision.None() here is correct, not a placeholder.
                     return PolicyDecision.None();
                 default:
                     return PolicyDecision.None();
@@ -300,15 +302,43 @@ namespace PoliSim.Testing
             return PolicyDecision.None();
         }
 
-        /// <summary>Every TaxType implemented at its own TaxTypeRateRanges maximum - see RunOne's parliamentstress-only day-driving block for why this is submitted as a TaxBill rather than a PolicyDecision.</summary>
-        private static Dictionary<TaxType, TaxBillLine> BuildParliamentStressBillLines(Country usa)
+        /// <summary>
+        /// Every TaxType implemented at its own TaxTypeRateRanges maximum, every SpendingCategory
+        /// pushed for the largest increase it'll accept, every WelfareProgramType implemented at max
+        /// generosity, and a maxed-out SWF - see RunOne's parliamentstress-only day-driving block for
+        /// why this is submitted as a BudgetBill rather than a PolicyDecision. Spending/SWF requested
+        /// magnitudes are deliberately larger than any real range (SimulationManager's own
+        /// ApplySpendingLineChanges/ApplySwfPolicyChanges clamp internally), so this doesn't need to
+        /// duplicate those private range constants here.
+        /// </summary>
+        private static BudgetBill BuildParliamentStressBill(Country usa)
         {
-            var lines = new Dictionary<TaxType, TaxBillLine>();
+            var bill = new BudgetBill();
+
             foreach (TaxLine taxLine in usa.TaxLines)
             {
-                lines[taxLine.Type] = new TaxBillLine(true, taxLine.MaxRate);
+                bill.TaxLines[taxLine.Type] = new TaxBillLine(true, taxLine.MaxRate);
             }
-            return lines;
+
+            foreach (SpendingLine spendingLine in usa.SpendingLines)
+            {
+                bill.SpendingPercentChanges[spendingLine.Category] = 1000f;
+            }
+
+            foreach (WelfareProgram program in usa.WelfarePrograms)
+            {
+                bill.WelfarePrograms[program.Type] = new WelfareBillLine(true, 100f);
+            }
+
+            bill.SwfShouldExist = true;
+            bill.SwfContributionRatePercent = 1000f;
+            bill.SwfDomesticAllocationPercent = 1000f;
+            bill.SwfEquitiesWeight = 1000f;
+            bill.SwfBondsWeight = 1000f;
+            bill.SwfInfrastructureWeight = 1000f;
+            bill.SwfRealEstateWeight = 1000f;
+
+            return bill;
         }
 
         private static PolicyDecision BuildWelfareStressDecision(Country usa, int turn)

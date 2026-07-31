@@ -36,7 +36,7 @@ namespace PoliSim.Data
     /// NationalistFront is the PROTEST archetype, strongly INVERSE - a classic anti-incumbent
     /// backlash pattern, surging when approval falls.</description></item>
     /// <item><description><c>FiscalStance</c> - -1 (favors lower taxes) to +1 (favors higher taxes/
-    /// more government revenue) - the axis ParliamentSystem scores a TaxBill's alignment against.
+    /// more government revenue) - the axis ParliamentSystem scores a BudgetBill's alignment against.
     /// Progressive favors higher taxes, Conservative favors lower, Centrist is neutral/pragmatic,
     /// Nationalist is mildly tax-skeptic (a generic populist-right placeholder stance, not a claim
     /// about any real nationalist party's actual platform - fictional and generic per this system's

@@ -264,26 +264,31 @@ namespace PoliSim.Simulation
             new Dictionary<CountryId, ForeignPolicyMeeting>();
 
         /// <summary>
-        /// Political Systems Overhaul Part B PILOT (Tax Policy tab only), Master Sequence step 4: at
-        /// most one pending TaxBill per country, mirroring _pendingForeignPolicyMeetingByCountry's own
-        /// single-slot pattern. Counts down via AdvanceLegislativeDay (called once per simulated day,
-        /// independent of the 121-day turn boundary) rather than TryRollForeignPolicyMeeting's
-        /// probabilistic roll - a bill's duration is deterministic, not a chance event.
-        /// </summary>
-        private readonly Dictionary<CountryId, TaxBill> _pendingTaxBillByCountry =
-            new Dictionary<CountryId, TaxBill>();
-
-        /// <summary>
         /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5a): a country's
-        /// annual budget process is open (its FiscalYearData start date has arrived) and not yet
-        /// resolved - single-slot per country, mirroring _pendingForeignPolicyMeetingByCountry's own
-        /// pattern. 5a intentionally has no bill payload here (unlike _pendingTaxBillByCountry) - the
-        /// actual Annual Budget bill/live-estimate wiring is 5c's job; this phase only builds the
-        /// date-detection and pause-hook plumbing 5c will attach real bill state to. Only ever set for
-        /// PlayerCountryId (see TryOpenBudgetProcess) - the other five countries are AI-controlled and
-        /// resolve automatically once 5c exists, never entering this set.
+        /// annual budget process is open (its FiscalYearData start date has arrived) and the player
+        /// hasn't yet introduced a BudgetBill - single-slot per country, mirroring
+        /// _pendingForeignPolicyMeetingByCountry's own pattern. This is Phase 1 of the annual cycle
+        /// (mandatory pause, blocks GameController.Update's day-loop); IntroduceBudgetBill clears this
+        /// AND starts Phase 2 (_pendingBudgetBillByCountry's own 21-day countdown, which does NOT
+        /// pause). Only ever set for PlayerCountryId (see TryOpenBudgetProcess) - the other five
+        /// countries are AI-controlled, never enter this set, and their own annual budget dates are
+        /// currently a no-op (Master Sequence step 5c scope note: no AI budget-drafting logic exists
+        /// anywhere in this codebase yet, so there's nothing to bundle into a bill for them - resolve
+        /// this properly, not by guessing at AI policy-making, if/when it's actually needed).
         /// </summary>
         private readonly HashSet<CountryId> _pendingBudgetProcessByCountry = new HashSet<CountryId>();
+
+        /// <summary>
+        /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): at most one
+        /// pending omnibus BudgetBill per country, mirroring _pendingForeignPolicyMeetingByCountry's
+        /// own single-slot pattern - Phase 2 of the annual cycle (see _pendingBudgetProcessByCountry's
+        /// own doc comment). Counts down via AdvanceBudgetBillDay (called once per simulated day,
+        /// independent of the 121-day turn boundary), the same deterministic-countdown idiom the
+        /// Master Sequence step 4 pilot's TaxBill/AdvanceLegislativeDay already established (retired -
+        /// see git history - BudgetBill generalizes it to Tax+Spending+Welfare+SWF together).
+        /// </summary>
+        private readonly Dictionary<CountryId, BudgetBill> _pendingBudgetBillByCountry =
+            new Dictionary<CountryId, BudgetBill>();
 
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
@@ -351,34 +356,46 @@ namespace PoliSim.Simulation
             _pendingForeignPolicyMeetingByCountry.Remove(countryId);
         }
 
-        /// <summary>The pending TaxBill for this country, or null if none is currently before Parliament (the common case).</summary>
-        public TaxBill GetPendingTaxBill(CountryId countryId)
+        /// <summary>The pending omnibus BudgetBill for this country, or null if none is currently before Parliament (the common case).</summary>
+        public BudgetBill GetPendingBudgetBill(CountryId countryId)
         {
-            return _pendingTaxBillByCountry.TryGetValue(countryId, out TaxBill bill) ? bill : null;
+            return _pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill bill) ? bill : null;
         }
 
-        /// <summary>Submits a new TaxBill for this country - a no-op (returns false) if one is already pending, since only one bill may be before Parliament at a time (see _pendingTaxBillByCountry's own doc comment). DaysRemaining is set here, not by the caller, so GameController never has to know ParliamentSystem.BillDurationDays itself.</summary>
-        public bool IntroduceTaxBill(CountryId countryId, Dictionary<TaxType, TaxBillLine> lines)
+        /// <summary>
+        /// Submits a new omnibus BudgetBill for this country - a no-op (returns false) if one is
+        /// already pending, since only one bill may be before Parliament at a time (see
+        /// _pendingBudgetBillByCountry's own doc comment). Also closes out the mandatory pause this
+        /// bill's introduction was blocking (_pendingBudgetProcessByCountry) - introducing IS the
+        /// action the pause exists to force, so time resumes the moment this succeeds, and the bill
+        /// then resolves quietly in the background over BillDurationDays, never pausing again.
+        /// DaysRemaining is set here, not by the caller, so GameController never has to know
+        /// ParliamentSystem.BillDurationDays itself.
+        /// </summary>
+        public bool IntroduceBudgetBill(CountryId countryId, BudgetBill bill)
         {
-            if (_pendingTaxBillByCountry.ContainsKey(countryId))
+            if (_pendingBudgetBillByCountry.ContainsKey(countryId))
             {
                 return false;
             }
 
-            _pendingTaxBillByCountry[countryId] = new TaxBill(lines, ParliamentSystem.BillDurationDays);
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingBudgetBillByCountry[countryId] = bill;
+            _pendingBudgetProcessByCountry.Remove(countryId);
             return true;
         }
 
         /// <summary>
-        /// Counts down the pending bill (if any) by one day, resolving it PASS/FAIL via
+        /// Counts down the pending BudgetBill (if any) by one day, resolving it PASS/FAIL via
         /// ParliamentSystem once DaysRemaining reaches 0 - called once per simulated day from
         /// GameController.Update's day-processing loop, independent of the 121-day turn boundary
-        /// (unlike Cabinet/ForeignPolicy, resolving a bill never pauses time - it's a deterministic
-        /// countdown, not something needing a player response).
+        /// (unlike the mandatory pause that preceded introduction, resolving a bill never pauses time -
+        /// it's a deterministic countdown, not something needing a player response, the same idiom the
+        /// retired TaxBill/AdvanceLegislativeDay already established).
         /// </summary>
-        public void AdvanceLegislativeDay(CountryId countryId)
+        public void AdvanceBudgetBillDay(CountryId countryId)
         {
-            if (!_pendingTaxBillByCountry.TryGetValue(countryId, out TaxBill bill))
+            if (!_pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill bill))
             {
                 return;
             }
@@ -391,8 +408,45 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             bool passed = ParliamentSystem.WouldBillPass(country, bill);
-            ParliamentSystem.ApplyBillResult(country, bill, passed);
-            _pendingTaxBillByCountry.Remove(countryId);
+            ParliamentSystem.ApplyBillResult(country, bill, passed, ApplyBudgetBillSpendingAndSwf);
+            _pendingBudgetBillByCountry.Remove(countryId);
+        }
+
+        /// <summary>
+        /// The Spending/SWF half of BudgetBill application that ParliamentSystem.ApplyBillResult
+        /// delegates back here (passed in as a callback so ParliamentSystem never needs a direct
+        /// dependency on SimulationManager's private internals) - reuses ApplySpendingLineChanges/
+        /// ApplySwfPolicyChanges via a throwaway PolicyDecision built from the bill's own fields,
+        /// rather than duplicating their clamping logic, plus direct SWF create/dissolve handling
+        /// (neither existing function owns that - both assume the fund's existence is already settled
+        /// going in). Only ever called from ApplyBillResult on a PASS - never on FAIL, never standalone.
+        /// </summary>
+        private void ApplyBudgetBillSpendingAndSwf(Country country, BudgetBill bill)
+        {
+            var spendingDecision = new PolicyDecision { SpendingLineChanges = bill.SpendingPercentChanges };
+            ApplySpendingLineChanges(country, spendingDecision);
+
+            if (!bill.SwfShouldExist)
+            {
+                country.SovereignWealthFund = null;
+                return;
+            }
+
+            if (country.SovereignWealthFund == null)
+            {
+                country.SovereignWealthFund = new SovereignWealthFund();
+            }
+
+            var swfDecision = new PolicyDecision
+            {
+                SwfContributionRateOverride = bill.SwfContributionRatePercent,
+                SwfDomesticAllocationOverride = bill.SwfDomesticAllocationPercent,
+                SwfEquitiesWeightOverride = bill.SwfEquitiesWeight,
+                SwfBondsWeightOverride = bill.SwfBondsWeight,
+                SwfInfrastructureWeightOverride = bill.SwfInfrastructureWeight,
+                SwfRealEstateWeightOverride = bill.SwfRealEstateWeight
+            };
+            ApplySwfPolicyChanges(country, swfDecision);
         }
 
         /// <summary>
@@ -433,24 +487,6 @@ namespace PoliSim.Simulation
             {
                 _pendingBudgetProcessByCountry.Add(countryId);
             }
-        }
-
-        /// <summary>
-        /// TEMPORARY 5a-ONLY PLACEHOLDER - clears the pending budget process with NO other effect.
-        /// Master Sequence step 5b (the Budget Process screen) and step 5c (the omnibus bill + live
-        /// vote estimate) don't exist yet, so 5a can't yet offer a real resolution - but a mandatory
-        /// pause with no way to ever clear it would leave the game permanently stuck for real once a
-        /// player's country's fiscal-year date arrives, exactly the kind of invisible-block failure
-        /// the last two rounds of investigation were about. This lets 5a's date-detection and
-        /// pause-gate/banner wiring be genuinely tested end-to-end (advance the calendar to the fiscal
-        /// date, confirm the mandatory pause and banner fire, confirm acknowledging resumes time)
-        /// without leaving a real dead end between now and 5c. Step 5c must REPLACE the call site that
-        /// invokes this (GameController's temporary Acknowledge button) with the real Budget Process
-        /// flow - do not leave this placeholder wired in once 5c ships.
-        /// </summary>
-        public void AcknowledgeBudgetProcess(CountryId countryId)
-        {
-            _pendingBudgetProcessByCountry.Remove(countryId);
         }
 
         /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>
