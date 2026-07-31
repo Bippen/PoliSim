@@ -2892,12 +2892,31 @@ namespace PoliSim.UI
             DrawColoredLabel($"Net (matches this turn's Budget change): {net:+0.0;-0.0;0}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
         }
 
-        /// <summary>Every TaxType for the player's country: an Implement/Remove toggle (immediate - see DrawTaxLineRow) plus, only while implemented, a slider that directly sets this turn's target rate.</summary>
         /// <summary>
         /// Political Systems Overhaul Part B PILOT (Master Sequence step 4): the Tax Policy tab is now
         /// the gated-legislation pilot. Sliders/toggles below remain DRAFT values (adjusting costs
         /// nothing, no vote needed) - the "Introduce Bill" button is the only way a draft ever reaches
         /// Parliament, and a PASSED bill is the only way it ever reaches the real, standing TaxLines.
+        ///
+        /// STABLE CONTROL LAYOUT PATTERN (mandatory for every gated tab, not just this one - see
+        /// "Background/timed state mutation vs. active UI interaction" in POLISIM_MASTER_ROADMAP.md's
+        /// working-discipline failure patterns): once a background system can resolve on ANY simulated
+        /// day - a bill passing/failing, and every one of the seven remaining tabs will gain this the
+        /// moment Master Sequence step 5 lands - it can mutate the exact standing value a slider on
+        /// this tab is reading, on a day the player has an active multi-frame drag in progress on that
+        /// slider. GUILayout allocates control IDs positionally (call order within OnGUI), not by a
+        /// stable key, so DrawTaxBillStatus and DrawTaxLineRow below must NEVER change which controls
+        /// they emit, in what order, based on live/mutable state (a bill pending or not, a TaxType
+        /// drafted-implemented or not). Swapping a Button for a Label, or omitting a Slider some
+        /// frames, changes the control count/sequence a currently-hot (mid-drag) control was allocated
+        /// against, which is a documented Unity IMGUI hang/desync trigger inside a ScrollView - this
+        /// is genuinely new risk, not previously reachable, because nothing before Parliament + real-
+        /// time day advancement could mutate this tab's own state out from under a live drag. The fix:
+        /// every control this tab can ever draw is drawn EVERY frame, in the SAME order; "not
+        /// currently applicable" is represented via GUI.enabled = false (greyed, non-interactive, but
+        /// still present and control-ID-stable), never by branching the control itself in/out of
+        /// existence. Every step-5 tab must follow this same shape from its first draft, not
+        /// retrofit it after finding the bug fresh a second time.
         /// </summary>
         private void DrawTaxPolicy(float availableHeight)
         {
@@ -2924,16 +2943,32 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        /// <summary>Pending-bill status plus the "Introduce Bill" action - disabled while a bill is already before Parliament, since only one may be pending at a time (see SimulationManager.IntroduceTaxBill).</summary>
+        /// <summary>
+        /// Pending-bill status plus the "Introduce Bill" action - disabled while a bill is already
+        /// before Parliament, since only one may be pending at a time (see
+        /// SimulationManager.IntroduceTaxBill). Follows DrawTaxPolicy's stable-control-layout pattern:
+        /// the status Label and the "Introduce Bill" Button are BOTH emitted every frame regardless of
+        /// pendingBill - only the label's text and the button's GUI.enabled state vary. Previously this
+        /// returned early with just a Label while a bill was pending, which meant a bill resolving
+        /// (clearing pendingBill) changed the control COUNT this method emits from one frame to the
+        /// next; since this is drawn before every tax line row, that shift also renumbers every
+        /// row's own positional control IDs the instant it happens - dangerous for any slider on this
+        /// tab that's mid-drag that same frame, not just the one tied to the resolving bill.
+        /// </summary>
         private void DrawTaxBillStatus()
         {
             TaxBill pendingBill = _simulationManager.GetPendingTaxBill(PlayerCountryId);
-            if (pendingBill != null)
-            {
-                GUILayout.Label($"A tax bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle);
-                return;
-            }
 
+            string statusText = pendingBill != null
+                ? $"A tax bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
+                : "No tax bill currently before Parliament.";
+            GUILayout.Label(statusText, _labelStyle);
+
+            // Compose with, never clobber, whatever ambient GUI.enabled the caller already set (e.g.
+            // the tab-switch's own !_isGameOver gate) - restoring a hardcoded true here would
+            // incorrectly re-enable this button while the game is over.
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && pendingBill == null;
             if (GUILayout.Button("Introduce Bill", _neutralActionButtonStyle, GUILayout.Width(_labelStyle.fontSize * 12f)))
             {
                 var lines = new Dictionary<TaxType, TaxBillLine>();
@@ -2945,6 +2980,7 @@ namespace PoliSim.UI
                 }
                 _simulationManager.IntroduceTaxBill(PlayerCountryId, lines);
             }
+            GUI.enabled = ambientEnabled;
         }
 
         /// <summary>Widest TaxType name as rendered in _labelStyle (the style DrawTaxLineRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached), same reasoning as GetSectorNameColumnWidth. The original fixed "_labelStyle.fontSize * 8f" heuristic here undersized the column for the longest name ("CapitalGainsTax"), the same label-truncation root cause found in the Sector/World-Map/Policy-Web labels.</summary>
@@ -2958,7 +2994,20 @@ namespace PoliSim.UI
             return widest + 12f;
         }
 
-        /// <summary>Political Systems Overhaul Part B PILOT: the Implement/Remove toggle now edits DRAFT state only (_taxImplementDrafts) - it no longer mutates taxLine.IsImplemented directly. Both the standing (legislated) value and the draft are shown, so it's always clear whether an unpassed change is pending.</summary>
+        /// <summary>
+        /// Political Systems Overhaul Part B PILOT: the Implement/Remove toggle now edits DRAFT state
+        /// only (_taxImplementDrafts) - it no longer mutates taxLine.IsImplemented directly. Both the
+        /// standing (legislated) value and the draft are shown, so it's always clear whether an
+        /// unpassed change is pending.
+        ///
+        /// Follows DrawTaxPolicy's stable-control-layout pattern: the rate slider is emitted every
+        /// frame regardless of draftImplemented - previously it was omitted entirely while
+        /// draftImplemented was false, which is exactly the shape that's unsafe once a bill resolving
+        /// mid-drag (ApplyBillResult writes taxLine.IsImplemented directly onto this same live TaxLine)
+        /// can flip draftImplemented's fallback value out from under an in-progress drag on this exact
+        /// row. Greyed out (GUI.enabled = false) and its value not written back to the draft while not
+        /// applicable, but always present at the same control position.
+        /// </summary>
         private void DrawTaxLineRow(TaxLine taxLine, float labelWidth)
         {
             float buttonWidth = _labelStyle.fontSize * 6f;
@@ -2978,19 +3027,25 @@ namespace PoliSim.UI
 
             GUILayout.Label($"Standing: {(taxLine.IsImplemented ? $"{taxLine.Rate:F2}%" : "not implemented")}", _labelStyle);
 
+            // The slider IS the current draft (defaulting to the standing Rate until dragged), bounded
+            // by this TaxType's own TaxTypeRateRanges - not a small per-turn delta, so a meaningful
+            // policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one bill.
+            float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+            string draftLabel = draftImplemented
+                ? $"Draft: {draftRate:F2}%  (range {taxLine.MinRate:F0}-{taxLine.MaxRate:F0}%)"
+                : "Draft: not implemented";
+            GUILayout.Label(draftLabel, _labelStyle);
+
+            // Compose with, never clobber, whatever ambient GUI.enabled the caller already set (e.g.
+            // the tab-switch's own !_isGameOver gate) - restoring a hardcoded true here would
+            // incorrectly re-enable this slider while the game is over.
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && draftImplemented;
+            float newRate = GUILayout.HorizontalSlider(draftRate, taxLine.MinRate, taxLine.MaxRate, _sliderStyle, _sliderThumbStyle);
+            GUI.enabled = ambientEnabled;
             if (draftImplemented)
             {
-                // The slider IS the current draft (defaulting to the standing Rate until dragged),
-                // bounded by this TaxType's own TaxTypeRateRanges - not a small per-turn delta, so a
-                // meaningful policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one bill.
-                float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
-                GUILayout.Label($"Draft: {draftRate:F2}%  (range {taxLine.MinRate:F0}-{taxLine.MaxRate:F0}%)", _labelStyle);
-                float newRate = GUILayout.HorizontalSlider(draftRate, taxLine.MinRate, taxLine.MaxRate, _sliderStyle, _sliderThumbStyle);
                 _taxRateInputs[taxLine.Type] = newRate;
-            }
-            else
-            {
-                GUILayout.Label("Draft: not implemented", _labelStyle);
             }
         }
 
