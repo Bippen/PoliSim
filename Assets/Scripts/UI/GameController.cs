@@ -634,6 +634,11 @@ namespace PoliSim.UI
             // Chair selection - a fired cabinet decision needs a player-picked response, not something
             // that should be silently skippable by racing ahead to the next turn.
             bool hasPendingCabinetDecisions = _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0;
+            // Same idiom again - a pending Foreign Policy meeting also blocks Update's day-loop (see
+            // its own gate), but until now had NO representation in this always-visible readout, only
+            // in DrawForeignPolicyTab's own modal - invisible from every other tab. See
+            // DrawCalendarAndSpeedControls' own doc comment.
+            bool hasPendingForeignPolicyMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null;
 
             float marginX = Screen.width * ScreenMarginFraction;
             float marginY = Screen.height * ScreenMarginFraction;
@@ -672,7 +677,7 @@ namespace PoliSim.UI
             GUILayout.Space(sectionSpacing);
 
             GUI.enabled = !_isGameOver;
-            DrawCalendarAndSpeedControls(hasPendingFedChairSelection, hasPendingCabinetDecisions);
+            DrawCalendarAndSpeedControls(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting);
             GUI.enabled = true;
 
             GUILayout.EndVertical();
@@ -1697,24 +1702,50 @@ namespace PoliSim.UI
         /// selected-vs-unselected visual idiom (UiPalette.BuildButtonStyle's Primary kind for whichever
         /// speed is currently active, Neutral for the rest) rather than inventing a new button-state
         /// convention just for this row.
+        ///
+        /// Persistent, unmissable pause indicator (POLISIM_MASTER_ROADMAP.md working discipline's
+        /// fifth failure pattern, "background/timed state mutation vs. active UI interaction" -
+        /// investigated after a reported freeze that the IMGUI stable-control-layout fix, commit
+        /// adb34ae, did NOT resolve). This is drawn in OnGUI's pinned-outside-scroll-view slot (see
+        /// OnGUI), so it's the ONE piece of UI guaranteed visible from every tab at any scroll
+        /// position, at any time. That matters because all three systems that can legitimately pause
+        /// Update's day-loop - Fed Chair term appointment, a Cabinet decision, a Foreign Policy
+        /// meeting - render their ACTUAL resolution UI (the candidate picker / DrawCabinetDecisionModal
+        /// / DrawForeignPolicyMeetingModal) only inside their own specific tab's draw call. A player
+        /// on, say, Tax Policy when one of these fires sees nothing wrong except that simulated days
+        /// silently stop advancing - indistinguishable from a hang unless they happen to check this
+        /// exact line and then navigate to the right tab. Before this fix, that line existed for Fed
+        /// Chair and Cabinet only (a modest _labelStyle line, easy to miss) and said NOTHING at all for
+        /// a pending Foreign Policy meeting - the one of the three most likely to fire early in a
+        /// fresh session, since it rolls per DAY (~1%) rather than per 121-day TURN like the other two.
+        /// Now: exactly one Label control either way (per DrawTaxPolicy's stable-control-layout
+        /// pattern - content and style vary, the control itself never does), escalated to
+        /// _eventBannerStyle (the same bold/orange weight as the dashboard's own BREAKING banner)
+        /// whenever ANY of the three is true, always naming which one and which tab resolves it.
         /// </summary>
-        private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions)
+        private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions, bool hasPendingForeignPolicyMeeting)
         {
             GUILayout.BeginVertical();
 
             string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
+            bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting;
+
+            // Priority order matches Update's own pause-gate check order exactly, so this always names
+            // whichever reason is actually the one currently blocking AdvanceDay.
+            string statusText = dateText;
             if (hasPendingFedChairSelection)
             {
-                GUILayout.Label($"{dateText} - paused: choose the next Fed chair to continue", _labelStyle);
+                statusText = $"{dateText} - TIME PAUSED: choose the next Fed Chair (Federal Reserve tab) to continue.";
             }
             else if (hasPendingCabinetDecisions)
             {
-                GUILayout.Label($"{dateText} - paused: resolve the pending Cabinet decision to continue", _labelStyle);
+                statusText = $"{dateText} - TIME PAUSED: resolve the pending Cabinet decision (Cabinet tab) to continue.";
             }
-            else
+            else if (hasPendingForeignPolicyMeeting)
             {
-                GUILayout.Label(dateText, _labelStyle);
+                statusText = $"{dateText} - TIME PAUSED: respond to the pending Foreign Policy meeting (Foreign Policy tab) to continue.";
             }
+            GUILayout.Label(statusText, isPaused ? _eventBannerStyle : _labelStyle);
 
             GUILayout.BeginHorizontal();
             DrawSpeedButton("Pause", GameSpeed.Paused);
