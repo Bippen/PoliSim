@@ -12,7 +12,7 @@ namespace PoliSim.Testing
     /// per-turn/per-country state and a final summary flagging anything that looks like a runaway
     /// feedback loop or invalid value. Not production code.
     ///
-    /// Reads two optional command-line arguments (so `Assets/Editor/BatchSimulationRunner.cs` can
+    /// Reads three optional command-line arguments (so `Assets/Editor/BatchSimulationRunner.cs` can
     /// drive it headlessly without touching this file per run - see CLAUDE.md's "Real-Unity
     /// Validation is the Standard Path" for why this replaced the standalone harness as the primary
     /// validation tool):
@@ -25,6 +25,12 @@ namespace PoliSim.Testing
     /// same rates, same turn timing) so both tools exercise identical policy sequences against the
     /// real game code; demographicpolicystress (Round 3 item 5, Part B) has no harness equivalent -
     /// added directly here, following the same pattern.
+    /// -skipsimulationtestrunner - added for Master Sequence step 5a's own Play-mode diagnostics
+    /// (e.g. a UI screenshot check that has nothing to do with SimulationTestRunner): SampleScene
+    /// entering Play mode ran this unconditionally before this flag existed, so ANY Play-mode
+    /// diagnostic - however unrelated - paid for a full 100-turn baseline pass (with per-turn logging)
+    /// before its own setup ever got a chance to run. No effect on BatchSimulationRunner or any
+    /// existing invocation, which never pass this flag - purely additive, opt-in only.
     /// </summary>
     public class SimulationTestRunner : MonoBehaviour
     {
@@ -47,6 +53,11 @@ namespace PoliSim.Testing
         private void Start()
         {
             string[] args = Environment.GetCommandLineArgs();
+
+            if (args.Contains("-skipsimulationtestrunner"))
+            {
+                return;
+            }
 
             if (args.Contains("-runmatrix"))
             {
