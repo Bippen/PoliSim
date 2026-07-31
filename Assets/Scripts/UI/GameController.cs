@@ -484,6 +484,15 @@ namespace PoliSim.UI
         private GUIStyle _tabButtonStyle;
         private GUIStyle _eventBannerStyle;
         private GUIStyle _gameOverStyle;
+        private GUIStyle _cardKindStyle;
+
+        // Master Sequence step 5e, Phase C batch 2: decision-card chrome. Fill sits slightly lighter
+        // than the app background so a card reads as raised without a border, matching PoliSimTheme's
+        // own Card token rather than inventing a second card color for this one screen.
+        private static readonly Color DecisionCardFill = new Color(0.16f, 0.17f, 0.20f);
+        private const int DecisionCardCornerRadius = 9;
+        private const int DecisionCardPadding = 12;
+        private const int DecisionCardSpineWidth = 8;
 
         // Phase 3 of the UI revamp: action-type-coded button styles (see UiPalette), rebuilt every
         // frame in RescaleStylesToScreen alongside the base styles they're cloned from, so their
@@ -803,6 +812,7 @@ namespace PoliSim.UI
             _eventBannerStyle.normal.textColor = new Color(1f, 0.65f, 0f);
             _gameOverStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = true };
             _gameOverStyle.normal.textColor = Color.red;
+            _cardKindStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = false };
 
             _stylesInitialized = true;
         }
@@ -836,6 +846,9 @@ namespace PoliSim.UI
 
             _eventBannerStyle.fontSize = bannerFontSize;
             _gameOverStyle.fontSize = bannerFontSize;
+            // Deliberately the smallest text on screen - a card's kind caption is a wayfinding label,
+            // not content, and must not compete with the decision's own headline underneath it.
+            _cardKindStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * 0.62f));
 
             // Rebuilt every frame (cheap - a handful of GUIStyle clones reusing cached swatch
             // textures, not per-frame texture allocation) so they always match _tabButtonStyle/
@@ -2396,30 +2409,37 @@ namespace PoliSim.UI
 
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
+                BeginDecisionCard("FEDERAL RESERVE", UiPalette.SystemArea.Political);
                 DrawFedChairSelectionModal();
-                GUILayout.Space(8f);
+                EndDecisionCard(UiPalette.SystemArea.Political);
                 anyPending = true;
             }
 
             ForeignPolicyMeeting pendingMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId);
             if (pendingMeeting != null)
             {
-                DrawForeignPolicyMeetingModal(pendingMeeting);
-                GUILayout.Space(8f);
+                BeginDecisionCard("FOREIGN POLICY", UiPalette.SystemArea.Global);
+                DrawForeignPolicyMeetingModal(pendingMeeting, drawOwnFrame: false);
+                EndDecisionCard(UiPalette.SystemArea.Global);
                 anyPending = true;
             }
 
             foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in _simulationManager.GetPendingCabinetDecisions(PlayerCountryId))
             {
-                DrawCabinetDecisionModal(portfolio, decision);
-                GUILayout.Space(8f);
+                // Tinted by the PORTFOLIO's own area, not one flat "cabinet" color - two simultaneous
+                // cabinet decisions from different portfolios should not read as the same thing.
+                UiPalette.SystemArea portfolioArea = UiPalette.GetPortfolioArea(portfolio);
+                BeginDecisionCard("CABINET", portfolioArea);
+                DrawCabinetDecisionModal(portfolio, decision, drawOwnFrame: false);
+                EndDecisionCard(portfolioArea);
                 anyPending = true;
             }
 
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
+                BeginDecisionCard("BUDGET PROCESS", UiPalette.SystemArea.Fiscal);
                 DrawBudgetBillStatusAndIntroduce();
-                GUILayout.Space(8f);
+                EndDecisionCard(UiPalette.SystemArea.Fiscal);
                 anyPending = true;
             }
 
@@ -2432,6 +2452,34 @@ namespace PoliSim.UI
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase C batch 2: opens a rounded card around one pending decision,
+        /// captioned with a small caps <paramref name="kind"/> label and spined in <paramref name="area"/>'s
+        /// own color (see EndDecisionCard, which draws the spine once the card's real height is known).
+        /// Deliberately wraps the EXISTING modal renderers rather than replacing them: all four are
+        /// shared with the tabs they originally lived on (Federal Reserve, Budget Process), so rewriting
+        /// their internals here would silently restyle those tabs too - which is exactly what Phase C's
+        /// batching discipline exists to prevent. Chrome around the outside changes only what the
+        /// Decisions tab itself composes.
+        /// </summary>
+        private void BeginDecisionCard(string kind, UiPalette.SystemArea area)
+        {
+            GUILayout.BeginVertical(UiPalette.BuildCardStyle(DecisionCardFill, DecisionCardCornerRadius, DecisionCardPadding, DecisionCardSpineWidth));
+            DrawColoredLabel(kind, _cardKindStyle, UiPalette.GetAreaColor(area));
+        }
+
+        /// <summary>Closes a card opened by BeginDecisionCard and draws its area spine, using the rect GUILayout just resolved for the whole card - the height isn't knowable until now, which is the entire reason the spine is drawn here rather than up front.</summary>
+        private void EndDecisionCard(UiPalette.SystemArea area)
+        {
+            GUILayout.EndVertical();
+            if (Event.current.type == EventType.Repaint)
+            {
+                UiPalette.DrawCardSpine(GUILayoutUtility.GetLastRect(), area, DecisionCardSpineWidth - 1f);
+            }
+
+            GUILayout.Space(10f);
         }
 
         /// <summary>Master Sequence step 5e, Phase A: Demographics tab - just the pie-chart half of the old "Compass & Demographics" tab (see DrawDemographicsContent's own doc comment), no category selector needed since there's only one content source. Never gated on game-over, matching the old tab's own behavior (pure visualization, no player-facing controls).</summary>
@@ -2836,9 +2884,20 @@ namespace PoliSim.UI
             }
         }
 
-        private void DrawCabinetDecisionModal(CabinetPortfolio portfolio, CabinetDecision decision)
+        /// <summary>
+        /// Master Sequence step 5e, Phase C batch 2: <paramref name="drawOwnFrame"/> defaults to true so
+        /// the Politics tab's own Cabinet screen (a LATER batch, which must not change yet) keeps its
+        /// existing box exactly. The Decisions tab passes false because it has already wrapped this in a
+        /// rounded card - without the opt-out the two frames nest and a flat grey box renders inside the
+        /// card, which is what happens if you only look at one of a shared renderer's call sites.
+        /// </summary>
+        private void DrawCabinetDecisionModal(CabinetPortfolio portfolio, CabinetDecision decision, bool drawOwnFrame = true)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            if (drawOwnFrame)
+            {
+                GUILayout.BeginVertical(_boxStyle);
+            }
+
             GUILayout.Label($"DECISION - {GetPortfolioName(portfolio)}: {decision.Name}", _eventBannerStyle);
             GUILayout.Label(decision.Description, _labelStyle);
             foreach (CabinetDecisionOption option in decision.Options)
@@ -2848,7 +2907,11 @@ namespace PoliSim.UI
                     _simulationManager.ResolveCabinetDecision(PlayerCountryId, portfolio, decision, option);
                 }
             }
-            GUILayout.EndVertical();
+
+            if (drawOwnFrame)
+            {
+                GUILayout.EndVertical();
+            }
         }
 
         /// <summary>
@@ -2858,9 +2921,13 @@ namespace PoliSim.UI
         /// so it moves to Decisions wholesale (see DrawDecisionsTab) with nothing left behind. Only
         /// this modal renderer survives, reused as-is from Decisions.
         /// </summary>
-        private void DrawForeignPolicyMeetingModal(ForeignPolicyMeeting meeting)
+        private void DrawForeignPolicyMeetingModal(ForeignPolicyMeeting meeting, bool drawOwnFrame = true)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            if (drawOwnFrame)
+            {
+                GUILayout.BeginVertical(_boxStyle);
+            }
+
             GUILayout.Label($"MEETING: {meeting.Name}", _eventBannerStyle);
             GUILayout.Label(meeting.Description, _labelStyle);
             foreach (ForeignPolicyMeetingOption option in meeting.Options)
@@ -2870,7 +2937,11 @@ namespace PoliSim.UI
                     _simulationManager.ResolveForeignPolicyMeeting(PlayerCountryId, option);
                 }
             }
-            GUILayout.EndVertical();
+
+            if (drawOwnFrame)
+            {
+                GUILayout.EndVertical();
+            }
         }
 
         /// <summary>

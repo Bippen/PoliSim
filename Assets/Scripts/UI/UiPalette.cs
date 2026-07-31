@@ -111,6 +111,25 @@ namespace PoliSim.UI
         };
 
         public static SystemArea GetCountryArea(CountryId countryId) => CountryAreas[countryId];
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase C: which system area a cabinet portfolio belongs to. Every
+        /// cabinet surface previously colored itself flat `Political` regardless of portfolio (see
+        /// GameController.DrawCabinetPortfolioPanel), which is fine when portfolios are only ever shown
+        /// one-per-panel but reads as a single undifferentiated block once several pending cabinet
+        /// decisions stack up together in the Decisions tab. Each portfolio maps to the area it actually
+        /// governs, so two simultaneous decisions are told apart at a glance.
+        /// </summary>
+        public static SystemArea GetPortfolioArea(CabinetPortfolio portfolio)
+        {
+            switch (portfolio)
+            {
+                case CabinetPortfolio.FinanceTreasury: return SystemArea.Fiscal;
+                case CabinetPortfolio.InteriorJustice: return SystemArea.CrimeJustice;
+                case CabinetPortfolio.HealthSocialAffairs: return SystemArea.Welfare;
+                default: return SystemArea.Political;
+            }
+        }
         public static Color GetCountryColor(CountryId countryId) => GetAreaColor(CountryAreas[countryId]);
 
         /// <summary>
@@ -252,6 +271,103 @@ namespace PoliSim.UI
             style.fontStyle = kind == ButtonKind.TabSelected || kind == ButtonKind.Primary ? FontStyle.Bold : baseStyle.fontStyle;
 
             return style;
+        }
+
+        private static readonly Dictionary<(Color Fill, int Radius), Texture2D> RoundedCache =
+            new Dictionary<(Color, int), Texture2D>();
+
+        /// <summary>
+        /// A cached rounded-corner texture, built once per (color, radius) and 9-sliced by the styles
+        /// below. `PoliSimTheme.RoundedBox` already draws rounded rects, but only into an explicit Rect
+        /// the caller has already measured - that works for fixed-layout widgets like StatTile and is
+        /// no help at all for the large majority of this UI, which is GUILayout flow whose height isn't
+        /// known until after its content has been laid out. A 9-sliced STYLE background is the piece
+        /// that was missing: it lets ordinary `GUILayout.BeginVertical(cardStyle)` content sit in a
+        /// proper card without any of it being rewritten into manual Rect math (which is exactly the
+        /// kind of rewrite that produced two real layout bugs in 5b).
+        /// Corner alpha is computed from true distance-to-corner-centre, so edges are smooth rather
+        /// than stair-stepped; every non-corner pixel resolves to distance 0 and stays fully opaque.
+        /// </summary>
+        private static Texture2D GetRoundedTexture(Color fill, int radius)
+        {
+            if (RoundedCache.TryGetValue((fill, radius), out Texture2D existing) && existing != null)
+            {
+                return existing;
+            }
+
+            int size = radius * 2 + 2;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float cornerX = x < radius ? radius - 0.5f : (x >= size - radius ? size - radius - 0.5f : x);
+                    float cornerY = y < radius ? radius - 0.5f : (y >= size - radius ? size - radius - 0.5f : y);
+                    float dx = x - cornerX;
+                    float dy = y - cornerY;
+                    float alpha = Mathf.Clamp01(radius - Mathf.Sqrt(dx * dx + dy * dy) + 0.5f);
+                    pixels[y * size + x] = new Color(fill.r, fill.g, fill.b, fill.a * alpha);
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply(false);
+            RoundedCache[(fill, radius)] = texture;
+            return texture;
+        }
+
+        private static readonly Dictionary<(Color Fill, int Radius, int Padding, int Spine), GUIStyle> CardStyleCache =
+            new Dictionary<(Color, int, int, int), GUIStyle>();
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase C: a rounded card style for wrapping existing GUILayout
+        /// content - `GUILayout.BeginVertical(UiPalette.BuildCardStyle(...))`. <paramref name="spineWidth"/>
+        /// only reserves extra LEFT padding; the spine itself is drawn by <see cref="DrawCardSpine"/>
+        /// once the card's real rect is known. Reserving it in the style rather than drawing over the
+        /// content afterwards is the same discipline the tab-bar icons had to learn the hard way (see
+        /// GameController.DrawConsolidatedTabButton): art laid on top of a control that doesn't know
+        /// it's there will eventually collide with it.
+        /// Cached per distinct combination - these are rebuilt every frame by callers, so allocating a
+        /// GUIStyle and a texture per call would be a per-frame leak, not just a cost.
+        /// </summary>
+        public static GUIStyle BuildCardStyle(Color fill, int cornerRadius = 8, int padding = 12, int spineWidth = 0)
+        {
+            var key = (fill, cornerRadius, padding, spineWidth);
+            if (CardStyleCache.TryGetValue(key, out GUIStyle cached) && cached != null && cached.normal.background != null)
+            {
+                return cached;
+            }
+
+            var style = new GUIStyle
+            {
+                border = new RectOffset(cornerRadius + 1, cornerRadius + 1, cornerRadius + 1, cornerRadius + 1),
+                padding = new RectOffset(padding + spineWidth, padding, padding, padding),
+                margin = new RectOffset(0, 0, 0, 0)
+            };
+            style.normal.background = GetRoundedTexture(fill, cornerRadius);
+
+            CardStyleCache[key] = style;
+            return style;
+        }
+
+        /// <summary>
+        /// The area-colored accent bar down a card's left edge - the single strongest "which system does
+        /// this belong to" cue in the design language, and the reason <see cref="BuildCardStyle"/> takes
+        /// a spineWidth at all. Call with the rect from GUILayoutUtility.GetLastRect() immediately after
+        /// the card's EndVertical. Drawn inside the padding the style already reserved, so it can never
+        /// overlap the card's own content.
+        /// </summary>
+        public static void DrawCardSpine(Rect cardRect, SystemArea area, float width = 4f, float inset = 5f)
+        {
+            var spineRect = new Rect(cardRect.x + inset, cardRect.y + inset, width, cardRect.height - inset * 2f);
+            GUI.DrawTexture(spineRect, GetRoundedTexture(GetAreaColor(area), 2), ScaleMode.StretchToFill, true);
         }
 
         private static Color GetButtonBaseColor(ButtonKind kind, SystemArea area)
