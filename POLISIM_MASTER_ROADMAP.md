@@ -287,14 +287,29 @@ matches this section's own table exactly.
 
 #### Phase B — Sprite reskin pilot: Statistics/Dashboard only
 
-Apply the icon-tinting helper (a small new piece of infrastructure - reads a `SystemArea` or the new
-`icon_nav_*` concept and returns the right `Texture2D` tinted via `PoliSimTheme.Accent`, built as part of
-this phase since nothing needs it yet) and `PoliSimTheme`/`PoliSimWidgets`' card/stat-tile/threshold-bar
-primitives to the Statistics tab specifically - its own nav icon (`icon_nav_statistics.png`, already
-imported) tinted appropriately in the tab bar, and its headline stats/graphs restyled using the new
-widget patterns instead of raw `OnGUI.Label` layout. Highest-visibility screen, validates both new
-pieces of infrastructure (icon tinting + card widgets) together before trusting them anywhere else. Do
-NOT touch any other tab's rendering in this phase.
+**Prerequisite check: DONE (2026-07-31), confirmed BEFORE any real Statistics/Dashboard rendering work
+started, per Elias's own explicit instruction not to build on an unverified assumption.** The
+icon-tinting helper (`UiPalette.DrawTintedIcon(Rect, Texture2D, Color)` - `GUI.color`-multiply tinting,
+the exact mechanism the Claude Design asset pack's own README specifies, mirroring `HemicycleRenderer`'s
+own existing per-seat dot-tinting idiom) is now real, permanent code in `UiPalette.cs`, not just planned.
+Verified via a throwaway, fully isolated Editor-only test window (`Assets/Editor/IconTintingTest.cs`,
+zero production-code changes, deleted after use per this project's own established convention) showing
+3 real imported icons (`icon_area_fiscal`, `icon_area_infrastructure`, `icon_nav_statistics`) each tinted
+3 ways (white/its own area color/dimmed grey). **Confirmed by Elias directly**: icon shapes clearly
+visible in every cell, background stays genuinely transparent, and the three tint colors are visibly
+different from each other - the core visual claim actually holds, not just assumed from the asset
+pack's own README text. Real production usage (which texture reference mechanism Statistics' actual
+tab-bar button and any other real call site uses - serialized Inspector fields vs. `Resources.Load` vs.
+something else - `AssetDatabase.LoadAssetAtPath` only works in-Editor, so the throwaway test's own
+loading method is NOT what production code will use) is still Phase B's own work below, not resolved by
+this prerequisite check alone.
+
+Apply the now-confirmed icon-tinting helper and `PoliSimTheme`/`PoliSimWidgets`' card/stat-tile/
+threshold-bar primitives to the Statistics tab specifically - its own nav icon (`icon_nav_statistics.png`,
+already imported) tinted appropriately in the tab bar, and its headline stats/graphs restyled using the
+new widget patterns instead of raw `OnGUI.Label` layout. Highest-visibility screen, validates both
+pieces of infrastructure (icon tinting + card widgets) together, in production code, before trusting
+them anywhere else. Do NOT touch any other tab's rendering in this phase.
 
 **Validation**: live-Editor screenshot confirming the new look renders correctly AND that all the same
 data is still accurate - a visual change must never be able to silently change a number. Hold here for
