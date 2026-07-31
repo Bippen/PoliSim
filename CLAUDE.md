@@ -3745,7 +3745,7 @@ seven tabs is step 5, not attempted here.
   specific seat split, real evidence the pass/fail math is doing genuine work, not just displaying a
   static label.
 
-## Master Sequence step 5a/5b/5c (Political Systems Overhaul Part B, full rollout)
+## Master Sequence step 5a/5b/5c/5d (Political Systems Overhaul Part B, full rollout)
 Step 5's original plan - "roll the Tax Policy pilot's uniform draft/introduce/vote pattern out to the
 remaining seven tabs unchanged" - is SUPERSEDED (2026-07-31). Elias confirmed a more realistic,
 better-specified design after a real freeze report (see `POLISIM_MASTER_ROADMAP.md`'s working
@@ -3935,6 +3935,126 @@ Spending + Welfare + SWF together, resolved once a year on each country's real f
   and by extension the save/load gap it exposed - was found through Elias's own live testing, not through
   the diagnostic or the compile check, which is exactly the category of bug automated validation alone
   cannot catch on a screen this interactive.
+
+**5d - standalone tier-2 (program add/remove) and tier-3 (non-budget policy) bills. DONE (2026-07-31).**
+Completes the three-tier design's remaining two tiers, reusing 5c's bill-resolution mechanism rather
+than inventing a new one, per the roadmap's own explicit instruction.
+- **Design fork confirmed via `AskUserQuestion` before implementation** (three questions, all answered
+  before any code was written): (1) tier 2 (program add/remove) rebuilt as a genuine ANYTIME standalone
+  bill, REPLACING the annual-bill path 5c had briefly folded implement/remove into - `BudgetBill.TaxLines`/
+  `WelfarePrograms` narrowed back from `TaxBillLine`/`WelfareBillLine` structs to plain
+  `Dictionary<TaxType, float>`/`Dictionary<WelfareProgramType, float>` (rate/generosity only, meaningful
+  solely for an ALREADY-implemented program - an entry for a program the country doesn't currently have
+  is simply skipped, not an error), matching this section's own original tier 1/tier 2 split description
+  that 5c had briefly deviated from. (2) Tier 3's non-fiscal dials score via a STATED sign-convention
+  mapping onto the existing single `FiscalStance` axis, rather than either inventing a second scoring
+  axis or treating every tier-3 bill as an unconditional neutral auto-pass. (3) One standalone bill per
+  TAB, not per dial - four new bill types, each bundling that tab's dials together, mirroring how
+  `BudgetBill` already bundled Tax+Spending+Welfare+SWF in 5c.
+- **`ProgramBill.cs`** (new): `TaxProgramBill`/`WelfareProgramBill`, each just `{ Type, IsAdd,
+  DaysRemaining }`. **`StandalonePolicyBills.cs`** (new): `LaborPolicyBill` (MinimumWage/
+  PaidFamilyLeaveWeeks/OvertimeRegulation/RetrainingProgram/FamilyPolicy/ImmigrationPolicy),
+  `CrimeJusticePolicyBill` (PoliceFunding/SentencingSeverity/BailReform/DrugPolicy/JudicialFunding/
+  BorderEnforcement), `SectorPolicyBill` (five `Dictionary<SectorType, float>`s, one per dial, covering
+  every sector at once), `TradePolicyBill` (`NewBaseTariffRate` - an ABSOLUTE target like `TaxLine.Rate`,
+  not the small per-turn delta `PolicyDecision.TariffRateChange` itself still uses - plus
+  `PartnerTariffOverrides`, deliberately EXCLUDED from the vote direction like SWF's own asset-mix terms,
+  though it still applies in full on PASS).
+- **`ParliamentSystem`**: `WouldBillPass` refactored - the seat-weighted-alignment core now takes a plain
+  `float direction` (`WouldBillPass(Country, float)`), with `WouldBillPass(Country, BudgetBill)` kept as a
+  thin convenience overload computing `GetBillDirection` first. Six new `GetXBillDirection`/
+  `ApplyXBillResult` pairs share this one core: `GetTaxProgramBillDirection`/`GetWelfareProgramBillDirection`
+  reuse the exact "effective value, 0 if not implemented" trick BudgetBill's own tax term used before 5d -
+  implementing turns the program's already-persistent Rate/GenerosityLevel "on" (same sign as a rate hike),
+  removing turns it "off" - so no new sign convention was needed for tier 2 at all.
+  `GetLaborBillDirection`/`GetCrimeJusticeBillDirection`/`GetSectorBillDirection`/`GetTradeBillDirection`
+  each document their own stated sign convention directly against real UI label text already in the
+  codebase: Sentencing Severity ("0 = lenient, 100 = harsh"), Drug Policy ("0 = decriminalized, 100 =
+  strict criminalization"), Border Enforcement ("0 = open/lenient, 100 = strict"), and
+  Deregulation/Nationalization ("0 = fully nationalized, 100 = fully deregulated/private") all read
+  NEGATIVE (conservative-coded) as the dial rises; Police/Judicial Funding, Bail Reform, Family
+  Policy/Immigration Policy, and every Sector dial except Deregulation all read POSITIVE
+  (spending-like/progressive-coded). None of the six new `ApplyXBillResult` functions charge a new
+  approval-cost penalty on PASS (matching BudgetBill's own Spending/Welfare/SWF precedent - these
+  categories were free before 5d gated them, so gating them doesn't newly invent a cost); FAIL still
+  charges the shared `BillFailedApprovalCost` uniformly across all seven bill types now in play.
+- **`SimulationManager`**: six new pending-bill collections. Tier 2 uses
+  `Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>>` (and the WelfareProgramType equivalent) -
+  MULTIPLE different programs can have a bill pending for the same country at once (e.g. "add UBI" and
+  "remove CarbonTax" simultaneously), just never two for the SAME program concurrently. Tier 3 uses one
+  `Dictionary<CountryId, XBill>` per bill type, single-slot per country per tab, mirroring
+  `_pendingBudgetBillByCountry`'s own pattern. All six `AdvanceXDay`/`AdvanceXBillsDay` methods are
+  non-blocking (introducible anytime, no mandatory-pause phase, matching the pre-5c `TaxBill`'s own
+  countdown-only behavior) and wired into `GameController.Update`'s existing day-loop alongside
+  `AdvanceBudgetBillDay`, none needing the pause-gate re-check the annual bill's own `TryOpenBudgetProcess`
+  call does. Four private `ApplyXBillEffects` delegate methods (mirroring `ApplyBudgetBillSpendingAndSwf`'s
+  own reuse pattern) reuse the EXISTING private `Apply*Changes` methods via a throwaway `PolicyDecision`,
+  so `ParliamentSystem` never needs direct access to their clamp-bound constants; `ApplyTradeBillEffects`
+  is the one exception needing a small conversion - `ApplyTariffRateChange` only understands a DELTA, so
+  the absolute `NewBaseTariffRate` target is converted to `target - country.BaseTariffRate` immediately
+  before calling it, landing the existing clamp exactly on the bill's requested target without duplicating
+  its bounds.
+- **`GameController`**: Tax/Welfare Policy tabs' Implement/Remove buttons now submit a standalone bill
+  IMMEDIATELY on click (not drafted first, unlike a rate/generosity slider) - a binary toggle has no
+  separate "adjust before submitting" step the way a rate does. Labor Market/Crime & Justice/Economic
+  Sectors/Trade tabs each gained a `DrawXBillStatusAndIntroduce`/`DrawXLiveEstimate`/`BuildXBillFromDrafts`
+  trio, mirroring `DrawBudgetBillStatusAndIntroduce`/`DrawLegislativeSupportEstimate`/
+  `BuildBudgetBillFromDrafts` exactly, with every dial gaining a "Standing: X, Draft: Y" label so it's
+  always clear whether an unresolved change is pending. Stable-control-layout discipline applied
+  throughout, same as every gated surface since the original Tax Policy freeze investigation.
+  `BuildPlayerDecision`/`PolicyInputsChangedSinceLastPreview` pruned of every dial that's now bill-gated -
+  only `InterestRateChange` (the Federal Reserve/Eurozone exemption) remains, since it was never gated in
+  the first place. `DrawParliamentTab`'s "Pending Legislation" section extended from showing only the
+  annual `BudgetBill` to listing every bill across all three tiers at once.
+- **Live-play bug found and fixed during this phase's own validation** (a pure UI gap, not caught by the
+  structural diagnostic since it involves no simulation logic): the Tax/Welfare Policy tabs' Implement/
+  Remove rows had no live pass/fail estimate of their own, unlike every other bill tier - a player could
+  easily be reading a DIFFERENT bill's estimate (e.g. the Budget Process tab's) and be confused when the
+  actual relevant bill resolved differently. This is exactly what happened live: Elias introduced a
+  welfare program bill that failed, having checked what turned out to be an unrelated estimate first.
+  Fixed with `DrawTaxProgramBillEstimate`/`DrawWelfareProgramBillEstimate` - a per-row live estimate
+  scoring the EXACT hypothetical the Implement/Remove button above it would submit (or the actual pending
+  bill's own estimate, once one exists), using the same `GetXBillDirection`/`WouldBillPass` pair every
+  other tier's estimate already calls.
+- **Validated - a throwaway Edit-mode diagnostic** (`StandaloneBillsDiagnostic`, calling `SimulationManager`/
+  `ParliamentSystem`'s public API directly - no reflection needed, unlike 5a/5c's diagnostics, since every
+  method involved here is already public): PASS and FAIL scenarios for `TaxProgramBill`/`WelfareProgramBill`
+  (add and remove), concurrent bills for different `TaxType`s coexisting correctly, `LaborPolicyBill`'s
+  all-expansionary sign convention, `CrimeJusticePolicyBill`'s MIXED sign convention (Sentencing Severity
+  negative, Police Funding positive, verified independently), `SectorPolicyBill`'s Deregulation sign flip,
+  `TradePolicyBill`'s partner-override vote exclusion (still applies on PASS despite not swaying the vote),
+  a `BudgetBill` regression check (an already-implemented TaxType's rate entry still applies; a
+  not-implemented one is skipped, not an error), and all six new `AdvanceXDay` methods confirmed as safe
+  no-ops with nothing pending - 21/21 PASS. The diagnostic's own FIRST run caught a real bug in the
+  DIAGNOSTIC ITSELF, not the shipped code: a FAIL scenario was silently hitting the neutral-auto-pass
+  branch instead of genuinely exercising seat-weighted scoring, because the target `TaxLine.Rate` was
+  `0f` (a not-yet-implemented tax can legitimately have never had a rate assigned) - direction ends up
+  exactly `0` regardless of party alignment when that happens, an easy trap for any future test using this
+  exact "toggle a not-yet-implemented program" pattern. Fixed by forcing a genuinely non-zero `Rate`
+  before scoring; all 21 assertions passed cleanly afterward. Deleted after use, per this project's own
+  established convention (never committed).
+- **Confirmed via live-Editor play** (2026-07-31, by Elias directly): freeze-free dragging at active
+  3x speed across multiple new tabs; live estimates confirmed updating correctly while dragging; a full
+  welfare bill introduce-and-resolve cycle carried out live (this is what surfaced the missing-estimate
+  bug above). A follow-up question from that same session - "welfare bills keep failing and tax bills
+  keep passing, is that a bug?" - led to a live investigation that resolved with NO code change needed:
+  Elias's Parliament tab showed Progressive Alliance and Conservative Union tied at EXACTLY 32% each
+  (their identical `PartyArchetypeData.ProgressiveBaseSupportShare`/`ConservativeBaseSupportShare`,
+  meaning `ApprovalRating` was sitting right around 50, so neither party had picked up any
+  approval-driven bonus yet). At an exact tie, their opposite-sign `FiscalStance` (+0.7 vs -0.7) cancels
+  perfectly; `CentristCoalition`'s neutral stance (0.0) contributes nothing either way; that leaves
+  `NationalistFront`'s smaller (12%) but purely negative-leaning (-0.3) seat share as the ONLY thing
+  actually deciding the net seat-weighted alignment, tipping it slightly negative. A negative net
+  alignment makes every contractionary bill (removing an already-implemented tax) score positive and
+  PASS, and every expansionary bill (implementing a new welfare program) score negative and FAIL,
+  regardless of which specific tax or program it is - the outcome's sign is fixed by current Parliament
+  composition, not by the bill's own content. Confirmed by hand-computing the exact weighted sum from
+  Elias's own reported percentages (0.32*0.7 + 0.24*0.0 + 0.12*(-0.3) + 0.32*(-0.7) = -0.036) before
+  reporting back that this is real, working-as-designed behavior, not a scoring bug. Worth keeping on
+  record: it's a genuine, non-obvious emergent property of the archetype design (see
+  `PartyArchetypeData`'s own doc comment on why Progressive/Conservative are built as mirror-image
+  establishment parties) that will keep surfacing as "why did my bill fail" questions in ordinary play,
+  not just this once.
 
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
@@ -4174,18 +4294,23 @@ split. Master Sequence step 5's original plan (a uniform per-tab repeat of the p
 remaining seven tabs) is SUPERSEDED (2026-07-31) by a revised three-tier bill design (an Annual Budget
 omnibus bill per country on its real fiscal-year date, plus a standalone-bill mechanism reused for both
 new/removed programs and non-budget policy) built in six sub-phases - see "Master Sequence step
-5a/5b/5c (Political Systems Overhaul Part B, full rollout)" above for the design pointer and what's
+5a/5b/5c/5d (Political Systems Overhaul Part B, full rollout)" above for the design pointer and what's
 actually been built. 5a (real per-country fiscal-year dates + the mandatory pause hook), 5b (the Budget
 Process full-screen UI shell, consolidating Tax/Spending/Welfare/Infrastructure/SWF onto one
-three-column screen), and 5c (the omnibus BudgetBill, replacing TaxBill, plus the live vote estimate)
-are all DONE (2026-07-31). Each was confirmed via both a structural diagnostic and Elias's own
+three-column screen), 5c (the omnibus BudgetBill, replacing TaxBill, plus the live vote estimate), and
+5d (standalone tier-2 program add/remove bills plus four standalone tier-3 non-budget policy bills, one
+per tab) are all DONE (2026-07-31). Each was confirmed via both a structural diagnostic and Elias's own
 live-Editor testing, not either alone - 5b needed two real layout bugs fixed in place (a header label
 clipping instead of wrapping, and the reused Live Policy Preview panel rendering catastrophically
-narrow) before it passed, and 5c's own live play caught two further real bugs a diagnostic alone never
+narrow) before it passed; 5c's own live play caught two further real bugs a diagnostic alone never
 would have: a global pause banner that silently masked a Budget Process pause behind a simultaneous
 Foreign Policy pause (fixed), and a lost SWF draft that turned out to be a genuine, previously-unknown
 project gap - this codebase has zero save/load persistence anywhere, so any Unity restart silently
-discards all game state, now tracked as its own item (Master Sequence item 8) in the Roadmap. 5d
-(standalone bills for new/removed programs and non-budget policy) is next. Round 4 of the original
-Roadmap stays unscoped until all of step 5 is done, so new features get designed against the
+discards all game state, now tracked as its own item (Master Sequence item 8) in the Roadmap; 5d's own
+live play found a missing live pass/fail estimate on the Tax/Welfare Implement/Remove rows (fixed) and,
+via a follow-up question from Elias, confirmed a real (not buggy) emergent property of the seat-weighted
+vote math - Progressive Alliance and Conservative Union sitting exactly tied cancels their fiscal pull,
+leaving Nationalist Front's smaller but purely negative lean to decide close votes. 5e (tab/IA
+consolidation into 7 tabs) is next. Round 4 of the original Roadmap stays unscoped until all of step 5
+is done, so new features get designed against the
 gated-legislation model from day one rather than retrofitted onto it later.
