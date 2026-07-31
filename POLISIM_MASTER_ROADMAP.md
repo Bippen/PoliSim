@@ -32,7 +32,7 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 - **Master Sequence step 3 (Continuous Time Migration Phase 0 — calendar, speed control, short-term gameplay scaffolding): DONE (2026-07-30).** Real in-game calendar with Pause/1x/2x/3x speed controls automatically firing the existing, unchanged 121-day turn cadence; a selectable-horizon live Policy Preview; multi-resolution `StatHistory`; and one small Foreign Policy Meetings interrupt slice (law-passing and "ongoing-process budgets" both explicitly deferred/superseded) — see "Continuous Time Migration Phase 0 (Master Sequence step 3)" in `CLAUDE.md` for the full writeup, the tick-equivalence proof, and validation (100-turn smoke check, UI screenshot smoke test).
 - **Continuous Time Migration Phases 1-5: not started.** Full plan below.
 - **Master Sequence step 4 (Political Systems Overhaul Part B, PILOT — Tax Policy tab only): DONE (2026-07-30).** Four generic fictional party archetypes with seats derived from ApprovalRating (bounded inertia plus jitter — a stated proposal resolving this item's own Open Question); the full draft → introduce → 21-day wait → pass/fail flow gates Tax Policy specifically (a passed TaxBill becomes the new standing rates, a failed one costs a modest approval hit and isn't lost); pass/fail scored via seat-weighted FiscalStance alignment against the bill's net direction (a second stated proposal). Federal Reserve/Eurozone exemption needed zero new code. Validated via the full 30-combination real-Unity matrix (15 scenarios × 100/500 turns, including a new worst-case `parliamentstress` scenario — zero hard anomalies, zero USA-specific anomalies) plus a screenshot smoke test — see "Parliament PILOT (Political Systems Overhaul Part B), Master Sequence step 4" in `CLAUDE.md` for the full writeup.
-- **Political Systems Overhaul Part B, full rollout (Master Sequence step 5): not started.** Full plan below.
+- **Political Systems Overhaul Part B, full rollout (Master Sequence step 5): not started, plan REVISED (2026-07-31).** The original "same uniform per-tab bill pattern rolled out to all seven remaining tabs" plan is superseded — Elias has since confirmed a more realistic, better-specified three-tier design (annual omnibus budget bill on each country's real fiscal-year date, plus a standalone-bill mechanism reused for both new/removed programs and non-budget policy changes) with an explicit six-phase build order, 5a through 5f, aesthetic restyling deliberately last. Full spec in Part B below — read it before starting any of 5a-5f, don't build the old plan.
 - **No Round 4 has been scoped.** Per the sequencing below, don't scope one yet — new features should be built against the post-Parliament interaction model, not the current one, to avoid retrofitting.
 
 ---
@@ -45,7 +45,7 @@ This is the one authoritative order, replacing whatever each original document s
 2. **Political Systems Overhaul — Part C (UI/graph restyling). DONE (2026-07-30) — see "UI/Graph Restyling and Political Visualization" in `CLAUDE.md`.** No dependencies. Full spec in Part C below.
 3. **Continuous Time Migration — Phase 0 (calendar, speed control, short-term gameplay scaffolding). DONE (2026-07-30) — see "Continuous Time Migration Phase 0 (Master Sequence step 3)" in `CLAUDE.md`.** No dependencies beyond what already exists. Full spec below. Keeps all existing economic math at its current cadence — this phase is purely the calendar/UI layer.
 4. **Political Systems Overhaul — Part B, PILOT ONLY (Tax Policy tab). DONE (2026-07-30) — see "Parliament PILOT (Political Systems Overhaul Part B), Master Sequence step 4" in `CLAUDE.md`.** Depends on step 3. Prove the full draft → introduce → vote → pass/fail flow end-to-end on one tab before touching any other. Full spec below.
-5. **Political Systems Overhaul — Part B, full rollout** to the remaining seven tabs, only once step 4 is validated.
+5. **Political Systems Overhaul — Part B, full rollout** — REVISED (2026-07-31): not a uniform per-tab repeat of the pilot, but a three-tier bill design (annual omnibus budget, standalone program add/remove, standalone non-budget policy) built in six sub-phases, 5a through 5f. Only once step 4 is validated (it is). Full spec in Part B below.
 6. **Resume Roadmap work (a new Round 4)** — only scope this once step 5 is done, so anything new is built directly against the gated-legislation model from day one.
 7. **Continuous Time Migration — Phases 1 through 5** (the actual daily-granularity conversion of each system's math, safest-first, core macro engine last). This is deliberately positioned after the political-systems work — it's a separate concern (simulation granularity, not who can change policy) and touching the same files for two unrelated reasons in the same window is worth avoiding.
 
@@ -161,7 +161,7 @@ Each portfolio's competence effect lands on an existing system, folded into that
 
 **Validate**: full scenario matrix plus a dedicated stress scenario cycling every minister decision option, confirming none push a shared ceiling past its bound.
 
-## Part B — Parliament (MASTER SEQUENCE STEPS 4 and 5; BLOCKED until Continuous Time Phase 0)
+## Part B — Parliament (MASTER SEQUENCE STEPS 4 and 5; step 4 DONE, step 5 plan REVISED 2026-07-31)
 
 **Step 4 (PILOT, Tax Policy only) result: DONE (2026-07-30).** Both Open Questions below resolved as
 stated proposals, not silent guesses: seats derive from ApprovalRating (bounded inertia + jitter, see
@@ -170,7 +170,8 @@ alignment against the bill's net direction. The gated-legislation model (draft �
 wait → pass/fail) is live on Tax Policy only; Fed/Eurozone exemption required no code (the interest-rate
 lever was never a gated tab). Validated via the full 30-combination real-Unity matrix plus a screenshot
 smoke test — full writeup: "Parliament PILOT (Political Systems Overhaul Part B), Master Sequence step
-4" in `CLAUDE.md`. Step 5 (full rollout to the remaining seven tabs) has NOT started.
+4" in `CLAUDE.md`. Step 5 (full rollout, revised three-tier design — see "Step 5, full rollout — REVISED
+DESIGN" below) has NOT started.
 
 **Parties**: small number of original, generic, clearly-fictional archetypes per country (e.g. "Progressive Alliance," "Conservative Union") — never real party names.
 
@@ -188,7 +189,35 @@ smoke test — full writeup: "Parliament PILOT (Political Systems Overhaul Part 
 
 **UI**: Parliament tab, hemicycle seat visualization (same node-placement math as the Policy Web's circular layout, arranged as a half-circle). Every gated tab needs a visible "Standing (legislated)" value alongside the "Draft (proposed)" value once rolled out to it.
 
-**Rollout discipline**: PILOT on Tax Policy only first (master sequence step 4) — well-understood, clean implement/adjust/remove semantics already in place. Full validation matrix on the pilot before touching any other tab. Only then (step 5) roll out to the remaining seven.
+### Step 5, full rollout — REVISED DESIGN (2026-07-31), supersedes the original plan below
+
+The original step 5 plan (immediately below this subsection, kept for historical record) was "roll the pilot's single uniform draft → introduce → vote → pass/fail pattern out to the remaining seven tabs unchanged." Elias has since confirmed a more realistic, better-specified design in detail. **This subsection is authoritative for step 5; the plan below it is superseded and must NOT be built.**
+
+**Three bill tiers, not one uniform pattern:**
+
+1. **Annual Budget** — every EXISTING program's rate/amount change (the Tax Policy pilot's own sliders, plus Spending, Welfare, Infrastructure, and SWF rate/allocation changes) bundles into ONE omnibus bill per country, voted on that country's own real fiscal-year date: USA October 1; Germany, France, Italy, Poland, Sweden January 1 (source: real government fiscal-year conventions). USA is the only player-facing country under this design, so only the USA's own annual budget process triggers a mandatory pause — the other five countries are AI-controlled and resolve their own annual budgets automatically, no player-facing pause needed for them.
+2. **Standalone bills — program add/remove**: introducing or removing a program or tax type entirely (new/removed `TaxLine`s, `WelfareProgram`s) is its own individual bill with its own vote, not tied to the annual budget date — can be introduced anytime.
+3. **Standalone bills — non-budget policy**: minimum wage, sentencing/bail/drug policy, sector subsidy/regulation/tax-credit/research-grant/deregulation dials, tariffs. Same individual-bill pattern as tier 2, reusing the SAME mechanism — do not build a second standalone-bill system for this tier.
+
+**Live support estimate**: extend the Tax Policy pilot's existing seat-weighted alignment scoring (`ParliamentSystem.GetBillDirection`/`WouldBillPass`) to recompute and display continuously as the player edits ANY draft — budget or standalone — not just after clicking Introduce. This is the same proven formula recomputed more often, not new scoring logic.
+
+**Mandatory budget pause**: extend the EXISTING global pending-decision banner (`GameController.DrawCalendarAndSpeedControls`, built fixing the Foreign Policy Meeting visibility gap — see POLISIM_MASTER_ROADMAP.md's working discipline pattern 6) to also cover "the USA's annual budget process is open and unresolved," alongside its existing Fed Chair/Cabinet/Foreign-Policy-meeting conditions. Do not build a fourth, separate, ad-hoc pause-check system parallel to the other three — same gate, same banner, one more condition.
+
+**CRITICAL — the stable-control-layout lesson applies MOST to this feature specifically.** The Budget Process screen is a big, multi-slider UI with a continuously-recomputing live vote estimate while the player is actively dragging — exactly the interaction shape that caused the real freeze investigated after step 4 (see working discipline pattern 5/6 above). Build it with stable control counts/order from the FIRST draft, per `GameController.DrawTaxPolicy`'s now-documented stable-control-layout template — do not retrofit this after a freeze a second time.
+
+**Sequencing — build in this exact order, one commit per phase, full validation matrix for anything touching bill/vote logic:**
+- **5a.** Real per-country fiscal-year dates, plus the mandatory pause hook (extends the existing pause-gate pattern — see Mandatory budget pause above).
+- **5b.** The Budget Process full-screen UI shell (left categories / center line-items / right live summary, per Elias's reference screenshots' LAYOUT only, not their dated visual style) — consolidates the existing Tax/Spending/Welfare/Infrastructure/SWF rate sliders onto one screen. No new bill logic yet.
+- **5c.** Wire the omnibus annual budget bill plus the live vote estimate.
+- **5d.** Standalone bill mechanism for new/removed programs AND non-budget policy tabs (tiers 2 and 3), reusing 5c's live-estimate pattern.
+- **5e.** Tab/IA consolidation into 7 tabs: Statistics (Recent Turns, World Map, graphs), Decisions (pending Foreign Policy/Cabinet/bill-vote interrupts), Demographics (population/pie charts), Tax, Spending (both now largely folded into the Budget Process screen from 5b — these tabs may become entry points into it rather than separate content), Policy/Laws (standalone bills from 5d), Politics (Parliament/Compass/Cabinet). Only do this once 5a-5d are stable — don't reorganize navigation around a mechanic that's still changing.
+- **5f.** Aesthetic restyling pass (reference image 1: rounded cards, dark theme, big-number/small-label hierarchy, progress-bar visualizations, generous spacing) — LAST, applied to the final consolidated 7-tab structure, not to tabs about to be merged/removed. Deliberately last because restyling a screen that's still being consolidated/rewired means restyling it twice; the navigation and bill mechanics need to stop moving first.
+
+**Open tie-in**: the Annual Budget tier explicitly includes SWF rate/allocation changes — this sharpens the existing "SWF emergency drawdown fast-track" Open Question below into something 5c/5d actually needs an answer to, not just a hypothetical. Resolve it before SWF is wired into the omnibus bill, not after.
+
+#### Original step 5 plan (SUPERSEDED 2026-07-31 — historical record only, do not build)
+
+**Rollout discipline**: PILOT on Tax Policy only first (master sequence step 4) — well-understood, clean implement/adjust/remove semantics already in place. Full validation matrix on the pilot before touching any other tab. Only then (step 5) roll out to the remaining seven, using the exact same uniform draft → introduce → vote → pass/fail pattern the pilot used, unchanged per tab.
 
 ## Part C — UI/graph restyling and political visualization (MASTER SEQUENCE STEP 2) — DONE (2026-07-30)
 
@@ -223,9 +252,9 @@ real rendering defect, before any unnecessary fix was attempted.
 ## Open Questions (live — add new entries here as they come up; do not resolve silently)
 
 - **Cabinet appointment confirmation** — should appointing a minister also require a parliamentary vote, or does the player retain unilateral appointment power? Not yet decided.
-- **SWF emergency drawdown fast-track** — if SWF drawdown becomes subject to the same gating as everything else, a genuine emergency response could get stuck behind a multi-week process, undermining its purpose. Worth an exemption similar to the Fed/Eurozone carve-out. Not yet decided.
+- **SWF emergency drawdown fast-track** — NOW LOAD-BEARING, not just hypothetical: Master Sequence step 5's revised design (see Part B above) explicitly folds SWF rate/allocation changes into the annual omnibus budget bill, so a genuine emergency drawdown could get stuck behind that country's next fiscal-year vote (up to a year away) unless this is resolved before 5c/5d wire SWF into the bill. Worth an exemption similar to the Fed/Eurozone carve-out. Not yet decided — resolve before implementing 5c.
 - **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not required for a first pass.
-- **"Ongoing-process budgets"** (Continuous Time Migration Phase 0, item 5) — explicitly deferred rather than scoped during Phase 0; the pass built only Foreign Policy Meetings as a proof-of-pattern interrupt slice. Needs a fresh design pass whenever it's actually picked up, not a retrofit onto that slice's shape.
+- **"Ongoing-process budgets"** (Continuous Time Migration Phase 0, item 5) — RESOLVED IN DESIGN (2026-07-31): this is now Master Sequence step 5's Annual Budget bill tier — see Part B above for the full design (real per-country fiscal-year dates, USA-only mandatory pause, the rest AI-resolved). Implementation is that plan itself (phases 5a-5c), not yet built.
 
 ---
 
