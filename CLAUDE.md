@@ -3745,7 +3745,7 @@ seven tabs is step 5, not attempted here.
   specific seat split, real evidence the pass/fail math is doing genuine work, not just displaying a
   static label.
 
-## Master Sequence step 5a/5b (Political Systems Overhaul Part B, full rollout)
+## Master Sequence step 5a/5b/5c (Political Systems Overhaul Part B, full rollout)
 Step 5's original plan - "roll the Tax Policy pilot's uniform draft/introduce/vote pattern out to the
 remaining seven tabs unchanged" - is SUPERSEDED (2026-07-31). Elias confirmed a more realistic,
 better-specified design after a real freeze report (see `POLISIM_MASTER_ROADMAP.md`'s working
@@ -3856,6 +3856,85 @@ scope.
   screenshots (the second specifically requested after the first fix attempt didn't survive contact
   with reality) - code review and a compile check alone cannot verify IMGUI layout at runtime, the same
   lesson this project's IMGUI stable-control-layout investigation already established.
+
+**5c - the omnibus annual budget bill + live-updating vote estimate. DONE (2026-07-31).** Replaces the
+Tax Policy pilot's single-tax `TaxBill` with a genuine three-tier-design Tier 1 bill covering Tax +
+Spending + Welfare + SWF together, resolved once a year on each country's real fiscal-year date.
+- **`BudgetBill`** (new, `Assets/Scripts/Data/BudgetBill.cs`, replaces the deleted `TaxBill.cs`): per-
+  `TaxType` implement/rate lines (unchanged shape from `TaxBill`), a `Dictionary<SpendingCategory, float>`
+  of percent changes, per-`WelfareProgramType` implement/generosity lines, and six SWF fields (exists
+  flag plus contribution rate/domestic allocation/four asset-mix weights) plus `DaysRemaining`.
+- **`ParliamentSystem`**: `GetBillDirection` extended to sum Tax (unchanged) + Spending (percent changes
+  summed directly) + Welfare (same "effective value, 0 if not implemented" trick as Tax) - SWF is
+  deliberately EXCLUDED from the vote direction as a stated simplification (asset-mix/contribution-rate
+  changes don't map cleanly onto a single fiscal-stance axis the way a tax rate or spending level does).
+  `WouldBillPass`'s seat-weighted `FiscalStance` alignment formula itself is unchanged. `ApplyBillResult`
+  now takes a delegate for the Spending/SWF portion (`SimulationManager.ApplyBudgetBillSpendingAndSwf`,
+  which reuses the existing private `ApplySpendingLineChanges`/`ApplySwfPolicyChanges` via a throwaway
+  `PolicyDecision`) since those two categories apply directly to `Country`/`SovereignWealthFund` rather
+  than through the Tax/Welfare "line" structs. Spending/Welfare/SWF changes intentionally carry NO new
+  approval-cost penalty on top of the existing `TaxHikeApprovalSensitivity`-based one, matching their
+  previous zero-cost immediate-apply behavior before this phase gated them behind a vote.
+- **`SimulationManager`**: `_pendingBudgetBillByCountry` (Phase 2, 21-day countdown, never pauses -
+  mirrors the retired `TaxBill`'s own behavior) replaces `_pendingTaxBillByCountry`.
+  `IntroduceBudgetBill` closes Phase 1 (removes the country from `_pendingBudgetProcessByCountry`, set up
+  by 5a) and opens Phase 2 in the same call, so there's no gap where neither is tracking the country.
+  `AdvanceBudgetBillDay` (was `AdvanceLegislativeDay`) decrements `DaysRemaining` and resolves at 0 via
+  `WouldBillPass`/`ApplyBillResult`. 5a's temporary `AcknowledgeBudgetProcess` placeholder is removed -
+  the real flow (Introduce) now closes Phase 1 for real, as 5a's own writeup flagged it would need to.
+- **`GameController`**: `DrawBudgetBillStatusAndIntroduce` (new) adds a status label + "Introduce Budget
+  Bill" button to the Budget Process tab's header - both ALWAYS rendered (stable-control-layout), the
+  button `GUI.enabled`-gated on "no bill already pending AND the budget process is actually open," never
+  omitted. `DrawLegislativeSupportEstimate` (new) recomputes `GetBillDirection`/`WouldBillPass` every
+  `OnGUI` call from the CURRENT draft state (cheap enough not to need `RecomputePolicyPreview`'s caching)
+  so the estimate updates live as any of the four categories' sliders move. `DrawWelfareProgramRow` and
+  `DrawSwfPolicyContent` were rewritten to the same stable-control-layout template `DrawTaxLineRow`
+  already used: Implement/Remove (or Create/Dissolve for SWF) now edit a draft dictionary/nullable-bool
+  only, never apply immediately, and every slider renders unconditionally with `GUI.enabled` composed
+  against the draft state - `DrawSwfPolicyContent`'s old `if (fund == null) return;` early-out (which
+  omitted all six SWF sliders whenever no fund existed yet) was removed for exactly this reason, since it
+  was the same hazard class as the original Tax Policy freeze investigation, just on a different tab.
+  `BuildPlayerDecision`'s per-turn automatic Spending/Welfare/SWF application, and
+  `PolicyInputsChangedSinceLastPreview`'s change-detection for the same three categories, were both
+  removed - those categories now only ever apply through a resolved `BudgetBill`, not every turn.
+- **Bug found and fixed during this phase's own live-play validation (not initially reported by
+  Elias)**: `DrawCalendarAndSpeedControls`'s global pending-decision banner used an `if`/`else if` chain
+  that only ever displayed ONE active pause reason - if a Foreign Policy meeting happened to be pending
+  at the same time as a Budget Process pause, only the Foreign Policy message showed, even though
+  `Update()`'s actual gate correctly blocked on both underneath. Fixed by collecting every currently-true
+  reason into a list and joining them into one combined label, ordered Fed Chair -> Cabinet -> Budget
+  Process -> Foreign Policy; still exactly one `Label` control either way, so this doesn't touch the
+  stable-control-layout guarantee.
+- **Validated - a throwaway Edit-mode diagnostic** (`BudgetBillDiagnostic`, same reflection-based
+  technique as 5a's diagnostic): a maxed-out PASS scenario, a scenario engineered to FAIL, and the
+  Phase 1 -> Phase 2 hand-off (mandatory pause blocks before Introduce, resumes immediately after,
+  and never re-pauses at any point during the 21-day countdown) - ALL PASS. Caught one real bug during
+  its own construction: an invalid `WelfareProgramType.UnemploymentBenefits` reference (the real enum
+  values are `UBI`/`NegativeIncomeTax`/`MeansTestedWelfare`/`UniversalHealthcare`/`HousingAssistance`/
+  `ChildcareSubsidies`) that an initial "compiles clean" claim had missed - caught for real only once
+  Unity's own batch-mode compiler was actually run and its full output read, not just grepped for
+  "error". A second throwaway diagnostic, `FiscalYearRecurrenceDiagnostic`, was written specifically to
+  audit a live-play anomaly (see below) by advancing the calendar through two full fiscal years for USA
+  via the same direct `AdvanceDay`/`TryOpenBudgetProcess` calls `Update()`'s own loop makes - confirmed
+  the mandatory pause correctly reopens on BOTH October 1, 2026 and October 1, 2027, disproving the
+  initial "has this ever fired a second time" hypothesis. Both diagnostics deleted after use, per this
+  project's own established convention (never committed).
+- **Confirmed via live-Editor play** (2026-07-31, by Elias directly, a genuine end-to-end sequence rather
+  than "does the screen render"): the Legislative Support estimate updates live while dragging sliders in
+  any of the four categories; SWF and Welfare sliders specifically dragged during ACTIVE 3x-speed time
+  advancement across nearly a full in-game year, with zero freeze; a full introduce -> wait -> resolve
+  cycle carried out live start to finish. This same live play is also what surfaced the anomaly that led
+  to `FiscalYearRecurrenceDiagnostic` above: an SWF draft set up after the October 2026 budget cycle never
+  became standing, still showing "no fund exists" by October 2027 a full fiscal year later. The diagnostic
+  proved the underlying mechanism was never buggy; Elias separately confirmed the actual cause was Unity
+  being closed and reopened multiple times between setting the draft and October 2027, losing the draft to
+  the restart - corroborated by a direct code check confirming this project has genuinely zero save/load
+  persistence anywhere (no `PlayerPrefs`/`JsonUtility`/`BinaryFormatter`/any save mechanism at all), now
+  tracked as its own confirmed gap (`POLISIM_MASTER_ROADMAP.md`'s Master Sequence item 8). Worth noting
+  explicitly: every one of this phase's real bugs - the banner masking issue, the lost-SWF-draft anomaly,
+  and by extension the save/load gap it exposed - was found through Elias's own live testing, not through
+  the diagnostic or the compile check, which is exactly the category of bug automated validation alone
+  cannot catch on a screen this interactive.
 
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
@@ -4094,13 +4173,19 @@ screenshot smoke test confirming the pass/fail math visibly working correctly ag
 split. Master Sequence step 5's original plan (a uniform per-tab repeat of the pilot across the
 remaining seven tabs) is SUPERSEDED (2026-07-31) by a revised three-tier bill design (an Annual Budget
 omnibus bill per country on its real fiscal-year date, plus a standalone-bill mechanism reused for both
-new/removed programs and non-budget policy) built in six sub-phases - see "Master Sequence step 5a/5b
-(Political Systems Overhaul Part B, full rollout)" above for the design pointer and what's actually
-been built. 5a (real per-country fiscal-year dates + the mandatory pause hook) and 5b (the Budget
+new/removed programs and non-budget policy) built in six sub-phases - see "Master Sequence step
+5a/5b/5c (Political Systems Overhaul Part B, full rollout)" above for the design pointer and what's
+actually been built. 5a (real per-country fiscal-year dates + the mandatory pause hook), 5b (the Budget
 Process full-screen UI shell, consolidating Tax/Spending/Welfare/Infrastructure/SWF onto one
-three-column screen) are both DONE (2026-07-31), each confirmed via live-Editor screenshots - 5b needed
-two real layout bugs fixed in place (a header label clipping instead of wrapping, and the reused Live
-Policy Preview panel rendering catastrophically narrow) before it passed. 5c (wiring the omnibus annual
-budget bill plus the live vote estimate) is next. Round 4 of the original Roadmap stays unscoped until
-all of step 5 is done, so new features get designed against the gated-legislation model from day one
-rather than retrofitted onto it later.
+three-column screen), and 5c (the omnibus BudgetBill, replacing TaxBill, plus the live vote estimate)
+are all DONE (2026-07-31). Each was confirmed via both a structural diagnostic and Elias's own
+live-Editor testing, not either alone - 5b needed two real layout bugs fixed in place (a header label
+clipping instead of wrapping, and the reused Live Policy Preview panel rendering catastrophically
+narrow) before it passed, and 5c's own live play caught two further real bugs a diagnostic alone never
+would have: a global pause banner that silently masked a Budget Process pause behind a simultaneous
+Foreign Policy pause (fixed), and a lost SWF draft that turned out to be a genuine, previously-unknown
+project gap - this codebase has zero save/load persistence anywhere, so any Unity restart silently
+discards all game state, now tracked as its own item (Master Sequence item 8) in the Roadmap. 5d
+(standalone bills for new/removed programs and non-budget policy) is next. Round 4 of the original
+Roadmap stays unscoped until all of step 5 is done, so new features get designed against the
+gated-legislation model from day one rather than retrofitted onto it later.
