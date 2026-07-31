@@ -3745,7 +3745,7 @@ seven tabs is step 5, not attempted here.
   specific seat split, real evidence the pass/fail math is doing genuine work, not just displaying a
   static label.
 
-## Master Sequence step 5a (Political Systems Overhaul Part B, full rollout)
+## Master Sequence step 5a/5b (Political Systems Overhaul Part B, full rollout)
 Step 5's original plan - "roll the Tax Policy pilot's uniform draft/introduce/vote pattern out to the
 remaining seven tabs unchanged" - is SUPERSEDED (2026-07-31). Elias confirmed a more realistic,
 better-specified design after a real freeze report (see `POLISIM_MASTER_ROADMAP.md`'s working
@@ -3810,6 +3810,52 @@ the design itself, to avoid two documents drifting out of sync.
   to continue for now"), and Acknowledge correctly resumes time - re-confirmed a full week later
   in-game (October 8), still ticking normally at 3x speed, i.e. the day-loop genuinely resumed rather
   than a one-frame fluke.
+
+**5b - the Budget Process full-screen UI shell. DONE (2026-07-31).** No new bill logic - that's 5c/5d's
+job; this phase only consolidates existing content onto one screen shell, per the design's own explicit
+scope.
+- **New "Budget Process" tab** (`GameController.DrawBudgetProcessTab`, 18th tab, shares row 5 with
+  Parliament): three columns - left a category selector (`BudgetProcessCategory`: Tax/Spending/Welfare/
+  Infrastructure/Swf), center the selected category's line-items, right the existing live Policy
+  Preview panel (`DrawPolicyPreview`) reused as-is, not a new estimate.
+- **Refactored** `DrawTaxPolicy`/`DrawSpendingPolicy`/`DrawWelfarePolicy`/`DrawInfrastructureTab`/
+  `DrawSwfPolicy`, each splitting out a `*Content` method (everything but the outer box/scrollview) that
+  both the original standalone tab and the new center column call - single source of truth, no
+  duplicated slider logic. The five standalone tabs are unchanged otherwise and stay as independent
+  entry points; only step 5e's tab consolidation removes them.
+- **Stable-control-layout**: the center column's content switches based on `_budgetProcessCategory`,
+  which only the player's own left-column button click can change - unlike a bill resolving in the
+  background, a click can never race an active drag on a DIFFERENT control (one mouse, one control at a
+  time), so this particular conditional swap isn't the hazard class `DrawTaxPolicy`'s own doc comment
+  warns about. Each reused `*Content` method already carries its own stable-control-layout guarantee
+  independently (including `DrawTaxPolicyContent`'s slider-always-present fix), so that safety property
+  carries over automatically by reuse.
+- **Two real layout bugs found via Elias's own live-Editor screenshots, fixed before this was
+  confirmed:**
+  1. The header description label was clipping mid-word instead of word-wrapping - the 3-column row
+     below it could push the outer container's computed "natural" width past the real screen edge (a
+     boxed column's `GUILayout.Width` request plus its `GUIStyle`'s own padding can add pixels beyond
+     what was requested), so the label's wrap boundary was inferred against an inflated width. Fixed
+     with an explicit `GUILayout.Width(availableWidth)` on the label, independent of whatever the row
+     below computes.
+  2. The reused Live Policy Preview panel was rendering catastrophically narrow - "Estimated Effects"
+     wrapping to a single character per line. First attempt gave it `Screen.width * LeftColumnWidthFraction`
+     (matching its native dashboard-column width) but capped it at half the row's own budget "so
+     category/center never collapse to nothing on a narrow window" - that cap turned out to be the
+     ACTUAL binding constraint at ordinary window sizes too, not just narrow ones. Root-caused (not
+     guessed) via a temporary debug label reporting the real runtime pixel width, confirming ~641px
+     observed vs. ~864px actually needed, cap binding rather than the `Screen.width` term. Corrected:
+     the panel keeps its natural width unconditionally; category and center columns get sane MINIMUM
+     widths instead of a share of leftover space; a genuine narrow-window overflow (all three don't fit
+     at their natural/minimum sizes) is now handled explicitly via a horizontal scrollview around the
+     whole row (new `_budgetProcessRowScrollPosition` field), rather than silently starving any one
+     column.
+- **Validated**: `dotnet build` clean (0 errors) after every iteration - a pure UI/layout change with no
+  economic math touched, so `BatchSimulationRunner`'s matrix doesn't apply (same reasoning as 5a and the
+  original Phase 0/UI Revamp items). Final layout confirmed via two rounds of Elias's own live-Editor
+  screenshots (the second specifically requested after the first fix attempt didn't survive contact
+  with reality) - code review and a compile check alone cannot verify IMGUI layout at runtime, the same
+  lesson this project's IMGUI stable-control-layout investigation already established.
 
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
@@ -4048,9 +4094,13 @@ screenshot smoke test confirming the pass/fail math visibly working correctly ag
 split. Master Sequence step 5's original plan (a uniform per-tab repeat of the pilot across the
 remaining seven tabs) is SUPERSEDED (2026-07-31) by a revised three-tier bill design (an Annual Budget
 omnibus bill per country on its real fiscal-year date, plus a standalone-bill mechanism reused for both
-new/removed programs and non-budget policy) built in six sub-phases - see "Master Sequence step 5a
+new/removed programs and non-budget policy) built in six sub-phases - see "Master Sequence step 5a/5b
 (Political Systems Overhaul Part B, full rollout)" above for the design pointer and what's actually
-been built. 5a (real per-country fiscal-year dates + the mandatory pause hook) is DONE (2026-07-31),
-confirmed via live-Editor screenshots; 5b (the Budget Process full-screen UI shell) is next. Round 4 of
-the original Roadmap stays unscoped until all of step 5 is done, so new features get designed against
-the gated-legislation model from day one rather than retrofitted onto it later.
+been built. 5a (real per-country fiscal-year dates + the mandatory pause hook) and 5b (the Budget
+Process full-screen UI shell, consolidating Tax/Spending/Welfare/Infrastructure/SWF onto one
+three-column screen) are both DONE (2026-07-31), each confirmed via live-Editor screenshots - 5b needed
+two real layout bugs fixed in place (a header label clipping instead of wrapping, and the reused Live
+Policy Preview panel rendering catastrophically narrow) before it passed. 5c (wiring the omnibus annual
+budget bill plus the live vote estimate) is next. Round 4 of the original Roadmap stays unscoped until
+all of step 5 is done, so new features get designed against the gated-legislation model from day one
+rather than retrofitted onto it later.
