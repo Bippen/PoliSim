@@ -16,8 +16,9 @@ through step 5d — see the Roadmap's own updated item 10 for the exact terms of
 **A prior Claude Design pack already exists in this project**
 (`PoliSim GUI redesign.zip`, security-reviewed and origin-verified as a claude.ai download — see the
 Roadmap's 5f-prep note) and covers 8 of the areas below already. This request reuses those 8 rather than
-re-commissioning them, and asks for what that pack didn't cover: 3 more area icons, all 9 Cabinet
-minister portraits, all 7 Fed Chair candidate portraits, 4 party emblems, and 6 real national flags.
+re-commissioning them, and asks for what that pack didn't cover: 2 more area icons, 4 new tab-navigation
+icons (found on a second research pass - see section 1's own note), all 9 Cabinet minister portraits, all
+7 Fed Chair candidate portraits, 4 party emblems, and 6 real national flags.
 
 **What stays procedural, unaffected by any of this**: `PoliSimTheme.cs`'s `RoundedBox`/`RoundedCard`/
 `Pill`/`Rule`/`TopAccent`/`LeftSpine` primitives (pure rounded-rect/line geometry, no art asset), and
@@ -47,9 +48,51 @@ author 11 separately-colored files.
 | `SovereignWealth` | `#A68F2E` | Sovereign Wealth Fund | **Have it** — reuse `icon_sovereign.png`/`.svg` | `icon_area_sovereignwealth.png` / `.svg` (rename — old name was abbreviated) |
 | `Infrastructure` | `#4A8FA6` | Infrastructure tab | **NEW — request** | `icon_area_infrastructure.png` / `.svg` |
 | `Global` | `#6BADE0` | World Map tab | **NEW — request** | `icon_area_global.png` / `.svg` |
-| `Neutral` | `#8C8C8C` | Generic fallback hue, no dedicated tab | **SKIPPED — confirmed by Elias (Q1)** | not requested |
+| `Neutral` | `#8C8C8C` | **Correction (2026-07-31): this WAS wrong.** `GameController.GetTabArea`'s switch has an explicit `default: return SystemArea.Neutral`, and `RecentTurns` currently hits it (the code's own comment: *"Recent Turns is informational, not a system area, so it stays Neutral"*) — Neutral is NOT unused today, contrary to what this document originally told Elias before Q1 was answered. | **SKIPPED — Elias confirmed (Q1), and the practical outcome still holds**: `RecentTurns` is folding into the new "Statistics" nav tab below, which gets its own new icon anyway, so Neutral becomes genuinely obsolete once that lands - just not for the reason originally stated. | not requested |
 
-**Net new icons: 2 (Infrastructure, Global).**
+**Net new area icons: 2 (Infrastructure, Global).** See the new tab-navigation icons below - a separate,
+previously-missed category.
+
+### Tab navigation icons (NEW — found on a second research pass, not tied to any existing `SystemArea`)
+
+Checking the actual `GetTabArea` mapping in `GameController.cs` against the roadmap's own 7-tab plan
+(Statistics, Decisions, Demographics, Tax, Spending, Policy/Laws, Politics) surfaced a real gap this
+document didn't originally cover: only Tax/Spending (→ `Fiscal`) and Politics (→ `Political`-ish, via
+Parliament/Cabinet's existing mapping) line up with a single existing area icon. The other four
+consolidated-tab concepts span MULTIPLE existing areas each and have no icon of their own:
+
+- **Statistics** — World Map (`Global`) + Recent Turns (`Neutral`, see the correction above) + graphs
+  spanning every area at once.
+- **Decisions** — Foreign Policy (`Trade`) + Cabinet (`Political`) + pending bill votes (spans every
+  bill-gated area). Individual decision CARDS inside this tab already get correct per-item icons for
+  free (the reference pack's `DecisionCard` widget keys color/identity off each item's OWN `SystemArea`
+  — verified by reading its actual code, not assumed) - this gap is specifically about the TOP-LEVEL tab
+  button itself, not anything inside it.
+- **Demographics** — used to share `Global` with World Map; now that World Map moves to Statistics,
+  Demographics (population/pie charts) needs its own identity.
+- **Policy/Laws** — standalone bills from 5d, spanning Labor/CrimeJustice/Sectors/Trade/Fiscal/Welfare
+  all at once.
+
+**Note on confidence**: the reference pack's own README says it was generated from a source mockup
+(`PoliSim GUI.dc.html`) not included in the delivered pack - these four concepts are a best-effort
+reading of the roadmap's own 5e tab descriptions, not verified against an actual visual design. Also
+note the final 7-tab IA itself isn't fully locked yet (the roadmap's 5e bullet doesn't explicitly say
+where Welfare/Labor/CrimeJustice/Sectors/Infrastructure/SWF/Federal Reserve/PolicyWeb/BudgetProcess land)
+— **Elias confirmed proceeding with best-guess icons now anyway**, rather than holding until the tab
+restructuring itself is designed, to get everything in one Claude Design round-trip.
+
+| Consolidated tab | Concept | Filename |
+|---|---|---|
+| Statistics | Chart/graph mark (e.g. a simple bar-chart or line-graph glyph) | `icon_nav_statistics.png` / `.svg` |
+| Decisions | Inbox/alert mark (e.g. a tray or bell with a notification dot - matches "pending interrupts" semantics) | `icon_nav_decisions.png` / `.svg` |
+| Demographics | Population mark (e.g. a grouped/stacked person-silhouette glyph) | `icon_nav_demographics.png` / `.svg` |
+| Policy/Laws | Gavel or scroll mark (legislation/lawmaking) | `icon_nav_policylaws.png` / `.svg` |
+
+**4 new nav icons requested.** Deliberately named `icon_nav_*`, not `icon_area_*` - these don't correspond
+to a `UiPalette.SystemArea` value (no such enum member exists for any of them), so reusing the area
+naming convention would misleadingly imply a code-level mapping that doesn't exist. Tax/Spending/Politics
+tabs reuse the existing `icon_area_fiscal`/`icon_area_political` icons directly - no new art needed for
+those three.
 
 ## 2. Cabinet minister portraits
 
@@ -174,13 +217,17 @@ section 6 for the specific format guidance this implies (different from the icon
 
 ## 7. Format & technical spec
 
-**Icons and emblems** (system-area icons, party emblems) — matches the existing pack's own established
-convention exactly, so the new files drop in next to the old ones with zero format drift:
+**Icons and emblems** (system-area icons, tab-navigation icons, party emblems) — matches the existing
+pack's own established convention exactly, so the new files drop in next to the old ones with zero
+format drift:
 - PNG: 256×256, 8-bit RGBA, transparent background, **authored white** (single-color silhouette — tinted
-  at draw time via `PoliSimTheme.Accent(area)`, not shipped as a pre-colored copy per hue). Party
-  emblems are the one exception — author them IN their real-world-convention color directly (section 4),
-  not white-for-tinting, since each party's color is now a fixed piece of its identity, not a
-  runtime-swappable area hue.
+  at draw time, not shipped as a pre-colored copy). Area icons tint via `PoliSimTheme.Accent(area)`;
+  nav icons have no `SystemArea` to key off (that's the whole point of them), so they'd tint via a
+  plain selected/unselected state instead (e.g. full white when the tab is active, muted grey/
+  `TextMuted` when it isn't) — a GameController wiring detail for later, not something the art itself
+  needs to encode. Party emblems are the one exception — author them IN their real-world-convention
+  color directly (section 4), not white-for-tinting, since each party's color is now a fixed piece of
+  its identity, not a runtime-swappable hue.
 - SVG: 24×24 source geometry, `currentColor` fill (icons) or fixed fill (emblems), 2–4 primitives
   (circle/rounded-rect/triangle/ellipse/arc) — simple enough to redraw procedurally later if ever needed,
   per the existing pack's own design intent.
@@ -226,6 +273,16 @@ icon_area_infrastructure.png
 icon_area_infrastructure.svg
 icon_area_global.png
 icon_area_global.svg
+
+# Tab navigation icons — 4 new (found on second research pass, not tied to a SystemArea)
+icon_nav_statistics.png
+icon_nav_statistics.svg
+icon_nav_decisions.png
+icon_nav_decisions.svg
+icon_nav_demographics.png
+icon_nav_demographics.svg
+icon_nav_policylaws.png
+icon_nav_policylaws.svg
 
 # System-area icons — 8 existing, LOCAL RENAME ONLY, no new art (confirmed, Q6)
 icon_area_fiscal.png / .svg          (was icon_fiscal)
@@ -276,15 +333,19 @@ flag_country_italy.png
 flag_country_poland.png
 ```
 
-**Total new art: 28 source assets → 47 actual files** (2 icons × 2 formats, 9 Cabinet portraits × 1
-format, 7 Fed Chair portraits × 1 format, 4 emblems × 2 formats, 6 flags × 1 format), plus 8 local
-renames of already-existing art (zero new files).
+**Total new art: 32 source assets → 42 actual files** (2 area icons × 2 formats, 4 nav icons × 2 formats,
+9 Cabinet portraits × 1 format, 7 Fed Chair portraits × 1 format, 4 emblems × 2 formats, 6 flags × 1
+format), plus 8 local renames of already-existing art (zero new files).
 
 ---
 
 ## 9. Elias's answers (resolved 2026-07-31 — was "Questions for Elias")
 
-1. **Neutral area icon** — recommendation confirmed. Skipped, not requested.
+1. **Neutral area icon** — recommendation confirmed. Skipped, not requested. **Correction (same day,
+   caught on a second research pass)**: the original reasoning given ("no dedicated tab uses Neutral")
+   was factually wrong - `RecentTurns` does, via `GetTabArea`'s fallback case. The outcome is unaffected
+   (Recent Turns is folding into the new Statistics nav tab below, which needs its own icon regardless),
+   but the stated reasoning at the time was inaccurate and is corrected here rather than left standing.
 2. **Cabinet portrait scope vs. future portfolios** — recommendation confirmed. Only the 9 candidates
    that exist in code today; more requested later if/when the other 3 confirmed-scope portfolios are
    actually built.
@@ -295,8 +356,15 @@ renames of already-existing art (zero new files).
    blue), not the arbitrary procedural rotation.
 6. **Rename the 8 existing icons now** — recommendation confirmed. Done in this document's own filename
    manifest (section 8); the actual file rename on disk happens once these are imported.
+7. **Tab-navigation icon gap (found 2026-07-31, on Elias's explicit "really research this" request)** —
+   the original request only covered the 11 existing `SystemArea`s and missed that the new 7-tab
+   consolidated nav (Statistics/Decisions/Demographics/Policy-Laws especially) doesn't map cleanly onto
+   any of them. Elias confirmed adding best-guess nav icons now (section 1's own "Tab navigation icons"
+   subsection) rather than holding until the tab restructuring itself is designed, to get everything in
+   one Claude Design round-trip.
 
 ---
 
-**Next step**: send sections 1–5 (the actual art brief — icons, Cabinet portraits, Fed Chair portraits,
-emblems, flags) to Claude Design. No `GameController.cs` changes until the assets are back.
+**Next step**: send sections 1–5 (the actual art brief — area icons, tab-nav icons, Cabinet portraits,
+Fed Chair portraits, emblems, flags) to Claude Design. No `GameController.cs` changes until the assets
+are back.
