@@ -14,27 +14,35 @@ namespace PoliSim.UI
     /// </summary>
     public class GameController : MonoBehaviour
     {
-        private enum RightPanelTab
+        /// <summary>
+        /// Master Sequence step 5e, Phase A (tab/IA restructuring): the 7 consolidated top-level tabs,
+        /// replacing the old 18-tab `RightPanelTab` bar - see POLISIM_MASTER_ROADMAP.md's "5e
+        /// implementation plan" for the full old-tab -&gt; new-tab mapping and reasoning behind every
+        /// placement (several tabs SPLIT across two destinations - Cabinet, Compass &amp; Demographics,
+        /// Trade - and five placements were genuinely ambiguous and required Elias's explicit
+        /// confirmation before being built). Deliberately NO visual style change in this phase - same
+        /// `DrawRightColumnTabButton` mechanics, same per-area color tinting, same underlying Draw*
+        /// content methods reused verbatim wherever possible. The sprite/icon reskin is Phase B/C's job.
+        /// </summary>
+        private enum ConsolidatedTab
         {
-            RecentTurns,
-            WorldMap,
-            Trade,
-            TaxPolicy,
-            SpendingPolicy,
-            FederalReserve,
-            WelfarePolicy,
-            LaborMarket,
-            CrimeJustice,
-            SectorPolicy,
-            Infrastructure,
-            SwfPolicy,
-            PolicyWeb,
-            Cabinet,
-            CompassAndDemographics,
-            ForeignPolicy,
-            Parliament,
-            BudgetProcess
+            Statistics,
+            Decisions,
+            Demographics,
+            Tax,
+            Spending,
+            PolicyLaws,
+            Politics
         }
+
+        /// <summary>Statistics tab's 3 sub-categories (Recent Turns, World Map, and Trade's informational half - the Trade Balance graph only, see TradeCategory below for the policy half).</summary>
+        private enum StatisticsCategory { RecentTurns, WorldMap, Trade }
+
+        /// <summary>Policy/Laws tab's 5 sub-categories - each already has (or, for Trade/Policy Web, now gains) its own standalone-bill or reference-tool identity.</summary>
+        private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade }
+
+        /// <summary>Politics tab's 4 sub-categories - the political institutions, whether or not their own lever is Parliament-gated (Federal Reserve isn't, by design - see the Fed/Eurozone exemption).</summary>
+        private enum PoliticsCategory { Parliament, Compass, Cabinet, FederalReserve }
 
         // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
         // player picks their country on a selector screen shown before the dashboard (see
@@ -94,9 +102,6 @@ namespace PoliSim.UI
         private const float ColumnSpacingFraction = 0.02f;
         private const float LeftColumnWidthFraction = 0.45f;
         private const float SectionSpacingFraction = 0.03f;
-
-        /// <summary>Vertical gap between the right column's two tab-button rows (see DrawRightColumnTabs) - 11 tabs no longer fit legibly in one row.</summary>
-        private const float TabRowSpacing = 4f;
 
         /// <summary>Fixed display height (px) for the World Map tab's map rect - the map itself stretches to whatever width the tab gives it (see MapRenderer.Draw's ScaleMode.StretchToFill), so only the height needs pinning to keep its aspect roughly sane.</summary>
         private const float WorldMapHeight = 260f;
@@ -437,7 +442,15 @@ namespace PoliSim.UI
         /// <summary>Collapsed by default - the "every system has its own tab" routing text is a one-time onboarding note, not something that needs to keep costing vertical space in the dashboard on every turn once a player already knows the layout.</summary>
         private bool _showTabGuide;
 
-        private RightPanelTab _rightPanelTab = RightPanelTab.PolicyWeb;
+        private ConsolidatedTab _consolidatedTab = ConsolidatedTab.Statistics;
+        private StatisticsCategory _statisticsCategory = StatisticsCategory.RecentTurns;
+        private PolicyLawsCategory _policyLawsCategory = PolicyLawsCategory.LaborMarket;
+        private PoliticsCategory _politicsCategory = PoliticsCategory.Parliament;
+        private Vector2 _statisticsContentScrollPosition;
+        private Vector2 _decisionsScrollPosition;
+        private Vector2 _demographicsScrollPosition;
+        private Vector2 _policyLawsContentScrollPosition;
+        private Vector2 _politicsContentScrollPosition;
         private Vector2 _worldMapScrollPosition;
         private Vector2 _policyWebScrollPosition;
         private PolicyNodeId? _selectedPolicyWebPolicyNode;
@@ -449,18 +462,11 @@ namespace PoliSim.UI
         // "candidates are shown, waiting for a click," mirroring _fedChairCandidates' own null-vs-set
         // idiom just keyed per portfolio instead of a single global slot.
         private Vector2 _cabinetScrollPosition;
-        private Vector2 _foreignPolicyScrollPosition;
         private readonly Dictionary<CabinetPortfolio, List<CabinetMinister>> _cabinetCandidatesByPortfolio = new Dictionary<CabinetPortfolio, List<CabinetMinister>>();
-        private Vector2 _tradeScrollPosition;
-        private Vector2 _taxPolicyScrollPosition;
-        private Vector2 _spendingPolicyScrollPosition;
         private Vector2 _federalReserveScrollPosition;
-        private Vector2 _welfarePolicyScrollPosition;
         private Vector2 _laborMarketScrollPosition;
         private Vector2 _crimeJusticeScrollPosition;
         private Vector2 _sectorPolicyScrollPosition;
-        private Vector2 _infrastructureScrollPosition;
-        private Vector2 _swfPolicyScrollPosition;
 
         /// <summary>Master Sequence step 5b: which category's content DrawBudgetProcessTab's center column currently shows - a left-column selector, not a draft/standing value itself, so no PolicyDecision/bill involvement.</summary>
         private enum BudgetProcessCategory { Tax, Spending, Welfare, Infrastructure, Swf }
@@ -729,92 +735,42 @@ namespace PoliSim.UI
             GUILayout.Space(columnSpacing);
 
             GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
-            DrawRightColumnTabs(rightColumnWidth);
+            DrawConsolidatedTabs(rightColumnWidth);
             GUILayout.Space(sectionSpacing * 0.5f);
 
-            // Four tab rows now (Compass & Demographics added a 15th tab, needing a fourth row - see
-            // DrawRightColumnTabs) - reserve all four rows' height plus the spacing between them, not
-            // just some, or a later row would silently eat into the tab-content area below and this
-            // whole panel would creep past its allotted height.
-            float tabRowsHeight = _tabButtonStyle.fixedHeight * 5f + TabRowSpacing * 4f;
+            // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
+            // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
+            float tabRowsHeight = _tabButtonStyle.fixedHeight;
             float tabContentHeight = areaHeight - tabRowsHeight - sectionSpacing * 0.5f;
-            switch (_rightPanelTab)
+            // Master Sequence step 5e, Phase A: game-over gating stays exactly where the OLD 18-tab
+            // dispatch had it, not a blanket gate here - several old tabs were deliberately NEVER
+            // gated (WorldMap/PolicyWeb/Parliament/Compass are read-only visualizations, still fully
+            // legible after game over), and several now-merged aggregate tabs mix gated and ungated
+            // pieces (e.g. Politics = Parliament[ungated] + Compass[ungated] + Cabinet[gated] +
+            // FederalReserve[gated]) - see each DrawXTab method below for where it applies its own
+            // gate at the right granularity, matching the old per-case behavior exactly.
+            switch (_consolidatedTab)
             {
-                case RightPanelTab.RecentTurns:
-                    DrawTurnLog(tabContentHeight);
+                case ConsolidatedTab.Statistics:
+                    DrawStatisticsTab(tabContentHeight);
                     break;
-                case RightPanelTab.WorldMap:
-                    DrawWorldMapTab(tabContentHeight);
+                case ConsolidatedTab.Decisions:
+                    DrawDecisionsTab(tabContentHeight);
                     break;
-                case RightPanelTab.Trade:
-                    DrawTrade(tabContentHeight);
+                case ConsolidatedTab.Demographics:
+                    DrawDemographicsTab(tabContentHeight);
                     break;
-                case RightPanelTab.TaxPolicy:
-                    GUI.enabled = !_isGameOver;
-                    DrawTaxPolicy(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.SpendingPolicy:
-                    GUI.enabled = !_isGameOver;
-                    DrawSpendingPolicy(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.FederalReserve:
-                    GUI.enabled = !_isGameOver;
-                    DrawFederalReserveTab(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.WelfarePolicy:
-                    GUI.enabled = !_isGameOver;
-                    DrawWelfarePolicy(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.LaborMarket:
-                    GUI.enabled = !_isGameOver;
-                    DrawLaborMarketTab(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.CrimeJustice:
-                    GUI.enabled = !_isGameOver;
-                    DrawCrimeJusticeTab(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.SectorPolicy:
-                    GUI.enabled = !_isGameOver;
-                    DrawSectorPolicy(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.Infrastructure:
-                    DrawInfrastructureTab(tabContentHeight);
-                    break;
-                case RightPanelTab.PolicyWeb:
-                    DrawPolicyWebTab(tabContentHeight);
-                    break;
-                case RightPanelTab.Cabinet:
-                    GUI.enabled = !_isGameOver;
-                    DrawCabinetTab(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.CompassAndDemographics:
-                    DrawCompassAndDemographicsTab(tabContentHeight);
-                    break;
-                case RightPanelTab.ForeignPolicy:
-                    GUI.enabled = !_isGameOver;
-                    DrawForeignPolicyTab(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.Parliament:
-                    DrawParliamentTab(tabContentHeight);
-                    break;
-                case RightPanelTab.SwfPolicy:
-                    GUI.enabled = !_isGameOver;
-                    DrawSwfPolicy(tabContentHeight);
-                    GUI.enabled = true;
-                    break;
-                case RightPanelTab.BudgetProcess:
+                case ConsolidatedTab.Tax:
+                case ConsolidatedTab.Spending:
                     GUI.enabled = !_isGameOver;
                     DrawBudgetProcessTab(tabContentHeight, rightColumnWidth);
                     GUI.enabled = true;
+                    break;
+                case ConsolidatedTab.PolicyLaws:
+                    DrawPolicyLawsTab(tabContentHeight);
+                    break;
+                case ConsolidatedTab.Politics:
+                    DrawPoliticsTab(tabContentHeight);
                     break;
             }
 
@@ -891,28 +847,30 @@ namespace PoliSim.UI
             _primaryButtonStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
         }
 
-        /// <summary>Maps a right-column tab to the system area whose hue it should be tinted with (see UiPalette.SystemArea) - Recent Turns is informational, not a system area, so it stays Neutral.</summary>
-        private static UiPalette.SystemArea GetTabArea(RightPanelTab tab)
+        /// <summary>
+        /// Maps a consolidated top-level tab to the system area whose hue it should be tinted with -
+        /// Phase A provisional choices only (no icons yet, color-only, same `GetTabArea`-style mapping
+        /// the old 18-tab bar used), superseded by Phase B/C's real per-tab `icon_nav_*` treatment.
+        /// Four of the 7 don't have one dominant existing SystemArea (Statistics/Decisions/Demographics/
+        /// PolicyLaws each aggregate multiple old areas) - picked for visual DISTINCTNESS across all 7
+        /// tab buttons (the actual property "reuse the existing tab-bar mechanics" needs to preserve),
+        /// not because any one is a uniquely "correct" fit: Statistics keeps Global (its dominant piece,
+        /// World Map, already used it), Politics keeps Political (strong precedent - Parliament/Cabinet/
+        /// FedReserve all already used it), Tax/Spending keep Fiscal unchanged (same screen either way,
+        /// so sharing a hue is a feature, not a confusion). Decisions and Policy/Laws get two more
+        /// distinct existing hues (CrimeJustice, Sectors) that aren't already claimed above.
+        /// </summary>
+        private static UiPalette.SystemArea GetConsolidatedTabArea(ConsolidatedTab tab)
         {
             switch (tab)
             {
-                case RightPanelTab.WorldMap: return UiPalette.SystemArea.Global;
-                case RightPanelTab.Trade: return UiPalette.SystemArea.Trade;
-                case RightPanelTab.TaxPolicy: return UiPalette.SystemArea.Fiscal;
-                case RightPanelTab.SpendingPolicy: return UiPalette.SystemArea.Fiscal;
-                case RightPanelTab.FederalReserve: return UiPalette.SystemArea.Political;
-                case RightPanelTab.WelfarePolicy: return UiPalette.SystemArea.Welfare;
-                case RightPanelTab.LaborMarket: return UiPalette.SystemArea.Labor;
-                case RightPanelTab.CrimeJustice: return UiPalette.SystemArea.CrimeJustice;
-                case RightPanelTab.SectorPolicy: return UiPalette.SystemArea.Sectors;
-                case RightPanelTab.Infrastructure: return UiPalette.SystemArea.Infrastructure;
-                case RightPanelTab.SwfPolicy: return UiPalette.SystemArea.SovereignWealth;
-                case RightPanelTab.PolicyWeb: return UiPalette.SystemArea.Global;
-                case RightPanelTab.Cabinet: return UiPalette.SystemArea.Political;
-                case RightPanelTab.CompassAndDemographics: return UiPalette.SystemArea.Global;
-                case RightPanelTab.ForeignPolicy: return UiPalette.SystemArea.Trade;
-                case RightPanelTab.Parliament: return UiPalette.SystemArea.Political;
-                case RightPanelTab.BudgetProcess: return UiPalette.SystemArea.Fiscal;
+                case ConsolidatedTab.Statistics: return UiPalette.SystemArea.Global;
+                case ConsolidatedTab.Decisions: return UiPalette.SystemArea.CrimeJustice;
+                case ConsolidatedTab.Demographics: return UiPalette.SystemArea.Labor;
+                case ConsolidatedTab.Tax: return UiPalette.SystemArea.Fiscal;
+                case ConsolidatedTab.Spending: return UiPalette.SystemArea.Fiscal;
+                case ConsolidatedTab.PolicyLaws: return UiPalette.SystemArea.Sectors;
+                case ConsolidatedTab.Politics: return UiPalette.SystemArea.Political;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -1123,15 +1081,7 @@ namespace PoliSim.UI
                 GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
                 GUILayout.Label(chair.Description, _labelStyle);
 
-                if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
-                {
-                    GUILayout.Space(8f);
-                    GUILayout.Label("A new presidential term begins next turn - choose the next Fed chair:", _labelStyle);
-                    foreach (FedChair candidate in _fedChairCandidates)
-                    {
-                        DrawFedChairCandidateButton(candidate);
-                    }
-                }
+                DrawFedChairSelectionModal();
             }
             else
             {
@@ -1199,6 +1149,31 @@ namespace PoliSim.UI
                 RecomputePolicyPreview();
             }
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase A: extracted from DrawFederalReserveTab so DrawDecisionsTab
+        /// can show the exact same pending Fed Chair selection there too, not just under Politics -
+        /// applying Elias's own confirmed reasoning for the Budget Process mandatory-pause interrupt
+        /// ("any 'time is blocked until you respond' state belongs in the same place, not treated as
+        /// an exception") to Fed Chair selection as well, since it's the same kind of blocking
+        /// interrupt (see UpdateFedChairSelectionState/GameController.Update's own pause gate) that
+        /// wasn't one of the five items Elias was explicitly asked about. A no-op if nothing is
+        /// pending, so both call sites can call it unconditionally.
+        /// </summary>
+        private void DrawFedChairSelectionModal()
+        {
+            if (_fedChairCandidates == null || _fedChairCandidates.Count == 0)
+            {
+                return;
+            }
+
+            GUILayout.Space(8f);
+            GUILayout.Label("A new presidential term begins next turn - choose the next Fed chair:", _labelStyle);
+            foreach (FedChair candidate in _fedChairCandidates)
+            {
+                DrawFedChairCandidateButton(candidate);
+            }
         }
 
         /// <summary>
@@ -1437,25 +1412,16 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Infrastructure tab (Phase 4 - new, replacing the old single dashboard summary line):
-        /// descriptive only, no player-facing dial (Infrastructure Condition is driven entirely by
+        /// Descriptive only, no player-facing dial (Infrastructure Condition is driven entirely by
         /// the existing Infrastructure spending category - see MacroSystem.ApplyInfrastructureCondition
         /// and GetInfrastructureSummaryLine's own original doc comment for why). Proportional bars,
         /// not a line graph - this is "how do these four assets compare right now" breakdown data,
-        /// not a trend-over-time reading, matching the task's own bar-vs-graph guidance.
+        /// not a trend-over-time reading, matching the task's own bar-vs-graph guidance. Master
+        /// Sequence step 5e, Phase A: the old standalone Infrastructure tab is retired (Elias's own
+        /// confirmed placement - folds into Tax/Spending alongside Welfare/SWF, since this content was
+        /// already reused verbatim inside Budget Process and the standalone tab had no lever of its
+        /// own) - this content-only method is now reached exclusively via DrawBudgetProcessTab.
         /// </summary>
-        private void DrawInfrastructureTab(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _infrastructureScrollPosition = GUILayout.BeginScrollView(_infrastructureScrollPosition, GUILayout.Height(scrollHeight));
-            DrawInfrastructureContent();
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>Content-only version of DrawInfrastructureTab, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
         private void DrawInfrastructureContent()
         {
             DrawColoredLabel("Infrastructure", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure));
@@ -2186,95 +2152,293 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Tab/toggle set for the right column - 11 tabs now (Phase 4 gave Federal Reserve/Labor
-        /// Market/Crime &amp; Justice/Infrastructure their own homes, split out of the dashboard and
-        /// the old combined Trade &amp; Spending tab), split into two rows since that many no longer
-        /// fit legibly in one. Each tab is tinted by its own SystemArea (see GetTabArea) - selected
-        /// uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-
-        /// open tab reads as visibly "lit up" in its own area's hue.
+        /// Master Sequence step 5e, Phase A: the 7 consolidated top-level tabs, all fitting in ONE row
+        /// (short labels, unlike the old 18-tab bar's "Sovereign Wealth Fund"-length names) - replaces
+        /// the old 6-per-row/5-row layout entirely. Each tab is tinted by its own SystemArea (see
+        /// GetConsolidatedTabArea) - selected uses the bright TabSelected variant, unselected the
+        /// dimmer Tab variant, same mechanic the old bar used, per Phase A's own "no visual style
+        /// change, only navigation changes" constraint.
         /// </summary>
-        private const int TabsPerRow = 6;
+        private const int ConsolidatedTabsPerRow = 7;
 
         /// <summary>
-        /// Each button previously auto-sized to its own label content (no explicit width), which
-        /// GUILayout never shrinks to fit - 6 buttons per row summing wider than the actual available
-        /// column width (a real risk at smaller window sizes, since column width is itself only a
-        /// FRACTION of Screen.width, not a fixed budget) just overflowed silently past the panel/
-        /// screen edge instead of wrapping. Now explicitly divided evenly across
-        /// <paramref name="availableWidth"/> - the SAME rightColumnWidth OnGUI already computes fresh
-        /// from Screen.width every frame - so the row can never exceed its actual budget at any
-        /// window size, matching the screen-relative approach already used everywhere else in this
-        /// class.
+        /// Explicitly divided evenly across <paramref name="availableWidth"/> - the SAME
+        /// rightColumnWidth OnGUI already computes fresh from Screen.width every frame - so the row
+        /// can never exceed its actual budget at any window size, matching the screen-relative
+        /// approach already used everywhere else in this class (see the old DrawRightColumnTabs' own
+        /// doc comment on why this matters, kept in git history).
         /// </summary>
-        private void DrawRightColumnTabs(float availableWidth)
+        private void DrawConsolidatedTabs(float availableWidth)
         {
-            float buttonWidth = availableWidth / TabsPerRow;
+            float buttonWidth = availableWidth / ConsolidatedTabsPerRow;
 
             GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Recent Turns", RightPanelTab.RecentTurns, buttonWidth);
-            DrawRightColumnTabButton("World Map", RightPanelTab.WorldMap, buttonWidth);
-            DrawRightColumnTabButton("Trade", RightPanelTab.Trade, buttonWidth);
-            DrawRightColumnTabButton("Tax Policy", RightPanelTab.TaxPolicy, buttonWidth);
-            DrawRightColumnTabButton("Spending Policy", RightPanelTab.SpendingPolicy, buttonWidth);
-            DrawRightColumnTabButton(GetCentralBankName(PlayerCountryId), RightPanelTab.FederalReserve, buttonWidth);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(TabRowSpacing);
-
-            GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Welfare Policy", RightPanelTab.WelfarePolicy, buttonWidth);
-            DrawRightColumnTabButton("Labor Market", RightPanelTab.LaborMarket, buttonWidth);
-            DrawRightColumnTabButton("Crime & Justice", RightPanelTab.CrimeJustice, buttonWidth);
-            DrawRightColumnTabButton("Economic Sectors", RightPanelTab.SectorPolicy, buttonWidth);
-            DrawRightColumnTabButton("Infrastructure", RightPanelTab.Infrastructure, buttonWidth);
-            DrawRightColumnTabButton("Sovereign Wealth Fund", RightPanelTab.SwfPolicy, buttonWidth);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(TabRowSpacing);
-
-            // Third row: Policy Web plus Cabinet (Political Systems Overhaul Part A, the 14th tab) -
-            // half-width each rather than Policy Web alone stretched full-width, which would look like
-            // a sizing bug now that the row has two tabs again.
-            GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Policy Web", RightPanelTab.PolicyWeb, availableWidth * 0.5f);
-            DrawRightColumnTabButton("Cabinet", RightPanelTab.Cabinet, availableWidth * 0.5f);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(TabRowSpacing);
-
-            // Fourth row: Compass & Demographics (Political Systems Overhaul Part C, the 15th tab)
-            // plus Foreign Policy (Continuous Time Migration Phase 0's short-term gameplay
-            // scaffolding, the 16th tab) - half-width each, same "two new tabs share a row" precedent
-            // the Policy Web/Cabinet row above already established.
-            GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Compass & Demographics", RightPanelTab.CompassAndDemographics, availableWidth * 0.5f);
-            DrawRightColumnTabButton("Foreign Policy", RightPanelTab.ForeignPolicy, availableWidth * 0.5f);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(TabRowSpacing);
-
-            // Fifth row: Parliament (Political Systems Overhaul Part B PILOT, Master Sequence step 4,
-            // the 17th tab) plus Budget Process (Master Sequence step 5b, the 18th tab) - half-width
-            // each, same "two new tabs share a row" precedent rows three/four already established.
-            // Budget Process consolidates Tax/Spending/Welfare/Infrastructure/SWF's existing content
-            // (see DrawBudgetProcessTab) - those five tabs stay as independent entry points for now
-            // per the Master Sequence step 5 design, not removed until step 5e's own tab consolidation.
-            GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Parliament", RightPanelTab.Parliament, availableWidth * 0.5f);
-            DrawRightColumnTabButton("Budget Process", RightPanelTab.BudgetProcess, availableWidth * 0.5f);
+            DrawConsolidatedTabButton("Statistics", ConsolidatedTab.Statistics, buttonWidth);
+            DrawConsolidatedTabButton("Decisions", ConsolidatedTab.Decisions, buttonWidth);
+            DrawConsolidatedTabButton("Demographics", ConsolidatedTab.Demographics, buttonWidth);
+            DrawConsolidatedTabButton("Tax", ConsolidatedTab.Tax, buttonWidth);
+            DrawConsolidatedTabButton("Spending", ConsolidatedTab.Spending, buttonWidth);
+            DrawConsolidatedTabButton("Policy/Laws", ConsolidatedTab.PolicyLaws, buttonWidth);
+            DrawConsolidatedTabButton("Politics", ConsolidatedTab.Politics, buttonWidth);
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>Each tab is tinted by its own SystemArea (see UiPalette/GetTabArea) - selected uses the bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab reads as visibly "lit up" in its own area's hue rather than just bold+yellow text. Width is now explicit (see DrawRightColumnTabs) and the style word-wraps (see InitializeStylesIfNeeded) so a long label like "Sovereign Wealth Fund" degrades to two lines at a narrow width instead of being hard-clipped.</summary>
-        private void DrawRightColumnTabButton(string label, RightPanelTab tab, float width)
+        /// <summary>
+        /// Each tab is tinted by its own SystemArea (see GetConsolidatedTabArea) - selected uses the
+        /// bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab
+        /// reads as visibly "lit up" in its own area's hue rather than just bold+yellow text. Switching
+        /// INTO Tax or Spending also seeds `_budgetProcessCategory` so the shared Budget Process screen
+        /// opens at the right starting category (see DrawTaxTab/DrawSpendingTab) - the only place this
+        /// button click does anything beyond changing which tab is selected, since Tax/Spending are two
+        /// differently-labeled entry points into the exact same underlying screen, not two screens.
+        /// </summary>
+        private void DrawConsolidatedTabButton(string label, ConsolidatedTab tab, float width)
         {
-            UiPalette.SystemArea area = GetTabArea(tab);
-            bool selected = _rightPanelTab == tab;
+            UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
+            bool selected = _consolidatedTab == tab;
             GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
             if (GUILayout.Button(label, style, GUILayout.Width(width)))
             {
-                _rightPanelTab = tab;
+                _consolidatedTab = tab;
+                if (tab == ConsolidatedTab.Tax)
+                {
+                    _budgetProcessCategory = BudgetProcessCategory.Tax;
+                }
+                else if (tab == ConsolidatedTab.Spending)
+                {
+                    _budgetProcessCategory = BudgetProcessCategory.Spending;
+                }
             }
+        }
+
+        /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above).</summary>
+        private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory) where T : struct, System.Enum
+        {
+            bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);
+            GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
+            if (GUILayout.Button(label, style))
+            {
+                selectedCategory = category;
+            }
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase A: Statistics tab - Recent Turns + World Map (both directly
+        /// named in the original 5e scope text) plus Trade's informational half (see
+        /// DrawTradeStatsContent's own doc comment on the split). RecentTurns/WorldMap reuse their
+        /// full old Draw*Tab methods UNCHANGED (each already owns its own box/scrollview) rather than
+        /// being surgically split - Phase A's own "no visual style changes, minimize risk" constraint
+        /// favors reusing existing rendering wholesale over extracting content-only pieces that don't
+        /// already exist, even at the cost of a harmless nested box for those two categories.
+        /// </summary>
+        private void DrawStatisticsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel("Statistics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.BeginHorizontal();
+            DrawSubCategoryButton("Recent Turns", StatisticsCategory.RecentTurns, ref _statisticsCategory);
+            DrawSubCategoryButton("World Map", StatisticsCategory.WorldMap, ref _statisticsCategory);
+            DrawSubCategoryButton("Trade", StatisticsCategory.Trade, ref _statisticsCategory);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(6f);
+
+            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f;
+            switch (_statisticsCategory)
+            {
+                case StatisticsCategory.RecentTurns:
+                    DrawTurnLog(contentHeight);
+                    break;
+                case StatisticsCategory.WorldMap:
+                    DrawWorldMapTab(contentHeight);
+                    break;
+                case StatisticsCategory.Trade:
+                    float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
+                    _statisticsContentScrollPosition = GUILayout.BeginScrollView(_statisticsContentScrollPosition, GUILayout.Height(scrollHeight));
+                    DrawTradeStatsContent();
+                    GUILayout.EndScrollView();
+                    break;
+            }
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase A: Decisions tab - every currently pending interrupt shown
+        /// together in one place, not a category selector (there's nothing to browse when nothing's
+        /// pending, unlike every other consolidated tab). Covers all four blocking interrupts that
+        /// exist in this codebase: Fed Chair selection, Foreign Policy meetings, Cabinet decisions, and
+        /// (per Elias's own confirmed reasoning - "any 'time is blocked until you respond' state
+        /// belongs in the same place, not treated as an exception") the Budget Process mandatory
+        /// pause. Every piece reuses the exact same rendering the old per-tab modals already used
+        /// (DrawFedChairSelectionModal/DrawForeignPolicyMeetingModal/DrawCabinetDecisionModal/
+        /// DrawBudgetBillStatusAndIntroduce) - Decisions doesn't reimplement anything, it just gathers.
+        /// Matches the old dispatch's own gating exactly: all four were only ever reachable through a
+        /// `!_isGameOver`-gated tab before, so the whole body stays gated here too.
+        /// </summary>
+        private void DrawDecisionsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _decisionsScrollPosition = GUILayout.BeginScrollView(_decisionsScrollPosition, GUILayout.Height(scrollHeight));
+
+            DrawColoredLabel("Decisions", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
+            GUILayout.Label("Everything currently waiting on your response, gathered in one place.", _labelStyle);
+            GUILayout.Space(6f);
+
+            GUI.enabled = !_isGameOver;
+
+            bool anyPending = false;
+
+            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
+            {
+                DrawFedChairSelectionModal();
+                GUILayout.Space(8f);
+                anyPending = true;
+            }
+
+            ForeignPolicyMeeting pendingMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId);
+            if (pendingMeeting != null)
+            {
+                DrawForeignPolicyMeetingModal(pendingMeeting);
+                GUILayout.Space(8f);
+                anyPending = true;
+            }
+
+            foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in _simulationManager.GetPendingCabinetDecisions(PlayerCountryId))
+            {
+                DrawCabinetDecisionModal(portfolio, decision);
+                GUILayout.Space(8f);
+                anyPending = true;
+            }
+
+            if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
+            {
+                DrawBudgetBillStatusAndIntroduce();
+                GUILayout.Space(8f);
+                anyPending = true;
+            }
+
+            GUI.enabled = true;
+
+            if (!anyPending)
+            {
+                GUILayout.Label("No pending decisions.", _labelStyle);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>Master Sequence step 5e, Phase A: Demographics tab - just the pie-chart half of the old "Compass & Demographics" tab (see DrawDemographicsContent's own doc comment), no category selector needed since there's only one content source. Never gated on game-over, matching the old tab's own behavior (pure visualization, no player-facing controls).</summary>
+        private void DrawDemographicsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
+            _demographicsScrollPosition = GUILayout.BeginScrollView(_demographicsScrollPosition, GUILayout.Height(scrollHeight));
+            DrawDemographicsContent();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase A: Policy/Laws tab - Labor Market/Crime &amp; Justice/
+        /// Economic Sectors (each already has its own tier-3 standalone bill from 5d), Policy Web
+        /// (Elias's own placement, overriding the original Statistics recommendation - "a relationship/
+        /// reference tool consulted while deciding what to change, closer to where bills get drafted
+        /// than to a pure stats readout"), and Trade's policy half (DrawTradePolicyContent). Per-
+        /// category gating matches the old dispatch exactly, not a blanket gate - Labor/Crime/Sectors
+        /// were gated, Policy Web/Trade were not.
+        /// </summary>
+        private void DrawPolicyLawsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
+            GUILayout.BeginHorizontal();
+            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory);
+            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory);
+            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory);
+            DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory);
+            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(6f);
+
+            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f;
+            switch (_policyLawsCategory)
+            {
+                case PolicyLawsCategory.LaborMarket:
+                    GUI.enabled = !_isGameOver;
+                    DrawLaborMarketTab(contentHeight);
+                    GUI.enabled = true;
+                    break;
+                case PolicyLawsCategory.CrimeJustice:
+                    GUI.enabled = !_isGameOver;
+                    DrawCrimeJusticeTab(contentHeight);
+                    GUI.enabled = true;
+                    break;
+                case PolicyLawsCategory.Sectors:
+                    GUI.enabled = !_isGameOver;
+                    DrawSectorPolicy(contentHeight);
+                    GUI.enabled = true;
+                    break;
+                case PolicyLawsCategory.PolicyWeb:
+                    DrawPolicyWebTab(contentHeight);
+                    break;
+                case PolicyLawsCategory.Trade:
+                    float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
+                    _policyLawsContentScrollPosition = GUILayout.BeginScrollView(_policyLawsContentScrollPosition, GUILayout.Height(scrollHeight));
+                    DrawTradePolicyContent();
+                    GUILayout.EndScrollView();
+                    break;
+            }
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase A: Politics tab - Parliament, the Political Compass half of
+        /// the old "Compass & Demographics" tab, Cabinet's management half, and Federal Reserve (Elias's
+        /// own confirmed placement - a real political institution with its own lever, even though the
+        /// Fed/Eurozone exemption means it's never Parliament-gated). Per-category gating matches the
+        /// old dispatch exactly - Parliament/Compass were never gated, Cabinet/FederalReserve were.
+        /// </summary>
+        private void DrawPoliticsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel("Politics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            GUILayout.BeginHorizontal();
+            DrawSubCategoryButton("Parliament", PoliticsCategory.Parliament, ref _politicsCategory);
+            DrawSubCategoryButton("Compass", PoliticsCategory.Compass, ref _politicsCategory);
+            DrawSubCategoryButton("Cabinet", PoliticsCategory.Cabinet, ref _politicsCategory);
+            DrawSubCategoryButton(GetCentralBankName(PlayerCountryId), PoliticsCategory.FederalReserve, ref _politicsCategory);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(6f);
+
+            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f;
+            switch (_politicsCategory)
+            {
+                case PoliticsCategory.Parliament:
+                    DrawParliamentTab(contentHeight);
+                    break;
+                case PoliticsCategory.Compass:
+                    float compassScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
+                    _politicsContentScrollPosition = GUILayout.BeginScrollView(_politicsContentScrollPosition, GUILayout.Height(compassScrollHeight));
+                    DrawPoliticalCompassContent();
+                    GUILayout.EndScrollView();
+                    break;
+                case PoliticsCategory.Cabinet:
+                    float cabinetScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
+                    GUI.enabled = !_isGameOver;
+                    _cabinetScrollPosition = GUILayout.BeginScrollView(_cabinetScrollPosition, GUILayout.Height(cabinetScrollHeight));
+                    DrawCabinetManagementContent();
+                    GUILayout.EndScrollView();
+                    GUI.enabled = true;
+                    break;
+                case PoliticsCategory.FederalReserve:
+                    GUI.enabled = !_isGameOver;
+                    DrawFederalReserveTab(contentHeight);
+                    GUI.enabled = true;
+                    break;
+            }
+            GUILayout.EndVertical();
         }
 
         private void DrawTurnLog(float availableHeight)
@@ -2535,31 +2699,36 @@ namespace PoliSim.UI
         /// the dashboard's own "BREAKING" event banner (see DrawTopBanner) per the Master Roadmap's own
         /// spec - reusing _eventBannerStyle rather than inventing a separate modal style.
         /// </summary>
-        private void DrawCabinetTab(float availableHeight)
+        /// <summary>
+        /// Master Sequence step 5e, Phase A: the old standalone Cabinet tab SPLIT across two new
+        /// destinations, per Elias's own confirmed mapping (the original 5e scope text names Cabinet
+        /// under both "Decisions" and "Politics") - this content-only piece is the Decisions half
+        /// (pending-decision modals only), called from DrawDecisionsTab. See
+        /// DrawCabinetManagementContent for the Politics half (portfolio panels). No outer box/
+        /// scrollview here, matching this codebase's own established "*Content" convention (e.g.
+        /// DrawTaxPolicyContent) - the caller owns the chrome.
+        /// </summary>
+        private void DrawCabinetPendingDecisionsContent()
         {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _cabinetScrollPosition = GUILayout.BeginScrollView(_cabinetScrollPosition, GUILayout.Height(scrollHeight));
-
-            DrawColoredLabel("Cabinet", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            GUILayout.Label("Each appointed minister quietly nudges their own portfolio's existing channels every turn just by serving, and occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime.", _labelStyle);
-            GUILayout.Space(6f);
-
             foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in _simulationManager.GetPendingCabinetDecisions(PlayerCountryId))
             {
                 DrawCabinetDecisionModal(portfolio, decision);
                 GUILayout.Space(8f);
             }
+        }
+
+        /// <summary>Politics half of the old Cabinet tab - see DrawCabinetPendingDecisionsContent's own doc comment for the split reasoning. Called from DrawPoliticsTab.</summary>
+        private void DrawCabinetManagementContent()
+        {
+            DrawColoredLabel("Cabinet", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            GUILayout.Label("Each appointed minister quietly nudges their own portfolio's existing channels every turn just by serving, and occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime. Pending decisions themselves now show under the Decisions tab.", _labelStyle);
+            GUILayout.Space(6f);
 
             foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
             {
                 DrawCabinetPortfolioPanel(portfolio);
                 GUILayout.Space(8f);
             }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         private void DrawCabinetDecisionModal(CabinetPortfolio portfolio, CabinetDecision decision)
@@ -2578,41 +2747,12 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Foreign Policy tab (Continuous Time Migration Phase 0 short-term gameplay scaffolding,
-        /// Master Sequence step 3): a single small proof-of-pattern interrupt slice reusing Cabinet's
-        /// own decision-modal pattern (DrawCabinetTab/DrawCabinetDecisionModal) - at most one pending
-        /// meeting at a time (see SimulationManager's own doc comment on
-        /// _pendingForeignPolicyMeetingByCountry), rolled per day rather than per turn since meetings
-        /// are meant to land between turn boundaries. Explicitly NOT a law-passing mechanic (that's
-        /// Political Systems Overhaul Part B's job) and explicitly NOT "ongoing-process budgets" (left
-        /// out of this pass's scope entirely, per the Master Roadmap's own Phase 0 spec being treated
-        /// as three candidate systems to choose from, not three mandatory builds).
+        /// Master Sequence step 5e, Phase A: the old standalone Foreign Policy tab is fully retired,
+        /// not split - its ENTIRE content was always just this interrupt (confirmed by reading its old
+        /// body: explanatory text + either the modal or "No meeting currently pending," nothing else),
+        /// so it moves to Decisions wholesale (see DrawDecisionsTab) with nothing left behind. Only
+        /// this modal renderer survives, reused as-is from Decisions.
         /// </summary>
-        private void DrawForeignPolicyTab(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _foreignPolicyScrollPosition = GUILayout.BeginScrollView(_foreignPolicyScrollPosition, GUILayout.Height(scrollHeight));
-
-            DrawColoredLabel("Foreign Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
-            GUILayout.Label("Occasionally a foreign counterpart requests a meeting - a trade delegation, a disaster relief appeal, a joint exercise proposal. Each has a few response options with a small, immediate, one-time effect. Meetings can arrive on any day, not just turn boundaries, and pause time until you respond.", _labelStyle);
-            GUILayout.Space(6f);
-
-            ForeignPolicyMeeting pendingMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId);
-            if (pendingMeeting != null)
-            {
-                DrawForeignPolicyMeetingModal(pendingMeeting);
-            }
-            else
-            {
-                GUILayout.Label("No meeting currently pending.", _labelStyle);
-            }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
         private void DrawForeignPolicyMeetingModal(ForeignPolicyMeeting meeting)
         {
             GUILayout.BeginVertical(_boxStyle);
@@ -2778,33 +2918,27 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Compass &amp; Demographics tab (Political Systems Overhaul Part C, Master Sequence step 2):
-        /// pure visualization, no player-facing controls. The political compass plots all six
-        /// countries at once (see PoliticalCompassRenderer); the five pie charts below it are all
-        /// scoped to the player's own country except Population, which is inherently comparative.
-        /// Ethnicity/religion breakdowns are explicitly OUT OF SCOPE per the Master Roadmap's own
-        /// Part C spec - not tracked anywhere in this game's data model.
+        /// Master Sequence step 5e, Phase A: the old standalone "Compass &amp; Demographics" tab SPLIT
+        /// across two new destinations, per Elias's own confirmed mapping (the original 5e scope text
+        /// separates "Compass" under Politics from "Demographics (population/pie charts)" as its own
+        /// tab). This content-only piece is the Political Compass half, called from DrawPoliticsTab.
+        /// See DrawDemographicsContent for the Demographics half (all five pie charts). No outer box/
+        /// scrollview here, matching this codebase's own established "*Content" convention.
         /// </summary>
-        private void DrawCompassAndDemographicsTab(float availableHeight)
+        private void DrawPoliticalCompassContent()
         {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _compassAndDemographicsScrollPosition = GUILayout.BeginScrollView(_compassAndDemographicsScrollPosition, GUILayout.Height(scrollHeight));
-
-            DrawColoredLabel("Compass & Demographics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("Grounded entirely in this game's own tracked policy data - no invented ideology labels, and no ethnicity/religion breakdown (not tracked anywhere in this game's data model).", _labelStyle);
-            GUILayout.Space(6f);
-
             DrawColoredLabel("Political Compass", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("X: average implemented tax rate blended with total government spending (% of GDP) - further right means a bigger fiscal footprint. Y: average sector regulation blended with average implemented welfare generosity - higher means more market regulation and a more generous welfare state. Your own country is ringed in white.", _labelStyle);
+            GUILayout.Label("Grounded entirely in this game's own tracked policy data - no invented ideology labels. X: average implemented tax rate blended with total government spending (% of GDP) - further right means a bigger fiscal footprint. Y: average sector regulation blended with average implemented welfare generosity - higher means more market regulation and a more generous welfare state. Your own country is ringed in white.", _labelStyle);
             float compassSize = Mathf.Clamp(Screen.height * 0.4f, 260f, 520f);
             Rect compassRect = GUILayoutUtility.GetRect(compassSize, compassSize, GUILayout.ExpandWidth(false));
             _politicalCompassRenderer.Draw(compassRect, _world.Countries, PlayerCountryId, _labelStyle);
+        }
 
-            GUILayout.Space(12f);
-
+        /// <summary>Demographics half of the old "Compass & Demographics" tab - see DrawPoliticalCompassContent's own doc comment for the split reasoning. Called from DrawDemographicsTab. Ethnicity/religion breakdowns are explicitly OUT OF SCOPE per the Master Roadmap's own Part C spec - not tracked anywhere in this game's data model.</summary>
+        private void DrawDemographicsContent()
+        {
             DrawColoredLabel("Demographics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Label("No ethnicity/religion breakdown (not tracked anywhere in this game's data model). The five charts below are all scoped to the player's own country except Population, which is inherently comparative.", _labelStyle);
             GUILayout.Space(4f);
 
             EconomyState state = _playerCountry.State;
@@ -2864,32 +2998,30 @@ namespace PoliSim.UI
                 populationSlices.Add(new PieSlice(country.Name, country.State.Population, UiPalette.GetCountryColor(country.Id)));
             }
             _populationPieChart.Draw("Population Share by Country (millions)", populationSlices, _labelStyle, "F1");
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>
-        /// Trade tab (Phase 4 - split off the old combined "Trade &amp; Spending" tab; the spending
-        /// report half moved into the Spending Policy tab instead, where it belongs alongside the
-        /// spending sliders it reports on). Adds a TradeBalance history graph and, per partner,
-        /// proportional bars for Export/Import volume - "how do these partners compare right now"
-        /// breakdown data, exactly the case the task calls out for bars over a line graph.
+        /// Master Sequence step 5e, Phase A: the old standalone Trade tab SPLIT across two new
+        /// destinations, per Elias's own confirmed mapping - informational content (this piece, the
+        /// Trade Balance graph) to Statistics, policy content (DrawTradePolicyContent below) to
+        /// Policy/Laws. Implementation refinement Elias also confirmed: per-partner rows (bars AND
+        /// override controls together) stay bundled as one unit under Policy/Laws rather than
+        /// splitting a single row's own bars from its own controls across two different tabs - a
+        /// player adjusting an override wants the volume bars right next to it for context. No outer
+        /// box/scrollview here, matching this codebase's own established "*Content" convention.
         /// </summary>
-        private void DrawTrade(float availableHeight)
+        private void DrawTradeStatsContent()
         {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _tradeScrollPosition = GUILayout.BeginScrollView(_tradeScrollPosition, GUILayout.Height(scrollHeight));
-
             EconomyState state = _playerCountry.State;
-
             DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             DrawColoredLabel($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
             _tradeBalanceGraph.Draw("Trade Balance", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true);
-            GUILayout.Space(6f);
+        }
 
+        /// <summary>Policy half of the old Trade tab (the TradePolicyBill and every per-partner row) - see DrawTradeStatsContent's own doc comment for the split reasoning. Called from DrawPolicyLawsTab.</summary>
+        private void DrawTradePolicyContent()
+        {
+            DrawColoredLabel("Trade Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             GUILayout.Label("Master Sequence step 5d: the base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting/resetting whether a partner override exists at all stays an immediate, structural action, unchanged.", _labelStyle);
             GUILayout.Space(6f);
 
@@ -2925,9 +3057,6 @@ namespace PoliSim.UI
                 DrawTradePartnerRow(link, partner, maxVolume);
                 GUILayout.Space(10f);
             }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         private void DrawTradePartnerRow(TradePartner link, Country partner, float maxVolume)
@@ -3275,12 +3404,15 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Political Systems Overhaul Part B, full rollout: the Tax Policy tab's sliders/toggles remain
-        /// DRAFT values (adjusting costs nothing, no vote needed) - since Master Sequence step 5c, the
-        /// "Introduce Budget Bill" action lives centrally on the Budget Process tab (an omnibus bill
-        /// covering Tax+Spending+Welfare+SWF together, superseding the step 4 pilot's Tax-only
-        /// TaxBill), and a PASSED bill is the only way a draft here ever reaches the real, standing
-        /// TaxLines.
+        /// Political Systems Overhaul Part B, full rollout: the Tax Policy category's sliders/toggles
+        /// remain DRAFT values (adjusting costs nothing, no vote needed) - since Master Sequence step
+        /// 5c, the "Introduce Budget Bill" action lives centrally on this same Budget Process screen
+        /// (an omnibus bill covering Tax+Spending+Welfare+SWF together, superseding the step 4 pilot's
+        /// Tax-only TaxBill), and a PASSED bill is the only way a draft here ever reaches the real,
+        /// standing TaxLines. Master Sequence step 5e, Phase A: the old standalone Tax Policy tab is
+        /// retired (folds into the new Tax/Spending consolidated tabs, both of which are just entry
+        /// points into this same Budget Process screen) - this content-only method is now reached
+        /// exclusively via DrawBudgetProcessTab.
         ///
         /// STABLE CONTROL LAYOUT PATTERN (mandatory for every gated tab, not just this one - see
         /// "Background/timed state mutation vs. active UI interaction" in POLISIM_MASTER_ROADMAP.md's
@@ -3302,23 +3434,6 @@ namespace PoliSim.UI
         /// still present and control-ID-stable), never by branching the control itself in/out of
         /// existence. Every step-5 tab must follow this same shape from its first draft, not
         /// retrofit it after finding the bug fresh a second time.
-        /// </summary>
-        private void DrawTaxPolicy(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _taxPolicyScrollPosition = GUILayout.BeginScrollView(_taxPolicyScrollPosition, GUILayout.Height(scrollHeight));
-            DrawTaxPolicyContent();
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// The actual Tax Policy content (everything but the outer box/scrollview) - factored out so
-        /// Master Sequence step 5b's Budget Process screen (DrawBudgetProcessTab) can show the exact
-        /// same content in its own center column without duplicating it. The standalone Tax Policy tab
-        /// above stays as its own independent entry point until step 5e's tab consolidation.
         /// </summary>
         private void DrawTaxPolicyContent()
         {
@@ -3428,19 +3543,7 @@ namespace PoliSim.UI
                 _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
         }
 
-        /// <summary>Every WelfareProgramType for the player's country: an Implement/Remove toggle (immediate - see DrawWelfareProgramRow) plus, only while implemented, a slider that directly sets this turn's target GenerosityLevel. Mirrors DrawTaxPolicy/DrawTaxLineRow exactly.</summary>
-        private void DrawWelfarePolicy(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _welfarePolicyScrollPosition = GUILayout.BeginScrollView(_welfarePolicyScrollPosition, GUILayout.Height(scrollHeight));
-            DrawWelfarePolicyContent();
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>Content-only version of DrawWelfarePolicy, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
+        /// <summary>Every WelfareProgramType for the player's country: an Implement/Remove toggle (immediate - see DrawWelfareProgramRow) plus, only while implemented, a slider that directly sets this turn's target GenerosityLevel. Mirrors DrawTaxPolicyContent/DrawTaxLineRow exactly. Master Sequence step 5e, Phase A: the old standalone Welfare Policy tab is retired (folds into Tax/Spending, same as Tax) - reached exclusively via DrawBudgetProcessTab now.</summary>
         private void DrawWelfarePolicyContent()
         {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
@@ -3670,7 +3773,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Sovereign Wealth Fund tab: a Create/Dissolve button (immediate, mirrors TaxLine.
+        /// Sovereign Wealth Fund category: a Create/Dissolve button (immediate, mirrors TaxLine.
         /// IsImplemented's toggle pattern) plus, only while it exists, TotalAssets/this-turn estimated
         /// contribution-or-withdrawal+returns (read-only) and sliders for every adjustable setting,
         /// including the Contribution/Withdrawal Rate slider that now goes negative to draw the fund
@@ -3680,23 +3783,9 @@ namespace PoliSim.UI
         /// fiscal problem. This is a GameController-only display computation - it is never written
         /// back into EconomyState/Country and never read by any simulation formula
         /// (GetDebtRiskPremium, GetFiscalReactionMultiplier, etc. all keep reading the real, gross
-        /// GovernmentDebt/DebtToGdpRatio exactly as before).
-        /// </summary>
-        private void DrawSwfPolicy(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _swfPolicyScrollPosition = GUILayout.BeginScrollView(_swfPolicyScrollPosition, GUILayout.Height(scrollHeight));
-            DrawSwfPolicyContent();
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// Content-only version of DrawSwfPolicy, reused by DrawBudgetProcessTab's center column
-        /// (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split
-        /// exists.
+        /// GovernmentDebt/DebtToGdpRatio exactly as before). Master Sequence step 5e, Phase A: the old
+        /// standalone SWF Policy tab is retired (folds into Tax/Spending, same as Tax/Welfare) -
+        /// reached exclusively via DrawBudgetProcessTab now.
         ///
         /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): Create/Dissolve
         /// now edits DRAFT state only (_swfExistsDraft) - it no longer mutates
@@ -3834,19 +3923,10 @@ namespace PoliSim.UI
         /// Mandatory's range is narrower, reflecting the real political difficulty of entitlement
         /// reform, and a Mandatory change carries a distinctly higher approval-rating penalty per
         /// relative size than a Discretionary one (see MacroSystem.MandatorySpendingApprovalMultiplier).
+        /// Master Sequence step 5e, Phase A: the old standalone Spending Policy tab is retired (folds
+        /// into Tax/Spending, both just entry points into this same Budget Process screen) - reached
+        /// exclusively via DrawBudgetProcessTab now.
         /// </summary>
-        private void DrawSpendingPolicy(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _spendingPolicyScrollPosition = GUILayout.BeginScrollView(_spendingPolicyScrollPosition, GUILayout.Height(scrollHeight));
-            DrawSpendingPolicyContent();
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>Content-only version of DrawSpendingPolicy, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
         private void DrawSpendingPolicyContent()
         {
             DrawColoredLabel("Spending Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
