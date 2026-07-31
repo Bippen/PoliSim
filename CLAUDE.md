@@ -3745,6 +3745,72 @@ seven tabs is step 5, not attempted here.
   specific seat split, real evidence the pass/fail math is doing genuine work, not just displaying a
   static label.
 
+## Master Sequence step 5a (Political Systems Overhaul Part B, full rollout)
+Step 5's original plan - "roll the Tax Policy pilot's uniform draft/introduce/vote pattern out to the
+remaining seven tabs unchanged" - is SUPERSEDED (2026-07-31). Elias confirmed a more realistic,
+better-specified design after a real freeze report (see `POLISIM_MASTER_ROADMAP.md`'s working
+discipline patterns 5 and 6 for the investigation - an initial IMGUI stable-control-layout hypothesis
+that turned out NOT to be the real cause, followed by the actual root cause: a legitimately
+time-blocking decision with no globally-visible indicator) forced a closer look at what step 5 would
+actually need: three bill tiers instead of
+one uniform pattern (an Annual Budget omnibus bill per country on its real fiscal-year date; standalone
+bills for introducing/removing a program entirely; standalone bills for non-budget policy, reusing the
+same standalone mechanism as the second tier), built in six sub-phases 5a-5f with aesthetic restyling
+deliberately last. Full design and reasoning: `POLISIM_MASTER_ROADMAP.md`'s "Step 5, full rollout -
+REVISED DESIGN" under Part B - this file only documents what's actually been BUILT and validated, not
+the design itself, to avoid two documents drifting out of sync.
+
+**5a - real per-country fiscal-year dates + the mandatory pause hook. DONE (2026-07-31).**
+- **`FiscalYearData`** (new, `Assets/Scripts/Data/FiscalYearData.cs`): `GetFiscalYearStart(CountryId)`
+  returns (month, day) per real government fiscal-year conventions - USA October 1; Germany, France,
+  Italy, Poland, Sweden all January 1 (calendar-year budgeting).
+- **`SimulationManager.IsFiscalYearStart`/`TryOpenBudgetProcess`/`GetPendingBudgetProcess`/
+  `AcknowledgeBudgetProcess`**: mirrors the existing `_pendingForeignPolicyMeetingByCountry` single-slot
+  pattern (`_pendingBudgetProcessByCountry`, a `HashSet<CountryId>` - no bill payload yet, since 5a is
+  pure plumbing and 5c/5d own the actual bill). `TryOpenBudgetProcess` is called once per simulated day
+  from `GameController.Update`'s existing day-loop, alongside `TryRollForeignPolicyMeeting`/
+  `AdvanceLegislativeDay`. Scoped to whichever country the player is actually controlling
+  (`PlayerCountryId`), not hardcoded to USA - consistent with how every other Parliament/Cabinet/
+  Foreign-Policy mechanic in this codebase already works; Fed Chair is this codebase's one deliberate
+  USA-only exception, for a separately-stated real-world reason, not a precedent to extend here without
+  cause. `AcknowledgeBudgetProcess` is an explicitly TEMPORARY 5a-only placeholder (clears the pending
+  flag with no bill effect) - without it, the mandatory pause would leave the game genuinely,
+  permanently stuck the first time a player's country's fiscal-year date arrives, since 5b (the Budget
+  Process screen) and 5c (the real bill) don't exist yet to resolve it for real. Step 5c must replace
+  its call site with the real Budget Process flow.
+- **`GameController`**: `GetPendingBudgetProcess` added as a fourth condition on both of `Update`'s
+  day-loop pause gates (the initial early-return and the mid-loop re-check), and as a fourth case on
+  `DrawCalendarAndSpeedControls`' existing global pending-decision banner - originally built to fix a
+  Foreign Policy Meeting visibility gap (see `POLISIM_MASTER_ROADMAP.md`'s working discipline pattern 6,
+  "a legitimately time-blocking decision with no globally-visible indicator") - extending the existing
+  pattern rather than building a fourth separate ad-hoc pause system, per the design's own explicit
+  instruction. One ALWAYS-PRESENT "Acknowledge" button was added beneath the status line,
+  `GUI.enabled`-gated rather than conditionally omitted - the stable-control-layout discipline (see
+  `GameController.DrawTaxPolicy`'s own doc comment, and `POLISIM_MASTER_ROADMAP.md`'s working discipline
+  pattern 5, "background/timed state mutation vs. active UI interaction") applies most acutely to
+  exactly this screen shape (many sliders, a live-recomputing estimate, real-time day advancement), so
+  this was built stable from its first draft rather than retrofitted after a freeze a second time.
+- **Validated - a throwaway Edit-mode diagnostic** (same technique as Phase 0's
+  `TickEquivalenceDiagnostic1` - no Play-mode round-trip; `GameController.Start()`/`Update()` invoked
+  directly via reflection to exercise the REAL production gate logic, not a hand-copied reimplementation
+  of it, with `_daySpeedTimer` force-set well above threshold since `Time.deltaTime` is meaningless
+  outside Play mode) confirmed, for both USA (October 1) and Germany (January 1): the pending state
+  opens correctly on the right date; `Update()`'s actual pause gate declines to advance `CurrentDate`
+  while pending; `AcknowledgeBudgetProcess` both clears the flag and lets the day-loop genuinely resume
+  on the next `Update()` call. ALL PASS, both countries. Diagnostic not committed (throwaway, per this
+  project's own established convention). A separate infrastructure fix was found and committed on its
+  own while building this diagnostic: `SimulationTestRunner` ran an unconditional 100-turn baseline pass
+  on every Play-mode scene entry with no opt-out, so any unrelated Play-mode diagnostic paid for it
+  first - fixed via an additive `-skipsimulationtestrunner` command-line flag, no effect on
+  `BatchSimulationRunner` or any existing invocation.
+- **Confirmed via live-Editor screenshots** (2026-07-31, by Elias directly - two automated headless
+  screenshot-capture attempts both stalled during Unity's own cold-start/asset-reimport, unrelated to
+  this code, so manual capture was used instead): the budget-process banner fires correctly on the real
+  fiscal date with honest placeholder wording ("Budget Process screen not built yet - acknowledge below
+  to continue for now"), and Acknowledge correctly resumes time - re-confirmed a full week later
+  in-game (October 8), still ticking normally at 3x speed, i.e. the day-loop genuinely resumed rather
+  than a one-frame fluke.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
@@ -3979,6 +4045,12 @@ Reserve/Eurozone exemption needed no new code, since the interest-rate lever was
 eight tabs Parliament gates. Validated via the full 30-combination real-Unity matrix (zero hard
 anomalies, zero USA-specific anomalies from the new worst-case parliamentstress scenario) plus a
 screenshot smoke test confirming the pass/fail math visibly working correctly against a real seat
-split. Master Sequence step 5 (Political Systems Overhaul Part B full rollout to the remaining seven
-tabs) is next; Round 4 of the original Roadmap stays unscoped until step 5 is done, so new features
-get designed against the gated-legislation model from day one rather than retrofitted onto it later.
+split. Master Sequence step 5's original plan (a uniform per-tab repeat of the pilot across the
+remaining seven tabs) is SUPERSEDED (2026-07-31) by a revised three-tier bill design (an Annual Budget
+omnibus bill per country on its real fiscal-year date, plus a standalone-bill mechanism reused for both
+new/removed programs and non-budget policy) built in six sub-phases - see "Master Sequence step 5a
+(Political Systems Overhaul Part B, full rollout)" above for the design pointer and what's actually
+been built. 5a (real per-country fiscal-year dates + the mandatory pause hook) is DONE (2026-07-31),
+confirmed via live-Editor screenshots; 5b (the Budget Process full-screen UI shell) is next. Round 4 of
+the original Roadmap stays unscoped until all of step 5 is done, so new features get designed against
+the gated-legislation model from day one rather than retrofitted onto it later.
