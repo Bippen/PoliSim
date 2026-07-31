@@ -203,6 +203,31 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// Master Sequence step 5e, Phase B: draws a sprite icon tinted to <paramref name="tint"/> -
+        /// the actual mechanism the Claude Design asset pack's own README specifies ("Authored white so
+        /// a single texture serves every state - tint with PoliSimTheme.Accent(...) instead of shipping
+        /// a coloured copy per hue"). `GUI.color` multiplies every subsequent draw call's own color
+        /// (white pixels become exactly <paramref name="tint"/>, the icon's own alpha channel is left
+        /// alone since IMGUI always respects source alpha), the same idiom `HemicycleRenderer` already
+        /// uses for its own per-seat dot tinting - restored immediately after so this never leaks into
+        /// whatever the caller draws next. A no-op (not a placeholder box) if <paramref name="icon"/>
+        /// is null, so a not-yet-imported/misconfigured texture reference fails silently rather than
+        /// drawing a wrong-looking fallback that could be mistaken for a working icon.
+        /// </summary>
+        public static void DrawTintedIcon(Rect rect, Texture2D icon, Color tint)
+        {
+            if (icon == null)
+            {
+                return;
+            }
+
+            Color previous = GUI.color;
+            GUI.color = tint;
+            GUI.DrawTexture(rect, icon, ScaleMode.ScaleToFit, true);
+            GUI.color = previous;
+        }
+
+        /// <summary>
         /// Builds a button style with a solid-color background per state (normal/hover/active) -
         /// Unity's IMGUI applies these automatically based on real mouse position/press state during
         /// Repaint, so this is genuine hover/pressed feedback, not just a static color. Clones
