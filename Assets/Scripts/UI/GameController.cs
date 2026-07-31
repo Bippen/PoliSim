@@ -32,7 +32,8 @@ namespace PoliSim.UI
             Cabinet,
             CompassAndDemographics,
             ForeignPolicy,
-            Parliament
+            Parliament,
+            BudgetProcess
         }
 
         // Country-selection task, Part 1: PlayerCountryId is no longer a compile-time constant - the
@@ -452,6 +453,11 @@ namespace PoliSim.UI
         private Vector2 _infrastructureScrollPosition;
         private Vector2 _swfPolicyScrollPosition;
 
+        /// <summary>Master Sequence step 5b: which category's content DrawBudgetProcessTab's center column currently shows - a left-column selector, not a draft/standing value itself, so no PolicyDecision/bill involvement.</summary>
+        private enum BudgetProcessCategory { Tax, Spending, Welfare, Infrastructure, Swf }
+        private BudgetProcessCategory _budgetProcessCategory = BudgetProcessCategory.Tax;
+        private Vector2 _budgetProcessCenterScrollPosition;
+
         private bool _stylesInitialized;
         private GUIStyle _headerStyle;
         private GUIStyle _labelStyle;
@@ -781,6 +787,11 @@ namespace PoliSim.UI
                     DrawSwfPolicy(tabContentHeight);
                     GUI.enabled = true;
                     break;
+                case RightPanelTab.BudgetProcess:
+                    GUI.enabled = !_isGameOver;
+                    DrawBudgetProcessTab(tabContentHeight, rightColumnWidth);
+                    GUI.enabled = true;
+                    break;
             }
 
             GUILayout.EndVertical();
@@ -877,6 +888,7 @@ namespace PoliSim.UI
                 case RightPanelTab.CompassAndDemographics: return UiPalette.SystemArea.Global;
                 case RightPanelTab.ForeignPolicy: return UiPalette.SystemArea.Trade;
                 case RightPanelTab.Parliament: return UiPalette.SystemArea.Political;
+                case RightPanelTab.BudgetProcess: return UiPalette.SystemArea.Fiscal;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -1305,7 +1317,14 @@ namespace PoliSim.UI
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _infrastructureScrollPosition = GUILayout.BeginScrollView(_infrastructureScrollPosition, GUILayout.Height(scrollHeight));
+            DrawInfrastructureContent();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
 
+        /// <summary>Content-only version of DrawInfrastructureTab, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
+        private void DrawInfrastructureContent()
+        {
             DrawColoredLabel("Infrastructure", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure));
             GUILayout.Label("Condition Index (0-100) per asset type - driven by the Infrastructure spending category in the Spending Policy tab, not a dial here.", _labelStyle);
             GUILayout.Space(8f);
@@ -1316,9 +1335,6 @@ namespace PoliSim.UI
                 UiPalette.DrawBar(asset.ConditionIndex / 100f, UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure));
                 GUILayout.Space(8f);
             }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>
@@ -2278,11 +2294,15 @@ namespace PoliSim.UI
 
             GUILayout.Space(TabRowSpacing);
 
-            // Fifth row: just Parliament (Political Systems Overhaul Part B PILOT, Master Sequence
-            // step 4, the 17th tab) - full-width, same "one new tab alone in its own row" precedent
-            // Policy Web's original third row established.
+            // Fifth row: Parliament (Political Systems Overhaul Part B PILOT, Master Sequence step 4,
+            // the 17th tab) plus Budget Process (Master Sequence step 5b, the 18th tab) - half-width
+            // each, same "two new tabs share a row" precedent rows three/four already established.
+            // Budget Process consolidates Tax/Spending/Welfare/Infrastructure/SWF's existing content
+            // (see DrawBudgetProcessTab) - those five tabs stay as independent entry points for now
+            // per the Master Sequence step 5 design, not removed until step 5e's own tab consolidation.
             GUILayout.BeginHorizontal();
-            DrawRightColumnTabButton("Parliament", RightPanelTab.Parliament, availableWidth);
+            DrawRightColumnTabButton("Parliament", RightPanelTab.Parliament, availableWidth * 0.5f);
+            DrawRightColumnTabButton("Budget Process", RightPanelTab.BudgetProcess, availableWidth * 0.5f);
             GUILayout.EndHorizontal();
         }
 
@@ -2961,6 +2981,94 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// Master Sequence step 5b: the Budget Process full-screen UI shell - left category selector /
+        /// center selected category's line-items / right live summary, consolidating the existing Tax,
+        /// Spending, Welfare, Infrastructure, and Sovereign Wealth Fund content onto one screen (their
+        /// own standalone tabs stay as independent entry points too, per the design's own "5e does tab
+        /// consolidation, not 5b" sequencing - both read/write the exact same draft state, since the
+        /// center column calls the SAME *Content methods those tabs call). No new bill logic here -
+        /// that's 5c/5d's job; the right column reuses the EXISTING live Policy Preview panel as this
+        /// phase's "live summary," not a new estimate.
+        ///
+        /// Stable-control-layout note: the center column's content switches based on
+        /// _budgetProcessCategory, which only the player's own left-column button click can change -
+        /// unlike a bill resolving in the background, a click can never race an active drag on a
+        /// DIFFERENT control (one mouse, one control at a time), so this particular conditional swap
+        /// isn't the hazard class DrawTaxPolicy's own doc comment warns about. Each *Content method
+        /// reused here (DrawTaxPolicyContent etc.) already carries its own stable-control-layout
+        /// guarantee independently - that safety property carries over automatically by reuse.
+        /// </summary>
+        private void DrawBudgetProcessTab(float availableHeight, float availableWidth)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+
+            DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
+            GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle);
+            GUILayout.Space(8f);
+
+            float headerAllowance = _labelStyle.fontSize * 5f + _headerStyle.fontSize + 16f;
+            float columnsHeight = availableHeight - headerAllowance;
+            float columnSpacing = 10f;
+            float categoryColumnWidth = (availableWidth - columnSpacing * 2f) * 0.18f;
+            float centerColumnWidth = (availableWidth - columnSpacing * 2f) * 0.52f;
+            float summaryColumnWidth = (availableWidth - columnSpacing * 2f) * 0.30f;
+
+            GUILayout.BeginHorizontal(GUILayout.Height(columnsHeight));
+
+            GUILayout.BeginVertical(GUILayout.Width(categoryColumnWidth));
+            DrawBudgetProcessCategoryButton("Tax", BudgetProcessCategory.Tax);
+            DrawBudgetProcessCategoryButton("Spending", BudgetProcessCategory.Spending);
+            DrawBudgetProcessCategoryButton("Welfare", BudgetProcessCategory.Welfare);
+            DrawBudgetProcessCategoryButton("Infrastructure", BudgetProcessCategory.Infrastructure);
+            DrawBudgetProcessCategoryButton("Sovereign Wealth Fund", BudgetProcessCategory.Swf);
+            GUILayout.EndVertical();
+
+            GUILayout.Space(columnSpacing);
+
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(centerColumnWidth));
+            _budgetProcessCenterScrollPosition = GUILayout.BeginScrollView(_budgetProcessCenterScrollPosition, GUILayout.Height(columnsHeight - _labelStyle.fontSize));
+            switch (_budgetProcessCategory)
+            {
+                case BudgetProcessCategory.Tax:
+                    DrawTaxPolicyContent();
+                    break;
+                case BudgetProcessCategory.Spending:
+                    DrawSpendingPolicyContent();
+                    break;
+                case BudgetProcessCategory.Welfare:
+                    DrawWelfarePolicyContent();
+                    break;
+                case BudgetProcessCategory.Infrastructure:
+                    DrawInfrastructureContent();
+                    break;
+                case BudgetProcessCategory.Swf:
+                    DrawSwfPolicyContent();
+                    break;
+            }
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+
+            GUILayout.Space(columnSpacing);
+
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(summaryColumnWidth));
+            DrawPolicyPreview();
+            GUILayout.EndVertical();
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+        }
+
+        private void DrawBudgetProcessCategoryButton(string label, BudgetProcessCategory category)
+        {
+            bool selected = _budgetProcessCategory == category;
+            GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
+            if (GUILayout.Button(label, style))
+            {
+                _budgetProcessCategory = category;
+            }
+        }
+
+        /// <summary>
         /// Political Systems Overhaul Part B PILOT (Master Sequence step 4): the Tax Policy tab is now
         /// the gated-legislation pilot. Sliders/toggles below remain DRAFT values (adjusting costs
         /// nothing, no vote needed) - the "Introduce Bill" button is the only way a draft ever reaches
@@ -2992,7 +3100,19 @@ namespace PoliSim.UI
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _taxPolicyScrollPosition = GUILayout.BeginScrollView(_taxPolicyScrollPosition, GUILayout.Height(scrollHeight));
+            DrawTaxPolicyContent();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
 
+        /// <summary>
+        /// The actual Tax Policy content (everything but the outer box/scrollview) - factored out so
+        /// Master Sequence step 5b's Budget Process screen (DrawBudgetProcessTab) can show the exact
+        /// same content in its own center column without duplicating it. The standalone Tax Policy tab
+        /// above stays as its own independent entry point until step 5e's tab consolidation.
+        /// </summary>
+        private void DrawTaxPolicyContent()
+        {
             DrawColoredLabel("Tax Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             GUILayout.Label("Adjusting implement/remove or a rate below only changes your DRAFT - nothing happens until you introduce it as a bill and Parliament votes. See the Parliament tab for seat composition.", _labelStyle);
             GUILayout.Space(8f);
@@ -3006,9 +3126,6 @@ namespace PoliSim.UI
                 DrawTaxLineRow(taxLine, taxTypeNameColumnWidth);
                 GUILayout.Space(10f);
             }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>
@@ -3124,7 +3241,14 @@ namespace PoliSim.UI
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _welfarePolicyScrollPosition = GUILayout.BeginScrollView(_welfarePolicyScrollPosition, GUILayout.Height(scrollHeight));
+            DrawWelfarePolicyContent();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
 
+        /// <summary>Content-only version of DrawWelfarePolicy, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
+        private void DrawWelfarePolicyContent()
+        {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
             GUILayout.Label("Implement or remove a welfare program, and (while implemented) drag its generosity directly to the target you want.", _labelStyle);
             _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false);
@@ -3136,9 +3260,6 @@ namespace PoliSim.UI
                 DrawWelfareProgramRow(welfareProgram, welfareTypeNameColumnWidth);
                 GUILayout.Space(10f);
             }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>Widest WelfareProgramType name as rendered in _labelStyle, plus a small right-side pad - recomputed each call, same reasoning as GetSectorNameColumnWidth/GetTaxTypeNameColumnWidth. The original fixed "_labelStyle.fontSize * 10f" heuristic here undersized the column for the longest name ("MeansTestedWelfare").</summary>
@@ -3298,7 +3419,14 @@ namespace PoliSim.UI
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _swfPolicyScrollPosition = GUILayout.BeginScrollView(_swfPolicyScrollPosition, GUILayout.Height(scrollHeight));
+            DrawSwfPolicyContent();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
 
+        /// <summary>Content-only version of DrawSwfPolicy, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
+        private void DrawSwfPolicyContent()
+        {
             DrawColoredLabel("Sovereign Wealth Fund", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth));
 
             SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
@@ -3313,8 +3441,6 @@ namespace PoliSim.UI
             if (fund == null)
             {
                 GUILayout.Label("No fund exists. Creating one starts a new budget expense (the contribution) in exchange for market returns on its growing assets - it can also be drawn down during a recession or emergency instead of borrowing, once it exists.", _labelStyle);
-                GUILayout.EndScrollView();
-                GUILayout.EndVertical();
                 return;
             }
 
@@ -3362,9 +3488,6 @@ namespace PoliSim.UI
             GUILayout.Label($"Real Estate: {draftRealEstate:F0} ({fund.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate) * 100f:F0}% of fund)", _labelStyle);
             UiPalette.DrawBar(fund.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate), swfColor, 8f);
             _swfRealEstateWeightInput = GUILayout.HorizontalSlider(draftRealEstate, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>
@@ -3382,7 +3505,14 @@ namespace PoliSim.UI
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _spendingPolicyScrollPosition = GUILayout.BeginScrollView(_spendingPolicyScrollPosition, GUILayout.Height(scrollHeight));
+            DrawSpendingPolicyContent();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
 
+        /// <summary>Content-only version of DrawSpendingPolicy, reused by DrawBudgetProcessTab's center column (Master Sequence step 5b) - see DrawTaxPolicyContent's own doc comment for why this split exists.</summary>
+        private void DrawSpendingPolicyContent()
+        {
             DrawColoredLabel("Spending Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             GUILayout.Label("Each line's slider is a percentage change of its OWN current amount, not a flat dollar delta. Mandatory programs have a narrower range and hit approval harder per relative size - entitlement reform is politically costly.", _labelStyle);
             GUILayout.Space(8f);
@@ -3438,9 +3568,6 @@ namespace PoliSim.UI
                 DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, maxDiscretionary);
                 GUILayout.Space(10f);
             }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>Interest on Debt is SimulationManager's existing automatic GetInterestOnDebt calculation, not a seeded line - shown as a read-only, clearly-marked-automatic figure from last turn's FiscalTurnReport.</summary>
