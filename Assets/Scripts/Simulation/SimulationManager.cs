@@ -273,6 +273,18 @@ namespace PoliSim.Simulation
         private readonly Dictionary<CountryId, TaxBill> _pendingTaxBillByCountry =
             new Dictionary<CountryId, TaxBill>();
 
+        /// <summary>
+        /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5a): a country's
+        /// annual budget process is open (its FiscalYearData start date has arrived) and not yet
+        /// resolved - single-slot per country, mirroring _pendingForeignPolicyMeetingByCountry's own
+        /// pattern. 5a intentionally has no bill payload here (unlike _pendingTaxBillByCountry) - the
+        /// actual Annual Budget bill/live-estimate wiring is 5c's job; this phase only builds the
+        /// date-detection and pause-hook plumbing 5c will attach real bill state to. Only ever set for
+        /// PlayerCountryId (see TryOpenBudgetProcess) - the other five countries are AI-controlled and
+        /// resolve automatically once 5c exists, never entering this set.
+        /// </summary>
+        private readonly HashSet<CountryId> _pendingBudgetProcessByCountry = new HashSet<CountryId>();
+
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
         {
@@ -381,6 +393,64 @@ namespace PoliSim.Simulation
             bool passed = ParliamentSystem.WouldBillPass(country, bill);
             ParliamentSystem.ApplyBillResult(country, bill, passed);
             _pendingTaxBillByCountry.Remove(countryId);
+        }
+
+        /// <summary>
+        /// True on the one day per year that matches <paramref name="countryId"/>'s own
+        /// FiscalYearData start date (month/day only, so this fires exactly once per year, the same
+        /// "compare against a specific calendar date" idiom AdvanceDay's own turn-boundary check
+        /// uses). Pure query - unlike AdvanceDay, has no side effects and isn't itself responsible for
+        /// opening anything; see TryOpenBudgetProcess for the caller that acts on it.
+        /// </summary>
+        public bool IsFiscalYearStart(CountryId countryId, System.DateTime date)
+        {
+            (int month, int day) = FiscalYearData.GetFiscalYearStart(countryId);
+            return date.Month == month && date.Day == day;
+        }
+
+        /// <summary>True while countryId's annual budget process is open and not yet resolved - see _pendingBudgetProcessByCountry's own doc comment and GameController's pause-gate/banner use of this.</summary>
+        public bool GetPendingBudgetProcess(CountryId countryId)
+        {
+            return _pendingBudgetProcessByCountry.Contains(countryId);
+        }
+
+        /// <summary>
+        /// Master Sequence step 5a: opens countryId's annual budget process on its own fiscal-year
+        /// start date - a no-op if today isn't that date, or if one's already open (single-slot,
+        /// mirroring TryRollForeignPolicyMeeting's own "safe to call every day unconditionally"
+        /// idiom). Called once per simulated day from GameController.Update's day-processing loop, for
+        /// PlayerCountryId only (see _pendingBudgetProcessByCountry's own doc comment on why the other
+        /// five countries never enter this set at this phase).
+        /// </summary>
+        public void TryOpenBudgetProcess(CountryId countryId, System.DateTime date)
+        {
+            if (_pendingBudgetProcessByCountry.Contains(countryId))
+            {
+                return;
+            }
+
+            if (IsFiscalYearStart(countryId, date))
+            {
+                _pendingBudgetProcessByCountry.Add(countryId);
+            }
+        }
+
+        /// <summary>
+        /// TEMPORARY 5a-ONLY PLACEHOLDER - clears the pending budget process with NO other effect.
+        /// Master Sequence step 5b (the Budget Process screen) and step 5c (the omnibus bill + live
+        /// vote estimate) don't exist yet, so 5a can't yet offer a real resolution - but a mandatory
+        /// pause with no way to ever clear it would leave the game permanently stuck for real once a
+        /// player's country's fiscal-year date arrives, exactly the kind of invisible-block failure
+        /// the last two rounds of investigation were about. This lets 5a's date-detection and
+        /// pause-gate/banner wiring be genuinely tested end-to-end (advance the calendar to the fiscal
+        /// date, confirm the mandatory pause and banner fire, confirm acknowledging resumes time)
+        /// without leaving a real dead end between now and 5c. Step 5c must REPLACE the call site that
+        /// invokes this (GameController's temporary Acknowledge button) with the real Budget Process
+        /// flow - do not leave this placeholder wired in once 5c ships.
+        /// </summary>
+        public void AcknowledgeBudgetProcess(CountryId countryId)
+        {
+            _pendingBudgetProcessByCountry.Remove(countryId);
         }
 
         /// <summary>Lets tools/tests (e.g. SimulationTestRunner) inject a specific World instead of the Awake-created default.</summary>

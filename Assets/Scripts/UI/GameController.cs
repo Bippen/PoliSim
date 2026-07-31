@@ -506,7 +506,8 @@ namespace PoliSim.UI
                 return;
             }
             if (UpdateFedChairSelectionState() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
-                || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
+                || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
+                || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
                 return;
             }
@@ -528,18 +529,25 @@ namespace PoliSim.UI
                 // pause time (it's a deterministic countdown, not something needing a player response).
                 _simulationManager.AdvanceLegislativeDay(PlayerCountryId);
 
+                // Master Sequence step 5a: same daily idiom as the two calls above - deterministic
+                // date check, not a chance roll, mirroring AdvanceLegislativeDay's own reasoning.
+                // Unlike AdvanceLegislativeDay, THIS one DOES need the gate re-check below, since
+                // opening the budget process is a mandatory pause (see the revised Part B design).
+                _simulationManager.TryOpenBudgetProcess(PlayerCountryId, _simulationManager.CurrentDate);
+
                 if (turnBoundaryCrossed)
                 {
                     AdvanceTurn();
                 }
 
                 // A newly-fired election reveal/Fed-Chair selection/Cabinet decision/foreign policy
-                // meeting (or game over) must stop the clock immediately, not keep draining
-                // _daySpeedTimer toward days/turns that can't happen yet - re-check every gate before
-                // this same frame's loop continues.
+                // meeting/budget process (or game over) must stop the clock immediately, not keep
+                // draining _daySpeedTimer toward days/turns that can't happen yet - re-check every gate
+                // before this same frame's loop continues.
                 if (_isGameOver || _pendingElectionResult != null || UpdateFedChairSelectionState()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
-                    || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
+                    || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
+                    || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
                 {
                     break;
                 }
@@ -639,6 +647,10 @@ namespace PoliSim.UI
             // in DrawForeignPolicyTab's own modal - invisible from every other tab. See
             // DrawCalendarAndSpeedControls' own doc comment.
             bool hasPendingForeignPolicyMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null;
+            // Master Sequence step 5a: the fourth condition on this same gate/banner, per the revised
+            // Part B design's explicit instruction to extend the existing pattern rather than build a
+            // fourth separate ad-hoc pause-check system.
+            bool hasPendingBudgetProcess = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
 
             float marginX = Screen.width * ScreenMarginFraction;
             float marginY = Screen.height * ScreenMarginFraction;
@@ -659,8 +671,10 @@ namespace PoliSim.UI
             // Advance Turn button in this same pinned-outside-scroll-view slot, for the same reason -
             // always visible and clickable regardless of how tall the banner/dashboard/sliders/
             // preview content gets. One extra row taller than the single button it replaces (date +
-            // status line, then the speed button row).
-            float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight + sectionSpacing;
+            // status line, then the speed button row). Master Sequence step 5a adds one more always-
+            // present row (the temporary Acknowledge budget process button, per DrawCalendarAndSpeedControls'
+            // own doc comment) - reserve _buttonStyle.fixedHeight again for it.
+            float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight * 2f + sectionSpacing;
             float leftScrollHeight = areaHeight - calendarAreaHeight;
 
             _leftColumnScrollPosition = GUILayout.BeginScrollView(_leftColumnScrollPosition, GUILayout.Height(leftScrollHeight));
@@ -677,7 +691,7 @@ namespace PoliSim.UI
             GUILayout.Space(sectionSpacing);
 
             GUI.enabled = !_isGameOver;
-            DrawCalendarAndSpeedControls(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting);
+            DrawCalendarAndSpeedControls(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess);
             GUI.enabled = true;
 
             GUILayout.EndVertical();
@@ -1722,13 +1736,24 @@ namespace PoliSim.UI
         /// pattern - content and style vary, the control itself never does), escalated to
         /// _eventBannerStyle (the same bold/orange weight as the dashboard's own BREAKING banner)
         /// whenever ANY of the three is true, always naming which one and which tab resolves it.
+        ///
+        /// Master Sequence step 5a adds a fourth condition, hasPendingBudgetProcess, per the revised
+        /// Part B design's explicit "extend the existing global banner, don't build a fourth ad-hoc
+        /// pause system" instruction. It also adds one ALWAYS-PRESENT "Acknowledge" button beneath the
+        /// status line - per DrawTaxPolicy's stable-control-layout pattern, the button itself is
+        /// emitted every frame regardless of hasPendingBudgetProcess (GUI.enabled gates whether it's
+        /// interactive, composed with the ambient enabled state), never conditionally added/removed,
+        /// since THIS specific screen (many sliders, a continuously-recomputing live vote estimate) is
+        /// exactly the shape the last real freeze came from. This button is a TEMPORARY 5a-only
+        /// placeholder (see SimulationManager.AcknowledgeBudgetProcess's own doc comment) - step 5c
+        /// must replace it with the real Budget Process screen entry point once that exists.
         /// </summary>
-        private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions, bool hasPendingForeignPolicyMeeting)
+        private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions, bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess)
         {
             GUILayout.BeginVertical();
 
             string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
-            bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting;
+            bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
 
             // Priority order matches Update's own pause-gate check order exactly, so this always names
             // whichever reason is actually the one currently blocking AdvanceDay.
@@ -1745,7 +1770,19 @@ namespace PoliSim.UI
             {
                 statusText = $"{dateText} - TIME PAUSED: respond to the pending Foreign Policy meeting (Foreign Policy tab) to continue.";
             }
+            else if (hasPendingBudgetProcess)
+            {
+                statusText = $"{dateText} - TIME PAUSED: the annual budget process is open (Budget Process screen not built yet - acknowledge below to continue for now).";
+            }
             GUILayout.Label(statusText, isPaused ? _eventBannerStyle : _labelStyle);
+
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && hasPendingBudgetProcess;
+            if (GUILayout.Button("Acknowledge budget process (temporary - real screen lands in step 5b/5c)", _neutralActionButtonStyle))
+            {
+                _simulationManager.AcknowledgeBudgetProcess(PlayerCountryId);
+            }
+            GUI.enabled = ambientEnabled;
 
             GUILayout.BeginHorizontal();
             DrawSpeedButton("Pause", GameSpeed.Paused);
