@@ -924,34 +924,64 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label($"{_playerCountry.Name} - Turn {_simulationManager.CurrentTurn}", _headerStyle);
 
-            // Two columns instead of one long vertical list - halves this block's own height, which
-            // matters since it's one of the biggest single contributors to the left column needing to
-            // scroll at all. Split is just "first half / second half" of the same headline set, not a
-            // meaningful grouping - there's no natural pairing among these nine values worth encoding.
-            GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical();
-            DrawColoredLabel($"GDP: {state.GDP:F1}  ({_lastGrowthPercent:+0.00;-0.00;0}%)", _labelStyle, UiPalette.GetDeltaColor(_lastGrowthPercent, higherIsBetter: true));
-            GUILayout.Label($"Unemployment: {state.Unemployment:F2}%", _labelStyle);
-            GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
-            GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
-            if (hasIndependentCurrency)
-            {
-                GUILayout.Label($"Currency Strength: {state.CurrencyStrength:F1}", _labelStyle);
-            }
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical();
-            GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
-            GUILayout.Label($"Government Debt: {state.GovernmentDebt:F1}", _labelStyle);
-            GUILayout.Label($"Debt-to-GDP: {state.DebtToGdpRatio:F1}%", _labelStyle);
-            GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
+            DrawHeadlineStatTiles(state, hasIndependentCurrency);
 
             GUILayout.Space(10f);
             DrawHeadlineGraphs(state);
 
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase B pilot: the dashboard's nine headline stats restyled onto
+        /// <see cref="PoliSimWidgets.StatTile"/> in a 3-column grid, replacing the old raw
+        /// GUILayout.Label two-column list - this is Phase B's actual sprite-pilot target (see
+        /// POLISIM_MASTER_ROADMAP.md), not the Statistics tab's own content, since this is the one
+        /// surface visible on every tab. GDP is the only tile with a real turn-over-turn delta
+        /// available (_lastGrowthPercent, tracked via _prevGdp) - the other eight get no delta pill
+        /// rather than a fabricated one, since no comparable prior-turn value is tracked for them.
+        /// DrawHeadlineGraphs (the procedural line graphs) is untouched by this pass - rule 10's own
+        /// carve-out keeps every data visualization procedural; only the icon/portrait/background
+        /// layer moves to sprite art.
+        /// </summary>
+        private void DrawHeadlineStatTiles(EconomyState state, bool hasIndependentCurrency)
+        {
+            const float scale = 1f;
+            const int columns = 3;
+            const float tileHeight = 92f;
+            const float gap = 8f;
+
+            var tiles = new List<(string label, string value, string suffix, string delta, bool deltaIsGood, UiPalette.SystemArea area)>
+            {
+                ("GDP", state.GDP.ToString("F1"), null, _lastGrowthPercent.ToString("+0.00;-0.00;0") + "%", _lastGrowthPercent >= 0f, UiPalette.SystemArea.Global),
+                ("Unemployment", state.Unemployment.ToString("F2"), "%", null, false, UiPalette.SystemArea.Labor),
+                ("Inflation", state.Inflation.ToString("F2"), "%", null, false, UiPalette.SystemArea.Fiscal),
+                ("Approval Rating", state.ApprovalRating.ToString("F1"), null, null, false, UiPalette.SystemArea.Political),
+            };
+
+            if (hasIndependentCurrency)
+            {
+                tiles.Add(("Currency Strength", state.CurrencyStrength.ToString("F1"), null, null, false, UiPalette.SystemArea.Trade));
+            }
+
+            tiles.Add(("Poverty Rate", state.PovertyRate.ToString("F1"), "%", null, false, UiPalette.SystemArea.Welfare));
+            tiles.Add(("Government Debt", state.GovernmentDebt.ToString("F1"), null, null, false, UiPalette.SystemArea.Fiscal));
+            tiles.Add(("Debt-to-GDP", state.DebtToGdpRatio.ToString("F1"), "%", null, false, UiPalette.SystemArea.Fiscal));
+            tiles.Add(("Budget Balance", state.Budget.ToString("F1"), null, null, false, UiPalette.SystemArea.Fiscal));
+
+            int rows = Mathf.CeilToInt(tiles.Count / (float)columns);
+            float totalHeight = rows * tileHeight + (rows - 1) * gap;
+            Rect gridRect = GUILayoutUtility.GetRect(0f, totalHeight, GUILayout.ExpandWidth(true));
+            float columnWidth = (gridRect.width - gap * (columns - 1)) / columns;
+
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                int row = i / columns;
+                int col = i % columns;
+                var tileRect = new Rect(gridRect.x + col * (columnWidth + gap), gridRect.y + row * (tileHeight + gap), columnWidth, tileHeight);
+                var tile = tiles[i];
+                PoliSimWidgets.StatTile(tileRect, tile.label, tile.value, tile.suffix, tile.delta, tile.deltaIsGood, null, tile.area, scale);
+            }
         }
 
         /// <summary>
@@ -2173,7 +2203,10 @@ namespace PoliSim.UI
             float buttonWidth = availableWidth / ConsolidatedTabsPerRow;
 
             GUILayout.BeginHorizontal();
-            DrawConsolidatedTabButton("Statistics", ConsolidatedTab.Statistics, buttonWidth);
+            // Master Sequence step 5e, Phase B pilot: ONLY Statistics gets its nav icon this phase -
+            // "Do NOT touch any other tab's rendering in this phase" - the other six stay text-only
+            // exactly as Phase A left them, rolled out in Phase C once this pilot is confirmed.
+            DrawConsolidatedTabButton("Statistics", ConsolidatedTab.Statistics, buttonWidth, "icon_nav_statistics");
             DrawConsolidatedTabButton("Decisions", ConsolidatedTab.Decisions, buttonWidth);
             DrawConsolidatedTabButton("Demographics", ConsolidatedTab.Demographics, buttonWidth);
             DrawConsolidatedTabButton("Tax", ConsolidatedTab.Tax, buttonWidth);
@@ -2191,13 +2224,37 @@ namespace PoliSim.UI
         /// opens at the right starting category (see DrawTaxTab/DrawSpendingTab) - the only place this
         /// button click does anything beyond changing which tab is selected, since Tax/Spending are two
         /// differently-labeled entry points into the exact same underlying screen, not two screens.
+        ///
+        /// Master Sequence step 5e, Phase B: <paramref name="iconName"/> is optional and additive only
+        /// - the `GUILayout.Button` call itself is byte-for-byte unchanged from Phase A (same style,
+        /// same click handling), so the 6 tabs that pass null render EXACTLY as before. When an icon
+        /// name IS given, `GUILayoutUtility.GetLastRect()` reads back the rect the button JUST drew
+        /// itself into and overlays a small tinted icon in its left side - drawn AFTER, on top of,
+        /// never replacing the button, so this can never change what's clickable or where.
         /// </summary>
-        private void DrawConsolidatedTabButton(string label, ConsolidatedTab tab, float width)
+        private void DrawConsolidatedTabButton(string label, ConsolidatedTab tab, float width, string iconName = null)
         {
             UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
             bool selected = _consolidatedTab == tab;
             GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
-            if (GUILayout.Button(label, style, GUILayout.Width(width)))
+            bool clicked = GUILayout.Button(label, style, GUILayout.Width(width));
+
+            if (iconName != null)
+            {
+                // Sized off the tab's OWN font size (tabFontSize, screen-height-scaled 18-30px - see
+                // OnGUI's font block) rather than a fixed pixel constant, so the icon reads as
+                // "roughly text height plus a bit" at every resolution instead of shrinking to a
+                // speck next to 18-30pt text on a large window. This sizing rule is what Phase C
+                // reuses for the other 6 tabs' icons, so it needs to hold up across the full
+                // clamp range, not just look right at one window size.
+                Rect buttonRect = GUILayoutUtility.GetLastRect();
+                float iconSize = Mathf.Min(buttonRect.height - 10f, style.fontSize * 1.3f);
+                var iconRect = new Rect(buttonRect.x + 8f, buttonRect.y + (buttonRect.height - iconSize) * 0.5f, iconSize, iconSize);
+                Color iconTint = selected ? Color.white : new Color(1f, 1f, 1f, 0.6f);
+                UiPalette.DrawTintedIcon(iconRect, IconLibrary.Get(iconName), iconTint);
+            }
+
+            if (clicked)
             {
                 _consolidatedTab = tab;
                 if (tab == ConsolidatedTab.Tax)
