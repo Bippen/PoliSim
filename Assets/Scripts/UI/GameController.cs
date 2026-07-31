@@ -457,6 +457,7 @@ namespace PoliSim.UI
         private enum BudgetProcessCategory { Tax, Spending, Welfare, Infrastructure, Swf }
         private BudgetProcessCategory _budgetProcessCategory = BudgetProcessCategory.Tax;
         private Vector2 _budgetProcessCenterScrollPosition;
+        private Vector2 _budgetProcessRowScrollPosition;
 
         private bool _stylesInitialized;
         private GUIStyle _headerStyle;
@@ -3003,17 +3004,38 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
 
             DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle);
+            // Explicit Width, not left to GUILayout's own inference - the horizontal 3-column row
+            // below can otherwise push this outer group's computed "natural" width past the screen
+            // edge (a boxed column's GUILayout.Width request plus its GUIStyle's own padding can add
+            // up to more than requested), which made this label wrap against an inflated width and
+            // clip mid-word rather than wrap. Tying it directly to availableWidth makes its wrap
+            // boundary correct regardless of what the row does.
+            GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle, GUILayout.Width(availableWidth));
             GUILayout.Space(8f);
 
             float headerAllowance = _labelStyle.fontSize * 5f + _headerStyle.fontSize + 16f;
             float columnsHeight = availableHeight - headerAllowance;
             float columnSpacing = 10f;
-            float categoryColumnWidth = (availableWidth - columnSpacing * 2f) * 0.18f;
-            float centerColumnWidth = (availableWidth - columnSpacing * 2f) * 0.52f;
-            float summaryColumnWidth = (availableWidth - columnSpacing * 2f) * 0.30f;
 
-            GUILayout.BeginHorizontal(GUILayout.Height(columnsHeight));
+            // The right column reuses DrawPolicyPreview UNCHANGED from its original dashboard-left-
+            // column home, where it unconditionally gets Screen.width * LeftColumnWidthFraction
+            // (0.45). A previous attempt capped this at half the row's own budget "so category/center
+            // never collapse to nothing on a narrow window" - confirmed via a debug-instrumented
+            // screenshot that this cap, not the Screen.width calculation, was the actual binding
+            // constraint at ordinary window sizes (~641px observed vs. the ~864px the panel actually
+            // needs), starving the panel at EVERY window size, not just narrow ones. Fixed: the
+            // preview panel gets its natural width unconditionally; category/center get sane MINIMUM
+            // widths instead of being derived from whatever's left over. If the three don't all fit at
+            // their natural/minimum sizes, that's a genuine narrow-window case, handled explicitly via
+            // a horizontal scrollview below rather than silently squeezing any one column.
+            float summaryColumnWidth = Screen.width * LeftColumnWidthFraction;
+            float categoryColumnWidth = Mathf.Max(_labelStyle.fontSize * 9f, availableWidth * 0.15f);
+            float centerColumnMinWidth = _labelStyle.fontSize * 20f;
+            float centerColumnWidth = Mathf.Max(centerColumnMinWidth, availableWidth - summaryColumnWidth - categoryColumnWidth - columnSpacing * 2f);
+            float totalRowWidth = categoryColumnWidth + columnSpacing + centerColumnWidth + columnSpacing + summaryColumnWidth;
+
+            _budgetProcessRowScrollPosition = GUILayout.BeginScrollView(_budgetProcessRowScrollPosition, GUILayout.Width(availableWidth), GUILayout.Height(columnsHeight));
+            GUILayout.BeginHorizontal(GUILayout.Width(totalRowWidth), GUILayout.Height(columnsHeight));
 
             GUILayout.BeginVertical(GUILayout.Width(categoryColumnWidth));
             DrawBudgetProcessCategoryButton("Tax", BudgetProcessCategory.Tax);
@@ -3055,6 +3077,7 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
+            GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
 
