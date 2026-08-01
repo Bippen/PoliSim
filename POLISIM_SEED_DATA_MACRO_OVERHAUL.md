@@ -89,7 +89,7 @@ EU average: 29.4; Euro area: 29.9 (2024) [VERIFIED] — useful sanity anchors.
 | France | 18.7 | [VERIFIED] June 2025 |
 | Germany | [GAP] — known to be low, among the smallest youth/adult gaps in the OECD | [GAP] |
 | Poland | [GAP] | [GAP] |
-| Sweden | [GAP] — reported among the higher Nordic rates despite a strong labour market | [GAP] |
+| Sweden | **22.2** | [VERIFIED] Eurostat Feb 2026, 15–24 rate — see the note below |
 | USA | [GAP] — OECD-wide youth rate was 11.2% (July 2025) as an anchor | [GAP] |
 
 EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED].

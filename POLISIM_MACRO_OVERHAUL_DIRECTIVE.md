@@ -52,7 +52,15 @@ Show, on each policy screen, the stats that policy actually affects — sourced 
 - Labor → unemployment, labor force participation, real wages (once added)
 - Crime → crime index, incarceration, corruption
 - Housing-related → the new housing stats (once added)
-Each with its current published value plus a compact sparkline reusing `GraphRenderer`.
+Each with its current value plus a compact sparkline reusing `GraphRenderer`.
+
+**CORRECTED 2026-08-01 — use LIVE values here, not published ones.** This directive originally said
+"published value". Elias overruled it after the implementation raised the conflict: a lagged, possibly
+preliminary figure sitting in a "what am I doing right now" panel misrepresents itself, and the
+instruction was only ever partly satisfiable — `PublishedStat` has 6 members against `StatNodeId`'s 18,
+so 12 of 18 policy-screen stats have no published series at all. The published, lagged view stays where
+it belongs, on the Statistics tab's graphs. Recorded here so the directive is not left contradicting the
+code.
 
 **THE CRITICAL BUG PRECEDENT:** the `StatTile` formatting bug displayed GDP as "9,3" instead of ~29000 after a purely visual change. Any number formatting or abbreviation work must be verified against real values at multiple magnitudes before shipping. A display change must never alter what a number means.
 
@@ -82,6 +90,13 @@ Life expectancy: USA 79.0, Italy 84.1, Sweden 84.1; France/Germany/Poland are ga
 Compute from existing state (debt-to-GDP, deficit trajectory, growth). Calibrate against the real curve in the seed file: Sweden ~35%→AAA, Germany ~63%→AAA, France ~116%→AA−, USA ~124%→AA+, Italy ~138%→BBB+.
 **Reuse the existing reserve-currency mechanism** (`BaseDebtInterestRateOverride`, reduced `RiskPremiumSensitivity`) to explain why the USA rates better than France despite higher debt — do not introduce a second, parallel notion of reserve-currency status.
 Consider modeling outlook (stable/negative) as a separate signal — a cheap way to telegraph a downgrade before it lands.
+
+**C5. Productivity — GDP per hour worked** *(added 2026-08-01, correcting an error in this directive)*
+This directive named **seven** new stats and then batched only **six**: productivity appeared in no batch at all. That was an authoring error, not a decision to drop it. Elias's ruling: **add it as C5 rather than leave it unassigned.**
+
+**Basis requirement, non-negotiable: OECD PPP, GDP per hour worked, all six countries on that one basis.** The seed file currently mixes sources — USA ~97 and France 90.86 are OECD PPP, but Sweden ~70 and Poland ~24.5 came from Statista and are almost certainly not PPP-adjusted on the same footing (Poland at $24.5 against an OECD PPP average of $67.5 is implausible). Germany and Italy are `[GAP]`. So all four of Germany, Italy, Sweden and Poland need sourcing or re-sourcing before C5 can start.
+
+Note the OECD's own caution that cross-country comparison of this measure is not meaningful — it considers a country against its own past the valid use. That suits this game: seed each country's level, then let the player watch their own trajectory rather than treating rank as meaningful.
 
 **Before each batch:** report which `[GAP]` figures that batch needs, so Elias can source them. Do not proceed on invented numbers.
 

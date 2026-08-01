@@ -1,5 +1,37 @@
 # PoliSim
 
+> ## ⚠ READ FIRST — what "N anomalies detected" actually means
+>
+> This file quotes anomaly counts in roughly a hundred places as evidence that a change was safe. **That
+> number is a 5-field check, not a whole-simulation health measure**, and every one of those quotes
+> should be read with this in mind.
+>
+> | Check | Coverage |
+> |---|---|
+> | `CheckFinite` (NaN / Infinity) | **29 of 29** `EconomyState` floats, plus Country-level fields — complete. No NaN can escape |
+> | `CheckSwing` (>20% turn-over-turn) | **5 of 29** — GDP, Unemployment, Inflation, InterestRate, DebtToGdpRatio, and *only* these |
+> | Range checks | **4 of 29** — GDP, Unemployment, Inflation, GovernmentDebt |
+>
+> Anomaly counts are overwhelmingly swing anomalies, and `CheckSwing` is structurally incapable of seeing
+> the other 24 tracked values because `Snapshot` stores only those five. **A runaway in PovertyRate,
+> Population, Consumption, Investment, CrimeIndex, LaborForceParticipationRate or 19 others produces zero
+> swing anomalies and a clean-looking run.**
+>
+> So "0 anomalies" proves those five fields stayed within 20% turn-over-turn and nothing went non-finite
+> anywhere. It does not prove the simulation is healthy, and it has historically been read as though it
+> did.
+>
+> **Elias's decision (2026-08-01): leave coverage at five and state this plainly instead of extending it.**
+> Extending would mean ~24 threshold choices plus a third baseline discontinuity in one day, and several
+> fields (NetMigrationRate, PopulationGrowthRate) legitimately exceed 20%, so blanket coverage would bury
+> real signal in noise. **Revisit if something ever slips through unnoticed.** Full analysis in the
+> harness audit section below.
+>
+> Two further reading notes for anomaly counts anywhere in this file: they are **not comparable across
+> the two baseline discontinuities of 2026-08-01** (the near-zero swing floor and the pre-epoch calendar
+> fix), and before `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating
+> that commit came from an unseeded run.
+
 ## Overview
 PoliSim is a turn-based political/economic simulation game built in Unity (C#). The player governs a country — starting with six real-world-seeded countries (USA, Sweden, Germany, France, Italy, Poland) — and makes policy decisions (a portfolio of individual taxes, category-specific spending, tariffs, interest rates) each turn. The core of the economy (GDP, unemployment, inflation) is driven by named macroeconomic theory rather than tuned-by-feel curves; a handful of surrounding mechanics (approval rating, currency strength, trade/tariff dampening) are still intentionally simple heuristics, though approval is now itself a Phillips-curve-adjacent formula rather than an ad hoc one (see "Political Layer" below). The player must balance economic performance against public approval to stay in power — literally: they face re-election every `ElectionCycle` turns and lose (game over) if approval has fallen below `ElectionSystem.LosingThreshold`.
 

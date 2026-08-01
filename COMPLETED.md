@@ -253,8 +253,12 @@ not to contain the error.
 
 `CheckFinite` covers **29 of 29** `EconomyState` floats — complete. `CheckSwing` covers **5 of 29**, and
 range checks **4 of 29**. The headline "N anomalies detected" figure quoted throughout this project's
-history is a 5-field measure, not a whole-simulation health signal. Deliberately not "fixed" — see the
-live Open Question.
+history is a 5-field measure, not a whole-simulation health signal.
+
+**RESOLVED 2026-08-01 — coverage stays at five, and the count is described accurately instead.**
+Extending would mean ~24 threshold choices plus a third baseline discontinuity in one day, and several
+fields legitimately exceed 20% turn-over-turn. The fix was documentary: `CLAUDE.md` now opens with a
+READ FIRST note stating what the number covers. Revisit if something ever slips through unnoticed.
 
 ### Two baseline discontinuities (2026-08-01)
 

@@ -607,36 +607,53 @@ against the actual code, never as a fit already established.**
 - Check Open Questions first.
 - Review the commit log — each step should be its own commit(s), validation results in the message or CLAUDE.md.
 
-### OQ — How should `SimulationRandom` stream position survive a save/load? (raised 2026-08-01)
+### RESOLVED (2026-08-01) — `SimulationRandom` stream position across save/load
 
-Found while extending item 8's scoping after Step A. `System.Random` cannot expose or restore its
-internal position, so re-seeding on load rewinds every stream to turn zero and the game replays draws the
-player has already seen. Two fixes, each with a permanent cost:
+**Decided: the counting shim.** Record draws per stream, re-seed and fast-forward on load. *"Reversible
+beats permanent under uncertainty; the xorshift option can be revisited once save/load exists and real
+load times are known."* Preserves every recorded baseline; pays an O(draws) loop per load. Implement as
+part of Master Sequence item 8.
 
-- **Counting shim** — record draws per stream, fast-forward on load. Preserves every recorded baseline;
-  pays an O(draws) loop on every load, forever.
-- **Explicit serializable PRNG** (64-bit xorshift) — constant-time load, state visible in a diff; breaks
-  every stream's number sequence once, invalidating every baseline in `CLAUDE.md`.
+### RESOLVED (2026-08-01) — `PublishedData.PeriodClosingValues` retention
 
-*Recommendation: the counting shim*, because it is reversible and this project has already taken several
-baseline discontinuities in a single day. Raised rather than decided because it is a permanent trade
-either way. Full reasoning in Master Sequence item 8's scoping extension.
+**Decided: keep everything, no pruning.** The data is small, and the failure pruning risks — a revision
+converging on a missing closing value — is a bug this project has already fixed once (`ea0a6a4`). Flatten
+to `{stat, periodStart, value}` records on save, rebuild the dictionary on load.
 
-### OQ — Retention rule for `PublishedData.PeriodClosingValues`? (raised 2026-08-01)
+### RESOLVED (2026-08-01) — harness swing-check coverage
 
-The dictionary grows one entry per stat per period forever, and it must be saved (revisions converge on
-it; omitting it reintroduces an already-fixed bug on every load). Once every publication referencing a
-period is `Final`, is that period's closing value still worth keeping? Answering deliberately is cheap
-now and awkward after save files exist in the wild.
+**Decided: leave it at five fields, and stop describing "N anomalies" as a whole-simulation health
+measure.** Extending would mean ~24 threshold choices plus a third baseline discontinuity in a single
+day, and several fields (NetMigrationRate, PopulationGrowthRate) legitimately exceed 20% turn-over-turn,
+so blanket coverage would bury real signal in noise.
 
-### OQ — Should the harness's swing check cover more than 5 of 29 tracked values? (raised 2026-08-01)
+**The fix is documentary, not mechanical.** Every doc quoting anomaly counts now states plainly that it
+is a **5-field check** — GDP, Unemployment, Inflation, InterestRate, DebtToGdpRatio — while `CheckFinite`
+is complete at **29/29**, so no NaN can escape. **Revisit if something ever slips through unnoticed.**
 
-See `CLAUDE.md`'s harness audit. `CheckSwing` is structurally limited to GDP, Unemployment, Inflation,
-InterestRate and DebtToGdpRatio, yet its anomaly count is quoted throughout as a whole-simulation health
-signal. Options: extend to all 29 (third baseline discontinuity in a day, and several uncovered fields
-move sharply enough that blanket coverage could bury real signal), extend to a chosen subset with
-per-field thresholds, or leave it at five and stop describing the count as more than it is. The last
-option costs nothing and removes the misreading.
+### RESOLVED (2026-08-01) — B2 shows LIVE values, not published
+
+**Decided: live, as built.** *"Your reasoning is better than the directive's."* A lagged preliminary
+figure in a "what am I doing right now" panel misrepresents itself, and the directive's instruction was
+only partly satisfiable — 6 published stats against 18 policy-screen stats. `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`
+has been corrected to match rather than left contradicting the code.
+
+**Noted for the record:** the deviation was correct, and escalating it was still right.
+
+### RESOLVED (2026-08-01) — C4 built out of order, deliberately
+
+**Decided: build C4 (credit rating) before C1–C3.** This departs from the Master Sequence's
+"top to bottom, do not skip ahead" rule, and the reason is recorded here specifically so it does not
+become precedent for casual skipping:
+
+1. **C4 depends on nothing in C1–C3.** It is `[DERIVE]` — computed from debt-to-GDP, deficit trajectory
+   and growth, all already tracked — and consumes no seed data from the earlier batches.
+2. **Its blocker is external and may persist indefinitely.** C1–C3 need figures requiring direct
+   Eurostat/OECD database access, which no session here can obtain.
+
+Skipping is justified when a later item is genuinely independent *and* the earlier blocker is outside the
+project's control. Neither condition alone is sufficient.
+
 
 ### RESOLVED (2026-08-01) — Step C1: which stat is the primary housing metric?
 
