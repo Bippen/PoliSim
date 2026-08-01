@@ -5019,3 +5019,54 @@ whole-population figures are obtained, which requires direct database access rat
 Worth recording as a decision pattern: *the better mechanic lost to the better-sourced one.* When those
 conflict on this project, coverage wins, because an invented seed is undetectable later while a missing
 secondary metric is merely absent.
+
+### Instance 7, refinement — the variant space is consistently larger than the warning written for it
+
+Youth unemployment was re-checked against instance 7's failure mode. **The existing seeds survive**:
+Italy 20.1 and France 18.7 are genuine 15–24 *rates*, not ratios, independently confirmed for June 2025
+against an EU average of 14.8%, with Eurostat's definition on record. The rate-vs-ratio warning already
+in the seed file did its job.
+
+But the re-check found a **second variant axis the warning did not name: age bracket.** Eurostat
+publishes both 15–24 and 15–29 series, crossed with rate-vs-ratio, giving four variants rather than two.
+EU 2025 reads 14.8% (15–24 rate), 11.7% (15–29 rate), 6.3% (15–29 ratio). Sweden sits on the fault line:
+**22.2% (15–24 rate) versus 12.2% (15–29 ratio)** — both real, both correctly attributed, differing by
+nearly 2x.
+
+**Recorded as a refinement of instance 7 rather than a new instance**, because the mechanism is
+identical. What is new is the pattern across two indicators:
+
+| Indicator | Variants the warning implied | Variants that actually exist |
+|---|---|---|
+| Housing cost overburden | 3 | **8+** |
+| Youth unemployment | 2 (rate/ratio) | **4** (rate/ratio × 15–24/15–29) |
+
+**The generalizable form: variant space is consistently larger than the warning written for it.** In both
+cases the warning was correct, useful, and one dimension short. So a warning that enumerates variants
+must be read as **"at least these"**, never as "these" — an enumeration is a floor, not a boundary. The
+practical consequence is that "I checked it against the documented warning" is not sufficient
+verification; the question is whether any *undocumented* axis exists, which is a different and harder
+question.
+
+This is itself a verification-integrity shape: the warning is the checking mechanism, and a check that is
+sound but incomplete reads exactly like a check that is sound.
+
+### Homeownership carries the same risk, unresolved, and C1 now depends on it
+
+Life expectancy, real wages and homeownership have not been re-checked. Life expectancy is likely
+low-risk — period versus cohort is the main axis, and 84.1 for Italy/Sweden is plausible for period.
+**Homeownership is not low-risk and is now urgent**, because the C1 decision made it the primary housing
+metric. Its axes: Eurostat measures share of *population* in owner-occupied dwellings (EU 68.4%), while
+US Census and most OECD reporting measure share of *households* owning; Eurostat additionally splits
+nationals-only from all residents.
+
+**Inspection of the existing table suggests the mixing may already be present**, without needing new
+sourcing: Germany carries two figures from two bases (46.7 in 2022 versus "Eurostat nationals-only 52.3
+in 2024", a 5.6-point spread) and the row settles on ~47 without saying which; Poland's ~87 sits against
+a Eurostat line elsewhere in the same file reading "Poland nationals 87.9%"; and the USA's 65.3–65.9
+matches the US Census household-based rate, not Eurostat's population base. So the four `[VERIFIED]`
+rows may span two or three denominators — each correct for its own source, and not comparable as a set.
+
+**This blocks C1 ahead of the two remaining lookups.** Sourcing Italy and Sweden before fixing the basis
+would add a fourth and fifth variant rather than completing a set. Recommended basis: OECD
+household-based, since USA and France are already there and the USA has no Eurostat figure at all.

@@ -771,3 +771,21 @@ which need direct Eurostat database access rather than search.
 income while US convention measures >30% or >50%, so no comparable figure exists. With homeownership as
 the primary metric the USA has a genuinely comparable verified figure (65.3%), so this stops blocking
 C1. It returns only if overburden is later added as a secondary metric.
+
+### OQ — Step C1: which measurement basis for homeownership rate? (raised 2026-08-01, BLOCKING)
+
+Homeownership became C1's primary metric and has not been re-checked against the variant failure mode
+(verification-integrity instance 7). Eurostat measures share of *population* in owner-occupied dwellings
+(EU 68.4%); US Census and most OECD reporting measure share of *households* owning; Eurostat also splits
+nationals-only from all residents.
+
+Inspection suggests the existing table may already mix bases: Germany carries 46.7 (2022) alongside
+"Eurostat nationals-only 52.3 (2024)" and settles on ~47 without saying which; Poland's ~87 matches a
+Eurostat "Poland nationals 87.9%" line elsewhere in the file; the USA's 65.3–65.9 is the household-based
+Census rate. Each is plausibly right for its own source and the set may still not be comparable.
+
+*Recommended: OECD household-based*, since USA and France are already there and the USA has no Eurostat
+figure at all. Raised rather than settled because it may require re-sourcing Germany and Poland.
+
+**This blocks the two remaining C1 lookups** — sourcing Italy and Sweden first would add a fourth and
+fifth variant instead of completing a set.

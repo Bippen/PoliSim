@@ -31,18 +31,46 @@ and this was attempted and failed.
 
 ---
 
-## The two remaining gaps
+## BLOCKING PREREQUISITE — fix the measurement basis before sourcing anything
+
+**Do not source Italy and Sweden yet.** Homeownership has the same variant problem that produced
+verification-integrity instance 7, it has not been re-checked, and it is now C1's primary metric.
+
+At least three axes: Eurostat measures share of *population* in owner-occupied dwellings (EU 68.4%),
+while US Census and most OECD reporting measure share of *households* owning; Eurostat separately splits
+nationals-only from all residents; and reference years are mixed (2022 / 2024 / 2025).
+
+**Inspection of the existing table suggests the mixing may already be there** — no new sourcing needed to
+see it:
+
+- **Germany carries two figures on two bases**, 46.7 (2022) and "Eurostat nationals-only 52.3 (2024)",
+  a 5.6-point spread. The row settles on ~47 without stating which basis that is.
+- **Poland ~87** sits against a Eurostat line elsewhere in the same file reading "Poland nationals
+  87.9%". If that is where ~87 came from, Poland is on Eurostat nationals-only while USA and France are
+  on OECD.
+- **USA 65.3–65.9** matches the US Census homeownership rate, which is household-based — not Eurostat's
+  population base.
+
+Each figure is likely correct for its own source. The set may still not be internally comparable, which
+is exactly the trap. Sourcing two more figures before fixing this would add a fourth and fifth variant
+rather than completing a set.
+
+*Recommended basis: OECD household-based*, since USA and France are already there and the USA has no
+Eurostat figure at all. Raised as an Open Question rather than settled, since it may require re-sourcing
+Germany and Poland.
+
+## The two remaining gaps — once the basis is fixed
 
 | # | Figure | Country | Difficulty |
 |---|---|---|---|
-| 1 | Homeownership rate | **Italy** | Straightforward OECD lookup — seed file indicates ~72–73 |
-| 2 | Homeownership rate | **Sweden** | Straightforward OECD lookup — seed file indicates ~63–65 |
+| 1 | Homeownership rate | **Italy** | Straightforward lookup — seed file indicates ~72–73 |
+| 2 | Homeownership rate | **Sweden** | Straightforward lookup — seed file indicates ~63–65 |
 
-Have: USA 65.3–65.9 (OECD), France 58.5 (OECD), Germany ~47, Poland ~87.
+Have: USA 65.3–65.9 (OECD), France 58.5 (OECD), Germany ~47 (basis unclear), Poland ~87 (basis unclear).
 
 The indicative ranges above are **sourcing hints, not values**, and will not be used as figures. Both
-should come from OECD, the same source as the USA and France entries, so the six are measured on one
-basis.
+must come from whichever basis is chosen, and each row should record that basis explicitly — the lesson
+of instance 7 applied forward rather than after the fact.
 
 ## Not blocking any more
 

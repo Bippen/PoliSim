@@ -52,6 +52,36 @@
 
 OECD average: 70.1% [VERIFIED]. Germany being far below every peer is real and worth preserving — it makes housing policy play differently there.
 
+**⚠ UNRESOLVED VARIANT RISK — MUST BE CHECKED BEFORE C1 SEEDS THESE.** Homeownership has the same
+variant problem as housing overburden and youth unemployment, and this table has **not** been re-checked
+against it. This now matters more than it did, because homeownership became C1's PRIMARY metric.
+
+At least three axes are in play:
+1. **Population base vs household base.** Eurostat measures the share of *people* living in
+   owner-occupied dwellings (EU 68.4%). US Census and most OECD reporting measure the share of
+   *occupied housing units* that are owner-occupied — a household base. These are different
+   denominators and do not give the same number.
+2. **Nationals-only vs all residents.** Eurostat publishes both; the gap is large in countries with
+   substantial non-national populations.
+3. **Reference year**, which is minor by comparison but still mixed across this table (2022 vs 2024 vs 2025).
+
+**Evidence the mixing may already be present in the rows above, visible without any new sourcing:**
+- **Germany carries two figures from two bases** — 46.7 (2022) and "Eurostat nationals-only 52.3 (2024)"
+  — differing by 5.6 points. The row settles on ~47 without stating which base that represents.
+- **Poland ~87** sits against the Eurostat line further down this file reading "Poland nationals 87.9%".
+  If the table's ~87 came from that line, Poland is on the Eurostat nationals-only basis while USA and
+  France are on OECD.
+- **USA 65.3–65.9** matches the US Census homeownership rate, which is household-based, not the
+  population base Eurostat uses.
+
+So the four `[VERIFIED]` rows may span two or three different denominators. Each figure is probably
+correct for its own source; the table may still not be internally comparable, which is exactly the trap.
+
+**Required before C1 seeds housing:** confirm one basis for all six countries — preferably OECD
+household-based, since USA and France are already there and the USA has no Eurostat figure at all — and
+record the basis explicitly in each row. Do NOT source Italy and Sweden until the basis is fixed, or the
+two new figures will simply add a fourth and fifth variant to the mix.
+
 **House Price Index:** [GAP] — no per-country figures sourced yet. Recommend seeding all six at an index value of 100 at game start (a standard index convention) and letting divergence emerge from simulation, rather than inventing differing starting levels. This is honest and avoids fake precision.
 
 ### 2. Inequality — Gini coefficient
@@ -80,9 +110,26 @@ EU average: 29.4; Euro area: 29.9 (2024) [VERIFIED] — useful sanity anchors.
 
 EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED].
 
-**Sweden: 22.2%** (Feb 2026, Eurostat) [VERIFIED] — genuinely high, confirming the "Nordic mixed picture" note; Sweden has averaged 16.95% since 1983, with an all-time high of 29.9% (July 2020). This is a real and counterintuitive feature worth preserving: a strong overall labour market alongside one of Europe's worst youth unemployment rates.
+**Sweden: 22.2%** (Feb 2026, Eurostat, 15–24 rate) [VERIFIED] — genuinely high, confirming the "Nordic mixed picture" note; Sweden has averaged 16.95% since 1983, with an all-time high of 29.9% (July 2020). This is a real and counterintuitive feature worth preserving: a strong overall labour market alongside one of Europe's worst youth unemployment rates.
 
-**CRITICAL METHODOLOGY WARNING:** youth unemployment *rate* (% of the youth labour force) and youth unemployment *ratio* (% of the youth population) are different measures and are frequently confused in published tables. Germany 3.6 and Poland 3.5 figures encountered during sourcing are **ratios, not rates** — do not mix them with the rate figures above. Use rate consistently.
+**✅ RE-CHECKED AND CONFIRMED (2026-08-01):** Italy 20.1 and France 18.7 are genuine RATES on the 15–24 basis, not ratios. Independently confirmed for June 2025 against an EU average of 14.8%. Eurostat's own definition, worth quoting: *the youth unemployment rate is the number of people aged 15 to 24 unemployed as a percentage of the labour force of the same age, and should not be interpreted as the share of jobless people in the overall youth population.* These seeds are sound.
+
+Additional 15–24 rate anchors from the same June 2025 dataset [VERIFIED]: Estonia 26.9 (highest), Spain 24.0, Italy 20.1, Portugal 18.9, Greece 18.8, Malta 6.2 (lowest).
+
+**⚠ SECOND VARIANT AXIS FOUND — AGE BRACKET.** The existing rate-vs-ratio warning below is necessary but NOT sufficient. Eurostat publishes both 15–24 and 15–29 series, giving a 2×2 matrix of four variants:
+
+| Variant | EU 2025 value |
+|---|---|
+| 15–24 rate (standard) | 14.8% |
+| 15–29 rate | 11.7% |
+| 15–29 ratio | 6.3% |
+| 15–24 ratio | (lower still) |
+
+Sweden sits directly on this fault line: **22.2% is the 15–24 rate; 12.2% is the 15–29 ratio.** Both are real Eurostat figures, both correctly attributed, measuring different things, differing by nearly 2x. Any youth unemployment figure must record BOTH its age bracket AND rate-vs-ratio, or it is meaningless.
+
+**CRITICAL METHODOLOGY WARNING (rate vs ratio):** youth unemployment *rate* (% of the youth labour force) and youth unemployment *ratio* (% of the youth population) are different measures and are frequently confused in published tables. Germany 3.6 and Poland 3.5 figures encountered during sourcing are **ratios, not rates** — do not mix them with the rate figures above. Use the 15–24 rate consistently.
+
+Related useful figure [VERIFIED, 2025]: the 15–29 ratio ranged from 2.9% (Bulgaria, Czechia) to 12.2% (Sweden) across the EU.
 
 ---
 
