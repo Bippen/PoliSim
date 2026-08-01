@@ -4411,3 +4411,48 @@ share one directory tree (`G:\UNITY\Unity Hub\`, with `6000.5.6f1/` inside it al
 `Unity.dll`'s timestamp does NOT indicate whether a reinstall happened - installers preserve build-time
 timestamps, so an identical date is what a clean reinstall of the same version looks like. Test by
 launching, not by inspecting file metadata.
+
+## Shared RNG structure can invalidate a validation method (2026-08-01)
+
+**The finding, which is about validation methodology rather than about randomness.** Step A0 made the
+simulation reproducible by moving all six random consumers - Cabinet, Event, FederalReserve,
+ForeignPolicy, Parliament, SovereignWealthFund - from their own private `System.Random` instances onto a
+single shared stream. Reproducibility was achieved. Isolation was silently destroyed.
+
+With one shared stream, every consumer draws from the same sequence in call order. Adding a single new
+draw ANYWHERE shifts every subsequent draw for every other consumer. Step A was about to add exactly
+that: noise on preliminary published figures. Events would have fired on different days, SWF returns
+would have differed, Fed chair candidate sets would have changed, parliament seat jitter would have
+moved - with no bug anywhere in the new code.
+
+**Why that mattered far more than "the numbers would change".** Step A's entire acceptance bar is an
+identical-trajectory proof: run the seeded scenario before and after, and any difference means published
+values leaked into the simulation. RNG-sequence contamination would have produced a diff that is
+**indistinguishable from that leak** - same symptom, completely different cause. The proof would have
+fired correctly and pointed at the wrong thing, and the obvious response (hunt for the leak) would have
+found nothing, because there was none. A validation method had been quietly robbed of its meaning by a
+change made two commits earlier for an unrelated reason.
+
+**Resolved by per-stream seeding** (commit `121656f`): each consumer gets its own `System.Random` seeded
+from `masterSeed + streamOffset`. Same master seed reproduces every stream exactly, and adding, removing
+or reordering draws in one stream cannot perturb another. This is the isolation the ORIGINAL per-system
+instances had, now made reproducible instead of clock-dependent - strictly better than either the
+original design or A0's first attempt. `SimulationRandom.Stream` is append-only: its integer values are
+baked into each stream's seed, so renumbering silently changes every seeded run and invalidates any
+baseline captured beforehand.
+
+**Credit where due**: Elias caught this before it did damage, from the direction of "the revision noise
+draws from the shared generator". The premise cited - that SovereignWealthFundSystem and
+FederalReserveSystem still had isolated instances to follow as precedent - was no longer true, since A0
+had already replaced them. The underlying concern was correct and the situation was worse than described:
+the coupling already applied to all six systems, not merely to a hypothetical new consumer.
+
+### Standing note, alongside the six failure patterns
+
+**Any change to shared RNG structure can invalidate a validation method's ability to mean what it
+claims.** More generally: a proof is only as trustworthy as the assumptions underneath it, and those
+assumptions are usually implicit and rarely re-checked when unrelated code changes. Before relying on a
+validation result, ask what the method assumes and whether anything has changed underneath it. Two
+instances of this already exist in this project's history - the clock-seeded RNG that made
+identical-trajectory comparison unfalsifiable in the first place, and this shared-stream coupling that
+would have made it fire for the wrong reason.
