@@ -4066,6 +4066,49 @@ than inventing a new one, per the roadmap's own explicit instruction.
   establishment parties) that will keep surfacing as "why did my bill fail" questions in ordinary play,
   not just this once.
 
+## Baseline validation after the 5e UI work (2026-08-01)
+
+**Run**: 100-turn `baseline` via `BatchSimulationRunner` against real Unity `6000.5.6f1`, executed by
+Elias after Master Sequence step 5e's UI batches, the Tax/Spending tab merge, the chrome wiring and the
+Budget Process layout fix. **Result: 96 anomalies. Verdict: consistent with documented baseline
+behaviour, no regression.** Recorded because it is the first full baseline since that body of work, and
+because a naive reading of the log looks alarming.
+
+**Why 96 is unremarkable**: it sits inside this project's own documented range for a 100-turn run - 28,
+34, 53, 56, 60, 74, 80, 86, 104, 106, 178 and 215 all appear in earlier validations above. Every entry
+is the known "swung X% in one turn" family across exactly four stats (`DebtToGdpRatio`, `Inflation`,
+`Unemployment`, `InterestRate`); **no new anomaly type**, no `exceeded`/`invalid`/NaN, no unbounded
+growth.
+
+**Sweden and France repeatedly reaching `DebtToGdpRatio` 0.00 is documented and intentional**, not new.
+It is the `Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt)` floor, already investigated
+twice - see "SpendingLine Amount Ceiling - Debt-to-Zero Fix" and "Fiscal Reaction Function" above, the
+latter of which explicitly records Sweden landing on the zero end of this spectrum as *"consistent with
+prior findings, not a new phenomenon"* and confirms France *"hits the identical floor via the identical
+mechanism"*. France only develops it from ~turn 75 here, which matches its far higher starting ratio.
+
+**The extreme percentages are a metric artifact, not instability** - worth writing down, because they
+are the most alarming-looking thing in the log and will recur in every future baseline. Every outsized
+figure has a tiny PRIOR value: 565.8% is `0.87 -> 5.80`, 1616.0% is `1.48 -> 25.47`, 1329.3% is
+`1.22 -> 17.51`, 419.4% is `4.24 -> 22.04`. Once debt sits near the floor, relative change explodes
+arithmetically - a 24-point move reported as 1616% purely because the denominator is near zero.
+`SimulationTestRunner` measures relative change with no absolute-magnitude floor.
+
+**What this run actually established**: every change since the last validated simulation state is
+UI-only (`GameController`, `UiPalette`, `IconLibrary`), and the single simulation-layer change in that
+window - extracting `ParliamentSystem.GetSeatWeightedAlignment` so `WouldBillPass` calls it, validated
+separately at 100-turn `parliamentstress` with zero new anomaly types - is a pure no-op extraction. So
+this is positive evidence that the 5e UI work did not disturb the simulation.
+
+**Two follow-ups identified, neither a defect, neither actioned:**
+1. **The anomaly detector is noisy by construction near zero.** An absolute-magnitude floor (ignore
+   swings where both values are below ~2.0) would collapse most of these 96 into silence and make a
+   genuine regression visible instead of buried in clamp noise. Small change to `SimulationTestRunner`;
+   deliberately NOT made here, since changing the detector in the same breath as reading its output
+   would destroy the comparability with every anomaly count recorded above.
+2. **Debt oscillating 0 -> 25% -> 0 is arguably poor simulation**, however intentional the clamp. That
+   is a design question for a future item, not a bug - flagged so it isn't rediscovered as one.
+
 ## Conventions
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
