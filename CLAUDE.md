@@ -4703,3 +4703,48 @@ A general review of the diagnostic tooling was explicitly excluded. Open questio
 harness carried a fatal bug for five occurrences without being suspected, and `SimulationTestRunner`'s
 other checks (finite-value checks, threshold constants like `MaxUnemploymentPercent`) have never been
 validated against known-bad input the way the diff now has been.
+
+## Verification-integrity instance 6 — the worst of the set (2026-08-01)
+
+**Why this one is worse than instances 1-5: a clean diff was exactly what success would have looked
+like.** The other five produced output that was wrong in some noticeable way once examined. This one
+would have produced the precise result that means "everything is correct", and there would have been no
+reason to look further.
+
+**The setup.** Step A's acceptance is an identical-trajectory proof: run the seeded scenario before and
+after, and any difference means published values leaked into the simulation. `PublicationSystem` is
+DATE-DRIVEN - releases fire on "first Friday", "the 12th", "t+30 after quarter end".
+
+**The trap.** `SimulationTestRunner` called `AdvanceTurn` directly and never called `AdvanceDay`, and
+`AdvanceTurn` only READS `CurrentDate` without advancing it. So the calendar was frozen at EpochDate for
+every batch run ever performed. Wiring `PublicationSystem` into the daily loop would have meant it
+published **nothing** during validation. The diff would have come back byte-identical, Step A would have
+been marked validated with "zero simulation change", and the feature would never have executed once.
+
+**Caught before running it**, by asking where the harness advances time rather than assuming it did -
+prompted by the standing question of what else the validation tooling was being trusted to do.
+
+### The wider hole this exposed
+
+This was never a Step A problem. `AdvanceDay` is the entry point for everything the continuous-time
+migration introduced, so a frozen calendar means **none of it has ever been exercised in validation**:
+fiscal-year budget pauses, Fed meeting cadence, `StatHistory`'s multi-resolution Daily/Weekly/Monthly/
+Quarterly bucketing, and every day-driven mechanic since. `StatHistory.Append(CurrentDate, ...)` has been
+recording the identical date for every turn of every run in this project's history.
+
+Every "validated against real Unity" claim in this file, prior to commit `e15cb49`, describes a
+frozen-calendar configuration the game itself can never be in.
+
+### TWO BASELINE DISCONTINUITIES ON THE SAME DAY - read historical numbers with care
+
+Both landed 2026-08-01, and both change anomaly counts for reasons unrelated to simulation quality:
+
+1. **Anomaly-detector floor** (`MinMagnitudeForSwingCheck = 2f`) - suppresses near-zero percentage
+   artifacts that were silently padding counts. LOWERS counts.
+2. **Calendar now advances** (`e15cb49`) - date-driven events fire in batch for the first time. Direction
+   unknown until measured, but trajectories legitimately change.
+
+**Every anomaly count and trajectory baseline recorded in this file before 2026-08-01 measured a
+frozen-calendar world with an inflated counter.** Do not compare a post-fix count against a pre-fix one
+and read the difference as the simulation improving or regressing. Only post-fix numbers are comparable
+with each other.
