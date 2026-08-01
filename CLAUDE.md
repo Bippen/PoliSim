@@ -4824,3 +4824,37 @@ CORRECT - that reference periods carry the right lag, that revisions land on the
 preliminary/revised distinction behaves as intended. `ReleaseCalendar` is pure date arithmetic and
 directly testable; that check is still outstanding and belongs before Step B builds release-point graphs
 on top of it.
+
+## Verification-integrity instance 5 — a correct measurement, over-read (2026-08-01)
+
+**Distinct from instances 1-4 and 6, and worth separating: this check was not broken.** It ran correctly,
+measured exactly what it measured, and reported a true number. The failure was in what that number was
+taken to mean.
+
+**What happened.** Step A's validation counted **7087 published entries** and treated that as evidence the
+publication system worked. The count was accurate. Publication genuinely ran 7087 times, on genuinely
+correct dates - the schedule was right, and the count corroborated it against a predicted ~7080.
+
+**What it did not show, at all: whether a single published VALUE was correct.** Nearly every one was the
+same stale figure. A count proves cadence. It is silent on content, and no amount of agreement between
+predicted and observed *counts* can say otherwise.
+
+**How the real defect surfaced**: only by dumping actual entries and reading them. Q1 2026 Revised, Q1
+2026 Final and Q2 2026 Revised all read `28999,3` - and that collision was the decisive clue precisely
+because it is STRUCTURAL rather than magnitude-based. A wrong-looking number invites argument about
+tolerance; **two different reference periods resolving to an identical figure cannot be explained by
+noise at all.** Look for impossible relationships between values, not just implausible values.
+
+**A wrong inference worth recording**, because it was reasonable and still wrong: the preliminary figures
+varied (29363,6, 29062,6) while the revised ones were identical, which suggested "the preliminary path
+works, the revision path is broken - compare them." Both called the same broken `ReadLiveValue`. The
+preliminary's variation was ±1.5% publication noise around the *same stale value*, and both observed
+figures sit inside that band. **Apparent variation is not evidence of a live read.** There was no working
+path to compare against, so that comparison would have found nothing.
+
+### The general rule
+
+**Ask of every check: what does this prove, and what does it merely appear to prove?** A count proves
+frequency. A checksum proves equality. An identical-trajectory diff proves nothing changed - not that
+anything ran. Each answers a narrower question than it feels like it answers, and the gap between the two
+is where a validated-looking feature hides being broken.
