@@ -3642,17 +3642,19 @@ namespace PoliSim.UI
         /// ANY draft - budget or standalone - not just after introducing, per the revised Part B
         /// design's own explicit instruction.
         /// </summary>
+        /// <summary>
+        /// Master Sequence step 5e, Phase C batch 5: the annual budget bill's own live estimate. This was
+        /// a FIFTH copy of the same renderer batch 4 collapsed for the four standalone tiers - and the
+        /// one on the most important screen in the game. It now shares DrawBillLiveEstimate, so the
+        /// budget bill gains the same lean bar as every other bill and, more importantly, the same
+        /// zero-direction handling: WouldBillPass's BudgetBill overload is documented as computing the
+        /// bill's direction and delegating to the float core, so passing that direction through is
+        /// exactly equivalent to the overload this used to call.
+        /// </summary>
         private void DrawLegislativeSupportEstimate()
         {
-            BudgetBill draftBill = BuildBudgetBillFromDrafts();
-            float direction = ParliamentSystem.GetBillDirection(_playerCountry, draftBill);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, draftBill);
-
             GUILayout.Label("Legislative Support (current draft)", _headerStyle);
-            string directionLabel = Mathf.Approximately(direction, 0f) ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
-            GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
-            DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
-                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+            DrawBillLiveEstimate(ParliamentSystem.GetBillDirection(_playerCountry, BuildBudgetBillFromDrafts()));
         }
 
         /// <summary>
