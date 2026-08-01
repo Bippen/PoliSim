@@ -39,6 +39,23 @@ namespace PoliSim.UI
             return loaded;
         }
 
+        private const string StatsResourcesPath = "Art/UI/Stats/";
+
+        /// <summary>
+        /// Master Sequence step 9, Step D: the macro stat icons, trend arrows, release marker and
+        /// revision badges, by filename minus extension - e.g. "icon_stat_gdp", "icon_trend_up",
+        /// "badge_preliminary". All 42 were delivered and imported in `be97ebb`.
+        ///
+        /// Same null-on-missing contract as <see cref="Get"/>: a typo draws nothing rather than
+        /// something misleading. **`icon_stat_interestrate` genuinely does not exist yet** - it was
+        /// missed from the original request manifest and is still outstanding from Claude Design, so
+        /// callers asking for it will correctly get null until it lands.
+        /// </summary>
+        public static Texture2D GetStat(string statIconName)
+        {
+            return Load(StatsResourcesPath + statIconName);
+        }
+
         private const string ChromeResourcesPath = "Art/UI/Chrome/";
 
         /// <summary>

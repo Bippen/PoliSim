@@ -714,6 +714,69 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>
+        /// Master Sequence step 9, Step B2: a compact sparkline for the contextual stat rows on policy
+        /// screens - no axes, no labels, no title, just the shape of the series.
+        ///
+        /// **Deliberately part of GraphRenderer rather than a new widget**, per the directive's "extend
+        /// GraphRenderer, do NOT build a parallel system". It reuses the same Bresenham
+        /// <see cref="DrawLine"/> the full graphs use, so a sparkline and its full-size counterpart
+        /// cannot render the same data differently.
+        ///
+        /// Static and self-contained because these are drawn many-per-frame across a policy screen and
+        /// must not each carry a GraphRenderer's cached texture state. Returns silently on a series too
+        /// short to have a shape - one point is not a trend, and drawing a flat line would imply one.
+        /// </summary>
+        public static void DrawSparkline(Rect rect, IReadOnlyList<float> history, Color color, int maxPoints = 40)
+        {
+            if (history == null || history.Count < 2 || rect.width < 2f || rect.height < 2f)
+            {
+                return;
+            }
+
+            int width = Mathf.Max(2, Mathf.RoundToInt(rect.width));
+            int height = Mathf.Max(2, Mathf.RoundToInt(rect.height));
+            int start = Mathf.Max(0, history.Count - maxPoints);
+            int count = history.Count - start;
+
+            float min = float.MaxValue, max = float.MinValue;
+            for (int i = start; i < history.Count; i++)
+            {
+                min = Mathf.Min(min, history[i]);
+                max = Mathf.Max(max, history[i]);
+            }
+
+            // A perfectly flat series has no range to normalize against; centre it rather than dividing
+            // by zero and producing a line pinned to an edge.
+            float range = max - min;
+            bool flat = range < Mathf.Epsilon;
+
+            var pixels = new Color[width * height];
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+
+            Vector2Int? previous = null;
+            for (int i = 0; i < count; i++)
+            {
+                float value = history[start + i];
+                int x = count > 1 ? Mathf.RoundToInt(i / (float)(count - 1) * (width - 1)) : 0;
+                int y = flat
+                    ? height / 2
+                    : Mathf.RoundToInt((value - min) / range * (height - 3)) + 1;
+
+                var point = new Vector2Int(x, Mathf.Clamp(y, 0, height - 1));
+                if (previous.HasValue)
+                {
+                    DrawLine(pixels, previous.Value, point, color, dashed: false);
+                }
+                previous = point;
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+            GUI.DrawTexture(rect, texture);
+            Object.DestroyImmediate(texture);
+        }
+
         /// <summary>Bresenham line, 2px thick for legibility at typical panel widths, optionally dashed (every 3rd step skipped) so the projected segment reads as "estimate" even before its lighter alpha is accounted for.</summary>
         private static void DrawLine(Color[] pixels, Vector2Int from, Vector2Int to, Color color, bool dashed)
         {
