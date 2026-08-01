@@ -90,7 +90,29 @@ EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED].
 
 These weren't part of the seven, but came up with real per-country data and are worth considering — especially the first, which is a strong candidate for the housing stat itself:
 
-**Housing cost overburden rate (%, share spending >40% of income on housing) [VERIFIED, Eurostat 2024]:** Greece 24.2, Germany 9.7, Hungary 7.9, Euro area 6.4, Poland 6.1, Sweden 5.1, France 3.9. This is a real, standard Eurostat measure of housing *affordability stress* — arguably a better core housing stat than homeownership rate, since it captures pressure rather than just tenure, and it moves in response to exactly the levers this game has (interest rates, housing assistance).
+**Housing cost overburden rate (%, share of population in households spending >40% of disposable income on housing) [VERIFIED, Eurostat 2024, indicator ilc_lvho07a]:**
+
+| Country | Whole-population rate | Confidence |
+|---|---|---|
+| Germany | 12.0 | [VERIFIED] |
+| Sweden | 10.6 | [VERIFIED] |
+| Italy | [GAP] — known to be below 9.0 (Eurostat listed only countries above that threshold) | [GAP] |
+| France | [GAP] — known to be below 9.0 | [GAP] |
+| Poland | [GAP] — known to be below 9.0 | [GAP] |
+| USA | [GAP] — see methodology warning below; not a simple lookup | [GAP] |
+
+EU average 8.2%. Range anchors: Greece highest at 28.9%, then Denmark 14.6%, Germany 12.0, Sweden 10.6, Czechia 9.2; lowest are Cyprus 2.4, Croatia 3.7, Slovenia 3.8.
+
+**⚠ CORRECTION — an earlier version of this file recorded the WRONG VARIANT.** The figures previously listed here (Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9) are the **"Two adults" household-type subset**, not the headline whole-population indicator. The difference is large: Sweden is 5.1 on the two-adults measure versus **10.6** whole-population — more than 2x. Germany 9.7 versus 12.0. Eurostat publishes at least three variants of this indicator (whole population, "two adults", and "18–64 years" — Sweden reads 5.1 / 10.6 / 10.8 respectively). **Use the whole-population figures above.** This is the same trap already flagged in this file for youth unemployment rate-vs-ratio, and it was walked into anyway — check which variant any Eurostat housing figure belongs to before using it.
+
+**USA methodology warning (this is a DECISION, not a lookup):** Eurostat measures >40% of disposable income; US sources conventionally measure >30% ("cost-burdened") or >50% ("severely cost-burdened"). No US figure is directly comparable. Three options, none free:
+1. Import a US figure with the bias documented (same approach the file already takes for Gini)
+2. Mark USA `[GAP]` and seed only the five EU countries
+3. Use homeownership rate for USA instead, where a genuinely comparable figure exists (65.3%)
+
+**Related affordability indicator [VERIFIED, Eurostat 2024]:** average share of disposable income spent on housing — EU 19%, Greece 36%, Denmark 26%, Sweden and Germany both 25%, Cyprus 11% (lowest). A softer, more complete measure than the overburden threshold, and available for more countries.
+
+**Homeownership, EU-wide [VERIFIED, Eurostat 2024]:** 68.4% of people in the EU live in owner-occupied dwellings (44.2% outright, 24.3% with a mortgage), 31.6% rent. Poland nationals 87.9%.
 
 **Long-term unemployment rate (%, of active population 15–74) [VERIFIED, Eurostat 2024]:** Greece 5.4, Spain 3.8, Italy 3.3, Portugal 2.4, Sweden 1.7, Austria 1.1, Poland 0.8, Denmark 0.8. A useful complement to headline unemployment — Italy's structural problem looks very different from Poland's.
 

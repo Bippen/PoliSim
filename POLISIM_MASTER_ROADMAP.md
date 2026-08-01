@@ -751,3 +751,33 @@ signal. Options: extend to all 29 (third baseline discontinuity in a day, and se
 move sharply enough that blanket coverage could bury real signal), extend to a chosen subset with
 per-field thresholds, or leave it at five and stop describing the count as more than it is. The last
 option costs nothing and removes the misreading.
+
+### OQ — Step C1: which stat is the primary housing metric? (raised 2026-08-01)
+
+The directive recommended **housing cost overburden rate** over homeownership rate. A seed-data
+correction (verification-integrity instance 7 — the recorded figures were Eurostat's "two adults" subset,
+not the whole-population indicator) has inverted the coverage picture that partly justified it:
+
+| Metric | Verified | Gaps |
+|---|---|---|
+| Housing cost overburden | **2 of 6** — Germany 12.0, Sweden 10.6 | Italy, France, Poland (all known <9.0), USA (no comparable threshold exists) |
+| Homeownership rate | **4 of 6** — USA, France, Germany, Poland | Italy, Sweden (both ordinary OECD lookups) |
+
+The directive's other reasons for preferring overburden still hold: it measures affordability *stress*
+rather than tenure, and it responds to interest rates and housing assistance, both already live levers.
+So the trade is real — better data versus better mechanics.
+
+Options: (1) switch primary to homeownership, overburden alongside once sourced; (2) keep overburden and
+source the three EU gaps, which are known to exist below 9.0; (3) different primary per country, which
+costs cross-country comparability — the trap the seed file warns about for Gini.
+
+*No recommendation.* This turns on whether interest-rate responsiveness or data coverage matters more
+for how C1 plays, which is a design call. Full detail in `STEP_C1_HOUSING_GAP_REPORT.md`.
+
+### OQ — Step C1: how should the USA housing figure be handled? (raised 2026-08-01)
+
+Eurostat overburden measures >40% of disposable income; US convention is >30% ("cost-burdened") or >50%
+("severely"). Nothing matches, so this is a decision rather than a lookup. The seed file's three options:
+import a US figure with the bias documented (as already done for Gini), mark USA `[GAP]` and seed only
+the EU five, or use homeownership for the USA where a genuinely comparable 65.3% exists. Each changes
+what the headline housing number means for one of six countries.

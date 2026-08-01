@@ -4909,3 +4909,66 @@ minimum.
 
 `CheckFinite`'s 29/29 coverage is genuinely complete - every `EconomyState` float plus several
 Country-level fields. Whatever else the harness misses, it cannot miss a NaN.
+
+## Verification-integrity instance 7 — a trusted source that was simply wrong (2026-08-01)
+
+**A new variant of the class, and the first that no amount of checking my own work would have caught.**
+
+The six previous instances all shared a shape: a checking mechanism that was broken, absent, or narrower
+than it appeared. Instance 7 is different. Nothing in the process malfunctioned. The figures were
+sourced deliberately by someone with web access, recorded in a file built specifically to be the
+project's ground truth, and marked `[VERIFIED]`. The check *was* "this was sourced carefully by a person
+who could actually look it up" — and that turned out not to be sufficient.
+
+**What happened.** `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` recorded housing cost overburden rates as
+Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9. Those are real Eurostat figures. They are also the
+**"Two adults" household-type subset**, not the headline whole-population indicator (`ilc_lvho07a`).
+The correct whole-population 2024 figures are Germany 12.0, Sweden 10.6, EU average 8.2. Sweden differs
+by more than 2x between variants — 5.1 versus 10.6 versus 10.8 for the "18–64" cut.
+
+**Why it is worth a numbered entry rather than a footnote.** The seed file *already contained an
+explicit warning about exactly this trap*, two sections earlier:
+
+> **CRITICAL METHODOLOGY WARNING:** youth unemployment *rate* and *ratio* are different measures and are
+> frequently confused in published tables.
+
+The same mistake was then made again in the very next data section. Knowing a trap exists, and having
+written the warning yourself, does not prevent walking into it — because the failure is not one of
+attention but of *not recording which variant a number belongs to at the moment you write it down*.
+
+**The practical lesson, which is narrower and more useful than "double-check sources":** when a
+statistical indicator has multiple published variants, **record WHICH variant explicitly alongside the
+value** — the indicator code, the population base, the threshold — not just the number and the year.
+`Germany 9.7` is unfalsifiable after the fact. `Germany 9.7 (ilc_lvho07a, two-adults households, >40%
+of disposable income, 2024)` announces its own scope and would have been caught on sight.
+
+This applies directly to every remaining `[VERIFIED]` figure in the seed file. Gini already carries a
+methodology warning; productivity already carries a source-conflict warning. Youth unemployment,
+life expectancy and real wage growth do not, and have not been re-checked against this failure mode.
+
+**What it does NOT mean.** It is not an argument for distrusting the seed file or for filling gaps by
+inference — the opposite. The file remains the only real-data ground truth available in this project,
+and the correction arrived through exactly the right channel: Elias re-checked and supplied a fix. The
+lesson is about metadata discipline when recording figures, not about the sourcing itself.
+
+### Consequence for Step C1 — the coverage question resolved in the unexpected direction
+
+Three claims existed about housing cost overburden coverage across the six playable countries. The
+directive claimed complete coverage ("all EU five"). The seed file's original figures implied 4 of 6 —
+which my first C1 gap report reported, correctly catching the directive's overstatement but trusting the
+underlying numbers. The corrected figures give **2 of 6**: Germany and Sweden only, with Italy, France
+and Poland known solely to be below 9.0, and the USA not obtainable at any comparable threshold.
+
+So the C1 gap report was right that the directive overstated coverage, and wrong about the actual
+number, in the same direction it was investigating. Coverage was worse than the pessimistic reading.
+
+This inverts the metric decision. Housing cost overburden was recommended as C1's primary stat partly
+because it was believed better covered; it is now covered **half as well** as homeownership rate
+(2 of 6 versus 4 of 6), and its remaining gaps are harder — three Eurostat lookups plus one country
+where no comparable figure exists at any threshold. The directive's *other* reasons for preferring it
+(it measures affordability stress rather than tenure, and responds to interest rates and housing
+assistance, both live levers here) are untouched and still good.
+
+**Escalated to Open Questions, not decided.** Choosing between coverage and interest-rate
+responsiveness is a judgment about how C1 should play, not a data question. See
+`STEP_C1_HOUSING_GAP_REPORT.md` for the three options and the per-option gap lists.
