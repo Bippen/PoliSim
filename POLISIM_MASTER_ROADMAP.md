@@ -93,6 +93,19 @@ This is the one authoritative order, replacing whatever each original document s
    is gitignored, so this does not travel with the repo — if a fresh clone can't see `Newtonsoft.Json`,
    let the Editor regenerate the csproj or re-add the reference the same way).
 
+   **Independent confirmation from Unity's own analyzer (2026-08-01)**: adding `Country.Published` produced
+   `warning UAC1001: Field 'Published' type 'PoliSim.Data.PublishedData' is skipped by serialization`.
+   Unity's serializer silently DROPS the entire published series — the exact failure this item's
+   serializer decision was made to avoid, now demonstrated by the compiler rather than argued from
+   documentation. Note the word *skipped*: no error, no data, no indication at runtime that anything was
+   lost. Had save/load been built on `JsonUtility`, every published figure would have vanished on reload
+   while the save file looked perfectly valid.
+
+   The warning is deliberately NOT silenced. Adding `[System.Serializable]` to `PublishedData` would
+   remove it without making the type serializable — its `Dictionary` fields remain unsupported — so the
+   warning would be traded for a false reassurance. It stands as an accurate signal, and it is why the
+   project's warning baseline moved from 11 to 12.
+
    **Implementation has NOT started.** Everything above is design and dependency work. The build order
    that follows from the two decisions: (1) a `SaveGame` payload type holding format version, player
    country, turn/date, `World`, the simulation snapshot and the draft snapshot; (2) explicit
