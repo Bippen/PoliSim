@@ -101,6 +101,63 @@ This is the one authoritative order, replacing whatever each original document s
    version from the very first write** — this game's data model is still changing weekly, and a save file
    with no version field is unreadable the moment a field moves, with no way to detect that it happened.
 
+9. **NEW (2026-08-01) — Macro Data & Release Calendar Overhaul (Steps A–D).** Full spec in
+   `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`; every real-world figure it depends on is in
+   `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. Appended rather than renumbering 1-8, which are referenced
+   throughout this document and `CLAUDE.md`.
+
+   **Why it is four steps and not one** — the directive's own reasoning, recorded here because it governs
+   how the work may be sequenced: seven new tracked stats + a revision mechanic + per-period lag tracking
+   + six countries publishing independently is the largest single change attempted on this project,
+   larger than Demographics (5 fields, which still needed two structural bug fixes and three correction
+   rounds). The split exists to make failure ATTRIBUTABLE. Step A introduces the publication machinery
+   with **zero new tracked variables**, so any trajectory drift can only be the machinery; Step C then
+   adds stats onto a foundation already proven inert. Landing both together would make a drift
+   impossible to attribute — and per the directive, such a drift "may not surface for hundreds of turns".
+
+   - **Step A — release calendar, published series, revisions, Tier 0 derived stats.** The risky
+     foundation. Rule-based per-country schedules (not hardcoded dates), a published series per stat
+     carrying reference period / publication date / value / revision status, preliminary→revised figures
+     derived from the true underlying value, and display-only derived stats (GDP per capita, tax burden
+     % GDP, spending % GDP, deficit % GDP, real GDP growth, sector shares).
+   - **Step B — graph overhaul + contextual policy-screen stats.** Display only, depends on A. EXTEND
+     `GraphRenderer`, do not build a parallel system. Calendar date axis, release-point markers,
+     preliminary-vs-revised treatment, selectable ranges, existing threshold lines retained.
+   - **Step C — the seven new tracked stats, in four batches** (C1 housing, C2 inequality + real wages,
+     C3 youth unemployment + life expectancy, C4 credit rating as a DERIVED value). Never all at once.
+     Rule 11 applies to every batch: any effect on an existing tracked variable folds into that
+     variable's existing combined ceiling, audited first — `PotentialGrowthRate` and
+     `LaborForceParticipationRate` are already heavily stacked.
+   - **Step D — sprite asset request.** A document, not code.
+
+   **SEQUENCING CHANGED BY ELIAS (2026-08-01), superseding the directive's own "Sequencing summary"**:
+   start with **STEP D**, not Step A. Sprite work has a long external turnaround (Claude Design round
+   trip, security review, import), while A–C are pure code that does not depend on it. D goes out first
+   and runs in parallel; **A starts immediately after D's request document is written**, not after the
+   assets arrive. The directive's ordering is otherwise unchanged.
+
+   **Consequential adjustment this forces**: Step D's spec says to derive the stat-icon list "from the
+   real stat enum once Step C's stats exist" — circular if D runs first. Resolved by compiling the list
+   from (a) the stats NAMED IN THE DIRECTIVE and (b) the 29 fields already on `EconomyState`, which are
+   readable today. Any icon whose exact name depends on a not-yet-written enum ships with a provisional
+   filename to be reconciled at implementation time, rather than blocking the request.
+
+   **THE CRITICAL CORRECTNESS RISK, and Step A's actual bar**: the player-facing UI reads the PUBLISHED
+   (lagged, possibly-revised) series; every internal system — Okun's Law, the Phillips Curve, the Fiscal
+   Reaction Function, sector integration — must keep reading LIVE values. A leak makes the model consume
+   its own stale output, and the effect may not appear for hundreds of turns. **Step A must change ZERO
+   simulation numbers, proven by identical trajectories before and after** — not by inspection. That
+   requires capturing a baseline run on the pre-change HEAD BEFORE any Step A code is written, since an
+   untainted reference cannot be reconstructed afterwards.
+
+   **`[GAP]` figures are Elias's to source, never to invent.** This session has no web search. Each Step
+   C batch must report its needed gaps before starting. Three further traps the seed file flags
+   explicitly and that must be carried forward: `[PARTIAL]`/source-conflicted figures must not be
+   silently merged (Sweden ~70 and Poland ~24.5 productivity are Statista, not OECD PPP — Poland is
+   implausible against an OECD PPP average of $67.5); Gini needs one normalized scale (Eurostat 0–100 vs
+   US 0–1, different methodology); and youth unemployment must use *rate* consistently, never *ratio*
+   (the Germany 3.6 / Poland 3.5 figures are ratios and would badly distort the model).
+
 If a step's own validation fails, fix it before moving to the next — never proceed past a failing step to "make progress" on the next one.
 
 ---
