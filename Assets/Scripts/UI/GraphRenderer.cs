@@ -1,3 +1,4 @@
+using PoliSim.Data;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -128,6 +129,195 @@ namespace PoliSim.UI
                     DrawThresholdLabelOverlay(rect, thresholdValue.Value, thresholdLabel);
                 }
             }
+        }
+
+        /// <summary>Selectable window for a published-series graph. "All" keeps the existing paging behaviour; the two bounded ranges filter by real elapsed calendar time rather than by entry count, since publication cadences differ per stat (monthly unemployment against quarterly GDP) and a fixed entry count would cover very different spans for each.</summary>
+        public enum TimeRange
+        {
+            OneYear,
+            FiveYears,
+            All
+        }
+
+        private TimeRange _timeRange = TimeRange.All;
+
+        private static readonly Color ReleaseMarkerColor = new Color(0.95f, 0.80f, 0.30f, 1f);
+        private static readonly Color PreliminaryLineColor = new Color(0.95f, 0.65f, 0.25f, 1f);
+
+        /// <summary>
+        /// Master Sequence step 9, Step B: draws a PUBLISHED series - lagged, revisable figures as the
+        /// player actually saw them - with a calendar date axis, release-point markers, and preliminary
+        /// values visually distinguished from settled ones.
+        ///
+        /// A separate overload rather than a change to the float-list signature, and the reason is
+        /// SEMANTIC rather than structural. A float-list graph shows live simulation values with no
+        /// release timing at all; this shows data that arrived on a schedule and may later be revised.
+        /// Only 6 of the ~29 tracked stats have real release schedules (see PublishedStat) - the other 23
+        /// legitimately keep reading live, and reshaping their call sites to carry publication semantics
+        /// that do not apply to them would make every one of those graphs express something untrue.
+        /// Every existing call site is therefore untouched.
+        ///
+        /// The plotted value for a reference period is its LATEST entry, so a revised figure supersedes
+        /// the preliminary one on the line itself - matching what a player looking at the chart today
+        /// would see - while the preliminary remains in the series and is what the marker colour reports.
+        /// </summary>
+        public void DrawPublished(string title, PublishedSeries series, GUIStyle labelStyle, bool? higherIsBetter, System.DateTime currentDate, float? thresholdValue = null, string thresholdLabel = null)
+        {
+            EnsureOverlayStylesInitialized(labelStyle);
+
+            if (series == null || series.Entries.Count == 0)
+            {
+                DrawTitleRow(title, null, higherIsBetter, labelStyle);
+                GUILayout.Label("Not yet published - the first release is still ahead.", labelStyle);
+                return;
+            }
+
+            // One point per REFERENCE PERIOD, not per entry: a revised figure replaces its preliminary on
+            // the line rather than appearing as a second point at the same date, which would read as
+            // volatility that never happened.
+            var periods = new List<System.DateTime>();
+            var latestForPeriod = new Dictionary<System.DateTime, PublishedEntry>();
+            foreach (PublishedEntry entry in series.Entries)
+            {
+                if (!latestForPeriod.TryGetValue(entry.ReferencePeriodStart, out PublishedEntry existing))
+                {
+                    periods.Add(entry.ReferencePeriodStart);
+                    latestForPeriod[entry.ReferencePeriodStart] = entry;
+                }
+                else if (entry.PublicationDate > existing.PublicationDate)
+                {
+                    latestForPeriod[entry.ReferencePeriodStart] = entry;
+                }
+            }
+
+            periods.Sort();
+
+            System.DateTime cutoff = _timeRange == TimeRange.OneYear ? currentDate.AddYears(-1)
+                : _timeRange == TimeRange.FiveYears ? currentDate.AddYears(-5)
+                : System.DateTime.MinValue;
+
+            var values = new List<float>();
+            var visiblePeriods = new List<System.DateTime>();
+            bool anyPreliminary = false;
+            foreach (System.DateTime period in periods)
+            {
+                if (period < cutoff)
+                {
+                    continue;
+                }
+
+                PublishedEntry entry = latestForPeriod[period];
+                values.Add(entry.Value);
+                visiblePeriods.Add(period);
+                anyPreliminary |= entry.Status == RevisionStatus.Preliminary;
+            }
+
+            DrawTitleRow(title, values, higherIsBetter, labelStyle);
+            DrawTimeRangeRow();
+
+            if (values.Count == 0)
+            {
+                GUILayout.Label($"No releases in the selected range - {periods.Count} older entries exist.", labelStyle);
+                return;
+            }
+
+            if (NeedsRedraw(values, null, thresholdValue))
+            {
+                Regenerate(values, null, thresholdValue);
+            }
+
+            float displayHeight = Mathf.Clamp(Screen.height * 0.075f, 50f, TextureHeight);
+            Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
+            if (_texture == null)
+            {
+                return;
+            }
+
+            GUI.DrawTexture(rect, _texture, ScaleMode.StretchToFill);
+            DrawAxisLabelOverlay(rect);
+            if (thresholdValue.HasValue && !string.IsNullOrEmpty(thresholdLabel))
+            {
+                DrawThresholdLabelOverlay(rect, thresholdValue.Value, thresholdLabel);
+            }
+
+            DrawReleaseMarkers(rect, visiblePeriods, latestForPeriod);
+            DrawDateAxisOverlay(rect, visiblePeriods);
+
+            PublishedEntry newest = latestForPeriod[visiblePeriods[visiblePeriods.Count - 1]];
+            string lag = $"{(newest.PublicationDate - newest.ReferencePeriodEnd).Days}d lag";
+            string status = newest.Status == RevisionStatus.Preliminary ? "PRELIMINARY" : newest.Status.ToString().ToUpperInvariant();
+            DrawColoredOverlayLabel(rect, $"latest: {FormatAxisValue(newest.Value)} ({status}, {lag})",
+                newest.Status == RevisionStatus.Preliminary ? PreliminaryLineColor : Color.white, anyPreliminary);
+        }
+
+        /// <summary>Range selector. Bounded ranges filter on real elapsed time, so a monthly stat and a quarterly one both show the same calendar span rather than the same number of points.</summary>
+        private void DrawTimeRangeRow()
+        {
+            GUILayout.BeginHorizontal();
+            foreach (TimeRange range in new[] { TimeRange.OneYear, TimeRange.FiveYears, TimeRange.All })
+            {
+                bool selected = _timeRange == range;
+                GUIStyle style = UiPalette.BuildButtonStyle(_pageButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
+                string label = range == TimeRange.OneYear ? "1yr" : range == TimeRange.FiveYears ? "5yr" : "All";
+                if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true)))
+                {
+                    _timeRange = range;
+                }
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// A tick under each release point, coloured by revision status - amber for a figure still
+        /// preliminary, pale for one that has settled. This is the payoff of Step A's revision mechanic:
+        /// the player can see WHEN a number arrived, and whether the one they are looking at might still
+        /// move. Drawn as an overlay rather than into the plot texture so it costs no regeneration.
+        /// </summary>
+        private void DrawReleaseMarkers(Rect rect, List<System.DateTime> periods, Dictionary<System.DateTime, PublishedEntry> latestForPeriod)
+        {
+            if (Event.current.type != EventType.Repaint || periods.Count < 2)
+            {
+                return;
+            }
+
+            float markerHeight = Mathf.Max(3f, rect.height * 0.10f);
+            for (int i = 0; i < periods.Count; i++)
+            {
+                float t = i / (float)(periods.Count - 1);
+                float x = rect.x + t * rect.width;
+                bool preliminary = latestForPeriod[periods[i]].Status == RevisionStatus.Preliminary;
+                var marker = new Rect(x - 1f, rect.yMax - markerHeight, 2f, markerHeight);
+                Color previousMarkerColor = GUI.color;
+                GUI.color = preliminary ? PreliminaryLineColor : ReleaseMarkerColor;
+                GUI.DrawTexture(marker, Texture2D.whiteTexture);
+                GUI.color = previousMarkerColor;
+            }
+        }
+
+        /// <summary>Calendar dates at each end of the plotted span, replacing the turn-number framing entirely - the reference PERIOD each figure describes, not when it was published.</summary>
+        private void DrawDateAxisOverlay(Rect rect, List<System.DateTime> periods)
+        {
+            if (periods.Count == 0)
+            {
+                return;
+            }
+
+            float labelHeight = _axisLabelStyle.fontSize + 4f;
+            var left = new Rect(rect.x + 2f, rect.yMax - labelHeight, rect.width * 0.5f, labelHeight);
+            var right = new Rect(rect.x + rect.width * 0.5f - 2f, rect.yMax - labelHeight, rect.width * 0.5f, labelHeight);
+
+            GUI.Label(left, periods[0].ToString("MMM yyyy"), _axisLabelStyle);
+            var rightStyle = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.UpperRight };
+            GUI.Label(right, periods[periods.Count - 1].ToString("MMM yyyy"), rightStyle);
+        }
+
+        private void DrawColoredOverlayLabel(Rect rect, string text, Color color, bool anyPreliminary)
+        {
+            var style = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.UpperRight };
+            Color previous = GUI.color;
+            GUI.color = color;
+            GUI.Label(new Rect(rect.x, rect.y, rect.width - 4f, _axisLabelStyle.fontSize + 4f), text, style);
+            GUI.color = previous;
         }
 
         /// <summary>Convenience wrapper for a stat with no clear "good direction" - see Draw's higherIsBetter remarks.</summary>

@@ -408,6 +408,9 @@ namespace PoliSim.UI
         // One GraphRenderer per headline dashboard stat - see GraphRenderer.cs. Each auto-scales its
         // own Y-axis, so instances are never shared across stats with different natural ranges.
         private readonly GraphRenderer _gdpGraph = new GraphRenderer();
+
+        /// <summary>Master Sequence step 9, Step B: the PUBLISHED GDP series, drawn directly beneath the live one so the reporting lag and any revision are legible by comparison rather than in isolation. GDP is the right stat to show this on - it is the only one with a real multi-stage revision cycle (BEA advance/second/third, Eurostat flash/regular), so it is where a revision can actually be watched happening.</summary>
+        private readonly GraphRenderer _gdpPublishedGraph = new GraphRenderer();
         private readonly GraphRenderer _unemploymentGraph = new GraphRenderer();
         private readonly GraphRenderer _approvalGraph = new GraphRenderer();
 
@@ -1092,6 +1095,15 @@ namespace PoliSim.UI
             _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false,
                 thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
             _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true);
+
+            // Master Sequence step 9, Step B: the same stat as PUBLISHED - lagged, and revised as later
+            // estimates arrive - immediately below its live counterpart. Placed adjacent deliberately:
+            // the gap between the two lines IS the reporting lag, which is far easier to read as a
+            // comparison than as an isolated chart with a date axis the player has to interpret.
+            GUILayout.Space(6f);
+            _gdpPublishedGraph.DrawPublished("GDP as published (amber tick = release, orange = preliminary)",
+                _playerCountry.Published.Series.TryGetValue(PublishedStat.Gdp, out PublishedSeries gdpPublished) ? gdpPublished : null,
+                _labelStyle, higherIsBetter: true, _simulationManager.CurrentDate);
         }
 
         /// <summary>
