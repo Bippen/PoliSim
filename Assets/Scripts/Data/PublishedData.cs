@@ -101,6 +101,22 @@ namespace PoliSim.Data
         public readonly Dictionary<PublishedStat, PublishedSeries> Series =
             new Dictionary<PublishedStat, PublishedSeries>();
 
+        /// <summary>
+        /// The TRUE value each reference period closed at, keyed by (stat, period start). Recorded as
+        /// the period elapses, not looked up afterwards - StatHistory keeps bare `List&lt;float&gt;` with
+        /// no dates attached, so there is no way to ask it "what was GDP in Q1".
+        ///
+        /// This is what a revision converges toward. Without it, a revision published in June resolved to
+        /// JUNE's value rather than to the Q1 value it claims to describe - and because GDP only changes
+        /// at a turn boundary (once per 121 days), publications for genuinely different quarters could
+        /// land inside the same turn and report an identical figure.
+        ///
+        /// Not itself published, and never read by the simulation: this is the underlying truth the
+        /// published series is a lagged, noisy view OF.
+        /// </summary>
+        public readonly Dictionary<(PublishedStat Stat, System.DateTime PeriodStart), float> PeriodClosingValues =
+            new Dictionary<(PublishedStat, System.DateTime), float>();
+
         public PublishedSeries GetOrCreate(PublishedStat stat)
         {
             if (!Series.TryGetValue(stat, out PublishedSeries series))

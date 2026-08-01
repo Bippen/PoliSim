@@ -71,6 +71,13 @@ namespace PoliSim.Simulation
         {
             foreach (PublishedStat stat in System.Enum.GetValues(typeof(PublishedStat)))
             {
+                // Record what the CURRENT period is running at, every day. Overwriting daily means that
+                // once a period closes, the stored figure is its value on its final day - which is the
+                // value every publication describing that period must converge to. Doing it this way
+                // needs no historical lookup, which StatHistory cannot provide (bare float lists, no
+                // dates attached).
+                country.Published.PeriodClosingValues[(stat, ReleaseCalendar.GetCurrentPeriodStart(stat, date))] = ReadLiveValue(country, stat);
+
                 if (!ReleaseCalendar.IsReleaseDay(country, stat, date))
                 {
                     continue;
@@ -91,7 +98,17 @@ namespace PoliSim.Simulation
                 {
                     continue;
                 }
-                float trueValue = ReadLiveValue(country, stat);
+                // The true value FOR THE REFERENCE PERIOD, not the value as of today. This was the bug:
+                // reading live here meant a June-published revision of Q1 converged on June's figure, so
+                // Q1 and Q2 revisions could report the same number to four significant figures whenever
+                // both publications fell inside one 121-day turn.
+                //
+                // Falls back to live only when no closing value was recorded - which can only happen for
+                // a period that elapsed before this system began recording, i.e. the inherited quarter.
+                if (!country.Published.PeriodClosingValues.TryGetValue((stat, periodStart), out float trueValue))
+                {
+                    trueValue = ReadLiveValue(country, stat);
+                }
                 RevisionStatus status = GetStatusFor(country, stat, date);
 
                 // The preliminary is a NOISY ESTIMATE OF the true value, not an independent random

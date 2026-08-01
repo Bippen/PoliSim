@@ -113,6 +113,32 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>
+        /// The period that <paramref name="date"/> falls INSIDE - distinct from GetReferencePeriod, which
+        /// gives the period a publication on that date DESCRIBES (an earlier, already-closed one).
+        ///
+        /// Used to record each period's closing value as it elapses, so a later revision can converge on
+        /// the value for its own reference period rather than on whatever the figure happens to be when
+        /// the revision is published.
+        /// </summary>
+        public static System.DateTime GetCurrentPeriodStart(PublishedStat stat, System.DateTime date)
+        {
+            switch (stat)
+            {
+                case PublishedStat.Gdp:
+                    int quarterFirstMonth = ((date.Month - 1) / 3) * 3 + 1;
+                    return new System.DateTime(date.Year, quarterFirstMonth, 1);
+
+                case PublishedStat.PovertyRate:
+                case PublishedStat.Population:
+                case PublishedStat.CrimeIndex:
+                    return new System.DateTime(date.Year, 1, 1);
+
+                default:
+                    return new System.DateTime(date.Year, date.Month, 1);
+            }
+        }
+
         private static System.DateTime MostRecentQuarterEnd(System.DateTime date)
         {
             int lastQuarterEndMonth = ((date.Month - 1) / 3) * 3;
