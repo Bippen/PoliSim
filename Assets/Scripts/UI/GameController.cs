@@ -895,6 +895,32 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>
+        /// Master Sequence step 5e, Phase C batch 6: a policy label that turns amber the moment its draft
+        /// diverges from the standing value. This is the one genuinely load-bearing idea taken from
+        /// `PoliSimWidgets.StandingDraftPair`, whose own documentation calls it "the only cue that a
+        /// change is pending a vote - so it is never optional"; the widget itself was rejected (see the
+        /// roadmap) because its hardcoded pixel offsets ignore rect.width and would break the
+        /// variable-width Budget Process columns. The signal survives, the fragile geometry doesn't.
+        ///
+        /// White is not a hardcoded "normal" colour here - DrawColoredLabel MULTIPLIES GUI.color by the
+        /// style's own text colour, so white means "leave the style alone" and this stays correct if the
+        /// label palette ever changes.
+        ///
+        /// Applied to every draft-bearing control in one pass on purpose: a missing amber cue reads as
+        /// "nothing changed here", so covering only some screens would actively mislead on the rest.
+        /// </summary>
+        private void DrawDraftLabel(string text, bool changed)
+        {
+            DrawColoredLabel(text, _labelStyle, changed ? PoliSimTheme.Draft : Color.white);
+        }
+
+        /// <summary>Overload for the common "Standing: X, Draft: Y" pair, so each call site states the two values it compares instead of hand-rolling an approximate-equality test 20 times over.</summary>
+        private void DrawDraftLabel(string text, float standing, float draft)
+        {
+            DrawDraftLabel(text, !Mathf.Approximately(standing, draft));
+        }
+
         /// <summary>One-off tinted label (GUI.color multiplies the style's own text color, restored immediately after) - used for every signed-delta readout in the UI so its color always reflects UiPalette.GetDeltaColor rather than a hand-picked one-time color.</summary>
         private static void DrawColoredLabel(string text, GUIStyle style, Color color)
         {
@@ -1289,27 +1315,27 @@ namespace PoliSim.UI
             EndAreaCard(UiPalette.SystemArea.CrimeJustice);
 
             float draftPoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
-            GUILayout.Label($"Police Funding - Standing: {_playerCountry.PoliceFundingLevel:F0}, Draft: {draftPoliceFunding:F0}", _labelStyle);
+            DrawDraftLabel($"Police Funding - Standing: {_playerCountry.PoliceFundingLevel:F0}, Draft: {draftPoliceFunding:F0}", _playerCountry.PoliceFundingLevel, draftPoliceFunding);
             _policeFundingInput = GUILayout.HorizontalSlider(draftPoliceFunding, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftSentencingSeverity = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
-            GUILayout.Label($"Sentencing Severity - Standing: {_playerCountry.SentencingSeverity:F0}, Draft: {draftSentencingSeverity:F0} (0 = lenient, 100 = harsh)", _labelStyle);
+            DrawDraftLabel($"Sentencing Severity - Standing: {_playerCountry.SentencingSeverity:F0}, Draft: {draftSentencingSeverity:F0} (0 = lenient, 100 = harsh)", _playerCountry.SentencingSeverity, draftSentencingSeverity);
             _sentencingSeverityInput = GUILayout.HorizontalSlider(draftSentencingSeverity, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftBailReform = GetBailReformInput(_playerCountry.BailReformLevel);
-            GUILayout.Label($"Bail Reform - Standing: {_playerCountry.BailReformLevel:F0}, Draft: {draftBailReform:F0} (0 = traditional cash bail, 100 = full reform)", _labelStyle);
+            DrawDraftLabel($"Bail Reform - Standing: {_playerCountry.BailReformLevel:F0}, Draft: {draftBailReform:F0} (0 = traditional cash bail, 100 = full reform)", _playerCountry.BailReformLevel, draftBailReform);
             _bailReformInput = GUILayout.HorizontalSlider(draftBailReform, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftDrugPolicy = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel);
-            GUILayout.Label($"Drug Policy - Standing: {_playerCountry.DrugPolicyLevel:F0}, Draft: {draftDrugPolicy:F0} (0 = decriminalized, 100 = strict criminalization)", _labelStyle);
+            DrawDraftLabel($"Drug Policy - Standing: {_playerCountry.DrugPolicyLevel:F0}, Draft: {draftDrugPolicy:F0} (0 = decriminalized, 100 = strict criminalization)", _playerCountry.DrugPolicyLevel, draftDrugPolicy);
             _drugPolicyInput = GUILayout.HorizontalSlider(draftDrugPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftJudicialFunding = GetJudicialFundingInput(_playerCountry.JudicialFundingLevel);
-            GUILayout.Label($"Judicial Funding - Standing: {_playerCountry.JudicialFundingLevel:F0}, Draft: {draftJudicialFunding:F0}", _labelStyle);
+            DrawDraftLabel($"Judicial Funding - Standing: {_playerCountry.JudicialFundingLevel:F0}, Draft: {draftJudicialFunding:F0}", _playerCountry.JudicialFundingLevel, draftJudicialFunding);
             _judicialFundingInput = GUILayout.HorizontalSlider(draftJudicialFunding, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftBorderEnforcement = GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel);
-            GUILayout.Label($"Border Enforcement - Standing: {_playerCountry.BorderEnforcementLevel:F0}, Draft: {draftBorderEnforcement:F0} (0 = open/lenient, 100 = strict)", _labelStyle);
+            DrawDraftLabel($"Border Enforcement - Standing: {_playerCountry.BorderEnforcementLevel:F0}, Draft: {draftBorderEnforcement:F0} (0 = open/lenient, 100 = strict)", _playerCountry.BorderEnforcementLevel, draftBorderEnforcement);
             _borderEnforcementInput = GUILayout.HorizontalSlider(draftBorderEnforcement, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
@@ -1393,24 +1419,24 @@ namespace PoliSim.UI
             DrawMinimumWageControl();
 
             float draftPaidLeave = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
-            GUILayout.Label($"Paid Family Leave - Standing: {_playerCountry.PaidFamilyLeaveWeeks:F0}, Draft: {draftPaidLeave:F0} weeks", _labelStyle);
+            DrawDraftLabel($"Paid Family Leave - Standing: {_playerCountry.PaidFamilyLeaveWeeks:F0}, Draft: {draftPaidLeave:F0} weeks", _playerCountry.PaidFamilyLeaveWeeks, draftPaidLeave);
             _paidFamilyLeaveWeeksInput = GUILayout.HorizontalSlider(draftPaidLeave, MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, _sliderStyle, _sliderThumbStyle);
 
             float draftOvertimeRegulation = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel);
-            GUILayout.Label($"Overtime/Working-Hour Regulation - Standing: {_playerCountry.OvertimeRegulationLevel:F0}, Draft: {draftOvertimeRegulation:F0} (0 = unregulated, 100 = strict caps)", _labelStyle);
+            DrawDraftLabel($"Overtime/Working-Hour Regulation - Standing: {_playerCountry.OvertimeRegulationLevel:F0}, Draft: {draftOvertimeRegulation:F0} (0 = unregulated, 100 = strict caps)", _playerCountry.OvertimeRegulationLevel, draftOvertimeRegulation);
             _overtimeRegulationInput = GUILayout.HorizontalSlider(draftOvertimeRegulation, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftRetraining = GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel);
-            GUILayout.Label($"Workforce Retraining Programs - Standing: {_playerCountry.RetrainingProgramLevel:F0}, Draft: {draftRetraining:F0}", _labelStyle);
+            DrawDraftLabel($"Workforce Retraining Programs - Standing: {_playerCountry.RetrainingProgramLevel:F0}, Draft: {draftRetraining:F0}", _playerCountry.RetrainingProgramLevel, draftRetraining);
             _retrainingProgramInput = GUILayout.HorizontalSlider(draftRetraining, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(8f);
             float draftFamilyPolicy = GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel);
-            GUILayout.Label($"Family Policy - Standing: {_playerCountry.FamilyPolicyLevel:F0}, Draft: {draftFamilyPolicy:F0} (0 = minimal support, 100 = maximal pro-natalist support)", _labelStyle);
+            DrawDraftLabel($"Family Policy - Standing: {_playerCountry.FamilyPolicyLevel:F0}, Draft: {draftFamilyPolicy:F0} (0 = minimal support, 100 = maximal pro-natalist support)", _playerCountry.FamilyPolicyLevel, draftFamilyPolicy);
             _familyPolicyInput = GUILayout.HorizontalSlider(draftFamilyPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftImmigrationPolicy = GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel);
-            GUILayout.Label($"Immigration Policy - Standing: {_playerCountry.ImmigrationPolicyLevel:F0}, Draft: {draftImmigrationPolicy:F0} (0 = maximally restrictive, 100 = maximally open)", _labelStyle);
+            DrawDraftLabel($"Immigration Policy - Standing: {_playerCountry.ImmigrationPolicyLevel:F0}, Draft: {draftImmigrationPolicy:F0} (0 = maximally restrictive, 100 = maximally open)", _playerCountry.ImmigrationPolicyLevel, draftImmigrationPolicy);
             _immigrationPolicyInput = GUILayout.HorizontalSlider(draftImmigrationPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
@@ -1518,7 +1544,7 @@ namespace PoliSim.UI
             }
 
             float draftMinimumWage = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian);
-            GUILayout.Label($"Minimum Wage - Standing: {_playerCountry.MinimumWagePercentOfMedian:F0}%, Draft: {draftMinimumWage:F0}% of median wage", _labelStyle);
+            DrawDraftLabel($"Minimum Wage - Standing: {_playerCountry.MinimumWagePercentOfMedian:F0}%, Draft: {draftMinimumWage:F0}% of median wage", _playerCountry.MinimumWagePercentOfMedian, draftMinimumWage);
             _minimumWageInput = GUILayout.HorizontalSlider(draftMinimumWage, MinMinimumWagePercent, MaxMinimumWagePercent, _sliderStyle, _sliderThumbStyle);
         }
 
@@ -3341,7 +3367,7 @@ namespace PoliSim.UI
             EndAreaCard(UiPalette.SystemArea.Trade);
 
             float draftTariffRate = GetTariffRateInput(_playerCountry.BaseTariffRate);
-            GUILayout.Label($"General Base Tariff Rate - Standing: {_playerCountry.BaseTariffRate:F2}%, Draft: {draftTariffRate:F2}% (range {MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}%; applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _labelStyle);
+            DrawDraftLabel($"General Base Tariff Rate - Standing: {_playerCountry.BaseTariffRate:F2}%, Draft: {draftTariffRate:F2}% (range {MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}%; applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _playerCountry.BaseTariffRate, draftTariffRate);
             _tariffRateInput = GUILayout.HorizontalSlider(draftTariffRate, MinBaseTariffRate, MaxBaseTariffRate, _sliderStyle, _sliderThumbStyle);
             GUILayout.Space(10f);
 
@@ -3404,7 +3430,7 @@ namespace PoliSim.UI
                 }
 
                 float draftRate = GetPartnerTariffInput(link.PartnerId, link.PlayerTariffOverride);
-                GUILayout.Label($"Override rate - Standing: {link.PlayerTariffOverride:F2}%, Draft: {draftRate:F2}% (range {PartnerTariffOverrideMin:F0}-{PartnerTariffOverrideMax:F0}%; applies via the Trade bill below)", _labelStyle);
+                DrawDraftLabel($"Override rate - Standing: {link.PlayerTariffOverride:F2}%, Draft: {draftRate:F2}% (range {PartnerTariffOverrideMin:F0}-{PartnerTariffOverrideMax:F0}%; applies via the Trade bill below)", link.PlayerTariffOverride, draftRate);
                 float newRate = GUILayout.HorizontalSlider(draftRate, PartnerTariffOverrideMin, PartnerTariffOverrideMax, _sliderStyle, _sliderThumbStyle);
                 _partnerTariffInputs[link.PartnerId] = newRate;
             }
@@ -3813,7 +3839,10 @@ namespace PoliSim.UI
             string draftLabel = taxLine.IsImplemented
                 ? $"Draft rate: {draftRate:F2}%  (range {taxLine.MinRate:F0}-{taxLine.MaxRate:F0}%, applies via the next Annual Budget bill)"
                 : "Draft rate: not implemented";
-            GUILayout.Label(draftLabel, _labelStyle);
+            // Only an IMPLEMENTED line can have a pending rate change - an unimplemented one is changed
+            // by its own standalone Implement/Remove bill above, not by this slider, so it must never
+            // show the amber cue regardless of what the (inactive) draft value happens to hold.
+            DrawDraftLabel(draftLabel, taxLine.IsImplemented && !Mathf.Approximately(draftRate, taxLine.Rate));
 
             // Compose with, never clobber, whatever ambient GUI.enabled the caller already set (e.g.
             // the tab-switch's own !_isGameOver gate) - restoring a hardcoded true here would
@@ -3912,7 +3941,9 @@ namespace PoliSim.UI
             string draftLabel = welfareProgram.IsImplemented
                 ? $"Draft generosity: {draftGenerosity:F0}% (applies via the next Annual Budget bill)"
                 : "Draft generosity: not implemented";
-            GUILayout.Label(draftLabel, _labelStyle);
+            // See DrawTaxLineRow's equivalent - an unimplemented program is changed by its own
+            // standalone bill, not by this slider, so it never shows the amber pending-change cue.
+            DrawDraftLabel(draftLabel, welfareProgram.IsImplemented && !Mathf.Approximately(draftGenerosity, welfareProgram.GenerosityLevel));
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && welfareProgram.IsImplemented;
@@ -4012,23 +4043,23 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
 
             float draftSubsidy = GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel);
-            GUILayout.Label($"Subsidy - Standing: {sector.SubsidyLevel:F0}, Draft: {draftSubsidy:F0}", _labelStyle);
+            DrawDraftLabel($"Subsidy - Standing: {sector.SubsidyLevel:F0}, Draft: {draftSubsidy:F0}", sector.SubsidyLevel, draftSubsidy);
             _sectorSubsidyInputs[sector.Type] = GUILayout.HorizontalSlider(draftSubsidy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftRegulation = GetSectorRegulationInput(sector.Type, sector.RegulationLevel);
-            GUILayout.Label($"Regulation - Standing: {sector.RegulationLevel:F0}, Draft: {draftRegulation:F0} (0 = light-touch, 100 = heavily regulated)", _labelStyle);
+            DrawDraftLabel($"Regulation - Standing: {sector.RegulationLevel:F0}, Draft: {draftRegulation:F0} (0 = light-touch, 100 = heavily regulated)", sector.RegulationLevel, draftRegulation);
             _sectorRegulationInputs[sector.Type] = GUILayout.HorizontalSlider(draftRegulation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftTaxCredit = GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel);
-            GUILayout.Label($"Tax Credits - Standing: {sector.TaxCreditLevel:F0}, Draft: {draftTaxCredit:F0}", _labelStyle);
+            DrawDraftLabel($"Tax Credits - Standing: {sector.TaxCreditLevel:F0}, Draft: {draftTaxCredit:F0}", sector.TaxCreditLevel, draftTaxCredit);
             _sectorTaxCreditInputs[sector.Type] = GUILayout.HorizontalSlider(draftTaxCredit, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftResearchGrants = GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel);
-            GUILayout.Label($"Research Grants - Standing: {sector.ResearchGrantsLevel:F0}, Draft: {draftResearchGrants:F0}", _labelStyle);
+            DrawDraftLabel($"Research Grants - Standing: {sector.ResearchGrantsLevel:F0}, Draft: {draftResearchGrants:F0}", sector.ResearchGrantsLevel, draftResearchGrants);
             _sectorResearchGrantsInputs[sector.Type] = GUILayout.HorizontalSlider(draftResearchGrants, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             float draftDeregulation = GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel);
-            GUILayout.Label($"Deregulation/Nationalization - Standing: {sector.DeregulationNationalizationLevel:F0}, Draft: {draftDeregulation:F0} (0 = fully nationalized, 100 = fully deregulated/private)", _labelStyle);
+            DrawDraftLabel($"Deregulation/Nationalization - Standing: {sector.DeregulationNationalizationLevel:F0}, Draft: {draftDeregulation:F0} (0 = fully nationalized, 100 = fully deregulated/private)", sector.DeregulationNationalizationLevel, draftDeregulation);
             _sectorDeregulationInputs[sector.Type] = GUILayout.HorizontalSlider(draftDeregulation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
         }
 
@@ -4127,14 +4158,16 @@ namespace PoliSim.UI
             DrawColoredLabel(estimateText, _labelStyle, fund != null
                 ? UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true)
                 : UiPalette.GetDeltaColor(0f, higherIsBetter: true));
-            GUILayout.Label(draftExists ? "Draft: fund drafted to exist." : "Draft: not implemented.", _labelStyle);
+            // The fund's own existence is a draft too: amber whenever the drafted existence differs from
+            // whether a fund actually stands today.
+            DrawDraftLabel(draftExists ? "Draft: fund drafted to exist." : "Draft: not implemented.", draftExists != (fund != null));
             GUILayout.Space(8f);
 
             SovereignWealthFund standingDefaults = fund ?? new SovereignWealthFund();
             bool ambientEnabled = GUI.enabled;
 
             float draftContributionRate = GetSwfContributionRateInput(standingDefaults.ContributionRatePercent);
-            GUILayout.Label($"Contribution/Withdrawal Rate: {draftContributionRate:+0.0;-0.0;0}% of GDP per turn (negative draws the fund down - use during a recession or emergency instead of borrowing)", _labelStyle);
+            DrawDraftLabel($"Contribution/Withdrawal Rate: {draftContributionRate:+0.0;-0.0;0}% of GDP per turn (negative draws the fund down - use during a recession or emergency instead of borrowing)", standingDefaults.ContributionRatePercent, draftContributionRate);
             GUI.enabled = ambientEnabled && draftExists;
             float newContributionRate = GUILayout.HorizontalSlider(draftContributionRate, MinSwfContributionRate, MaxSwfContributionRate, _sliderStyle, _sliderThumbStyle);
             GUI.enabled = ambientEnabled;
@@ -4144,7 +4177,7 @@ namespace PoliSim.UI
             }
 
             float draftDomesticAllocation = GetSwfDomesticAllocationInput(standingDefaults.DomesticAllocationPercent);
-            GUILayout.Label($"Domestic Allocation: {draftDomesticAllocation:F0}% (rest international - this pass doesn't model differing returns by allocation)", _labelStyle);
+            DrawDraftLabel($"Domestic Allocation: {draftDomesticAllocation:F0}% (rest international - this pass doesn't model differing returns by allocation)", standingDefaults.DomesticAllocationPercent, draftDomesticAllocation);
             GUI.enabled = ambientEnabled && draftExists;
             float newDomesticAllocation = GUILayout.HorizontalSlider(draftDomesticAllocation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
             GUI.enabled = ambientEnabled;
@@ -4299,9 +4332,12 @@ namespace PoliSim.UI
         {
             float draftPercent = GetSpendingLineInput(spendingLine.Category);
             float impliedDollarChange = spendingLine.Amount * draftPercent / 100f;
-            GUILayout.Label(
+            // Spending drafts are expressed as a percentage CHANGE rather than a standing/draft pair, so
+            // "differs from standing" here means a non-zero change - the same amber cue, reached from the
+            // other direction.
+            DrawDraftLabel(
                 $"{spendingLine.Category}: {spendingLine.Amount:F1}  Change: {draftPercent:+0.0;-0.0;0}% ({impliedDollarChange:+0.0;-0.0;0})",
-                _labelStyle);
+                !Mathf.Approximately(draftPercent, 0f));
             UiPalette.DrawBar(spendingLine.Amount / maxAmountInGroup, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), 8f);
             float newPercent = GUILayout.HorizontalSlider(draftPercent, -rangePercent, rangePercent, _sliderStyle, _sliderThumbStyle);
             _spendingLineInputs[spendingLine.Category] = newPercent;
