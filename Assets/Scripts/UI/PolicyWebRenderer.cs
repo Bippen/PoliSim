@@ -696,6 +696,9 @@ namespace PoliSim.UI
         public static string GetStatName(StatNodeId id) => StatInfo[id].Name;
         public static UiPalette.SystemArea GetPolicyArea(PolicyNodeId id) => PolicyInfo[id].Area;
 
+        /// <summary>This stat's good/bad/neither framing. Exposed for PolicyScreenStats so each policy screen's contextual stat row colours a delta by the SAME judgment this widget uses, rather than forming a second opinion that could disagree about the same number.</summary>
+        public static bool? GetStatHigherIsBetter(StatNodeId id) => StatInfo[id].HigherIsBetter;
+
         /// <summary>Every stat this policy node has a real edge to, for the detail popup's own effect list.</summary>
         public static List<PolicyWebEdge> GetEdgesFor(PolicyNodeId id)
         {
