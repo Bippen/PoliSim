@@ -911,9 +911,27 @@ namespace PoliSim.Testing
             }
         }
 
+        /// <summary>
+        /// Absolute floor for the percentage swing check. A RELATIVE measure is meaningless when both
+        /// values sit near zero: `DebtToGdpRatio` moving 1.48 -> 25.47 was reported as "swung 1616.0% in
+        /// one turn", which is arithmetically true and analytically worthless - a 24-point move inflated
+        /// purely by a small denominator. The pre-existing 0.01 guard was far too low to catch it, so
+        /// these have been silently padding anomaly counts for the whole project history.
+        ///
+        /// Suppression requires BOTH values to be below the floor, so a genuine move OUT of the near-zero
+        /// range (0.87 -> 5.80, say) is still reported - that is a real 6.7x change, not an artifact.
+        /// Only tiny-to-tiny noise is filtered.
+        /// </summary>
+        private const float MinMagnitudeForSwingCheck = 2f;
+
         private static void CheckSwing(int turn, Country country, string field, float previousValue, float currentValue, List<string> anomalies)
         {
             if (Mathf.Abs(previousValue) < 0.01f)
+            {
+                return;
+            }
+
+            if (Mathf.Abs(previousValue) < MinMagnitudeForSwingCheck && Mathf.Abs(currentValue) < MinMagnitudeForSwingCheck)
             {
                 return;
             }

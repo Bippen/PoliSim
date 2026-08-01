@@ -4651,3 +4651,55 @@ they are the instruments every "PASS" in this file was measured with. Worth an e
 principle that an unexamined instrument is an assumption. Note the related precedent already recorded
 above: the anomaly detector's percentage metric is mathematically meaningless near zero, which was found
 by inspection rather than by the detector ever complaining.
+
+## Narrow harness audit before Step A (2026-08-01)
+
+Scoped deliberately to what Step A's acceptance depends on, not an open-ended review. Three items.
+
+### 1. The identical-trajectory diff — VALIDATED, after fixing a defect in it
+
+**A defect was found in the comparison method itself, not the harness.** Every "identical trajectory"
+claim made earlier today used `grep '^Turn '`, which matches only the **anomaly lines**. The log also
+contains **600 full-state lines** per 100-turn run (`[baseline/100] Turn N | Country: GDP=…,
+Unemployment=…, …`, i.e. 100 turns x 6 countries) beginning with `[scenario/turns]`, and those were never
+being compared. A change that shifted simulation values without crossing an anomaly threshold would have
+passed silently - precisely the small, slow drift a published-value leak causes.
+
+**Validated by negative control**, because a comparison never shown to fail on a real difference has not
+been validated: `OkunCoefficient` was changed 0.5 -> 0.5001 (0.02%), the seeded run repeated, and the
+full-state diff caught it at **Turn 4** as `GovernmentDebt=42358,1 -> 42358,2`. Change reverted and
+verified clean against HEAD afterwards. Sensitivity to one digit in the fourth significant place is
+ample for leak detection.
+
+**Use the full-state lines for any before/after proof:**
+```
+grep "^\[baseline/100\] Turn" <log> > state.txt      # 600 lines, the real trajectory
+grep "^Turn " <log>                                   # anomalies only - NOT sufficient
+```
+
+### 2. Anomaly detector near-zero defect — FIXED, and it changes historical counts
+
+`CheckSwing` computes a relative percentage, which is meaningless when both values are near zero:
+`DebtToGdpRatio` 1.48 -> 25.47 reported as "swung 1616.0%". The pre-existing `< 0.01f` guard was far too
+low to suppress it. Added `MinMagnitudeForSwingCheck = 2f`, requiring **both** values to be under the
+floor before suppressing - so a genuine move out of the near-zero range (0.87 -> 5.80) is still reported,
+and only tiny-to-tiny noise is filtered.
+
+**DISCONTINUITY WARNING.** This lowers anomaly counts versus every historical figure recorded in this
+file (28, 34, 53, 56, 60, 74, 80, 85, 86, 96, 97, 104, 106, 178, 215 all predate the fix). **Do not
+compare a post-fix count against a pre-fix one and read the drop as an improvement in the simulation** -
+nothing about the simulation changed, only what gets counted. Post-fix counts are comparable only with
+each other.
+
+### 3. Seeded reproducibility — CONFIRMED on values
+
+Two seeded runs at `-seed=12345` on different HEADs (before and after the batch-exit fix) produced
+**600/600 identical full-state lines**. That confirms both that seeding works and that the harness exit
+fix did not perturb the simulation.
+
+### Out of scope, logged not chased
+
+A general review of the diagnostic tooling was explicitly excluded. Open question still standing: the
+harness carried a fatal bug for five occurrences without being suspected, and `SimulationTestRunner`'s
+other checks (finite-value checks, threshold constants like `MaxUnemploymentPercent`) have never been
+validated against known-bad input the way the diff now has been.
