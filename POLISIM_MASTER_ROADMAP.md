@@ -51,6 +51,56 @@ This is the one authoritative order, replacing whatever each original document s
 7. **Continuous Time Migration — Phases 1 through 5** (the actual daily-granularity conversion of each system's math, safest-first, core macro engine last). This is deliberately positioned after the political-systems work — it's a separate concern (simulation granularity, not who can change policy) and touching the same files for two unrelated reasons in the same window is worth avoiding.
 8. **NEW (2026-07-31) — Build a save/load system.** Not yet scoped, not yet sequenced into the numbered order above (appended here rather than renumbering 1-7, which are referenced extensively throughout this document and `CLAUDE.md`). **Recommendation, pending Elias's confirmation**: scope and build this before or alongside Round 4 (item 6) — Round 4 is already unscoped and is the natural next planning point, and building more features on top of an unpersisted game only compounds the amount of state a save system will eventually need to cover. Reasoning this is a real severity issue, not a nice-to-have: confirmed via direct investigation (zero `PlayerPrefs`/`JsonUtility`/`BinaryFormatter`/any persistence mechanism anywhere in the codebase) that every Unity Editor/Play-mode restart discards ALL game state silently, with no error or warning - and the amount of state that now matters has grown substantially since this was last a non-issue: Cabinet ministers and their competence/philosophy, Parliament seat composition, any pending TaxBill/BudgetBill and its DaysRemaining countdown, every draft dictionary across every gated tab, the calendar date itself, Fed Chair terms, SWF holdings - losing any of this on an ordinary restart is a real loss of play, not a cosmetic gap. This was the leading suspect for a live-play anomaly where an SWF draft never became standing across two observed fiscal-year cycles - **now confirmed as the actual cause**: Elias confirmed Unity was closed/reopened multiple times between setting the draft and the next fiscal date, and the underlying bill mechanism itself was independently proven correct across two full fiscal years via a targeted diagnostic (see CLAUDE.md's "Master Sequence step 5a/5b/5c" writeup). Needs its own design pass before implementation starts, not a guess: what serializes cleanly under Unity's own `JsonUtility` (which - like Unity's Inspector serialization generally - doesn't support `Dictionary<>` natively either, the same limitation already visible as `UAC1009` warnings on several existing fields, e.g. `PolicyDecision.TaxRateOverrides`/`SpendingLineChanges`/every Sector-override dictionary; `BudgetBill`'s own dictionaries would hit the same wall), whether a mid-cycle pending bill's DaysRemaining and a real save timestamp interact cleanly, and how much of `World`/`Country`'s current in-memory object graph can serialize as-is versus needs a dedicated save-data shape. Escalate format/scope decisions rather than guessing, per this document's own working discipline item 4.
 
+   **SCOPED (2026-08-01), both escalated decisions now answered by Elias.** The design pass this item
+   asked for has been done, and the answer to "what serializes cleanly under `JsonUtility`" turned out to
+   be: **essentially none of it.** `JsonUtility` fails this state model on four independent counts, each
+   verified against the real code rather than assumed:
+   - **`Dictionary` is unsupported** — `SimulationManager` alone holds 10+, several NESTED
+     (`Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>>`), on top of `Country`'s own. This is
+     what the 11 standing `UAC1009` build warnings have been reporting all along.
+   - **`DateTime` is unsupported** — and `SimulationManager.CurrentDate` is a `DateTime` auto-property
+     with a *private setter*, so it fails twice over. The in-game calendar is not optional state.
+   - **`readonly` collection fields are not serialized** — 4 of them, including `StatHistory`'s series.
+   - **Nullables are unsupported** — `DateTime?` throughout `StatHistory`.
+
+   **Decision 1 — serializer: Newtonsoft JSON** (`com.unity.nuget.newtonsoft-json`, a Unity-published
+   package), chosen by Elias over hand-writing a DTO layer. It handles dictionaries, nested dictionaries,
+   `DateTime`, nullables and private setters natively, so game classes can be persisted close to as-is.
+   The rejected alternative meant mirroring a large share of the 33 types in `Assets/Scripts/Data` into
+   save-only DTOs, flattening every dictionary into paired lists, hand-encoding `DateTime` — and
+   re-mirroring every one of them on each future model change. Added to `Packages/manifest.json`.
+
+   **Decision 2 — first-pass scope: all three layers**, per Elias:
+   1. **Core sim state** — `World` (countries, economies, parliaments, cabinets) + current turn/date.
+   2. **Pending bills and interrupts** — in-flight bills WITH their day counters, plus pending
+      cabinet/foreign-policy/Fed-chair decisions. Omitting these would make a reload silently cancel
+      anything mid-vote, which is its own version of the bug this item exists to fix.
+   3. **UI draft values** — the unintroduced slider drafts. This is precisely what was lost in the
+      original 5c incident (the SWF draft), so a "save system" that dropped them would not have
+      prevented the very bug that motivated it.
+
+   **Implementation note for whoever builds it**: `SimulationManager`'s pending state lives in `private
+   readonly` dictionaries, so it needs an explicit `CaptureSaveState()`/`RestoreSaveState()` pair
+   returning a plain state object, rather than reflection over private fields. Explicit is better here
+   for a reason beyond taste: it makes the persisted surface reviewable, so a newly added pending-bill
+   type that nobody wired into the save shows up as an obvious omission instead of silently
+   half-persisting. Same for `GameController`'s drafts.
+
+   **Dependency is in place and proven (commit `ebcc2d2`)**: the package resolved, and a throwaway probe
+   serializing a NESTED dictionary — the precise case `JsonUtility` cannot express — compiled clean
+   against it before being deleted. One local-only gotcha for whoever picks this up: Unity had not
+   regenerated `Assembly-CSharp.csproj` with the Newtonsoft reference, so it was added by hand (that file
+   is gitignored, so this does not travel with the repo — if a fresh clone can't see `Newtonsoft.Json`,
+   let the Editor regenerate the csproj or re-add the reference the same way).
+
+   **Implementation has NOT started.** Everything above is design and dependency work. The build order
+   that follows from the two decisions: (1) a `SaveGame` payload type holding format version, player
+   country, turn/date, `World`, the simulation snapshot and the draft snapshot; (2) explicit
+   `CaptureSaveState`/`RestoreSaveState` on `SimulationManager` and on `GameController`'s drafts;
+   (3) read/write through `Application.persistentDataPath`; (4) UI to trigger it. **Include the format
+   version from the very first write** — this game's data model is still changing weekly, and a save file
+   with no version field is unreadable the moment a field moves, with no way to detect that it happened.
+
 If a step's own validation fails, fix it before moving to the next — never proceed past a failing step to "make progress" on the next one.
 
 ---
