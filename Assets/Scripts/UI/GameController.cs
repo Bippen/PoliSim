@@ -721,13 +721,29 @@ namespace PoliSim.UI
             float areaHeight = Screen.height - marginY * 2f;
 
             float columnSpacing = areaWidth * ColumnSpacingFraction;
-            float leftColumnWidth = areaWidth * LeftColumnWidthFraction;
-            float rightColumnWidth = areaWidth - leftColumnWidth - columnSpacing;
             float sectionSpacing = areaHeight * SectionSpacingFraction;
+
+            // Elias's directive (2026-08-01): the Budget tab takes the WHOLE window rather than the right
+            // column, so its three columns (category / line-items / live estimate) get roughly double the
+            // width and the whole budget is visible at once. This is standing behaviour for that tab, not
+            // a toggle. It also retires the width pressure that screen had been fighting - at 1227x690 the
+            // row goes from ~624px to ~1180px, comfortably more than everything that was overflowing.
+            //
+            // Elias chose to hide the left column entirely, including the calendar/speed controls, having
+            // been shown the tradeoff. That strip is normally pinned outside the scroll view on every tab
+            // precisely so a player can always see WHY time is blocked (working discipline item 2, which
+            // exists because of a real "time silently stopped and I couldn't tell why" bug). To keep that
+            // guarantee without giving the space back, DrawBudgetProcessTab re-surfaces any pending
+            // interrupt as its own banner - see DrawFullScreenPendingInterruptBanner.
+            bool budgetFullScreen = _consolidatedTab == ConsolidatedTab.Budget;
+            float leftColumnWidth = budgetFullScreen ? 0f : areaWidth * LeftColumnWidthFraction;
+            float rightColumnWidth = budgetFullScreen ? areaWidth : areaWidth - leftColumnWidth - columnSpacing;
 
             GUILayout.BeginArea(new Rect(marginX, marginY, areaWidth, areaHeight));
             GUILayout.BeginHorizontal();
 
+            if (!budgetFullScreen)
+            {
             GUILayout.BeginVertical(GUILayout.Width(leftColumnWidth));
 
             // Continuous Time Migration Phase 0: the calendar/speed control panel replaces the old
@@ -761,6 +777,7 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
 
             GUILayout.Space(columnSpacing);
+            }
 
             GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
             DrawConsolidatedTabs(rightColumnWidth);
@@ -3561,6 +3578,47 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// Re-surfaces any pending blocking interrupt inside the Budget screen itself.
+        /// </summary>
+        private void DrawFullScreenPendingInterruptBanner()
+        {
+            // The Budget tab runs full-screen (see OnGUI), which hides the calendar/speed strip - and that
+            // strip is normally the ONLY always-visible indicator of why simulated time has stopped.
+            // Working discipline item 2 exists because of a real bug where time silently halted and the
+            // player had no way to tell why, since the resolving UI lived on a tab they weren't looking at.
+            // Going full-screen here would recreate exactly that, in the one screen most likely to be open
+            // when an interrupt fires - so any pending interrupt is re-surfaced here instead.
+            //
+            // The Budget Process's own pause is deliberately NOT listed: this screen already states that
+            // status directly, and repeating it would train players to ignore the banner.
+            var blocking = new List<string>();
+            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
+            {
+                blocking.Add("a Fed Chair appointment");
+            }
+
+            if (_simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0)
+            {
+                blocking.Add("a Cabinet decision");
+            }
+
+            if (_simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
+            {
+                blocking.Add("a Foreign Policy meeting");
+            }
+
+            if (blocking.Count == 0)
+            {
+                return;
+            }
+
+            GUILayout.Label(
+                $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. Open the Decisions tab to resolve it; speed controls are on any other tab.",
+                _eventBannerStyle);
+            GUILayout.Space(4f);
+        }
+
+        /// <summary>
         /// Master Sequence step 5b: the Budget Process full-screen UI shell - left category selector /
         /// center selected category's line-items / right live summary, consolidating the existing Tax,
         /// Spending, Welfare, Infrastructure, and Sovereign Wealth Fund content onto one screen (their
@@ -3583,6 +3641,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
 
             DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
+            DrawFullScreenPendingInterruptBanner();
             // Explicit Width, not left to GUILayout's own inference - the horizontal 3-column row
             // below can otherwise push this outer group's computed "natural" width past the screen
             // edge (a boxed column's GUILayout.Width request plus its GUIStyle's own padding can add
