@@ -40,47 +40,31 @@
 
 ## PART 2 — Seed data for the seven new tracked stats
 
-### 1. Housing — homeownership rate (%)
+### 1. Housing — homeownership rate (% of HOUSEHOLDS owning, OECD Affordable Housing Database basis)
+
+**Use this basis only.** The previous version of this row mixed three incompatible bases and was not a usable set — see the warning below.
+
 | Country | Value | Confidence |
 |---|---|---|
-| USA | 65.3–65.9 | [VERIFIED] OECD / 2025 figures |
+| USA | 65.3 | [VERIFIED] OECD |
 | France | 58.5 | [VERIFIED] OECD |
-| Germany | ~47 (46.7 in 2022; Eurostat nationals-only 52.3 in 2024) | [VERIFIED] — lowest in Europe, a genuine outlier: strong rental culture, high rent control, no mortgage interest deduction |
-| Poland | ~87 | [VERIFIED] directionally — top-10 globally, post-communist privatization legacy |
-| Italy | [GAP] typically ~72–73, needs sourcing | [GAP] |
-| Sweden | [GAP] ~63–65 range, needs sourcing | [GAP] |
+| Germany | 41.0 | [VERIFIED] OECD — lowest among major economies, a genuine structural outlier |
+| Poland | [GAP on this basis] — confirmed in the global top 10 alongside Lithuania, Bulgaria and Latvia (post-communist privatization legacy), but no exact OECD figure sourced | [PARTIAL] |
+| Italy | [GAP on this basis] | [GAP] |
+| Sweden | [GAP on this basis] | [GAP] |
 
-OECD average: 70.1% [VERIFIED]. Germany being far below every peer is real and worth preserving — it makes housing policy play differently there.
+Anchors on the same basis [VERIFIED]: OECD average 70.1, Slovakia highest at 93.5, Canada 68.6, Australia 62.7, Switzerland lowest at 38.2. OECD-wide, 71% of households owned outright or with a mortgage in 2022 versus 24% renting.
 
-**⚠ UNRESOLVED VARIANT RISK — MUST BE CHECKED BEFORE C1 SEEDS THESE.** Homeownership has the same
-variant problem as housing overburden and youth unemployment, and this table has **not** been re-checked
-against it. This now matters more than it did, because homeownership became C1's PRIMARY metric.
+**⚠ THREE-WAY BASIS SPREAD — this is why the earlier set was unusable.** Germany appears in sources as:
+- **41.0%** — OECD, share of *households* owning
+- **~46.7%** — a 2022 dwelling-based figure
+- **52.3%** — Eurostat, *nationals only*
 
-At least three axes are in play:
-1. **Population base vs household base.** Eurostat measures the share of *people* living in
-   owner-occupied dwellings (EU 68.4%). US Census and most OECD reporting measure the share of
-   *occupied housing units* that are owner-occupied — a household base. These are different
-   denominators and do not give the same number.
-2. **Nationals-only vs all residents.** Eurostat publishes both; the gap is large in countries with
-   substantial non-national populations.
-3. **Reference year**, which is minor by comparison but still mixed across this table (2022 vs 2024 vs 2025).
+An 11.3-point spread across three definitions of "the German homeownership rate," every one correct for its own source. A set mixing these would encode differences that are measurement artifacts rather than real. Eurostat additionally measures share of *population* in owner-occupied dwellings (68.4% EU 2024), a fourth basis again.
 
-**Evidence the mixing may already be present in the rows above, visible without any new sourcing:**
-- **Germany carries two figures from two bases** — 46.7 (2022) and "Eurostat nationals-only 52.3 (2024)"
-  — differing by 5.6 points. The row settles on ~47 without stating which base that represents.
-- **Poland ~87** sits against the Eurostat line further down this file reading "Poland nationals 87.9%".
-  If the table's ~87 came from that line, Poland is on the Eurostat nationals-only basis while USA and
-  France are on OECD.
-- **USA 65.3–65.9** matches the US Census homeownership rate, which is household-based, not the
-  population base Eurostat uses.
+USA and France above independently match figures already recorded as OECD-sourced, confirming the basis is coherent — Germany was simply captured from a different one.
 
-So the four `[VERIFIED]` rows may span two or three different denominators. Each figure is probably
-correct for its own source; the table may still not be internally comparable, which is exactly the trap.
-
-**Required before C1 seeds housing:** confirm one basis for all six countries — preferably OECD
-household-based, since USA and France are already there and the USA has no Eurostat figure at all — and
-record the basis explicitly in each row. Do NOT source Italy and Sweden until the basis is fixed, or the
-two new figures will simply add a fourth and fifth variant to the mix.
+**Poland caution:** the ~87.9% figure elsewhere in this file is a Eurostat *nationals* line, not the OECD household basis. Directionally right (Poland genuinely is among the highest globally) but not a same-basis value.
 
 **House Price Index:** [GAP] — no per-country figures sourced yet. Recommend seeding all six at an index value of 100 at game start (a standard index convention) and letting divergence emerge from simulation, rather than inventing differing starting levels. This is honest and avoids fake precision.
 

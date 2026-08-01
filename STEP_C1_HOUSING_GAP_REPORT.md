@@ -1,103 +1,103 @@
-# Step C1 (Housing) — metric decided, blocked on two figures
+# Step C1 (Housing) — metric decided, basis fixed, blocked on three figures
 
-**Status: BLOCKED on 2 lookups. No implementation started.**
-**REVISED twice on 2026-08-01** — first after the seed-data variant correction, then after Elias's
-metric decision. History kept at the bottom, because the sequence is the useful part.
+**Status: BLOCKED on 3 lookups. No implementation started.**
+**REVISED three times on 2026-08-01** — after the variant correction, after Elias's metric decision, and
+after the homeownership basis re-check. The sequence is kept at the bottom because it is the useful part.
 
 ---
 
 ## DECIDED — homeownership rate is C1's primary housing metric
 
-**This reverses the original directive**, which recommended housing cost overburden. Elias's call, and
-the reasoning is a data-honesty one rather than a modelling one:
+**This reverses the original directive**, which recommended housing cost overburden. Elias's call.
 
-Overburden remains the **better concept**. It measures affordability *stress* rather than tenure, and it
-responds to interest rates and housing assistance — both already live levers in this game, which is
-exactly what would have made it play well. None of that changed.
+Overburden remains the **better concept** — it measures affordability *stress* rather than tenure, and
+responds to interest rates and housing assistance, both already live levers here. That reasoning was
+never wrong and still isn't. It lost on data honesty: 2 of 6 verified means seeding four countries from a
+range, and a bound is not a value.
 
-What decided it is that overburden has **2 of 6 verified coverage** (Germany 12.0, Sweden 10.6). Italy,
-France and Poland are *bounded* between 4.0 and 9.0 — an honest constraint derived from Eurostat naming
-only the countries above 9.0 and below 4.0 — but a bound is not a value. Seeding four countries from a
-range means inventing precision, which is the exact thing the `[GAP]` discipline exists to prevent.
+## DECIDED — the basis is OECD Affordable Housing Database, share of HOUSEHOLDS owning
 
-Homeownership has **4 of 6 verified coverage** and preserves the most interesting real contrast in the
-data: **Germany ~47% against Poland ~87%**. That spread is genuine, culturally rooted (German rental
-culture, rent control, no mortgage interest deduction; Polish post-communist privatization), and it makes
-housing policy play differently in the two countries without any invented figure.
+A re-check confirmed the earlier table mixed incompatible bases. Germany alone appears three ways:
 
-**Overburden is deferred, not dropped.** It becomes a secondary metric if exact `ilc_lvho07a`
-whole-population figures are obtained. That needs direct Eurostat database access — search cannot do it,
-and this was attempted and failed.
+| Basis | Germany |
+|---|---|
+| OECD, share of households owning | **41.0** |
+| Dwelling-based (2022) | ~46.7 |
+| Eurostat, nationals only | 52.3 |
 
----
+An **11.3-point spread** across three definitions, every one correct for its own source. Eurostat's
+population-based measure (68.4% EU) is a fourth. A set mixing these would encode measurement artifacts as
+if they were real national differences.
 
-## BLOCKING PREREQUISITE — fix the measurement basis before sourcing anything
-
-**Do not source Italy and Sweden yet.** Homeownership has the same variant problem that produced
-verification-integrity instance 7, it has not been re-checked, and it is now C1's primary metric.
-
-At least three axes: Eurostat measures share of *population* in owner-occupied dwellings (EU 68.4%),
-while US Census and most OECD reporting measure share of *households* owning; Eurostat separately splits
-nationals-only from all residents; and reference years are mixed (2022 / 2024 / 2025).
-
-**Inspection of the existing table suggests the mixing may already be there** — no new sourcing needed to
-see it:
-
-- **Germany carries two figures on two bases**, 46.7 (2022) and "Eurostat nationals-only 52.3 (2024)",
-  a 5.6-point spread. The row settles on ~47 without stating which basis that is.
-- **Poland ~87** sits against a Eurostat line elsewhere in the same file reading "Poland nationals
-  87.9%". If that is where ~87 came from, Poland is on Eurostat nationals-only while USA and France are
-  on OECD.
-- **USA 65.3–65.9** matches the US Census homeownership rate, which is household-based — not Eurostat's
-  population base.
-
-Each figure is likely correct for its own source. The set may still not be internally comparable, which
-is exactly the trap. Sourcing two more figures before fixing this would add a fourth and fifth variant
-rather than completing a set.
-
-*Recommended basis: OECD household-based*, since USA and France are already there and the USA has no
-Eurostat figure at all. Raised as an Open Question rather than settled, since it may require re-sourcing
-Germany and Poland.
-
-## The two remaining gaps — once the basis is fixed
-
-| # | Figure | Country | Difficulty |
-|---|---|---|---|
-| 1 | Homeownership rate | **Italy** | Straightforward lookup — seed file indicates ~72–73 |
-| 2 | Homeownership rate | **Sweden** | Straightforward lookup — seed file indicates ~63–65 |
-
-Have: USA 65.3–65.9 (OECD), France 58.5 (OECD), Germany ~47 (basis unclear), Poland ~87 (basis unclear).
-
-The indicative ranges above are **sourcing hints, not values**, and will not be used as figures. Both
-must come from whichever basis is chosen, and each row should record that basis explicitly — the lesson
-of instance 7 applied forward rather than after the fact.
-
-## Not blocking any more
-
-- **USA overburden** — was a methodology decision (Eurostat >40% vs US >30%/>50%, nothing comparable).
-  With homeownership primary, the USA has a genuinely comparable verified figure at 65.3%. The question
-  is deferred alongside overburden itself rather than being resolved.
-- **House Price Index** — marked `[GAP]` but resolved by convention: seed all six at index 100 and let
-  divergence emerge. A standard index convention, not an invented figure.
+**Single-basis set now recorded:** USA 65.3, France 58.5, Germany 41.0, OECD average 70.1.
 
 ---
 
-## How this arrived here — worth keeping
+## ⚠ The margin is narrower than this report previously claimed
 
-Four successive claims about overburden coverage, each correcting the last:
+The previous version of this report justified the decision on **4-of-6 coverage** for homeownership
+against 2-of-6 for overburden. **That was too strong.** On a single consistent basis, homeownership has
+**3 of 6** — Poland's ~87.9 turned out to be a Eurostat *nationals* line, not the OECD household basis,
+so it leaves the verified set.
 
-| Source | Coverage | Verdict |
+**Coverage is 3–2, not 4–2.** The decision **holds** — 3 verified same-basis figures still beat 2, and
+overburden's three missing countries are unobtainable by search while homeownership's are ordinary
+lookups — but it holds by one country rather than two.
+
+A second claim also needs correcting. I previously argued the decision preserved "the sharpest real
+contrast in the data, **Germany ~47% against Poland ~87%**." That specific pair is **not usable as
+stated**: the two figures come from different bases, which is precisely the error being corrected. What
+survives is stronger for Germany and weaker overall:
+
+- **Germany 41.0 against an OECD average of 70.1** is a real same-basis contrast, and *more* extreme than
+  the ~47 figure suggested. The structural outlier that makes housing policy play differently in Germany
+  is intact and better evidenced than before.
+- **Poland's position is directional only** until sourced on the OECD basis — genuinely among the highest
+  globally (top 10, alongside Lithuania, Bulgaria and Latvia), but without a same-basis number the
+  Germany-vs-Poland spread cannot be quoted.
+
+---
+
+## The three remaining gaps — all on the OECD household basis
+
+| # | Country | Note |
 |---|---|---|
-| The directive | 6 of 6 ("all EU five", "complete EU coverage") | Overstated |
-| Seed file, original figures | 4 of 6 | **Wrong variant** — "two adults" subset, not whole population |
-| My first gap report | 4 of 6 | Caught the directive; trusted the underlying numbers |
-| Corrected + gap-closing attempt | **2 of 6** verified, 3 bounded, 1 unobtainable | Correct |
+| 1 | **Poland** | `[PARTIAL]` — confirmed top-10 globally, but no exact OECD figure. The ~87.9 in this project's files is Eurostat nationals, not same-basis |
+| 2 | **Italy** | `[GAP]` |
+| 3 | **Sweden** | `[GAP]` |
 
-The first report was right to flag the directive and wrong about the number, in the same direction it was
-already investigating — coverage was worse than its pessimistic reading. See `CLAUDE.md`,
-verification-integrity instance 7, for why this indicator in particular defeated ordinary sourcing care:
-at least eight Eurostat variants publish under one name, and secondary sources reproduce different ones
-without labelling which.
+Have: USA 65.3, France 58.5, Germany 41.0. Same-basis anchors for sanity-checking whatever comes back:
+OECD average 70.1, Slovakia 93.5 (highest), Canada 68.6, Australia 62.7, Switzerland 38.2 (lowest).
 
-**C1 does not start until the two homeownership figures are supplied.** I have no web access and will
-not infer a value from an indicative range or a bound.
+Earlier indicative ranges for Italy (~72–73) and Sweden (~63–65) were on unknown bases and **must not be
+used** — they are not merely imprecise, they may be measuring something else.
+
+Each row should record its basis explicitly when sourced. That is instance 7's lesson applied forward
+rather than after the fact.
+
+## Not blocking
+
+- **USA overburden** — deferred with overburden itself; homeownership gives the USA a comparable 65.3.
+- **House Price Index** — `[GAP]` but resolved by convention: all six seed at index 100 and diverge.
+
+---
+
+## How this arrived here
+
+Six successive claims about housing coverage, each correcting the last:
+
+| Stage | Claim | Verdict |
+|---|---|---|
+| Directive | Overburden 6 of 6 | Overstated |
+| Seed file, original | Overburden 4 of 6 | Wrong variant — "two adults" subset |
+| First gap report | Overburden 4 of 6 | Caught the directive; trusted the numbers |
+| Corrected + gap-closing | Overburden **2 of 6** | Correct |
+| Metric decision | Homeownership 4 of 6 | Overstated — mixed bases |
+| Basis re-check | Homeownership **3 of 6** | Correct |
+
+Both metrics were overstated at first, and in both cases the error was invisible to a check against the
+documented warning. See `CLAUDE.md`, verification-integrity instance 7 and its refinements, for why —
+this is now the third indicator where an undocumented variant axis existed.
+
+**C1 does not start until the three figures are supplied on the OECD household basis.** I have no web
+access and will not infer a value from a range, a bound, or a figure on another basis.

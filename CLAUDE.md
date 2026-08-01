@@ -5070,3 +5070,54 @@ rows may span two or three denominators — each correct for its own source, and
 **This blocks C1 ahead of the two remaining lookups.** Sourcing Italy and Sweden before fixing the basis
 would add a fourth and fifth variant rather than completing a set. Recommended basis: OECD
 household-based, since USA and France are already there and the USA has no Eurostat figure at all.
+
+### Instance 7, third confirmation — promoting the pattern to a STANDING RULE
+
+Homeownership was re-checked on a single basis. **The suspicion was correct and understated.** Germany's
+spread is three-way, not two:
+
+| Basis | Germany |
+|---|---|
+| OECD, share of households owning | **41.0** |
+| Dwelling-based (2022) | ~46.7 |
+| Eurostat, nationals only | 52.3 |
+
+**11.3 points across three definitions**, every one correct for its own source, plus Eurostat's
+population-based measure (68.4% EU) as a fourth axis. The figure this project had been carrying — ~47 —
+was the middle one, and no row recorded which.
+
+That makes three indicators, each checked against its own documented warning, each hiding a further axis:
+
+| Indicator | Warning implied | Actually exists |
+|---|---|---|
+| Housing cost overburden | 3 | **8+** |
+| Youth unemployment | 2 | **4** |
+| Homeownership | (none written) | **4+** |
+
+**STANDING RULE — for any cross-country statistic, assume an undocumented variant axis exists until
+proven otherwise, and record the basis alongside every value as a matter of course.** Not "when the
+indicator looks tricky" — always. Three for three is no longer an observation about particular
+indicators; it is the base rate.
+
+The corollary that keeps biting: **checking a figure against the documented warning is not verification.**
+It confirms the axes someone already knew about, which is exactly the subset guaranteed not to contain
+the error. This is the verification-integrity class in its purest form — the check is sound, incomplete,
+and indistinguishable from complete at the moment you run it.
+
+### Consequence — the C1 margin narrowed, and a claim of mine needed correcting
+
+Single-basis coverage is **3 of 6 for homeownership versus 2 of 6 for overburden**, not the 4-of-6 that
+justified the decision. **The decision holds** — three same-basis figures still beat two, and
+overburden's missing three are unobtainable by search while homeownership's are ordinary lookups — but
+by one country rather than two, and Poland leaves the verified set (its ~87.9 is a Eurostat nationals
+line).
+
+I had also argued the decision preserved "the sharpest real contrast, Germany ~47% against Poland ~87%."
+**That pair is not usable as stated** — two bases, which is the error being corrected. What survives:
+Germany **41.0 against an OECD average of 70.1** is a real same-basis contrast and *more* extreme than
+~47 implied, so the German outlier is intact and better evidenced; Poland is directional only until
+sourced on the OECD basis.
+
+Recorded because the earlier, stronger claim is in this file's history and should not be left standing.
+
+**Real wage growth is now the last unverified indicator before C3.**

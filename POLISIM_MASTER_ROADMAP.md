@@ -772,20 +772,17 @@ income while US convention measures >30% or >50%, so no comparable figure exists
 the primary metric the USA has a genuinely comparable verified figure (65.3%), so this stops blocking
 C1. It returns only if overburden is later added as a secondary metric.
 
-### OQ — Step C1: which measurement basis for homeownership rate? (raised 2026-08-01, BLOCKING)
+### RESOLVED (2026-08-01) — Step C1: which measurement basis for homeownership rate?
 
-Homeownership became C1's primary metric and has not been re-checked against the variant failure mode
-(verification-integrity instance 7). Eurostat measures share of *population* in owner-occupied dwellings
-(EU 68.4%); US Census and most OECD reporting measure share of *households* owning; Eurostat also splits
-nationals-only from all residents.
+**Decided: OECD Affordable Housing Database, share of HOUSEHOLDS owning.** The suspicion that the table
+mixed bases was correct and understated — Germany's spread is three-way (OECD households 41.0 /
+dwelling-based ~46.7 / Eurostat nationals-only 52.3), an 11.3-point range across three correct-for-their-
+source definitions, with Eurostat's population base (68.4% EU) as a fourth.
 
-Inspection suggests the existing table may already mix bases: Germany carries 46.7 (2022) alongside
-"Eurostat nationals-only 52.3 (2024)" and settles on ~47 without saying which; Poland's ~87 matches a
-Eurostat "Poland nationals 87.9%" line elsewhere in the file; the USA's 65.3–65.9 is the household-based
-Census rate. Each is plausibly right for its own source and the set may still not be comparable.
+Single-basis set: USA 65.3, France 58.5, Germany 41.0, OECD average 70.1. Poland leaves the verified set
+— its ~87.9 is a Eurostat nationals line — joining Italy and Sweden as gaps on this basis.
 
-*Recommended: OECD household-based*, since USA and France are already there and the USA has no Eurostat
-figure at all. Raised rather than settled because it may require re-sourcing Germany and Poland.
-
-**This blocks the two remaining C1 lookups** — sourcing Italy and Sweden first would add a fourth and
-fifth variant instead of completing a set.
+**Consequence: the C1 margin is 3–2, not the 4–2 that justified the decision.** The decision holds
+(three same-basis figures beat two, and overburden's gaps are unobtainable by search while these are
+ordinary lookups) but by one country rather than two. See `STEP_C1_HOUSING_GAP_REPORT.md`, which also
+corrects an overstated claim about the Germany-vs-Poland contrast.
