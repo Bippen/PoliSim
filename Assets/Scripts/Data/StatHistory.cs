@@ -59,7 +59,7 @@ namespace PoliSim.Data
 
     /// <summary>
     /// Rolling numeric history of a country's key tracked stats - a UI-facing convenience so a
-    /// dashboard graph can show a trend without re-deriving it from the Recent Turns text log, which
+    /// graph can show a trend without re-deriving it from the turn-activity text log, which
     /// is a formatted string per turn, not raw numbers. Appended once per turn by
     /// SimulationManager.AdvanceTurn, for every country (not just the player's), after that turn's
     /// state is fully settled - never touched by PreviewTurn's throwaway clone, so a live slider drag

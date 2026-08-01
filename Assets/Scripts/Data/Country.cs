@@ -511,7 +511,7 @@ namespace PoliSim.Data
         /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see
         /// StatHistory.cs. Appended once per turn by SimulationManager.AdvanceTurn, kept entirely
-        /// separate from the existing Recent Turns text log.
+        /// separate from the existing turn-activity text log (shown under Statistics -> International since 2026-08-01).
         /// </summary>
         public StatHistory History = new StatHistory();
 

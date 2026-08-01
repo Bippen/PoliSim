@@ -41,8 +41,20 @@ namespace PoliSim.UI
             Politics
         }
 
-        /// <summary>Statistics tab's 3 sub-categories (Recent Turns, World Map, and Trade's informational half - the Trade Balance graph only, see TradeCategory below for the policy half).</summary>
-        private enum StatisticsCategory { RecentTurns, WorldMap, Trade }
+
+        /// <summary>
+        /// Statistics tab's two sub-categories, restructured 2026-08-01 from the previous
+        /// RecentTurns/WorldMap/Trade split.
+        ///
+        /// "Recent Turns" was a name inherited from the turn-based era and no longer describes anything
+        /// the player sees under continuous time. "Domestic" says what the content actually is. Trade
+        /// stopped being a peer sub-tab and folded into International, because trade IS international
+        /// relations - it was only ever a sibling for historical reasons, not conceptual ones.
+        ///
+        /// All statistics now live in this tab, numbers and graphs together. The left column keeps
+        /// headline numbers only.
+        /// </summary>
+        private enum StatisticsCategory { Domestic, International }
 
         /// <summary>Policy/Laws tab's 5 sub-categories - each already has (or, for Trade/Policy Web, now gains) its own standalone-bill or reference-tool identity.</summary>
         private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade }
@@ -414,6 +426,14 @@ namespace PoliSim.UI
         private readonly GraphRenderer _unemploymentGraph = new GraphRenderer();
         private readonly GraphRenderer _approvalGraph = new GraphRenderer();
 
+        // Restructure 2026-08-01: all graphs moved out of the left column into the Statistics tab, which
+        // has the width and height they need. These are the stats that previously had no graph at all
+        // because the strip could only fit three.
+        private readonly GraphRenderer _inflationGraph = new GraphRenderer();
+        private readonly GraphRenderer _povertyGraph = new GraphRenderer();
+        private readonly GraphRenderer _debtGraph = new GraphRenderer();
+        private readonly GraphRenderer _unemploymentPublishedGraph = new GraphRenderer();
+
         // Phase 4's per-tab graph rollout - one GraphRenderer per newly-homed stat, same "never
         // shared across stats" reasoning as the three headline instances above.
         private readonly GraphRenderer _interestRateGraph = new GraphRenderer();
@@ -458,7 +478,7 @@ namespace PoliSim.UI
         private bool _showTabGuide;
 
         private ConsolidatedTab _consolidatedTab = ConsolidatedTab.Statistics;
-        private StatisticsCategory _statisticsCategory = StatisticsCategory.RecentTurns;
+        private StatisticsCategory _statisticsCategory = StatisticsCategory.Domestic;
         private PolicyLawsCategory _policyLawsCategory = PolicyLawsCategory.LaborMarket;
         private PoliticsCategory _politicsCategory = PoliticsCategory.Parliament;
         private Vector2 _statisticsContentScrollPosition;
@@ -1002,8 +1022,10 @@ namespace PoliSim.UI
 
             DrawHeadlineStatTiles(state, hasIndependentCurrency);
 
-            GUILayout.Space(10f);
-            DrawHeadlineGraphs(state);
+            // Graphs deliberately absent (2026-08-01). The left column is numbers only now - headline
+            // tiles, the policy preview, and the calendar/speed controls. Every graph lives in the
+            // Statistics tab, where a stat and its history can sit side by side at a readable size
+            // instead of being split across two parts of the screen at strip height.
 
             GUILayout.EndVertical();
         }
@@ -1073,38 +1095,6 @@ namespace PoliSim.UI
         /// hand-rolled forecast, the same "reuse the real preview math" idiom the existing text
         /// preview already established.
         /// </summary>
-        private void DrawHeadlineGraphs(EconomyState state)
-        {
-            float? projectedGdp = null;
-            float? projectedUnemployment = null;
-            float? projectedApproval = null;
-
-            if (_hasCachedPreview)
-            {
-                projectedGdp = state.GDP * (1f + _cachedGdpGrowthPercentRaw / 100f);
-                projectedUnemployment = state.Unemployment + _cachedUnemploymentChangeRaw;
-                projectedApproval = state.ApprovalRating + _cachedApprovalChangeRaw;
-            }
-
-            // Continuous Time Migration Phase 0: every graph reads the Quarterly resolution
-            // specifically - see StatHistory's own class doc comment for why this is the resolution
-            // that exactly matches this project's existing one-point-per-turn graph cadence with zero
-            // visual change, while Daily/Weekly/Monthly sit ready underneath for Phases 1-5.
-            StatHistory history = _playerCountry.History;
-            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true);
-            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false,
-                thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
-            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true);
-
-            // Master Sequence step 9, Step B: the same stat as PUBLISHED - lagged, and revised as later
-            // estimates arrive - immediately below its live counterpart. Placed adjacent deliberately:
-            // the gap between the two lines IS the reporting lag, which is far easier to read as a
-            // comparison than as an isolated chart with a date axis the player has to interpret.
-            GUILayout.Space(6f);
-            _gdpPublishedGraph.DrawPublished("GDP as published (amber tick = release, orange = preliminary)",
-                _playerCountry.Published.Series.TryGetValue(PublishedStat.Gdp, out PublishedSeries gdpPublished) ? gdpPublished : null,
-                _labelStyle, higherIsBetter: true, _simulationManager.CurrentDate);
-        }
 
         /// <summary>
         /// Generates 2-3 Fed chair candidates the first time the upcoming turn is detected as an
@@ -2508,12 +2498,12 @@ namespace PoliSim.UI
             return style;
         }
 
-        /// <summary>
-        /// Master Sequence step 5e, Phase A: Statistics tab - Recent Turns + World Map (both directly
-        /// named in the original 5e scope text) plus Trade's informational half (see
-        /// DrawTradeStatsContent's own doc comment on the split). RecentTurns/WorldMap reuse their
-        /// full old Draw*Tab methods UNCHANGED (each already owns its own box/scrollview) rather than
-        /// being surgically split - Phase A's own "no visual style changes, minimize risk" constraint
+        /// Statistics tab. RESTRUCTURED 2026-08-01 into two sub-tabs: Domestic (this country's own
+        /// numbers AND graphs together) and International (world map, trade, and world-wide activity).
+        /// Replaces the previous RecentTurns/WorldMap/Trade split - "Recent Turns" was a turn-based-era
+        /// name that describes nothing under continuous time, and Trade was only ever a peer sub-tab for
+        /// historical rather than conceptual reasons. All statistics live here now; the left column
+        /// keeps headline numbers only.
         /// favors reusing existing rendering wholesale over extracting content-only pieces that don't
         /// already exist, even at the cost of a harmless nested box for those two categories.
         /// </summary>
@@ -2522,29 +2512,112 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Statistics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.BeginHorizontal();
-            DrawSubCategoryButton("Recent Turns", StatisticsCategory.RecentTurns, ref _statisticsCategory);
-            DrawSubCategoryButton("World Map", StatisticsCategory.WorldMap, ref _statisticsCategory);
-            DrawSubCategoryButton("Trade", StatisticsCategory.Trade, ref _statisticsCategory);
+            DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory);
+            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
             float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f;
+            float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
+            _statisticsContentScrollPosition = GUILayout.BeginScrollView(_statisticsContentScrollPosition, GUILayout.Height(scrollHeight));
             switch (_statisticsCategory)
             {
-                case StatisticsCategory.RecentTurns:
-                    DrawTurnLog(contentHeight);
+                case StatisticsCategory.Domestic:
+                    DrawDomesticStatisticsContent();
                     break;
-                case StatisticsCategory.WorldMap:
-                    DrawWorldMapTab(contentHeight);
-                    break;
-                case StatisticsCategory.Trade:
-                    float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
-                    _statisticsContentScrollPosition = GUILayout.BeginScrollView(_statisticsContentScrollPosition, GUILayout.Height(scrollHeight));
-                    DrawTradeStatsContent();
-                    GUILayout.EndScrollView();
+                case StatisticsCategory.International:
+                    DrawInternationalStatisticsContent(contentHeight);
                     break;
             }
+            GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Domestic statistics: this country's own numbers AND their graphs, together. Restructured
+        /// 2026-08-01 - the left column now carries headline numbers only, so a stat and its history are
+        /// no longer split across two parts of the screen where they could not be read against each
+        /// other.
+        /// </summary>
+        private void DrawDomesticStatisticsContent()
+        {
+            EconomyState state = _playerCountry.State;
+            bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
+
+            DrawColoredLabel("Domestic", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            DrawHeadlineStatTiles(state, hasIndependentCurrency);
+            GUILayout.Space(10f);
+
+            // Next-turn projections carried over from the old left-column graphs rather than dropped in
+            // the move - the dashed segment is a real feature, and losing it silently would have been a
+            // regression disguised as a relocation.
+            float? projectedGdp = null;
+            float? projectedUnemployment = null;
+            float? projectedApproval = null;
+            if (_hasCachedPreview)
+            {
+                projectedGdp = state.GDP * (1f + _cachedGdpGrowthPercentRaw / 100f);
+                projectedUnemployment = state.Unemployment + _cachedUnemploymentChangeRaw;
+                projectedApproval = state.ApprovalRating + _cachedApprovalChangeRaw;
+            }
+
+            StatHistory history = _playerCountry.History;
+            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true);
+            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false,
+                thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
+            _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, _labelStyle, higherIsBetter: false);
+            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true);
+            _povertyGraph.Draw("Poverty Rate", history.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false);
+            _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false,
+                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable");
+
+            GUILayout.Space(12f);
+            DrawColoredLabel("As published", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            GUILayout.Label("What the public sees: lagged, and revised as later estimates arrive. Compare against the live figures above.", _labelStyle);
+            GUILayout.Space(4f);
+
+            _gdpPublishedGraph.DrawPublished("GDP as published",
+                _playerCountry.Published.Series.TryGetValue(PublishedStat.Gdp, out PublishedSeries gdpPublished) ? gdpPublished : null,
+                _labelStyle, higherIsBetter: true, _simulationManager.CurrentDate);
+
+            _unemploymentPublishedGraph.DrawPublished("Unemployment as published",
+                _playerCountry.Published.Series.TryGetValue(PublishedStat.Unemployment, out PublishedSeries unemploymentPublished) ? unemploymentPublished : null,
+                _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate);
+
+            // TEMPORARY DIAGNOSTIC - retained until the visual design conveys the same provenance.
+            GUILayout.Space(8f);
+            GUILayout.Label($"[DEBUG] now={_simulationManager.CurrentDate:yyyy-MM-dd}  liveGDP={state.GDP:F1}", _labelStyle);
+            if (gdpPublished != null)
+            {
+                GUILayout.Label($"[DEBUG] {gdpPublished.Entries.Count} GDP entries (refStart | refEnd | pubDate | value | status):", _labelStyle);
+                for (int i = 0; i < gdpPublished.Entries.Count; i++)
+                {
+                    PublishedEntry e = gdpPublished.Entries[i];
+                    GUILayout.Label($"[{i}] {e.ReferencePeriodStart:yyyy-MM-dd} | {e.ReferencePeriodEnd:yyyy-MM-dd} | {e.PublicationDate:yyyy-MM-dd} | {e.Value:F1} | {e.Status}", _labelStyle);
+                }
+            }
+        }
+
+        /// <summary>
+        /// International statistics: the world map plus everything cross-country, now including Trade -
+        /// which absorbed the old peer sub-tab because trade IS international relations, and was only
+        /// ever a sibling for historical reasons. The turn log lives here too, since its content is
+        /// world-wide rather than domestic.
+        /// </summary>
+        private void DrawInternationalStatisticsContent(float availableHeight)
+        {
+            DrawColoredLabel("International", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            DrawWorldMapContent();
+
+            GUILayout.Space(10f);
+            DrawTradeStatsContent();
+
+            GUILayout.Space(10f);
+            DrawColoredLabel("Recent activity", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            for (int i = _turnLog.Count - 1; i >= 0 && i > _turnLog.Count - 12; i--)
+            {
+                GUILayout.Label(_turnLog[i], _labelStyle);
+            }
         }
 
         /// <summary>
@@ -2791,13 +2864,11 @@ namespace PoliSim.UI
         /// read straight from existing SimulationManager/EconomyState/EconomicEvent data - no new
         /// simulation data of any kind.
         /// </summary>
-        private void DrawWorldMapTab(float availableHeight)
+        /// <summary>World-map content, extracted from the former World Map sub-tab so the International
+        /// sub-tab can compose it alongside Trade. Wrapper (box + scroll view) removed - the caller owns
+        /// scrolling now, and nesting a scroll view inside one breaks wheel handling.</summary>
+        private void DrawWorldMapContent()
         {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _worldMapScrollPosition = GUILayout.BeginScrollView(_worldMapScrollPosition, GUILayout.Height(scrollHeight));
-
             DrawColoredLabel("World Map", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.Label("Hover a marker for a quick readout, click to pin it below. Colored dots are recent events - green helped, red hurt; size reflects how big a shock it was, and dots fade out over a few turns.", _labelStyle);
             GUILayout.Space(6f);
@@ -2840,8 +2911,6 @@ namespace PoliSim.UI
                 GUILayout.Label("Click a country marker or an event dot for details.", _labelStyle);
             }
 
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>Read-only headline readout for the five non-player countries; the full dashboard-level detail set for USA (the player's own country) - matches the task's explicit "read-only for the five, full detail for USA" split.</summary>
