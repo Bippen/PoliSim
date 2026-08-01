@@ -250,3 +250,24 @@ netmigrationrate. This is **not** an argument for dropping them — they are con
 tab's Domestic and International sub-tabs, which is a separate and equally real surface. The section 9
 recommendation ("send the full 42") therefore stands unchanged; the only correction is the missing
 interest-rate icon.
+
+## 11. CORRECTION (2026-08-01) — the pack WAS delivered; section 10 said otherwise and was wrong
+
+Section 10 closed by stating *"No macro sprites have been delivered yet... no `Stats/` directory exists.
+Item remains blocked on Claude Design delivery."* **That is false.** All 42 assets were delivered,
+security-reviewed and imported earlier the same day (`be97ebb`, with hand-written `.meta` files in
+`65be9ab`): 36 `icon_stat_*`, 3 trend arrows, 1 release marker, 2 revision badges, in
+`Assets/Resources/Art/UI/Stats/` exactly as section 8 specified.
+
+The error: the check searched for `stat_*.png`, which does not match `icon_stat_gdp.png` because of the
+`icon_` prefix. An empty result was read as "not delivered" rather than "bad pattern" — a checking
+mechanism that returned a clean-looking negative for the wrong reason, which is the
+verification-integrity class in `CLAUDE.md`, committed while writing up that very class.
+
+**Actual status: delivered and imported, but UNWIRED.** No code references any of the 42, and
+`IconLibrary` has no `StatsResourcesPath` alongside its Icons/Chrome/Portraits paths. They are ready to
+consume whenever B2's rendering is built. Nothing is blocked on Claude Design.
+
+The section 10 finding that stands unchanged: **`icon_stat_interestrate` is still missing** from the
+manifest and from the delivery, and is still needed — interest rate is one of the 18 stats reachable on a
+policy screen.
