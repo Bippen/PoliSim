@@ -4552,3 +4552,55 @@ controlling asset import workers (something like `-importWorkerCount`, exact nam
 unconfirmed); whether `EditorApplication.Exit()` is documented to block while import workers are active,
 and the recommended batch-mode shutdown sequence; and whether Search indexing can be disabled per-project
 via a settings asset rather than a CLI flag.
+
+## The batch-run hang: actual root cause found and FIXED (2026-08-01)
+
+**Supersedes every earlier explanation in this file.** The recurring "Unity batch run never exits" problem
+was never Search indexing, and never the crashed asset import worker. **It was a bug in
+`BatchSimulationRunner` itself**, present since the tool was written.
+
+**The bug.** `Run()` subscribed `WaitThenExit` to `EditorApplication.update` and then set
+`EditorApplication.isPlaying = true`. Entering Play mode triggers a DOMAIN RELOAD, and a domain reload
+wipes all static state and unsubscribes every delegate. So the callback was destroyed by the very line
+that followed it, `_framesWaited` reset to 0, and nothing ever called `EditorApplication.Exit(0)`. Unity
+ran the simulation, logged its summary, and then sat in Play mode forever.
+
+**The diagnostic that identifies it**: `"BatchSimulationRunner: exiting after wait."` - logged
+immediately before the Exit call - **never appeared in ANY run's log**. That negative observation held
+across every occurrence, while indexing messages and worker crashes came and went. A symptom that is
+*always* present discriminates better than one that is merely often present.
+
+**The fix** (commit below): state moved from static fields into `SessionState`, which survives domain
+reloads, plus an `[InitializeOnLoadMethod]` that re-subscribes `WaitThenExit` after each reload. The exit
+path now survives the event that used to destroy it. `Exit(0)` is also called directly rather than
+setting `isPlaying = false` in the same frame, since leaving Play mode is itself asynchronous.
+
+**Verified**: first clean self-termination of the session - `EXIT LINE PRESENT: 1`, `Unity EXITED
+CLEANLY`, and 75 anomalies matching the baseline exactly, so shutdown behaviour changed while simulation
+behaviour did not.
+
+### Two wrong diagnoses, and why each survived so long
+
+1. **Search/asset indexing** (5 occurrences). Plausible because `[Indexing] Starting Initial Indexing`
+   appears in every log and the process spins at high CPU. But indexing COMPLETES well before the hang -
+   the hang is after `Shut down.`. Never tested, only assumed.
+2. **Crashed asset import worker.** Better evidenced - a real `code=10054` crash line, a worker left
+   `Connected`, and it neatly explained why the hang worsened after force-kills. **Disproved by testing
+   it**: disabling parallel import (`m_DesiredImportWorkerCountPctOfLogicalCPUs: 0`) removed the worker
+   crash entirely and the hang persisted completely unchanged.
+
+The second is the more instructive failure: a plausible mechanism, real supporting evidence in the log,
+and an elegant explanation for a puzzling correlation - and still a bystander. **A correlated symptom is
+not a cause, and the only thing that separated them was running the experiment.**
+
+### Note on the two changes made while chasing the wrong cause
+
+Both were kept, on their own merits rather than as fixes for this: parallel import disabled (removes a
+real crash, and the project is small enough not to need workers), and `Library/` deleted and rebuilt
+(cleared genuinely inconsistent state from prior force-kills). Neither fixed the hang.
+
+**`m_ParallelImport` does not exist in Unity 6000.5's EditorSettings.** Verified by searching
+`UnityEditor.CoreModule.dll` for it and every plausible variant; the only import-worker field is
+`m_DesiredImportWorkerCountPctOfLogicalCPUs`, which matches the "25% of logical cores" default. Setting
+it to 0 is how you get no workers in this version. Checking the binary mattered: a misspelled YAML key
+would have done nothing while looking correct.

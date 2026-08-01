@@ -26,12 +26,44 @@ namespace PoliSim.EditorTools
     public static class BatchSimulationRunner
     {
         private const int FramesToWaitAfterPlay = 15;
-        private static int _framesWaited;
+
+        // State lives in SessionState, not static fields, because ENTERING PLAY MODE TRIGGERS A DOMAIN
+        // RELOAD - and a domain reload wipes every static field and unsubscribes every delegate.
+        //
+        // That was the bug behind this project's long-running "batch run hangs forever" problem. The old
+        // version subscribed WaitThenExit to EditorApplication.update and then set isPlaying = true; the
+        // reload that followed silently removed that subscription and reset the frame counter, so
+        // WaitThenExit never ran again and EditorApplication.Exit was never called. Unity finished the
+        // simulation, logged its summary, and then sat in Play mode indefinitely.
+        //
+        // The diagnostic that identifies this: "BatchSimulationRunner: exiting after wait." below never
+        // appeared in ANY run's log, hung or otherwise. Five occurrences were misattributed to Search
+        // indexing and later to a crashed asset import worker - both were bystanders visible in the same
+        // logs. Disabling parallel import removed the worker crash entirely and the hang persisted
+        // unchanged, which is what ruled that explanation out.
+        //
+        // SessionState survives domain reloads (it is scoped to the Editor session), and
+        // [InitializeOnLoadMethod] re-subscribes after each reload, so the exit path now survives the
+        // very event that used to destroy it.
+        private const string ActiveKey = "PoliSim.BatchSimulationRunner.Active";
+        private const string FramesKey = "PoliSim.BatchSimulationRunner.FramesWaited";
+
+        [InitializeOnLoadMethod]
+        private static void ReattachAfterDomainReload()
+        {
+            if (SessionState.GetBool(ActiveKey, false))
+            {
+                EditorApplication.update -= WaitThenExit;
+                EditorApplication.update += WaitThenExit;
+            }
+        }
 
         public static void Run()
         {
             EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
-            _framesWaited = 0;
+            SessionState.SetBool(ActiveKey, true);
+            SessionState.SetInt(FramesKey, 0);
+            EditorApplication.update -= WaitThenExit;
             EditorApplication.update += WaitThenExit;
             EditorApplication.isPlaying = true;
         }
@@ -43,15 +75,20 @@ namespace PoliSim.EditorTools
                 return;
             }
 
-            _framesWaited++;
-            if (_framesWaited < FramesToWaitAfterPlay)
+            int framesWaited = SessionState.GetInt(FramesKey, 0) + 1;
+            SessionState.SetInt(FramesKey, framesWaited);
+            if (framesWaited < FramesToWaitAfterPlay)
             {
                 return;
             }
 
             EditorApplication.update -= WaitThenExit;
+            SessionState.SetBool(ActiveKey, false);
             Debug.Log("BatchSimulationRunner: exiting after wait.");
-            EditorApplication.isPlaying = false;
+
+            // Exit directly rather than setting isPlaying = false first and exiting in the same frame:
+            // leaving Play mode is itself asynchronous, so the old sequence asked Unity to tear down Play
+            // mode and terminate simultaneously.
             EditorApplication.Exit(0);
         }
     }
