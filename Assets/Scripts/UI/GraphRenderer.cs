@@ -253,6 +253,7 @@ namespace PoliSim.UI
             }
 
             DrawReleaseMarkers(rect, visiblePeriods, latestForPeriod);
+            DrawPublishedPointOverlay(rect, visiblePeriods, latestForPeriod, series);
             DrawDateAxisOverlay(rect, visiblePeriods);
 
             PublishedEntry newest = latestForPeriod[visiblePeriods[visiblePeriods.Count - 1]];
@@ -304,6 +305,100 @@ namespace PoliSim.UI
                 GUI.DrawTexture(marker, Texture2D.whiteTexture);
                 GUI.color = previousMarkerColor;
             }
+        }
+
+        /// <summary>
+        /// Per-point provenance overlay - the part that makes a published series readable AS published
+        /// rather than as just another line.
+        ///
+        /// Designed rather than iterated, because two earlier attempts failed for reasons more width
+        /// alone could not fix. Four distinct signals, none of which requires reading text:
+        ///
+        /// 1. **Every release is a filled marker.** A published series is a sequence of discrete events,
+        ///    not a continuous measurement, and the markers say so - the line between them is
+        ///    interpolation the player should not read as data.
+        /// 2. **Preliminary points are HOLLOW, settled points FILLED.** Shape rather than colour alone,
+        ///    so it survives being tinted and does not depend on hue discrimination. A hollow marker
+        ///    reads as "not yet solid", which is what preliminary means.
+        /// 3. **A revised point shows its ghost.** Where a figure was revised, the superseded value is
+        ///    drawn as a faint marker at its old height with a connector to the new one, so the
+        ///    correction is visible as a movement rather than inferred from a number that silently
+        ///    changed. This is the payoff of Step A's revision mechanic and the thing no amount of extra
+        ///    width was ever going to convey on its own.
+        /// 4. **Larger markers than the plot line is thick**, so they read as deliberate marks rather
+        ///    than as rendering artifacts - the failure mode of the previous attempt's 2px ticks.
+        /// </summary>
+        private void DrawPublishedPointOverlay(Rect rect, List<System.DateTime> periods, Dictionary<System.DateTime, PublishedEntry> latestForPeriod, PublishedSeries series)
+        {
+            if (Event.current.type != EventType.Repaint || periods.Count < 2)
+            {
+                return;
+            }
+
+            float range = Mathf.Max(0.0001f, _lastMax - _lastMin);
+            float markerSize = Mathf.Clamp(rect.height * 0.09f, 5f, 9f);
+
+            for (int i = 0; i < periods.Count; i++)
+            {
+                PublishedEntry entry = latestForPeriod[periods[i]];
+                float x = rect.x + (i / (float)(periods.Count - 1)) * rect.width;
+                float y = rect.yMax - ((entry.Value - _lastMin) / range) * rect.height;
+
+                // A superseded value for this same period, if one exists - the ghost.
+                PublishedEntry superseded = null;
+                foreach (PublishedEntry candidate in series.Entries)
+                {
+                    if (candidate.ReferencePeriodStart == entry.ReferencePeriodStart
+                        && candidate.PublicationDate < entry.PublicationDate
+                        && (superseded == null || candidate.PublicationDate > superseded.PublicationDate))
+                    {
+                        superseded = candidate;
+                    }
+                }
+
+                if (superseded != null && !Mathf.Approximately(superseded.Value, entry.Value))
+                {
+                    float ghostY = rect.yMax - ((superseded.Value - _lastMin) / range) * rect.height;
+                    DrawMarker(new Vector2(x, ghostY), markerSize * 0.8f, new Color(PreliminaryLineColor.r, PreliminaryLineColor.g, PreliminaryLineColor.b, 0.35f), hollow: true);
+                    DrawConnector(x, ghostY, y, new Color(PreliminaryLineColor.r, PreliminaryLineColor.g, PreliminaryLineColor.b, 0.5f));
+                }
+
+                bool preliminary = entry.Status == RevisionStatus.Preliminary;
+                DrawMarker(new Vector2(x, y), markerSize, preliminary ? PreliminaryLineColor : ReleaseMarkerColor, hollow: preliminary);
+            }
+        }
+
+        /// <summary>Filled or hollow square marker. Hollow is drawn as four edges rather than a ring because IMGUI has no primitive circle, and a hollow SQUARE still reads unambiguously as "not filled" at 5-9px.</summary>
+        private static void DrawMarker(Vector2 centre, float size, Color color, bool hollow)
+        {
+            Color previous = GUI.color;
+            GUI.color = color;
+            float half = size * 0.5f;
+
+            if (!hollow)
+            {
+                GUI.DrawTexture(new Rect(centre.x - half, centre.y - half, size, size), Texture2D.whiteTexture);
+            }
+            else
+            {
+                const float edge = 1.5f;
+                GUI.DrawTexture(new Rect(centre.x - half, centre.y - half, size, edge), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(centre.x - half, centre.y + half - edge, size, edge), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(centre.x - half, centre.y - half, edge, size), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(centre.x + half - edge, centre.y - half, edge, size), Texture2D.whiteTexture);
+            }
+
+            GUI.color = previous;
+        }
+
+        /// <summary>Vertical connector from a superseded value to its revision - the visible "this number moved" cue.</summary>
+        private static void DrawConnector(float x, float fromY, float toY, Color color)
+        {
+            Color previous = GUI.color;
+            GUI.color = color;
+            float top = Mathf.Min(fromY, toY);
+            GUI.DrawTexture(new Rect(x - 0.75f, top, 1.5f, Mathf.Abs(toY - fromY)), Texture2D.whiteTexture);
+            GUI.color = previous;
         }
 
         /// <summary>Calendar dates at each end of the plotted span, replacing the turn-number framing entirely - the reference PERIOD each figure describes, not when it was published.</summary>
