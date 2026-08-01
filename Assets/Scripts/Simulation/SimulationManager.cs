@@ -87,6 +87,24 @@ namespace PoliSim.Simulation
         public bool AdvanceDay()
         {
             CurrentDate = CurrentDate.AddDays(1);
+
+            // Master Sequence step 9, Step A: statistics are published on their real release schedules,
+            // which are date-driven ("first Friday", "the 12th", "t+30 after quarter end"), so this is
+            // the only correct place for it - once per simulated day, after the date has advanced.
+            //
+            // PublicationSystem READS country.State and WRITES only country.Published. It returns no
+            // value and nothing below consumes its output, so it cannot influence the turn boundary
+            // computed here or anything AdvanceTurn later does. Its revision noise draws from
+            // SimulationRandom's own PublicationRevision stream, so it cannot perturb any other
+            // consumer's draw sequence either.
+            if (_world != null)
+            {
+                foreach (Country country in _world.Countries)
+                {
+                    PublicationSystem.PublishDueFigures(country, CurrentDate);
+                }
+            }
+
             int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
             return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
         }
