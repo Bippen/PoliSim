@@ -4500,3 +4500,55 @@ evidence about it. Note also that Unity regenerates this csproj on import, which
 before acting on it.** All three failures above were caught that way - by noticing the result
 contradicted an established fact - and not by any tool failing loudly. A surprising diagnostic is
 evidence about the diagnostic at least as much as about the system under test.
+
+## Unity batch-run process policy (2026-08-01)
+
+**STANDING AUTHORIZATION.** Elias grants blanket, ongoing permission to force-kill `Unity.exe` and
+`UnityPackageManager.exe` processes for this project at any time, without asking first. This replaces the
+previous ask-every-time rule, which cost significant time across 5+ occurrences of the post-run hang.
+**The verification requirement stays**: always confirm with `Get-Process` afterwards that nothing remains.
+Only the permission request is removed, not the check.
+
+**CLEAR BEFORE, NOT AFTER.** A process-clear is now the mandatory FIRST step of every Unity invocation,
+not a reaction to a lock failure. The hang holds both the project lock (next run dies with
+`return code 1` after a ~24-line log) and file locks (`rm` fails with `Device or resource busy`), so
+clearing beforehand removes an entire class of wasted runs.
+
+**Never chain the clear to the run with `&&`** - see the verification-integrity note above, where exactly
+that pattern reported success while silently skipping the capture. Use `;`, and verify the artifact
+exists afterwards rather than trusting an exit code.
+
+Standard invocation:
+```
+1. Get-Process Unity,UnityPackageManager | Stop-Process -Force      (no permission needed)
+2. Get-Process ...                                                  (verify clear)
+3. Unity.exe -batchmode -nographics ... -logFile <path>              (separate command, not &&)
+4. Confirm "Sanity check complete" IN THE LOG - exit codes have been wrong 3+ times
+```
+
+### Root-cause investigation of the hang - findings, not attribution
+
+Every prior occurrence was attributed to Unity's startup Search/asset indexing. **The log evidence says
+otherwise**, and the real cause looks self-reinforcing:
+
+- `BatchSimulationRunner: exiting after wait.` - the message logged immediately before
+  `EditorApplication.Exit(0)` - **never appears in a hung run's log**.
+- Yet `Shut down.` IS the final line. So Unity reached shutdown; the PROCESS then failed to terminate.
+- The log also shows `Unexpected transport error from import worker 0 (possible crash). code=10054`,
+  with the worker left `WorkerState(Connected)`.
+- `[Indexing] Starting Initial Indexing for Assets` does appear, but indexing completes. The hang is
+  after `Shut down.`, not during indexing.
+
+**Hypothesis: a crashed/orphaned asset import worker prevents process termination.** This fits the
+otherwise-puzzling observation that the hang is MORE common after a force-kill: killing leaves the asset
+database and import-worker state inconsistent, the next run crashes a worker, the process won't exit, and
+it gets force-killed again. The workaround feeds the problem.
+
+**Untested fix to try first**: delete `Library/` once and let Unity rebuild it cleanly, with no
+force-kill during the rebuild - the only step that breaks the cycle rather than continuing it.
+
+**Needs external lookup (no web search available in-session):** the Unity 6000.5 batch-mode flag
+controlling asset import workers (something like `-importWorkerCount`, exact name and whether 0 is legal
+unconfirmed); whether `EditorApplication.Exit()` is documented to block while import workers are active,
+and the recommended batch-mode shutdown sequence; and whether Search indexing can be disabled per-project
+via a settings asset rather than a CLI flag.
