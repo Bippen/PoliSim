@@ -4858,3 +4858,54 @@ path to compare against, so that comparison would have found nothing.
 frequency. A checksum proves equality. An identical-trajectory diff proves nothing changed - not that
 anything ran. Each answers a narrower question than it feels like it answers, and the gap between the two
 is where a validated-looking feature hides being broken.
+
+## Harness audit — general tooling review (2026-08-01)
+
+Prompted by six verification-integrity instances in a single step. The question asked of every check:
+**what does this prove, and what does it merely appear to prove?**
+
+### Coverage, measured rather than assumed
+
+| Check | Fields covered | Assessment |
+|---|---|---|
+| `CheckFinite` (NaN/Infinity) | **29 of 29** `EconomyState` floats, plus Country-level fields | Complete. Proves what it appears to. |
+| `CheckSwing` (>20% turn-over-turn) | **5 of 29** — GDP, Unemployment, Inflation, InterestRate, DebtToGdpRatio | **Major gap.** See below. |
+| Range checks (negative / absurd) | **4 of 29** — GDP, Unemployment, Inflation, GovernmentDebt | Narrow, but the four most load-bearing. |
+
+### The swing check covers 5 of 29 tracked values
+
+**This is the instance-5 pattern in the harness's own headline metric.** "N anomalies detected" is the
+number every validation writeup in this file quotes as a health signal. It is overwhelmingly composed of
+swing anomalies - and the swing check is *structurally incapable* of seeing 24 of the 29 tracked values,
+because `Snapshot` stores only five fields to compare against.
+
+A runaway in `PovertyRate`, `CrimeIndex`, `Population`, `LaborForceParticipationRate`, `Consumption`,
+`Investment`, `ConsumerConfidence`, `CorruptionIndex` or 16 others would produce **zero** swing anomalies
+and a clean-looking run. Only a NaN or a negative GDP/debt would catch it, and only for the four
+range-checked fields.
+
+So: the anomaly count proves *those five fields* stayed within 20% turn-over-turn. It does not prove the
+simulation is healthy, and it has been read as though it did.
+
+### NOT fixed unilaterally — logged as an Open Question
+
+Extending `Snapshot` to all 29 fields is the obvious fix, and it is deliberately NOT done here, because
+it is a judgment call with real consequences rather than a clear defect:
+
+- It would be the **third baseline discontinuity in one day** (after the near-zero floor and the calendar
+  fix), further breaking comparability with every historical count.
+- Several of the 24 uncovered fields legitimately move sharply - `NetMigrationRate` and
+  `PopulationGrowthRate` are small numbers where ordinary variation crosses 20% easily. Coverage could
+  bury real signal in noise, which is how the near-zero defect caused harm in the first place.
+- The right threshold is likely per-field rather than one global 20%, and choosing 24 thresholds is a
+  design task, not a mechanical one.
+
+**Open Question for Elias**: extend swing coverage to all 29 fields (and with what thresholds), extend to
+a chosen subset, or leave at five and simply stop describing the anomaly count as a whole-simulation
+health measure? The last option costs nothing and removes the misreading, which may be the honest
+minimum.
+
+### What was verified as sound
+
+`CheckFinite`'s 29/29 coverage is genuinely complete - every `EconomyState` float plus several
+Country-level fields. Whatever else the harness misses, it cannot miss a NaN.
