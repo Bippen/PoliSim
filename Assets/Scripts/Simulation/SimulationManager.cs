@@ -22,6 +22,22 @@ namespace PoliSim.Simulation
         public float WelfareCost;
         public float SwfContribution;
         public float SwfReturns;
+
+        /// <summary>
+        /// This turn's total spending and budget balance EXACTLY as ApplyRevenueAndSpending computed
+        /// them, recorded rather than recomputed.
+        ///
+        /// They cannot be reconstructed from the fields above: that method sums
+        /// DetailedSpendingResult.GovernmentSpending, while this report carries
+        /// BaselineGovernmentSpending - a different field - and DiscretionarySpending here is a
+        /// per-turn CHANGE, not a level. Any caller adding the components up would produce a
+        /// plausible number that is not the one the simulation used, which is the StatTile
+        /// formatting bug's failure shape applied to arithmetic instead of display.
+        ///
+        /// BudgetBalance is signed the same way the simulation signs it: positive is a SURPLUS.
+        /// </summary>
+        public float TotalSpending;
+        public float BudgetBalance;
     }
 
     /// <summary>
@@ -1012,7 +1028,7 @@ namespace PoliSim.Simulation
                 country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
             }
 
-            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns);
+            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns, out float totalSpendingThisTurn, out float budgetBalanceThisTurn);
 
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
@@ -1025,7 +1041,9 @@ namespace PoliSim.Simulation
                 TariffRevenue = tariffRevenue,
                 WelfareCost = welfareCost,
                 SwfContribution = swfContribution,
-                SwfReturns = swfReturns
+                SwfReturns = swfReturns,
+                TotalSpending = totalSpendingThisTurn,
+                BudgetBalance = budgetBalanceThisTurn
             };
 
             MacroSystem.ApplyNationalAccounts(country, spendingResult.GovernmentSpending, interestRate);
@@ -1137,7 +1155,7 @@ namespace PoliSim.Simulation
                 previewCountry.SovereignWealthFund.TotalAssets = Mathf.Clamp(previewCountry.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
             }
 
-            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns);
+            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns, out _, out _);
 
             float previewedInterestRate;
             if (previewCountry.CurrentFedChair != null)
@@ -2103,7 +2121,7 @@ namespace PoliSim.Simulation
         /// reduces it, hard-clamped to a sane debt-to-GDP range. Returns the actual (post-efficiency,
         /// post-reaction) revenue so the caller can record it on this turn's FiscalTurnReport.
         /// </summary>
-        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns)
+        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns, out float totalSpending, out float budgetBalance)
         {
             EconomyState state = country.State;
             float theoreticalRevenue = GetTotalTaxRevenue(country);
@@ -2111,8 +2129,8 @@ namespace PoliSim.Simulation
             float financeTreasuryCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.FinanceTreasury);
             float effectiveCollectionEfficiency = Mathf.Clamp01(country.CollectionEfficiency + financeTreasuryCompetenceBias);
             float actualRevenue = theoreticalRevenue * effectiveCollectionEfficiency * fiscalReactionMultiplier + swfReturns;
-            float totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
-            float budgetBalance = actualRevenue - totalSpending;
+            totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
+            budgetBalance = actualRevenue - totalSpending;
 
             state.Budget += budgetBalance;
             float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
