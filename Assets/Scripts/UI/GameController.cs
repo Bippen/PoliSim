@@ -1632,13 +1632,19 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(10f);
-            GUILayout.BeginHorizontal();
+            // Header and horizon buttons sit on SEPARATE rows. Previously they shared one row with a
+            // FlexibleSpace between them, which set this panel's minimum width at roughly
+            // "header + four buttons" (~864px measured) - far more than it gets inside the Budget
+            // Process's three-column row, and the main reason that row overflowed into a horizontal
+            // scrollbar. Stacking costs one row of height, which this panel has, and removes the
+            // width floor entirely.
             GUILayout.Label("Estimated Effects", _headerStyle);
-            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
             DrawHorizonButton(PreviewHorizon.OneDay);
             DrawHorizonButton(PreviewHorizon.OneWeek);
             DrawHorizonButton(PreviewHorizon.OneMonth);
             DrawHorizonButton(PreviewHorizon.FullTurn);
+            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-turn value. Projection only, not a guarantee.", _labelStyle);
 
@@ -3562,10 +3568,23 @@ namespace PoliSim.UI
             // widths instead of being derived from whatever's left over. If the three don't all fit at
             // their natural/minimum sizes, that's a genuine narrow-window case, handled explicitly via
             // a horizontal scrollview below rather than silently squeezing any one column.
-            float summaryColumnWidth = Screen.width * LeftColumnWidthFraction;
-            float categoryColumnWidth = Mathf.Max(_labelStyle.fontSize * 9f, availableWidth * 0.15f);
-            float centerColumnMinWidth = _labelStyle.fontSize * 20f;
-            float centerColumnWidth = Mathf.Max(centerColumnMinWidth, availableWidth - summaryColumnWidth - categoryColumnWidth - columnSpacing * 2f);
+            // FIXED 2026-08-01: all three columns are now derived from availableWidth - the width this TAB
+            // actually owns - and are guaranteed to sum to LESS than it, so the row cannot scroll
+            // horizontally at any window size.
+            //
+            // The bug: summaryColumnWidth was `Screen.width * LeftColumnWidthFraction` (0.45), i.e. 45% of
+            // the WHOLE window - but this tab lives in the right column and owns only ~52% of the window.
+            // That single column therefore claimed ~86% of the row, and the center column holding every
+            // bill line item was pushed off-screen behind a horizontal scrollbar that could not
+            // practically be used. The reasoning previously recorded here - give the preview panel "its
+            // natural width unconditionally" - measured that natural width against the panel's ORIGINAL
+            // home in the 45%-wide LEFT column, and was never re-derived when it was reused inside the
+            // much narrower right column.
+            float scrollbarAllowance = 18f;
+            float usableWidth = availableWidth - columnSpacing * 2f - scrollbarAllowance;
+            float categoryColumnWidth = Mathf.Clamp(usableWidth * 0.16f, _labelStyle.fontSize * 5f, _labelStyle.fontSize * 10f);
+            float summaryColumnWidth = usableWidth * 0.34f;
+            float centerColumnWidth = usableWidth - categoryColumnWidth - summaryColumnWidth;
             float totalRowWidth = categoryColumnWidth + columnSpacing + centerColumnWidth + columnSpacing + summaryColumnWidth;
 
             _budgetProcessRowScrollPosition = GUILayout.BeginScrollView(_budgetProcessRowScrollPosition, GUILayout.Width(availableWidth), GUILayout.Height(columnsHeight));
