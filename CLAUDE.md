@@ -4604,3 +4604,50 @@ real crash, and the project is small enough not to need workers), and `Library/`
 `m_DesiredImportWorkerCountPctOfLogicalCPUs`, which matches the "25% of logical cores" default. Setting
 it to 0 is how you get no workers in this version. Checking the binary mattered: a misspelled YAML key
 would have done nothing while looking correct.
+
+## Verification-integrity, instance 4 — the largest one (2026-08-01)
+
+Belongs with the three verification-integrity failures above, and dwarfs them. In this case the
+compromised checking mechanism was **the validation harness itself**, and it went undetected across five
+occurrences while the blame sat on Unity.
+
+**The bug.** `BatchSimulationRunner.Run()` subscribed `WaitThenExit` to `EditorApplication.update`, then
+set `EditorApplication.isPlaying = true` on the very next line. Entering Play mode triggers a domain
+reload, and a domain reload unsubscribes every delegate and wipes every static field - so the callback
+was destroyed immediately after being registered, and `EditorApplication.Exit(0)` was never reached.
+Fixed by holding state in `SessionState` (survives domain reloads) and re-subscribing via
+`[InitializeOnLoadMethod]`.
+
+**Five occurrences were blamed on Unity.** First on Search/asset indexing, later on crashed asset import
+workers. Both theories were coherent, both fit real log evidence, and the second even explained a
+genuinely puzzling correlation (the hang worsening after force-kills). Both were bystanders. The defect
+was in our own tooling the entire time, and every "workaround" was treating a symptom of our own bug.
+
+### The diagnostic lesson, stated generally
+
+**A symptom that is ALWAYS present discriminates better than one that is merely often present.**
+
+`"BatchSimulationRunner: exiting after wait."` was absent from every hung run - and, decisively, had
+never appeared in ANY run at all, including ones that looked fine. That constant negative was far more
+informative than the noisy positives that dominated attention: indexing messages and worker crashes both
+came and went across runs, which is exactly what a bystander looks like. **Read logs for what is
+reliably absent, not only for what is conspicuously present.** An expected line that never appears is a
+stronger signal than an alarming line that sometimes does.
+
+### Correlation versus cause: only the experiment settled it
+
+The import-worker theory was not defeated by better reasoning - the reasoning was fine. It was defeated
+by an experiment: disabling parallel import removed the worker crash **entirely**, and the hang persisted
+completely unchanged. **When two phenomena reliably travel together, separating them experimentally is
+often the only way to tell which is the cause.** Analysis can generate the hypothesis; only the
+intervention distinguishes it from its companions.
+
+### Open question raised by this, not yet investigated
+
+If the validation harness carried a bug this fundamental - never exiting, on every single run - for five
+occurrences without being suspected, **what else in the validation tooling is being trusted the same
+way?** `SimulationTestRunner` and the various diagnostic patterns have never themselves been validated;
+they are the instruments every "PASS" in this file was measured with. Worth an explicit review, on the
+principle that an unexamined instrument is an assumption. Note the related precedent already recorded
+above: the anomaly detector's percentage metric is mathematically meaningless near zero, which was found
+by inspection rather than by the detector ever complaining.
