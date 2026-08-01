@@ -114,6 +114,58 @@ This is the one authoritative order, replacing whatever each original document s
    version from the very first write** — this game's data model is still changing weekly, and a save file
    with no version field is unreadable the moment a field moves, with no way to detect that it happened.
 
+   ### Scoping extension (2026-08-01) — two save-blocking types that did not exist when the above was written
+
+   The design above was written on 2026-07-31. Step A landed on 2026-08-01 and introduced two pieces of
+   state the serializer decision does **not** already cover. Both were found by inspection, not
+   speculation, and both would produce a save file that loads without error while being wrong.
+
+   **Gap 1 — `SimulationRandom` cannot be saved as designed, and is the more serious of the two.**
+   It holds `Dictionary<Stream, System.Random>` plus the master seed, and `System.Random` exposes no way
+   to read or restore its internal position. Saving only the master seed and re-seeding on load therefore
+   rewinds **every stream to its turn-zero position**: a game saved at turn 50 and reloaded would replay
+   the same event draws, Fed-chair candidates and cabinet decisions the player already saw, in the same
+   order. The save would look valid and the simulation would still look deterministic — it would just be
+   running the wrong part of the sequence. This is a *replay*, not a reroll, so it is not a save-scum
+   exploit; it is a correctness failure that is easy to mistake for one.
+
+   Two viable fixes, and this is a genuine fork rather than a clear call:
+
+   - **Wrap `System.Random` in a counting shim** that records how many draws each stream has taken, then
+     on load re-seed and fast-forward each stream by its recorded count. Minimal change to the existing
+     seeding contract, and the `Stream` enum's append-only rule keeps working untouched. Cost: the
+     fast-forward is O(draws), a real if brief load-time loop after a long game.
+   - **Replace `System.Random` with a small explicit PRNG** (e.g. 64-bit xorshift) whose entire state is
+     two integers that serialize directly. Constant-time load, and the state becomes inspectable in a
+     diff. Cost: it changes every existing stream's number sequence — a deliberate, one-time break of
+     every recorded baseline in `CLAUDE.md`, and this project has already accumulated several such
+     discontinuities in a single day.
+
+   *Recommendation: the counting shim.* It is reversible, preserves every existing baseline, and its cost
+   is bounded by draws-per-game rather than anything unbounded. **Escalated to Open Questions** rather
+   than settled here, because it trades a permanent baseline break against a permanent load-time loop,
+   and that is Elias's call.
+
+   **Gap 2 — `PublishedData.PeriodClosingValues` is keyed by a `ValueTuple`.** Its declared type is
+   `Dictionary<(PublishedStat Stat, DateTime PeriodStart), float>`. Newtonsoft serializes dictionaries as
+   JSON objects with string keys and needs a `TypeConverter` to render a key as a string; `ValueTuple`
+   has none, so this will fail or emit unusable keys. Same class of problem as the `UAC1001` finding
+   above, caught before a silent data loss rather than after.
+
+   It cannot simply be dropped from the save. `PeriodClosingValues` is what a later revision converges
+   toward, and publishing has already had exactly one bug from resolving that value wrongly — revisions
+   converging on the publication date's live figure instead of the reference period's closing figure. A
+   save that omitted it would reintroduce that bug on every load. It also grows without bound, one entry
+   per stat per period forever, so it wants a retention rule at the same time.
+
+   Straightforward fix, no fork: flatten it into a list of `{stat, periodStart, value}` records on
+   capture and rebuild the dictionary on restore — the same flattening the design above already commits
+   to for every other dictionary. The retention rule (how many closed periods stay worth keeping once
+   every publication referencing them is `Final`) is a separate question worth answering deliberately
+   rather than defaulting to "keep everything".
+
+   **Still not started, and correctly so.** This extension adds scope; it does not begin implementation.
+
 9. **NEW (2026-08-01) — Macro Data & Release Calendar Overhaul (Steps A–D).** Full spec in
    `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`; every real-world figure it depends on is in
    `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. Appended rather than renumbering 1-8, which are referenced
@@ -668,3 +720,34 @@ real rendering defect, before any unnecessary fix was attempted.
 - Check the Master Sequence section — confirm which step is actually in progress or next, don't assume.
 - Check Open Questions first.
 - Review the commit log — each step should be its own commit(s), validation results in the message or CLAUDE.md.
+
+### OQ — How should `SimulationRandom` stream position survive a save/load? (raised 2026-08-01)
+
+Found while extending item 8's scoping after Step A. `System.Random` cannot expose or restore its
+internal position, so re-seeding on load rewinds every stream to turn zero and the game replays draws the
+player has already seen. Two fixes, each with a permanent cost:
+
+- **Counting shim** — record draws per stream, fast-forward on load. Preserves every recorded baseline;
+  pays an O(draws) loop on every load, forever.
+- **Explicit serializable PRNG** (64-bit xorshift) — constant-time load, state visible in a diff; breaks
+  every stream's number sequence once, invalidating every baseline in `CLAUDE.md`.
+
+*Recommendation: the counting shim*, because it is reversible and this project has already taken several
+baseline discontinuities in a single day. Raised rather than decided because it is a permanent trade
+either way. Full reasoning in Master Sequence item 8's scoping extension.
+
+### OQ — Retention rule for `PublishedData.PeriodClosingValues`? (raised 2026-08-01)
+
+The dictionary grows one entry per stat per period forever, and it must be saved (revisions converge on
+it; omitting it reintroduces an already-fixed bug on every load). Once every publication referencing a
+period is `Final`, is that period's closing value still worth keeping? Answering deliberately is cheap
+now and awkward after save files exist in the wild.
+
+### OQ — Should the harness's swing check cover more than 5 of 29 tracked values? (raised 2026-08-01)
+
+See `CLAUDE.md`'s harness audit. `CheckSwing` is structurally limited to GDP, Unemployment, Inflation,
+InterestRate and DebtToGdpRatio, yet its anomaly count is quoted throughout as a whole-simulation health
+signal. Options: extend to all 29 (third baseline discontinuity in a day, and several uncovered fields
+move sharply enough that blanket coverage could bury real signal), extend to a chosen subset with
+per-field thresholds, or leave it at five and stop describing the count as more than it is. The last
+option costs nothing and removes the misreading.
