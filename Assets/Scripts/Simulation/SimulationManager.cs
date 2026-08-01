@@ -70,7 +70,8 @@ namespace PoliSim.Simulation
         public const int DaysPerTurn = 121;
 
         /// <summary>The in-game calendar's epoch (Turn 0's date) - a clean, honestly-arbitrary flavor choice, not independently researched, chosen to roughly align with this project's own "seeded with real mid-2026 policy rates" starting data (see WorldFactory).</summary>
-        private static readonly System.DateTime EpochDate = new System.DateTime(2026, 1, 1);
+        /// <summary>Game start. Public since Step A: PublicationSystem must know it to suppress releases for reference periods that predate the simulation, which have no data behind them.</summary>
+        public static readonly System.DateTime EpochDate = new System.DateTime(2026, 1, 1);
 
         /// <summary>Advances one day at a time via AdvanceDay, driven by GameController's own real-time speed-controlled Update loop - never touched by PreviewTurn's own throwaway clone, so a live slider drag can never leak a phantom day into the real calendar.</summary>
         public System.DateTime CurrentDate { get; private set; } = EpochDate;
@@ -877,6 +878,7 @@ namespace PoliSim.Simulation
         public void SetWorld(World world)
         {
             _world = world;
+            SeedPublishedHistory();
         }
 
         private void Awake()
@@ -884,6 +886,22 @@ namespace PoliSim.Simulation
             if (_world == null)
             {
                 _world = WorldFactory.CreateDefault();
+            }
+
+            SeedPublishedHistory();
+        }
+
+        /// <summary>Gives every country the one inherited published quarter it takes office with - see PublicationSystem.SeedInheritedHistory. Called from BOTH world-entry paths (injection and Awake) so batch runs and real play start from an identical published record; the seeding method is itself idempotent, so the overlap is harmless.</summary>
+        private void SeedPublishedHistory()
+        {
+            if (_world == null)
+            {
+                return;
+            }
+
+            foreach (Country country in _world.Countries)
+            {
+                PublicationSystem.SeedInheritedHistory(country);
             }
         }
 

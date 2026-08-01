@@ -30,6 +30,40 @@ namespace PoliSim.Simulation
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.PublicationRevision);
 
         /// <summary>
+        /// Seeds the ONE inherited quarter a new government takes office with, so the published record
+        /// does not begin the day the player does.
+        ///
+        /// Without it, suppressing pre-epoch releases leaves the GDP graph empty until roughly day 120 -
+        /// the first full quarter ends 31 March and its advance estimate lands ~30 April - which hides
+        /// the reporting lag for a third of the first year, exactly when a player is forming their model
+        /// of how the game works.
+        ///
+        /// This invents nothing. Every country is already seeded with a real sourced starting GDP, and
+        /// that is precisely the figure the outgoing administration would have published for the quarter
+        /// before taking office. Exactly ONE quarter is seeded: a second would require inventing a value,
+        /// since only the starting figure is sourced. Marked Final, because an inherited historical
+        /// figure is settled rather than awaiting revision.
+        /// </summary>
+        public static void SeedInheritedHistory(Country country)
+        {
+            PublishedSeries series = country.Published.GetOrCreate(PublishedStat.Gdp);
+            if (series.Entries.Count > 0)
+            {
+                return;
+            }
+
+            System.DateTime periodEnd = SimulationManager.EpochDate.AddDays(-1);
+            series.Entries.Add(new PublishedEntry
+            {
+                ReferencePeriodStart = periodEnd.AddMonths(-3).AddDays(1),
+                ReferencePeriodEnd = periodEnd,
+                PublicationDate = SimulationManager.EpochDate,
+                Value = country.State.GDP,
+                Status = RevisionStatus.Final
+            });
+        }
+
+        /// <summary>
         /// Called once per simulated day, per country, AFTER the day's simulation has run - so a figure
         /// published today reflects state as of today, not a half-updated intermediate.
         /// </summary>
@@ -43,6 +77,20 @@ namespace PoliSim.Simulation
                 }
 
                 ReleaseCalendar.GetReferencePeriod(stat, date, out System.DateTime periodStart, out System.DateTime periodEnd);
+
+                // Suppress releases for periods that predate the game. The schedule is real - a t+30
+                // GDP estimate genuinely fires 30 days into a new game - but its reference quarter ended
+                // before the simulation began, so there is no data behind it. Publishing anyway stamped
+                // a pre-epoch period with today's live value, which put dates on the graph's axis for
+                // quarters the simulation never ran and inverted the apparent trend.
+                //
+                // The one legitimate pre-epoch figure is the INHERITED quarter seeded by
+                // SeedInheritedHistory, which carries the country's real sourced starting value rather
+                // than a present-day reading pretending to be historical.
+                if (periodStart < SimulationManager.EpochDate)
+                {
+                    continue;
+                }
                 float trueValue = ReadLiveValue(country, stat);
                 RevisionStatus status = GetStatusFor(country, stat, date);
 

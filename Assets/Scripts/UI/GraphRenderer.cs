@@ -221,6 +221,18 @@ namespace PoliSim.UI
                 return;
             }
 
+            // A single point is the NORMAL early-game state, not an edge case: a new government starts
+            // with one inherited quarter and waits until roughly day 120 for its own first release. A
+            // one-point line has no slope to plot and would render as a degenerate full-width segment, so
+            // it is reported as a value instead - which is also more honest, since one figure is not yet
+            // a trend.
+            if (values.Count == 1)
+            {
+                PublishedEntry only = latestForPeriod[visiblePeriods[0]];
+                GUILayout.Label($"{FormatAxisValue(only.Value)} for {only.ReferencePeriodStart:MMM yyyy} - {only.ReferencePeriodEnd:MMM yyyy} ({only.Status}). Next release builds the trend.", labelStyle);
+                return;
+            }
+
             if (NeedsRedraw(values, null, thresholdValue))
             {
                 Regenerate(values, null, thresholdValue);
