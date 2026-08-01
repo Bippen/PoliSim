@@ -39,7 +39,7 @@ namespace PoliSim.Simulation
         /// <summary>Modest one-time ApprovalRating cost for reshuffling a minister anytime - same small magnitude class as EventSystem's own ApprovalEffect range (-2 to -5), not a separately invented scale.</summary>
         public const float ReshuffleApprovalCost = 2f;
 
-        private static readonly System.Random RandomSource = new System.Random();
+        private static System.Random RandomSource => SimulationRandom.Shared;
 
         private static readonly Dictionary<CabinetPortfolio, List<CabinetMinister>> CandidatePool = new Dictionary<CabinetPortfolio, List<CabinetMinister>>
         {

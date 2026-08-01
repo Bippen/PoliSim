@@ -74,6 +74,16 @@ namespace PoliSim.Testing
                 return;
             }
 
+            // Master Sequence step 9, Step A0: -seed=N makes a run reproducible so before/after
+            // trajectories can be compared strictly. Absent (or 0), behaviour is unchanged and every run
+            // still differs, which is what real play wants.
+            int seed = GetIntArg(args, "-seed=", 0);
+            if (seed != 0)
+            {
+                SimulationRandom.Seed(seed);
+                Debug.Log($"SimulationRandom seeded with {seed} - this run is reproducible.");
+            }
+
             int singleTurnsToRun = GetIntArg(args, "-turns=", 100);
             string singleScenario = GetStringArg(args, "-scenario=", "baseline");
             RunOne(singleTurnsToRun, singleScenario, logEveryTurn: true);
