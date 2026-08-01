@@ -5121,3 +5121,42 @@ sourced on the OECD basis.
 Recorded because the earlier, stronger claim is in this file's history and should not be left standing.
 
 **Real wage growth is now the last unverified indicator before C3.**
+
+## Verification-integrity instance 8 — `-runmatrix` silently discarded `-seed`
+
+Found while trying to run a before/after trajectory diff for Step A4.
+
+`SimulationTestRunner.Start()` checked `-runmatrix` **first**, and that branch **returns**. The `-seed=N`
+handling sat *after* it. So the two flags were mutually exclusive, silently:
+
+```
+if (args.Contains("-runmatrix")) { ...run 8 combinations...; return; }   // seed never read
+int seed = GetIntArg(args, "-seed=", 0);                                 // unreachable in matrix mode
+```
+
+**Why this is the same class again.** `-seed` exists for exactly one purpose — Step A0 added it so
+before/after trajectories could be compared strictly. And `-runmatrix` is the run CLAUDE.md recommends
+"whenever a change could plausibly affect long-run stability". The single most important validation this
+project performs is a seeded matrix diff, and it was the one combination that could not work. A matrix
+before/after diff would have compared two **differently seeded** runs and attributed pure RNG drift to
+the change under test — producing either a false alarm or, worse, a real divergence dismissed as noise.
+
+Both flags are documented together in this file's own batch-run section, which is what made the
+combination look supported. Nothing warned; the seed line simply never printed.
+
+**Fixed** by moving the seed block above the `-runmatrix` branch. Verified working: a
+`-seed=777 -turns=20` run now prints "SimulationRandom seeded with 777" and produces exactly 120 state
+lines (20 turns × 6 countries).
+
+### Environment notes learned the hard way in the same session
+
+- **Unity 6000.5 ignores `-logFile <path>`** and redirects to `<project>/Logs/Editor.log`, rotating the
+  previous run to `Editor-prev.log`. An earlier read of that file mixed a stale run with a current one
+  and showed 1200 state lines (two 600-line runs) with two different anomaly counts — briefly
+  misdiagnosed as the harness running twice. **Clear or timestamp the log before a run, never trust it
+  after.**
+- **A killed Unity leaves `Temp/UnityLockfile` behind.** A stale lockfile makes the next `-executeMethod`
+  exit immediately, writing a 0-byte log and no error. Remove it when no Unity process is running.
+- **`&`-invoking Unity returns before the work finishes.** Follow with `Wait-Process` on the PID.
+- **`*>` redirection to a file captured 0 bytes** where direct invocation surfaced the output normally.
+  Capture the command's output rather than redirecting it to a file.

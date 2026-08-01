@@ -59,6 +59,23 @@ namespace PoliSim.Testing
                 return;
             }
 
+            // Master Sequence step 9, Step A0: -seed=N makes a run reproducible so before/after
+            // trajectories can be compared strictly. Absent (or 0), behaviour is unchanged and every run
+            // still differs, which is what real play wants.
+            //
+            // **This MUST come before the -runmatrix branch.** It used to sit after it, and since that
+            // branch returns, passing -runmatrix silently discarded the seed - so the full matrix, the
+            // run CLAUDE.md recommends "whenever a change could plausibly affect long-run stability",
+            // was the one run that could never be reproduced. A before/after matrix diff would then have
+            // compared two differently-seeded runs and attributed pure RNG drift to the change under
+            // test. Verification-integrity instance 8; see CLAUDE.md.
+            int seed = GetIntArg(args, "-seed=", 0);
+            if (seed != 0)
+            {
+                SimulationRandom.Seed(seed);
+                Debug.Log($"SimulationRandom seeded with {seed} - this run is reproducible.");
+            }
+
             if (args.Contains("-runmatrix"))
             {
                 // Runs every (scenario, turn count) combination in one Play session, each against its
@@ -72,16 +89,6 @@ namespace PoliSim.Testing
                     }
                 }
                 return;
-            }
-
-            // Master Sequence step 9, Step A0: -seed=N makes a run reproducible so before/after
-            // trajectories can be compared strictly. Absent (or 0), behaviour is unchanged and every run
-            // still differs, which is what real play wants.
-            int seed = GetIntArg(args, "-seed=", 0);
-            if (seed != 0)
-            {
-                SimulationRandom.Seed(seed);
-                Debug.Log($"SimulationRandom seeded with {seed} - this run is reproducible.");
             }
 
             int singleTurnsToRun = GetIntArg(args, "-turns=", 100);
