@@ -187,7 +187,8 @@ existing assets with no format drift.
   design intent the original pack was built on.
 - **Unity import settings** (for reference, not part of the art brief): Texture Type
   `Sprite (2D and UI)`, Alpha Is Transparency **on**, sRGB **on**, Filter Mode `Bilinear`, Compression
-  `None`. 9-sliced sprites additionally need their Border set to 18 on all sides in the Sprite Editor —
+  `None`. 9-sliced sprites additionally need their Border set **per the geometry table above** — 10 all
+  sides for buttons, 13 for the panel, 14 left/right + 0 top/bottom for the capsules — in the Sprite Editor —
   a project-side import step, not something the art must encode.
 
 ---
