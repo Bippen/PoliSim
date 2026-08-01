@@ -4456,3 +4456,47 @@ validation result, ask what the method assumes and whether anything has changed 
 instances of this already exist in this project's history - the clock-seeded RNG that made
 identical-trajectory comparison unfalsifiable in the first place, and this shared-stream coupling that
 would have made it fire for the wrong reason.
+
+## Verification-integrity failures (2026-08-01)
+
+**A recurring class worth naming, because three instances occurred in rapid succession during Step A and
+none of them announced itself.** In each case the thing being CHECKED was fine; the CHECKING MECHANISM
+was compromised. That is far more dangerous than an ordinary bug, because the output still looks like a
+result - just a wrong one - and the natural response is to act on it.
+
+1. **Shared RNG coupling silently disarmed a proof.** Step A0 moved all six random consumers onto one
+   stream to make runs reproducible. That coupled them: any new draw added anywhere would shift every
+   other consumer's sequence. Step A was about to add exactly that (noise on preliminary published
+   figures). The resulting trajectory diff would have been **indistinguishable from the published-values
+   leak the identical-trajectory proof exists to detect** - the alarm would have fired correctly and
+   pointed at the wrong cause, and hunting for the leak would have found nothing, because there was none.
+   Fixed by per-stream seeding; see "Shared RNG structure can invalidate a validation method" above.
+
+2. **A `cleanup && capture` chain reported success while skipping the capture entirely.** The `rm` step
+   hit a file lock held by a lingering post-simulation Unity process, so `&&` short-circuited and the
+   Unity run never happened - while the task still reported exit code 0. Nothing in the output said
+   "no capture occurred"; it had to be inferred from an unexpected timestamp on a file that should have
+   been deleted. **Use `;` rather than `&&` between a cleanup step and the work it precedes**, and verify
+   the artifact exists afterwards rather than trusting an exit code.
+
+3. **An audit script fabricated a finding.** A one-liner checking csproj coverage used bad path escaping
+   and reported all 62 scripts as missing from a csproj that was demonstrably compiling them. It was
+   caught only because the claim contradicted something already known to be true - the build had just
+   succeeded. A less obviously absurd false positive would have been acted on.
+
+### Standing tooling gap: the local build does not see unregistered files
+
+`dotnet build Assembly-CSharp.csproj` compiles ONLY the files listed in that csproj. A newly created
+script that has not been added to it will be skipped entirely, so the build can pass while that file
+references members that do not exist - which is exactly what happened when `PublicationSystem.cs`
+referenced `Country.Published` before that field existed. **Unity compiles everything under `Assets/`**
+and refuses to run with `Scripts have compiler errors.`, so Unity catches it; the local build
+structurally cannot. Register a new file in the csproj BEFORE treating any local compile-check as
+evidence about it. Note also that Unity regenerates this csproj on import, which can drop manual entries.
+
+### The general rule
+
+**When a diagnostic produces a surprising result, check it against something already known to be true
+before acting on it.** All three failures above were caught that way - by noticing the result
+contradicted an established fact - and not by any tool failing loudly. A surprising diagnostic is
+evidence about the diagnostic at least as much as about the system under test.

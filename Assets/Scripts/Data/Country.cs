@@ -13,6 +13,16 @@ namespace PoliSim.Data
         public CountryId Id;
         public string Name;
         public EconomyState State;
+
+        /// <summary>
+        /// Master Sequence step 9, Step A: the player-facing PUBLISHED view - lagged, and sometimes a
+        /// preliminary figure later revised. Deliberately a sibling of State rather than part of it: every
+        /// simulation system reads `country.State.X`, so keeping published values out of EconomyState
+        /// makes a leak into Okun's Law, the Phillips Curve or the Fiscal Reaction Function a
+        /// compile-time impossibility rather than something reviewers must keep noticing across 55 call
+        /// sites. See STEP_A_LIVE_VALUE_AUDIT.md.
+        /// </summary>
+        public PublishedData Published = new PublishedData();
         public CurrencyZone CurrencyZone;
         public List<TradePartner> TradePartners = new List<TradePartner>();
 
