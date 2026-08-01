@@ -489,10 +489,10 @@ namespace PoliSim.UI
         // Master Sequence step 5e, Phase C batch 2: decision-card chrome. Fill sits slightly lighter
         // than the app background so a card reads as raised without a border, matching PoliSimTheme's
         // own Card token rather than inventing a second card color for this one screen.
-        private static readonly Color DecisionCardFill = new Color(0.16f, 0.17f, 0.20f);
-        private const int DecisionCardCornerRadius = 9;
-        private const int DecisionCardPadding = 12;
-        private const int DecisionCardSpineWidth = 8;
+        private static readonly Color AreaCardFill = new Color(0.16f, 0.17f, 0.20f);
+        private const int AreaCardCornerRadius = 9;
+        private const int AreaCardPadding = 12;
+        private const int AreaCardSpineWidth = 8;
 
         // Full-scale deflection for a pending bill's lean bar. Seat-weighted alignment is bounded by the
         // strongest party stance (~0.7) but sits far lower in practice - the documented tied-parties
@@ -1283,9 +1283,10 @@ namespace PoliSim.UI
             GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
             GUILayout.Space(8f);
 
+            BeginAreaCard("CRIME & JUSTICE BILL", UiPalette.SystemArea.CrimeJustice);
             DrawCrimeJusticeBillStatusAndIntroduce();
             DrawCrimeJusticeLiveEstimate();
-            GUILayout.Space(8f);
+            EndAreaCard(UiPalette.SystemArea.CrimeJustice);
 
             float draftPoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
             GUILayout.Label($"Police Funding - Standing: {_playerCountry.PoliceFundingLevel:F0}, Draft: {draftPoliceFunding:F0}", _labelStyle);
@@ -1350,14 +1351,7 @@ namespace PoliSim.UI
         /// <summary>Master Sequence step 5d: recomputes every OnGUI call (cheap, same reasoning as DrawLegislativeSupportEstimate) so it updates live as the player edits any Crime &amp; Justice draft.</summary>
         private void DrawCrimeJusticeLiveEstimate()
         {
-            CrimeJusticePolicyBill draftBill = BuildCrimeJusticeBillFromDrafts();
-            float direction = ParliamentSystem.GetCrimeJusticeBillDirection(_playerCountry, draftBill);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
-
-            string directionLabel = Mathf.Approximately(direction, 0f) ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
-            GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
-            DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
-                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+            DrawBillLiveEstimate(ParliamentSystem.GetCrimeJusticeBillDirection(_playerCountry, BuildCrimeJusticeBillFromDrafts()));
         }
 
         /// <summary>Bundles every current Crime &amp; Justice draft into one bill, exactly as it stands at the moment of the call - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>
@@ -1391,9 +1385,10 @@ namespace PoliSim.UI
             GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
             GUILayout.Space(8f);
 
+            BeginAreaCard("LABOR MARKET BILL", UiPalette.SystemArea.Labor);
             DrawLaborBillStatusAndIntroduce();
             DrawLaborLiveEstimate();
-            GUILayout.Space(8f);
+            EndAreaCard(UiPalette.SystemArea.Labor);
 
             DrawMinimumWageControl();
 
@@ -1452,17 +1447,45 @@ namespace PoliSim.UI
             GUI.enabled = ambientEnabled;
         }
 
-        /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern.</summary>
         private void DrawLaborLiveEstimate()
         {
-            LaborPolicyBill draftBill = BuildLaborBillFromDrafts();
-            float direction = ParliamentSystem.GetLaborBillDirection(_playerCountry, draftBill);
+            DrawBillLiveEstimate(ParliamentSystem.GetLaborBillDirection(_playerCountry, BuildLaborBillFromDrafts()));
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase C batch 4: the shared live pass/fail estimate for every
+        /// standalone bill tier. All four policy screens (Labor, Crime &amp; Justice, Sectors, Trade) had a
+        /// byte-for-byte identical copy of this, differing only in which draft they built and which
+        /// direction getter they called - so the only thing that ever varied is the float now passed in.
+        ///
+        /// Collapsing them matters for more than duplication: the zero-direction trap below has to be
+        /// handled identically everywhere, and four copies is four chances to get it wrong (the Parliament
+        /// card already shipped that exact bug once - see DrawPendingBillCard).
+        ///
+        /// The lean bar shows ParliamentSystem.GetSeatWeightedAlignment, the quantity the vote is really
+        /// decided on, so a player can see HOW close a bill is rather than only which side of the line it
+        /// currently sits. Deliberately not PoliSimWidgets.SupportBar - this model has no seats-based
+        /// majority for it to draw (see DrawPendingBillCard's own comment for the full reasoning).
+        /// </summary>
+        private void DrawBillLiveEstimate(float direction)
+        {
+            // Unity's Mathf.Sign(0f) returns 1, not 0, so an unchanged draft would otherwise be scored as
+            // parliament's raw net stance - negative in the documented tied-parties case - and contradict
+            // the WOULD PASS verdict printed directly above it. WouldBillPass short-circuits on exactly
+            // this condition, so the bar must too.
+            bool contested = !Mathf.Approximately(direction, 0f);
             bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
 
-            string directionLabel = Mathf.Approximately(direction, 0f) ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
+            string directionLabel = !contested ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
             GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
             DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
                 _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+
+            Rect barRect = GUILayoutUtility.GetRect(10f, _labelStyle.fontSize * 0.7f, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                UiPalette.DrawDivergingBar(barRect, contested ? ParliamentSystem.GetSeatWeightedAlignment(_playerCountry, direction) : 0f, PendingBillLeanDisplayRange);
+            }
         }
 
         /// <summary>See BuildCrimeJusticeBillFromDrafts's own doc comment - identical pattern.</summary>
@@ -2454,18 +2477,18 @@ namespace PoliSim.UI
 
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
-                BeginDecisionCard("FEDERAL RESERVE", UiPalette.SystemArea.Political);
+                BeginAreaCard("FEDERAL RESERVE", UiPalette.SystemArea.Political);
                 DrawFedChairSelectionModal();
-                EndDecisionCard(UiPalette.SystemArea.Political);
+                EndAreaCard(UiPalette.SystemArea.Political);
                 anyPending = true;
             }
 
             ForeignPolicyMeeting pendingMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId);
             if (pendingMeeting != null)
             {
-                BeginDecisionCard("FOREIGN POLICY", UiPalette.SystemArea.Global);
+                BeginAreaCard("FOREIGN POLICY", UiPalette.SystemArea.Global);
                 DrawForeignPolicyMeetingModal(pendingMeeting, drawOwnFrame: false);
-                EndDecisionCard(UiPalette.SystemArea.Global);
+                EndAreaCard(UiPalette.SystemArea.Global);
                 anyPending = true;
             }
 
@@ -2474,17 +2497,17 @@ namespace PoliSim.UI
                 // Tinted by the PORTFOLIO's own area, not one flat "cabinet" color - two simultaneous
                 // cabinet decisions from different portfolios should not read as the same thing.
                 UiPalette.SystemArea portfolioArea = UiPalette.GetPortfolioArea(portfolio);
-                BeginDecisionCard("CABINET", portfolioArea);
+                BeginAreaCard("CABINET", portfolioArea);
                 DrawCabinetDecisionModal(portfolio, decision, drawOwnFrame: false);
-                EndDecisionCard(portfolioArea);
+                EndAreaCard(portfolioArea);
                 anyPending = true;
             }
 
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
-                BeginDecisionCard("BUDGET PROCESS", UiPalette.SystemArea.Fiscal);
+                BeginAreaCard("BUDGET PROCESS", UiPalette.SystemArea.Fiscal);
                 DrawBudgetBillStatusAndIntroduce();
-                EndDecisionCard(UiPalette.SystemArea.Fiscal);
+                EndAreaCard(UiPalette.SystemArea.Fiscal);
                 anyPending = true;
             }
 
@@ -2500,28 +2523,33 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Master Sequence step 5e, Phase C batch 2: opens a rounded card around one pending decision,
-        /// captioned with a small caps <paramref name="kind"/> label and spined in <paramref name="area"/>'s
-        /// own color (see EndDecisionCard, which draws the spine once the card's real height is known).
-        /// Deliberately wraps the EXISTING modal renderers rather than replacing them: all four are
-        /// shared with the tabs they originally lived on (Federal Reserve, Budget Process), so rewriting
-        /// their internals here would silently restyle those tabs too - which is exactly what Phase C's
-        /// batching discipline exists to prevent. Chrome around the outside changes only what the
-        /// Decisions tab itself composes.
+        /// Master Sequence step 5e, Phase C: opens a rounded card, optionally captioned with a small caps
+        /// <paramref name="kind"/> label, spined in <paramref name="area"/>'s own color (see EndAreaCard,
+        /// which draws the spine once the card's real height is known). Pass a null caption for a card
+        /// whose content already names itself.
+        ///
+        /// Introduced in batch 2 for the Decisions tab, generalized in batch 4 (hence the rename from
+        /// BeginDecisionCard) once Parliament's pending bills and the four Policy/Laws bill panels wanted
+        /// the same chrome. It deliberately wraps EXISTING renderers rather than replacing them: several
+        /// are shared across tabs belonging to different batches, so rewriting their internals would
+        /// silently restyle a screen this batch was not supposed to touch.
         /// </summary>
-        private void BeginDecisionCard(string kind, UiPalette.SystemArea area)
+        private void BeginAreaCard(string kind, UiPalette.SystemArea area)
         {
-            GUILayout.BeginVertical(UiPalette.BuildCardStyle(DecisionCardFill, DecisionCardCornerRadius, DecisionCardPadding, DecisionCardSpineWidth));
-            DrawColoredLabel(kind, _cardKindStyle, UiPalette.GetAreaColor(area));
+            GUILayout.BeginVertical(UiPalette.BuildCardStyle(AreaCardFill, AreaCardCornerRadius, AreaCardPadding, AreaCardSpineWidth));
+            if (!string.IsNullOrEmpty(kind))
+            {
+                DrawColoredLabel(kind, _cardKindStyle, UiPalette.GetAreaColor(area));
+            }
         }
 
         /// <summary>Closes a card opened by BeginDecisionCard and draws its area spine, using the rect GUILayout just resolved for the whole card - the height isn't knowable until now, which is the entire reason the spine is drawn here rather than up front.</summary>
-        private void EndDecisionCard(UiPalette.SystemArea area)
+        private void EndAreaCard(UiPalette.SystemArea area)
         {
             GUILayout.EndVertical();
             if (Event.current.type == EventType.Repaint)
             {
-                UiPalette.DrawCardSpine(GUILayoutUtility.GetLastRect(), area, DecisionCardSpineWidth - 1f);
+                UiPalette.DrawCardSpine(GUILayoutUtility.GetLastRect(), area, AreaCardSpineWidth - 1f);
             }
 
             GUILayout.Space(10f);
@@ -3117,7 +3145,7 @@ namespace PoliSim.UI
             bool contested = !Mathf.Approximately(direction, 0f);
             float alignment = contested ? ParliamentSystem.GetSeatWeightedAlignment(_playerCountry, direction) : 0f;
 
-            GUILayout.BeginVertical(UiPalette.BuildCardStyle(DecisionCardFill, DecisionCardCornerRadius, DecisionCardPadding, DecisionCardSpineWidth));
+            BeginAreaCard(null, area);
             GUILayout.Label(label, _labelStyle);
             DrawColoredLabel(
                 contested ? (wouldPass ? "Currently leans PASS" : "Currently leans FAIL") : "Unopposed - no change requested",
@@ -3130,13 +3158,7 @@ namespace PoliSim.UI
                 UiPalette.DrawDivergingBar(barRect, alignment, PendingBillLeanDisplayRange);
             }
 
-            GUILayout.EndVertical();
-            if (Event.current.type == EventType.Repaint)
-            {
-                UiPalette.DrawCardSpine(GUILayoutUtility.GetLastRect(), area, DecisionCardSpineWidth - 1f);
-            }
-
-            GUILayout.Space(8f);
+            EndAreaCard(area);
         }
 
         private void DrawCabinetPortfolioPanel(CabinetPortfolio portfolio)
@@ -3313,9 +3335,10 @@ namespace PoliSim.UI
             GUILayout.Label("Master Sequence step 5d: the base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting/resetting whether a partner override exists at all stays an immediate, structural action, unchanged.", _labelStyle);
             GUILayout.Space(6f);
 
+            BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
             DrawTradeBillStatusAndIntroduce();
             DrawTradeLiveEstimate();
-            GUILayout.Space(8f);
+            EndAreaCard(UiPalette.SystemArea.Trade);
 
             float draftTariffRate = GetTariffRateInput(_playerCountry.BaseTariffRate);
             GUILayout.Label($"General Base Tariff Rate - Standing: {_playerCountry.BaseTariffRate:F2}%, Draft: {draftTariffRate:F2}% (range {MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}%; applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _labelStyle);
@@ -3421,14 +3444,7 @@ namespace PoliSim.UI
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern. Only the base rate sways this estimate (see ParliamentSystem.GetTradeBillDirection's own doc comment on why partner overrides are excluded).</summary>
         private void DrawTradeLiveEstimate()
         {
-            TradePolicyBill draftBill = BuildTradeBillFromDrafts();
-            float direction = ParliamentSystem.GetTradeBillDirection(_playerCountry, draftBill);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
-
-            string directionLabel = Mathf.Approximately(direction, 0f) ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
-            GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
-            DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
-                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillDirection(_playerCountry, BuildTradeBillFromDrafts()));
         }
 
         /// <summary>Bundles the base tariff rate draft and every partner override draft into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts. Only a partner with an ACTIVE override gets an entry, mirroring BuildPlayerDecision's own former "only currently-implemented" reasoning.</summary>
@@ -3935,9 +3951,10 @@ namespace PoliSim.UI
             GUILayout.Label("Output/Employment/the sector's own metric are descriptive only in this pass - the five dials below nudge them, but they don't feed back into GDP/Unemployment. Master Sequence step 5d: every dial is a DRAFT across every sector - nothing happens until you introduce them all as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
             GUILayout.Space(8f);
 
+            BeginAreaCard("ECONOMIC SECTORS BILL", UiPalette.SystemArea.Sectors);
             DrawSectorBillStatusAndIntroduce();
             DrawSectorLiveEstimate();
-            GUILayout.Space(8f);
+            EndAreaCard(UiPalette.SystemArea.Sectors);
 
             // Measured (not guessed) against _headerStyle - the style the name column is actually
             // drawn in - since _headerStyle's font is both bigger and bolder than _labelStyle's, a
@@ -4035,14 +4052,7 @@ namespace PoliSim.UI
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern.</summary>
         private void DrawSectorLiveEstimate()
         {
-            SectorPolicyBill draftBill = BuildSectorBillFromDrafts();
-            float direction = ParliamentSystem.GetSectorBillDirection(_playerCountry, draftBill);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
-
-            string directionLabel = Mathf.Approximately(direction, 0f) ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
-            GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
-            DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
-                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+            DrawBillLiveEstimate(ParliamentSystem.GetSectorBillDirection(_playerCountry, BuildSectorBillFromDrafts()));
         }
 
         /// <summary>Bundles every current Sector draft, across every SectorType, into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>
