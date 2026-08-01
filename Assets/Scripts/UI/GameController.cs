@@ -341,7 +341,13 @@ namespace PoliSim.UI
             {
                 case PreviewHorizon.OneWeek: return "1 Week";
                 case PreviewHorizon.OneMonth: return "1 Month";
-                case PreviewHorizon.FullTurn: return $"Full Turn ({SimulationManager.DaysPerTurn} days)";
+                // Deliberately NOT "Full Turn (121 days)". That label alone was ~180px wide, and with the
+                // other three on the same row it set a ~400px hard minimum for a column that can be as
+                // narrow as 199px - the buttons then drew straight past the column edge (IMGUI does not
+                // clip children to a fixed-width group) and off the viewport, which is what clipped the
+                // preview panel's own headings. No information is lost: the day count is stated in full in
+                // the sentence directly beneath these buttons.
+                case PreviewHorizon.FullTurn: return "Full Turn";
                 default: return "1 Day";
             }
         }
@@ -1644,12 +1650,16 @@ namespace PoliSim.UI
             // scrollbar. Stacking costs one row of height, which this panel has, and removes the
             // width floor entirely.
             GUILayout.Label("Estimated Effects", _headerStyle);
+            // Two rows of two rather than one row of four. Even with the shortened "Full Turn" label, four
+            // side by side still demand more than this column gets at small window sizes; 2x2 halves that
+            // minimum. The buttons expand to share each row so the block stays tidy at any width.
             GUILayout.BeginHorizontal();
             DrawHorizonButton(PreviewHorizon.OneDay);
             DrawHorizonButton(PreviewHorizon.OneWeek);
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
             DrawHorizonButton(PreviewHorizon.OneMonth);
             DrawHorizonButton(PreviewHorizon.FullTurn);
-            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-turn value. Projection only, not a guarantee.", _labelStyle);
 
@@ -1679,7 +1689,10 @@ namespace PoliSim.UI
         {
             bool selected = _previewHorizon == horizon;
             GUIStyle style = UiPalette.BuildButtonStyle(_neutralActionButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
-            if (GUILayout.Button(GetHorizonLabel(horizon), style, GUILayout.ExpandWidth(false)))
+            // ExpandWidth(true), not false: content-sized buttons let the longest label dictate the row's
+            // width, which is how this block came to demand more than its column had. Sharing the row
+            // makes each button half the column instead, whatever the label says.
+            if (GUILayout.Button(GetHorizonLabel(horizon), style, GUILayout.ExpandWidth(true)))
             {
                 _previewHorizon = horizon;
             }
@@ -3831,19 +3844,23 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawTaxLineRow(TaxLine taxLine, float labelWidth)
         {
-            float buttonWidth = _labelStyle.fontSize * 6f;
             TaxProgramBill pendingBill = FindPendingTaxProgramBill(taxLine.Type);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(taxLine.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
 
             string toggleLabel = pendingBill != null
-                ? $"{(pendingBill.IsAdd ? "Implement" : "Remove")} bill pending ({pendingBill.DaysRemaining}d)"
-                : taxLine.IsImplemented ? "Introduce Remove Bill" : "Introduce Implement Bill";
+                // Short labels on purpose. "Introduce Implement Bill" plus the tax/program name beside it
+                // needed ~362px inside a column that is 293px at ordinary window sizes, so the button drew
+                // straight past the column edge - the same overflow that clipped the preview panel. The
+                // words dropped are recoverable from context: the row already names the program, and this
+                // screen's own header explains that implementing or removing submits a standalone bill.
+                ? $"Pending ({pendingBill.DaysRemaining}d)"
+                : taxLine.IsImplemented ? "Remove" : "Implement";
             GUIStyle toggleStyle = taxLine.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth * 2.4f)))
+            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.ExpandWidth(true)))
             {
                 _simulationManager.IntroduceTaxProgramBill(PlayerCountryId, taxLine.Type, !taxLine.IsImplemented);
             }
@@ -3933,19 +3950,23 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawWelfareProgramRow(WelfareProgram welfareProgram, float labelWidth)
         {
-            float buttonWidth = _labelStyle.fontSize * 6f;
             WelfareProgramBill pendingBill = FindPendingWelfareProgramBill(welfareProgram.Type);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(welfareProgram.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
 
             string toggleLabel = pendingBill != null
-                ? $"{(pendingBill.IsAdd ? "Implement" : "Remove")} bill pending ({pendingBill.DaysRemaining}d)"
-                : welfareProgram.IsImplemented ? "Introduce Remove Bill" : "Introduce Implement Bill";
+                // Short labels on purpose. "Introduce Implement Bill" plus the tax/program name beside it
+                // needed ~362px inside a column that is 293px at ordinary window sizes, so the button drew
+                // straight past the column edge - the same overflow that clipped the preview panel. The
+                // words dropped are recoverable from context: the row already names the program, and this
+                // screen's own header explains that implementing or removing submits a standalone bill.
+                ? $"Pending ({pendingBill.DaysRemaining}d)"
+                : welfareProgram.IsImplemented ? "Remove" : "Implement";
             GUIStyle toggleStyle = welfareProgram.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.Width(buttonWidth * 2.4f)))
+            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.ExpandWidth(true)))
             {
                 _simulationManager.IntroduceWelfareProgramBill(PlayerCountryId, welfareProgram.Type, !welfareProgram.IsImplemented);
             }
