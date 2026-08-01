@@ -16,6 +16,9 @@ namespace PoliSim.UI
         private static GUIStyle _label, _value, _body, _mono;
         private static float _builtAtScale = -1f;
 
+        /// <summary>Floor for StatTile's shrink-to-fit (see StatTile). Below this a headline figure stops being readable at a glance, and a tile that narrow is a layout problem to fix rather than something to keep shrinking text into.</summary>
+        private const int MinStatValueFontSize = 11;
+
         private static void EnsureStyles(float scale)
         {
             if (Mathf.Approximately(_builtAtScale, scale) && _label != null)
@@ -102,7 +105,26 @@ namespace PoliSim.UI
 
             var valueStyle = Sized(_value, PoliSimTheme.FontStatHero, PoliSimTheme.TextPrimary, scale, TextAnchor.LowerLeft);
             float valueHeight = PoliSimTheme.FontStatHero * scale * 1.05f;
+
+            // A stat tile must never be able to DISPLAY A DIFFERENT NUMBER than it was given. Two
+            // properties conspired to let it: this style inherits wordWrap from GUI.skin.label, and the
+            // anchor is a BOTTOM one - so a value too wide for the tile wrapped, and the bottom anchor
+            // rendered only the LAST wrapped line. "29689,3" became "9,3": not obviously broken, just a
+            // plausible-looking wrong number, which is the worst possible failure for a readout.
+            // Percentages never showed it because they are short enough never to wrap.
+            //
+            // wordWrap off alone is not sufficient - it converts wrapping into clipping, which would show
+            // "2968" instead, still a wrong number. So the font is also shrunk until the whole value fits.
+            // Shrinking is the only option here that cannot misreport: the figure gets smaller, never
+            // different.
+            valueStyle.wordWrap = false;
             Vector2 valueSize = valueStyle.CalcSize(new GUIContent(value));
+            if (valueSize.x > innerWidth && valueSize.x > 0f && innerWidth > 0f)
+            {
+                valueStyle.fontSize = Mathf.Max(MinStatValueFontSize, Mathf.FloorToInt(valueStyle.fontSize * (innerWidth / valueSize.x)));
+                valueSize = valueStyle.CalcSize(new GUIContent(value));
+            }
+
             GUI.Label(new Rect(x, y, innerWidth, valueHeight), value, valueStyle);
 
             if (!string.IsNullOrEmpty(suffix))

@@ -996,10 +996,15 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawHeadlineStatTiles(EconomyState state, bool hasIndependentCurrency)
         {
-            const float scale = 1f;
+            // Screen-derived, not a fixed 1.0. Hardcoding 1.0 meant the tile's own type sizes stayed
+            // constant (FontStatHero is 42px) while the tiles themselves narrowed with the window - so
+            // below roughly 1080p the headline figures no longer fit, which is what let a wrapped value
+            // render as a fragment (see PoliSimWidgets.StatTile). Every other control in this class
+            // already derives its size from Screen.height; this one was the exception.
+            float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.5f);
             const int columns = 3;
-            const float tileHeight = 92f;
-            const float gap = 8f;
+            float tileHeight = 92f * scale;
+            float gap = 8f * scale;
 
             var tiles = new List<(string label, string value, string suffix, string delta, bool deltaIsGood, UiPalette.SystemArea area)>
             {
