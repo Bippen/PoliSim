@@ -53,6 +53,22 @@ namespace PoliSim.UI
         public static readonly Color NegativeChangeColor = new Color(0.90f, 0.35f, 0.35f, 1f);
         public static readonly Color NeutralChangeColor = new Color(0.75f, 0.75f, 0.75f, 1f);
 
+        /// <summary>
+        /// The de-emphasised icon tint - white at 60% alpha, for an icon that is present but not the
+        /// focus (an unselected nav tab, a stat chip's category glyph).
+        ///
+        /// **White-with-alpha rather than a grey, deliberately.** Every chrome and icon sprite in this
+        /// project is authored pure white with all of its depth carried in the alpha channel, so tinting
+        /// toward grey would flatten that depth instead of dimming it. The value matches what
+        /// `DrawConsolidatedTabButton` had inline for unselected tabs - this promotes that literal to a
+        /// named member rather than introducing a second, slightly-different muted shade.
+        ///
+        /// Not to be confused with <see cref="NeutralChangeColor"/>, which means "this delta has no
+        /// direction" and belongs to the signed-change convention above. These look similar and mean
+        /// entirely different things.
+        /// </summary>
+        public static readonly Color MutedIconTint = new Color(1f, 1f, 1f, 0.6f);
+
         /// <summary>Below this absolute value/percent, a change reads as "no real change" (neutral gray) rather than an arbitrarily-signed green/red on essentially noise.</summary>
         private const float NeutralChangeThreshold = 0.05f;
 

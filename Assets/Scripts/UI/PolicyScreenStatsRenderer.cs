@@ -69,7 +69,7 @@ namespace PoliSim.UI
             Texture2D icon = IconLibrary.GetStat(GetIconName(stat));
             if (icon != null)
             {
-                UiPalette.DrawTintedIcon(new Rect(x, rect.y + (RowHeight - IconSize) * 0.5f, IconSize, IconSize), icon, UiPalette.MutedTextColor);
+                UiPalette.DrawTintedIcon(new Rect(x, rect.y + (RowHeight - IconSize) * 0.5f, IconSize, IconSize), icon, UiPalette.MutedIconTint);
                 x += IconSize + 6f;
             }
 
@@ -96,7 +96,7 @@ namespace PoliSim.UI
         {
             if (higherIsBetter == null || history == null || history.Count < 2)
             {
-                return UiPalette.MutedTextColor;
+                return UiPalette.NeutralChangeColor;
             }
 
             return UiPalette.GetDeltaColor(history[history.Count - 1] - history[history.Count - 2], higherIsBetter.Value);

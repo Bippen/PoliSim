@@ -2450,7 +2450,7 @@ namespace PoliSim.UI
                     buttonRect.y + ConsolidatedTabIconTopPadding,
                     iconSize,
                     iconSize);
-                Color iconTint = selected ? Color.white : new Color(1f, 1f, 1f, 0.6f);
+                Color iconTint = selected ? Color.white : UiPalette.MutedIconTint;
                 UiPalette.DrawTintedIcon(iconRect, icon, iconTint);
             }
 
