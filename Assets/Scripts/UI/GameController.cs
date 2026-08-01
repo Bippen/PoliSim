@@ -15,7 +15,7 @@ namespace PoliSim.UI
     public class GameController : MonoBehaviour
     {
         /// <summary>
-        /// Master Sequence step 5e, Phase A (tab/IA restructuring): the 7 consolidated top-level tabs,
+        /// Master Sequence step 5e, Phase A (tab/IA restructuring): the consolidated top-level tabs (7 originally, 6 since the Tax/Spending merge below),
         /// replacing the old 18-tab `RightPanelTab` bar - see POLISIM_MASTER_ROADMAP.md's "5e
         /// implementation plan" for the full old-tab -&gt; new-tab mapping and reasoning behind every
         /// placement (several tabs SPLIT across two destinations - Cabinet, Compass &amp; Demographics,
@@ -29,8 +29,14 @@ namespace PoliSim.UI
             Statistics,
             Decisions,
             Demographics,
-            Tax,
-            Spending,
+            // Merged 2026-08-01, was two tabs (Tax and Spending). They were never two screens: both
+            // dispatched to the exact same DrawBudgetProcessTab, differing only in which of ITS OWN
+            // five sub-categories (Tax/Spending/Welfare/Infrastructure/SWF) they pre-selected on entry.
+            // Two top-level tabs that open the same screen and then hand you the same sub-selector is a
+            // duplicated entry point, not a navigation choice - and it implied Tax and Spending were
+            // peers of Statistics/Politics when they are actually peers of Welfare and Infrastructure,
+            // which were already sub-categories here.
+            Budget,
             PolicyLaws,
             Politics
         }
@@ -776,8 +782,7 @@ namespace PoliSim.UI
                 case ConsolidatedTab.Demographics:
                     DrawDemographicsTab(tabContentHeight);
                     break;
-                case ConsolidatedTab.Tax:
-                case ConsolidatedTab.Spending:
+                case ConsolidatedTab.Budget:
                     GUI.enabled = !_isGameOver;
                     DrawBudgetProcessTab(tabContentHeight, rightColumnWidth);
                     GUI.enabled = true;
@@ -887,8 +892,7 @@ namespace PoliSim.UI
                 case ConsolidatedTab.Statistics: return UiPalette.SystemArea.Global;
                 case ConsolidatedTab.Decisions: return UiPalette.SystemArea.CrimeJustice;
                 case ConsolidatedTab.Demographics: return UiPalette.SystemArea.Labor;
-                case ConsolidatedTab.Tax: return UiPalette.SystemArea.Fiscal;
-                case ConsolidatedTab.Spending: return UiPalette.SystemArea.Fiscal;
+                case ConsolidatedTab.Budget: return UiPalette.SystemArea.Fiscal;
                 case ConsolidatedTab.PolicyLaws: return UiPalette.SystemArea.Sectors;
                 case ConsolidatedTab.Politics: return UiPalette.SystemArea.Political;
                 default: return UiPalette.SystemArea.Neutral;
@@ -2289,14 +2293,14 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Master Sequence step 5e, Phase A: the 7 consolidated top-level tabs, all fitting in ONE row
+        /// Master Sequence step 5e, Phase A: the 6 consolidated top-level tabs (7 before the Tax/Spending merge), all fitting in ONE row
         /// (short labels, unlike the old 18-tab bar's "Sovereign Wealth Fund"-length names) - replaces
         /// the old 6-per-row/5-row layout entirely. Each tab is tinted by its own SystemArea (see
         /// GetConsolidatedTabArea) - selected uses the bright TabSelected variant, unselected the
         /// dimmer Tab variant, same mechanic the old bar used, per Phase A's own "no visual style
         /// change, only navigation changes" constraint.
         /// </summary>
-        private const int ConsolidatedTabsPerRow = 7;
+        private const int ConsolidatedTabsPerRow = 6;
 
         // Master Sequence step 5e, Phase C: the consolidated tab bar stacks its icon ABOVE its label
         // rather than beside it. Beside-it was tried first (Phase B) and genuinely does not fit: the
@@ -2338,8 +2342,7 @@ namespace PoliSim.UI
             DrawConsolidatedTabButton("Statistics", ConsolidatedTab.Statistics, buttonWidth, "icon_nav_statistics");
             DrawConsolidatedTabButton("Decisions", ConsolidatedTab.Decisions, buttonWidth, "icon_nav_decisions");
             DrawConsolidatedTabButton("Demographics", ConsolidatedTab.Demographics, buttonWidth, "icon_nav_demographics");
-            DrawConsolidatedTabButton("Tax", ConsolidatedTab.Tax, buttonWidth, "icon_area_fiscal");
-            DrawConsolidatedTabButton("Spending", ConsolidatedTab.Spending, buttonWidth, "icon_area_fiscal");
+            DrawConsolidatedTabButton("Budget", ConsolidatedTab.Budget, buttonWidth, "icon_area_fiscal");
             DrawConsolidatedTabButton("Policy/Laws", ConsolidatedTab.PolicyLaws, buttonWidth, "icon_nav_policylaws");
             DrawConsolidatedTabButton("Politics", ConsolidatedTab.Politics, buttonWidth, "icon_area_political");
             GUILayout.EndHorizontal();
@@ -2348,11 +2351,10 @@ namespace PoliSim.UI
         /// <summary>
         /// Each tab is tinted by its own SystemArea (see GetConsolidatedTabArea) - selected uses the
         /// bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab
-        /// reads as visibly "lit up" in its own area's hue rather than just bold+yellow text. Switching
-        /// INTO Tax or Spending also seeds `_budgetProcessCategory` so the shared Budget Process screen
-        /// opens at the right starting category (see DrawTaxTab/DrawSpendingTab) - the only place this
-        /// button click does anything beyond changing which tab is selected, since Tax/Spending are two
-        /// differently-labeled entry points into the exact same underlying screen, not two screens.
+        /// reads as visibly "lit up" in its own area's hue rather than just bold+yellow text. A click now
+        /// does nothing except change which tab is selected - the Tax/Spending merge (see ConsolidatedTab)
+        /// removed the one exception, which used to seed `_budgetProcessCategory` so those two entry
+        /// points landed on different sub-categories of the same screen.
         ///
         /// Master Sequence step 5e, Phase C: when <paramref name="iconName"/> is given, the icon is
         /// stacked ABOVE the label (see the ConsolidatedTabIcon* constants for why beside-it was
@@ -2411,15 +2413,10 @@ namespace PoliSim.UI
 
             if (clicked)
             {
+                // Nothing to seed since Tax and Spending merged into one Budget tab: the Budget Process
+                // screen's own category selector is now the only thing that sets _budgetProcessCategory,
+                // so it keeps whatever the player last chose instead of a tab click silently resetting it.
                 _consolidatedTab = tab;
-                if (tab == ConsolidatedTab.Tax)
-                {
-                    _budgetProcessCategory = BudgetProcessCategory.Tax;
-                }
-                else if (tab == ConsolidatedTab.Spending)
-                {
-                    _budgetProcessCategory = BudgetProcessCategory.Spending;
-                }
             }
         }
 
