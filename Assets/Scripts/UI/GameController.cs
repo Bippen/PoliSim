@@ -2448,11 +2448,35 @@ namespace PoliSim.UI
         private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory) where T : struct, System.Enum
         {
             bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);
-            GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
-            if (GUILayout.Button(label, style))
+            GUIStyle style = BuildSubTabStyle(selected);
+            if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 selectedCategory = category;
             }
+        }
+
+        /// <summary>
+        /// Shared style for every sub-tab button - the Statistics/Policy-Laws/Politics selectors and the
+        /// Budget Process category column. Identical to the tab-bar style except that it CLEARS
+        /// fixedHeight.
+        ///
+        /// That one property was the cause of the sub-tabs' unreadable labels: `_tabButtonStyle` sets
+        /// wordWrap AND a fixed height, so a label too wide for its button wrapped to two or three lines
+        /// and then had everything past the first clipped off by that fixed height. "Sovereign Wealth
+        /// Fund" in the 94px-wide category column is the worst case. With the height free, a button grows
+        /// to fit its own wrapped text; callers pass MinHeight so buttons never render SHORTER than the
+        /// tab bar's, which keeps a row looking even when nothing needs to wrap.
+        ///
+        /// Callers also pass ExpandWidth(true) so buttons in a horizontal row share it evenly instead of
+        /// the longest label dictating the row's width - the same overflow that clipped the Budget Process
+        /// columns. A wrapping style's minimum width is its longest WORD rather than its whole label, so
+        /// sharing genuinely fits rather than merely deferring the overflow.
+        /// </summary>
+        private GUIStyle BuildSubTabStyle(bool selected)
+        {
+            GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
+            style.fixedHeight = 0f;
+            return style;
         }
 
         /// <summary>
@@ -3600,7 +3624,11 @@ namespace PoliSim.UI
             // much narrower right column.
             float scrollbarAllowance = 18f;
             float usableWidth = availableWidth - columnSpacing * 2f - scrollbarAllowance;
-            float categoryColumnWidth = Mathf.Clamp(usableWidth * 0.16f, _labelStyle.fontSize * 5f, _labelStyle.fontSize * 10f);
+            // Floor raised from 5x to 7x the label font: even with wrapping, a button's minimum width is
+            // its longest WORD, and "Sovereign" needs ~97px at the smallest supported font - more than the
+            // 94px this column got at 16% on a 1227x690 window. Below this floor the category buttons
+            // overflow their own column, which is the exact failure the rest of this screen just had.
+            float categoryColumnWidth = Mathf.Clamp(usableWidth * 0.16f, _labelStyle.fontSize * 7f, _labelStyle.fontSize * 10f);
             float summaryColumnWidth = usableWidth * 0.34f;
             float centerColumnWidth = usableWidth - categoryColumnWidth - summaryColumnWidth;
             float totalRowWidth = categoryColumnWidth + columnSpacing + centerColumnWidth + columnSpacing + summaryColumnWidth;
@@ -3657,8 +3685,11 @@ namespace PoliSim.UI
         private void DrawBudgetProcessCategoryButton(string label, BudgetProcessCategory category)
         {
             bool selected = _budgetProcessCategory == category;
-            GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
-            if (GUILayout.Button(label, style))
+            GUIStyle style = BuildSubTabStyle(selected);
+            // Same treatment as the horizontal sub-tabs (see BuildSubTabStyle), and this column is where
+            // it matters most: it is the narrowest surface in the UI, so "Sovereign Wealth Fund" and
+            // "Infrastructure" wrap here even at large window sizes.
+            if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 _budgetProcessCategory = category;
             }
