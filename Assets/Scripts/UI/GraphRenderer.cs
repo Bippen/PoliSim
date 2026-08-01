@@ -213,9 +213,49 @@ namespace PoliSim.UI
             float labelHeight = _axisLabelStyle.fontSize + 4f;
             float mid = (_lastMin + _lastMax) * 0.5f;
 
-            GUI.Label(new Rect(rect.x + 2f, rect.y, rect.width - 4f, labelHeight), _lastMax.ToString("F1"), _axisLabelStyle);
-            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height * 0.5f - labelHeight * 0.5f, rect.width - 4f, labelHeight), mid.ToString("F1"), _axisLabelStyle);
-            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height - labelHeight, rect.width - 4f, labelHeight), _lastMin.ToString("F1"), _axisLabelStyle);
+            GUI.Label(new Rect(rect.x + 2f, rect.y, rect.width - 4f, labelHeight), FormatAxisValue(_lastMax), _axisLabelStyle);
+            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height * 0.5f - labelHeight * 0.5f, rect.width - 4f, labelHeight), FormatAxisValue(mid), _axisLabelStyle);
+            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height - labelHeight, rect.width - 4f, labelHeight), FormatAxisValue(_lastMin), _axisLabelStyle);
+        }
+
+        /// <summary>
+        /// Master Sequence step 9, Step B: axis labels for values of any magnitude, in a gutter only a
+        /// few characters wide.
+        ///
+        /// The previous `ToString("F1")` produced "42358,1" for GovernmentDebt and "30555,1" for GDP -
+        /// seven characters in `rect.width - 4f`. That is the same shape as the StatTile bug the
+        /// directive warns about: a number too wide for its space, silently mangled by the UI.
+        ///
+        /// Abbreviation is both the fix and the hazard here, so this is written so that losing magnitude
+        /// is IMPOSSIBLE rather than merely unlikely. Every abbreviated result carries an explicit unit
+        /// suffix (k/M/B), so a truncated or misread value cannot masquerade as a smaller plain number -
+        /// which is exactly how "29689,3" became a plausible-looking "9,3". If the suffix is absent, no
+        /// scaling was applied and the digits are literal.
+        ///
+        /// Verified against real values taken from an actual baseline run rather than invented ones -
+        /// see the table in the Step B commit message. Sub-1000 values keep one decimal, matching the
+        /// old behaviour exactly, so percentages and rates are unchanged.
+        /// </summary>
+        internal static string FormatAxisValue(float value)
+        {
+            float magnitude = Mathf.Abs(value);
+
+            if (magnitude >= 1_000_000_000f)
+            {
+                return (value / 1_000_000_000f).ToString("0.#") + "B";
+            }
+
+            if (magnitude >= 1_000_000f)
+            {
+                return (value / 1_000_000f).ToString("0.#") + "M";
+            }
+
+            if (magnitude >= 1_000f)
+            {
+                return (value / 1_000f).ToString("0.#") + "k";
+            }
+
+            return value.ToString("F1");
         }
 
         /// <summary>Right-aligned label at the threshold line's own Y position, in ThresholdLineColor so it visually pairs with the line it describes rather than blending into the plain axis labels on the left.</summary>
