@@ -120,6 +120,30 @@ namespace PoliSim.Testing
             for (int turn = 1; turn <= turnsToRun; turn++)
             {
                 decisions[CountryId.USA] = BuildUsaDecision(scenario, usa, turn, world);
+
+                // Advance the CALENDAR day by day, exactly as GameController's real-time loop does,
+                // rather than calling AdvanceTurn against a frozen date.
+                //
+                // Until 2026-08-01 this loop called AdvanceTurn directly and never touched AdvanceDay, so
+                // CurrentDate stayed pinned at EpochDate for the whole run. Every batch validation in this
+                // project's history therefore measured a FROZEN-CALENDAR world the game never actually
+                // runs in: fiscal-year budget pauses, Fed meeting cadence, StatHistory's multi-resolution
+                // (Daily/Weekly/Monthly/Quarterly) bucketing, and every other day-driven mechanic
+                // introduced by the continuous-time migration never fired in validation at all.
+                //
+                // AdvanceDay returns true on a turn boundary - the same signal GameController acts on - so
+                // driving it here reproduces the real cadence exactly instead of approximating it.
+                bool turnBoundaryCrossed = false;
+                for (int day = 0; day < SimulationManager.DaysPerTurn; day++)
+                {
+                    turnBoundaryCrossed |= simulationManager.AdvanceDay();
+                }
+
+                if (!turnBoundaryCrossed)
+                {
+                    anomalies.Add($"Turn {turn}: advancing {SimulationManager.DaysPerTurn} days did not cross a turn boundary - the day/turn cadence is out of step.");
+                }
+
                 simulationManager.AdvanceTurn(decisions);
 
                 // Political Systems Overhaul Part A: no player is present to click a response, so any
