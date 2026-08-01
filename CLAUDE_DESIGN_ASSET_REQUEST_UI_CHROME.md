@@ -1,6 +1,6 @@
 # Claude Design asset request — UI chrome (buttons, sliders, scrollbars, panels)
 
-**Status:** ready to send, pending Elias's answers to section 8.
+**Status:** READY TO SEND — all four open questions answered by Elias (section 8), specs reconciled.
 **Date:** 2026-08-01.
 **Context:** follow-up to `CLAUDE_DESIGN_ASSET_REQUEST_5E.md` (icons, portraits, emblems, flags — all
 delivered and now in production use). That request covered *imagery*. This one covers *control chrome*:
@@ -136,20 +136,18 @@ they encoded mechanics and layout this project does not have):
 
 ---
 
-## 8. Open questions for Elias
+## 8. Decisions (all four ANSWERED — 2026-08-01, Elias: "do everything you recommended")
 
-1. **Gradient depth.** How much dimensionality do you want on buttons — nearly flat with just a 1px edge
-   highlight (most consistent with the current flat dark cards), or a more pronounced raised/pressed
-   gradient (more tactile, slightly more "game UI")? *Recommendation: subtle.* The existing design
-   language is flat, and strong gradients would fight the Phase C cards.
-2. **Corner radius.** The Phase C cards use a 9px radius at 1080p. Should buttons match exactly, or be
-   slightly tighter (~6px) so controls read as distinct from containers? *Recommendation: slightly
-   tighter* — it visually separates "thing you click" from "thing that holds content".
-3. **The slider fill (section 4).** Confirm you want a fill added at all — it is a genuine, if small,
-   behavioural change to every dial in the game, not just a reskin. *Recommendation: yes*, given 30
-   dials with standing-vs-draft values.
-4. **The panel sprite (section 6).** Worth producing, or should we just reuse the existing procedural
-   card for outer frames too? *Recommendation: produce it*, but treat it as the most droppable item here.
+1. **Gradient depth: SUBTLE.** Nearly flat, with a 1px lighter inner top edge doing most of the work.
+   The existing design language is flat dark, and a strong gradient would fight the Phase C cards.
+2. **Corner radius: TIGHTER THAN CONTAINERS.** Buttons **6px**, panels **9px** (matching the cards).
+   This visually separates "thing you click" from "thing that holds content". See the caveat in section 9
+   about fixed-pixel corners — it is a real limitation, not a detail.
+3. **Slider fill: YES, include it.** Accepted as a genuine (small) behavioural change to every dial, not
+   just a reskin, justified by 30 dials that each carry a standing value and a draft value.
+4. **Panel sprite: PRODUCE IT.** Still the most droppable item in this request — if it proves visually
+   indistinguishable from the existing procedural card in practice, we drop it and reuse the procedural
+   one rather than keeping an asset that earns nothing.
 
 ---
 
@@ -159,12 +157,31 @@ Matches `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`'s established conventions, so these 
 existing assets with no format drift.
 
 - **PNG:** 8-bit RGBA, transparent background, **authored white** (single-colour, tinted at draw time).
-- **9-sliced elements** (`ui_button_*`, `ui_slider_track`, `ui_slider_fill`, `ui_scrollbar_*`,
-  `ui_panel`): **64×64**, corner radius **16px**, intended 9-slice border **18px** on all four sides
-  (leaving a 28×28 stretchable centre). Keep all detail — gradients, bevels, edges — inside that 18px
-  border, since the centre is stretched arbitrarily and any detail there will smear.
-- **Non-9-sliced elements** (`ui_slider_thumb`): **48×48**, artwork centred, ~10% transparent margin so
-  the shape is not clipped when drawn at odd sizes.
+- **Per-element geometry** (revised to match decision 2 — an earlier draft of this document said a flat
+  16px radius for everything, which contradicted that decision and would have made buttons rounder than
+  the containers holding them):
+
+  | Element | Canvas | Corner radius | 9-slice border |
+  |---|---|---|---|
+  | `ui_button_*` (4) | 48×48 | **6px** | 10px all sides |
+  | `ui_panel` | 48×48 | **9px** | 13px all sides |
+  | `ui_slider_track`, `ui_slider_fill` | 48×48 | full capsule (radius = ½ height) | 14px left/right, 0 top/bottom |
+  | `ui_scrollbar_track`, `ui_scrollbar_thumb` | 48×48 | full capsule | 14px left/right, 0 top/bottom |
+  | `ui_slider_thumb` | 48×48 | circular, not 9-sliced | — |
+
+  Keep all detail — gradients, bevels, edge highlights — **inside** the border region. The centre is
+  stretched arbitrarily, so any detail placed there will smear. The border is always larger than the
+  corner radius so the rounded corner is never cut by the slice.
+- **`ui_slider_thumb`** is drawn at a fixed size rather than stretched: artwork centred with a ~10%
+  transparent margin so it isn't clipped at odd sizes.
+- **Known limitation, stated so it isn't discovered later as a bug:** a 9-slice border is a **fixed pixel
+  count** — Unity does not scale it with screen resolution. Every other size in this game does scale
+  (fonts and control heights derive from `Screen.height`, and the procedural cards scale their radius
+  with it). So on a much larger display these corners will read as slightly tighter relative to
+  everything around them, and on a small one slightly rounder. Author for **1080p**, which is the
+  reference resolution the rest of the UI's own numbers were tuned at. If the divergence turns out to be
+  visible at 4K, the fix is on our side (swapping to procedural rounded rects for buttons, which
+  `UiPalette.GetRoundedTexture` can already generate at any radius) — not a re-request of the art.
 - **SVG source:** same geometry, `currentColor` fill, simple primitives (rounded-rect, circle, linear
   gradient). Keep it simple enough to be redrawn procedurally later if we ever choose to — the same
   design intent the original pack was built on.
@@ -180,22 +197,22 @@ existing assets with no format drift.
 **10 source assets → 20 files** (PNG + SVG each).
 
 ```
-# Buttons (9-slice, 64x64)
+# Buttons (9-slice, 48x48)
 ui_button_normal.png / .svg
 ui_button_hover.png / .svg
 ui_button_pressed.png / .svg
 ui_button_disabled.png / .svg
 
 # Slider
-ui_slider_track.png / .svg      (9-slice, 64x64)
-ui_slider_fill.png / .svg       (9-slice, 64x64)
-ui_slider_thumb.png / .svg      (fixed shape, 48x48)
+ui_slider_track.png / .svg      (9-slice, 48x48)
+ui_slider_fill.png / .svg       (9-slice, 48x48)
+ui_slider_thumb.png / .svg      (fixed shape, 48x48, circular)
 
-# Scrollbar (9-slice, 64x64)
+# Scrollbar (9-slice, 48x48)
 ui_scrollbar_track.png / .svg
 ui_scrollbar_thumb.png / .svg
 
-# Panel (9-slice, 64x64)
+# Panel (9-slice, 48x48)
 ui_panel.png / .svg
 ```
 
