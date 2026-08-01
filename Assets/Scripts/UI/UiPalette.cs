@@ -273,6 +273,38 @@ namespace PoliSim.UI
             return style;
         }
 
+        /// <summary>
+        /// Master Sequence step 5e, Phase C batch 3: a bar that fills OUTWARD FROM THE CENTRE - right
+        /// and green when <paramref name="value"/> is positive, left and red when negative - with the
+        /// centre line marking the decision threshold.
+        ///
+        /// This shape was chosen because the thing it draws (ParliamentSystem.GetSeatWeightedAlignment)
+        /// has a zero threshold rather than a majority one. A conventional left-to-right progress bar
+        /// with a marker part-way along would imply "fill this much to pass", which is not how the vote
+        /// model works. <paramref name="displayRange"/> is a presentation choice only - the value is
+        /// clamped into it purely so a lopsided parliament still renders a readable bar - so callers
+        /// should NOT print a number derived from it and imply precision the model doesn't claim.
+        /// </summary>
+        public static void DrawDivergingBar(Rect rect, float value, float displayRange)
+        {
+            GUI.DrawTexture(rect, GetSolidTexture(BarTrackColor), ScaleMode.StretchToFill);
+
+            float centreX = rect.x + rect.width * 0.5f;
+            float fraction = displayRange > 0f ? Mathf.Clamp(value / displayRange, -1f, 1f) : 0f;
+            float halfWidth = rect.width * 0.5f * Mathf.Abs(fraction);
+
+            if (halfWidth > 0.5f)
+            {
+                var fillRect = fraction >= 0f
+                    ? new Rect(centreX, rect.y, halfWidth, rect.height)
+                    : new Rect(centreX - halfWidth, rect.y, halfWidth, rect.height);
+                GUI.DrawTexture(fillRect, GetSolidTexture(fraction >= 0f ? PositiveChangeColor : NegativeChangeColor), ScaleMode.StretchToFill);
+            }
+
+            var centreLine = new Rect(centreX - 1f, rect.y - 2f, 2f, rect.height + 4f);
+            GUI.DrawTexture(centreLine, GetSolidTexture(ThresholdMarkerColor), ScaleMode.StretchToFill);
+        }
+
         private static readonly Dictionary<(Color Fill, int Radius), Texture2D> RoundedCache =
             new Dictionary<(Color, int), Texture2D>();
 

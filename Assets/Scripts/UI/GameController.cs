@@ -494,6 +494,13 @@ namespace PoliSim.UI
         private const int DecisionCardPadding = 12;
         private const int DecisionCardSpineWidth = 8;
 
+        // Full-scale deflection for a pending bill's lean bar. Seat-weighted alignment is bounded by the
+        // strongest party stance (~0.7) but sits far lower in practice - the documented tied-parties
+        // case lands near -0.036 - so scaling to the theoretical maximum would render every real bill as
+        // a flat line. Presentation only: nothing is derived from this value, and no number is printed
+        // from it (see DrawPendingBillCard).
+        private const float PendingBillLeanDisplayRange = 0.15f;
+
         // Phase 3 of the UI revamp: action-type-coded button styles (see UiPalette), rebuilt every
         // frame in RescaleStylesToScreen alongside the base styles they're cloned from, so their
         // font size/fixed height always stay in sync with the current screen size too.
@@ -1183,6 +1190,10 @@ namespace PoliSim.UI
         private void DrawFedChairCandidateButton(FedChair candidate)
         {
             GUILayout.BeginVertical(_boxStyle);
+            GUILayout.BeginHorizontal();
+            DrawPersonPortrait(IconLibrary.GetFedChairPortrait(candidate.Name), UiPalette.SystemArea.Political);
+
+            GUILayout.BeginVertical();
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
             if (GUILayout.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
@@ -1192,6 +1203,40 @@ namespace PoliSim.UI
                 RecomputePolicyPreview();
             }
             GUILayout.EndVertical();
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Master Sequence step 5e, Phase C batch 3: draws one person's imported portrait art, reserving
+        /// its space through GUILayoutUtility.GetRect so surrounding GUILayout content flows around it
+        /// rather than being drawn over (the same discipline the tab-bar icons had to learn - see
+        /// DrawConsolidatedTabButton). Falls back to `PoliSimWidgets.Portrait`'s procedural silhouette
+        /// when <paramref name="portrait"/> is null, which is what happens for any name added to the
+        /// CabinetSystem/FederalReserveSystem pools later without matching art - a generic placeholder
+        /// is honest, whereas reusing some other candidate's face would actively misinform.
+        /// Sized off the current label font rather than a fixed pixel count so it tracks the same
+        /// screen-derived scale as everything around it.
+        /// </summary>
+        private void DrawPersonPortrait(Texture2D portrait, UiPalette.SystemArea area)
+        {
+            float size = _labelStyle.fontSize * 3.2f;
+            Rect rect = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size), GUILayout.Height(size));
+
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            if (portrait != null)
+            {
+                GUI.DrawTexture(rect, portrait, ScaleMode.ScaleAndCrop, true);
+            }
+            else
+            {
+                PoliSimWidgets.Portrait(rect, area, 1f);
+            }
         }
 
         /// <summary>
@@ -2983,74 +3028,131 @@ namespace PoliSim.UI
         {
             GUILayout.Label("Pending Legislation", _headerStyle);
 
-            var lines = new List<string>();
+            // Master Sequence step 5e, Phase C batch 3: each pending bill now carries the DIRECTION it
+            // was scored on, not just a pre-formatted sentence, so the lean bar below can show the
+            // seat-weighted alignment Parliament actually decides on rather than only its sign.
+            var pending = new List<(string Label, float Direction, UiPalette.SystemArea Area)>();
 
             BudgetBill budgetBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             if (budgetBill != null)
             {
-                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, budgetBill);
-                lines.Add($"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.");
+                pending.Add(($"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetBillDirection(_playerCountry, budgetBill), UiPalette.SystemArea.Fiscal));
             }
 
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
-                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, ParliamentSystem.GetTaxProgramBillDirection(_playerCountry, bill));
-                lines.Add($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.");
+                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetTaxProgramBillDirection(_playerCountry, bill), UiPalette.SystemArea.Fiscal));
             }
 
             foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
             {
-                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill));
-                lines.Add($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.");
+                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill), UiPalette.SystemArea.Welfare));
             }
 
             LaborPolicyBill laborBill = _simulationManager.GetPendingLaborBill(PlayerCountryId);
             if (laborBill != null)
             {
-                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, ParliamentSystem.GetLaborBillDirection(_playerCountry, laborBill));
-                lines.Add($"Labor Market bill - resolves in {laborBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.");
+                pending.Add(($"Labor Market bill - resolves in {laborBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetLaborBillDirection(_playerCountry, laborBill), UiPalette.SystemArea.Labor));
             }
 
             CrimeJusticePolicyBill crimeJusticeBill = _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId);
             if (crimeJusticeBill != null)
             {
-                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, ParliamentSystem.GetCrimeJusticeBillDirection(_playerCountry, crimeJusticeBill));
-                lines.Add($"Crime & Justice bill - resolves in {crimeJusticeBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.");
+                pending.Add(($"Crime & Justice bill - resolves in {crimeJusticeBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetCrimeJusticeBillDirection(_playerCountry, crimeJusticeBill), UiPalette.SystemArea.CrimeJustice));
             }
 
             SectorPolicyBill sectorBill = _simulationManager.GetPendingSectorBill(PlayerCountryId);
             if (sectorBill != null)
             {
-                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, ParliamentSystem.GetSectorBillDirection(_playerCountry, sectorBill));
-                lines.Add($"Economic Sectors bill - resolves in {sectorBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.");
+                pending.Add(($"Economic Sectors bill - resolves in {sectorBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetSectorBillDirection(_playerCountry, sectorBill), UiPalette.SystemArea.Sectors));
             }
 
             TradePolicyBill tradeBill = _simulationManager.GetPendingTradeBill(PlayerCountryId);
             if (tradeBill != null)
             {
-                bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, ParliamentSystem.GetTradeBillDirection(_playerCountry, tradeBill));
-                lines.Add($"Trade bill - resolves in {tradeBill.DaysRemaining} day(s). Current seat composition leans {(wouldPass ? "PASS" : "FAIL")}.");
+                pending.Add(($"Trade bill - resolves in {tradeBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetTradeBillDirection(_playerCountry, tradeBill), UiPalette.SystemArea.Trade));
             }
 
-            if (lines.Count == 0)
+            if (pending.Count == 0)
             {
                 GUILayout.Label("No bill currently before Parliament.", _labelStyle);
                 return;
             }
 
-            foreach (string line in lines)
+            foreach ((string label, float direction, UiPalette.SystemArea area) in pending)
             {
-                GUILayout.Label(line, _labelStyle);
+                DrawPendingBillCard(label, direction, area);
             }
+        }
+
+        /// <summary>
+        /// One pending bill: its description, the PASS/FAIL verdict, and a bar showing HOW comfortably -
+        /// <see cref="ParliamentSystem.GetSeatWeightedAlignment"/>, the quantity the vote is actually
+        /// decided on, drawn diverging from a centre threshold.
+        ///
+        /// Deliberately NOT `PoliSimWidgets.SupportBar`, despite that widget existing and looking like
+        /// the obvious fit. SupportBar renders "N of 200 seats, majority 101", and this simulation has
+        /// no seats-based majority at all: parties are weighted by the STRENGTH of their fiscal stance,
+        /// so a bill can pass with fewer aligned seats than opposed ones and fail with more. Drawing a
+        /// majority line here would assert a rule the model does not implement. The magnitude is shown
+        /// as a bar only, with no number attached, because its display range is a presentation choice
+        /// rather than anything the simulation claims precision about.
+        /// </summary>
+        private void DrawPendingBillCard(string label, float direction, UiPalette.SystemArea area)
+        {
+            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
+
+            // A zero-direction bill (drafts introduced unchanged) passes unconditionally - WouldBillPass
+            // short-circuits before scoring it. The bar has to short-circuit on the SAME condition:
+            // Unity's Mathf.Sign(0f) returns 1, not 0, so scoring it anyway yields parliament's raw net
+            // stance - negative in this game's documented tied-parties case - and would paint a red bar
+            // directly beside the words "leans PASS".
+            bool contested = !Mathf.Approximately(direction, 0f);
+            float alignment = contested ? ParliamentSystem.GetSeatWeightedAlignment(_playerCountry, direction) : 0f;
+
+            GUILayout.BeginVertical(UiPalette.BuildCardStyle(DecisionCardFill, DecisionCardCornerRadius, DecisionCardPadding, DecisionCardSpineWidth));
+            GUILayout.Label(label, _labelStyle);
+            DrawColoredLabel(
+                contested ? (wouldPass ? "Currently leans PASS" : "Currently leans FAIL") : "Unopposed - no change requested",
+                _labelStyle,
+                UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+
+            Rect barRect = GUILayoutUtility.GetRect(10f, _labelStyle.fontSize * 0.7f, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                UiPalette.DrawDivergingBar(barRect, alignment, PendingBillLeanDisplayRange);
+            }
+
+            GUILayout.EndVertical();
+            if (Event.current.type == EventType.Repaint)
+            {
+                UiPalette.DrawCardSpine(GUILayoutUtility.GetLastRect(), area, DecisionCardSpineWidth - 1f);
+            }
+
+            GUILayout.Space(8f);
         }
 
         private void DrawCabinetPortfolioPanel(CabinetPortfolio portfolio)
         {
             GUILayout.BeginVertical(_boxStyle);
-            DrawColoredLabel(GetPortfolioName(portfolio), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            // Headed in the PORTFOLIO's own area color now (see UiPalette.GetPortfolioArea), not the
+            // flat Political every cabinet surface used before - so the three portfolio panels read as
+            // three different departments rather than one repeated block.
+            DrawColoredLabel(GetPortfolioName(portfolio), _headerStyle, UiPalette.GetAreaColor(UiPalette.GetPortfolioArea(portfolio)));
 
             if (_playerCountry.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister minister))
             {
+                GUILayout.BeginHorizontal();
+                DrawPersonPortrait(IconLibrary.GetCabinetPortrait(portfolio, minister.Name), UiPalette.GetPortfolioArea(portfolio));
+
+                GUILayout.BeginVertical();
                 GUILayout.Label($"{minister.Name} ({minister.Philosophy})", _labelStyle);
                 GUILayout.Label(minister.Description, _labelStyle);
                 if (GUILayout.Button("Reshuffle", _neutralActionButtonStyle))
@@ -3059,6 +3161,9 @@ namespace PoliSim.UI
                     _playerCountry.State.ApprovalRating = Mathf.Clamp(_playerCountry.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost, 0f, 100f);
                     _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
                 }
+                GUILayout.EndVertical();
+
+                GUILayout.EndHorizontal();
             }
             else
             {
@@ -3082,6 +3187,10 @@ namespace PoliSim.UI
         private void DrawCabinetCandidateButton(CabinetPortfolio portfolio, CabinetMinister candidate)
         {
             GUILayout.BeginVertical(_boxStyle);
+            GUILayout.BeginHorizontal();
+            DrawPersonPortrait(IconLibrary.GetCabinetPortrait(portfolio, candidate.Name), UiPalette.GetPortfolioArea(portfolio));
+
+            GUILayout.BeginVertical();
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
             if (GUILayout.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
@@ -3090,6 +3199,9 @@ namespace PoliSim.UI
                 _cabinetCandidatesByPortfolio.Remove(portfolio);
                 RecomputePolicyPreview();
             }
+            GUILayout.EndVertical();
+
+            GUILayout.EndHorizontal();
             GUILayout.EndVertical();
         }
 

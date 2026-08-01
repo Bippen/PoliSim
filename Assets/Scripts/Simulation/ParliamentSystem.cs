@@ -179,13 +179,22 @@ namespace PoliSim.Simulation
         /// (each via its own GetXBillDirection, with its own stated sign convention documented there)
         /// and pass the resulting float in here.
         /// </summary>
-        public static bool WouldBillPass(Country country, float direction)
+        /// <summary>
+        /// The seat-weighted alignment score a bill is actually decided on: positive passes, negative
+        /// fails, and the magnitude is how comfortably. Extracted from WouldBillPass (which now calls
+        /// it) purely so the UI can VISUALISE the deciding quantity instead of only its sign - the math
+        /// is unchanged and there is deliberately still exactly one implementation, so the two can never
+        /// drift apart and report different verdicts.
+        ///
+        /// Worth understanding before displaying it: this is NOT a headcount, and there is no
+        /// seats-based majority threshold anywhere in this model. Each party contributes its seat share
+        /// weighted by the STRENGTH of its fiscal stance, so a bill can pass with fewer aligned seats
+        /// than opposed ones (if its supporters care more) and fail with more. Any UI that draws this as
+        /// "N of 200 seats, needs 101" would be asserting something the simulation does not do - see
+        /// GameController.DrawPendingLegislation for the diverging-lean bar used instead.
+        /// </summary>
+        public static float GetSeatWeightedAlignment(Country country, float direction)
         {
-            if (Mathf.Approximately(direction, 0f))
-            {
-                return true;
-            }
-
             float billSign = Mathf.Sign(direction);
             float weightedAlignment = 0f;
             foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
@@ -195,7 +204,17 @@ namespace PoliSim.Simulation
                 weightedAlignment += seatShare * PartyArchetypeData.GetFiscalStance(archetype) * billSign;
             }
 
-            return weightedAlignment > 0f;
+            return weightedAlignment;
+        }
+
+        public static bool WouldBillPass(Country country, float direction)
+        {
+            if (Mathf.Approximately(direction, 0f))
+            {
+                return true;
+            }
+
+            return GetSeatWeightedAlignment(country, direction) > 0f;
         }
 
         /// <summary>Convenience overload - computes BudgetBill's own direction, then scores it via the shared WouldBillPass(Country, float) core.</summary>
