@@ -32,7 +32,7 @@ namespace PoliSim.Simulation
         /// <summary>Chance per country per turn that an event fires - small, so events read as notable, not background noise.</summary>
         private const float EventChancePerTurn = 0.12f;
 
-        private static System.Random RandomSource => SimulationRandom.Shared;
+        private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Event);
 
         private static readonly List<EconomicEvent> EventPool = new List<EconomicEvent>
         {

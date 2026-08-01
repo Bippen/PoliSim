@@ -27,7 +27,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private const float MeetingChancePerDay = 0.01f;
 
-        private static System.Random RandomSource => SimulationRandom.Shared;
+        private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.ForeignPolicy);
 
         private static readonly List<ForeignPolicyMeeting> MeetingPool = new List<ForeignPolicyMeeting>
         {

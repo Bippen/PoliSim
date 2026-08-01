@@ -36,7 +36,7 @@ namespace PoliSim.Simulation
         // Isolated from EventSystem's own System.Random, UnityEngine.Random, and GameController's
         // _previewRandom - drawing candidates at an election boundary must never perturb any other
         // RNG consumer's sequence.
-        private static System.Random RandomSource => SimulationRandom.Shared;
+        private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.FederalReserve);
 
         private static readonly List<FedChair> CandidatePool = new List<FedChair>
         {

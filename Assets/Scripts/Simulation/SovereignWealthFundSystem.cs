@@ -18,7 +18,7 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class SovereignWealthFundSystem
     {
-        private static System.Random RandomSource => SimulationRandom.Shared;
+        private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.SovereignWealth);
 
         /// <summary>
         /// Real long-run average NOMINAL annual returns per asset class - equities ~8% (global

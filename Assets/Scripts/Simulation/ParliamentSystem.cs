@@ -34,7 +34,7 @@ namespace PoliSim.Simulation
         /// <summary>Flat ApprovalRating cost when a bill fails - a smaller, "not really the player's fault" magnitude than Cabinet's own 2-point ReshuffleApprovalCost, since failure here is Parliament's decision, not a player misstep.</summary>
         public const float BillFailedApprovalCost = 1.5f;
 
-        private static System.Random RandomSource => SimulationRandom.Shared;
+        private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Parliament);
 
         /// <summary>
         /// Recomputes this country's target seat shares from its current ApprovalRating
