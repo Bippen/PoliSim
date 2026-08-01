@@ -211,3 +211,42 @@ stats + 3 arrows + 1 marker + 2 badges) and request the 27 existing-stat icons o
 which are actually used. *Recommendation: send the full 42.* The turnaround is the expensive part, the
 per-icon marginal cost is low, and an unused icon costs a few KB whereas a missing one costs another
 round trip mid-implementation.
+
+## 10. Addendum after Step B2 — Open Question 9 is now answered, and one icon is missing
+
+Section 9 asked whether to send all 42 sprites now or hold the 27 existing-stat icons until Step B
+showed which stats actually appear on policy screens. **Step B2 has now determined that set exactly**,
+so the question no longer needs a judgment call.
+
+`PolicyScreenStats` derives each policy screen's stat row from the Policy Web's edge list, which means
+the stats reachable on any policy screen are exactly the 18 members of `StatNodeId` — no more, ever,
+without a new edge being added. Those 18 are:
+
+GDP, Unemployment, Inflation, Approval Rating, Debt-to-GDP, Poverty Rate, **Interest Rate**, Trade
+Balance, Labor Force Participation, Crime Index, Incarceration Rate, Organized Crime Index, Corruption
+Index, Potential Growth Rate, Population Growth Rate, Dependency Ratio, Consumer Confidence, Business
+Confidence.
+
+### The omission
+
+**17 of those 18 have an icon in section 8's manifest. `Interest Rate` does not.**
+
+This is a genuine gap in the original request rather than a scope choice. Interest rate is among the
+most visible numbers in the game — it has its own policy node (`InterestRateDecision`), drives the
+Taylor Rule, and appears on the Federal Reserve and Eurozone screens — yet no `icon_stat_interestrate`
+was asked for. It should be added:
+
+```
+icon_stat_interestrate
+```
+
+Bringing the request to **43 source assets → 86 files**.
+
+### The remaining 10
+
+Ten of the 27 existing-stat icons have no *policy-screen* consumer: budget, currencystrength,
+consumption, investment, inflationexpectations, governmentdebt, population, birthrate, deathrate,
+netmigrationrate. This is **not** an argument for dropping them — they are consumed by the Statistics
+tab's Domestic and International sub-tabs, which is a separate and equally real surface. The section 9
+recommendation ("send the full 42") therefore stands unchanged; the only correction is the missing
+interest-rate icon.
