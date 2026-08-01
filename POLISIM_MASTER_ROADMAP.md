@@ -752,32 +752,22 @@ move sharply enough that blanket coverage could bury real signal), extend to a c
 per-field thresholds, or leave it at five and stop describing the count as more than it is. The last
 option costs nothing and removes the misreading.
 
-### OQ — Step C1: which stat is the primary housing metric? (raised 2026-08-01)
+### RESOLVED (2026-08-01) — Step C1: which stat is the primary housing metric?
 
-The directive recommended **housing cost overburden rate** over homeownership rate. A seed-data
-correction (verification-integrity instance 7 — the recorded figures were Eurostat's "two adults" subset,
-not the whole-population indicator) has inverted the coverage picture that partly justified it:
+**Decided: homeownership rate, reversing the directive's recommendation.** Overburden remains the better
+concept — affordability stress rather than tenure, responsive to interest rates and housing assistance,
+both live levers — but a gap-closing attempt confirmed only **2 of 6** verified (Germany 12.0, Sweden
+10.6). Italy, France and Poland are `[BOUNDED]` to 4.0–9.0, honestly derived from Eurostat naming only
+the countries above 9.0 and below 4.0, and a bound is not a value. Seeding four countries from a range
+would be inventing precision.
 
-| Metric | Verified | Gaps |
-|---|---|---|
-| Housing cost overburden | **2 of 6** — Germany 12.0, Sweden 10.6 | Italy, France, Poland (all known <9.0), USA (no comparable threshold exists) |
-| Homeownership rate | **4 of 6** — USA, France, Germany, Poland | Italy, Sweden (both ordinary OECD lookups) |
+Homeownership has **4 of 6** verified and preserves the sharpest real contrast in the data, Germany ~47%
+against Poland ~87%. Overburden is deferred as a secondary metric pending exact `ilc_lvho07a` figures,
+which need direct Eurostat database access rather than search.
 
-The directive's other reasons for preferring overburden still hold: it measures affordability *stress*
-rather than tenure, and it responds to interest rates and housing assistance, both already live levers.
-So the trade is real — better data versus better mechanics.
+### RESOLVED (2026-08-01) — Step C1: how should the USA housing figure be handled?
 
-Options: (1) switch primary to homeownership, overburden alongside once sourced; (2) keep overburden and
-source the three EU gaps, which are known to exist below 9.0; (3) different primary per country, which
-costs cross-country comparability — the trap the seed file warns about for Gini.
-
-*No recommendation.* This turns on whether interest-rate responsiveness or data coverage matters more
-for how C1 plays, which is a design call. Full detail in `STEP_C1_HOUSING_GAP_REPORT.md`.
-
-### OQ — Step C1: how should the USA housing figure be handled? (raised 2026-08-01)
-
-Eurostat overburden measures >40% of disposable income; US convention is >30% ("cost-burdened") or >50%
-("severely"). Nothing matches, so this is a decision rather than a lookup. The seed file's three options:
-import a US figure with the bias documented (as already done for Gini), mark USA `[GAP]` and seed only
-the EU five, or use homeownership for the USA where a genuinely comparable 65.3% exists. Each changes
-what the headline housing number means for one of six countries.
+**Deferred with the metric.** The question was that Eurostat overburden measures >40% of disposable
+income while US convention measures >30% or >50%, so no comparable figure exists. With homeownership as
+the primary metric the USA has a genuinely comparable verified figure (65.3%), so this stops blocking
+C1. It returns only if overburden is later added as a secondary metric.

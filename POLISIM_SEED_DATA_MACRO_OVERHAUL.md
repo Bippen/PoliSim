@@ -96,14 +96,24 @@ These weren't part of the seven, but came up with real per-country data and are 
 |---|---|---|
 | Germany | 12.0 | [VERIFIED] |
 | Sweden | 10.6 | [VERIFIED] |
-| Italy | [GAP] — known to be below 9.0 (Eurostat listed only countries above that threshold) | [GAP] |
-| France | [GAP] — known to be below 9.0 | [GAP] |
-| Poland | [GAP] — known to be below 9.0 | [GAP] |
+| Italy | [BOUNDED] between 4.0 and 9.0 — see derivation below | [PARTIAL] |
+| France | [BOUNDED] between 4.0 and 9.0 | [PARTIAL] |
+| Poland | [BOUNDED] between 4.0 and 9.0 | [PARTIAL] |
 | USA | [GAP] — see methodology warning below; not a simple lookup | [GAP] |
+
+**Derivation of the 4.0–9.0 bound:** Eurostat's 2024 article names exactly five countries above 9.0% (Greece 28.9, Denmark 14.6, Germany 12.0, Sweden 10.6, Czechia 9.2) and three below 4.0% (Cyprus 2.4, Croatia 3.7, Slovenia 3.8). Italy, France and Poland appear in neither list, so each sits between those thresholds. This is a real constraint honestly derived from published data — not a guess — but it is not a precise value and must not be recorded as one.
+
+**Attempts to close these three gaps by search failed.** Eurostat's own summary article only names the extremes, and every alternative source returns a DIFFERENT VARIANT of the indicator rather than the headline figure (cities, tenant-at-market-price, below-60%-of-median, two adults, 18–64 years). Anyone with database access can pull the exact values from Eurostat `ilc_lvho07a` directly; they are not obtainable from summary articles.
 
 EU average 8.2%. Range anchors: Greece highest at 28.9%, then Denmark 14.6%, Germany 12.0, Sweden 10.6, Czechia 9.2; lowest are Cyprus 2.4, Croatia 3.7, Slovenia 3.8.
 
-**⚠ CORRECTION — an earlier version of this file recorded the WRONG VARIANT.** The figures previously listed here (Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9) are the **"Two adults" household-type subset**, not the headline whole-population indicator. The difference is large: Sweden is 5.1 on the two-adults measure versus **10.6** whole-population — more than 2x. Germany 9.7 versus 12.0. Eurostat publishes at least three variants of this indicator (whole population, "two adults", and "18–64 years" — Sweden reads 5.1 / 10.6 / 10.8 respectively). **Use the whole-population figures above.** This is the same trap already flagged in this file for youth unemployment rate-vs-ratio, and it was walked into anyway — check which variant any Eurostat housing figure belongs to before using it.
+**⚠ CORRECTION — an earlier version of this file recorded the WRONG VARIANT.** The figures previously listed here (Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9) are the **"Two adults" household-type subset**, not the headline whole-population indicator. The difference is large: Sweden is 5.1 on the two-adults measure versus **10.6** whole-population — more than 2x. Germany 9.7 versus 12.0. **Use the whole-population figures above.** This is the same trap already flagged in this file for youth unemployment rate-vs-ratio, and it was walked into anyway.
+
+**This indicator is unusually variant-prone — treat any figure for it as suspect until the variant is confirmed.** Eurostat publishes at least eight variants under the same name: whole population, two adults, 18–64 years, 65+, cities, rural areas, tenant at market price, tenant at reduced price, owner with mortgage, owner without mortgage, and by income quintile. Sweden alone reads 5.1 / 10.6 / 10.8 / 17.9 depending on which you pull.
+
+Secondary sources compound this. Visual Capitalist, explicitly citing Eurostat 2024, publishes Denmark at 22.7% and Norway at 21.0% — against Eurostat's own 14.6% for Denmark. A reputable outlet, correct attribution, different variant, no label.
+
+**Practical rule: record WHICH variant alongside every value, never just the number.** A bare figure for this indicator carries no meaning.
 
 **USA methodology warning (this is a DECISION, not a lookup):** Eurostat measures >40% of disposable income; US sources conventionally measure >30% ("cost-burdened") or >50% ("severely cost-burdened"). No US figure is directly comparable. Three options, none free:
 1. Import a US figure with the bias documented (same approach the file already takes for Gini)

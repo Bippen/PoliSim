@@ -4972,3 +4972,50 @@ assistance, both live levers here) are untouched and still good.
 **Escalated to Open Questions, not decided.** Choosing between coverage and interest-rate
 responsiveness is a judgment about how C1 should play, not a data question. See
 `STEP_C1_HOUSING_GAP_REPORT.md` for the three options and the per-option gap lists.
+
+### Instance 7, follow-up — why this indicator defeated ordinary care, and the rule that follows
+
+A gap-closing attempt on the three missing overburden figures failed, and the reason upgrades instance 7
+from "a mistake was made" to "a bare figure for this indicator is meaningless".
+
+**Eurostat publishes at least eight variants under the one name** "housing cost overburden rate": whole
+population, two adults, 18–64, 65+, cities, rural areas, tenant at market price, tenant at reduced price,
+owner with mortgage, owner without mortgage, and by income quintile. **Sweden alone reads 5.1 / 10.6 /
+10.8 / 17.9** depending which is pulled. The original error was not carelessness about an obscure
+distinction — it was picking one of eight equally-real published numbers, all correctly labelled at
+source, and recording only the digits.
+
+**Secondary sources make it worse.** Visual Capitalist, explicitly citing Eurostat 2024, publishes
+Denmark at 22.7% and Norway at 21.0% against Eurostat's own 14.6% for Denmark. Reputable outlet, correct
+attribution, different variant, no label. A reader checking "does this match Eurostat?" would find the
+citation correct and the number wrong.
+
+**The rule, and it generalizes past this indicator:** when a statistical indicator has multiple published
+variants, **record WHICH variant alongside every value — never just the number.** The indicator code,
+the population base, the threshold, the year. `Germany 9.7` cannot be checked after the fact.
+`Germany 9.7 (ilc_lvho07a, two-adults households, >40% of disposable income, 2024)` announces its own
+scope and is falsifiable on sight.
+
+Corollary for sourcing sessions: **a summary article is not a database.** Eurostat's own 2024 article
+names only the extremes — five countries above 9.0%, three below 4.0% — which is why Italy, France and
+Poland could be *bounded* to 4.0–9.0 but not valued. That bound is a real, honestly derived constraint
+and is recorded as `[BOUNDED]`, deliberately distinct from `[VERIFIED]` and `[GAP]`. **A bound is not a
+value and must never be seeded as one.**
+
+### C1 metric decision — homeownership over overburden (Elias, 2026-08-01)
+
+**The directive's recommendation is reversed.** Overburden remains the better *concept* — affordability
+stress rather than tenure, responsive to interest rates and housing assistance, both live levers — and
+that reasoning was never wrong. It lost on data honesty: 2 of 6 verified means seeding four countries
+from a range, which is inventing precision.
+
+Homeownership carries 4 of 6 verified and preserves the sharpest real contrast in the seed data,
+**Germany ~47% versus Poland ~87%** — genuine, culturally rooted, and enough on its own to make housing
+policy play differently between countries without a single invented figure.
+
+Overburden is **deferred, not dropped**; it returns as a secondary metric if exact `ilc_lvho07a`
+whole-population figures are obtained, which requires direct database access rather than search.
+
+Worth recording as a decision pattern: *the better mechanic lost to the better-sourced one.* When those
+conflict on this project, coverage wins, because an invented seed is undetectable later while a missing
+secondary metric is merely absent.
