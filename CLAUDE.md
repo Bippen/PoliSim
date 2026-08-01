@@ -4367,3 +4367,47 @@ leaving Nationalist Front's smaller but purely negative lean to decide close vot
 consolidation into 7 tabs) is next. Round 4 of the original Roadmap stays unscoped until all of step 5
 is done, so new features get designed against the
 gated-legislation model from day one rather than retrofitted onto it later.
+
+## Simulation determinism, and two batch-run gotchas (2026-08-01)
+
+**The simulation is now deterministic under a seed, and that is a prerequisite for Master Sequence item
+9's Step A, not a convenience.** Step A's bar is "changes ZERO simulation numbers, proven by identical
+trajectories before and after". That was unfalsifiable before this work: six systems each held their own
+`new System.Random()`, clock-seeded, so two runs of IDENTICAL code differed (96 vs 97 anomalies on
+consecutive 100-turn baselines). Any before/after comparison would have been noise, and a published-value
+leak is exactly the small, slow divergence noise hides.
+
+All six now draw from `SimulationRandom` (commit `75fa05a`), seedable in one call, with
+`SimulationTestRunner` accepting `-seed=N` alongside `-turns` and `-scenario`. Unseeded remains the
+default, so real play still varies between playthroughs.
+
+**Proven, not assumed**: two independent 100-turn baseline runs at `-seed=12345` produced **all 85
+per-turn lines identical**, compared as VALUES via `diff`, not as anomaly counts. The count alone is
+insufficient - two runs can share a count while differing in values, which is the exact false pass this
+check exists to rule out.
+
+**The sixth source was nearly missed.** `SovereignWealthFundSystem` did not match the first audit's search
+pattern and was only caught by re-running the search after rewiring the other five. Left unseeded, one
+system would have kept re-randomising every run while everything appeared to work - defeating the proof
+silently. Re-check after a mechanical change; the first pass missed it.
+
+### Two operational facts about batch runs, both of which cost real time today
+
+1. **Seeded runs cannot be chained back-to-back.** After `SimulationTestRunner` finishes, the Unity
+   process lingers in the documented post-simulation exit hang and KEEPS THE PROJECT LOCK. The next run
+   is then refused and dies with `Exiting without the bug reporter. Application will terminate with
+   return code 1` after a ~24-line log with no script compilation in it. Any multi-run validation must
+   clear the previous process between runs, not loop.
+2. **Exit codes from these runs are meaningless - read the log.** A total failure to launch
+   (`Unity.dll failed to load`) reported **exit code 0** twice, because the shell pipeline succeeded even
+   though Unity produced nothing at all. Only `Sanity check complete` in the log proves a run happened.
+   Do not pipe Unity's own output to /dev/null: doing so hid that load failure through two wasted
+   attempts.
+
+**Editor install fragility.** Two Editor installs (6000.5.4f1, then 6000.5.6f1) broke with
+`Unity.dll failed to load`, each shortly after a Unity Hub self-update. The Hub application and the Editor
+share one directory tree (`G:\UNITY\Unity Hub\`, with `6000.5.6f1/` inside it alongside the Hub's own
+`ffmpeg.dll`/`dxcompiler.dll`), which is the likely mechanism. Reinstalling fixes it. Note that
+`Unity.dll`'s timestamp does NOT indicate whether a reinstall happened - installers preserve build-time
+timestamps, so an identical date is what a clean reinstall of the same version looks like. Test by
+launching, not by inspecting file metadata.
