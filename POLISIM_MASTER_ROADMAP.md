@@ -288,14 +288,23 @@ drawn anywhere yet).
 **Old → new mapping - CONFIRMED (directly stated in this document's own original 5e scope text, or
 require no judgment call):**
 
+> **AMENDED 2026-08-01 — the structure is now 6 tabs, not 7** (commit `865fcf4`). Tax and Spending were
+> merged into a single **Budget** tab at Elias's direction, so every row below that previously read "Tax",
+> "Spending" or "Tax or Spending (same screen)" now reads **Budget**. The original split gave the same
+> screen two top-level entry points that differed only in which of its OWN five sub-categories
+> (Tax/Spending/Welfare/Infrastructure/SWF) was pre-selected — which also misrepresented Tax and Spending
+> as peers of Statistics and Politics when they are really peers of Welfare and Infrastructure, already
+> sub-categories of that very screen. The rows are amended in place rather than duplicated, since the
+> destination changed but every mapping DECISION below still stands exactly as reasoned.
+
 | Old tab (`RightPanelTab`) | New tab | Basis |
 |---|---|---|
 | `RecentTurns` | Statistics | Original 5e scope text names it explicitly. |
 | `WorldMap` | Statistics | Original 5e scope text names it explicitly. |
-| `TaxPolicy` | Tax | Retired as standalone - becomes an ENTRY POINT into the existing Budget Process screen (`DrawBudgetProcessTab`), opened at its Tax category. Confirmed via `DrawRightColumnTabs`'s own code comment: *"Budget Process consolidates Tax/Spending/Welfare/Infrastructure/SWF's existing content... those five tabs stay as independent entry points for now per the Master Sequence step 5 design, not removed until step 5e's own tab consolidation."* This IS that consolidation. |
-| `SpendingPolicy` | Spending | Same as Tax above, opened at its Spending category. |
-| `WelfarePolicy` | Tax or Spending (same screen) | Same mechanism - Welfare is one of `BudgetProcessCategory`'s 5 existing values, reachable from EITHER new entry point once inside the consolidated screen, not a separate top-level tab. |
-| `SwfPolicy` | Tax or Spending (same screen) | Same mechanism - `BudgetProcessCategory.Swf`. |
+| `TaxPolicy` | Budget | Retired as standalone - becomes an ENTRY POINT into the existing Budget Process screen (`DrawBudgetProcessTab`), opened at its Tax category. Confirmed via `DrawRightColumnTabs`'s own code comment: *"Budget Process consolidates Tax/Spending/Welfare/Infrastructure/SWF's existing content... those five tabs stay as independent entry points for now per the Master Sequence step 5 design, not removed until step 5e's own tab consolidation."* This IS that consolidation. |
+| `SpendingPolicy` | Budget | Same as Tax above, opened at its Spending category. |
+| `WelfarePolicy` | Budget | Same mechanism - Welfare is one of `BudgetProcessCategory`'s 5 existing values, reachable from EITHER new entry point once inside the consolidated screen, not a separate top-level tab. |
+| `SwfPolicy` | Budget | Same mechanism - `BudgetProcessCategory.Swf`. |
 | `LaborMarket` | Policy/Laws | Original 5e scope text: "Policy/Laws (standalone bills from 5d)" - `LaborPolicyBill` is exactly this. |
 | `CrimeJustice` | Policy/Laws | Same - `CrimeJusticePolicyBill`. |
 | `SectorPolicy` | Policy/Laws | Same - `SectorPolicyBill`. |
@@ -303,11 +312,11 @@ require no judgment call):**
 | `CompassAndDemographics` | SPLIT: Politics + Demographics | Original 5e scope text separates "Compass" (under Politics) from "Demographics (population/pie charts)" as its own tab - this single existing tab's two halves (the Political Compass chart vs. the demographic pie charts) split accordingly. |
 | `ForeignPolicy` | Decisions | Original 5e scope text names it explicitly, AND confirmed via code that the ENTIRE standalone tab's content is the pending-meeting interrupt (explanatory text + either the modal or "No meeting currently pending") - nothing left behind to place anywhere else. |
 | `Parliament` | Politics | Original 5e scope text names it explicitly. Deliberately NOT also split into Decisions - unlike Foreign Policy/Cabinet, a pending bill never pauses time (only the ANNUAL budget process's Phase 1 does, and that's covered by the global banner already, not a tab), so there's no true "interrupt" here needing Decisions' attention pattern - Parliament's own "Pending Legislation" list (all 7 bill types) is informational, not blocking. |
-| `BudgetProcess` | Tax or Spending (same screen) | This tab doesn't move anywhere new - it effectively becomes what "Tax" and "Spending" both open into (see `TaxPolicy` row above). Not retired so much as promoted to the thing the other five folded into. |
+| `BudgetProcess` | Budget | This tab doesn't move anywhere new - it effectively becomes what "Tax" and "Spending" both open into (see `TaxPolicy` row above). Not retired so much as promoted to the thing the other five folded into. |
 | `Trade` | SPLIT: Statistics + Policy/Laws | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** The Trade Balance graph and per-partner import/export volume bars are informational (Statistics-flavored); the tariff bill status/live-estimate/Introduce action (`TradePolicyBill`, a genuine standalone bill from 5d) is exactly what "Policy/Laws (standalone bills from 5d)" describes. Implementation refinement (not a design fork): the per-partner override CONTROLS stay bundled with their own bars in one row rather than splitting a single row's rendering across two different tabs (a real UX regression - a player adjusting an override wants the volume bars right next to it) - so Statistics gets only the aggregate Trade Balance graph, and Policy/Laws gets the full per-partner section (bars AND override controls together). |
 | `FederalReserve` | Politics | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** A real political institution with its own active lever (interest rate, Fed Chair selection) that groups naturally with Parliament/Cabinet, even though the Fed/Eurozone exemption means it's never Parliament-gated. |
 | `PolicyWeb` | Policy/Laws | **RESOLVED by Elias (2026-07-31), OVERRIDING the original recommendation (Statistics).** Elias's own reasoning: "it's a relationship/reference tool consulted while deciding what to change, closer to where bills get drafted than to a pure stats readout." |
-| `Infrastructure` | Tax or Spending (same screen) | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** Consistent with Welfare/SWF above - `DrawInfrastructureContent` is ALREADY reused verbatim inside Budget Process's own Infrastructure category, and the standalone tab has no independent lever of its own. |
+| `Infrastructure` | Budget | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** Consistent with Welfare/SWF above - `DrawInfrastructureContent` is ALREADY reused verbatim inside Budget Process's own Infrastructure category, and the standalone tab has no independent lever of its own. |
 | Does "Decisions" need the Budget Process mandatory-pause interrupt too? | Yes | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** Elias's own reasoning: "any 'time is blocked until you respond' state belongs in the same place, not treated as an exception." Reuses the same `DrawBudgetBillStatusAndIntroduce` status+Introduce UI already built for Tax/Spending, shown in Decisions ONLY while `GetPendingBudgetProcess` is true (mirroring Foreign Policy/Cabinet's own "only appears while actually pending" pattern) - the ongoing per-bill countdown status stays under Tax/Spending, this is specifically the blocking Phase-1 moment. |
 
 All five previously-escalated placement questions are now resolved - see Open Questions below, marked
@@ -389,7 +398,7 @@ and confirm after each batch before continuing to the next.
 **Batch 1 — the tab bar itself: DONE (2026-08-01)**, commit `a8decf9`, confirmed by Elias in the live
 Editor ("all the tabs are looking great"). Taken first, and as a single batch rather than split, because
 the tab bar is shared chrome rather than any one tab's content - splitting it would have left the bar
-visibly half-iconned between batches. All 7 tabs now carry their icon; the four `icon_nav_*` exist
+visibly half-iconned between batches. All tabs now carry their icon (7 at the time; 6 since the Tax/Spending merge); the four `icon_nav_*` exist
 precisely because Statistics/Decisions/Demographics/Policy-Laws map to no single `SystemArea`, while
 Tax/Spending/Politics reuse `icon_area_fiscal`/`icon_area_political` directly per
 `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`'s own manifest. **Tax and Spending share one icon** - both are
@@ -398,7 +407,7 @@ Process screen; flagged to Elias explicitly rather than silently substituted, an
 
 Two things worth carrying into later batches:
 - **The icon is stacked ABOVE its label, not beside it, and this was forced by real arithmetic, not
-  taste**: the right column is ~55% of the window, so each of 7 tabs gets ~143px at 1080p, while
+  taste**: the right column is ~55% of the window, so each of 7 tabs got ~143px at 1080p (6 tabs now, slightly wider, but the conclusion holds), while
   "Demographics" alone is ~175px of text at the 26px tab font. A left gutter pushed labels to three
   lines and clipped them; shrinking the icon to compensate returned it to the unreadable speck the work
   set out to fix. Elias picked stacking from three costed options.
