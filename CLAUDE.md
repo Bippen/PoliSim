@@ -4748,3 +4748,36 @@ Both landed 2026-08-01, and both change anomaly counts for reasons unrelated to 
 frozen-calendar world with an inflated counter.** Do not compare a post-fix count against a pre-fix one
 and read the difference as the simulation improving or regressing. Only post-fix numbers are comparable
 with each other.
+
+### Correction: the calendar fix changed NO trajectories (measured 2026-08-01)
+
+Commit `e15cb49`'s message predicted trajectories would change once the calendar advanced. **They did
+not.** Measured: the 600 full-state lines from the calendar-driven baseline
+(`stepA_baseline_calendar_e15cb49.log`) are byte-identical to the frozen-calendar baseline. The
+75 -> 69 anomaly change came entirely from the detector floor, not the calendar.
+
+**Why**, established by tracing the callers rather than assuming: every date-driven GATE lives in the UI
+layer. `UpdateFedChairSelectionState` exists only in `GameController`; the budget-process pause is
+consumed there too. `SimulationManager.AdvanceTurn` reads `CurrentDate` solely to stamp
+`History.Append`. Batch mode drives the simulation directly, so those gates are structurally unreachable
+from it - the calendar advancing cannot change what they do, because they are never called.
+
+**The fix is still correct and was still necessary**, for a different reason than stated:
+`AdvanceDay()` is now actually invoked in batch runs, which is what allows `PublicationSystem` to execute
+during validation at all. Without it, Step A's proof would have been vacuous. `StatHistory` also now
+receives advancing dates rather than the same date every turn.
+
+**Verification that the calendar genuinely advances** (since trajectories can no longer serve as
+evidence): the harness raises an anomaly whenever `DaysPerTurn` calls to `AdvanceDay` fail to cross a
+turn boundary. Zero such anomalies across 100 turns, which requires the date to have advanced 12,100
+days - roughly 33 simulated years.
+
+**Revised discontinuity guidance**: only ONE of today's two changes actually moves the numbers. The
+anomaly-detector floor does; the calendar fix does not. Pre- and post-`e15cb49` trajectories are directly
+comparable.
+
+**Standing caveat this exposes**: batch validation exercises `SimulationManager` only. Every
+player-facing gate and interrupt - budget-process pauses, Fed chair selection, cabinet decisions,
+foreign-policy meetings - lives in `GameController` and is invisible to it. That is a real limit on what
+"validated against real Unity" means in this file, and it is why live-Editor confirmation has repeatedly
+caught things batch runs could not.
