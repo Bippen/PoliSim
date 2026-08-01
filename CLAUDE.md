@@ -4781,3 +4781,46 @@ player-facing gate and interrupt - budget-process pauses, Fed chair selection, c
 foreign-policy meetings - lives in `GameController` and is invisible to it. That is a real limit on what
 "validated against real Unity" means in this file, and it is why live-Editor confirmation has repeatedly
 caught things batch runs could not.
+
+## Master Sequence step 9, Step A — DONE (2026-08-01)
+
+Release calendar, published series and the revision mechanic. Commit `e3a0feb`, with the data model in
+`8e63a6f` and the seed infrastructure in `75fa05a`/`121656f`.
+
+**Built.** `PublishedData`/`PublishedSeries`/`PublishedEntry` on `Country` (never on `EconomyState`);
+`ReleaseCalendar` implementing the seed file's [VERIFIED] rules as date arithmetic; `PublicationSystem`
+called once per simulated day from `AdvanceDay`. Revisions APPEND rather than overwrite, so a player who
+acted on a preliminary figure can still see the number they acted on. Preliminaries are a noisy estimate
+OF the true value, so a revision always converges toward reality rather than being an arbitrary jump.
+
+**Six stats publish, not 29** - only those with a real release rule in the seed data. Inventing a cadence
+for something like `ConsumerConfidence` would be the fabrication the `[GAP]` discipline forbids; the rest
+keep reading live until a schedule is sourced.
+
+### Validation - five checks, and why the last one is the one that counts
+
+1. `EconomyState.cs` unchanged, so the 55 simulation call sites reading `country.State.X` cannot reach a
+   published value.
+2. Only `ReleaseCalendar`, `PublicationSystem` and `SimulationManager` reference `Published` anywhere
+   under `Assets/Scripts/Simulation`.
+3. **600/600 full-state lines byte-identical** to the baseline at `-seed=12345`. Zero simulation change.
+4. The diff can actually detect a difference - negative control, `OkunCoefficient` 0.5 -> 0.5001 (0.02%),
+   caught at Turn 4.
+5. **`PublicationSystem` actually executed: 7087 published entries.**
+
+**Check 5 is the one a clean diff would have hidden**, and it is the difference between this being a
+proof and a formality. A trajectory diff returns identical both when the feature is correctly inert AND
+when it never ran at all. Checks 1-4 were all satisfiable by an implementation that did nothing.
+
+The count corroborates the release RULES too, not just execution: 12,100 simulated days is ~33.1 years,
+predicting ~397 monthly unemployment and ~397 monthly inflation entries per country, USA GDP at three
+estimates per quarter (~397) against the EU five at two (~265), plus ~99 annual - **~7080 predicted
+against 7087 observed**.
+
+### What this validation does NOT cover
+
+It proves publishing does not DISTURB the simulation. It does not prove the published figures are
+CORRECT - that reference periods carry the right lag, that revisions land on the right dates, or that the
+preliminary/revised distinction behaves as intended. `ReleaseCalendar` is pure date arithmetic and
+directly testable; that check is still outstanding and belongs before Step B builds release-point graphs
+on top of it.

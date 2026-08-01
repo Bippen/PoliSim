@@ -115,7 +115,7 @@ This is the one authoritative order, replacing whatever each original document s
    adds stats onto a foundation already proven inert. Landing both together would make a drift
    impossible to attribute — and per the directive, such a drift "may not surface for hundreds of turns".
 
-   - **Step A — release calendar, published series, revisions, Tier 0 derived stats.** The risky
+   - **Step A — release calendar, published series, revisions, Tier 0 derived stats. DONE (2026-08-01), commit `e3a0feb`.** The risky
      foundation. Rule-based per-country schedules (not hardcoded dates), a published series per stat
      carrying reference period / publication date / value / revision status, preliminary→revised figures
      derived from the true underlying value, and display-only derived stats (GDP per capita, tax burden
