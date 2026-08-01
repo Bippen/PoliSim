@@ -39,6 +39,21 @@ namespace PoliSim.UI
             return loaded;
         }
 
+        private const string ChromeResourcesPath = "Art/UI/Chrome/";
+
+        /// <summary>
+        /// Master Sequence step 5e, chrome batch 1: the imported control-chrome sprites (button
+        /// backgrounds, slider and scrollbar parts, panel frame) by filename minus extension, e.g.
+        /// "ui_button_normal". Authored pure white with all depth in alpha, so callers are expected to
+        /// tint them - see `UiPalette.BuildButtonStyle`. Returns null when a sprite is missing, and every
+        /// caller is written to fall back to its previous procedural appearance rather than draw nothing,
+        /// so a failed import degrades the look instead of producing invisible controls.
+        /// </summary>
+        public static Texture2D GetChrome(string chromeName)
+        {
+            return Load(ChromeResourcesPath + chromeName);
+        }
+
         private const string PortraitResourcesPath = "Art/UI/Portraits/";
 
         /// <summary>

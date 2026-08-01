@@ -246,22 +246,131 @@ namespace PoliSim.UI
             GUI.color = previous;
         }
 
+        // Keyed on the source texture REFERENCE rather than an instance id - Unity 6000.5 deprecated
+        // Object.GetInstanceID(), and the reference is a perfectly good key here since IconLibrary
+        // caches and returns the same Texture2D instance for a given sprite name.
+        private static readonly Dictionary<(Texture2D Source, Color Tint), Texture2D> TintedChromeCache =
+            new Dictionary<(Texture2D, Color), Texture2D>();
+
+        // Unreadability is a property of the SOURCE sprite, not of any one tint, so it is tracked
+        // separately rather than as a null entry in the cache above - whose lookup deliberately treats
+        // null as "absent" so it also recovers from textures Unity destroyed across a domain reload.
+        // Without this set, a failed read would be retried (and re-logged) on every frame of every tint.
+        private static readonly HashSet<Texture2D> UnreadableChrome = new HashSet<Texture2D>();
+
         /// <summary>
-        /// Builds a button style with a solid-color background per state (normal/hover/active) -
-        /// Unity's IMGUI applies these automatically based on real mouse position/press state during
-        /// Repaint, so this is genuine hover/pressed feedback, not just a static color. Clones
-        /// <paramref name="baseStyle"/> first so font size/fixed height (already screen-scaled by the
-        /// caller) carry over unchanged - only the color identity changes here.
+        /// Master Sequence step 5e, chrome batch 1: multiplies one of the imported chrome sprites by a
+        /// colour, producing a cached tinted copy.
+        ///
+        /// The sprites are authored pure white with ALL depth - gradient, bevel, pressed inset, edge
+        /// highlight - carried in the alpha channel (verified on import: channel spread across the pack
+        /// is 0). Multiplying therefore yields exactly the requested hue while preserving that depth,
+        /// where the old `GetSolidTexture` could only produce a flat rectangle.
+        ///
+        /// Pre-tinting into a copy, rather than setting `GUI.backgroundColor` around each draw, is
+        /// deliberate: it keeps <see cref="BuildButtonStyle"/>'s signature and behaviour identical, so
+        /// none of the ~24 existing button call sites need to change. Rewriting them all to bracket
+        /// each draw with a colour push/pop would be a far larger and more fragile edit for the same
+        /// pixels. The cost is one 48x48 texture per (sprite, colour) pair - a few KB each, for a
+        /// handful of pairs.
+        ///
+        /// Returns null if <paramref name="source"/> is null (sprite not imported), which callers treat
+        /// as "fall back to the old solid-colour background" rather than drawing nothing.
+        /// </summary>
+        private static Texture2D GetTintedChrome(Texture2D source, Color tint)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            if (UnreadableChrome.Contains(source))
+            {
+                return null;
+            }
+
+            var key = (source, tint);
+            if (TintedChromeCache.TryGetValue(key, out Texture2D cached) && cached != null)
+            {
+                return cached;
+            }
+
+            // GetPixels throws unless the texture was imported with Read/Write enabled. That flag was set
+            // by editing the .meta files, which only takes effect once Unity reimports them - so on a
+            // machine where that reimport hasn't happened yet, this would throw INSIDE OnGUI and take the
+            // entire UI down rather than degrading one button. Caught and cached as a miss so the fallback
+            // path is used from then on, without re-throwing (and re-logging) every frame.
+            Color[] pixels;
+            try
+            {
+                pixels = source.GetPixels();
+            }
+            catch (UnityException)
+            {
+                Debug.LogWarning($"UiPalette: chrome sprite '{source.name}' is not readable, falling back to flat button backgrounds. Re-import it with Read/Write enabled to get the sprite chrome.");
+                UnreadableChrome.Add(source);
+                return null;
+            }
+
+            var tinted = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] *= tint;
+            }
+
+            tinted.SetPixels(pixels);
+            tinted.Apply(false);
+            TintedChromeCache[key] = tinted;
+            return tinted;
+        }
+
+        /// <summary>Border insets for the 9-sliced chrome sprites, from the delivered pack's own README - buttons 10, panel 13, capsules 14 left/right. Kept here as named constants so the numbers live beside the code that applies them rather than only in a README.</summary>
+        public const int ChromeButtonBorder = 10;
+        public const int ChromePanelBorder = 13;
+        public const int ChromeCapsuleBorder = 14;
+
+        /// <summary>
+        /// Builds a button style with the imported chrome sprite as its background per state
+        /// (normal/hover/active) - Unity's IMGUI applies these automatically based on real mouse
+        /// position/press state during Repaint, so this is genuine hover/pressed feedback, not just a
+        /// static color. Clones <paramref name="baseStyle"/> first so font size/fixed height (already
+        /// screen-scaled by the caller) carry over unchanged.
+        ///
+        /// Master Sequence step 5e, chrome batch 1: each state now uses its OWN sprite - a pressed
+        /// button gets genuinely different geometry (inverted gradient, inner shadow) rather than just a
+        /// darker flat fill. `style.border` is what makes 9-slicing work in IMGUI: the slice comes from
+        /// the STYLE, never from the texture asset's own `spriteBorder` field, which IMGUI does not read.
+        /// If the sprites are missing for any reason the method silently falls back to the previous
+        /// solid-color rectangles, so a broken import degrades to the old look rather than to invisible
+        /// buttons.
         /// </summary>
         public static GUIStyle BuildButtonStyle(GUIStyle baseStyle, ButtonKind kind, SystemArea area = SystemArea.Neutral)
         {
             Color baseColor = GetButtonBaseColor(kind, area);
             var style = new GUIStyle(baseStyle);
 
-            style.normal.background = GetSolidTexture(baseColor);
-            style.hover.background = GetSolidTexture(Lighten(baseColor, 0.2f));
-            style.active.background = GetSolidTexture(Darken(baseColor, 0.25f));
+            Texture2D normalSprite = IconLibrary.GetChrome("ui_button_normal");
+            Texture2D hoverSprite = IconLibrary.GetChrome("ui_button_hover");
+            Texture2D pressedSprite = IconLibrary.GetChrome("ui_button_pressed");
+
+            style.normal.background = GetTintedChrome(normalSprite, baseColor) ?? GetSolidTexture(baseColor);
+            style.hover.background = GetTintedChrome(hoverSprite, baseColor) ?? GetSolidTexture(Lighten(baseColor, 0.2f));
+            style.active.background = GetTintedChrome(pressedSprite, baseColor) ?? GetSolidTexture(Darken(baseColor, 0.25f));
             style.focused.background = style.normal.background;
+
+            if (normalSprite != null)
+            {
+                // Hover/pressed differentiation now comes from the sprites' own alpha (the hover sprite is
+                // brighter, the pressed one inset), so all three states share ONE base colour rather than
+                // the old lighten/darken pair. Doing both would double the effect.
+                style.border = new RectOffset(ChromeButtonBorder, ChromeButtonBorder, ChromeButtonBorder, ChromeButtonBorder);
+            }
 
             Color textColor = kind == ButtonKind.TabSelected ? Color.white : Lighten(Color.white, 0f);
             style.normal.textColor = textColor;
