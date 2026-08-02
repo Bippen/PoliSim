@@ -462,9 +462,53 @@ the prevention-vs-detection distinction in rule 5c, demonstrated against the per
 hour earlier. **OECD's DSDs are wider than Eurostat's; the dimension count must be read from the DSD, not
 assumed from the Eurostat pattern.**
 
-**What remains for whoever picks this up:** determine which `PRICE_BASE` / `TRANSFORMATION` combination
-the seed's 90.86 came from — or establish that the OECD has revised since — then re-run the gate. The
-outstanding question is a *variant identification*, not an access problem.
+#### FULL SPECIFICATION DONE 2026-08-02. THE GATE STILL FAILS — and the reason is instructive.
+
+The nine-dimension key was read from the DSD and every dimension specified. There are exactly **two**
+`USD_PPP_H` series for France, and both were enumerated:
+
+```
+https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0/
+    FRA.A.GDPHRS._T.USD_PPP_H.V.N._Z.PPP        <- current prices, PPP converted
+    FRA.A.GDPHRS._T.USD_PPP_H.LR.N._Z.PPP       <- chain linked volume (rebased)
+```
+
+| | 2022 | 2023 | 2024 |
+|---|---|---|---|
+| `V` current prices | 86.32 | **91.18** | **92.74** |
+| `LR` chain linked volume | 81.54 | 81.54 | 81.56 |
+
+**The seed's 90.86 appears NOWHERE**: not in France's full `V` series 2010–2024 (56.70 → 92.74,
+monotonic apart from 2021), and not in any of the **41 countries** in the 2024 cross-section.
+
+⚠ **AND YET THIS IS NOT RECORDED AS AN ERROR, because the revision-vs-error test cannot be completed.**
+Rule 5f-bis needs **both** conditions, and only one holds:
+
+| Condition | Status |
+|---|---|
+| Disputed value appears nowhere in the dataset | ✅ **Holds** — exhaustively, across years and cross-section |
+| Method has reproduced other anchors **in the same session** | ❌ **FAILS — no OECD anchor has ever reproduced** |
+
+**This is a bootstrapping problem, and it is worth naming.** The second condition exists to prove the
+technique before letting it overturn recorded data. On a *brand-new source* there is nothing yet proven —
+the Eurostat anchors say nothing about whether an OECD query is being built correctly. **A first contact
+with an API can never satisfy condition 2, which means it can never declare an error.** That is the
+conservative outcome by design, and correct: the default holds, and the file wins.
+
+**The evidence nonetheless points at revision rather than error, and points at a specific one.** France
+2023 reads **91.18** against the seed's 90.86 — a gap of 0.32, which is the revision signature magnitude,
+where 2024 is 1.88 away. **The likeliest story is that 90.86 is a pre-revision 2023 figure recorded under
+a 2024 label** — OECD publishes a "2024 edition" containing 2023 data, and PPP-converted series revise
+when PPP benchmarks update. That is a hypothesis with evidence, not a finding, and it is not enough to
+rewrite a `[VERIFIED]` figure on.
+
+**What would settle it, for whoever picks this up:** a single OECD figure independently confirmed from
+another route — any country, any year — would satisfy condition 2 and unlock the whole dataset. Until
+then C5 stays with Elias. **The access problem is solved; the trust problem is not.**
+
+⚠ **Germany, Italy, Sweden and Poland were NOT recorded**, though the query now returns them cleanly on a
+fully-specified key. Sourcing four new figures on a signature whose one testable anchor does not reproduce
+is precisely what rule 5f exists to stop.
 
 **Separately: OECD homeownership on the household basis (C1) does NOT appear to be in SDMX at all.** The
 full dataflow list was searched for housing and tenure; it returns regional housing, housing transactions
@@ -548,6 +592,39 @@ with. Every safeguard below exists because the usual signal that something is wr
 **d. Record the full query URL alongside the value**, plus every dimension code AND its returned label.
 A value without its query is unreproducible, and this file's whole method is reproducibility.
 
+**d-bis. 🔴 READ THE DIMENSION COUNT FROM THE DSD. NEVER CARRY IT OVER FROM ANOTHER API.**
+
+#### VERIFICATION-INTEGRITY INSTANCE — the rule was right, understood, and written down an hour earlier
+
+Rule 5c (prevention vs detection) was recorded at roughly 17:00 on 2026-08-02. The OECD productivity query
+failed for exactly the reason 5c describes at roughly 17:45, **written by the same session that had just
+written the rule.**
+
+**What happened.** `DSD_PDB` has **nine** key dimensions —
+`REF_AREA · FREQ · MEASURE · ACTIVITY · UNIT_MEASURE · PRICE_BASE · TRANSFORMATION · ASSET_CODE ·
+CONVERSION_TYPE`. Five were specified. The response returned several variants per country, and **not one
+label was wrong, because none of them was wrong**: every row was a genuine OECD figure for a combination
+that had simply not been excluded. Detection had nothing to detect.
+
+**The tell was a stray USA reading of `2.24`** against an expected ~97 — three orders of magnitude off,
+perfectly labelled, sitting in the same response as plausible values. **That is what an unfiltered
+dimension looks like**: not an error message, not a bad label, just an extra row that belongs to a
+question nobody asked.
+
+**Why knowing the rule did not prevent the mistake.** The rule was learned on Eurostat, whose datasets run
+4–7 dimensions and whose omissions were caught by anchors. **OECD's DSDs are wider.** The habit that
+transferred was "state the dimensions I know about" — which is not the rule. The rule is "state every
+dimension the DSD declares", and the DSD is the only thing that knows how many that is.
+
+**Knowing a rule and applying it under a different API's shape are different skills.** The standing form:
+
+> **Fetch the DSD, count its key dimensions, and specify all of them — every time, per dataset, per API.
+> A dimension count is a property of the dataset, never of the provider and never of habit.**
+
+A cheap mechanical check: SDMX rejects a key with the wrong arity outright — *"Not enough key values in
+query, expecting 9 got 8"* — so **deliberately sending one too few is a free way to make the API state
+its own arity** before building the real query.
+
 **e. 🔴 STATUS FLAGS ARE DATA, NOT DECORATION — and a flagged figure is NEVER silently `[VERIFIED]`.**
 JSON-stat responses carry a per-observation `status`. The very first test query returned **`bep`** —
 *"break in time series, estimated, provisional"*. A figure with a break flag is **not on the same basis as
@@ -571,14 +648,44 @@ It is overturned only when **both** hold:
 2. **The method has already reproduced other anchors in the same session**, so the technique is known
    good rather than assumed good.
 
+   ⚠ **This condition CANNOT be met on first contact with a new source, by design.** Anchors reproduced
+   against one API prove nothing about queries built against another — the OECD attempt below satisfied
+   condition 1 exhaustively and still could not declare an error, because no OECD figure had ever been
+   reproduced. **A new source therefore starts unable to overturn anything**, and must earn that standing
+   by reproducing one known value first. Conservative on purpose: the alternative is letting an unproven
+   query rewrite verified data on its first outing.
+
 Both held for the life expectancy 84.1 error below, and corroboration arrived from a third direction (its
 "joint highest in EU" claim failed independently). **Neither condition alone is sufficient.**
 
-⚠ **Distinguish this from ROUTINE REVISION, which looks similar and means the opposite.** A revised figure
-sits *close* to the recorded one (0.1–0.3 for monthly unemployment), in the *right* variant, with the
-qualitative claims still holding. An erroneous figure is absent entirely. The youth unemployment audit
-below is the revision case; life expectancy is the error case. Treating a revision as an error would churn
-good data; treating an error as a revision would preserve a fiction.
+**f-ter. 🔴 THE REVISION-vs-ERROR TEST (Elias, 2026-08-02). Run this on EVERY mismatch.** A figure that
+fails to reproduce is one of two completely different things, and they get opposite treatment:
+
+| | **REVISION** — the seed was right, the source moved | **ERROR** — the seed was never right |
+|---|---|---|
+| Value vs current | Close, at the **exact period claimed** | Matches nothing |
+| Variant | Correct — it aligns with a real series | Often correct too; irrelevant |
+| **Elsewhere in the dataset** | n/a | **Appears in NO year and NO cross-section** |
+| Qualitative claims | Still hold | Fail independently |
+| Treatment | Update the value, keep the vintage, keep confidence | Replace, log as verification-integrity, re-check its siblings |
+
+**🔴 MAGNITUDE ALONE DOES NOT DISTINGUISH THEM, and this is the whole point of the rule.** The evidence
+from the day both were found:
+
+- **Youth unemployment: 0.1–0.3 off → REVISION.** Italy 20.1→20.0, France 18.7→19.0, Sweden 22.2→22.5.
+- **Life expectancy: 0.4 off → ERROR.** Italy 84.1→83.7 — a *larger* gap, and the wrong one.
+
+**The bigger discrepancy was the honest figure.** Anyone triaging by "how far off is it" would have
+reached the wrong verdict on both. The discriminator is not distance, it is **whether the number exists
+anywhere in the source at all** — a revision leaves the old value in the historical record or adjacent
+periods; an error leaves no trace because there was never anything to leave.
+
+**The failure modes are asymmetric, which is why the test must be run rather than guessed:**
+- *Revision misread as error* → good data churned, sourcing effort repeated, confidence markers lowered on
+  figures that deserved them.
+- *Error misread as revision* → the fiction is preserved, updated to a new wrong value, and its
+  `[VERIFIED]` marker renewed. **This is the worse one, because it launders a mistake into fresh
+  confidence.**
 
 **g. 🔴 WHEN THE QUERY SHAPE CHANGES, RE-RUN THE GATE IN THE NEW SHAPE.** A gate that passed in one shape
 says nothing whatever about another. Each of these is a shape change and each needs its own anchored
