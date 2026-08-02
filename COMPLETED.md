@@ -242,9 +242,9 @@ Not a roadmap item, but real work that everything above depends on.
 `PublicationRevision` stream specifically so publishing cannot perturb the draw sequence of events, SWF
 returns, Fed chair candidates, cabinet decisions or parliament jitter.
 
-### Verification-integrity failures — nine instances, one named class
+### Verification-integrity failures — ten instances, one named class
 
-*Count corrected 2026-08-02: this said "seven", written before instances 8 and 9 existed.*
+*Count corrected 2026-08-02: this said "seven", written before instances 8, 9 and 10 existed.*
 
 Documented in full in `CLAUDE.md`. The pattern: **the checking mechanism was compromised, not the thing
 checked.** Recorded here because it is the most transferable output of this project so far.
@@ -268,6 +268,21 @@ when an enum's zero value is a real and especially a *good* state, a zero-initia
 distinguish "unset" from it** — carry an explicit has-a-value flag, or reserve slot 0 for `None`. Note it
 was only visible because Italy's true rating is far from AAA; the identical bug on Sweden or Germany,
 both genuinely AAA, would have produced no anomaly at all.
+
+**Instance 10 — three broken verification scripts in one day**, each returning a clean, confidently
+formatted, **universally negative** result: "nothing registered", "no sprites delivered", "no asset pack
+imported". `[regex]::Escape` + `-SimpleMatch`; a `stat_*.png` pattern that misses the `icon_` prefix; and
+`.Length` on a `PSCustomObject` colliding with the intrinsic member. All three were caught only because
+the answer contradicted something already known — one of them was briefly reported before correction.
+
+**A universal negative is the dangerous shape**: a partial one invites scrutiny, while "nothing matched"
+reads as a decisive finding — precisely when it is most likely to be the check failing, since the
+commonest defects break *every* comparison identically.
+
+**STANDING RULE:** any verification script capable of returning a universal negative must **self-test
+against a known-good case first and print the result**, so "the script is broken" and "the finding is
+real" are distinguishable *at read time* rather than afterwards by noticing a contradiction. **Corollary:
+a check whose known-good case cannot be named is not yet a check.**
 
 **Instance 7 is the one that generalizes furthest** — a *trusted source that was simply wrong*. Three
 indicators, each checked against its own documented warning, each hiding a further variant axis:

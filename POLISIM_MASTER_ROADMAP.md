@@ -503,6 +503,29 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   question."* Add as a fifth tier-3 bill type alongside Labor/CrimeJustice/Sector/Trade. **Zero new
   mechanism required.** Worth doing soon.
 
+- **`menu_pattern_tile.png` — delivered, never imported. CONFIRMED genuinely absent (2026-08-02).**
+  Verified rather than assumed: **no background or menu texture of any kind exists anywhere under
+  `Assets/`**, so this is a real gap, not a rename. It is the *only* unaccounted-for file in the
+  "PoliSim GUI redesign.zip" pack — everything else in that zip reconciled: `PoliSimTheme.cs` and
+  `PoliSimWidgets.cs` are in production, and its 8 area icons plus 8 SVG sources are present under
+  reconciled names (`icon_crime` → `icon_area_crimejustice`, `icon_sovereign` →
+  `icon_area_sovereignwealth`, and so on).
+
+  **It is wanted.** Working-discipline rule 10 names "background/menu textures" as explicitly approved
+  sprite art, and the country-selector screen (`DrawCountrySelector`) currently draws no background at
+  all — so there is both a policy decision in favour and a screen with nothing on it.
+
+  ⚠ **This is an IMPORT task, not a request.** The asset already exists and is a valid 256×256 PNG
+  (5,432 bytes, correct PNG signature) inside the zip. It does **not** belong in
+  `CLAUDE_DESIGN_ASSET_REQUEST.md` alongside `icon_stat_interestrate` — that document is for art Claude
+  Design still has to make, and asking for something already delivered would be a duplicate request.
+  The work is: import it to `Assets/Resources/Art/UI/Textures/`, hand-write its `.meta` with the
+  established settings, wire it into the selector screen, then archive the zip.
+
+  **Until then the zip stays unarchived at the project root** — see `AssetPackArchive/README.md`. That
+  is deliberate: an unarchived zip is a visible reminder, whereas archiving it would file the gap away
+  as if it were resolved.
+
 ---
 
 ## When Elias returns to this document

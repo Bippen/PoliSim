@@ -5561,3 +5561,65 @@ invisible.
 **How it was caught:** the number moved in the wrong direction. The cadence change should only ever have
 *reduced* anomalies, and Italy went from 0 to 30. A change that improves one metric while regressing
 another in a way the change cannot explain is worth attributing before reporting either number.
+
+---
+
+## Verification-integrity instance 10 — three broken verification scripts in one day (2026-08-02)
+
+**This instance is not really about PowerShell.** It is about the fact that on a single day, three
+separate verification scripts returned **clean, confidently-formatted, universally-negative results**, and
+all three were wrong. Each was caught only because the answer contradicted something already known — not
+by anything in the output itself.
+
+| # | The script | What it reported | Why it was wrong |
+|---|---|---|---|
+| a | csproj registration check | `GameController.cs = 0` — i.e. **nothing** registered | `[regex]::Escape` combined with `-SimpleMatch` searched for the literal `GameController\.cs` |
+| b | delivered-sprite check | **no** macro sprites delivered | Pattern `stat_*.png` does not match `icon_stat_gdp.png` — the `icon_` prefix |
+| c | zip-import verification | **all 84** `Macro_Data_UI` files zero-length, i.e. every asset pack NOT imported | `.Length` on a `PSCustomObject` collides with the intrinsic member and returned nothing, so the `> 0` filter dropped everything |
+
+**How each was actually caught** — and note that in every case the catch was external to the check:
+
+- (a) `GameController.cs` has been registered for months, so "0 registered" was impossible.
+- (b) The record said 42 sprites were delivered; the "bad pattern" reading was only preferred over the
+  "not delivered" reading after re-checking.
+- (c) `icon_stat_gdp.png` had been read as a 256×256 image earlier in the same session, so "zero-length"
+  was known to be false.
+
+**Each of these came within one step of a false report.** (b) *was* briefly reported as "no sprites
+delivered" and had to be corrected in `VISUAL_REVIEW_BACKLOG.md`. (c) would have declared four
+fully-imported asset packs broken and blocked a cleanup on fictional missing files.
+
+### Why a universal negative is the dangerous shape specifically
+
+A partial negative invites scrutiny — *"why did these three fail and not the others?"* A **universal**
+negative reads as a clean, decisive finding: *nothing is registered, nothing was delivered, nothing was
+imported.* It looks like signal precisely when it is most likely to be the check itself failing, because
+the commonest script defects — a bad pattern, a wrong operator, a property collision — break **every**
+comparison identically rather than a few of them.
+
+The three failures above share no technology and no author error in common. What they share is shape.
+
+### STANDING RULE — self-test before interpreting
+
+**Any verification script capable of returning a universal negative must first run itself against a
+known-good case and print the result.** The self-test output has to appear *before* the findings, so that
+"the script is broken" and "the finding is real" are distinguishable **at read time** — not afterwards, by
+someone happening to notice a contradiction with something they already knew.
+
+The rewritten zip check does exactly this and is the reference implementation:
+
+```
+Indexed 544 distinct basenames under Assets/
+SELF-TEST icon_stat_gdp.png -> 1 hit(s), first size 3441 bytes (must be > 0)
+```
+
+If that line reads `0 hit(s)` or `0 bytes`, every result below it is void, and that is visible immediately
+rather than three paragraphs of confident output later.
+
+**Corollary:** a check whose known-good case cannot be named is not yet a check. If there is no example
+that *must* pass, there is no way to tell a working script from a broken one, and the output cannot be
+trusted in either direction.
+
+This joins instances 4–9 in the same class — **the checking mechanism was compromised, not the thing
+checked** — and is the first to yield a rule about how checks must be *written* rather than about what to
+be suspicious of after the fact.

@@ -48,6 +48,11 @@ struct.** Anything the UI can show needs an icon regardless of which type owns t
   nav and area icons, 16 portraits, 12 chrome. Check `Assets/Resources/Art/UI/` before producing anything.
 - **Cabinet portraits for Defense, Foreign Affairs and Education.** Genuinely needed eventually, and
   deliberately **not** requested — see §5.
+- **`menu_pattern_tile.png`** — a menu/background texture. **Already delivered** (valid 256×256 PNG in
+  "PoliSim GUI redesign.zip") and simply never imported. It is *wanted* — rule 10 approves background/menu
+  textures and the country-selector screen has no background — but the work is an **import**, not a
+  request. Tracked as live work in `POLISIM_MASTER_ROADMAP.md`. **Do not re-request it**; producing it
+  again would duplicate art that exists.
 - **Pre-coloured trend arrows or badges.** Colour is applied at runtime; see §3.
 - **Real-world currency symbols, agency logos, or national statistics-office branding.** The game's
   institutions are fictional by standing rule 9, and this would also be someone else's trademark.
