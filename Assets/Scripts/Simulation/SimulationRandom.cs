@@ -49,7 +49,7 @@ namespace PoliSim.Simulation
 
         private static int? _masterSeed;
 
-        private static readonly Dictionary<Stream, System.Random> Streams = new Dictionary<Stream, System.Random>();
+        private static readonly Dictionary<Stream, CountingRandom> Streams = new Dictionary<Stream, CountingRandom>();
 
         /// <summary>Makes every stream reproducible. Called once at the start of a validation run, before any turn is simulated - see SimulationTestRunner's `-seed=` argument. Clears existing streams so a mid-run reseed cannot leave some consumers on stale sequences.</summary>
         public static void Seed(int seed)
@@ -58,20 +58,96 @@ namespace PoliSim.Simulation
             Streams.Clear();
         }
 
-        /// <summary>This consumer's own sequence. Created on first use; seeded from the master seed plus the stream's own offset when a seed is set, clock-seeded otherwise.</summary>
+        /// <summary>
+        /// This consumer's own sequence. Created on first use, seeded from the master seed plus the
+        /// stream's own offset.
+        ///
+        /// **Changed for save/load (2026-08-02): there is now ALWAYS a master seed.** Previously an
+        /// unseeded run used `new System.Random()` per stream, whose position could never be reconstructed
+        /// - so an unseeded game, which is every real playthrough, would have been unsaveable. On first use
+        /// without an explicit seed one is drawn from the clock and recorded, which keeps real play varying
+        /// between playthroughs (the original intent) while making every game restorable.
+        ///
+        /// Returns `System.Random` rather than `CountingRandom` so no call site changes and none can
+        /// accidentally depend on the counting.
+        /// </summary>
         public static System.Random For(Stream stream)
         {
-            if (Streams.TryGetValue(stream, out System.Random existing))
+            if (Streams.TryGetValue(stream, out CountingRandom existing))
             {
                 return existing;
             }
 
-            System.Random created = _masterSeed.HasValue
-                ? new System.Random(_masterSeed.Value + (int)stream * 7919)
-                : new System.Random();
+            if (!_masterSeed.HasValue)
+            {
+                _masterSeed = System.Environment.TickCount;
+            }
 
+            var created = new CountingRandom(_masterSeed.Value + (int)stream * 7919);
             Streams[stream] = created;
             return created;
+        }
+
+        /// <summary>
+        /// The master seed this game is running on. Always has a value once any stream has been used - see
+        /// <see cref="For"/>. Saved so a reload can rebuild every stream from the same root.
+        /// </summary>
+        public static int MasterSeed
+        {
+            get
+            {
+                if (!_masterSeed.HasValue)
+                {
+                    _masterSeed = System.Environment.TickCount;
+                }
+
+                return _masterSeed.Value;
+            }
+        }
+
+        /// <summary>
+        /// Every stream's draw count, for saving. **Only streams that have actually been used appear** -
+        /// an absent stream has taken zero draws, and <see cref="RestoreState"/> recreates it on demand at
+        /// position zero, which is the same thing.
+        /// </summary>
+        public static Dictionary<Stream, int> CaptureDrawCounts()
+        {
+            var counts = new Dictionary<Stream, int>();
+            foreach (KeyValuePair<Stream, CountingRandom> pair in Streams)
+            {
+                counts[pair.Key] = pair.Value.DrawCount;
+            }
+
+            return counts;
+        }
+
+        /// <summary>
+        /// Rebuilds every stream at its saved position: re-seed from the master seed, then fast-forward by
+        /// the recorded draw count. This is the counting shim's whole purpose - without the fast-forward,
+        /// a load silently rewinds every stream to turn zero and the game replays events the player has
+        /// already seen.
+        ///
+        /// **Streams absent from <paramref name="drawCounts"/> are left uncreated rather than created at
+        /// zero.** Identical behaviour - `For` builds them at position zero on demand - but it also means a
+        /// save written before a new `Stream` value existed still loads correctly, with the new stream
+        /// starting fresh. That matters because the `Stream` enum is append-only by rule.
+        /// </summary>
+        public static void RestoreState(int masterSeed, Dictionary<Stream, int> drawCounts)
+        {
+            _masterSeed = masterSeed;
+            Streams.Clear();
+
+            if (drawCounts == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<Stream, int> pair in drawCounts)
+            {
+                var stream = new CountingRandom(masterSeed + (int)pair.Key * 7919);
+                stream.FastForward(pair.Value);
+                Streams[pair.Key] = stream;
+            }
         }
     }
 }
