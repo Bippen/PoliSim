@@ -246,6 +246,21 @@ namespace PoliSim.Simulation
         /// </summary>
         private const float MaxSwfToGdpPercent = 300f;
 
+        /// <summary>
+        /// How far below zero net government debt may run before it is caught, as a percentage of GDP.
+        ///
+        /// **This is a RUNAWAY GUARD, not a calibrated bound**, and the distinction is the whole point of
+        /// the number being this large. Its job is to stop an unbounded excursion from reaching infinity
+        /// during and after the SWF-returns fix; it is NOT meant to shape any live value. Norway - the
+        /// real world's most extreme net creditor, and this project's own SWF calibration reference -
+        /// sits near -250% of GDP, so nothing plausible comes within a factor of four of this.
+        ///
+        /// ⚠ **If a country ever reaches it, that is a bug report rather than a clamp working.** The
+        /// previous attempt used -300%, which France settled AT (-297.6%) - a bound that binds is a
+        /// number the model reads instead of its own state, and C4's rating was reading it.
+        /// </summary>
+        private const float NetCreditorRunawayGuardPercent = 1000f;
+
         /// <summary>Bounds for this turn's requested PERCENTAGE change to a Discretionary SpendingLine (see PolicyDecision.SpendingLineChanges).</summary>
         private const float DiscretionaryPercentChangeRange = 30f;
 
@@ -2239,7 +2254,22 @@ namespace PoliSim.Simulation
             float fiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
             float financeTreasuryCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.FinanceTreasury);
             float effectiveCollectionEfficiency = Mathf.Clamp01(country.CollectionEfficiency + financeTreasuryCompetenceBias);
-            float actualRevenue = theoreticalRevenue * effectiveCollectionEfficiency * fiscalReactionMultiplier + swfReturns;
+            // SWF RETURNS ARE INSIDE THE MULTIPLIER (2026-08-02, Elias's ruling: fix the cause).
+            //
+            // They used to be added AFTER it - `... * fiscalReactionMultiplier + swfReturns` - which put
+            // the fastest-growing component of a net creditor's revenue permanently beyond the reach of
+            // the one mechanism that pushes back. Measured, not assumed: Sweden's multiplier pinned at its
+            // 0.5 floor for 104 of 120 turns while fund returns reached 405% of the tax revenue the
+            // multiplier could still act on, and the fund compounded 386 -> 10,902 while tax revenue grew
+            // 174 -> 767. The stabiliser worked perfectly on the shrinking half and not at all on the
+            // growing one.
+            //
+            // Inside the multiplier, the semantics are also the more defensible ones: a government whose
+            // debt is far below its comfortable level LOOSENS - it spends its fund's windfall rather than
+            // banking it - which is exactly what the fiscal reaction function already claims to model for
+            // tax revenue. The symmetry holds at the other end too: a heavily indebted government leans
+            // harder on its fund.
+            float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + swfReturns) * fiscalReactionMultiplier;
             totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
             budgetBalance = actualRevenue - totalSpending;
 
@@ -2256,20 +2286,23 @@ namespace PoliSim.Simulation
             // Germany only under `swfstress` - precisely the set whose SWF drives net position negative.
             // The CEILING is retained and is not implicated: no country has ever reached it.
             //
-            // ⚠ THE BOUND IS NOW SYMMETRIC, AND THAT IS A SECOND DECISION - see the Open Questions entry.
-            // Removing the floor outright produced an unbounded NEGATIVE runaway: Sweden reached -615% of
-            // GDP over 120 turns and France -359%, which is roadmap failure pattern 3 wearing the other
-            // sign. The cause is structural rather than incidental - SWF returns are added to revenue
-            // AFTER the fiscal reaction multiplier, so the one stabiliser that would push back cannot
-            // reach them, while the fund compounds at a rate that structurally exceeds trend GDP growth.
-            // That is the same asymmetry `MaxSwfToGdpPercent` already exists to bound.
+            // THE NEGATIVE SIDE IS A RUNAWAY GUARD, NOT A BOUND (2026-08-02, Elias's ruling).
             //
-            // -300% is not an arbitrary mirror. Norway - the country this project used to calibrate SWF
-            // returns, and the real world's most extreme net creditor - holds a fund worth roughly 2.5x
-            // its GDP, so a net position near -250% is the empirical outer edge. The bound sits just
-            // beyond it, and reuses the existing constant rather than introducing a second number.
+            // A -300% symmetric bound was tried first and rejected: France settled at -297.6% against it,
+            // which is not "close to a bound" but PINNED TO one, so every downstream reader - C4's rating
+            // above all - was reading the clamp rather than the model. The cause is now fixed upstream
+            // (SWF returns run through the fiscal reaction multiplier), and this exists only to stop an
+            // unbounded excursion during and after that fix.
+            //
+            // ⚠ IT IS SET WHERE NOTHING SHOULD EVER REACH IT. If a country touches -1000% of GDP that is
+            // a BUG REPORT, not a clamp doing its job - the guard has caught a runaway the stabiliser
+            // should have prevented, and the correct response is to investigate rather than to widen it.
+            //
+            // The CEILING is unchanged and is not a guard: MaxDebtToGdpPercent is a calibrated gameplay
+            // bound that no country has ever reached either, but it predates this and stays as it was.
             float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
-            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, -maxDebt, maxDebt);
+            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.GDP;
+            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, -netCreditorGuard, maxDebt);
 
             return actualRevenue;
         }
