@@ -228,6 +228,25 @@ Have on OECD PPP: USA ~97, France 90.86.
 **Blocks:** Step C5. *C5 exists because the directive named seven new stats and batched only six —
 productivity appeared in no batch. An authoring error, corrected 2026-08-01, not a decision to drop it.*
 
+### DECIDED 2026-08-02 (Elias, delegated) — KEEP C5, lowest priority of the four blocked batches
+
+**Not cut.** The question was whether productivity is worth keeping given its sourcing problems. It is —
+but it goes last.
+
+**Why cutting it would achieve nothing.** C1, C2, C3 and C5 are blocked on **the same** prerequisite:
+database access. Dropping C5 does not unblock C1–C3, frees no work that could start today, and does not
+reduce the number of trips to the database — the figures would be sourced in one session either way.
+**A cut that unblocks nothing is not a simplification.**
+
+**Why it goes last of the four.** The OECD's own caution — that cross-country comparison of GDP per hour
+worked is not meaningful, and the valid use is a country against its own past — is a real mark against it.
+That does not make the stat worthless (the framing actually suits this game: seed each country's level,
+then let the player watch their own trajectory), but among four batches competing for one scarce resource
+it has the weakest claim.
+
+**Revisit only if database access never materialises.** If the other three land and C5's four figures
+remain unobtainable, dropping it then is reasonable — decided against evidence rather than in advance.
+
 ## B5. Step C4 — Poland's sovereign rating (1 figure, NON-blocking)
 
 `[GAP]`, typically A range. A **validation anchor only**, not a seed, since C4 is derived. Its absence

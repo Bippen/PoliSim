@@ -98,9 +98,63 @@ calm while its inputs did this would be the broken one.
 debt trajectories and produce **zero** rating anomalies both before and after the cadence change, which
 is itself evidence the rating is reading faithfully rather than misbehaving.
 
+### DECIDED 2026-08-02 (Elias, delegated) — allow net government debt to go NEGATIVE
+
+**Approach: remove the zero floor rather than damp the symptom.** `Mathf.Clamp(debt, 0f, maxDebt)` is
+what creates the bounce artifact — a stock driven below zero is held at zero and then released, which is
+exactly the shape a bimodal attractor takes.
+
+**Why negative debt is correct rather than a hack.** A country whose sovereign wealth fund exceeds its
+debt is a **net creditor**, which is a real fiscal state — and specifically **Norway's**, the country this
+project already used to calibrate SWF returns. The game *already displays* "Net Government Position (debt
+minus fund assets)"; it is only the simulation that refuses to represent it. Clamping at zero encodes an
+assumption the UI has already rejected.
+
+⚠ **DO NOT IMPLEMENT UNTIL THE MECHANISM IS CONFIRMED.** Verify against a real trajectory that the zero
+clamp is what produces the 0.00% → ~44% swings, and establish whether it **fully** explains the −135.5% to
++170.8% settled-deficit range or whether something else contributes. **Three wrong theories preceded the
+right one on the Unity batch-run hang** — that precedent is why this is gated. Report the mechanism before
+proposing an implementation.
+
+**MECHANISM CONFIRMED 2026-08-02 — the gate is satisfied, implementation may be scoped.** Full evidence in
+CLAUDE.md. In short: the FLOOR is the mechanism (Sweden 67/120 baseline turns, France 14/120); the
+**ceiling is never hit by anyone**, so `MaxDebtToGdpPercent` is not involved; and the affected set is
+exactly "countries whose SWF drives net position negative" — which explains Germany, whose anomalies occur
+**only in `swfstress`**, where its debt does reach 0.0% repeatedly. Elias's premise holds and is stronger
+than stated: Sweden is a net creditor from **turn 1**, reaching a net position of −599 by turn 16, with
+single-turn excursions to −64.3% of GDP.
+
+⚠ **It does NOT fully explain the deficit range.** The per-turn budget balance is itself volatile
+(Sweden: +79, +16, +48, +0.8, +30, −40 …) and that volatility is upstream of the clamp. Removing the floor
+should eliminate the 0.00% pinning and the bounce; whether it eliminates the rating thrash entirely is
+**not** established. Re-run `DebtClampDiagnostic` with the floor removed and check year-over-year deltas
+against the notch threshold — if they still clear it, the residual is budget-balance volatility and is a
+separate defect this one was hiding.
+
+⚠ **Design decision to settle before building:** with debt clamped at zero, interest on debt is zero, so a
+net creditor currently earns nothing on its net assets. Removing the floor without deciding how negative
+debt interacts with `GetInterestOnDebt` creates either free money or a new asymmetry.
+
 ---
 
 ## THE MASTER SEQUENCE — work this list top to bottom, do not skip ahead
+
+### ⚠ EXECUTION ORDER FOR ITEMS 6–8 CHANGED 2026-08-02 (Elias, delegated)
+
+**The numbering below is deliberately NOT changed** — items 1–8 are referenced throughout this file and
+`CLAUDE.md`, and renumbering would break every reference. Only the order of work changes:
+
+| Work order | Item | Why |
+|---|---|---|
+| **1st** | **8 — save/load** | Already scoped and decided (serializer, three-layer scope, counting shim). Every crash or Editor restart currently destroys all state. And Phases 4–5 need heavy multi-turn validation that is painful without persistence |
+| **2nd** | **7 — Continuous Time Phases 1–5** | Must precede Round 4 |
+| **3rd** | **6 — Round 4** | Round 4 would add systems that Phases 1–5 must then convert to daily granularity — **doing the work twice** |
+
+**The Round 4 reasoning is the load-bearing part, and it is item 6's own argument applied one level up.**
+Item 6 already says to scope it only once step 5 closes, so new work is built against the
+gated-legislation model from day one. The same logic applies to the daily-granularity conversion: build
+Round 4 against BOTH finished foundations, not one. *Item 6 also remains gated on step 5 closing — that
+dependency is unchanged.*
 
 This is the one authoritative order, replacing whatever each original document separately suggested. It exists because Political Systems Overhaul Part B depends on Continuous Time Phase 0, and because building new Roadmap features or converting existing systems to daily granularity while Parliament's gating is mid-rollout would mean touching the same code for two different reasons at once — exactly the kind of overlap this project's discipline exists to avoid.
 
@@ -206,12 +260,13 @@ This is the one authoritative order, replacing whatever each original document s
      every recorded baseline in `CLAUDE.md`, and this project has already accumulated several such
      discontinuities in a single day.
 
-   *Recommendation: the counting shim.* It is reversible, preserves every existing baseline, and its cost
-   is bounded by draws-per-game rather than anything unbounded. **Escalated to Open Questions** rather
-   than settled here, because it trades a permanent baseline break against a permanent load-time loop,
-   and that is Elias's call.
+   **RESOLVED (2026-08-01) — the counting shim.** Elias's ruling: reversible beats permanent under
+   uncertainty, and the xorshift option stays revisitable once save/load exists and real load times are
+   known. It preserves every recorded baseline, and its cost is bounded by draws-per-game rather than
+   by anything unbounded. **This is the version to build.**
 
-   **Gap 2 — `PublishedData.PeriodClosingValues` is keyed by a `ValueTuple`.** Its declared type is
+   **Gap 2 — `PublishedData.PeriodClosingValues` is keyed by a `ValueTuple`.** *(Key type widened to
+   `ClosingStat` on 2026-08-02; still a `ValueTuple`, so this gap stands unchanged.)* Its declared type is
    `Dictionary<(PublishedStat Stat, DateTime PeriodStart), float>`. Newtonsoft serializes dictionaries as
    JSON objects with string keys and needs a `TypeConverter` to render a key as a string; `ValueTuple`
    has none, so this will fail or emit unusable keys. Same class of problem as the `UAC1001` finding

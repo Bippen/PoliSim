@@ -5623,3 +5623,92 @@ trusted in either direction.
 This joins instances 4–9 in the same class — **the checking mechanism was compromised, not the thing
 checked** — and is the first to yield a rule about how checks must be *written* rather than about what to
 be suspicious of after the fact.
+
+---
+
+## Debt-to-zero: mechanism CONFIRMED, and it is the floor clamp — but not the whole story (2026-08-02)
+
+Investigation only. **Nothing was implemented**, per Elias's explicit gate: *"three wrong theories preceded
+the right one on the Unity hang; confirm before building."*
+
+**Method.** `Assets/Editor/DebtClampDiagnostic.cs` — a temporary tool reading **only public API**, with no
+production code instrumented. The pre-clamp value is *reconstructed* rather than observed:
+`ApplyRevenueAndSpending` computes `Clamp(GovernmentDebt - budgetBalance, 0, maxDebt)`, so last turn's
+stored debt minus this turn's `FiscalTurnReport.BudgetBalance` is exactly the value that went into the
+clamp. Comparing it against what was stored says, per turn, whether a bound bound.
+
+### Confirmed
+
+**1. The floor is the mechanism. `SimulationManager.cs:2145`:**
+
+```csharp
+state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt);
+```
+
+Baseline, seed 777, 120 turns:
+
+| Country | Floor hits | Ceiling hits | Net-creditor turns | Final debt/GDP |
+|---|---|---|---|---|
+| Sweden | **67 / 120** | 0 | **120 / 120** | 0.00% |
+| France | **14 / 120** | 0 | 56 | 0.00% |
+| Germany | 0 | 0 | 0 | 38.57% |
+| USA / Italy / Poland | 0 | 0 | 0 | healthy |
+
+**2. The ceiling is never involved.** Zero hits for all six countries. `MaxDebtToGdpPercent = 300f` plays
+no part in this defect — worth stating because "a clamp" could reasonably have meant either bound.
+
+**3. Elias's premise is correct, and stronger than stated.** Sweden is a net creditor from **turn 1** — SWF
+203.4 against debt 137.9 — and by turn 16 its net position is **−599**. The single-turn excursion below
+zero reaches **−64.3% of GDP**. The simulation is not approximating a country near zero debt; it is
+suppressing a large, persistent, genuinely negative net position. That is Norway, which is the country
+this project already used to calibrate SWF returns.
+
+**4. The affected set is exactly "countries whose SWF drives net position negative", and this explains
+Germany.** Germany showed 0 floor hits in baseline yet contributed 103 matrix anomalies, which looked like
+a contradiction. It is not: **Germany's anomalies occur ONLY in `swfstress`** (14 at 100 turns, 89 at 500),
+and its `swfstress` debt trajectory is 57.2% → **0.0%** → 10.4% → **0.0%** → 24.8% → **0.0%** → 80.1% →
+**0.0%**. Same mechanism; Germany just needs the SWF push to reach the floor. Baseline anomalies are
+Sweden and France only — precisely the two countries that hit the floor in baseline.
+
+### NOT confirmed — what removing the clamp would and would not fix
+
+**The clamp creates the BOUNCE, but it does not create the underlying volatility.** Sweden's per-turn
+budget balance in baseline runs +79.1, +16.0, +48.0, +0.8, +30.2, **−39.8**, +10.5, +14.9 … That
+oscillation is upstream of the clamp and would survive its removal.
+
+So the honest split:
+
+- **Removing the floor should eliminate the 0.00% pinning and the bounce off zero** — the specific artifact
+  where a stock is held at a bound and then released. That much follows directly from the evidence.
+- **It is NOT established that the rating thrash disappears entirely.** If net debt trends smoothly to
+  −64% of GDP the effective burden sits far below the curve's first breakpoint and the rating is a stable
+  AAA — but a net position *oscillating* around a negative value would still produce year-over-year
+  changes, and whether those alone clear the 4-notch threshold is not answered by this data.
+
+**Recommended check to run WITH the implementation, not after it:** re-run this same diagnostic with the
+floor removed and compare the per-turn `budgetBalance` series — unchanged, as it must be if the change is
+purely to the stock — alongside the resulting year-over-year debt deltas. If the deltas fall below the
+notch threshold, the fix is complete; if they do not, the residual is budget-balance volatility and is a
+separate defect that was hidden behind this one.
+
+**Second-order consequence worth designing for deliberately:** with debt clamped at zero, interest on debt
+is zero, so a net creditor currently earns **nothing** on its net assets. Removing the floor without
+deciding how negative debt interacts with `GetInterestOnDebt` would silently create either free money or a
+new asymmetry. This is a design decision, not an implementation detail.
+
+### Method note — the diagnostic's first output was unusable, and the self-test rule caught it
+
+The first version wrote `{x:F2}` into a comma-separated file under a Swedish locale, so decimal commas
+split every row into the wrong fields and the parse reported Germany at 4644% debt. **The integer summary
+counts were unaffected**, which is exactly how a half-broken output misleads — part of it looked right.
+
+Fixed with `InvariantCulture` and a semicolon separator, and the tool now prints a **self-test first**, per
+the standing rule from verification-integrity instance 10:
+
+```
+SELFTEST seed Sweden   debtToGdp=35.00% debt=217.00 gdp=620.00
+SELFTEST seed Germany  debtToGdp=63.00% debt=2961.00 gdp=4700.00
+```
+
+Those are the seeded values and the C4 calibration anchors. If they do not read that way, everything below
+is void — visible before any finding is interpreted rather than after.
