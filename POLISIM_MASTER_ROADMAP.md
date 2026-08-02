@@ -52,8 +52,10 @@ because they are not done.
     rather than on marker design. Sequencing them behind it instead of iterating saved the wasted pass.
   - The `[DEBUG]` publication-lag dump is **removed** — item 8 passed, which was its whole purpose.
   - **Round 4 scoping is unblocked**, having been gated on exactly this.
-- **BUILT, NOT CALLED — still live** — macro Step A4. Trajectory-validated but surfaces nothing to the
-  player; see the Step A4 entry under Master Sequence item 9.
+- ✅ **macro Step A4 — DONE 2026-08-02.** Its derived stats are on screen (Statistics → Domestic, under
+  the headline tiles): GDP per capita, tax burden, government spending, deficit/surplus and sector
+  shares. It had been built and trajectory-validated but displayed nothing, which is the "built but
+  uncalled" state this project repeatedly mistook for done. **Needs a visual look**, like anything new.
 - **WAITING, NOT LIVE** — what is left in `MISSING_PREREQUISITES.md` is now **one supplier and one
   upstream defect**: 16 figures needing database access (Steps C1, C2, C3, C5), and Step C4's closure
   (section F). *Decisions, Claude Design and the visual reviews all emptied on 2026-08-02.*
@@ -329,12 +331,13 @@ This is the one authoritative order, replacing whatever each original document s
      `PublicationSystem.cs` and `SimulationManager.cs`. `DerivedStats.cs` was not added until `70798e9`,
      whose own message says "NOT trajectory-validated". **A4 was folded into a DONE marker for a commit
      that did not contain it**, and stayed there for a day.
-   - **Step A4 — Tier 0 derived stats. LIVE, not done.** Built (`70798e9`), now trajectory-validated
-     (`3d77b11` — zero finiteness failures across the full matrix). **But it displays nothing:** of its six
-     methods, four have only a test-harness caller and two are consumed internally by
-     `CreditRatingSystem`. The directive defines A4 as *"pure display arithmetic"*, so a version that
-     displays nothing is not done. **Remaining work: surface GDP per capita, tax burden % GDP, spending %
-     GDP and sector shares in the UI.** Unblocked — ordinary work, waiting on nobody.
+   - **Step A4 — Tier 0 derived stats. DONE 2026-08-02.** Built (`70798e9`), trajectory-validated
+     (`3d77b11` — zero finiteness failures across the full matrix), and now **displayed**: a "Derived"
+     panel on Statistics → Domestic carries GDP per capita, tax burden % GDP, spending % GDP, the signed
+     deficit/surplus and sector shares. The directive defines A4 as *"pure display arithmetic"*, so it was
+     not done while it displayed nothing — for a full day, with four of its six methods reachable only
+     from the test harness. **The lesson is the roadmap's own: check callers before believing a feature
+     exists.**
    - **Step B — graph overhaul + contextual policy-screen stats.** Display only, depends on A. EXTEND
      `GraphRenderer`, do not build a parallel system. **B1 built (`dd7e323`), B2 built and wired
      (`4869476`) — both await visual confirmation**, backlog items 3 and 10. Neither is done.

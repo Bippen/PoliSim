@@ -2705,6 +2705,8 @@ namespace PoliSim.UI
             DrawColoredLabel("Domestic", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             DrawHeadlineStatTiles(state, hasIndependentCurrency);
             GUILayout.Space(10f);
+            DrawDerivedStatsRow();
+            GUILayout.Space(10f);
 
             // Next-turn projections carried over from the old left-column graphs rather than dropped in
             // the move - the dashed segment is a real feature, and losing it silently would have been a
@@ -3081,6 +3083,84 @@ namespace PoliSim.UI
                 GUILayout.Label("Click a country marker or an event dot for details.", _labelStyle);
             }
 
+        }
+
+        /// <summary>
+        /// Macro overhaul Step A4's derived stats, finally on screen. The directive defines A4 as "pure
+        /// display arithmetic" — it was built (`70798e9`) and trajectory-validated (`3d77b11`) but
+        /// displayed nothing for a day, which is precisely the "built but uncalled" state this project
+        /// keeps mistaking for done.
+        ///
+        /// **Every figure here is DERIVED, never stored.** Nothing in this method may write to the
+        /// model, and nothing else may read these numbers back — that is what makes A4 safe to have
+        /// landed after the release-calendar machinery rather than before it.
+        ///
+        /// Two unit traps live in this one row, which is why it is worth having in a single place:
+        /// - **GDP per capita is in THOUSANDS per person**, not billions like every other money value in
+        ///   the model — billions divided by millions. It is the one exception `MoneyUnit.Thousands`
+        ///   exists for, and the P2 formatter was built to carry it.
+        /// - **Deficit is signed so positive means a DEFICIT**, inverting the simulation's own
+        ///   `BudgetBalance` convention, which is positive for a surplus. `DerivedStats` flips it once so
+        ///   no call site has to remember.
+        ///
+        /// Reads LIVE state rather than the published series, deliberately: this sits directly beneath
+        /// the live headline tiles and above the "As published" section, so mixing a lagged figure in
+        /// here would misrepresent which of the two a player is looking at.
+        /// </summary>
+        private void DrawDerivedStatsRow()
+        {
+            FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("Derived", _headerStyle);
+
+            float? perCapita = DerivedStats.GdpPerCapita(_playerCountry);
+            GUILayout.Label(perCapita.HasValue
+                ? $"GDP per capita: {UiFormat.Money(perCapita.Value, MoneyUnit.Thousands)}"
+                : "GDP per capita: n/a (no population)", _labelStyle);
+
+            // "advance a turn" rather than a zero: no turn has produced a FiscalTurnReport yet, and a
+            // 0.0% tax burden is a confident wrong number of exactly the kind this project keeps finding.
+            float? taxBurden = DerivedStats.TaxBurdenPercentOfGdp(_playerCountry, report);
+            GUILayout.Label(taxBurden.HasValue
+                ? $"Tax burden: {taxBurden.Value:F1}% of GDP"
+                : "Tax burden: not yet computed (advance a turn)", _labelStyle);
+
+            float? spending = DerivedStats.SpendingPercentOfGdp(_playerCountry, report);
+            GUILayout.Label(spending.HasValue
+                ? $"Government spending: {spending.Value:F1}% of GDP"
+                : "Government spending: not yet computed (advance a turn)", _labelStyle);
+
+            float? deficit = DerivedStats.DeficitPercentOfGdp(_playerCountry, report);
+            if (deficit.HasValue)
+            {
+                // Positive is a deficit, so "higher is better" is FALSE here - the opposite of the
+                // BudgetBalance colouring elsewhere, because the sign convention is the opposite too.
+                DrawColoredLabel($"{(deficit.Value >= 0f ? "Deficit" : "Surplus")}: {Mathf.Abs(deficit.Value):F1}% of GDP",
+                    _labelStyle, UiPalette.GetDeltaColor(deficit.Value, higherIsBetter: false));
+            }
+            else
+            {
+                GUILayout.Label("Deficit: not yet computed (advance a turn)", _labelStyle);
+            }
+
+            List<(SectorType Type, float SharePercent)> shares = DerivedStats.SectorSharesOfGdp(_playerCountry);
+            if (shares.Count > 0)
+            {
+                var sb = new System.Text.StringBuilder("Sector shares of GDP: ");
+                for (int i = 0; i < shares.Count; i++)
+                {
+                    if (i > 0) { sb.Append(" | "); }
+                    sb.Append($"{shares[i].Type} {shares[i].SharePercent:F1}%");
+                }
+                GUILayout.Label(sb.ToString(), _labelStyle);
+            }
+            else
+            {
+                GUILayout.Label("Sector shares of GDP: not tracked for this country.", _labelStyle);
+            }
+
+            GUILayout.EndVertical();
         }
 
         /// <summary>Read-only headline readout for the five non-player countries; the full dashboard-level detail set for USA (the player's own country) - matches the task's explicit "read-only for the five, full detail for USA" split.</summary>
