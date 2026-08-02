@@ -122,9 +122,12 @@ at all — an annual review cycle would dissolve the thrash by construction rath
 
 **Blocks:** Step C4 being called done. The tile ships meanwhile, correct for USA/Italy/Poland.
 
-## A2. SWF emergency drawdown fast-track
+## ~~A2. SWF emergency drawdown fast-track~~ — ✅ RESOLVED *and* BUILT 2026-08-02 (`b1c077f`)
 
-**Task:** let an emergency SWF drawdown bypass the annual budget bill.
+`SwfDrawdownBill`, the fifth tier-3 bill, exactly as recommended below: standalone, votable, zero new
+mechanism. The original entry is kept because its reasoning is the spec the implementation followed.
+
+**Task (original):** let an emergency SWF drawdown bypass the annual budget bill.
 
 **Needs:** Elias to confirm or reject the recommendation below. **Load-bearing, not hypothetical** — SWF
 rate/allocation changes have ridden the annual omnibus budget bill since 5c, so a genuine emergency can
