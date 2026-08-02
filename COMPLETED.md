@@ -642,3 +642,74 @@ failed was never seen. It needs re-review with item 9.
 
 **Items 5 and 6 passed with defects** and stay open: text clipping, which is the label-measurement class
 recurring for the sixth and seventh time.
+
+---
+
+## 15. Asset pipeline — both outstanding deliveries imported, and the gap that hid them closed (2026-08-02)
+
+Two assets were sitting in zips at the project root while three documents recorded them as outstanding.
+Both are now in production, and the pattern that let them sit is now a check rather than a note.
+
+### `icon_stat_interestrate` — delivered the same day it was recorded as "awaiting delivery" (`6ff2e1f`)
+
+The Interest Rate chip on B2's contextual stat row drew no icon. `MISSING_PREREQUISITES.md` section E
+read *"REQUEST SENT, awaiting delivery"*; Elias pointed out it had already arrived in
+`Policy rate icon design.zip`.
+
+256×256 RGBA PNG to `Assets/Resources/Art/UI/Stats/`, 24×24 `currentColor` SVG source to `Stats/Source/`,
+both with hand-written `.meta` files. The PNG's is **byte-identical to `icon_stat_gdp.png.meta` apart from
+its guid**, which is what the request document's own import spec prescribes. Brief met: a `%` — slash plus
+two dots — over a rising stepped line, distinct from `icon_stat_inflation`'s price tag, which mattered
+because the two sit adjacent on the Fiscal row and one is a lever the player pulls while the other is an
+outcome they watch.
+
+**Why it was missed originally, and the lesson that generalises:** the macro icon pack derived its stat
+list from the 29 fields on `EconomyState` — code-grounded, and the right instinct. `InterestRate` is not
+one of them; it lives on `CurrencyZone`, because a rate belongs to a currency zone rather than to one
+country's economy (the Eurozone five share one). It was structurally invisible to that derivation while
+being a `StatNodeId`, a `PolicyNodeId` target, a Taylor Rule input and the headline figure on two screens.
+**Enumerate the display enum, not the storage struct.**
+
+### `menu_pattern_tile.png` — delivered, then unimported for weeks (`this commit`)
+
+A seamless 256px dot-lattice-and-hatch tile, white on transparent at very low alpha (sampled values 0, 6
+and 21 of 255) so it reads as texture rather than as a pattern in its own right. Imported to
+`Assets/Resources/Art/UI/Textures/` — a new folder, with a hand-written folder `.meta` — and wired into
+`DrawCountrySelector`, which previously drew no background at all.
+
+**Its `.meta` deliberately departs from the icon convention in exactly one respect: Wrap Mode `Repeat`
+rather than `Clamp`**, verified as the only difference besides the guid. That is what the delivery's own
+README specifies, and it is load-bearing: the tile is drawn with `GUI.DrawTextureWithTexCoords` at one
+tile per 256px of screen, so `Clamp` would not error — it would stretch the edge pixel across the display
+and read as a design choice rather than as a broken import. `StatIconCoverageCheck` now asserts the wrap
+mode for exactly that reason.
+
+The wash beneath it is drawn whether or not the texture loads, so a failed import degrades to a flat dark
+panel instead of taking the background down with it.
+
+### The pattern both shared, now a standing rule and two checks
+
+**Working-discipline rule 12: "awaiting delivery" must be re-derived from the filesystem, never trusted
+from a document.** Neither register was wrong when written. Nothing watches the project root, a delivery
+does not announce itself, and the status outlived the fact — twice.
+
+- **`DeliveredAssetCheck`** (`Assets/Editor/`) compares every zip's contents against what exists under
+  `Assets/` and fails on any gap. **Proven against the real defect before being trusted**: with
+  `menu_pattern_tile.png` temporarily withdrawn it reported `MISSING ... 18 of 19 asset entries present`
+  and exited 1; restored, it reports 0 gaps across all 7 packs and 191 asset entries. It also independently
+  reproduces every figure in the archive README (84/84, 42/42, 24/24, 20/20, 2/2), which had until now
+  been a hand-verified claim. It carries a documented alias map for the 16 entries imported under
+  reconciled names (`icon_crime` → `icon_area_crimejustice`, and so on), verified against the files on
+  disk rather than taken from the README's "and so on" — without it the check would report 16 permanent
+  false misses and become noise that gets ignored.
+- **`StatIconCoverageCheck`** asks the runtime half: that every name the UI hard-codes resolves through
+  `Resources.Load`. **19 of 19.** A file existing on disk does not guarantee this when its `.meta` is
+  hand-written — a malformed importer block leaves the asset present and unloadable, and the
+  null-on-missing contract would swallow that silently.
+
+**The project root now holds no zips at all**, for the first time. That state is itself the signal: a zip
+at the root means something in it is unfinished.
+
+⚠ **One consequence, raised not resolved:** review item 10 was seen with the Interest Rate chip's label
+flush left where the missing icon would have been, so that row's spacing is not what Elias approved. That
+is item 10's *second* caveat, alongside its sparklines never having rendered at turn 0.

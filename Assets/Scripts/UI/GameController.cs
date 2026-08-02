@@ -659,6 +659,8 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawCountrySelector()
         {
+            DrawMenuBackground();
+
             GUILayout.BeginArea(new Rect(0f, 0f, Screen.width, Screen.height));
             GUILayout.FlexibleSpace();
             GUILayout.BeginHorizontal();
@@ -685,6 +687,38 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
             GUILayout.EndArea();
+        }
+
+        /// <summary>
+        /// The country-selector's background: a flat wash, then `menu_pattern_tile` repeated over it.
+        ///
+        /// Drawn in the order the asset pack's own README specifies - wash underneath, tile on top, one
+        /// tile per 256px of screen via `DrawTextureWithTexCoords` rather than a stretched copy, which is
+        /// the whole reason the texture is authored seamless and imported with Wrap Mode Repeat. Stretching
+        /// it would blur the lattice into a smear at any window size but one.
+        ///
+        /// The tile is white-on-transparent at very low alpha (the sampled values are 0, 6 and 21 out of
+        /// 255), so it reads as texture on the wash rather than as a pattern in its own right. That is
+        /// deliberate on the artist's part and is why it must not be tinted or brightened here.
+        ///
+        /// **The wash is drawn whether or not the texture loads.** `IconLibrary` returns null for a
+        /// missing sprite, and this screen previously drew no background at all - so a failed import
+        /// degrades to a flat dark panel, which is a fine screen, instead of taking the wash down with it.
+        /// </summary>
+        private void DrawMenuBackground()
+        {
+            var screen = new Rect(0f, 0f, Screen.width, Screen.height);
+            GUI.DrawTexture(screen, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0f,
+                PoliSimTheme.AppBackground, Vector4.zero, Vector4.zero);
+
+            Texture2D tile = IconLibrary.GetTexture("menu_pattern_tile");
+            if (tile == null)
+            {
+                return;
+            }
+
+            GUI.DrawTextureWithTexCoords(screen, tile,
+                new Rect(0f, 0f, screen.width / tile.width, screen.height / tile.height));
         }
 
         /// <summary>

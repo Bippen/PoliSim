@@ -5991,3 +5991,68 @@ point is a draw call, extract the part a batch-mode method can reach.
 label sitting flush left where the missing icon would have been, so the row's spacing is not what was
 confirmed. That is now the *second* caveat on item 10, alongside its sparklines never having rendered at
 turn 0.
+
+---
+
+## `menu_pattern_tile.png` imported, and "awaiting delivery" made checkable (2026-08-02)
+
+The second of the two delivered-but-unimported assets, and the one that had sat longest. Its zip was kept
+unarchived at the project root **on purpose**, as a visible reminder — a convention that worked in the
+sense that the reminder survived, and failed in the sense that nothing acted on it for weeks.
+
+### The import, and the one deliberate departure from the icon convention
+
+`Assets/Resources/Art/UI/Textures/menu_pattern_tile.png` — a new folder, with a hand-written folder
+`.meta` alongside the texture's own. A seamless 256px dot lattice plus 135° hatch, white on transparent at
+very low alpha (sampled 0, 6 and 21 of 255), so it reads as texture on a wash rather than as a pattern.
+
+**Wrap Mode `Repeat`, where every icon in this project is `Clamp`.** Verified as the *only* difference
+from `icon_stat_gdp.png.meta` besides the guid, by diffing the two files. The delivery's own README
+specifies it, and it is load-bearing rather than cosmetic: the tile is drawn with
+`GUI.DrawTextureWithTexCoords` at one repeat per 256px of screen, so `Clamp` would not throw or warn — it
+would stretch the edge pixel across the whole display, which looks like a deliberate gradient rather than
+a broken import. That is precisely the class of failure this project keeps finding, so
+`StatIconCoverageCheck` now asserts `wrapMode == Repeat` rather than merely that the texture loads.
+
+`IconLibrary.GetTexture` is a separate accessor from `Get`/`GetStat` for the same reason: these two
+categories are *used* differently, not merely stored apart, and one accessor would invite an icon drawn
+tiled or a tile imported clamped.
+
+**Wired into `DrawCountrySelector`**, which drew no background at all before. The flat wash is drawn
+whether or not the texture resolves, so a failed import degrades to a plain dark panel — a fine screen —
+instead of taking the wash down with it.
+
+### Rule 12, and why the check is on the zip rather than on the register
+
+Two assets, two documents, same shape: `icon_stat_interestrate` recorded as *"REQUEST SENT, awaiting
+delivery"* on the day it arrived, and `menu_pattern_tile.png` named as a gap in three places while sitting
+in a zip twenty feet away. **Neither register was wrong when written.** A register is only as current as
+its last edit; nothing watches the project root; a delivery does not announce itself. Both were closed
+only because Elias said the file already existed — which is not a mechanism.
+
+`DeliveredAssetCheck` compares **what was delivered against what exists**, which is the one comparison
+that cannot go stale.
+
+**Proven against the real defect before being trusted**, per the standing self-test rule: with the tile
+temporarily withdrawn it reported `MISSING PoliSim GUI redesign.zip: menu_pattern_tile.png`, `18 of 19
+asset entries present`, and exited 1. Restored: 0 gaps, 7 packs, 191 asset entries, exit 0. A check that
+has never been observed failing is not evidence of anything.
+
+**It also retired a hand-verified claim.** The archive README's table (84/84, 42/42, 24/24, 20/20, 2/2)
+was produced by a manual reconciliation; the check reproduced every figure independently, and can now
+re-derive them on demand. The reverse direction is covered too — an asset deleted *after* its pack was
+archived reports as a REGRESSION rather than going unnoticed.
+
+**The alias map is the part that decides whether this check survives.** The GUI redesign pack shipped
+`icon_<area>` and the project imports area icons as `icon_area_<SystemArea>`, so 16 entries would report
+as permanent false misses. They are mapped, and the mapping was verified against the files on disk rather
+than taken from the archive README's "and so on". A check that cries wolf gets ignored, and an ignored
+check is worse than none because it looks like coverage.
+
+### The general form of the lesson
+
+**A status describing the outside world is a cached value, and needs an expiry.** "Awaiting delivery",
+"blocked on X", "not yet sourced" all describe something outside the repository, and every one of them
+goes stale silently. Where the underlying fact is mechanically checkable — a file's existence, an asset
+resolving, a package version — the check belongs in `Assets/Editor/` next to the others, and the document
+should point at it rather than restate its answer.

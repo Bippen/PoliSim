@@ -22,7 +22,7 @@ Closure needs items 1–9 confirmed. **Items 3, 7, 8 and 9 all failed.**
 | 7. First release + reporting lag | ❌ **FAIL** — graphs unreadable | open, P3 — **unblocked** |
 | 8. Revision treatment | ❌ **FAIL** — graphs unreadable | open, P3 — **unblocked** |
 | 9. Budget Process restyle | 🔴 **HARD FAIL** — black screen | **FIXED, needs re-review** |
-| 10. B2 contextual stat row | ✅ PASS | ⚠️ see caveat below |
+| 10. B2 contextual stat row | ✅ PASS | ⚠️ **superseded — two caveats, re-review with 9** |
 | 11. Credit Rating tile | ✅ PASS — placement confirmed | **CLOSED** |
 
 ---
@@ -65,8 +65,12 @@ Item 10 is Tier 0 (no advancement), so Elias reviewed it at turn 0. `DrawSparkli
 rendered during item 10's review.** The same component then crashed the Budget tab at day 273 once history
 had filled.
 
-Item 10's chips, icons and layout are confirmed. **Its sparklines are not**, and they are the part that
-failed. Re-review item 10 alongside item 9.
+Item 10's chips and layout are confirmed. **Its sparklines are not**, and they are the part that failed.
+
+**A second, independent caveat landed later the same day**: the row was reviewed with the Interest Rate
+chip drawing *no icon*, because `icon_stat_interestrate` had not yet been imported. It has been since, so
+that chip's spacing is not what was approved either. See item 10's own section for both.
+Re-review item 10 alongside item 9.
 
 ---
 
@@ -152,9 +156,21 @@ at full width.
 
 ## 10. B2 contextual stat row — the one thing here that can be *wrong*, not just ugly
 
+⚠️ **ITS PASS IS SUPERSEDED — TWO CAVEATS, AND EACH ONE ALONE INVALIDATES WHAT WAS SEEN.** Re-review this
+alongside item 9, after advancement.
+
+1. **Its sparklines never rendered.** Item 10 is Tier 0, so it was reviewed at turn 0, and `DrawSparkline`
+   returns early below two history points — quarterly history has fewer than two that early. The chips,
+   icons and layout are confirmed; **the sparklines are not**, and the sparkline is the component that
+   then crashed the Budget tab at day 273.
+2. **The Interest Rate chip has changed shape since the review.** It was seen with no icon —
+   `icon_stat_interestrate` had not been imported, and the null-on-missing contract correctly shifted its
+   label flush left into the space an icon would occupy. That icon landed 2026-08-02, so **the row's
+   spacing on any screen showing Interest Rate is not what you approved.**
+
 **What / where:** `4869476`. Added 2026-08-02, numbered 10 rather than renumbering 1–9, which are
-referenced from the roadmap. It is a **Tier 0** item despite the number — it
-is on screen the moment you open either tab, no advancement needed.
+referenced from the roadmap. It is a **Tier 0** item despite the number for its layout — but the two
+caveats above both need advancement, so in practice review it with item 9.
 
 **Look at:** Policy/Laws → each of Labor Market, Crime & Justice, Economic Sectors, Trade. Then
 Budget → each of Tax, Spending, Welfare, Infrastructure, Sovereign Wealth Fund.

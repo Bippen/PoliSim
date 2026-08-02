@@ -21,6 +21,7 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 9. **All new named entities (cabinet ministers, party names, legislators) are original and fictional** — never real people or real political parties. Same rule the Fed Chair mechanic already established, extended to every new character/entity going forward.
 10. **REVERSED (2026-07-31), was a hard rule through Master Sequence step 5d**: visuals are now a MIXED procedural/sprite model, not "all procedural." Elias has explicitly approved imported sprite art for **icons, portraits, and background/menu textures specifically** — see `CLAUDE_DESIGN_ASSET_REQUEST.md` (the single standing asset request; the original 5E/chrome/macro requests were consolidated into it 2026-08-02, all delivered) for the asset work this decision unblocked. **Stays procedural, unchanged, no exception**: all UI chrome/layout (`PoliSimTheme.cs`'s `RoundedBox`/`RoundedCard`/`Pill`/`Rule`/`TopAccent`/`LeftSpine` — pure `GUI.DrawTexture` rounded-rect/line geometry, no art asset, no reason to change) and every existing DATA visualization (`GraphRenderer`, `MapRenderer`, `PolicyWebRenderer`, `PoliticalCompassRenderer`, `HemicycleRenderer`) — none of these draw a "picture," they render real tracked simulation data, which is exactly what rule 5 ("ground new mechanics in real data") already protects; nothing about the icon/portrait decision touches that. **Becomes sprite-based**: one icon per `UiPalette.SystemArea` (policy area), one portrait per Cabinet minister candidate, one emblem per `PartyArchetype`, and background/menu textures — all sourced from Claude Design with the same origin-verification and security-review discipline already established for the first pack (Zone.Identifier mark-of-the-web check, full code/asset read-through before treating anything as trusted). This is a real, deliberate policy reversal, documented as such per this same working-discipline section's own precedent for recording a caveat/correction honestly rather than letting it look like silent drift - any FUTURE reversal of a standing rule must be recorded the same explicit way.
 11. **Any new mechanic that nudges an existing tracked variable must fold into that variable's existing combined ceiling**, not add an uncounted new source — audit the actual ceiling code before adding a contributor, don't assume there's room.
+12. **NEW (2026-08-02) — "awaiting delivery" is a status that must be RE-DERIVED FROM THE FILESYSTEM, never trusted from a document.** Two separate assets were recorded as outstanding while already sitting in zips at the project root: `icon_stat_interestrate` (registered *"REQUEST SENT, awaiting delivery"* on the day it in fact arrived) and `menu_pattern_tile.png` (delivered, then unimported for weeks while three documents named it as a gap). **Neither register was wrong when written.** Nothing watches the project root, a delivery does not announce itself, and so the status simply outlived the fact — twice, which is what makes it a pattern rather than an oversight. Both gaps were eventually closed only because Elias happened to say the file already existed. **Run `DeliveredAssetCheck` before reporting any asset as outstanding**: it compares every zip's contents against what exists under `Assets/` and fails on any gap, which is the one comparison that cannot go stale. Its companion `StatIconCoverageCheck` asks the runtime half of the same question — that a name the UI hard-codes actually resolves through `Resources.Load`, which a file merely existing on disk does not guarantee when its `.meta` is hand-written. The general form: **a status describing the outside world is a cached value, and needs an expiry.**
 
 ---
 
@@ -590,28 +591,10 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   question."* Add as a fifth tier-3 bill type alongside Labor/CrimeJustice/Sector/Trade. **Zero new
   mechanism required.** Worth doing soon.
 
-- **`menu_pattern_tile.png` — delivered, never imported. CONFIRMED genuinely absent (2026-08-02).**
-  Verified rather than assumed: **no background or menu texture of any kind exists anywhere under
-  `Assets/`**, so this is a real gap, not a rename. It is the *only* unaccounted-for file in the
-  "PoliSim GUI redesign.zip" pack — everything else in that zip reconciled: `PoliSimTheme.cs` and
-  `PoliSimWidgets.cs` are in production, and its 8 area icons plus 8 SVG sources are present under
-  reconciled names (`icon_crime` → `icon_area_crimejustice`, `icon_sovereign` →
-  `icon_area_sovereignwealth`, and so on).
-
-  **It is wanted.** Working-discipline rule 10 names "background/menu textures" as explicitly approved
-  sprite art, and the country-selector screen (`DrawCountrySelector`) currently draws no background at
-  all — so there is both a policy decision in favour and a screen with nothing on it.
-
-  ⚠ **This is an IMPORT task, not a request.** The asset already exists and is a valid 256×256 PNG
-  (5,432 bytes, correct PNG signature) inside the zip. It does **not** belong in
-  `CLAUDE_DESIGN_ASSET_REQUEST.md` alongside `icon_stat_interestrate` — that document is for art Claude
-  Design still has to make, and asking for something already delivered would be a duplicate request.
-  The work is: import it to `Assets/Resources/Art/UI/Textures/`, hand-write its `.meta` with the
-  established settings, wire it into the selector screen, then archive the zip.
-
-  **Until then the zip stays unarchived at the project root** — see `AssetPackArchive/README.md`. That
-  is deliberate: an unarchived zip is a visible reminder, whereas archiving it would file the gap away
-  as if it were resolved.
+- ~~**`menu_pattern_tile.png` — delivered, never imported.**~~ **DONE 2026-08-02.** Imported, wired into
+  `DrawCountrySelector`, zip archived. **The project root now holds no zips at all**, which is the first
+  time that has been true — and is itself the standing signal, per working-discipline rule 12: a zip at
+  the root means something in it is unfinished. Details in `COMPLETED.md`.
 
 ---
 

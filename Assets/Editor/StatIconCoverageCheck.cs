@@ -5,8 +5,9 @@ using UnityEngine;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// Confirms every stat the B2 contextual row can draw resolves to a real sprite, through the same
-    /// `Resources.Load` path the game uses rather than by checking the filesystem.
+    /// Confirms every stat the B2 contextual row can draw resolves to a real sprite - plus the handful
+    /// of other UI art loaded by a hard-coded literal name - through the same `Resources.Load` path the
+    /// game uses rather than by checking the filesystem.
     ///
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod
     /// PoliSim.EditorTools.StatIconCoverageCheck.Run -logFile &lt;path&gt;`
@@ -54,7 +55,35 @@ namespace PoliSim.EditorTools
                 }
             }
 
-            Debug.Log($"=== Stat icon coverage: {total - missing} of {total} present ===");
+            // The other art the UI loads by a hard-coded literal name, which is the same question this
+            // check exists for one category over: does the name a draw call passes actually resolve?
+            // Kept here rather than in DeliveredAssetCheck because that one asks whether a delivery
+            // arrived on disk, and a file can be present and correct while a malformed .meta leaves it
+            // unloadable - which is exactly the risk when a .meta is hand-written, as this one's was.
+            foreach (string textureName in new[] { "menu_pattern_tile" })
+            {
+                total++;
+                Texture2D texture = IconLibrary.GetTexture(textureName);
+                if (texture == null)
+                {
+                    Debug.Log($"  MISSING background texture -> {textureName}");
+                    missing++;
+                }
+                else
+                {
+                    // A seamless tile is drawn with DrawTextureWithTexCoords and MUST be imported with
+                    // Wrap Mode Repeat - the one place its .meta deliberately departs from the icon
+                    // convention. Clamp would not fail; it would stretch the edge pixel across the
+                    // screen, which reads as a design choice rather than as a broken import.
+                    string wrap = texture.wrapMode.ToString();
+                    bool repeats = texture.wrapMode == TextureWrapMode.Repeat;
+                    if (!repeats) { missing++; }
+                    Debug.Log($"  {(repeats ? "ok  " : "FAIL")} {textureName} -> {texture.width}x{texture.height}, " +
+                        $"wrap {wrap}{(repeats ? string.Empty : " - expected Repeat for a seamless tile")}");
+                }
+            }
+
+            Debug.Log($"=== UI art coverage: {total - missing} of {total} resolve ===");
             EditorApplication.Exit(missing == 0 ? 0 : 1);
         }
     }

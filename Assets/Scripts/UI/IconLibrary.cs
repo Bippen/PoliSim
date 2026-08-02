@@ -64,6 +64,27 @@ namespace PoliSim.UI
             return Load(StatsResourcesPath + statIconName);
         }
 
+        private const string TextureResourcesPath = "Art/UI/Textures/";
+
+        /// <summary>
+        /// Full-surface background textures, by filename minus extension - currently just
+        /// "menu_pattern_tile", imported 2026-08-02.
+        ///
+        /// Separate from <see cref="Get"/> and <see cref="GetStat"/> because these are used differently
+        /// rather than merely stored elsewhere: a tile is drawn with `GUI.DrawTextureWithTexCoords` over
+        /// a whole screen and **imported with Wrap Mode Repeat**, where every icon in this project is
+        /// Clamp. Its `.meta` is the icon convention with exactly that one deviation. Mixing the two
+        /// categories behind one accessor would invite an icon being drawn tiled, or a tile being
+        /// imported clamped - which shows up as a visible seam rather than as an error.
+        ///
+        /// Same null-on-missing contract as everything else here: callers draw their existing background
+        /// and skip the overlay.
+        /// </summary>
+        public static Texture2D GetTexture(string textureName)
+        {
+            return Load(TextureResourcesPath + textureName);
+        }
+
         private const string ChromeResourcesPath = "Art/UI/Chrome/";
 
         /// <summary>
