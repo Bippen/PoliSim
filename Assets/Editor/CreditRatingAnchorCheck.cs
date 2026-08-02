@@ -63,12 +63,32 @@ namespace PoliSim.EditorTools
             new Anchor("France",  116f, 1f,    null,                   CreditRating.AAminus, "curve point (116, 3) exactly"),
             new Anchor("Italy",   138f, 1f,    null,                   CreditRating.BBBplus, "curve point (138, 7) exactly"),
             new Anchor("USA",     124f, 0.05f, UsaDeficitPercentOfGdp, CreditRating.AAplus,  "reserve discount reads 63.2% effective; deficit is what costs the notch"),
+
+            // ADDED 2026-08-02, AND EXPECTED TO FAIL. Poland's real rating (S&P A−, Moody's A2, Fitch A−)
+            // was sourced 2026-08-02 and breaks this curve's monotonicity in the OPPOSITE direction to
+            // the USA: Poland carries LOWER debt than Germany (59% vs 63%) and rates FOUR NOTCHES WORSE.
+            //
+            // The model cannot express that. `GetEffectiveDebtBurden` discounts debt above the reference
+            // by RiskPremiumSensitivity and has no term that PENALISES, so no country can rate below the
+            // curve its debt alone places it on. Poland at 59% lands in the flat AAA region by
+            // construction, and no parameter choice moves it.
+            //
+            // It is added anyway, failing, ON PURPOSE. A calibration check that passes because the hard
+            // case was left out of it is exactly the confirmation this project has learned to distrust:
+            // "5 of 5" was a statement about five countries chosen partly for being expressible. The
+            // missing factor is some combination of currency status (Poland borrows partly in a currency
+            // it does not issue), institutional quality, and an EU-periphery premium. Until such a term
+            // exists, this line is the standing reminder that it does not.
+            new Anchor("Poland",  59f,  1f,    null,                   CreditRating.Aminus,  "EXPECTED FAIL — lower debt than Germany, four notches worse; no penalising term exists"),
         };
 
         public static void Run()
         {
             int passed = 0;
-            Debug.Log("=== Step C4 5-anchor calibration check ===");
+            // Counted separately so the exit code can gate on the five EXPRESSIBLE anchors while Poland's
+            // documented failure is reported without failing the build - see the note at the end.
+            int expressiblePassed = 0;
+            Debug.Log("=== Step C4 6-anchor calibration check (Poland added 2026-08-02, expected to FAIL) ===");
 
             foreach (Anchor anchor in Anchors)
             {
@@ -79,6 +99,7 @@ namespace PoliSim.EditorTools
                 if (ok)
                 {
                     passed++;
+                    if (anchor.Country != "Poland") { expressiblePassed++; }
                 }
 
                 Debug.Log($"{(ok ? "PASS" : "FAIL")} {anchor.Country,-8} debt {anchor.DebtToGdp,5:F1}% " +
@@ -92,8 +113,22 @@ namespace PoliSim.EditorTools
             // the model and how much is the number chosen for it.
             ReportUsaDeficitBand();
 
-            Debug.Log($"=== 5-anchor calibration: {passed} of {Anchors.Length} PASS ===");
-            EditorApplication.Exit(passed == Anchors.Length ? 0 : 1);
+            Debug.Log($"=== 6-anchor calibration: {passed} of {Anchors.Length} PASS ===");
+
+            // EXIT 0 ON THE KNOWN, DOCUMENTED FAILURE - deliberately, and this is the only place in the
+            // project where a check does that. Poland cannot pass until CreditRatingSystem gains a
+            // penalising term, so failing the build on it would make this check something people disable
+            // rather than read. The five expressible anchors still gate: if any of THEM breaks, that is a
+            // real regression and the exit code says so.
+            //
+            // ⚠ WHEN A PENALISING TERM IS ADDED, DELETE THIS ALLOWANCE. A permanently-tolerated failure
+            // is how a known gap becomes invisible.
+            if (passed < Anchors.Length)
+            {
+                Debug.Log("NOTE Poland's failure is EXPECTED and documented - the model has no term that " +
+                    "rates a country BELOW its debt curve. Exit code reflects the other five only.");
+            }
+            EditorApplication.Exit(expressiblePassed >= Anchors.Length - 1 ? 0 : 1);
         }
 
         private static void ReportUsaDeficitBand()
