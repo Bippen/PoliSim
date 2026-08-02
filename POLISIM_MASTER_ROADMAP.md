@@ -440,9 +440,36 @@ list stays short enough to actually read.
 - **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not
   required for a first pass. Nobody is blocked on it; it has simply never been prioritised.
 
-*Moved out 2026-08-02:* Step C4's deficit re-calibration, the SWF emergency drawdown fast-track and
-Cabinet appointment confirmation are all waiting on an Elias decision — see `MISSING_PREREQUISITES.md`
-sections A1, A2 and A3. Five 2026-08-01 resolutions and two 2026-07-31 ones moved to `COMPLETED.md` §11.
+### RESOLVED 2026-08-02 — all three section A decisions
+
+Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately so none is reopened later.
+
+- **C4's rating thrash — fixed by REVIEW CADENCE, not damping.** The cap-and-average recommendation was
+  **rejected**: it shrinks the thrash without removing its cause, and lands on the exact term the 5-anchor
+  calibration runs through. Instead the rating updates on a scheduled annual review reading a *settled*
+  fiscal position. Agencies review on a cycle rather than re-rating continuously; the release-calendar
+  machinery already models exactly this shape; and Fed rate decisions are existing precedent for
+  scheduled-not-continuous. **Implemented (`a4155ca`), and it produced a finding.** The 5-anchor
+  calibration still passes 5 of 5, and matrix anomalies fell 3,421 to 1,416 — but they are **not gone**,
+  which was the bar. The residual traces to the pre-existing **debt-to-zero bimodality**, not to the
+  rating: the settled annual deficit ranges −135.5% to +170.8% of GDP because the debt stock itself
+  oscillates 0% to 45% and back within a year, in exactly the documented Sweden/France/Germany set.
+  **Step C4's implementation is complete; its closure now waits on that upstream defect** — see
+  `MISSING_PREREQUISITES.md` section F.
+- **SWF emergency drawdown — standalone tier-3 bill**, reusing 5d's mechanism. Not bundled into the
+  annual budget, not fully exempt like the Fed/Eurozone carve-out. **Still to build — see below.**
+- **Cabinet appointments stay unilateral.** Parliament gates *policy*; appointments are *executive*, and
+  reshuffling already carries an approval cost. **No code change — this confirms current behaviour.**
+
+*Five 2026-08-01 resolutions and two 2026-07-31 ones moved to `COMPLETED.md` section 11.*
+
+### Live, unblocked work carried out of section A
+
+- **SWF emergency drawdown fast-track (A2).** Blocks nothing, but the gap is live in the current build:
+  since 5c, SWF rate and allocation changes ride the annual omnibus bill, so a genuine emergency can be
+  stuck behind a fiscal-year vote up to a year away — *"a gameplay bug wearing the costume of a design
+  question."* Add as a fifth tier-3 bill type alongside Labor/CrimeJustice/Sector/Trade. **Zero new
+  mechanism required.** Worth doing soon.
 
 ---
 

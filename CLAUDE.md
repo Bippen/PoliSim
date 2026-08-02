@@ -5360,3 +5360,119 @@ and across two prior discontinuities.
 Reading a Unity log while Unity still holds it throws `IOException` (file in use) from
 `File.ReadAllText`. `Select-String` opens shared and works fine. Poll with `Select-String`, or wait for
 process exit before reading the whole file.
+
+---
+
+## A1 implemented: rating by scheduled review — anchors hold, thrash does NOT clear (2026-08-02)
+
+`a4155ca`. Elias's ruling: fix the thrash by review **cadence**, not by damping. Implemented as specified.
+**The acceptance bar was "the 3,421 anomalies must be GONE, not merely reduced". They are not gone.**
+
+### What was built
+
+**Changes WHEN the rating is computed, not HOW.** The formula body moved verbatim out of `Evaluate` into
+`EvaluateFrom(debtToGdp, riskPremiumSensitivity, deficit, growth)`; `BurdenCurve`, the reserve-currency
+discount, the deficit divisor and the growth thresholds are untouched, and both the live path and the
+scheduled review call the same method so they cannot drift into two formulas.
+
+**Cadence: annual, on each country's own fiscal-year start** (USA 1 Oct, EU five 1 Jan). Justified rather
+than defaulted — agencies review once or twice a year; the date already exists as
+`FiscalYearData.GetFiscalYearStart` and is already what `ReleaseCalendar` treats as the boundary annual
+figures settle on, so it adds no date rule and no parallel timer; and it is the same boundary the budget
+process turns on, so a review lands when the year it judges has closed.
+
+**The settled deficit is derived from the debt stock, and that is the substantive fix.** The thrash came
+from `FiscalTurnReport.BudgetBalance` — one 121-day turn's balance. A year's deficit is by definition the
+year's increase in indebtedness, so with both stocks recorded it is exact rather than smoothed:
+
+    Debt = (d/100) * Y   =>   deficit%(of current GDP) = d_now - d_prev * (Y_prev / Y_now)
+
+Both readings come from `PeriodClosingValues` on the **same** quarterly boundaries, which is why
+`ClosingStat.DebtToGdpRatio` deliberately shares GDP's period rule.
+
+**On reusing `PeriodClosingValues` rather than a parallel store, as instructed:** it is keyed by
+`PublishedStat`, which has no debt member. Rather than add one — that enum makes a deliberate claim that
+only stats with a REAL release rule appear in it, and a never-published member would contradict it and
+make `Latest()` a permanent null trap — the key was widened to a new `ClosingStat` superset. One store,
+one recording pass, an explicit exhaustive map that throws on drift.
+
+### Validation 1 — the 5-anchor calibration check: 5 of 5 PASS, unchanged
+
+Run **before** the matrix, as instructed. New `CreditRatingAnchorCheck` runs headlessly with **no Play
+mode** (the formula is pure arithmetic), so it takes seconds.
+
+| Anchor | Debt | Effective burden | Result | Expected |
+|---|---|---|---|---|
+| Sweden | 35.0% | 35.0% | AAA | AAA ✓ |
+| Germany | 63.0% | 63.0% | AAA | AAA ✓ |
+| France | 116.0% | 116.0% | AA− | AA− ✓ |
+| Italy | 138.0% | 138.0% | BBB+ | BBB+ ✓ |
+| USA | 124.0% (deficit 6.4%) | 63.2% | AA+ | AA+ ✓ |
+
+**This is the FIRST EXECUTABLE version of this check.** The original calibration (`76a8f35`) was done by
+hand and recorded only in a commit message, so "passes unchanged" means "reproduces the five results
+recorded there", not "matches a previous script". Codifying it was overdue: an anchor check that exists
+only in prose cannot be re-run after a change, which is exactly what this work needed it for.
+
+The USA anchor is the one with a tunable input, so the check reports the band rather than only that one
+value passes: **the USA holds AA+ for deficits in [4.6%, 7.5%] of GDP**, and the anchor uses 6.4% — near
+the middle, not balanced on an edge.
+
+### Validation 2 — full matrix: 3,421 → 1,416. Reduced 59%, NOT eliminated
+
+15 scenarios × 100 and 500 turns, `-seed=777`, real Unity 6000.5.6f1, 0 compile errors.
+
+| | Before | After |
+|---|---|---|
+| Sweden | 1,761 | 616 |
+| France | 1,117 | 567 |
+| Germany | 240 | 103 |
+| USA / Italy / Poland | 0 | **0** ✓ |
+| Finiteness failures | 0 | **0** ✓ |
+
+The "countries currently at zero must stay at zero" requirement is met.
+
+**A defect in the check itself was found and fixed mid-validation.** An intermediate run showed 1,446 with
+30 new Italy anomalies, all on turn 1. `CreditRating.AAA` is enum value 0, so the pre-run snapshot
+recorded an unrated country as AAA and every country's **first** review registered as a spurious
+multi-notch downgrade. The check now compares two *reviewed* ratings only. Same
+confident-wrong-default failure the tile guards against with its em dash — an unrated sovereign is not a
+top-rated one.
+
+### Why the residual is NOT a rating defect — the discrepancy, reported rather than tuned away
+
+Elias's instruction was to report a discrepancy rather than adjust until it passes, because *"a
+calibration that needs tuning to survive a change in read-timing is telling you something about the
+fiscal position being read."* That is exactly what happened.
+
+**The settled ANNUAL deficit ranges from −135.5% to +170.8% of GDP**, and 773 of 1,416 flagged readings
+exceed ±20%. The review is reading correctly; what it reads is not credible. Sweden's `DebtToGdpRatio` in
+plain `baseline` runs 21.8% → 0.90% → **0.00%** by turn 50 and stays pinned there, while stress scenarios
+show the same stock spiking back to ~44% and collapsing again within a year.
+
+**That is the already-documented debt-to-zero bimodality** (CLAUDE.md, "SpendingLine Amount Ceiling —
+Debt-to-Zero Fix"; "Both Sweden and France settle at `DebtToGdpRatio` = 0.0% by turn 500"), and it is
+roadmap failure pattern 4, bimodal attractors. The affected set — **Sweden, France, Germany** — is the
+documented set. USA, Italy and Poland, whose debt trajectories are well-behaved, produce zero anomalies
+both before and after.
+
+**No review cadence can stabilise a rating over a debt stock that oscillates between 0% and 45% of GDP
+inside a year, and none should.** A sovereign whose debt genuinely moved like that *would* be downgraded
+repeatedly. Reporting the downgrade is correct behaviour; the input is what is wrong. Damping it — the
+option Elias rejected — would have hidden this rather than surfaced it.
+
+**Conclusion: C4's implementation is complete and correct. The blocker moves upstream** to the debt-to-zero
+defect, which is a pre-existing simulation-model problem C4 is merely the first stat to read
+year-over-year. Recorded as such rather than left looking like unfinished rating work.
+
+### A further verification-integrity variant, per Elias's note
+
+C4 was reported as "calibrated against 5 of 5 verifiable anchors" while **nothing called it**. Those
+anchors were hand-fed static debt/deficit/growth values, so the calibration proved the formula computes
+correctly at five points and said nothing about behaviour across a trajectory. The thrash appeared the
+moment it became reachable and was fed real simulated state.
+
+**The class: a correct measurement taken under conditions the system will never actually run in.** The
+check was sound; its conditions were not representative. This is why the anchor check is now executable
+and the harness evaluates the rating per turn — a static check and a trajectory check answer different
+questions, and only the second one notices this.

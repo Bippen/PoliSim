@@ -12,15 +12,93 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 
 | Supplier | Items | Downstream |
 |---|---|---|
-| **Elias — decision** | 3 | Step C4 closure, SWF emergencies, Cabinet appointments |
+| ~~**Elias — decision**~~ | ~~3~~ **0 — all resolved 2026-08-02** | — |
 | **Elias — database access** | 16 blocking + 1 anchor | Steps C1, C2, C3, C5 |
 | **Elias — visual review** | 11 | Master Sequence step 5 closure |
 | **Claude Design** | 1 | Cosmetic only |
-| **Another task first** | 2 | Cabinet portraits, Round 4 scoping |
+| **Another task first** | 3 | Cabinet portraits, Round 4 scoping, Step C4 closure |
 
 ---
 
 # A. Waiting on Elias — a decision
+
+## ✅ ALL THREE RESOLVED 2026-08-02. Nothing in section A is waiting.
+
+Rulings and reasoning below, kept in full so none of these is reopened as an unanswered question later.
+
+### A1 — RESOLVED: fix the rating thrash by REVIEW CADENCE, not by damping
+
+**The primary recommendation (cap + multi-turn average) was rejected.** Elias took the alternative raised
+almost in passing: the rating updates on a scheduled review cycle rather than every turn.
+
+**Why damping was the weaker fix.** It makes the thrash *smaller* without removing why it exists — a
+rating recomputed from a single turn's fiscal position will always track that position's volatility, and
+every constant chosen to suppress that is a number nobody can justify from anything real. It also lands
+directly on the term the 5-anchor calibration runs through, which is the risk this section identified.
+
+**Why the review cycle is stronger — four reasons, all recorded:**
+1. **It is what actually happens.** Agencies review sovereigns on a cycle rather than re-rating
+   continuously as quarterly figures move. The scheduled review *is* the real-world mechanism that
+   prevents real-world thrash, so modelling it reproduces the behaviour instead of approximating its
+   absence.
+2. **The machinery already exists.** Step A built the release-calendar and published-series system for
+   exactly this shape — a value evolving continuously underneath, surfacing on a schedule.
+3. **Precedent already in the game.** Central bank rate decisions run on ~8 scheduled meetings a year
+   rather than continuously.
+4. **It dissolves the problem by construction rather than tuning it.** Rating off a settled annual fiscal
+   position is closer to what agencies do, so the 5-anchor calibration stays valid rather than needing
+   re-derivation against a smoothed term.
+
+**Implemented 2026-08-02 (`a4155ca`), and it produced a finding rather than a clean pass.**
+
+- **5-anchor calibration: 5 of 5 PASS, unchanged** — run before the matrix as instructed, and now
+  executable for the first time rather than existing only in a commit message.
+- **Full matrix: 3,421 → 1,416 anomalies.** Reduced 59%, **not eliminated**. USA, Italy and Poland stayed
+  at zero as required; the residual is Sweden 616, France 567, Germany 103.
+- **The residual is not a rating defect.** The settled annual deficit ranges **−135.5% to +170.8% of GDP**
+  because the underlying debt stock oscillates between 0% and ~45% within a year — the documented
+  debt-to-zero bimodality, in exactly the documented set of countries. No review cadence can or should
+  stabilise a rating over that input.
+
+**The blocker therefore moves upstream — see section F below.** C4's own implementation is complete.
+
+### A2 — RESOLVED: SWF emergency drawdown becomes a standalone tier-3 bill
+
+**Recommendation accepted as written.** Emergency SWF drawdown uses 5d's existing tier-2/3 mechanism —
+most naturally a fifth tier-3 type alongside Labor / CrimeJustice / Sector / Trade. Not bundled into the
+annual budget; not fully exempt like the Fed/Eurozone carve-out.
+
+Reasoning unchanged and needs no addition: real governments handle fiscal emergencies through expedited
+votes rather than unilateral action, Norway's own GPFG withdrawal is an ordinary budget-process matter,
+and this needs **zero new mechanism**.
+
+**Still unbuilt, and worth doing soon despite blocking nothing** — the gap is live in the current build.
+Since 5c, SWF rate and allocation changes ride the annual omnibus bill, so a genuine emergency can be
+stuck behind a fiscal-year vote up to a year away. Elias's framing: *"a gameplay bug wearing the costume
+of a design question."* Now tracked as live work in the roadmap, not here.
+
+### A3 — RESOLVED: Cabinet appointments stay UNILATERAL
+
+**No parliamentary vote to appoint a minister.** Reasoning recorded because none existed before:
+
+- **It preserves a distinction the game already makes well.** Parliament gates *policy* — what the state
+  does. Appointments are *executive* — who the player works through. One gate for both flattens a
+  separation the gated-legislation model deliberately created.
+- **There is already a cost.** Reshuffling carries an `ApprovalRating` hit, so Cabinet decisions have
+  consequences without a second gate.
+- **A vote would make Cabinet worse to play.** Interactive ministers bringing decisions are the point of
+  Part A; a multi-week legislative process in front of every appointment turns a responsive system slow
+  for no gameplay gain.
+- **It is defensible in the real world.** Confirmation practice varies enormously across the six modelled
+  countries; unilateral appointment is not unrealistic.
+
+**Nothing to build.** The current behaviour is already unilateral, so this ruling confirms the code rather
+than changing it.
+
+---
+
+<details>
+<summary>Original section A text, as raised (kept for the record)</summary>
 
 ## A1. 🔴 Step C4's deficit term needs re-calibrating
 
@@ -67,6 +145,8 @@ ordinary budget-process matter. **Needs zero new mechanism.**
 **Needs:** Elias's ruling. No recommendation recorded — this is a pure design preference.
 
 **Blocks:** nothing. Recorded so it is not silently dropped.
+
+</details>
 
 ---
 
@@ -229,3 +309,35 @@ miss. Portrait and area-icon coverage is complete.
 
 **Blocks:** nothing. `IconLibrary` returns null for a missing sprite and the chip's layout shifts left,
 which is correct — a placeholder would imply the wrong stat.
+
+---
+
+# F. Waiting on an upstream simulation defect
+
+## F1. 🔴 Step C4 cannot be called done until the debt-to-zero bimodality is fixed
+
+**Task:** close Step C4.
+
+**Needs:** the debt trajectory for Sweden, France and Germany to stop oscillating between 0% and ~45% of
+GDP. This is a **pre-existing simulation-model defect**, documented long before C4 existed — see
+CLAUDE.md's "SpendingLine Amount Ceiling — Debt-to-Zero Fix", and roadmap failure pattern 4 (bimodal
+attractors).
+
+**Why it now blocks C4 specifically.** The scheduled annual review (`a4155ca`) works as designed: it reads
+a settled year-over-year fiscal position instead of one turn's budget balance, and the 5-anchor
+calibration still passes 5 of 5. But the settled annual deficit it reads ranges **−135.5% to +170.8% of
+GDP**, because it is derived — correctly — from a debt stock that collapses to exactly 0.00% and spikes
+back to ~44% inside a year.
+
+**A sovereign whose debt genuinely moved like that would be downgraded repeatedly.** The rating is
+reporting its input faithfully; the input is what is wrong. Damping the rating to hide it was explicitly
+rejected in A1, and would have buried this.
+
+**Evidence:** `Logs/a1_matrix_final_20260802.log`. Sweden's `DebtToGdpRatio` in plain `baseline`:
+21.8% (turn 1) → 0.90% (turn 25) → **0.00%** (turns 50, 75, 100). The three affected countries are exactly
+the documented set; USA, Italy and Poland have well-behaved debt and produce **zero** rating anomalies.
+
+**Blocks:** Step C4 closure only. The rating tile ships and is correct for USA, Italy and Poland.
+
+**Not blocked on Elias** — this is ordinary (if substantial) simulation work, listed here because C4's
+completion genuinely waits on another task rather than on more rating work.
