@@ -686,7 +686,7 @@ namespace PoliSim.UI
                 if (prevPixel.HasValue)
                 {
                     bool isProjectedSegment = i > lastRealIndex;
-                    DrawLine(pixels, prevPixel.Value, pixel, isProjectedSegment ? ProjectedLineColor : HistoryLineColor, isProjectedSegment);
+                    DrawLine(pixels, TextureWidth, TextureHeight, prevPixel.Value, pixel, isProjectedSegment ? ProjectedLineColor : HistoryLineColor, isProjectedSegment);
                 }
                 prevPixel = pixel;
             }
@@ -736,6 +736,33 @@ namespace PoliSim.UI
 
             int width = Mathf.Max(2, Mathf.RoundToInt(rect.width));
             int height = Mathf.Max(2, Mathf.RoundToInt(rect.height));
+
+            Color[] pixels = BuildSparklinePixels(width, height, history, color, maxPoints);
+
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+            texture.SetPixels(pixels);
+            texture.Apply();
+            GUI.DrawTexture(rect, texture);
+            Object.DestroyImmediate(texture);
+        }
+
+        /// <summary>
+        /// The sparkline's pixel buffer, with no GUI or texture involvement.
+        ///
+        /// **Split out so it can be tested.** The whole of this drawing path shipped a crash that only
+        /// surfaced in a live session - an IndexOutOfRangeException mid-OnGUI that blanked the screen -
+        /// and it could not be caught headlessly because DrawSparkline calls GUI.DrawTexture, which
+        /// throws outside OnGUI. The arithmetic that actually had the bug has no such dependency, so it
+        /// lives here and `GraphRendererDiagnostic` hammers it directly.
+        /// </summary>
+        public static Color[] BuildSparklinePixels(int width, int height, IReadOnlyList<float> history, Color color, int maxPoints = 40)
+        {
+            var pixels = new Color[width * height];
+            if (history == null || history.Count < 2)
+            {
+                return pixels;
+            }
+
             int start = Mathf.Max(0, history.Count - maxPoints);
             int count = history.Count - start;
 
@@ -751,9 +778,6 @@ namespace PoliSim.UI
             float range = max - min;
             bool flat = range < Mathf.Epsilon;
 
-            var pixels = new Color[width * height];
-            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-
             Vector2Int? previous = null;
             for (int i = 0; i < count; i++)
             {
@@ -763,22 +787,32 @@ namespace PoliSim.UI
                     ? height / 2
                     : Mathf.RoundToInt((value - min) / range * (height - 3)) + 1;
 
-                var point = new Vector2Int(x, Mathf.Clamp(y, 0, height - 1));
+                var point = new Vector2Int(Mathf.Clamp(x, 0, width - 1), Mathf.Clamp(y, 0, height - 1));
                 if (previous.HasValue)
                 {
-                    DrawLine(pixels, previous.Value, point, color, dashed: false);
+                    DrawLine(pixels, width, height, previous.Value, point, color, dashed: false);
                 }
                 previous = point;
             }
 
-            texture.SetPixels(pixels);
-            texture.Apply();
-            GUI.DrawTexture(rect, texture);
-            Object.DestroyImmediate(texture);
+            return pixels;
         }
 
-        /// <summary>Bresenham line, 2px thick for legibility at typical panel widths, optionally dashed (every 3rd step skipped) so the projected segment reads as "estimate" even before its lighter alpha is accounted for.</summary>
-        private static void DrawLine(Color[] pixels, Vector2Int from, Vector2Int to, Color color, bool dashed)
+        /// <summary>
+        /// Bresenham line, 2px thick for legibility at typical panel widths, optionally dashed (every
+        /// 3rd step skipped) so the projected segment reads as "estimate" even before its lighter alpha
+        /// is accounted for.
+        ///
+        /// **The buffer's dimensions are PARAMETERS, not the TextureWidth/TextureHeight constants, and
+        /// that is the fix for a real crash.** This helper was written for the full-size graph and
+        /// hardcoded those constants. DrawSparkline then reused it - deliberately, so a sparkline could
+        /// not disagree with its full-size counterpart - against a 72x20 buffer. The bounds check
+        /// therefore validated against 300x90 while the index used a stride of 300, so a sparkline pixel
+        /// at y>=5 indexed past the end of a 1,440-element array and threw IndexOutOfRangeException
+        /// mid-OnGUI, blanking the entire screen; below that it silently wrote to the wrong pixels.
+        /// **Sharing the algorithm was right; sharing the constants was not.**
+        /// </summary>
+        private static void DrawLine(Color[] pixels, int bufferWidth, int bufferHeight, Vector2Int from, Vector2Int to, Color color, bool dashed)
         {
             int x0 = from.x, y0 = from.y, x1 = to.x, y1 = to.y;
             int dx = Mathf.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
@@ -790,8 +824,8 @@ namespace PoliSim.UI
             {
                 if (!dashed || step % 3 != 0)
                 {
-                    SetPixelSafe(pixels, x0, y0, color);
-                    SetPixelSafe(pixels, x0, y0 + 1, color);
+                    SetPixelSafe(pixels, bufferWidth, bufferHeight, x0, y0, color);
+                    SetPixelSafe(pixels, bufferWidth, bufferHeight, x0, y0 + 1, color);
                 }
                 step++;
 
@@ -806,13 +840,18 @@ namespace PoliSim.UI
             }
         }
 
-        private static void SetPixelSafe(Color[] pixels, int x, int y, Color color)
+        /// <summary>
+        /// Writes one pixel, ignoring anything outside the buffer. **Bounds-checks and strides against the
+        /// CALLER'S buffer dimensions**, which is what makes it genuinely safe for any buffer size rather
+        /// than only for the full-size graph - see DrawLine's comment for the crash the old version caused.
+        /// </summary>
+        private static void SetPixelSafe(Color[] pixels, int bufferWidth, int bufferHeight, int x, int y, Color color)
         {
-            if (x < 0 || x >= TextureWidth || y < 0 || y >= TextureHeight)
+            if (x < 0 || x >= bufferWidth || y < 0 || y >= bufferHeight)
             {
                 return;
             }
-            pixels[y * TextureWidth + x] = color;
+            pixels[y * bufferWidth + x] = color;
         }
     }
 }

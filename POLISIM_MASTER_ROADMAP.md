@@ -41,9 +41,17 @@ because they are not done.
 
 - **DONE** — Master Sequence steps 1, 2, 3, 4, 5a–5d, and 5e Phases A/B + batches 1–3; Roadmap Rounds 1–3
   (15 items); macro overhaul Steps A1–A3 and D. See `COMPLETED.md`.
-- **BUILT, NOT CONFIRMED — still live** — 11 items in `VISUAL_REVIEW_BACKLOG.md`, including 5e Phase C
-  batches 4–6, B1's graph overhaul, B2's stat row and C4's dashboard tile. **Step 5 cannot close until
-  items 1–9 are confirmed**; items 10 and 11 belong to step 9 and gate nothing.
+- 🔴 **REVIEWED 2026-08-02 — MASTER SEQUENCE STEP 5 DOES NOT CLOSE.** Elias reviewed all eleven items
+  live, as USA. **Items 3, 7, 8 and 9 failed**; closure needs 1–9. Full results and priority order in
+  `VISUAL_REVIEW_BACKLOG.md`.
+  - **Closed:** 1, 2, 4, 11 (and 10, with a caveat below).
+  - **Pass with defects:** 5 and 6 — text clipping, the label-measurement class already fixed 5+ times.
+  - **Failing:** 3 (unit bug — GDP renders "29k" for $29 **trillion**), 7 and 8 (graphs unreadable,
+    blocked on 3), 9 (black screen — **root-caused and FIXED**, needs re-review).
+  - ⚠ **Item 10's pass is not safe.** It is Tier 0 so it was reviewed at turn 0, and `DrawSparkline`
+    returns early below two history points — **its sparklines never rendered during the review**, and the
+    sparkline is precisely what crashed item 9. Re-review 10 with 9.
+  - **The `[DEBUG]` dump stays live** at `GameController.cs:2589` until item 8 passes.
 - **BUILT, NOT CALLED — still live** — macro Step A4. Trajectory-validated but surfaces nothing to the
   player; see the Step A4 entry under Master Sequence item 9.
 - **WAITING, NOT LIVE** — all blocked work is in `MISSING_PREREQUISITES.md`: 16 figures needing database

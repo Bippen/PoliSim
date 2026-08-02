@@ -1,31 +1,103 @@
-# Visual review backlog — everything built but never seen
+# Visual review backlog — REVIEWED 2026-08-02
 
-**As of 2026-08-02.** Eleven items are in the "built, compiles, committed, never visually confirmed" state.
-They are ordered so that **items 1–6, 10 and 11 need no game advancement at all** — enter Play mode and they
-are on screen. Item 7 needs one turn, item 8 needs two, item 9 needs three or four depending on country.
+**Elias reviewed all eleven items in one live session, playing as USA.** Results below. This file is no
+longer a "never seen" list — it is now the record of what was seen and what came back.
 
-*Items 10 and 11 are numbered last but are Tier 0; they were appended rather than renumbering 1–9, which
-are referenced from the roadmap. Item 10 is the only one here where a rejection
-would mean something is factually **wrong** rather than merely unattractive, and item 11 carries a known,
-already-logged model defect — read its warning before reviewing it.*
+## 🔴 Master Sequence step 5 does NOT close
 
-One session, one fast-forward, in order. Nothing below requires restarting.
+Closure needs items 1–9 confirmed. **Items 3, 7, 8 and 9 all failed.**
+
+**The `[DEBUG]` dump stays live** at `GameController.cs:2589` — item 8 has not passed.
+
+## Results
+
+| Item | Result | Status |
+|---|---|---|
+| 1. Statistics nav icon | ✅ PASS — *"it reads like an icon"* | **CLOSED** |
+| 2. Statistics restructure | ✅ PASS — *"natural"* | **CLOSED** |
+| 3. Published graph, empty state | ❌ **FAIL** — unit bug | open, P2 |
+| 4. Amber draft cue | ✅ PASS — *"says it is a draft"* | **CLOSED** |
+| 5. Policy/Laws restyle | ⚠️ PASS with defect — *"trade is cut off"* | open, P4 |
+| 6. Budget full-screen | ⚠️ PASS with defect — text above icons clipped | open, P4 |
+| 7. First release + reporting lag | ❌ **FAIL** — graphs unreadable | open, P3 |
+| 8. Revision treatment | ❌ **FAIL** — graphs unreadable | open, P3 |
+| 9. Budget Process restyle | 🔴 **HARD FAIL** — black screen | **FIXED, needs re-review** |
+| 10. B2 contextual stat row | ✅ PASS | ⚠️ see caveat below |
+| 11. Credit Rating tile | ✅ PASS — placement confirmed | **CLOSED** |
 
 ---
 
-## ⚠ First, a correction to the record
+## ✅ P1 — Item 9's black screen: root-caused and FIXED (`GraphRenderer`)
 
-**I told you earlier today that no macro sprites had been delivered. That was wrong.** All 42 are
-present and imported (`be97ebb`, `65be9ab`): 36 `icon_stat_*`, 3 trend arrows, 1 release marker, 2
-revision badges, in `Assets/Resources/Art/UI/Stats/`. My check used the pattern `stat_*.png`, which does
-not match `icon_stat_gdp.png` because of the `icon_` prefix, and I read the empty result as "not
-delivered" instead of "bad pattern" — the same shape as the verification failures logged in `CLAUDE.md`,
-committed while writing up that very class.
+**It was an `OnGUI` exception, and it was mine — not the full-screen layout, not the pause banner.**
+Found in `Logs/Editor.log` from Elias's own session, 2,309 occurrences:
 
-~~**They are imported but completely unwired**~~ — **no longer true as of 2026-08-02.** `IconLibrary`
-gained its Stats path (`5701a04`) and B2's stat row (`4869476`) draws them, so **item 10 is where these
-sprites become visible for the first time.** 41 of 42 render; `icon_stat_interestrate` was never
-delivered, so the Interest Rate chip correctly draws no icon rather than a stand-in.
+```
+IndexOutOfRangeException: Index was outside the bounds of the array.
+  at GraphRenderer.SetPixelSafe          (GraphRenderer.cs:815)
+  at GraphRenderer.DrawLine              (GraphRenderer.cs:794)
+  at GraphRenderer.DrawSparkline         (GraphRenderer.cs:769)
+  at PolicyScreenStatsRenderer.DrawChip  (PolicyScreenStatsRenderer.cs:143)
+  at GameController.DrawBudgetProcessTab (GameController.cs:3893)
+  at GameController.OnGUI                (GameController.cs:833)
+```
+
+**The defect.** `SetPixelSafe` bounds-checked against `TextureWidth`/`TextureHeight` — the full-size
+graph's **300×90** — and indexed with a stride of 300. `DrawSparkline` passes a **72×20 = 1,440**-element
+buffer. At y≥5 the index reached 1,500+ and threw; below that it silently wrote to the wrong pixels. An
+exception inside `OnGUI` aborts the rest of the frame, which is exactly a black screen.
+
+**This came from B2's own "reuse, don't duplicate" decision backfiring.** `5701a04` deliberately reused
+`DrawLine` *"so a sparkline can't disagree with its full-size counterpart"* — right instinct, but the
+shared helper was not dimension-agnostic. **Sharing the algorithm was correct; sharing the constants was
+not.** Both helpers now take the buffer's dimensions.
+
+**Why it reached a live session:** the only entry point was `DrawSparkline`, which calls
+`GUI.DrawTexture` and therefore cannot run outside `OnGUI` — so nothing headless could ever exercise it.
+The pixel maths is now `GraphRenderer.BuildSparklinePixels`, with no GUI dependency, and
+`GraphRendererDiagnostic` covers it: **336 width×height×series-shape combinations, all passing**, plus the
+exact 72×20 failing case.
+
+### ⚠ This puts item 10's PASS in doubt — it needs re-review after advancement
+
+Item 10 is Tier 0 (no advancement), so Elias reviewed it at turn 0. `DrawSparkline` returns early when
+`history.Count < 2`, and quarterly history has fewer than two entries that early — **so no sparkline ever
+rendered during item 10's review.** The same component then crashed the Budget tab at day 273 once history
+had filled.
+
+Item 10's chips, icons and layout are confirmed. **Its sparklines are not**, and they are the part that
+failed. Re-review item 10 alongside item 9.
+
+---
+
+## Remaining work, in Elias's priority order
+
+**P2 — Item 3, the unit bug** (not started). GDP `29000` renders as **"29k"**; the game stores billions,
+so that is $29 **trillion**. Unit-wrong, not arithmetic-wrong — a player reads "29k" and nothing
+contradicts them. **Third instance on this same value**: `StatTile` once showed GDP as "9,3", and the
+rebuilt formatter guarantees a k/M/B suffix so magnitude cannot be lost — but applies it to a base unit of
+1. Scope is wider than the axis: tiles show `28999,3` and `37956,2` raw and unlabelled, and the same
+applies to spending lines, tax revenue, SWF assets and budget balance. **The game states its units
+nowhere.** Investigation must confirm billions is the base unit *consistently*, enumerate every currency
+display site, and propose one approach — not patch the graph.
+
+**P3 — Items 7 and 8, unreadable graphs** (blocked on P2). *"hard to make out any of the graphs what they
+are saying"* at one turn; *"still hard to tell"* at two. **Do not iterate on marker design yet** — an axis
+reading "29k" for $29T makes a graph genuinely unreadable, and the reporting-lag graph is entirely about
+reading values against dates. Sequence: fix units → re-review 7 and 8 → only then treat residual
+unreadability as a separate density/marker finding.
+
+**P4 — Items 5 and 6, text clipping** (not started). Item 5: "trade is cut off". Item 6: text above the
+icons clipped on Debt-to-GDP and similar tiles. This is the **label-measurement class already fixed at
+least five times** (Manufacturing sector label, World Map country names, TaxLine/WelfareProgram rows,
+Policy Web category headers). **Audit for the pattern rather than fixing two instances** — measure against
+the style the text actually renders in, recompute per frame since sizes rescale with the window, leave
+real margin. Worth asking whether a shared measured-label helper ends the class rather than a sixth
+site-specific fix.
+
+---
+
+*Original per-item review briefs follow, retained for the items still open.*
 
 ---
 
