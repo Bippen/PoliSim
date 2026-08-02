@@ -439,7 +439,12 @@ Optional refinement (Open Question, not required for a first pass): real reporti
 
 ## Phases 1-5 — daily-granularity conversion (MASTER SEQUENCE STEP 7, safest-first)
 
-- **Phase 1**: Sectors and Infrastructure (smallest blast radius, proves the methodology).
+- **Phase 1: Sectors and Infrastructure. ✅ DONE 2026-08-02 (`321a10e`).** Aggregation-equivalence 28/28,
+  max drift 0.0004% against a 3% bar; full matrix anomaly counts identical to the pre-phase baseline.
+  **The methodology is proven** — the two constants took *different* shapes (a gap-closing fraction is
+  multiplicative, a decay rate is linear) and the sector sensitivities correctly took none at all, which
+  is the distinction the rest of the phases turn on. Investment stayed on the turn boundary as a discrete
+  budget action; see the commit for that decision.
 - **Phase 2**: Labor Market and Crime & Justice (moderate risk).
 - **Phase 3**: Tax portfolio, Welfare, Spending categories, SWF (revenue/spending-critical, same seriousness as the original debt work).
 - **Phase 4**: Demographics (its YearsPerTurn scaling is a direct dependency on turn-length — cannot start until the new day-length constant is threaded through correctly; use the same throwaway-diagnostic-before-full-matrix discipline that caught its two prior structural bugs).
