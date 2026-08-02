@@ -844,6 +844,14 @@ namespace PoliSim.Simulation
         /// <summary>Fraction of the gap versus each sector stat's target that closes each turn on its own - matches PovertyRate/CrimeIndex's own moderate-slow reversion speed.</summary>
         private const float SectorReversionSpeed = 0.15f;
 
+        /// <summary>
+        /// Continuous Time Phase 1: <see cref="SectorReversionSpeed"/> as a per-DAY gap-closing fraction.
+        /// **Derived, never typed in** — a hardcoded 0.001342 would silently become a different policy the
+        /// moment `DaysPerTurn` changes, and the whole migration exists to change turn length.
+        /// </summary>
+        private static readonly float SectorReversionSpeedPerDay =
+            1f - Mathf.Pow(1f - SectorReversionSpeed, 1f / SimulationManager.DaysPerTurn);
+
         /// <summary>Points added per point a sector's SubsidyLevel sits above its neutral 50 (and removed per point below) - applied uniformly to Output/Employment/SectorMetric in this first pass, deliberately not wired to the budget (see CLAUDE.md).</summary>
         internal const float SectorSubsidySensitivity = 0.04f;
 
@@ -877,6 +885,35 @@ namespace PoliSim.Simulation
         /// </summary>
         public static void ApplySectorEffects(Country country)
         {
+            ApplySectorEffectsInternal(country, SectorReversionSpeed);
+        }
+
+        /// <summary>
+        /// CONTINUOUS TIME PHASE 1 — the daily form of <see cref="ApplySectorEffects"/>.
+        ///
+        /// `SectorReversionSpeed` is a GAP-CLOSING FRACTION, so it takes translation shape #2
+        /// (multiplicative), not #1. The gap remaining after one turn is `(1 - 0.15)`, so the daily speed
+        /// must satisfy `(1 - s_day)^121 = (1 - s_turn)`, giving `s_day = 1 - (1 - s_turn)^(1/121)` —
+        /// about 0.001342. **Dividing 0.15 by 121 is the first-attempt bug the methodology warns about**
+        /// and would close the gap measurably faster than the turn model does.
+        ///
+        /// **The sensitivity constants are deliberately NOT scaled.** They define the TARGET
+        /// (`Baseline + adjustment`), which is a level, not a per-step increment — the same distinction
+        /// rule 4 draws for clamps. Scaling them would shrink the destination rather than the speed of
+        /// travel, which is a different model, not a finer-grained one.
+        ///
+        /// Aggregation-equivalence is therefore EXACT here rather than within tolerance: for any target
+        /// held fixed across the turn, 121 daily steps leave precisely the residual gap one turn step
+        /// leaves. Policy dials only change on turn boundaries, so the target is always fixed across the
+        /// interval.
+        /// </summary>
+        public static void ApplySectorEffectsDaily(Country country)
+        {
+            ApplySectorEffectsInternal(country, SectorReversionSpeedPerDay);
+        }
+
+        private static void ApplySectorEffectsInternal(Country country, float reversionSpeed)
+        {
             foreach (Sector sector in country.Sectors)
             {
                 float subsidyAdjustment = SectorSubsidySensitivity * (sector.SubsidyLevel - NeutralPolicyDialLevel);
@@ -891,13 +928,13 @@ namespace PoliSim.Simulation
                     - deregulationAdjustment + SectorResearchGrantsEmploymentSensitivity * researchGrantsGap;
 
                 float outputTarget = sector.BaselineOutputShareOfGdp + outputAndMetricAdjustment;
-                sector.OutputShareOfGdp = Mathf.Max(0f, sector.OutputShareOfGdp + SectorReversionSpeed * (outputTarget - sector.OutputShareOfGdp));
+                sector.OutputShareOfGdp = Mathf.Max(0f, sector.OutputShareOfGdp + reversionSpeed * (outputTarget - sector.OutputShareOfGdp));
 
                 float employmentTarget = sector.BaselineEmploymentShare + employmentAdjustment;
-                sector.EmploymentShare = Mathf.Max(0f, sector.EmploymentShare + SectorReversionSpeed * (employmentTarget - sector.EmploymentShare));
+                sector.EmploymentShare = Mathf.Max(0f, sector.EmploymentShare + reversionSpeed * (employmentTarget - sector.EmploymentShare));
 
                 float metricTarget = sector.BaselineSectorMetric + outputAndMetricAdjustment;
-                sector.SectorMetric = Mathf.Max(0f, sector.SectorMetric + SectorReversionSpeed * (metricTarget - sector.SectorMetric));
+                sector.SectorMetric = Mathf.Max(0f, sector.SectorMetric + reversionSpeed * (metricTarget - sector.SectorMetric));
             }
         }
 
@@ -905,6 +942,9 @@ namespace PoliSim.Simulation
 
         /// <summary>ConditionIndex points lost per turn to deferred maintenance, absent any incremental Infrastructure spending increase this turn - infrastructure needs growing real investment merely to hold steady (rising usage, materials aging, tech obsolescence), so a flat spending level still implies gradual real degradation. Deliberately small, and hard-clamped below so it can never diverge - see InfrastructureAsset.cs for why this is a stock model, not a gap-to-baseline one.</summary>
         private const float InfrastructureDecayRatePerTurn = 0.08f;
+
+        /// <summary>Continuous Time Phase 1: the same decay as a per-DAY linear rate (shape #1). Derived from <see cref="SimulationManager.DaysPerTurn"/> rather than typed, for the same reason as <see cref="SectorReversionSpeedPerDay"/>.</summary>
+        private const float InfrastructureDecayRatePerDay = InfrastructureDecayRatePerTurn / SimulationManager.DaysPerTurn;
 
         /// <summary>ConditionIndex points gained per percentage-point-of-GDP this turn's Infrastructure spending change represents - reuses the exact same PercentOfGdp(decision.InfrastructureSpendingChange, GDP) signal ApplyCategorySpendingEffects already computes for its PotentialGrowthRate nudge, per the task's explicit "connect to the existing category, don't invent a parallel system" instruction.</summary>
         private const float InfrastructureInvestmentSensitivity = 6f;
@@ -925,6 +965,51 @@ namespace PoliSim.Simulation
                 asset.ConditionIndex = Mathf.Clamp(
                     asset.ConditionIndex - InfrastructureDecayRatePerTurn + InfrastructureInvestmentSensitivity * infrastructurePercent,
                     0f, 100f);
+            }
+        }
+
+        /// <summary>
+        /// CONTINUOUS TIME PHASE 1 — the daily DECAY only. Investment is deliberately left on the turn
+        /// boundary, and that split is the substantive decision in this conversion.
+        ///
+        /// **Decay is a continuous physical process** — materials age, usage wears, technology obsolesces
+        /// — so it is translation shape #1, linear: `rate_per_day = rate_per_turn / 121`. Nothing about it
+        /// is tied to when a budget is passed.
+        ///
+        /// **Investment is a discrete budget action**, not a continuous flow. `InfrastructureSpendingChange`
+        /// is a per-turn policy decision that exists only at a turn boundary; `AdvanceDay` has no
+        /// `PolicyDecision` and inventing one so the credit could be smeared across 121 days would model
+        /// spending the player has not yet committed to. So the credit stays exactly where it was, applied
+        /// once per turn at full strength.
+        ///
+        /// **Aggregation-equivalence is exact by construction:** 121 × (decay/121) = decay, and the
+        /// investment term is untouched, so a turn's total movement is identical to before.
+        ///
+        /// ⚠ **One real behavioural difference, and it is intended:** the [0, 100] clamp now applies daily
+        /// rather than once, so an asset already at 0 stops accruing decay mid-turn instead of absorbing a
+        /// full turn's worth. That is more correct — a stock cannot decay past empty — and it is the only
+        /// place the two forms can diverge. Rule 4 applies: the clamp itself does NOT scale.
+        /// </summary>
+        public static void ApplyInfrastructureConditionDaily(Country country)
+        {
+            foreach (InfrastructureAsset asset in country.InfrastructureAssets)
+            {
+                asset.ConditionIndex = Mathf.Clamp(asset.ConditionIndex - InfrastructureDecayRatePerDay, 0f, 100f);
+            }
+        }
+
+        /// <summary>
+        /// Continuous Time Phase 1: the INVESTMENT half of <see cref="ApplyInfrastructureCondition"/>,
+        /// kept at turn granularity. Split out so the turn path applies exactly the credit and none of the
+        /// decay, which <see cref="ApplyInfrastructureConditionDaily"/> has already charged day by day.
+        /// </summary>
+        public static void ApplyInfrastructureInvestment(Country country, PolicyDecision decision)
+        {
+            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, country.State.GDP);
+            foreach (InfrastructureAsset asset in country.InfrastructureAssets)
+            {
+                asset.ConditionIndex = Mathf.Clamp(
+                    asset.ConditionIndex + InfrastructureInvestmentSensitivity * infrastructurePercent, 0f, 100f);
             }
         }
 

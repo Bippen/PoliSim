@@ -127,6 +127,17 @@ namespace PoliSim.Simulation
                     // in the simulation consumes, so it cannot influence the turn boundary computed
                     // below. It draws no randomness either, so the seeded trajectory is unaffected.
                     CreditRatingSystem.ReviewIfDue(country, CurrentDate);
+
+                    // CONTINUOUS TIME PHASE 1 (2026-08-02): Sectors and Infrastructure now evolve DAILY.
+                    // This is the first economic state AdvanceDay has ever touched - Phase 0 deliberately
+                    // moved only the calendar - so the ordering guarantee that made publishing safe no
+                    // longer holds for these two, and they are placed after it on purpose: publication
+                    // reads a day's state, so it must see the state that day actually produced.
+                    //
+                    // Both are aggregation-equivalent to their turn forms by construction rather than by
+                    // tolerance; see the two Daily methods for the per-constant reasoning.
+                    MacroSystem.ApplySectorEffectsDaily(country);
+                    MacroSystem.ApplyInfrastructureConditionDaily(country);
                 }
             }
 
@@ -1146,8 +1157,10 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyPopulationGrowth(country);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
-            MacroSystem.ApplyInfrastructureCondition(country, spendingResult.EffectiveDecision);
-            MacroSystem.ApplySectorEffects(country);
+            // Phase 1: the DECAY and the sector reversion have already been charged day by day in
+            // AdvanceDay. Only the discrete investment credit belongs here now - applying either of the
+            // continuous flows again would double-count a full turn's worth on top of the daily steps.
+            MacroSystem.ApplyInfrastructureInvestment(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplySectorGrowthEffect(country);
             MacroSystem.ApplyWelfareProgramEffects(country);
 
@@ -1280,6 +1293,10 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyPopulationGrowth(previewCountry);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
+            // Phase 1: the preview deliberately keeps the TURN-level forms. It models one whole turn on a
+            // throwaway clone WITHOUT advancing any days, so the daily methods would never be called on it
+            // - the turn forms are exactly the 121-day aggregate the preview is trying to show. These are
+            // now their only remaining callers, which is correct rather than dead code.
             MacroSystem.ApplyInfrastructureCondition(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplySectorEffects(previewCountry);
             MacroSystem.ApplySectorGrowthEffect(previewCountry);

@@ -6,6 +6,23 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 
 ## Non-negotiable working discipline (applies to everything below, no exceptions)
 
+0. **SCALE VALIDATION TO RISK (added 2026-08-02).** Real Unity stays the standard of truth — rule 1 is
+   unchanged — but the *size* of the check matches what the change can actually break:
+   - **Simulation math** → full matrix, 100 and 500 turns, like-for-like before/after.
+   - **UI-only** → compile check plus a smoke run. A change that cannot reach simulation math cannot move
+     a trajectory; `BatchSimulationRunner` never calls `OnGUI`.
+   - **Data-layer additions nothing calls yet** → compile check.
+
+   **Three further standing cuts, same date:** stop creating new standing documents (findings go in
+   `CLAUDE.md`, status in this file); the verification-integrity log **stops at 10** — later instances get
+   one line, not a numbered write-up; and **batch the reporting** — work through several items and report
+   once, unless something fails or needs a decision.
+
+   ⚠ **What does NOT get cut**, because each caught a real defect in the last two days: real-Unity
+   validation before anything is called done; never inventing a `[GAP]` figure; visual work being
+   built-not-confirmed until Elias sees it; verifying against commits and callers rather than summary
+   memory; and the API cross-check gate.
+
 1. **Real Unity is the standard of truth, not the standalone harness.** It has been wrong about project state multiple times this project (a stale swing threshold, an interest-rate crash mischaracterized as noise, a debt trajectory that flatly contradicted real Unity). Use it for fast iteration only. Before considering *anything* done, validate via `BatchSimulationRunner` against real Unity (`G:\UNITY\Unity Hub\6000.5.6f1\` - migrated from `6000.5.4f1` on 2026-08-01 after the older install became corrupted; see CLAUDE.md's "Real-Unity Validation is the Standard Path" for the full story) at both 100 and 500 turn horizons (or their day-equivalent, once the continuous-time migration changes the unit).
 2. **Watch for the six failure patterns already seen repeatedly**: turn-1 discontinuities, oscillation, unbounded/compounding growth, bimodal attractors, and two new ones (both new as of Continuous Time + Parliament + Cabinet/Foreign-Policy coexisting, both surfaced investigating the SAME reported live-play freeze):
    - **Background/timed state mutation vs. active UI interaction** — a background system (a bill resolving, or any future timed/probabilistic mechanic) mutating live state that a GUILayout control is reading, on a day/frame the player has an active multi-frame drag in progress on that exact control. GUILayout allocates control IDs positionally, not by a stable key, so a control disappearing or a preceding control's count changing mid-drag is a documented Unity IMGUI hang/desync trigger, especially inside a ScrollView — and it's invisible to `BatchSimulationRunner`, which applies policy decisions programmatically and never drives real OnGUI/mouse-drag events, so no batch run can ever catch it. First hypothesized in the Tax Policy tab (Master Sequence step 4 pilot) when a pending TaxBill could resolve while the player was mid-drag on a rate slider; hardened there via the stable-control-layout pattern (see `GameController.DrawTaxPolicy`'s doc comment, commit `adb34ae`) regardless — every control a gated tab can ever draw renders every frame, in the same order, with "not currently applicable" expressed via `GUI.enabled = false` (composed with, not clobbering, any ambient enabled state) rather than by omitting or swapping the control. **Caveat, recorded honestly**: this fix did NOT resolve the reported freeze — Elias reproduced it again under the same conditions after commit `adb34ae`. The pattern and fix are still real and worth keeping (every one of the seven remaining tabs gains this exact same theoretical exposure once Master Sequence step 5 wires them into the draft/bill/vote model), but it was not the actual trigger of the original report. See the next pattern for what the investigation found instead.
@@ -13,7 +30,11 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 
    Assume a new mechanic is guilty of all six until the full-horizon batch run (for the first four) and direct live-Editor confirmation (for the last two, which batch runs cannot exercise) prove otherwise.
 3. **Commit per unit of work.** One feature, one commit, descriptive message. Confirm staged contents match the message before committing.
-4. **Escalate, don't guess, on genuine design decisions.** Add to Open Questions with a recommendation and reasoning; move to the next item rather than blocking.
+4. **DECIDE IT YOURSELF (amended 2026-08-02 — the old rule was producing days of round-trips).** The
+   escalate-don't-guess rule was for genuine design forks; in practice it escalated things like where a UI
+   tile goes. **New standard: make the call, state the decision and its reasoning in the commit message,
+   and flag it for Elias to overrule.** Escalate only when undoing it would be expensive or irreversible —
+   a data model change, a mechanic other systems will build on, anything touching the fiscal engine.
 5. **Ground new mechanics in real data.** Label anything stylized honestly — never let a placeholder look like real data.
 6. **Scope every new system small on the first pass.** Plumbing plus a few clearly-justified effects, not full theoretical richness.
 7. **Update CLAUDE.md after every item**, including validation results, so history stays traceable.
