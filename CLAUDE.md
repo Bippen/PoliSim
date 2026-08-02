@@ -6057,3 +6057,83 @@ check is worse than none because it looks like coverage.
 goes stale silently. Where the underlying fact is mechanically checkable — a file's existence, an asset
 resolving, a package version — the check belongs in `Assets/Editor/` next to the others, and the document
 should point at it rather than restate its answer.
+
+---
+
+## The debt floor removed — and the finding that it was never the rating thrash's cause (2026-08-02)
+
+Elias's ruling implemented: the zero floor on `GovernmentDebt` is gone, debt may go negative, and a net
+creditor earns nothing on its position. Validated against the full matrix at 100 and 500 turns, seed 777,
+real Unity 6000.5.6f1, **with a like-for-like before/after run** — the change was stashed, the pre-change
+matrix captured, then restored. Comparing two differently-seeded runs would have attributed RNG drift to
+the change, which is verification-integrity instance 8's exact lesson.
+
+### The numbers, by anomaly class
+
+| Anomaly | BEFORE | AFTER | |
+|---|---|---|---|
+| `DebtToGdpRatio swung` | 6,225 | **2,507** | −60% |
+| `CreditRating moved` | 1,416 | **1,394** | −1.6% |
+| `Inflation swung` | 1,305 | 1,305 | unchanged |
+| `Unemployment swung` | 116 | 116 | unchanged |
+| `InterestRate swung` | 93 | 93 | unchanged |
+
+**The three unchanged rows are as informative as the two that moved.** Byte-identical counts across
+inflation, unemployment and interest rates are direct evidence the change touched the debt stock and
+nothing else — a fiscal change leaking into the macro engine would have shown here first.
+
+### THE FINDING: the floor caused the debt bimodality, and did NOT cause the rating thrash
+
+This is the question the roadmap explicitly gated success on, and the answer is **no**.
+
+- **Debt swings fell 60%**, and the 0.00% pinning is gone entirely. Sweden no longer bounces 0%↔44%; it
+  crosses into net-creditor territory smoothly and stays there. The mechanism confirmation was right.
+- **Rating moves fell 1.6%** — from 1,416 to 1,394. That is noise. **The rating thrash was never the
+  floor's doing.**
+
+Two independent measurements agree, which is why this is stated as a finding rather than a suspicion.
+`DebtClampDiagnostic`'s year-over-year test — which isolates the DEBT term by evaluating the rating curve
+with the deficit and growth terms omitted — reports **0 notch moves in 117 years for the USA, Sweden,
+Germany and Poland**, 1 for Italy and 9 for France. The debt stock's own contribution to the rating is now
+almost perfectly stable. Yet the matrix still logs 1,394 multi-notch moves.
+
+**The residual is the deficit term**, exactly as the A1 write-up suspected when it recorded a settled
+annual deficit ranging −135.5% to +170.8% of GDP. That is a separate defect, and the floor was hiding it
+by making the debt stock's own noise so large that nobody could see past it. **Step C4's closure now waits
+on THAT**, not on this.
+
+### A second bound was needed, and it is a decision Elias has not made
+
+Removing the floor outright produced an unbounded NEGATIVE runaway: **Sweden reached −615% of GDP** over
+120 turns and France −359%. That is roadmap failure pattern 3 with the sign flipped, so the change could
+not pass its own validation bar without a bound.
+
+**The cause is structural.** `ApplyRevenueAndSpending` computes
+`actualRevenue = theoretical * efficiency * fiscalReactionMultiplier + swfReturns` — SWF returns are added
+*after* the multiplier, so the one stabiliser that would push back against a growing surplus cannot reach
+them, while the fund compounds at a rate that structurally exceeds trend GDP growth. That is the same
+asymmetry `MaxSwfToGdpPercent` already exists to bound, now visible from the other side.
+
+**Bounded symmetrically at −300% of GDP**, reusing the existing constant. The number is not an arbitrary
+mirror: Norway — the country this project used to calibrate SWF returns, and the real world's most extreme
+net creditor — holds a fund worth roughly 2.5× GDP, so a net position near −250% is the empirical outer
+edge and the bound sits just beyond it. With it, Sweden settles at −220% and France at −298%.
+
+⚠ **France reaches the bound and sits near it, which is the shape the floor's own defect had.** France is
+also the only country still showing meaningful year-over-year rating movement (9 of 117 years, up to 2
+notches). It is the remaining problem case and should be treated as one.
+
+⚠ **The bound is MY call, not Elias's.** His ruling covered removing the floor and the interest treatment;
+it did not cover what happens at the negative extreme, because the runaway was not known until the floor
+came off. Logged in Open Questions with the alternative — fixing the SWF-returns asymmetry directly rather
+than bounding its symptom — which is the more principled fix and a much larger change.
+
+### Why a net creditor earns nothing, and why that is not the whole answer
+
+Without the guard, negative debt times a positive rate is negative interest, which flows through as a
+REDUCTION in total spending — free money that grows with the surplus and compounds. That would have been a
+worse defect than the one being fixed, and it would have looked like a well-run economy rather than a bug.
+
+Zero is the conservative half of Elias's ruling. Interest earned on net assets is real, and modelling it is
+deliberately deferred: the SWF already models the return on government assets, so paying a second return
+on the same position here would double-count it.

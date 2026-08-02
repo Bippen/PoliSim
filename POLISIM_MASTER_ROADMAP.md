@@ -81,7 +81,21 @@ placement alone would not have covered them.
 
 ---
 
-## 🔴 The debt-to-zero bimodality — highest-priority defect, promoted 2026-08-02
+## ✅ The debt-to-zero bimodality — FIXED 2026-08-02. Its successor defect is named at the end.
+
+**The floor is gone, debt may go negative, and the 0.00% pinning with it** — debt-swing anomalies fell
+60% across the full matrix (6,225 → 2,507, 100 and 500 turns, seed 777, like-for-like before/after).
+A symmetric −300% bound was needed to stop an unbounded negative runaway; see Open Questions, because that
+bound is my call rather than Elias's.
+
+🔴 **What it was hiding, and what now carries the priority: the rating thrash is the DEFICIT term's.**
+Removing the floor moved rating anomalies by 1.6% (1,416 → 1,394) while
+`DebtClampDiagnostic` reports the debt stock's own contribution as almost perfectly stable — 0 notch moves
+in 117 years for four of six countries. **Step C4's closure waits on the deficit term, not on this.**
+Full evidence in `CLAUDE.md`. The original entry follows, kept because the mechanism reasoning is what
+made the fix possible.
+
+### Original entry — the defect as it stood before the fix
 
 **What:** Sweden's, France's and Germany's `DebtToGdpRatio` collapses to exactly **0.00%** and, under
 stress, spikes back to ~44% and collapses again within a year. Sweden in plain `baseline`: 21.8% (turn 1)
@@ -533,6 +547,24 @@ list stays short enough to actually read.
 
 - **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not
   required for a first pass. Nobody is blocked on it; it has simply never been prioritised.
+
+- 🔴 **NEW 2026-08-02 — the −300% net-creditor bound is my call, not yours, and wants confirming.**
+  Removing the debt floor produced an unbounded negative runaway (Sweden −615% of GDP, France −359%), so
+  the change could not pass validation without *some* bound. I added one symmetric to the existing
+  ceiling, reusing the same constant, grounded in Norway's real ~2.5×GDP fund. **Your ruling did not cover
+  this** — the runaway was not visible until the floor came off.
+  - **The alternative, and it is more principled:** fix the cause instead of bounding the symptom. SWF
+    returns are added to revenue *after* the fiscal reaction multiplier, so the stabiliser cannot reach
+    them while the fund compounds faster than GDP forever. Routing them through the multiplier — or
+    treating fund returns as a stock rather than as budget revenue — would remove the runaway at source.
+    **Much larger change**, touching a model calibrated against Norway, which is why I did not take it.
+  - ⚠ **France reaches the bound and sits near it**, which is the shape the floor's own defect had. It is
+    also the only country still showing year-over-year rating movement. Treat France as the open case.
+
+- 🔴 **NEW 2026-08-02 — the rating thrash's real cause is the DEFICIT term, and it is a separate defect.**
+  Removing the floor cut debt-swing anomalies 60% (6,225 → 2,507) and moved rating anomalies by 1.6%
+  (1,416 → 1,394). Two independent measurements agree the debt stock is no longer the driver. **Step C4's
+  closure now waits on this instead.** Full evidence in `CLAUDE.md`.
 
 ### RESOLVED 2026-08-02 — all three section A decisions
 

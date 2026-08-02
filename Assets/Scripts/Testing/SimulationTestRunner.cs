@@ -787,10 +787,16 @@ namespace PoliSim.Testing
                 anomalies.Add($"Turn {turn} {country.Name}: inflation out of range ({state.Inflation:F2}%)");
             }
 
-            if (state.GovernmentDebt < 0f)
-            {
-                anomalies.Add($"Turn {turn} {country.Name}: negative GovernmentDebt ({state.GovernmentDebt:F1})");
-            }
+            // NEGATIVE GovernmentDebt IS NO LONGER AN ANOMALY (2026-08-02). It means the country is a net
+            // creditor - a real fiscal state that the zero floor made unrepresentable, and that removing
+            // the floor exists to allow. Flagging it here would report the FIX as the defect, and loudly:
+            // Sweden is a net creditor from turn 1.
+            //
+            // What replaces it is deliberately one-sided. There is no principled floor on how negative a
+            // net position can go - a sovereign wealth fund can in principle exceed any debt - so the
+            // finiteness check below is the guard in that direction, and it is a real one: an unbounded
+            // negative runaway would still be caught.
+            CheckFinite(turn, country, "GovernmentDebt", state.GovernmentDebt, anomalies);
 
             CheckFinite(turn, country, "GDP", state.GDP, anomalies);
             CheckFinite(turn, country, "Inflation", state.Inflation, anomalies);

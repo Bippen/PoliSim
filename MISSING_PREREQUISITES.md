@@ -340,7 +340,19 @@ not resolve, so a gap declares itself in a batch log instead of waiting to be no
 
 # F. Waiting on an upstream simulation defect
 
-## F1. 🔴 Step C4's CLOSURE waits on the debt-to-zero bimodality — C4 itself is finished
+## F1. 🔴 Step C4's CLOSURE — the blocker CHANGED 2026-08-02. It is now the deficit term.
+
+⚠ **UPDATED, and the update is the point: the debt-to-zero bimodality is FIXED and was not the cause.**
+The floor came off, debt-swing anomalies fell 60% (6,225 → 2,507) — and rating anomalies moved 1.6%
+(1,416 → 1,394). Two independent measurements agree the debt stock is no longer driving the thrash;
+`DebtClampDiagnostic` now reports 0 year-over-year notch moves in 117 years for four of the six countries.
+
+**C4's closure therefore waits on the DEFICIT term's volatility**, which the A1 write-up already suspected
+when it recorded a settled annual deficit ranging −135.5% to +170.8% of GDP. The floor was hiding it by
+making the debt stock's own noise too large to see past. Everything below about C4 itself still stands —
+the implementation is complete and the 5 anchors still pass 5 of 5, re-confirmed after the debt fix.
+
+### The original entry, kept because its reasoning about what blocks what still applies
 
 **Task:** close Step C4.
 

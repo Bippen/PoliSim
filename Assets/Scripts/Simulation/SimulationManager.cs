@@ -2106,6 +2106,25 @@ namespace PoliSim.Simulation
             float baseRate = country.BaseDebtInterestRateOverride >= 0f
                 ? country.BaseDebtInterestRateOverride
                 : country.CurrencyZone.InterestRate;
+            // A NET CREDITOR PAYS NOTHING AND EARNS NOTHING (2026-08-02, Elias's ruling, made when the
+            // zero floor was removed and negative debt became representable).
+            //
+            // Without this guard the arithmetic would silently invert: negative debt times a positive
+            // rate is negative interest, which flows through ApplyRevenueAndSpending as a REDUCTION in
+            // total spending - free money, growing with the size of the surplus, compounding into
+            // exactly the runaway the floor was masking. That is a worse defect than the one being
+            // fixed, and it would look like a well-run economy rather than like a bug.
+            //
+            // Zero rather than an interest income is the deliberately conservative half of the ruling.
+            // Interest earned on net assets is a real thing a net creditor gets, and modelling it is a
+            // SEPARATE decision Elias has explicitly deferred - the SWF already models the return on
+            // government assets, so paying a second return on the same position here would double-count
+            // it. Scoping this to "no free money" keeps the debt fix a debt fix.
+            if (state.GovernmentDebt <= 0f)
+            {
+                return 0f;
+            }
+
             float effectiveRate = baseRate + GetDebtRiskPremium(state) * country.RiskPremiumSensitivity;
             return state.GovernmentDebt * (effectiveRate / 100f);
         }
@@ -2141,8 +2160,32 @@ namespace PoliSim.Simulation
             budgetBalance = actualRevenue - totalSpending;
 
             state.Budget += budgetBalance;
+
+            // NO FLOOR (2026-08-02, Elias's ruling). Debt may go NEGATIVE, which means the country is a
+            // net creditor - a real fiscal state, and specifically Norway's, the country this project
+            // already used to calibrate SWF returns. The game has always DISPLAYED "Net Government
+            // Position (debt minus fund assets)"; only the simulation refused to represent it.
+            //
+            // The old `Mathf.Clamp(..., 0f, maxDebt)` is what produced the debt-to-zero bimodality:
+            // a stock driven below zero was held at zero and then released, which is the exact shape of
+            // a bimodal attractor. Sweden hit the floor on 67 of 120 baseline turns, France on 14, and
+            // Germany only under `swfstress` - precisely the set whose SWF drives net position negative.
+            // The CEILING is retained and is not implicated: no country has ever reached it.
+            //
+            // ⚠ THE BOUND IS NOW SYMMETRIC, AND THAT IS A SECOND DECISION - see the Open Questions entry.
+            // Removing the floor outright produced an unbounded NEGATIVE runaway: Sweden reached -615% of
+            // GDP over 120 turns and France -359%, which is roadmap failure pattern 3 wearing the other
+            // sign. The cause is structural rather than incidental - SWF returns are added to revenue
+            // AFTER the fiscal reaction multiplier, so the one stabiliser that would push back cannot
+            // reach them, while the fund compounds at a rate that structurally exceeds trend GDP growth.
+            // That is the same asymmetry `MaxSwfToGdpPercent` already exists to bound.
+            //
+            // -300% is not an arbitrary mirror. Norway - the country this project used to calibrate SWF
+            // returns, and the real world's most extreme net creditor - holds a fund worth roughly 2.5x
+            // its GDP, so a net position near -250% is the empirical outer edge. The bound sits just
+            // beyond it, and reuses the existing constant rather than introducing a second number.
             float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
-            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt);
+            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, -maxDebt, maxDebt);
 
             return actualRevenue;
         }
