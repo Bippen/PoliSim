@@ -6137,3 +6137,44 @@ worse defect than the one being fixed, and it would have looked like a well-run 
 Zero is the conservative half of Elias's ruling. Interest earned on net assets is real, and modelling it is
 deliberately deferred: the SWF already models the return on government assets, so paying a second return
 on the same position here would double-count it.
+
+---
+
+## P4 — the label-clipping class, fixed with one helper (2026-08-02)
+
+`PoliSimWidgets.MeasuredLabel` and `MeasuredWidth`. The audit's recommendation, built as specified:
+measure in the style the text actually renders in, force `wordWrap` off, shrink rather than truncate,
+recompute per frame, and reserve space for whatever shares the rect.
+
+### The two reported sites
+
+- **Item 6 — `StatTile`'s label.** The "9,3" bug one field away from its own fix, in the same method:
+  `new GUIStyle(GUI.skin.label)` inherits `wordWrap = true`, drawn into a fixed `12f * scale` rect with a
+  middle anchor, so `DEBT-TO-GDP` wrapped to two lines and both lost their tops and bottoms.
+- **Item 5 — `DrawSubCategoryButton`'s width.** `ExpandWidth(true)` with no width budget: GUILayout
+  divides the row evenly, so when natural widths exceed the container the longest labels lose their
+  tails, and Trade — last in the row — is where it shows. **`MinWidth` is what `ExpandWidth` was
+  missing**: "take a share" never said "and this much is the minimum I need".
+
+### Two more found in the same widget, neither reported
+
+Both are the same class in quieter form, and both were found by reading `StatTile` rather than by looking
+for them:
+
+- **The suffix ran off the tile.** The value was fitted to the *full* inner width, then the suffix drawn
+  at `x + valueSize.x` — so a value wide enough to fill the tile pushed its own unit past the edge. The
+  value now reserves the measured suffix width before shrinking.
+- **`subLabel` was given `innerWidth` while starting at the delta pill's right edge**, so its rect
+  overran the tile by exactly the pill's width.
+
+### What was deliberately NOT touched, and why
+
+Three of the seven audited sites — the sector name column, World Map country names, and Policy Web
+category headers — **already measure correctly against the right style**, each from its own earlier fix.
+They were left alone. Refactoring working, visually-confirmed code onto a new helper is churn with real
+regression risk, and the helper's value is in being the answer for the *next* site rather than in
+rewriting the sites that already got it right.
+
+**That is the honest scope: two reported sites fixed, two latent ones found and fixed, five left
+standing.** The class is not "closed" by fiat — it is closed when the next label added goes through the
+helper instead of re-deriving the fix, and this is the first time there is something to go through.

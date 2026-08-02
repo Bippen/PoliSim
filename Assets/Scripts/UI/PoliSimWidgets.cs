@@ -69,6 +69,78 @@ namespace PoliSim.UI
             return s;
         }
 
+        /// <summary>Floor for <see cref="MeasuredLabel"/>'s shrink-to-fit. Deliberately lower than
+        /// <see cref="MinStatValueFontSize"/>: a supporting label may shrink further than a headline
+        /// figure before it stops being worth drawing, and a shared floor would either clip labels or
+        /// hold headline values larger than their tile.</summary>
+        private const int MinMeasuredLabelFontSize = 8;
+
+        /// <summary>
+        /// Draws text guaranteed to fit its rect, by measuring it in THE STYLE IT WILL ACTUALLY RENDER IN
+        /// and shrinking the font until it fits.
+        ///
+        /// **One fix for a class that has now recurred seven times** — the Manufacturing sector label,
+        /// World Map country names, TaxLine/WelfareProgram rows, Policy Web category headers,
+        /// Policy/Laws' "Trade" button, Budget tile labels, and `StatTile`'s value field. Every instance
+        /// is the same shape: a text rect sized by a hardcoded constant instead of by measuring the
+        /// string, in a project where every style rescales with the window.
+        ///
+        /// **The argument for a helper rather than an eighth site-specific fix is in this very file.**
+        /// `StatTile`'s VALUE field has carried this exact treatment since the "9,3" incident, with a
+        /// comment naming the cause — and the LABEL field ten lines above it never got it, and clipped.
+        /// A fix that must be remembered at each site will be forgotten at the next one.
+        ///
+        /// **Shrink, never truncate.** Truncating changes what the text says: "29689,3" clipped to "2968"
+        /// is a plausible-looking wrong number, the worst failure a readout can have. Shrinking makes text
+        /// smaller but never different. Wrapping to two lines inside a one-line rect is the same failure
+        /// in another hat — both wrapped lines then lose their tops and bottoms — so `wordWrap` is forced
+        /// off here rather than left to whatever `GUI.skin.label` was inherited with.
+        ///
+        /// Measured per frame on purpose: styles derive from `scale`, which derives from `Screen.height`,
+        /// so a width cached at one window size is wrong at the next.
+        /// </summary>
+        /// <param name="reserveWidth">Width already spoken for inside the same rect — a suffix, a pill, a
+        /// following control — so text is fitted to what is genuinely left rather than to the whole rect.</param>
+        /// <returns>The rendered size, so a caller can lay out what follows against real geometry instead
+        /// of an assumed width.</returns>
+        public static Vector2 MeasuredLabel(Rect rect, string text, GUIStyle style, float reserveWidth = 0f)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return Vector2.zero;
+            }
+
+            style.wordWrap = false;
+            float available = rect.width - reserveWidth;
+            Vector2 size = style.CalcSize(new GUIContent(text));
+
+            if (size.x > available && size.x > 0f && available > 0f)
+            {
+                style.fontSize = Mathf.Max(MinMeasuredLabelFontSize, Mathf.FloorToInt(style.fontSize * (available / size.x)));
+                size = style.CalcSize(new GUIContent(text));
+            }
+
+            GUI.Label(new Rect(rect.x, rect.y, available, rect.height), text, style);
+            return size;
+        }
+
+        /// <summary>
+        /// How wide this text genuinely needs, in the style it will render in, plus margin.
+        ///
+        /// For the WIDTH variant of the same class: a row of `ExpandWidth` controls with no width budget,
+        /// where the last one clips because the container over-committed. This lets a caller ask before
+        /// laying out instead of discovering it at draw time.
+        /// </summary>
+        public static float MeasuredWidth(string text, GUIStyle style, float margin = 0f)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return margin;
+            }
+
+            return style.CalcSize(new GUIContent(text)).x + margin;
+        }
+
         // --- 1. Stat tile -----------------------------------------------------------------
 
         /// <summary>
@@ -99,7 +171,11 @@ namespace PoliSim.UI
             float y = rect.y + padY;
             float innerWidth = rect.width - padX * 2f;
 
-            GUI.Label(new Rect(x, y, innerWidth, 12f * scale), label.ToUpperInvariant(),
+            // REVIEW ITEM 6 WAS HERE, and it was the "9,3" bug one field away from its own fix. This
+            // style inherits wordWrap from GUI.skin.label and is drawn into a fixed 12f*scale rect with a
+            // middle anchor - so "DEBT-TO-GDP" wrapped to two lines and both lost their tops and bottoms.
+            // The value field below has carried the fix since the "9,3" incident; this label never got it.
+            MeasuredLabel(new Rect(x, y, innerWidth, 12f * scale), label.ToUpperInvariant(),
                 Sized(_label, PoliSimTheme.FontLabel, PoliSimTheme.TextMuted, scale));
             y += 20f * scale;
 
@@ -117,19 +193,28 @@ namespace PoliSim.UI
             // "2968" instead, still a wrong number. So the font is also shrunk until the whole value fits.
             // Shrinking is the only option here that cannot misreport: the figure gets smaller, never
             // different.
+            //
+            // This now goes through MeasuredLabel, which is that same treatment generalised. The value
+            // keeps its own higher font floor (MinStatValueFontSize) by pre-shrinking against it, because
+            // a headline figure that shrinks as far as a label may would be unreadable at a glance.
             valueStyle.wordWrap = false;
             Vector2 valueSize = valueStyle.CalcSize(new GUIContent(value));
-            if (valueSize.x > innerWidth && valueSize.x > 0f && innerWidth > 0f)
+            float suffixWidth = string.IsNullOrEmpty(suffix)
+                ? 0f
+                : MeasuredWidth(suffix, Sized(_body, PoliSimTheme.FontBodySmall, PoliSimTheme.Neutral, scale), 5f * scale);
+            float valueRoom = innerWidth - suffixWidth;
+            if (valueSize.x > valueRoom && valueSize.x > 0f && valueRoom > 0f)
             {
-                valueStyle.fontSize = Mathf.Max(MinStatValueFontSize, Mathf.FloorToInt(valueStyle.fontSize * (innerWidth / valueSize.x)));
-                valueSize = valueStyle.CalcSize(new GUIContent(value));
+                valueStyle.fontSize = Mathf.Max(MinStatValueFontSize, Mathf.FloorToInt(valueStyle.fontSize * (valueRoom / valueSize.x)));
             }
 
-            GUI.Label(new Rect(x, y, innerWidth, valueHeight), value, valueStyle);
+            // The suffix is reserved rather than ignored: it was previously drawn at x + valueSize.x with
+            // the value fitted to the FULL inner width, so a wide value pushed its own unit off the tile.
+            valueSize = MeasuredLabel(new Rect(x, y, innerWidth, valueHeight), value, valueStyle, suffixWidth);
 
             if (!string.IsNullOrEmpty(suffix))
             {
-                GUI.Label(new Rect(x + valueSize.x + 5f * scale, y, innerWidth, valueHeight), suffix,
+                MeasuredLabel(new Rect(x + valueSize.x + 5f * scale, y, innerWidth - valueSize.x - 5f * scale, valueHeight), suffix,
                     Sized(_body, PoliSimTheme.FontBodySmall, PoliSimTheme.Neutral, scale, TextAnchor.LowerLeft));
             }
 
@@ -146,7 +231,9 @@ namespace PoliSim.UI
 
                 if (!string.IsNullOrEmpty(subLabel))
                 {
-                    GUI.Label(new Rect(pill.xMax + 7f * scale, y, innerWidth, 18f * scale), subLabel,
+                    // Was given `innerWidth` while starting at the pill's right edge, so its rect ran off
+                    // the tile by exactly the pill's width - the same class, in its quietest form.
+                    MeasuredLabel(new Rect(pill.xMax + 7f * scale, y, x + innerWidth - pill.xMax - 7f * scale, 18f * scale), subLabel,
                         Sized(_body, PoliSimTheme.FontBodySmall - 1, PoliSimTheme.TextMuted, scale));
                 }
 

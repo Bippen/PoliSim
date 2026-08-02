@@ -2614,7 +2614,19 @@ namespace PoliSim.UI
         {
             bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);
             GUIStyle style = BuildSubTabStyle(selected);
-            if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
+
+            // REVIEW ITEM 5 ("trade is cut off") WAS HERE, and it is the WIDTH variant of the label
+            // class. Five buttons share the Policy/Laws row with ExpandWidth(true) and no width budget:
+            // GUILayout divides the row evenly, so when the natural widths exceed the container the
+            // longest labels lose their tails - and the last button, Trade, is where it shows.
+            //
+            // MinWidth is what ExpandWidth was missing. ExpandWidth says "take a share"; it never says
+            // "and this much is the minimum I need". With a floor measured in the style the text actually
+            // renders in, GUILayout gives each button at least its own content and the row wraps or
+            // compresses evenly instead of silently truncating the end of it.
+            float minWidth = PoliSimWidgets.MeasuredWidth(label, style, style.padding.horizontal + 6f);
+            if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinWidth(minWidth),
+                GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 selectedCategory = category;
             }
