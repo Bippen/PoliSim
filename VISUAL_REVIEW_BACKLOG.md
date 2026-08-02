@@ -15,12 +15,12 @@ Closure needs items 1–9 confirmed. **Items 3, 7, 8 and 9 all failed.**
 |---|---|---|
 | 1. Statistics nav icon | ✅ PASS — *"it reads like an icon"* | **CLOSED** |
 | 2. Statistics restructure | ✅ PASS — *"natural"* | **CLOSED** |
-| 3. Published graph, empty state | ❌ **FAIL** — unit bug | open, P2 |
+| 3. Published graph, empty state | ❌ **FAIL** — unit bug | **FIXED `628d78e`, needs re-review** |
 | 4. Amber draft cue | ✅ PASS — *"says it is a draft"* | **CLOSED** |
 | 5. Policy/Laws restyle | ⚠️ PASS with defect — *"trade is cut off"* | open, P4 |
 | 6. Budget full-screen | ⚠️ PASS with defect — text above icons clipped | open, P4 |
-| 7. First release + reporting lag | ❌ **FAIL** — graphs unreadable | open, P3 |
-| 8. Revision treatment | ❌ **FAIL** — graphs unreadable | open, P3 |
+| 7. First release + reporting lag | ❌ **FAIL** — graphs unreadable | open, P3 — **unblocked** |
+| 8. Revision treatment | ❌ **FAIL** — graphs unreadable | open, P3 — **unblocked** |
 | 9. Budget Process restyle | 🔴 **HARD FAIL** — black screen | **FIXED, needs re-review** |
 | 10. B2 contextual stat row | ✅ PASS | ⚠️ see caveat below |
 | 11. Credit Rating tile | ✅ PASS — placement confirmed | **CLOSED** |
@@ -72,20 +72,22 @@ failed. Re-review item 10 alongside item 9.
 
 ## Remaining work, in Elias's priority order
 
-**P2 — Item 3, the unit bug** (not started). GDP `29000` renders as **"29k"**; the game stores billions,
-so that is $29 **trillion**. Unit-wrong, not arithmetic-wrong — a player reads "29k" and nothing
-contradicts them. **Third instance on this same value**: `StatTile` once showed GDP as "9,3", and the
-rebuilt formatter guarantees a k/M/B suffix so magnitude cannot be lost — but applies it to a base unit of
-1. Scope is wider than the axis: tiles show `28999,3` and `37956,2` raw and unlabelled, and the same
-applies to spending lines, tax revenue, SWF assets and budget balance. **The game states its units
-nowhere.** Investigation must confirm billions is the base unit *consistently*, enumerate every currency
-display site, and propose one approach — not patch the graph.
+**P2 — Item 3, the unit bug. ✅ FIXED 2026-08-02 (`628d78e`), awaiting re-review.** GDP now renders
+`$29.0T` everywhere, through one `UiFormat.Money(value, MoneyUnit)` whose unit is a **required**
+parameter on every graph and pie-chart entry point — ~30 display sites, more than the 21 the
+investigation enumerated. `MoneyFormatDiagnostic` passes 6 of 6 in real Unity. **What still needs
+Elias's eye is item 3's original question**, which the fix does not answer: does a single-point
+published graph with the "next release builds the trend" message read as *working* or as *broken*?
+The brief below stands. The original finding, for the record: GDP `29000` rendered as **"29k"** for $29
+**trillion** — unit-wrong, not arithmetic-wrong, and the third instance on this same value after
+`StatTile`'s "9,3". Tiles showed `28999,3` raw and unlabelled, as did spending lines, tax revenue, SWF
+assets and budget balance. **The game stated its units nowhere.**
 
-**P3 — Items 7 and 8, unreadable graphs** (blocked on P2). *"hard to make out any of the graphs what they
-are saying"* at one turn; *"still hard to tell"* at two. **Do not iterate on marker design yet** — an axis
-reading "29k" for $29T makes a graph genuinely unreadable, and the reporting-lag graph is entirely about
-reading values against dates. Sequence: fix units → re-review 7 and 8 → only then treat residual
-unreadability as a separate density/marker finding.
+**P3 — Items 7 and 8, unreadable graphs. 🟢 NOW REVIEWABLE — the P2 blocker is cleared.** *"hard to make
+out any of the graphs what they are saying"* at one turn; *"still hard to tell"* at two. The axis no
+longer misreports magnitude, so what remains is a genuine density/marker/readability judgment. **This is
+now the top of the list.** Re-review 7 and 8 first; only treat residual unreadability as a design finding
+after seeing it with correct units.
 
 **P4 — Items 5 and 6, text clipping** (not started). Item 5: "trade is cut off". Item 6: text above the
 icons clipped on Debt-to-GDP and similar tiles. This is the **label-measurement class already fixed at

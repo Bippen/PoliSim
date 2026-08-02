@@ -284,12 +284,12 @@ section 14. **Master Sequence step 5 still does NOT close** — it needs 1–9, 
 |---|---|
 | 9 (black screen) | **Nothing — FIXED** (`e9e3f6a`). Waits only on Elias re-looking |
 | 10 (B2 stat row) | Elias re-looking **after advancement** — its sparklines never rendered at turn 0, and the sparkline is what crashed item 9 |
-| 3 (unit bug) | **Me** — investigated, one approach recommended; needs a go-ahead to change ~21 sites |
-| 7, 8 (unreadable graphs) | **Item 3 landing first.** Cannot be judged while an axis reads "29k" for $29T |
+| 3 (unit bug) | **Nothing — FIXED** (`628d78e`, 6 of 6 diagnostic checks pass). Waits only on Elias re-looking, and on item 3's *original* question: does a one-point published graph read as working or as broken? |
+| 7, 8 (unreadable graphs) | **Nothing — unblocked.** The axis no longer misreports magnitude, so these are now a live readability judgment and the top of the queue |
 | 5, 6 (clipping) | **Me** — audited, shared helper recommended |
 
-*This section is no longer one undifferentiated "waiting on Elias" block: three of the seven wait on work,
-not on review.*
+*This section is no longer one undifferentiated "waiting on Elias" block. As of the P2 fix, **five of the
+seven wait on Elias looking** and only 5 and 6 wait on work.*
 
 **11 items, detailed in `VISUAL_REVIEW_BACKLOG.md`.** Not duplicated here; that document is the live
 list and holds the per-item look-at/judgment/if-rejected detail.

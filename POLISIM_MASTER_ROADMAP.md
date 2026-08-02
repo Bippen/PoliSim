@@ -46,8 +46,9 @@ because they are not done.
   `VISUAL_REVIEW_BACKLOG.md`.
   - **Closed:** 1, 2, 4, 11 (and 10, with a caveat below).
   - **Pass with defects:** 5 and 6 — text clipping, the label-measurement class already fixed 5+ times.
-  - **Failing:** 3 (unit bug — GDP renders "29k" for $29 **trillion**), 7 and 8 (graphs unreadable,
-    blocked on 3), 9 (black screen — **root-caused and FIXED**, needs re-review).
+  - **Failing:** 3 (unit bug — **FIXED `628d78e`**, needs re-review), 7 and 8 (graphs unreadable —
+    **no longer blocked**, now reviewable), 9 (black screen — **root-caused and FIXED**, needs
+    re-review).
   - ⚠ **Item 10's pass is not safe.** It is Tier 0 so it was reviewed at turn 0, and `DrawSparkline`
     returns early below two history points — **its sparklines never rendered during the review**, and the
     sparkline is precisely what crashed item 9. Re-review 10 with 9.
@@ -558,24 +559,19 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 
 *Five 2026-08-01 resolutions and two 2026-07-31 ones moved to `COMPLETED.md` section 11.*
 
-### Live work from the 2026-08-02 visual review — investigated, awaiting a go-ahead
+### Live work from the 2026-08-02 visual review
 
-Both were investigated rather than patched, because both are recurrences that survived earlier
-site-specific fixes. Full findings in `CLAUDE.md`.
+- **P2 — the currency unit bug (review item 3). ✅ BUILT 2026-08-02 (`628d78e`), NOT YET SEEN.**
+  `UiFormat.Money(value, MoneyUnit)` renders `$29.0T`; the unit is a **required** parameter on every
+  graph and pie-chart entry point, so a currency display that does not state its unit no longer
+  compiles. `MoneyFormatDiagnostic` passes 6 of 6 in real Unity against the seed figures. Full record,
+  including four findings — two of them defects in the fix that only the diagnostic caught — in
+  `CLAUDE.md`. **It stays live here because built-but-unconfirmed is not done:** item 3 asks whether a
+  one-point published graph reads as working or broken, and that is a judgment about the screen, not
+  about the arithmetic. 🟢 **Items 7 and 8 are unblocked** — they are now reviewable, not passing.
 
-- **P2 — the currency unit bug (review item 3).** `FormatAxisValue(29000)` renders **"29k"** for **$29
-  trillion**: the suffix ladder is correct arithmetic on a base unit of 1, but the model stores billions.
-  **Confirmed billions is consistent** across all seven `EconomyState` currency fields, `SpendingLine`,
-  the SWF and all twelve `FiscalTurnReport` money fields — so there is no second, worse divergence
-  problem. **21 display sites**, and the game states its units nowhere. One exception matters:
-  `DerivedStats.GdpPerCapita` is thousands-per-person, so the unit must live per-stat, not globally.
-  **Recommended: one `UiFormat.Money(value, MoneyUnit)` entry point rendering `$29.0T`, with the unit
-  carried on the stat's existing metadata**, and `FormatAxisValue` retired for currency. Chosen because
-  the failure mode twice over has been a correct formatter applied inconsistently — the fix has to make
-  inconsistency hard, not merely discouraged. **No simulation change; ~21 call sites.**
-  🔴 **Blocks review items 7 and 8**, which cannot be judged while an axis misreports magnitude.
-
-- **P4 — the label-clipping class (review items 5 and 6).** Seventh recurrence. **Item 6 is literally the
+- **P4 — the label-clipping class (review items 5 and 6).** Investigated rather than patched, because
+  it is a recurrence that survived earlier site-specific fixes. Full findings in `CLAUDE.md`. Seventh recurrence. **Item 6 is literally the
   "9,3" bug again, one field away in the same method**: `StatTile`'s label style is
   `new GUIStyle(GUI.skin.label)`, inheriting `wordWrap = true`, drawn into a fixed `12f * scale` rect —
   so a long label wraps to two lines and both get clipped. The **value** field in that same widget has
