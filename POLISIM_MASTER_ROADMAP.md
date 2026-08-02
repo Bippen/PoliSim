@@ -616,11 +616,11 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 
 ### Live, unblocked work carried out of section A
 
-- **SWF emergency drawdown fast-track (A2).** Blocks nothing, but the gap is live in the current build:
-  since 5c, SWF rate and allocation changes ride the annual omnibus bill, so a genuine emergency can be
-  stuck behind a fiscal-year vote up to a year away — *"a gameplay bug wearing the costume of a design
-  question."* Add as a fifth tier-3 bill type alongside Labor/CrimeJustice/Sector/Trade. **Zero new
-  mechanism required.** Worth doing soon.
+- ✅ **SWF emergency drawdown fast-track (A2) — DONE 2026-08-02 (`b1c077f`).** `SwfDrawdownBill`, the
+  fifth tier-3 bill alongside Labor/CrimeJustice/Sector/Trade, reusing 5d's mechanism wholesale. Wired
+  into the day advance, the Sovereign Wealth Fund tab and the pending-bills list. Full matrix anomaly
+  counts identical to the run before it, which is the expected result: no batch scenario introduces this
+  bill, so identical counts prove it inert until used. **Needs a visual look**, like anything new.
 
 - ~~**`menu_pattern_tile.png` — delivered, never imported.**~~ **DONE 2026-08-02.** Imported, wired into
   `DrawCountrySelector`, zip archived. **The project root now holds no zips at all**, which is the first
