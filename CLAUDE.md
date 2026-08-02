@@ -5192,3 +5192,84 @@ lines (20 turns × 6 countries).
 - **`&`-invoking Unity returns before the work finishes.** Follow with `Wait-Process` on the PID.
 - **`*>` redirection to a file captured 0 bytes** where direct invocation surfaced the output normally.
   Capture the command's output rather than redirecting it to a file.
+
+---
+
+## Step B2 wired in — sub-screen granularity, and what "deliberately unwired" cost (2026-08-02)
+
+`4869476`. Yesterday B2's rendering was committed **built but unwired**, on the correct reasoning that
+`GetConsolidatedTabArea` answers `PolicyLaws` with `Sectors` and driving a stat row off it would print
+sector stats on the Labor and Crime & Justice screens. That call was right *at tab granularity*. The
+mistake was stopping there: **one level down, the mapping is exact**, and the evidence was already in the
+file. Every policy sub-screen declares its own area for its own bill card — `DrawLaborMarketTab` draws
+"LABOR MARKET BILL" as `SystemArea.Labor`, and so on. The two new `GetPolicyScreenArea` overloads read
+that same declaration, so the stat row cannot disagree with the card directly beneath it.
+
+`GetConsolidatedTabArea`'s own doc comment says it picks hues for **visual distinctness**, not
+correctness — `PolicyLaws` got `Sectors` because that colour was unclaimed. It should never be read as a
+semantic mapping by anything, and now carries a cross-reference saying so.
+
+**The dead-code finding that prompted this.** All four files added 2026-08-01 had **zero callers**:
+`CreditRatingSystem` (none), `DerivedStats` (only `CreditRatingSystem`), `PolicyScreenStats` (none),
+`PolicyScreenStatsRenderer` (none) — plus `GraphRenderer.DrawSparkline` and `IconLibrary`'s Stats path,
+both reachable only from the dead renderer. 641 lines with no entry point. Only one piece of that was
+flagged at the time. **A session that ends with "built but not wired" should state the full reachability
+picture, not just the one piece it consciously chose not to connect.**
+
+**`CreditRatingSystem` is still uncalled**, and that is now recorded in the roadmap as an open placement
+question rather than quietly fixed. C4 computes correctly and anchors to 5 of 5 verifiable real ratings,
+but where a sovereign rating belongs in the UI is a design decision, not a wiring detail.
+
+### Two real findings from the edge list, neither invented to fill a gap
+
+- **No `Infrastructure` policy node has a single Policy Web edge.** The Infrastructure screen therefore
+  draws no stat row at all. That is the honest output of a real gap — the row appears by itself the day
+  an edge is added, with no change at the call site.
+- **`Fiscal` derives 7 stats**, because all 13 `TaxType`s and all 14 spending lines run through the same
+  two channels (approval on a hike; revenue/outlay feeding `DebtToGdp`). Hence the 4-stat cap with the
+  remainder *stated* ("+N more affected - see Policy Web") rather than silently trimmed. Tax and Spending
+  showing the same four stats is correct, not a bug — they genuinely move the same things.
+
+`MeasureHeight` and `Draw` both route through one private `ComputeLayout`, so reserved and drawn height
+are the same calculation rather than two that agree until one is edited — the StatTile duplicate-
+formatter lesson applied to layout. No stable-control-layout exposure: the row emits only
+`GUILayoutUtility.GetRect` plus `GUI.Label`/`DrawTexture`, and no interactive control allocates an ID, so
+a chip count changing between frames cannot desync a drag in progress.
+
+**Validation.** Unity 6000.5.6f1 batch compile: **0 errors** — the real compiler, which is what caught
+the invented `MutedTextColor` yesterday when `dotnet build` did not. The csproj blind spot does not apply
+here (existing files were edited, and their `<Compile Include>` entries already existed), but
+registration was confirmed before trusting the build regardless. `dotnet build --no-incremental`: **12
+distinct warnings, 1 UAC1001 + 11 UAC1009 — identical to yesterday**, none in the touched files. The
+10-turn batch run's 17 anomalies are the documented pre-existing Sweden/France debt-to-zero baseline (see
+"SpendingLine Amount Ceiling - Debt-to-Zero Fix"); an OnGUI-only change cannot reach simulation math,
+which `BatchSimulationRunner` exercises without ever calling `OnGUI`. **Not visually confirmed** — added
+as `VISUAL_REVIEW_BACKLOG.md` item 10, and it is the only item there where rejection would mean a Policy
+Web *edge* is wrong rather than something merely looking bad.
+
+### Also fixed: four `.meta` files were never committed
+
+`e185a72`. The four `.cs` files added 2026-08-01 were committed without their Unity `.meta` files, while
+all 62 other script metas in the repo are tracked. The GUID lives in the meta, not the source, so a fresh
+clone would have had Unity mint new ones and any future serialized reference to these types would have
+resolved differently between machines. **Staging a new `.cs` in a Unity project means staging its `.meta`
+in the same commit.**
+
+### Corrections to this file's own environment notes
+
+- **`-logFile <path>` IS honoured on 6000.5.6f1.** The note above ("Unity 6000.5 ignores `-logFile`") is
+  wrong as stated. Direct evidence from this session: the run wrote 135,445 bytes to the custom path at
+  10:20:03, while `Logs/Editor.log` (786,438 bytes) and `Logs/Editor-prev.log` sat untouched from
+  2026-08-01. The original observation was real but the cause was misattributed — most likely the stale-
+  log confusion described alongside it, not the flag being ignored. **Timestamping the log per run is
+  still the right practice**, which is what makes this verifiable at all.
+- **"`&`-invoking Unity returns before the work finishes" — confirmed again, the hard way.** `Unity.exe`
+  is a GUI-subsystem binary, so PowerShell's `&` does not wait: `$LASTEXITCODE` came back empty and the
+  log did not exist yet, which looked like a failed launch when Unity was in fact mid-compile. Poll the
+  log for a terminal marker (`exiting after wait` / `Sanity check complete` / `error CS`), or
+  `Wait-Process` on the PID.
+- **`[regex]::Escape` combined with `-SimpleMatch` silently finds nothing.** A csproj registration check
+  reported `GameController.cs = 0` — the escape produced `GameController\.cs` and `-SimpleMatch` then
+  searched for that literal. It reported "not registered" for a file that has been registered for
+  months. Use one or the other, never both, and treat a *universal* negative from a verification check as
+  evidence the check is broken rather than the code.

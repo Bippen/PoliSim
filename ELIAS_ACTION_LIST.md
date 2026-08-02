@@ -1,13 +1,30 @@
 # Everything waiting on Elias
 
-**Compiled 2026-08-01.** Four categories: **decisions** (open questions), **visual reviews**, **figures
-to source**, and **external deliveries**. Nothing here can move without you.
+**Compiled 2026-08-01. Section A closed 2026-08-01; counts refreshed 2026-08-02.** Four categories:
+**decisions** (open questions), **visual reviews**, **figures to source**, and **external deliveries**.
+Nothing here can move without you.
 
 Ordered within each section by what unblocks the most downstream work.
 
 ---
 
-# A. DECISIONS — 5 open questions
+# A. DECISIONS — ✅ ALL FIVE ANSWERED (`8291662`), NONE LIVE
+
+**Nothing in this section is waiting on you any more.** Kept below as the record of what was asked and
+why, since each answer is load-bearing for code that now exists. The authoritative resolutions live in
+`POLISIM_MASTER_ROADMAP.md`'s Open Questions section.
+
+| # | Decision | Built against it |
+|---|---|---|
+| A1 | **Counting shim** for `SimulationRandom` across save/load — reversible beats permanent | Nothing yet; implement with Master Sequence item 8 |
+| A2 | Swing coverage **stays at five fields**; the fix is documentary — see CLAUDE.md's READ FIRST note | `CLAUDE.md` header |
+| A3 | Policy screens show **LIVE**, not published | `5701a04`, wired `4869476` |
+| A4 | **Keep all** `PeriodClosingValues`, no pruning | Flatten-on-save design recorded |
+| A5 | **Build C4 out of order** — genuinely independent *and* externally blocked, both required | `76a8f35` |
+
+*The original text of all five follows, unedited.*
+
+## The five as originally asked
 
 ## A1. How should `SimulationRandom` stream position survive a save/load? 🔴 blocks save/load
 
@@ -78,9 +95,9 @@ blocker on C1–C3 is external and may persist.
 
 ---
 
-# B. VISUAL REVIEWS — 9 items, one session
+# B. VISUAL REVIEWS — 10 items, one session
 
-Full detail in `VISUAL_REVIEW_BACKLOG.md`. **Six need no game advancement**; the rest fit one sitting
+Full detail in `VISUAL_REVIEW_BACKLOG.md`. **Seven need no game advancement**; the rest fit one sitting
 with three fast-forwards. Review **item 2 before item 3** — the restructure gates the graph redesign.
 
 | # | Item | Advancement |
@@ -94,6 +111,7 @@ with three fast-forwards. Review **item 2 before item 3** — the restructure ga
 | 7 | First release + reporting lag | 1 turn → 2026-05-02 |
 | 8 | **Revision treatment — the payoff for Step A + B1** | 2 turns → 2026-08-31 |
 | 9 | Budget Process restyle — **closes Master Sequence step 5** | 3 turns (USA) / 4 (EU) |
+| 10 | **B2 stat row** *(new 2026-08-02)* — the only item where rejection means something is factually wrong, not just ugly | none |
 
 **Item 8 is the one that matters.** Everything else asks "does it look right." That one asks whether a
 player can *see* a revision happen without being told. If not, Step A is built but not communicated.
@@ -207,11 +225,16 @@ Interest rate is one of the 18 stats reachable on a policy screen, has its own p
 
 | Category | Count | Unblocks |
 |---|---|---|
-| **Decisions** | 5 | Save/load, B2 rendering, Step C sequencing |
-| **Visual reviews** | 9 | Master Sequence step 5 closure |
+| ~~**Decisions**~~ | ~~5~~ **0 — all answered `8291662`** | — |
+| **Visual reviews** | **10** | Master Sequence step 5 closure |
 | **Figures** | 17 blocking + 4 deferred | Steps C1, C2, C3, C5 |
 | **External** | 1 | Cosmetic only |
 
-**Fastest path to unblocking the most work:** A3 (frees B2 rendering immediately), then the six
-zero-advancement visual reviews, then A1 (frees save/load). The C-step figures are the long pole and the
-only ones needing database access rather than judgement.
+**Fastest path to unblocking the most work, as of 2026-08-02:** the **seven zero-advancement visual
+reviews** (1–6 and 10) — they need nothing but Play mode, and item 10 doubles as a correctness check on
+the Policy Web's edge list. Then items 7–9 in one sitting, which closes Master Sequence step 5. The
+C-step figures remain the long pole and the only items needing database access rather than judgement.
+
+*Decisions are no longer on the critical path. A3 freed B2 rendering, which is now built, wired and
+awaiting only review item 10; A1's counting shim is scoped but deliberately unbuilt until Master
+Sequence item 8.*

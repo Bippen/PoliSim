@@ -32,14 +32,24 @@ both and is never superseded.
 
 - **DONE** — Master Sequence steps 1, 2, 3, 4, and 5a–5d; Roadmap Rounds 1–3 (15 items); macro overhaul
   Steps A1–A3, B1 and D. See `COMPLETED.md`.
-- **AWAITING ELIAS'S VISUAL REVIEW** — 9 built-but-unconfirmed items, including 5e Phase C batches 4–6.
-  See `VISUAL_REVIEW_BACKLOG.md`. Step 5 cannot close until these are confirmed.
+- **AWAITING ELIAS'S VISUAL REVIEW** — 10 built-but-unconfirmed items, including 5e Phase C batches 4–6
+  and (new 2026-08-02) B2's contextual stat row. See `VISUAL_REVIEW_BACKLOG.md`. Step 5 cannot close
+  until items 1–9 are confirmed; item 10 belongs to step 9, not 5, so it does not gate that closure.
 - **BLOCKED ON ELIAS** — 3 live Open Questions (bottom of this document), plus Step C1's three
-  OECD-basis housing figures.
+  OECD-basis housing figures. *The five macro-overhaul questions A1–A5 are all resolved (`8291662`).*
 - **BLOCKED ON EXTERNAL** — macro Steps C2 and C3 need `[GAP]` figures requiring database access;
   `icon_stat_interestrate` needs Claude Design.
 - **NOT STARTED** — Master Sequence items 6 (Round 4) and 7 (Continuous Time Phases 1–5), both **weeks**
-  of work; item 8 (save/load, scoped only); macro Step A4 and B2 rendering; macro Step C.
+  of work; item 8 (save/load, scoped only); macro Step C1–C3 and C5.
+
+**Built 2026-08-01/02, all four now reachable from the UI**: macro Step A4 (`70798e9`, Tier 0 derived
+stats — *still not trajectory-validated*), Step C4 (`76a8f35`, sovereign credit rating), and B2 rendering
+(`5701a04`) wired at sub-screen granularity (`4869476`).
+
+⚠ **`CreditRatingSystem` has no caller.** C4 computes correctly and is unit-anchored against 5 of 5
+verifiable real-world ratings, but nothing displays it — it is built, not surfaced. Placing it is a real
+design question (Statistics tab as a published series? the Budget screen, next to debt?) and is
+deliberately left open rather than guessed at, per working-discipline item 4.
 
 ---
 

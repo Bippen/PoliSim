@@ -1,8 +1,12 @@
 # Visual review backlog — everything built but never seen
 
-**As of 2026-08-01.** Nine items are in the "built, compiles, committed, never visually confirmed" state.
-They are ordered so that **items 1–6 need no game advancement at all** — enter Play mode and they are on
-screen. Item 7 needs one turn, item 8 needs two, item 9 needs three or four depending on country.
+**As of 2026-08-02.** Ten items are in the "built, compiles, committed, never visually confirmed" state.
+They are ordered so that **items 1–6 and 10 need no game advancement at all** — enter Play mode and they
+are on screen. Item 7 needs one turn, item 8 needs two, item 9 needs three or four depending on country.
+
+*Item 10 is numbered last but is a Tier 0 item; it was appended rather than renumbering 1–9, which are
+referenced from `ELIAS_ACTION_LIST.md` and the roadmap. It is also the only item here where a rejection
+would mean something is factually wrong rather than merely unattractive — see its own entry.*
 
 One session, one fast-forward, in order. Nothing below requires restarting.
 
@@ -116,6 +120,36 @@ at full width.
 
 **If rejected:** isolated. A layout flag.
 
+## 10. B2 contextual stat row — the one thing here that can be *wrong*, not just ugly
+
+**What / where:** `4869476`. Added 2026-08-02, numbered 10 rather than renumbering 1–9, which are
+referenced from `ELIAS_ACTION_LIST.md` and the roadmap. It is a **Tier 0** item despite the number — it
+is on screen the moment you open either tab, no advancement needed.
+
+**Look at:** Policy/Laws → each of Labor Market, Crime & Justice, Economic Sectors, Trade. Then
+Budget → each of Tax, Spending, Welfare, Infrastructure, Sovereign Wealth Fund.
+
+**The judgment — two separate questions, and the second matters more:**
+
+1. *Does it look right?* Chip spacing, sparkline legibility at 72×20, whether the icons read at 22px, and
+   whether the row competes with the bill card underneath it instead of introducing it.
+2. **Are the stats on each screen the ones that screen's levers actually move?** This is a correctness
+   question wearing a visual disguise. The list is derived from the Policy Web's edge list rather than
+   authored, so a wrong entry means a wrong *edge* — a claimed policy→stat relationship that isn't real.
+   That is worth catching here, because the same edge list drives the Policy Web itself.
+
+**Two expected results that are not bugs:**
+
+- **Infrastructure shows no row at all.** No Infrastructure policy node has a single Policy Web edge. The
+  gap is real and pre-existing; the row will appear on its own the day an edge is added.
+- **Policy Web shows no row**, deliberately — it *is* the full edge list, so a 4-stat summary above it
+  would be a worse view of the same data.
+
+**Also check:** Tax and Spending show the *same* four stats. That is intended — both run through the same
+two channels — but if it reads as a bug to you, say so, because it will read that way to a player too.
+
+**If rejected:** isolated to `PolicyScreenStatsRenderer` and two call sites; nothing else consumes it.
+
 ---
 
 # TIER 1 — one turn (ends day 121 = 2026-05-02)
@@ -194,9 +228,12 @@ Master Sequence step 5 open. Approving items 1–9 closes 5e entirely.
 
 # Explicitly NOT in this backlog
 
-- **B2 contextual policy-screen stats** (`3dcf038`) — data layer only. `PolicyScreenStats` resolves
-  which stats belong on which screen; **no rendering was written**. Nothing to look at, by design.
-- **The 42 macro sprites** — imported, unwired, invisible. See the correction at the top.
+- ~~**B2 contextual policy-screen stats** (`3dcf038`) — data layer only.~~ **No longer true as of
+  2026-08-02.** Rendering was built (`5701a04`) and wired (`4869476`); it is now review **item 10**.
+- ~~**The 42 macro sprites** — imported, unwired, invisible.~~ **No longer true.** `IconLibrary` gained
+  its Stats path in `5701a04` and item 10 is the first thing that draws them, so this is the review where
+  the macro sprites become visible for the first time. 41 of 42 — `icon_stat_interestrate` was never
+  delivered, so the Interest Rate chip correctly draws no icon rather than a stand-in.
 - **Sub-tab label fix** (`f5c25ac`) — you confirmed this one ("It looks better") before asking for the
   Budget full-screen change. Considered done.
 
@@ -212,6 +249,7 @@ Master Sequence step 5 open. Approving items 1–9 closes 5e entirely.
 | 4 | Amber draft cue | none | drag a slider |
 | 5 | Policy/Laws restyle | none | on load |
 | 6 | Budget full-screen | none | on load |
+| 10 | **B2 stat row** | none | last of the free ones; do it after 5 and 6, since it sits *on* both those screens and you want them settled first |
 | — | *advance 1 turn* | → 2026-05-02 | |
 | 7 | First release + lag | 1 turn | shares axis with 8 |
 | — | *advance 1 turn* | → 2026-08-31 | |
@@ -220,5 +258,5 @@ Master Sequence step 5 open. Approving items 1–9 closes 5e entirely.
 | 9 | Budget Process restyle | 3–4 turns | closes 5e |
 
 **Note on save/load:** there is still no persistence (Master Sequence item 8), so closing Unity mid-review
-loses the advancement. Items 1–6 cost nothing to redo; items 7–9 would need the turns re-run. Worth doing
-7–9 in one sitting.
+loses the advancement. Items 1–6 and 10 cost nothing to redo; items 7–9 would need the turns re-run. Worth
+doing 7–9 in one sitting.
