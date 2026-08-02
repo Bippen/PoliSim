@@ -143,6 +143,9 @@ namespace PoliSim.Simulation
                     // preserved exactly from AdvanceTurn - OrganizedCrime and Corruption run BEFORE
                     // CrimeIndex, which reads that day's freshly-updated OrganizedCrimeIndex, and
                     // ApplyCrimeEffects runs after all three because it reads all of their gaps.
+                    // Phase 3, part 1: PovertyRate's reversion. The rest of Phase 3 - the money
+                    // resolution - is NOT here yet; see the roadmap handoff.
+                    MacroSystem.ApplyPovertyRateDaily(country);
                     MacroSystem.ApplyLaborForceParticipationRateDaily(country);
                     MacroSystem.ApplyOrganizedCrimeIndexDaily(country);
                     MacroSystem.ApplyCorruptionIndexDaily(country);
@@ -1225,8 +1228,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyOkunsLaw(country, actualGrowthRate);
             MacroSystem.ApplyPhillipsCurveInflation(country);
             MacroSystem.ApplyInflationExpectations(state);
-            MacroSystem.ApplyPovertyRate(country);
-            // Phase 2: LFPR, the three crime indices and prison population now run DAILY in AdvanceDay.
+            // Phase 2/3: PovertyRate, LFPR, the three crime indices and prison population now run DAILY in AdvanceDay.
             // Applying them again here would add a full turn's reversion on top of 121 daily steps. The
             // Round 3 ordering constraint (OrganizedCrime before CrimeIndex, which reads its freshly-
             // updated value) moved with them and is preserved in AdvanceDay.

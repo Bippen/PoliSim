@@ -309,7 +309,7 @@ namespace PoliSim.Simulation
         /// welfareReduction/minimumWageReduction, landing inside the SAME final Clamp(0, 100) that
         /// already serves as this stat's combined ceiling). Hard-clamped to [0, 100].
         /// </summary>
-        public static void ApplyPovertyRate(Country country)
+        public static void ApplyPovertyRate(Country country, float reversionSpeed = PovertyReversionSpeed)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
@@ -339,7 +339,7 @@ namespace PoliSim.Simulation
             float healthSocialAffairsCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.HealthSocialAffairs);
 
             float target = baseline - welfareReduction - minimumWageReduction - healthSocialAffairsCompetenceBias;
-            state.PovertyRate = Mathf.Clamp(state.PovertyRate + PovertyReversionSpeed * (target - state.PovertyRate), 0f, MaxPovertyRatePercent);
+            state.PovertyRate = Mathf.Clamp(state.PovertyRate + reversionSpeed * (target - state.PovertyRate), 0f, MaxPovertyRatePercent);
         }
 
         // --- Labor Force Participation Rate: a tracked stat, mean-reverting toward its own baseline ---
@@ -865,6 +865,7 @@ namespace PoliSim.Simulation
         // --- Continuous Time Phase 2: daily entry points. Thin wrappers on purpose - the target maths
         // lives in ONE place per system, so the daily and turn paths can never disagree about what a
         // country is reverting toward. Only the SPEED differs, which is the entire translation.
+        public static void ApplyPovertyRateDaily(Country country) => ApplyPovertyRate(country, PovertyReversionSpeedPerDay);
         public static void ApplyLaborForceParticipationRateDaily(Country country) => ApplyLaborForceParticipationRate(country, LaborForceParticipationReversionSpeedPerDay);
         public static void ApplyCrimeIndexDaily(Country country) => ApplyCrimeIndex(country, CrimeIndexReversionSpeedPerDay);
         public static void ApplyOrganizedCrimeIndexDaily(Country country) => ApplyOrganizedCrimeIndex(country, OrganizedCrimeReversionSpeedPerDay);
@@ -877,6 +878,7 @@ namespace PoliSim.Simulation
         }
 
         // --- Continuous Time Phase 2: Labor Market and Crime & Justice daily speeds ---
+        private static readonly float PovertyReversionSpeedPerDay = PerDayReversion(PovertyReversionSpeed);
         private static readonly float LaborForceParticipationReversionSpeedPerDay = PerDayReversion(LaborForceParticipationReversionSpeed);
         private static readonly float CrimeIndexReversionSpeedPerDay = PerDayReversion(CrimeIndexReversionSpeed);
         private static readonly float OrganizedCrimeReversionSpeedPerDay = PerDayReversion(OrganizedCrimeReversionSpeed);
