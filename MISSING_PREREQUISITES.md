@@ -314,20 +314,42 @@ which is correct — a placeholder would imply the wrong stat.
 
 # F. Waiting on an upstream simulation defect
 
-## F1. 🔴 Step C4 cannot be called done until the debt-to-zero bimodality is fixed
+## F1. 🔴 Step C4's CLOSURE waits on the debt-to-zero bimodality — C4 itself is finished
 
 **Task:** close Step C4.
+
+**Step C4's implementation is COMPLETE, and the cadence fix worked as intended.** Nothing about the
+rating remains to be built or tuned. The scheduled annual review (`a4155ca`) does exactly what Elias's A1
+ruling specified: it reads a settled year-over-year fiscal position instead of one turn's budget balance,
+it changed *when* the rating is computed rather than *how*, and the 5-anchor calibration consequently
+still passes **5 of 5, unchanged**. This entry exists because a finished feature is being held open by
+something that is not the feature.
 
 **Needs:** the debt trajectory for Sweden, France and Germany to stop oscillating between 0% and ~45% of
 GDP. This is a **pre-existing simulation-model defect**, documented long before C4 existed — see
 CLAUDE.md's "SpendingLine Amount Ceiling — Debt-to-Zero Fix", and roadmap failure pattern 4 (bimodal
 attractors).
 
-**Why it now blocks C4 specifically.** The scheduled annual review (`a4155ca`) works as designed: it reads
-a settled year-over-year fiscal position instead of one turn's budget balance, and the 5-anchor
-calibration still passes 5 of 5. But the settled annual deficit it reads ranges **−135.5% to +170.8% of
-GDP**, because it is derived — correctly — from a debt stock that collapses to exactly 0.00% and spikes
-back to ~44% inside a year.
+### C4 is the first instrument that makes this defect visible to a player
+
+**This is the part worth carrying forward.** The debt-to-zero bimodality has been known for a while and
+has, until now, been a **log-only** finding: it lived in anomaly counts, batch-run summaries and
+CLAUDE.md prose. Nothing on screen reported it. A player could run a 100-turn game as Sweden and never be
+told their national debt had gone to exactly zero and stayed there.
+
+The credit rating changes that. It sits in the dashboard tile grid, visible on every tab, and it reports
+its input faithfully — so a debt stock swinging 0% to 45% and back inside a year now surfaces as a rating
+visibly collapsing and recovering. **The defect did not get worse; it got a display.**
+
+Two consequences:
+- **Its priority should rise.** It has gone from a background modelling concern to something that blocks
+  a step AND is player-visible. It was never a step-blocker before.
+- **The rating is doing its job.** A derived stat that stayed calm while its inputs did this would be the
+  broken one. Damping it — the option rejected in A1 — would have returned the defect to log-only.
+
+**Why it blocks C4 specifically.** The settled annual deficit the review reads ranges **−135.5% to
++170.8% of GDP**, because it is derived — correctly — from a debt stock that collapses to exactly 0.00%
+and spikes back to ~44% inside a year.
 
 **A sovereign whose debt genuinely moved like that would be downgraded repeatedly.** The rating is
 reporting its input faithfully; the input is what is wrong. Damping the rating to hide it was explicitly

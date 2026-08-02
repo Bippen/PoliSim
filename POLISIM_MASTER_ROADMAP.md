@@ -46,9 +46,11 @@ because they are not done.
   items 1–9 are confirmed**; items 10 and 11 belong to step 9 and gate nothing.
 - **BUILT, NOT CALLED — still live** — macro Step A4. Trajectory-validated but surfaces nothing to the
   player; see the Step A4 entry under Master Sequence item 9.
-- **WAITING, NOT LIVE** — all blocked work is in `MISSING_PREREQUISITES.md`: 3 Elias decisions (C4's
-  re-calibration, SWF fast-track, Cabinet appointments), 16 figures needing database access (Steps C1,
-  C2, C3, C5), the 11 visual reviews above, and `icon_stat_interestrate` from Claude Design.
+- **WAITING, NOT LIVE** — all blocked work is in `MISSING_PREREQUISITES.md`: 16 figures needing database
+  access (Steps C1, C2, C3, C5), the 11 visual reviews above, `icon_stat_interestrate` from Claude
+  Design, and Step C4's closure (section F). *All three Elias decisions were resolved 2026-08-02.*
+- 🔴 **HIGHEST-PRIORITY DEFECT — the debt-to-zero bimodality.** Dedicated entry immediately below.
+  Promoted 2026-08-02: it now blocks a step AND is player-visible, neither of which was true before.
 - **NOT STARTED, UNBLOCKED** — Master Sequence items 6 (Round 4, itself gated on step 5 closing) and 7
   (Continuous Time Phases 1–5), both **weeks** of work; item 8 (save/load, scoped only).
 
@@ -63,8 +65,38 @@ placement alone would not have covered them.
 
 - **A4 — PASSES.** Zero finiteness failures across all 30 runs, all six countries, every turn. Its
   outstanding "NOT trajectory-validated" caveat from `70798e9` is discharged.
-- 🔴 **C4 — FAILS.** 3,421 rating-thrash anomalies. See the new Open Question below; it is the one live
-  blocker on Step C4 being considered done.
+- **C4 — IMPLEMENTATION COMPLETE** (`a4155ca`). The first run failed with 3,421 rating-thrash anomalies;
+  Elias's A1 ruling fixed it by review CADENCE rather than damping. Anchors hold **5 of 5, unchanged**;
+  matrix anomalies fell to **1,416**. The residual is **not a C4 defect** — see the entry directly below.
+  **Closure, not the build, is what remains outstanding.**
+
+---
+
+## 🔴 The debt-to-zero bimodality — highest-priority defect, promoted 2026-08-02
+
+**What:** Sweden's, France's and Germany's `DebtToGdpRatio` collapses to exactly **0.00%** and, under
+stress, spikes back to ~44% and collapses again within a year. Sweden in plain `baseline`: 21.8% (turn 1)
+→ 0.90% (turn 25) → **0.00%** from turn 50 on. Full technical history in CLAUDE.md, "SpendingLine Amount
+Ceiling — Debt-to-Zero Fix"; this is roadmap failure pattern 4, bimodal attractors.
+
+**Not new. Its PRIORITY is new**, and for two specific reasons:
+
+1. **It now blocks a step.** Step C4's closure waits on it — see `MISSING_PREREQUISITES.md` section F1.
+   No previously-known consequence of this defect blocked anything; it was a background modelling
+   concern that batch runs reported and nothing acted on.
+2. **It is now player-visible.** Until 2026-08-02 this defect was **log-only** — it lived in anomaly
+   counts, batch summaries and prose. Step C4's credit rating is the **first instrument that surfaces it
+   on screen**: the tile sits in the dashboard grid on every tab and reports its input faithfully, so a
+   debt stock swinging 0%↔45% now reads as a rating visibly collapsing and recovering. **The defect did
+   not get worse — it got a display.**
+
+**Do not fix this by damping the rating.** That option was raised and explicitly rejected in A1, and
+doing it now would return the defect to log-only while making C4 dishonest. A derived stat that stayed
+calm while its inputs did this would be the broken one.
+
+**Scope note:** the affected set is exactly the documented one. USA, Italy and Poland have well-behaved
+debt trajectories and produce **zero** rating anomalies both before and after the cadence change, which
+is itself evidence the rating is reading faithfully rather than misbehaving.
 
 ---
 

@@ -242,7 +242,9 @@ Not a roadmap item, but real work that everything above depends on.
 `PublicationRevision` stream specifically so publishing cannot perturb the draw sequence of events, SWF
 returns, Fed chair candidates, cabinet decisions or parliament jitter.
 
-### Verification-integrity failures — seven instances, one named class
+### Verification-integrity failures — nine instances, one named class
+
+*Count corrected 2026-08-02: this said "seven", written before instances 8 and 9 existed.*
 
 Documented in full in `CLAUDE.md`. The pattern: **the checking mechanism was compromised, not the thing
 checked.** Recorded here because it is the most transferable output of this project so far.
@@ -252,6 +254,20 @@ detector with a near-zero defect; an audit script whose bad escaping fabricated 
 a successful build; piping Unity output to `/dev/null`, hiding a fatal load error through two runs
 reported as exit 0; and a `cleanup && capture` chain that reported success while silently skipping the
 capture.
+
+**Instance 8** — `-runmatrix` silently discarded `-seed`, so the single most important validation this
+project performs (a seeded matrix diff) was the one combination that could never work. Both flags were
+documented together, which is what made the combination look supported.
+
+**Instance 9 — an enum whose zero value is a meaningful state.** `CreditRating.AAA = 0`, so
+`default(CreditRating)` is AAA and an *unrated* country snapshotted as *top-rated*; every country's first
+scheduled review then read as a downgrade, fabricating 30 anomalies for Italy alone. The same
+confident-wrong-default appeared three times on one feature — `Mathf.RoundToInt(NaN)` is also 0 and also
+clamps to AAA, and the dashboard tile would have rendered an unreviewed rating as AAA. **STANDING RULE:
+when an enum's zero value is a real and especially a *good* state, a zero-initialised field cannot
+distinguish "unset" from it** — carry an explicit has-a-value flag, or reserve slot 0 for `None`. Note it
+was only visible because Italy's true rating is far from AAA; the identical bug on Sweden or Germany,
+both genuinely AAA, would have produced no anomaly at all.
 
 **Instance 7 is the one that generalizes furthest** — a *trusted source that was simply wrong*. Three
 indicators, each checked against its own documented warning, each hiding a further variant axis:
@@ -340,7 +356,13 @@ revisable after review item 11.** Computed every frame rather than cached — ca
 to disagree with the debt figure next to it. Only a Positive/Negative outlook draws a pill, because
 `StatTile`'s pill is binary and "Stable" is neither.
 
-🔴 **C4 is NOT complete** — its first trajectory validation failed. See `MISSING_PREREQUISITES.md` A1.
+**UPDATED 2026-08-02 — C4's implementation is COMPLETE** (`a4155ca`). Its first trajectory validation
+failed with 3,421 rating-thrash anomalies; Elias's A1 ruling fixed it by review **cadence** rather than
+damping, and the cadence fix worked as intended. Anchors hold **5 of 5, unchanged**; matrix anomalies fell
+to **1,416**, and the residual is **not a C4 defect** — see §13.
+
+**Only C4's CLOSURE remains outstanding**, and it waits on an upstream simulation defect rather than on
+any further rating work. `MISSING_PREREQUISITES.md` §F1.
 
 ### A4 — Tier 0 derived stats. TRAJECTORY-VALIDATED, but NOT surfaced. Not complete.
 
@@ -500,3 +522,76 @@ Both of the design doc's open items were resolved by implementation: which stats
 (`PublishedStat` has 6 members, only those with real specified release rules), and what the UI shows
 before a stat's first publication (`SeedInheritedHistory` seeds exactly one inherited quarter carrying the
 real sourced starting GDP — a second would require inventing a value).
+
+---
+
+## 13. Step C4 — scheduled rating review. IMPLEMENTATION COMPLETE (2026-08-02)
+
+`a4155ca`. Elias's A1 ruling: fix the rating thrash by review **cadence**, not by damping. **The cadence
+fix worked as intended and Step C4's implementation is finished** — nothing about the rating remains to be
+built or tuned. Only its *closure* is outstanding, and that waits on an upstream defect (§F1 of
+`MISSING_PREREQUISITES.md`), not on more rating work.
+
+**Changed WHEN the rating is computed, not HOW.** The formula body moved verbatim out of `Evaluate` into
+`EvaluateFrom(debtToGdp, riskPremiumSensitivity, deficit, growth)`. `BurdenCurve`, the reserve-currency
+discount, the deficit divisor and the growth thresholds are untouched, and the live path and the scheduled
+review share the one method so they cannot drift into two formulas. **That is what preserved the
+calibration**, and the anchor check proves it did.
+
+**Cadence: annual, on each country's own fiscal-year start** (USA 1 Oct, EU five 1 Jan). Justified rather
+than defaulted — agencies review once or twice a year; the date already exists as
+`FiscalYearData.GetFiscalYearStart` and is already the boundary `ReleaseCalendar` treats annual figures as
+settling on, so no new date rule and no parallel timer; and it is the same boundary the budget process
+turns on, so a review lands when the year it judges has closed. Outlook refreshes quarterly while the
+rating moves annually — the real division of labour between the two signals, and what makes the outlook
+worth having when the rating is deliberately still between reviews.
+
+**The settled deficit is derived from the debt stock**, which is the substantive fix. The thrash came from
+`FiscalTurnReport.BudgetBalance` — one 121-day turn's balance. A year's deficit is by definition the
+year's increase in indebtedness, so with both stocks recorded it is exact rather than smoothed:
+`deficit% = d_now − d_prev × (Y_prev / Y_now)`, both readings from `PeriodClosingValues` on the **same**
+quarterly boundaries.
+
+**Lasting decision — `ClosingStat` vs `PublishedStat`.** Reusing `PeriodClosingValues` was instructed, but
+it is keyed by `PublishedStat`, which has no debt member. The key was widened to a new `ClosingStat`
+superset rather than adding a member to `PublishedStat`, because that enum makes a deliberate claim — only
+stats with a real sourced release rule appear in it, since inventing a cadence is fabrication — and a
+never-published member would contradict it and make `Latest()` a permanent null trap. One store, one
+recording pass, an explicit exhaustive map that throws on drift.
+
+### Validation
+
+**5-anchor calibration: 5 of 5 PASS, unchanged.** Run before the matrix, as instructed.
+`CreditRatingAnchorCheck` runs headlessly with **no Play mode** — the formula is pure arithmetic — so it
+takes seconds.
+
+**This is the first EXECUTABLE version of that check.** The original calibration (`76a8f35`) was done by
+hand and recorded only in a commit message. "Unchanged" therefore means "reproduces those five recorded
+results", not "matches a previous script". An anchor check that exists only in prose cannot be re-run
+after a change, which is exactly what this work needed it for. The check also reports the band its one
+tunable input survives in — **the USA holds AA+ for deficits in [4.6%, 7.5%] of GDP**, and the anchor uses
+6.4%, near the middle rather than balanced on an edge.
+
+**Full matrix: 3,421 → 1,416 anomalies**, `-seed=777`, 15 scenarios × 100 and 500 turns, 0 compile errors,
+0 finiteness failures. USA, Italy and Poland stayed at **zero**, as required.
+
+### The residual is not a C4 defect — and C4 is what made it visible
+
+The remaining 1,416 (Sweden 616, France 567, Germany 103) trace entirely to the **debt-to-zero
+bimodality**. The settled annual deficit the review reads ranges **−135.5% to +170.8% of GDP**, derived
+correctly from a debt stock that collapses to exactly 0.00% and spikes back to ~44% inside a year.
+Sweden in plain `baseline`: 21.8% (turn 1) → 0.90% (turn 25) → **0.00%** from turn 50 on.
+
+**A sovereign whose debt genuinely moved like that would be downgraded repeatedly.** The rating reports its
+input faithfully; the input is what is wrong.
+
+**C4 is the first instrument that makes this pre-existing defect player-facing rather than log-only.**
+Until now the bimodality lived in anomaly counts, batch summaries and CLAUDE.md prose — a player could run
+100 turns as Sweden and never be told their national debt had gone to zero and stayed there. The rating
+tile sits in the dashboard grid on every tab, so the same defect now shows up on screen. **It did not get
+worse; it got a display.** That is why its priority was raised in the roadmap: it now blocks a step and is
+visible to a player, neither of which was true before.
+
+**Do not fix it by damping the rating.** That option was raised and explicitly rejected in A1; doing it now
+would return the defect to log-only while making C4 dishonest. A derived stat that stayed calm while its
+inputs did this would be the broken one.

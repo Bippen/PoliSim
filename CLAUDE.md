@@ -5314,6 +5314,11 @@ with is discharged.
 
 **C4 — FAILS. 3,421 anomalies**, every one a rating moving more than four notches in a single turn.
 
+> ⏩ **This records the state on 2026-08-02 BEFORE the A1 cadence fix, and is not current status.** Elias
+> ruled the fix should be review cadence rather than damping. C4's implementation is now **complete**, the
+> anchors still hold 5 of 5, and the residual anomalies were attributed to the debt-to-zero bimodality
+> rather than to the rating. See "A1 implemented" further down this file.
+
 | Country | Anomalies |
 |---|---|
 | Sweden | 1,761 |
@@ -5461,9 +5466,27 @@ inside a year, and none should.** A sovereign whose debt genuinely moved like th
 repeatedly. Reporting the downgrade is correct behaviour; the input is what is wrong. Damping it — the
 option Elias rejected — would have hidden this rather than surfaced it.
 
-**Conclusion: C4's implementation is complete and correct. The blocker moves upstream** to the debt-to-zero
-defect, which is a pre-existing simulation-model problem C4 is merely the first stat to read
-year-over-year. Recorded as such rather than left looking like unfinished rating work.
+**Conclusion: C4's implementation is COMPLETE and correct, and the cadence fix worked as intended. The
+blocker moves upstream** to the debt-to-zero defect — a pre-existing simulation-model problem C4 is merely
+the first stat to read year-over-year. Tracked as `MISSING_PREREQUISITES.md` section F1; recorded as an
+upstream dependency rather than left looking like unfinished rating work.
+
+### C4 is the first instrument that makes the bimodality player-facing
+
+**Worth recording separately, because it changes the DEFECT's priority rather than the rating's status.**
+Until now the debt-to-zero bimodality was a **log-only** finding: it lived in anomaly counts, batch-run
+summaries and this file's own prose. Nothing on screen reported it, and a player could run 100 turns as
+Sweden without ever being told their national debt had reached exactly zero and stayed there.
+
+The credit rating tile changes that. It sits in the dashboard grid, visible on every tab, and reports its
+input faithfully — so a debt stock swinging 0% to 45% and back inside a year now surfaces as a rating
+visibly collapsing and recovering. **The defect did not get worse; it got a display.**
+
+Consequences, both now recorded in the roadmap: its **priority rises** (it blocks a step AND is
+player-visible, neither of which was true before), and **it must not be fixed by damping the rating** —
+that option was raised and explicitly rejected in A1, and doing it now would return the defect to log-only
+while making C4 dishonest. A derived stat that stayed calm while its inputs did this would be the broken
+one.
 
 ### A further verification-integrity variant, per Elias's note
 
@@ -5476,3 +5499,65 @@ moment it became reachable and was fed real simulated state.
 check was sound; its conditions were not representative. This is why the anchor check is now executable
 and the harness evaluates the rating per turn — a static check and a trajectory check answer different
 questions, and only the second one notices this.
+
+---
+
+## Verification-integrity instance 9 — an enum whose zero value is a meaningful state (2026-08-02)
+
+**The defect was in the check, not the system under test.** Same class as instances 4–8: the checking
+mechanism was compromised while the thing being checked was fine.
+
+**What happened.** `SimulationTestRunner`'s rating-thrash check snapshots each country's rating before the
+run and flags any single-turn move beyond four notches. The snapshot is taken before day one, when no
+review has run yet — so it recorded `country.Rating.Rating`, which was the **default** value of the
+`CreditRating` enum.
+
+```csharp
+public enum CreditRating
+{
+    AAA = 0, AAplus = 1, AA = 2, ...
+}
+```
+
+**`AAA = 0`, and `default(CreditRating)` is therefore AAA.** An unrated country snapshotted as
+*top-rated*. Then each country's first scheduled review set its real rating, and the check read that as a
+downgrade from AAA:
+
+```
+[DERIVED] Turn 1 Italy: CreditRating moved 7 notches in one turn
+          (AAA -> BBB+, reviewed burden 138,0%, settled deficit n/a%)
+```
+
+Italy at 138% debt is *correctly* BBB+ — it is one of the five calibration anchors, and it passes. Nothing
+moved. **30 anomalies were fabricated for Italy alone**, and Italy had been at zero before the change, so
+this read as a regression caused by the cadence work. It was not.
+
+**Why it is worth a numbered instance rather than a footnote.** The zero value of an enum is not neutral
+when zero is itself a meaningful state. `CreditRating` is ordered best-to-worst by design — the ordering
+*is* the semantics, and `InterpolateCurve`/`Mathf.Clamp` depend on it — so AAA has to be 0. The bug is not
+the enum; it is that **"no value yet" and "the best possible value" became indistinguishable**, and a
+zero-initialised field silently chose the flattering one.
+
+**This is the same shape as two other findings on the same feature, which is what makes it a pattern:**
+
+| Where | The confident wrong default |
+|---|---|
+| `Evaluate` | `Mathf.RoundToInt(NaN)` is 0 → clamps to **AAA**. A broken country renders as top-rated |
+| Dashboard tile | An unreviewed rating would render as **AAA** rather than "not yet rated" |
+| Harness snapshot | An unreviewed rating snapshots as **AAA**, so a first rating reads as a downgrade |
+
+All three resolve the same way and all three are now fixed: carry an explicit
+`HasBeenReviewed`/`float?`-style "no value yet" flag rather than letting a zero-initialised field stand in
+for one. The tile renders an em dash; the harness compares only two *reviewed* ratings; `EvaluateFrom`
+takes `float?` for the terms that may not be computable.
+
+**STANDING RULE:** when an enum's zero value is a real, meaningful state — especially a *good* one — a
+zero-initialised field cannot distinguish "unset" from that state. Either carry an explicit "has a value"
+flag, or reserve slot 0 for a `None`/`Unrated` member. Do not rely on the default being obviously wrong
+at a glance: here it was obviously wrong only for Italy, whose real rating happens to be far from AAA. The
+same bug on Sweden or Germany — both genuinely AAA — would have produced **no anomaly at all** and stayed
+invisible.
+
+**How it was caught:** the number moved in the wrong direction. The cadence change should only ever have
+*reduced* anomalies, and Italy went from 0 to 30. A change that improves one metric while regressing
+another in a way the change cannot explain is worth attributing before reporting either number.
