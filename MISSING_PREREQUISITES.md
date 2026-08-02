@@ -15,7 +15,7 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 | ~~**Elias — decision**~~ | ~~3~~ **0 — all resolved 2026-08-02** | — |
 | **Elias — database access** | 16 blocking + 1 anchor | Steps C1, C2, C3, C5 |
 | **Elias — visual review** | ~~11~~ **7 open** (4 closed 2026-08-02) | Master Sequence step 5 closure |
-| ~~**Claude Design**~~ | **SENT 2026-08-02** — awaiting delivery | Cosmetic only |
+| ~~**Claude Design**~~ | **0 — delivered and imported 2026-08-02** | — |
 | **Another task first** | 3 | Cabinet portraits, Round 4 scoping, Step C4 closure |
 
 ---
@@ -334,21 +334,21 @@ one rather than being retrofitted.
 
 # E. Waiting on Claude Design
 
-## E1. `icon_stat_interestrate` — ✅ REQUEST SENT 2026-08-02, awaiting delivery
+## ✅ NOTHING. Section E is empty as of 2026-08-02.
 
-**Task:** the Interest Rate chip on B2's contextual stat row draws no icon.
+**E1 — `icon_stat_interestrate`. DELIVERED AND IMPORTED**, the same day the request was sent. Elias
+pointed out that it had already arrived, in `Policy rate icon design.zip` at the project root — this
+register still said "awaiting delivery" because nothing watches for a delivery landing.
 
-**Status: sent.** CLAUDE_DESIGN_ASSET_REQUEST.md has gone to Claude Design. This is no longer waiting on
-Elias — it is waiting on delivery, then a security review and import following the established pattern.
+Imported to `Assets/Resources/Art/UI/Stats/` with a hand-written `.meta`, verified by loading through
+`Resources.Load` rather than by finding the file on disk. Zip archived. Details in `COMPLETED.md`.
 
-**Needs:** one 256×256 PNG (renders at 22px). Full spec in CLAUDE_DESIGN_ASSET_REQUEST.md.
-
-**Verified as the only outstanding asset (2026-08-02)**, not assumed: every literal icon name requested
-anywhere in `Assets/Scripts` was cross-referenced against the 84 files on disk, and this was the sole
-miss. Portrait and area-icon coverage is complete.
-
-**Blocks:** nothing. `IconLibrary` returns null for a missing sprite and the chip's layout shifts left,
-which is correct — a placeholder would imply the wrong stat.
+**The recurring pattern is worth naming, because this is the second instance:** a delivered asset sitting
+unimported while a document reports it as outstanding. The other is `menu_pattern_tile.png`, delivered in
+"PoliSim GUI redesign.zip" and still unimported — which is exactly why that zip stays unarchived at the
+project root as a visible reminder. **A delivery is not self-announcing.** `StatIconCoverageCheck` now
+closes the loop for stat icons specifically: it enumerates `StatNodeId` and reports any name that does
+not resolve, so a gap declares itself in a batch log instead of waiting to be noticed.
 
 ---
 

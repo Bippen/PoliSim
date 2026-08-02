@@ -56,8 +56,9 @@ because they are not done.
 - **BUILT, NOT CALLED — still live** — macro Step A4. Trajectory-validated but surfaces nothing to the
   player; see the Step A4 entry under Master Sequence item 9.
 - **WAITING, NOT LIVE** — all blocked work is in `MISSING_PREREQUISITES.md`: 16 figures needing database
-  access (Steps C1, C2, C3, C5), the 11 visual reviews above, `icon_stat_interestrate` from Claude
-  Design, and Step C4's closure (section F). *All three Elias decisions were resolved 2026-08-02.*
+  access (Steps C1, C2, C3, C5), the visual reviews above, and Step C4's closure (section F). *All three
+  Elias decisions were resolved 2026-08-02, and section E emptied the same day — `icon_stat_interestrate`
+  was delivered and imported, so nothing waits on Claude Design.*
 - 🔴 **HIGHEST-PRIORITY DEFECT — the debt-to-zero bimodality.** Dedicated entry immediately below.
   Promoted 2026-08-02: it now blocks a step AND is player-visible, neither of which was true before.
 - **NOT STARTED, UNBLOCKED** — Master Sequence items 6 (Round 4, itself gated on step 5 closing) and 7

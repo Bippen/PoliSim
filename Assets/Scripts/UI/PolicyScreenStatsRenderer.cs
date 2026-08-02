@@ -122,9 +122,11 @@ namespace PoliSim.UI
 
             float x = rect.x + 4f;
 
-            // The icon is optional by design: IconLibrary returns null for a missing sprite, and
-            // icon_stat_interestrate genuinely does not exist yet. A null just shifts the label left
-            // rather than drawing a placeholder that would imply the wrong stat.
+            // The icon is optional by design: IconLibrary returns null for a missing sprite, and a null
+            // just shifts the label left rather than drawing a placeholder that would imply the wrong
+            // stat. Every stat on this row now has one - icon_stat_interestrate, the last gap, landed
+            // 2026-08-02 - but the contract stays, because it is what makes adding a stat ahead of its
+            // art a non-event.
             Texture2D icon = IconLibrary.GetStat(GetIconName(stat));
             if (icon != null)
             {
@@ -167,8 +169,15 @@ namespace PoliSim.UI
         /// was built from, which do not all match StatNodeId's shorter names - "Poverty" against
         /// icon_stat_povertyrate, "Crime" against icon_stat_crimeindex, and so on. A ToLower() would
         /// silently miss those and draw nothing.
+        ///
+        /// Public so a batch-mode Editor check can enumerate the mapping and confirm every name resolves
+        /// to a real sprite. That is the standing rule from the sparkline crash applied to a lookup
+        /// rather than to maths: this mapping's only caller is inside a draw call, and a wrong name here
+        /// fails silently by design (null draws nothing), so the one place it can be verified is a
+        /// headless pass over the enum. The missing interest-rate icon was found by cross-referencing
+        /// names against the disk BY HAND - this is that check, made runnable.
         /// </summary>
-        private static string GetIconName(StatNodeId stat)
+        public static string GetIconName(StatNodeId stat)
         {
             switch (stat)
             {
@@ -178,7 +187,7 @@ namespace PoliSim.UI
                 case StatNodeId.Approval: return "icon_stat_approvalrating";
                 case StatNodeId.DebtToGdp: return "icon_stat_debttogdpratio";
                 case StatNodeId.Poverty: return "icon_stat_povertyrate";
-                case StatNodeId.InterestRate: return "icon_stat_interestrate"; // not yet delivered - null is correct
+                case StatNodeId.InterestRate: return "icon_stat_interestrate";
                 case StatNodeId.TradeBalance: return "icon_stat_tradebalance";
                 case StatNodeId.Lfpr: return "icon_stat_laborforceparticipationrate";
                 case StatNodeId.Crime: return "icon_stat_crimeindex";

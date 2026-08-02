@@ -5932,3 +5932,62 @@ For the width variant, the same helper answers "how wide does this row actually 
 **Do not fix items 5 and 6 in place.** Six prior site-specific fixes have not ended this; a seventh will
 not either. The helper plus a sweep of the seven known sites is the same amount of work with a different
 outcome.
+
+---
+
+## `icon_stat_interestrate` — delivered weeks before anyone noticed (2026-08-02)
+
+**Elias pointed out that the icon already existed**, in `Policy rate icon design.zip` at the project root.
+`MISSING_PREREQUISITES.md` section E had it as *"REQUEST SENT, awaiting delivery"*. Both statements were
+written from the same accurate information; nothing reconciled them.
+
+**The import, done the established way.** `icon_stat_interestrate.png` (256×256 RGBA, verified by PNG
+signature and header, white-on-alpha with coverage in line with an existing stat icon) to
+`Assets/Resources/Art/UI/Stats/`, its 24×24 `currentColor` SVG source to `Stats/Source/`, both with
+hand-written `.meta` files. The PNG's is **byte-identical to `icon_stat_gdp.png.meta` apart from its
+guid**, which is what §3 of the request document prescribes, and the two new guids were checked against
+all 296 `.meta` files in the project for collisions. Zip archived to `/AssetPackArchive/`.
+
+**The brief was met**: a `%` — a slash with two dots — over a rising stepped line. Distinct from
+`icon_stat_inflation`'s price tag, which mattered because the two sit adjacent on the Fiscal stat row and
+one is a lever the player pulls while the other is an outcome they observe.
+
+### The verification point: file-on-disk is not the property that matters
+
+The import was confirmed by **loading through `Resources.Load`** — `IconLibrary.GetStat`, the exact path
+the game uses — not by finding the file. A hand-written `.meta` is precisely the case where those two
+answers can differ: the file can be present and correct while a malformed importer block leaves it
+unloadable, and `IconLibrary`'s null-on-missing contract would then swallow the failure silently.
+
+### `StatIconCoverageCheck`, and why a null-on-missing contract needs one
+
+`Assets/Editor/StatIconCoverageCheck.cs` enumerates every `StatNodeId`, resolves its icon name through
+`PolicyScreenStatsRenderer.GetIconName` and reports any that does not load. **18 of 18 present.**
+
+The contract that made this icon's absence invisible is a *good* contract — a missing sprite draws
+nothing rather than a stand-in that would imply the wrong stat, and it is what lets a new stat land ahead
+of its art. But a failure mode designed to be silent in play needs somewhere it is loud, and there was
+nowhere: the gap was eventually found by cross-referencing requested names against the disk **by hand**.
+This is that cross-reference, made runnable. `GetIconName` went from private to public for it — the
+standing rule from the sparkline crash applied to a lookup instead of to maths: where the only entry
+point is a draw call, extract the part a batch-mode method can reach.
+
+### Two lessons, both about how the gap survived rather than about the icon
+
+- **A delivery is not self-announcing.** This is the *second* asset delivered and left unimported while a
+  document reported it outstanding; `menu_pattern_tile.png` is the first and is still open. The register
+  cannot detect a zip appearing at the project root. That is exactly why the unarchived zip is kept as a
+  visible reminder — and why "awaiting delivery" is a status worth re-checking against the filesystem
+  rather than trusting.
+- **A correct derivation against the wrong list still misses.** The macro icon pack derived its stats
+  from the 29 fields on `EconomyState` — code-grounded, and the right instinct. `InterestRate` is not one:
+  it lives on `CurrencyZone`, because a rate belongs to a currency zone rather than to one country's
+  economy (the Eurozone five share one). It was structurally invisible to that derivation while being a
+  `StatNodeId`, a `PolicyNodeId` target, a Taylor Rule input, and the headline figure on two screens.
+  **Enumerate the display enum, not the storage struct** — anything the UI can show needs an icon
+  regardless of which type owns the field.
+
+⚠ **This puts review item 10's pass in further doubt.** It was reviewed with the Interest Rate chip's
+label sitting flush left where the missing icon would have been, so the row's spacing is not what was
+confirmed. That is now the *second* caveat on item 10, alongside its sparklines never having rendered at
+turn 0.

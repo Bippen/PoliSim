@@ -44,12 +44,20 @@ namespace PoliSim.UI
         /// <summary>
         /// Master Sequence step 9, Step D: the macro stat icons, trend arrows, release marker and
         /// revision badges, by filename minus extension - e.g. "icon_stat_gdp", "icon_trend_up",
-        /// "badge_preliminary". All 42 were delivered and imported in `be97ebb`.
+        /// "badge_preliminary". All 42 were delivered and imported in `be97ebb`, and
+        /// `icon_stat_interestrate` - the one the original manifest missed - landed 2026-08-02, so the
+        /// set is complete at 43.
         ///
         /// Same null-on-missing contract as <see cref="Get"/>: a typo draws nothing rather than
-        /// something misleading. **`icon_stat_interestrate` genuinely does not exist yet** - it was
-        /// missed from the original request manifest and is still outstanding from Claude Design, so
-        /// callers asking for it will correctly get null until it lands.
+        /// something misleading.
+        ///
+        /// **Why interest rate was missed, kept because the lesson generalises:** the macro pack derived
+        /// its stat list from the 29 fields on `EconomyState`, which is the right instinct and still
+        /// missed this one - `InterestRate` lives on `CurrencyZone`, because a rate belongs to a currency
+        /// zone rather than to one country's economy (the Eurozone five share one). It was structurally
+        /// invisible to that derivation while being a `StatNodeId`, a `PolicyNodeId` target, a Taylor
+        /// Rule input and the headline figure on two screens. **Enumerate the display enum, not the
+        /// storage struct** - anything the UI can show needs an icon regardless of which type owns it.
         /// </summary>
         public static Texture2D GetStat(string statIconName)
         {

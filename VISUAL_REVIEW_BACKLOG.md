@@ -258,8 +258,11 @@ Master Sequence step 5 open. Approving items 1–9 closes 5e entirely.
   2026-08-02.** Rendering was built (`5701a04`) and wired (`4869476`); it is now review **item 10**.
 - ~~**The 42 macro sprites** — imported, unwired, invisible.~~ **No longer true.** `IconLibrary` gained
   its Stats path in `5701a04` and item 10 is the first thing that draws them, so this is the review where
-  the macro sprites become visible for the first time. 41 of 42 — `icon_stat_interestrate` was never
-  delivered, so the Interest Rate chip correctly draws no icon rather than a stand-in.
+  the macro sprites become visible for the first time. **All 43 as of 2026-08-02** —
+  `icon_stat_interestrate` was delivered and imported, so the Interest Rate chip now draws its icon like
+  every other. ⚠ **This changes what item 10 shows**: it was reviewed with that chip's label sitting
+  flush left where the missing icon would have been, so the row's spacing is not what was confirmed.
+  Re-review it with the sparkline caveat above.
 - **Sub-tab label fix** (`f5c25ac`) — you confirmed this one ("It looks better") before asking for the
   Budget full-screen change. Considered done.
 

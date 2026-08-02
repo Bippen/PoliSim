@@ -1,6 +1,6 @@
 # Claude Design asset request — PoliSim
 
-**Status:** ready to send.
+**Status: NOTHING OUTSTANDING.** The one open request was delivered and imported on 2026-08-02.
 **Date:** 2026-08-02.
 **Supersedes:** `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`, `_UI_CHROME.md`, `_UI_CHROME_ADDENDUM.md` and
 `_MACRO.md` — all four fully delivered, imported and verified in production. Their contents are recorded
@@ -11,16 +11,35 @@ request document**; new requests append here rather than starting a new file.
 
 ---
 
-## 1. Outstanding request — 1 sprite
+## 1. Outstanding requests — NONE
 
-| Subject | Filename | Suggested mark |
+**Nothing is waiting on Claude Design.** Sections 2–4 below are the standing conventions; a future
+request appends here rather than starting a new file.
+
+### ✅ DELIVERED AND IMPORTED 2026-08-02 — `icon_stat_interestrate`
+
+Delivered in `Policy rate icon design.zip` (now in `/AssetPackArchive/`), as a 256×256 RGBA PNG plus its
+24×24 SVG source. **The brief was met**: the mark is a `%` — rendered as a slash with two dots — over a
+rising stepped line, which reads as a rate that is *set* rather than observed, and is not confusable with
+`icon_stat_inflation`'s price tag.
+
+Imported to `Assets/Resources/Art/UI/Stats/` with a hand-written `.meta` byte-identical to
+`icon_stat_gdp.png.meta` apart from its guid, per §3. **Verified by loading it through `Resources.Load`**
+— the path the game uses — rather than by finding the file on disk; `StatIconCoverageCheck` reports
+**18 of 18** stat icons present.
+
+| Subject | Filename | Mark delivered |
 |---|---|---|
-| Interest rate | `icon_stat_interestrate.png` | A percent sign paired with a policy-rate motif — e.g. `%` over a small stepped line, reading as "the rate that is *set*" rather than a generic percentage |
+| Interest rate | `icon_stat_interestrate.png` | `%` over a small stepped line |
 
-**Why it needs to be distinct from the inflation icon.** `icon_stat_inflation` is a price tag with an
-up-arrow. Interest rate is a *policy lever the player pulls*, not an outcome they observe, and the two sit
-adjacent on the Fiscal-area stat row. If they read as variants of one another the player will misread
-which one they control.
+**The derivation lesson is kept, because it generalises.** This icon was missed from the macro pack
+because that pack derived its stat list from the 29 fields on `EconomyState` — a code-grounded method and
+the right instinct. `InterestRate` is not an `EconomyState` field; it lives on `CurrencyZone`, since a
+rate belongs to a currency zone rather than to one country's economy (the Eurozone five share one). It
+was invisible to that derivation while being a `StatNodeId`, a `PolicyNodeId` target, a Taylor Rule input
+and the headline figure on two screens. **Enumerate the display enum, not the storage struct.**
+`StatIconCoverageCheck` now runs exactly that enumeration in batch mode, so the next gap reports itself
+instead of waiting to be found by hand.
 
 ### Why this one was missed, so the same derivation error does not recur
 
