@@ -9,33 +9,31 @@
 ---
 
 ## STEP A — Release calendar, revisions, and Tier 0 derived stats
-*The risky foundation. No new tracked variables at all.*
 
-**A1. Release calendar (rule-based, per country)**
-Implement the schedules from the seed data file as rules, not hardcoded dates:
-- USA: unemployment first Friday monthly; CPI mid-month (~12th); GDP advance ~t+30 after quarter end, second ~t+60, third ~t+90.
-- EU five: inflation flash on the last working day of the reference month; full inflation t+15–18; GDP preliminary flash t+30, t+45 flash, regular estimates ~t+65 and ~t+110.
-- Annual-cadence stats (poverty, population, demographics, crime, infrastructure) publish once yearly.
-- Central bank rate decisions: ~8 scheduled meetings/year (already established elsewhere).
+**A1–A3: DONE 2026-08-01.** Release calendar, published-series model and the revision mechanic. Full
+record in `COMPLETED.md` section 6 — including the one-directional rule (`PublicationSystem` writes
+`Country.Published` and reads `Country.State`, never the reverse) and the two real bugs fixed.
 
-**A2. Published-series data model**
-Each tracked stat gains a published series distinct from its live simulation value. Each published entry carries: reference period, publication date, value, and revision status (preliminary / revised / final).
+**A4 (Tier 0 derived stats): LIVE, not done.** Built (`70798e9`) and trajectory-validated (`3d77b11`),
+but it surfaces nothing to the player — and this step defines A4 as *"pure display arithmetic"*. See the
+roadmap for the remaining work.
 
-**A3. Revision mechanic**
-Preliminary figures are published first and later revised, per the real BEA advance→second→third and Eurostat flash→final patterns. The player should sometimes act on a figure that later turns out to have been wrong. Revisions should be small and plausible, not arbitrary — derive the revised value from the true underlying simulation value, with the preliminary being a noisy early estimate of it.
+⚠ **The critical correctness risk this step was built around — still binding on everything downstream.**
+The player-facing UI reads the PUBLISHED (lagged, possibly-revised) series. Every internal system —
+Okun's Law, the Phillips Curve, the Fiscal Reaction Function, sector integration — must keep reading
+LIVE values. A leak makes the model consume its own stale output, and the effect may not surface for
+hundreds of turns. Retained here rather than consolidated because it governs Step C too.
 
-**A4. Tier 0 derived stats** (zero simulation risk — pure display arithmetic from already-tracked values)
-GDP per capita (GDP ÷ Population), tax burden % GDP, spending % GDP, deficit % GDP, real GDP growth, sector shares of GDP.
-
-**THE CRITICAL CORRECTNESS RISK — verify explicitly, do not assume:**
-The player-facing UI reads the PUBLISHED (lagged, possibly-revised) series. Every internal simulation system — Okun's Law, the Phillips Curve, the Fiscal Reaction Function, sector integration, everything — must keep reading LIVE values. If published values leak into the simulation, the model starts consuming its own stale output and the effect may not surface for hundreds of turns. Prove this with a before/after comparison showing identical simulation trajectories pre- and post-change.
-
-**Validation:** full scenario matrix at both horizons, PLUS the identical-trajectory proof above. This step must not change a single simulation number.
+*Remaining A1–A3 spec text consolidated out 2026-08-02; git history holds it in full.*
 
 ---
 
 ## STEP B — Graph overhaul and contextual policy-screen stats
 *Depends on A. Pure display, lower risk.*
+
+**Status: B1 and B2 both BUILT, neither CONFIRMED.** B1's graph overhaul (`dd7e323`) and B2's
+contextual stat row (`5701a04`, wired `4869476`) await visual review items 3 and 10. **Spec retained in
+full below** rather than consolidated, because a rejected review sends the work straight back to it.
 
 **B1. Graph overhaul** — extend `GraphRenderer`, do NOT build a parallel system:
 - Real calendar date axis instead of turn numbers.
@@ -105,23 +103,24 @@ Note the OECD's own caution that cross-country comparison of this measure is not
 ---
 
 ## STEP D — Sprite asset request
-*A document, not code — compile early, run in parallel.*
 
-Same rigorous format as `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`: exact filenames derived from real enum values, exact dimensions, format spec, and the corrected `.meta` import settings already worked out for the chrome pack (nPOTScale, alphaIsTransparency, no block compression, no mipmaps, Clamp wrapping).
+**DONE 2026-08-01.** 42 assets requested, delivered, security-reviewed and imported; wired 2026-08-02.
+Record in `COMPLETED.md` section 6.
 
-**BE PRECISE ABOUT WHAT ACTUALLY NEEDS ART.** Graph axes, gridlines, plot lines, threshold lines, bars, and fills are all PROCEDURAL — `GraphRenderer` already draws these and they stay code, per rule 10's data-visualization carve-out. Sprites are needed only for:
-- One small icon per tracked stat type (derive the exact list from the real stat enum once Step C's stats exist)
-- Trend arrows (up / down / flat), tintable white-on-transparent like the existing chrome pack
-- A release-marker/pin sprite for publication points on graphs
-- A small badge distinguishing preliminary from revised figures
+**One gap, root-caused 2026-08-02:** `icon_stat_interestrate` was never requested, because this step's
+"derive the list from the real stat enum" instruction was satisfied against `EconomyState`'s 29 fields —
+and `InterestRate` is not one of them. It lives on `CurrencyZone`. **Enumerate the display enum
+(`StatNodeId`), not the storage struct.** Now the sole item in `CLAUDE_DESIGN_ASSET_REQUEST.md`.
+
+*Spec consolidated out 2026-08-02; git history holds it in full.*
 
 ---
 
 ## Sequencing summary
 
-1. **Step A** — foundation, highest risk, must prove it changes no simulation numbers.
-2. **Step B** — display layer on top of A.
-3. **Step C** — four batches, each independently validated.
-4. **Step D** — document, compile anytime; assets land before the icon work in B/C needs them.
+1. ~~**Step A**~~ — A1–A3 done; A4 built but not surfaced.
+2. ~~**Step B**~~ — B1 and B2 built; both await visual confirmation.
+3. **Step C** — FIVE batches (C5 added 2026-08-01), each independently validated. **C1, C2, C3 and C5 are blocked on figures; C4 is built and blocked on a re-calibration decision** — see `MISSING_PREREQUISITES.md`. This is the only genuinely outstanding step.
+4. ~~**Step D**~~ — delivered, imported and wired.
 
 Standing rules apply throughout: real Unity validation before anything is "done," one commit per unit of work, escalate genuine design forks to Open Questions rather than deciding silently, never mark a phase done without a live check.

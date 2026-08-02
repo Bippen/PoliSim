@@ -10,7 +10,7 @@ namespace PoliSim.Simulation
     /// reverse.** The published series is the player-facing, lagged, sometimes-revised view; every
     /// simulation system keeps reading live values off EconomyState. A published value reaching a
     /// simulation input would make the model consume its own stale output - a slow feedback corruption
-    /// that per the directive "may not surface for hundreds of turns". See STEP_A_LIVE_VALUE_AUDIT.md.
+    /// that per the directive "may not surface for hundreds of turns". See COMPLETED.md section 12.md.
     ///
     /// **This system must not change any simulation number.** It writes only to Published, and its noise
     /// draws from SimulationRandom's own PublicationRevision stream so publishing cannot perturb the draw

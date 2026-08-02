@@ -5,7 +5,7 @@ They are ordered so that **items 1–6, 10 and 11 need no game advancement at al
 are on screen. Item 7 needs one turn, item 8 needs two, item 9 needs three or four depending on country.
 
 *Items 10 and 11 are numbered last but are Tier 0; they were appended rather than renumbering 1–9, which
-are referenced from `ELIAS_ACTION_LIST.md` and the roadmap. Item 10 is the only one here where a rejection
+are referenced from the roadmap. Item 10 is the only one here where a rejection
 would mean something is factually **wrong** rather than merely unattractive, and item 11 carries a known,
 already-logged model defect — read its warning before reviewing it.*
 
@@ -22,9 +22,10 @@ not match `icon_stat_gdp.png` because of the `icon_` prefix, and I read the empt
 delivered" instead of "bad pattern" — the same shape as the verification failures logged in `CLAUDE.md`,
 committed while writing up that very class.
 
-**They are imported but completely unwired** — zero code references, and `IconLibrary` has no Stats
-path alongside its Icons/Chrome/Portraits ones. So they are not a review item yet; there is nothing to
-look at. They are ready for whenever B2's rendering gets built. Step D is delivered, not blocked.
+~~**They are imported but completely unwired**~~ — **no longer true as of 2026-08-02.** `IconLibrary`
+gained its Stats path (`5701a04`) and B2's stat row (`4869476`) draws them, so **item 10 is where these
+sprites become visible for the first time.** 41 of 42 render; `icon_stat_interestrate` was never
+delivered, so the Interest Rate chip correctly draws no icon rather than a stand-in.
 
 ---
 
@@ -124,7 +125,7 @@ at full width.
 ## 10. B2 contextual stat row — the one thing here that can be *wrong*, not just ugly
 
 **What / where:** `4869476`. Added 2026-08-02, numbered 10 rather than renumbering 1–9, which are
-referenced from `ELIAS_ACTION_LIST.md` and the roadmap. It is a **Tier 0** item despite the number — it
+referenced from the roadmap. It is a **Tier 0** item despite the number — it
 is on screen the moment you open either tab, no advancement needed.
 
 **Look at:** Policy/Laws → each of Labor Market, Crime & Justice, Economic Sectors, Trade. Then

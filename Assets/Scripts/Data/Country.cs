@@ -20,7 +20,7 @@ namespace PoliSim.Data
         /// simulation system reads `country.State.X`, so keeping published values out of EconomyState
         /// makes a leak into Okun's Law, the Phillips Curve or the Fiscal Reaction Function a
         /// compile-time impossibility rather than something reviewers must keep noticing across 55 call
-        /// sites. See STEP_A_LIVE_VALUE_AUDIT.md.
+        /// sites. See COMPLETED.md section 12 (was STEP_A_LIVE_VALUE_AUDIT.md, consolidated 2026-08-02).
         /// </summary>
         public PublishedData Published = new PublishedData();
         public CurrencyZone CurrencyZone;

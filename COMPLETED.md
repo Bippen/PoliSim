@@ -148,9 +148,19 @@ they are not recorded as complete here.
 
 ---
 
-## 6. Macro Data & Release Calendar Overhaul — Steps A, B1, D
+## 6. Macro Data & Release Calendar Overhaul — Steps A1–A3, D
 
 *Master Sequence step 9. Partially complete — see the roadmap for what remains.*
+
+⚠ **Scope correction (2026-08-02).** This section previously read "Steps A, B1, D". Both halves of that
+were wrong, found by verifying against the commits rather than the summary:
+
+- **"Step A" is A1–A3 only. A4 is NOT done** — see §9 below. `POLISIM_MASTER_ROADMAP.md` had marked all of
+  Step A *including Tier 0 derived stats* as "DONE (2026-08-01), commit `e3a0feb`". That commit contains
+  exactly two files, `PublicationSystem.cs` and `SimulationManager.cs`; `DerivedStats.cs` was not added
+  until `70798e9`, whose own message says "NOT trajectory-validated".
+- **B1 is built, not confirmed**, and belongs in `VISUAL_REVIEW_BACKLOG.md` rather than here. Its entry is
+  retained below for the one part that *is* validated — `FormatAxisValue`.
 
 ### Step A1–A3 — release calendar, published-series model, revisions. DONE 2026-08-01.
 
@@ -195,14 +205,22 @@ which **is** validated:
 displayed GDP as "9,3": 30555,1→"30,6k", 42358,1→"42,4k", 138,6→"138,6", 999,9→"999,9", 1000→"1k",
 −42358,1→"−42,4k", plus M and B ranges.
 
-### Step D — sprite asset request. DELIVERED 2026-08-01.
+### Step D — sprite asset request. DELIVERED 2026-08-01. Wired 2026-08-02.
 
 42 assets requested (`6a53878`), delivered, security-reviewed and imported (`be97ebb`), with hand-written
 `.meta` files (`65be9ab`) carrying the correct import settings: `nPOTScale`, `alphaIsTransparency`, no
 block compression, no mipmaps, Clamp wrapping — Unity's defaults are wrong for UI sprites.
 
-**Current state: imported but entirely unwired.** No code references them; `IconLibrary` has no Stats
-path. **Known gap:** `icon_stat_interestrate` was never requested and is still missing.
+**Now wired**: `IconLibrary` gained its Stats path in `5701a04` and B2's stat row (`4869476`) is the first
+thing that draws them. 41 of 42 render.
+
+**Known gap, root-caused 2026-08-02:** `icon_stat_interestrate` was never requested because the macro
+pack derived its list from the **29 fields on `EconomyState`**, and `InterestRate` is not one — it lives on
+`CurrencyZone`, since a rate belongs to a currency zone rather than one country's economy. It was
+therefore invisible to a code-grounded derivation while being one of the 18 policy-screen stats, the
+target of its own policy node, a Taylor Rule input and the Fed/Eurozone headline figure. **Lesson:
+enumerate the display enum (`StatNodeId`), not the storage struct.** Now the sole item in
+`CLAUDE_DESIGN_ASSET_REQUEST.md`.
 
 ---
 
@@ -289,3 +307,196 @@ macro engine and the highest-risk work in the project. Step C of the macro overh
 blocked on data requiring database access. Save/load is scoped but unbuilt.
 
 This project is meaningfully underway, not nearly finished.
+
+---
+
+## 9. Master Sequence step 9 continued — B2, C4 placement, A4 validation (2026-08-02)
+
+### B2 — contextual policy-screen stats. BUILT AND WIRED. Awaiting review item 10.
+
+Data layer `3dcf038`, rendering `5701a04`, `UiPalette.MutedIconTint` fix `58c4442`, wiring `4869476`.
+
+**Recorded here for the wiring decision, which is settled**; the visual result is not confirmed, so B2 is
+not complete. `GetConsolidatedTabArea` is a **hue picker** — its own doc says it chooses for visual
+distinctness across the tab bar, not correctness, and answers `PolicyLaws` with `Sectors` only because
+that colour was unclaimed. Driving a stat row from it would have shown sector stats on the Labor and
+Crime & Justice screens. **At sub-screen granularity the mapping is exact**, because every policy screen
+already declares its own area for its bill card. That is what `GetPolicyScreenArea` reads.
+
+**Lasting decision — derived, never authored.** Which stats appear comes from the Policy Web's edge list,
+so adding an edge makes a chip appear with no second list to maintain. A wrong chip therefore means a
+wrong *edge*, which is why review item 10 is a correctness check wearing a visual disguise.
+
+**Two real findings from that edge list:**
+- **No `Infrastructure` policy node has a single Policy Web edge**, so that screen correctly draws no row.
+- **`Fiscal` derives 7 stats** — all 13 `TaxType`s and all 14 spending lines touch `DebtToGdp` and
+  `Approval`. Hence a 4-stat cap with the remainder stated ("+N more affected — see Policy Web"), never
+  silently trimmed. Tax and Spending showing identical stats is correct, not a bug.
+
+### C4 — credit rating placed on the dashboard. PROVISIONAL. Model defect open.
+
+`76a8f35` built, `3d77b11` placed beside Debt-to-GDP. **Placement is Elias's call and explicitly
+revisable after review item 11.** Computed every frame rather than cached — caching is how a rating comes
+to disagree with the debt figure next to it. Only a Positive/Negative outlook draws a pill, because
+`StatTile`'s pill is binary and "Stable" is neither.
+
+🔴 **C4 is NOT complete** — its first trajectory validation failed. See `MISSING_PREREQUISITES.md` A1.
+
+### A4 — Tier 0 derived stats. TRAJECTORY-VALIDATED, but NOT surfaced. Not complete.
+
+`70798e9` built, validated `3d77b11`.
+
+**A4 passes its validation**: zero finiteness failures across the full matrix — 15 scenarios × 100 and
+500 turns × 6 countries, `-seed=777`, real Unity 6000.5.6f1. The "NOT trajectory-validated" caveat
+`70798e9` shipped with is discharged.
+
+**A4 is still not done, and this is the honest reason.** The directive defines it as *"pure display
+arithmetic"* — and it displays nothing. Verified 2026-08-02 by enumerating callers: of its six methods,
+four (`GdpPerCapita`, `TaxBurdenPercentOfGdp`, `SpendingPercentOfGdp`, `SectorSharesOfGdp`) have **only a
+test-harness caller**, and the other two are consumed internally by `CreditRatingSystem`. **A display-only
+feature that displays nothing is not complete**, however well it validates.
+
+**Deviation from `STEP_A_DESIGN.md` worth recording:** that design recommended computing Tier 0 stats
+"from published inputs throughout". As built they read **live**. Consistent with Elias's later A3 ruling
+(live on policy screens), but it was never explicitly reconciled — worth confirming when A4 is surfaced.
+
+### Harness coverage extended to the derived layer
+
+**The generalizable lesson: wiring into the UI and wiring into the harness are different things.** A
+dashboard tile is `OnGUI` code and `BatchSimulationRunner` never calls `OnGUI`, so placing C4 on the
+dashboard would have left it exactly as unreachable from a batch run. `SimulationTestRunner` now evaluates
+both A4 and C4 per turn, per country, which is what actually put them under the matrix.
+
+**Why pure display arithmetic needs coverage at all:** `CreditRatingSystem.Evaluate` ends in
+`Mathf.RoundToInt(notches)` then a clamp, and `RoundToInt(NaN)` is **0**, which clamps to **AAA**. A
+non-finite input would not crash and would not look wrong — it would render the best possible rating on a
+broken country.
+
+**Third baseline discontinuity for anomaly counts.** `[DERIVED]`-prefixed anomalies did not exist before
+this, so counts either side are not comparable. Governed by `CLAUDE.md`'s READ FIRST note like the other
+two.
+
+### Unity `.meta` files for the four new scripts
+
+`e185a72`. The four `.cs` files added 2026-08-01 were committed without their `.meta`, while all 62 other
+script metas are tracked. **The GUID lives in the meta, not the source**, so a fresh clone would have had
+Unity mint new ones and any future serialized reference would resolve differently between machines.
+**Staging a new `.cs` in a Unity project means staging its `.meta` in the same commit.**
+
+---
+
+## 10. Master Sequence step 5e — Phases A and B, Phase C batches 1–3
+
+*Consolidated out of the roadmap 2026-08-02. Batches 4–6 remain live in `VISUAL_REVIEW_BACKLOG.md`.*
+
+**Phase A — tab/IA restructuring. DONE 2026-07-31.** 18 tabs to 7 consolidated tabs with sub-categories.
+Elias confirmed all five placement calls: Trade split (informational to Statistics, policy to
+Policy/Laws); Federal Reserve to Politics; **Policy Web to Policy/Laws, overriding the original
+recommendation** on Elias's reasoning that "it's a relationship/reference tool consulted while deciding
+what to change"; Infrastructure folded into Budget Process; Budget Process interrupts surface under
+Decisions too, because "any 'time is blocked until you respond' state belongs in the same place".
+
+**Phase B — sprite reskin pilot (Statistics/Dashboard). DONE 2026-08-01**, confirmed live across two
+rounds.
+
+**Batch 1 — tab bar** (`a8decf9`), **Batch 2 — card chrome + Decisions** (`5df7811`), **Batch 3 —
+Politics** (`6922f9f`). All three confirmed by Elias in the live Editor.
+
+**Demographics needs no restyle — a finding, not an omission.** Its content is entirely pie charts, which
+working discipline item 10 keeps procedural. Decorative cards would add clutter without meaning.
+
+### Two lasting lessons from batch 3, both worth more than the batch
+
+**`PoliSimWidgets.SupportBar` was the wrong widget, and the reason generalizes.** It renders "N of 200
+seats, majority 101". **This simulation has no seats-based majority**: `ParliamentSystem` sums
+`seatShare * fiscalStance * billSign` and tests against zero, so a bill can pass with fewer aligned seats
+than opposed. Using it would have drawn a rule the model does not implement. **The design pack's widgets
+were authored against an assumed generic political sim, not this codebase — check each against the real
+model before reaching for it.** `UiPalette.DrawDivergingBar` is the honest substitute, fed by
+`ParliamentSystem.GetSeatWeightedAlignment`, which `WouldBillPass` also calls so the two cannot disagree.
+
+**`Mathf.Sign(0f)` returns 1 in Unity, not 0.** A zero-direction bill passes unconditionally via a
+short-circuit in `WouldBillPass`, but scoring it anyway yields parliament's raw net stance — negative in
+the tied-parties case — which would have painted a red bar beside "leans PASS". **Any derived display must
+short-circuit on the same condition its verdict does.** Caught while writing repro steps, not in review.
+
+---
+
+## 11. Resolved design decisions
+
+*Consolidated out of the roadmap's Open Questions 2026-08-02. All resolved; none live.*
+
+| # | Question | Resolution |
+|---|---|---|
+| A1 | `SimulationRandom` stream position across save/load | **Counting shim** — record draws per stream, fast-forward on load. Reversible beats permanent; xorshift revisitable once real load times are known. Preserves every recorded baseline. Implement with Master Sequence item 8 |
+| A2 | Harness swing-check coverage (5 of 29) | **Stays at five**; fix is documentary. Extending meant ~24 threshold choices plus a third discontinuity in one day, and several fields legitimately exceed 20% turn-over-turn. `CLAUDE.md` now opens with a READ FIRST note stating what the number covers |
+| A3 | B2 shows LIVE or PUBLISHED values | **LIVE.** A lagged, possibly preliminary figure in a "what am I doing right now" panel misrepresents itself, and the instruction was only satisfiable for 6 of 18 stats. Published view stays on Statistics |
+| A4 | `PublishedData.PeriodClosingValues` retention | **Keep everything, no pruning.** Data is small; a revision converging on a missing closing value is a bug already fixed once (`ea0a6a4`). Flatten to `{stat, periodStart, value}` on save, rebuild on load |
+| A5 | Build C4 out of order? | **Yes**, with the justification recorded so it is not precedent: skipping is warranted only when a later item is **genuinely independent AND** the earlier blocker is outside the project's control. Neither condition alone suffices |
+| C1a | Primary housing metric | **Homeownership**, reversing the directive's overburden recommendation. Elias's call, on data honesty — see below |
+| C1b | USA housing figure | Homeownership gives the USA a comparable 65.3, dissolving the overburden methodology mismatch |
+| C1c | Homeownership measurement basis | **OECD Affordable Housing Database, share of HOUSEHOLDS owning. This basis only** |
+| — | Economic Sectors feedback | **INTEGRATE** — bounded nudges under an all-sources ceiling. Real-Unity confirmed pinned at the ceiling under stress |
+| — | Infrastructure `ConditionIndex` feedback | **FEED BACK** — threshold-based drag, reconciled with the pre-existing nudge under one combined ceiling (0.75) |
+
+### The housing metric decision, and the six-stage correction behind it
+
+Overburden remains the **better concept** — it measures affordability *stress* rather than tenure and
+responds to interest rates and housing assistance, both live levers. **It lost on data honesty**: 2 of 6
+verified means seeding four countries from a range, and a bound is not a value.
+
+**The margin is 3–2, not 4–2.** Poland's ~87.9 turned out to be a Eurostat *nationals* line, not the OECD
+household basis, so it left the verified set. The decision holds — 3 same-basis figures still beat 2, and
+overburden's missing three are unobtainable by search while homeownership's are ordinary lookups — but by
+one country rather than two.
+
+**Germany alone appears three ways**, an 11.3-point spread across three definitions each correct for its
+own source: OECD households 41.0, dwelling-based ~46.7, Eurostat nationals 52.3. Eurostat's
+population-based measure (68.4% EU) is a fourth. **Germany 41.0 against an OECD average of 70.1** is the
+real same-basis contrast, and *more* extreme than the earlier ~47 figure suggested.
+
+**Six successive claims about housing coverage, each correcting the last** — kept because it is the
+clearest single illustration of verification-integrity instance 7:
+
+| Stage | Claim | Verdict |
+|---|---|---|
+| Directive | Overburden 6 of 6 | Overstated |
+| Seed file, original | Overburden 4 of 6 | Wrong variant — "two adults" subset |
+| First gap report | Overburden 4 of 6 | Caught the directive; trusted the numbers |
+| Corrected + gap-closing | Overburden **2 of 6** | Correct |
+| Metric decision | Homeownership 4 of 6 | Overstated — mixed bases |
+| Basis re-check | Homeownership **3 of 6** | Correct |
+
+**Both metrics were overstated at first, and in both cases the error was invisible to a check against the
+documented warning.**
+
+---
+
+## 12. Step A design and audit artifacts
+
+*`STEP_A_DESIGN.md` and `STEP_A_LIVE_VALUE_AUDIT.md` were consolidated here and deleted 2026-08-02. Both
+were pre-implementation artifacts for work now complete; git history preserves them in full.*
+
+**The audit's central finding, which drove the architecture:** all **55 live reads across 11 simulation
+files** go through `country.State.X`. Keeping published values off `EconomyState` entirely makes a leak a
+**compile-time impossibility** rather than a review obligation across 55 sites. Per-file counts:
+`MacroSystem` 18, `SimulationManager` 15, `ParliamentSystem` 9, `TradeSystem` 3, `TaylorRule` 2,
+`EurozoneRateSystem` 2, `CurrencySystem` 2, and one each in `ForeignPolicySystem`, `EventSystem`,
+`ElectionSystem`, `CabinetSystem`.
+
+**The free check that came with it:** any diff to `EconomyState.cs` beyond comments is itself evidence the
+design drifted — catchable before the expensive trajectory comparison.
+
+**The three systems the directive named, and why they were highest-risk:** Okun's Law and the Phillips
+Curve both read `state.Unemployment`; the Fiscal Reaction Function reads `country.State.DebtToGdpRatio`.
+**`Unemployment` and `DebtToGdpRatio` are also among the most-published stats in the real release
+calendar**, making these three simultaneously the highest-risk and the easiest to get wrong.
+
+**Baseline captured at `6a53878`** (pre-change HEAD), stored at `baselines/stepA_baseline_6a53878.log` —
+captured *before* any Step A code, because once the code changes the untainted reference cannot be
+reconstructed.
+
+Both of the design doc's open items were resolved by implementation: which stats get published series
+(`PublishedStat` has 6 members, only those with real specified release rules), and what the UI shows
+before a stat's first publication (`SeedInheritedHistory` seeds exactly one inherited quarter carrying the
+real sourced starting GDP — a second would require inventing a value).

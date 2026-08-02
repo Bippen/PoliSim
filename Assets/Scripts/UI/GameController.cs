@@ -2458,7 +2458,7 @@ namespace PoliSim.UI
             // Master Sequence step 5e, Phase C: all 7 tabs now carry their icon. The four icon_nav_*
             // ones exist precisely because Statistics/Decisions/Demographics/Policy-Laws map to no
             // single UiPalette.SystemArea; Tax, Spending and Politics instead reuse the existing area
-            // icons directly, exactly as CLAUDE_DESIGN_ASSET_REQUEST_5E.md's own manifest specifies
+            // icons directly, exactly as the 5E asset manifest specified (see COMPLETED.md section 8)
             // ("Tax/Spending/Politics tabs reuse the existing icon_area_fiscal/icon_area_political
             // icons directly - no new art needed"). Tax and Spending deliberately share one icon:
             // both are GetConsolidatedTabArea -> Fiscal, and both are two differently-labeled entry

@@ -5003,7 +5003,7 @@ assistance, both live levers here) are untouched and still good.
 
 **Escalated to Open Questions, not decided.** Choosing between coverage and interest-rate
 responsiveness is a judgment about how C1 should play, not a data question. See
-`STEP_C1_HOUSING_GAP_REPORT.md` for the three options and the per-option gap lists.
+`MISSING_PREREQUISITES.md` B1 and B6 for the three options and the per-option gap lists (was `STEP_C1_HOUSING_GAP_REPORT.md`, consolidated 2026-08-02).
 
 ### Instance 7, follow-up — why this indicator defeated ordinary care, and the rule that follows
 

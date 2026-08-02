@@ -6,7 +6,7 @@ namespace PoliSim.UI
     /// Master Sequence step 5e, Phase B: runtime lookup for the imported icon sprites
     /// (`Assets/Resources/Art/UI/Icons/`), by name rather than `UiPalette.SystemArea` - several icons
     /// (the four `icon_nav_*` ones) deliberately don't correspond to any `SystemArea` value at all (see
-    /// `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`'s own note on why), so a `SystemArea`-keyed API would be
+    /// COMPLETED.md section 8's note on why), so a `SystemArea`-keyed API would be
     /// wrong for half the set. Backed by `Resources.Load`, not `AssetDatabase` (Editor-only, would
     /// silently break in a real player build) - the Icons folder was moved into a `Resources/`
     /// subfolder specifically so this works both in-Editor and in a build. Textures are cached after

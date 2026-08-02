@@ -92,7 +92,7 @@ namespace PoliSim.Data
     /// That guarantee is structural rather than a matter of review discipline: this lives on `Country`
     /// beside `State`, never inside it, so the 55 simulation call sites that read `country.State.X` cannot
     /// reach a published value without someone adding a visible new reference. See
-    /// `STEP_A_LIVE_VALUE_AUDIT.md` for the enumeration, and note the two cheap checks it defines - that
+    /// `COMPLETED.md` section 12 for the enumeration, and note the two cheap checks it defines - that
     /// `EconomyState.cs` stays unchanged, and that no file under `Assets/Scripts/Simulation/` ever
     /// mentions `Published`.
     /// </summary>

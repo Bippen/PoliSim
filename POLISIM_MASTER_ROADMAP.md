@@ -19,28 +19,38 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 7. **Update CLAUDE.md after every item**, including validation results, so history stays traceable.
 8. **Verify Unity processes actually exited** (`Get-Process Unity*,UnityPackageManager`) before trusting that a closed window means it's safe to run a batch validation — confirmed to cause false failures more than once.
 9. **All new named entities (cabinet ministers, party names, legislators) are original and fictional** — never real people or real political parties. Same rule the Fed Chair mechanic already established, extended to every new character/entity going forward.
-10. **REVERSED (2026-07-31), was a hard rule through Master Sequence step 5d**: visuals are now a MIXED procedural/sprite model, not "all procedural." Elias has explicitly approved imported sprite art for **icons, portraits, and background/menu textures specifically** — see `CLAUDE_DESIGN_ASSET_REQUEST_5E.md` for the concrete Master Sequence step 5e asset request this decision unblocks. **Stays procedural, unchanged, no exception**: all UI chrome/layout (`PoliSimTheme.cs`'s `RoundedBox`/`RoundedCard`/`Pill`/`Rule`/`TopAccent`/`LeftSpine` — pure `GUI.DrawTexture` rounded-rect/line geometry, no art asset, no reason to change) and every existing DATA visualization (`GraphRenderer`, `MapRenderer`, `PolicyWebRenderer`, `PoliticalCompassRenderer`, `HemicycleRenderer`) — none of these draw a "picture," they render real tracked simulation data, which is exactly what rule 5 ("ground new mechanics in real data") already protects; nothing about the icon/portrait decision touches that. **Becomes sprite-based**: one icon per `UiPalette.SystemArea` (policy area), one portrait per Cabinet minister candidate, one emblem per `PartyArchetype`, and background/menu textures — all sourced from Claude Design with the same origin-verification and security-review discipline already established for the first pack (Zone.Identifier mark-of-the-web check, full code/asset read-through before treating anything as trusted). This is a real, deliberate policy reversal, documented as such per this same working-discipline section's own precedent for recording a caveat/correction honestly rather than letting it look like silent drift - any FUTURE reversal of a standing rule must be recorded the same explicit way.
+10. **REVERSED (2026-07-31), was a hard rule through Master Sequence step 5d**: visuals are now a MIXED procedural/sprite model, not "all procedural." Elias has explicitly approved imported sprite art for **icons, portraits, and background/menu textures specifically** — see `CLAUDE_DESIGN_ASSET_REQUEST.md` (the single standing asset request; the original 5E/chrome/macro requests were consolidated into it 2026-08-02, all delivered) for the asset work this decision unblocked. **Stays procedural, unchanged, no exception**: all UI chrome/layout (`PoliSimTheme.cs`'s `RoundedBox`/`RoundedCard`/`Pill`/`Rule`/`TopAccent`/`LeftSpine` — pure `GUI.DrawTexture` rounded-rect/line geometry, no art asset, no reason to change) and every existing DATA visualization (`GraphRenderer`, `MapRenderer`, `PolicyWebRenderer`, `PoliticalCompassRenderer`, `HemicycleRenderer`) — none of these draw a "picture," they render real tracked simulation data, which is exactly what rule 5 ("ground new mechanics in real data") already protects; nothing about the icon/portrait decision touches that. **Becomes sprite-based**: one icon per `UiPalette.SystemArea` (policy area), one portrait per Cabinet minister candidate, one emblem per `PartyArchetype`, and background/menu textures — all sourced from Claude Design with the same origin-verification and security-review discipline already established for the first pack (Zone.Identifier mark-of-the-web check, full code/asset read-through before treating anything as trusted). This is a real, deliberate policy reversal, documented as such per this same working-discipline section's own precedent for recording a caveat/correction honestly rather than letting it look like silent drift - any FUTURE reversal of a standing rule must be recorded the same explicit way.
 11. **Any new mechanic that nudges an existing tracked variable must fold into that variable's existing combined ceiling**, not add an uncounted new source — audit the actual ceiling code before adding a contributor, don't assume there's room.
 
 ---
 
 ## Where things stand right now
 
-**Completed work has moved to `COMPLETED.md`.** This document holds only live work. Finished items move
-there; this file should shrink over time, not grow. `CLAUDE.md` remains the detailed technical record for
-both and is never superseded.
+**This document holds only live work.** Two companions carry everything else, and the split is the
+standing pattern — see "Document set and the consolidation rule" at the bottom of this file.
 
-- **DONE** — Master Sequence steps 1, 2, 3, 4, and 5a–5d; Roadmap Rounds 1–3 (15 items); macro overhaul
-  Steps A1–A3, B1 and D. See `COMPLETED.md`.
-- **AWAITING ELIAS'S VISUAL REVIEW** — 10 built-but-unconfirmed items, including 5e Phase C batches 4–6
-  and (new 2026-08-02) B2's contextual stat row. See `VISUAL_REVIEW_BACKLOG.md`. Step 5 cannot close
-  until items 1–9 are confirmed; item 10 belongs to step 9, not 5, so it does not gate that closure.
-- **BLOCKED ON ELIAS** — 3 live Open Questions (bottom of this document), plus Step C1's three
-  OECD-basis housing figures. *The five macro-overhaul questions A1–A5 are all resolved (`8291662`).*
-- **BLOCKED ON EXTERNAL** — macro Steps C2 and C3 need `[GAP]` figures requiring database access;
-  `icon_stat_interestrate` needs Claude Design.
-- **NOT STARTED** — Master Sequence items 6 (Round 4) and 7 (Continuous Time Phases 1–5), both **weeks**
-  of work; item 8 (save/load, scoped only); macro Step C1–C3 and C5.
+| Document | Holds |
+|---|---|
+| `COMPLETED.md` | Finished work. This file shrinks into it, never grows |
+| `MISSING_PREREQUISITES.md` | Work that is *waiting* on a named party. Not startable, so not live |
+| `CLAUDE.md` | The detailed technical record for both. **Never superseded** |
+
+**A task is only live here if someone could start it today.** Blocked → `MISSING_PREREQUISITES.md`.
+Finished → `COMPLETED.md`. Built-but-unconfirmed and built-but-uncalled are **neither** — they stay live,
+because they are not done.
+
+- **DONE** — Master Sequence steps 1, 2, 3, 4, 5a–5d, and 5e Phases A/B + batches 1–3; Roadmap Rounds 1–3
+  (15 items); macro overhaul Steps A1–A3 and D. See `COMPLETED.md`.
+- **BUILT, NOT CONFIRMED — still live** — 11 items in `VISUAL_REVIEW_BACKLOG.md`, including 5e Phase C
+  batches 4–6, B1's graph overhaul, B2's stat row and C4's dashboard tile. **Step 5 cannot close until
+  items 1–9 are confirmed**; items 10 and 11 belong to step 9 and gate nothing.
+- **BUILT, NOT CALLED — still live** — macro Step A4. Trajectory-validated but surfaces nothing to the
+  player; see the Step A4 entry under Master Sequence item 9.
+- **WAITING, NOT LIVE** — all blocked work is in `MISSING_PREREQUISITES.md`: 3 Elias decisions (C4's
+  re-calibration, SWF fast-track, Cabinet appointments), 16 figures needing database access (Steps C1,
+  C2, C3, C5), the 11 visual reviews above, and `icon_stat_interestrate` from Claude Design.
+- **NOT STARTED, UNBLOCKED** — Master Sequence items 6 (Round 4, itself gated on step 5 closing) and 7
+  (Continuous Time Phases 1–5), both **weeks** of work; item 8 (save/load, scoped only).
 
 **Built 2026-08-01/02, all now reachable**: macro Step A4 (`70798e9`), Step C4 (`76a8f35`), and B2
 rendering (`5701a04`) wired at sub-screen granularity (`4869476`). C4 is placed on the dashboard tile
@@ -203,14 +213,23 @@ This is the one authoritative order, replacing whatever each original document s
    adds stats onto a foundation already proven inert. Landing both together would make a drift
    impossible to attribute — and per the directive, such a drift "may not surface for hundreds of turns".
 
-   - **Step A — release calendar, published series, revisions, Tier 0 derived stats. DONE (2026-08-01), commit `e3a0feb`.** The risky
-     foundation. Rule-based per-country schedules (not hardcoded dates), a published series per stat
-     carrying reference period / publication date / value / revision status, preliminary→revised figures
-     derived from the true underlying value, and display-only derived stats (GDP per capita, tax burden
-     % GDP, spending % GDP, deficit % GDP, real GDP growth, sector shares).
+   - **Step A1–A3 — release calendar, published series, revisions. DONE (2026-08-01).** See `COMPLETED.md`.
+
+     ⚠ **CORRECTED 2026-08-02, and it is the kind of error this consolidation exists to catch.** This line
+     previously read *"Step A — release calendar, published series, revisions, Tier 0 derived stats. DONE
+     (2026-08-01), commit `e3a0feb`"* — wrong on two counts. `e3a0feb` contains exactly two files,
+     `PublicationSystem.cs` and `SimulationManager.cs`. `DerivedStats.cs` was not added until `70798e9`,
+     whose own message says "NOT trajectory-validated". **A4 was folded into a DONE marker for a commit
+     that did not contain it**, and stayed there for a day.
+   - **Step A4 — Tier 0 derived stats. LIVE, not done.** Built (`70798e9`), now trajectory-validated
+     (`3d77b11` — zero finiteness failures across the full matrix). **But it displays nothing:** of its six
+     methods, four have only a test-harness caller and two are consumed internally by
+     `CreditRatingSystem`. The directive defines A4 as *"pure display arithmetic"*, so a version that
+     displays nothing is not done. **Remaining work: surface GDP per capita, tax burden % GDP, spending %
+     GDP and sector shares in the UI.** Unblocked — ordinary work, waiting on nobody.
    - **Step B — graph overhaul + contextual policy-screen stats.** Display only, depends on A. EXTEND
-     `GraphRenderer`, do not build a parallel system. Calendar date axis, release-point markers,
-     preliminary-vs-revised treatment, selectable ranges, existing threshold lines retained.
+     `GraphRenderer`, do not build a parallel system. **B1 built (`dd7e323`), B2 built and wired
+     (`4869476`) — both await visual confirmation**, backlog items 3 and 10. Neither is done.
    - **Step C — the seven new tracked stats, in four batches** (C1 housing, C2 inequality + real wages,
      C3 youth unemployment + life expectancy, C4 credit rating as a DERIVED value). Never all at once.
      Rule 11 applies to every batch: any effect on an existing tracked variable folds into that
@@ -319,117 +338,9 @@ proven. Written here before any code changes so it survives a session restart. S
 throughout: one commit per phase (or per batch within Phase C), escalate genuine design forks rather
 than guessing, never mark a phase done without a live screenshot.
 
-#### Phase A — Tab/IA restructuring (no visual style changes yet). DONE (2026-07-31).
-
-Reuses the existing tab-bar UI mechanics (color-coded per area, same interaction pattern, same
-`DrawRightColumnTabButton` mechanics, now `DrawConsolidatedTabButton`) - only the grouping/navigation
-changed in this phase, not the visual style (icons/sprites are Phase B/C's job, no `icon_*` texture is
-drawn anywhere yet).
-
-**Real tab audit (confirmed against `GameController.cs`'s actual `RightPanelTab` enum, not assumed -
-18 tabs, matching Elias's own list exactly, none missing).**
-
-**Old → new mapping - CONFIRMED (directly stated in this document's own original 5e scope text, or
-require no judgment call):**
-
-> **AMENDED 2026-08-01 — the structure is now 6 tabs, not 7** (commit `865fcf4`). Tax and Spending were
-> merged into a single **Budget** tab at Elias's direction, so every row below that previously read "Tax",
-> "Spending" or "Tax or Spending (same screen)" now reads **Budget**. The original split gave the same
-> screen two top-level entry points that differed only in which of its OWN five sub-categories
-> (Tax/Spending/Welfare/Infrastructure/SWF) was pre-selected — which also misrepresented Tax and Spending
-> as peers of Statistics and Politics when they are really peers of Welfare and Infrastructure, already
-> sub-categories of that very screen. The rows are amended in place rather than duplicated, since the
-> destination changed but every mapping DECISION below still stands exactly as reasoned.
-
-| Old tab (`RightPanelTab`) | New tab | Basis |
-|---|---|---|
-| `RecentTurns` | Statistics → **Domestic** | Original 5e scope named it explicitly. **RESTRUCTURED 2026-08-01**: "Recent Turns" was a turn-based-era name that no longer describes anything under continuous time; its content is now the Domestic sub-tab, and the turn log itself moved to International (it reports world-wide activity, not domestic). 
-| `WorldMap` | Statistics → **International** | Original 5e scope named it explicitly. **RESTRUCTURED 2026-08-01**: renamed International, and it ABSORBED Trade - trade is international relations, and was only ever a peer sub-tab for historical rather than conceptual reasons. 
-| `TaxPolicy` | Budget | Retired as standalone - becomes an ENTRY POINT into the existing Budget Process screen (`DrawBudgetProcessTab`), opened at its Tax category. Confirmed via `DrawRightColumnTabs`'s own code comment: *"Budget Process consolidates Tax/Spending/Welfare/Infrastructure/SWF's existing content... those five tabs stay as independent entry points for now per the Master Sequence step 5 design, not removed until step 5e's own tab consolidation."* This IS that consolidation. |
-| `SpendingPolicy` | Budget | Same as Tax above, opened at its Spending category. |
-| `WelfarePolicy` | Budget | Same mechanism - Welfare is one of `BudgetProcessCategory`'s 5 existing values, reachable from EITHER new entry point once inside the consolidated screen, not a separate top-level tab. |
-| `SwfPolicy` | Budget | Same mechanism - `BudgetProcessCategory.Swf`. |
-| `LaborMarket` | Policy/Laws | Original 5e scope text: "Policy/Laws (standalone bills from 5d)" - `LaborPolicyBill` is exactly this. |
-| `CrimeJustice` | Policy/Laws | Same - `CrimeJusticePolicyBill`. |
-| `SectorPolicy` | Policy/Laws | Same - `SectorPolicyBill`. |
-| `Cabinet` | SPLIT: Decisions + Politics | Original 5e scope text names Cabinet under BOTH "Decisions (pending... Cabinet... interrupts)" AND "Politics (Parliament/Compass/Cabinet)" - confirmed via code that `DrawCabinetTab` genuinely has two distinct pieces: the pending-decision modal loop (`GetPendingCabinetDecisions`/`DrawCabinetDecisionModal`) moves to Decisions, the portfolio/candidate-picker UI stays under Politics. |
-| `CompassAndDemographics` | SPLIT: Politics + Demographics | Original 5e scope text separates "Compass" (under Politics) from "Demographics (population/pie charts)" as its own tab - this single existing tab's two halves (the Political Compass chart vs. the demographic pie charts) split accordingly. |
-| `ForeignPolicy` | Decisions | Original 5e scope text names it explicitly, AND confirmed via code that the ENTIRE standalone tab's content is the pending-meeting interrupt (explanatory text + either the modal or "No meeting currently pending") - nothing left behind to place anywhere else. |
-| `Parliament` | Politics | Original 5e scope text names it explicitly. Deliberately NOT also split into Decisions - unlike Foreign Policy/Cabinet, a pending bill never pauses time (only the ANNUAL budget process's Phase 1 does, and that's covered by the global banner already, not a tab), so there's no true "interrupt" here needing Decisions' attention pattern - Parliament's own "Pending Legislation" list (all 7 bill types) is informational, not blocking. |
-| `BudgetProcess` | Budget | This tab doesn't move anywhere new - it effectively becomes what "Tax" and "Spending" both open into (see `TaxPolicy` row above). Not retired so much as promoted to the thing the other five folded into. |
-| `Trade` | SPLIT: Statistics + Policy/Laws | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** The Trade Balance graph and per-partner import/export volume bars are informational (Statistics-flavored); the tariff bill status/live-estimate/Introduce action (`TradePolicyBill`, a genuine standalone bill from 5d) is exactly what "Policy/Laws (standalone bills from 5d)" describes. Implementation refinement (not a design fork): the per-partner override CONTROLS stay bundled with their own bars in one row rather than splitting a single row's rendering across two different tabs (a real UX regression - a player adjusting an override wants the volume bars right next to it) - so Statistics gets only the aggregate Trade Balance graph, and Policy/Laws gets the full per-partner section (bars AND override controls together). | **RESTRUCTURED 2026-08-01**: the Statistics half is no longer a `Trade` sub-tab of its own - it folded into **International**, since trade IS international relations and was only a peer for historical reasons. The Policy/Laws half is unchanged. 
-| `FederalReserve` | Politics | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** A real political institution with its own active lever (interest rate, Fed Chair selection) that groups naturally with Parliament/Cabinet, even though the Fed/Eurozone exemption means it's never Parliament-gated. |
-| `PolicyWeb` | Policy/Laws | **RESOLVED by Elias (2026-07-31), OVERRIDING the original recommendation (Statistics).** Elias's own reasoning: "it's a relationship/reference tool consulted while deciding what to change, closer to where bills get drafted than to a pure stats readout." |
-| `Infrastructure` | Budget | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** Consistent with Welfare/SWF above - `DrawInfrastructureContent` is ALREADY reused verbatim inside Budget Process's own Infrastructure category, and the standalone tab has no independent lever of its own. |
-| Does "Decisions" need the Budget Process mandatory-pause interrupt too? | Yes | **RESOLVED by Elias (2026-07-31), confirmed as originally proposed.** Elias's own reasoning: "any 'time is blocked until you respond' state belongs in the same place, not treated as an exception." Reuses the same `DrawBudgetBillStatusAndIntroduce` status+Introduce UI already built for Tax/Spending, shown in Decisions ONLY while `GetPendingBudgetProcess` is true (mirroring Foreign Policy/Cabinet's own "only appears while actually pending" pattern) - the ongoing per-bill countdown status stays under Tax/Spending, this is specifically the blocking Phase-1 moment. |
-
-All five previously-escalated placement questions are now resolved - see Open Questions below, marked
-closed. Phase A implementation proceeded using the mapping above in full, exactly as confirmed - the
-`ConsolidatedTab`/`StatisticsCategory`/`PolicyLawsCategory`/`PoliticsCategory` enums and their dispatch
-in `GameController.cs` match this table row for row. One extension beyond the five resolved items,
-applying Elias's own stated general principle (see the Budget Process row above - "any 'time is blocked
-until you respond' state belongs in the same place, not treated as an exception") rather than guessing
-at something new: Fed Chair selection is ALSO a blocking interrupt (see `UpdateFedChairSelectionState`)
-that was never one of the five items Elias was asked about - added to Decisions too
-(`DrawFedChairSelectionModal`, extracted from Federal Reserve's own tab so both places render the exact
-same UI), flagged clearly rather than silently added.
-
-**Validation for Phase A: DONE.** `dotnet build` clean (0 errors, full output read - not just grepped
-for "error"). The single-scenario automated smoke check (100-turn baseline via
-`BatchSimulationRunner`) was attempted twice and abandoned - both attempts stalled inside Unity's own
-cold-start asset-reimport/indexing phase (confirmed via process CPU/responsiveness checks: the process
-was genuinely busy, not deadlocked, but never got past Editor startup to actually run the scenario),
-the same category of infrastructure issue already documented earlier in this project's history as
-unrelated to the code under test. Not retried a third time - Phase A's code changes are 100% UI-layer
-(`GameController.cs` only; `ParliamentSystem.cs`/`SimulationManager.cs`/`MacroSystem.cs`/every
-simulation file untouched), so the real risk here was always navigation/UI breakage, which only a live
-click-through can verify anyway (a headless batch run never drives real `OnGUI`). **Confirmed via
-Elias's own live-Editor click-through (2026-07-31)**: all 7 new tabs render correctly, every
-sub-category selector (Statistics' 3, Policy/Laws' 5, Politics' 4) switches correctly, and the mapping
-matches this section's own table exactly.
-
-#### Phase B — Sprite reskin pilot: Statistics/Dashboard only — **DONE (2026-08-01)**
-
-**Prerequisite check: DONE (2026-07-31), confirmed BEFORE any real Statistics/Dashboard rendering work
-started, per Elias's own explicit instruction not to build on an unverified assumption.** The
-icon-tinting helper (`UiPalette.DrawTintedIcon(Rect, Texture2D, Color)` - `GUI.color`-multiply tinting,
-the exact mechanism the Claude Design asset pack's own README specifies, mirroring `HemicycleRenderer`'s
-own existing per-seat dot-tinting idiom) is now real, permanent code in `UiPalette.cs`, not just planned.
-Verified via a throwaway, fully isolated Editor-only test window (`Assets/Editor/IconTintingTest.cs`,
-zero production-code changes, deleted after use per this project's own established convention) showing
-3 real imported icons (`icon_area_fiscal`, `icon_area_infrastructure`, `icon_nav_statistics`) each tinted
-3 ways (white/its own area color/dimmed grey). **Confirmed by Elias directly**: icon shapes clearly
-visible in every cell, background stays genuinely transparent, and the three tint colors are visibly
-different from each other - the core visual claim actually holds, not just assumed from the asset
-pack's own README text. Real production usage (which texture reference mechanism Statistics' actual
-tab-bar button and any other real call site uses - serialized Inspector fields vs. `Resources.Load` vs.
-something else - `AssetDatabase.LoadAssetAtPath` only works in-Editor, so the throwaway test's own
-loading method is NOT what production code will use) is still Phase B's own work below, not resolved by
-this prerequisite check alone.
-
-Apply the now-confirmed icon-tinting helper and `PoliSimTheme`/`PoliSimWidgets`' card/stat-tile/
-threshold-bar primitives to the Statistics tab specifically - its own nav icon (`icon_nav_statistics.png`,
-already imported) tinted appropriately in the tab bar, and its headline stats/graphs restyled using the
-new widget patterns instead of raw `OnGUI.Label` layout. Highest-visibility screen, validates both
-pieces of infrastructure (icon tinting + card widgets) together, in production code, before trusting
-them anywhere else. Do NOT touch any other tab's rendering in this phase.
-
-**Validation**: live-Editor screenshot confirming the new look renders correctly AND that all the same
-data is still accurate - a visual change must never be able to silently change a number. Hold here for
-Elias's confirmation before Phase C.
-
-**Validation: DONE (2026-08-01)**, confirmed by Elias in the live Editor across two rounds. Built: the
-production texture-loading mechanism Phase B's prerequisite check explicitly left open is now
-`IconLibrary` (a cached name -> `Texture2D` lookup over `Resources.Load`, which is why the Icons folder
-moved to `Assets/Resources/Art/UI/Icons` - `AssetDatabase` is Editor-only and would have silently broken
-in a real player build), the Statistics tab's own nav icon drawn through it, and `DrawDashboard`'s nine
-headline stats restyled from a raw two-column `GUILayout.Label` list onto a three-column
-`PoliSimWidgets.StatTile` grid (`DrawHeadlineStatTiles`). `DrawHeadlineGraphs` deliberately untouched,
-per rule 10's own carve-out keeping every data visualization procedural. Only GDP carries a delta pill,
-since `_lastGrowthPercent`/`_prevGdp` is the only genuine turn-over-turn value tracked - the other eight
-show no delta rather than a fabricated one. **Round 1** confirmed the grid ("restyled grid is looking
-good") but rejected the icon as overlapping its label; that is fixed in Phase C batch 1 below, where the
-cause and the arithmetic are recorded. Commits `b6da098` (code), `967fb46` (the tinting helper).
+**Phases A and B, and Phase C batches 1–3: DONE and live-confirmed.** Consolidated to `COMPLETED.md` §10
+on 2026-08-02, including the two lasting lessons from batch 3 (the `SupportBar` widget mismatch and
+`Mathf.Sign(0f)`) which are worth more than the batches themselves.
 
 #### Phase C — Rollout to remaining 6 tabs
 
@@ -438,82 +349,6 @@ Tax/Spending (Budget Process), Policy/Laws, and Politics - NOT all 6 simultaneou
 time, the same discipline the original Parliament gating rollout used (step 5's own revised design
 explicitly avoided touching all seven remaining tabs in one pass, for exactly this reason). Screenshot
 and confirm after each batch before continuing to the next.
-
-**Batch 1 — the tab bar itself: DONE (2026-08-01)**, commit `a8decf9`, confirmed by Elias in the live
-Editor ("all the tabs are looking great"). Taken first, and as a single batch rather than split, because
-the tab bar is shared chrome rather than any one tab's content - splitting it would have left the bar
-visibly half-iconned between batches. All tabs now carry their icon (7 at the time; 6 since the Tax/Spending merge); the four `icon_nav_*` exist
-precisely because Statistics/Decisions/Demographics/Policy-Laws map to no single `SystemArea`, while
-Tax/Spending/Politics reuse `icon_area_fiscal`/`icon_area_political` directly per
-`CLAUDE_DESIGN_ASSET_REQUEST_5E.md`'s own manifest. **Tax and Spending share one icon** - both are
-`GetConsolidatedTabArea` -> `Fiscal` and both are differently-labelled entry points into the same Budget
-Process screen; flagged to Elias explicitly rather than silently substituted, and left as documented.
-
-Two things worth carrying into later batches:
-- **The icon is stacked ABOVE its label, not beside it, and this was forced by real arithmetic, not
-  taste**: the right column is ~55% of the window, so each of 7 tabs got ~143px at 1080p (6 tabs now, slightly wider, but the conclusion holds), while
-  "Demographics" alone is ~175px of text at the 26px tab font. A left gutter pushed labels to three
-  lines and clipped them; shrinking the icon to compensate returned it to the unreadable speck the work
-  set out to fix. Elias picked stacking from three costed options.
-- **Reserve space, never overlay.** Phase B drew the icon on top of the already-finished button, so
-  GUILayout centred the label with no knowledge an icon was there - that WAS the overlap bug. Batch 1
-  reserves the space via `style.padding.top` before the button draws, so the label's own layout accounts
-  for the icon and they cannot collide at any window size or label length. Any future "draw art into an
-  existing control" work in this codebase should assume the same failure mode.
-
-**Batch 2 — card chrome + the Decisions tab: DONE (2026-08-01)**, commit `5df7811`, confirmed by Elias
-in the live Editor. Added the shared infrastructure the remaining batches all depend on, then used it on
-one tab: `UiPalette.BuildCardStyle`/`DrawCardSpine`/`GetRoundedTexture` (a 9-sliced rounded texture
-behind a GUIStyle background) plus `UiPalette.GetPortfolioArea`, and `GameController`'s
-`BeginDecisionCard`/`EndDecisionCard`. The Decisions tab now renders each pending interrupt as its own
-card with a caps kind caption and an area-colored left spine; Cabinet decisions tint by PORTFOLIO
-(Finance→Fiscal, Interior→CrimeJustice, Health→Welfare) rather than the flat `Political` every cabinet
-surface used before, which reads as one undifferentiated block once several stack up.
-
-Three things later batches should reuse rather than rediscover:
-- **`PoliSimTheme.RoundedBox` is not sufficient on its own.** It only draws into a Rect the caller has
-  already measured - fine for fixed-layout widgets like `StatTile`, useless for the large majority of
-  this UI, which is GUILayout flow whose height isn't known until its content has been laid out. The
-  9-sliced STYLE background is what makes existing GUILayout content cardable without rewriting it into
-  manual Rect math - and that rewrite is exactly what produced two real layout bugs in 5b. **Prefer
-  `BuildCardStyle` over converting a screen to Rect math.**
-- **Check every call site of a shared renderer before restyling it.**
-  `DrawForeignPolicyMeetingModal`/`DrawCabinetDecisionModal` already opened their own `_boxStyle` frame,
-  so wrapping them nested a flat grey box inside the dark card. Both took a `drawOwnFrame` parameter
-  **defaulting to true**, so the Politics tab's own Cabinet screen (a later batch) stayed byte-for-byte
-  unchanged. Several of these renderers are shared across tabs that belong to DIFFERENT batches - that
-  is the main way a batch can silently leak into a tab it wasn't supposed to touch.
-- **Cache anything built per frame.** Card styles and their textures are rebuilt by callers every frame;
-  allocating per call is a per-frame leak, not just a cost.
-
-**Batch 3 — Politics (+ Demographics assessed): DONE (2026-08-01)**, commit `6922f9f`, confirmed by
-Elias in the live Editor. The 16 imported portraits moved into `Resources/` and are now actually drawn
-for Fed chair candidates, cabinet candidates and appointed ministers, via `IconLibrary`'s
-`GetCabinetPortrait`/`GetFedChairPortrait` (filename derived from the character's generated name, not a
-hand-maintained table that could drift from the pools in `CabinetSystem`/`FederalReserveSystem`;
-unmatched names fall back to the procedural silhouette rather than showing someone else's face).
-Portfolio panels head in their own area color. Pending bills render as cards with a lean bar.
-
-**Demographics needs no restyle, and this is a finding rather than an omission**: its content is
-entirely pie charts, which working discipline item 10 explicitly keeps procedural. Wrapping them in
-decorative cards would add clutter without meaning. Treat it as complete.
-
-**The roadmap's own recommendation to use `PoliSimWidgets.SupportBar` here was WRONG, and the reason
-generalizes.** That widget renders "N of 200 seats, majority 101". This simulation has no seats-based
-majority at all: `ParliamentSystem` decides a vote by summing `seatShare * fiscalStance * billSign` and
-testing it against ZERO, so a bill can pass with fewer aligned seats than opposed ones (if its
-supporters hold stronger stances) and fail with more. Using it would have drawn a rule the model does
-not implement. **The design pack's widgets were authored against an assumed generic political sim, not
-against this codebase's actual mechanics — check each one against the real model before reaching for
-it, rather than trusting that a plausible-sounding fit is a real one.** `UiPalette.DrawDivergingBar`
-(centre-threshold, no number printed) is the honest substitute, fed by a new
-`ParliamentSystem.GetSeatWeightedAlignment` that `WouldBillPass` also calls so the two cannot disagree.
-
-Also worth carrying forward: **`Mathf.Sign(0f)` returns 1 in Unity, not 0.** A zero-direction bill
-(drafts introduced unchanged) passes unconditionally via a short-circuit in `WouldBillPass`, but scoring
-it anyway yields parliament's raw net stance — negative in the documented tied-parties case — which
-would have painted a red bar beside the words "leans PASS". Any derived display must short-circuit on
-the same condition its verdict does. This was caught while writing repro steps, not during review.
 
 **Batch 4 — Policy/Laws: BUILT (2026-08-01)**, commit `a1bec98`. **Not yet live-confirmed.** All four
 standalone-bill screens (Labor, Crime & Justice, Sectors, Trade) had a byte-for-byte identical
@@ -583,7 +418,7 @@ against the actual code, never as a fit already established.**
 
 - **5f. FOLDED INTO 5e (2026-07-31)** — the aesthetic restyling pass originally scoped as its own later phase is now part of 5e's combined scope (see above), not a separate step. Kept here, not deleted, per this document's own practice of marking supersession explicitly rather than silently rewriting history. Original 5f scope: aesthetic restyling pass (reference image 1: rounded cards, dark theme, big-number/small-label hierarchy, progress-bar visualizations, generous spacing) — LAST, applied to the final consolidated 7-tab structure, not to tabs about to be merged/removed, precisely because restyling a screen that's still being consolidated/rewired means restyling it twice. **Prep material referenced below is now folded into 5e's own broader asset request, not held separately.**
 
-**5f prep, superseded by 5e's own consolidated asset request — "PoliSim GUI redesign.zip" asset pack** (`G:\UNITY\Projects\PoliSim\PoliSim GUI redesign.zip`, still not yet imported) — **origin confirmed**: Windows' Zone.Identifier mark-of-the-web on the file shows `ZoneId=3` (Internet zone), `HostUrl=https://claude.ai/`, i.e. a browser download from claude.ai (a Claude Design handoff), not an unknown/untrusted source. **Full security review completed** before this was treated as trusted prep work: both C# files (`PoliSimTheme.cs`, `PoliSimWidgets.cs`) read line-by-line and grepped clean for `System.Net`/`System.IO`/`System.Diagnostics`/`System.Reflection`/`Process.Start`/`UnityEditor`/`WebRequest`/`HttpClient`/`File.`/`Application.OpenURL`/`PlayerPrefs`/`Socket` — zero matches; all 8 SVG icon sources read in full and confirmed pure static geometry (`rect`/`circle`/`ellipse`/`path` only, no `<script>`, no event handlers, no external references); all 9 PNGs verified as genuine PNG image data via magic-byte detection, scanned for embedded scripts/URLs/executable signatures with none found. **Two distinct pieces, two different statuses**: the C# theming/widget code (`PoliSimTheme.cs` design tokens + rounded-rect primitives, `PoliSimWidgets.cs`'s six widgets) is PURE PROCEDURAL DRAWING LOGIC — unaffected by the rule 10 reversal, since it was already compliant either way. The actual icon/texture image files (8 SVGs + 9 PNGs) were the genuinely different case rule 10's reversal above now explicitly clears for import - the 8 existing `SystemArea` icons cover 8 of the 11 areas (all but Infrastructure, Global, and Neutral) and are folded into `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`'s asset manifest as reusable, avoiding a duplicate request; the `menu_pattern_tile.png` background texture is likewise reusable as-is. **Still not yet imported into the project** - importing is a GameController.cs rendering change, explicitly deferred until Elias has reviewed the full 5e asset request and the remaining (new) assets are back.
+**5f prep, superseded by 5e's own consolidated asset request — "PoliSim GUI redesign.zip" asset pack** (`G:\UNITY\Projects\PoliSim\PoliSim GUI redesign.zip`, still not yet imported) — **origin confirmed**: Windows' Zone.Identifier mark-of-the-web on the file shows `ZoneId=3` (Internet zone), `HostUrl=https://claude.ai/`, i.e. a browser download from claude.ai (a Claude Design handoff), not an unknown/untrusted source. **Full security review completed** before this was treated as trusted prep work: both C# files (`PoliSimTheme.cs`, `PoliSimWidgets.cs`) read line-by-line and grepped clean for `System.Net`/`System.IO`/`System.Diagnostics`/`System.Reflection`/`Process.Start`/`UnityEditor`/`WebRequest`/`HttpClient`/`File.`/`Application.OpenURL`/`PlayerPrefs`/`Socket` — zero matches; all 8 SVG icon sources read in full and confirmed pure static geometry (`rect`/`circle`/`ellipse`/`path` only, no `<script>`, no event handlers, no external references); all 9 PNGs verified as genuine PNG image data via magic-byte detection, scanned for embedded scripts/URLs/executable signatures with none found. **Two distinct pieces, two different statuses**: the C# theming/widget code (`PoliSimTheme.cs` design tokens + rounded-rect primitives, `PoliSimWidgets.cs`'s six widgets) is PURE PROCEDURAL DRAWING LOGIC — unaffected by the rule 10 reversal, since it was already compliant either way. The actual icon/texture image files (8 SVGs + 9 PNGs) were the genuinely different case rule 10's reversal above now explicitly clears for import - the 8 existing `SystemArea` icons cover 8 of the 11 areas (all but Infrastructure, Global, and Neutral) and are folded into the asset manifest as reusable, avoiding a duplicate request; the `menu_pattern_tile.png` background texture is likewise reusable as-is. **Still not yet imported into the project** - importing is a GameController.cs rendering change, explicitly deferred until Elias has reviewed the full 5e asset request and the remaining (new) assets are back.
 
 **Open tie-in**: the Annual Budget tier explicitly includes SWF rate/allocation changes — this sharpens the existing "SWF emergency drawdown fast-track" Open Question below into something 5c/5d actually needs an answer to, not just a hypothetical. Resolve it before SWF is wired into the omnibus bill, not after.
 
@@ -595,53 +430,19 @@ against the actual code, never as a fit already established.**
 
 ---
 
-## Resolved Open Questions (from Roadmap Rounds 1-3 — historical, no action needed)
-
-1. **Economic Sectors feedback**: Resolved INTEGRATE. Implemented as bounded nudges onto PotentialGrowthRate/Unemployment under an all-sources ceiling (MaxTotalPotentialGrowthAdjustment = 1.0). Real-Unity confirmed, growth rate observed pinned exactly at the ceiling under worst-case stress — direct evidence it binds correctly. Full detail: CLAUDE.md "Sector Integration."
-2. **Infrastructure ConditionIndex feedback**: Resolved FEED BACK. Threshold-based drag on PotentialGrowthRate, reconciled with the pre-existing Infrastructure-spending nudge under one combined ceiling (0.75). Real-Unity confirmed. Full detail: CLAUDE.md "Infrastructure Feedback."
-
 ## Open Questions (live — add new entries here as they come up; do not resolve silently)
 
-- 🔴 **NEW (2026-08-02) — Step C4's deficit term is unsmoothed and uncapped, and the rating thrashes.**
-  Found by the first trajectory validation C4 has ever had (`3d77b11`). **3,421 anomalies** across the
-  full matrix — every one a rating moving more than four notches in a single turn. Sweden 1,761,
-  France 1,117, Germany 240; USA, Italy and Poland zero. **282 are full-ladder 16-notch moves, AAA to
-  CCC and back the following turn.** Present in plain `baseline` at both 100 and 500 turns, so it is not
-  a stress-scenario artifact.
 
-  **The cause is pinned, not guessed.** At each of those moments the logged effective debt burden is
-  0–45%, which `BurdenCurve` maps to 0–1 notches, and the growth term contributes at most ±0.5. Only the
-  deficit term can supply the remaining 5–16, and it is `notches += (deficitPercent - 3) / 3` with **no
-  cap and no smoothing** — one turn at a ~45%-of-GDP deficit is a 14-notch downgrade, reversed next turn.
+**Blocked questions live in `MISSING_PREREQUISITES.md`, not here.** This section is for questions that
+are genuinely open and not yet escalated. Once a question is waiting on a named party it moves, so this
+list stays short enough to actually read.
 
-  **Why this is escalated rather than fixed in place.** C4's curve was calibrated against 5 of 5
-  verifiable real-world ratings (`76a8f35`), and every plausible fix — capping the deficit contribution,
-  averaging it over several turns, or rating off a smoothed fiscal position — changes the term that
-  calibration runs through. The USA's AA+ in particular *depends* on its deficit exceeding 3%. So this is
-  a re-calibration against the real anchors, not a tweak, and guessing a smoothing window would quietly
-  invalidate the one thing that made C4 credible.
+- **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not
+  required for a first pass. Nobody is blocked on it; it has simply never been prioritised.
 
-  **Recommendation:** cap the deficit contribution at ~2–3 notches (no real agency downgrades 14 notches
-  for one year's deficit) *and* feed it a multi-turn average, then re-run the 5-anchor check before the
-  matrix. Worth deciding whether a rating should update per turn at all, or annually like a real review
-  cycle — the latter would dissolve the thrash by construction rather than damping it.
-
-  **Meanwhile the tile is live.** It is correct for USA, Italy and Poland and visibly wrong for Sweden,
-  France and Germany. If that is not acceptable pre-fix, the cheap interim is to draw the rating only for
-  countries whose rating has been stable — but that hides a real defect behind a display rule, so it is
-  offered as a stopgap, not a recommendation.
-
-- **Cabinet appointment confirmation** — should appointing a minister also require a parliamentary vote, or does the player retain unilateral appointment power? Not yet decided.
-- **SWF emergency drawdown fast-track** — LOAD-BEARING, not hypothetical: SWF rate/allocation changes have been part of the annual omnibus budget bill since 5c (DONE), so a genuine emergency drawdown can currently get stuck behind that country's next fiscal-year vote (up to a year away). **Recommendation (2026-07-31), pending Elias's confirmation**: emergency SWF drawdown becomes a standalone bill — the SAME tier 2/3 mechanism 5d already built (now real, not hypothetical - see 5d above) for new/removed programs and non-budget policy — not bundled into the annual budget, and NOT fully exempt like the Fed/Eurozone carve-out. Reasoning: real governments handle fiscal emergencies via expedited votes, not zero-oversight unilateral action; Norway's own GPFG withdrawal is itself an ordinary budget-process matter, not a central-bank-style independent decision, so a full exemption would overstate SWF's real-world independence. This needs zero new mechanism — it's exactly 5d's standalone-bill pattern, reused (most naturally as a fifth tier-3 bill type alongside Labor/CrimeJustice/Sector/Trade). Not yet confirmed — do not build against this until Elias signs off.
-- **RESOLVED (2026-07-31) — "PoliSim GUI redesign.zip" icon/texture assets vs. working discipline item 10.** Elias explicitly reversed item 10: icons, portraits, and background/menu textures are now approved as imported sprite art (see item 10's own updated text above). `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`'s full 58-file request (all six original sub-questions plus a later tab-navigation-icon addition) has been answered by Elias, delivered by Claude Design, security-reviewed, and imported into `Assets/Art/UI/` (2026-07-31). Fully closed - no image assets remain outside the project. `GameController.cs` rendering work is still deliberately not started - see the new "5e implementation plan" open items directly below for what's actually gating that now.
-- **RESOLVED (2026-07-31) — Phase A tab-placement calls.** All five confirmed by Elias; see Part B's "5e implementation plan" mapping table above for the final placements and reasoning. Kept here for the record:
-  1. `Trade` tab - confirmed split: informational content (Trade Balance graph) to Statistics, policy content (the `TradePolicyBill` and per-partner override rows) to Policy/Laws.
-  2. `FederalReserve` tab - confirmed Politics.
-  3. `PolicyWeb` tab - **Policy/Laws, NOT Statistics** (overrides the original recommendation) - Elias's own reasoning: "it's a relationship/reference tool consulted while deciding what to change, closer to where bills get drafted than to a pure stats readout."
-  4. `Infrastructure` tab - confirmed folding into the Tax/Spending (Budget Process) destination alongside Welfare/SWF.
-  5. Budget Process mandatory-pause interrupt surfaces under Decisions too - confirmed. Elias's own reasoning: "any 'time is blocked until you respond' state belongs in the same place, not treated as an exception."
-- **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not required for a first pass.
-- **"Ongoing-process budgets"** (Continuous Time Migration Phase 0, item 5) — RESOLVED IN DESIGN (2026-07-31): this is now Master Sequence step 5's Annual Budget bill tier — see Part B above for the full design (real per-country fiscal-year dates, USA-only mandatory pause, the rest AI-resolved). Implementation is that plan itself (phases 5a-5c), not yet built.
+*Moved out 2026-08-02:* Step C4's deficit re-calibration, the SWF emergency drawdown fast-track and
+Cabinet appointment confirmation are all waiting on an Elias decision — see `MISSING_PREREQUISITES.md`
+sections A1, A2 and A3. Five 2026-08-01 resolutions and two 2026-07-31 ones moved to `COMPLETED.md` §11.
 
 ---
 
@@ -651,85 +452,48 @@ against the actual code, never as a fit already established.**
 - Check Open Questions first.
 - Review the commit log — each step should be its own commit(s), validation results in the message or CLAUDE.md.
 
-### RESOLVED (2026-08-01) — `SimulationRandom` stream position across save/load
 
-**Decided: the counting shim.** Record draws per stream, re-seed and fast-forward on load. *"Reversible
-beats permanent under uncertainty; the xorshift option can be revisited once save/load exists and real
-load times are known."* Preserves every recorded baseline; pays an O(draws) loop per load. Implement as
-part of Master Sequence item 8.
+---
 
-### RESOLVED (2026-08-01) — `PublishedData.PeriodClosingValues` retention
+## Document set and the consolidation rule
 
-**Decided: keep everything, no pruning.** The data is small, and the failure pruning risks — a revision
-converging on a missing closing value — is a bug this project has already fixed once (`ea0a6a4`). Flatten
-to `{stat, periodStart, value}` records on save, rebuild the dictionary on load.
+**Established 2026-08-02, in the first consolidation pass. This is the standing pattern — run it whenever
+the live documents start describing finished work.**
 
-### RESOLVED (2026-08-01) — harness swing-check coverage
+Eight documents, each with one job. If a fact belongs in two of them, it belongs in the one further down.
 
-**Decided: leave it at five fields, and stop describing "N anomalies" as a whole-simulation health
-measure.** Extending would mean ~24 threshold choices plus a third baseline discontinuity in a single
-day, and several fields (NetMigrationRate, PopulationGrowthRate) legitimately exceed 20% turn-over-turn,
-so blanket coverage would bury real signal in noise.
+| Document | Holds | Grows or shrinks |
+|---|---|---|
+| `POLISIM_MASTER_ROADMAP.md` | **Live work only** — startable today | Shrinks |
+| `VISUAL_REVIEW_BACKLOG.md` | Built but never seen. Live, because unconfirmed is not done | Shrinks as reviews land |
+| `MISSING_PREREQUISITES.md` | Blocked work, by supplier. Not startable, so not live | Shrinks as blockers clear |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | The single standing asset request | Appended to, then emptied on delivery |
+| `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md` | Step 9's spec. Done steps become pointers; live specs stay | Shrinks |
+| `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | Real-world figures with `[VERIFIED]`/`[PARTIAL]`/`[GAP]` markers | Reference; stable |
+| `COMPLETED.md` | Finished work + lasting decisions and lessons | Grows |
+| `CLAUDE.md` | The detailed technical record. **Never superseded** | Grows |
 
-**The fix is documentary, not mechanical.** Every doc quoting anomaly counts now states plainly that it
-is a **5-field check** — GDP, Unemployment, Inflation, InterestRate, DebtToGdpRatio — while `CheckFinite`
-is complete at **29/29**, so no NaN can escape. **Revisit if something ever slips through unnoticed.**
+### The three-way test every task gets
 
-### RESOLVED (2026-08-01) — B2 shows LIVE values, not published
+1. **Finished?** → `COMPLETED.md`, then delete from source.
+2. **Waiting on a named party?** → `MISSING_PREREQUISITES.md`, then delete from source.
+3. **Neither?** → it stays live.
 
-**Decided: live, as built.** *"Your reasoning is better than the directive's."* A lagged preliminary
-figure in a "what am I doing right now" panel misrepresents itself, and the directive's instruction was
-only partly satisfiable — 6 published stats against 18 policy-screen stats. `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`
-has been corrected to match rather than left contradicting the code.
+**"Built but unconfirmed" and "built but uncalled" are case 3, not case 1.** They are the two states this
+project has repeatedly mistaken for done, and both were found again in this pass.
 
-**Noted for the record:** the deviation was correct, and escalating it was still right.
+### Rules learned from doing it the first time
 
-### RESOLVED (2026-08-01) — C4 built out of order, deliberately
-
-**Decided: build C4 (credit rating) before C1–C3.** This departs from the Master Sequence's
-"top to bottom, do not skip ahead" rule, and the reason is recorded here specifically so it does not
-become precedent for casual skipping:
-
-1. **C4 depends on nothing in C1–C3.** It is `[DERIVE]` — computed from debt-to-GDP, deficit trajectory
-   and growth, all already tracked — and consumes no seed data from the earlier batches.
-2. **Its blocker is external and may persist indefinitely.** C1–C3 need figures requiring direct
-   Eurostat/OECD database access, which no session here can obtain.
-
-Skipping is justified when a later item is genuinely independent *and* the earlier blocker is outside the
-project's control. Neither condition alone is sufficient.
-
-
-### RESOLVED (2026-08-01) — Step C1: which stat is the primary housing metric?
-
-**Decided: homeownership rate, reversing the directive's recommendation.** Overburden remains the better
-concept — affordability stress rather than tenure, responsive to interest rates and housing assistance,
-both live levers — but a gap-closing attempt confirmed only **2 of 6** verified (Germany 12.0, Sweden
-10.6). Italy, France and Poland are `[BOUNDED]` to 4.0–9.0, honestly derived from Eurostat naming only
-the countries above 9.0 and below 4.0, and a bound is not a value. Seeding four countries from a range
-would be inventing precision.
-
-Homeownership has **4 of 6** verified and preserves the sharpest real contrast in the data, Germany ~47%
-against Poland ~87%. Overburden is deferred as a secondary metric pending exact `ilc_lvho07a` figures,
-which need direct Eurostat database access rather than search.
-
-### RESOLVED (2026-08-01) — Step C1: how should the USA housing figure be handled?
-
-**Deferred with the metric.** The question was that Eurostat overburden measures >40% of disposable
-income while US convention measures >30% or >50%, so no comparable figure exists. With homeownership as
-the primary metric the USA has a genuinely comparable verified figure (65.3%), so this stops blocking
-C1. It returns only if overburden is later added as a secondary metric.
-
-### RESOLVED (2026-08-01) — Step C1: which measurement basis for homeownership rate?
-
-**Decided: OECD Affordable Housing Database, share of HOUSEHOLDS owning.** The suspicion that the table
-mixed bases was correct and understated — Germany's spread is three-way (OECD households 41.0 /
-dwelling-based ~46.7 / Eurostat nationals-only 52.3), an 11.3-point range across three correct-for-their-
-source definitions, with Eurostat's population base (68.4% EU) as a fourth.
-
-Single-basis set: USA 65.3, France 58.5, Germany 41.0, OECD average 70.1. Poland leaves the verified set
-— its ~87.9 is a Eurostat nationals line — joining Italy and Sweden as gaps on this basis.
-
-**Consequence: the C1 margin is 3–2, not the 4–2 that justified the decision.** The decision holds
-(three same-basis figures beat two, and overburden's gaps are unobtainable by search while these are
-ordinary lookups) but by one country rather than two. See `STEP_C1_HOUSING_GAP_REPORT.md`, which also
-corrects an overstated claim about the Germany-vs-Poland contrast.
+- **Verify against the repo and the commit history, not against a summary.** The pass found Step A marked
+  *"DONE, commit `e3a0feb`"* with Tier 0 derived stats folded in — but that commit contains two files and
+  neither is `DerivedStats.cs`, which arrived at `70798e9` carrying "NOT trajectory-validated" in its own
+  message. A summary is exactly where that error hides.
+- **Check callers before believing a feature exists.** A4 validates cleanly and displays nothing; all four
+  new files from 2026-08-01 had zero callers when checked. `grep` for the call sites, do not assume the
+  wiring landed with the code.
+- **If removing finished items empties a document, delete it.** An empty shell drifts back into use.
+  `ELIAS_ACTION_LIST.md` was deleted for exactly this reason — every section had migrated.
+- **Do not duplicate a live list into the blocked register.** `MISSING_PREREQUISITES.md` names what the
+  visual reviews block and points at `VISUAL_REVIEW_BACKLOG.md`; it does not restate the 11 items. Two
+  copies of one list is the drift this pass exists to undo.
+- **Repoint references before deleting a file**, and grep afterwards to prove nothing dangles.
