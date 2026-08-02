@@ -127,20 +127,85 @@ These weren't part of the seven, but came up with real per-country data and are 
 |---|---|---|
 | Germany | 12.0 | [VERIFIED] |
 | Sweden | 10.6 | [VERIFIED] |
-| Italy | [BOUNDED] between 4.0 and 9.0 — see derivation below | [PARTIAL] |
-| France | [BOUNDED] between 4.0 and 9.0 | [PARTIAL] |
-| Poland | [BOUNDED] between 4.0 and 9.0 | [PARTIAL] |
+| Italy | 5.1 | [VERIFIED] — Eurostat API, 2026-08-02 |
+| France | 7.0 | [VERIFIED] — Eurostat API, 2026-08-02 |
+| Poland | 5.2 | [VERIFIED] — Eurostat API, 2026-08-02 |
 | USA | [GAP] — see methodology warning below; not a simple lookup | [GAP] |
 
-**Derivation of the 4.0–9.0 bound:** Eurostat's 2024 article names exactly five countries above 9.0% (Greece 28.9, Denmark 14.6, Germany 12.0, Sweden 10.6, Czechia 9.2) and three below 4.0% (Cyprus 2.4, Croatia 3.7, Slovenia 3.8). Italy, France and Poland appear in neither list, so each sits between those thresholds. This is a real constraint honestly derived from published data — not a guess — but it is not a precise value and must not be recorded as one.
+**✅ THE THREE [BOUNDED] GAPS ARE CLOSED (2026-08-02), pulled directly from the Eurostat API.**
 
-**Attempts to close these three gaps by search failed.** Eurostat's own summary article only names the extremes, and every alternative source returns a DIFFERENT VARIANT of the indicator rather than the headline figure (cities, tenant-at-market-price, below-60%-of-median, two adults, 18–64 years). Anyone with database access can pull the exact values from Eurostat `ilc_lvho07a` directly; they are not obtainable from summary articles.
+Query, identical for all three apart from `geo` — **every dimension stated explicitly**, which is what
+makes the result unambiguous rather than merely correct:
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ilc_lvho07a
+    ?lang=EN&unit=PC&rskpovth=TOTAL&age=TOTAL&sex=T&geo=IT&geo=FR&geo=PL&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `unit` | `PC` | Percentage |
+| `rskpovth` | `TOTAL` | Total |
+| `age` | `TOTAL` | Total |
+| `sex` | `T` | Total |
+| `time` | `2024` | 2024 |
+
+**Status flags: none on any of the three.** Dataset last updated 2026-06-08.
+
+**Two controls ran before these were trusted**, and both are why they read `[VERIFIED]` and not `[PARTIAL]`:
+
+1. **Cross-check gate.** The same query shape reproduced Germany at exactly **12.0** — already
+   `[VERIFIED]` here — *before* any new value was pulled. A query that cannot reproduce a known value is
+   a broken query, and everything from it is of unknown basis.
+2. **Decode test.** The trio came from a MULTI-geo query, where values arrive as a flat array and must be
+   mapped back through the returned index — a step the single-country gate never exercised. The query was
+   re-run with Germany and Sweden included: both landed on **12.0** and **10.6** at their own positions,
+   proving the decode instead of assuming it. *A correct value in the wrong position is indistinguishable
+   from a correct answer.*
+
+### ✅ THE [BOUNDED] DERIVATION METHOD HELD — all three landed inside 4.0–9.0
+
+**The original derivation:** Eurostat's 2024 article named exactly five countries above 9.0% (Greece 28.9,
+Denmark 14.6, Germany 12.0, Sweden 10.6, Czechia 9.2) and three below 4.0% (Cyprus 2.4, Croatia 3.7,
+Slovenia 3.8). Italy, France and Poland appeared in neither list, so each had to sit between them.
+
+**France 7.0, Poland 5.2, Italy 5.1 — every one inside the bound.** This matters well beyond three
+numbers. The derivation rested on an assumption it could not check: that the article's extremes lists were
+COMPLETE. A single result outside 4.0–9.0 would have invalidated that reasoning everywhere it was used,
+not merely this bound. It holds. **Bounding from published extremes is a sound technique for this file**,
+now confirmed against ground truth rather than trusted — and it was testable precisely because the bound
+was honest about being a range instead of being written down as a point estimate.
 
 EU average 8.2%. Range anchors: Greece highest at 28.9%, then Denmark 14.6%, Germany 12.0, Sweden 10.6, Czechia 9.2; lowest are Cyprus 2.4, Croatia 3.7, Slovenia 3.8.
 
-**⚠ CORRECTION — an earlier version of this file recorded the WRONG VARIANT.** The figures previously listed here (Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9) are the **"Two adults" household-type subset**, not the headline whole-population indicator. The difference is large: Sweden is 5.1 on the two-adults measure versus **10.6** whole-population — more than 2x. Germany 9.7 versus 12.0. **Use the whole-population figures above.** This is the same trap already flagged in this file for youth unemployment rate-vs-ratio, and it was walked into anyway.
+**⚠ CORRECTION — an earlier version of this file recorded the WRONG VARIANT.** The figures previously listed here (Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9) are a different cut of the indicator, not the headline whole-population one. The difference is large: Sweden 5.1 versus **10.6** whole-population — more than 2x. Germany 9.7 versus 12.0. **Use the whole-population figures above.** Same trap this file already flagged for youth unemployment rate-vs-ratio, walked into anyway.
 
-**This indicator is unusually variant-prone — treat any figure for it as suspect until the variant is confirmed.** Eurostat publishes at least eight variants under the same name: whole population, two adults, 18–64 years, 65+, cities, rural areas, tenant at market price, tenant at reduced price, owner with mortgage, owner without mortgage, and by income quintile. Sweden alone reads 5.1 / 10.6 / 10.8 / 17.9 depending on which you pull.
+**⚠⚠ CORRECTION TO THE CORRECTION (2026-08-02, from the API's own structure).** The paragraph above used
+to attribute those wrong figures to a **"two adults" household-type subset of `ilc_lvho07a`**. That
+explanation is wrong, and wrong in a way that wastes the time of anyone acting on it: **`ilc_lvho07a` has
+no household-type dimension at all.** Its real structure, read from the API:
+
+> **`ilc_lvho07a` — "Housing cost overburden rate by age, sex and poverty status"**
+> Dimensions: `freq` · `unit` · **`rskpovth`** · **`age`** · **`sex`** · `geo` · `time`
+> For Germany 2024 alone this is **153 values** — 3 poverty thresholds × 17 age brackets × 3 sexes.
+
+So the 9.7 figure came from a **different dataset code**, not a different filter on this one. The
+correction's conclusion stands (12.0 right, 9.7 wrong); only its stated mechanism was invented. Someone
+following the old note would go looking for a household-type dimension that does not exist, conclude the
+warning was stale, and trust the wrong number.
+
+**🔴 `rskpovth=B_60` IS THE MOST DANGEROUS VARIANT, and it was not previously named.** The poverty-threshold
+dimension splits into `TOTAL`, `A_60` (above 60% of median income) and `B_60` (below it). Overburden among
+the below-60% population runs FAR above the whole-population rate — it is the same indicator restricted to
+those least able to afford housing. A `B_60` figure is a real Eurostat number, correctly attributed, and
+several times too high. **It would read as entirely plausible in this table**, which is exactly what makes
+it worse than an obviously broken value.
+
+The full age dimension, for reference, since several of these are the variants the old note gestured at:
+`TOTAL`, `Y_LT6`, `Y6-11`, `Y12-17`, `Y15-19`, `Y15-24`, `Y15-29`, `Y16-19`, `Y16-24`, `Y16-29`, `Y_LT18`,
+`Y18-24`, `Y18-64`, `Y20-24`, `Y20-29`, `Y25-29`, `Y_GE65`.
+
+**This indicator is unusually variant-prone — treat any figure for it as suspect until the variant is confirmed.** Beyond `ilc_lvho07a`'s own 153-cell grid, Eurostat publishes further cuts under the same NAME in other datasets: by household type, by tenure status (tenant at market price, tenant at reduced price, owner with mortgage, owner without), by degree of urbanisation (cities, towns, rural), and by income quintile. Sweden alone reads 5.1 / 10.6 / 10.8 / 17.9 depending which you pull.
 
 Secondary sources compound this. Visual Capitalist, explicitly citing Eurostat 2024, publishes Denmark at 22.7% and Norway at 21.0% — against Eurostat's own 14.6% for Denmark. A reputable outlet, correct attribution, different variant, no label.
 
@@ -241,3 +306,48 @@ Computed at display time from already-tracked values. No new state, no new ceili
 3. **Every new stat that nudges an existing tracked variable must fold into that variable's existing combined ceiling**, audited first, per standing rule 11. `PotentialGrowthRate` and `LaborForceParticipationRate` are both already heavily stacked.
 
 4. **Gaps are gaps.** Every `[GAP]` above must be sourced by Elias (or another web-search-capable session) before the stat it belongs to ships. Do not fill them with plausible-looking invented numbers — that would violate this project's core data-honesty rule and would be very hard to detect later.
+
+---
+
+### 5. 🔴 API SOURCING RULES (added 2026-08-02, when the Eurostat API turned out to be reachable)
+
+**The variant problem is WORSE through an API than through an article, not better.** An article tells you
+what it describes — "housing cost overburden, whole population, 2024" — in words that can contradict a
+misreading. An API returns whatever dimensions you filtered on, as a bare number, with no prose to argue
+with. Every safeguard below exists because the usual signal that something is wrong has been removed.
+
+**a. Confirm the dataset's real structure before pulling from it. Never pattern-match a plausible code.**
+`ilc_lvho07a` was assumed for a year to have a household-type dimension. It does not — it is
+`rskpovth` × `age` × `sex`. A code that looks right and returns a number is the failure mode here.
+
+**b. State EVERY dimension explicitly in every query.** Not just the ones you care about.
+
+**c. PREVENTION AND DETECTION ARE DIFFERENT CONTROLS, and only one of them scales.**
+- *Verifying returned labels* is **detection**: the response echoes each dimension's code and its label,
+  so a query that asked for the wrong thing can be caught by reading what came back.
+- *Stating every dimension* is **prevention**: it makes the query unambiguous in the first place.
+- **Detection does not cover an omitted dimension.** Leave `rskpovth` out and the API returns three
+  values — one per threshold — each correctly labelled. Nothing is *wrong* to catch. You simply pick one,
+  and if you pick `B_60` you have recorded a real, correctly-attributed, several-times-too-high number.
+  **The label check cannot save you, because no label is incorrect.** Only stating the dimension can.
+
+**d. Record the full query URL alongside the value**, plus every dimension code AND its returned label.
+A value without its query is unreproducible, and this file's whole method is reproducibility.
+
+**e. 🔴 STATUS FLAGS ARE DATA, NOT DECORATION — and a flagged figure is NEVER silently `[VERIFIED]`.**
+JSON-stat responses carry a per-observation `status`. The very first test query returned **`bep`** —
+*"break in time series, estimated, provisional"*. A figure with a break flag is **not on the same basis as
+the figure before it**, which is precisely the class of divergence this file's `[PARTIAL]` markers exist
+to record. Record the flag next to the value; let it downgrade the confidence marker. `e` (estimated),
+`p` (provisional), `b` (break), `d` (definition differs), `u` (low reliability) and their combinations all
+mean the number needs a caveat, not a promotion.
+
+**f. Cross-check against a known-verified value BEFORE sourcing anything new, and treat it as a GATE.**
+If a query cannot reproduce a figure this file already verified, **the query is wrong — not the file** —
+and everything from it is of unknown basis. Stop and report rather than proceeding. This ran for real on
+2026-08-02: Germany's 12.0 was reproduced exactly before the Italy/France/Poland values were pulled.
+
+**g. A multi-country query needs its own decode test.** Values arrive as a flat array to be mapped back
+through the returned index. Include a known-value country in the same call and confirm it lands on its own
+number. **A correct value in the wrong position is indistinguishable from a correct answer** — the single-
+country gate does not exercise this at all.
