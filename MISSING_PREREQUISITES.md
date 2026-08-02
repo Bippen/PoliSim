@@ -13,7 +13,7 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 | Supplier | Items | Downstream |
 |---|---|---|
 | ~~**Elias — decision**~~ | ~~3~~ **0 — all resolved 2026-08-02** | — |
-| **Elias — database access** | 16 blocking + 1 anchor | Steps C1, C2, C3, C5 |
+| **Elias — database access** | ~~16~~ **12 blocking** + 1 anchor | Steps C1, C2, C3. *C5 closed 2026-08-02 via the OECD API* |
 | ~~**Elias — visual review**~~ | ~~11~~ **0 — all confirmed 2026-08-02** | Step 5 CLOSED |
 | ~~**Claude Design**~~ | **0 — delivered and imported 2026-08-02** | — |
 | **Another task first** | ~~3~~ **2** | Cabinet portraits, Step C4 closure. *Round 4 scoping released 2026-08-02* |
@@ -218,15 +218,31 @@ USA 79.0, Italy 84.1, Sweden 84.1. Low variant risk — period vs cohort is the 
 
 **Blocks:** Step C3.
 
-## B4. Step C5 — Productivity (4 figures)
+## ~~B4. Step C5 — Productivity (4 figures)~~ — ✅ ALL SIX SOURCED 2026-08-02. C5 IS NOT BLOCKED.
+
+**Sourced exactly from the OECD SDMX API**, all six countries, 2022, one basis, one vintage — see seed
+file section 6 for values, the fully-specified nine-dimension query, and why they carry
+`[PRIMARY-UNANCHORED]` rather than `[VERIFIED]`.
+
+**C5 can be built now.** What remains is a *confidence upgrade*, not a blocker: one exact,
+independently-published OECD figure — any country, any year — reproduced in a session with live SDMX
+access would satisfy rule 5f-bis and promote all six to `[VERIFIED]`. Every candidate anchor already in
+the seed file was tried and failed (France 90.86, USA ~97, OECD average ~67.5 — none reproduce on either
+price basis). The OECD Compendium of Productivity Indicators is the most likely home for a usable one.
+
+⚠ **The `[GAP]` count in this document's header table is now 16 → 12.** C5's four are closed.
+
+**The original entry, for the record:**
 
 **Basis: OECD PPP, GDP per hour worked, all six countries on that one basis. Non-negotiable.**
 
 Germany `[GAP]`, Italy `[GAP]`, and **re-source Sweden (~70) and Poland (~24.5)** — both came from
 Statista and are almost certainly not PPP-adjusted on the same footing. Poland at $24.5 against an OECD
-PPP average of $67.5 is implausible.
+PPP average of $67.5 is implausible. *Confirmed emphatically: the real figures are 89.95 and 54.09 —
+Poland was off by more than 2×.*
 
-Have on OECD PPP: USA ~97, France 90.86.
+Have on OECD PPP: USA ~97, France 90.86. *Neither reproduces against the primary source; see seed file
+section 6 on the 90.86 provenance question.*
 
 **Blocks:** Step C5. *C5 exists because the directive named seven new stats and batched only six —
 productivity appeared in no batch. An authoring error, corrected 2026-08-01, not a decision to drop it.*

@@ -426,14 +426,60 @@ values.* The US sitting ~3 years below comparable countries is real and worth pr
 Useful anchors: OECD average real household income per capita growth 1.8% in 2024 [VERIFIED]. Note Germany and Italy both saw *declining* real household income in 2024 even while real wages rose — wages and household income are different measures; don't conflate them.
 
 ### 6. Productivity — GDP per hour worked (USD, PPP)
-| Country | Value | Confidence |
-|---|---|---|
-| USA | ~97 | [VERIFIED] OECD — above average, but behind several smaller high-income economies |
-| France | 90.86 (2024) | [VERIFIED] OECD |
-| Germany | [GAP] | [GAP] |
-| Italy | [GAP] — OECD notes Italian productivity growth stagnated 2012–2022 | [GAP] |
-| Sweden | ~70 (2024, Statista) — see warning below | [PARTIAL] |
-| Poland | ~24.5 (2024, Statista) — see warning below; OECD separately notes substantial productivity *gains* 2012–2022 from a lower base, alongside some of the OECD's longest working hours | [PARTIAL] |
+
+✅ **ALL SIX SOURCED EXACTLY FROM OECD SDMX, 2026-08-02. One year, one basis, one vintage.**
+
+| Country | **2022** | **2024** | Confidence |
+|---|---|---|---|
+| USA | **90.83** | **100.12** | `[PRIMARY-UNANCHORED]` |
+| Germany | **94.54** | — | `[PRIMARY-UNANCHORED]` — *closes a `[GAP]`* |
+| Sweden | **89.95** | — | `[PRIMARY-UNANCHORED]` — *replaces a `[PARTIAL]` ~70* |
+| France | **86.32** | **92.74** | `[PRIMARY-UNANCHORED]` — *replaces an unreproducible 90.86* |
+| Italy | **78.20** | — | `[PRIMARY-UNANCHORED]` — *closes a `[GAP]`* |
+| Poland | **54.09** | — | `[PRIMARY-UNANCHORED]` — *replaces a `[PARTIAL]` ~24.5* |
+
+```
+https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0/
+    DEU+SWE+USA+ITA+POL+FRA.A.GDPHRS._T.USD_PPP_H.V.N._Z.PPP?startPeriod=2022&endPeriod=2022
+```
+
+**All NINE key dimensions specified**, read from the DSD: `REF_AREA · FREQ=A · MEASURE=GDPHRS ·
+ACTIVITY=_T · UNIT_MEASURE=USD_PPP_H · PRICE_BASE=V · TRANSFORMATION=N · ASSET_CODE=_Z ·
+CONVERSION_TYPE=PPP`. Labels returned as intended: *"GDP per hour worked"*, *"US dollars per hour, PPP
+converted"*, *"Current prices"*, *"Total - all activities"*.
+
+**Seed 2022, not 2024.** It is the newest year with a complete same-basis cross-section for all six —
+rung 2 of the fallback ladder. Only France and the USA have 2024 values; mixing them with 2022 figures
+for the other four would fabricate a cross-section that never existed on any single date, which is the
+rule this file already states for youth unemployment.
+
+#### 🔴 WHY `[PRIMARY-UNANCHORED]` AND NOT `[VERIFIED]` — the gate is UNRUN, not passed
+
+These are exact values from the primary database on an unambiguous key, and the variant is confirmed by
+the DSD's own labels. **But no independent anchor reproduced**, so rule 5f-bis condition 2 is unmet and
+the variant identification rests on labels alone rather than on agreement with a known figure. Every
+candidate anchor in this file was tried and every one failed:
+
+| Candidate | File records | SDMX actual | |
+|---|---|---|---|
+| France GDP/hour | 90.86 (2024) | 92.74 (V) / 81.56 (LR) | ✗ appears in no year, no country |
+| USA GDP/hour | ~97 | 100.12 (2024) / 90.83 (2022) | ✗ and approximate, so unusable as an exact anchor |
+| OECD average | ~67.5 (2022) | **72.59** (V) / ~64–66 (LR) | ✗ on either basis |
+
+**The marker is the honest middle.** `[VERIFIED]` would claim a check that was not performed;
+`[PARTIAL]` would understate figures pulled exactly from the authoritative source. These are as good as
+data gets without an anchor, and they are explicitly one rung below the Eurostat figures in this file,
+which do have anchors. **One exact, independently-published OECD figure — any country, any year — would
+promote all six.**
+
+⚠ **The whole cross-section moves together if the basis is wrong.** That is the residual risk: not that
+one value is off, but that `PRICE_BASE=V` is the wrong choice for the game's purposes. `LR` (chain linked
+volume) is the alternative and runs ~10–15% lower. `V` was chosen because it matches what the file's
+existing figures were closest to and is what "current USD, PPP adjusted" ordinarily means.
+
+**Sanity checks pass:** all six above the OECD 2022 average of 72.59 except Poland and — narrowly — Italy
+at 78.20; ordering Germany > USA > Sweden > France > Italy > Poland is consistent with the qualitative
+claims already recorded here (Italian stagnation 2012–2022, Polish catch-up from a low base).
 
 **SOURCE-CONFLICT WARNING on Sweden/Poland:** those two figures come from a different source (Statista) than the USA/France figures (OECD PPP) and are almost certainly NOT PPP-adjusted on the same basis — Poland at $24.5 is implausibly low against an OECD PPP average of $67.5. Do not mix them into one table as-is. Either source all six from OECD PPP consistently, or treat these two as placeholders needing replacement.
 
@@ -481,34 +527,60 @@ https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0/
 **The seed's 90.86 appears NOWHERE**: not in France's full `V` series 2010–2024 (56.70 → 92.74,
 monotonic apart from 2021), and not in any of the **41 countries** in the 2024 cross-section.
 
-⚠ **AND YET THIS IS NOT RECORDED AS AN ERROR, because the revision-vs-error test cannot be completed.**
-Rule 5f-bis needs **both** conditions, and only one holds:
+⚠ **NOT RECORDED AS AN ERROR — the revision-vs-error test cannot be completed.** Rule 5f-bis needs both
+conditions; condition 1 holds exhaustively, condition 2 fails because **no OECD anchor has ever
+reproduced**. See rule 5f-bis's own note on the bootstrapping problem: a first contact with a source
+cannot declare an error, by design.
 
-| Condition | Status |
-|---|---|
-| Disputed value appears nowhere in the dataset | ✅ **Holds** — exhaustively, across years and cross-section |
-| Method has reproduced other anchors **in the same session** | ❌ **FAILS — no OECD anchor has ever reproduced** |
+#### 🔴 THE 90.86 PROVENANCE QUESTION — the France story is WEAKENED, Germany is the stronger candidate
 
-**This is a bootstrapping problem, and it is worth naming.** The second condition exists to prove the
-technique before letting it overturn recorded data. On a *brand-new source* there is nothing yet proven —
-the Eurostat anchors say nothing about whether an OECD query is being built correctly. **A first contact
-with an API can never satisfy condition 2, which means it can never declare an error.** That is the
-conservative outcome by design, and correct: the default holds, and the file wins.
+**The "pre-revision France 2023" hypothesis had the DIRECTION WRONG.** A secondary OECD-derived series on
+an older vintage reads France 2022 = 87.7 and 2023 = 92.8, against SDMX's 86.32 and 91.18 — so the older
+vintage runs **above** the current one. A pre-revision France 2023 would therefore be ~92.8, **not**
+90.86. Two vintages of France 2023 are now visible, 92.8 and 91.18, and 90.86 is neither.
 
-**The evidence nonetheless points at revision rather than error, and points at a specific one.** France
-2023 reads **91.18** against the seed's 90.86 — a gap of 0.32, which is the revision signature magnitude,
-where 2024 is 1.88 away. **The likeliest story is that 90.86 is a pre-revision 2023 figure recorded under
-a 2024 label** — OECD publishes a "2024 edition" containing 2023 data, and PPP-converted series revise
-when PPP benchmarks update. That is a hypothesis with evidence, not a finding, and it is not enough to
-rewrite a `[VERIFIED]` figure on.
+**Stronger candidate: 90.86 is GERMANY 2022 on the old vintage.** That same secondary series reads
+Germany 2022 = **90.9**, which is exactly what 90.86 rounds to at one decimal — country, year and vintage
+lining up at once, where the France story needs a value appearing in no known vintage. The adjacent row
+in this table was Germany's `[GAP]`, which is precisely where a transcription slip lands.
 
-**What would settle it, for whoever picks this up:** a single OECD figure independently confirmed from
-another route — any country, any year — would satisfy condition 2 and unlock the whole dataset. Until
-then C5 stays with Elias. **The access problem is solved; the trust problem is not.**
+**Tested 2026-08-02, and the test neither confirms nor refutes it.** Current-vintage Germany 2022 is
+**94.54** — so Germany was revised UP ~4% where France was revised DOWN ~1.6%. That is consistent with the
+hypothesis (revisions are country-specific, as PPP benchmark updates are) but cannot verify it, **because
+the old vintage is not queryable from SDMX.** It would need the OECD Compendium edition the figure
+originally came from.
 
-⚠ **Germany, Italy, Sweden and Poland were NOT recorded**, though the query now returns them cleanly on a
-fully-specified key. Sourcing four new figures on a signature whose one testable anchor does not reproduce
-is precisely what rule 5f exists to stop.
+**Status: unresolved, and now unresolvable from the API alone.** Logged here rather than as a
+verification-integrity instance, because attributing a `[VERIFIED]` figure to the wrong country is a
+serious claim and the evidence is a one-decimal secondary source.
+
+#### The `[ESTIMATED]` C5 set was superseded within hours — and the exercise still paid for itself
+
+Under the fallback ladder (Part 4 rule 4), a session without OECD access built a rung-3 `[ESTIMATED]` set
+from a secondary aggregator, bridged to the SDMX vintage by a France-calibrated factor of 0.98426 with a
+stated ±3% band. A later session with SDMX access replaced all of it with rung-1b figures. **The
+estimates are gone; two findings from them are not:**
+
+| | `[ESTIMATED]` | Actual | Error |
+|---|---|---|---|
+| Poland | 53.5 | 54.09 | +1.1% ✅ |
+| USA | 90.1 | 90.83 | +0.8% ✅ |
+| Sweden | 88.8 | 89.95 | +1.3% ✅ |
+| **Germany** | 89.5 | **94.54** | **+5.6% ❌** |
+| **Italy** | 73.3 | **78.20** | **+6.7% ❌** |
+
+1. **Three of five landed inside the ±3% band; two did not.** The method was sound and the band was too
+   narrow — and it failed **precisely where its author said it would**. The estimate's stated weakness was
+   that the vintage bridge was calibrated on one country while *"PPP benchmark revisions are
+   country-specific"*. Germany's revision (+4%) and France's (−1.6%) differ in sign, so a France-derived
+   factor could not describe Germany. **A correctly-labelled limitation predicted the exact failure**,
+   which is the strongest argument in this file for stating uncertainty rather than hiding it.
+2. **The Sweden/Poland source-conflict warning is now quantified.** Statista's ~70 and ~24.5 against
+   OECD's 89.95 and 54.09 — Poland off by more than **2×**. The `[PARTIAL]` markers were right, and the
+   scale of the error justifies the file's refusal to mix sources.
+
+**Rung-3 estimates earn their place when access is unavailable, and they are cheap to discard when it
+returns.** The failure mode to avoid was never "estimating" — it was estimating *silently*.
 
 **Separately: OECD homeownership on the household basis (C1) does NOT appear to be in SDMX at all.** The
 full dataflow list was searched for housing and tenure; it returns regional housing, housing transactions
@@ -564,6 +636,40 @@ Computed at display time from already-tracked values. No new state, no new ceili
 3. **Every new stat that nudges an existing tracked variable must fold into that variable's existing combined ceiling**, audited first, per standing rule 11. `PotentialGrowthRate` and `LaborForceParticipationRate` are both already heavily stacked.
 
 4. **Gaps are gaps.** Every `[GAP]` above must be sourced by Elias (or another web-search-capable session) before the stat it belongs to ships. Do not fill them with plausible-looking invented numbers — that would violate this project's core data-honesty rule and would be very hard to detect later.
+
+   🔴 **AMENDED 2026-08-02 (Elias) — THE FALLBACK LADDER, which overrides the above FOR SEEDING ONLY.**
+
+   > **If data cannot be found for recent years, take the newest available. If still unavailable, estimate.**
+
+   This does **not** override the honesty discipline underneath rule 4; it changes what a gap licenses.
+   A game cannot ship a blank, and a blank is not more honest than a labelled approximation. What keeps
+   the rule safe is that each rung carries its own marker:
+
+   | Rung | Means | Marker |
+   |---|---|---|
+   | 1 | Sourced, current year, gate passed | `[VERIFIED]` |
+   | 1b | Sourced exactly from the primary database, **but no anchor reproduced in-session** | `[PRIMARY-UNANCHORED]` — see below |
+   | 2 | Sourced, but an **older year** than wanted | `[VERIFIED]` *with the year stated* |
+   | 3 | **Not sourced** — derived by a stated, reproducible method from stated inputs, with an uncertainty band | `[ESTIMATED]` |
+
+   **`[ESTIMATED]` is never `[VERIFIED]` and is never silently promoted.** It is a placeholder that plays
+   correctly, not a fact, and it is replaced the moment a real figure exists.
+
+   **Climb the ladder in order, and record which rung each value came from.** A value on rung 3 that could
+   have come from rung 2 is a failure of the rule, not an application of it. *Demonstrated the same day:
+   an `[ESTIMATED]` C5 set built on rung 3 was superseded within hours by rung-1b figures once a session
+   with SDMX access ran the query — see section 6.*
+
+5. 🔴 **API REACHABILITY IS A PROPERTY OF THE SESSION, NOT OF THE PROJECT.** A previous entry in this file
+   read *"the access problem is solved"*. It was true of the session that wrote it and false as a general
+   claim: the very next session had **no route to OECD data at all** — `curl` egress proxied to an
+   allowlist (`CONNECT tunnel failed, 403`), `WebFetch` returning SDMX as unreadable binary, OECD web
+   pages JS-rendered and empty, Compendium PDFs blocked by `robots.txt`, no browser connected.
+
+   **Record which route worked, from where, on what date** — the same discipline this file already applies
+   to values. And note the consequence for rule 5f-bis condition 2: a session that cannot run the method
+   does not merely fail that condition, **it cannot test it**. Finding an anchor and reproducing it must
+   happen in ONE session with live access; splitting that work across sessions cannot close the gate.
 
 ---
 
