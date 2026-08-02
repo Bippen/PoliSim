@@ -77,7 +77,50 @@ namespace PoliSim.EditorTools
                     cc.InfrastructureAssets[i].ConditionIndex, cd.InfrastructureAssets[i].ConditionIndex) ? 1 : 0;
             }
 
-            Debug.Log($"=== Phase 1 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% ===");
+            // --- PHASE 2: Labor Market and Crime & Justice -------------------------------------------
+            // Driven off baseline the same way, and via the same policy dials a player would move, so the
+            // targets differ from current state and there is a real gap for both paths to close.
+            World e = WorldFactory.CreateDefault();
+            World f = WorldFactory.CreateDefault();
+            Country ce = e.GetCountry(CountryId.Sweden);
+            Country cf = f.GetCountry(CountryId.Sweden);
+            foreach (Country x in new[] { ce, cf })
+            {
+                x.PoliceFundingLevel = 80f;
+                x.SentencingSeverity = 20f;
+                x.BailReformLevel = 75f;
+                x.DrugPolicyLevel = 25f;
+                x.RetrainingProgramLevel = 85f;
+            }
+
+            // Turn path: one step each, in AdvanceTurn's documented order.
+            MacroSystem.ApplyLaborForceParticipationRate(ce);
+            MacroSystem.ApplyOrganizedCrimeIndex(ce);
+            MacroSystem.ApplyCorruptionIndex(ce);
+            MacroSystem.ApplyCrimeIndex(ce);
+            MacroSystem.ApplyCrimeEffects(ce);
+            MacroSystem.ApplyPrisonPopulationRate(ce);
+
+            // Daily path: 121 steps, same order preserved.
+            for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
+            {
+                MacroSystem.ApplyLaborForceParticipationRateDaily(cf);
+                MacroSystem.ApplyOrganizedCrimeIndexDaily(cf);
+                MacroSystem.ApplyCorruptionIndexDaily(cf);
+                MacroSystem.ApplyCrimeIndexDaily(cf);
+                MacroSystem.ApplyCrimeEffectsDaily(cf);
+                MacroSystem.ApplyPrisonPopulationRateDaily(cf);
+            }
+
+            total += 6;
+            passed += Compare("LaborForceParticipationRate", ce.State.LaborForceParticipationRate, cf.State.LaborForceParticipationRate) ? 1 : 0;
+            passed += Compare("OrganizedCrimeIndex", ce.State.OrganizedCrimeIndex, cf.State.OrganizedCrimeIndex) ? 1 : 0;
+            passed += Compare("CorruptionIndex", ce.State.CorruptionIndex, cf.State.CorruptionIndex) ? 1 : 0;
+            passed += Compare("CrimeIndex", ce.State.CrimeIndex, cf.State.CrimeIndex) ? 1 : 0;
+            passed += Compare("PrisonPopulationRate", ce.State.PrisonPopulationRate, cf.State.PrisonPopulationRate) ? 1 : 0;
+            passed += Compare("BusinessConfidence (crime drift)", ce.State.BusinessConfidence, cf.State.BusinessConfidence) ? 1 : 0;
+
+            Debug.Log($"=== Phases 1-2 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% ===");
             EditorApplication.Exit(passed == total ? 0 : 1);
         }
 

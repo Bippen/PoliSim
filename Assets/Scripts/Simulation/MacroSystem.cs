@@ -408,7 +408,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private const float MaxLaborForceParticipationAdjustment = 1.0f;
 
-        public static void ApplyLaborForceParticipationRate(Country country)
+        public static void ApplyLaborForceParticipationRate(Country country, float reversionSpeed = LaborForceParticipationReversionSpeed)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
@@ -427,7 +427,7 @@ namespace PoliSim.Simulation
                 - DiscouragedWorkerSensitivity * unemploymentGap
                 + combinedAdjustment;
             state.LaborForceParticipationRate = Mathf.Clamp(
-                state.LaborForceParticipationRate + LaborForceParticipationReversionSpeed * (target - state.LaborForceParticipationRate),
+                state.LaborForceParticipationRate + reversionSpeed * (target - state.LaborForceParticipationRate),
                 0f, MaxLaborForceParticipationPercent);
         }
 
@@ -474,7 +474,7 @@ namespace PoliSim.Simulation
         /// their shared neutral 50 - all three reduce the target when above it. Hard-clamped to
         /// [0, 100], the same scale as CrimeIndex.
         /// </summary>
-        public static void ApplyOrganizedCrimeIndex(Country country)
+        public static void ApplyOrganizedCrimeIndex(Country country, float reversionSpeed = OrganizedCrimeReversionSpeed)
         {
             EconomyState state = country.State;
             float target = country.BaselineOrganizedCrimeIndex
@@ -482,7 +482,7 @@ namespace PoliSim.Simulation
                 - BorderEnforcementOrganizedCrimeSensitivity * (country.BorderEnforcementLevel - NeutralPolicyDialLevel)
                 - JudicialFundingOrganizedCrimeSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
 
-            state.OrganizedCrimeIndex = Mathf.Clamp(state.OrganizedCrimeIndex + OrganizedCrimeReversionSpeed * (target - state.OrganizedCrimeIndex), 0f, MaxCrimeIndexPercent);
+            state.OrganizedCrimeIndex = Mathf.Clamp(state.OrganizedCrimeIndex + reversionSpeed * (target - state.OrganizedCrimeIndex), 0f, MaxCrimeIndexPercent);
         }
 
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
@@ -496,13 +496,13 @@ namespace PoliSim.Simulation
         /// by how far JudicialFundingLevel sits from its neutral 50 - higher funding reduces the
         /// target. Hard-clamped to [0, 100], the same scale as CrimeIndex.
         /// </summary>
-        public static void ApplyCorruptionIndex(Country country)
+        public static void ApplyCorruptionIndex(Country country, float reversionSpeed = CorruptionReversionSpeed)
         {
             EconomyState state = country.State;
             float target = country.BaselineCorruptionIndex
                 - JudicialFundingCorruptionSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
 
-            state.CorruptionIndex = Mathf.Clamp(state.CorruptionIndex + CorruptionReversionSpeed * (target - state.CorruptionIndex), 0f, MaxCrimeIndexPercent);
+            state.CorruptionIndex = Mathf.Clamp(state.CorruptionIndex + reversionSpeed * (target - state.CorruptionIndex), 0f, MaxCrimeIndexPercent);
         }
 
         // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
@@ -758,7 +758,7 @@ namespace PoliSim.Simulation
         /// like every other lever here, landing inside the SAME final Clamp(0, 100) that already
         /// serves as this stat's combined ceiling). Hard-clamped to [0, 100].
         /// </summary>
-        public static void ApplyCrimeIndex(Country country)
+        public static void ApplyCrimeIndex(Country country, float reversionSpeed = CrimeIndexReversionSpeed)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
@@ -772,7 +772,7 @@ namespace PoliSim.Simulation
                 + OrganizedCrimeIndexSensitivity * organizedCrimeGap
                 - interiorJusticeCompetenceBias;
 
-            state.CrimeIndex = Mathf.Clamp(state.CrimeIndex + CrimeIndexReversionSpeed * (target - state.CrimeIndex), 0f, MaxCrimeIndexPercent);
+            state.CrimeIndex = Mathf.Clamp(state.CrimeIndex + reversionSpeed * (target - state.CrimeIndex), 0f, MaxCrimeIndexPercent);
         }
 
         /// <summary>BusinessConfidence points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - higher-than-baseline crime deters investment, a real and well-documented effect, kept small since Confidence directly multiplies Investment.</summary>
@@ -793,7 +793,7 @@ namespace PoliSim.Simulation
         /// ApplyCategorySpendingEffects/ApplyWelfareProgramEffects' own nudges. The Organized Crime and
         /// Corruption terms were added in Round 3 item 3.
         /// </summary>
-        public static void ApplyCrimeEffects(Country country)
+        public static void ApplyCrimeEffects(Country country, float scale = 1f)
         {
             EconomyState state = country.State;
             float crimeGap = state.CrimeIndex - country.BaselineCrimeIndex;
@@ -802,7 +802,7 @@ namespace PoliSim.Simulation
             float confidenceAdjustment = CrimeBusinessConfidenceSensitivity * crimeGap
                 + OrganizedCrimeBusinessConfidenceSensitivity * organizedCrimeGap
                 + CorruptionBusinessConfidenceSensitivity * corruptionGap;
-            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence - confidenceAdjustment, MinConfidence, MaxConfidence);
+            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence - confidenceAdjustment * scale, MinConfidence, MaxConfidence);
         }
 
         // --- Prison Population Rate: a real, per-100k tracked stat, mean-reverting toward its own baseline (Round 2's "Deeper Crime & Justice") ---
@@ -828,7 +828,7 @@ namespace PoliSim.Simulation
         /// raises it), and JudicialFundingLevel (more funding reduces it via faster case processing -
         /// Round 3 item 3) - all gaps versus their shared neutral 50. Hard-clamped to [0, 1000].
         /// </summary>
-        public static void ApplyPrisonPopulationRate(Country country)
+        public static void ApplyPrisonPopulationRate(Country country, float reversionSpeed = PrisonPopulationReversionSpeed)
         {
             EconomyState state = country.State;
             float target = country.BaselinePrisonPopulationRate
@@ -836,7 +836,7 @@ namespace PoliSim.Simulation
                 + DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel)
                 - JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
 
-            state.PrisonPopulationRate = Mathf.Clamp(state.PrisonPopulationRate + PrisonPopulationReversionSpeed * (target - state.PrisonPopulationRate), 0f, MaxPrisonPopulationRate);
+            state.PrisonPopulationRate = Mathf.Clamp(state.PrisonPopulationRate + reversionSpeed * (target - state.PrisonPopulationRate), 0f, MaxPrisonPopulationRate);
         }
 
         // --- Economic Sectors: descriptive tracked breakdowns, isolated from the core GDP/unemployment/inflation loop (see CLAUDE.md's "Economic Sectors") ---
@@ -849,8 +849,50 @@ namespace PoliSim.Simulation
         /// **Derived, never typed in** — a hardcoded 0.001342 would silently become a different policy the
         /// moment `DaysPerTurn` changes, and the whole migration exists to change turn length.
         /// </summary>
-        private static readonly float SectorReversionSpeedPerDay =
-            1f - Mathf.Pow(1f - SectorReversionSpeed, 1f / SimulationManager.DaysPerTurn);
+        private static readonly float SectorReversionSpeedPerDay = PerDayReversion(SectorReversionSpeed);
+
+        /// <summary>
+        /// CONTINUOUS TIME: converts a per-TURN gap-closing fraction into its per-DAY equivalent.
+        ///
+        /// Translation shape #2, multiplicative. A reversion speed is the fraction of the gap that closes
+        /// in one step, so the gap SURVIVING one turn is `(1 - s_turn)`, and the daily speed must satisfy
+        /// `(1 - s_day)^121 = (1 - s_turn)`. **Dividing by 121 is the first-attempt bug the methodology
+        /// warns about** — it would close the gap materially faster than the turn model.
+        ///
+        /// Every phase's reversion constants go through here rather than being typed, so none can drift
+        /// from `DaysPerTurn` when the continuous-time migration changes turn length.
+        /// </summary>
+        // --- Continuous Time Phase 2: daily entry points. Thin wrappers on purpose - the target maths
+        // lives in ONE place per system, so the daily and turn paths can never disagree about what a
+        // country is reverting toward. Only the SPEED differs, which is the entire translation.
+        public static void ApplyLaborForceParticipationRateDaily(Country country) => ApplyLaborForceParticipationRate(country, LaborForceParticipationReversionSpeedPerDay);
+        public static void ApplyCrimeIndexDaily(Country country) => ApplyCrimeIndex(country, CrimeIndexReversionSpeedPerDay);
+        public static void ApplyOrganizedCrimeIndexDaily(Country country) => ApplyOrganizedCrimeIndex(country, OrganizedCrimeReversionSpeedPerDay);
+        public static void ApplyCorruptionIndexDaily(Country country) => ApplyCorruptionIndex(country, CorruptionReversionSpeedPerDay);
+        public static void ApplyPrisonPopulationRateDaily(Country country) => ApplyPrisonPopulationRate(country, PrisonPopulationReversionSpeedPerDay);
+        public static void ApplyCrimeEffectsDaily(Country country) => ApplyCrimeEffects(country, CrimeEffectsDailyScale);
+        private static float PerDayReversion(float turnSpeed)
+        {
+            return 1f - Mathf.Pow(1f - turnSpeed, 1f / SimulationManager.DaysPerTurn);
+        }
+
+        // --- Continuous Time Phase 2: Labor Market and Crime & Justice daily speeds ---
+        private static readonly float LaborForceParticipationReversionSpeedPerDay = PerDayReversion(LaborForceParticipationReversionSpeed);
+        private static readonly float CrimeIndexReversionSpeedPerDay = PerDayReversion(CrimeIndexReversionSpeed);
+        private static readonly float OrganizedCrimeReversionSpeedPerDay = PerDayReversion(OrganizedCrimeReversionSpeed);
+        private static readonly float CorruptionReversionSpeedPerDay = PerDayReversion(CorruptionReversionSpeed);
+        private static readonly float PrisonPopulationReversionSpeedPerDay = PerDayReversion(PrisonPopulationReversionSpeed);
+
+        /// <summary>
+        /// Phase 2: scale for <see cref="ApplyCrimeEffects"/>'s BusinessConfidence nudge, which is an
+        /// ACCUMULATING drift rather than a reversion — it has no target, so shape #2 does not apply.
+        /// Linear, shape #1: 121 daily applications of `sensitivity/121` sum to one turn's application.
+        ///
+        /// Approximate rather than exact, and knowingly so: the crime gaps driving it now move daily too,
+        /// so the sum is over a slightly varying gap instead of a fixed one. Second-order, and far inside
+        /// the ±3–5% aggregation bar.
+        /// </summary>
+        private const float CrimeEffectsDailyScale = 1f / SimulationManager.DaysPerTurn;
 
         /// <summary>Points added per point a sector's SubsidyLevel sits above its neutral 50 (and removed per point below) - applied uniformly to Output/Employment/SectorMetric in this first pass, deliberately not wired to the budget (see CLAUDE.md).</summary>
         internal const float SectorSubsidySensitivity = 0.04f;

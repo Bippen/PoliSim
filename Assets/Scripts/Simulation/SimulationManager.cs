@@ -138,6 +138,17 @@ namespace PoliSim.Simulation
                     // tolerance; see the two Daily methods for the per-constant reasoning.
                     MacroSystem.ApplySectorEffectsDaily(country);
                     MacroSystem.ApplyInfrastructureConditionDaily(country);
+
+                    // CONTINUOUS TIME PHASE 2: Labor Market and Crime & Justice. The ORDER matters and is
+                    // preserved exactly from AdvanceTurn - OrganizedCrime and Corruption run BEFORE
+                    // CrimeIndex, which reads that day's freshly-updated OrganizedCrimeIndex, and
+                    // ApplyCrimeEffects runs after all three because it reads all of their gaps.
+                    MacroSystem.ApplyLaborForceParticipationRateDaily(country);
+                    MacroSystem.ApplyOrganizedCrimeIndexDaily(country);
+                    MacroSystem.ApplyCorruptionIndexDaily(country);
+                    MacroSystem.ApplyCrimeIndexDaily(country);
+                    MacroSystem.ApplyCrimeEffectsDaily(country);
+                    MacroSystem.ApplyPrisonPopulationRateDaily(country);
                 }
             }
 
@@ -1215,14 +1226,10 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyPhillipsCurveInflation(country);
             MacroSystem.ApplyInflationExpectations(state);
             MacroSystem.ApplyPovertyRate(country);
-            MacroSystem.ApplyLaborForceParticipationRate(country);
-            // Round 3 item 3: must run BEFORE ApplyCrimeIndex, which reads this turn's freshly-updated
-            // OrganizedCrimeIndex.
-            MacroSystem.ApplyOrganizedCrimeIndex(country);
-            MacroSystem.ApplyCorruptionIndex(country);
-            MacroSystem.ApplyCrimeIndex(country);
-            MacroSystem.ApplyCrimeEffects(country);
-            MacroSystem.ApplyPrisonPopulationRate(country);
+            // Phase 2: LFPR, the three crime indices and prison population now run DAILY in AdvanceDay.
+            // Applying them again here would add a full turn's reversion on top of 121 daily steps. The
+            // Round 3 ordering constraint (OrganizedCrime before CrimeIndex, which reads its freshly-
+            // updated value) moved with them and is preserved in AdvanceDay.
 
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
