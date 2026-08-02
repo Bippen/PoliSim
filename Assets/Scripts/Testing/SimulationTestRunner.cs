@@ -38,6 +38,14 @@ namespace PoliSim.Testing
         private const float MaxInflationPercent = 50f;
         private const float MaxSingleTurnChangePercent = 20f;
 
+        /// <summary>
+        /// Master Sequence step 9: how far Step C4's rating may move in a single turn before it counts
+        /// as an anomaly. Four notches - real sovereign ratings move one or two at a time and multi-notch
+        /// cuts are crisis events, so four is comfortably outside normal behaviour without firing on the
+        /// ordinary debt movement the early turns produce.
+        /// </summary>
+        private const int MaxSingleTurnRatingNotchMove = 4;
+
         private class Snapshot
         {
             public float GDP;
@@ -45,6 +53,12 @@ namespace PoliSim.Testing
             public float Inflation;
             public float InterestRate;
             public float DebtToGdpRatio;
+            /// <summary>
+            /// Step C4's rating as a notch index (0 = AAA). Snapshotted so the trajectory check can see
+            /// a rating MOVE. The level itself is clamped in range by construction, so checking only the
+            /// level would be vacuous - movement is the one way a derived rating can misbehave over time.
+            /// </summary>
+            public int CreditRatingNotch;
         }
 
         private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress", "demographicpolicystress", "cabinetstress", "parliamentstress" };
@@ -118,7 +132,7 @@ namespace PoliSim.Testing
             foreach (Country country in world.Countries)
             {
                 decisions[country.Id] = PolicyDecision.None();
-                previous[country.Id] = SnapshotOf(country);
+                previous[country.Id] = SnapshotOf(country, simulationManager.GetLastFiscalReport(country.Id));
             }
 
             var anomalies = new List<string>();
@@ -209,9 +223,10 @@ namespace PoliSim.Testing
                             $"Population={state.Population:F3}, PopulationGrowthRate={state.PopulationGrowthRate:F3}, DependencyRatio={state.DependencyRatio:F2}");
                     }
 
-                    CheckAnomalies(turn, country, state, prev, anomalies);
+                    FiscalTurnReport report = simulationManager.GetLastFiscalReport(country.Id);
+                    CheckAnomalies(turn, country, state, prev, report, anomalies);
 
-                    previous[country.Id] = SnapshotOf(country);
+                    previous[country.Id] = SnapshotOf(country, report);
                 }
             }
 
@@ -729,7 +744,7 @@ namespace PoliSim.Testing
             };
         }
 
-        private static Snapshot SnapshotOf(Country country)
+        private static Snapshot SnapshotOf(Country country, FiscalTurnReport report)
         {
             return new Snapshot
             {
@@ -737,11 +752,12 @@ namespace PoliSim.Testing
                 Unemployment = country.State.Unemployment,
                 Inflation = country.State.Inflation,
                 InterestRate = country.CurrencyZone.InterestRate,
-                DebtToGdpRatio = country.State.DebtToGdpRatio
+                DebtToGdpRatio = country.State.DebtToGdpRatio,
+                CreditRatingNotch = (int)CreditRatingSystem.Evaluate(country, report).Rating
             };
         }
 
-        private static void CheckAnomalies(int turn, Country country, EconomyState state, Snapshot previous, List<string> anomalies)
+        private static void CheckAnomalies(int turn, Country country, EconomyState state, Snapshot previous, FiscalTurnReport report, List<string> anomalies)
         {
             if (state.GDP < 0f)
             {
@@ -932,6 +948,63 @@ namespace PoliSim.Testing
             CheckSwing(turn, country, "Inflation", previous.Inflation, state.Inflation, anomalies);
             CheckSwing(turn, country, "InterestRate", previous.InterestRate, country.CurrencyZone.InterestRate, anomalies);
             CheckSwing(turn, country, "DebtToGdpRatio", previous.DebtToGdpRatio, state.DebtToGdpRatio, anomalies);
+
+            CheckDerivedStats(turn, country, previous, report, anomalies);
+        }
+
+        /// <summary>
+        /// Master Sequence step 9: trajectory coverage for Steps A4 (<see cref="DerivedStats"/>) and C4
+        /// (<see cref="CreditRatingSystem"/>).
+        ///
+        /// **Why these need harness coverage at all, when neither can change a simulation number.**
+        /// Both are pure functions over already-tracked state, so they cannot corrupt the model. What
+        /// they CAN do is present a confident, wrong figure - and one specific path makes that silent:
+        /// <see cref="CreditRatingSystem.Evaluate"/> ends in `Mathf.RoundToInt(notches)` followed by a
+        /// clamp, and `RoundToInt(NaN)` is 0, which clamps to **AAA**. A non-finite deficit or growth
+        /// term would therefore not crash and not look wrong - it would render the best possible rating
+        /// on a broken country. Checking the inputs for finiteness is the only way that surfaces.
+        ///
+        /// Every A4 method returns `float?` with null meaning "not computable yet", which is a real
+        /// answer rather than a failure - so each is checked only when it has a value.
+        ///
+        /// Anomalies from here are prefixed `[DERIVED]` so they stay separable from the historical
+        /// anomaly counts quoted throughout CLAUDE.md, which were measured before this coverage existed.
+        /// </summary>
+        private static void CheckDerivedStats(int turn, Country country, Snapshot previous, FiscalTurnReport report, List<string> anomalies)
+        {
+            CheckDerivedFinite(turn, country, "GdpPerCapita", DerivedStats.GdpPerCapita(country), anomalies);
+            CheckDerivedFinite(turn, country, "TaxBurdenPercentOfGdp", DerivedStats.TaxBurdenPercentOfGdp(country, report), anomalies);
+            CheckDerivedFinite(turn, country, "SpendingPercentOfGdp", DerivedStats.SpendingPercentOfGdp(country, report), anomalies);
+            CheckDerivedFinite(turn, country, "DeficitPercentOfGdp", DerivedStats.DeficitPercentOfGdp(country, report), anomalies);
+            CheckDerivedFinite(turn, country, "RealGdpGrowthPercent", DerivedStats.RealGdpGrowthPercent(country), anomalies);
+
+            foreach ((SectorType type, float sharePercent) in DerivedStats.SectorSharesOfGdp(country))
+            {
+                CheckDerivedFinite(turn, country, $"SectorShareOfGdp[{type}]", sharePercent, anomalies);
+            }
+
+            CreditRatingSystem.Assessment assessment = CreditRatingSystem.Evaluate(country, report);
+
+            // The burden is what the rating actually reads, so a non-finite one is the failure that
+            // would otherwise surface as a silent AAA.
+            CheckDerivedFinite(turn, country, "CreditRating.EffectiveDebtBurden", assessment.EffectiveDebtBurden, anomalies);
+
+            int notchMove = Mathf.Abs((int)assessment.Rating - previous.CreditRatingNotch);
+            if (notchMove > MaxSingleTurnRatingNotchMove)
+            {
+                anomalies.Add($"[DERIVED] Turn {turn} {country.Name}: CreditRating moved {notchMove} notches in one turn " +
+                    $"({CreditRatingSystem.Format((CreditRating)previous.CreditRatingNotch)} -> {CreditRatingSystem.Format(assessment.Rating)}, " +
+                    $"effective burden {assessment.EffectiveDebtBurden:F1}%)");
+            }
+        }
+
+        /// <summary>Finiteness check for a nullable derived value. A null is "not computable yet", which is a real answer and not an anomaly.</summary>
+        private static void CheckDerivedFinite(int turn, Country country, string field, float? value, List<string> anomalies)
+        {
+            if (value.HasValue && (float.IsNaN(value.Value) || float.IsInfinity(value.Value)))
+            {
+                anomalies.Add($"[DERIVED] Turn {turn} {country.Name}: {field} is not finite ({value.Value})");
+            }
         }
 
         private static void CheckFinite(int turn, Country country, string field, float value, List<string> anomalies)

@@ -1083,13 +1083,18 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Master Sequence step 5e, Phase B pilot: the dashboard's nine headline stats restyled onto
+        /// Master Sequence step 5e, Phase B pilot: the dashboard's headline stats restyled onto
         /// <see cref="PoliSimWidgets.StatTile"/> in a 3-column grid, replacing the old raw
         /// GUILayout.Label two-column list - this is Phase B's actual sprite-pilot target (see
         /// POLISIM_MASTER_ROADMAP.md), not the Statistics tab's own content, since this is the one
-        /// surface visible on every tab. GDP is the only tile with a real turn-over-turn delta
-        /// available (_lastGrowthPercent, tracked via _prevGdp) - the other eight get no delta pill
-        /// rather than a fabricated one, since no comparable prior-turn value is tracked for them.
+        /// surface visible on every tab. Ten tiles now (nine without an independent currency): Step
+        /// C4's Credit Rating joined the grid 2026-08-02, beside Debt-to-GDP.
+        ///
+        /// **Only two tiles can show a delta pill, and for different reasons.** GDP has a real
+        /// turn-over-turn delta (_lastGrowthPercent, tracked via _prevGdp). Credit Rating shows its
+        /// OUTLOOK, which is not a delta at all but a forward signal, and only when that signal is
+        /// Positive or Negative. Every other tile gets no pill rather than a fabricated one, since no
+        /// comparable prior-turn value is tracked for them.
         /// DrawHeadlineGraphs (the procedural line graphs) is untouched by this pass - rule 10's own
         /// carve-out keeps every data visualization procedural; only the icon/portrait/background
         /// layer moves to sprite art.
@@ -1122,6 +1127,31 @@ namespace PoliSim.UI
             tiles.Add(("Poverty Rate", state.PovertyRate.ToString("F1"), "%", null, false, UiPalette.SystemArea.Welfare));
             tiles.Add(("Government Debt", state.GovernmentDebt.ToString("F1"), null, null, false, UiPalette.SystemArea.Fiscal));
             tiles.Add(("Debt-to-GDP", state.DebtToGdpRatio.ToString("F1"), "%", null, false, UiPalette.SystemArea.Fiscal));
+
+            // Step C4, placed 2026-08-02 (PROVISIONAL - see roadmap; revisable after visual review).
+            // Directly after Debt-to-GDP on purpose: a sovereign rating is a judgment ABOUT the fiscal
+            // position, not an independent variable, so it belongs beside the number it is mostly a
+            // judgment about. Derived every frame from current state rather than cached - it is pure
+            // arithmetic over values already on screen, and caching it is exactly how a rating could
+            // come to disagree with the debt figure sitting next to it.
+            //
+            // GetLastFiscalReport returns null on turn 0; Evaluate handles that by omitting the deficit
+            // term rather than guessing, so the tile always has a real value and never a placeholder.
+            CreditRatingSystem.Assessment rating = CreditRatingSystem.Evaluate(_playerCountry, _simulationManager.GetLastFiscalReport(PlayerCountryId));
+            // Only a Positive or Negative outlook gets a pill. StatTile's pill is binary - good or bad -
+            // and "Stable" is genuinely neither, so colouring it either way would assert something the
+            // model does not claim. An absent pill is already this grid's norm (seven of the other tiles
+            // show none), so absence reads as "nothing to telegraph", which is precisely what Stable
+            // means. The outlook exists to warn of a MOVE; no move, no warning.
+            bool hasOutlookSignal = rating.Outlook != RatingOutlook.Stable;
+            tiles.Add((
+                "Credit Rating",
+                CreditRatingSystem.Format(rating.Rating),
+                null,
+                hasOutlookSignal ? (rating.Outlook == RatingOutlook.Positive ? "OUTLOOK +" : "OUTLOOK −") : null,
+                rating.Outlook == RatingOutlook.Positive,
+                UiPalette.SystemArea.Fiscal));
+
             tiles.Add(("Budget Balance", state.Budget.ToString("F1"), null, null, false, UiPalette.SystemArea.Fiscal));
 
             int rows = Mathf.CeilToInt(tiles.Count / (float)columns);
