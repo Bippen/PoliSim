@@ -397,7 +397,39 @@ and `DeliveredAssetCheck` compares every zip's contents against what exists unde
 
 # F. Waiting on an upstream simulation defect
 
-## F1. 🔴 Step C4's CLOSURE — the blocker CHANGED 2026-08-02. It is now the deficit term.
+## F1. 🟢 Step C4's CLOSURE — the blocker is RESOLVED as of 2026-08-02. Awaiting Elias's sign-off.
+
+**Rating anomalies across the full matrix: 1,416 → 19.** A 98.7% reduction, and the deficit-term
+volatility that blocked C4 is gone with it. Nothing about C4 itself was changed — the fix was entirely
+upstream, in how SWF returns reach the budget.
+
+| Stage | `CreditRating moved` | `DebtToGdpRatio swung` |
+|---|---|---|
+| Original | 1,416 | 6,225 |
+| Debt floor removed | 1,394 | 2,507 |
+| SWF returns inside the multiplier | 1,020 | 3,508 |
+| **Structural draw (smoothing)** | **19** | **140** |
+
+**The decisive change was the double-count fix**, found while implementing the smoothing ruling: the
+realised return was added to the fund's assets *and* booked as government revenue, so the money existed
+twice. The budget now receives a 3%/year structural draw **withdrawn from** the fund — Norway's own
+fiscal rule — so it moves rather than duplicating, and is smooth by construction.
+
+**Sanity-checked as fixed rather than frozen:** no country pins the fiscal reaction multiplier any more
+(was 104/120 turns for Sweden, 51/120 for France), no country goes net-creditor, and trajectories still
+move — Sweden settles near 10.5% of GDP, France 92.3%, Germany 38.6%, Italy 115.2%, Poland 29.9%, USA
+142.2%. Inflation, unemployment and interest-rate anomaly counts are byte-identical throughout, which is
+the evidence of no leakage into the macro engine.
+
+⚠ **One thing worth Elias's eye, and it is a NEW question rather than a leftover:** Sweden's debt ratio is
+now very flat — 13.3% → 10.7% across 120 turns. That is a plausible equilibrium for a country whose fund
+draw roughly covers its deficit, but real debt ratios move more than that. **Possibly too quiet**, and a
+different question from the one this fix addressed.
+
+**What remains for closure: Elias confirming the rating behaves acceptably in play.** The defect is gone
+from the logs; whether the tile now reads well is a judgment about the screen.
+
+### The original entry, retained
 
 ⚠ **UPDATED, and the update is the point: the debt-to-zero bimodality is FIXED and was not the cause.**
 The floor came off, debt-swing anomalies fell 60% (6,225 → 2,507) — and rating anomalies moved 1.6%

@@ -247,6 +247,36 @@ namespace PoliSim.Simulation
         private const float MaxSwfToGdpPercent = 300f;
 
         /// <summary>
+        /// The SWF's STRUCTURAL DRAW into the budget, as a percentage of fund assets per YEAR — Norway's
+        /// own fiscal rule (the *handlingsregel*), which permits spending the fund's expected real return
+        /// rather than its realised one, whatever the market did that year.
+        ///
+        /// **This replaces booking the realised return as revenue, and fixes two defects at once
+        /// (2026-08-02, Elias's smoothing ruling):**
+        ///
+        /// 1. **VOLATILITY.** A realised return is market variance arriving in the budget. Sweden's fund
+        ///    reaches ~10,900 against a GDP near 1,200, so a single turn's equity swing could exceed 100%
+        ///    of GDP — which is the whole of C4's "settled deficit ranges −135.5% to +170.8%" blocker.
+        ///    A draw proportional to fund SIZE is smooth by construction.
+        /// 2. **DOUBLE-COUNTING.** `ApplyReturns` adds the return to `TotalAssets` *and* the same figure
+        ///    was then added to revenue — the fund kept it and the government spent it, so the money
+        ///    existed twice. The contribution one line above is handled correctly (budget pays, fund
+        ///    receives; money MOVES). The draw is now likewise withdrawn from the fund.
+        ///
+        /// 3% is Norway's own figure. Chosen over a rolling average of realised returns because an
+        /// average still transmits the LEVEL of a very large fund into the budget and damps only its
+        /// variance — and because this is the rule the real instrument actually uses.
+        /// </summary>
+        private const float SwfStructuralDrawPercentPerYear = 3f;
+
+        /// <summary>The annual structural draw expressed per TURN. A turn is <see cref="DaysPerTurn"/> days, so a year is 365/121 turns - derived rather than hardcoded, because the continuous-time migration will change the turn length and a baked-in constant would silently become a different policy.</summary>
+        private static float SwfStructuralDrawPerTurnFraction()
+        {
+            float turnsPerYear = 365f / DaysPerTurn;
+            return SwfStructuralDrawPercentPerYear / 100f / turnsPerYear;
+        }
+
+        /// <summary>
         /// How far below zero net government debt may run before it is caught, as a percentage of GDP.
         ///
         /// **This is a RUNAWAY GUARD, not a calibrated bound**, and the distinction is the whole point of
@@ -1127,15 +1157,26 @@ namespace PoliSim.Simulation
 
             float swfContribution = GetSwfContribution(country);
             float swfReturns = 0f;
+            float swfDraw = 0f;
             if (country.SovereignWealthFund != null)
             {
                 country.SovereignWealthFund.TotalAssets += swfContribution;
+
+                // The fund still accrues its ACTUAL market return, volatile and possibly negative. That
+                // keeps the STOCK honest and is what the player is shown.
                 swfReturns = SovereignWealthFundSystem.ApplyReturns(country.SovereignWealthFund);
                 float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
                 country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+
+                // What reaches the BUDGET is the structural draw, not the realised return - and it is
+                // WITHDRAWN, so it moves rather than duplicating. Clamped to the fund's own balance for
+                // the same reason the emergency drawdown is: a fund cannot pay out what it does not hold.
+                swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction();
+                swfDraw = Mathf.Clamp(swfDraw, 0f, country.SovereignWealthFund.TotalAssets);
+                country.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns, out float totalSpendingThisTurn, out float budgetBalanceThisTurn);
+            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out float totalSpendingThisTurn, out float budgetBalanceThisTurn);
 
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
@@ -1254,15 +1295,23 @@ namespace PoliSim.Simulation
             // of its sequence for a turn the player might not even commit to.
             float swfContribution = GetSwfContribution(previewCountry);
             float swfReturns = 0f;
+            float swfDraw = 0f;
             if (previewCountry.SovereignWealthFund != null)
             {
                 previewCountry.SovereignWealthFund.TotalAssets += swfContribution;
                 swfReturns = SovereignWealthFundSystem.GetAverageReturnEstimate(previewCountry.SovereignWealthFund);
                 float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
                 previewCountry.SovereignWealthFund.TotalAssets = Mathf.Clamp(previewCountry.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+
+                // Mirrors AdvanceTurn exactly: the budget sees the structural DRAW, not the return. The
+                // preview must model the same flow the turn will, or the estimate it shows is of a
+                // mechanism the game no longer has.
+                swfDraw = previewCountry.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction();
+                swfDraw = Mathf.Clamp(swfDraw, 0f, previewCountry.SovereignWealthFund.TotalAssets);
+                previewCountry.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfReturns, out _, out _);
+            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out _, out _);
 
             float previewedInterestRate;
             if (previewCountry.CurrentFedChair != null)
@@ -2254,7 +2303,12 @@ namespace PoliSim.Simulation
             float fiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
             float financeTreasuryCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.FinanceTreasury);
             float effectiveCollectionEfficiency = Mathf.Clamp01(country.CollectionEfficiency + financeTreasuryCompetenceBias);
-            // SWF RETURNS ARE INSIDE THE MULTIPLIER (2026-08-02, Elias's ruling: fix the cause).
+            // NOTE: `swfReturns` here is now the STRUCTURAL DRAW, not the realised market return - see
+            // SwfStructuralDrawPercentPerYear. The parameter name is retained because it is the fund's
+            // contribution to revenue either way, and renaming it across every call site would obscure
+            // the diff that matters. The realised return no longer reaches the budget at all.
+            //
+            // SWF INCOME IS INSIDE THE MULTIPLIER (2026-08-02, Elias's ruling: fix the cause).
             //
             // They used to be added AFTER it - `... * fiscalReactionMultiplier + swfReturns` - which put
             // the fastest-growing component of a net creditor's revenue permanently beyond the reach of
