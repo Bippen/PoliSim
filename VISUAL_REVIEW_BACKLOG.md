@@ -1,12 +1,13 @@
 # Visual review backlog — everything built but never seen
 
-**As of 2026-08-02.** Ten items are in the "built, compiles, committed, never visually confirmed" state.
-They are ordered so that **items 1–6 and 10 need no game advancement at all** — enter Play mode and they
+**As of 2026-08-02.** Eleven items are in the "built, compiles, committed, never visually confirmed" state.
+They are ordered so that **items 1–6, 10 and 11 need no game advancement at all** — enter Play mode and they
 are on screen. Item 7 needs one turn, item 8 needs two, item 9 needs three or four depending on country.
 
-*Item 10 is numbered last but is a Tier 0 item; it was appended rather than renumbering 1–9, which are
-referenced from `ELIAS_ACTION_LIST.md` and the roadmap. It is also the only item here where a rejection
-would mean something is factually wrong rather than merely unattractive — see its own entry.*
+*Items 10 and 11 are numbered last but are Tier 0; they were appended rather than renumbering 1–9, which
+are referenced from `ELIAS_ACTION_LIST.md` and the roadmap. Item 10 is the only one here where a rejection
+would mean something is factually **wrong** rather than merely unattractive, and item 11 carries a known,
+already-logged model defect — read its warning before reviewing it.*
 
 One session, one fast-forward, in order. Nothing below requires restarting.
 
@@ -27,7 +28,7 @@ look at. They are ready for whenever B2's rendering gets built. Step D is delive
 
 ---
 
-# TIER 0 — no advancement needed (items 1–6)
+# TIER 0 — no advancement needed (items 1–6, plus 10 and 11 at the end of this tier)
 
 ## 1. Statistics nav icon sizing
 
@@ -150,6 +151,29 @@ two channels — but if it reads as a bug to you, say so, because it will read t
 
 **If rejected:** isolated to `PolicyScreenStatsRenderer` and two call sites; nothing else consumes it.
 
+## 11. Credit Rating tile — placement provisional, and it is *knowingly wrong* for three countries
+
+**What / where:** `3d77b11`. Step C4's rating joins the dashboard tile grid directly after Debt-to-GDP.
+Tier 0 — visible on every tab, the moment you enter Play mode.
+
+**Look at:** the dashboard tile grid, on load. Then advance a few turns and watch it.
+
+**The judgment:** does a rating belong in the headline grid at all, or does it read as clutter next to
+Debt-to-GDP saying much the same thing? Placement was Elias's call and is explicitly **provisional** —
+the alternative home is the Budget screen. Also: "AA+" is the only non-numeric value in a grid of
+numbers, so check it doesn't look out of place at `FontStatHero`.
+
+⚠ **Known defect — do not report this as a review finding, it is already logged.** The rating thrashes
+for **Sweden, France and Germany** (up to 16 notches in one turn and back), because C4's deficit term is
+uncapped and unsmoothed. See the roadmap's Open Questions. It is correct and stable for **USA, Italy and
+Poland** — review the placement using one of those three. The thrash is a model defect awaiting a
+re-calibration decision, not a display bug.
+
+**Outlook pill:** only appears for a Positive or Negative outlook. A missing pill means "Stable", not
+missing data — `StatTile`'s pill is binary and Stable is neither good nor bad.
+
+**If rejected:** one tile entry in `DrawHeadlineStatTiles`; the rating itself is used nowhere else.
+
 ---
 
 # TIER 1 — one turn (ends day 121 = 2026-05-02)
@@ -249,7 +273,8 @@ Master Sequence step 5 open. Approving items 1–9 closes 5e entirely.
 | 4 | Amber draft cue | none | drag a slider |
 | 5 | Policy/Laws restyle | none | on load |
 | 6 | Budget full-screen | none | on load |
-| 10 | **B2 stat row** | none | last of the free ones; do it after 5 and 6, since it sits *on* both those screens and you want them settled first |
+| 10 | **B2 stat row** | none | after 5 and 6, since it sits *on* both those screens |
+| 11 | **Credit Rating tile** | none | use USA, Italy or Poland - the other three thrash, already logged |
 | — | *advance 1 turn* | → 2026-05-02 | |
 | 7 | First release + lag | 1 turn | shares axis with 8 |
 | — | *advance 1 turn* | → 2026-08-31 | |

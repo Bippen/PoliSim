@@ -95,9 +95,9 @@ blocker on C1–C3 is external and may persist.
 
 ---
 
-# B. VISUAL REVIEWS — 10 items, one session
+# B. VISUAL REVIEWS — 11 items, one session
 
-Full detail in `VISUAL_REVIEW_BACKLOG.md`. **Seven need no game advancement**; the rest fit one sitting
+Full detail in `VISUAL_REVIEW_BACKLOG.md`. **Eight need no game advancement**; the rest fit one sitting
 with three fast-forwards. Review **item 2 before item 3** — the restructure gates the graph redesign.
 
 | # | Item | Advancement |
@@ -112,15 +112,21 @@ with three fast-forwards. Review **item 2 before item 3** — the restructure ga
 | 8 | **Revision treatment — the payoff for Step A + B1** | 2 turns → 2026-08-31 |
 | 9 | Budget Process restyle — **closes Master Sequence step 5** | 3 turns (USA) / 4 (EU) |
 | 10 | **B2 stat row** *(new 2026-08-02)* — the only item where rejection means something is factually wrong, not just ugly | none |
+| 11 | **Credit Rating tile** *(new 2026-08-02)* — placement provisional; review on USA, Italy or Poland only | none |
 
 **Item 8 is the one that matters.** Everything else asks "does it look right." That one asks whether a
 player can *see* a revision happen without being told. If not, Step A is built but not communicated.
 
+⚠ **Item 11 carries a known model defect — already logged, do not re-report it.** The rating thrashes up
+to 16 notches per turn for Sweden, France and Germany because C4's deficit term is uncapped and
+unsmoothed (roadmap Open Questions). It is correct and stable for USA, Italy and Poland; use one of those
+to judge the placement.
+
 **Keep the `[DEBUG]` dump** (`GameController.cs:2589`) until item 8 passes — it is your cross-check that
 the picture matches the data. Tell me when it passes and I'll strip it.
 
-*Note: no save/load exists, so closing Unity mid-review loses advancement. Items 1–6 are free to redo;
-do 7–9 in one sitting.*
+*Note: no save/load exists, so closing Unity mid-review loses advancement. Items 1–6, 10 and 11 are free
+to redo; do 7–9 in one sitting.*
 
 ---
 
@@ -226,12 +232,12 @@ Interest rate is one of the 18 stats reachable on a policy screen, has its own p
 | Category | Count | Unblocks |
 |---|---|---|
 | ~~**Decisions**~~ | ~~5~~ **0 — all answered `8291662`** | — |
-| **Visual reviews** | **10** | Master Sequence step 5 closure |
+| **Visual reviews** | **11** | Master Sequence step 5 closure |
 | **Figures** | 17 blocking + 4 deferred | Steps C1, C2, C3, C5 |
 | **External** | 1 | Cosmetic only |
 
-**Fastest path to unblocking the most work, as of 2026-08-02:** the **seven zero-advancement visual
-reviews** (1–6 and 10) — they need nothing but Play mode, and item 10 doubles as a correctness check on
+**Fastest path to unblocking the most work, as of 2026-08-02:** the **eight zero-advancement visual
+reviews** (1–6, 10 and 11) — they need nothing but Play mode, and item 10 doubles as a correctness check on
 the Policy Web's edge list. Then items 7–9 in one sitting, which closes Master Sequence step 5. The
 C-step figures remain the long pole and the only items needing database access rather than judgement.
 
