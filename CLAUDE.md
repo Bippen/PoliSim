@@ -5244,8 +5244,8 @@ distinct warnings, 1 UAC1001 + 11 UAC1009 — identical to yesterday**, none in 
 10-turn batch run's 17 anomalies are the documented pre-existing Sweden/France debt-to-zero baseline (see
 "SpendingLine Amount Ceiling - Debt-to-Zero Fix"); an OnGUI-only change cannot reach simulation math,
 which `BatchSimulationRunner` exercises without ever calling `OnGUI`. **Not visually confirmed** — added
-as `VISUAL_REVIEW_BACKLOG.md` item 10, and it is the only item there where rejection would mean a Policy
-Web *edge* is wrong rather than something merely looking bad.
+as review item 10, and it is the only item there where rejection would mean a Policy Web *edge* is wrong
+rather than something merely looking bad. *(Confirmed 2026-08-02 — see `COMPLETED.md` section 16.)*
 
 ### Also fixed: four `.meta` files were never committed
 
@@ -5586,7 +5586,8 @@ by anything in the output itself.
   was known to be false.
 
 **Each of these came within one step of a false report.** (b) *was* briefly reported as "no sprites
-delivered" and had to be corrected in `VISUAL_REVIEW_BACKLOG.md`. (c) would have declared four
+delivered" and had to be corrected in the visual review record (now `COMPLETED.md` section 16).
+(c) would have declared four
 fully-imported asset packs broken and blocked a cleanup on fictional missing files.
 
 ### Why a universal negative is the dangerous shape specifically
@@ -5717,8 +5718,8 @@ is void — visible before any finding is interpreted rather than after.
 
 ## The sparkline crash — two transferable lessons (2026-08-02)
 
-Fixed in `e9e3f6a`; the defect itself is written up in `VISUAL_REVIEW_BACKLOG.md`. Two points generalise
-well beyond it.
+Fixed in `e9e3f6a`; the defect itself is written up in `COMPLETED.md` section 16, with the stack trace.
+Two points generalise well beyond it.
 
 ### 1. Sharing an algorithm was right. Sharing its constants was not.
 

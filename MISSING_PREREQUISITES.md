@@ -14,9 +14,9 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 |---|---|---|
 | ~~**Elias — decision**~~ | ~~3~~ **0 — all resolved 2026-08-02** | — |
 | **Elias — database access** | 16 blocking + 1 anchor | Steps C1, C2, C3, C5 |
-| **Elias — visual review** | ~~11~~ **7 open** (4 closed 2026-08-02) | Master Sequence step 5 closure |
+| ~~**Elias — visual review**~~ | ~~11~~ **0 — all confirmed 2026-08-02** | Step 5 CLOSED |
 | ~~**Claude Design**~~ | **0 — delivered and imported 2026-08-02** | — |
-| **Another task first** | 3 | Cabinet portraits, Round 4 scoping, Step C4 closure |
+| **Another task first** | ~~3~~ **2** | Cabinet portraits, Step C4 closure. *Round 4 scoping released 2026-08-02* |
 
 ---
 
@@ -273,33 +273,18 @@ only, or use homeownership for the USA (65.3 exists and is comparable).
 
 # C. Waiting on Elias — visual review
 
-## ✅ REVIEWED 2026-08-02. Four items closed; seven still open.
+## ✅ NOTHING. Section C is empty as of 2026-08-02.
 
-**Elias reviewed all eleven live, as USA.** Items 1, 2, 4 and 11 passed clean and moved to `COMPLETED.md`
-section 14. **Master Sequence step 5 still does NOT close** — it needs 1–9, and 3, 7, 8 and 9 failed.
+**All eleven items are confirmed.** Elias reviewed them live as USA, then re-reviewed the five that had
+failed or carried caveats — 3, 7, 8, 9 and 10 — and passed all five. Full record in `COMPLETED.md`
+section 16. **`VISUAL_REVIEW_BACKLOG.md` has been deleted**, its content migrated, per the standing rule
+that an emptied document drifts back into use.
 
-**What each remaining item now waits on — they are no longer all the same thing:**
+**Master Sequence step 5 is CLOSED**, which releases D2 (Round 4 scoping) below.
 
-| Item | Waits on |
-|---|---|
-| 9 (black screen) | **Nothing — FIXED** (`e9e3f6a`). Waits only on Elias re-looking |
-| 10 (B2 stat row) | Elias re-looking **after advancement** — its sparklines never rendered at turn 0, and the sparkline is what crashed item 9 |
-| 3 (unit bug) | **Nothing — FIXED** (`628d78e`, 6 of 6 diagnostic checks pass). Waits only on Elias re-looking, and on item 3's *original* question: does a one-point published graph read as working or as broken? |
-| 7, 8 (unreadable graphs) | **Nothing — unblocked.** The axis no longer misreports magnitude, so these are now a live readability judgment and the top of the queue |
-| 5, 6 (clipping) | **Me** — audited, shared helper recommended |
-
-*This section is no longer one undifferentiated "waiting on Elias" block. As of the P2 fix, **five of the
-seven wait on Elias looking** and only 5 and 6 wait on work.*
-
-**11 items, detailed in `VISUAL_REVIEW_BACKLOG.md`.** Not duplicated here; that document is the live
-list and holds the per-item look-at/judgment/if-rejected detail.
-
-**Eight need no game advancement** (items 1–6, 10, 11) — enter Play mode and they are on screen. Items
-7–9 need one, two and three-to-four turns respectively and should be done in one sitting, because there
-is still no save/load and closing Unity loses the advancement.
-
-**Blocks:** **Master Sequence step 5 cannot close until items 1–9 are confirmed.** That in turn is what
-gates scoping Round 4 (item 6) — see D2. Items 10 and 11 belong to step 9 and gate nothing.
+**The two defects behind items 5 and 6 did not block closure, and are still live** — the label-clipping
+class, tracked in the roadmap as P4. They belong there rather than here: a known defect is not an
+unconfirmed screen, and nothing about them waits on a named party.
 
 ⚠ **Item 11 carries a known model defect** — the C4 thrash in A1 above. Review it on USA, Italy or
 Poland; the defect is logged and should not be re-reported as a review finding.
@@ -320,15 +305,16 @@ which would violate the derive-filenames-from-real-values rule the asset request
 **Blocks:** nothing. Current coverage is complete — 9 ministers + 7 Fed chairs = 16 portraits, all
 present and name-matched.
 
-## D2. Round 4 scoping
+## ~~D2. Round 4 scoping~~ — ✅ RELEASED 2026-08-02. Not blocked; moved to the roadmap as live work.
 
-**Task:** scope Master Sequence item 6.
+Its only gate was Master Sequence step 5, which closed when Elias confirmed the last five review items.
+The dependency was real rather than cautious — Round 4 is scoped after step 5 so anything new is built
+against the gated-legislation model from day one instead of being retrofitted — and it is now satisfied.
 
-**Needs:** Master Sequence step 5 to close, which needs section C's visual reviews 1–9.
-
-**Why it is a real dependency rather than caution:** the roadmap's own rule is that Round 4 is scoped
-only once step 5 is done, so anything new is built directly against the gated-legislation model from day
-one rather than being retrofitted.
+⚠ **Still gated on one thing, which is NOT a blocker in this register's sense:** the agreed execution
+order puts item 8 (save/load) and item 7 (Continuous Time Phases 1–5) *before* Round 4, so that new
+systems are built against both finished foundations rather than converted to daily granularity
+afterwards. That is a sequencing decision already made, not a party to wait on.
 
 ---
 

@@ -138,8 +138,7 @@ checking them against the real model — they did not match how drafts actually 
 ### Step 5e — visual rollout. Phases A and B done; Phase C batches 1–3 live-confirmed.
 
 Scope was revised to absorb 5f (tab/IA reorg + full sprite-based overhaul). Batches 1–3 confirmed
-2026-08-01. **Batches 4–6 are built but await visual confirmation** — see `VISUAL_REVIEW_BACKLOG.md`;
-they are not recorded as complete here.
+2026-08-01. **Batches 4–6 confirmed 2026-08-02** — see section 16, which closed step 5 entirely.
 
 **Lasting decisions from the visual work:**
 - Tax and Spending merged into one **Budget** tab (`ConsolidatedTab` 7 → 6 values).
@@ -159,8 +158,9 @@ were wrong, found by verifying against the commits rather than the summary:
   Step A *including Tier 0 derived stats* as "DONE (2026-08-01), commit `e3a0feb`". That commit contains
   exactly two files, `PublicationSystem.cs` and `SimulationManager.cs`; `DerivedStats.cs` was not added
   until `70798e9`, whose own message says "NOT trajectory-validated".
-- **B1 is built, not confirmed**, and belongs in `VISUAL_REVIEW_BACKLOG.md` rather than here. Its entry is
-  retained below for the one part that *is* validated — `FormatAxisValue`.
+- **B1 was built-not-confirmed when this was written; confirmed 2026-08-02** as review items 3, 7 and 8 —
+  see section 16. Its entry below is retained for the part that was validated at the time,
+  `FormatAxisValue`, which the P2 fix has since scoped to non-currency axes only.
 
 ### Step A1–A3 — release calendar, published-series model, revisions. DONE 2026-08-01.
 
@@ -424,7 +424,7 @@ Unity mint new ones and any future serialized reference would resolve differentl
 
 ## 10. Master Sequence step 5e — Phases A and B, Phase C batches 1–3
 
-*Consolidated out of the roadmap 2026-08-02. Batches 4–6 remain live in `VISUAL_REVIEW_BACKLOG.md`.*
+*Consolidated out of the roadmap 2026-08-02; batches 4–6 confirmed the same day — see section 16.*
 
 **Phase A — tab/IA restructuring. DONE 2026-07-31.** 18 tabs to 7 consolidated tabs with sub-categories.
 Elias confirmed all five placement calls: Trade split (informational to Statistics, policy to
@@ -713,3 +713,76 @@ at the root means something in it is unfinished.
 ⚠ **One consequence, raised not resolved:** review item 10 was seen with the Interest Rate chip's label
 flush left where the missing icon would have been, so that row's spacing is not what Elias approved. That
 is item 10's *second* caveat, alongside its sparklines never having rendered at turn 0.
+
+---
+
+## 16. Visual review CLOSED — all eleven items confirmed, and Master Sequence step 5 with them (2026-08-02)
+
+**Elias re-reviewed items 3, 7, 8, 9 and 10 and passed all five.** With 1, 2, 4 and 11 closed earlier the
+same day and 5 and 6 having passed with a defect, **every one of the eleven items is confirmed.**
+`VISUAL_REVIEW_BACKLOG.md` was deleted per the standing pattern — an emptied document drifts back into
+use — and this section is its record.
+
+### Final results — all eleven
+
+| Item | Result |
+|---|---|
+| 1. Statistics nav icon | ✅ PASS — *"it reads like an icon"* |
+| 2. Statistics restructure | ✅ PASS — *"natural"* |
+| 3. Published graph, empty state | ✅ PASS on re-review, after the P2 unit fix (`628d78e`) |
+| 4. Amber draft cue | ✅ PASS — *"says it is a draft"* |
+| 5. Policy/Laws restyle | ✅ PASS with a defect — *"trade is cut off"* |
+| 6. Budget full-screen | ✅ PASS with a defect — text above the icons clipped |
+| 7. First release + reporting lag | ✅ PASS on re-review, once the axis stopped misreporting magnitude |
+| 8. Revision treatment | ✅ PASS on re-review |
+| 9. Budget Process restyle | ✅ PASS on re-review, after the sparkline crash fix (`e9e3f6a`) |
+| 10. B2 contextual stat row | ✅ PASS on re-review, with both caveats cleared |
+| 11. Credit Rating tile | ✅ PASS — placement confirmed |
+
+**The two defects in 5 and 6 remain live work and did NOT block closure**, correctly: the items are
+confirmed as designs, and what is left is the label-clipping class (P4), which is a defect with its own
+entry in the roadmap rather than an unconfirmed screen. Keeping the review open for it would have
+conflated "has not been seen" with "has a known bug".
+
+### What the four failures cost, and what each taught
+
+Three of the four failures were real defects rather than taste, and each produced a permanent check:
+
+- **Item 3 — the currency unit bug.** `FormatAxisValue(29000)` rendered "29k" for $29 trillion; the third
+  instance on the same value. Fixed by `UiFormat.Money` with the unit a **required** parameter, covered by
+  `MoneyFormatDiagnostic` (6 of 6). Full record in `CLAUDE.md`.
+- **Items 7 and 8 — "hard to make out any of the graphs".** Not a marker-design problem at all, which is
+  why the sequencing mattered: both were held behind item 3 rather than iterated on, and both passed once
+  the axis stopped lying about magnitude. **Two review items were fixed by changing neither of them.**
+- **Item 9 — a black screen**, and the most instructive. `SetPixelSafe` bounds-checked against the
+  full-size graph's 300×90 while `DrawSparkline` passed a 72×20 buffer; at y≥5 the index ran past the
+  1,440-element array and threw inside `OnGUI`, aborting the frame. 2,309 occurrences in Elias's own
+  `Editor.log`.
+
+  ```
+  IndexOutOfRangeException: Index was outside the bounds of the array.
+    at GraphRenderer.SetPixelSafe          (GraphRenderer.cs:815)
+    at GraphRenderer.DrawSparkline         (GraphRenderer.cs:769)
+    at PolicyScreenStatsRenderer.DrawChip  (PolicyScreenStatsRenderer.cs:143)
+    at GameController.OnGUI                (GameController.cs:833)
+  ```
+
+  It came from B2's own "reuse, don't duplicate" decision backfiring: `DrawLine` was deliberately reused
+  *"so a sparkline can't disagree with its full-size counterpart"* — the right instinct with a shared
+  helper that was not dimension-agnostic. **Sharing the algorithm was correct; sharing the constants was
+  not.** The maths is now `BuildSparklinePixels`, callable headlessly, and `GraphRendererDiagnostic`
+  covers 336 size/shape combinations plus the exact failing case.
+
+### Item 10 carried two caveats into the re-review, and both are now cleared
+
+Worth recording because both were found by reasoning about *what the reviewer could actually have seen*,
+not by re-testing:
+
+1. Its sparklines never rendered during the first pass — item 10 is Tier 0, so it was reviewed at turn 0,
+   and `DrawSparkline` returns early below two history points. The component that had been confirmed was
+   not the component that later crashed.
+2. It was reviewed with the Interest Rate chip drawing no icon, because `icon_stat_interestrate` had not
+   yet been imported and the null-on-missing contract shifted the label into the icon's space.
+
+**A pass is only valid for what was on screen.** Both caveats invalidated a confirmation that looked
+complete, and neither would have surfaced from the review notes alone.

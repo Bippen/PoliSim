@@ -40,34 +40,32 @@ standing pattern — see "Document set and the consolidation rule" at the bottom
 Finished → `COMPLETED.md`. Built-but-unconfirmed and built-but-uncalled are **neither** — they stay live,
 because they are not done.
 
-- **DONE** — Master Sequence steps 1, 2, 3, 4, 5a–5d, and 5e Phases A/B + batches 1–3; Roadmap Rounds 1–3
-  (15 items); macro overhaul Steps A1–A3 and D. See `COMPLETED.md`.
-- 🔴 **REVIEWED 2026-08-02 — MASTER SEQUENCE STEP 5 DOES NOT CLOSE.** Elias reviewed all eleven items
-  live, as USA. **Items 3, 7, 8 and 9 failed**; closure needs 1–9. Full results and priority order in
-  `VISUAL_REVIEW_BACKLOG.md`.
-  - **Closed:** 1, 2, 4, 11 (and 10, with a caveat below).
-  - **Pass with defects:** 5 and 6 — text clipping, the label-measurement class already fixed 5+ times.
-  - **Failing:** 3 (unit bug — **FIXED `628d78e`**, needs re-review), 7 and 8 (graphs unreadable —
-    **no longer blocked**, now reviewable), 9 (black screen — **root-caused and FIXED**, needs
-    re-review).
-  - ⚠ **Item 10's pass is not safe.** It is Tier 0 so it was reviewed at turn 0, and `DrawSparkline`
-    returns early below two history points — **its sparklines never rendered during the review**, and the
-    sparkline is precisely what crashed item 9. Re-review 10 with 9.
-  - **The `[DEBUG]` dump stays live** at `GameController.cs:2589` until item 8 passes.
+- **DONE** — Master Sequence steps **1, 2, 3, 4 and 5 (all of it)**; Roadmap Rounds 1–3 (15 items); macro
+  overhaul Steps A1–A3 and D. See `COMPLETED.md`.
+- ✅ **MASTER SEQUENCE STEP 5 IS CLOSED (2026-08-02).** Elias reviewed all eleven items live as USA, then
+  re-reviewed the five that had failed or carried caveats. **All eleven are confirmed.** Full record in
+  `COMPLETED.md` section 16; `VISUAL_REVIEW_BACKLOG.md` was deleted per the standing pattern rather than
+  left as an empty shell.
+  - Three of the four failures were real defects, and each left a permanent check behind —
+    `MoneyFormatDiagnostic`, `GraphRendererDiagnostic`, `StatIconCoverageCheck`.
+  - **Items 7 and 8 passed without either being touched**, because both were blocked on item 3's unit bug
+    rather than on marker design. Sequencing them behind it instead of iterating saved the wasted pass.
+  - The `[DEBUG]` publication-lag dump is **removed** — item 8 passed, which was its whole purpose.
+  - **Round 4 scoping is unblocked**, having been gated on exactly this.
 - **BUILT, NOT CALLED — still live** — macro Step A4. Trajectory-validated but surfaces nothing to the
   player; see the Step A4 entry under Master Sequence item 9.
-- **WAITING, NOT LIVE** — all blocked work is in `MISSING_PREREQUISITES.md`: 16 figures needing database
-  access (Steps C1, C2, C3, C5), the visual reviews above, and Step C4's closure (section F). *All three
-  Elias decisions were resolved 2026-08-02, and section E emptied the same day — `icon_stat_interestrate`
-  was delivered and imported, so nothing waits on Claude Design.*
+- **WAITING, NOT LIVE** — what is left in `MISSING_PREREQUISITES.md` is now **one supplier and one
+  upstream defect**: 16 figures needing database access (Steps C1, C2, C3, C5), and Step C4's closure
+  (section F). *Decisions, Claude Design and the visual reviews all emptied on 2026-08-02.*
 - 🔴 **HIGHEST-PRIORITY DEFECT — the debt-to-zero bimodality.** Dedicated entry immediately below.
   Promoted 2026-08-02: it now blocks a step AND is player-visible, neither of which was true before.
-- **NOT STARTED, UNBLOCKED** — Master Sequence items 6 (Round 4, itself gated on step 5 closing) and 7
-  (Continuous Time Phases 1–5), both **weeks** of work; item 8 (save/load, scoped only).
+- **NOT STARTED, UNBLOCKED** — Master Sequence item 6 (**Round 4 — now scopeable, its gate cleared when
+  step 5 closed**) and item 7 (Continuous Time Phases 1–5), both **weeks** of work; item 8 (save/load,
+  scoped only, and first in the agreed execution order).
 
 **Built 2026-08-01/02, all now reachable**: macro Step A4 (`70798e9`), Step C4 (`76a8f35`), and B2
 rendering (`5701a04`) wired at sub-screen granularity (`4869476`). C4 is placed on the dashboard tile
-grid beside Debt-to-GDP (`3d77b11`) — **placement is PROVISIONAL and revisable after visual review**.
+grid beside Debt-to-GDP (`3d77b11`) — **placement CONFIRMED** by review item 11.
 
 **Trajectory validation, run 2026-08-02** (`3d77b11`; full matrix, 15 scenarios × 100 and 500 turns,
 `-seed=777`, real Unity 6000.5.6f1). Both were validatable only once `SimulationTestRunner` evaluated
@@ -173,10 +171,8 @@ This is the one authoritative order, replacing whatever each original document s
 2. **Part C (UI/graph restyling). DONE** — see `COMPLETED.md`.
 3. **Continuous Time Phase 0. DONE** — see `COMPLETED.md`. Calendar/UI only; changed no economic math.
 4. **Part B, PILOT (Tax Policy tab). DONE** — see `COMPLETED.md`.
-5. **Part B, full rollout (5a–5f).** 5a–5d **DONE** (`COMPLETED.md`). **5e is the only live part:** Phases
-   A and B done, Phase C batches 1–3 live-confirmed, **batches 4–6 built but awaiting visual
-   confirmation** — see `VISUAL_REVIEW_BACKLOG.md` items 4, 5 and 9. Scope absorbed 5f. Confirming those
-   three closes step 5 entirely. Full 5e spec in Part B below.
+5. **Part B, full rollout (5a–5f). DONE 2026-08-02** — see `COMPLETED.md` sections 10 and 16. 5e's Phase C
+   batches 4–6 were the last live part, and Elias's review confirmed them. Scope absorbed 5f.
 6. **Resume Roadmap work (a new Round 4)** — only scope this once step 5 is done, so anything new is built directly against the gated-legislation model from day one.
 7. **Continuous Time Migration — Phases 1 through 5** (the actual daily-granularity conversion of each system's math, safest-first, core macro engine last). This is deliberately positioned after the political-systems work — it's a separate concern (simulation granularity, not who can change policy) and touching the same files for two unrelated reasons in the same window is worth avoiding.
 8. **NEW (2026-07-31) — Build a save/load system.** Not yet scoped, not yet sequenced into the numbered order above (appended here rather than renumbering 1-7, which are referenced extensively throughout this document and `CLAUDE.md`). **Recommendation, pending Elias's confirmation**: scope and build this before or alongside Round 4 (item 6) — Round 4 is already unscoped and is the natural next planning point, and building more features on top of an unpersisted game only compounds the amount of state a save system will eventually need to cover. Reasoning this is a real severity issue, not a nice-to-have: confirmed via direct investigation (zero `PlayerPrefs`/`JsonUtility`/`BinaryFormatter`/any persistence mechanism anywhere in the codebase) that every Unity Editor/Play-mode restart discards ALL game state silently, with no error or warning - and the amount of state that now matters has grown substantially since this was last a non-issue: Cabinet ministers and their competence/philosophy, Parliament seat composition, any pending TaxBill/BudgetBill and its DaysRemaining countdown, every draft dictionary across every gated tab, the calendar date itself, Fed Chair terms, SWF holdings - losing any of this on an ordinary restart is a real loss of play, not a cosmetic gap. This was the leading suspect for a live-play anomaly where an SWF draft never became standing across two observed fiscal-year cycles - **now confirmed as the actual cause**: Elias confirmed Unity was closed/reopened multiple times between setting the draft and the next fiscal date, and the underlying bill mechanism itself was independently proven correct across two full fiscal years via a targeted diagnostic (see CLAUDE.md's "Master Sequence step 5a/5b/5c" writeup). Needs its own design pass before implementation starts, not a guess: what serializes cleanly under Unity's own `JsonUtility` (which - like Unity's Inspector serialization generally - doesn't support `Dictionary<>` natively either, the same limitation already visible as `UAC1009` warnings on several existing fields, e.g. `PolicyDecision.TaxRateOverrides`/`SpendingLineChanges`/every Sector-override dictionary; `BudgetBill`'s own dictionaries would hit the same wall), whether a mid-cycle pending bill's DaysRemaining and a real save timestamp interact cleanly, and how much of `World`/`Country`'s current in-memory object graph can serialize as-is versus needs a dedicated save-data shape. Escalate format/scope decisions rather than guessing, per this document's own working discipline item 4.
@@ -617,7 +613,7 @@ Eight documents, each with one job. If a fact belongs in two of them, it belongs
 | Document | Holds | Grows or shrinks |
 |---|---|---|
 | `POLISIM_MASTER_ROADMAP.md` | **Live work only** — startable today | Shrinks |
-| `VISUAL_REVIEW_BACKLOG.md` | Built but never seen. Live, because unconfirmed is not done | Shrinks as reviews land |
+| ~~`VISUAL_REVIEW_BACKLOG.md`~~ | Built but never seen. **DELETED 2026-08-02** — all eleven items confirmed, so it shrank to nothing and went, exactly as the rule below prescribes | — |
 | `MISSING_PREREQUISITES.md` | Blocked work, by supplier. Not startable, so not live | Shrinks as blockers clear |
 | `CLAUDE_DESIGN_ASSET_REQUEST.md` | The single standing asset request | Appended to, then emptied on delivery |
 | `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md` | Step 9's spec. Done steps become pointers; live specs stay | Shrinks |
@@ -645,7 +641,8 @@ project has repeatedly mistaken for done, and both were found again in this pass
   wiring landed with the code.
 - **If removing finished items empties a document, delete it.** An empty shell drifts back into use.
   `ELIAS_ACTION_LIST.md` was deleted for exactly this reason — every section had migrated.
-- **Do not duplicate a live list into the blocked register.** `MISSING_PREREQUISITES.md` names what the
-  visual reviews block and points at `VISUAL_REVIEW_BACKLOG.md`; it does not restate the 11 items. Two
-  copies of one list is the drift this pass exists to undo.
+- **Do not duplicate a live list into the blocked register.** While the visual reviews were open,
+  `MISSING_PREREQUISITES.md` named what they blocked and pointed at the backlog rather than restating the
+  11 items. Two copies of one list is the drift this pass exists to undo. *(Both documents have since
+  emptied that section — the pattern held right through to deletion.)*
 - **Repoint references before deleting a file**, and grep afterwards to prove nothing dangles.

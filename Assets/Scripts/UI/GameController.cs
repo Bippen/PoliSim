@@ -2734,21 +2734,17 @@ namespace PoliSim.UI
                 _playerCountry.Published.Series.TryGetValue(PublishedStat.Unemployment, out PublishedSeries unemploymentPublished) ? unemploymentPublished : null,
                 _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate, moneyUnit: null);
 
-            // TEMPORARY DIAGNOSTIC - retained until the visual design conveys the same provenance.
-            GUILayout.Space(8f);
-            // The raw stored figure is kept alongside the formatted one HERE ONLY: this line exists to be
-            // cross-checked against batch-run logs, which print the model's own billions. Every other
-            // site drops the raw number - see the P2 fix.
-            GUILayout.Label($"[DEBUG] now={_simulationManager.CurrentDate:yyyy-MM-dd}  liveGDP={UiFormat.Money(state.GDP, MoneyUnit.Billions)} (raw {state.GDP:F1}B)", _labelStyle);
-            if (gdpPublished != null)
-            {
-                GUILayout.Label($"[DEBUG] {gdpPublished.Entries.Count} GDP entries (refStart | refEnd | pubDate | value | status):", _labelStyle);
-                for (int i = 0; i < gdpPublished.Entries.Count; i++)
-                {
-                    PublishedEntry e = gdpPublished.Entries[i];
-                    GUILayout.Label($"[{i}] {e.ReferencePeriodStart:yyyy-MM-dd} | {e.ReferencePeriodEnd:yyyy-MM-dd} | {e.PublicationDate:yyyy-MM-dd} | {e.Value:F1} | {e.Status}", _labelStyle);
-                }
-            }
+            // The [DEBUG] publication-lag dump lived here from `dd7e323` until 2026-08-02. It printed the
+            // live GDP figure beside every published entry's reference period, publication date, value and
+            // revision status, so the graph above could be cross-checked against the data behind it.
+            //
+            // REMOVED because it did its job: review item 8 (revision treatment) passed, which is the
+            // confirmation that the graph and the data agree - the exact question the dump existed to
+            // answer. It was explicitly never to ship, and keeping a diagnostic past the confirmation it
+            // was waiting for is how a temporary thing becomes permanent.
+            //
+            // If provenance ever needs re-checking, `PublicationSystem`'s own tests reach the same data
+            // without a UI surface, which is the better place for it.
         }
 
         /// <summary>
