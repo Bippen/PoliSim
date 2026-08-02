@@ -5822,6 +5822,61 @@ something else. Carrying the unit on the stat, and making the currency path requ
 **Scope: ~21 call sites, one new formatter, one metadata addition.** No simulation change whatsoever —
 every stored value keeps its current number and unit.
 
+### IMPLEMENTED 2026-08-02 — built exactly as recommended, plus four findings
+
+`UiFormat.Money(value, MoneyUnit)` in `Assets/Scripts/UI/UiFormat.cs`, verified by
+`MoneyFormatDiagnostic` (`Assets/Editor/`), **6 of 6 checks PASS** in real Unity 6000.5.6f1. USA GDP
+`29000` now renders **`$29.0T`**; the seed table (`35960` → `$36.0T`, `1530` → `$1.53T`, `850` → `$850B`,
+Sweden's SWF `195` → `$195B`) all render at true magnitude. No simulation file was touched.
+
+**The unit is a required parameter, not a defaulted one**, on `GraphRenderer.Draw`/`DrawPublished`/
+`DrawNeutral` and on `PieChartRenderer.Draw`. Every one of the ~19 call sites now states either a unit or
+an explicit `moneyUnit: null`. That is the recommendation's "inconsistency becomes hard" property made
+real: a new currency graph cannot be added silently, because it will not compile without answering the
+question. `FormatAxisValue` survives for rates and indices and now carries a NON-CURRENCY ONLY warning.
+
+**Finding 1 — the 21-site enumeration was low.** The real count is closer to 30. The fiscal report has
+**eight** money rows plus a net line, not the four the investigation listed, and **two pie-chart legends**
+(Spending Allocation, Theoretical Tax Revenue) print billions through `PieChartRenderer`'s
+`valueFormat` and were missed entirely — that widget was never inspected because the investigation
+searched display sites in `GameController`, and the chart's formatting lives one file away. *Lesson: an
+enumeration built by grepping the file where the symptom was seen will miss the widgets it delegates to.*
+
+**Finding 2 — the worst-stated unit in the game was `" units"`.** Three preview-panel figures (SWF
+contribution, SWF returns, Net Budget Impact) called `FormatEstimate(value, " units")`, rendering
+`+120.00 units` for $120 billion. Now `FormatMoneyEstimate`, rendering `+$120B (±$9.60B)`.
+
+**Finding 3 — the formatter must pin its culture, and this machine proves why.** The first version used
+the ambient locale and produced **`$29,0T`** on this sv-SE machine: a Swedish decimal comma against a US
+dollar sign. Money now formats in `InvariantCulture`. Two reasons, and the second is the stronger: the
+amounts are US dollars in every country's UI, so the separator should match the symbol; and a
+locale-dependent formatter **cannot have a fixed-string regression test**, which is intolerable for the
+one function that has now been wrong three times. Non-money numbers keep their existing locale
+formatting — nothing else changed. Note the project's own history: the "9,3" incident was a
+comma-decimal figure clipped in a narrow rect.
+
+**Finding 4 — round-then-tier is a real bug, and only the diagnostic caught it.** The first version
+rounded the dollar amount to three significant digits and then chose a tier, which requires dividing by
+a negative power of ten. `1e-9` is not exactly representable, so `$999.97B` came back a hair below
+`1e12`, missed the trillions tier and printed **`$1000B`**. Fixed by rounding in the already-scaled
+domain and promoting a tier on carry. **This is the case for the diagnostic existing at all**: it is
+invisible at every seed value, appears only within 0.003% of a tier boundary, and no visual review would
+ever have found it.
+
+**Two OnGUI-safety points, both from the sparkline lesson.**
+- `CHECK 6` proves `Money` cannot throw on NaN/±Infinity/`float.MaxValue`. It renders nonsense
+  (`$NaN`, `$InfinityT`) and **survives**, which is the correct bar for a function every draw call
+  reaches — an exception inside `OnGUI` aborts the frame and blanks the screen.
+- The tile call sites state `MoneyUnit.Billions` directly rather than
+  `GetStatUnit(StatNodeId.Gdp).Value`. That `.Value` would throw inside `OnGUI` if the metadata entry
+  were ever cleared, and billions is a fact about `EconomyState.GDP` (a field) rather than about the
+  stat table. **Generic code that formats an arbitrary stat still asks the metadata** — the per-stat
+  graph, the B2 chips, and both GDP graphs do — which is exactly the split the metadata exists for.
+
+⚠ **NOT VISUALLY CONFIRMED.** Review item 3 stays open, and items 7/8 are now unblocked rather than
+passed. Arithmetic being right is not the same as a graph reading well, which is the whole reason those
+items were sequenced behind this one.
+
 ---
 
 ## P4 — the clipping class: audit, and why a shared helper is warranted (2026-08-02)

@@ -43,13 +43,16 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Draws the pie (fixed square size, letter-boxed into whatever width GUILayout gives it)
-        /// plus a legend row per slice below it (color swatch, label, value, and percent share) -
-        /// <paramref name="valueFormat"/> is a standard .NET numeric format string (e.g. "F0", "F1")
-        /// applied to each slice's own raw Value in the legend, so a caller passing dollar amounts
-        /// vs. percentage points vs. population counts can each get sensible legend text without
-        /// this widget needing to know which.
+        /// plus a legend row per slice below it (color swatch, label, value, and percent share).
+        ///
+        /// The two format parameters are exclusive, and both are required so a caller has to answer
+        /// the question that the P2 unit bug was caused by nobody asking: is this money? A currency
+        /// chart passes <paramref name="moneyUnit"/> (and <c>null</c> for
+        /// <paramref name="valueFormat"/>, which is then unused) and its legend renders through
+        /// <see cref="UiFormat.Money"/>. Everything else - percentage points, population counts,
+        /// employment shares - passes a standard .NET numeric format string and no unit.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<PieSlice> slices, GUIStyle labelStyle, string valueFormat = "F1")
+        public void Draw(string title, IReadOnlyList<PieSlice> slices, GUIStyle labelStyle, string valueFormat, MoneyUnit? moneyUnit)
         {
             EnsureStylesInitialized(labelStyle);
             GUILayout.Label(title, labelStyle);
@@ -89,7 +92,10 @@ namespace PoliSim.UI
                 GUI.color = slice.Color;
                 GUI.DrawTexture(swatchRect, Texture2D.whiteTexture);
                 GUI.color = previousColor;
-                GUILayout.Label($"  {slice.Label}: {slice.Value.ToString(valueFormat)} ({percent:F0}%)", _legendLabelStyle);
+                string valueText = moneyUnit.HasValue
+                    ? UiFormat.Money(slice.Value, moneyUnit.Value)
+                    : slice.Value.ToString(valueFormat ?? "F1");
+                GUILayout.Label($"  {slice.Label}: {valueText} ({percent:F0}%)", _legendLabelStyle);
                 GUILayout.EndHorizontal();
             }
         }

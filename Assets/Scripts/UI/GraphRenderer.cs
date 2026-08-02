@@ -54,6 +54,18 @@ namespace PoliSim.UI
         private float _lastMin;
         private float _lastMax;
 
+        /// <summary>
+        /// The unit this graph's series is money in, or null if it is not money. Set by whichever Draw
+        /// entry point the caller used, and read by every label this class writes - the axis overlay, the
+        /// single-point empty state and the "latest:" overlay - so all three of them agree by
+        /// construction rather than by three call sites remembering to.
+        ///
+        /// Held as state rather than threaded through the private draw helpers because the alternative
+        /// is a parameter on each of them, and one helper forgetting it is precisely the shape of the
+        /// bug this exists to fix.
+        /// </summary>
+        private MoneyUnit? _moneyUnit;
+
         /// <summary>0 = most recent window (the only page that can show a next-turn projection); increases going further back in time. Clamped to the valid range fresh every Draw call against the CURRENT history length, so a page index that's now out of range (e.g. right after a fresh game/country switch with less history) never gets stuck showing a blank page.</summary>
         private int _pageFromEnd;
 
@@ -80,10 +92,18 @@ namespace PoliSim.UI
         /// name="thresholdLabel"/> draw an optional reference line (e.g. a country's own
         /// ComfortableDebtToGdpPercent, or NaturalUnemploymentRate/NAIRU) - omit both (leave
         /// thresholdValue null) for a stat with no natural single reference point.
+        ///
+        /// <paramref name="moneyUnit"/> states whether this series is currency and in which unit -
+        /// null for a rate, percentage or index. It is REQUIRED rather than defaulted, which is the
+        /// whole point: the unit bug (review item 3) rendered $29T as "29k" because an axis had no way
+        /// to know its series was money, and a defaulted parameter would let the next currency graph be
+        /// added with the same silence. Prefer passing <c>PolicyWebRenderer.GetStatUnit(stat)</c> where
+        /// the call site has a StatNodeId, so the answer comes from the stat's own metadata.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, float? thresholdValue = null, string thresholdLabel = null)
+        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null)
         {
             EnsureOverlayStylesInitialized(labelStyle);
+            _moneyUnit = moneyUnit;
 
             if (history == null || history.Count == 0)
             {
@@ -161,9 +181,10 @@ namespace PoliSim.UI
         /// the preliminary one on the line itself - matching what a player looking at the chart today
         /// would see - while the preliminary remains in the series and is what the marker colour reports.
         /// </summary>
-        public void DrawPublished(string title, PublishedSeries series, GUIStyle labelStyle, bool? higherIsBetter, System.DateTime currentDate, float? thresholdValue = null, string thresholdLabel = null)
+        public void DrawPublished(string title, PublishedSeries series, GUIStyle labelStyle, bool? higherIsBetter, System.DateTime currentDate, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null)
         {
             EnsureOverlayStylesInitialized(labelStyle);
+            _moneyUnit = moneyUnit;
 
             if (series == null || series.Entries.Count == 0)
             {
@@ -229,7 +250,7 @@ namespace PoliSim.UI
             if (values.Count == 1)
             {
                 PublishedEntry only = latestForPeriod[visiblePeriods[0]];
-                GUILayout.Label($"{FormatAxisValue(only.Value)} for {only.ReferencePeriodStart:MMM yyyy} - {only.ReferencePeriodEnd:MMM yyyy} ({only.Status}). Next release builds the trend.", labelStyle);
+                GUILayout.Label($"{FormatValue(only.Value)} for {only.ReferencePeriodStart:MMM yyyy} - {only.ReferencePeriodEnd:MMM yyyy} ({only.Status}). Next release builds the trend.", labelStyle);
                 return;
             }
 
@@ -259,7 +280,7 @@ namespace PoliSim.UI
             PublishedEntry newest = latestForPeriod[visiblePeriods[visiblePeriods.Count - 1]];
             string lag = $"{(newest.PublicationDate - newest.ReferencePeriodEnd).Days}d lag";
             string status = newest.Status == RevisionStatus.Preliminary ? "PRELIMINARY" : newest.Status.ToString().ToUpperInvariant();
-            DrawColoredOverlayLabel(rect, $"latest: {FormatAxisValue(newest.Value)} ({status}, {lag})",
+            DrawColoredOverlayLabel(rect, $"latest: {FormatValue(newest.Value)} ({status}, {lag})",
                 newest.Status == RevisionStatus.Preliminary ? PreliminaryLineColor : Color.white, anyPreliminary);
         }
 
@@ -427,10 +448,10 @@ namespace PoliSim.UI
             GUI.color = previous;
         }
 
-        /// <summary>Convenience wrapper for a stat with no clear "good direction" - see Draw's higherIsBetter remarks.</summary>
-        public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, float? thresholdValue = null, string thresholdLabel = null)
+        /// <summary>Convenience wrapper for a stat with no clear "good direction" - see Draw's higherIsBetter remarks. <paramref name="moneyUnit"/> stays required here too: "no clear good direction" says nothing about whether the series is money, and the one caller that draws an arbitrary StatNodeId through this overload can genuinely be handed GDP or Trade Balance.</summary>
+        public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null)
         {
-            Draw(title, history, projectedValue, labelStyle, higherIsBetter: null, thresholdValue: thresholdValue, thresholdLabel: thresholdLabel);
+            Draw(title, history, projectedValue, labelStyle, higherIsBetter: null, moneyUnit: moneyUnit, thresholdValue: thresholdValue, thresholdLabel: thresholdLabel);
         }
 
         /// <summary>Lazily builds the overlay styles from the caller's own label style (font/skin already resolved by GameController's RescaleStylesToScreen) rather than GUI.skin directly, so they stay proportionate to the rest of the panel without GraphRenderer needing its own screen-size-aware rescaling logic.</summary>
@@ -510,14 +531,33 @@ namespace PoliSim.UI
             float labelHeight = _axisLabelStyle.fontSize + 4f;
             float mid = (_lastMin + _lastMax) * 0.5f;
 
-            GUI.Label(new Rect(rect.x + 2f, rect.y, rect.width - 4f, labelHeight), FormatAxisValue(_lastMax), _axisLabelStyle);
-            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height * 0.5f - labelHeight * 0.5f, rect.width - 4f, labelHeight), FormatAxisValue(mid), _axisLabelStyle);
-            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height - labelHeight, rect.width - 4f, labelHeight), FormatAxisValue(_lastMin), _axisLabelStyle);
+            GUI.Label(new Rect(rect.x + 2f, rect.y, rect.width - 4f, labelHeight), FormatValue(_lastMax), _axisLabelStyle);
+            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height * 0.5f - labelHeight * 0.5f, rect.width - 4f, labelHeight), FormatValue(mid), _axisLabelStyle);
+            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height - labelHeight, rect.width - 4f, labelHeight), FormatValue(_lastMin), _axisLabelStyle);
+        }
+
+        /// <summary>
+        /// Every value this class turns into text goes through here, so the axis, the single-point
+        /// empty state and the "latest:" overlay cannot disagree about the same series.
+        ///
+        /// Currency routes to <see cref="UiFormat.Money"/> with the unit the caller declared; everything
+        /// else keeps <see cref="FormatAxisValue"/>, which is correct for the rates, percentages and
+        /// indices that make up every other graph in the game.
+        /// </summary>
+        private string FormatValue(float value)
+        {
+            return _moneyUnit.HasValue ? UiFormat.Money(value, _moneyUnit.Value) : FormatAxisValue(value);
         }
 
         /// <summary>
         /// Master Sequence step 9, Step B: axis labels for values of any magnitude, in a gutter only a
         /// few characters wide.
+        ///
+        /// ⚠ NON-CURRENCY ONLY, as of the P2 fix (2026-08-02). This is where the unit bug lived: the
+        /// k/M/B ladder below is correct arithmetic on a base unit of 1, and every money value in this
+        /// project is stored in BILLIONS, so it reported $29T as "29k". Money goes through
+        /// <see cref="UiFormat.Money"/> instead - reach it via <see cref="FormatValue"/>, never by
+        /// calling this directly with an amount.
         ///
         /// The previous `ToString("F1")` produced "42358,1" for GovernmentDebt and "30555,1" for GDP -
         /// seven characters in `rect.width - 4f`. That is the same shape as the StatTile bug the

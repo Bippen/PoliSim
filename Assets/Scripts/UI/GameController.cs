@@ -1113,7 +1113,16 @@ namespace PoliSim.UI
 
             var tiles = new List<(string label, string value, string suffix, string delta, bool deltaIsGood, UiPalette.SystemArea area)>
             {
-                ("GDP", state.GDP.ToString("F1"), null, _lastGrowthPercent.ToString("+0.00;-0.00;0") + "%", _lastGrowthPercent >= 0f, UiPalette.SystemArea.Global),
+                // The GDP tile is where this bug has now appeared three times - "9,3", then "29k". The
+                // suffix column stays null because the amount now carries its own ("$29.0T"), and a
+                // tile suffix would render "$29.0T B".
+                //
+                // States MoneyUnit.Billions directly rather than reading the stat metadata, because this
+                // reads the FIELD rather than a StatNodeId: billions is a fact about EconomyState.GDP,
+                // and GetStatUnit(...).Value would throw inside OnGUI if that entry were ever cleared -
+                // the sparkline crash is what an exception in a draw call costs. Generic code that
+                // formats an arbitrary stat still asks the metadata, which is what it is for.
+                ("GDP", UiFormat.Money(state.GDP, MoneyUnit.Billions), null, _lastGrowthPercent.ToString("+0.00;-0.00;0") + "%", _lastGrowthPercent >= 0f, UiPalette.SystemArea.Global),
                 ("Unemployment", state.Unemployment.ToString("F2"), "%", null, false, UiPalette.SystemArea.Labor),
                 ("Inflation", state.Inflation.ToString("F2"), "%", null, false, UiPalette.SystemArea.Fiscal),
                 ("Approval Rating", state.ApprovalRating.ToString("F1"), null, null, false, UiPalette.SystemArea.Political),
@@ -1125,7 +1134,7 @@ namespace PoliSim.UI
             }
 
             tiles.Add(("Poverty Rate", state.PovertyRate.ToString("F1"), "%", null, false, UiPalette.SystemArea.Welfare));
-            tiles.Add(("Government Debt", state.GovernmentDebt.ToString("F1"), null, null, false, UiPalette.SystemArea.Fiscal));
+            tiles.Add(("Government Debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, null, false, UiPalette.SystemArea.Fiscal));
             tiles.Add(("Debt-to-GDP", state.DebtToGdpRatio.ToString("F1"), "%", null, false, UiPalette.SystemArea.Fiscal));
 
             // Step C4, placed 2026-08-02 (PROVISIONAL - see roadmap; revisable after visual review).
@@ -1156,7 +1165,9 @@ namespace PoliSim.UI
                 rating.Outlook == RatingOutlook.Positive,
                 UiPalette.SystemArea.Fiscal));
 
-            tiles.Add(("Budget Balance", state.Budget.ToString("F1"), null, null, false, UiPalette.SystemArea.Fiscal));
+            // Signed on purpose: a budget balance's direction is the whole reading, and "+$120B" against
+            // "-$120B" should not depend on the player noticing a minus sign in a headline-size figure.
+            tiles.Add(("Budget Balance", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, null, false, UiPalette.SystemArea.Fiscal));
 
             int rows = Mathf.CeilToInt(tiles.Count / (float)columns);
             float totalHeight = rows * tileHeight + (rows - 1) * gap;
@@ -1313,7 +1324,7 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             // Neutral (no green/red judgment) - which direction of rate change is "good" depends
             // entirely on the current inflation/growth situation, not a fixed convention.
-            _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle);
+            _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null);
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -1459,10 +1470,10 @@ namespace PoliSim.UI
             _borderEnforcementInput = GUILayout.HorizontalSlider(draftBorderEnforcement, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
-            _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false);
-            _organizedCrimeGraph.Draw("Organized Crime Index", _playerCountry.History.OrganizedCrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false);
-            _corruptionGraph.Draw("Corruption Index", _playerCountry.History.CorruptionIndex.Quarterly, null, _labelStyle, higherIsBetter: false);
-            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k", _playerCountry.History.PrisonPopulationRate.Quarterly, null, _labelStyle);
+            _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
+            _organizedCrimeGraph.Draw("Organized Crime Index", _playerCountry.History.OrganizedCrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
+            _corruptionGraph.Draw("Corruption Index", _playerCountry.History.CorruptionIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
+            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k", _playerCountry.History.PrisonPopulationRate.Quarterly, null, _labelStyle, moneyUnit: null);
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -1560,7 +1571,7 @@ namespace PoliSim.UI
             _immigrationPolicyInput = GUILayout.HorizontalSlider(draftImmigrationPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
 
             GUILayout.Space(10f);
-            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true);
+            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true, moneyUnit: null);
 
             GUILayout.Space(8f);
             EconomyState demographicState = _playerCountry.State;
@@ -1848,8 +1859,8 @@ namespace PoliSim.UI
             _cachedNetBudgetImpactRaw = preview.NetBudgetImpact;
             _cachedSwfReturnsEstimateRaw = preview.SwfReturnsEstimate;
 
-            _cachedSwfContributionText = FormatEstimate(preview.SwfContributionEstimate, " units");
-            _cachedSwfReturnsText = FormatEstimate(preview.SwfReturnsEstimate, " units");
+            _cachedSwfContributionText = FormatMoneyEstimate(preview.SwfContributionEstimate, MoneyUnit.Billions);
+            _cachedSwfReturnsText = FormatMoneyEstimate(preview.SwfReturnsEstimate, MoneyUnit.Billions);
 
             // Continuous Time Migration Phase 0: the live Policy Preview panel shows THIS horizon's
             // display-only re-scaling of the same full-turn PreviewTurn output above - see
@@ -1873,7 +1884,7 @@ namespace PoliSim.UI
             _cachedPovertyRateScaledText = FormatEstimate(_cachedPovertyRateChangeScaled, " pts");
             _cachedLaborForceParticipationRateScaledText = FormatEstimate(_cachedLaborForceParticipationRateChangeScaled, " pts");
             _cachedCrimeIndexScaledText = FormatEstimate(_cachedCrimeIndexChangeScaled, " pts");
-            _cachedNetBudgetScaledText = FormatEstimate(_cachedNetBudgetImpactScaled, " units");
+            _cachedNetBudgetScaledText = FormatMoneyEstimate(_cachedNetBudgetImpactScaled, MoneyUnit.Billions);
             _cachedPreviewHorizonDays = horizonDays;
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
@@ -1961,6 +1972,21 @@ namespace PoliSim.UI
             float marginPercent = MinPreviewMarginPercent + (float)_previewRandom.NextDouble() * (MaxPreviewMarginPercent - MinPreviewMarginPercent);
             float marginAmount = Mathf.Abs(value) * marginPercent / 100f;
             return $"{value:+0.00;-0.00;0}{unitSuffix} (±{marginAmount:0.00}{unitSuffix})";
+        }
+
+        /// <summary>
+        /// <see cref="FormatEstimate"/> for a currency figure. Same margin roll, same "value ± margin"
+        /// shape, but both numbers render through <see cref="UiFormat.Money"/>.
+        ///
+        /// The three call sites for this previously passed the literal suffix " units" - the clearest
+        /// single example of the P2 finding that this game states its units nowhere. A player reading
+        /// "+120.00 units" had no way to learn that meant $120 billion.
+        /// </summary>
+        private string FormatMoneyEstimate(float value, MoneyUnit unit)
+        {
+            float marginPercent = MinPreviewMarginPercent + (float)_previewRandom.NextDouble() * (MaxPreviewMarginPercent - MinPreviewMarginPercent);
+            float marginAmount = Mathf.Abs(value) * marginPercent / 100f;
+            return $"{UiFormat.MoneyDelta(value, unit)} (±{UiFormat.Money(marginAmount, unit)})";
         }
 
         /// <summary>
@@ -2412,7 +2438,7 @@ namespace PoliSim.UI
 
         private void AppendLogEntry(EconomyState state)
         {
-            _turnLog.Add($"Turn {_simulationManager.CurrentTurn}: GDP={state.GDP:F1} ({_lastGrowthPercent:+0.00;-0.00;0}%), " +
+            _turnLog.Add($"Turn {_simulationManager.CurrentTurn}: GDP={UiFormat.Money(state.GDP, MoneyUnit.Billions)} ({_lastGrowthPercent:+0.00;-0.00;0}%), " +
                 $"Unemp={state.Unemployment:F2}%, Infl={state.Inflation:F2}%, Approval={state.ApprovalRating:F1}, Debt/GDP={state.DebtToGdpRatio:F1}%");
 
             while (_turnLog.Count > MaxLogEntries)
@@ -2648,13 +2674,17 @@ namespace PoliSim.UI
             }
 
             StatHistory history = _playerCountry.History;
-            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true);
-            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false,
+            // The unit comes from the stat's own metadata rather than a MoneyUnit literal here. A literal
+            // would be a second place that knows GDP is in billions, which is how the P2 unit bug spread
+            // across 21 sites in the first place.
+            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true,
+                moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
+            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false, moneyUnit: null,
                 thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
-            _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, _labelStyle, higherIsBetter: false);
-            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true);
-            _povertyGraph.Draw("Poverty Rate", history.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false);
-            _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false,
+            _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
+            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true, moneyUnit: null);
+            _povertyGraph.Draw("Poverty Rate", history.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
+            _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
                 thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable");
 
             GUILayout.Space(12f);
@@ -2664,15 +2694,18 @@ namespace PoliSim.UI
 
             _gdpPublishedGraph.DrawPublished("GDP as published",
                 _playerCountry.Published.Series.TryGetValue(PublishedStat.Gdp, out PublishedSeries gdpPublished) ? gdpPublished : null,
-                _labelStyle, higherIsBetter: true, _simulationManager.CurrentDate);
+                _labelStyle, higherIsBetter: true, _simulationManager.CurrentDate, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
 
             _unemploymentPublishedGraph.DrawPublished("Unemployment as published",
                 _playerCountry.Published.Series.TryGetValue(PublishedStat.Unemployment, out PublishedSeries unemploymentPublished) ? unemploymentPublished : null,
-                _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate);
+                _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate, moneyUnit: null);
 
             // TEMPORARY DIAGNOSTIC - retained until the visual design conveys the same provenance.
             GUILayout.Space(8f);
-            GUILayout.Label($"[DEBUG] now={_simulationManager.CurrentDate:yyyy-MM-dd}  liveGDP={state.GDP:F1}", _labelStyle);
+            // The raw stored figure is kept alongside the formatted one HERE ONLY: this line exists to be
+            // cross-checked against batch-run logs, which print the model's own billions. Every other
+            // site drops the raw number - see the P2 fix.
+            GUILayout.Label($"[DEBUG] now={_simulationManager.CurrentDate:yyyy-MM-dd}  liveGDP={UiFormat.Money(state.GDP, MoneyUnit.Billions)} (raw {state.GDP:F1}B)", _labelStyle);
             if (gdpPublished != null)
             {
                 GUILayout.Label($"[DEBUG] {gdpPublished.Entries.Count} GDP entries (refStart | refEnd | pubDate | value | status):", _labelStyle);
@@ -3022,7 +3055,7 @@ namespace PoliSim.UI
 
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label(isPlayer ? $"{country.Name} (your country)" : $"{country.Name} (read-only)", _headerStyle);
-            GUILayout.Label($"GDP: {state.GDP:F1}", _labelStyle);
+            GUILayout.Label($"GDP: {UiFormat.Money(state.GDP, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Unemployment: {state.Unemployment:F2}%", _labelStyle);
             GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
             GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
@@ -3031,7 +3064,7 @@ namespace PoliSim.UI
             if (isPlayer)
             {
                 GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
-                GUILayout.Label($"Budget Balance (cumulative): {state.Budget:F1}", _labelStyle);
+                GUILayout.Label($"Budget Balance (cumulative): {UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions)}", _labelStyle);
                 GUILayout.Label($"Currency Strength: {state.CurrencyStrength:F1}", _labelStyle);
             }
 
@@ -3147,7 +3180,10 @@ namespace PoliSim.UI
             {
                 GraphRenderer graph = GetOrCreatePolicyWebStatGraph(node);
                 GUILayout.Space(6f);
-                graph.DrawNeutral($"{PolicyWebRenderer.GetStatName(node)} (last 50 turns)", history, null, _labelStyle);
+                // The one graph that draws an arbitrary stat, and therefore the one that would have needed
+                // a hand-maintained "which of these are money" list. It asks the stat instead.
+                graph.DrawNeutral($"{PolicyWebRenderer.GetStatName(node)} (last 50 turns)", history, null, _labelStyle,
+                    moneyUnit: PolicyWebRenderer.GetStatUnit(node));
             }
             else
             {
@@ -3523,7 +3559,7 @@ namespace PoliSim.UI
                     new PieSlice("Working-age", 100f - state.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor)),
                     new PieSlice("Dependents", state.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral)),
                 },
-                _labelStyle, "F1");
+                _labelStyle, "F1", moneyUnit: null);
             GUILayout.Space(10f);
 
             var sectorSlices = new List<PieSlice>();
@@ -3533,7 +3569,7 @@ namespace PoliSim.UI
                 sectorSlices.Add(new PieSlice(sector.Type.ToString(), sector.EmploymentShare, UiPalette.GetCategoricalColor(sectorIndex)));
                 sectorIndex++;
             }
-            _sectorEmploymentPieChart.Draw($"{_playerCountry.Name}: Employment Share by Sector", sectorSlices, _labelStyle, "F1");
+            _sectorEmploymentPieChart.Draw($"{_playerCountry.Name}: Employment Share by Sector", sectorSlices, _labelStyle, "F1", moneyUnit: null);
             GUILayout.Space(10f);
 
             if (_playerCountry.SpendingLines.Count > 0)
@@ -3545,7 +3581,7 @@ namespace PoliSim.UI
                     spendingSlices.Add(new PieSlice(line.Category.ToString(), line.Amount, UiPalette.GetCategoricalColor(spendingIndex)));
                     spendingIndex++;
                 }
-                _spendingAllocationPieChart.Draw($"{_playerCountry.Name}: Spending Allocation", spendingSlices, _labelStyle, "F1");
+                _spendingAllocationPieChart.Draw($"{_playerCountry.Name}: Spending Allocation", spendingSlices, _labelStyle, valueFormat: null, moneyUnit: MoneyUnit.Billions);
             }
             else
             {
@@ -3563,7 +3599,7 @@ namespace PoliSim.UI
                 taxSlices.Add(new PieSlice(taxLine.Type.ToString(), revenue, UiPalette.GetCategoricalColor(taxIndex)));
                 taxIndex++;
             }
-            _taxRevenuePieChart.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxSlices, _labelStyle, "F0");
+            _taxRevenuePieChart.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxSlices, _labelStyle, valueFormat: null, moneyUnit: MoneyUnit.Billions);
             GUILayout.Space(10f);
 
             var populationSlices = new List<PieSlice>();
@@ -3571,7 +3607,7 @@ namespace PoliSim.UI
             {
                 populationSlices.Add(new PieSlice(country.Name, country.State.Population, UiPalette.GetCountryColor(country.Id)));
             }
-            _populationPieChart.Draw("Population Share by Country (millions)", populationSlices, _labelStyle, "F1");
+            _populationPieChart.Draw("Population Share by Country (millions)", populationSlices, _labelStyle, "F1", moneyUnit: null);
         }
 
         /// <summary>
@@ -3588,8 +3624,9 @@ namespace PoliSim.UI
         {
             EconomyState state = _playerCountry.State;
             DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
-            DrawColoredLabel($"Overall Trade Balance: {state.TradeBalance:F1}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
-            _tradeBalanceGraph.Draw("Trade Balance", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true);
+            DrawColoredLabel($"Overall Trade Balance: {UiFormat.MoneyDelta(state.TradeBalance, MoneyUnit.Billions)}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
+            _tradeBalanceGraph.Draw("Trade Balance", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true,
+                moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.TradeBalance));
         }
 
         /// <summary>Policy half of the old Trade tab (the TradePolicyBill and every per-partner row) - see DrawTradeStatsContent's own doc comment for the split reasoning. Called from DrawPolicyLawsTab.</summary>
@@ -3741,16 +3778,16 @@ namespace PoliSim.UI
                 - report.BaselineGovernmentSpending - report.DiscretionarySpending - report.MandatorySpending
                 - report.UnemploymentBenefitCost - report.InterestOnDebt - report.WelfareCost;
 
-            GUILayout.Label($"Revenue (Tax): {report.Revenue:F1}", _labelStyle);
-            GUILayout.Label($"Baseline Government Spending: {report.BaselineGovernmentSpending:F1}", _labelStyle);
-            GUILayout.Label($"Discretionary Spending Change (this turn): {report.DiscretionarySpending:F1}", _labelStyle);
-            GUILayout.Label($"Mandatory Spending: {report.MandatorySpending:F1}", _labelStyle);
-            GUILayout.Label($"Unemployment Benefit Cost: {report.UnemploymentBenefitCost:F1}", _labelStyle);
-            GUILayout.Label($"Interest On Debt: {report.InterestOnDebt:F1}", _labelStyle);
-            GUILayout.Label($"Welfare Program Cost: {report.WelfareCost:F1}", _labelStyle);
-            GUILayout.Label($"Tariff Revenue Collected: {report.TariffRevenue:F1}", _labelStyle);
+            GUILayout.Label($"Revenue (Tax): {UiFormat.Money(report.Revenue, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Baseline Government Spending: {UiFormat.Money(report.BaselineGovernmentSpending, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Discretionary Spending Change (this turn): {UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Mandatory Spending: {UiFormat.Money(report.MandatorySpending, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Unemployment Benefit Cost: {UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Interest On Debt: {UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Welfare Program Cost: {UiFormat.Money(report.WelfareCost, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Tariff Revenue Collected: {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Space(6f);
-            DrawColoredLabel($"Net (matches this turn's Budget change): {net:+0.0;-0.0;0}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
+            DrawColoredLabel($"Net (matches this turn's Budget change): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
         }
 
         /// <summary>
@@ -4197,7 +4234,7 @@ namespace PoliSim.UI
         {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
             GUILayout.Label("A generosity slider below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Implementing or removing a program entirely is separate - it submits its own standalone bill immediately (Master Sequence step 5d), resolving independently of the annual cycle.", _labelStyle);
-            _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false);
+            _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
             GUILayout.Space(8f);
 
             float welfareTypeNameColumnWidth = GetWelfareProgramNameColumnWidth();
@@ -4466,7 +4503,9 @@ namespace PoliSim.UI
             }
 
             string standingText = fund != null
-                ? $"Standing: fund exists. Total Assets: {fund.TotalAssets:F1}  |  Government Debt (gross): {_playerCountry.State.GovernmentDebt:F1}  |  Net Government Position: {_playerCountry.State.GovernmentDebt - fund.TotalAssets:F1}"
+                // Net position is signed deliberately - a net CREDITOR (Sweden is one from turn 1) shows
+                // a negative net position, and that is a real fiscal state rather than a display error.
+                ? $"Standing: fund exists. Total Assets: {UiFormat.Money(fund.TotalAssets, MoneyUnit.Billions)}  |  Government Debt (gross): {UiFormat.Money(_playerCountry.State.GovernmentDebt, MoneyUnit.Billions)}  |  Net Government Position: {UiFormat.MoneyDelta(_playerCountry.State.GovernmentDebt - fund.TotalAssets, MoneyUnit.Billions)}"
                 : "Standing: no fund exists. Creating one (once the annual budget bill passes) starts a new budget expense (the contribution) in exchange for market returns on its growing assets - it can also be drawn down during a recession or emergency instead of borrowing.";
             GUILayout.Label(standingText, _labelStyle);
 
@@ -4587,7 +4626,7 @@ namespace PoliSim.UI
             // Moved here from the old combined "Trade & Spending" tab (Phase 4) - the last-turn
             // fiscal report belongs next to the sliders it explains, not bolted onto Trade.
             DrawSpendingSection();
-            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false,
+            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
                 thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable");
             GUILayout.Space(16f);
 
@@ -4641,7 +4680,7 @@ namespace PoliSim.UI
         private void DrawInterestOnDebtRow()
         {
             FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            string valueText = report != null ? $"{report.InterestOnDebt:F1}" : "not yet computed (advance a turn)";
+            string valueText = report != null ? UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions) : "not yet computed (advance a turn)";
             GUILayout.Label($"Interest on Debt (automatic, last turn): {valueText}", _labelStyle);
         }
 
@@ -4654,7 +4693,7 @@ namespace PoliSim.UI
             // "differs from standing" here means a non-zero change - the same amber cue, reached from the
             // other direction.
             DrawDraftLabel(
-                $"{spendingLine.Category}: {spendingLine.Amount:F1}  Change: {draftPercent:+0.0;-0.0;0}% ({impliedDollarChange:+0.0;-0.0;0})",
+                $"{spendingLine.Category}: {UiFormat.Money(spendingLine.Amount, MoneyUnit.Billions)}  Change: {draftPercent:+0.0;-0.0;0}% ({UiFormat.MoneyDelta(impliedDollarChange, MoneyUnit.Billions)})",
                 !Mathf.Approximately(draftPercent, 0f));
             UiPalette.DrawBar(spendingLine.Amount / maxAmountInGroup, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), 8f);
             float newPercent = GUILayout.HorizontalSlider(draftPercent, -rangePercent, rangePercent, _sliderStyle, _sliderThumbStyle);

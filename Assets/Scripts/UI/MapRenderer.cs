@@ -350,7 +350,7 @@ namespace PoliSim.UI
             }
 
             EconomyState state = country.State;
-            string text = $"{country.Name}\nGDP: {state.GDP:F1}\nUnemployment: {state.Unemployment:F2}%\nApproval: {state.ApprovalRating:F1}";
+            string text = $"{country.Name}\nGDP: {UiFormat.Money(state.GDP, MoneyUnit.Billions)}\nUnemployment: {state.Unemployment:F2}%\nApproval: {state.ApprovalRating:F1}";
             DrawTooltipBox(mousePosition, text, labelStyle);
         }
 

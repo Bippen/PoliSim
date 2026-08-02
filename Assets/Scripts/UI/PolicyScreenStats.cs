@@ -18,10 +18,11 @@ namespace PoliSim.UI
     /// follows automatically - there is no second list to keep in sync, which is the failure mode a
     /// hand-written screen-to-stat table would have guaranteed.
     ///
-    /// Formatting delegates to <see cref="GraphRenderer.FormatAxisValue"/> for the large-magnitude stats
-    /// rather than reimplementing it. That is the direct lesson of the StatTile formatting bug: a second,
-    /// independently-written formatter is exactly how "GDP shows 9,3" happened. Per-stat units below are
-    /// taken from the existing display call sites in GameController, not chosen fresh.
+    /// Formatting delegates rather than reimplementing - the direct lesson of the StatTile formatting
+    /// bug, where a second, independently-written formatter is exactly how "GDP shows 9,3" happened.
+    /// Currency goes to <see cref="UiFormat.Money"/> with the unit read from the stat's own metadata;
+    /// the remaining per-stat units below are taken from the existing display call sites in
+    /// GameController, not chosen fresh.
     /// </summary>
     public static class PolicyScreenStats
     {
@@ -126,19 +127,23 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Display text for a value, in the unit that stat is already displayed in elsewhere in this UI.
-        /// Large-magnitude stats route through GraphRenderer.FormatAxisValue - the one verified,
-        /// magnitude-aware formatter - rather than a second implementation.
+        ///
+        /// Money asks the stat's own metadata for its unit and renders through UiFormat.Money, rather
+        /// than switching on the stat here. That is deliberate: the previous version routed GDP and
+        /// TradeBalance through GraphRenderer.FormatAxisValue - correctly, by the reasoning available at
+        /// the time - and inherited its unit bug, so these chips showed "29k" for $29T. A local list of
+        /// which stats are money is a second copy of a fact that now has one home.
         /// </summary>
         public static string Format(StatNodeId stat, float value)
         {
+            MoneyUnit? unit = PolicyWebRenderer.GetStatUnit(stat);
+            if (unit.HasValue)
+            {
+                return UiFormat.Money(value, unit.Value);
+            }
+
             switch (stat)
             {
-                // Absolute money magnitudes: the two that can reach the k/M/B range where a fixed
-                // decimal format is what produced the StatTile bug. TradeBalance is also signed.
-                case StatNodeId.Gdp:
-                case StatNodeId.TradeBalance:
-                    return GraphRenderer.FormatAxisValue(value);
-
                 case StatNodeId.Unemployment:
                 case StatNodeId.Inflation:
                 case StatNodeId.Approval:

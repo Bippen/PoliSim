@@ -102,6 +102,15 @@ namespace PoliSim.UI
         {
             public string Name;
             public bool? HigherIsBetter;
+
+            /// <summary>
+            /// The currency unit this stat is stored in, or null if it is not money at all (a rate, a
+            /// percentage, an index). Lives here rather than at the display sites because the P2 unit
+            /// bug survived two correct site-specific fixes: a stat that carries its own unit lets a
+            /// graph axis ASK what it is drawing instead of assuming, and makes the next display site
+            /// hard to get wrong rather than merely discouraged from it.
+            /// </summary>
+            public MoneyUnit? Unit;
         }
 
         private static readonly Dictionary<PolicyNodeId, PolicyNodeInfo> PolicyInfo = new Dictionary<PolicyNodeId, PolicyNodeInfo>
@@ -165,14 +174,17 @@ namespace PoliSim.UI
 
         private static readonly Dictionary<StatNodeId, StatNodeInfo> StatInfo = new Dictionary<StatNodeId, StatNodeInfo>
         {
-            { StatNodeId.Gdp, new StatNodeInfo { Name = "GDP", HigherIsBetter = true } },
+            // The two money stats. Every currency figure in the model is stored in billions - verified
+            // against the seeds, see MoneyUnit's own doc comment - and these are the only two entries in
+            // this table that are amounts rather than rates, percentages or indices.
+            { StatNodeId.Gdp, new StatNodeInfo { Name = "GDP", HigherIsBetter = true, Unit = MoneyUnit.Billions } },
             { StatNodeId.Unemployment, new StatNodeInfo { Name = "Unemployment", HigherIsBetter = false } },
             { StatNodeId.Inflation, new StatNodeInfo { Name = "Inflation", HigherIsBetter = null } },
             { StatNodeId.Approval, new StatNodeInfo { Name = "Approval Rating", HigherIsBetter = true } },
             { StatNodeId.DebtToGdp, new StatNodeInfo { Name = "Debt-to-GDP", HigherIsBetter = false } },
             { StatNodeId.Poverty, new StatNodeInfo { Name = "Poverty Rate", HigherIsBetter = false } },
             { StatNodeId.InterestRate, new StatNodeInfo { Name = "Interest Rate", HigherIsBetter = null } },
-            { StatNodeId.TradeBalance, new StatNodeInfo { Name = "Trade Balance", HigherIsBetter = true } },
+            { StatNodeId.TradeBalance, new StatNodeInfo { Name = "Trade Balance", HigherIsBetter = true, Unit = MoneyUnit.Billions } },
             { StatNodeId.Lfpr, new StatNodeInfo { Name = "Labor Force Participation", HigherIsBetter = true } },
             { StatNodeId.Crime, new StatNodeInfo { Name = "Crime Index", HigherIsBetter = false } },
             { StatNodeId.PrisonPopulation, new StatNodeInfo { Name = "Incarceration Rate", HigherIsBetter = null } },
@@ -699,6 +711,13 @@ namespace PoliSim.UI
         /// <summary>This stat's good/bad/neither framing. Exposed for PolicyScreenStats so each policy screen's contextual stat row colours a delta by the SAME judgment this widget uses, rather than forming a second opinion that could disagree about the same number.</summary>
         public static bool? GetStatHigherIsBetter(StatNodeId id) => StatInfo[id].HigherIsBetter;
 
+        /// <summary>
+        /// The currency unit this stat is stored in, or null if it is not money. The single source of
+        /// truth for that question: a display site asks here rather than deciding locally, which is what
+        /// the P2 unit bug's two failed fixes both did.
+        /// </summary>
+        public static MoneyUnit? GetStatUnit(StatNodeId id) => StatInfo[id].Unit;
+
         /// <summary>Every stat this policy node has a real edge to, for the detail popup's own effect list.</summary>
         public static List<PolicyWebEdge> GetEdgesFor(PolicyNodeId id)
         {
@@ -819,7 +838,7 @@ namespace PoliSim.UI
                     break;
                 case PolicyNodeId.SwfContributionRate:
                     lines.Add(country.SovereignWealthFund != null
-                        ? $"Current contribution: {country.SovereignWealthFund.ContributionRatePercent:F1}% of GDP/turn (fund: {country.SovereignWealthFund.TotalAssets:F1})"
+                        ? $"Current contribution: {country.SovereignWealthFund.ContributionRatePercent:F1}% of GDP/turn (fund: {UiFormat.Money(country.SovereignWealthFund.TotalAssets, MoneyUnit.Billions)})"
                         : "No Sovereign Wealth Fund currently exists for this country.");
                     lines.Add("DebtToGdp effect is multi-turn (contribution reduces this turn's Budget, then compounds via investment returns) - no single-turn number to show.");
                     break;
@@ -896,7 +915,7 @@ namespace PoliSim.UI
             foreach (SpendingLine line in country.SpendingLines)
             {
                 if (line.Category != category) continue;
-                lines.Add($"Current amount: {line.Amount:F1} ({(line.IsMandatory ? "Mandatory" : "Discretionary")})");
+                lines.Add($"Current amount: {UiFormat.Money(line.Amount, MoneyUnit.Billions)} ({(line.IsMandatory ? "Mandatory" : "Discretionary")})");
                 lines.Add($"Approval multiplier: {GetApprovalMultiplier(category):F1}x (Mandatory baseline is {MacroSystem.MandatorySpendingApprovalMultiplier:F1}x, the strongest)");
                 return true;
             }
