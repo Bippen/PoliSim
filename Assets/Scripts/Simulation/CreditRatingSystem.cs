@@ -3,20 +3,6 @@ using UnityEngine;
 
 namespace PoliSim.Simulation
 {
-    /// <summary>Sovereign credit rating notches, S&amp;P's ladder. Index order IS the ordering - 0 is best.</summary>
-    public enum CreditRating
-    {
-        AAA = 0, AAplus = 1, AA = 2, AAminus = 3,
-        Aplus = 4, A = 5, Aminus = 6,
-        BBBplus = 7, BBB = 8, BBBminus = 9,
-        BBplus = 10, BB = 11, BBminus = 12,
-        Bplus = 13, B = 14, Bminus = 15,
-        CCC = 16
-    }
-
-    /// <summary>Outlook is a separate signal from the rating - a cheap way to telegraph a downgrade before it lands.</summary>
-    public enum RatingOutlook { Positive, Stable, Negative }
-
     /// <summary>
     /// Master Sequence step 9, Step C4: sovereign credit rating, **DERIVED, never seeded**.
     ///
@@ -75,13 +61,34 @@ namespace PoliSim.Simulation
         /// </summary>
         public static Assessment Evaluate(Country country, FiscalTurnReport report)
         {
-            float burden = GetEffectiveDebtBurden(country);
+            return EvaluateFrom(
+                country.State.DebtToGdpRatio,
+                country.RiskPremiumSensitivity,
+                DerivedStats.DeficitPercentOfGdp(country, report),
+                DerivedStats.RealGdpGrowthPercent(country));
+        }
+
+        /// <summary>
+        /// The rating formula itself, over explicit inputs.
+        ///
+        /// **This body is unchanged from the original `Evaluate` (`76a8f35`), and that is deliberate.**
+        /// Elias's A1 ruling fixed the rating thrash by changing WHEN the rating is computed, not HOW -
+        /// so `BurdenCurve`, the reserve-currency discount, the deficit divisor and the growth thresholds
+        /// are all untouched. That is precisely what preserves the 5-anchor calibration: the scheduled
+        /// review and the anchor check run through this same method, so a passing anchor check after the
+        /// change means the same thing it meant before it.
+        ///
+        /// Extracted so the two callers - the live evaluation and the scheduled review reading settled
+        /// values - cannot drift into two slightly different formulas.
+        /// </summary>
+        public static Assessment EvaluateFrom(float debtToGdp, float riskPremiumSensitivity, float? deficitPercent, float? growthPercent)
+        {
+            float burden = GetEffectiveDebtBurden(debtToGdp, riskPremiumSensitivity);
             float notches = InterpolateCurve(burden);
 
             // Deficit trajectory. This is what separates the USA from a AAA despite its reserve status,
             // and it is the real story: agencies downgraded the USA (S&P 2011, Fitch 2023) over deficits
             // and governance, not over an inability to borrow.
-            float? deficitPercent = DerivedStats.DeficitPercentOfGdp(country, report);
             if (deficitPercent.HasValue && deficitPercent.Value > DeficitReferencePercent)
             {
                 notches += (deficitPercent.Value - DeficitReferencePercent) / 3f;
@@ -89,15 +96,14 @@ namespace PoliSim.Simulation
 
             // Growth. A country can outgrow its debt, and a contracting one cannot. Kept deliberately
             // small - growth moves a rating at the margin, it does not dominate the debt stock.
-            float? growth = DerivedStats.RealGdpGrowthPercent(country);
-            if (growth.HasValue)
+            if (growthPercent.HasValue)
             {
-                if (growth.Value >= 3f) notches -= 0.5f;
-                else if (growth.Value < 0f) notches += 0.5f;
+                if (growthPercent.Value >= 3f) notches -= 0.5f;
+                else if (growthPercent.Value < 0f) notches += 0.5f;
             }
 
             int index = Mathf.Clamp(Mathf.RoundToInt(notches), 0, (int)CreditRating.CCC);
-            return new Assessment((CreditRating)index, GetOutlook(country, deficitPercent, growth), burden);
+            return new Assessment((CreditRating)index, GetOutlook(deficitPercent, growthPercent), burden);
         }
 
         /// <summary>
@@ -113,15 +119,14 @@ namespace PoliSim.Simulation
         /// carries HIGHER debt than France (124 vs 116) yet rates BETTER (AA+ vs AA-). France reads its
         /// full 116; the USA reads 60 + (124-60)*0.05 = 63.2.
         /// </summary>
-        private static float GetEffectiveDebtBurden(Country country)
+        private static float GetEffectiveDebtBurden(float debtToGdp, float riskPremiumSensitivity)
         {
-            float debtToGdp = country.State.DebtToGdpRatio;
             if (debtToGdp <= DebtReferencePercent)
             {
                 return debtToGdp;
             }
 
-            return DebtReferencePercent + (debtToGdp - DebtReferencePercent) * country.RiskPremiumSensitivity;
+            return DebtReferencePercent + (debtToGdp - DebtReferencePercent) * riskPremiumSensitivity;
         }
 
         /// <summary>
@@ -130,7 +135,7 @@ namespace PoliSim.Simulation
         /// growth. France carrying a negative outlook while southern Europe sits stable is the pattern
         /// this reproduces.
         /// </summary>
-        private static RatingOutlook GetOutlook(Country country, float? deficitPercent, float? growth)
+        private static RatingOutlook GetOutlook(float? deficitPercent, float? growth)
         {
             if (deficitPercent.HasValue)
             {
@@ -155,6 +160,104 @@ namespace PoliSim.Simulation
             }
 
             return BurdenCurve[BurdenCurve.Length - 1].Notches;
+        }
+
+        /// <summary>
+        /// The trailing-year fiscal position as of the most recently CLOSED quarter - the settled figures
+        /// a review reads instead of one turn's instantaneous state.
+        ///
+        /// **The deficit is derived from the debt stock, not read from a flow, and that is the fix.** The
+        /// thrash came from `FiscalTurnReport.BudgetBalance`: one 121-day turn's balance, which swings
+        /// hard enough to move the rating 14 notches and back. A year's deficit is by definition the
+        /// year's increase in indebtedness, so with both stocks recorded it is exact rather than
+        /// approximated:
+        ///
+        ///     Debt = (d/100) * Y,  so  deficit%(of current GDP) = d_now - d_prev * (Y_prev / Y_now)
+        ///
+        /// Both `d` and `Y` come from `PeriodClosingValues` on the SAME quarterly boundaries, which is why
+        /// `ClosingStat.DebtToGdpRatio` deliberately shares GDP's period rule - comparing a debt reading
+        /// to a GDP reading from a different date would silently corrupt the ratio.
+        ///
+        /// Returns nulls rather than zeros when a year of history does not exist yet. A missing year-ago
+        /// figure means "cannot compute a deficit", not "the deficit was zero", and `EvaluateFrom` already
+        /// omits the term rather than guessing.
+        /// </summary>
+        public static void GetSettledPosition(Country country, System.DateTime date,
+            out float debtToGdp, out float? deficitPercent, out float? growthPercent)
+        {
+            // The quarter that has just CLOSED, not the one now running - hence date.AddDays(-1). On a
+            // 1 January review this is Oct-Dec, which is the position the review is actually judging.
+            System.DateTime settled = ReleaseCalendar.GetCurrentPeriodStart(ClosingStat.Gdp, date.AddDays(-1));
+            System.DateTime prior = settled.AddYears(-1);
+
+            float? debtNow = country.Published.ClosingValue(ClosingStat.DebtToGdpRatio, settled);
+            float? gdpNow = country.Published.ClosingValue(ClosingStat.Gdp, settled);
+            float? debtPrior = country.Published.ClosingValue(ClosingStat.DebtToGdpRatio, prior);
+            float? gdpPrior = country.Published.ClosingValue(ClosingStat.Gdp, prior);
+
+            // Debt-to-GDP is a STOCK, so a reading at the review instant is already a settled position -
+            // no averaging needed or wanted. The live fallback covers only the first review, before any
+            // quarter has closed, and is the same value the closing would have recorded that day.
+            debtToGdp = debtNow ?? country.State.DebtToGdpRatio;
+
+            deficitPercent = null;
+            growthPercent = null;
+            if (!gdpNow.HasValue || !gdpPrior.HasValue || gdpPrior.Value <= 0f)
+            {
+                return;
+            }
+
+            growthPercent = (gdpNow.Value - gdpPrior.Value) / gdpPrior.Value * 100f;
+
+            if (debtNow.HasValue && debtPrior.HasValue && gdpNow.Value > 0f)
+            {
+                deficitPercent = debtNow.Value - debtPrior.Value * (gdpPrior.Value / gdpNow.Value);
+            }
+        }
+
+        /// <summary>
+        /// Runs a scheduled rating review if one is due today, and refreshes the outlook each time a
+        /// quarter closes. Called once per simulated day, per country, from the same daily pass as
+        /// <see cref="PublicationSystem.PublishDueFigures"/>.
+        ///
+        /// **Cadence: annual, on the country's own fiscal-year start** (USA 1 October, the European five
+        /// 1 January). Justification, since Elias asked for one rather than a default:
+        /// - Real agencies review sovereigns roughly once or twice a year, so one scheduled review is
+        ///   within the real range and comfortably inside the "small number per year" bound set by A1.
+        /// - That date already exists in this project (`FiscalYearData.GetFiscalYearStart`) and is
+        ///   already what `ReleaseCalendar` treats as the boundary annual figures settle on, so this adds
+        ///   no new date rule and no parallel timer - the A1 ruling's explicit requirement.
+        /// - It is the same boundary the country's own budget process turns on, so a rating review lands
+        ///   exactly when the fiscal year it judges has closed.
+        ///
+        /// **The outlook refreshes quarterly while the rating moves annually**, which is the real
+        /// division of labour between the two signals and what makes the outlook worth having: with the
+        /// rating deliberately still between reviews, a deteriorating position would otherwise be
+        /// invisible until the next review. It reads the same trailing-year position, so it reports a
+        /// developing trend rather than one quarter's noise.
+        /// </summary>
+        public static void ReviewIfDue(Country country, System.DateTime date)
+        {
+            GetSettledPosition(country, date, out float debtToGdp, out float? deficitPercent, out float? growthPercent);
+            Assessment assessment = EvaluateFrom(debtToGdp, country.RiskPremiumSensitivity, deficitPercent, growthPercent);
+
+            SovereignRatingState rating = country.Rating;
+            (int fiscalMonth, int fiscalDay) = FiscalYearData.GetFiscalYearStart(country.Id);
+            bool isReviewDay = date.Month == fiscalMonth && date.Day == fiscalDay;
+
+            if (isReviewDay || !rating.HasBeenReviewed)
+            {
+                rating.HasBeenReviewed = true;
+                rating.Rating = assessment.Rating;
+                rating.LastReviewDate = date;
+                rating.ReviewedDebtBurden = assessment.EffectiveDebtBurden;
+                rating.ReviewedDeficitPercent = deficitPercent;
+                rating.ReviewedGrowthPercent = growthPercent;
+            }
+
+            // Outlook tracks the settled position continuously; because that position only moves when a
+            // quarter closes, this changes at most quarterly despite running daily.
+            rating.Outlook = assessment.Outlook;
         }
 
         /// <summary>Display text, e.g. "AA+" - the enum names cannot carry '+' or '-'.</summary>

@@ -69,15 +69,22 @@ namespace PoliSim.Simulation
         /// </summary>
         public static void PublishDueFigures(Country country, System.DateTime date)
         {
+            // Record what the CURRENT period is running at, every day. Overwriting daily means that once
+            // a period closes, the stored figure is its value on its final day - which is the value every
+            // publication describing that period must converge to. Doing it this way needs no historical
+            // lookup, which StatHistory cannot provide (bare float lists, no dates attached).
+            //
+            // Iterates ClosingStat, not PublishedStat, because DebtToGdpRatio is recorded but never
+            // published - Step C4's annual rating review reads a settled debt stock rather than an
+            // instantaneous one. Recording still only ever WRITES to Published, so this cannot move a
+            // simulation number any more than the rest of this file can.
+            foreach (ClosingStat closing in System.Enum.GetValues(typeof(ClosingStat)))
+            {
+                country.Published.PeriodClosingValues[(closing, ReleaseCalendar.GetCurrentPeriodStart(closing, date))] = ReadClosingValue(country, closing);
+            }
+
             foreach (PublishedStat stat in System.Enum.GetValues(typeof(PublishedStat)))
             {
-                // Record what the CURRENT period is running at, every day. Overwriting daily means that
-                // once a period closes, the stored figure is its value on its final day - which is the
-                // value every publication describing that period must converge to. Doing it this way
-                // needs no historical lookup, which StatHistory cannot provide (bare float lists, no
-                // dates attached).
-                country.Published.PeriodClosingValues[(stat, ReleaseCalendar.GetCurrentPeriodStart(stat, date))] = ReadLiveValue(country, stat);
-
                 if (!ReleaseCalendar.IsReleaseDay(country, stat, date))
                 {
                     continue;
@@ -105,7 +112,7 @@ namespace PoliSim.Simulation
                 //
                 // Falls back to live only when no closing value was recorded - which can only happen for
                 // a period that elapsed before this system began recording, i.e. the inherited quarter.
-                if (!country.Published.PeriodClosingValues.TryGetValue((stat, periodStart), out float trueValue))
+                if (!country.Published.PeriodClosingValues.TryGetValue((stat.ToClosingStat(), periodStart), out float trueValue))
                 {
                     trueValue = ReadLiveValue(country, stat);
                 }
@@ -157,15 +164,25 @@ namespace PoliSim.Simulation
         /// </summary>
         private static float ReadLiveValue(Country country, PublishedStat stat)
         {
+            return ReadClosingValue(country, stat.ToClosingStat());
+        }
+
+        /// <summary>
+        /// Reads the LIVE value being recorded or published. One-directional by construction: this system
+        /// reads EconomyState and writes Published, never the reverse.
+        /// </summary>
+        private static float ReadClosingValue(Country country, ClosingStat stat)
+        {
             EconomyState state = country.State;
             switch (stat)
             {
-                case PublishedStat.Unemployment: return state.Unemployment;
-                case PublishedStat.Inflation: return state.Inflation;
-                case PublishedStat.Gdp: return state.GDP;
-                case PublishedStat.PovertyRate: return state.PovertyRate;
-                case PublishedStat.Population: return state.Population;
-                case PublishedStat.CrimeIndex: return state.CrimeIndex;
+                case ClosingStat.Unemployment: return state.Unemployment;
+                case ClosingStat.Inflation: return state.Inflation;
+                case ClosingStat.Gdp: return state.GDP;
+                case ClosingStat.PovertyRate: return state.PovertyRate;
+                case ClosingStat.Population: return state.Population;
+                case ClosingStat.CrimeIndex: return state.CrimeIndex;
+                case ClosingStat.DebtToGdpRatio: return state.DebtToGdpRatio;
                 default: return 0f;
             }
         }

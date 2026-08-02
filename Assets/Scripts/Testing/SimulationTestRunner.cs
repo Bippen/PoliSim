@@ -59,6 +59,15 @@ namespace PoliSim.Testing
             /// level would be vacuous - movement is the one way a derived rating can misbehave over time.
             /// </summary>
             public int CreditRatingNotch;
+
+            /// <summary>
+            /// Whether <see cref="CreditRatingNotch"/> came from an actual review or is just the enum's
+            /// default. Without this the first review registers as a spurious multi-notch "move" from
+            /// AAA - `CreditRating.AAA` is 0, so an unrated country looks top-rated - which fabricated 30
+            /// anomalies for Italy alone on turn 1. An unrated sovereign is not a AAA one, and a first
+            /// rating is not a downgrade.
+            /// </summary>
+            public bool CreditRatingReviewed;
         }
 
         private static readonly string[] MatrixScenarios = { "baseline", "stress", "sustainedexploit", "tariffoverride", "welfarestress", "swfstress", "phase2stress", "laborstress", "crimejusticestress", "infrastructurestress", "deferredmaintenance", "growthstackstress", "demographicpolicystress", "cabinetstress", "parliamentstress" };
@@ -132,7 +141,7 @@ namespace PoliSim.Testing
             foreach (Country country in world.Countries)
             {
                 decisions[country.Id] = PolicyDecision.None();
-                previous[country.Id] = SnapshotOf(country, simulationManager.GetLastFiscalReport(country.Id));
+                previous[country.Id] = SnapshotOf(country);
             }
 
             var anomalies = new List<string>();
@@ -224,9 +233,9 @@ namespace PoliSim.Testing
                     }
 
                     FiscalTurnReport report = simulationManager.GetLastFiscalReport(country.Id);
-                    CheckAnomalies(turn, country, state, prev, report, anomalies);
+                    CheckAnomalies(turn, country, state, prev, report, simulationManager.CurrentDate, anomalies);
 
-                    previous[country.Id] = SnapshotOf(country, report);
+                    previous[country.Id] = SnapshotOf(country);
                 }
             }
 
@@ -744,7 +753,7 @@ namespace PoliSim.Testing
             };
         }
 
-        private static Snapshot SnapshotOf(Country country, FiscalTurnReport report)
+        private static Snapshot SnapshotOf(Country country)
         {
             return new Snapshot
             {
@@ -753,11 +762,15 @@ namespace PoliSim.Testing
                 Inflation = country.State.Inflation,
                 InterestRate = country.CurrencyZone.InterestRate,
                 DebtToGdpRatio = country.State.DebtToGdpRatio,
-                CreditRatingNotch = (int)CreditRatingSystem.Evaluate(country, report).Rating
+                // The STANDING rating, not a fresh evaluation. Since Elias's A1 ruling the rating is set
+                // by scheduled review, so this is what the player actually sees - and re-evaluating here
+                // would test a value the game no longer displays.
+                CreditRatingNotch = (int)country.Rating.Rating,
+                CreditRatingReviewed = country.Rating.HasBeenReviewed
             };
         }
 
-        private static void CheckAnomalies(int turn, Country country, EconomyState state, Snapshot previous, FiscalTurnReport report, List<string> anomalies)
+        private static void CheckAnomalies(int turn, Country country, EconomyState state, Snapshot previous, FiscalTurnReport report, System.DateTime date, List<string> anomalies)
         {
             if (state.GDP < 0f)
             {
@@ -949,7 +962,7 @@ namespace PoliSim.Testing
             CheckSwing(turn, country, "InterestRate", previous.InterestRate, country.CurrencyZone.InterestRate, anomalies);
             CheckSwing(turn, country, "DebtToGdpRatio", previous.DebtToGdpRatio, state.DebtToGdpRatio, anomalies);
 
-            CheckDerivedStats(turn, country, previous, report, anomalies);
+            CheckDerivedStats(turn, country, previous, report, date, anomalies);
         }
 
         /// <summary>
@@ -970,7 +983,7 @@ namespace PoliSim.Testing
         /// Anomalies from here are prefixed `[DERIVED]` so they stay separable from the historical
         /// anomaly counts quoted throughout CLAUDE.md, which were measured before this coverage existed.
         /// </summary>
-        private static void CheckDerivedStats(int turn, Country country, Snapshot previous, FiscalTurnReport report, List<string> anomalies)
+        private static void CheckDerivedStats(int turn, Country country, Snapshot previous, FiscalTurnReport report, System.DateTime date, List<string> anomalies)
         {
             CheckDerivedFinite(turn, country, "GdpPerCapita", DerivedStats.GdpPerCapita(country), anomalies);
             CheckDerivedFinite(turn, country, "TaxBurdenPercentOfGdp", DerivedStats.TaxBurdenPercentOfGdp(country, report), anomalies);
@@ -983,18 +996,22 @@ namespace PoliSim.Testing
                 CheckDerivedFinite(turn, country, $"SectorShareOfGdp[{type}]", sharePercent, anomalies);
             }
 
-            CreditRatingSystem.Assessment assessment = CreditRatingSystem.Evaluate(country, report);
+            // The settled inputs the scheduled review actually reads. Checked for finiteness because
+            // Evaluate ends in RoundToInt(notches) then a clamp, and RoundToInt(NaN) is 0 - which clamps
+            // to AAA. A non-finite input would render the best possible rating on a broken country.
+            CreditRatingSystem.GetSettledPosition(country, date, out float settledDebt, out float? settledDeficit, out float? settledGrowth);
+            CheckDerivedFinite(turn, country, "CreditRating.SettledDebtToGdp", settledDebt, anomalies);
+            CheckDerivedFinite(turn, country, "CreditRating.SettledDeficitPercent", settledDeficit, anomalies);
+            CheckDerivedFinite(turn, country, "CreditRating.SettledGrowthPercent", settledGrowth, anomalies);
+            CheckDerivedFinite(turn, country, "CreditRating.ReviewedDebtBurden", country.Rating.ReviewedDebtBurden, anomalies);
 
-            // The burden is what the rating actually reads, so a non-finite one is the failure that
-            // would otherwise surface as a silent AAA.
-            CheckDerivedFinite(turn, country, "CreditRating.EffectiveDebtBurden", assessment.EffectiveDebtBurden, anomalies);
-
-            int notchMove = Mathf.Abs((int)assessment.Rating - previous.CreditRatingNotch);
-            if (notchMove > MaxSingleTurnRatingNotchMove)
+            // Only compare two REVIEWED ratings. A first rating is not a move from AAA.
+            int notchMove = Mathf.Abs((int)country.Rating.Rating - previous.CreditRatingNotch);
+            if (previous.CreditRatingReviewed && country.Rating.HasBeenReviewed && notchMove > MaxSingleTurnRatingNotchMove)
             {
                 anomalies.Add($"[DERIVED] Turn {turn} {country.Name}: CreditRating moved {notchMove} notches in one turn " +
-                    $"({CreditRatingSystem.Format((CreditRating)previous.CreditRatingNotch)} -> {CreditRatingSystem.Format(assessment.Rating)}, " +
-                    $"effective burden {assessment.EffectiveDebtBurden:F1}%)");
+                    $"({CreditRatingSystem.Format((CreditRating)previous.CreditRatingNotch)} -> {CreditRatingSystem.Format(country.Rating.Rating)}, " +
+                    $"reviewed burden {country.Rating.ReviewedDebtBurden:F1}%, settled deficit {settledDeficit?.ToString("F1") ?? "n/a"}%)");
             }
         }
 

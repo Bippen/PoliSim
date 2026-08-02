@@ -23,6 +23,15 @@ namespace PoliSim.Data
         /// sites. See COMPLETED.md section 12 (was STEP_A_LIVE_VALUE_AUDIT.md, consolidated 2026-08-02).
         /// </summary>
         public PublishedData Published = new PublishedData();
+
+        /// <summary>
+        /// The standing sovereign rating, set by scheduled review rather than recomputed every turn - see
+        /// `CreditRatingSystem.ReviewIfDue` and Elias's A1 ruling (2026-08-02). A derived OUTPUT, sitting
+        /// beside Published for the same reason Published sits beside State: nothing in the simulation
+        /// reads it, it folds into no ceiling, and it draws no randomness.
+        /// </summary>
+        public SovereignRatingState Rating = new SovereignRatingState();
+
         public CurrencyZone CurrencyZone;
         public List<TradePartner> TradePartners = new List<TradePartner>();
 

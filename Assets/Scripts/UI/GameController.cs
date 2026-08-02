@@ -1131,24 +1131,28 @@ namespace PoliSim.UI
             // Step C4, placed 2026-08-02 (PROVISIONAL - see roadmap; revisable after visual review).
             // Directly after Debt-to-GDP on purpose: a sovereign rating is a judgment ABOUT the fiscal
             // position, not an independent variable, so it belongs beside the number it is mostly a
-            // judgment about. Derived every frame from current state rather than cached - it is pure
-            // arithmetic over values already on screen, and caching it is exactly how a rating could
-            // come to disagree with the debt figure sitting next to it.
+            // judgment about.
             //
-            // GetLastFiscalReport returns null on turn 0; Evaluate handles that by omitting the deficit
-            // term rather than guessing, so the tile always has a real value and never a placeholder.
-            CreditRatingSystem.Assessment rating = CreditRatingSystem.Evaluate(_playerCountry, _simulationManager.GetLastFiscalReport(PlayerCountryId));
+            // Reads the STANDING rating rather than recomputing per frame. Per Elias's A1 ruling
+            // (2026-08-02) the rating is set by scheduled annual review and is unchanged between
+            // reviews - that is the design, not a staleness bug, and recomputing here would reintroduce
+            // exactly the per-turn thrash the review cadence exists to remove.
+            SovereignRatingState rating = _playerCountry.Rating;
             // Only a Positive or Negative outlook gets a pill. StatTile's pill is binary - good or bad -
             // and "Stable" is genuinely neither, so colouring it either way would assert something the
             // model does not claim. An absent pill is already this grid's norm (seven of the other tiles
             // show none), so absence reads as "nothing to telegraph", which is precisely what Stable
             // means. The outlook exists to warn of a MOVE; no move, no warning.
-            bool hasOutlookSignal = rating.Outlook != RatingOutlook.Stable;
+            bool hasOutlookSignal = rating.HasBeenReviewed && rating.Outlook != RatingOutlook.Stable;
             tiles.Add((
                 "Credit Rating",
-                CreditRatingSystem.Format(rating.Rating),
+                // Em dash until the first review runs. An unrated sovereign is not a top-rated one, and
+                // defaulting to AAA would be the confident-wrong-number failure this project keeps
+                // finding. In practice the first review runs on day one, so this is a guard rather than
+                // a state the player normally sees.
+                rating.HasBeenReviewed ? CreditRatingSystem.Format(rating.Rating) : "-",
                 null,
-                hasOutlookSignal ? (rating.Outlook == RatingOutlook.Positive ? "OUTLOOK +" : "OUTLOOK −") : null,
+                hasOutlookSignal ? (rating.Outlook == RatingOutlook.Positive ? "OUTLOOK +" : "OUTLOOK -") : null,
                 rating.Outlook == RatingOutlook.Positive,
                 UiPalette.SystemArea.Fiscal));
 

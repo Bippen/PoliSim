@@ -119,6 +119,14 @@ namespace PoliSim.Simulation
                 foreach (Country country in _world.Countries)
                 {
                     PublicationSystem.PublishDueFigures(country, CurrentDate);
+
+                    // Step C4's scheduled rating review, deliberately AFTER the day's closings are
+                    // recorded above so a review landing on a period boundary reads that period's own
+                    // closing rather than the previous one. Same one-directional guarantee as
+                    // publishing: it reads State/Published and writes only Country.Rating, which nothing
+                    // in the simulation consumes, so it cannot influence the turn boundary computed
+                    // below. It draws no randomness either, so the seeded trajectory is unaffected.
+                    CreditRatingSystem.ReviewIfDue(country, CurrentDate);
                 }
             }
 

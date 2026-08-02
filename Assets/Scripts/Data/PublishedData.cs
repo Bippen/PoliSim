@@ -20,6 +20,56 @@ namespace PoliSim.Data
         CrimeIndex
     }
 
+    /// <summary>
+    /// Which statistic a recorded PERIOD CLOSING belongs to - a strict superset of
+    /// <see cref="PublishedStat"/>.
+    ///
+    /// **Why this is a separate enum rather than extra members on `PublishedStat`.** That enum makes a
+    /// deliberate correctness claim - only stats with a REAL sourced release rule appear in it, because
+    /// inventing a publication cadence would be fabrication. `DebtToGdpRatio` has no release rule and is
+    /// never published; it is recorded only so derived consumers can read a SETTLED value for a closed
+    /// period instead of an instantaneous one. Adding it to `PublishedStat` would quietly contradict that
+    /// claim and make `Latest(DebtToGdpRatio)` a permanent null trap.
+    ///
+    /// **The first six members mirror `PublishedStat` in the same order** - see
+    /// <see cref="ClosingStatExtensions.ToClosingStat"/>, which maps between them explicitly and throws
+    /// on an unmapped member, so drift surfaces immediately rather than silently mis-keying a series.
+    /// </summary>
+    public enum ClosingStat
+    {
+        Unemployment,
+        Inflation,
+        Gdp,
+        PovertyRate,
+        Population,
+        CrimeIndex,
+
+        /// <summary>
+        /// Recorded, never published. Added 2026-08-02 for Step C4's scheduled rating review, which reads
+        /// a settled annual fiscal position rather than one turn's state. A STOCK, so its closing value
+        /// is the settled position directly - no averaging needed or wanted.
+        /// </summary>
+        DebtToGdpRatio
+    }
+
+    public static class ClosingStatExtensions
+    {
+        /// <summary>Explicit, exhaustive map. Throws rather than defaulting, so adding a `PublishedStat` member without extending `ClosingStat` fails loudly on the first recording pass instead of silently writing every new stat under one wrong key.</summary>
+        public static ClosingStat ToClosingStat(this PublishedStat stat)
+        {
+            switch (stat)
+            {
+                case PublishedStat.Unemployment: return ClosingStat.Unemployment;
+                case PublishedStat.Inflation: return ClosingStat.Inflation;
+                case PublishedStat.Gdp: return ClosingStat.Gdp;
+                case PublishedStat.PovertyRate: return ClosingStat.PovertyRate;
+                case PublishedStat.Population: return ClosingStat.Population;
+                case PublishedStat.CrimeIndex: return ClosingStat.CrimeIndex;
+                default: throw new System.ArgumentOutOfRangeException(nameof(stat), stat, "PublishedStat has no ClosingStat counterpart - add one.");
+            }
+        }
+    }
+
     /// <summary>Where a figure sits in the revision cycle. Real agencies publish an early estimate and correct it later - BEA advance/second/third, Eurostat flash/final.</summary>
     public enum RevisionStatus
     {
@@ -114,8 +164,19 @@ namespace PoliSim.Data
         /// Not itself published, and never read by the simulation: this is the underlying truth the
         /// published series is a lagged, noisy view OF.
         /// </summary>
-        public readonly Dictionary<(PublishedStat Stat, System.DateTime PeriodStart), float> PeriodClosingValues =
-            new Dictionary<(PublishedStat, System.DateTime), float>();
+        public readonly Dictionary<(ClosingStat Stat, System.DateTime PeriodStart), float> PeriodClosingValues =
+            new Dictionary<(ClosingStat, System.DateTime), float>();
+
+        /// <summary>
+        /// The settled value this stat closed the period at, or null if that period was never recorded -
+        /// which is the honest answer before the game has run long enough, and must not be papered over
+        /// with a live reading. Step C4's annual rating review depends on that distinction: a missing
+        /// year-ago figure means "cannot compute a deficit yet", not "the deficit was zero".
+        /// </summary>
+        public float? ClosingValue(ClosingStat stat, System.DateTime periodStart)
+        {
+            return PeriodClosingValues.TryGetValue((stat, periodStart), out float value) ? value : (float?)null;
+        }
 
         public PublishedSeries GetOrCreate(PublishedStat stat)
         {

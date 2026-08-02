@@ -123,15 +123,28 @@ namespace PoliSim.Simulation
         /// </summary>
         public static System.DateTime GetCurrentPeriodStart(PublishedStat stat, System.DateTime date)
         {
+            return GetCurrentPeriodStart(stat.ToClosingStat(), date);
+        }
+
+        /// <summary>
+        /// Same rule, over the wider <see cref="ClosingStat"/> set. `DebtToGdpRatio` is recorded but never
+        /// published, so it needs a period rule without a release rule - it uses the QUARTERLY boundary
+        /// GDP uses, deliberately: Step C4's rating review derives the year's deficit from the change in
+        /// the debt stock, so the two series must close on the same boundaries or the ratio would compare
+        /// a debt reading to a GDP reading from a different date.
+        /// </summary>
+        public static System.DateTime GetCurrentPeriodStart(ClosingStat stat, System.DateTime date)
+        {
             switch (stat)
             {
-                case PublishedStat.Gdp:
+                case ClosingStat.Gdp:
+                case ClosingStat.DebtToGdpRatio:
                     int quarterFirstMonth = ((date.Month - 1) / 3) * 3 + 1;
                     return new System.DateTime(date.Year, quarterFirstMonth, 1);
 
-                case PublishedStat.PovertyRate:
-                case PublishedStat.Population:
-                case PublishedStat.CrimeIndex:
+                case ClosingStat.PovertyRate:
+                case ClosingStat.Population:
+                case ClosingStat.CrimeIndex:
                     return new System.DateTime(date.Year, 1, 1);
 
                 default:
