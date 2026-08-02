@@ -347,7 +347,23 @@ If a query cannot reproduce a figure this file already verified, **the query is 
 and everything from it is of unknown basis. Stop and report rather than proceeding. This ran for real on
 2026-08-02: Germany's 12.0 was reproduced exactly before the Italy/France/Poland values were pulled.
 
-**g. A multi-country query needs its own decode test.** Values arrive as a flat array to be mapped back
-through the returned index. Include a known-value country in the same call and confirm it lands on its own
-number. **A correct value in the wrong position is indistinguishable from a correct answer** — the single-
-country gate does not exercise this at all.
+**g. 🔴 WHEN THE QUERY SHAPE CHANGES, RE-RUN THE GATE IN THE NEW SHAPE.** A gate that passed in one shape
+says nothing whatever about another. Each of these is a shape change and each needs its own anchored
+re-check:
+
+| From | To | The step that is newly unexercised |
+|---|---|---|
+| single-geo | multi-geo | values arrive as a flat array, mapped back through the returned index |
+| single-period | time series | the same, along the `time` axis |
+| one dimension filtered | several | interaction of filters, and which dimension varies in the array |
+
+**Why this is a rule and not a nicety.** The single-country gate reproduced Germany's 12.0 perfectly and
+proved the *variant* was right — but it never touched index decoding, because with one country there is
+only position 0. The trio then arrived through a multi-geo query whose mapping step nothing had tested.
+**A correct value in the wrong position is invisible to every other control in this process**: the
+dimension labels are all correct, the status flags are all clean, the numbers are all real Eurostat
+figures. Only an anchor landing on its own known value can catch it.
+
+**Cheapest form: carry the anchor inside the real query.** Add a known-value country to the same call
+rather than running a separate verification pass — the position check then rides along for free, on
+exactly the query whose results you intend to keep, instead of on a proxy for it.
