@@ -29,28 +29,87 @@ namespace PoliSim.UI
         private const float MinChipWidth = 190f;
 
         /// <summary>
-        /// Draws the row, wrapping into as many lines as the available width needs. Draws nothing at
-        /// all for an area with no policy levers - callers should not special-case that.
+        /// Default cap on how many stats a screen shows. Four, because the widest area genuinely has
+        /// seven: every tax and every spending line is Fiscal, and all of them touch DebtToGdp and
+        /// Approval, so Fiscal's derived list is 7 stats deep. Seven chips at the two-per-row the
+        /// Budget Process centre column has space for is four lines of chrome sitting on top of the
+        /// line items the player actually came to edit. The overflow is stated, never silently cut.
         /// </summary>
-        public static void Draw(UiPalette.SystemArea area, Country country, GUIStyle labelStyle, float availableWidth)
+        public const int DefaultMaxStats = 4;
+
+        /// <summary>
+        /// Height this row will occupy, for callers that must reserve space before drawing (every
+        /// current caller does - a tab computes its content height up front and hands it to a
+        /// ScrollView). Pass the SAME availableWidth and maxStats given to <see cref="Draw"/>, since
+        /// chips-per-row is derived from width; both route through <see cref="ComputeLayout"/> so the
+        /// measurement and the drawing cannot disagree. Returns 0 for an area with no levers, which is
+        /// exactly what Draw then occupies.
+        /// </summary>
+        public static float MeasureHeight(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats = DefaultMaxStats)
+        {
+            ComputeLayout(area, availableWidth, maxStats, out int shown, out _, out int lines, out int omitted);
+            if (shown == 0)
+            {
+                return 0f;
+            }
+
+            return lines * RowHeight + (omitted > 0 ? OverflowLineHeight(labelStyle) : 0f);
+        }
+
+        /// <summary>
+        /// Draws the row, wrapping into as many lines as the available width needs. Draws nothing at
+        /// all for an area with no policy levers - callers should not special-case that. Areas do
+        /// legitimately have none: no Infrastructure policy node has a single Policy Web edge, so the
+        /// Infrastructure screen correctly shows no stat row rather than an invented one.
+        /// </summary>
+        public static void Draw(UiPalette.SystemArea area, Country country, GUIStyle labelStyle, float availableWidth, int maxStats = DefaultMaxStats)
         {
             IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area);
-            if (stats.Count == 0)
+            ComputeLayout(area, availableWidth, maxStats, out int shown, out int perRow, out _, out int omitted);
+            if (shown == 0)
             {
                 return;
             }
 
-            int perRow = Mathf.Max(1, Mathf.FloorToInt(availableWidth / MinChipWidth));
             float chipWidth = availableWidth / perRow;
 
-            for (int i = 0; i < stats.Count; i += perRow)
+            for (int i = 0; i < shown; i += perRow)
             {
                 Rect line = GUILayoutUtility.GetRect(availableWidth, RowHeight);
-                for (int c = 0; c < perRow && i + c < stats.Count; c++)
+                for (int c = 0; c < perRow && i + c < shown; c++)
                 {
                     DrawChip(new Rect(line.x + c * chipWidth, line.y, chipWidth, RowHeight), stats[i + c], country, labelStyle);
                 }
             }
+
+            // Says what was left out rather than trimming quietly, and names where the full picture
+            // lives - the Policy Web is the same edge list this row is derived from, so it is the
+            // honest answer to "affected how?", not a consolation link.
+            if (omitted > 0)
+            {
+                Rect overflow = GUILayoutUtility.GetRect(availableWidth, OverflowLineHeight(labelStyle));
+                Color previous = GUI.color;
+                GUI.color = UiPalette.MutedIconTint;
+                GUI.Label(new Rect(overflow.x + 4f, overflow.y, availableWidth - 8f, overflow.height),
+                    $"+{omitted} more affected - see Policy Web", labelStyle);
+                GUI.color = previous;
+            }
+        }
+
+        private static float OverflowLineHeight(GUIStyle labelStyle) => labelStyle.fontSize + 6f;
+
+        /// <summary>
+        /// The single place chips-per-row, line count and overflow are decided, so
+        /// <see cref="MeasureHeight"/> and <see cref="Draw"/> are the same calculation rather than two
+        /// that agree until one is edited. This is the StatTile-formatter lesson applied to layout.
+        /// </summary>
+        private static void ComputeLayout(UiPalette.SystemArea area, float availableWidth, int maxStats, out int shown, out int perRow, out int lines, out int omitted)
+        {
+            IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area);
+            perRow = Mathf.Max(1, Mathf.FloorToInt(availableWidth / MinChipWidth));
+            shown = Mathf.Min(stats.Count, Mathf.Max(1, maxStats));
+            omitted = stats.Count - shown;
+            lines = Mathf.CeilToInt(shown / (float)perRow);
         }
 
         private static void DrawChip(Rect rect, StatNodeId stat, Country country, GUIStyle labelStyle)

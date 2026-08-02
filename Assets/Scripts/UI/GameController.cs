@@ -834,7 +834,7 @@ namespace PoliSim.UI
                     GUI.enabled = true;
                     break;
                 case ConsolidatedTab.PolicyLaws:
-                    DrawPolicyLawsTab(tabContentHeight);
+                    DrawPolicyLawsTab(tabContentHeight, rightColumnWidth);
                     break;
                 case ConsolidatedTab.Politics:
                     DrawPoliticsTab(tabContentHeight);
@@ -941,6 +941,58 @@ namespace PoliSim.UI
                 case ConsolidatedTab.Budget: return UiPalette.SystemArea.Fiscal;
                 case ConsolidatedTab.PolicyLaws: return UiPalette.SystemArea.Sectors;
                 case ConsolidatedTab.Politics: return UiPalette.SystemArea.Political;
+                default: return UiPalette.SystemArea.Neutral;
+            }
+        }
+
+        /// <summary>
+        /// Master Sequence step 9, Step B2: which SystemArea a Policy/Laws SUB-SCREEN actually belongs
+        /// to, for the contextual stat row.
+        ///
+        /// **Deliberately not <see cref="GetConsolidatedTabArea"/>.** That method's own doc says it
+        /// picks hues for visual DISTINCTNESS across the tab bar, not correctness - it answers
+        /// PolicyLaws with Sectors purely because Sectors was an unclaimed colour. Driving a stat row
+        /// off it would put sector stats (PotentialGrowth, Unemployment) on the Labor and Crime &amp;
+        /// Justice screens, which is worse than showing nothing: a confidently-wrong number is harder
+        /// to disbelieve than an absent one. At sub-screen granularity the mapping is exact, because
+        /// each of these screens already declares its own area for its bill card - Labor Market draws
+        /// "LABOR MARKET BILL" as SystemArea.Labor, and so on. This reads the same truth those cards do.
+        ///
+        /// Policy Web returns Neutral on purpose: it IS the whole edge list this row is derived from,
+        /// so a four-stat summary above it would be a worse view of the same data.
+        /// </summary>
+        private static UiPalette.SystemArea GetPolicyScreenArea(PolicyLawsCategory category)
+        {
+            switch (category)
+            {
+                case PolicyLawsCategory.LaborMarket: return UiPalette.SystemArea.Labor;
+                case PolicyLawsCategory.CrimeJustice: return UiPalette.SystemArea.CrimeJustice;
+                case PolicyLawsCategory.Sectors: return UiPalette.SystemArea.Sectors;
+                case PolicyLawsCategory.Trade: return UiPalette.SystemArea.Trade;
+                default: return UiPalette.SystemArea.Neutral;
+            }
+        }
+
+        /// <summary>
+        /// The same exact mapping for the Budget Process sub-screens. Tax and Spending both answer
+        /// Fiscal, which is correct rather than a shortcut: every TaxType and every spending line runs
+        /// through the same two Policy Web channels (approval on a hike, and revenue/outlay feeding
+        /// DebtToGdp), so they genuinely move the same stats and their bill card is one shared
+        /// SystemArea.Fiscal card.
+        ///
+        /// Infrastructure answers Infrastructure and will draw nothing, because no Infrastructure
+        /// policy node has a Policy Web edge yet. That is the honest result of a real gap in the edge
+        /// list - the row appears by itself the day one is added, with no change here.
+        /// </summary>
+        private static UiPalette.SystemArea GetPolicyScreenArea(BudgetProcessCategory category)
+        {
+            switch (category)
+            {
+                case BudgetProcessCategory.Tax: return UiPalette.SystemArea.Fiscal;
+                case BudgetProcessCategory.Spending: return UiPalette.SystemArea.Fiscal;
+                case BudgetProcessCategory.Welfare: return UiPalette.SystemArea.Welfare;
+                case BudgetProcessCategory.Infrastructure: return UiPalette.SystemArea.Infrastructure;
+                case BudgetProcessCategory.Swf: return UiPalette.SystemArea.SovereignWealth;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -2748,7 +2800,7 @@ namespace PoliSim.UI
         /// category gating matches the old dispatch exactly, not a blanket gate - Labor/Crime/Sectors
         /// were gated, Policy Web/Trade were not.
         /// </summary>
-        private void DrawPolicyLawsTab(float availableHeight)
+        private void DrawPolicyLawsTab(float availableHeight, float availableWidth)
         {
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
@@ -2761,7 +2813,16 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f;
+            // Step B2: the stats THIS sub-screen's own levers move, directly under its selector so the
+            // numbers change with the screen. Measured before it is drawn and subtracted from the
+            // content budget below, so it takes space from the tab rather than pushing the content
+            // scroll view past the bottom of the tab.
+            float statRowWidth = availableWidth - _boxStyle.padding.horizontal - 8f;
+            UiPalette.SystemArea statArea = GetPolicyScreenArea(_policyLawsCategory);
+            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
+            PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
+
+            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f - statRowHeight;
             switch (_policyLawsCategory)
             {
                 case PolicyLawsCategory.LaborMarket:
@@ -3787,7 +3848,17 @@ namespace PoliSim.UI
             GUILayout.Space(columnSpacing);
 
             GUILayout.BeginVertical(_boxStyle, GUILayout.Width(centerColumnWidth));
-            _budgetProcessCenterScrollPosition = GUILayout.BeginScrollView(_budgetProcessCenterScrollPosition, GUILayout.Height(columnsHeight - _labelStyle.fontSize));
+
+            // Step B2: pinned ABOVE this column's scroll view, not inside it. The row describes what
+            // the line items below it move, so scrolling the list must not scroll the summary of the
+            // list out of sight - the same reasoning that keeps the calendar panel outside the left
+            // column's scroll view.
+            float statRowWidth = centerColumnWidth - _boxStyle.padding.horizontal - 8f;
+            UiPalette.SystemArea statArea = GetPolicyScreenArea(_budgetProcessCategory);
+            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
+            PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
+
+            _budgetProcessCenterScrollPosition = GUILayout.BeginScrollView(_budgetProcessCenterScrollPosition, GUILayout.Height(columnsHeight - _labelStyle.fontSize - statRowHeight));
             switch (_budgetProcessCategory)
             {
                 case BudgetProcessCategory.Tax:
