@@ -5273,3 +5273,90 @@ in the same commit.**
   searched for that literal. It reported "not registered" for a file that has been registered for
   months. Use one or the other, never both, and treat a *universal* negative from a verification check as
   evidence the check is broken rather than the code.
+
+---
+
+## Step C4 placed, and its first trajectory validation fails (2026-08-02)
+
+`3d77b11`. Elias overruled the escalation from earlier the same session, correctly: placement is not the
+kind of genuine design fork working-discipline item 4 covers — it is the same reasoning applied to every
+other stat — and leaving C4 uncalled was *blocking* validation rather than protecting it.
+
+**Placement (PROVISIONAL).** Credit Rating joins the dashboard tile grid directly after Debt-to-GDP. A
+sovereign rating is a judgment *about* a fiscal position, so it sits beside the number it is mostly a
+judgment about. Computed every frame rather than cached — caching is exactly how a rating could come to
+disagree with the debt figure rendered next to it. Only a Positive or Negative outlook draws a pill:
+`StatTile`'s pill is binary (good/bad) and "Stable" is genuinely neither, so colouring it either way
+would assert something the model does not claim.
+
+### The tile was not what made validation possible — the harness change was
+
+**A dashboard tile is `OnGUI` code, and `BatchSimulationRunner` never calls `OnGUI`.** Placing C4 on the
+dashboard would have left it exactly as unreachable from a batch run as it was before. `SimulationTestRunner`
+now evaluates both A4 and C4 per turn, per country, inside `CheckAnomalies`, which is what actually put
+them under the matrix. **Worth remembering the next time "wire it in" is offered as a route to
+validation: wiring into the UI and wiring into the harness are different things, and only one of them is
+checkable headlessly.**
+
+**Why pure display arithmetic needs coverage at all.** Neither can change a simulation number. But
+`CreditRatingSystem.Evaluate` ends in `Mathf.RoundToInt(notches)` followed by a clamp, and
+`RoundToInt(NaN)` is **0**, which clamps to **AAA**. A non-finite deficit or growth term would not crash
+and would not look wrong — it would render the best possible rating on a broken country. That is the
+StatTile failure shape again (a plausible-looking wrong number), and only an input finiteness check
+surfaces it.
+
+### Results — full matrix, 15 scenarios × 100 and 500 turns, `-seed=777`, real Unity 6000.5.6f1
+
+**A4 — PASSES.** Zero finiteness failures across all 30 runs, all six countries, every turn:
+`GdpPerCapita`, `TaxBurdenPercentOfGdp`, `SpendingPercentOfGdp`, `DeficitPercentOfGdp`,
+`RealGdpGrowthPercent` and every sector share. The "NOT trajectory-validated" caveat `70798e9` shipped
+with is discharged.
+
+**C4 — FAILS. 3,421 anomalies**, every one a rating moving more than four notches in a single turn.
+
+| Country | Anomalies |
+|---|---|
+| Sweden | 1,761 |
+| France | 1,117 |
+| Germany | 240 |
+| USA / Italy / Poland | 0 |
+
+**282 are full-ladder 16-notch moves — AAA to CCC and back the following turn.** Present in plain
+`baseline` at both horizons, so this is not a stress-scenario artifact.
+
+**The cause is pinned by deduction from the logged data, not guessed.** The anomaly message includes the
+effective debt burden precisely so this is answerable without another run. At each of those moments the
+burden is 0–45%, which `BurdenCurve` maps to 0–1 notches ((0,0) and (70,0) are its first two points), and
+the growth term contributes at most ±0.5. **Only the deficit term can supply the remaining 5–16 notches**,
+and it is `notches += (deficitPercent - 3) / 3` — no cap, no smoothing. Worked back: Sweden turn 78
+(burden 44.5%, AAA→B) implies a ~45%-of-GDP single-turn deficit; France turn 73 (burden 77.3%, AAA→A)
+implies ~17%.
+
+**Escalated rather than fixed, and this is not the earlier over-escalation repeating.** C4's curve was
+calibrated against 5 of 5 verifiable real-world ratings, and the USA's AA+ *depends specifically* on its
+deficit exceeding 3% — the exact term every plausible fix modifies. Capping it, averaging it over turns,
+or rating off a smoothed fiscal position all change what that calibration runs through, so this is a
+re-calibration against the real anchors rather than a tweak. Guessing a smoothing window would quietly
+invalidate the one thing that made C4 credible. Recommendation and the interim options are in the
+roadmap's Open Questions.
+
+**The tile is live and honest about which countries it is wrong for**: correct for USA, Italy and Poland;
+visibly thrashing for Sweden, France and Germany.
+
+### Anomaly-count bookkeeping
+
+New anomalies carry a `[DERIVED]` prefix so they stay separable from the counts quoted throughout this
+file, which all predate this coverage — **this is a third baseline discontinuity for anomaly counts, and
+the READ FIRST note at the top of this file governs it like the other two.** The checks are additive and
+pure (no `SimulationRandom` draws, no mutation), so they cannot alter a trajectory; determinism under
+`-seed` is preserved, and the run confirmed "SimulationRandom seeded with 777 - this run is reproducible."
+
+Per-scenario split (total / derived / pre-existing) is in `Logs/a4c4_matrix_20260802.log`. Note the
+pre-existing counts are **not** comparable to older recorded figures: those were taken at different seeds
+and across two prior discontinuities.
+
+### One more environment note
+
+Reading a Unity log while Unity still holds it throws `IOException` (file in use) from
+`File.ReadAllText`. `Select-String` opens shared and works fine. Poll with `Select-String`, or wait for
+process exit before reading the whole file.

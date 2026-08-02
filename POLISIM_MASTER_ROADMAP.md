@@ -42,14 +42,19 @@ both and is never superseded.
 - **NOT STARTED** — Master Sequence items 6 (Round 4) and 7 (Continuous Time Phases 1–5), both **weeks**
   of work; item 8 (save/load, scoped only); macro Step C1–C3 and C5.
 
-**Built 2026-08-01/02, all four now reachable from the UI**: macro Step A4 (`70798e9`, Tier 0 derived
-stats — *still not trajectory-validated*), Step C4 (`76a8f35`, sovereign credit rating), and B2 rendering
-(`5701a04`) wired at sub-screen granularity (`4869476`).
+**Built 2026-08-01/02, all now reachable**: macro Step A4 (`70798e9`), Step C4 (`76a8f35`), and B2
+rendering (`5701a04`) wired at sub-screen granularity (`4869476`). C4 is placed on the dashboard tile
+grid beside Debt-to-GDP (`3d77b11`) — **placement is PROVISIONAL and revisable after visual review**.
 
-⚠ **`CreditRatingSystem` has no caller.** C4 computes correctly and is unit-anchored against 5 of 5
-verifiable real-world ratings, but nothing displays it — it is built, not surfaced. Placing it is a real
-design question (Statistics tab as a published series? the Budget screen, next to debt?) and is
-deliberately left open rather than guessed at, per working-discipline item 4.
+**Trajectory validation, run 2026-08-02** (`3d77b11`; full matrix, 15 scenarios × 100 and 500 turns,
+`-seed=777`, real Unity 6000.5.6f1). Both were validatable only once `SimulationTestRunner` evaluated
+them per turn — a dashboard tile is OnGUI code and `BatchSimulationRunner` never calls `OnGUI`, so
+placement alone would not have covered them.
+
+- **A4 — PASSES.** Zero finiteness failures across all 30 runs, all six countries, every turn. Its
+  outstanding "NOT trajectory-validated" caveat from `70798e9` is discharged.
+- 🔴 **C4 — FAILS.** 3,421 rating-thrash anomalies. See the new Open Question below; it is the one live
+  blocker on Step C4 being considered done.
 
 ---
 
@@ -596,6 +601,35 @@ against the actual code, never as a fit already established.**
 2. **Infrastructure ConditionIndex feedback**: Resolved FEED BACK. Threshold-based drag on PotentialGrowthRate, reconciled with the pre-existing Infrastructure-spending nudge under one combined ceiling (0.75). Real-Unity confirmed. Full detail: CLAUDE.md "Infrastructure Feedback."
 
 ## Open Questions (live — add new entries here as they come up; do not resolve silently)
+
+- 🔴 **NEW (2026-08-02) — Step C4's deficit term is unsmoothed and uncapped, and the rating thrashes.**
+  Found by the first trajectory validation C4 has ever had (`3d77b11`). **3,421 anomalies** across the
+  full matrix — every one a rating moving more than four notches in a single turn. Sweden 1,761,
+  France 1,117, Germany 240; USA, Italy and Poland zero. **282 are full-ladder 16-notch moves, AAA to
+  CCC and back the following turn.** Present in plain `baseline` at both 100 and 500 turns, so it is not
+  a stress-scenario artifact.
+
+  **The cause is pinned, not guessed.** At each of those moments the logged effective debt burden is
+  0–45%, which `BurdenCurve` maps to 0–1 notches, and the growth term contributes at most ±0.5. Only the
+  deficit term can supply the remaining 5–16, and it is `notches += (deficitPercent - 3) / 3` with **no
+  cap and no smoothing** — one turn at a ~45%-of-GDP deficit is a 14-notch downgrade, reversed next turn.
+
+  **Why this is escalated rather than fixed in place.** C4's curve was calibrated against 5 of 5
+  verifiable real-world ratings (`76a8f35`), and every plausible fix — capping the deficit contribution,
+  averaging it over several turns, or rating off a smoothed fiscal position — changes the term that
+  calibration runs through. The USA's AA+ in particular *depends* on its deficit exceeding 3%. So this is
+  a re-calibration against the real anchors, not a tweak, and guessing a smoothing window would quietly
+  invalidate the one thing that made C4 credible.
+
+  **Recommendation:** cap the deficit contribution at ~2–3 notches (no real agency downgrades 14 notches
+  for one year's deficit) *and* feed it a multi-turn average, then re-run the 5-anchor check before the
+  matrix. Worth deciding whether a rating should update per turn at all, or annually like a real review
+  cycle — the latter would dissolve the thrash by construction rather than damping it.
+
+  **Meanwhile the tile is live.** It is correct for USA, Italy and Poland and visibly wrong for Sweden,
+  France and Germany. If that is not acceptable pre-fix, the cheap interim is to draw the rating only for
+  countries whose rating has been stable — but that hides a real defect behind a display rule, so it is
+  offered as a stopgap, not a recommendation.
 
 - **Cabinet appointment confirmation** — should appointing a minister also require a parliamentary vote, or does the player retain unilateral appointment power? Not yet decided.
 - **SWF emergency drawdown fast-track** — LOAD-BEARING, not hypothetical: SWF rate/allocation changes have been part of the annual omnibus budget bill since 5c (DONE), so a genuine emergency drawdown can currently get stuck behind that country's next fiscal-year vote (up to a year away). **Recommendation (2026-07-31), pending Elias's confirmation**: emergency SWF drawdown becomes a standalone bill — the SAME tier 2/3 mechanism 5d already built (now real, not hypothetical - see 5d above) for new/removed programs and non-budget policy — not bundled into the annual budget, and NOT fully exempt like the Fed/Eurozone carve-out. Reasoning: real governments handle fiscal emergencies via expedited votes, not zero-oversight unilateral action; Norway's own GPFG withdrawal is itself an ordinary budget-process matter, not a central-bank-style independent decision, so a full exemption would overstate SWF's real-world independence. This needs zero new mechanism — it's exactly 5d's standalone-bill pattern, reused (most naturally as a fifth tier-3 bill type alongside Labor/CrimeJustice/Sector/Trade). Not yet confirmed — do not build against this until Elias signs off.
