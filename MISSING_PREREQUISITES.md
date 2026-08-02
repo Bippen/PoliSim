@@ -188,7 +188,11 @@ homeownership 4+ with no warning at all. A bare number is unfalsifiable later.
 *Count reconciliation: 16 figures genuinely block a batch. `ELIAS_ACTION_LIST.md` previously said "17
 blocking" — that total included C4's Poland rating, which is a validation anchor and blocks nothing.*
 
-## B1. 🔴 Step C1 — Housing (3 figures)
+## ~~B1. Step C1 — Housing (3 figures)~~ — ✅ CLOSED 2026-08-02
+
+Italy 74.4, Sweden 62.1, Poland 86.8 — all `[ESTIMATED]` from a four-country bridge off the Eurostat
+population basis, 95% band ±7pp. See seed file section 1. **The basis warning below still governs any
+re-sourcing**, and the AHD vintage behind the bridge is an open quality debt.
 
 **Basis: OECD Affordable Housing Database, share of HOUSEHOLDS owning. This basis only.**
 
@@ -206,7 +210,10 @@ They were on unknown bases, so they may be measuring something else entirely.
 
 **Blocks:** Step C1 implementation, which has not started.
 
-## B2. Step C2 — Inequality + real wages (3 figures)
+## ~~B2. Step C2 — Inequality + real wages (3 figures)~~ — ✅ CLOSED 2026-08-02
+
+USA Gini **39.5** `[ESTIMATED]`, Sweden real wages **1.3** `[ESTIMATED]`, USA real wages **1.0**
+`[VERIFIED]`. ⚠ **The real-wage ROW now mixes three bases** — a quality debt, not a gap; see seed §5.
 
 | Stat | Country | Note |
 |---|---|---|
@@ -223,7 +230,10 @@ from Eurostat's 0–100.
 
 **Blocks:** Step C2.
 
-## B3. Step C3 — Youth unemployment + life expectancy (6 figures)
+## ~~B3. Step C3 — Youth unemployment + life expectancy (6 figures)~~ — ✅ FULLY SOURCED 2026-08-02
+
+All `[VERIFIED]` except France and Poland life expectancy, which carry provisional status flags. USA
+youth unemployment (10.0 / 9.5, 16–24 basis) closed it last.
 
 **Youth unemployment — 15–24 RATE only** (not ratio, not 15–29):
 
@@ -288,10 +298,14 @@ it has the weakest claim.
 **Revisit only if database access never materialises.** If the other three land and C5's four figures
 remain unobtainable, dropping it then is reasonable — decided against evidence rather than in advance.
 
-## B5. Step C4 — Poland's sovereign rating (1 figure, NON-blocking)
+## ~~B5. Step C4 — Poland's sovereign rating~~ — ✅ CLOSED 2026-08-02: **A− / A2 / A−**
 
-`[GAP]`, typically A range. A **validation anchor only**, not a seed, since C4 is derived. Its absence
-blocks nothing; it would strengthen the calibration check that A1 above will need.
+A **validation anchor only**, not a seed, since C4 is derived — so it never blocked anything.
+
+🔴 **But it turned out to carry a model finding: Poland BREAKS the mapping's monotonicity in the opposite
+direction to the USA** — lower debt than Germany, four notches worse. `RiskPremiumSensitivity` only
+discounts and never penalises, so `CreditRatingSystem` will over-rate Poland. **Run the 5-anchor check as
+a six-anchor check and expect Poland to fail first.** This belongs to F1's closure work; see seed §7.
 
 ## B6. Deferred — housing cost overburden (4 items, only if re-adopted)
 
@@ -370,12 +384,14 @@ register still said "awaiting delivery" because nothing watches for a delivery l
 Imported to `Assets/Resources/Art/UI/Stats/` with a hand-written `.meta`, verified by loading through
 `Resources.Load` rather than by finding the file on disk. Zip archived. Details in `COMPLETED.md`.
 
-**The recurring pattern is worth naming, because this is the second instance:** a delivered asset sitting
-unimported while a document reports it as outstanding. The other is `menu_pattern_tile.png`, delivered in
-"PoliSim GUI redesign.zip" and still unimported — which is exactly why that zip stays unarchived at the
-project root as a visible reminder. **A delivery is not self-announcing.** `StatIconCoverageCheck` now
-closes the loop for stat icons specifically: it enumerates `StatNodeId` and reports any name that does
-not resolve, so a gap declares itself in a batch log instead of waiting to be noticed.
+**The recurring pattern is worth naming, because it happened twice:** a delivered asset sitting unimported
+while a document reports it as outstanding. The other was `menu_pattern_tile.png`, delivered in "PoliSim
+GUI redesign.zip" — **also imported and archived 2026-08-02, so the project root now holds no zips at
+all.** That state is itself the signal: a zip at the root means something in it is unfinished.
+
+**A delivery is not self-announcing**, which is why both loops are now closed by checks rather than by
+memory: `StatIconCoverageCheck` enumerates `StatNodeId` and reports any icon name that does not resolve,
+and `DeliveredAssetCheck` compares every zip's contents against what exists under `Assets/`.
 
 ---
 
