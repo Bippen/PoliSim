@@ -5712,3 +5712,168 @@ SELFTEST seed Germany  debtToGdp=63.00% debt=2961.00 gdp=4700.00
 
 Those are the seeded values and the C4 calibration anchors. If they do not read that way, everything below
 is void — visible before any finding is interpreted rather than after.
+
+---
+
+## The sparkline crash — two transferable lessons (2026-08-02)
+
+Fixed in `e9e3f6a`; the defect itself is written up in `VISUAL_REVIEW_BACKLOG.md`. Two points generalise
+well beyond it.
+
+### 1. Sharing an algorithm was right. Sharing its constants was not.
+
+`5701a04` deliberately reused `GraphRenderer.DrawLine` for the sparkline *"so a sparkline can't disagree
+with its full-size counterpart"*. That reasoning was sound and is still sound — one Bresenham
+implementation, one behaviour. What went wrong is that the shared helper also carried the **full-size
+graph's dimensions**: `SetPixelSafe` bounds-checked against `TextureWidth`/`TextureHeight` (300×90) and
+strided by 300, while the sparkline handed it a 72×20 buffer.
+
+**A helper shared across callers must take everything that varies between them as a parameter.** A
+constant baked into a shared helper is an assumption about *one* caller, silently imposed on all of them.
+The giveaway here was in plain sight: a method named `SetPixelSafe` that is only safe for one buffer size.
+
+### 2. The defect survived because its only entry point required `OnGUI`
+
+`DrawSparkline` calls `GUI.DrawTexture`, which throws outside `OnGUI`. So **no headless test could reach
+the arithmetic at all** — not because anyone decided against testing it, but because there was no callable
+surface that didn't drag the GUI in. It shipped, passed a build, passed a matrix run, and was only caught
+by a human opening the screen.
+
+The fix was to split the pure part out: `BuildSparklinePixels(width, height, history, color, maxPoints)`
+returns a `Color[]` and touches no GUI. `GraphRendererDiagnostic` now covers **336 width × height ×
+series-shape combinations**, which would have caught this before it ever rendered.
+
+**STANDING RULE: where pixel or layout maths sits behind a GUI-only entry point, extract the maths.** The
+test for whether this applies: *can I call the calculation from a batch-mode Editor method?* If not, the
+calculation cannot be regression-tested, and every future change to it is unverifiable by anything except
+a human looking at a screen. Other places this likely applies, unaudited: `MapRenderer`'s projection maths,
+`PolicyWebRenderer`'s node layout, `HemicycleRenderer`'s seat arc, `PoliticalCompassRenderer`'s scaling.
+
+---
+
+## P2 — the unit bug: investigation, and one recommended approach (2026-08-02)
+
+**Not patched.** The spec asked for investigation and a single proposal, on the explicit grounds that *"a
+unit-aware formatter applied inconsistently is exactly how this bug survived two previous fixes."*
+
+### Finding 1 — the base unit is BILLIONS, and it is consistent
+
+Checked against seeds rather than assumed. USA GDP `29000` = $29,000B = **$29T**; `GovernmentDebt` 35960 =
+124% of GDP; `SocialSecurity` 1530 = $1.53T against a real ~$1.5T; `Defense` 850 = $850B against a real
+~$850B; Sweden's SWF 195 ≈ its real AP-fund total. Every stored currency value is on the same scale.
+
+**So there is no second, worse problem.** The spec flagged inconsistent units as the outcome that would
+matter more; it is not the case. Seven currency fields on `EconomyState` (`GDP`, `Budget`, `TradeBalance`,
+`Consumption`, `Investment`, `PotentialGDP`, `GovernmentDebt`), plus `SpendingLine.Amount`,
+`SovereignWealthFund.TotalAssets` and all twelve `FiscalTurnReport` money fields — all billions.
+
+⚠ **One genuine exception, and it is a derived value, not a stored one.** `DerivedStats.GdpPerCapita`
+returns **thousands per person** (billions ÷ millions), which its own doc comment states. Any formatter
+that assumes "currency ⇒ billions" would render it a million times too large. It is not currently
+displayed anywhere — but A4's remaining work is precisely to surface it, so the formatter must handle a
+per-stat unit rather than one global one.
+
+### Finding 2 — the formatter is magnitude-aware and unit-blind
+
+```csharp
+if (magnitude >= 1_000f) return (value / 1_000f).ToString("0.#") + "k";
+```
+
+`FormatAxisValue(29000)` → `"29k"`. The arithmetic is right for a base unit of 1. The suffix ladder was
+added after the `StatTile` "9,3" bug specifically so magnitude could not be lost — and it works, but it is
+scaling from the wrong starting point.
+
+### Finding 3 — 21 display sites, and the game states its units NOWHERE
+
+| Path | Sites | Symptom |
+|---|---|---|
+| Via `FormatAxisValue` | 4 — graph axis labels ×3, published-graph empty state, "latest:" overlay, B2 chips (`Gdp`, `TradeBalance`) | `"29k"` for $29T |
+| Raw `F1`, no suffix, no unit | 17 — GDP/Government Debt/Budget Balance tiles, Statistics GDP line, cumulative budget, trade balance, Revenue/Interest/Welfare/Tariff report rows, SWF panel (assets, gross debt, net position), interest-on-debt row, spending line amounts + implied change, world-map tooltip, Policy Web spending popup, turn log, `[DEBUG]` dump | `28999,3` bare |
+| Preview panel | 1 — "Net Budget Impact" | bare |
+| **Sparklines** | 0 | **unaffected** — they draw shape only, no text |
+
+Not one site prints a currency symbol or a unit. `GameController.cs:4652` even computes a local named
+`impliedDollarChange` and renders it as a bare number.
+
+### Recommendation — ONE approach: a per-stat unit on a single money formatter
+
+**Render `$29.0T`, not `29000` and not `29k`.** Concretely:
+
+1. **One entry point**, `UiFormat.Money(float value, MoneyUnit unit)`, where `MoneyUnit` is `Billions`
+   (everything stored) or `Thousands` (`GdpPerCapita`). It normalises to a base amount and then picks
+   `$X.XT` / `$XXXB` / `$XXM` — so the suffix describes the real magnitude rather than the storage scale.
+2. **The unit travels with the stat, not with the call site.** Extend the existing per-stat metadata
+   (`PolicyWebRenderer.StatInfo` already carries `HigherIsBetter` per `StatNodeId`; `PolicyScreenStats`
+   already switches per stat) with a unit. Graph axes then ask the series what it is instead of assuming.
+3. **Retire `FormatAxisValue` for currency.** It stays for non-currency axes (rates, indices) where a bare
+   `F1` is right. A currency axis that calls it becomes a compile-time impossibility if the axis takes a
+   `MoneyUnit`-bearing descriptor rather than a raw float.
+
+**Why this over the alternatives.** *Raw plus a unit label* ("29000 ($B)") keeps the reading burden on the
+player on every screen and still shows a five-digit number where "$29T" would do. *Differing by context* —
+tiles one way, axes another — is precisely the inconsistency that let this survive two fixes; the same
+number would read differently on two screens a click apart.
+
+**The property that matters most is that inconsistency becomes hard rather than merely discouraged.**
+Two prior fixes were correct in isolation and failed because nothing prevented the next site from doing
+something else. Carrying the unit on the stat, and making the currency path require it, is what stops a
+22nd site from being added wrong.
+
+**Scope: ~21 call sites, one new formatter, one metadata addition.** No simulation change whatsoever —
+every stored value keeps its current number and unit.
+
+---
+
+## P4 — the clipping class: audit, and why a shared helper is warranted (2026-08-02)
+
+**Not patched.** Sixth and seventh recurrences of one class; the spec asked whether a shared helper ends
+it. **It would, and the evidence is stronger than expected — the fix already exists and was applied to one
+field of one widget.**
+
+### Item 6 is literally the "9,3" bug again, in the same file, one field away
+
+`PoliSimWidgets.StatTile` builds its label style as `new GUIStyle(GUI.skin.label)`, which **inherits
+`wordWrap = true`**, and draws it into a fixed `12f * scale`-tall rect with a `MiddleLeft` anchor. A label
+too wide for the tile wraps to two lines, and two lines vertically centred in a one-line box lose their
+tops and bottoms — exactly "the text above is cut off" on `DEBT-TO-GDP` and similar.
+
+The `StatTile` **value** field has carried the fix for this since the "9,3" incident, and its own comment
+names the cause:
+
+> *"this style inherits wordWrap from GUI.skin.label, and the anchor is a BOTTOM one - so a value too wide
+> for the tile wrapped, and the bottom anchor rendered only the LAST wrapped line."*
+
+The value got `wordWrap = false` plus shrink-to-fit. **The label, ten lines above it in the same method,
+did not.** That is the whole argument for a helper: the correct fix was written, proven, commented — and
+then not reused even within its own widget.
+
+### Item 5 is the width variant
+
+`DrawSubCategoryButton` uses `GUILayout.Button(label, style, ExpandWidth(true), MinHeight(...))`. Five
+buttons share the Policy/Laws row (Labor Market, Crime & Justice, Economic Sectors, Policy Web, Trade); the
+row has no width budget, so when natural widths exceed the container the last one — Trade — clips.
+
+### The class, across seven known instances
+
+Manufacturing sector label · World Map country names · TaxLine/WelfareProgram rows · Policy Web category
+headers · Policy/Laws "Trade" · Budget tile labels · StatTile values (fixed).
+
+**Every one is the same root shape: a text rect sized by a hardcoded constant instead of by measuring the
+string in the style it will actually be drawn in.**
+
+### Recommendation — `PoliSimWidgets.MeasuredLabel`
+
+One helper that takes the rect, the text and **the style it will actually render in**, then:
+- measures via `style.CalcSize`/`CalcHeight` against that style, not a smaller stand-in;
+- sets `wordWrap = false` and **shrinks the font until it fits**, never truncating — the value field's
+  existing approach, because shrinking makes a figure smaller but never *different*, which is the property
+  that mattered for "9,3" and matters identically for a clipped label;
+- recomputes per frame, since every style in this project rescales with the window;
+- leaves an explicit margin so nothing sits flush against a boundary.
+
+For the width variant, the same helper answers "how wide does this row actually need to be", which is what
+`DrawSubCategoryButton`'s container needs in order to stop over-committing.
+
+**Do not fix items 5 and 6 in place.** Six prior site-specific fixes have not ended this; a seventh will
+not either. The helper plus a sweep of the seven known sites is the same amount of work with a different
+outcome.

@@ -103,42 +103,10 @@ site-specific fix.
 
 # TIER 0 — no advancement needed (items 1–6, plus 10 and 11 at the end of this tier)
 
-## 1. Statistics nav icon sizing
+## Items 1, 2, 4 and 11 — CLOSED, briefs moved to `COMPLETED.md` section 14
 
-**What / where:** `b6da098` (Phase B pilot), resized in a follow-up after your "colored speck" feedback.
-The nav icon sits stacked above the label on the Statistics tab button.
-
-**Look at:** the tab bar, immediately, at **1.0x scale, 16:9**. No sub-tab, no state.
-
-**The judgment:** does it read as an *icon* at a glance — roughly text height plus a bit — or is it still
-decorative noise you'd never actually navigate by? You asked for "genuinely right rather than a token
-bump," and only your eye at native resolution can say whether it cleared that bar.
-
-**Honest uncertainty:** you later said "All the tabs are looking great" after batch 1 rolled icons onto
-all seven tabs, which *may* have been the confirmation. I cannot tell from the repo whether that
-covered the resize specifically, and I have no record of a 1.0x screenshot taken after it. Treat as
-unconfirmed; it is the cheapest check here.
-
-**If rejected:** isolated. A size constant. Nothing depends on it. Redo, not a block.
-
-## 2. Statistics restructure — Domestic / International
-
-**What / where:** `9713c60`. Sub-tabs went `{RecentTurns, WorldMap, Trade}` → `{Domestic,
-International}`, Trade was absorbed into International, and **all graphs were removed from the left
-column**.
-
-**Look at:** Statistics tab → both sub-tabs. Also glance at the **left column on any tab** to confirm it
-is numbers-only now.
-
-**The judgment:** two questions your eyes must answer. (a) Does Trade sitting inside International read
-as natural, or does it feel buried — you go looking for "Trade" and find it isn't a tab any more?
-(b) Does the left column feel *cleaner* without graphs, or *emptier* — did removing them take away
-orientation you were actually using?
-
-**If rejected:** this is the expensive one. Item 3's redesign was built to fill the width this
-restructure freed up. Reverting the layout means the published-graph redesign no longer has a home and
-would need re-siting. **Rejecting this blocks item 3; rejecting item 3 does not block this.** Review in
-this order.
+Confirmed by Elias 2026-08-02. Removed from this file per the standing three-way test: finished work
+lives in `COMPLETED.md`, and this file holds only what is still open.
 
 ## 3. Published-graph redesign — initial state only
 
@@ -153,20 +121,6 @@ publication mechanic, and it lasts until the first release lands.
 
 **If rejected:** just this panel's empty state. Does not block the revision review in item 8 — that is a
 different visual on the same widget.
-
-## 4. Amber draft cue
-
-**What / where:** Phase C batch 6. `DrawDraftLabel(text, standing, draft)` — 25 call sites.
-
-**Look at:** any policy screen with a slider. **Drag one.** The label should turn amber to mark
-"changed from standing."
-
-**The judgment:** is amber legible against the panel background *and* distinguishable from the other
-status colours already in use? And does it read as "you changed this, not yet law" rather than as a
-warning that something is wrong? That distinction is entirely a colour-semantics judgment.
-
-**If rejected:** isolated but wide — 25 sites share one helper, so a colour change is one edit. Redo,
-not a block.
 
 ## 5. Policy / Laws tab restyle
 
@@ -223,33 +177,6 @@ Budget → each of Tax, Spending, Welfare, Infrastructure, Sovereign Wealth Fund
 two channels — but if it reads as a bug to you, say so, because it will read that way to a player too.
 
 **If rejected:** isolated to `PolicyScreenStatsRenderer` and two call sites; nothing else consumes it.
-
-## 11. Credit Rating tile — placement provisional, and it is *knowingly wrong* for three countries
-
-**What / where:** `3d77b11`. Step C4's rating joins the dashboard tile grid directly after Debt-to-GDP.
-Tier 0 — visible on every tab, the moment you enter Play mode.
-
-**Look at:** the dashboard tile grid, on load. Then advance a few turns and watch it.
-
-**The judgment:** does a rating belong in the headline grid at all, or does it read as clutter next to
-Debt-to-GDP saying much the same thing? Placement was Elias's call and is explicitly **provisional** —
-the alternative home is the Budget screen. Also: "AA+" is the only non-numeric value in a grid of
-numbers, so check it doesn't look out of place at `FontStatHero`.
-
-⚠ **Known defect — do not report this as a review finding, it is already logged.** The rating thrashes
-for **Sweden, France and Germany** (up to 16 notches in one turn and back), because C4's deficit term is
-uncapped and unsmoothed. See the roadmap's Open Questions. It is correct and stable for **USA, Italy and
-Poland** — review the placement using one of those three. The thrash is a model defect awaiting a
-re-calibration decision, not a display bug.
-
-**Outlook pill:** only appears for a Positive or Negative outlook. A missing pill means "Stable", not
-missing data — `StatTile`'s pill is binary and Stable is neither good nor bad.
-
-**If rejected:** one tile entry in `DrawHeadlineStatTiles`; the rating itself is used nowhere else.
-
----
-
-# TIER 1 — one turn (ends day 121 = 2026-05-02)
 
 ## 7. First published release + the reporting lag
 

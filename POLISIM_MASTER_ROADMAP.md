@@ -558,6 +558,33 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 
 *Five 2026-08-01 resolutions and two 2026-07-31 ones moved to `COMPLETED.md` section 11.*
 
+### Live work from the 2026-08-02 visual review — investigated, awaiting a go-ahead
+
+Both were investigated rather than patched, because both are recurrences that survived earlier
+site-specific fixes. Full findings in `CLAUDE.md`.
+
+- **P2 — the currency unit bug (review item 3).** `FormatAxisValue(29000)` renders **"29k"** for **$29
+  trillion**: the suffix ladder is correct arithmetic on a base unit of 1, but the model stores billions.
+  **Confirmed billions is consistent** across all seven `EconomyState` currency fields, `SpendingLine`,
+  the SWF and all twelve `FiscalTurnReport` money fields — so there is no second, worse divergence
+  problem. **21 display sites**, and the game states its units nowhere. One exception matters:
+  `DerivedStats.GdpPerCapita` is thousands-per-person, so the unit must live per-stat, not globally.
+  **Recommended: one `UiFormat.Money(value, MoneyUnit)` entry point rendering `$29.0T`, with the unit
+  carried on the stat's existing metadata**, and `FormatAxisValue` retired for currency. Chosen because
+  the failure mode twice over has been a correct formatter applied inconsistently — the fix has to make
+  inconsistency hard, not merely discouraged. **No simulation change; ~21 call sites.**
+  🔴 **Blocks review items 7 and 8**, which cannot be judged while an axis misreports magnitude.
+
+- **P4 — the label-clipping class (review items 5 and 6).** Seventh recurrence. **Item 6 is literally the
+  "9,3" bug again, one field away in the same method**: `StatTile`'s label style is
+  `new GUIStyle(GUI.skin.label)`, inheriting `wordWrap = true`, drawn into a fixed `12f * scale` rect —
+  so a long label wraps to two lines and both get clipped. The **value** field in that same widget has
+  carried the fix (wordWrap off, shrink-to-fit) since the "9,3" incident and its comment names the exact
+  cause; the label never got it. Item 5 ("trade is cut off") is the width variant — five `ExpandWidth`
+  buttons in a row with no width budget. **Recommended: one `PoliSimWidgets.MeasuredLabel` helper** that
+  measures in the style text actually renders in, shrinks rather than truncates, recomputes per frame,
+  and leaves margin — then sweep the seven known sites. Six site-specific fixes have not ended this class.
+
 ### Live, unblocked work carried out of section A
 
 - **SWF emergency drawdown fast-track (A2).** Blocks nothing, but the gap is live in the current build:

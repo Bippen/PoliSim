@@ -610,3 +610,35 @@ visible to a player, neither of which was true before.
 **Do not fix it by damping the rating.** That option was raised and explicitly rejected in A1; doing it now
 would return the defect to log-only while making C4 dishonest. A derived stat that stayed calm while its
 inputs did this would be the broken one.
+
+---
+
+## 14. Visual review — the four items Elias closed (2026-08-02)
+
+**Elias reviewed all eleven items live, playing as USA.** Four passed clean and are closed; the rest stay
+in `VISUAL_REVIEW_BACKLOG.md`. **Master Sequence step 5 does NOT close** — it needs items 1–9, and 3, 7, 8
+and 9 all failed.
+
+| Item | Verdict |
+|---|---|
+| **1. Statistics nav icon sizing** | ✅ *"it reads like an icon"* — closes the "colored speck" thread from the Phase B pilot |
+| **2. Statistics restructure** | ✅ *"natural"* — Domestic/International split confirmed, Trade sitting inside International reads correctly, and the graphs-out-of-the-left-column change holds |
+| **4. Amber draft cue** | ✅ *"says it is a draft"* — the 25-call-site `DrawDraftLabel` treatment communicates "changed, not yet law" without reading as a warning |
+| **11. Credit Rating tile** | ✅ **placement confirmed** — beside Debt-to-GDP in the dashboard grid. The provisional marker on C4's placement is discharged |
+
+**Item 2's dependency resolved favourably:** it gated item 3, and rejecting item 2 would have left item 3's
+redesign without a home. Item 2 passing means item 3's failure is confined to item 3.
+
+**Item 11's confirmation settles C4's placement**, which had been explicitly recorded as provisional and
+revisable. It is no longer provisional. *(C4's own closure remains blocked upstream — see
+`MISSING_PREREQUISITES.md` §F1.)*
+
+### Not closed, and why the distinction matters
+
+**Item 10 passed but is NOT closed.** It is Tier 0, so it was reviewed at turn 0 — and `DrawSparkline`
+returns early below two history points, so **its sparklines never rendered during the review**. The same
+component then crashed the Budget tab at day 273. Its chips, icons and layout are confirmed; the part that
+failed was never seen. It needs re-review with item 9.
+
+**Items 5 and 6 passed with defects** and stay open: text clipping, which is the label-measurement class
+recurring for the sixth and seventh time.

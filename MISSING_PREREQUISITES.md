@@ -14,8 +14,8 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 |---|---|---|
 | ~~**Elias — decision**~~ | ~~3~~ **0 — all resolved 2026-08-02** | — |
 | **Elias — database access** | 16 blocking + 1 anchor | Steps C1, C2, C3, C5 |
-| **Elias — visual review** | 11 | Master Sequence step 5 closure |
-| **Claude Design** | 1 | Cosmetic only |
+| **Elias — visual review** | ~~11~~ **7 open** (4 closed 2026-08-02) | Master Sequence step 5 closure |
+| ~~**Claude Design**~~ | **SENT 2026-08-02** — awaiting delivery | Cosmetic only |
 | **Another task first** | 3 | Cabinet portraits, Round 4 scoping, Step C4 closure |
 
 ---
@@ -273,6 +273,24 @@ only, or use homeownership for the USA (65.3 exists and is comparable).
 
 # C. Waiting on Elias — visual review
 
+## ✅ REVIEWED 2026-08-02. Four items closed; seven still open.
+
+**Elias reviewed all eleven live, as USA.** Items 1, 2, 4 and 11 passed clean and moved to `COMPLETED.md`
+section 14. **Master Sequence step 5 still does NOT close** — it needs 1–9, and 3, 7, 8 and 9 failed.
+
+**What each remaining item now waits on — they are no longer all the same thing:**
+
+| Item | Waits on |
+|---|---|
+| 9 (black screen) | **Nothing — FIXED** (`e9e3f6a`). Waits only on Elias re-looking |
+| 10 (B2 stat row) | Elias re-looking **after advancement** — its sparklines never rendered at turn 0, and the sparkline is what crashed item 9 |
+| 3 (unit bug) | **Me** — investigated, one approach recommended; needs a go-ahead to change ~21 sites |
+| 7, 8 (unreadable graphs) | **Item 3 landing first.** Cannot be judged while an axis reads "29k" for $29T |
+| 5, 6 (clipping) | **Me** — audited, shared helper recommended |
+
+*This section is no longer one undifferentiated "waiting on Elias" block: three of the seven wait on work,
+not on review.*
+
 **11 items, detailed in `VISUAL_REVIEW_BACKLOG.md`.** Not duplicated here; that document is the live
 list and holds the per-item look-at/judgment/if-rejected detail.
 
@@ -316,11 +334,14 @@ one rather than being retrofitted.
 
 # E. Waiting on Claude Design
 
-## E1. `icon_stat_interestrate`
+## E1. `icon_stat_interestrate` — ✅ REQUEST SENT 2026-08-02, awaiting delivery
 
 **Task:** the Interest Rate chip on B2's contextual stat row draws no icon.
 
-**Needs:** one 64×64 PNG. Full spec in `CLAUDE_DESIGN_ASSET_REQUEST.md`.
+**Status: sent.** CLAUDE_DESIGN_ASSET_REQUEST.md has gone to Claude Design. This is no longer waiting on
+Elias — it is waiting on delivery, then a security review and import following the established pattern.
+
+**Needs:** one 256×256 PNG (renders at 22px). Full spec in CLAUDE_DESIGN_ASSET_REQUEST.md.
 
 **Verified as the only outstanding asset (2026-08-02)**, not assumed: every literal icon name requested
 anywhere in `Assets/Scripts` was cross-referenced against the 84 files on disk, and this was the sole
