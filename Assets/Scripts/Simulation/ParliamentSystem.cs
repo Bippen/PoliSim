@@ -509,6 +509,33 @@ namespace PoliSim.Simulation
             applyEffects(country, bill);
         }
 
+        /// <summary>
+        /// SwfDrawdownBill's direction. Drawing on the fund puts money into the economy now, so it reads
+        /// EXPANSIONARY - positive on the same FiscalStance axis every other bill here scores against.
+        ///
+        /// The withdrawal is already a percentage of GDP, the same unit BudgetBill's own SWF contribution
+        /// term uses, so it is directly comparable against the other bills' magnitudes without rescaling.
+        /// The sign flip lives in the field's NAME rather than in arithmetic here:
+        /// <see cref="SwfDrawdownBill.WithdrawalPercentOfGdp"/> is positive when taking money out, where
+        /// `ContributionRatePercent` is positive when paying in.
+        /// </summary>
+        public static float GetSwfDrawdownBillDirection(Country country, SwfDrawdownBill bill)
+        {
+            return bill.WithdrawalPercentOfGdp;
+        }
+
+        /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplySwfDrawdownBillEffects).</summary>
+        public static void ApplySwfDrawdownBillResult(Country country, SwfDrawdownBill bill, bool passed, System.Action<Country, SwfDrawdownBill> applyEffects)
+        {
+            if (!passed)
+            {
+                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                return;
+            }
+
+            applyEffects(country, bill);
+        }
+
         private static TaxLine FindTaxLine(Country country, TaxType type)
         {
             foreach (TaxLine line in country.TaxLines)

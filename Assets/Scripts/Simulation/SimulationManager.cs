@@ -369,6 +369,10 @@ namespace PoliSim.Simulation
         private readonly Dictionary<CountryId, TradePolicyBill> _pendingTradeBillByCountry =
             new Dictionary<CountryId, TradePolicyBill>();
 
+        /// <summary>Elias's A2 ruling: the SWF emergency drawdown is a fifth standalone tier-3 bill, so it gets its own pending slot exactly like the other four.</summary>
+        private readonly Dictionary<CountryId, SwfDrawdownBill> _pendingSwfDrawdownBillByCountry =
+            new Dictionary<CountryId, SwfDrawdownBill>();
+
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
         {
@@ -796,6 +800,86 @@ namespace PoliSim.Simulation
                 SectorDeregulationNationalizationOverrides = bill.DeregulationLevels
             };
             ApplySectorPolicyChanges(country, decision);
+        }
+
+        /// <summary>The pending SWF emergency drawdown bill for this country, or null if none is before Parliament.</summary>
+        public SwfDrawdownBill GetPendingSwfDrawdownBill(CountryId countryId)
+        {
+            return _pendingSwfDrawdownBillByCountry.TryGetValue(countryId, out SwfDrawdownBill bill) ? bill : null;
+        }
+
+        /// <summary>
+        /// See IntroduceLaborBill's own doc comment - identical pattern, with one extra guard: a country
+        /// with no fund has nothing to draw down, so the bill cannot be introduced rather than passing
+        /// and quietly doing nothing. A vote that resolves to no effect is worse than an unavailable
+        /// control, because the player spends the wait learning nothing.
+        /// </summary>
+        public bool IntroduceSwfDrawdownBill(CountryId countryId, SwfDrawdownBill bill)
+        {
+            if (_pendingSwfDrawdownBillByCountry.ContainsKey(countryId))
+            {
+                return false;
+            }
+
+            Country guardCountry = _world.GetCountry(countryId);
+            if (guardCountry == null || guardCountry.SovereignWealthFund == null)
+            {
+                return false;
+            }
+
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingSwfDrawdownBillByCountry[countryId] = bill;
+            return true;
+        }
+
+        /// <summary>See AdvanceLaborBillDay's own doc comment - identical pattern.</summary>
+        public void AdvanceSwfDrawdownBillDay(CountryId countryId)
+        {
+            if (!_pendingSwfDrawdownBillByCountry.TryGetValue(countryId, out SwfDrawdownBill bill))
+            {
+                return;
+            }
+
+            bill.DaysRemaining--;
+            if (bill.DaysRemaining > 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetSwfDrawdownBillDirection(country, bill));
+            ParliamentSystem.ApplySwfDrawdownBillResult(country, bill, passed, ApplySwfDrawdownBillEffects);
+            _pendingSwfDrawdownBillByCountry.Remove(countryId);
+        }
+
+        /// <summary>
+        /// The drawdown's apply delegate: a ONE-OFF transfer out of the fund into the budget, unlike
+        /// every other SWF term, which sets a standing rate.
+        ///
+        /// **Clamped to what the fund actually holds.** A withdrawal larger than the fund cannot be
+        /// honoured, and letting `TotalAssets` go negative would invent money and hand the budget a
+        /// credit that never existed - the same class of error as the negative-debt interest inversion
+        /// caught when the debt floor came off. The bill is not rejected for asking too much; it delivers
+        /// what is there, which is what an emergency drawdown of a depleted fund really produces.
+        ///
+        /// Proceeds land on `Budget` rather than paying down debt directly, deliberately: the budget is
+        /// the channel every other fiscal flow runs through, so the drawdown reaches debt the same way a
+        /// surplus does and every downstream reader - the fiscal reaction function, the rating's deficit
+        /// term, the reports - sees it without a special case.
+        /// </summary>
+        private void ApplySwfDrawdownBillEffects(Country country, SwfDrawdownBill bill)
+        {
+            SovereignWealthFund fund = country.SovereignWealthFund;
+            if (fund == null)
+            {
+                return;
+            }
+
+            float requested = country.State.GDP * bill.WithdrawalPercentOfGdp / 100f;
+            float withdrawn = Mathf.Clamp(requested, 0f, fund.TotalAssets);
+
+            fund.TotalAssets -= withdrawn;
+            country.State.Budget += withdrawn;
         }
 
         /// <summary>The pending standalone Trade bill for this country, or null if none is currently before Parliament.</summary>

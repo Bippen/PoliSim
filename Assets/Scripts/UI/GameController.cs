@@ -97,6 +97,18 @@ namespace PoliSim.UI
         private const float MinSwfContributionRate = -10f;
         private const float MaxSwfContributionRate = 10f;
 
+        /// <summary>
+        /// Bounds for the EMERGENCY drawdown bill's slider — a one-off withdrawal, not the standing
+        /// contribution rate above. The ceiling is deliberately higher than `MaxSwfContributionRate`'s
+        /// 10%: that one is an annual flow that repeats, this is a single crisis transfer, and capping an
+        /// emergency at the same rate as routine policy would defeat the purpose of having an emergency
+        /// path at all. The floor is zero because a negative withdrawal is a contribution, which already
+        /// has its own control — a slider that silently changes meaning at zero is how sign errors reach
+        /// production.
+        /// </summary>
+        private const float MinSwfDrawdownPercentOfGdp = 0f;
+        private const float MaxSwfDrawdownPercentOfGdp = 25f;
+
         /// <summary>Bounds for the Paid Family Leave slider (weeks) - must match SimulationManager.MinPaidFamilyLeaveWeeks/MaxPaidFamilyLeaveWeeks.</summary>
         private const float MinPaidFamilyLeaveWeeks = 0f;
         private const float MaxPaidFamilyLeaveWeeks = 104f;
@@ -164,6 +176,9 @@ namespace PoliSim.UI
         // stays part of the annual omnibus bill; nullable rather than a Dictionary since there's only
         // one fund. Not cleared by ResetPolicyInputs, for the same reason _taxRateInputs isn't.
         private bool? _swfExistsDraft;
+
+        /// <summary>The emergency drawdown slider's draft, in % of GDP. Not cleared by ResetPolicyInputs, matching every other draft here — a player who dialled in a number and then advanced a day should not find it reset.</summary>
+        private float _swfDrawdownPercentInput;
 
         // Draft ABSOLUTE Sovereign Wealth Fund settings (not deltas) - meaningful whenever the DRAFT
         // says the fund should exist (GetSwfExistsDraft), not just while the real fund already does -
@@ -614,6 +629,7 @@ namespace PoliSim.UI
                 _simulationManager.AdvanceCrimeJusticeBillDay(PlayerCountryId);
                 _simulationManager.AdvanceSectorBillDay(PlayerCountryId);
                 _simulationManager.AdvanceTradeBillDay(PlayerCountryId);
+                _simulationManager.AdvanceSwfDrawdownBillDay(PlayerCountryId);
 
                 // Master Sequence step 5a: same daily idiom as the two calls above - deterministic
                 // date check, not a chance roll, mirroring AdvanceBudgetBillDay's own reasoning.
@@ -3530,6 +3546,15 @@ namespace PoliSim.UI
                     ParliamentSystem.GetTradeBillDirection(_playerCountry, tradeBill), UiPalette.SystemArea.Trade));
             }
 
+            SwfDrawdownBill drawdownBill = _simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId);
+            if (drawdownBill != null)
+            {
+                // Names its amount, unlike the other four. A drawdown IS its number - "an emergency
+                // drawdown bill" tells a player nothing about what they are about to be committed to.
+                pending.Add(($"SWF emergency drawdown - {drawdownBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {drawdownBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetSwfDrawdownBillDirection(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth));
+            }
+
             if (pending.Count == 0)
             {
                 GUILayout.Label("No bill currently before Parliament.", _labelStyle);
@@ -3860,6 +3885,57 @@ namespace PoliSim.UI
             if (GUILayout.Button("Introduce Trade Bill", _neutralActionButtonStyle))
             {
                 _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
+            }
+            GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>
+        /// The SWF emergency drawdown's own bill row, on the Sovereign Wealth Fund tab. Elias's A2
+        /// ruling, closing the gap where a genuine emergency could sit behind a fiscal-year vote up to a
+        /// year away because every SWF change rode the annual omnibus.
+        ///
+        /// **Every control renders every frame**, with availability expressed through `GUI.enabled`
+        /// composed with the ambient state rather than by omitting controls — the stable-control-layout
+        /// pattern this project adopted after the mid-drag freeze investigation. A fund that does not
+        /// exist yet disables the button; it does not remove it.
+        /// </summary>
+        private void DrawSwfDrawdownBillStatusAndIntroduce()
+        {
+            SwfDrawdownBill pendingBill = _simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId);
+            bool fundExists = _playerCountry.SovereignWealthFund != null;
+
+            GUILayout.Label("Emergency Drawdown (standalone bill - does not wait for the annual budget)", _headerStyle);
+
+            string statusText = pendingBill != null
+                ? $"A drawdown bill is before Parliament - {pendingBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {pendingBill.DaysRemaining} day(s)."
+                : fundExists
+                    ? "No drawdown bill before Parliament. Introduce one to withdraw from the fund now rather than at the fiscal year."
+                    : "No fund exists to draw down. Create one through the annual budget first.";
+            GUILayout.Label(statusText, _labelStyle);
+
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && fundExists && pendingBill == null;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Withdraw: {_swfDrawdownPercentInput:F1}% of GDP", _labelStyle, GUILayout.Width(200f));
+            _swfDrawdownPercentInput = GUILayout.HorizontalSlider(_swfDrawdownPercentInput,
+                MinSwfDrawdownPercentOfGdp, MaxSwfDrawdownPercentOfGdp, _sliderStyle, _sliderThumbStyle);
+            GUILayout.EndHorizontal();
+
+            if (fundExists)
+            {
+                // What the request would actually deliver, not what it asks for. The fund may hold less,
+                // and finding that out only after a multi-day vote would be the worst moment to learn it.
+                float requested = _playerCountry.State.GDP * _swfDrawdownPercentInput / 100f;
+                float deliverable = Mathf.Min(requested, _playerCountry.SovereignWealthFund.TotalAssets);
+                string capped = deliverable < requested ? "  (CAPPED - the fund holds less than this)" : string.Empty;
+                GUILayout.Label($"Would release {UiFormat.Money(deliverable, MoneyUnit.Billions)} into the budget{capped}", _labelStyle);
+            }
+
+            if (GUILayout.Button("Introduce Emergency Drawdown Bill", _neutralActionButtonStyle))
+            {
+                _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
+                    new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
             }
             GUI.enabled = ambientEnabled;
         }
@@ -4725,6 +4801,12 @@ namespace PoliSim.UI
             {
                 _swfRealEstateWeightInput = newRealEstate;
             }
+
+            // The emergency path, last on the tab and visually separated: everything above it rides the
+            // annual budget bill, and this one deliberately does not. Placing it beside those controls
+            // would blur exactly the distinction it exists to draw.
+            GUILayout.Space(14f);
+            DrawSwfDrawdownBillStatusAndIntroduce();
         }
 
         /// <summary>
