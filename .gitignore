@@ -74,3 +74,12 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 baselines/
+
+# Source .zip deliveries from Claude Design, kept out of Assets/ so Unity does not
+# import them and generate a pointless .meta. Contents are already extracted into
+# Assets/Resources/Art/UI/; these are the original artifacts (including SVG sources)
+# and are untracked, matching how they sat at the project root before being tidied.
+/AssetPackArchive/
+
+# Any asset-pack zip left at the root awaiting a decision - see AssetPackArchive/README.md
+/*.zip
