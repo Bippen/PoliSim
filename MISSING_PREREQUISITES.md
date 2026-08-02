@@ -165,9 +165,9 @@ each would make one more trustworthy:
 
 | Debt | Where | What would settle it |
 |---|---|---|
-| **C5 is `[PRIMARY-UNANCHORED]`** | seed §6 | One exact, independently-published OECD figure reproduced in a session with live SDMX access |
+| ~~**C5 is `[PRIMARY-UNANCHORED]`**~~ | seed §6 | ✅ **CLOSED 2026-08-02** — anchor found via DBnomics; both original seeds reproduce exactly; all six promoted to `[VERIFIED]` |
 | **The real-wage row mixes THREE bases** | seed §5 | Re-source all six from OECD Taxing Wages 2025 (one basis, in SDMX). *Correct figures, incoherent set — the housing-overburden defect again* |
-| **The AHD vintage behind C1's estimates is unrecorded** | seed §1 | Find the year of the four OECD anchors. Unrecorded vintage is what produced the 90.86 problem |
+| **The AHD vintage behind C1's estimates is unrecorded** | seed §1 | Find the year of the four OECD anchors. **Unrecorded vintage is exactly what made 90.86 undecidable** — now the canonical example |
 
 ⚠ **Three C1/C2 figures are `[ESTIMATED]`, not sourced** — Italy/Sweden/Poland homeownership, Sweden real
 wages, USA Gini. They are rung 3 of the fallback ladder, carry stated methods and bands, and are replaced

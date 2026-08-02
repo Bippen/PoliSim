@@ -553,18 +553,24 @@ list stays short enough to actually read.
 - **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not
   required for a first pass. Nobody is blocked on it; it has simply never been prioritised.
 
-- 🔴 **NEW 2026-08-02 — the −300% net-creditor bound is my call, not yours, and wants confirming.**
-  Removing the debt floor produced an unbounded negative runaway (Sweden −615% of GDP, France −359%), so
-  the change could not pass validation without *some* bound. I added one symmetric to the existing
-  ceiling, reusing the same constant, grounded in Norway's real ~2.5×GDP fund. **Your ruling did not cover
-  this** — the runaway was not visible until the floor came off.
-  - **The alternative, and it is more principled:** fix the cause instead of bounding the symptom. SWF
-    returns are added to revenue *after* the fiscal reaction multiplier, so the stabiliser cannot reach
-    them while the fund compounds faster than GDP forever. Routing them through the multiplier — or
-    treating fund returns as a stock rather than as budget revenue — would remove the runaway at source.
-    **Much larger change**, touching a model calibrated against Norway, which is why I did not take it.
-  - ⚠ **France reaches the bound and sits near it**, which is the shape the floor's own defect had. It is
-    also the only country still showing year-over-year rating movement. Treat France as the open case.
+- ✅ **RULED 2026-08-02 — the net-creditor bound: FIX THE CAUSE, keep a non-binding guard.** Route SWF
+  returns through the fiscal reaction multiplier so the stabiliser can reach them, **and** retain a
+  deliberately wide runaway guard (~−1000% of GDP) that no country approaches. **The −300% symmetric bound
+  is retired.**
+
+  Elias's reasoning, recorded so it is not reopened:
+  1. **France at −298% against a −300% bound is not a risk, it is already pinning.** Everything downstream
+     of C4 reads that number, so it is reading the bound rather than the model.
+  2. **The deficit-term investigation is the very next work and it reads this value.** Investigating a
+     clamped signal wastes the investigation — exactly how the debt floor hid the deficit term until it
+     came off.
+  3. **A guard is not a bound.** Its job is to stop an unbounded runaway during and after the fix, never
+     to shape a live value. **If any country reaches it, that is a bug report, not a clamp.**
+  4. The Norway calibration this touches **has anchors**, so the cause-fix's risk is measurable where the
+     bound's risk is hidden.
+
+  ⚠ **Report the mechanism before proposing the implementation** — same shape as the debt-floor
+  investigation, and the same reason: three wrong theories preceded the right one on the batch-run hang.
 
 - 🔴 **NEW 2026-08-02 — the rating thrash's real cause is the DEFICIT term, and it is a separate defect.**
   Removing the floor cut debt-swing anomalies 60% (6,225 → 2,507) and moved rating anomalies by 1.6%

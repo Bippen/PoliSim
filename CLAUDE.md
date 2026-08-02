@@ -6178,3 +6178,66 @@ rewriting the sites that already got it right.
 **That is the honest scope: two reported sites fixed, two latent ones found and fixed, five left
 standing.** The class is not "closed" by fiat — it is closed when the next label added goes through the
 helper instead of re-deriving the fix, and this is the first time there is something to go through.
+
+---
+
+## Verification-integrity instance — "appears nowhere" is FALSE for a restated level series (2026-08-02)
+
+**The most important lesson from the API work, because it is the one where the rule was wrong rather than
+the practitioner.**
+
+Rule 5f-ter in the seed file distinguishes a REVISION from an ERROR by asking whether the disputed value
+survives anywhere in the source: *"a revision leaves the old value in the historical record or adjacent
+periods; an error leaves no trace because there was never anything to leave."*
+
+**That reasoning holds only where the source preserves vintages.** OECD's GDP-per-hour series does not —
+a revision **restates every year at once**, so the pre-revision figure vanishes from the live API
+completely, in every year and every cross-section.
+
+### What actually happened
+
+France's productivity seed of **90.86** was searched across its full 2010–2024 series and a 41-country
+2024 cross-section. It appeared nowhere. Every observation in that search was correct. **The conclusion
+drawn from them was wrong** — 90.86 was the right figure on its own vintage, confirmed later against a
+DBnomics snapshot (2026-04-07) reading **90.8595608458969**, alongside the USA's "~97" reading
+**97.0466946503153**. Both original seeds were right; the live series had simply been restated, five of
+six countries upward by 1.0–2.3%.
+
+**A correct-but-superseded value produces exactly the fingerprint the rule assigns to an error — and the
+more exhaustively you search the live source, the more confident you become of the wrong verdict.**
+
+### What saved the figure was the GATE, not the TEST
+
+The test pointed at ERROR. What prevented a correct `[VERIFIED]` figure being overwritten was rule
+5f-bis's second condition — *the method must have reproduced an anchor in the same session* — which could
+not be met on first contact with a new API. **The default held and the file won.**
+
+That condition had been recorded a few hours earlier as a conservative inconvenience, with a note that it
+"can never declare an error on first contact... conservative by design". **It is the only reason the data
+survived.** A defensive rule justifies itself the first time it fires against a conclusion that looked
+airtight, and this is that occasion.
+
+### The standing form
+
+> **"Appears nowhere in the source" distinguishes error from revision ONLY where the source preserves
+> vintages. For a restated level series it distinguishes nothing. Check a third-party archive with
+> per-snapshot retrieval dates — DBnomics mirrors OECD SDMX and is reachable where `sdmx.oecd.org` is
+> not — BEFORE concluding a value never existed.**
+>
+> **And record the RETRIEVAL DATE beside every value from such a series, not just the reference year.**
+> Without it, a superseded figure and a wrong figure are indistinguishable by any available test.
+
+### Two hypotheses built on the bad verdict, both dead
+
+Both were mine, and both were confident:
+
+- *"90.86 is a pre-revision France 2023, and the direction is wrong for it"* — the vintage used to reason
+  about direction was a **secondary aggregator's**, not OECD's. Against the real archived OECD vintage the
+  direction reverses. **A secondary source's vintage cannot calibrate a primary source's revision.**
+- *"90.86 may be Germany 2022 pre-revision"* — archived Germany 2022 is 92.4008. The 90.9 that made the
+  story attractive was a one-decimal coincidence in an aggregator. Declining to log that as a
+  verification-integrity instance on one decimal of secondary evidence was the correct call.
+
+**The generalisable point beyond APIs:** an exhaustive search that returns nothing is evidence about the
+*source as it exists now*, never about whether a value was ever true. Absence is only evidence of error
+when the source is capable of remembering.

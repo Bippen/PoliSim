@@ -296,18 +296,33 @@ as *originally sound and since revised*, on this evidence:
   SE 22.2→22.5). Life expectancy's 84.1 was 0.4 off and matched **nothing anywhere**.
 - **The variant is right.** They align with SA, not NSA — a 1.9-point difference for Italy — so whoever
   sourced them pulled the correct series.
-- **Every qualitative claim survives.** Sweden is genuinely high (22–25 across the year), Italy around 20,
-  France around 19, Germany strikingly low. The counterintuitive Sweden finding this file thought worth
-  preserving is real.
+- **Every qualitative claim survives** *on the Jun 2025 cross-section these anchors belong to*: Sweden
+  genuinely high (22–25 across the year), Italy around 20, France around 19, Germany strikingly low.
+  ⚠ **The Italy-above-France ordering is specific to Jun 2025 and reverses by Feb 2026** — see the ruling
+  above. Sweden-highest and Germany-lowest hold on both.
 
 **Monthly unemployment is a revisable series, so a value without a vintage is incomplete.** Both retrieval
 date and reference period are now recorded above; the earlier entries had a period but no retrieval date,
 which is why nobody could tell revision from error until the primary source was reachable.
 
-⚠ **A choice for Elias, not a data question:** the table now carries two reference periods. Jun 2025 keeps
-comparability with how this file was originally sourced; Feb 2026 is the latest available and is what a
-player would recognise as "now". **Seed from one period consistently** — mixing them across countries
-would fabricate a cross-section that never existed on any single date.
+### ✅ RULED (Elias, 2026-08-02): **SEED FEBRUARY 2026.** One period, all six.
+
+| Germany | USA | Poland | Italy | France | Sweden |
+|---|---|---|---|---|---|
+| 7.3 | **9.5** | 11.9 | 17.7 | 21.1 | 22.5 |
+
+USA is `[VERIFIED]` on this period — BLS CPS `LNS14024887`, 16–24, rate, seasonally adjusted.
+⚠ Feb 2026 is the less settled vintage; **record the retrieval date (2026-08-02)**, per the restated-series
+rule.
+
+🔴 **TWO NARRATIVE CLAIMS IN THIS FILE ARE NOW STALE AND WOULD CONTRADICT THE SEEDS.** On the Feb 2026
+cross-section **France (21.1) is ABOVE Italy (17.7)** — the reverse of Jun 2025, where Italy 20.0 led
+France 19.0. Any prose describing "Italy around 20, France around 19" is describing the *other*
+cross-section and must be rewritten with the seeds rather than left to disagree with them.
+
+**What survives unchanged:** Sweden remains highest and Germany lowest, so the counterintuitive Nordic
+finding this file wanted preserved — a strong overall labour market alongside one of Europe's worst youth
+rates — holds on this period too.
 
 EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED] — *not re-checked; a different series to the
 per-country figures above.*
@@ -447,7 +462,7 @@ See the verification-integrity entry below the table — this is the single most
 
 | Country | Value | Confidence |
 |---|---|---|
-| USA | 79.0 (2024, highest-ever; up from 78.4 in 2023) | [VERIFIED] CDC NCHS — **not Eurostat-checkable, see note** |
+| USA | **79.0** (2024; up from 78.4 in 2023) | ✅ [VERIFIED] **CDC/NCHS FINAL data** — re-checked 2026-08-02 |
 | Italy | **83.7** | [VERIFIED] Eurostat API 2026-08-02 — *replaces an incorrect 84.1* |
 | Sweden | **83.8** | [VERIFIED] Eurostat API 2026-08-02 — *replaces an incorrect 84.1* |
 | France | **83.0** | ⚠ **[PROVISIONAL]** — status flag `p`. Not `[VERIFIED]` |
@@ -493,11 +508,25 @@ alongside a number, where the claim was never checked against the source and the
 to interrogate it; the database gives the whole cross-section, which is how "nowhere in any year, for any
 country" became a checkable statement rather than a suspicion.
 
-⚠ **USA 79.0 is NOT checkable this way.** It is CDC NCHS, not Eurostat, so the API cannot audit it. It
-stays `[VERIFIED]` on its original basis — but **it came from the same sourcing session that produced the
-84.1 error and deserves a re-check against CDC directly.** Flagged, not downgraded: there is no evidence
-against it, only guilt by association, and downgrading on that alone would be as unprincipled as the
-original over-confidence.
+#### ✅ USA 79.0 RE-CHECKED AND CONFIRMED (2026-08-02) — the guilt by association is discharged
+
+**CDC/NCHS, *Mortality in the United States, 2024*, NCHS Data Brief No. 548 — FINAL mortality data, not
+provisional.** 79.0 years, total population, up 0.6 from 78.4 in 2023, which this file also records
+correctly. Female 81.4, male 76.5. Source: National Vital Statistics System.
+
+It was flagged only because it came from the sourcing session that produced the 84.1 error. **It is exactly
+right, on the right basis, from the right agency** — which is itself evidence that the 84.1 failure was a
+single bad secondary source rather than a session-wide problem.
+
+🔴 **AND IT IS THE STRONGEST FIGURE IN THIS ROW, which the file should say plainly.** France 83.0 carries
+`p` and Poland 78.5 carries `ep` — both provisional, both expected to move. **The USA is the only fully
+final figure here.** The habitual assumption that the US number is the shaky one because it comes from
+outside Eurostat is, in this row, backwards.
+
+⚠ **ONE CLAIM REMOVED, NOT CONFIRMED: "highest-ever".** The brief states the 0.6-year rise from 2023 and
+says nothing about a record. It has been dropped rather than left standing — **an unchecked structural
+claim written alongside a correct number is precisely the shape of the 84.1 failure**, and repeating that
+pattern in the very entry that corrects it would be indefensible. Re-add it only with a source.
 
 EU average: 81.7 (2024) [VERIFIED] — *not re-checked against the API; it was not one of the disputed
 values.* The US sitting ~3 years below comparable countries is real and worth preserving.
@@ -546,14 +575,22 @@ Useful anchors: OECD average real household income per capita growth 1.8% in 202
 
 ✅ **ALL SIX SOURCED EXACTLY FROM OECD SDMX, 2026-08-02. One year, one basis, one vintage.**
 
-| Country | **2022** | **2024** | Confidence |
-|---|---|---|---|
-| USA | **90.83** | **100.12** | `[PRIMARY-UNANCHORED]` |
-| Germany | **94.54** | — | `[PRIMARY-UNANCHORED]` — *closes a `[GAP]`* |
-| Sweden | **89.95** | — | `[PRIMARY-UNANCHORED]` — *replaces a `[PARTIAL]` ~70* |
-| France | **86.32** | **92.74** | `[PRIMARY-UNANCHORED]` — *replaces an unreproducible 90.86* |
-| Italy | **78.20** | — | `[PRIMARY-UNANCHORED]` — *closes a `[GAP]`* |
-| Poland | **54.09** | — | `[PRIMARY-UNANCHORED]` — *replaces a `[PARTIAL]` ~24.5* |
+| Country | **2022** | Confidence |
+|---|---|---|
+| Germany | **94.54** | ✅ `[VERIFIED]` |
+| USA | **90.83** | ✅ `[VERIFIED]` |
+| Sweden | **89.95** | ✅ `[VERIFIED]` |
+| France | **86.32** | ✅ `[VERIFIED]` |
+| Italy | **78.20** | ✅ `[VERIFIED]` |
+| Poland | **54.09** | ✅ `[VERIFIED]` |
+
+**Basis, in full — this must never be a bare number again:** `OECD DSD_PDB` · `MEASURE=GDPHRS` ·
+`ACTIVITY=_T` · `UNIT_MEASURE=USD_PPP_H` · `PRICE_BASE=V` (current prices) · `FREQ=A` · reference year
+**2022** · **live vintage retrieved 2026-08-02**.
+
+🔴 **RECORD THE RETRIEVAL DATE, NOT JUST THE REFERENCE YEAR.** This series restates wholesale — see the
+verification-integrity instance below. A value without a retrieval date cannot be distinguished from an
+error by any test in this file.
 
 ```
 https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0/
@@ -570,29 +607,69 @@ rung 2 of the fallback ladder. Only France and the USA have 2024 values; mixing 
 for the other four would fabricate a cross-section that never existed on any single date, which is the
 rule this file already states for youth unemployment.
 
-#### 🔴 WHY `[PRIMARY-UNANCHORED]` AND NOT `[VERIFIED]` — the gate is UNRUN, not passed
+#### 🟢 THE ANCHOR WAS FOUND, AND 90.86 WAS RIGHT ALL ALONG (2026-08-02, session 4)
 
-These are exact values from the primary database on an unambiguous key, and the variant is confirmed by
-the DSD's own labels. **But no independent anchor reproduced**, so rule 5f-bis condition 2 is unmet and
-the variant identification rests on labels alone rather than on agreement with a known figure. Every
-candidate anchor in this file was tried and every one failed:
+**`[PRIMARY-UNANCHORED]` is retired for these six.** Rule 5f-bis condition 2 is satisfied: **both**
+original seeds reproduce exactly against an independent archive of the same key.
 
-| Candidate | File records | SDMX actual | |
+| Seed in this file | Archived OECD series | |
+|---|---|---|
+| France **90.86** (2024) | France 2024 = **90.8595608458969** | ✅ exact to 2dp |
+| USA **~97** | USA 2023 = **97.0466946503153** | ✅ |
+
+**Everything about the original sourcing now makes sense, including the bit that looked like
+carelessness.** The seed carried a year label for France and none for the USA **because the USA series
+ends at 2023 in that vintage while France runs to 2024.** Whoever sourced these pulled one coherent
+cross-section and labelled it honestly.
+
+**The route — record it, it is the only working path found in four sessions.** `db.nomics.world`
+(CEPREMAP) mirrors OECD SDMX with its own ingestion pipeline and dimension mapping, serves plain HTML that
+parses, and is reachable where `sdmx.oecd.org` is not. Append `?tab=table` to a series URL for every
+observation at full precision. ⚠ `api.db.nomics.world` is `robots.txt`-blocked; `db.nomics.world` is not.
+
+```
+https://db.nomics.world/OECD/DSD_PDB@DF_PDB_LV/FRA.A.GDPHRS._T.USD_PPP_H.V._Z._Z._Z?tab=table
+   snapshot retrieved by DBnomics 2026-04-07
+```
+
+**Why the live query could not find it: the live series is the SAME series, restated.** Live 2026-08-02
+against the 2026-04-07 archive, at 2022 — systematic, one-directional for five of six, USA alone revised
+down. That is a national-accounts and PPP-benchmark revision, not a basis difference:
+
+| | live | archive | Δ |
 |---|---|---|---|
-| France GDP/hour | 90.86 (2024) | 92.74 (V) / 81.56 (LR) | ✗ appears in no year, no country |
-| USA GDP/hour | ~97 | 100.12 (2024) / 90.83 (2022) | ✗ and approximate, so unusable as an exact anchor |
-| OECD average | ~67.5 (2022) | **72.59** (V) / ~64–66 (LR) | ✗ on either basis |
+| Germany | 94.54 | 92.4008 | **+2.32%** |
+| Italy | 78.20 | 76.8155 | +1.80% |
+| France | 86.32 | 84.8632 | +1.72% |
+| Poland | 54.09 | 53.2791 | +1.52% |
+| Sweden | 89.95 | 89.0469 | +1.01% |
+| USA | 90.83 | 92.2214 | **−1.51%** |
 
-**The marker is the honest middle.** `[VERIFIED]` would claim a check that was not performed;
-`[PARTIAL]` would understate figures pulled exactly from the authoritative source. These are as good as
-data gets without an anchor, and they are explicitly one rung below the Eurostat figures in this file,
-which do have anchors. **One exact, independently-published OECD figure — any country, any year — would
-promote all six.**
+**Confirmed structurally, not just numerically:** the archive reproduces France's idiosyncratic 2021 dip
+(83.96 → 82.53 → 84.86) that the live pull described independently, and **old years are revision-stable
+as predicted** — live France 2010 reads **56.7042** against the archive's 56.71, a gap of **0.01%** where
+2022 differs by 1.72%. *(Queried live 2026-08-02. Not bit-exact, so this corroborates the key rather than
+formally gating it — but a different series or basis would differ by percent, not by a hundredth.)*
 
-⚠ **The whole cross-section moves together if the basis is wrong.** That is the residual risk: not that
-one value is off, but that `PRICE_BASE=V` is the wrong choice for the game's purposes. `LR` (chain linked
-volume) is the alternative and runs ~10–15% lower. `V` was chosen because it matches what the file's
-existing figures were closest to and is what "current USD, PPP adjusted" ordinarily means.
+**France 90.86 and USA ~97 are SUPERSEDED, NOT CORRECTED.** They were right on their vintage. **Do not log
+them as errors** — the error path triggers a re-check of every sibling figure from that sourcing session,
+and there is now positive evidence that session was working correctly.
+
+##### The archived vintage, kept as the audit trail
+
+| | 2022 | 2023 | 2024 |
+|---|---|---|---|
+| Germany | 92.4008 | 93.7210 | 98.3940 |
+| USA | 92.2214 | **97.0467** | — *(series ends 2023)* |
+| Sweden | 89.0469 | 89.5980 | 95.4554 |
+| France | 84.8632 | 87.2951 | **90.8596** |
+| Italy | 76.8155 | 77.0889 | 79.3402 |
+| Poland | 53.2791 | 54.1595 | 59.2708 |
+
+⚠ **The OECD average "~$67.5/hour (2022)" is still not an anchor** — live gives 72.59 on current prices.
+Likely explanation, untested: **67.5 is an unweighted mean across members where the SDMX aggregate is
+GDP-weighted.** With Ireland ~151 and Mexico ~25 in the set, the two diverge by about that much. If so it
+is not an anchor for the aggregate series at all and should be relabelled rather than re-hunted.
 
 **Sanity checks pass:** all six above the OECD 2022 average of 72.59 except Poland and — narrowly — Italy
 at 78.20; ordering Germany > USA > Sweden > France > Italy > Poland is consistent with the qualitative
@@ -949,6 +1026,38 @@ periods; an error leaves no trace because there was never anything to leave.
 - *Error misread as revision* → the fiction is preserved, updated to a new wrong value, and its
   `[VERIFIED]` marker renewed. **This is the worse one, because it launders a mistake into fresh
   confidence.**
+
+#### 🔴 CORRECTION 2026-08-02 — THE "APPEARS NOWHERE" DISCRIMINATOR IS FALSE FOR RESTATED LEVEL SERIES
+
+The test above rests on *"a revision leaves the old value in the historical record or adjacent periods;
+an error leaves no trace."* **That holds only if the source preserves vintages. It does not for a level
+series that gets restated.**
+
+When OECD revises GDP-per-hour it **overwrites every year at once**. The pre-revision value vanishes from
+the live API completely — every year, every cross-section. **A correct-but-superseded figure therefore
+produces exactly the fingerprint this rule assigns to an ERROR, and the more exhaustively you search the
+live API the more confident you become of the wrong verdict.**
+
+That is not hypothetical. France's 90.86 was searched across its full 2010–2024 series *and* a 41-country
+cross-section, found nowhere, and judged absent. **Every observation was right; the conclusion was wrong.**
+The figure was correct on its own vintage all along.
+
+**What saved it was NOT this test — the test pointed at ERROR. It was the GATE.** Condition 2 could not be
+met on first contact with OECD, so the default held and the file won. **The conservative rule that felt
+like an obstruction is the only reason a correct `[VERIFIED]` figure was not overwritten.**
+
+> **STANDING FORM: "appears nowhere in the source" distinguishes error from revision ONLY where the source
+> preserves vintages. For a restated level series it distinguishes nothing. Check a third-party archive
+> with per-snapshot retrieval dates — DBnomics — BEFORE concluding a value never existed.**
+
+**Two hypotheses built on the bad verdict, both dead, both recorded so they are not revived:**
+- *"Pre-revision France 2023 ≈ 92.8, so 90.86 is on the wrong side."* The vintage used to reason about
+  direction was a **secondary aggregator's** unstated vintage, not OECD's. Against the real archived OECD
+  vintage the direction reverses. **A secondary source's vintage cannot calibrate a primary source's
+  revision.**
+- *"90.86 may be Germany 2022, pre-revision."* Dead — archived Germany 2022 is 92.4008. The 90.9 that made
+  it attractive was a one-decimal coincidence in an aggregator, the exact "close but wrong" state rule 5f
+  warns about. **Declining to log it as a verification-integrity instance on that evidence was correct.**
 
 **g. 🔴 WHEN THE QUERY SHAPE CHANGES, RE-RUN THE GATE IN THE NEW SHAPE.** A gate that passed in one shape
 says nothing whatever about another. Each of these is a shape change and each needs its own anchored
