@@ -49,9 +49,64 @@
 | USA | 65.3 | [VERIFIED] OECD |
 | France | 58.5 | [VERIFIED] OECD |
 | Germany | 41.0 | [VERIFIED] OECD — lowest among major economies, a genuine structural outlier |
-| Poland | [GAP on this basis] — confirmed in the global top 10 alongside Lithuania, Bulgaria and Latvia (post-communist privatization legacy), but no exact OECD figure sourced | [PARTIAL] |
-| Italy | [GAP on this basis] | [GAP] |
-| Sweden | [GAP on this basis] | [GAP] |
+| Poland | **86.8** | ⚠ **[ESTIMATED]** — 95% band 78.4–95.2 |
+| Italy | **74.4** | ⚠ **[ESTIMATED]** — 95% band 66.8–82.1 |
+| Sweden | **62.1** | ⚠ **[ESTIMATED]** — 95% band 54.9–69.4 |
+
+#### 📐 THE ESTIMATE — a four-point regression from the Eurostat population basis
+
+**Rung 3 of the fallback ladder.** The OECD Affordable Housing Database is absent from SDMX; its HM1.3
+note is reachable and confirms the basis exactly (*"share of households in different tenure types, in
+percent, 2024 or latest year available"*), but the values live in charts and a companion worksheet that
+do not parse.
+
+**Four countries have a value on BOTH bases, so the bridge is FITTED rather than assumed** — and that is
+the deliberate fix for C5's known weakness, whose France-only bridge missed Germany by 5.6% and Italy by
+6.7% exactly where its stated limitation predicted:
+
+| | Eurostat (population) | OECD AHD (households) | fit | residual |
+|---|---|---|---|---|
+| Switzerland | 42.0 | 38.2 | 36.91 | +1.29 |
+| Germany | 47.2 | 41.0 | 42.67 | −1.67 |
+| France | 61.2 | 58.5 | 58.16 | +0.34 |
+| Slovakia | 93.1 | 93.5 | 93.46 | +0.04 |
+
+```
+household = 1.1065 × population − 9.5604      R² = 0.9977, residual sd 1.51 pp, df = 2
+```
+
+**All seven Eurostat inputs re-verified against the API 2026-08-02** (`ilc_lvho02`, `tenure=OWN`,
+`hhcomp=TOTAL`, `rskpovth=TOTAL`, `unit=PC`, 2024, no status flags) — FR 61.2, DE 47.2, CH 42.0, SK 93.1,
+IT 75.9, SE 64.8, PL 87.1, every one exact. The OECD side of the bridge could not be re-verified; the AHD
+is not queryable.
+
+**The relationship has a mechanism, which is why it is trusted at all:** owner households are larger than
+renter households, so a population base overstates ownership relative to a household base — and the two
+converge as ownership approaches universal. Slovakia's gap is +0.4pp; Germany's is −6.2pp. A fit with a
+physical story behind it is worth more than a high R² without one.
+
+🔴 **LEAD WITH THE 95% BAND, NOT THE 68% ONE.** Four calibration points leave two degrees of freedom, so
+the formal prediction interval is ±7pp however tight R² looks. **C5's ±3% band was falsified for two of
+five countries; quoting ±2.5pp here would repeat that mistake with better arithmetic behind it.**
+
+**No directional correction applied to Sweden, and that is a decision.** The tempting move is to shade
+Sweden down by Germany's residual, since Sweden is structurally Germany-like (high-renting, mortgage-heavy).
+The evidence does not support it: the two low-ownership countries sit on **opposite** sides of the fit
+(Switzerland +1.29, Germany −1.67), so the residuals show no structural pattern to correct for.
+
+⚠ **The real residual risk is VINTAGE, not fit.** The four AHD anchors come from this file and **their year
+is not recorded**, while the Eurostat side is 2024. Homeownership moves slowly so the effect is small — but
+it is unquantified, and an unrecorded vintage is precisely what produced the 90.86 problem. **Whoever finds
+the AHD vintage should record it here.**
+
+⚠ **The old indicative ranges (Italy ~72–73, Sweden ~63–65) were deliberately NOT used**, not even as a
+sanity check, per this file's own instruction that they sit on unknown bases. That the estimates land near
+them is noted and **must not be treated as corroboration** — agreement between a fitted value and an
+unknown-basis one is coincidence until the basis is known.
+
+**Sanity checks that WERE used:** OECD average 70.1 — Italy and Poland above, Sweden below, correct for
+these countries. Poland 86.8 below Slovakia's 93.5, consistent with "top 10 globally but not the top".
+Sweden below Canada 68.6 and above Switzerland 38.2, consistent with a high-renting Nordic market.
 
 Anchors on the same basis [VERIFIED]: OECD average 70.1, Slovakia highest at 93.5, Canada 68.6, Australia 62.7, Switzerland lowest at 38.2. OECD-wide, 71% of households owned outright or with a mortgage in 2022 versus 24% renting.
 
@@ -124,9 +179,28 @@ somewhere real to look.
 | Germany | 29.5 | [VERIFIED] Eurostat 2024 |
 | Sweden | 27.6 | [VERIFIED] Eurostat 2024 |
 | Poland | **26.0** | [VERIFIED] Eurostat API 2026-08-02 — **replaces a [PARTIAL] Statista ~29, which was 3 points too high** |
-| USA | ~0.39–0.40 (i.e. ~39–40 on the same 0–100 scale) | [VERIFIED] directionally — OECD reports the US as having the highest income inequality among major developed nations |
+| USA | **39.5** | ⚠ **[ESTIMATED]** — OECD IDD, disposable income (post-tax post-transfer), **reference year 2019** carried forward. Band 38.5–41.0 |
 
 **METHODOLOGY WARNING:** the Eurostat figures are equivalised disposable income on a 0–100 scale. US figures commonly appear on a 0–1 scale and from a different source (OECD/World Bank) with different methodology. Normalize to one scale and document which, or the US will look artificially different for measurement reasons rather than real ones.
+
+**✅ THE SCALE HALF OF THAT WARNING IS CLOSED (2026-08-02).** 39.5 is already on Eurostat's 0–100 scale
+(OECD IDD publishes 0.395), so **the seed needs no conversion step** — which removes the most likely place
+for a factor-of-100 error. It confirms rather than replaces the old "~0.39–0.40".
+
+⚠ **`[ESTIMATED]`, not `[VERIFIED]`, for two separate reasons — neither is fixable by finding a better number:**
+
+1. **Reference year 2019**, carried forward to the seed year. Rung 2 of the fallback ladder was the newest
+   reachable; the carry-forward is what makes it rung 3.
+2. **🔴 THE EQUIVALENCE SCALES DIFFER AND CANNOT BE RECONCILED.** OECD IDD uses the **square-root** scale;
+   Eurostat EU-SILC uses the **modified-OECD** scale. The two produce different Ginis *from identical
+   data*. The US figure is therefore comparable **in spirit** to the five Eurostat figures, not identical
+   in construction. Under a point of difference, but a real one, and it must be documented rather than
+   assumed away — this is exactly the "correct figures, incoherent set" trap this file keeps finding.
+
+**What survives the caveat:** USA ~39.5 against Italy 32.2, France 30.0, Germany 29.5, Sweden 27.6, Poland
+26.0, EU average 29.4. **The US gap is far larger than any equivalence-scale artefact**, so the qualitative
+claim the game needs — the US is a distinct outlier on inequality — is safe even though the exact number
+is not.
 
 EU average: 29.4; Euro area: 29.9 (2024) [VERIFIED] — useful sanity anchors.
 
@@ -170,7 +244,22 @@ the audit note below, and rule 5f-bis on why the two get opposite treatment.
 | Germany | **6.9** | 7.3 | [VERIFIED] Eurostat API — closes a `[GAP]` |
 | Poland | **12.2** | 11.9 | [VERIFIED] Eurostat API — closes a `[GAP]` |
 | Sweden | 23.5 | **22.5** | [VERIFIED] Eurostat API — *was recorded 22.2 for Feb 2026; revised* |
-| USA | [GAP] — OECD-wide youth rate 11.2% (July 2025) as an anchor | | [GAP] |
+| USA | **10.0** | **9.5** | [VERIFIED] BLS CPS `LNS14024887` via FRED, 2026-08-02 — **16–24, see below** |
+
+**✅ C3's last gap closed 2026-08-02.** BLS Current Population Survey, series `LNS14024887`, both reference
+periods. Rate (% of labour force) ✅ and seasonally adjusted ✅ — matching the five Eurostat figures on
+both axes that matter most.
+
+⚠ **The age bracket differs and must NOT be "corrected" later: US is 16–24, Eurostat is 15–24.** This is
+not a variant error. US labour-force statistics do not cover under-16s at all, so 16–24 *is* the
+OECD-harmonised US equivalent — there is no 15–24 US figure to find. **Record the bracket beside the
+value**; a future session that spots the mismatch and "fixes" it will be manufacturing a number.
+
+⚠ **October 2025 is missing at source** (federal shutdown gap), not a broken pull. Worth knowing before
+anyone re-pulls the series and concludes something is wrong.
+
+**Sanity:** USA 10.0 sits just below the file's OECD-wide anchor of 11.2% (Jul 2025), far below Sweden
+23.5 / Italy 20.0 / France 19.0, above Germany 6.9. Coherent across all six.
 
 ```
 https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m
@@ -420,8 +509,36 @@ values.* The US sitting ~3 years below comparable countries is real and worth pr
 | Italy | 2.7 | [VERIFIED] OECD Taxing Wages 2025 — highest among Europe's five largest economies |
 | Germany | 2.2 | [VERIFIED] OECD Taxing Wages 2025 |
 | France | 0.7 | [VERIFIED] OECD Taxing Wages 2025 — lowest among the major economies |
-| Sweden | [GAP] — nominal wage growth was in the 3–5% band in 2024; real figure not directly sourced | [GAP] |
-| USA | [GAP] — OECD describes US real wage growth as "stable"; real household income per capita +0.3% in Q4 2024 | [GAP] |
+| Sweden | **1.3** | ⚠ **[ESTIMATED]** — nominal 4.1% (Medlingsinstitutet, whole economy, full-year 2024) minus 2.84% KPI annual average. The nominal figure is sourced, the deflator is secondary, **the subtraction is derived** |
+| USA | **1.0** | [VERIFIED] BLS Real Earnings (released 2025-01-15) — real average hourly earnings, all employees, Dec 2023→Dec 2024, SA, CPI-U deflated |
+
+### 🔴 THIS ROW NOW MIXES THREE BASES AND MUST NOT BE SEEDED AS-IS
+
+Every figure is correct; the **set** is incoherent — the same class of defect as the housing-overburden
+variant error, and worth as much attention:
+
+| Countries | Source | What it actually measures |
+|---|---|---|
+| Italy 2.7, Germany 2.2, France 0.7 | OECD Taxing Wages 2025 | real **net (after-tax)** wage, single worker at average earnings |
+| Poland 9.0 | EU DG EMPL | economy-wide real wage |
+| USA 1.0, Sweden 1.3 | BLS / Medlingsinstitutet | economy-wide real **gross** average earnings |
+
+**These are not interchangeable: a tax change moves the first and not the third.** Recommendation:
+re-source all six from **OECD Taxing Wages 2025**, which covers every OECD country on one basis. Its
+country notes are `robots.txt`-blocked, but the underlying data is in SDMX — reachable from a session with
+OECD access, which is the same unlock C5's anchor needs.
+
+⚠ **Sweden's deflator choice is a factor-of-two decision, and it is sourced.** Medlingsinstitutet's own
+15-month figure for the same agreement period reads **3.8% excluding housing interest costs vs 1.9%
+including them**. Sweden's KPI includes mortgage interest where most countries' headline indices do not,
+and 2023–24 is exactly when Swedish mortgage rates moved hardest. **The 1.3% above is the KPI
+(interest-inclusive) basis; a KPIF basis would be materially higher.** Record which, or the number means
+nothing. *Cross-check: Medlingsinstitutet reports real wages +3.2% for December 2024 alone against a
+December KPI of 0.8% — the full-year figure is lower because inflation fell through the year, which is the
+expected shape rather than a discrepancy.*
+
+**USA note:** real average **weekly** earnings rose 0.7% against hourly's 1.0%, the gap being a 0.3% fall
+in the average workweek — a real effect, not a conflict between two sources.
 
 Useful anchors: OECD average real household income per capita growth 1.8% in 2024 [VERIFIED]. Note Germany and Italy both saw *declining* real household income in 2024 even while real wages rose — wages and household income are different measures; don't conflate them.
 
@@ -606,9 +723,34 @@ Real-world anchors [VERIFIED], which form a natural calibration curve for that m
 | France | ~116% | AA−/Negative (S&P, mid-2025) |
 | USA | ~124% | AA+ (S&P since 2011; Fitch downgraded 2023; Moody's held AAA longest) |
 | Italy | ~138% | BBB+/Stable (S&P, mid-2025) |
-| Poland | [GAP] — typically in the A range; S&P covers it under CEE sovereigns but no figure sourced | [GAP] |
+| Poland | ~59% | **A− (S&P) · A2 (Moody's) · A− (Fitch)** — [VERIFIED] 2026-08-02 |
+
+**✅ THE C4 CALIBRATION ANCHOR IS CLOSED (2026-08-02).** Poland sits in the A range, as expected. Outlooks
+deteriorated through 2025 — Moody's to negative (2025-09-19), Fitch to negative (Sept 2025), S&P affirming
+A− stable (Nov 2025). **Treat the outlooks as far more perishable than the ratings**; the level is the
+calibration input, the outlook is a signal with a shelf life.
 
 **KEY INSIGHT for the mapping:** the curve is nearly monotonic in debt-to-GDP — *except the USA*, which carries HIGHER debt than France yet rates BETTER. That's the reserve-currency premium. This project already models exactly that effect (`BaseDebtInterestRateOverride` = 3.3% and reduced `RiskPremiumSensitivity` for USA). The rating derivation should reuse that SAME reserve-currency factor rather than introducing a second, parallel notion of it.
+
+### 🔴 POLAND BREAKS THE MONOTONICITY TOO — in the OPPOSITE direction, and C4 will over-rate it
+
+This anchor is worth more than "one more calibration point". **Poland carries LOWER debt than Germany
+(~59% vs ~63%) and rates FOUR NOTCHES WORSE (A− against AAA).** The USA exception is a country rating
+*better* than its debt implies; Poland is a country rating *worse*. One factor cannot produce both.
+
+**What this means for the implemented `CreditRatingSystem`:** its curve reads debt-to-GDP through
+`RiskPremiumSensitivity`, which is the reserve-currency term — the USA's 0.05 discounts debt above the
+reference. **There is no term that penalises**, so a low-debt country cannot rate below the curve, and
+Poland will come out near AAA. The missing factor is some combination of currency status (Poland is
+outside the euro and borrows partly in it), institutional quality, and an EU-periphery risk premium.
+
+⚠ **Run the 5-anchor calibration as a SIX-anchor calibration and expect it to fail on Poland first.**
+`CreditRatingAnchorCheck` currently passes 5 of 5 — that is a statement about five countries, and the
+sixth is the one carrying the new information. A check that passes because the hard case was never in it
+is the kind of confirmation this project has learned to distrust.
+
+*(This is a finding about the model, not about the data. Logged here because the anchor is what surfaced
+it; the work belongs to Step C4's closure.)*
 
 Also worth modeling: France carries a *negative outlook* while southern European sovereigns are stable — outlook is a real signal distinct from the rating itself, and a cheap way to telegraph a downgrade before it lands.
 
@@ -670,6 +812,21 @@ Computed at display time from already-tracked values. No new state, no new ceili
    to values. And note the consequence for rule 5f-bis condition 2: a session that cannot run the method
    does not merely fail that condition, **it cannot test it**. Finding an anchor and reproducing it must
    happen in ONE session with live access; splitting that work across sessions cannot close the gate.
+
+   **Routes observed as of 2026-08-02 — a starting point, not a guarantee:**
+
+   | Route | Status | Note |
+   |---|---|---|
+   | `ec.europa.eu/eurostat/api/...` | ✅ **Works via both `curl` and `WebFetch`** | Returns JSON-stat, which parses cleanly as text |
+   | `fred.stlouisfed.org/data/<SERIES>.txt` | ✅ Works | Plain text, full series — the reliable US route |
+   | `bls.gov` news releases | ✅ Works | |
+   | `webfs.oecd.org` AHD notes | ✅ Works | Basis/definition text only, **not the data** |
+   | `sdmx.oecd.org` | ⚠ **Session-dependent** | Worked via `curl` in one session, blocked by proxy allowlist (`CONNECT tunnel failed, 403`) in two others. **`WebFetch` cannot read it at all** — SDMX returns compressed binary |
+   | `oecd.org` publication PDFs | ❌ Blocked | `robots.txt`, including the Taxing Wages country notes |
+   | `oecd.org` data pages | ❌ Empty | JS-rendered; navigation and metadata only |
+
+   **The generalisable point: JSON-stat survives a text-only fetch and SDMX does not.** Where a provider
+   offers both, prefer the JSON-stat endpoint — it is readable from strictly more sessions.
 
 ---
 

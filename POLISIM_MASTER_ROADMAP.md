@@ -56,9 +56,11 @@ because they are not done.
   the headline tiles): GDP per capita, tax burden, government spending, deficit/surplus and sector
   shares. It had been built and trajectory-validated but displayed nothing, which is the "built but
   uncalled" state this project repeatedly mistook for done. **Needs a visual look**, like anything new.
-- **WAITING, NOT LIVE** — what is left in `MISSING_PREREQUISITES.md` is now **one supplier and one
-  upstream defect**: 16 figures needing database access (Steps C1, C2, C3, C5), and Step C4's closure
-  (section F). *Decisions, Claude Design and the visual reviews all emptied on 2026-08-02.*
+- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md` is down to **one upstream defect and one blocked
+  task**: Step C4's closure (section F), and cabinet portraits (section D1, waiting on three portfolios
+  being authored). ~~16 figures needing database access~~ — **all sourced 2026-08-02; section B is empty
+  and C1/C2/C3/C5 are buildable.** *Decisions, database access, Claude Design and the visual reviews all
+  emptied on 2026-08-02.* Three quality debts survive in section B — none blocks a batch.
 - 🔴 **HIGHEST-PRIORITY DEFECT — the debt-to-zero bimodality.** Dedicated entry immediately below.
   Promoted 2026-08-02: it now blocks a step AND is player-visible, neither of which was true before.
 - **NOT STARTED, UNBLOCKED** — Master Sequence item 6 (**Round 4 — now scopeable, its gate cleared when

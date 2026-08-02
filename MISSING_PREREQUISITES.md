@@ -13,7 +13,7 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 | Supplier | Items | Downstream |
 |---|---|---|
 | ~~**Elias — decision**~~ | ~~3~~ **0 — all resolved 2026-08-02** | — |
-| **Elias — database access** | ~~16~~ **12 blocking** + 1 anchor | Steps C1, C2, C3. *C5 closed 2026-08-02 via the OECD API* |
+| ~~**Elias — database access**~~ | ~~16~~ **0 blocking** | ✅ **ALL FOUR BATCHES SOURCED 2026-08-02.** C1/C2/C3/C5 can be built. Three *quality debts* remain — see below — but no batch waits on a missing figure |
 | ~~**Elias — visual review**~~ | ~~11~~ **0 — all confirmed 2026-08-02** | Step 5 CLOSED |
 | ~~**Claude Design**~~ | **0 — delivered and imported 2026-08-02** | — |
 | **Another task first** | ~~3~~ **2** | Cabinet portraits, Step C4 closure. *Round 4 scoping released 2026-08-02* |
@@ -153,7 +153,29 @@ ordinary budget-process matter. **Needs zero new mechanism.**
 
 ---
 
-# B. Waiting on Elias — database access
+# B. ~~Waiting on Elias — database access~~ — ✅ EMPTY AS OF 2026-08-02
+
+**Every figure that blocked a batch has been sourced**, across three sessions, via the Eurostat REST API,
+the OECD SDMX API, BLS/FRED, and — for three items only — a stated, banded estimate under the fallback
+ladder. Values, queries, dimension labels, status flags and confidence markers are all in
+`POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. **C1, C2, C3 and C5 are buildable.**
+
+**🔴 WHAT REMAINS IS QUALITY DEBT, NOT GAPS — and the distinction matters.** None of these blocks a batch;
+each would make one more trustworthy:
+
+| Debt | Where | What would settle it |
+|---|---|---|
+| **C5 is `[PRIMARY-UNANCHORED]`** | seed §6 | One exact, independently-published OECD figure reproduced in a session with live SDMX access |
+| **The real-wage row mixes THREE bases** | seed §5 | Re-source all six from OECD Taxing Wages 2025 (one basis, in SDMX). *Correct figures, incoherent set — the housing-overburden defect again* |
+| **The AHD vintage behind C1's estimates is unrecorded** | seed §1 | Find the year of the four OECD anchors. Unrecorded vintage is what produced the 90.86 problem |
+
+⚠ **Three C1/C2 figures are `[ESTIMATED]`, not sourced** — Italy/Sweden/Poland homeownership, Sweden real
+wages, USA Gini. They are rung 3 of the fallback ladder, carry stated methods and bands, and are replaced
+the moment real figures exist. **They are placeholders that play correctly, not facts.**
+
+**The original section follows, retained because its basis warnings still govern any re-sourcing.**
+
+---
 
 **No session here has web search.** Every figure below must be sourced externally. **Do not invent, infer
 from a range, or carry across from another basis.**
