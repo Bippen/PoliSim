@@ -64,6 +64,54 @@ An 11.3-point spread across three definitions of "the German homeownership rate,
 
 USA and France above independently match figures already recorded as OECD-sourced, confirming the basis is coherent — Germany was simply captured from a different one.
 
+#### ⚠ EUROSTAT TENURE FIGURES — A SEPARATE SET ON A DIFFERENT BASIS. DO NOT MERGE INTO THE TABLE ABOVE.
+
+Sourced from the Eurostat API 2026-08-02 **because they were reachable, not because they close C1's gaps
+— they do not.** These are the *fourth basis* the warning above names: **share of POPULATION in
+owner-occupied dwellings**, not share of HOUSEHOLDS owning. Italy, Sweden and Poland remain `[GAP]` on
+C1's OECD household basis.
+
+| Country | Owner | of which: with mortgage | outright | Tenant |
+|---|---|---|---|---|
+| Italy | **75.9** | 12.7 | 63.2 | 24.1 |
+| Sweden | **64.8** | 49.6 | 15.2 | 35.2 |
+| Poland | **87.1** | 11.7 | 75.4 | 12.9 |
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ilc_lvho02
+    ?lang=EN&rskpovth=TOTAL&hhcomp=TOTAL&unit=PC&tenure=OWN&tenure=OWN_L&tenure=OWN_NL&tenure=RENT
+    &geo=IT&geo=SE&geo=PL&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `rskpovth` | `TOTAL` | Total |
+| `hhcomp` | `TOTAL` | Total |
+| `tenure` | `OWN` / `OWN_L` / `OWN_NL` / `RENT` | Owner / with mortgage or loan / no outstanding mortgage / Tenant |
+| `unit` | `PC` | Percentage |
+
+**No status flags.** Dataset updated 2026-06-11.
+
+**Gated on internal arithmetic, since no Eurostat tenure anchor exists in this file.** With no known value
+to reproduce, the decode was proven structurally instead: `OWN_L + OWN_NL = OWN` and `OWN + RENT = 100`
+both hold exactly for all three countries. A mis-decoded position would break those identities. *This is
+the substitute gate when the anchor gate is unavailable — a weaker check than an anchor, and recorded as
+such.*
+
+**Poland 87.1 sits directly beside the file's existing `[PARTIAL]` note** that Poland is "confirmed in the
+global top 10" with "87.9 (nationals)" — 87.1 is the whole-population figure against 87.9 for nationals
+only, which is a coherent pair rather than a contradiction, and confirms the top-10 claim.
+
+**Sweden's split is the interesting one and worth preserving:** 64.8% own, but 49.6 of that carries a
+mortgage against only 15.2 outright — the inverse of Italy (12.7 mortgaged, 63.2 outright) and Poland
+(11.7 / 75.4). Same headline ownership rate, completely different household balance sheets, which is a
+real difference a fiscal model could plausibly care about.
+
+**🔴 `ilc_lvho02` IS WHERE THE "TWO ADULTS" VARIANT ACTUALLY LIVES.** Its `hhcomp` dimension carries 17
+household compositions including `A2="Two adults"`. The overburden correction above was right that
+`ilc_lvho07a` has no such dimension — this is the dataset that does. Anyone chasing that old note now has
+somewhere real to look.
+
 **Poland caution:** the ~87.9% figure elsewhere in this file is a Eurostat *nationals* line, not the OECD household basis. Directionally right (Poland genuinely is among the highest globally) but not a same-basis value.
 
 **House Price Index:** [GAP] — no per-country figures sourced yet. Recommend seeding all six at an index value of 100 at game start (a standard index convention) and letting divergence emerge from simulation, rather than inventing differing starting levels. This is honest and avoids fake precision.
@@ -75,24 +123,105 @@ USA and France above independently match figures already recorded as OECD-source
 | France | 30.0 | [VERIFIED] Eurostat 2024 |
 | Germany | 29.5 | [VERIFIED] Eurostat 2024 |
 | Sweden | 27.6 | [VERIFIED] Eurostat 2024 |
-| Poland | ~29 | [PARTIAL] Statista 2024 (0.29 on 0–1 scale) — plausible against the EU average of 29.4, but not sourced directly from Eurostat like the four above; prefer an Eurostat figure if one can be obtained |
+| Poland | **26.0** | [VERIFIED] Eurostat API 2026-08-02 — **replaces a [PARTIAL] Statista ~29, which was 3 points too high** |
 | USA | ~0.39–0.40 (i.e. ~39–40 on the same 0–100 scale) | [VERIFIED] directionally — OECD reports the US as having the highest income inequality among major developed nations |
 
 **METHODOLOGY WARNING:** the Eurostat figures are equivalised disposable income on a 0–100 scale. US figures commonly appear on a 0–1 scale and from a different source (OECD/World Bank) with different methodology. Normalize to one scale and document which, or the US will look artificially different for measurement reasons rather than real ones.
 
 EU average: 29.4; Euro area: 29.9 (2024) [VERIFIED] — useful sanity anchors.
 
-### 3. Youth unemployment rate (%, ages 15–24, share of labour force)
-| Country | Value | Confidence |
-|---|---|---|
-| Italy | 20.1 | [VERIFIED] June 2025 |
-| France | 18.7 | [VERIFIED] June 2025 |
-| Germany | [GAP] — known to be low, among the smallest youth/adult gaps in the OECD | [GAP] |
-| Poland | [GAP] | [GAP] |
-| Sweden | **22.2** | [VERIFIED] Eurostat Feb 2026, 15–24 rate — see the note below |
-| USA | [GAP] — OECD-wide youth rate was 11.2% (July 2025) as an anchor | [GAP] |
+**✅ POLAND CLOSED, AND ALL FOUR EXISTING FIGURES CONFIRMED (2026-08-02).**
 
-EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED].
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ilc_di12
+    ?lang=EN&age=TOTAL&statinfo=GINI_HND&geo=PL&geo=IT&geo=FR&geo=DE&geo=SE&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `age` | `TOTAL` | Total |
+| `statinfo` | `GINI_HND` | **Gini coefficient (scale from 0 to 100)** — the scale question answered by the source itself |
+| `time` | `2024` | 2024 |
+
+**No status flags.** Dataset updated 2026-06-08. **Germany 29.5, France 30.0, Italy 32.2 and Sweden 27.6
+all reproduced exactly** — four anchors in the one query, which both confirms those figures against the
+primary source and proves the index decode for Poland's position.
+
+⚠ **The Statista figure was 3 points too high, and the error had a direction.** ~29 placed Poland *at* the
+EU average (29.4); the true 26.0 places it **well below** — and below Sweden's 27.6, making Poland the
+most equal of the five European countries in this set rather than a middling one. That is a different
+country to model. **The file's own instruction to "prefer a Eurostat figure if one can be obtained" was
+right, and the reason it was right is now measurable.**
+
+**Note the scale trap is closed at source:** `statinfo=GINI_HND` returns the label *"Gini coefficient
+(scale from 0 to 100)"*, so the 0–100 vs 0–1 confusion the methodology warning describes is settled by the
+API rather than by convention. The USA figure remains on a different source and basis — the warning below
+still applies to it.
+
+### 3. Youth unemployment rate (%, under 25, share of labour force)
+
+**AUDITED AND RE-SOURCED FROM THE API 2026-08-02. This is the REVISION case, not the error case** — see
+the audit note below, and rule 5f-bis on why the two get opposite treatment.
+
+| Country | Jun 2025 | Feb 2026 | Confidence |
+|---|---|---|---|
+| Italy | **20.0** | 17.7 | [VERIFIED] Eurostat API — *was recorded 20.1; revised* |
+| France | **19.0** | 21.1 | [VERIFIED] Eurostat API — *was recorded 18.7; revised* |
+| Germany | **6.9** | 7.3 | [VERIFIED] Eurostat API — closes a `[GAP]` |
+| Poland | **12.2** | 11.9 | [VERIFIED] Eurostat API — closes a `[GAP]` |
+| Sweden | 23.5 | **22.5** | [VERIFIED] Eurostat API — *was recorded 22.2 for Feb 2026; revised* |
+| USA | [GAP] — OECD-wide youth rate 11.2% (July 2025) as an anchor | | [GAP] |
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m
+    ?lang=EN&age=Y_LT25&unit=PC_ACT&sex=T&s_adj=SA&geo=DE&geo=PL&geo=IT&geo=FR&time=2025-06&time=2026-02
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `age` | `Y_LT25` | Less than 25 years |
+| `unit` | `PC_ACT` | **Percentage of population in the labour force** — i.e. the RATE |
+| `sex` | `T` | Total |
+| `s_adj` | `SA` | Seasonally adjusted data, not calendar adjusted data |
+
+**No status flags on any value.** Dataset updated 2026-07-31.
+
+**🔴 The rate/ratio trap is now closed by construction, not by care.** `unit=PC_ACT` *is* Eurostat's rate
+definition — percentage of the labour force, not of the population. The file previously warned that
+Germany 3.6 and Poland 3.5 encountered during sourcing were **ratios**; the API returns **6.9 and 12.2**
+for those countries on the rate basis, roughly double, exactly as the warning predicted. Stating `unit`
+explicitly makes the wrong measure unreachable rather than merely discouraged.
+
+⚠ **`s_adj` was the undeclared dimension, and it matters more than expected.** The old entries recorded
+neither adjustment nor a query. For Italy in June 2025 the two variants read **SA 20.0 vs NSA 21.9** — a
+1.9-point spread, larger than any revision, and either could have been written down as "the" figure. SA is
+the correct choice (it is what Eurostat headlines and what the old figures were closest to) but that was
+established by testing both against the anchors, not assumed.
+
+#### Audit result: REVISION, not error — and why that verdict differs from life expectancy
+
+Neither Italy 20.1 nor France 18.7 nor Sweden 22.2 reproduces exactly. All three are nevertheless treated
+as *originally sound and since revised*, on this evidence:
+
+- **They sit 0.1–0.3 from the current values at the exact months claimed** (IT 20.1→20.0, FR 18.7→19.0,
+  SE 22.2→22.5). Life expectancy's 84.1 was 0.4 off and matched **nothing anywhere**.
+- **The variant is right.** They align with SA, not NSA — a 1.9-point difference for Italy — so whoever
+  sourced them pulled the correct series.
+- **Every qualitative claim survives.** Sweden is genuinely high (22–25 across the year), Italy around 20,
+  France around 19, Germany strikingly low. The counterintuitive Sweden finding this file thought worth
+  preserving is real.
+
+**Monthly unemployment is a revisable series, so a value without a vintage is incomplete.** Both retrieval
+date and reference period are now recorded above; the earlier entries had a period but no retrieval date,
+which is why nobody could tell revision from error until the primary source was reachable.
+
+⚠ **A choice for Elias, not a data question:** the table now carries two reference periods. Jun 2025 keeps
+comparability with how this file was originally sourced; Feb 2026 is the latest available and is what a
+player would recognise as "now". **Seed from one period consistently** — mixing them across countries
+would fabricate a cross-section that never existed on any single date.
+
+EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED] — *not re-checked; a different series to the
+per-country figures above.*
 
 **Sweden: 22.2%** (Feb 2026, Eurostat, 15–24 rate) [VERIFIED] — genuinely high, confirming the "Nordic mixed picture" note; Sweden has averaged 16.95% since 1983, with an all-time high of 29.9% (July 2020). This is a real and counterintuitive feature worth preserving: a strong overall labour market alongside one of Europe's worst youth unemployment rates.
 
@@ -223,16 +352,66 @@ Secondary sources compound this. Visual Capitalist, explicitly citing Eurostat 2
 **Long-term unemployment rate (%, of active population 15–74) [VERIFIED, Eurostat 2024]:** Greece 5.4, Spain 3.8, Italy 3.3, Portugal 2.4, Sweden 1.7, Austria 1.1, Poland 0.8, Denmark 0.8. A useful complement to headline unemployment — Italy's structural problem looks very different from Poland's.
 
 ### 4. Life expectancy at birth (years)
+
+🔴 **THE TWO PREVIOUS `[VERIFIED]` FIGURES HERE WERE WRONG. Corrected 2026-08-02 from the primary source.**
+See the verification-integrity entry below the table — this is the single most important thing on this page.
+
 | Country | Value | Confidence |
 |---|---|---|
-| USA | 79.0 (2024, highest-ever; up from 78.4 in 2023) | [VERIFIED] CDC NCHS |
-| Italy | 84.1 | [VERIFIED] Eurostat 2024 — joint highest in EU |
-| Sweden | 84.1 | [VERIFIED] Eurostat 2024 — joint highest in EU |
-| France | [GAP] — Eurostat notes a slight +0.1yr increase in 2024; typically ~83 | [GAP] |
-| Germany | [GAP] — typically ~81 | [GAP] |
-| Poland | [GAP] — typically ~78 | [GAP] |
+| USA | 79.0 (2024, highest-ever; up from 78.4 in 2023) | [VERIFIED] CDC NCHS — **not Eurostat-checkable, see note** |
+| Italy | **83.7** | [VERIFIED] Eurostat API 2026-08-02 — *replaces an incorrect 84.1* |
+| Sweden | **83.8** | [VERIFIED] Eurostat API 2026-08-02 — *replaces an incorrect 84.1* |
+| France | **83.0** | ⚠ **[PROVISIONAL]** — status flag `p`. Not `[VERIFIED]` |
+| Germany | **81.2** | [VERIFIED] Eurostat API 2026-08-02 — no status flag |
+| Poland | **78.5** | ⚠ **[PROVISIONAL]** — status flag `ep` (estimated, provisional). Not `[VERIFIED]` |
 
-EU average: 81.7 (2024) [VERIFIED]. The US sitting ~3.7 years below comparable countries is real and worth preserving.
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_mlexpec
+    ?lang=EN&unit=YR&sex=T&age=Y_LT1&geo=FR&geo=DE&geo=PL&geo=IT&geo=SE&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `unit` | `YR` | Year |
+| `sex` | `T` | Total |
+| `age` | `Y_LT1` | Less than 1 year *(= at birth)* |
+| `time` | `2024` | 2024 |
+
+**France and Poland are NOT `[VERIFIED]`, per the status-flag rule.** `p` and `ep` mean provisional and
+estimated-provisional; both will move. They are good enough to seed a game and must not be quoted as
+settled figures.
+
+#### 🔴 VERIFICATION-INTEGRITY INSTANCE — a `[VERIFIED]` figure that was simply wrong
+
+**Claim:** *"Italy 84.1, Sweden 84.1, [VERIFIED] Eurostat 2024, joint highest in EU."*
+**Reality:** Italy 83.7, Sweden 83.8, and neither leads the EU — **Spain does, at 84.0** (Liechtenstein and
+Switzerland read 84.2 but are EFTA, not EU).
+
+Every part of that entry was wrong: both values, the claim they were equal, and the claim either was
+highest. Three independent checks, and the third is what made the verdict safe:
+
+1. **84.1 appears in no year** for either country — Italy 2021→24 runs 82.6, 82.8, 83.3, 83.7.
+2. **84.1 appears nowhere in the entire 2024 cross-section**, for any country in the dataset.
+3. **The structural claim failed on its own terms** — Italy 83.7 ≠ Sweden 83.8, so "joint" was false
+   independently of what the right numbers were.
+
+**Root cause: sourced from a summary article rather than the primary database**, then marked `[VERIFIED]`.
+Same class as the `ilc_lvho07a` household-type error recorded above — a plausible structural claim written
+alongside a number, where the claim was never checked against the source and the number was quietly wrong.
+**A secondary source can be accurate about a number and still invent the frame around it.**
+
+**What makes this catchable now and not before:** the API. A summary article gives one number with no way
+to interrogate it; the database gives the whole cross-section, which is how "nowhere in any year, for any
+country" became a checkable statement rather than a suspicion.
+
+⚠ **USA 79.0 is NOT checkable this way.** It is CDC NCHS, not Eurostat, so the API cannot audit it. It
+stays `[VERIFIED]` on its original basis — but **it came from the same sourcing session that produced the
+84.1 error and deserves a re-check against CDC directly.** Flagged, not downgraded: there is no evidence
+against it, only guilt by association, and downgrading on that alone would be as unprincipled as the
+original over-confidence.
+
+EU average: 81.7 (2024) [VERIFIED] — *not re-checked against the API; it was not one of the disputed
+values.* The US sitting ~3 years below comparable countries is real and worth preserving.
 
 ### 5. Real wage growth (%, 2024)
 | Country | Value | Confidence |
@@ -257,6 +436,41 @@ Useful anchors: OECD average real household income per capita growth 1.8% in 202
 | Poland | ~24.5 (2024, Statista) — see warning below; OECD separately notes substantial productivity *gains* 2012–2022 from a lower base, alongside some of the OECD's longest working hours | [PARTIAL] |
 
 **SOURCE-CONFLICT WARNING on Sweden/Poland:** those two figures come from a different source (Statista) than the USA/France figures (OECD PPP) and are almost certainly NOT PPP-adjusted on the same basis — Poland at $24.5 is implausibly low against an OECD PPP average of $67.5. Do not mix them into one table as-is. Either source all six from OECD PPP consistently, or treat these two as placeholders needing replacement.
+
+#### ⚠ OECD API ATTEMPTED 2026-08-02 — GATE FAILED, NOTHING RECORDED
+
+**`sdmx.oecd.org` IS reachable** (HTTP 200 with `Accept: application/vnd.sdmx.structure+json`), and the
+right dataset exists: `OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0`, measure `GDPHRS` *("GDP per hour worked")*, unit
+`USD_PPP_H` *("US dollars per hour, PPP converted")*. So C5 is **technically** self-serviceable. It is not
+yet **actually** self-serviceable, because the gate did not pass:
+
+| | France | USA |
+|---|---|---|
+| Seed | 90.86 | ~97 |
+| `PRICE_BASE=V` (current prices) | 92.74 | 100.12 |
+| `PRICE_BASE=LR` | 81.56 | 84.11 |
+
+`V` is close but reproduces neither. **Not recorded** — per rule 5f, a query that cannot reproduce a known
+value is of unknown basis, and "close" is exactly the state in which a wrong variant is most convincing.
+
+**🔴 I WALKED INTO THIS FILE'S OWN RULE 5b, WHICH IS WORTH RECORDING.** The DSD has **nine** key
+dimensions; I specified five and left `PRICE_BASE`, `TRANSFORMATION`, `ASSET_CODE` and `CONVERSION_TYPE`
+blank. The response came back with multiple variants per country — including a stray USA reading of
+**2.24** from some other asset/conversion combination — and **not one label was wrong**, because none of
+them was wrong. They were all real OECD figures for combinations I had failed to exclude. This is exactly
+the prevention-vs-detection distinction in rule 5c, demonstrated against the person who wrote it down an
+hour earlier. **OECD's DSDs are wider than Eurostat's; the dimension count must be read from the DSD, not
+assumed from the Eurostat pattern.**
+
+**What remains for whoever picks this up:** determine which `PRICE_BASE` / `TRANSFORMATION` combination
+the seed's 90.86 came from — or establish that the OECD has revised since — then re-run the gate. The
+outstanding question is a *variant identification*, not an access problem.
+
+**Separately: OECD homeownership on the household basis (C1) does NOT appear to be in SDMX at all.** The
+full dataflow list was searched for housing and tenure; it returns regional housing, housing transactions
+and *job* tenure, but no Affordable Housing Database equivalent. **C1's OECD-basis gaps for Italy, Sweden
+and Poland are therefore NOT closed by API access** and remain Elias's, unless the AHD is published
+somewhere outside SDMX.
 
 OECD average: ~$67.5/hour (2022) [VERIFIED]. Ireland tops the ranking at ~$151 but is heavily distorted by multinational accounting — a good example of why raw cross-country comparison misleads.
 
@@ -346,6 +560,25 @@ mean the number needs a caveat, not a promotion.
 If a query cannot reproduce a figure this file already verified, **the query is wrong — not the file** —
 and everything from it is of unknown basis. Stop and report rather than proceeding. This ran for real on
 2026-08-02: Germany's 12.0 was reproduced exactly before the Italy/France/Poland values were pulled.
+
+**f-bis. THE ONE CONDITION UNDER WHICH THE FILE LOSES (Elias, 2026-08-02).** "The query is wrong, not the
+file" is the right DEFAULT and must stay the default — it is what stops a bad query rewriting good data.
+It is overturned only when **both** hold:
+
+1. **The disputed value appears NOWHERE in the dataset** — not in any year, not for any country, not
+   under any variant. *A wrong variant still surfaces its number somewhere; that is exactly what makes
+   variant errors detectable. A value absent from the entire source is not a variant mismatch.*
+2. **The method has already reproduced other anchors in the same session**, so the technique is known
+   good rather than assumed good.
+
+Both held for the life expectancy 84.1 error below, and corroboration arrived from a third direction (its
+"joint highest in EU" claim failed independently). **Neither condition alone is sufficient.**
+
+⚠ **Distinguish this from ROUTINE REVISION, which looks similar and means the opposite.** A revised figure
+sits *close* to the recorded one (0.1–0.3 for monthly unemployment), in the *right* variant, with the
+qualitative claims still holding. An erroneous figure is absent entirely. The youth unemployment audit
+below is the revision case; life expectancy is the error case. Treating a revision as an error would churn
+good data; treating an error as a revision would preserve a fiction.
 
 **g. 🔴 WHEN THE QUERY SHAPE CHANGES, RE-RUN THE GATE IN THE NEW SHAPE.** A gate that passed in one shape
 says nothing whatever about another. Each of these is a shape change and each needs its own anchored
