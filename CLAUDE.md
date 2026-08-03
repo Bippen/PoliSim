@@ -1329,6 +1329,62 @@ fixes it and fixes the resolution at the same time, which matters more here than
 in this UI derives its font size from `Screen.height`, so a 640x480 capture would have been a screenshot
 of font sizes no player ever sees.** Any future visual tooling in this project must not use `-batchmode`.
 
+## v2.0 wiring — the theme inversion, and two failures worth more than the feature (2026-08-03)
+
+The chrome pack went live at four shared chokepoints — `PoliSimTheme`, `UiPalette`, `PoliSimWidgets`,
+`GameController`'s style init — rather than across 80 draw methods. Because every screen already reads
+through those, the change propagates. Details are in the commit; three things belong here.
+
+### 1. A theme inversion is not a palette swap
+
+Going from light-on-dark to ink-on-paper invalidates every assumption about the GROUND, and those
+assumptions are scattered far from the palette:
+
+- **`DrawColoredLabel` MULTIPLIED `GUI.color`.** Correct while the ramp was near-white (white × hue =
+  hue) and useless at `#2B2620`, where near-black × hue is near-black. Every coloured header in the game
+  would have rendered as an identical dark smudge. It now sets the style's `textColor` for the call.
+  **The multiply was documented as deliberate**, which is exactly why it was easy to miss: the comment
+  explained *why* it was multiplicative without stating what it depended on.
+- **`MutedIconTint` was white @60%** — invisible on paper.
+- **Text needs a surface.** `_boxStyle` inherited `GUI.skin.box`; once the ink ramp landed, every label
+  inside a tab container was dark-on-dark and had effectively vanished. **Ink and paper are one change
+  and cannot ship apart.**
+
+The generalisable form: *when a theme's ground flips, grep for what assumed the old one — not for the
+colours, but for the OPERATIONS (multiply, lighten, alpha-over) that only make sense against it.*
+
+### 2. ⚠ A guard written for exactly one failure, which did not catch it
+
+`UiPalette.GetTintedChrome` calls `Texture2D.GetPixels`, which throws unless the texture is imported
+readable. The author knew, and wrapped it in a `try`/`catch` with a comment saying — accurately — that an
+escape here "would throw INSIDE OnGUI and take the entire UI down rather than degrading one button".
+
+**It caught `UnityException`. Unity throws `ArgumentException` for a non-readable texture, and
+`ArgumentException` does not derive from `UnityException`.** So the defence written for this precise
+failure let it through, and the first capture of the wired UI was an empty desk — no error visible in
+the game, just nothing drawn.
+
+It survived unnoticed only because every chrome sprite happened to be imported readable. The v2.0 metas
+were generated from `icon_stat_gdp.png.meta` per the asset request's §3, which carries `isReadable: 0` —
+**correct for icons, which are drawn with a `GUI.color` tint, and wrong for chrome, which is pixel-tinted.
+§3 does not draw that distinction and should.**
+
+Two lessons, and the second is the transferable one:
+
+1. Catch broadly at an `OnGUI` boundary. Any escape costs the whole frame, and the fallback here was a
+   complete working path — there is no failure mode where re-throwing served the player.
+2. **A guard is a hypothesis about how something fails, and hypotheses need testing.** This one had a
+   correct diagnosis, a correct remedy, and the wrong exception type, and nothing in between would ever
+   have revealed it. If a `catch` exists to prevent a specific disaster, provoke that disaster once.
+
+### 3. The delta pill was retired on someone else's judgment
+
+Asked whether a chip sprite was wanted for the signed delta on a stat tile, Design answered that it was
+not: on paper a delta is inked text, not a lozenge. That is now how it renders. **Worth recording because
+the question was posed as optional and the useful answer was "don't"** — the brief asked for judgment
+instead of a sprite, and got it. B2 is untouched: the ink is still chosen by whether the change is GOOD,
+never by whether the number rose.
+
 ## Per-Partner Tariff Overrides
 A player-settable tariff override per trade partner, extending `TradeSystem`/`TradePartner` rather
 than building a new mechanic alongside the existing `BaseTariffRate`/`TariffRateChange` lever:

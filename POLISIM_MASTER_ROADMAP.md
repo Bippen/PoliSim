@@ -488,14 +488,41 @@ If a step's own validation fails, fix it before moving to the next — never pro
    stable control layout; the published/live distinction; per-area colour identity; and the
    always-visible interrupt indicator.
 
-   ### OPEN, AND BLOCKING THE DESIGN BRIEF
+   ### WHERE IT STANDS — end of 2026-08-03
 
-   1. **The eleven-hue question.** Eleven saturated `SystemArea` identity hues versus a muted period
-      palette — do the hues survive in aged/desaturated form, or does a non-colour carrier (icon,
-      typographic mark, paper stock, seal) replace them? **This is the hardest constraint in the
-      redirection**: two simultaneous cabinet decisions from different portfolios must remain
-      distinguishable at a glance, and that is a *function*, not a decoration.
-   2. **The font test result** — see `CLAUDE.md`.
+   | | |
+   |---|---|
+   | Architecture | **Decided and measured.** Hybrid at screen granularity; render order confirmed in a built player |
+   | Typography | **Done.** TeX Gyre Pagella + Courier Prime, open-licence, owned by `PoliSimTheme` |
+   | Design brief | **Sent and answered in full.** Two chrome passes delivered; spec reproduced in the request doc §1C |
+   | Sprites | **136 on disk, 52 chrome resolving.** Passes 1+2 imported and verified |
+   | Wiring | **Systemic layer live** — palette, buttons, panels, tabs, stat plates, chips, sliders, scrollbars |
+
+   ⚠ **NEXT SESSION STARTS HERE: the wiring is built, NOT confirmed.** Elias has the captures and has
+   not yet reviewed them in a live Editor. Nothing further should be layered on top until he has, because
+   every remaining item below changes the same screens.
+
+   **Still unwired, and each needs CALL-SITE work rather than a style assignment** — a stamp goes on a
+   resolved bill, hatch on a draft delta, the seal on a signing: `ui_stamp_carried/rejected/draft` ·
+   `ui_seal_official` · `ui_folder_dossier` · `ui_portrait_frame(_oval)` · `ui_banner_hold` ·
+   `ui_hatch_draft` · `ui_grain_tile` · `ui_scrim_takeover` · `ui_calendar_pad` · `ui_tab_spine` ·
+   `ui_subtab_on/off` · `ui_chip_outline` · `ui_slider_tick`.
+
+   **Then the Canvas path**, which has a full specification and nothing built: eight narrative screens,
+   the hand-off envelope, and the scrim. `CANVAS_SPEC.md` is reproduced in the request doc; the country
+   selector is the obvious pilot, being self-contained and already a full-screen state.
+
+   **One inherited defect worth fixing early**: the eleven pre-v2.0 chrome sprites are now entirely
+   superseded and removable in one pass, once the v2.0 chrome is confirmed.
+
+   ### RESOLVED — was blocking the design brief
+
+   1. ✅ **The eleven-hue question — ANSWERED: all eleven survive, aged and desaturated, no non-colour
+      carrier.** The evidence was that colour keys charts as well as identity: emblems drawn *instead of*
+      the hemicycle legend's swatch broke the legend's correspondence with its own arcs. A mark cannot
+      substitute where the mark is not what the chart is drawn in. Inks now live in `UiPalette`.
+   2. ✅ **The font test — ANSWERED**, and it also surfaced that draft amber and the Political hue were
+      the same hex. They are now separate. See `CLAUDE.md`.
 
    Not blocking, but must be settled before art is commissioned: the three modals that render in TWO
    places via `drawOwnFrame` each need both a framed standalone and an unframed embedded treatment.

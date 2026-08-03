@@ -522,6 +522,13 @@ sprites:
 The delivered `.meta` should match `Assets/Resources/Art/UI/Stats/icon_stat_gdp.png.meta` exactly apart
 from its `guid`. Copying that file and changing only the guid is the reliable route.
 
+⚠ **ONE EXCEPTION, ADDED 2026-08-03 AFTER IT COST AN ENTIRE UI: CHROME NEEDS `isReadable: 1`.** The icon
+template carries `isReadable: 0`, which is correct for icons — they are drawn with a `GUI.color` tint and
+never read back. Chrome is different: `UiPalette.GetTintedChrome` calls `Texture2D.GetPixels` to tint the
+sprite per button state, and `GetPixels` throws on a non-readable texture. The v2.0 pass-1 metas were
+copied from the icon template exactly as instructed above, and the first wired build rendered as an empty
+desk. **Copy the template, then set `isReadable: 1` for anything under `Chrome/`.**
+
 ---
 
 ## 4. Filename manifest and the naming rule
