@@ -14,11 +14,48 @@ Fifth request in this project. **The technical conventions in §3–§4 are unch
 
 ## 1. THE v2.0 BRIEF — total visual redirection
 
+### FIRST — research Suzerain yourself
+
+**Before designing anything, look at Suzerain (Torpor Games) directly.** Find and study screenshots of its
+interface rather than working from the description below. **The description is one reading of it, and
+yours may well be better** — you will have looked at the source, and everything after this section is
+second-hand by construction.
+
+Specific screens worth finding, each chosen because it maps onto something PoliSim actually has:
+
+| Look at | Because PoliSim needs |
+|---|---|
+| Cabinet meeting screens | the Cabinet roster and the decision modals |
+| Political / party overview | the Parliament screen and its hemicycle |
+| Economy and budget panels | the Budget screen — the densest in the game |
+| The national map | the World Map on Statistics → International |
+| Character portraits | 16 existing portraits, and how they are framed |
+| Constitution and law screens | Policy/Laws, and the bill cards |
+| The desk, folder and document framing generally | the whole chrome language |
+
+**Study the idiom, not the assets.** What is wanted is the visual language — how paper, frames, furniture
+and type are used to make a government feel physical. Reproducing Suzerain's own artwork, layouts or trade
+dress is not, and would collide with the same standing rule that keeps every institution in this game
+fictional (§2).
+
+⚠ **Then tell us where Suzerain's approach would NOT work here, and why. This is not a courtesy
+question.** Suzerain is a narrative game with numbers in it; **PoliSim is a numbers game that needs
+narrative weight**, and that difference is where a faithful copy would fail. Concretely: the Budget screen
+shows dozens of numeric line items at once, each with a slider, a standing-versus-draft pair, and a live
+legislative-vote estimate beside it — on one screen, with no room bought back anywhere.
+
+Wherever the ornamentation would cost more space than it earns, **we would rather adapt the style than
+copy it into a worse fit**, and after looking at both you are better placed to see that than we are. Say
+so in the delivery. A section listing what you deliberately did not carry across is more useful to us than
+a set of frames that assume the fit is total.
+
 ### What is being asked for
 
+*Our reading of the idiom — offered after yours rather than instead of it.*
+
 PoliSim's UI is a dark-mode data dashboard. It becomes a **1950s-republic aesthetic built as physical
-furniture**, in the visual idiom of Suzerain (Torpor Games): desk surfaces, paper documents, folders,
-ornate frames, painted portraits, textured backgrounds, and full-screen focus for consequential moments.
+furniture**, in the visual idiom of Suzerain: desk surfaces, paper documents, folders, ornate frames,
+painted portraits, textured backgrounds, and full-screen focus for consequential moments.
 
 **This is a redirection, not a restyle.** Nothing in the current look is a constraint on the new one.
 
@@ -155,49 +192,6 @@ screens** — Labor, Crime & Justice, Sectors, Trade, and the annual budget bill
 Reskinning any of these in the new idiom is in scope. **Inventing replacements for art that already
 exists is not.** `ui_button_disabled` is a special case: IMGUI has no disabled style state, so it becomes
 usable only once its screen is on Canvas.
-
----
-
-### ✅ DELIVERED AND IMPORTED 2026-08-02 — `icon_stat_interestrate`
-
-Delivered in `Policy rate icon design.zip` (now in `/AssetPackArchive/`), as a 256×256 RGBA PNG plus its
-24×24 SVG source. **The brief was met**: the mark is a `%` — rendered as a slash with two dots — over a
-rising stepped line, which reads as a rate that is *set* rather than observed, and is not confusable with
-`icon_stat_inflation`'s price tag.
-
-Imported to `Assets/Resources/Art/UI/Stats/` with a hand-written `.meta` byte-identical to
-`icon_stat_gdp.png.meta` apart from its guid, per §3. **Verified by loading it through `Resources.Load`**
-— the path the game uses — rather than by finding the file on disk; `StatIconCoverageCheck` reports
-**18 of 18** stat icons present.
-
-| Subject | Filename | Mark delivered |
-|---|---|---|
-| Interest rate | `icon_stat_interestrate.png` | `%` over a small stepped line |
-
-**The derivation lesson is kept, because it generalises.** This icon was missed from the macro pack
-because that pack derived its stat list from the 29 fields on `EconomyState` — a code-grounded method and
-the right instinct. `InterestRate` is not an `EconomyState` field; it lives on `CurrencyZone`, since a
-rate belongs to a currency zone rather than to one country's economy (the Eurozone five share one). It
-was invisible to that derivation while being a `StatNodeId`, a `PolicyNodeId` target, a Taylor Rule input
-and the headline figure on two screens. **Enumerate the display enum, not the storage struct.**
-`StatIconCoverageCheck` now runs exactly that enumeration in batch mode, so the next gap reports itself
-instead of waiting to be found by hand.
-
-### Why this one was missed, so the same derivation error does not recur
-
-The macro pack derived its stat list from **"the 29 fields that actually exist on `EconomyState`"** — a
-deliberately code-grounded method, and the right instinct. But **`InterestRate` is not an `EconomyState`
-field.** It lives on `CurrencyZone.InterestRate`, because a rate belongs to a currency zone rather than to
-one country's economy — the Eurozone five share one. So it was structurally invisible to that derivation
-while being, simultaneously:
-
-- one of the 18 stats reachable on a policy screen (`StatNodeId.InterestRate`),
-- the target of its own policy node (`PolicyNodeId.InterestRateDecision`),
-- an input to the Taylor Rule, and
-- the headline figure on both the Fed and Eurozone screens.
-
-**Lesson for any future stat-icon list: enumerate the display enum (`StatNodeId`), not the storage
-struct.** Anything the UI can show needs an icon regardless of which type owns the field.
 
 ---
 
@@ -387,6 +381,12 @@ inventory from the filesystem, and the screen inventory from the enums, before t
 ---
 
 ### Earlier verification note, retained (2026-08-02)
+
+*The `icon_stat_interestrate` delivery record that used to sit in §1 was removed on 2026-08-03 — it was
+stranded inside the v2.0 brief when §1 was rewritten, and a closed 2026-08-02 delivery reading as part of
+an open request is exactly the kind of stale content this document keeps getting wrong. The delivery
+itself is recorded in `COMPLETED.md` §8 and in git history; **its lesson — enumerate the display enum, not
+the storage struct — was the part worth keeping and now lives in §4**, where a filename gets derived.*
 
 Every literal icon name referenced anywhere in `Assets/Scripts` was extracted and cross-referenced against
 the 84 sprite files then on disk; `icon_stat_interestrate` was the only miss. Area-icon and portrait
