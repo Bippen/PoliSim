@@ -22,11 +22,76 @@ namespace PoliSim.UI
     /// </summary>
     public static class PolicyScreenStatsRenderer
     {
-        private const float RowHeight = 44f;
-        private const float IconSize = 22f;
-        private const float SparklineWidth = 72f;
-        private const float SparklineHeight = 20f;
-        private const float MinChipWidth = 190f;
+        /// <summary>
+        /// ⚠ **THESE WERE FIXED px AND THAT WAS A LIVE CLIPPING BUG (fixed 2026-08-03).**
+        ///
+        /// Every style in this UI derives its `fontSize` from `Screen.height` (see
+        /// `GameController.RescaleStylesToScreen`, which re-derives it every frame). These five constants
+        /// did not. They are correct at `fontSize` 16 — the bottom of that clamp, i.e. the smallest window
+        /// the game supports — and at any larger window the row was too short and too narrow for its own
+        /// text. At 900px height the label font is 20px and the name was being drawn into an 18px-tall
+        /// rect: the stat row rendered `Debt-to` / `Approval` / `Busines` / `Poverty` over
+        /// vertically-cropped figures, on every policy screen, in production.
+        ///
+        /// **This is instance #8 of the class `PoliSimWidgets.MeasuredLabel` was written to end**, and it
+        /// is in the one renderer that never adopted it. The lesson is not "use the helper" — it is that a
+        /// helper only helps where someone remembered to call it, and the durable fix is for the GEOMETRY
+        /// to derive from the same font size the text does. Each factor below reproduces the original
+        /// constant exactly at `fontSize` 16 and scales from there, so nothing changes at the size these
+        /// were authored for and everything grows correctly above it.
+        ///
+        /// `OverflowLineHeight` further down already did this (`fontSize + 6f`). The pattern was in the
+        /// file; the row just never got it.
+        /// </summary>
+        private const float RowHeightPad = 8f;
+        private const float IconSizePerFont = 22f / 16f;
+        private const float SparklineWidthPerFont = 72f / 16f;
+        private const float SparklineHeightPerFont = 20f / 16f;
+        private const float MinChipWidthPerFont = 190f / 16f;
+
+        /// <summary>
+        /// One text line's height, taken from the STYLE'S OWN METRICS rather than from `fontSize` plus a
+        /// guess.
+        ///
+        /// **The first version of this fix used `fontSize + 4f` and the values were still clipped.** A
+        /// font's line height is not a fixed function of its point size - TeX Gyre Pagella has generous
+        /// ascenders and descenders and needs roughly `fontSize + 8` at 20px, where the default sans did
+        /// not. Guessing the padding replaces a constant that is wrong at every size but one with a
+        /// constant that is wrong for every FACE but one, which is not progress. `GUIStyle.lineHeight`
+        /// asks the font, so this now survives both a window resize and a change of typeface.
+        ///
+        /// The `fontSize + 4f` floor is a guard, not the answer: `lineHeight` can read 0 before a
+        /// dynamic font has rasterised at a given size.
+        /// </summary>
+        private static float LineHeightFor(GUIStyle s) => Mathf.Max(s.lineHeight, s.fontSize + 4f);
+
+        private static float RowHeightFor(GUIStyle s) => LineHeightFor(s) * 2f + RowHeightPad;
+        private static float IconSizeFor(GUIStyle s) => s.fontSize * IconSizePerFont;
+        private static float SparklineWidthFor(GUIStyle s) => s.fontSize * SparklineWidthPerFont;
+        private static float SparklineHeightFor(GUIStyle s) => s.fontSize * SparklineHeightPerFont;
+        private static float MinChipWidthFor(GUIStyle s) => s.fontSize * MinChipWidthPerFont;
+
+        /// <summary>
+        /// A private copy of the caller's label style for chip text, because
+        /// <see cref="PoliSimWidgets.MeasuredLabel"/> SHRINKS the style it is handed and the caller's
+        /// `labelStyle` is shared with every other label on the screen. Rebuilt only when the source size
+        /// or face changes, and its `fontSize` is reset on every call so one long stat name cannot leave
+        /// the next chip permanently smaller.
+        /// </summary>
+        private static GUIStyle _chipText;
+        private static int _chipTextBuiltAtSize = -1;
+
+        private static GUIStyle ChipTextStyle(GUIStyle labelStyle)
+        {
+            if (_chipText == null || _chipTextBuiltAtSize != labelStyle.fontSize || _chipText.font != labelStyle.font)
+            {
+                _chipText = new GUIStyle(labelStyle) { wordWrap = false };
+                _chipTextBuiltAtSize = labelStyle.fontSize;
+            }
+
+            _chipText.fontSize = labelStyle.fontSize;
+            return _chipText;
+        }
 
         /// <summary>
         /// Default cap on how many stats a screen shows. Four, because the widest area genuinely has
@@ -47,13 +112,13 @@ namespace PoliSim.UI
         /// </summary>
         public static float MeasureHeight(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats = DefaultMaxStats)
         {
-            ComputeLayout(area, availableWidth, maxStats, out int shown, out _, out int lines, out int omitted);
+            ComputeLayout(area, labelStyle, availableWidth, maxStats, out int shown, out _, out int lines, out int omitted);
             if (shown == 0)
             {
                 return 0f;
             }
 
-            return lines * RowHeight + (omitted > 0 ? OverflowLineHeight(labelStyle) : 0f);
+            return lines * RowHeightFor(labelStyle) + (omitted > 0 ? OverflowLineHeight(labelStyle) : 0f);
         }
 
         /// <summary>
@@ -65,7 +130,7 @@ namespace PoliSim.UI
         public static void Draw(UiPalette.SystemArea area, Country country, GUIStyle labelStyle, float availableWidth, int maxStats = DefaultMaxStats)
         {
             IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area);
-            ComputeLayout(area, availableWidth, maxStats, out int shown, out int perRow, out _, out int omitted);
+            ComputeLayout(area, labelStyle, availableWidth, maxStats, out int shown, out int perRow, out _, out int omitted);
             if (shown == 0)
             {
                 return;
@@ -75,10 +140,10 @@ namespace PoliSim.UI
 
             for (int i = 0; i < shown; i += perRow)
             {
-                Rect line = GUILayoutUtility.GetRect(availableWidth, RowHeight);
+                Rect line = GUILayoutUtility.GetRect(availableWidth, RowHeightFor(labelStyle));
                 for (int c = 0; c < perRow && i + c < shown; c++)
                 {
-                    DrawChip(new Rect(line.x + c * chipWidth, line.y, chipWidth, RowHeight), stats[i + c], country, labelStyle);
+                    DrawChip(new Rect(line.x + c * chipWidth, line.y, chipWidth, RowHeightFor(labelStyle)), stats[i + c], country, labelStyle);
                 }
             }
 
@@ -96,17 +161,23 @@ namespace PoliSim.UI
             }
         }
 
-        private static float OverflowLineHeight(GUIStyle labelStyle) => labelStyle.fontSize + 6f;
+        /// <summary>
+        /// Was `fontSize + 6f`. That scaled with the window, which is why the doc comment on the row
+        /// constants credits it as already having the right idea — but `+6` is still a guess at a font's
+        /// descender depth, and under TeX Gyre Pagella it clipped the tail of "Policy Web". Same
+        /// correction as <see cref="LineHeightFor"/>: ask the style.
+        /// </summary>
+        private static float OverflowLineHeight(GUIStyle labelStyle) => LineHeightFor(labelStyle) + 2f;
 
         /// <summary>
         /// The single place chips-per-row, line count and overflow are decided, so
         /// <see cref="MeasureHeight"/> and <see cref="Draw"/> are the same calculation rather than two
         /// that agree until one is edited. This is the StatTile-formatter lesson applied to layout.
         /// </summary>
-        private static void ComputeLayout(UiPalette.SystemArea area, float availableWidth, int maxStats, out int shown, out int perRow, out int lines, out int omitted)
+        private static void ComputeLayout(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats, out int shown, out int perRow, out int lines, out int omitted)
         {
             IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area);
-            perRow = Mathf.Max(1, Mathf.FloorToInt(availableWidth / MinChipWidth));
+            perRow = Mathf.Max(1, Mathf.FloorToInt(availableWidth / MinChipWidthFor(labelStyle)));
             shown = Mathf.Min(stats.Count, Mathf.Max(1, maxStats));
             omitted = stats.Count - shown;
             lines = Mathf.CeilToInt(shown / (float)perRow);
@@ -120,6 +191,12 @@ namespace PoliSim.UI
             IReadOnlyList<float> history = PolicyWebRenderer.GetHistory(stat, country.History);
             Color trendColor = GetTrendColor(history, higherIsBetter);
 
+            GUIStyle text = ChipTextStyle(labelStyle);
+            float iconSize = IconSizeFor(labelStyle);
+            float sparkWidth = SparklineWidthFor(labelStyle);
+            float sparkHeight = SparklineHeightFor(labelStyle);
+            float lineHeight = LineHeightFor(labelStyle);
+
             float x = rect.x + 4f;
 
             // The icon is optional by design: IconLibrary returns null for a missing sprite, and a null
@@ -130,20 +207,23 @@ namespace PoliSim.UI
             Texture2D icon = IconLibrary.GetStat(GetIconName(stat));
             if (icon != null)
             {
-                UiPalette.DrawTintedIcon(new Rect(x, rect.y + (RowHeight - IconSize) * 0.5f, IconSize, IconSize), icon, UiPalette.MutedIconTint);
-                x += IconSize + 6f;
+                UiPalette.DrawTintedIcon(new Rect(x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize), icon, UiPalette.MutedIconTint);
+                x += iconSize + 6f;
             }
 
-            float textWidth = rect.xMax - x - SparklineWidth - 10f;
-            GUI.Label(new Rect(x, rect.y + 2f, textWidth, 18f), PolicyScreenStats.GetName(stat), labelStyle);
+            // MeasuredLabel rather than GUI.Label, per the standing rule this file was violating: SHRINK,
+            // NEVER TRUNCATE. A clipped stat name is merely ugly; a clipped VALUE is a plausible-looking
+            // wrong number, which is the worst failure a readout can have - and both were happening here.
+            float textWidth = rect.xMax - x - sparkWidth - 10f;
+            PoliSimWidgets.MeasuredLabel(new Rect(x, rect.y + 2f, textWidth, lineHeight), PolicyScreenStats.GetName(stat), text);
 
             Color previous = GUI.color;
             GUI.color = trendColor;
-            GUI.Label(new Rect(x, rect.y + 20f, textWidth, 20f), PolicyScreenStats.Format(stat, value), labelStyle);
+            PoliSimWidgets.MeasuredLabel(new Rect(x, rect.y + lineHeight + 2f, textWidth, lineHeight), PolicyScreenStats.Format(stat, value), ChipTextStyle(labelStyle));
             GUI.color = previous;
 
             GraphRenderer.DrawSparkline(
-                new Rect(rect.xMax - SparklineWidth - 4f, rect.y + (RowHeight - SparklineHeight) * 0.5f, SparklineWidth, SparklineHeight),
+                new Rect(rect.xMax - sparkWidth - 4f, rect.y + (rect.height - sparkHeight) * 0.5f, sparkWidth, sparkHeight),
                 history, trendColor);
         }
 

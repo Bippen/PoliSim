@@ -992,7 +992,13 @@ namespace PoliSim.UI
             _sliderThumbStyle.fixedWidth = sliderThumbWidth;
 
             _tabButtonStyle.fontSize = tabFontSize;
-            _tabButtonStyle.fixedHeight = tabButtonHeight;
+            // A tab/category button WRAPS to two lines for the long labels ("Sovereign Wealth Fund"), and
+            // its fixedHeight has to be able to hold both of them. It could not: the height came from
+            // Screen.height alone, and the serif introduced in v2.0 has a taller line box than the default
+            // sans it replaced, so the second line was cut off in the Budget category rail. Taking the max
+            // against the style's own two-line height makes it font-aware rather than font-specific -
+            // exactly the correction PolicyScreenStatsRenderer.LineHeightFor documents at more length.
+            _tabButtonStyle.fixedHeight = Mathf.Max(tabButtonHeight, _tabButtonStyle.lineHeight * 2f + 8f);
 
             _eventBannerStyle.fontSize = bannerFontSize;
             _gameOverStyle.fontSize = bannerFontSize;
