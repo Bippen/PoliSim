@@ -1,8 +1,10 @@
 # Claude Design asset request — PoliSim
 
-**Status: v2.0 VISUAL REDIRECTION — OPEN.**
-**Chrome pass 1 received, verified and imported 2026-08-03** (30 sprites + 7 SVG sources + palette,
-41/41 resolving through `Resources.Load`). **Pass 2 is outstanding — see §1's last subsection.**
+**Status: v2.0 VISUAL REDIRECTION — CHROME COMPLETE, NOTHING OUTSTANDING WITH DESIGN.**
+**Passes 1 and 2 received, verified and imported 2026-08-03**: 41 sprites + 7 SVG sources + palette +
+`DIRECTION.md` + `CANVAS_SPEC.md`, 52/52 resolving through `Resources.Load`. Pass 2 answered every item in
+§1B. **The delivered specification is reproduced in §1C** — read that before implementing anything.
+**What is open is now ours, not theirs:** the draft-amber sign-off (§1B.5), and wiring any of it.
 **Date:** 2026-08-03.
 **Supersedes:** `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`, `_UI_CHROME.md`, `_UI_CHROME_ADDENDUM.md` and
 `_MACRO.md` — all four fully delivered, imported and verified in production. Their contents are recorded
@@ -179,24 +181,25 @@ standing/draft pair · draft track · decision card · badge/chip · portrait ·
 sub-category button · slider row · bill card · live-estimate block (**one shared renderer across five
 screens** — Labor, Crime & Justice, Sectors, Trade, and the annual budget bill) · speed button · sparkline.
 
-### What already exists — 125 sprites. DO NOT REDRAW.
+### What already exists — 136 sprites. DO NOT REDRAW.
 
-*Was 96 until chrome pass 1 landed on 2026-08-03. Re-derived from the filesystem on that date; **§6 says
-to re-derive rather than trust this number, and it meant it** — a count in prose is a cached value.*
+*84 → 96 → 125 → 136 across three days. **§6 says to re-derive this from the filesystem rather than trust
+it, and it has been right every single time.** A count in prose is a cached value with no expiry.*
 
 | Category | Count | Status |
 |---|---|---|
 | Stat icons (`icon_stat_*`, `icon_trend_*`, `badge_*`, `icon_release_marker`) | 43 | wired |
 | Area + nav icons (`icon_area_*` ×10, `icon_nav_*` ×4) | 14 | wired |
 | Portraits (9 cabinet + 7 Fed chair) | 16 | wired |
-| **v2.0 chrome, pass 1** | **30** | **imported, resolving, not yet wired to any control** |
-| Chrome, pre-v2.0 | 11 | 3 wired; 8 superseded by pass 1 |
+| **v2.0 chrome, passes 1 + 2** | **41** | **imported, 52/52 resolving, not yet wired to any control** |
+| Chrome, pre-v2.0 | 11 | 3 wired; **all 11 now superseded** by the v2.0 passes |
 | Background texture (`menu_pattern_tile`) | 1 | wired |
 | Country flags (`flag_country_*`) | 6 | wired |
 | Party emblems (`emblem_party_*`) | 4 | wired |
 
-*Pre-v2.0 chrome is 11 rather than 12 because pass 1's `ui_slider_track` took over that filename; the old
-sprite is superseded and its bytes remain in git history.*
+*Pre-v2.0 chrome is 11 rather than 12 because pass 1's `ui_slider_track` took over that filename. Pass 2's
+scrollbars supersede the last four that had no v2.0 equivalent, so the pre-v2.0 set is now entirely dead
+weight — retained until the v2.0 chrome is actually wired, then removable in one pass.*
 
 Reskinning any of these in the new idiom is in scope. **Inventing replacements for art that already
 exists is not.** `ui_button_disabled` is a special case: IMGUI has no disabled style state, so it becomes
@@ -204,7 +207,14 @@ usable only once its screen is on Canvas.
 
 ---
 
-## 1B. CHROME PASS 2 — OUTSTANDING REQUEST (2026-08-03)
+## 1B. CHROME PASS 2 — ✅ ANSWERED IN FULL, 2026-08-03
+
+*Retained as written rather than deleted, because the request and its answer read as a pair. Every item
+below was delivered: scrollbars with the arrow-button call made explicitly, the chip judgment (which came
+back as "not a pill" — see §1C.5), the Pagella stamp re-cut, and the missing `DIRECTION.md`. §1B.3's
+question is answered too: the chrome pack was complete in itself, and `CANVAS_SPEC.md` covers §3.3.*
+
+### The original request follows
 
 Pass 1 arrived complete against its own manifest: 30 PNGs, every one matching its stated dimensions,
 all alpha-correct, all 41 sprites in the folder resolving through `Resources.Load`. The 9-slice insets,
@@ -303,6 +313,107 @@ this; it is recorded here so the hold is visible rather than looking like an ove
 
 ---
 
+## 1C. DELIVERED SPECIFICATION — pass 2, 2026-08-03
+
+**Pass 2 answered every item in §1B.** It shipped 11 new sprites, re-cut the three stamps in Pagella, and
+brought back the two documents that were missing: `DIRECTION.md` (the `[Wn]`/`[Bn]` companion) and
+`CANVAS_SPEC.md` (the §3.3 Canvas path).
+
+⚠ **Both are reproduced below rather than referenced, because `AssetPackArchive/` is gitignored.** The
+zips never enter the repo, so a document that lives only inside one is lost to anyone who clones. This is
+the delivered-vs-reachable lesson applied to prose instead of sprites.
+
+### 1C.1 The thesis, and where the idiom was deliberately refused
+
+> *"A ledger, not a decree. Suzerain frames ONE document at a time and lets ornament spend freely around
+> it. PoliSim shows dozens of live figures at once and redraws them at 3× speed. The idiom is adopted at
+> the PERIMETER and refused at the ROW."*
+
+| tag | refused | why |
+|---|---|---|
+| W1 | ornament per row | plate-per-document costs 40–60px/item; Budget has ~40 rows. Ornament concentrates on panel frames (≤6/screen); rows get hairline `ui_pixel` rules |
+| W2 | texture under live digits | grain behind a redrawing numeral shimmers. Numeral plates ≤2% grain; `ui_grain_tile` **never** behind live digits |
+| W3 | scene transitions everywhere | tab flips stay instant — a clerk flipping folders. Motion is rationed to the Canvas moments |
+| W4 | a mood palette | Suzerain runs 2–3 tones; PoliSim's eleven hues are **data infrastructure**. Aged, not reduced — distinguishable at 12px swatch |
+| W5 | the prose register | their paper carries letters; ours carries figures. Bulletins, ledgers, forms, tally sheets |
+| W6 | period as age | the game plays in 2026. The 1950s is the institution's graphic language, not artifact age. "Ministry fresh print", stock `#F0E7D8`, weathering reserved for archival material |
+
+**Also not carried across:** scene illustrations · per-row paper skeuomorphs (stacked-sheet offsets, wax
+seals on data cards) · handwriting as a data carrier · page-turn transitions · heavy vignettes over dense
+panels · documents half-overlapping data panels (impossible by measurement).
+
+**Carried across:** the desk as ground · paper as the surface of record · folder tabs as navigation ·
+ornate framing reserved for portraits and consequential documents · stamps and printed badges as state ·
+the full-screen document as the shape of every consequential moment.
+
+### 1C.2 Where each load-bearing behaviour lands
+
+| tag | behaviour | how the chrome satisfies it |
+|---|---|---|
+| B1 | amber draft cue | `ui_stamp_draft` + `ui_hatch_draft` tinted draftAmber — **may change form, may not disappear** |
+| B2 | direction-aware green/red | good `#3E8A5F` / bad `#9C4238`; deltas are inked text coloured by goodness, not sign |
+| B3 | MoneyUnit | register rule: unit always named beside the figure; no art renders currency without one |
+| B4 | shrink, never truncate | plates are 9-slice with near-flat centres — **no fixed-size text plate anywhere in the pack** |
+| B5 | stable control layout | `ui_btn_disabled`, `ui_slider_knob_disabled`, N/A chip — disabled is rendered, never omitted |
+| B6 | published vs live | published = printed bulletin (solid frame + ref period + date + badge chip); live = desk reading (dashed rule, unbadged) |
+| B7 | six consolidated tabs | folder tabs + `ui_tab_spine` tinted per area |
+| B8 | always-visible interrupt | `ui_banner_hold` is desk-mounted (dark set) so it survives Budget full-screen **and** the Canvas scrim |
+| B9 | legend ↔ chart colour | legend swatches print in the chart's own ink; emblems sit BESIDE swatches, never instead |
+| B10 | lining figures | art carries no numerals of its own |
+| B11 | `U+2212` / `U+00B1` | true minus everywhere in art copy |
+
+### 1C.3 The hand-off envelope — every consequential moment
+
+Runs **from the IMGUI side**, per the render-order spike.
+
+| t (ms) | action | side |
+|---|---|---|
+| 0 | input locks; sim clock holds | IMGUI |
+| 0–180 | `ui_scrim_takeover` fades 0→100%, opacity only, ease-out quad | IMGUI |
+| 180–240 | hold at 85%; IMGUI suppressed, Canvas enabled behind the wash | swap |
+| 240–500 | document entrance: rise 24px, settle −0.6°→0°, ease-out cubic | Canvas |
+| 580–700 | stamp/seal thunk: scale 1.15→1.0, 120ms | Canvas |
+| 700+ | controls fade in last | Canvas |
+
+Exit reversed and faster: controls lock → document drops 16px + fades 200ms → Canvas disabled → IMGUI
+redraws under scrim → scrim lifts 240ms. **Round trip ≤1.2s.** `ui_banner_hold` survives the whole
+sequence.
+
+### 1C.4 Per-screen Canvas specs
+
+- **Country selector** — `CountryFolder` ×6. Folder card, `ui_tab_spine` tinted per country's mapped area
+  hue, flags (full-colour exemption), `menu_pattern_tile` ground. States: normal · hover (lift −8px, 60ms)
+  · pressed (scale 0.985) · selected (folder opens, brief slides in, 320ms) · disabled (`#B9A886`, no lift).
+- **Election results** — bulletin lands → seats fill by declaration wave 1200ms in party-ink order
+  (procedural dots, rule 10) → swing figures count up 600ms → verdict stamp thunks last.
+- **Bill vote / budget signing** — division bar fills 500ms (ayes from left, noes from right, meeting at
+  the threshold tick) → CARRIED/REJECTED stamp. Signing: pen scratch 400ms → `ui_seal_official` drops
+  1.3→1.0 over 140ms + 6px settle shake.
+- ⚠ **Fed chair · cabinet decision · foreign policy meeting — THE DUAL-SITING ANSWER.** Standalone
+  (`drawOwnFrame: true`) gets its own plate + `ui_frame_ornate` + title band, oval portraits at hero size,
+  full envelope entrance. Embedded (`false`) gets **interior furniture only** — no plate, no frame, no
+  title band, no outer shadow, rect portraits at roster size, and **no entrance animation**, since it is
+  already on screen inside Decisions. **Asset consequence: frame, title band and plate are separate
+  sprites from interior furniture, so the embedded path simply skips them.** This is the constraint §1
+  flagged, resolved.
+- **Interrupt banner** — dark set, desk-mounted, amber lamp dot pulsing 60↔100% on a 1.2s sine, always
+  naming the resolving screen.
+- **Scrim** — one radial-vignette sprite stretched full-screen; **opacity is the only animated property**,
+  and it is never a dim layer under a partial popup, because those do not exist.
+
+### 1C.5 Two implementation instructions that came back with the art
+
+1. ⚠ **Scrollbar arrow buttons are styled to NOTHING** — "a ledger has no arrow furniture". Point
+   `upButton`/`downButton`/`leftButton`/`rightButton` at `ui_scrollbar_button_none` **and** set
+   `fixedWidth = fixedHeight = 0` with zero margins. **Both are required — the sprite alone still leaves
+   IMGUI reserving the space.**
+2. ⚠ **THE SIGNED DELTA IS NOT A PILL IN THIS IDIOM.** On paper a delta is inked text, not a lozenge.
+   **Retire `PoliSimTheme.Pill` at the stat-tile delta call sites**; keep `ui_chip` / `ui_chip_outline` for
+   `PoliSimWidgets.Badge` sites — published/revised/urgency — where a printed chip is period-correct. This
+   is the judgment §1B.2 asked for instead of a sprite, and it is a **code** change, not an art one.
+
+---
+
 ## 2. Explicitly OUT of scope — please do not produce these
 
 - **Anything the seven data renderers already draw**: axes, gridlines, tick marks, plot lines, threshold
@@ -310,7 +421,7 @@ this; it is recorded here so the hold is visible rather than looking like an ove
   pie wedges, compass dots. All procedural, per working-discipline item 10 — these render real tracked
   simulation data rather than a picture, and that is exactly what rule 10 protects. **Frames, plates and
   paper AROUND them are in scope; the data marks inside are not.**
-- **Any sprite already delivered.** **125** are in production — see the table in §1. Check
+- **Any sprite already delivered.** **136** are in production — see the table in §1. Check
   `Assets/Resources/Art/UI/` before producing anything. *(This bullet said 84, then 96, both within two
   days; re-derive from the filesystem rather than trusting the number.)*
 - **Typefaces.** Already chosen, open-licensed and imported: TeX Gyre Pagella (display + body) and
