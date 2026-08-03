@@ -1137,6 +1137,89 @@ debt).
   are more turns to accumulate them over) are all attributable to ordinary swing/misery-index noise, not
   runaway divergence.
 
+## Continuous Time Phase 3 — the money resolution goes daily, and the one constant that is a decision rather than a flow (2026-08-03)
+
+The fiscal engine's conversion to daily granularity. Structure first, then the finding, which is the part
+worth carrying into Phases 4 and 5.
+
+**The split.** `SimulationManager.AccrueDailyFiscalFlows` runs once per country per day inside
+`AdvanceDay` and charges `1/DaysPerTurn` of every flow: tax revenue, unemployment benefits, welfare cost,
+interest on debt, the SWF's contribution/return/draw, and the debt stock update that follows from them.
+The BUDGET RESOLUTION stays on the turn boundary — `ResolveSpendingForTurn` and every policy application
+around it are unchanged — because a budget passing is an event on a date, not a flow. The consequence is
+that a plan is resolved at one boundary and executed across the following 121 days, which is both what a
+budget *is* and the only causally possible ordering: the boundary that resolves a budget is 121 days of
+play before the next one. **A policy change's cash effect therefore lands one period after the boundary
+that made it**; its effect on the GDP identity's G term does not move, since `ApplyNationalAccounts` is
+Phase 5 and still reads the plan at the boundary that resolved it.
+
+The state this required is `SimulationManager.FiscalPeriod`, one per country, holding the plan the current
+days are executing plus a running sum of what they have accrued (closed out into `FiscalTurnReport` at the
+next boundary, so the report is now a genuine sum of 121 days rather than one step's figure). It exists
+because most of the daily step CAN be re-derived from persistent country state but government/mandatory
+spending cannot: for the five countries without a detailed `SpendingLines` portfolio the discretionary
+figure comes from `PolicyDecision.TotalDiscretionarySpending`, which exists only at a boundary. The period
+is seeded on first use — day 1 arrives 121 days before the first `AdvanceTurn`, and without a seed every
+country would spend nothing for its opening third of a year — derived directly from the seeded portfolio
+and deliberately NOT by calling `ResolveSpendingForTurn`, which is not idempotent.
+
+`SovereignWealthFundSystem.ApplyReturns` became `DrawPeriodReturn` and no longer mutates the fund: the
+return is drawn ONCE per period at the boundary and accrued daily. Drawing daily would consume 121x the
+RNG and invalidate every recorded baseline for no modelling gain.
+
+### The finding: a constant can be a DECISION rather than a FLOW, and decisions do not divide by 121
+
+The migration methodology asks which mathematical shape a constant is — linear, multiplicative,
+probability, or a clamp that does not shrink at all. Phase 3 found a fifth answer, and found it the
+expensive way.
+
+Every fiscal flow took the linear shape correctly and is exact by construction. But `ApplyRevenueAndSpending`
+also applies `GetFiscalReactionMultiplier`, and the first implementation recomputed it every day — the
+obvious "more continuous" choice, since it reads `DebtToGdpRatio` and the debt ratio now moves daily.
+**It failed the aggregation bar outright: Sweden 24.8% drift on budget balance, Germany 22.7%, against a
+3% bar** (`GovernmentDebt` 13.6% and 7.0%). The cause is not a coding error. `FiscalReactionSensitivity`
+is 1.5 and a single period moves a country's debt ratio by ten points or more, so a multiplier that
+re-reads that ratio every morning walks a long way down its own surplus over the period it is supposed to
+be governing. The turn form structurally could not do this — its debt stock moved exactly once — so daily
+recomputation was not a finer version of the validated model. It was a different model.
+
+Freezing it for the period passes at 0.45%/1.35%, and the argument for freezing is not that it passes.
+`GetFiscalReactionMultiplier`'s own doc comment describes "a country's own government modestly tightens…
+as debt rises above its `ComfortableDebtToGdpPercent` anchor" — that is a fiscal STANCE, and a stance is
+adopted when the budget is set, not re-derived daily. It still responds fully to the debt the country
+actually accumulated; it does so at the boundary, where every other budget decision in this game is made.
+`FiscalPeriod.PlannedFiscalReactionMultiplier` holds it, and `ApplyRevenueAndSpending` gained a `-1`
+sentinel override (this file's existing idiom) so the turn form's remaining caller, `PreviewTurn`, reads
+exactly as it did.
+
+**The generalisable question, for Phases 4 and 5:** is this constant a quantity that *flows*, or a
+decision that was *taken*? Only the first kind divides by 121. Phase 5's macro engine is full of the
+second kind.
+
+### Interest is the one deliberate difference from the turn form
+
+Interest stayed daily, and is why the residual is 1.35% rather than zero: it is charged on the debt the
+country holds today rather than the debt it held four months ago, so a country running down its debt pays
+slightly less over a period than the turn form charged it. That is a real modelling gain, not an error,
+and it is the whole of the remaining drift — every country's 120-turn debt lands 1–5% lower, all in the
+same direction.
+
+### Validation
+
+Aggregation-equivalence 39/39 within 3%. Full matrix (15 scenarios x 100/500 turns) run before and after
+under the same seed against real Unity `6000.5.6f1`: **25 of 30 combinations byte-identical**, 1629 → 1637
+anomalies total, and the only categories that moved are the two directly downstream of the debt path
+(DebtToGdp swings 139 → 145, credit-rating notch moves 18 → 20). Inflation (1257), Unemployment (123) and
+InterestRate (92) are unchanged to the anomaly — read that with the file's own opening caveat about what
+an anomaly count does and does not cover. `DebtClampDiagnostic`: zero ceiling hits, zero negative-debt
+turns and zero runaway-guard hits, before and after. `CreditRatingAnchorCheck`: unchanged at 5/6, Poland's
+known expected failure.
+
+One tool is now slightly approximate and it is worth knowing: `DebtClampDiagnostic` reconstructs an
+"unclamped" debt as `previousDebt - budgetBalance` to detect clamp hits. With interest compounding within
+a period that reconstruction is no longer exact. It is a diagnostic rather than a gate, and its clamp-hit
+counts were zero in both runs, so nothing rests on it today.
+
 ## Per-Partner Tariff Overrides
 A player-settable tariff override per trade partner, extending `TradeSystem`/`TradePartner` rather
 than building a new mechanic alongside the existing `BaseTariffRate`/`TariffRateChange` lever:

@@ -16,6 +16,12 @@ namespace PoliSim.EditorTools
     /// Phase 1 covers Sectors and Infrastructure. Both should come out EXACT rather than merely inside
     /// tolerance, because both translations were chosen to be algebraically equivalent rather than
     /// approximately so — a residual above float noise means a constant took the wrong shape.
+    ///
+    /// **Phase 3 is the first section where a residual is EXPECTED rather than suspicious**, and reading
+    /// it as a bug would be the mistake. Its flows are exact by construction (121 × flow/121), but the
+    /// daily path charges interest against a debt stock that is itself moving daily and re-reads that
+    /// stock through GetFiscalReactionMultiplier — a within-period feedback loop the turn form could not
+    /// have had. A small drift is that loop; a LARGE one means a component took the wrong shape.
     /// </summary>
     public static class AggregationEquivalenceCheck
     {
@@ -120,7 +126,70 @@ namespace PoliSim.EditorTools
             passed += Compare("PrisonPopulationRate", ce.State.PrisonPopulationRate, cf.State.PrisonPopulationRate) ? 1 : 0;
             passed += Compare("BusinessConfidence (crime drift)", ce.State.BusinessConfidence, cf.State.BusinessConfidence) ? 1 : 0;
 
-            Debug.Log($"=== Phases 1-2 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% ===");
+            // --- PHASE 3: the money resolution ---------------------------------------------------------
+            // Unlike Phases 1-2 this one is NOT exact by construction, and is not expected to be. The
+            // daily path recharges interest against a debt stock that is itself moving daily, and
+            // GetFiscalReactionMultiplier re-reads the debt ratio each day - a within-period feedback loop
+            // the turn form structurally could not have. That drift is the thing being measured here, so
+            // both paths are given the IDENTICAL plan and an identical SWF return, leaving the feedback as
+            // the only difference between them.
+            //
+            // Two countries, deliberately: Sweden owns a sovereign wealth fund (so the contribute/earn/
+            // clamp/draw sequence is exercised) and Germany does not (so a failure can be attributed to
+            // the plain revenue/spending/debt path rather than to the fund).
+            foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany })
+            {
+                var turnGo = new GameObject($"AggEq_Turn_{id}");
+                var dailyGo = new GameObject($"AggEq_Daily_{id}");
+                World turnWorld = WorldFactory.CreateDefault();
+                World dailyWorld = WorldFactory.CreateDefault();
+                SimulationManager turnSim = turnGo.AddComponent<SimulationManager>();
+                SimulationManager dailySim = dailyGo.AddComponent<SimulationManager>();
+                turnSim.SetWorld(turnWorld);
+                dailySim.SetWorld(dailyWorld);
+
+                Country turnCountry = turnWorld.GetCountry(id);
+                Country dailyCountry = dailyWorld.GetCountry(id);
+
+                // The plan both paths spend, computed here rather than read out of either simulation, so
+                // neither can quietly be measured against its own answer. Every country except the USA
+                // uses the legacy baseline mechanic, so G is its structural share of GDP and Mandatory is
+                // zero; a flat 2% period return stands in for the random draw.
+                float governmentSpending = turnCountry.State.GDP * (turnCountry.GovernmentSpendingRate / 100f);
+                float mandatorySpending = 0f;
+                float swfPeriodReturn = turnCountry.SovereignWealthFund != null
+                    ? turnCountry.SovereignWealthFund.TotalAssets * 0.02f
+                    : 0f;
+
+                float turnBudgetBefore = turnCountry.State.Budget;
+                float dailyBudgetBefore = dailyCountry.State.Budget;
+
+                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, mandatorySpending, swfPeriodReturn);
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
+                {
+                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, mandatorySpending, swfPeriodReturn);
+                }
+
+                // The DEBT STOCK and the BUDGET BALANCE, not the Budget level: Budget is a running total
+                // whose seeded starting value both paths share, so comparing it directly would divide the
+                // difference by a number neither path produced and flatter the result.
+                total += 2;
+                passed += Compare($"{id}.GovernmentDebt", turnCountry.State.GovernmentDebt, dailyCountry.State.GovernmentDebt) ? 1 : 0;
+                passed += Compare($"{id}.BudgetBalance",
+                    turnCountry.State.Budget - turnBudgetBefore, dailyCountry.State.Budget - dailyBudgetBefore) ? 1 : 0;
+
+                if (turnCountry.SovereignWealthFund != null)
+                {
+                    total++;
+                    passed += Compare($"{id}.SwfTotalAssets",
+                        turnCountry.SovereignWealthFund.TotalAssets, dailyCountry.SovereignWealthFund.TotalAssets) ? 1 : 0;
+                }
+
+                Object.DestroyImmediate(turnGo);
+                Object.DestroyImmediate(dailyGo);
+            }
+
+            Debug.Log($"=== Phases 1-3 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% ===");
             EditorApplication.Exit(passed == total ? 0 : 1);
         }
 

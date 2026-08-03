@@ -94,15 +94,21 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// Applies this turn's market return to the fund: each asset class's share of TotalAssets
+        /// Draws this period's market return for the fund: each asset class's share of TotalAssets
         /// (via SovereignWealthFund.GetNormalizedWeight - the player's own Asset Class Mix sliders,
         /// so a more equity-heavy mix genuinely earns more on average and swings harder either way)
-        /// earns its own randomly-drawn return, summed and added directly to TotalAssets. Returns the
-        /// total dollar return (positive OR NEGATIVE) so SimulationManager can report it as this
-        /// turn's fiscal income figure - a real down turn is a real, reported revenue shortfall, not
-        /// silently floored to zero.
+        /// earns its own randomly-drawn return, summed into one total dollar figure (positive OR
+        /// NEGATIVE) so SimulationManager can report it as this period's fiscal income figure - a real
+        /// down period is a real, reported revenue shortfall, not silently floored to zero.
+        ///
+        /// CONTINUOUS TIME PHASE 3: this used to be ApplyReturns, and applied the return to TotalAssets
+        /// itself. It no longer does. The draw happens ONCE at a turn boundary and SimulationManager
+        /// accrues 1/DaysPerTurn of it per day, so the fund's balance drifts instead of jumping - and the
+        /// zero floor moved with it, into the daily step that now owns every write to TotalAssets.
+        /// Drawing daily instead was rejected: 121x the RNG, every recorded baseline invalidated, and no
+        /// modelling gain, since the draw's granularity is not what the migration is about.
         /// </summary>
-        public static float ApplyReturns(SovereignWealthFund fund)
+        public static float DrawPeriodReturn(SovereignWealthFund fund)
         {
             float totalReturn = 0f;
             foreach (SovereignWealthAssetClass assetClass in AssetClasses)
@@ -111,7 +117,6 @@ namespace PoliSim.Simulation
                 totalReturn += share * (GetRandomReturnPercent(assetClass) / 100f);
             }
 
-            fund.TotalAssets = Mathf.Max(0f, fund.TotalAssets + totalReturn);
             return totalReturn;
         }
 

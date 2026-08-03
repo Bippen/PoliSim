@@ -450,21 +450,47 @@ Optional refinement (Open Question, not required for a first pass): real reporti
   anomaly out of ~1,670, traced to the known confidence-path residual. **The `PerDayReversion` helper now
   exists and is shared**, so Phases 3–5 reuse one proven conversion rather than deriving their own.
 
-  ⚠ **HANDOFF FOR PHASES 3–5.** The pattern is established and mechanical for anything shaped
+  ⚠ **HANDOFF FOR PHASES 4–5.** The pattern is established and mechanical for anything shaped
   `state.X += speed * (target − X)`: add a default `reversionSpeed` parameter, add a `…Daily` wrapper
   passing `PerDayReversion(turnSpeed)`, move the call from `AdvanceTurn` to `AdvanceDay` preserving
   order, leave `PreviewTurn` on the turn form, then extend `AggregationEquivalenceCheck`.
   **What is NOT mechanical, and is where the remaining risk lives:**
   - **Accumulating terms with no target** take the LINEAR transform, not the multiplicative one — see
     `ApplyCrimeEffects`. Every remaining phase has some.
-  - **Phase 3 is the fiscal engine**, which working-discipline rule 4 names as escalate-don't-decide.
-    Budget resolution is turn-shaped by nature (a budget passes on a date); converting *flows* while
-    leaving *resolution* on the turn boundary is the likely split, and it is a design call.
+  - **A constant that is a POLICY STANCE rather than a flow may need to stay frozen for the period** —
+    Phase 3's fiscal reaction multiplier is the worked example, and the only Phase 1–3 constant that
+    failed the bar on its first shape. Ask of every remaining constant: is this a quantity that flows,
+    or a decision that was taken? Decisions belong to the boundary that took them.
   - **Phase 4's `YearsPerTurn`** is a direct turn-length dependency and has produced two prior structural
     bugs; the roadmap's own instruction is a throwaway diagnostic BEFORE the matrix.
   - **Phase 5 is the core macro engine** and has the project's worst record for hidden instability. It is
     last on purpose and should start with full attention, not at the end of a long session.
-- **Phase 3**: Tax portfolio, Welfare, Spending categories, SWF (revenue/spending-critical, same seriousness as the original debt work).
+- **Phase 3: Tax portfolio, Welfare, Spending categories, SWF — the fiscal engine. ✅ DONE 2026-08-03.**
+  Part 1 (`42a499f`) moved `PovertyRate`; part 2 moved the money. Aggregation-equivalence 39/39, Phase 3's
+  own max drift 1.35% against a 3% bar; full matrix at 100 and 500 turns, same seed, like-for-like:
+  **25 of 30 combinations byte-identical**, 1629 → 1637 anomalies, and the only two categories that moved
+  at all are the two directly downstream of the debt path (DebtToGdp swings 139 → 145, credit-rating notch
+  moves 18 → 20) — Inflation, Unemployment and InterestRate counts are unchanged to the anomaly.
+  `DebtClampDiagnostic` reports zero ceiling hits, zero negative-debt turns and zero runaway-guard hits
+  before and after; `CreditRatingAnchorCheck` is unchanged at 5/6 with Poland's known expected failure.
+  Every country's 120-turn debt ends 1–5% lower, all in the same direction, which the interest change
+  below accounts for.
+
+  **What moved and what deliberately did not.** Revenue, unemployment benefits, welfare, interest, the
+  SWF's contribution/return/draw and the debt stock itself now accrue daily. The BUDGET RESOLUTION stays
+  on the boundary, because a budget passing is an event on a date rather than a flow — so a plan is
+  resolved at one boundary and executed over the following 121 days. That ordering is forced rather than
+  chosen, and its one player-visible consequence is worth stating: **a policy change's CASH effect now
+  lands one period after the boundary that made it.** Its effect on the GDP identity's G term does not
+  move, because that is Phase 5.
+
+  ⚠ **THE ONE CONSTANT THAT FAILED ITS FIRST SHAPE, and the lesson that generalises.** Recomputing
+  `GetFiscalReactionMultiplier` daily — the obvious "more continuous" choice — failed the bar outright
+  (Sweden 24.8% drift on budget balance, Germany 22.7%). Not a bug: `FiscalReactionSensitivity` is 1.5 and
+  one period moves a country's debt ratio ten points or more, so a multiplier re-reading that ratio daily
+  walks down its own surplus during the period it is supposed to be governing. Freezing it per period
+  passes at 0.45%/1.35% **and is the better model**, because the mechanism is a fiscal *stance* and a
+  stance is adopted when the budget is set. Full write-up in `CLAUDE.md`.
 - **Phase 4**: Demographics (its YearsPerTurn scaling is a direct dependency on turn-length — cannot start until the new day-length constant is threaded through correctly; use the same throwaway-diagnostic-before-full-matrix discipline that caught its two prior structural bugs).
 - **Phase 5**: The core macro engine — GDP identity, Okun's Law, Phillips Curve, interest rate transmission, Fiscal Reaction Function, debt dynamics. Highest risk, last on purpose — this system has the worst track record for hidden instability in the project. Do not start until every other phase has proven the methodology reliable.
 

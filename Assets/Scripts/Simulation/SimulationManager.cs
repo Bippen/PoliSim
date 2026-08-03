@@ -143,8 +143,7 @@ namespace PoliSim.Simulation
                     // preserved exactly from AdvanceTurn - OrganizedCrime and Corruption run BEFORE
                     // CrimeIndex, which reads that day's freshly-updated OrganizedCrimeIndex, and
                     // ApplyCrimeEffects runs after all three because it reads all of their gaps.
-                    // Phase 3, part 1: PovertyRate's reversion. The rest of Phase 3 - the money
-                    // resolution - is NOT here yet; see the roadmap handoff.
+                    // Phase 3, part 1: PovertyRate's reversion.
                     MacroSystem.ApplyPovertyRateDaily(country);
                     MacroSystem.ApplyLaborForceParticipationRateDaily(country);
                     MacroSystem.ApplyOrganizedCrimeIndexDaily(country);
@@ -152,6 +151,15 @@ namespace PoliSim.Simulation
                     MacroSystem.ApplyCrimeIndexDaily(country);
                     MacroSystem.ApplyCrimeEffectsDaily(country);
                     MacroSystem.ApplyPrisonPopulationRateDaily(country);
+
+                    // CONTINUOUS TIME PHASE 3, part 2: the money resolution. Revenue, benefits, welfare,
+                    // interest, the SWF's contribution/return/draw and the debt stock itself all move
+                    // daily now; only the BUDGET RESOLUTION that decides what to spend stays on the turn
+                    // boundary, because a budget passing is an event on a date rather than a flow.
+                    //
+                    // Placed last in the day so it charges interest against the debt every earlier
+                    // system has finished with, and reads the same GDP the rest of the day did.
+                    AccrueDailyFiscalFlows(country);
                 }
             }
 
@@ -283,7 +291,7 @@ namespace PoliSim.Simulation
         ///    reaches ~10,900 against a GDP near 1,200, so a single turn's equity swing could exceed 100%
         ///    of GDP — which is the whole of C4's "settled deficit ranges −135.5% to +170.8%" blocker.
         ///    A draw proportional to fund SIZE is smooth by construction.
-        /// 2. **DOUBLE-COUNTING.** `ApplyReturns` adds the return to `TotalAssets` *and* the same figure
+        /// 2. **DOUBLE-COUNTING.** The realised return was added to `TotalAssets` *and* the same figure
         ///    was then added to revenue — the fund kept it and the government spent it, so the money
         ///    existed twice. The contribution one line above is handled correctly (budget pays, fund
         ///    receives; money MOVES). The draw is now likewise withdrawn from the fund.
@@ -356,6 +364,101 @@ namespace PoliSim.Simulation
 
         private readonly Dictionary<CountryId, FiscalTurnReport> _lastFiscalReports = new Dictionary<CountryId, FiscalTurnReport>();
         private readonly Dictionary<CountryId, EconomicEvent> _lastEventsByCountry = new Dictionary<CountryId, EconomicEvent>();
+
+        /// <summary>
+        /// CONTINUOUS TIME PHASE 3: the fraction of a period-shaped flow that lands in one day.
+        ///
+        /// Translation shape #1, LINEAR. A budget flow is an accumulating quantity with no target to
+        /// revert toward, so the multiplicative form MacroSystem.PerDayReversion uses does not apply -
+        /// 121 payments of `flow/121` are exactly one period's payment, which is the whole translation.
+        /// Derived from DaysPerTurn rather than typed, like every other daily constant in this migration.
+        /// </summary>
+        private const float FiscalFlowPerDayFraction = 1f / DaysPerTurn;
+
+        /// <summary>
+        /// CONTINUOUS TIME PHASE 3: one country's in-flight fiscal period - the spending plan its
+        /// current 121 days are executing, plus the running sum of what those days have actually accrued.
+        ///
+        /// **This is the "NEW PER-COUNTRY STATE" the Phase 3 handoff named as the blocker**, and it
+        /// exists because the daily step cannot re-derive everything it needs. Tax revenue, unemployment
+        /// benefits, welfare cost, interest and the SWF contribution are all functions of persistent
+        /// country state, so AccrueDailyFiscalFlows recomputes each of them from scratch every day.
+        /// Government and Mandatory spending are NOT: for the five countries without a detailed
+        /// SpendingLines portfolio the discretionary figure comes from
+        /// PolicyDecision.TotalDiscretionarySpending, which exists only at a turn boundary and is
+        /// persisted nowhere else. ResolveSpendingForTurn's answer is stored here so the days that follow
+        /// can spend it.
+        ///
+        /// **A PLAN IS RESOLVED AT ONE BOUNDARY AND EXECUTED OVER THE NEXT 121 DAYS.** That ordering is
+        /// forced rather than chosen - the boundary that resolves a budget is 121 days of play before the
+        /// next one - and it is also what a budget is: a government passes it on a date and then spends
+        /// it. The consequence worth stating plainly is that a policy change's CASH effect now lands one
+        /// period after the boundary that made it, where it used to land instantly. Its effect on the GDP
+        /// identity's G term does NOT move - MacroSystem.ApplyNationalAccounts still reads the plan at the
+        /// boundary that resolved it - because the core macro engine is Phase 5, not this phase.
+        ///
+        /// **THE SWF RETURN IS DRAWN ONCE PER PERIOD AND ACCRUED DAILY** (decision recorded 2026-08-02 by
+        /// the Phase 3 part 1 commit, flagged for overrule and left standing here). Drawing daily would
+        /// consume 121x the RNG and invalidate every recorded baseline in the project, for no modelling
+        /// gain - the draw's granularity is not what this migration is about.
+        /// </summary>
+        private class FiscalPeriod
+        {
+            // THE PLAN - set by the boundary that opened this period, spent across its days.
+            public float PlannedGovernmentSpending;
+            public float PlannedMandatorySpending;
+            public float PlannedBaselineGovernmentSpending;
+            public float PlannedDiscretionarySpending;
+            public float PlannedSwfReturn;
+
+            /// <summary>
+            /// GetFiscalReactionMultiplier as it stood when this period opened, held FIXED for its whole
+            /// 121 days - and this is the one Phase 3 constant that is a modelling call rather than a
+            /// mechanical translation.
+            ///
+            /// **Recomputing it daily was tried first and FAILED the aggregation bar outright** (Sweden
+            /// 24.8% drift on budget balance, Germany 22.7%, against a 3% bar). The cause is not a bug:
+            /// FiscalReactionSensitivity is 1.5 and a single period moves a country's debt ratio by ten
+            /// points or more, so a multiplier that re-reads the ratio every day walks a long way down
+            /// its own surplus during the period it is supposed to be governing. The turn form could not
+            /// do this - its debt stock moved exactly once - so daily recomputation was not a finer
+            /// version of the validated model, it was a different one.
+            ///
+            /// Freezing it is also the more defensible reading of what the mechanism IS. Its own doc
+            /// comment describes "a country's own government modestly tightens... as debt rises above its
+            /// ComfortableDebtToGdpPercent anchor" - a fiscal STANCE, and a stance is adopted when the
+            /// budget is set, not re-derived every morning. The stance still responds fully to the debt
+            /// the country has actually accumulated; it does so at the boundary, which is where every
+            /// other budget decision in this game is made.
+            /// </summary>
+            public float PlannedFiscalReactionMultiplier;
+
+            // THE ACCRUAL - summed day by day, closed out into a FiscalTurnReport at the next boundary.
+            public float AccruedRevenue;
+            public float AccruedMandatorySpending;
+            public float AccruedUnemploymentBenefitCost;
+            public float AccruedInterestOnDebt;
+            public float AccruedWelfareCost;
+            public float AccruedSwfContribution;
+            public float AccruedSwfReturns;
+            public float AccruedTotalSpending;
+            public float AccruedBudgetBalance;
+
+            public void ResetAccrual()
+            {
+                AccruedRevenue = 0f;
+                AccruedMandatorySpending = 0f;
+                AccruedUnemploymentBenefitCost = 0f;
+                AccruedInterestOnDebt = 0f;
+                AccruedWelfareCost = 0f;
+                AccruedSwfContribution = 0f;
+                AccruedSwfReturns = 0f;
+                AccruedTotalSpending = 0f;
+                AccruedBudgetBalance = 0f;
+            }
+        }
+
+        private readonly Dictionary<CountryId, FiscalPeriod> _fiscalPeriods = new Dictionary<CountryId, FiscalPeriod>();
 
         /// <summary>
         /// Political Systems Overhaul Part A: cabinet decisions rolled but not yet resolved by a
@@ -1146,6 +1249,11 @@ namespace PoliSim.Simulation
         /// (inflation), and approval. <paramref name="tariffRevenue"/> was already collected (and
         /// already added to Budget) by TradeSystem earlier this same turn - it's threaded through
         /// only to record it on this turn's FiscalTurnReport, not applied again here.
+        ///
+        /// CONTINUOUS TIME PHASE 3: "fiscal policy" here no longer means moving money. The budget is
+        /// RESOLVED at this boundary and then EXECUTED daily by AccrueDailyFiscalFlows over the 121 days
+        /// that follow; what remains in this method is the resolution, the close-out of the period that
+        /// just ended, and everything downstream of them that is still turn-shaped.
         /// </summary>
         private void ApplyDomesticPolicy(Country country, PolicyDecision decision, float tariffRevenue)
         {
@@ -1178,48 +1286,54 @@ namespace PoliSim.Simulation
             MacroSystem.ApplySectorGrowthEffect(country);
             MacroSystem.ApplyWelfareProgramEffects(country);
 
-            float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
-            float interestOnDebt = GetInterestOnDebt(country);
-            float welfareCost = GetTotalWelfareCost(country);
+            // CONTINUOUS TIME PHASE 3: the money already moved, day by day, in AccrueDailyFiscalFlows.
+            // What is left at a boundary is what a boundary is actually for - CLOSING the period that
+            // just ended and RESOLVING the plan the next one executes. No cash changes hands here, and
+            // deliberately so: charging a period's flows here on top of 121 daily accruals is the
+            // double-count Phase 1 already had to reason about for infrastructure investment.
+            FiscalPeriod period = GetOrSeedFiscalPeriod(country);
 
-            float swfContribution = GetSwfContribution(country);
-            float swfReturns = 0f;
-            float swfDraw = 0f;
-            if (country.SovereignWealthFund != null)
-            {
-                country.SovereignWealthFund.TotalAssets += swfContribution;
-
-                // The fund still accrues its ACTUAL market return, volatile and possibly negative. That
-                // keeps the STOCK honest and is what the player is shown.
-                swfReturns = SovereignWealthFundSystem.ApplyReturns(country.SovereignWealthFund);
-                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
-                country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
-
-                // What reaches the BUDGET is the structural draw, not the realised return - and it is
-                // WITHDRAWN, so it moves rather than duplicating. Clamped to the fund's own balance for
-                // the same reason the emergency drawdown is: a fund cannot pay out what it does not hold.
-                swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction();
-                swfDraw = Mathf.Clamp(swfDraw, 0f, country.SovereignWealthFund.TotalAssets);
-                country.SovereignWealthFund.TotalAssets -= swfDraw;
-            }
-
-            float revenue = ApplyRevenueAndSpending(country, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out float totalSpendingThisTurn, out float budgetBalanceThisTurn);
-
+            // Every flow below is the SUM of this period's 121 daily accruals, not a single step's
+            // figure. BaselineGovernmentSpending/DiscretionarySpending are the decomposition of the plan
+            // those days were spending - read BEFORE the re-plan below overwrites it - so their sum still
+            // equals the government spending actually accrued, which is the property every existing
+            // caller of this report relies on.
+            //
+            // TariffRevenue is the exception and stays a turn figure: TradeSystem is not part of Phase 3
+            // and still collects once per boundary. Recording it as anything else would be a fiction.
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
-                Revenue = revenue,
-                BaselineGovernmentSpending = spendingResult.BaselineGovernmentSpending,
-                DiscretionarySpending = spendingResult.DiscretionarySpendingChangeThisTurn,
-                MandatorySpending = spendingResult.MandatorySpending,
-                UnemploymentBenefitCost = unemploymentBenefitCost,
-                InterestOnDebt = interestOnDebt,
+                Revenue = period.AccruedRevenue,
+                BaselineGovernmentSpending = period.PlannedBaselineGovernmentSpending,
+                DiscretionarySpending = period.PlannedDiscretionarySpending,
+                MandatorySpending = period.AccruedMandatorySpending,
+                UnemploymentBenefitCost = period.AccruedUnemploymentBenefitCost,
+                InterestOnDebt = period.AccruedInterestOnDebt,
                 TariffRevenue = tariffRevenue,
-                WelfareCost = welfareCost,
-                SwfContribution = swfContribution,
-                SwfReturns = swfReturns,
-                TotalSpending = totalSpendingThisTurn,
-                BudgetBalance = budgetBalanceThisTurn
+                WelfareCost = period.AccruedWelfareCost,
+                SwfContribution = period.AccruedSwfContribution,
+                SwfReturns = period.AccruedSwfReturns,
+                TotalSpending = period.AccruedTotalSpending,
+                BudgetBalance = period.AccruedBudgetBalance
             };
+
+            // Open the next period. The SWF return is drawn ONCE here and accrued daily - see
+            // FiscalPeriod's doc comment for that decision and why daily draws were rejected. The draw
+            // sits at the same point in ApplyDomesticPolicy the old ApplyReturns call did, so the
+            // SovereignWealthFund random stream still advances exactly once per country per turn.
+            period.ResetAccrual();
+            period.PlannedGovernmentSpending = spendingResult.GovernmentSpending;
+            period.PlannedMandatorySpending = spendingResult.MandatorySpending;
+            period.PlannedBaselineGovernmentSpending = spendingResult.BaselineGovernmentSpending;
+            period.PlannedDiscretionarySpending = spendingResult.DiscretionarySpendingChangeThisTurn;
+            period.PlannedSwfReturn = country.SovereignWealthFund != null
+                ? SovereignWealthFundSystem.DrawPeriodReturn(country.SovereignWealthFund)
+                : 0f;
+
+            // Read AFTER 121 days of accrual have finished moving the debt stock, so the stance the next
+            // period adopts responds to the debt the country actually ended this one with - the same
+            // instant the turn form read it, for the same reason.
+            period.PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
 
             MacroSystem.ApplyNationalAccounts(country, spendingResult.GovernmentSpending, interestRate);
             MacroSystem.ApplyPotentialGdpGrowth(country);
@@ -1757,7 +1871,7 @@ namespace PoliSim.Simulation
         /// MinSwfContributionRate), this same figure is negative, which ApplyRevenueAndSpending's
         /// plain sum already treats as a revenue offset rather than an expense - no separate
         /// withdrawal code path was needed. Whichever sign it has, TotalAssets is adjusted by exactly
-        /// this amount (see AdvanceTurn/PreviewTurn), so a drawdown correctly shrinks the fund by the
+        /// this amount (see AccrueDailyFiscalFlows/PreviewTurn), so a drawdown correctly shrinks the fund by the
         /// withdrawn amount, clamped at 0 (see MaxSwfToGdpPercent's own clamp) - the fund can't be
         /// drawn down past empty.
         /// </summary>
@@ -2304,6 +2418,167 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// This country's in-flight fiscal period, seeded on first use.
+        ///
+        /// **The seed is not a formality.** Day 1 of a new game arrives 121 days BEFORE the first
+        /// AdvanceTurn, so no plan has been resolved yet and without one every country would spend
+        /// nothing at all for its opening third of a year. It is derived directly from the portfolio the
+        /// country was seeded with, and deliberately WITHOUT calling ResolveSpendingForTurn: that method
+        /// is not idempotent - it applies a period of spending growth and demographic pressure - so
+        /// calling it here would charge the world an extra turn of both before the game had advanced one.
+        ///
+        /// PlannedSwfReturn seeds to the fund's DETERMINISTIC average estimate rather than a random draw,
+        /// so no RNG is consumed before the first budget resolution. A draw here would shift the
+        /// SovereignWealthFund stream by one per country and invalidate every recorded baseline on day 1,
+        /// which is a large price for the opening period's return being drawn rather than expected.
+        /// </summary>
+        private FiscalPeriod GetOrSeedFiscalPeriod(Country country)
+        {
+            if (_fiscalPeriods.TryGetValue(country.Id, out FiscalPeriod existing))
+            {
+                return existing;
+            }
+
+            bool hasDetailedPortfolio = country.SpendingLines.Count > 0;
+            float governmentSpending = hasDetailedPortfolio
+                ? GetSpendingLineTotal(country, mandatory: false)
+                : GetBaselineGovernmentSpending(country);
+
+            var seeded = new FiscalPeriod
+            {
+                PlannedGovernmentSpending = governmentSpending,
+                PlannedMandatorySpending = hasDetailedPortfolio ? GetSpendingLineTotal(country, mandatory: true) : 0f,
+                // The opening period has no player decision behind it, so all of G is baseline and none
+                // of it is this period's discretionary CHANGE - the same split ResolveSpendingForTurn
+                // reports for a turn in which the player changed nothing.
+                PlannedBaselineGovernmentSpending = governmentSpending,
+                PlannedDiscretionarySpending = 0f,
+                PlannedSwfReturn = country.SovereignWealthFund != null
+                    ? SovereignWealthFundSystem.GetAverageReturnEstimate(country.SovereignWealthFund)
+                    : 0f,
+                PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country)
+            };
+
+            _fiscalPeriods[country.Id] = seeded;
+            return seeded;
+        }
+
+        /// <summary>
+        /// CONTINUOUS TIME PHASE 3: one day's money. This is the fiscal engine's daily step - the half of
+        /// Phase 3 the part-1 commit scoped and deliberately did not start.
+        ///
+        /// Every flow is one period's figure times FiscalFlowPerDayFraction (shape #1, linear). Tax
+        /// revenue, benefits, welfare, interest and the SWF contribution are all RECOMPUTED from live
+        /// country state each day rather than frozen at plan time. Today that only matters for interest -
+        /// GDP, unemployment and every policy rate are still turn-level until Phase 5, so nothing else
+        /// can move between two days - but it is the shape the rest of the migration needs, and interest
+        /// genuinely should be charged on the debt the country holds today rather than the debt it held
+        /// four months ago. That intra-period interest accrual is the ONE deliberate difference from the
+        /// turn form, and the aggregation-equivalence check exists to keep it inside tolerance.
+        ///
+        /// The fiscal reaction multiplier is the exception and is held fixed for the period; recomputing
+        /// it daily failed the bar by a wide margin, and FiscalPeriod records both the measurement and
+        /// why freezing it is the better model rather than merely the passing one.
+        ///
+        /// The SWF sequence is the turn form's, unchanged in ORDER: contribute, earn, clamp, then draw -
+        /// the structural draw comes out of post-return assets, not pre-. Only the size of each step
+        /// changed.
+        ///
+        /// Runs for every country including NPCs, exactly as the turn form did.
+        /// </summary>
+        private void AccrueDailyFiscalFlows(Country country)
+        {
+            FiscalPeriod period = GetOrSeedFiscalPeriod(country);
+            EconomyState state = country.State;
+
+            float governmentSpending = period.PlannedGovernmentSpending * FiscalFlowPerDayFraction;
+            float mandatorySpending = period.PlannedMandatorySpending * FiscalFlowPerDayFraction;
+            float unemploymentBenefitCost = GetUnemploymentBenefitCost(country) * FiscalFlowPerDayFraction;
+            float interestOnDebt = GetInterestOnDebt(country) * FiscalFlowPerDayFraction;
+            float welfareCost = GetTotalWelfareCost(country) * FiscalFlowPerDayFraction;
+            float swfContribution = GetSwfContribution(country) * FiscalFlowPerDayFraction;
+
+            float swfReturns = 0f;
+            float swfDraw = 0f;
+            if (country.SovereignWealthFund != null)
+            {
+                country.SovereignWealthFund.TotalAssets += swfContribution;
+
+                swfReturns = period.PlannedSwfReturn * FiscalFlowPerDayFraction;
+                country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfReturns);
+
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
+                country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+
+                swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction() * FiscalFlowPerDayFraction;
+                swfDraw = Mathf.Clamp(swfDraw, 0f, country.SovereignWealthFund.TotalAssets);
+                country.SovereignWealthFund.TotalAssets -= swfDraw;
+            }
+
+            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
+
+            period.AccruedRevenue += revenue;
+            period.AccruedMandatorySpending += mandatorySpending;
+            period.AccruedUnemploymentBenefitCost += unemploymentBenefitCost;
+            period.AccruedInterestOnDebt += interestOnDebt;
+            period.AccruedWelfareCost += welfareCost;
+            period.AccruedSwfContribution += swfContribution;
+            period.AccruedSwfReturns += swfReturns;
+            period.AccruedTotalSpending += totalSpending;
+            period.AccruedBudgetBalance += budgetBalance;
+        }
+
+        /// <summary>
+        /// CONTINUOUS TIME PHASE 3 VALIDATION HOOK - the money resolution EXACTLY as AdvanceTurn applied
+        /// it before this phase: one whole period's flows, in one step, against a caller-supplied plan.
+        ///
+        /// Kept rather than deleted because it IS the aggregation-equivalence bar - the already-validated
+        /// turn-level answer that 121 daily accruals have to land within tolerance of. Nothing in the
+        /// simulation loop calls it; its only caller is AggregationEquivalenceCheck.
+        /// </summary>
+        public void ApplyPeriodFiscalStepForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn)
+        {
+            EconomyState state = country.State;
+            float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
+            float interestOnDebt = GetInterestOnDebt(country);
+            float welfareCost = GetTotalWelfareCost(country);
+            float swfContribution = GetSwfContribution(country);
+
+            float swfDraw = 0f;
+            if (country.SovereignWealthFund != null)
+            {
+                country.SovereignWealthFund.TotalAssets += swfContribution;
+                country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfPeriodReturn);
+
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
+                country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+
+                swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction();
+                swfDraw = Mathf.Clamp(swfDraw, 0f, country.SovereignWealthFund.TotalAssets);
+                country.SovereignWealthFund.TotalAssets -= swfDraw;
+            }
+
+            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out _, out _);
+        }
+
+        /// <summary>
+        /// CONTINUOUS TIME PHASE 3 VALIDATION HOOK - installs an explicit plan and runs exactly one day of
+        /// the REAL production accrual (AccrueDailyFiscalFlows), so AggregationEquivalenceCheck can drive
+        /// 121 of them against the turn-shaped step above with both paths spending a plan it chose.
+        ///
+        /// It delegates rather than reproducing the daily maths on purpose: a validation path that
+        /// re-implements what it validates can pass while the shipped code is wrong.
+        /// </summary>
+        public void AccrueDayForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn)
+        {
+            FiscalPeriod period = GetOrSeedFiscalPeriod(country);
+            period.PlannedGovernmentSpending = governmentSpending;
+            period.PlannedMandatorySpending = mandatorySpending;
+            period.PlannedSwfReturn = swfPeriodReturn;
+            AccrueDailyFiscalFlows(country);
+        }
+
+        /// <summary>
         /// Government revenue is GetTotalTaxRevenue's theoretical figure scaled down by the country's
         /// CollectionEfficiency (enforcement quality/informal economy/evasion - see Country's doc
         /// comment), nudged by the Finance/Treasury Cabinet minister's passive competence bias if one
@@ -2321,12 +2596,26 @@ namespace PoliSim.Simulation
         /// MacroSystem's national accounts G term). A deficit adds to GovernmentDebt, a surplus
         /// reduces it, hard-clamped to a sane debt-to-GDP range. Returns the actual (post-efficiency,
         /// post-reaction) revenue so the caller can record it on this turn's FiscalTurnReport.
+        ///
+        /// CONTINUOUS TIME PHASE 3: every spending figure is passed IN, so the caller decides whether it
+        /// is handing over a whole period's or one day's. Revenue is the exception - it is computed here,
+        /// from the country's own portfolio - so <paramref name="revenuePeriodFraction"/> is what tells
+        /// this method which of the two it is being asked for. It defaults to a whole period, which keeps
+        /// PreviewTurn (the turn form's remaining caller) reading exactly as it did.
+        ///
+        /// <paramref name="fiscalReactionMultiplierOverride"/> is the -1 sentinel by default (this file's
+        /// existing idiom for "unset" - see Country.BaseDebtInterestRateOverride), meaning "compute the
+        /// multiplier from the debt ratio right now", which is what the turn form always did. The daily
+        /// path passes the value its period opened with instead; see FiscalPeriod for why that one is
+        /// held fixed while every other component is recomputed daily.
         /// </summary>
-        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns, out float totalSpending, out float budgetBalance)
+        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns, out float totalSpending, out float budgetBalance, float revenuePeriodFraction = 1f, float fiscalReactionMultiplierOverride = -1f)
         {
             EconomyState state = country.State;
-            float theoreticalRevenue = GetTotalTaxRevenue(country);
-            float fiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
+            float theoreticalRevenue = GetTotalTaxRevenue(country) * revenuePeriodFraction;
+            float fiscalReactionMultiplier = fiscalReactionMultiplierOverride >= 0f
+                ? fiscalReactionMultiplierOverride
+                : GetFiscalReactionMultiplier(country);
             float financeTreasuryCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.FinanceTreasury);
             float effectiveCollectionEfficiency = Mathf.Clamp01(country.CollectionEfficiency + financeTreasuryCompetenceBias);
             // NOTE: `swfReturns` here is now the STRUCTURAL DRAW, not the realised market return - see
