@@ -475,8 +475,9 @@ If a step's own validation fails, fix it before moving to the next — never pro
       fade over everything, because IMGUI is on top) and then handed to the Canvas screen, or played
       entirely inside the Canvas screen after the hand-off.
 
-   *Residual risk, deliberately not closed: this was measured in the Editor Game View. Re-run the spike
-   against a built player before the architecture is locked — the harness is ready.*
+   ✅ **RESIDUAL RISK CLOSED 2026-08-03 — re-measured in a BUILT WINDOWS PLAYER, identical result.**
+   `outer=RED, band=GREEN, centre=GREEN` at 1600×900, byte-for-byte the Editor's answer. The hybrid no
+   longer rests on an Editor-only measurement, and the architecture can be locked.
 
    ### WHAT MUST NOT REGRESS
 

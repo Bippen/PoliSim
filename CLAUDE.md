@@ -1250,7 +1250,12 @@ which cannot draw its own control layers will still happily print a verdict abou
 rewritten version logs each canvas's mode, material, colour and world corners, and reports INCONCLUSIVE
 when no canvas drew, so the same false verdict cannot be produced silently again.
 
-*Residual: measured in the Editor Game View. Re-run against a built player before the architecture locks.*
+✅ **CONFIRMED IN A BUILT PLAYER, 2026-08-03 — the residual risk is closed.** `PlayerSpikeBuilder` builds
+a standalone Windows player containing only the spike; it ran at 1600×900 and produced
+`outer=RED, band=GREEN, centre=GREEN` — identical to the Editor. **The whole hybrid rested on an
+Editor-only measurement of a compositing order, which is exactly the kind of result that can differ in a
+build.** It does not. The player writes its verdict to a text file rather than only to the log, because a
+player log lands in a per-user AppData path the caller then has to go and find.
 
 ### 2. The font test — IMGUI carries more than expected, and the body face is where it breaks
 
