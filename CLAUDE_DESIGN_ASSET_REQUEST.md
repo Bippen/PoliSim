@@ -1,6 +1,8 @@
 # Claude Design asset request — PoliSim
 
-**Status: v2.0 VISUAL REDIRECTION — OPEN, and far larger than the four packs before it.**
+**Status: v2.0 VISUAL REDIRECTION — OPEN.**
+**Chrome pass 1 received, verified and imported 2026-08-03** (30 sprites + 7 SVG sources + palette,
+41/41 resolving through `Resources.Load`). **Pass 2 is outstanding — see §1's last subsection.**
 **Date:** 2026-08-03.
 **Supersedes:** `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`, `_UI_CHROME.md`, `_UI_CHROME_ADDENDUM.md` and
 `_MACRO.md` — all four fully delivered, imported and verified in production. Their contents are recorded
@@ -90,7 +92,7 @@ full-screen takeover is not.
 ### The eleven-hue requirement — a FLOOR, with evidence
 
 The game carries eleven system-area identity hues (Fiscal, Trade, Political, Welfare, Labor,
-CrimeJustice, Sectors, Infrastructure, SovereignWealth, Global, Neutral — hex values in §1.6). They
+CrimeJustice, Sectors, Infrastructure, SovereignWealth, Global, Neutral — hex values in §3.0). They
 propagate to tabs, cards, spines, tiles, countries, cabinet portfolios and icons.
 
 **Elias's decision (2026-08-03): keep all eleven, aged and desaturated into a period palette. No
@@ -177,21 +179,127 @@ standing/draft pair · draft track · decision card · badge/chip · portrait ·
 sub-category button · slider row · bill card · live-estimate block (**one shared renderer across five
 screens** — Labor, Crime & Justice, Sectors, Trade, and the annual budget bill) · speed button · sparkline.
 
-### What already exists — 96 sprites. DO NOT REDRAW.
+### What already exists — 125 sprites. DO NOT REDRAW.
+
+*Was 96 until chrome pass 1 landed on 2026-08-03. Re-derived from the filesystem on that date; **§6 says
+to re-derive rather than trust this number, and it meant it** — a count in prose is a cached value.*
 
 | Category | Count | Status |
 |---|---|---|
 | Stat icons (`icon_stat_*`, `icon_trend_*`, `badge_*`, `icon_release_marker`) | 43 | wired |
 | Area + nav icons (`icon_area_*` ×10, `icon_nav_*` ×4) | 14 | wired |
 | Portraits (9 cabinet + 7 Fed chair) | 16 | wired |
-| Chrome (buttons, panel, sliders, scrollbars) | 12 | 3 wired; 9 superseded by v2.0 |
+| **v2.0 chrome, pass 1** | **30** | **imported, resolving, not yet wired to any control** |
+| Chrome, pre-v2.0 | 11 | 3 wired; 8 superseded by pass 1 |
 | Background texture (`menu_pattern_tile`) | 1 | wired |
 | Country flags (`flag_country_*`) | 6 | wired |
 | Party emblems (`emblem_party_*`) | 4 | wired |
 
+*Pre-v2.0 chrome is 11 rather than 12 because pass 1's `ui_slider_track` took over that filename; the old
+sprite is superseded and its bytes remain in git history.*
+
 Reskinning any of these in the new idiom is in scope. **Inventing replacements for art that already
 exists is not.** `ui_button_disabled` is a special case: IMGUI has no disabled style state, so it becomes
 usable only once its screen is on Canvas.
+
+---
+
+## 1B. CHROME PASS 2 — OUTSTANDING REQUEST (2026-08-03)
+
+Pass 1 arrived complete against its own manifest: 30 PNGs, every one matching its stated dimensions,
+all alpha-correct, all 41 sprites in the folder resolving through `Resources.Load`. The 9-slice insets,
+the baked-shadow reasoning and the tint rule are all usable as delivered. **This is a short follow-up,
+not a rework.**
+
+Two components are **unaccounted for** — not delivered, and not listed under "Not in this pack (by
+design)" either, which is why they read as gaps rather than decisions.
+
+### 1B.1 Scrollbars — the significant one
+
+⚠ **Every data screen in the game scrolls. There are 16 scroll views**: the left column, all six tabs,
+both of the Budget screen's columns, and every Policy/Laws sub-screen. Without sprites they fall back to
+Unity's built-in grey scrollbars sitting against baked paper — **on the Budget screen, three of them at
+once, on the densest surface in the game.** It is the most visible way the illusion can break.
+
+Pass 1's own `ui_slider_track` / `ui_slider_knob` are the right family to derive from, but a scrollbar is
+a different control and IMGUI styles it separately.
+
+| file | role | notes |
+|---|---|---|
+| `ui_scrollbar_track_v` | vertical channel | 9-slice, stretches on Y only |
+| `ui_scrollbar_thumb_v` | vertical thumb | 9-slice, stretches on Y only |
+| `ui_scrollbar_track_h` | horizontal channel | 9-slice, stretches on X only |
+| `ui_scrollbar_thumb_h` | horizontal thumb | 9-slice, stretches on X only |
+
+- **Hover and pressed variants for the two thumbs** if the idiom wants them (`_hover`, `_pressed`). Tracks
+  need one state only.
+- ⚠ **IMGUI also draws scrollbar UP and DOWN BUTTONS from the skin.** Unity's defaults will show through
+  as grey arrows even once the track and thumb are replaced. Either supply them, or say explicitly that
+  they should be styled to nothing — **please make that call rather than leaving it, because "nothing" is
+  a legitimate answer here and silence is not.**
+- The channel reads best as recessed *into* the paper or desk rather than laid on top of it; the thumb is
+  the natural place for brass. That is a suggestion, not a spec.
+
+*The old chrome pack shipped four scrollbar sprites which pass 1 supersedes. Do not derive from them —
+they are the dark-dashboard idiom, and they were never wired.*
+
+### 1B.2 Badge / chip / pill
+
+`PoliSimWidgets.Badge` and `PoliSimTheme.Pill`. Five call sites, but far higher visual frequency than that
+suggests: **the signed delta pill rides on every stat tile**, and stat tiles fill the dashboard and the
+whole Statistics tab. `DecisionCard`'s urgency chip is the same shape.
+
+| file | role | colour |
+|---|---|---|
+| `ui_chip` | small 9-sliceable pill, text sits inside it | **WoA** — tinted per use |
+
+⚠ **This one is genuinely optional, and we would rather have your judgment than a sprite.** It works
+procedurally today (Unity 6's `GUI.DrawTexture` takes real corner radii, which is how `PoliSimTheme.Pill`
+draws it), so the question is whether a procedurally-rounded pill can sit on aged paper without looking
+like screen UI that wandered in. **If the answer is that it should not be a pill at all in this idiom —
+that a delta belongs as inked text, a rule, or a small stamp instead — say that and skip the sprite.**
+
+Two load-bearing constraints on whatever replaces it, both non-negotiable in FUNCTION however it looks:
+
+- **Direction-aware green/red.** A delta is coloured by whether the change is *good*, not by whether the
+  number rose. Falling unemployment is green. So the mark must be tintable, and legible in both.
+- **Amber means drafted-not-enacted**, and only that.
+
+### 1B.3 One question, because it changes what we build next
+
+The manifest is headed "UI chrome" and "Pass 1 of 1". Brief §3.3 also asked for the **Canvas path** —
+sprite sheets, prefab-shaped component specs with their states, transition timings — for the eight
+narrative screens (country selector, election results, Fed chair selection, cabinet decision, foreign
+policy meeting, bill vote, budget signing, interrupt banner). What arrived on that side is
+`ui_scrim_takeover` and its 180 ms timing.
+
+**Is "Pass 1 of 1" saying the chrome pack is complete in itself, or that no further pass is planned?** If
+the former, this is simply the next request and nothing is wrong. If the latter, the Canvas screens have
+chrome to reuse but no specification, and that work is blocked.
+
+### 1B.4 Three corrections and a missing document
+
+- ✅ **`menu_pattern_tile` is imported and wired.** The manifest's closing line says it is "still pending
+  import on your side (roadmap)". It is not — it resolves at 256×256 with wrap Repeat and draws the
+  country-selector background. The roadmap line you read was stale. **Recorded because it is the same
+  cached-status failure this document keeps catching, arriving from the other direction this time.**
+- ⚠ **The stamp SVGs specify Georgia**, which is a licensed Microsoft font. The delivered PNGs are raster
+  so nothing ships and there is no problem today — but the sources cannot be regenerated by anyone without
+  that font. **Please re-cut them in TeX Gyre Pagella**, which the game already ships (§1, typography) and
+  which is a Palatino clone rather than a Georgia one, so expect to re-space.
+- ⚠ **`ui_slider_track` collides by name with the old chrome pack's sprite.** Ours won and supersedes it,
+  which is correct — flagged only so the collision is not a surprise if you regenerate.
+- ❓ **The manifest cites `[B1]`, `[B5]`, `[B8]`, `[W1]` and `[W2]`** as though a companion document
+  exists. It is not in the zip. Those tags look like the "where Suzerain's approach would NOT work here"
+  analysis §1 asked for — **which is the part we most wanted.** Please resend it, in the pack.
+
+### 1B.5 Held, awaiting sign-off — not a request
+
+`polisim_palette.json` is imported but **no value is wired yet**. Its flagged decision is a real find and
+Elias's to make: draft amber and the Political area hue are literally the same hex today
+(`PoliSimTheme.Draft = Caution = #E0B341`, `SystemArea.Political = #E0B341`), so two load-bearing
+behaviours have been sharing a colour. The pack separates them. Nothing further is needed from Design on
+this; it is recorded here so the hold is visible rather than looking like an oversight.
 
 ---
 
@@ -202,9 +310,9 @@ usable only once its screen is on Canvas.
   pie wedges, compass dots. All procedural, per working-discipline item 10 — these render real tracked
   simulation data rather than a picture, and that is exactly what rule 10 protects. **Frames, plates and
   paper AROUND them are in scope; the data marks inside are not.**
-- **Any sprite already delivered.** **96** are in production — see the table in §1. Check
-  `Assets/Resources/Art/UI/` before producing anything. *(This bullet said 84 until 2026-08-03 and was
-  wrong; re-derive from the filesystem rather than trusting the number.)*
+- **Any sprite already delivered.** **125** are in production — see the table in §1. Check
+  `Assets/Resources/Art/UI/` before producing anything. *(This bullet said 84, then 96, both within two
+  days; re-derive from the filesystem rather than trusting the number.)*
 - **Typefaces.** Already chosen, open-licensed and imported: TeX Gyre Pagella (display + body) and
   Courier Prime (document artifacts). Do not propose or supply fonts.
 - **Cabinet portraits for Defense, Foreign Affairs and Education.** Genuinely needed eventually, and
@@ -369,7 +477,7 @@ evidence are both measured results, recorded in `CLAUDE.md`.
 ⚠ **Three figures in the previous version of this document were STALE, and each was believed accurate
 when written**, which is the point:
 
-- *"84 sprite files on disk"* — now 96, and it was already wrong before this survey.
+- *"84 sprite files on disk"* — then 96, now 125 after chrome pass 1. Wrong twice inside two days.
 - *"7 consolidated tabs"* — six since the 2026-08-01 Tax+Spending merge; the same stale count survived in
   two code comments until 2026-08-03.
 - *"Nothing outstanding"* — true of the request queue, and simultaneously false of the game: 10 delivered
