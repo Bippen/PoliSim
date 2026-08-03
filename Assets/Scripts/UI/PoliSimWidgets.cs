@@ -56,6 +56,20 @@ namespace PoliSim.UI
                 fontSize = Mathf.RoundToInt(PoliSimTheme.FontMicro * scale + 2f)
             };
             _mono.normal.textColor = PoliSimTheme.TextMuted;
+
+            // v2.0 typography. **This block closes a real gap.** The survey's font test assigned faces to
+            // GameController's 15 styles and every headline stat value on screen stayed in Unity's default
+            // - because these four styles are built HERE, from `GUI.skin.label`, and nothing at the call
+            // site can see them. Sized() derives from these four, so the face propagates to every widget
+            // variant from these assignments alone.
+            //
+            // `_mono` takes the DOCUMENT face rather than the body face: it is this file's meta/annotation
+            // style, the closest the widget set has to a printed-instrument voice. Everything else takes
+            // body. Null-safe via PoliSimTheme, so a missing font leaves Unity's default.
+            PoliSimTheme.WithBody(_label);
+            PoliSimTheme.WithBody(_value);
+            PoliSimTheme.WithBody(_body);
+            if (PoliSimTheme.Document != null) { _mono.font = PoliSimTheme.Document; }
         }
 
         private static GUIStyle Sized(GUIStyle basis, int unscaledSize, Color color, float scale, TextAnchor anchor = TextAnchor.MiddleLeft)

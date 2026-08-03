@@ -108,6 +108,112 @@ namespace PoliSim.UI
             (rgb & 0xFF) / 255f,
             1f);
 
+        // --- Typography (v2.0) --------------------------------------------------------------
+
+        /// <summary>
+        /// The three type roles, and the reason they live HERE rather than in whichever class happens to
+        /// build a style.
+        ///
+        /// **The v2.0 survey's font test assigned faces to GameController's 15 styles and every headline
+        /// stat value stayed in Unity's default font**, because <see cref="PoliSimWidgets"/> builds its own
+        /// styles from `GUI.skin.label` and is invisible from those call sites. A font owned by one screen
+        /// class can only ever reach that class. Owned here, it reaches anything that already reads a
+        /// design token — which is everything, by construction.
+        ///
+        /// **DISPLAY and BODY are the same humanist serif** (Elias's direction, 2026-08-03): humanist
+        /// serifs keep large counters and stay readable at 13–15px, so one family covers headers and body
+        /// without a second face and without a monospace's vertical cost.
+        ///
+        /// **DOCUMENT is a monospace and is RESERVED**, never ambient body text. It marks a genuine
+        /// document artifact — a bill, a printed bulletin, a formal instrument. That reservation is the
+        /// whole point: a face used everywhere signals nothing. The measured alternative was a 35–40%
+        /// vertical cost on the densest screens for a signal that had stopped meaning anything.
+        ///
+        /// Null-safe throughout, matching <see cref="IconLibrary"/>'s standing contract: a missing font
+        /// leaves `GUIStyle.font` null and Unity falls back to its built-in face, so a failed import
+        /// degrades the look instead of rendering nothing.
+        /// </summary>
+        private const string FontResourcesPath = "Art/UI/Fonts/";
+
+        /// <summary>
+        /// **TeX Gyre Pagella**, chosen over three other open candidates after capturing all seven screens
+        /// under each (2026-08-03). It is a metric-compatible Palatino clone, so it is the literal
+        /// fulfilment of the stated direction rather than an approximation of it — and it also won on the
+        /// two things the captures actually measured:
+        ///
+        /// - **It costs less width than Gentium Book Plus.** Gentium clipped "Sovereign Wealth Fund" in the
+        ///   Budget category rail, where Pagella fits it on two lines. Same string, same style, taller line
+        ///   box against a `fixedHeight` button.
+        /// - **Lining figures.** Vollkorn was eliminated on this alone: it sets old-style (text) figures, so
+        ///   "$29.0T" and "37,00%" render with x-height numerals that do not align in a column. In a game
+        ///   whose every screen is a table of numbers that is disqualifying, and it is invisible until you
+        ///   look at a real stat tile.
+        ///
+        /// Licensed under the GUST Font License (LPPL 1.3c) rather than OFL — free, redistributable, and
+        /// commercially usable. See ATTRIBUTION.md beside the font files.
+        /// </summary>
+        private const string DisplayFontDefault = "TeXGyrePagella-Bold";
+        private const string BodyFontDefault = "TeXGyrePagella-Regular";
+        private const string DocumentFontDefault = "CourierPrime-Regular";
+
+        private static Font _display, _body, _document;
+        private static bool _fontsResolved;
+
+        public static Font Display { get { ResolveFonts(); return _display; } }
+        public static Font Body { get { ResolveFonts(); return _body; } }
+        public static Font Document { get { ResolveFonts(); return _document; } }
+
+        /// <summary>
+        /// Loads the three faces once.
+        ///
+        /// `-fontfamily=&lt;name&gt;` overrides the serif for a run, so the candidate comparison captures a
+        /// real build of the real code rather than a mock-up. Same command-line-argument idiom
+        /// `SimulationTestRunner` already uses for `-seed=` and `-skipsimulationtestrunner`, and inert in
+        /// a shipped game, which is never launched with it.
+        /// </summary>
+        private static void ResolveFonts()
+        {
+            if (_fontsResolved)
+            {
+                return;
+            }
+
+            _fontsResolved = true;
+
+            string family = null;
+            foreach (string arg in System.Environment.GetCommandLineArgs())
+            {
+                if (arg.StartsWith("-fontfamily="))
+                {
+                    family = arg.Substring("-fontfamily=".Length);
+                }
+            }
+
+            string display = string.IsNullOrEmpty(family) ? DisplayFontDefault : family + "-Bold";
+            string body = string.IsNullOrEmpty(family) ? BodyFontDefault : family + "-Regular";
+
+            _display = Resources.Load<Font>(FontResourcesPath + display) ?? Resources.Load<Font>(FontResourcesPath + body);
+            _body = Resources.Load<Font>(FontResourcesPath + body);
+            _document = Resources.Load<Font>(FontResourcesPath + DocumentFontDefault);
+
+            Debug.Log($"PoliSimTheme fonts: display={(_display != null ? _display.name : "DEFAULT")} " +
+                $"body={(_body != null ? _body.name : "DEFAULT")} document={(_document != null ? _document.name : "DEFAULT")}");
+        }
+
+        /// <summary>Applies the body face to a style, or leaves Unity's default when the font is missing. A one-liner so no call site has to repeat the null check.</summary>
+        public static GUIStyle WithBody(GUIStyle style)
+        {
+            if (Body != null) { style.font = Body; }
+            return style;
+        }
+
+        /// <summary>The display-face equivalent of <see cref="WithBody"/>, for headers, tabs and banners.</summary>
+        public static GUIStyle WithDisplay(GUIStyle style)
+        {
+            if (Display != null) { style.font = Display; }
+            return style;
+        }
+
         // --- Primitives -------------------------------------------------------------------
 
         private static Texture2D _white;

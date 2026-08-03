@@ -948,6 +948,22 @@ namespace PoliSim.UI
             _gameOverStyle.normal.textColor = Color.red;
             _cardKindStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = false };
 
+            // v2.0 typography (Elias's direction, 2026-08-03): ONE humanist serif across headers and body,
+            // with the monospace reserved for genuine document artifacts and deliberately absent here -
+            // nothing on these screens is a printed instrument. The display face differs from the body
+            // face only in weight, so the distinction stays a matter of size and weight rather than of two
+            // competing families. PoliSimWidgets applies the same faces to its own styles; see
+            // PoliSimTheme for why the fonts are owned there rather than in this class.
+            PoliSimTheme.WithDisplay(_headerStyle);
+            PoliSimTheme.WithDisplay(_tabButtonStyle);
+            PoliSimTheme.WithDisplay(_eventBannerStyle);
+            PoliSimTheme.WithDisplay(_gameOverStyle);
+            PoliSimTheme.WithDisplay(_cardKindStyle);
+            PoliSimTheme.WithDisplay(_buttonStyle);
+
+            PoliSimTheme.WithBody(_labelStyle);
+            PoliSimTheme.WithBody(_boxStyle);
+
             _stylesInitialized = true;
         }
 
