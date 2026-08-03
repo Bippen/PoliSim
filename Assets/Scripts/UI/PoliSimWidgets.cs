@@ -72,6 +72,26 @@ namespace PoliSim.UI
             if (PoliSimTheme.Document != null) { _mono.font = PoliSimTheme.Document; }
         }
 
+        /// <summary>
+        /// The v2.0 plate sprite, or false when it is missing so the caller can fall back to the
+        /// procedural rounded card. Cached because a stat tile is drawn many times per frame and
+        /// `Resources.Load` does not cache the managed reference across calls.
+        /// </summary>
+        private static Texture2D _plate;
+        private static bool _plateResolved;
+
+        private static bool PlateSprite(out Texture2D plate)
+        {
+            if (!_plateResolved)
+            {
+                _plate = IconLibrary.GetChrome("ui_plate_tile");
+                _plateResolved = true;
+            }
+
+            plate = _plate;
+            return plate != null;
+        }
+
         private static GUIStyle Sized(GUIStyle basis, int unscaledSize, Color color, float scale, TextAnchor anchor = TextAnchor.MiddleLeft)
         {
             var s = new GUIStyle(basis)
@@ -176,7 +196,22 @@ namespace PoliSim.UI
         {
             EnsureStyles(scale);
 
-            PoliSimTheme.RoundedCard(rect, PoliSimTheme.Card, PoliSimTheme.Hairline, PoliSimTheme.RadiusCard * scale);
+            // v2.0: a stat tile is a printed plate. ui_plate_tile is 128x96 @2x, inset 14/14/14/18 - the
+            // bottom deeper for its baked shadow - so the @1x border is 7/7/7/9. The area keyline along
+            // the top edge stays: it is B9's colour key, drawn over the plate rather than replacing it.
+            //
+            // W2 from the direction doc lands here: this is the flattest surface in the game on purpose.
+            // Grain behind a figure that redraws every frame shimmers, so ui_grain_tile must never sit
+            // under a numeral plate.
+            if (!PlateSprite(out Texture2D plate))
+            {
+                PoliSimTheme.RoundedCard(rect, PoliSimTheme.Card, PoliSimTheme.Hairline, PoliSimTheme.RadiusCard * scale);
+            }
+            else
+            {
+                GUI.DrawTexture(rect, plate, ScaleMode.StretchToFill, true);
+            }
+
             PoliSimTheme.TopAccent(rect, area, 2f * scale);
 
             float padX = 17f * scale;
@@ -236,11 +271,24 @@ namespace PoliSim.UI
 
             if (!string.IsNullOrEmpty(delta))
             {
+                // ⚠ **THE DELTA IS NO LONGER A PILL, and that is a design ruling rather than a tidy-up.**
+                //
+                // Asked whether a chip sprite was wanted here, Design answered that it was not: *"on paper
+                // a delta is inked text, not a lozenge."* A rounded lozenge is screen-UI furniture that
+                // would sit on aged paper looking like it had wandered in from another program. So the
+                // figure is simply inked, left-aligned where the pill used to start.
+                //
+                // ui_chip / ui_chip_outline still ship and are still used - by Badge, for the printed
+                // markers (PRELIMINARY, REVISED, ACTION REQUIRED) where a chip is period-correct.
+                //
+                // B2 is untouched by this and must stay so: the ink is chosen by whether the change is
+                // GOOD, never by whether the number rose. `deltaIsGood` is the caller's judgment and this
+                // only renders it.
                 Color tone = deltaIsGood ? PoliSimTheme.Good : PoliSimTheme.Bad;
-                var deltaStyle = Sized(_mono, PoliSimTheme.FontBodySmall - 1, tone, scale, TextAnchor.MiddleCenter);
-                float w = deltaStyle.CalcSize(new GUIContent(delta)).x + 14f * scale;
+                var deltaStyle = Sized(_body, PoliSimTheme.FontBodySmall, tone, scale, TextAnchor.MiddleLeft);
+                deltaStyle.fontStyle = FontStyle.Bold;
+                float w = deltaStyle.CalcSize(new GUIContent(delta)).x + 6f * scale;
                 var pill = new Rect(x, y, w, 18f * scale);
-                PoliSimTheme.RoundedBox(pill, PoliSimTheme.Tint(tone, 0.14f), 7f * scale);
                 GUI.Label(pill, delta, deltaStyle);
 
                 if (!string.IsNullOrEmpty(subLabel))
@@ -432,10 +480,29 @@ namespace PoliSim.UI
         {
             EnsureStyles(scale);
 
+            // v2.0: a PRINTED CHIP - square-cornered, r=2px - not a rounded pill. This is the call site
+            // ui_chip was made for (REVISED, PRELIMINARY, ACTION REQUIRED, N/A); the signed delta on a
+            // stat tile deliberately is not, and is inked text instead. See StatTile.
+            //
+            // ui_chip is white-on-alpha, so it takes the tone directly. Two variants ship: solid for a
+            // stated fact, outline for a qualified one. Solid is the default here because Badge's existing
+            // callers are all statements rather than qualifications; the outline is available for the
+            // published/preliminary distinction (B6) when that gets its own pass.
             var style = Sized(_label, PoliSimTheme.FontLabel, tone, scale, TextAnchor.MiddleCenter);
             float w = style.CalcSize(new GUIContent(text)).x + 20f * scale;
             var box = new Rect(rect.x, rect.y, w, rect.height);
-            PoliSimTheme.RoundedBox(box, PoliSimTheme.Tint(tone, 0.14f), 9f * scale);
+
+            Texture2D chip = IconLibrary.GetChrome("ui_chip");
+            if (chip != null)
+            {
+                GUI.DrawTexture(box, chip, ScaleMode.StretchToFill, true, 0f, PoliSimTheme.Tint(tone, 0.85f), Vector4.zero, Vector4.zero);
+            }
+            else
+            {
+                PoliSimTheme.RoundedBox(box, PoliSimTheme.Tint(tone, 0.14f), 9f * scale);
+            }
+
+            style.normal.textColor = PoliSimTheme.Hex(0xF2EADB);
             GUI.Label(box, text, style);
             return w;
         }

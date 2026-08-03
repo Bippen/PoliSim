@@ -539,7 +539,10 @@ namespace PoliSim.UI
         // Master Sequence step 5e, Phase C batch 2: decision-card chrome. Fill sits slightly lighter
         // than the app background so a card reads as raised without a border, matching PoliSimTheme's
         // own Card token rather than inventing a second card color for this one screen.
-        private static readonly Color AreaCardFill = new Color(0.16f, 0.17f, 0.20f);
+        // v2.0: a card is a sheet of paper, not a dark panel. Tinting the paper sprite by the old
+        // near-black fill would have multiplied it down to mud - the sprite carries its own colour now, so
+        // this is white, i.e. "leave the paper as authored".
+        private static readonly Color AreaCardFill = Color.white;
         private const int AreaCardCornerRadius = 9;
         private const int AreaCardPadding = 12;
         private const int AreaCardSpineWidth = 8;
@@ -779,7 +782,9 @@ namespace PoliSim.UI
             }
 
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
+            // v2.0: the desk. Everything the UI draws is furniture standing on it, so this is the one
+            // surface that stayed dark when the theme inverted.
+            camera.backgroundColor = PoliSimTheme.Desk;
         }
 
         private void OnGUI()
@@ -843,7 +848,9 @@ namespace PoliSim.UI
 
             if (!budgetFullScreen)
             {
-            GUILayout.BeginVertical(GUILayout.Width(leftColumnWidth));
+            // v2.0: the left column stands on paper like every other panel. Without a sheet under it its
+            // banner, dashboard headings and preview text were ink on bare desk - present, and unreadable.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(leftColumnWidth));
 
             // Continuous Time Migration Phase 0: the calendar/speed control panel replaces the old
             // Advance Turn button in this same pinned-outside-scroll-view slot, for the same reason -
@@ -964,7 +971,146 @@ namespace PoliSim.UI
             PoliSimTheme.WithBody(_labelStyle);
             PoliSimTheme.WithBody(_boxStyle);
 
+            // v2.0: ink on paper. Every style above derives from GUI.skin, whose text colour was authored
+            // for a dark ground and is now unreadable, so each one is re-inked here rather than left to
+            // whatever the skin happened to carry.
+            foreach (GUIStyle inked in new[] { _headerStyle, _labelStyle, _boxStyle, _tabButtonStyle, _cardKindStyle })
+            {
+                inked.normal.textColor = PoliSimTheme.TextPrimary;
+                inked.hover.textColor = PoliSimTheme.TextPrimary;
+                inked.active.textColor = PoliSimTheme.TextPrimary;
+                inked.focused.textColor = PoliSimTheme.TextPrimary;
+            }
+
+            // The two banners keep their own emphatic inks rather than the ramp - they exist to be
+            // noticed. Amber for a pending interrupt, brick for game over.
+            _eventBannerStyle.normal.textColor = PoliSimTheme.Draft;
+            _gameOverStyle.normal.textColor = PoliSimTheme.Bad;
+
+            StyleScrollbars();
+            StyleSliders();
+            StyleBoxAsPaper(_boxStyle);
+
             _stylesInitialized = true;
+        }
+
+        /// <summary>
+        /// v2.0: `_boxStyle` is the container every tab wraps its content in, and it inherited
+        /// `GUI.skin.box` — which on a dark ground was a faint panel and on the desk is nothing at all.
+        ///
+        /// **This is the other half of the theme inversion, and leaving it out was visible immediately:**
+        /// the ink ramp had already been applied, so every label inside these containers was rendering
+        /// dark-on-dark and had effectively vanished. Ink needs paper under it; the two changes are one
+        /// change and cannot ship apart.
+        /// </summary>
+        private static void StyleBoxAsPaper(GUIStyle box)
+        {
+            Texture2D paper = IconLibrary.GetChrome("ui_panel_paper");
+            if (paper == null)
+            {
+                return;
+            }
+
+            box.normal.background = paper;
+            box.border = new RectOffset(22, 22, 22, 28);
+            box.padding = new RectOffset(14, 14, 12, 14);
+        }
+
+        /// <summary>
+        /// v2.0: the scrollbars, restyled globally on `GUI.skin` rather than per call site.
+        ///
+        /// **There are 16 scroll views in this game** — the left column, all six tabs, both Budget
+        /// columns, every Policy/Laws sub-screen — and IMGUI takes their appearance from the skin, not
+        /// from any argument a caller passes. One place is therefore both the cheapest fix and the only
+        /// consistent one. Left unstyled they render Unity's grey against baked paper, three at once on
+        /// the Budget screen; Design called that the most visible way the illusion breaks.
+        ///
+        /// ⚠ **THE ARROW BUTTONS TAKE TWO CHANGES, NOT ONE.** Design's call was that a ledger has no arrow
+        /// furniture, so they are styled to a fully transparent 4×4 sprite — but pointing the style at a
+        /// blank sprite is NOT enough on its own. IMGUI still reserves the button's fixed size, leaving a
+        /// gap at each end of every track. `fixedWidth`/`fixedHeight` must be zeroed AND the margins
+        /// cleared as well. Both, or the furniture is invisible and still occupying space.
+        ///
+        /// Null-safe throughout: a missing sprite leaves that piece of the skin as Unity supplied it.
+        /// </summary>
+        private static void StyleScrollbars()
+        {
+            ApplyScrollbarPiece(GUI.skin.verticalScrollbar, "ui_scrollbar_track_v", null, null, new RectOffset(4, 4, 7, 7));
+            ApplyScrollbarPiece(GUI.skin.verticalScrollbarThumb, "ui_scrollbar_thumb_v", "ui_scrollbar_thumb_v_hover", "ui_scrollbar_thumb_v_pressed", new RectOffset(4, 4, 8, 8));
+            ApplyScrollbarPiece(GUI.skin.horizontalScrollbar, "ui_scrollbar_track_h", null, null, new RectOffset(7, 7, 4, 4));
+            ApplyScrollbarPiece(GUI.skin.horizontalScrollbarThumb, "ui_scrollbar_thumb_h", "ui_scrollbar_thumb_h_hover", "ui_scrollbar_thumb_h_pressed", new RectOffset(8, 8, 4, 4));
+
+            foreach (GUIStyle arrow in new[]
+            {
+                GUI.skin.verticalScrollbarUpButton, GUI.skin.verticalScrollbarDownButton,
+                GUI.skin.horizontalScrollbarLeftButton, GUI.skin.horizontalScrollbarRightButton
+            })
+            {
+                Texture2D none = IconLibrary.GetChrome("ui_scrollbar_button_none");
+                if (none != null)
+                {
+                    arrow.normal.background = none;
+                    arrow.hover.background = none;
+                    arrow.active.background = none;
+                }
+
+                arrow.fixedWidth = 0f;
+                arrow.fixedHeight = 0f;
+                arrow.margin = new RectOffset(0, 0, 0, 0);
+                arrow.padding = new RectOffset(0, 0, 0, 0);
+                arrow.border = new RectOffset(0, 0, 0, 0);
+            }
+        }
+
+        /// <summary>
+        /// v2.0: the policy sliders — 31 of them across the game, and the single control the player
+        /// actually manipulates. Styled on `_sliderStyle`/`_sliderThumbStyle` rather than on `GUI.skin`
+        /// because those two are what every call site passes.
+        ///
+        /// The knob is a fixed-size brass piece and must never stretch, so its border stays zero; the
+        /// track is the only part that 9-slices. `ui_slider_tick` ships for the standing-value mark and is
+        /// deliberately NOT wired here — it is drawn per row against a real value, which is call-site
+        /// work rather than a style.
+        /// </summary>
+        /// <remarks>
+        /// Instance, not static, unlike its two neighbours — those write to `GUI.skin` or to a style
+        /// handed in, this one writes to `_sliderStyle`/`_sliderThumbStyle`, which are fields on the
+        /// controller.
+        /// </remarks>
+        private void StyleSliders()
+        {
+            Texture2D track = IconLibrary.GetChrome("ui_slider_track");
+            if (track != null)
+            {
+                _sliderStyle.normal.background = track;
+                _sliderStyle.border = new RectOffset(5, 5, 2, 6);
+            }
+
+            Texture2D knob = IconLibrary.GetChrome("ui_slider_knob");
+            Texture2D knobDisabled = IconLibrary.GetChrome("ui_slider_knob_disabled");
+            if (knob != null)
+            {
+                _sliderThumbStyle.normal.background = knob;
+                _sliderThumbStyle.hover.background = knob;
+                _sliderThumbStyle.active.background = knob;
+                _sliderThumbStyle.focused.background = knobDisabled ?? knob;
+                _sliderThumbStyle.border = new RectOffset(0, 0, 0, 0);
+            }
+        }
+
+        private static void ApplyScrollbarPiece(GUIStyle style, string normalName, string hoverName, string pressedName, RectOffset border)
+        {
+            Texture2D normal = IconLibrary.GetChrome(normalName);
+            if (normal == null)
+            {
+                return;
+            }
+
+            style.normal.background = normal;
+            style.hover.background = IconLibrary.GetChrome(hoverName) ?? normal;
+            style.active.background = IconLibrary.GetChrome(pressedName) ?? normal;
+            style.focused.background = normal;
+            style.border = border;
         }
 
         /// <summary>Re-derives every style's font size/control size from the current screen size every frame (cheap field writes, no allocation) so a live window resize stays legible instead of squinting-small.</summary>
@@ -1118,7 +1264,10 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawDraftLabel(string text, bool changed)
         {
-            DrawColoredLabel(text, _labelStyle, changed ? PoliSimTheme.Draft : Color.white);
+            // v2.0: the unchanged case was `Color.white`, which was the ink ramp's own colour on a dark
+            // ground and is near-invisible on paper. Amber still means drafted-not-enacted (B1) and is
+            // untouched; only the "no change" colour moved, from white to ink.
+            DrawColoredLabel(text, _labelStyle, changed ? PoliSimTheme.Draft : PoliSimTheme.TextPrimary);
         }
 
         /// <summary>Overload for the common "Standing: X, Draft: Y" pair, so each call site states the two values it compares instead of hand-rolling an approximate-equality test 20 times over.</summary>
@@ -1128,12 +1277,25 @@ namespace PoliSim.UI
         }
 
         /// <summary>One-off tinted label (GUI.color multiplies the style's own text color, restored immediately after) - used for every signed-delta readout in the UI so its color always reflects UiPalette.GetDeltaColor rather than a hand-picked one-time color.</summary>
+        /// <summary>
+        /// ⚠ **v2.0: THIS NOW SETS THE COLOUR RATHER THAN MULTIPLYING BY IT, and the change was forced.**
+        ///
+        /// It used to set `GUI.color`, which MULTIPLIES the style's own text colour. That worked while the
+        /// ramp was near-white — white × hue = hue. The theme is ink on paper now, so the ramp is
+        /// `#2B2620`, and multiplying near-black by a hue produces near-black: every coloured header in
+        /// the game would have rendered as an indistinguishable dark smudge.
+        ///
+        /// Setting the style's `textColor` for the duration of the call keeps the FUNCTION the callers
+        /// depend on — "render this label in this colour", which is how the amber draft cue and every area
+        /// header work — while making the colour absolute, which is what a paper ground requires. Restored
+        /// immediately, because these styles are shared across the whole frame.
+        /// </summary>
         private static void DrawColoredLabel(string text, GUIStyle style, Color color)
         {
-            Color previous = GUI.color;
-            GUI.color = color;
+            Color previous = style.normal.textColor;
+            style.normal.textColor = color;
             GUILayout.Label(text, style);
-            GUI.color = previous;
+            style.normal.textColor = previous;
         }
 
         /// <summary>Above the dashboard: a game-over banner takes priority (the game has effectively ended), otherwise the current turn's event (if any) as "BREAKING: ...".</summary>

@@ -49,9 +49,13 @@ namespace PoliSim.UI
         }
 
         // --- Signed-change convention: the ONE green/red pair every delta in the UI uses. ---
-        public static readonly Color PositiveChangeColor = new Color(0.35f, 0.85f, 0.45f, 1f);
-        public static readonly Color NegativeChangeColor = new Color(0.90f, 0.35f, 0.35f, 1f);
-        public static readonly Color NeutralChangeColor = new Color(0.75f, 0.75f, 0.75f, 1f);
+        //
+        // v2.0: the aged inks. Screen green and screen red do not survive being printed on paper, and
+        // these still satisfy the behaviour that matters (B2) — a delta is coloured by whether the change
+        // is GOOD, never by whether the number rose. See GetDeltaColor.
+        public static readonly Color PositiveChangeColor = PoliSimTheme.Hex(0x3E8A5F);
+        public static readonly Color NegativeChangeColor = PoliSimTheme.Hex(0x9C4238);
+        public static readonly Color NeutralChangeColor = PoliSimTheme.Hex(0x5D564A);
 
         /// <summary>
         /// The de-emphasised icon tint - white at 60% alpha, for an icon that is present but not the
@@ -67,7 +71,12 @@ namespace PoliSim.UI
         /// direction" and belongs to the signed-change convention above. These look similar and mean
         /// entirely different things.
         /// </summary>
-        public static readonly Color MutedIconTint = new Color(1f, 1f, 1f, 0.6f);
+        /// <remarks>
+        /// v2.0: was white @60%, which was correct against a dark ground and is INVISIBLE on paper. It is
+        /// now faint ink at the same alpha. The white-on-alpha authoring note above still holds and is the
+        /// reason this is a tint at all — only the ground it sits on changed.
+        /// </remarks>
+        public static readonly Color MutedIconTint = new Color(0x5D / 255f, 0x56 / 255f, 0x4A / 255f, 0.75f);
 
         /// <summary>Below this absolute value/percent, a change reads as "no real change" (neutral gray) rather than an arbitrarily-signed green/red on essentially noise.</summary>
         private const float NeutralChangeThreshold = 0.05f;
@@ -93,17 +102,23 @@ namespace PoliSim.UI
         // --- System-area hues: one distinct family per part of the game, spread around the wheel so no two are confusable, and none of them overlap the pure green/red reserved for the change convention above. ---
         private static readonly Dictionary<SystemArea, Color> AreaColors = new Dictionary<SystemArea, Color>
         {
-            { SystemArea.Neutral, new Color(0.55f, 0.55f, 0.55f) },
-            { SystemArea.Fiscal, new Color(0.29f, 0.50f, 0.84f) },        // blue - tax & spending
-            { SystemArea.Trade, new Color(0.18f, 0.75f, 0.75f) },         // teal - tariffs & trade partners
-            { SystemArea.Political, new Color(0.84f, 0.65f, 0.18f) },     // gold - approval, elections, Federal Reserve
-            { SystemArea.Welfare, new Color(0.84f, 0.29f, 0.62f) },       // magenta - welfare programs
-            { SystemArea.Labor, new Color(0.84f, 0.48f, 0.18f) },         // orange - labor market policy
-            { SystemArea.CrimeJustice, new Color(0.65f, 0.29f, 0.29f) },  // brick - crime & justice
-            { SystemArea.Sectors, new Color(0.48f, 0.29f, 0.84f) },       // indigo - economic sectors
-            { SystemArea.Infrastructure, new Color(0.29f, 0.56f, 0.65f) },// slate - infrastructure
-            { SystemArea.SovereignWealth, new Color(0.65f, 0.56f, 0.18f) },// bronze - sovereign wealth fund
-            { SystemArea.Global, new Color(0.42f, 0.68f, 0.88f) }         // sky blue - world map overview
+            // v2.0 AGED INKS (2026-08-03), from polisim_palette.json. Derived by Design in oklch:
+            // chroma −45%, lightness normalised to 0.48–0.62, 3–6° warm drift. **All eleven survive** —
+            // Elias's decision, and the evidence for it is that these same values key CHARTS (the
+            // hemicycle legend, pie wedges, the political compass). Reducing the palette would not
+            // simplify anything; it would break a legend. This is the ON-PAPER set; PoliSimTheme carries
+            // the same eleven at desk weight for the one surface still on a dark ground.
+            { SystemArea.Neutral, PoliSimTheme.Hex(0x6D7480) },
+            { SystemArea.Fiscal, PoliSimTheme.Hex(0x35619E) },          // blue - tax & spending
+            { SystemArea.Trade, PoliSimTheme.Hex(0x23867B) },           // teal - tariffs & trade partners
+            { SystemArea.Political, PoliSimTheme.Hex(0xA8842E) },       // ochre - approval, elections, Federal Reserve
+            { SystemArea.Welfare, PoliSimTheme.Hex(0xA84E7B) },         // magenta - welfare programs
+            { SystemArea.Labor, PoliSimTheme.Hex(0xB5622F) },           // orange - labor market policy
+            { SystemArea.CrimeJustice, PoliSimTheme.Hex(0x9C4238) },    // brick - crime & justice
+            { SystemArea.Sectors, PoliSimTheme.Hex(0x62579F) },         // indigo - economic sectors
+            { SystemArea.Infrastructure, PoliSimTheme.Hex(0x3E7480) },  // slate - infrastructure
+            { SystemArea.SovereignWealth, PoliSimTheme.Hex(0x85643A) }, // bronze - sovereign wealth fund
+            { SystemArea.Global, PoliSimTheme.Hex(0x5C87A8) }           // sky blue - world map overview
         };
 
         public static Color GetAreaColor(SystemArea area) => AreaColors[area];
@@ -316,12 +331,25 @@ namespace PoliSim.UI
             // machine where that reimport hasn't happened yet, this would throw INSIDE OnGUI and take the
             // entire UI down rather than degrading one button. Caught and cached as a miss so the fallback
             // path is used from then on, without re-throwing (and re-logging) every frame.
+            // ⚠ **THIS CATCH WAS WRONG AND THE COMMENT ABOVE DESCRIBES A DEFENCE THAT DID NOT WORK.**
+            //
+            // It caught `UnityException`. Unity throws `ArgumentException` for a non-readable texture
+            // ("texture data is either not readable, corrupted or does not exist"), and ArgumentException
+            // does not derive from UnityException — so the guard written specifically to stop this from
+            // taking the UI down let it through. It went unnoticed for as long as every chrome sprite
+            // happened to be imported readable; the v2.0 pack arrived with `isReadable: 0` (copied from the
+            // ICON meta template, which is correct for icons and wrong for chrome) and the whole interface
+            // rendered as an empty desk.
+            //
+            // Catching Exception rather than a named type is deliberate here: this runs inside OnGUI,
+            // where ANY escape blanks the entire frame, and the fallback is a complete, already-working
+            // flat-colour path. There is no failure mode where re-throwing serves the player better.
             Color[] pixels;
             try
             {
                 pixels = source.GetPixels();
             }
-            catch (UnityException)
+            catch (System.Exception)
             {
                 Debug.LogWarning($"UiPalette: chrome sprite '{source.name}' is not readable, falling back to flat button backgrounds. Re-import it with Read/Write enabled to get the sprite chrome.");
                 UnreadableChrome.Add(source);
@@ -371,24 +399,32 @@ namespace PoliSim.UI
             Color baseColor = GetButtonBaseColor(kind, area);
             var style = new GUIStyle(baseStyle);
 
-            Texture2D normalSprite = IconLibrary.GetChrome("ui_button_normal");
-            Texture2D hoverSprite = IconLibrary.GetChrome("ui_button_hover");
-            Texture2D pressedSprite = IconLibrary.GetChrome("ui_button_pressed");
+            // v2.0: brass for the emphatic kinds, paper for the rest, and the pack's own disabled plate.
+            // These sprites are REAL-COLOUR paper furniture rather than white-on-alpha, so they are drawn
+            // untinted for Neutral/TabUnselected and only lightly tinted where an area hue must read
+            // through - the opposite of the old chrome pack, which was tintable by construction.
+            bool emphatic = kind == ButtonKind.Primary || kind == ButtonKind.TabSelected || kind == ButtonKind.Implement || kind == ButtonKind.Remove;
+            Texture2D normalSprite = IconLibrary.GetChrome(emphatic ? "ui_btn_brass" : "ui_btn_paper");
+            Texture2D pressedSprite = normalSprite;
+            Texture2D hoverSprite = normalSprite;
 
             style.normal.background = GetTintedChrome(normalSprite, baseColor) ?? GetSolidTexture(baseColor);
-            style.hover.background = GetTintedChrome(hoverSprite, baseColor) ?? GetSolidTexture(Lighten(baseColor, 0.2f));
-            style.active.background = GetTintedChrome(pressedSprite, baseColor) ?? GetSolidTexture(Darken(baseColor, 0.25f));
+            style.hover.background = GetTintedChrome(hoverSprite, Lighten(baseColor, 0.12f)) ?? GetSolidTexture(Lighten(baseColor, 0.2f));
+            style.active.background = GetTintedChrome(pressedSprite, Darken(baseColor, 0.14f)) ?? GetSolidTexture(Darken(baseColor, 0.25f));
             style.focused.background = style.normal.background;
 
             if (normalSprite != null)
             {
-                // Hover/pressed differentiation now comes from the sprites' own alpha (the hover sprite is
-                // brighter, the pressed one inset), so all three states share ONE base colour rather than
-                // the old lighten/darken pair. Doing both would double the effect.
-                style.border = new RectOffset(ChromeButtonBorder, ChromeButtonBorder, ChromeButtonBorder, ChromeButtonBorder);
+                // The pack's buttons are 128x64 @2x with a 20/20/20/28 inset - the bottom edge is deeper
+                // because the drop shadow is baked into it. GUIStyle.border is at @1x, so these are half
+                // the manifest's figures. IMGUI reads the slice from the STYLE and never from the texture
+                // asset's own spriteBorder field, which is why this cannot be set in the importer.
+                style.border = new RectOffset(10, 10, 10, 14);
             }
 
-            Color textColor = kind == ButtonKind.TabSelected ? Color.white : Lighten(Color.white, 0f);
+            // Ink on paper, cream on brass. The old value was white for everything, which was right on a
+            // dark ground and unreadable on a paper button.
+            Color textColor = emphatic ? PoliSimTheme.Hex(0xF2EADB) : PoliSimTheme.TextPrimary;
             style.normal.textColor = textColor;
             style.hover.textColor = textColor;
             style.active.textColor = textColor;
@@ -502,13 +538,23 @@ namespace PoliSim.UI
                 return cached;
             }
 
+            // v2.0: the paper sheet. ui_panel_paper is 512x512 @2x with a 44/44/44/56 inset - the bottom
+            // is deeper because the drop shadow is baked into that edge, so an even border would stretch
+            // the shadow up the sides. Halved here because GUIStyle.border is @1x.
+            //
+            // Falls back to the procedural rounded rect when the sprite is missing, per IconLibrary's
+            // standing null contract: a failed import degrades the look rather than producing an
+            // invisible card.
+            Texture2D paper = IconLibrary.GetChrome("ui_panel_paper");
             var style = new GUIStyle
             {
-                border = new RectOffset(cornerRadius + 1, cornerRadius + 1, cornerRadius + 1, cornerRadius + 1),
+                border = paper != null
+                    ? new RectOffset(22, 22, 22, 28)
+                    : new RectOffset(cornerRadius + 1, cornerRadius + 1, cornerRadius + 1, cornerRadius + 1),
                 padding = new RectOffset(padding + spineWidth, padding, padding, padding),
                 margin = new RectOffset(0, 0, 0, 0)
             };
-            style.normal.background = GetRoundedTexture(fill, cornerRadius);
+            style.normal.background = GetTintedChrome(paper, fill) ?? GetRoundedTexture(fill, cornerRadius);
 
             CardStyleCache[key] = style;
             return style;
@@ -538,12 +584,15 @@ namespace PoliSim.UI
                 case ButtonKind.Primary:
                     return GetAreaColor(SystemArea.Political);
                 case ButtonKind.Tab:
-                    return Darken(GetAreaColor(area), 0.35f);
+                    // v2.0: an unselected folder tab is off-stock, NOT a darkened hue. The hue survives on
+                    // its spine (ui_tab_spine), which is where per-area identity lives now - darkening the
+                    // whole tab was a dark-theme device and turns paper muddy.
+                    return PoliSimTheme.StockOff;
                 case ButtonKind.TabSelected:
                     return GetAreaColor(area);
                 case ButtonKind.Neutral:
                 default:
-                    return new Color(0.32f, 0.32f, 0.34f);
+                    return PoliSimTheme.Card;
             }
         }
     }

@@ -12,29 +12,53 @@ namespace PoliSim.UI
     /// </summary>
     public static class PoliSimTheme
     {
-        // --- Surfaces (dark theme). Layered darkest -> lightest as depth increases. ---
-        public static readonly Color AppBackground = Hex(0x0B0E12);
-        public static readonly Color Card = Hex(0x151920);
-        public static readonly Color CardInset = Hex(0x12161D);
-        public static readonly Color ModalBackground = Hex(0x11151B);
-        public static readonly Color Scrim = new Color(0.024f, 0.031f, 0.043f, 0.78f);
-        public static readonly Color Hairline = new Color(1f, 1f, 1f, 0.06f);
-        public static readonly Color HairlineStrong = new Color(1f, 1f, 1f, 0.14f);
-        public static readonly Color BarTrack = new Color(1f, 1f, 1f, 0.06f);
-        public static readonly Color ThresholdMarker = new Color(0.914f, 0.929f, 0.953f, 0.85f);
+        // --- Surfaces (v2.0 "ministry fresh print"). Values from polisim_palette.json. ---
+        //
+        // ⚠ THE THEME INVERTED. Until 2026-08-03 this was a dark stack and text was light-on-dark; it is
+        // now INK ON PAPER, and the desk is the only dark surface left. Anything that assumed a dark
+        // ground - a light text colour, a white-tinted overlay, an alpha hairline meant to lift off black -
+        // is wrong now rather than merely off-palette.
+        public static readonly Color Desk = Hex(0x241B10);
+        public static readonly Color DeskDeep = Hex(0x14100B);
+        public static readonly Color AppBackground = Desk;
+        public static readonly Color Card = Hex(0xF0E7D8);        // paper
+        public static readonly Color CardInset = Hex(0xE7DCC4);   // plate
+        public static readonly Color Tile = Hex(0xEDE2CB);
+        public static readonly Color ModalBackground = Hex(0xF2EADB);
+        public static readonly Color Scrim = new Color(0.078f, 0.063f, 0.043f, 0.85f);
+        public static readonly Color Hairline = Hex(0xB7A98C);        // rule
+        public static readonly Color HairlineStrong = Hex(0x8A7A5C);  // ruleHeavy
+        public static readonly Color BarTrack = new Color(0.545f, 0.478f, 0.361f, 0.35f);
+        public static readonly Color ThresholdMarker = Hex(0x2B2620);
+        public static readonly Color Brass = Hex(0x9C8148);
+        public static readonly Color BrassLight = Hex(0xB3985E);
+        public static readonly Color BrassBorder = Hex(0x6F5A30);
+        public static readonly Color StockOff = Hex(0xB9A886);
+        public static readonly Color StockHover = Hex(0xC4B28E);
 
-        // --- Text ramp. Label is the smallest legible step at 1080p; never go below it. ---
-        public static readonly Color TextPrimary = Hex(0xE9EDF3);
-        public static readonly Color TextSecondary = Hex(0x9AA4B3);
-        public static readonly Color TextMuted = Hex(0x78849A);
+        // --- Text ramp: ink on paper. ---
+        public static readonly Color TextPrimary = Hex(0x2B2620);   // inkText
+        public static readonly Color TextSecondary = Hex(0x5D564A); // inkFaint
+        public static readonly Color TextMuted = Hex(0x7A7263);
+        /// <summary>Text sitting on the DESK rather than on paper - the interrupt banner, and only that.</summary>
+        public static readonly Color TextOnDesk = Hex(0xF0E7D8);
 
-        // --- Semantic states. Mapped onto UiPalette's existing change convention. ---
-        public static readonly Color Good = Hex(0x4EC98A);
-        public static readonly Color Caution = Hex(0xE0B341);
-        public static readonly Color Bad = Hex(0xC8534A);
-        public static readonly Color Neutral = Hex(0x8F9AAB);
+        // --- Semantic inks. ---
+        public static readonly Color Good = Hex(0x3E8A5F);
+        public static readonly Color Caution = Hex(0xBE8A00);
+        public static readonly Color Bad = Hex(0x9C4238);
+        public static readonly Color Neutral = Hex(0x6D7480);
 
-        /// <summary>Amber is reserved for "drafted but not enacted" — budget drafts, pending bills.</summary>
+        /// <summary>
+        /// Amber is reserved for "drafted but not enacted" — budget drafts, pending bills.
+        ///
+        /// ⚠ **IT IS NO LONGER THE SAME VALUE AS THE POLITICAL AREA HUE, and that separation is the whole
+        /// point.** Until 2026-08-03 `Draft`, `Caution` and `SystemArea.Political` were all `#E0B341` —
+        /// literally one hex serving two load-bearing behaviours, so on any Political-tinted surface
+        /// "drafted, not enacted" was indistinguishable from "this belongs to Politics". Design caught it
+        /// and split them: draft amber `#BE8A00`, Political ochre `#A8842E`. A pencil-amber draft mark can
+        /// no longer be read as a Politics legend key.
+        /// </summary>
         public static readonly Color Draft = Caution;
 
         // --- Geometry. All radii in unscaled px; multiply by the caller's UI scale. ---
@@ -73,20 +97,44 @@ namespace PoliSim.UI
         /// </summary>
         private static readonly Dictionary<UiPalette.SystemArea, Color> AreaAccents = new Dictionary<UiPalette.SystemArea, Color>
         {
-            { UiPalette.SystemArea.Neutral, Hex(0x8F9AAB) },
-            { UiPalette.SystemArea.Fiscal, Hex(0x4D8DF6) },
-            { UiPalette.SystemArea.Trade, Hex(0x1FB2A6) },
-            { UiPalette.SystemArea.Political, Hex(0xE0B341) },
-            { UiPalette.SystemArea.Welfare, Hex(0xD9569F) },
-            { UiPalette.SystemArea.Labor, Hex(0xEE7A3A) },
-            { UiPalette.SystemArea.CrimeJustice, Hex(0xC8534A) },
-            { UiPalette.SystemArea.Sectors, Hex(0x7A6BF0) },
-            { UiPalette.SystemArea.Infrastructure, Hex(0x4A93A8) },
-            { UiPalette.SystemArea.SovereignWealth, Hex(0xB08D4A) },
-            { UiPalette.SystemArea.Global, Hex(0x6BAEE0) }
+            { UiPalette.SystemArea.Neutral, Hex(0x6D7480) },
+            { UiPalette.SystemArea.Fiscal, Hex(0x35619E) },
+            { UiPalette.SystemArea.Trade, Hex(0x23867B) },
+            { UiPalette.SystemArea.Political, Hex(0xA8842E) },
+            { UiPalette.SystemArea.Welfare, Hex(0xA84E7B) },
+            { UiPalette.SystemArea.Labor, Hex(0xB5622F) },
+            { UiPalette.SystemArea.CrimeJustice, Hex(0x9C4238) },
+            { UiPalette.SystemArea.Sectors, Hex(0x62579F) },
+            { UiPalette.SystemArea.Infrastructure, Hex(0x3E7480) },
+            { UiPalette.SystemArea.SovereignWealth, Hex(0x85643A) },
+            { UiPalette.SystemArea.Global, Hex(0x5C87A8) }
+        };
+
+        /// <summary>
+        /// The same eleven hues at DESK weight — lighter, for the one class of surface that is still a
+        /// dark ground: `ui_banner_hold` and anything else desk-mounted. The ink set above would sink into
+        /// it. Kept as a separate table rather than derived, because these are authored values from
+        /// `polisim_palette.json`'s "lifted" set, not a computed lightening of the inks.
+        /// </summary>
+        private static readonly Dictionary<UiPalette.SystemArea, Color> AreaAccentsOnDesk = new Dictionary<UiPalette.SystemArea, Color>
+        {
+            { UiPalette.SystemArea.Neutral, Hex(0x9AA1AD) },
+            { UiPalette.SystemArea.Fiscal, Hex(0x7C9CC9) },
+            { UiPalette.SystemArea.Trade, Hex(0x5FA89E) },
+            { UiPalette.SystemArea.Political, Hex(0xC9A855) },
+            { UiPalette.SystemArea.Welfare, Hex(0xC27E9F) },
+            { UiPalette.SystemArea.Labor, Hex(0xC98A5E) },
+            { UiPalette.SystemArea.CrimeJustice, Hex(0xBC7168) },
+            { UiPalette.SystemArea.Sectors, Hex(0x9288C2) },
+            { UiPalette.SystemArea.Infrastructure, Hex(0x7BA3AE) },
+            { UiPalette.SystemArea.SovereignWealth, Hex(0xB0925F) },
+            { UiPalette.SystemArea.Global, Hex(0x8FAEC7) }
         };
 
         public static Color Accent(UiPalette.SystemArea area) => AreaAccents[area];
+
+        /// <summary>The desk-weight variant. See <see cref="AreaAccentsOnDesk"/>.</summary>
+        public static Color AccentOnDesk(UiPalette.SystemArea area) => AreaAccentsOnDesk[area];
 
         /// <summary>The same hue at card-tint strength — badge backgrounds, icon plates, decision-card washes.</summary>
         public static Color AccentWash(UiPalette.SystemArea area, float alpha = 0.13f)
