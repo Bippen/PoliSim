@@ -100,6 +100,43 @@ namespace PoliSim.UI
             return Load(ChromeResourcesPath + chromeName);
         }
 
+        private const string FlagResourcesPath = "Art/UI/Flags/";
+        private const string EmblemResourcesPath = "Art/UI/Emblems/";
+
+        /// <summary>
+        /// A country's national flag, by <see cref="PoliSim.Data.CountryId"/> - filename derived from the
+        /// enum, like every other art category here.
+        ///
+        /// ⚠ **THESE WERE DELIVERED, IMPORTED, AND THEN INVISIBLE FOR WEEKS.** The flags and the party
+        /// emblems both sat under `Assets/Art/UI/`, which is NOT under a `Resources/` folder, so
+        /// `Resources.Load` could never have found them - and nothing referenced them anyway, so nothing
+        /// ever failed. Found by the v2.0 UI survey (2026-08-03), which counted sprites on disk and
+        /// compared that against sprites the code can reach.
+        ///
+        /// **`DeliveredAssetCheck` passes on these and always did**, which is the part worth keeping:
+        /// that check asks *"did every delivered file land under `Assets/`"* and the answer was yes.
+        /// **A file existing under `Assets/` does not mean the game can load it.** `StatIconCoverageCheck`
+        /// is the check that asks the runtime question, and it only covers the 19 names the UI hard-codes.
+        /// Working-discipline rule 12 says a status describing the outside world needs an expiry; this is
+        /// the same lesson one layer in - **an asset's status has TWO parts, delivered and reachable, and
+        /// the project only had a check for the first.**
+        ///
+        /// **Not white-on-alpha, unlike every other category here.** Flags and emblems are authored in
+        /// their own real colours (the emblem SVGs carry `#E0B23C` gold and `#FFFFFF`), which is correct
+        /// for what they are, and means callers must NOT tint them the way `UiPalette.BuildButtonStyle`
+        /// tints the chrome pack or `DrawTintedIcon` tints an area icon.
+        /// </summary>
+        public static Texture2D GetFlag(PoliSim.Data.CountryId countryId)
+        {
+            return Load(FlagResourcesPath + "flag_country_" + countryId.ToString().ToLowerInvariant());
+        }
+
+        /// <summary>A party archetype's emblem, by <see cref="PoliSim.Data.PartyArchetype"/>. Same derivation, same delivered-but-unreachable history, and same "already coloured, do not tint" caveat as <see cref="GetFlag"/>.</summary>
+        public static Texture2D GetPartyEmblem(PoliSim.Data.PartyArchetype archetype)
+        {
+            return Load(EmblemResourcesPath + "emblem_party_" + archetype.ToString().ToLowerInvariant());
+        }
+
         private const string PortraitResourcesPath = "Art/UI/Portraits/";
 
         /// <summary>

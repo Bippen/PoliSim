@@ -187,22 +187,45 @@ debt interacts with `GetInterestOnDebt` creates either free money or a new asymm
 
 ## THE MASTER SEQUENCE — work this list top to bottom, do not skip ahead
 
-### ⚠ EXECUTION ORDER FOR ITEMS 6–8 CHANGED 2026-08-02 (Elias, delegated)
+### ⚠⚠ EXECUTION ORDER CHANGED AGAIN 2026-08-03 (Elias) — **v2.0 DISPLACES CONTINUOUS TIME**
 
 **The numbering below is deliberately NOT changed** — items 1–8 are referenced throughout this file and
 `CLAUDE.md`, and renumbering would break every reference. Only the order of work changes:
 
 | Work order | Item | Why |
 |---|---|---|
-| **1st** | **8 — save/load** | Already scoped and decided (serializer, three-layer scope, counting shim). Every crash or Editor restart currently destroys all state. And Phases 4–5 need heavy multi-turn validation that is painful without persistence |
-| **2nd** | **7 — Continuous Time Phases 1–5** | Must precede Round 4 |
-| **3rd** | **6 — Round 4** | Round 4 would add systems that Phases 1–5 must then convert to daily granularity — **doing the work twice** |
+| **1st** | **9 — v2.0 UI overhaul** | Elias's decision, 2026-08-03. A total visual redirection touches every screen; anything built first gets rebuilt |
+| **2nd** | **8 — save/load** | Already scoped and decided. Every crash or Editor restart still destroys all state |
+| **3rd** | **7 — Continuous Time Phases 4–5** | Phases 1–3 are DONE. **Deferred indefinitely behind v2.0 — see the consequence below** |
+| **4th** | **6 — Round 4** | Round 4 would add systems Phases 4–5 must then convert — **doing the work twice** |
 
-**The Round 4 reasoning is the load-bearing part, and it is item 6's own argument applied one level up.**
-Item 6 already says to scope it only once step 5 closes, so new work is built against the
-gated-legislation model from day one. The same logic applies to the daily-granularity conversion: build
-Round 4 against BOTH finished foundations, not one. *Item 6 also remains gated on step 5 closing — that
-dependency is unchanged.*
+⚠ **THE CONSEQUENCE, STATED PLAINLY: the game stays on 121-day turns for the whole of v2.0, and that is
+not a temporary state with a known end date.** Continuous Time Phases 4 and 5 are **deferred, not
+cancelled**. Until they land:
+
+- **A turn is 121 days and moves as one step.** Demographics (Phase 4) and the entire core macro engine —
+  GDP identity, Okun's Law, Phillips Curve, interest-rate transmission, the fiscal reaction function's
+  own transmission path (Phase 5) — all still resolve at the turn boundary, in one jump.
+- **Nothing breaks, and specifically Phase 0's automatic tick keeps working.** The calendar advances a day
+  at a time, `AdvanceDay` returns true on the boundary, the speed controls work, publications release on
+  their real schedules, credit ratings review on theirs, and Phases 1–3's systems (sectors,
+  infrastructure, labor market, crime & justice, poverty, and the whole money resolution) genuinely do
+  move daily. **The daily layer is real and half the simulation already lives in it.**
+- **So the honest description of the state we are shipping v2.0 on is a HYBRID SIMULATION**: a daily
+  calendar with daily fiscal and social systems, and a turn-shaped macro core underneath. A player
+  watching debt tick daily while GDP jumps every 121 days is seeing exactly that seam. **The v2.0 UI must
+  not present the macro figures as if they were continuous** — the published/live distinction already
+  carries most of this weight, and it should keep carrying it.
+- **Phase 4's and Phase 5's handoff notes stay live and unmodified** below. They are not stale; they are
+  waiting. The Phase 3 lesson (*a constant can be a DECISION rather than a FLOW*) is the most valuable
+  thing in them and must survive the wait.
+
+**Why v2.0 goes first, in Elias's framing:** a total visual redirection rewrites every draw method
+regardless of framework, so anything built before it gets built twice. That is item 6's own
+"don't-build-it-twice" argument applied one level further up — the same reasoning that put Phases 1–5
+ahead of Round 4 now puts v2.0 ahead of both.
+
+*Item 6 also remains gated on step 5 closing — that dependency is unchanged.*
 
 This is the one authoritative order, replacing whatever each original document separately suggested. It exists because Political Systems Overhaul Part B depends on Continuous Time Phase 0, and because building new Roadmap features or converting existing systems to daily granularity while Parliament's gating is mid-rollout would mean touching the same code for two different reasons at once — exactly the kind of overlap this project's discipline exists to avoid.
 
@@ -401,6 +424,81 @@ This is the one authoritative order, replacing whatever each original document s
 
 If a step's own validation fails, fix it before moving to the next — never proceed past a failing step to "make progress" on the next one.
 
+9. **NEW (2026-08-03) — v2.0 UI OVERHAUL. Elias's decision, and it is now FIRST in the work order.**
+   A total visual redirection to the Suzerain (Torpor Games) idiom: a 1950s-republic aesthetic built as
+   physical furniture — desk surfaces, paper documents, folders, ornate frames — with painted portraits,
+   textured backgrounds and full-screen focus for consequential moments. The current UI is a dark-mode
+   data dashboard. **This is a redirection, not a restyle**, and it displaces Continuous Time Phases 4–5
+   (see the execution-order block above for the consequence, which is stated there rather than here
+   because it changes what the SIMULATION is, not just what the UI looks like).
+
+   ### ARCHITECTURE — DECIDED 2026-08-03, HYBRID AT SCREEN GRANULARITY
+
+   Elias chose the hybrid after the architectural survey, on one specific finding: **the desk metaphor is
+   NOT continuous.** A data screen is *"looking at a document"*, not a document sliding around on a shared
+   desk. That is what makes the hybrid safe, and the reasoning is worth preserving because it is the whole
+   justification:
+
+   | | Renders in | Gets |
+   |---|---|---|
+   | **Narrative / consequential screens** | **Canvas** | Transitions, TextMeshPro, masks, effects |
+   | **Data-dense screens** | **IMGUI, restyled** | 9-slice frames, textures, a real font — no rewrite |
+
+   **Canvas**: country selector, election results, Fed chair selection, cabinet decisions, foreign policy
+   meetings, bill votes, the budget signing moment, the pending-interrupt banner.
+   **IMGUI**: Statistics, Budget line items, Policy/Laws tables, Demographics, and all seven renderers.
+
+   ⚠ **SCREEN GRANULARITY, NEVER ELEMENT GRANULARITY. This is the rule the architecture rests on.**
+   IMGUI composites as one flat rectangle, so **the IMGUI layer cannot be masked, animated, or PARTIALLY
+   occluded by Canvas elements**. A screen is therefore either a Canvas screen or an IMGUI screen — never
+   both with interleaved layering. **Any request that violates this silently is a request to migrate that
+   screen wholesale to Canvas, and should be recognised as such rather than hacked around.**
+
+   ⚠⚠ **THE RENDER ORDER IS NOT WHAT THE SURVEY ASSUMED. Measured 2026-08-03; full write-up in
+   `CLAUDE.md`.** The survey proposed ScreenSpaceCamera Canvas *below* → IMGUI → ScreenSpaceOverlay Canvas
+   *above*. The spike confirmed the first half and **disproved the second**:
+
+   | Layer | Measured |
+   |---|---|
+   | ScreenSpaceCamera Canvas | renders BELOW IMGUI ✅ as assumed |
+   | ScreenSpaceOverlay Canvas | **also renders BELOW IMGUI** ❌ — buried completely |
+
+   **There is no Canvas render mode that draws above OnGUI.** IMGUI is always topmost. Two consequences,
+   both load-bearing for how v2.0 gets built:
+
+   1. **A Canvas screen is only visible when the IMGUI layer is SUPPRESSED** — `GameController.OnGUI` must
+      early-return while a narrative screen is up. This is not a workaround; it is the screen-granularity
+      rule enforced by the renderer itself, which is the best possible outcome for a rule that would
+      otherwise rely on discipline.
+   2. **The survey's proposed transition — "a Canvas overlay fades in over the IMGUI screen" — is
+      impossible.** Transitions must instead be driven from the IMGUI side (an IMGUI full-screen scrim can
+      fade over everything, because IMGUI is on top) and then handed to the Canvas screen, or played
+      entirely inside the Canvas screen after the hand-off.
+
+   *Residual risk, deliberately not closed: this was measured in the Editor Game View. Re-run the spike
+   against a built player before the architecture is locked — the harness is ready.*
+
+   ### WHAT MUST NOT REGRESS
+
+   Eight load-bearing behaviours, each of which fixed a real defect, catalogued in full in `CLAUDE.md`.
+   The appearance may change completely; the FUNCTION may not. In brief: the amber draft cue; direction-
+   aware green/red (`GetDeltaColor`, keyed to *good*, not to *up*); the `MoneyUnit` formatter (a call site
+   must not be able to render currency without naming a unit); `MeasuredLabel`'s shrink-never-truncate;
+   stable control layout; the published/live distinction; per-area colour identity; and the
+   always-visible interrupt indicator.
+
+   ### OPEN, AND BLOCKING THE DESIGN BRIEF
+
+   1. **The eleven-hue question.** Eleven saturated `SystemArea` identity hues versus a muted period
+      palette — do the hues survive in aged/desaturated form, or does a non-colour carrier (icon,
+      typographic mark, paper stock, seal) replace them? **This is the hardest constraint in the
+      redirection**: two simultaneous cabinet decisions from different portfolios must remain
+      distinguishable at a glance, and that is a *function*, not a decoration.
+   2. **The font test result** — see `CLAUDE.md`.
+
+   Not blocking, but must be settled before art is commissioned: the three modals that render in TWO
+   places via `drawOwnFrame` each need both a framed standalone and an unframed embedded treatment.
+
 ---
 
 # PART ONE: Continuous Time Migration
@@ -438,6 +536,12 @@ Optional refinement (Open Question, not required for a first pass): real reporti
 ## Phase 0 — DONE (2026-07-30). See `COMPLETED.md`.
 
 ## Phases 1-5 — daily-granularity conversion (MASTER SEQUENCE STEP 7, safest-first)
+
+> ⏸ **PHASES 4 AND 5 ARE DEFERRED BEHIND v2.0 (Elias, 2026-08-03) — deferred, NOT cancelled.** Phases 1–3
+> are done and their daily systems are live. Until 4 and 5 land, demographics and the core macro engine
+> stay turn-shaped and the game runs a **hybrid simulation**: a daily calendar with daily fiscal and
+> social systems over a 121-day macro core. See the execution-order block at the top of this file for the
+> full consequence. **Everything below stays live and unmodified — these notes are waiting, not stale.**
 
 - **Phase 1: Sectors and Infrastructure. ✅ DONE 2026-08-02 (`321a10e`).** Aggregation-equivalence 28/28,
   max drift 0.0004% against a 3% bar; full matrix anomaly counts identical to the pre-phase baseline.

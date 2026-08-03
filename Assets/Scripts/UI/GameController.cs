@@ -695,6 +695,32 @@ namespace PoliSim.UI
                 {
                     SelectPlayerCountry(country.Id);
                 }
+
+                // The national flag, laid into the button's own left gutter. These sprites were delivered
+                // and imported weeks ago and had never once been drawn - see IconLibrary.GetFlag for why
+                // nothing ever failed. Drawn AFTER the button so it sits on top, and read from
+                // GetLastRect so it tracks whatever height RescaleStylesToScreen just gave the control.
+                //
+                // Not tinted: unlike the chrome pack and the area icons, a flag is authored in its own
+                // colours. Null-safe by IconLibrary's standing contract, so a missing file degrades to the
+                // plain coloured plate this screen has always shown.
+                //
+                // Placed in the gutter rather than reserved in the style, and that IS the weaker of the
+                // two options this project already knows about (see UiPalette.BuildCardStyle's note on art
+                // laid over a control that does not know it is there). It is safe HERE specifically: the
+                // button is 40% of the window wide with a short centred label, so the gutter is empty at
+                // every size the game runs at. It would not be safe on a narrow control.
+                Texture2D flag = IconLibrary.GetFlag(country.Id);
+                if (flag != null)
+                {
+                    Rect buttonRect = GUILayoutUtility.GetLastRect();
+                    float flagHeight = buttonRect.height * 0.5f;
+                    float flagWidth = flagHeight * 1.5f;
+                    GUI.DrawTexture(
+                        new Rect(buttonRect.x + flagHeight * 0.5f, buttonRect.y + (buttonRect.height - flagHeight) * 0.5f, flagWidth, flagHeight),
+                        flag, ScaleMode.ScaleToFit);
+                }
+
                 GUILayout.Space(10f);
             }
 
@@ -972,14 +998,20 @@ namespace PoliSim.UI
         /// Maps a consolidated top-level tab to the system area whose hue it should be tinted with -
         /// Phase A provisional choices only (no icons yet, color-only, same `GetTabArea`-style mapping
         /// the old 18-tab bar used), superseded by Phase B/C's real per-tab `icon_nav_*` treatment.
-        /// Four of the 7 don't have one dominant existing SystemArea (Statistics/Decisions/Demographics/
-        /// PolicyLaws each aggregate multiple old areas) - picked for visual DISTINCTNESS across all 7
+        /// Four of the 6 don't have one dominant existing SystemArea (Statistics/Decisions/Demographics/
+        /// PolicyLaws each aggregate multiple old areas) - picked for visual DISTINCTNESS across all 6
         /// tab buttons (the actual property "reuse the existing tab-bar mechanics" needs to preserve),
         /// not because any one is a uniquely "correct" fit: Statistics keeps Global (its dominant piece,
         /// World Map, already used it), Politics keeps Political (strong precedent - Parliament/Cabinet/
-        /// FedReserve all already used it), Tax/Spending keep Fiscal unchanged (same screen either way,
-        /// so sharing a hue is a feature, not a confusion). Decisions and Policy/Laws get two more
-        /// distinct existing hues (CrimeJustice, Sectors) that aren't already claimed above.
+        /// FedReserve all already used it), Budget keeps Fiscal unchanged. Decisions and Policy/Laws get
+        /// two more distinct existing hues (CrimeJustice, Sectors) that aren't already claimed above.
+        ///
+        /// **Said "7" until 2026-08-03**, and had been wrong since the 2026-08-01 Tax+Spending merge:
+        /// those two tabs became the single Budget tab (see ConsolidatedTab's own comment) and nothing
+        /// updated the counts here. Found by the v2.0 UI survey, which needed an exact screen inventory
+        /// and got a stale one from the code. Recorded rather than silently fixed, because it is the
+        /// same shape as working-discipline rule 12: **a comment carrying a COUNT ages badly, since the
+        /// change that invalidates it is never in the same place as the comment.**
         /// </summary>
         private static UiPalette.SystemArea GetConsolidatedTabArea(ConsolidatedTab tab)
         {
@@ -2535,15 +2567,17 @@ namespace PoliSim.UI
             float buttonWidth = availableWidth / ConsolidatedTabsPerRow;
 
             GUILayout.BeginHorizontal();
-            // Master Sequence step 5e, Phase C: all 7 tabs now carry their icon. The four icon_nav_*
-            // ones exist precisely because Statistics/Decisions/Demographics/Policy-Laws map to no
-            // single UiPalette.SystemArea; Tax, Spending and Politics instead reuse the existing area
-            // icons directly, exactly as the 5E asset manifest specified (see COMPLETED.md section 8)
-            // ("Tax/Spending/Politics tabs reuse the existing icon_area_fiscal/icon_area_political
-            // icons directly - no new art needed"). Tax and Spending deliberately share one icon:
-            // both are GetConsolidatedTabArea -> Fiscal, and both are two differently-labeled entry
-            // points into the SAME Budget Process screen, so a shared mark is honest rather than a
-            // collision - flagged to Elias rather than silently substituted for something else.
+            // Master Sequence step 5e, Phase C: all 6 tabs carry their icon. The four icon_nav_* ones
+            // exist precisely because Statistics/Decisions/Demographics/Policy-Laws map to no single
+            // UiPalette.SystemArea; Budget and Politics instead reuse the existing area icons directly,
+            // exactly as the 5E asset manifest specified (see COMPLETED.md section 8) ("Tax/Spending/
+            // Politics tabs reuse the existing icon_area_fiscal/icon_area_political icons directly - no
+            // new art needed").
+            //
+            // **Said "7 tabs", and described a Tax/Spending icon SHARE, until 2026-08-03.** Both were
+            // left behind by the 2026-08-01 merge that turned those two tabs into the single Budget tab -
+            // there is no longer any sharing to flag, because there is only one tab. Same stale-count
+            // failure as GetConsolidatedTabArea's own comment; see there for why it is worth naming.
             DrawConsolidatedTabButton("Statistics", ConsolidatedTab.Statistics, buttonWidth, "icon_nav_statistics");
             DrawConsolidatedTabButton("Decisions", ConsolidatedTab.Decisions, buttonWidth, "icon_nav_decisions");
             DrawConsolidatedTabButton("Demographics", ConsolidatedTab.Demographics, buttonWidth, "icon_nav_demographics");

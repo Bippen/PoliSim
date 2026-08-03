@@ -111,9 +111,41 @@ namespace PoliSim.UI
 
                 GUILayout.BeginHorizontal();
                 Rect swatchRect = GUILayoutUtility.GetRect(labelStyle.fontSize, labelStyle.fontSize, GUILayout.ExpandWidth(false));
+
+                // The party's own emblem, where a flat colour swatch used to be. These four sprites were
+                // delivered and imported weeks ago and had never once been drawn - see IconLibrary.GetFlag
+                // for the delivered-but-unreachable story they share with the country flags.
+                //
+                // **Worth noting for the v2.0 eleven-hue question**: this row now carries party identity as
+                // a MARK as well as a colour, which is exactly the substitution the redesign has to decide
+                // about. It is a live example rather than a proposal.
+                //
+                // ⚠ **THE SWATCH STAYS, AND THAT IS THE WHOLE POINT OF THIS BLOCK.** The emblem was first
+                // drawn INSTEAD of the swatch, which looked better and broke something real: the legend's
+                // colour is what keys each row to its own arc of seats in the chart above, and the emblems
+                // are authored in their own palette (gold, red, blue) that has no relationship to
+                // GetCategoricalColor's golden-angle hues. A legend whose colour does not match the chart
+                // it explains is worse than no emblem. Caught in the screenshot, not in review.
+                //
+                // So: swatch first (correspondence preserved), emblem beside it (identity added).
+                //
+                // **This is a small live answer to v2.0's eleven-hue question** - a mark and a colour can
+                // coexist and carry identity together. Whether the redesign keeps both, or drops the
+                // colour and lets the mark carry it alone, is exactly the open decision; what this proves
+                // is that dropping the colour is not free wherever a colour is also keying a chart.
+                //
+                // Untinted (the emblems are already coloured) and null-safe: a missing file simply leaves
+                // the swatch, which is what this legend has always drawn.
                 GUI.color = UiPalette.GetCategoricalColor(i);
                 GUI.DrawTexture(swatchRect, Texture2D.whiteTexture);
                 GUI.color = previousColor;
+
+                Texture2D emblem = IconLibrary.GetPartyEmblem(archetype);
+                if (emblem != null)
+                {
+                    Rect emblemRect = GUILayoutUtility.GetRect(labelStyle.fontSize, labelStyle.fontSize, GUILayout.ExpandWidth(false));
+                    GUI.DrawTexture(emblemRect, emblem, ScaleMode.ScaleToFit);
+                }
                 GUILayout.Label($"  {PartyArchetypeData.GetDisplayName(archetype)}: {count} seats ({percent:F0}%)", labelStyle);
                 GUILayout.EndHorizontal();
             }

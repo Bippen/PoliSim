@@ -1220,6 +1220,110 @@ One tool is now slightly approximate and it is worth knowing: `DebtClampDiagnost
 a period that reconstruction is no longer exact. It is a diagnostic rather than a gate, and its clamp-hit
 counts were zero in both runs, so nothing rests on it today.
 
+## v2.0 preparation — three measured findings and one live defect (2026-08-03)
+
+Four pieces of groundwork Elias ordered before the v2.0 design brief goes out. Each produced something
+that changes what the brief can say, which is why they ran first.
+
+### 1. The render-order spike — the survey's assumption was HALF WRONG
+
+`RenderOrderSpike` layers three full-bleed colours (ScreenSpaceCamera Canvas red / IMGUI green /
+ScreenSpaceOverlay Canvas blue) and reads three known pixels out of the captured frame. Result:
+
+| Layer | Assumed | Measured |
+|---|---|---|
+| ScreenSpaceCamera Canvas | below IMGUI | **below IMGUI** ✅ |
+| ScreenSpaceOverlay Canvas | ABOVE IMGUI | **below IMGUI** ❌ |
+
+**IMGUI is always topmost; no Canvas render mode draws above OnGUI.** The hybrid survives — a Canvas
+screen simply requires `GameController.OnGUI` to early-return while it is up, which is the
+screen-granularity rule enforced by the renderer rather than by discipline. What does NOT survive is the
+survey's proposed transition: a Canvas overlay cannot fade in over an IMGUI screen. Transitions have to
+be driven from the IMGUI side (a full-screen IMGUI scrim CAN fade over everything) and handed off.
+
+⚠ **The first spike run reported "FAIL — assumption does not hold", and that verdict was worthless.**
+The screenshot showed IMGUI's band exactly where it belonged and *neither canvas drawn at all*, over a
+background colour no layer in the test used. Two harness bugs: `Camera.main` was reused untouched so its
+clear flags were whatever the default scene carried, and `Image` did not produce geometry. `RawImage` plus
+an explicitly-configured camera fixed both. **The lesson is not "check your spike" — it is that a spike
+which cannot draw its own control layers will still happily print a verdict about their order.** The
+rewritten version logs each canvas's mode, material, colour and world corners, and reports INCONCLUSIVE
+when no canvas drew, so the same false verdict cannot be produced silently again.
+
+*Residual: measured in the Editor Game View. Re-run against a built player before the architecture locks.*
+
+### 2. The font test — IMGUI carries more than expected, and the body face is where it breaks
+
+Two TTFs assigned to the existing `GUIStyle`s, nothing else changed, three variants captured across all
+seven screens (`none` = today's default, `period` = Palatino Linotype + Courier New, `legible` = Georgia +
+Consolas). Windows system fonts, so the test ran in a scratch copy — **they cannot ship in a build**, and
+production needs open-licensed equivalents.
+
+- **A display serif transforms the headers, and it costs one line per style.** This is the single
+  highest-return, lowest-risk change available to the aesthetic, and it is available in IMGUI today.
+- **A monospace body face is the expensive half.** Courier New pushed the Budget screen's explanatory
+  paragraph from 5 lines to 6 and the right column's estimate block off the bottom of the fold — roughly
+  35–40% more vertical space for the same words. Consolas cost far less (narrower, taller x-height) but
+  reads as a code editor rather than a document. **The typewriter face is an aesthetic win and a density
+  loss, and the Budget screen is where that trade gets decided.**
+- ⚠ **`PoliSimWidgets` builds its OWN `GUIStyle`s, so a font assigned to `GameController`'s 15 styles
+  never reaches it.** Every headline stat value, delta pill and badge stayed in the default font across
+  all three variants — visible in the captures as identical numbers under different headers. A real font
+  pass has to cover the widget library too, and that is not obvious from the call sites.
+
+### 3. Flags and emblems were delivered, imported — and unreachable for weeks
+
+All 6 `flag_country_*` and 4 `emblem_party_*` sprites sat under `Assets/Art/UI/`, which is **not** under a
+`Resources/` folder, and were referenced by zero lines of code. `Resources.Load` could never have found
+them; nothing referenced them, so nothing ever failed.
+
+⚠ **`DeliveredAssetCheck` passed on these, and was right to.** It asks *"did every delivered file land
+under `Assets/`"* — 191 of 191 entries across 7 zips, 0 missing. **A file existing under `Assets/` does not
+mean the game can load it.** `StatIconCoverageCheck` asks the runtime question but only covers the 19
+names the UI hard-codes. So: **an asset's status has TWO parts, DELIVERED and REACHABLE, and the project
+only had a check for the first.** This is working-discipline rule 12 one layer in — the cached-status
+lesson applied to the loader rather than to the inbox.
+
+Both categories are now under `Resources/`, have derived-name accessors (`IconLibrary.GetFlag`,
+`GetPartyEmblem`), and are drawn: flags in the country selector's button gutter, emblems in the hemicycle
+legend. **They are also the two categories that are NOT white-on-alpha** — a flag and a party emblem are
+authored in their own colours (the emblem SVGs carry `#E0B23C` and `#FFFFFF`), so the design brief must
+not blanket-require the tintable convention that governs every other category.
+
+**One thing the emblems broke, worth keeping:** drawn *instead of* the legend's colour swatch they looked
+better and destroyed the legend's correspondence with the chart — the swatch colour is what keys each row
+to its own arc of seats, and the emblem palette has no relationship to `GetCategoricalColor`'s
+golden-angle hues. Swatch retained, emblem placed beside it. **This is a small live answer to v2.0's
+eleven-hue question: a mark and a colour can carry identity together, and dropping the colour is not free
+wherever that colour is also keying a chart.**
+
+### 4. A LIVE DEFECT found by the font test, not caused by it
+
+**`PolicyScreenStatsRenderer.DrawChip` clips both its stat names and its values, in production, today.**
+Visible in the baseline capture as `Debt-to` / `Approval` / `Busines` / `Poverty` above vertically-cropped
+figures. Cause: `GUI.Label` into hardcoded rects (`18f` tall for the name, `20f` for the value, inside a
+`RowHeight = 44f`) while every style's `fontSize` scales with `Screen.height` — at 900px height the label
+font is 20px in an 18px box.
+
+**This is instance #8 of the exact class `PoliSimWidgets.MeasuredLabel` was built to end**, in a renderer
+that never adopted it. Not fixed here — it was found during a survey and fixing production UI mid-survey
+is the wrong moment — but it should be the first thing v2.0 touches on that screen, and it is a reminder
+that the helper only helps where someone remembered to call it.
+
+### The screenshot harness, and the batchmode trap that cost the first attempt
+
+The project had **no screenshot tooling at all** (zero `ScreenCapture` references), so every visual
+confirmation had been Elias looking at his own Editor — fine in conversation, useless for an async report.
+`UiScreenshotDriver` + `UiScreenshotCapture` drive `GameController` to each screen by reflection and
+capture at end-of-frame. They live in the scratch copy, not the repo.
+
+⚠ **`WaitForEndOfFrame` NEVER RESUMES under `-batchmode`.** The first run attached, logged
+`driver attached, label=none, 640x480`, and hung with no error and no stack trace — a silent hang, the
+same failure shape `BatchSimulationRunner`'s own comment warns about. Running with a real Editor window
+fixes it and fixes the resolution at the same time, which matters more here than it looks: **every style
+in this UI derives its font size from `Screen.height`, so a 640x480 capture would have been a screenshot
+of font sizes no player ever sees.** Any future visual tooling in this project must not use `-batchmode`.
+
 ## Per-Partner Tariff Overrides
 A player-settable tariff override per trade partner, extending `TradeSystem`/`TradePartner` rather
 than building a new mechanic alongside the existing `BaseTariffRate`/`TariffRateChange` lever:
