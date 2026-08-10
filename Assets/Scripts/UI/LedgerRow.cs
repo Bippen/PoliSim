@@ -86,6 +86,37 @@ namespace PoliSim.UI
             GUIStyle thumbStyle)
         {
             float scale = Scale(nameStyle);
+            Columns(row, nameStyle, out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
+
+            Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
+
+            DrawCell(nameRect, name, nameStyle, rowInk, TextAnchor.MiddleLeft);
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive);
+            }
+
+            // ALWAYS emitted, enabled or not - see the control-ID note above.
+            bool ambient = GUI.enabled;
+            GUI.enabled = ambient && interactive;
+            float result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, thumbStyle);
+            GUI.enabled = ambient;
+
+            DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk);
+            DrawCell(trailingRect, trailingText, figureStyle, rowInk, TextAnchor.MiddleRight);
+
+            return interactive ? result : draft;
+        }
+
+        /// <summary>
+        /// The four column rects, shared by <see cref="Draw"/> and <see cref="DrawReadOnly"/> so a
+        /// read-only sub-screen lines up with the ones carrying sliders.
+        /// </summary>
+        private static void Columns(Rect row, GUIStyle nameStyle,
+            out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect)
+        {
+            float scale = Scale(nameStyle);
             float gap = RefColumnGap * scale;
 
             // ⚠ THE COLUMNS ARE PROPORTIONAL TO THE ROW, NOT TO THE FONT. The first cut scaled the
@@ -119,30 +150,10 @@ namespace PoliSim.UI
 
             float trackWidth = Mathf.Max(minTrack, row.width - nameWidth - figureWidth - trailingWidth - gap * 3f);
 
-            var nameRect = new Rect(row.x, row.y, nameWidth, row.height);
-            var trackRect = new Rect(nameRect.xMax + gap, row.y + (row.height - RefTrackHeight * scale) * 0.5f, trackWidth, RefTrackHeight * scale);
-            var figureRect = new Rect(trackRect.xMax + gap, row.y, figureWidth, row.height);
-            var trailingRect = new Rect(figureRect.xMax + gap, row.y, trailingWidth, row.height);
-
-            Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
-
-            DrawCell(nameRect, name, nameStyle, rowInk, TextAnchor.MiddleLeft);
-
-            if (Event.current.type == EventType.Repaint)
-            {
-                DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive);
-            }
-
-            // ALWAYS emitted, enabled or not - see the control-ID note above.
-            bool ambient = GUI.enabled;
-            GUI.enabled = ambient && interactive;
-            float result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, thumbStyle);
-            GUI.enabled = ambient;
-
-            DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk);
-            DrawCell(trailingRect, trailingText, figureStyle, rowInk, TextAnchor.MiddleRight);
-
-            return interactive ? result : draft;
+            nameRect = new Rect(row.x, row.y, nameWidth, row.height);
+            trackRect = new Rect(nameRect.xMax + gap, row.y + (row.height - RefTrackHeight * scale) * 0.5f, trackWidth, RefTrackHeight * scale);
+            figureRect = new Rect(trackRect.xMax + gap, row.y, figureWidth, row.height);
+            trailingRect = new Rect(figureRect.xMax + gap, row.y, trailingWidth, row.height);
         }
 
         /// <summary>The standing tick and the draft hatch band - drawn UNDER the slider so the knob reads as sitting on the track rather than beside it.</summary>
@@ -233,6 +244,43 @@ namespace PoliSim.UI
             // "reads as an error rather than as a fit" failure §A.9a exists to prevent.
             _cellStyle.fontSize = source.fontSize;
             return _cellStyle;
+        }
+
+        /// <summary>
+        /// A row with **no control at all**: name, a gauge bar where the track would be, figure,
+        /// trailing column.
+        ///
+        /// **Not `Draw` with `interactive: false`.** That renders a disabled slider, which is the right
+        /// answer for a value the player could change but currently cannot (behaviour 5: disabled is
+        /// rendered, never omitted). Infrastructure condition is a different case - there is nothing to
+        /// drag under any circumstances, because it is an OUTPUT driven by the Infrastructure spending
+        /// category rather than a dial. Emitting a slider for it would add a control where the screen has
+        /// never had one, and would tell the player a lie about what they can do.
+        ///
+        /// The column geometry is shared, so a read-only sub-screen still lines up with the four that
+        /// carry sliders - which is the whole reason this lives here rather than being drawn ad hoc.
+        /// </summary>
+        /// <param name="fill">0..1 gauge proportion.</param>
+        public static void DrawReadOnly(
+            Rect row, string name, float fill, string figureText, string trailingText,
+            Color barInk, GUIStyle nameStyle, GUIStyle figureStyle)
+        {
+            Columns(row, nameStyle, out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
+
+            DrawCell(nameRect, name, nameStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                Color previous = GUI.color;
+                GUI.color = PoliSimTheme.BarTrack;
+                GUI.DrawTexture(trackRect, Texture2D.whiteTexture);
+                GUI.color = barInk;
+                GUI.DrawTexture(new Rect(trackRect.x, trackRect.y, trackRect.width * Mathf.Clamp01(fill), trackRect.height), Texture2D.whiteTexture);
+                GUI.color = previous;
+            }
+
+            DrawCell(figureRect, figureText, figureStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
+            DrawCell(trailingRect, trailingText, figureStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
         }
 
         /// <summary>Public so a caller composing extra columns beside a row - the tax screen's verdict cell, say - prints them in the same measured, never-clipping way rather than reaching for a raw GUI.Label.</summary>

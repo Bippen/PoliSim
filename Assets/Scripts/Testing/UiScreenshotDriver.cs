@@ -58,7 +58,7 @@ namespace PoliSim.Testing
         {
             Directory.CreateDirectory(OutputDirectory);
 
-            GameController controller = FindFirstObjectByType<GameController>();
+            GameController controller = FindAnyObjectByType<GameController>();
             if (controller == null)
             {
                 Debug.LogError("SHOT: no GameController in scene - nothing to capture.");

@@ -1967,11 +1967,23 @@ namespace PoliSim.UI
             GUILayout.Label("Condition Index (0-100) per asset type - driven by the Infrastructure spending category in the Spending Policy tab, not a dial here.", _labelStyle);
             GUILayout.Space(8f);
 
+            // READ-ONLY rows, and deliberately not disabled sliders. Condition Index is an OUTPUT of the
+            // Infrastructure spending category, not a dial - there is nothing to drag under any
+            // circumstances - so LedgerRow.DrawReadOnly emits no control at all. A disabled slider is the
+            // right answer where a player COULD change a value but currently cannot (behaviour 5); here
+            // it would add a control this screen has never had and misstate what the player can do.
             foreach (InfrastructureAsset asset in _playerCountry.InfrastructureAssets)
             {
-                GUILayout.Label($"{asset.Type}: {asset.ConditionIndex:F0} / 100", _labelStyle);
-                UiPalette.DrawBar(asset.ConditionIndex / 100f, UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure));
-                GUILayout.Space(8f);
+                Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+                LedgerRow.DrawReadOnly(
+                    rowRect,
+                    asset.Type.ToString(),
+                    asset.ConditionIndex / 100f,
+                    asset.ConditionIndex.ToString("F0", CultureInfo.InvariantCulture) + " / 100",
+                    null,
+                    UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure),
+                    _labelStyle,
+                    _labelStyle);
             }
         }
 
