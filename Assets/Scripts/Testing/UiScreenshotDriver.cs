@@ -118,6 +118,16 @@ namespace PoliSim.Testing
                     ScrollBy(controller, 900f);
                     yield return Settle();
                     yield return Capture(stem + "_rows");
+
+                    // ⚠ A THIRD CAPTURE, DEEPER STILL. 900px clears the preamble and shows the first few
+                    // rows, which answers "does a row render". It does not answer "does this hold at
+                    // depth" - and on the two screens where that is the real question it lands inside the
+                    // first group. Economic Sectors is eight sectors x five dials = FORTY rows, and the
+                    // whole point of the group headers is what happens at a sector BOUNDARY, which is
+                    // ~1400px down. Spending's 29-row discretionary tail is the same shape of question.
+                    ScrollBy(controller, 2200f);
+                    yield return Settle();
+                    yield return Capture(stem + "_deep");
                 }
 
                 SetEnumField(controller, sub.Key, sub.Value[0]);
@@ -188,22 +198,47 @@ namespace PoliSim.Testing
         }
 
         /// <summary>
-        /// Every content scroll view a sub-screen might live inside.
-        ///
-        /// Each tab owns its own field, and only one of them is on screen at a time, so the driver sets
-        /// them ALL rather than needing to know which tab uses which. Setting a scroll position on a
-        /// view that is not currently drawn is harmless - it is a plain Vector2 that IMGUI will clamp
-        /// the next time that view lays out.
+        /// The left column's own scroll view, deliberately left alone so it stays identical between
+        /// captures and cannot be mistaken for part of what changed.
         /// </summary>
-        private static readonly string[] ContentScrollFields =
+        private const string LeftColumnScrollField = "_leftColumnScrollPosition";
+
+        private static FieldInfo[] _scrollFields;
+
+        /// <summary>
+        /// Every `Vector2 *ScrollPosition` field on GameController, DISCOVERED rather than listed.
+        ///
+        /// ⚠ **A hardcoded list of six shipped and was silently wrong.** Policy/Laws does not scroll
+        /// through `_policyLawsContentScrollPosition` - each of its sub-screens owns its own
+        /// (`_laborMarketScrollPosition`, `_crimeJusticeScrollPosition`, `_sectorPolicyScrollPosition`),
+        /// none of which was in the list. So every "scrolled" capture of that tab was a no-op that
+        /// happened to look plausible, because the preamble there is short enough that rows appear
+        /// anyway. The deep pass is what exposed it: identical to the shallow one, pixel for pixel.
+        ///
+        /// There are eighteen such fields. Enumerating them is the same discipline
+        /// `ChromeV2CoverageCheck` applies to sprites - a list omits whatever it forgot, and cannot tell
+        /// you that it did. Only one view is on screen at a time, so setting them all is harmless.
+        /// </summary>
+        private static FieldInfo[] ScrollFields(object target)
         {
-            "_budgetProcessCenterScrollPosition",
-            "_policyLawsContentScrollPosition",
-            "_statisticsContentScrollPosition",
-            "_politicsContentScrollPosition",
-            "_demographicsScrollPosition",
-            "_decisionsScrollPosition"
-        };
+            if (_scrollFields != null)
+            {
+                return _scrollFields;
+            }
+
+            var found = new List<FieldInfo>();
+            foreach (FieldInfo f in target.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            {
+                if (f.FieldType == typeof(Vector2) && f.Name.EndsWith("ScrollPosition") && f.Name != LeftColumnScrollField)
+                {
+                    found.Add(f);
+                }
+            }
+
+            _scrollFields = found.ToArray();
+            Debug.Log($"SHOT: driving {_scrollFields.Length} scroll views.");
+            return _scrollFields;
+        }
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
 
@@ -211,17 +246,9 @@ namespace PoliSim.Testing
 
         private static void SetScrolls(object target, float y)
         {
-            foreach (string field in ContentScrollFields)
+            foreach (FieldInfo f in ScrollFields(target))
             {
-                // Silent on a miss, deliberately, and unlike SetEnumField. A renamed sub-category must
-                // fail loudly because it would capture the wrong screen; a scroll field that does not
-                // exist on this build simply means that view is not scrollable, which is not an error
-                // and would otherwise log six warnings per capture.
-                FieldInfo f = target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
-                if (f != null && f.FieldType == typeof(Vector2))
-                {
-                    f.SetValue(target, new Vector2(0f, y));
-                }
+                f.SetValue(target, new Vector2(0f, y));
             }
         }
 

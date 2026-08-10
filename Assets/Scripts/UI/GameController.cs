@@ -1716,29 +1716,29 @@ namespace PoliSim.UI
             DrawCrimeJusticeLiveEstimate();
             EndAreaCard(UiPalette.SystemArea.CrimeJustice);
 
-            float draftPoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel);
-            DrawDraftLabel($"Police Funding - Standing: {_playerCountry.PoliceFundingLevel:F0}, Draft: {draftPoliceFunding:F0}", _playerCountry.PoliceFundingLevel, draftPoliceFunding);
-            _policeFundingInput = GUILayout.HorizontalSlider(draftPoliceFunding, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _policeFundingInput = DrawDialRow("Police Funding",
+                _playerCountry.PoliceFundingLevel, GetPoliceFundingInput(_playerCountry.PoliceFundingLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
 
-            float draftSentencingSeverity = GetSentencingSeverityInput(_playerCountry.SentencingSeverity);
-            DrawDraftLabel($"Sentencing Severity - Standing: {_playerCountry.SentencingSeverity:F0}, Draft: {draftSentencingSeverity:F0} (0 = lenient, 100 = harsh)", _playerCountry.SentencingSeverity, draftSentencingSeverity);
-            _sentencingSeverityInput = GUILayout.HorizontalSlider(draftSentencingSeverity, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _sentencingSeverityInput = DrawDialRow("Sentencing Severity",
+                _playerCountry.SentencingSeverity, GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 lenient - 100 harsh");
 
-            float draftBailReform = GetBailReformInput(_playerCountry.BailReformLevel);
-            DrawDraftLabel($"Bail Reform - Standing: {_playerCountry.BailReformLevel:F0}, Draft: {draftBailReform:F0} (0 = traditional cash bail, 100 = full reform)", _playerCountry.BailReformLevel, draftBailReform);
-            _bailReformInput = GUILayout.HorizontalSlider(draftBailReform, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _bailReformInput = DrawDialRow("Bail Reform",
+                _playerCountry.BailReformLevel, GetBailReformInput(_playerCountry.BailReformLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 cash bail - 100 reformed");
 
-            float draftDrugPolicy = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel);
-            DrawDraftLabel($"Drug Policy - Standing: {_playerCountry.DrugPolicyLevel:F0}, Draft: {draftDrugPolicy:F0} (0 = decriminalized, 100 = strict criminalization)", _playerCountry.DrugPolicyLevel, draftDrugPolicy);
-            _drugPolicyInput = GUILayout.HorizontalSlider(draftDrugPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _drugPolicyInput = DrawDialRow("Drug Policy",
+                _playerCountry.DrugPolicyLevel, GetDrugPolicyInput(_playerCountry.DrugPolicyLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 decriminalized - 100 strict");
 
-            float draftJudicialFunding = GetJudicialFundingInput(_playerCountry.JudicialFundingLevel);
-            DrawDraftLabel($"Judicial Funding - Standing: {_playerCountry.JudicialFundingLevel:F0}, Draft: {draftJudicialFunding:F0}", _playerCountry.JudicialFundingLevel, draftJudicialFunding);
-            _judicialFundingInput = GUILayout.HorizontalSlider(draftJudicialFunding, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _judicialFundingInput = DrawDialRow("Judicial Funding",
+                _playerCountry.JudicialFundingLevel, GetJudicialFundingInput(_playerCountry.JudicialFundingLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
 
-            float draftBorderEnforcement = GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel);
-            DrawDraftLabel($"Border Enforcement - Standing: {_playerCountry.BorderEnforcementLevel:F0}, Draft: {draftBorderEnforcement:F0} (0 = open/lenient, 100 = strict)", _playerCountry.BorderEnforcementLevel, draftBorderEnforcement);
-            _borderEnforcementInput = GUILayout.HorizontalSlider(draftBorderEnforcement, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _borderEnforcementInput = DrawDialRow("Border Enforcement",
+                _playerCountry.BorderEnforcementLevel, GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 open - 100 strict");
 
             GUILayout.Space(10f);
             _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
@@ -4958,25 +4958,34 @@ namespace PoliSim.UI
                 _labelStyle);
             GUILayout.EndHorizontal();
 
-            float draftSubsidy = GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel);
-            DrawDraftLabel($"Subsidy - Standing: {sector.SubsidyLevel:F0}, Draft: {draftSubsidy:F0}", sector.SubsidyLevel, draftSubsidy);
-            _sectorSubsidyInputs[sector.Type] = GUILayout.HorizontalSlider(draftSubsidy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            // ⚠ THE SECTOR IS THE GROUP; EACH DIAL IS A ROW. That mapping is not new - it is exactly how
+            // Spending groups its 29 lines under Mandatory/Discretionary headings, and the sector's
+            // descriptive line above is group CONTEXT (output, employment, its own metric) in the same
+            // way "narrower range, higher approval cost" is context for mandatory spending. A dial is the
+            // thing with a standing value and a draft; a sector is not.
+            //
+            // This is the densest sub-screen in the game: eight sectors x five dials is forty rows,
+            // against Spending's 29. The group header is what keeps it navigable - it breaks the run
+            // into eights, and a reader scans headers rather than rows.
+            _sectorSubsidyInputs[sector.Type] = DrawDialRow("Subsidy",
+                sector.SubsidyLevel, GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
 
-            float draftRegulation = GetSectorRegulationInput(sector.Type, sector.RegulationLevel);
-            DrawDraftLabel($"Regulation - Standing: {sector.RegulationLevel:F0}, Draft: {draftRegulation:F0} (0 = light-touch, 100 = heavily regulated)", sector.RegulationLevel, draftRegulation);
-            _sectorRegulationInputs[sector.Type] = GUILayout.HorizontalSlider(draftRegulation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _sectorRegulationInputs[sector.Type] = DrawDialRow("Regulation",
+                sector.RegulationLevel, GetSectorRegulationInput(sector.Type, sector.RegulationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 light - 100 heavy");
 
-            float draftTaxCredit = GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel);
-            DrawDraftLabel($"Tax Credits - Standing: {sector.TaxCreditLevel:F0}, Draft: {draftTaxCredit:F0}", sector.TaxCreditLevel, draftTaxCredit);
-            _sectorTaxCreditInputs[sector.Type] = GUILayout.HorizontalSlider(draftTaxCredit, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _sectorTaxCreditInputs[sector.Type] = DrawDialRow("Tax Credits",
+                sector.TaxCreditLevel, GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
 
-            float draftResearchGrants = GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel);
-            DrawDraftLabel($"Research Grants - Standing: {sector.ResearchGrantsLevel:F0}, Draft: {draftResearchGrants:F0}", sector.ResearchGrantsLevel, draftResearchGrants);
-            _sectorResearchGrantsInputs[sector.Type] = GUILayout.HorizontalSlider(draftResearchGrants, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _sectorResearchGrantsInputs[sector.Type] = DrawDialRow("Research Grants",
+                sector.ResearchGrantsLevel, GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
 
-            float draftDeregulation = GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel);
-            DrawDraftLabel($"Deregulation/Nationalization - Standing: {sector.DeregulationNationalizationLevel:F0}, Draft: {draftDeregulation:F0} (0 = fully nationalized, 100 = fully deregulated/private)", sector.DeregulationNationalizationLevel, draftDeregulation);
-            _sectorDeregulationInputs[sector.Type] = GUILayout.HorizontalSlider(draftDeregulation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _sectorDeregulationInputs[sector.Type] = DrawDialRow("Deregulation / Nationalization",
+                sector.DeregulationNationalizationLevel, GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 private");
         }
 
         /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceSectorBill/GetPendingSectorBill).</summary>
