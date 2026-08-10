@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using PoliSim.Data;
+using PoliSim.Simulation;
 using PoliSim.UI;
 using UnityEngine;
 
@@ -79,6 +80,9 @@ namespace PoliSim.Testing
             yield return Capture("01_country_selector");
 
             Invoke(controller, "SelectPlayerCountry", CountryId.USA);
+            yield return Settle();
+
+            AdvanceDays(controller);
             yield return Settle();
 
             for (int i = 0; i < Tabs.Length; i++)
@@ -238,6 +242,59 @@ namespace PoliSim.Testing
             _scrollFields = found.ToArray();
             Debug.Log($"SHOT: driving {_scrollFields.Length} scroll views.");
             return _scrollFields;
+        }
+
+        /// <summary>
+        /// Days to advance before capturing. Long enough that every history-dependent surface is
+        /// populated: graphs plot, the map has trade lines, published bulletins exist, and
+        /// `GraphRenderer`'s page row has more than one page to page through.
+        ///
+        /// ⚠ **The reason this exists is that turn-0 captures systematically under-tested the UI**, and it
+        /// took three separate discoveries to see it. A chart with no data draws no plate, so
+        /// `GraphRenderer` and `MapRenderer` sat on near-black grounds through every v2.0 capture and
+        /// looked like paper. The page row emitted no controls, so a behaviour-5 defect was invisible.
+        /// Anything whose appearance depends on history existing was, in effect, never captured at all.
+        ///
+        /// 3 turns x 365 days clears `WindowSize` (50) history points on the quarterly series, which is
+        /// what makes the pagination row real rather than merely present.
+        /// </summary>
+        private const int WarmupDays = 365 * 3;
+
+        /// <summary>
+        /// Drives the simulation forward through the real `AdvanceDay` / `AdvanceTurn` pair, so warmed-up
+        /// state is produced by the same path play produces it.
+        ///
+        /// ⚠ **`AdvanceDay` ALONE IS NOT ENOUGH, and the first attempt at this proved it.** `AdvanceDay`
+        /// runs the daily systems and returns true on a turn boundary, but it is the CALLER that then
+        /// calls `AdvanceTurn` - which is what appends `StatHistory`. Driving days alone advanced the
+        /// calendar three years and moved debt from $36.0T to $41.9T, yet left the UI reading "Turn 0"
+        /// and every graph saying "No data yet". A warm-up that moves the economy without producing
+        /// history is precisely the failure this whole pass exists to correct, in miniature.
+        /// </summary>
+        private static void AdvanceDays(object controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(simField?.GetValue(controller) is SimulationManager sim))
+            {
+                Debug.LogError("SHOT: could not reach SimulationManager - capturing at turn 0, which under-tests every history-dependent surface.");
+                return;
+            }
+
+            // Empty decisions: the warm-up is "time passed with no policy changes", which is the neutral
+            // baseline a capture wants. Anything else would bake one playthrough's choices into what is
+            // meant to be a picture of the UI.
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+            int turns = 0;
+            for (int i = 0; i < WarmupDays; i++)
+            {
+                if (sim.AdvanceDay())
+                {
+                    sim.AdvanceTurn(noDecisions);
+                    turns++;
+                }
+            }
+
+            Debug.Log($"SHOT: advanced {WarmupDays} days / {turns} turns before capture.");
         }
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
