@@ -1,15 +1,20 @@
 # PoliSim v2.0 — Screen Specification
 
 *Extracted 2026-08-10 from Claude Design project `b3dec27b`, file `PoliSim v2 Screens.dc.html`
-(treatment A, "ministry fresh print", eight boards at 1920×1080).*
+(treatment A, "ministry fresh print", eight boards at 1920×1080). **Revised to pass 3, 2026-08-10.***
 
 ⚠ **This is a specification, not source to port.** The delivered artifact is HTML/CSS; PoliSim renders
 in IMGUI and Canvas. Every number below is design intent restated in terms this project can implement.
 Nothing here was translated from markup — the markup was measured and discarded.
 
-⚠ **Read `§C. CONFLICTS` before implementing anything.** Nine items conflict with the eleven
-load-bearing behaviours, the delivered asset pack, or the simulation's actual data model. Four are
-blocking.
+**Pass 3 status: all nine §1D items resolved.** Seven accepted as raised, two amended with reasoning
+that improves on the request (D4's hue cap, D7's resort ladder). The locale flag and the §1D.4 banner
+wording were both taken. `polisim_palette.json`, `MANIFEST.md`, `DIRECTION.md` and `CANVAS_SPEC.md` were
+all updated in the same pass, and the boards were redrawn rather than annotated.
+
+⚠ **Read `§C` before implementing anything.** The nine are closed; **seven new findings** came out of
+re-reviewing pass 3 against the same standard. **One is blocking** — and it is a spec correction, not
+something to discover mid-implementation.
 
 ---
 
@@ -74,9 +79,9 @@ Brass: `#B3985E → #9C8148` gradient, border `#6F5A30`, text `#F4ECDC`.
 `1px #B7A98C` = column-header rule · `1px #D5C8AB` = row separator ·
 `3px double #8A7A5C` inset 8–14px = the ornate frame (`ui_frame_double`).
 
-### A.3 The eleven hues — three tints, only two delivered
+### A.3 The eleven hues — three tints, all delivered
 
-Already wired in `PoliSimTheme` from `polisim_palette.json`; the mockups use them unchanged.
+Already wired in `PoliSimTheme` from `polisim_palette.json`; the boards use them unchanged.
 
 | area | ink (on paper) | lifted (on desk) | tab swatch (on stock) |
 |---|---|---|---|
@@ -92,10 +97,50 @@ Already wired in `PoliSimTheme` from `polisim_palette.json`; the mockups use the
 | SovereignWealth | `#85643A` | `#B0925F` | — |
 | Global | `#5C87A8` | `#8FAEC7` | `#4E7291` |
 
-⚠ The **third column is new and only partly delivered** — see `§C.6`.
+The third column is the **inactive tab swatch tint**, delivered in full by pass 3 as `tabTint.*`. Its
+derivation, for anything that needs to generate one: **ink at oklch chroma ×0.78, lightness ×0.97**,
+snapped to hex. The table above carries the snapped values, so the rule is documentation rather than
+something to compute at runtime.
 
 **Semantic:** draft `#BE8A00` (lifted `#D4A72C`) · good `#3E8A5F` (lifted `#6FB08A`) ·
 bad `#9C4238` (lifted `#BC7168`) · caution = draft.
+
+### A.3a Party inks — their own set, not the area inks
+
+Pass 3, D5. Cut deliberately in hue space the eleven areas do not occupy (wine / petrol / drab khaki /
+sage), and keyed to the **real** `PartyArchetype` members. **A party may never print in an area accent
+or in semantic good/bad.** Hemicycle arcs, legend swatches and swing figures all key this set, and the
+legend swatch is the arc's own ink (B9).
+
+| `PartyArchetype` | ink | lifted |
+|---|---|---|
+| ProgressiveAlliance | `#7E3557` | `#A2607F` |
+| ConservativeUnion | `#2F4E63` | `#6B87A0` |
+| CentristCoalition | `#77714A` | `#9E9873` |
+| NationalistFront | `#4E5A45` | `#7E8A73` |
+
+Verified against the wired tables: none of the four collides with any of the eleven area inks, either
+tint, or `good` / `bad` / `draftAmber`.
+
+### A.3b Categorical series — eight, and a hard cap
+
+Pass 3, D4. Replaces `UiPalette.GetCategoricalColor`'s golden-angle HSV walk. Assign **in series order**:
+
+`#9C5233` · `#8A7A2C` · `#5C7434` · `#2F7458` · `#2E6E7E` · `#46608F` · `#745394` · `#95517A`
+
+⚠ **Eight is a hard cap, not a palette that repeats.** A series longer than eight **must not be
+hue-keyed at all** — it changes chart form to a **ranked single-ink bar ledger in the owning area's
+ink**. Verified against the actual series lengths:
+
+| series | length | treatment |
+|---|---|---|
+| `SectorType` (employment pie) | **8** | at the cap — stays hue-keyed |
+| `TaxType` (revenue pie) | 13 | converts to ranked bar ledger, Fiscal ink |
+| `SpendingCategory` (spending pie) | 29 | converts to ranked bar ledger, Fiscal ink |
+| `PartyArchetype` (hemicycle) | 4 | keys `parties.*`, never this set |
+
+The ranked bar ledger satisfies B9 trivially — one ink, and every row carries its own inline label, so
+there is no legend to disagree with the chart. See `§C.4` for the one implementation consequence.
 
 ### A.4 Typography — role assignments
 
@@ -192,11 +237,45 @@ Inner plates: `#F4ECDC`, `1px #C9BA9B`, shadow `0 3px 8px rgba(0,0,0,.2)`, paddi
 Plate head: `11 bold ls .16em` over a `1.5px #8A7A5C` rule with `6px` clearance; optional mono `10
 #8A7A5C` right-aligned status word.
 
+### A.8a Published vs live — B6, corrected
+
+⚠ **The §1C.2 sentence is STRUCK.** It read *"published = printed bulletin (solid frame + ref period +
+date + badge chip); live = desk reading (dashed rule, unbadged)"*, which conflated two independent
+things and disagreed with every board. `DIRECTION.md`'s B6 row now carries the corrected rule; this is
+that rule, so the two documents agree rather than contradict.
+
+**Two orthogonal channels, and that is the whole point:**
+
+| channel | keys | values |
+|---|---|---|
+| **badge chip + reference period + publication date** | **published-ness** | present = published · absent = live |
+| **frame style** | **revision status** | dashed = preliminary/provisional · solid = final |
+
+So a *preliminary published* figure is **badged, dated, and dashed** — which is exactly what board 1a
+draws, and what the old sentence made impossible to express. A **live desk reading** is unbadged,
+undated, and sits on a solid plate under the screen-level `— DESK READINGS, LIVE` caption.
+
+The correction matters because the two states the old rule collapsed are the two a player most needs
+told apart: *"this number is provisional"* and *"this number is not a publication at all."*
+
 ### A.9 The ledger row — the Budget screen's atom
 
-Row height `44px`, separator `1px #D5C8AB`, grid `168px | 1fr | 114px | 62px | 44px`, gap `10`.
-Column header band: `8.5 bold ls .13em inkFaint`, closed by `1px #B7A98C`, padding `7/0/5`.
+**Redrawn in pass 3** against the screen as actually built — one `BudgetProcessCategory` at a time, all
+29 spending programs, both density levers taken.
+
+Row height **`36px`** (was 44), separator `1px #D5C8AB`, grid **`250px | 1fr | 150px | 88px`**, gap `10`,
+right padding `26px` to clear the scrollbar. The per-row `VOTES` column is **deleted** — no
+per-instrument legislative support exists — and its width is what pays for the 250px name column.
+Column header band: `8.5 bold ls .13em inkFaint`, closed by `1px #B7A98C`, padding `7/26/5/0`.
 Totals: `1.5px #8A7A5C` above, label `10 bold ls .14em inkFaint`, value `16 bold`.
+
+29 rows × 36px = 1044px against a viewport of roughly 22 rows, so **it scrolls, and that is intended**.
+
+**Scroll view treatment — all 16 of them, not just this one:**
+`ui_scrollbar_track_v` recessed *into* the paper (baked inner shadow), **`14px` wide, inset `6px` from
+the paper's right edge**, full ledger height. `ui_scrollbar_thumb_v` brass, proportional, **minimum
+length `40px`**, inset `1px` within the track. Arrow buttons per pass 2: `ui_scrollbar_button_none`
+**and** `fixedWidth = fixedHeight = 0` with zero margins — both, or IMGUI still reserves the space.
 
 **The in-row slider is the design's best single idea and it is B1's primary carrier:**
 
@@ -211,7 +290,30 @@ Totals: `1.5px #8A7A5C` above, label `10 bold ls .14em inkFaint`, value `16 bold
   The row is still drawn, still measured, still occupies its 44px (B5).
 
 Draft values appear inline as `standing ✎ draft`, the draft half in `#BE8A00` bold — on rows, on
-subtotals, and on the bill rail. See `§C.1`: **the `✎` glyph does not exist in any shipped font.**
+subtotals, and on the bill rail.
+
+⚠ **The pencil is GEOMETRY, never a font glyph.** Pass 3 settled this: no shipped font carries `U+270F`,
+so the mark is `icon_pencil_draft` tinted `#BE8A00`, drawn inline immediately before the draft figure,
+`11px` at body size (`12px` on totals, `9px` in column headers), rotated `−30°` as authored. The same
+geometry is baked into `ui_stamp_draft` and the `✎ DRAFT` chip. Two riders that travel with it:
+
+- **`▲` / `▼` are Pagella-only.** Present there, absent from Courier Prime — never set a delta arrow in
+  the document face.
+- **`⚠` becomes a printed `N.B.`** in shipped copy. It is absent from all three fonts.
+
+### A.9a Names never clip — the resort ladder
+
+Pass 3, D7. Agreed that nothing may clip, but **not by uniform auto-shrink**: a ledger column where
+every row prints at a different size reads as an error rather than as a fit. Order of resort:
+
+1. **Widen the fixed column** — 250px, paid for by the deleted `VOTES` column.
+2. **Wrap generated names to two lines** — minister names, anything authored at runtime.
+3. **Curated abbreviation table for enum names** — `Veterans Benefits Mandatory` → `Veterans Benefits —
+   Mand.`. A table, so the abbreviation is chosen once and is stable between frames.
+4. **Best-fit shrink, floor `11px`** — last resort only.
+
+⚠ See `§C.2`: this ladder is specified for the **name** column. B4's original defect was numeric, and
+the numeric cells did not get it.
 
 ### A.10 Buttons
 
@@ -319,200 +421,200 @@ up 600ms → verdict stamp thunks last.
 
 ---
 
-## C. CONFLICTS
+## C. PASS 3 — DISPOSITIONS, AND WHAT THE RE-REVIEW FOUND
 
-Nine. Four block implementation. Each is stated with the evidence, not as a preference.
+### C.0 The nine, closed
 
-### C.1 ⛔ BLOCKING — B1's carrier glyph does not exist in any shipped font
+Re-reviewed against the same standard as pass 2 — the eleven load-bearing behaviours and both measured
+architectural constraints. Every disposition below was checked against the boards or the codebase rather
+than taken on the changelog's word.
 
-The design makes `✎` (U+270F) the primary draft marker. It appears on all four IMGUI boards: the
-`✎ 3 DRAFTS OPEN` header, the `STANDING ✎ DRAFT` column header, every drafted row (`22,0% ✎ 24,5%`),
-both subtotals, the bill rail's three figure rows, and the `✎ DRAFT — NOT ENACTED` stamp.
-
-Measured against the three fonts actually in `Assets/Resources/Art/UI/Fonts/`:
-
-| glyph | Pagella Regular | Pagella Bold | Courier Prime |
-|---|---|---|---|
-| `U+270F` ✎ pencil | **absent** | **absent** | **absent** |
-| `U+270E` ✎ pencil (lower) | **absent** | **absent** | **absent** |
-| `U+26A0` ⚠ warning | **absent** | **absent** | **absent** |
-| `U+25C4` ◄ | **absent** | **absent** | **absent** |
-| `U+25B2` ▲ / `U+25BC` ▼ | present | present | **absent** |
-| `U+2212` − / `U+00B1` ± | present | present | present |
-
-This is precisely the B11 failure mode — *"a font or glyph set lacking it renders a blank box on a readout
-the player is meant to trust"* — landing on **B1**, the behaviour that must never become nothing. Shipped
-as designed, every draft marker in the game renders as `□`.
-
-`U+2212` and `U+00B1` are confirmed present, so B11 as previously verified still holds. The regression is
-in glyphs the design newly introduced after that audit.
-
-**Resolution required from Design, not from code:** either the pencil becomes a tinted sprite
-(`icon_pencil_draft.svg` already exists in the pack and is unwired), or the draft marker becomes a
-typographic mark that Pagella actually carries. ▲/▼ are safe in Pagella but must never be set in Courier
-Prime.
-
-### C.2 ⛔ BLOCKING — the division bar shows a quantity the simulation does not compute
-
-The design's central legislative visual is a seat-count division: `PASSES · 186 – 164`, a bar filled
-53.1% aye against nay meeting at a threshold tick, and `aye 186 · 176 to pass · margin 10`. It appears on
-1b (bill rail), 1c (division records `212 – 138`) and 1g (`DIVISION No. 215 · 186 – 164`).
-
-`ParliamentSystem.GetSeatWeightedAlignment` documents the opposite in its own comment:
-
-> *"this is NOT a headcount, and there is no seats-based majority threshold anywhere in this model. Each
-> party contributes its seat share…"*
-
-`DrawBillLiveEstimate` renders what the model does produce: a direction label, a WOULD PASS / WOULD FAIL
-verdict, and a diverging lean bar. Its comment records that this is deliberate — *"Deliberately not
-PoliSimWidgets.SupportBar — this model has no seats-based majority for it to draw… the Parliament card
-already shipped that exact bug once."*
-
-So the design asks for a re-run of a bug the codebase already fixed and documented. Either the
-simulation gains a real division model (a substantial change, not a UI one), or the division bar becomes
-a period-styled rendering of the *diverging alignment* that actually exists. The second is cheap and
-honest; it needs a design decision because the bar's whole composition changes.
-
-**The same applies to the per-row `VOTES` column** (`−9`, `+6`, `−12`, `+4`, `N/A`) on 1b's ledger.
-Per-instrument legislative support does not exist at any granularity — bills are scored whole.
-
-### C.3 ⛔ BLOCKING — the Budget board tests 19 rows; the game has 42
-
-1b is captioned *"the density stress test: 19 live line items"* and draws 11 tax rows and 8 spending rows
-at `44px` each. The actual data model:
-
-| | mockup | actual |
+| item | disposition | verified how |
 |---|---|---|
-| `TaxType` | 11 | **13** |
-| `SpendingCategory` | 8 | **29** |
-| `WelfareProgramType` | — | 6 |
-| `InfrastructureType` | — | 4 |
+| D1 glyph | accepted — pencil is `icon_pencil_draft` geometry, never a font glyph | **0** occurrences of `U+270F` remain across all eight boards; riders taken (`▲▼` Pagella-only, `⚠` → printed `N.B.`) |
+| D2 division bar | accepted, option 1 — verdict + seat-weighted lean bar; per-row `VOTES` deleted | boards redrawn; seat counts kept only where `Country.ParliamentSeats` is real. **But see `§C.1`** |
+| D3 density | conceded — 1b was a composite; redrawn as the Spending sub-tab as built, 29 programs | rows 44→36px **and** it scrolls; scrollbar drawn and specified for all 16 views |
+| D4 unaged charts | **amended** — categorical caps at 8; longer series change chart form | `SectorType` is exactly **8**, so the sector pie stays hue-keyed; tax (13) and spending (29) convert |
+| D5 party inks | accepted — own hue set, re-keyed to the real `PartyArchetype` four | no collision with any area ink, either tint, or `good`/`bad`/`draftAmber` |
+| D6 third tint | delivered — the derivation rule plus all eleven snapped values | `tabTint.*` complete in `polisim_palette.json` |
+| D7 truncation | **amended** — never clip, but by a resort ladder, not uniform auto-shrink | ladder specified in `§A.9a`. **But see `§C.2`** |
+| D8 published/live | boards' rule stands; §1C.2 struck | corrected rule recorded in `§A.8a`; `DIRECTION.md` B6 matches |
+| D9 phantom sprites | accepted — four substitutions approved, four new assets delivered | **see `§C.5`–`§C.7`** |
+| §1D.3 locale | agreed — not art's call | **0** comma-decimal money figures remain; dates English |
+| §1D.4 banner | accepted verbatim | 1e reworded; banner now on 1a, 1b, 1d, 1g **and 1h** |
 
-29 spending rows at 44px is `1276px` of content in a column roughly `800px` tall. The board's own
-argument in W1 used the right number — *"Budget has ~40 rows"* — and then the board drew half of them.
-The density case is untested at the density that exists.
+Two of these are better than what was asked for. **D4** refused to ship 29 distinguishable aged hues and
+changed the chart form instead — the right answer, and the one that keeps B9 intact. **D7** rejected
+uniform auto-shrink on the grounds that a column printing at four different sizes reads as an error
+rather than as a fit, which is a real observation the request missed.
 
-Two knock-ons:
-- **Row height must come down, or the column scrolls.** No board draws a scrollbar anywhere, despite
-  §1B.1 establishing 16 scroll views and pass 2 delivering six scrollbar sprites for them. The
-  scrollbar's width, inset and relationship to the paper edge are unspecified on every screen.
-- **1b shows revenue and appropriations side by side while the sub-tab row highlights `Tax`.** The
-  implementation has one category visible at a time (`DrawBudgetProcessTab` → `BudgetProcessCategory`).
-  Either the design intends Budget to abandon its sub-tabs for a two-column always-on ledger — which the
-  row arithmetic makes impossible — or the board is a composite. It needs saying which.
+### C.1 ⛔ BLOCKING — division records have no backing data at all
 
-### C.4 ⛔ BLOCKING — four data visualisations were never aged
+Design's D2 caveat reads: *"division records keep the verdict stamp plus the alignment captured at the
+vote."* Board 1c prints, per row: `No. 214` · title · `29 apr 2026 · alignment −0.12, seat-weighted` ·
+`CARRIED` stamp.
 
-`UiPalette.GetCategoricalColor` is still `Color.HSVToRGB(hue, 0.65f, 0.9f)` on a golden-angle sequence —
-saturated screen colour, untouched by the v2.0 pass. It drives four charts:
+**Nothing behind any of those five fields exists.** This is not "the alignment isn't persisted" — the
+record itself does not exist, so the fallback of dropping to *date + verdict only* is not available
+either.
 
-| call site | slices |
-|---|---|
-| `HemicycleRenderer` seats + legend | 4 parties |
-| sector employment pie | 8 sectors |
-| **spending pie** | **29 categories** |
-| tax revenue pie | 13 types |
+Evidence:
 
-The mockups draw hemicycle seats in aged inks (`#9C4238`, `#62579F`, `#A8842E`, `#35619E`), so the design
-**assumes an aged categorical set exists.** None was delivered. `polisim_palette.json` covers eleven area
-hues and four semantic colours; it says nothing about categorical series.
+- `ApplyBillResult` (`ParliamentSystem.cs:247`) is where every bill of every tier resolves. On FAIL it
+  docks approval and returns. On PASS it mutates tax lines, welfare generosity, spending and SWF, applies
+  the tax-hike approval penalty, and returns. **It writes no record.**
+- A repo-wide search for a history store — `List<…Bill>`, `DivisionRecord`, `BillHistory`, `RecentVotes`,
+  any activity or event log — returns **zero hits** in `Assets/Scripts/Data/` and
+  `Assets/Scripts/Simulation/`.
+- `DrawParliamentTab` (`GameController.cs:3682`) draws the hemicycle and `DrawPendingLegislation`.
+  Pending only. Nothing UI-side retains a resolved bill either.
 
-This is the eleven-hue argument again, one level down: colour here keys a data visualisation, so it is
-load-bearing by the generalisation recorded in §1 — and 29 mutually distinguishable aged hues is a
-materially harder problem than eleven. **Left as-is, the Statistics tab renders a bright HSV rainbow on
-aged paper** — the most visible way the illusion can break, and worse than the grey scrollbars §1B.1
-worried about.
+**The constructive half.** The alignment *is* computed at the exact moment of resolution —
+`SimulationManager.cs:666` calls `WouldBillPass(country, bill)`, which calls `GetSeatWeightedAlignment`
+internally — and then discards it. So Design's caveat is the cheapest possible unsatisfiable thing: the
+quantity exists at the right instant, and `ApplyBillResult` is a **single choke point** all seven bill
+tiers pass through. What is missing is a record, not a number.
 
-### C.5 ⚠ Party inks collide with area inks on the same screen
+**Two ways forward, and this is Elias's call, not ours:**
 
-The four party inks are the four area inks, exactly:
+1. **Cut the panel** from 1c until a division-record store exists. 1c loses one of its four plates and
+   the screen needs re-balancing.
+2. **Add the store** — a small, well-bounded change: a per-country ring buffer of
+   `(number, title, date, alignment, passed)` appended in `ApplyBillResult`. It is a simulation change,
+   so it needs sign-off separately, and it is not covered by the current gate.
 
-| party | ink | collides with |
+Recorded here rather than discovered during implementation, which is exactly what was asked for.
+
+### C.2 ⚠ D7's ladder resolved the site, not the class
+
+The ladder is specified for the **`PROGRAM` name column**, and it does resolve that column properly —
+the 250px measure, the two-line wrap, the abbreviation table and the 11px floor between them mean a
+generated or enum-derived name can no longer clip.
+
+But B4 is a **class-level** rule, and its original defect was numeric. `UiFormat`'s own doc comment
+names it: *"the '9,3' incident was a comma-decimal figure clipped in a narrow rect."*
+
+Every other fixed-measure cell on the pass-3 boards still carries a fixed width with no stated resort:
+
+| site | measure | content |
 |---|---|---|
-| National Labor Front | `#9C4238` | CrimeJustice — **and semantic `bad`** |
-| Reform Union | `#62579F` | Sectors |
-| Agrarian League | `#A8842E` | **Political** |
-| Centrist Coalition | `#35619E` | Fiscal |
+| ledger `STANDING ✎ DRAFT` | `150px`, no wrap | two money figures + the pencil sprite |
+| ledger `SHARE` | `88px`, no wrap | `6.5% GDP` |
+| stat tile label | ~`133px` (3-up in 430px), no wrap | `CURRENCY STRENGTH`, `GOVERNMENT DEBT` |
+| legend seats / delta (1c) | `70px` / `56px` / `52px` | seat counts and swings |
+| legend seats / delta (1h) | `60px` / `56px` | as above |
 
-On the Politics tab the tab's own ink is `#A8842E` and the Agrarian League swatch is `#A8842E`. On 1c the
-`majority of 1` warning prints in `#9C4238` — the same ink as the largest party's seats, two rows above.
+None of these is *demonstrably* broken — `MoneyUnit` tiering bounds a money figure to about six
+characters, so 150px is comfortable today. The objection is that it is comfortable **by assumption**
+rather than by construction, and the assumption is precisely the one B4 exists because someone made
+before.
 
-This is the same defect §1B.5 just resolved for draft amber and Political, arriving from a different
-direction: two load-bearing meanings sharing one hex. B9 requires the legend swatch to match its arc; it
-does not require the arc to match an unrelated area accent.
+**What the spec needs:** the ladder stated as applying to *every* fixed-measure cell, with the numeric
+variant of step 2 named — numbers cannot wrap and cannot be abbreviated by table, so for them the ladder
+is *widen → shrink to the 11px floor*, and never a clip. This is a one-line generalisation of a rule
+Design has already reasoned through correctly.
 
-Related: **the design's party names are invented.** `PartyArchetype` is `ProgressiveAlliance ·
-ConservativeUnion · CentristCoalition · NationalistFront`; the boards use *National Labor Front · Reform
-Union · Agrarian League · Centrist Coalition*. Only one matches, and `emblem_party_*` sprites exist for
-the real four. Cosmetic in the mockup, but the ink→party mapping has to be re-keyed to the real set.
+### C.3 ⚠ The 36px row and the two-line wrap collide as soon as type rescales
 
-### C.6 ⚠ A third hue tint is used but not delivered
+Pass 3 sets the ledger row at a fixed `36px` and permits generated names to wrap to two lines at `13px`
+with `line-height 1.1`.
 
-Inactive tab swatches use a knocked-back tint that is in neither the `ink` nor `lifted` table and is not
-in `polisim_palette.json`. Six of eleven appear (`§A.3`); five do not, and there is no stated derivation
-to compute the rest from. Either the five missing values or the rule that produces them is needed.
+At 1080p that fits: `2 × 13 × 1.1 = 28.6px` inside 36px, about 7px spare. But **§3.2 of the asset
+request states the governing constraint** — *"every style in this UI rescales with `Screen.height`, so
+there is no single fixed render size."* At 1440p the same name sets at roughly `17.3px`, and two lines
+become `38.1px` — **taller than the row that is supposed to contain it.**
 
-### C.7 ⚠ B4 — the design's ledger truncates
+This is the `PolicyScreenStatsRenderer.DrawChip` defect exactly, which has already produced three
+separate instances in this project (`DrawChip`, `OverflowLineHeight`, tab-button `fixedHeight`). The
+fix is the same one that worked there: **derive the row height from the font metric rather than fixing
+it** —
 
-`§1C.2` records B4 as satisfied at the sprite level: *"no fixed-size text plate anywhere in the pack."*
-True, and not the whole story. At the **layout** level 1b fixes the instrument-name column at `168px` and
-clips overflow, and stat-tile labels are set to not wrap. Program and instrument names are longer than
-168px at several of these sizes, and cabinet-minister names are generated.
+```
+RowHeight = max(2 × LineHeightFor(nameStyle) + pad, SliderTrackHeight + pad)
+```
 
-*"A clipped number is a plausible wrong number"* applies to a clipped label too — `Veterans Benefits
-Mandatory` clipped to `Veterans Benefits` is a different programme. Every fixed-measure text cell in the
-spec must route through the shrinking measured-label path, never a clip.
+`36px` should be recorded as the value *at 1080p*, not as the row height.
 
-### C.8 ⚠ B6 — the spec and the mockup disagree on which treatment is which
+### C.4 ⚠ `GetCategoricalColor` must fail past eight, not wrap
 
-`§1C.2` B6: *"published = printed bulletin (solid frame + ref period + date + badge chip); live = desk
-reading (dashed rule, unbadged)."*
+D4's cap is correct and the chart-form change is the right answer. The implementation trap is in how the
+cap gets enforced.
 
-1a draws the opposite: the **dashed**-border block (`1px dashed #B7A98C`) is the one carrying the
-`PRELIMINARY` badge and the publication date, while the live desk readings sit on solid plates under a
-`DOMESTIC BULLETIN — DESK READINGS, LIVE` caption.
+`UiPalette.GetCategoricalColor(int index)` currently computes a golden-angle hue and therefore **always
+returns a colour for any index**. Its call sites pass indices up to **28** (spending) and **12** (tax).
+If the function simply becomes an eight-entry array indexed `index % 8`, those series keep working and
+silently alias — category 0 and category 8 print in the same ink, on the same chart, and **B9 breaks
+without anything failing.**
 
-The mockup's version is arguably the better one — a dashed rule reads as *provisional*, which is what
-preliminary means. But the two documents state opposite rules for the same behaviour, and B6 is exactly
-the behaviour where getting it backwards is invisible until a player trusts a wrong figure. One of them
-has to be struck.
+**The call sites must change chart form; the function must not quietly absorb the difference.** Whatever
+replaces it should fail loudly past index 7 rather than wrap, so that a series which outgrows the cap is
+caught at the call site instead of at a player's eye.
 
-### C.9 ⚠ Named-but-undelivered sprites, and one date/decimal locale question
+### C.5 ⚠ `emblem_state_seal` breaks what the `emblem_` prefix means
 
-Eight sprite names appear in board captions with no file behind them anywhere in `Assets/Resources/`:
+The sprite itself is right, and tintable is the correct choice for a seal. The **name** is the problem.
 
-`ui_event_card` · `ui_status_ok` · `ui_stamp_holds` · `ui_stamp_verdict` · `emblem_state_seal` ·
-`canvas_folder_country` · `canvas_btn_brass` · `canvas_btn_paper`
+§3.1 makes the prefix load-bearing: *"Country flags and party emblems are authored in their own real
+colours… Any new art in those two categories stays full-colour; everything else stays white-on-alpha.
+Getting this backwards in either direction produces art that cannot be used."*
 
-The first four have plausible substitutes in the delivered pack (the event card is a tinted
-`ui_panel_paper` with a drawn left rule; the stamps can reuse `ui_stamp_carried` / `ui_stamp_rejected`
-tinted). The last four do not — **the Canvas path has no button or folder art at all**, which is the
-§1B.3 gap re-opening after `CANVAS_SPEC.md` appeared to close it.
+So `emblem_*` currently *means* "full-colour exemption, never tint". Pass 3's manifest marks
+`emblem_state_seal` as **WoA** — tinted `inkText` on documents, brass on desk. That is the opposite
+rule under the same prefix, and it makes the exemption uncheckable by name.
 
-Separately: every board sets decimals with a comma (`$29,3T`, `4,38%`) and dates in Swedish
-(`12 maj 2026`, `14 november 2027`) while all UI copy is English (`Send to the floor`). That is a
-locale decision nobody has taken. It interacts with B3 — the MoneyUnit formatter owns how a figure
-prints, so the separator belongs there, not in art direction.
+The manifest's own note gives the answer away: it calls the sprite *"radial-tick family of
+`ui_seal_official`"*. **It should ship as `ui_seal_state`**, where it sits beside the sprite it is
+derived from and inherits the correct tint rule. Left as `emblem_*`, `IconLibrary`'s emblem accessor
+gains a member that must never be drawn the way every other member of that family is drawn.
 
----
+### C.6 ⚠ `canvas_*` is a new namespace, and two of them are sprite sheets
 
+Two separate consequences, neither an error, both needing a decision before import:
+
+- **The prefix.** Every one of the 52 sprites in `Chrome/` is `ui_*`. `canvas_folder_country`,
+  `canvas_btn_brass` and `canvas_btn_paper` open a second namespace inside the same folder. Defensible —
+  they are the Canvas path and behave differently — but it should be a recorded decision rather than
+  drift, because `ChromeV2CoverageCheck` and anything else keyed to the convention now sees two families.
+- **The sheets.** `canvas_btn_brass` and `canvas_btn_paper` are `256×384` = **three cells of `256×128`**
+  (normal / hover / pressed), with 9-slice `24/24/24/32` *per cell*. Every other delivered sprite is a
+  single sprite with one border set. §3's import instruction — copy the `.meta` from
+  `icon_stat_gdp.png.meta` — produces a **single-sprite** texture, and `Resources.Load<Sprite>` on a
+  multi-sprite texture returns `null`. These two need Sprite Mode Multiple, a grid slice, and
+  `Resources.LoadAll`. That is a real import difference and the first time the pack has needed one.
+
+### C.7 ⚠ SVG-only delivery — nothing from pass 3 is loadable yet
+
+Pass 3 shipped **SVG sources only**: `canvas_folder_country`, `canvas_btn_brass`, `canvas_btn_paper`,
+`emblem_state_seal`. Every previous pass shipped PNGs. The manifest says to *"rasterize @2× at import"*,
+so this is a task rather than an error — but it is a task nobody has scheduled, and until it is done the
+four specified assets do not exist in `Assets/Resources/` at all.
+
+⚠ **And `ChromeV2CoverageCheck` will not catch it.** That check enumerates `Chrome/` from disk and
+verifies each file resolves through `Resources.Load` — it validates that *what is present is reachable*,
+not that *what is specified is present*. Four missing assets produce a clean 52/52 pass.
+
+That is the delivered-vs-reachable lesson arriving from the opposite direction, and it means the check
+needs a manifest to compare against before it can be trusted on a pass that adds files.
 ## D. THE TWO ARCHITECTURAL CONSTRAINTS — both respected
 
-**1. Hybrid at screen granularity. ✅ Respected, with one clause needing restatement.**
+**1. Hybrid at screen granularity. ✅ Respected — and pass 3 closed the one clause that weakened it.**
 
 Every board is wholly one side: 1a–1d IMGUI, 1f–1h Canvas. No board interleaves an IMGUI element into a
 Canvas screen or the reverse. 1e makes the swap explicit and gives it a 60ms hold at 85% scrim precisely
 so the changeover is invisible.
 
-The one clause to restate: `§1C.3` says `ui_banner_hold` *"survives the whole sequence"*, and 1e's caption
-repeats it. Read literally against *"IMGUI LAYER SUPPRESSED"* at t=180ms, that would mean IMGUI keeps
-drawing over an active Canvas screen — element-granularity interleaving, and the thing the spike ruled
-out. **1g resolves it correctly in the art:** the banner is drawn *by the Canvas screen*, pinned to the
-bottom edge (`rgba(20,16,11,.9)` on `1px #3A2F1E`, padding `10/24`). So the rule is
-**"every Canvas takeover draws its own copy of the hold banner"**, not "the IMGUI banner persists."
-It should be written that way, because the current phrasing is an invitation to break the architecture.
+The clause raised as §1D.4 — `§1C.3`'s *"survives the whole sequence"*, which read as IMGUI drawing over
+a live Canvas screen — **was accepted verbatim and is now struck.** The governing rule:
 
-1h omits the banner entirely — the one board that should carry it and does not.
+> **Every Canvas takeover redraws the hold banner itself.** The IMGUI banner cannot persist past
+> t=180ms, because IMGUI is suppressed. Time-hold state is never invisible because **both sides draw
+> it**, not because one side survives.
+
+Verified in the boards rather than in the changelog: the banner now appears on **1a, 1b, 1d, 1g and 1h**
+— 1h was the board missing it, and it has been added. `CANVAS_SPEC.md` §0/§3 were corrected to match.
+
+This is a strengthening, not a patch. The previous phrasing was the one sentence in the whole pack that,
+implemented literally, would have broken screen granularity.
 
 **2. Transitions run from the IMGUI side. ✅ Respected explicitly and correctly.**
 
@@ -525,17 +627,27 @@ otherwise."*
 
 ---
 
-## E. WHAT IS ACTUALLY BUILDABLE TODAY
+## E. WHAT IS ACTUALLY BUILDABLE
 
-Unblocked by every conflict above, because none of it touches the four blockers:
+Everything the nine blockers held up is now specified. Unblocked, and touching none of `§C`'s findings:
 
 - the surface ladder, ink set and rule weights (`§A.1`–`A.2`) — already wired, needs verification only
-- the tab strip's three-state treatment (`§A.7`), minus the five missing swatch tints
-- the sub-tab row and plate treatment (`§A.8`)
+- the three hue tables (`§A.3`, `A.3a`, `A.3b`) — complete for the first time: all eleven tab tints, the
+  four party inks, and the eight-hue categorical series
+- the tab strip's three-state treatment (`§A.7`) — no longer missing five values
+- the sub-tab row, plate treatment, and the corrected published/live rule (`§A.8`, `A.8a`)
 - the two status-line states (`§A.6`) — B8's carrier, fully specified
+- the ledger row and the scroll-view treatment (`§A.9`), **with `§C.3`'s row height derived rather than
+  fixed at 36px**
+- the resort ladder (`§A.9a`), **generalised per `§C.2` to numeric cells before it is relied on**
 - the dossier card and the generic stamp treatment (`§A.11`)
-- the dual-siting build rule (`§A.12`) — unambiguous, and the constraint §1 flagged is resolved
-- the hand-off envelope timings (`§A.13`)
+- the dual-siting build rule (`§A.12`)
+- the hand-off envelope timings (`§A.13`), including the corrected banner rule
 
-**Gated on Elias reviewing the current chrome wiring in a live Editor.** That instruction stands and this
-document does not supersede it — every item above changes the same screens the wiring already touched.
+**Needs a decision before it can be built:** the 1c division-records panel (`§C.1`) — cut, or add a
+record store. **Needs an import pass:** rasterising pass 3's four SVGs, with the sheet-slicing and
+naming questions in `§C.5`–`§C.7` settled first.
+
+⚠ **Gated on Elias reviewing the current chrome wiring in a live Editor.** That instruction stands and
+this document does not supersede it — every item above changes the same screens the wiring already
+touched.
