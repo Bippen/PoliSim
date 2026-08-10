@@ -109,6 +109,19 @@ namespace PoliSim.UI
             {
                 DrawTitleRow(title, null, higherIsBetter, labelStyle);
                 GUILayout.Label("No data yet - advance a turn.", labelStyle);
+
+                // ⚠ THE PAGE ROW IS STILL DRAWN, and this is the same behaviour-5 defect as DrawPageRow's
+                // own, one call level up. Returning here emitted ZERO controls on an empty history and
+                // TWO the moment the first turn advanced - a control-count change driven by background
+                // state, on screens that carry sliders below the graph.
+                //
+                // Worth recording HOW this was missed: the 2026-08-10 sweep scanned for methods that
+                // both emit a control and early-return, and this method emits none DIRECTLY - it calls
+                // DrawPageRow, which does. **A sweep one call level deep cannot see a guard that sits
+                // above the emitter rather than beside it.** Found by asking what the fix below did NOT
+                // cover, which is the same "what does this check not assert" question the verification
+                // note in CLAUDE.md is about.
+                DrawPageRow(1);
                 return;
             }
 
@@ -495,28 +508,46 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>Prev/Next page buttons plus a "how far back" label - only drawn when there's more than one page, so a graph with <=50 turns of history (most of a fresh game) looks exactly as it did before pagination existed.</summary>
+        /// <summary>
+        /// Prev/Next page buttons plus a "how far back" label.
+        ///
+        /// ⚠ **ALWAYS EMITTED, and this is a behaviour-5 fix (2026-08-10).** It used to `return` early
+        /// when there was only one page, so a graph emitted ZERO controls on a fresh game and TWO once
+        /// history passed <see cref="WindowSize"/> turns - and `totalPages` derives from
+        /// `history.Count`, which grows every turn. So the control count changed spontaneously, driven by
+        /// background state rather than by anything the player did.
+        ///
+        /// That is the hazard `GameController.DrawTaxPolicyContent` documents, and this was the only
+        /// site in the codebase where it could genuinely fire: GraphRenderer is drawn on screens that
+        /// also carry sliders (Labor Market's participation graph, Welfare's poverty graph), so a graph
+        /// crossing the pagination threshold mid-drag would shift the control ID of every slider below
+        /// it. Found by sweeping for the pattern after two hand-found instances, not by hitting it.
+        ///
+        /// **The discipline was already here, one level too shallow** - the buttons inside were correctly
+        /// disabled at the ends rather than omitted. The same treatment now covers the row itself.
+        /// </summary>
         private void DrawPageRow(int totalPages)
         {
-            if (totalPages <= 1)
-            {
-                return;
-            }
+            bool paged = totalPages > 1;
 
             GUILayout.BeginHorizontal();
-            GUI.enabled = _pageFromEnd < totalPages - 1;
+            GUI.enabled = paged && _pageFromEnd < totalPages - 1;
             if (GUILayout.Button("< Older", _pageButtonStyle, GUILayout.ExpandWidth(false)))
             {
                 _pageFromEnd++;
             }
             GUI.enabled = true;
 
-            string rangeLabel = _pageFromEnd == 0
-                ? $"Last {WindowSize} turns"
-                : $"{_pageFromEnd * WindowSize + 1}-{(_pageFromEnd + 1) * WindowSize} turns ago";
+            // Blank rather than "Last 50 turns" on a single-page graph: the row is present for control
+            // stability, not to announce a pagination the player has no use for yet.
+            string rangeLabel = !paged
+                ? string.Empty
+                : _pageFromEnd == 0
+                    ? $"Last {WindowSize} turns"
+                    : $"{_pageFromEnd * WindowSize + 1}-{(_pageFromEnd + 1) * WindowSize} turns ago";
             GUILayout.Label(rangeLabel, _pageLabelStyle, GUILayout.ExpandWidth(true));
 
-            GUI.enabled = _pageFromEnd > 0;
+            GUI.enabled = paged && _pageFromEnd > 0;
             if (GUILayout.Button("Newer >", _pageButtonStyle, GUILayout.ExpandWidth(false)))
             {
                 _pageFromEnd--;

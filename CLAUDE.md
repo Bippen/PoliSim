@@ -1289,6 +1289,41 @@ place. Phase 3's write-up in this file said "39/39 within 3%" and drew the concl
 is validated". Had it said "the conversion is faithful; nothing here checks whether the turn form was
 right", the 3.017x error would have been visible in the sentence that shipped it.
 
+## Behaviour 5's hazard is BACKGROUND-STATE-DRIVEN control counts, not branching (2026-08-10)
+
+Behaviour 5 is written as *"every control renders every frame in the same order; 'not applicable' is a
+disabled state, never an omitted element."* Read literally that forbids any branch that changes how many
+controls a screen emits. **Read that way it is not checkable** — it flags correct code and it gave no way
+to rank the three sites a sweep turned up.
+
+The sweep came after two instances were found by hand during the v2.0 conversion (`DrawMinimumWageControl`
+returning early for a country with no statutory minimum wage; the partner tariff override emitting
+button+slider when set and button alone when not). Two in one tab is a pattern, so the rest of the
+codebase was swept rather than waiting to trip over a third: every control emission in `GameController`
+(24 methods), `GraphRenderer` and `LedgerRow`, checked for early returns and for conditionals guarding a
+control.
+
+**Result: zero remaining early returns, three conditional sites, ONE of them a real defect.** What
+separates them is not whether they branch — all three do — but **what drives the branch**:
+
+| site | branches on | verdict |
+|---|---|---|
+| interest rate (`GameController`) | `hasIndependentCurrency` | ✅ **fine, and correct by construction** — both branches emit exactly one slider; only the range and label differ |
+| cabinet reshuffle (`GameController`) | whether a portfolio is filled | ⚠ **breaks the wording, not the hazard** — `CabinetMinisters` is written only by `GameController` (verified: no simulation system touches it) and the screen has no sliders, so nothing can be mid-drag |
+| **`GraphRenderer.DrawPageRow`** | **`totalPages`, derived from `history.Count`** | ⛔ **the real one** — history grows every turn, so the count went 0→2 spontaneously, on screens that DO carry sliders below the graph |
+
+**So the checkable form of the rule is:** a screen's control count may not change as a result of state
+the player did not just change. Branching on something immutable for the screen's lifetime is fine.
+Branching on something the player toggles with the very control in question is fine, if nothing draggable
+is on screen. **Branching on something that moves in the background is the defect** — that is the only
+shape where a hot control's ID can shift underneath a drag.
+
+Two things worth keeping from how this one was found. `DrawPageRow` **already had the discipline one
+level too shallow** — its buttons were correctly `GUI.enabled`-disabled at the ends rather than omitted,
+inside a block that was itself omitted. And it was the only site of the three that could genuinely fire,
+while being the one nobody would have found by reading the screens that break — it lives in a shared
+renderer, so it was one bug in every place a graph sits above a slider.
+
 ## A turn is now a year — the 3.017x fiscal defect (2026-08-10)
 
 Elias reported from a live Editor session: **spending was running a full year's deficit every turn.**

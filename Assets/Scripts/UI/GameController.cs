@@ -3900,6 +3900,30 @@ namespace PoliSim.UI
                 GUILayout.BeginVertical();
                 GUILayout.Label($"{minister.Name} ({minister.Philosophy})", _labelStyle);
                 GUILayout.Label(minister.Description, _labelStyle);
+
+                // ⚠ A DELIBERATE EXCEPTION TO BEHAVIOUR 5's WORDING, and NOT a precedent. Recorded here
+                // in 2026-08-10's sweep so a future reader neither "fixes" it nor cites it.
+                //
+                // The branches below emit different control COUNTS - one Reshuffle button when a
+                // minister holds the portfolio, N candidate buttons or one Search button when it is
+                // vacant - which is the shape that produced two real defects elsewhere (the minimum-wage
+                // slider and the partner tariff override, both fixed). Two specific facts make it safe
+                // HERE, and both were verified rather than assumed:
+                //
+                //   1. `Country.CabinetMinisters` is written ONLY by this class. Every writer in the
+                //      repo is in GameController or SimulationTestRunner; no simulation system mutates
+                //      it. So the count can only change as the direct result of a click in this method,
+                //      never underneath the player.
+                //   2. This screen emits NO sliders. Nothing here can be mid-drag, and a button click
+                //      resolves within the frame that raised it.
+                //
+                // The hazard behaviour 5 exists to prevent is a HOT control's ID shifting because
+                // background state changed the count. Neither half of that is reachable here. The rule's
+                // wording is broader than its hazard, and this is the one place in the codebase where
+                // the two come apart - see the sweep note in CLAUDE.md.
+                //
+                // Contorting this into a fixed control set would also mean rendering N candidate buttons
+                // when there are no candidates, which is not a thing.
                 if (GUILayout.Button("Reshuffle", _neutralActionButtonStyle))
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
