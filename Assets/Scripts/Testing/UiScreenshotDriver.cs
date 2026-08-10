@@ -96,8 +96,19 @@ namespace PoliSim.Testing
                         continue;
                     }
 
+                    SetVector2Field(controller, "_budgetProcessCenterScrollPosition", Vector2.zero);
                     yield return Settle();
                     yield return Capture($"{i + 2:00}{(char)('a' + c)}_budget_{BudgetCategories[c].ToLowerInvariant()}");
+
+                    // ⚠ A SECOND CAPTURE, SCROLLED PAST THE PREAMBLE. Every Budget sub-screen opens with
+                    // a header, explanatory prose and a last-turn summary that together fill most of the
+                    // panel, so a capture at scroll zero shows one or two rows and answers nothing about
+                    // the density case - which on Spending's 29 categories is the entire question D3 was
+                    // about. Scrolling far enough to put rows on screen is the only way to see whether a
+                    // treatment that reads well at 13 rows survives at 29.
+                    SetVector2Field(controller, "_budgetProcessCenterScrollPosition", new Vector2(0f, 900f));
+                    yield return Settle();
+                    yield return Capture($"{i + 2:00}{(char)('a' + c)}_budget_{BudgetCategories[c].ToLowerInvariant()}_rows");
                 }
 
                 SetEnumField(controller, "_budgetProcessCategory", "Tax");
@@ -165,6 +176,19 @@ namespace PoliSim.Testing
             }
 
             m.Invoke(target, new[] { arg });
+        }
+
+        /// <summary>Scroll positions are plain Vector2 fields, so driving one is how a capture reaches content below the fold. Silent on a missing field rather than loud: a screen that has no scroll view is a legitimate case, unlike a renamed sub-category.</summary>
+        private static void SetVector2Field(object target, string field, Vector2 value)
+        {
+            FieldInfo f = target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (f == null || f.FieldType != typeof(Vector2))
+            {
+                Debug.LogWarning($"SHOT: scroll field {field} not found - capturing unscrolled.");
+                return;
+            }
+
+            f.SetValue(target, value);
         }
 
         private static bool SetEnumField(object target, string field, string value)

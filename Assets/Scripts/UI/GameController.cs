@@ -5117,23 +5117,18 @@ namespace PoliSim.UI
             DrawInterestOnDebtRow();
             GUILayout.Space(10f);
 
-            // Bars are scaled within their own group (Mandatory vs. Discretionary), not against each
-            // other - the two groups differ by orders of magnitude (e.g. Social Security vs. SBA), so
-            // one shared scale would flatten every Discretionary bar to nothing.
-            float maxMandatory = 1f;
-            float maxDiscretionary = 1f;
-            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
-            {
-                if (spendingLine.IsMandatory)
-                {
-                    maxMandatory = Mathf.Max(maxMandatory, spendingLine.Amount);
-                }
-                else
-                {
-                    maxDiscretionary = Mathf.Max(maxDiscretionary, spendingLine.Amount);
-                }
-            }
-
+            // The per-row size bar is GONE, and its within-group scaling with it.
+            //
+            // It gave an at-a-glance relative size inside each group, which the ledger's SHARE column now
+            // gives numerically and across both groups. At 29 rows the bar cost 8px each - 232px of pure
+            // height on the one screen D3 was about - and the board draws no such bar. A row is a line;
+            // anything that makes it two is spending the density this screen does not have.
+            //
+            // MANDATORY vs DISCRETIONARY STAYS EXACTLY AS IT IS: two section headers, each with its own
+            // slider range. **The boards never express this distinction at all** - it does not appear
+            // anywhere in pass 3's 1b - so there is no spec treatment to adopt and inventing a row-level
+            // one would be inventing, not implementing. It is also not a row property: it is a property
+            // of a GROUP, and a header is what a group heading looks like. Declared to Design as V2.
             GUILayout.Label("Mandatory (narrower range, higher approval cost)", _headerStyle);
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
@@ -5142,8 +5137,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange, maxMandatory);
-                GUILayout.Space(10f);
+                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange);
             }
 
             GUILayout.Space(10f);
@@ -5155,8 +5149,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, maxDiscretionary);
-                GUILayout.Space(10f);
+                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange);
             }
         }
 
@@ -5169,19 +5162,54 @@ namespace PoliSim.UI
         }
 
         /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size, plus a bar sized relative to <paramref name="maxAmountInGroup"/> (its own Mandatory/Discretionary group's largest line) for an at-a-glance size comparison.</summary>
-        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent, float maxAmountInGroup)
+        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent)
         {
             float draftPercent = GetSpendingLineInput(spendingLine.Category);
-            float impliedDollarChange = spendingLine.Amount * draftPercent / 100f;
-            // Spending drafts are expressed as a percentage CHANGE rather than a standing/draft pair, so
-            // "differs from standing" here means a non-zero change - the same amber cue, reached from the
-            // other direction.
-            DrawDraftLabel(
-                $"{spendingLine.Category}: {UiFormat.Money(spendingLine.Amount, MoneyUnit.Billions)}  Change: {draftPercent:+0.0;-0.0;0}% ({UiFormat.MoneyDelta(impliedDollarChange, MoneyUnit.Billions)})",
-                !Mathf.Approximately(draftPercent, 0f));
-            UiPalette.DrawBar(spendingLine.Amount / maxAmountInGroup, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), 8f);
-            float newPercent = GUILayout.HorizontalSlider(draftPercent, -rangePercent, rangePercent, _sliderStyle, _sliderThumbStyle);
+            bool hasDraft = !Mathf.Approximately(draftPercent, 0f);
+            float draftAmount = spendingLine.Amount * (1f + draftPercent / 100f);
+
+            // ⚠ SPENDING'S STANDING VALUE SITS AT ZERO, and that is the whole translation.
+            //
+            // A tax row's slider carries the RATE, so its standing tick sits at the enacted rate. A
+            // spending row's slider carries a PERCENTAGE CHANGE to its own amount, so the position
+            // meaning "as it stands" is 0 - dead centre of a -range..+range track. Mapping standing to 0
+            // rather than to the amount is what makes the hatch band read correctly: it spans from
+            // no-change to the drafted change, in whichever direction, which is exactly what it means on
+            // a tax row too. The units differ; the geometry and behaviour 1 do not.
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+
+            float newPercent = LedgerRow.Draw(
+                rowRect,
+                spendingLine.Category.ToString(),
+                0f,
+                draftPercent,
+                -rangePercent,
+                rangePercent,
+                UiFormat.Money(spendingLine.Amount, MoneyUnit.Billions),
+                // The draft half prints the AMOUNT it lands at, not the percentage that got it there -
+                // the board's column is STANDING then DRAFT, two comparable figures, and "$1.53T then
+                // +2.0%" would make the reader do the arithmetic the row exists to have already done.
+                hasDraft ? UiFormat.Money(draftAmount, MoneyUnit.Billions) : null,
+                SpendingShareOfGdpText(spendingLine.Amount),
+                interactive: true,
+                _labelStyle,
+                _labelStyle,
+                _sliderStyle,
+                _sliderThumbStyle);
+
             _spendingLineInputs[spendingLine.Category] = newPercent;
+        }
+
+        /// <summary>This line's share of GDP, the board's trailing column for a spending row. B3: the unit is named, and a share is not money so it takes a format string rather than a MoneyUnit.</summary>
+        private string SpendingShareOfGdpText(float amount)
+        {
+            float gdp = _playerCountry.State.GDP;
+            if (gdp <= 0f)
+            {
+                return "-";
+            }
+
+            return (amount / gdp * 100f).ToString("F1", CultureInfo.InvariantCulture) + "% GDP";
         }
     }
 }

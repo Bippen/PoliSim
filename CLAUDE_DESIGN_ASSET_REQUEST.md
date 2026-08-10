@@ -817,6 +817,25 @@ tax instrument's own legislative support, which does not exist. This scores the 
 Implement/Remove bill for that one program — a real whole-bill direction the model does compute. Same
 row, different quantity, and they look alike enough to be worth keeping straight.
 
+**V2 — Mandatory vs Discretionary spending has no treatment in the boards, so the build kept its own.**
+
+`SpendingCategory` splits into **Mandatory** (6 lines — Social Security, Medicare, Medicaid, Income
+Security, Veterans Benefits, Federal Retirement) and **Discretionary** (23). The distinction is real and
+mechanical: mandatory programmes take a narrower draft range and cost more approval per unit changed,
+because entitlement reform is politically expensive.
+
+**Board 1b does not express it anywhere** — no grouping, no marker, no column. So there was nothing to
+adopt, and the build kept what it already had: **two section headers, each introducing its own group.**
+
+Declared rather than requested, for two reasons. It is not a row property — it is a property of a
+*group*, and a heading is what a group heading looks like — so a row-level treatment would be the wrong
+shape even if one existed. And inventing a visual language for a distinction the boards never addressed
+is inventing, not implementing, which is the line this section exists to keep visible.
+
+✅ **If you want it expressed differently, that is a real design question and worth answering** — the two
+groups differ by orders of magnitude ($1.53T against $9B), which is exactly the kind of thing a period
+ledger has conventions for. But it needs a decision, not a guess from us.
+
 ### What this blocks, precisely
 
 Nothing in the IMGUI path. All four items are Canvas-side, and the Canvas path was already gated behind
