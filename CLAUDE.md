@@ -1289,6 +1289,40 @@ place. Phase 3's write-up in this file said "39/39 within 3%" and drew the concl
 is validated". Had it said "the conversion is faithful; nothing here checks whether the turn form was
 right", the 3.017x error would have been visible in the sentence that shipped it.
 
+## Publication cadence, measured — five of six stats never revise (2026-08-10)
+
+`PublicationCadenceCheck` runs headless (`PublicationSystem.PublishDueFigures` is static, so no play
+mode) and measures twelve simulated years for the USA:
+
+| stat | 1st release | 1st PRELIMINARY | days PRELIMINARY | releases |
+|---|---|---|---|---|
+| Unemployment | day 36 | **never** | 0 | 143 |
+| Inflation | day 42 | **never** | 0 | 143 |
+| **Gdp** | day 1 | **day 119** | **1410** | 142 |
+| PovertyRate | day 638 | **never** | 0 | 11 |
+| Population | day 638 | **never** | 0 | 11 |
+| CrimeIndex | day 638 | **never** | 0 | 11 |
+
+⚠ **GDP is the only series with a revision stage.** The other five are single-estimate — published once
+and final immediately. The annual three are not "hard to catch preliminary"; they have no preliminary
+state to catch.
+
+**This reframes behaviour 6 rather than scheduling it.** Channel 1 (badge + reference period +
+publication date, carrying PUBLISHED-NESS) applies to all six and is where their information lives.
+Channel 2 (frame style, carrying REVISION STATUS) is meaningful for GDP alone; the other five always
+draw solid, which is correct and carries nothing. The channels are still right to be independent — they
+are simply not equally loaded, and only one series can ever exercise the second.
+
+**It also settled a rendering decision.** Eleven annual releases beside a daily live series reads as a
+broken graph rather than as a comparison, so the annual three render as BADGED FIGURES — value,
+reference period, publication date, no trend line — while the monthly and quarterly ones keep the
+comparison graph and its "compare against the live figures above" framing. A published annual figure is
+a bulletin, which is a stat block rather than a chart.
+
+⚠ **And it corrected an assumption in the capture driver.** GDP first reaches preliminary at **day 119**
+and holds it roughly a third of all days. The driver found one at day 1125 only because its own
+1095-day minimum was binding — not because the state was scarce. The wait was never the constraint.
+
 ## Behaviour 5's hazard is BACKGROUND-STATE-DRIVEN control counts, not branching (2026-08-10)
 
 Behaviour 5 is written as *"every control renders every frame in the same order; 'not applicable' is a

@@ -450,6 +450,9 @@ namespace PoliSim.UI
         private readonly GraphRenderer _debtGraph = new GraphRenderer();
         private readonly GraphRenderer _unemploymentPublishedGraph = new GraphRenderer();
 
+        /// <summary>Inflation publishes monthly like Unemployment, so it gets the comparison graph treatment rather than the badged-figure one - see PublishedFigure for why cadence decides that.</summary>
+        private readonly GraphRenderer _inflationPublishedGraph = new GraphRenderer();
+
         // Phase 4's per-tab graph rollout - one GraphRenderer per newly-homed stat, same "never
         // shared across stats" reasoning as the three headline instances above.
         private readonly GraphRenderer _interestRateGraph = new GraphRenderer();
@@ -1709,6 +1712,12 @@ namespace PoliSim.UI
 
             DrawColoredLabel("Crime & Justice", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
             GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
+            GUILayout.Space(8f);
+
+            // Annual cadence, so a bulletin rather than a chart - see PublishedFigure.
+            PublishedFigure.Draw("Crime index as published",
+                _playerCountry.Published.Series.TryGetValue(PublishedStat.CrimeIndex, out PublishedSeries crimePublished) ? crimePublished : null,
+                _labelStyle, moneyUnit: null);
             GUILayout.Space(8f);
 
             BeginAreaCard("CRIME & JUSTICE BILL", UiPalette.SystemArea.CrimeJustice);
@@ -3065,6 +3074,23 @@ namespace PoliSim.UI
                 _playerCountry.Published.Series.TryGetValue(PublishedStat.Unemployment, out PublishedSeries unemploymentPublished) ? unemploymentPublished : null,
                 _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate, moneyUnit: null);
 
+            // Inflation joins the two graphs because it SHARES THEIR CADENCE - monthly, 143 releases over
+            // twelve years - so "compare against the live figures above" earns its place here.
+            _inflationPublishedGraph.DrawPublished("Inflation as published",
+                _playerCountry.Published.Series.TryGetValue(PublishedStat.Inflation, out PublishedSeries inflationPublished) ? inflationPublished : null,
+                _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate, moneyUnit: null);
+
+            // ⚠ AND POVERTY RATE DOES NOT, because it publishes ANNUALLY - eleven releases in twelve
+            // years, per PublicationCadenceCheck. Eleven points beside a daily live series reads as a
+            // broken graph rather than as a comparison. An annual published figure is a bulletin - this
+            // number, for this period, released on this date - so it renders as one. Placed here rather
+            // than beside its live twin on Welfare so every published figure stays discoverable in one
+            // place, which matters more for a bulletin than adjacency does.
+            GUILayout.Space(8f);
+            PublishedFigure.Draw("Poverty rate as published",
+                _playerCountry.Published.Series.TryGetValue(PublishedStat.PovertyRate, out PublishedSeries povertyPublished) ? povertyPublished : null,
+                _labelStyle, moneyUnit: null);
+
             // The [DEBUG] publication-lag dump lived here from `dd7e323` until 2026-08-02. It printed the
             // live GDP figure beside every published entry's reference period, publication date, value and
             // revision status, so the graph above could be cross-checked against the data behind it.
@@ -4099,6 +4125,12 @@ namespace PoliSim.UI
             }
             _taxRevenueLedger.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxRows, _labelStyle,
                 UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
+            GUILayout.Space(10f);
+
+            // Annual cadence, so a bulletin rather than a chart - see PublishedFigure.
+            PublishedFigure.Draw("Population as published",
+                _playerCountry.Published.Series.TryGetValue(PublishedStat.Population, out PublishedSeries populationPublished) ? populationPublished : null,
+                _labelStyle, moneyUnit: null);
             GUILayout.Space(10f);
 
             var populationSlices = new List<PieSlice>();
