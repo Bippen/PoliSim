@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PoliSim.Data;
 using UnityEngine;
 
 namespace PoliSim.UI
@@ -130,6 +131,34 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.SovereignWealth, Hex(0xB0925F) },
             { UiPalette.SystemArea.Global, Hex(0x8FAEC7) }
         };
+
+        /// <summary>
+        /// The four party inks - **their own set, and deliberately not the eleven area accents**.
+        ///
+        /// Delivered by pass 3 as `parties.*` answering D5: the boards had every party printing in an
+        /// area ink (National Labor Front in CrimeJustice's red, which is also semantic `bad`; Agrarian
+        /// League in Political's ochre, on the very tab whose own accent is Political). Two load-bearing
+        /// meanings sharing one hex is the defect §1B.5 had just resolved for draft amber, arriving from
+        /// another direction. These are cut in hue space the areas never occupy - wine, petrol, drab
+        /// khaki, sage.
+        ///
+        /// ⚠ **The hemicycle drew from `UiPalette.GetCategoricalColor` until 2026-08-10**, which is the
+        /// CHART SERIES set. Behaviour 9 held by luck - the legend swatch and the arc both called the
+        /// same function with the same index, so they matched - but four parties were consuming
+        /// categorical slots 0-3, so a party and a pie wedge could print identically. B9 was satisfied
+        /// while the thing B9 protects was not.
+        /// </summary>
+        private static readonly Dictionary<PartyArchetype, Color> PartyInks = new Dictionary<PartyArchetype, Color>
+        {
+            { PartyArchetype.ProgressiveAlliance, Hex(0x7E3557) },
+            { PartyArchetype.ConservativeUnion, Hex(0x2F4E63) },
+            { PartyArchetype.CentristCoalition, Hex(0x77714A) },
+            { PartyArchetype.NationalistFront, Hex(0x4E5A45) }
+        };
+
+        /// <summary>This party's ink. The SAME call must serve a hemicycle arc and its legend swatch - that is behaviour 9, and routing both through one accessor is what makes it true by construction rather than by two call sites agreeing.</summary>
+        public static Color Party(PartyArchetype archetype) =>
+            PartyInks.TryGetValue(archetype, out Color ink) ? ink : AreaAccents[UiPalette.SystemArea.Neutral];
 
         public static Color Accent(UiPalette.SystemArea area) => AreaAccents[area];
 

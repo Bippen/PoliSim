@@ -58,7 +58,7 @@ namespace PoliSim.UI
             {
                 PartyArchetype archetype = LeftToRightOrder[i];
                 int count = seats.TryGetValue(archetype, out int s) ? s : 0;
-                Color color = UiPalette.GetCategoricalColor(i);
+                Color color = PoliSimTheme.Party(archetype);
                 for (int j = 0; j < count; j++)
                 {
                     seatColors.Add(color);
@@ -136,7 +136,7 @@ namespace PoliSim.UI
                 //
                 // Untinted (the emblems are already coloured) and null-safe: a missing file simply leaves
                 // the swatch, which is what this legend has always drawn.
-                GUI.color = UiPalette.GetCategoricalColor(i);
+                GUI.color = PoliSimTheme.Party(archetype);
                 GUI.DrawTexture(swatchRect, Texture2D.whiteTexture);
                 GUI.color = previousColor;
 
