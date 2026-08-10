@@ -88,6 +88,7 @@ namespace PoliSim.Testing
 
             AdvanceDays(controller);
             DivergeSwfWeights(controller);
+            DraftSpendingLines(controller);
             yield return Settle();
 
             for (int i = 0; i < Tabs.Length; i++)
@@ -346,6 +347,61 @@ namespace PoliSim.Testing
             {
                 Debug.LogWarning("SHOT: could not diverge SWF weights - the normalised column will read identical to raw and prove nothing.");
             }
+        }
+
+        /// <summary>
+        /// Drafts two spending lines - one up, one down - so behaviour 1's carriers actually RENDER.
+        ///
+        /// Without this every spending row captures at zero change, which means the hatch band has zero
+        /// width, the draft figure is null, and icon_pencil_draft never draws. The screen would look
+        /// correct and prove nothing, exactly the way the SWF weight column did before
+        /// <see cref="DivergeSwfWeights"/>. Two directions rather than one because the hatch is
+        /// explicitly bidirectional (see LedgerRow.DrawTrackFurniture) and a single raise would leave
+        /// the cut case unexercised.
+        /// </summary>
+        private static void DraftSpendingLines(object controller)
+        {
+            FieldInfo f = controller.GetType().GetField("_spendingLineInputs", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (f == null || !(f.GetValue(controller) is System.Collections.IDictionary inputs))
+            {
+                Debug.LogWarning("SHOT: could not draft spending lines - B1's hatch and pencil will not render and the capture proves nothing.");
+                return;
+            }
+
+            // ⚠ SEEDED FROM THE COUNTRY, NOT FROM THE DICTIONARY'S EXISTING KEYS. `_spendingLineInputs`
+            // is filled lazily as each row draws, so before the first Budget frame it is EMPTY - an
+            // earlier version of this iterated its keys, drafted nothing, and reported success.
+            object country = controller.GetType()
+                .GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(controller);
+            object lines = country?.GetType().GetProperty("SpendingLines")?.GetValue(country)
+                ?? country?.GetType().GetField("SpendingLines")?.GetValue(country);
+
+            if (!(lines is System.Collections.IEnumerable spendingLines))
+            {
+                Debug.LogWarning("SHOT: could not reach SpendingLines - B1's hatch and pencil will not render.");
+                return;
+            }
+
+            int drafted = 0;
+            foreach (object line in spendingLines)
+            {
+                object category = line.GetType().GetProperty("Category")?.GetValue(line)
+                    ?? line.GetType().GetField("Category")?.GetValue(line);
+                if (category == null)
+                {
+                    continue;
+                }
+
+                // EVERY line, alternating direction - not the first two. Drafting only a couple left the
+                // carriers real but off-screen: the bill direction moved, proving the draft was live,
+                // while every row in frame still rendered at zero change. A capture that depends on
+                // which rows happen to be scrolled into view is not evidence.
+                inputs[category] = (drafted % 2 == 0) ? 6f : -4f;
+                drafted++;
+            }
+
+            Debug.Log($"SHOT: drafted {drafted} spending lines (+6%, -4%) so B1's hatch, draft figure and pencil render.");
         }
 
         private static bool SetPrivateField(object target, string field, object value)

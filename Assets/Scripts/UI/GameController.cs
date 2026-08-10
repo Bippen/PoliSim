@@ -5383,7 +5383,18 @@ namespace PoliSim.UI
             // anywhere in pass 3's 1b - so there is no spec treatment to adopt and inventing a row-level
             // one would be inventing, not implementing. It is also not a row property: it is a property
             // of a GROUP, and a header is what a group heading looks like. Declared to Design as V2.
-            GUILayout.Label("Mandatory (narrower range, higher approval cost)", _headerStyle);
+            // Each group's bars scale to that group's own largest line, and the header says which scale
+            // is in force. Q1's answer keeps SHARE global (a share of GDP means the same thing in both
+            // sections, and rebasing it per group would make the column lie), which is only survivable
+            // because the bar now carries within-group discrimination that the share column cannot.
+            // Ship one without the other and the discretionary tail reads 0.4/0.4/0.3/0.3/0.2 with
+            // nothing to tell those rows apart - which is exactly the state Q1 was raised about.
+            float mandatoryMax = GroupSpendingMax(isMandatory: true);
+            float discretionaryMax = GroupSpendingMax(isMandatory: false);
+
+            GUILayout.Label(
+                $"Mandatory (narrower range, higher approval cost) - bars to {UiFormat.Money(mandatoryMax, MoneyUnit.Billions)}",
+                _headerStyle);
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
                 if (!spendingLine.IsMandatory)
@@ -5391,11 +5402,13 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange);
+                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange, mandatoryMax);
             }
 
             GUILayout.Space(10f);
-            GUILayout.Label("Discretionary", _headerStyle);
+            GUILayout.Label(
+                $"Discretionary - bars to {UiFormat.Money(discretionaryMax, MoneyUnit.Billions)}",
+                _headerStyle);
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
                 if (spendingLine.IsMandatory)
@@ -5403,7 +5416,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange);
+                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, discretionaryMax);
             }
         }
 
@@ -5416,7 +5429,22 @@ namespace PoliSim.UI
         }
 
         /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size, plus a bar sized relative to <paramref name="maxAmountInGroup"/> (its own Mandatory/Discretionary group's largest line) for an at-a-glance size comparison.</summary>
-        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent)
+        /// <summary>The largest line in one spending group - the denominator its bars scale against (V2). Guarded above zero so an empty or all-zero group cannot divide by it.</summary>
+        private float GroupSpendingMax(bool isMandatory)
+        {
+            float max = 0f;
+            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
+            {
+                if (spendingLine.IsMandatory == isMandatory)
+                {
+                    max = Mathf.Max(max, spendingLine.Amount);
+                }
+            }
+
+            return Mathf.Max(max, 0.0001f);
+        }
+
+        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent, float groupMax)
         {
             float draftPercent = GetSpendingLineInput(spendingLine.Category);
             bool hasDraft = !Mathf.Approximately(draftPercent, 0f);
@@ -5449,7 +5477,8 @@ namespace PoliSim.UI
                 _labelStyle,
                 _labelStyle,
                 _sliderStyle,
-                _sliderThumbStyle);
+                _sliderThumbStyle,
+                barFraction: spendingLine.Amount / groupMax);
 
             _spendingLineInputs[spendingLine.Category] = newPercent;
         }

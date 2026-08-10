@@ -57,17 +57,26 @@ ui_scrollbar_button_none
 ui_chip
 ui_chip_outline
 
-# ---- pass 3, 2026-08-10 (4) ----
-# DELIVERED AS SVG SOURCES ONLY. These are specified and absent, so the check fails on them by
-# design — that failure is the whole reason this manifest exists. PNG delivery is an open follow-up
-# with Design (see CLAUDE_DESIGN_ASSET_REQUEST.md §1E). Two further open questions before import:
-# emblem_state_seal is white-on-alpha and so violates what the emblem_ prefix means (§3.1 makes that
-# family the full-colour exemption — it should ship as ui_seal_state), and canvas_btn_brass/_paper
-# are three-cell state strips needing Sprite Mode Multiple rather than §3's single-sprite meta.
-canvas_folder_country
-canvas_btn_brass
-canvas_btn_paper
-emblem_state_seal
+# ---- pass 3, IMPORTED 2026-08-10 (9) ----
+# Delivered and imported. The four names that stood here — canvas_folder_country, canvas_btn_brass,
+# canvas_btn_paper, emblem_state_seal — were SUPERSEDED rather than merely fulfilled, so they are
+# gone rather than ticked off: Design retired the canvas_* namespace, renamed the seal to match what
+# §3.1's emblem_ prefix actually means, and split each three-cell button strip into per-state
+# sprites following the scrollbar precedent. That last one turned two open questions into nine
+# single-sprite files, which is why this section grew from four entries to nine.
+#
+# ⚠ Retiring the old names is PART OF the import. Leaving them would have kept the check failing
+# against assets that no longer exist under those names — a red that means nothing, which is worse
+# than the honest red it replaced.
+ui_folder_country
+ui_seal_state
+icon_pencil_draft
+ui_btn_brass_canvas
+ui_btn_brass_canvas_hover
+ui_btn_brass_canvas_pressed
+ui_btn_paper_canvas
+ui_btn_paper_canvas_hover
+ui_btn_paper_canvas_pressed
 
 # ---- superseded pre-v2.0 chrome (11) ----
 # Present on disk, fully superseded by the passes above, removable in one pass once the v2.0 wiring

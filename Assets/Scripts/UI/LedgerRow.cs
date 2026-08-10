@@ -83,12 +83,36 @@ namespace PoliSim.UI
             GUIStyle nameStyle,
             GUIStyle figureStyle,
             GUIStyle sliderStyle,
-            GUIStyle thumbStyle)
+            GUIStyle thumbStyle,
+            float barFraction = -1f)
         {
             float scale = Scale(nameStyle);
             Columns(row, nameStyle, out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
             Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
+
+            // The MAGNITUDE bar, scaled by the caller against its GROUP's largest row (Design's answer to
+            // V2). It sits along the bottom of the name cell so it never fights the text above it.
+            //
+            // **Why the group and not the whole screen.** Scaled globally, every discretionary line would
+            // sit at a few percent of Social Security and the whole group would render as one flat
+            // smear - the same failure the SHARE column has, for the same reason. Scaled to the group,
+            // the bar discriminates exactly where the share column cannot. The header prints which scale
+            // is in force, because a bar whose scale is unstated is a bar that can be misread across
+            // sections, and two adjacent groups here really do differ by three orders of magnitude.
+            if (barFraction >= 0f && Event.current.type == EventType.Repaint)
+            {
+                float barHeight = Mathf.Max(1f, 2f * scale);
+                var barRect = new Rect(
+                    nameRect.x,
+                    nameRect.yMax - barHeight,
+                    nameRect.width * Mathf.Clamp01(barFraction),
+                    barHeight);
+                Color barPrevious = GUI.color;
+                GUI.color = interactive ? PoliSimTheme.TextSecondary : PoliSimTheme.TextMuted;
+                GUI.DrawTexture(barRect, Texture2D.whiteTexture);
+                GUI.color = barPrevious;
+            }
 
             DrawNameCell(nameRect, name, nameStyle, rowInk);
 
@@ -199,6 +223,30 @@ namespace PoliSim.UI
             GUI.color = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
             GUI.DrawTexture(tickRect, Texture2D.whiteTexture);
             GUI.color = tickPrevious;
+
+            // D1's agreed draft carrier: a pencil at the DRAFT end, so the two ends of the change are
+            // marked by what they ARE - the standing value by a hard rule, the proposed one by a
+            // drawing implement. The hatch says how far; these two say which end is which.
+            //
+            // ⚠ PURELY ADDITIVE, and it must stay that way. Behaviour 1 is already carried above by the
+            // hatch and by the amber figures in DrawFigurePair, both of which have their own fallbacks.
+            // This is a fidelity upgrade on a cue that already holds, NOT the cue itself - so when the
+            // sprite is missing this draws nothing and B1 is unharmed. Making the pencil load-bearing
+            // (by moving any part of the hatch or the tick under this null check) would convert an
+            // optional refinement into a single point of failure for the behaviour.
+            if (interactive && hatchWidth > 1f)
+            {
+                Texture2D pencil = IconLibrary.GetChrome("icon_pencil_draft");
+                if (pencil != null)
+                {
+                    float size = track.height + 6f * scale;
+                    var pencilRect = new Rect(draftX - size * 0.5f, track.y - 3f * scale, size, size);
+                    Color pencilPrevious = GUI.color;
+                    GUI.color = PoliSimTheme.Draft;
+                    GUI.DrawTexture(pencilRect, pencil, ScaleMode.ScaleToFit);
+                    GUI.color = pencilPrevious;
+                }
+            }
         }
 
         /// <summary>`standing → draft`, the draft half in amber. Behaviour 1 in text, beside the same pair drawn on the track.</summary>

@@ -1091,3 +1091,23 @@ Every literal icon name referenced anywhere in `Assets/Scripts` was extracted an
 the 84 sprite files then on disk; `icon_stat_interestrate` was the only miss. Area-icon and portrait
 coverage were checked separately against `UiPalette.SystemArea` and against the real `CabinetSystem`/
 `FederalReserveSystem` candidate pools respectively, and both were complete.
+
+## §1F — CARRIED, NOT RESOLVED: Design's rasterization diff (opened 2026-08-10)
+
+Pass 3 shipped the six per-state button PNGs with an explicit caveat: they are cut from the strip
+cells byte-identically in geometry, but Design asked us to diff them against **our own**
+rasterization once before trusting the pipeline — correctly noting that a byte-identical cut is a
+claim about their tooling, not a verification of ours.
+
+**We cannot run it.** This machine has no SVG rasterizer: no ImageMagick (`convert` on PATH is the
+Windows disk utility), no Inkscape, no `rsvg-convert`, no Node, and the `python3` on PATH is the
+Microsoft Store stub. Unity cannot stand in either — `com.unity.vectorgraphics` is not installed.
+
+**What was verified instead, and what that does and does not cover.** All six PNGs decode cleanly at
+256×128 with 32bpp alpha, and all six MD5 hashes differ, so the cuts are genuinely distinct frames
+rather than a duplicated cell — a failure mode a geometry-only check would have missed. That
+verifies *their* delivery. It does not verify *our* pipeline, which is precisely the distinction
+Design drew, so the caveat stands.
+
+⚠ This closes when a rasterizer exists here — not when the sprites look right in a capture. They
+already do, and that is exactly why this is easy to let lapse.
