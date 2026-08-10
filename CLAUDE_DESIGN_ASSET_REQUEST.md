@@ -1,18 +1,39 @@
 # Claude Design asset request — PoliSim
 
-**Status: v2.0 VISUAL REDIRECTION — CHROME COMPLETE, NOTHING OUTSTANDING WITH DESIGN.**
-**Passes 1 and 2 received, verified and imported 2026-08-03**: 41 sprites + 7 SVG sources + palette +
-`DIRECTION.md` + `CANVAS_SPEC.md`, 52/52 resolving through `Resources.Load`. Pass 2 answered every item in
-§1B. **The delivered specification is reproduced in §1C** — read that before implementing anything.
-**What is open is now ours, not theirs:** the draft-amber sign-off (§1B.5), and wiring any of it.
-**Date:** 2026-08-03.
+**Status: PASS 3 REVISION REQUEST OPEN — nine items with Design, four blocking.**
+**Date:** 2026-08-10.
+
+➡ **START AT [§1D](#1d-revision-request--the-eight-screen-boards-2026-08-10).** The eight screen boards
+arrived and were read; §1D is what goes back. The four blockers are **D1** the draft-marker glyph missing
+from every shipped font, **D2** a division bar the simulation cannot compute, **D3** a density board that
+tested 19 rows against an actual 42, and **D4** four charts that were never aged. Five smaller items
+follow, plus a locale flag and one proposed wording fix.
+
+⚠ **§1D is mirrored at `uploads/REVISION_REQUEST_PASS3.md` in the Design project, and at
+`REVISION_REQUEST_PASS3.md` in this repo, so it arrives as a new file rather than an in-place overwrite
+of a document a week old.** **This document is the source of truth**; the mirror is generated from §1D by
+the command recorded at the top of the mirror, so regenerating it is how they are kept from drifting.
+Edit §1D here, then regenerate — never edit the mirror.
+
+**What is settled.** Passes 1 and 2 received, verified and imported 2026-08-03: 41 sprites + 7 SVG
+sources + palette + `DIRECTION.md` + `CANVAS_SPEC.md`, 52/52 resolving through `Resources.Load`. Pass 2
+answered every item in §1B. **The delivered specification is reproduced in §1C** — read that before
+implementing anything. The chrome is wired but **not yet confirmed in a live Editor**, and nothing may be
+layered on it until it is.
+
+**What is ours, not theirs:** the draft-amber sign-off (§1B.5), and wiring any of it.
+
 **Supersedes:** `CLAUDE_DESIGN_ASSET_REQUEST_5E.md`, `_UI_CHROME.md`, `_UI_CHROME_ADDENDUM.md` and
 `_MACRO.md` — all four fully delivered, imported and verified in production. Their contents are recorded
 in `COMPLETED.md` §8 and the originals remain in git history. **This is the single standing asset request
 document**; new requests append here rather than starting a new file.
 
-Fifth request in this project. **The technical conventions in §3–§4 are unchanged and still binding**;
-§1 below is the new brief.
+Fifth request in this project. **The technical conventions in §3–§4 are unchanged and still binding.**
+
+⚠ **This header was itself the failure it exists to catch.** Between 2026-08-03 and 2026-08-10 it read
+*"CHROME COMPLETE, NOTHING OUTSTANDING WITH DESIGN"* while §1D sat below it carrying four blockers, and
+Elias could not find the revision request because the document's most-read line denied there was one.
+A status line is a cached value with no expiry — §6's rule, landing on the document that records §6.
 
 ---
 
