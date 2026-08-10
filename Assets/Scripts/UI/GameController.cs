@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using PoliSim.Data;
 using PoliSim.Simulation;
 using UnityEngine;
@@ -4603,27 +4604,50 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
 
             DrawTaxProgramBillEstimate(taxLine, pendingBill);
-            GUILayout.Label($"Standing: {(taxLine.IsImplemented ? $"{taxLine.Rate:F2}%" : "not implemented")}", _labelStyle);
 
+            // v2.0 (POLISIM_V2_SCREEN_SPEC.md §A.9): the three stacked labels this row used to draw -
+            // "Standing:", "Draft rate:", and a bare slider - collapse into ONE ledger row where the
+            // standing value is a tick on the track, the draft is the knob, and the span between them
+            // is hatched in draft amber. Behaviour 1 stops being a colour on a label and becomes a
+            // distance the player can read at a glance.
+            //
             // The slider IS the current draft (defaulting to the standing Rate until dragged), bounded
             // by this TaxType's own TaxTypeRateRanges - not a small per-turn delta, so a meaningful
             // policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one bill.
             float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
-            string draftLabel = taxLine.IsImplemented
-                ? $"Draft rate: {draftRate:F2}%  (range {taxLine.MinRate:F0}-{taxLine.MaxRate:F0}%, applies via the next Annual Budget bill)"
-                : "Draft rate: not implemented";
+
             // Only an IMPLEMENTED line can have a pending rate change - an unimplemented one is changed
             // by its own standalone Implement/Remove bill above, not by this slider, so it must never
             // show the amber cue regardless of what the (inactive) draft value happens to hold.
-            DrawDraftLabel(draftLabel, taxLine.IsImplemented && !Mathf.Approximately(draftRate, taxLine.Rate));
+            bool hasDraft = taxLine.IsImplemented && !Mathf.Approximately(draftRate, taxLine.Rate);
 
-            // Compose with, never clobber, whatever ambient GUI.enabled the caller already set (e.g.
-            // the tab-switch's own !_isGameOver gate) - restoring a hardcoded true here would
-            // incorrectly re-enable this slider while the game is over.
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && taxLine.IsImplemented;
-            float newRate = GUILayout.HorizontalSlider(draftRate, taxLine.MinRate, taxLine.MaxRate, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
+            // B3: no call site renders currency without naming a MoneyUnit. This is the same per-line
+            // figure the revenue breakdown uses, so the two can never disagree.
+            float estimatedRevenue = _playerCountry.State.GDP * (taxLine.Rate / 100f) * taxLine.BaseShareOfGdp;
+
+            // GetRect + GUI.HorizontalSlider is exactly what GUILayout.HorizontalSlider does internally,
+            // so the control-ID sequence this row emits is unchanged: button, then slider, every frame.
+            // See DrawTaxPolicyContent's doc comment on why that ordering is a hang trigger, not taste.
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            float newRate = LedgerRow.Draw(
+                rowRect,
+                taxLine.Type.ToString(),
+                taxLine.Rate,
+                draftRate,
+                taxLine.MinRate,
+                taxLine.MaxRate,
+                // InvariantCulture, deliberately. UiFormat pins money for this reason and its doc comment
+                // names the exact string this machine's sv-SE locale produced ("$29,0T"); a rate printed
+                // beside a pinned money figure must not disagree with it about what a decimal point is.
+                taxLine.IsImplemented ? taxLine.Rate.ToString("F2", CultureInfo.InvariantCulture) + "%" : "not implemented",
+                hasDraft ? draftRate.ToString("F2", CultureInfo.InvariantCulture) + "%" : null,
+                taxLine.IsImplemented ? UiFormat.Money(estimatedRevenue, MoneyUnit.Billions) : "-",
+                taxLine.IsImplemented,
+                _labelStyle,
+                _labelStyle,
+                _sliderStyle,
+                _sliderThumbStyle);
+
             if (taxLine.IsImplemented)
             {
                 _taxRateInputs[taxLine.Type] = newRate;
