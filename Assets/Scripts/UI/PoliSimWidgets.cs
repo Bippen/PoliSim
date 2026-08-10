@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PoliSim.UI
@@ -137,6 +138,45 @@ namespace PoliSim.UI
         /// following control — so text is fitted to what is genuinely left rather than to the whole rect.</param>
         /// <returns>The rendered size, so a caller can lay out what follows against real geometry instead
         /// of an assumed width.</returns>
+        /// <summary>
+        /// Per-source scratch clones, so shrinking never touches a caller's style.
+        ///
+        /// ⚠ **This method used to mutate the style it was handed** - setting `wordWrap` and, when text
+        /// overflowed, permanently lowering `fontSize`. Handing it a shared style therefore shrank that
+        /// style a little more on every frame, compounding until layout collapsed across every screen
+        /// using it.
+        ///
+        /// **It caught two callers.** `PolicyScreenStatsRenderer` worked around it with a private cached
+        /// `ChipTextStyle`; `LedgerRow` then hit the identical bug from scratch and needed the identical
+        /// workaround. **A method that permanently mutates its argument is a defect in the method, not a
+        /// discipline problem for callers** - the second occurrence proved the convention was not
+        /// transmissible. The shared-style path is now impossible rather than merely discouraged.
+        ///
+        /// Keyed on the source style by reference and refreshed from it each call, so a style that
+        /// rescales with `Screen.height` is followed rather than frozen, and the previous call's shrink
+        /// is undone rather than accumulated.
+        /// </summary>
+        private static readonly Dictionary<GUIStyle, GUIStyle> MeasuredScratchStyles = new Dictionary<GUIStyle, GUIStyle>();
+
+        private static GUIStyle MeasuredScratch(GUIStyle source)
+        {
+            if (!MeasuredScratchStyles.TryGetValue(source, out GUIStyle scratch) || scratch == null)
+            {
+                scratch = new GUIStyle(source);
+                MeasuredScratchStyles[source] = scratch;
+            }
+
+            // Re-seeded from the source every call. fontSize is the one that matters (it both follows a
+            // window resize and undoes the previous call's shrink); the rest are copied because a caller
+            // legitimately varies them per cell and the scratch must not remember the last cell's.
+            scratch.fontSize = source.fontSize;
+            scratch.font = source.font;
+            scratch.alignment = source.alignment;
+            scratch.normal.textColor = source.normal.textColor;
+            scratch.padding = source.padding;
+            return scratch;
+        }
+
         public static Vector2 MeasuredLabel(Rect rect, string text, GUIStyle style, float reserveWidth = 0f)
         {
             if (string.IsNullOrEmpty(text))
@@ -144,17 +184,20 @@ namespace PoliSim.UI
                 return Vector2.zero;
             }
 
-            style.wordWrap = false;
+            // The caller's style is READ, never written. Everything below shrinks the scratch.
+            GUIStyle fitted = MeasuredScratch(style);
+            fitted.wordWrap = false;
+
             float available = rect.width - reserveWidth;
-            Vector2 size = style.CalcSize(new GUIContent(text));
+            Vector2 size = fitted.CalcSize(new GUIContent(text));
 
             if (size.x > available && size.x > 0f && available > 0f)
             {
-                style.fontSize = Mathf.Max(MinMeasuredLabelFontSize, Mathf.FloorToInt(style.fontSize * (available / size.x)));
-                size = style.CalcSize(new GUIContent(text));
+                fitted.fontSize = Mathf.Max(MinMeasuredLabelFontSize, Mathf.FloorToInt(fitted.fontSize * (available / size.x)));
+                size = fitted.CalcSize(new GUIContent(text));
             }
 
-            GUI.Label(new Rect(rect.x, rect.y, available, rect.height), text, style);
+            GUI.Label(new Rect(rect.x, rect.y, available, rect.height), text, fitted);
             return size;
         }
 

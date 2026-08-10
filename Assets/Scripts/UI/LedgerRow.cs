@@ -208,17 +208,14 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// ⚠ **`MeasuredLabel` SHRINKS THE STYLE IT IS HANDED**, permanently, as its way of fitting text.
+        /// A private copy so this row never writes alignment or colour onto the caller's style.
         ///
-        /// Handing it the caller's `_labelStyle` therefore shrinks the whole UI's shared label style a
-        /// little more on every frame, compounding until the layout collapses. The first live capture
-        /// after this row was wired showed exactly that: rows losing their track and figures entirely,
-        /// and text drifting up into the line above.
-        ///
-        /// **This is the second time this trap has been hit in this project** - `PolicyScreenStatsRenderer`
-        /// solved it with a private cached `ChipTextStyle` for the same reason. A per-row cached copy,
-        /// rebuilt only when the source style's size actually changes, is the same fix: MeasuredLabel
-        /// gets something disposable to shrink, and the caller's style is never touched.
+        /// **It no longer needs to guard against MeasuredLabel's shrink** - that was the original reason
+        /// (the first capture after this row was wired showed the shared `_labelStyle` shrinking a little
+        /// more each frame until layout collapsed across every screen), and `MeasuredLabel` now clones
+        /// internally so the shared-style path is impossible rather than merely discouraged. What remains
+        /// is the narrower need: each cell sets its own alignment and ink, and doing that on the caller's
+        /// style would be the same class of mutation one level down.
         /// </summary>
         private static GUIStyle _cellStyle;
         private static int _cellStyleSourceSize = -1;
@@ -236,6 +233,12 @@ namespace PoliSim.UI
             // "reads as an error rather than as a fit" failure §A.9a exists to prevent.
             _cellStyle.fontSize = source.fontSize;
             return _cellStyle;
+        }
+
+        /// <summary>Public so a caller composing extra columns beside a row - the tax screen's verdict cell, say - prints them in the same measured, never-clipping way rather than reaching for a raw GUI.Label.</summary>
+        public static void Cell(Rect rect, string text, GUIStyle source, Color ink, TextAnchor alignment)
+        {
+            DrawCell(rect, text, source, ink, alignment);
         }
 
         private static void DrawCell(Rect rect, string text, GUIStyle source, Color ink, TextAnchor alignment)

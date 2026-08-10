@@ -1492,6 +1492,29 @@ The general lesson, now that it has appeared nine times: **a number that came ou
 measurement at one resolution, never a constant.** Catching this one in the spec rather than in a
 capture is the first time the class has been found before it shipped.
 
+### ⚠ THE MOCKUP-NUMBER RULE — and it is not only about resolution
+
+**Instance #10 arrived the same day, in the same file, from the same spec, and I had already written
+the warning one method above it.** `LedgerRow` derived its row height from the font metric — correctly,
+having just recorded why — and then took the spec's `250 / 150 / 88` column widths and scaled them by
+font size alone. The first live capture killed it: those measures are quoted against board 1b's ~1100px
+ledger panel, the actual centre column on this screen is ~745px, the three fixed columns summed to more
+than the row was wide, the track collapsed to its floor, and both figure columns rendered past the panel
+edge where they simply did not appear.
+
+**So the rule is wider than "derive from `Screen.height`".** A number on a design board is a measurement
+taken against *that board's* conditions — its resolution, its font size, **and its container width** —
+and every one of those varies here. Deriving against one axis while copying another still ships the bug.
+
+**Every remaining number the spec supplies is suspect until derived or explicitly confirmed as fixed.**
+Paddings, insets, tick sizes, the 14px scrollbar track, the 6px inset, the 40px minimum thumb, the 11px
+shrink floor, the 44/26/22px panel paddings. Each is a value at 1920×1080 in a container of a particular
+width. **Confirming one as genuinely fixed is a real answer** — some things should not scale, a hairline
+rule being the obvious case — but it has to be a decision that was taken, not a number that was copied.
+
+The tell, in both instances: the number arrived with no unit of comparison attached. `36px` and `250px`
+each looked like a constant because the board had nothing else in view to measure them against.
+
 ### The screenshot harness, and the batchmode trap that cost the first attempt
 
 The project had **no screenshot tooling at all** (zero `ScreenCapture` references), so every visual

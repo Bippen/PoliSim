@@ -4582,14 +4582,6 @@ namespace PoliSim.UI
         {
             TaxProgramBill pendingBill = FindPendingTaxProgramBill(taxLine.Type);
 
-            GUILayout.BeginHorizontal();
-
-            // The name used to be drawn here, ahead of the button. The v2.0 ledger row below carries it
-            // in its own name column, and the first live capture showed the two rendering one above the
-            // other - the same instrument named twice, three lines apart. The button keeps its own
-            // left-hand gutter so it still aligns with the ledger row's name column beneath it.
-            GUILayout.Space(labelWidth);
-
             string toggleLabel = pendingBill != null
                 // Short labels on purpose. "Introduce Implement Bill" plus the tax/program name beside it
                 // needed ~362px inside a column that is 293px at ordinary window sizes, so the button drew
@@ -4599,16 +4591,41 @@ namespace PoliSim.UI
                 ? $"Pending ({pendingBill.DaysRemaining}d)"
                 : taxLine.IsImplemented ? "Remove" : "Implement";
             GUIStyle toggleStyle = taxLine.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
+
+            // ONE ROW, not four stacked lines. Until the first live capture this drew a full-width
+            // button, then a sentence-long estimate, then the ledger row - three lines per instrument on
+            // the densest screen in the game, where the board draws one. The button and the verdict move
+            // onto the row itself; the estimate's prose collapses to the verdict word it was carrying.
+            //
+            // ⚠ CONTROL ORDER IS PRESERVED EXACTLY: button, then slider, every frame. That is the whole
+            // constraint DrawTaxPolicyContent's doc comment describes - GUILayout allocates control IDs
+            // positionally and a background bill can resolve mid-drag - and it is order STABILITY that
+            // matters, so drawing the same two controls in the same sequence at different rects is safe
+            // where varying the sequence would not be.
+            Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            float gap = _labelStyle.fontSize * 0.6f;
+            // Measured in the style the button ACTUALLY renders in, not in _labelStyle. The first inline
+            // capture measured the label style and "Implement" wrapped to "Implemen / t" - the button
+            // style carries its own padding and metrics, so measuring a different style sizes the column
+            // for a different string. Same class as the mockup-number rule: a measurement is only valid
+            // against the conditions it was taken under.
+            float actionWidth = Mathf.Max(fullRow.width * 0.15f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);
+            float verdictWidth = fullRow.width * 0.13f;
+
+            var actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);
+            var verdictRect = new Rect(actionRect.x - verdictWidth - gap, fullRow.y, verdictWidth, fullRow.height);
+            var ledgerRect = new Rect(fullRow.x, fullRow.y, verdictRect.x - fullRow.x - gap, fullRow.height);
+
+            // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.ExpandWidth(true)))
+            if (GUI.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceTaxProgramBill(PlayerCountryId, taxLine.Type, !taxLine.IsImplemented);
             }
             GUI.enabled = ambientEnabledForButton;
-            GUILayout.EndHorizontal();
 
-            DrawTaxProgramBillEstimate(taxLine, pendingBill);
+            DrawTaxProgramBillVerdict(taxLine, pendingBill, verdictRect);
 
             // v2.0 (POLISIM_V2_SCREEN_SPEC.md §A.9): the three stacked labels this row used to draw -
             // "Standing:", "Draft rate:", and a bare slider - collapse into ONE ledger row where the
@@ -4633,9 +4650,9 @@ namespace PoliSim.UI
             // GetRect + GUI.HorizontalSlider is exactly what GUILayout.HorizontalSlider does internally,
             // so the control-ID sequence this row emits is unchanged: button, then slider, every frame.
             // See DrawTaxPolicyContent's doc comment on why that ordering is a hang trigger, not taste.
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            // Control 2 of 2 - the slider, inside the ledger row.
             float newRate = LedgerRow.Draw(
-                rowRect,
+                ledgerRect,
                 taxLine.Type.ToString(),
                 taxLine.Rate,
                 draftRate,
@@ -4670,14 +4687,24 @@ namespace PoliSim.UI
         /// pending, it scores THAT bill instead, since introducing a new one isn't the live question
         /// anymore.
         /// </summary>
-        private void DrawTaxProgramBillEstimate(TaxLine taxLine, TaxProgramBill pendingBill)
+        private void DrawTaxProgramBillVerdict(TaxLine taxLine, TaxProgramBill pendingBill, Rect rect)
         {
             TaxProgramBill bill = pendingBill ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !taxLine.IsImplemented };
             float direction = ParliamentSystem.GetTaxProgramBillDirection(_playerCountry, bill);
             bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
-            string prefix = pendingBill != null ? "Pending bill" : "If introduced now";
-            DrawColoredLabel($"{prefix}: {(wouldPass ? "WOULD PASS" : "WOULD FAIL")} (current seat composition)",
-                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+
+            // The sentence this used to print - "If introduced now: WOULD PASS (current seat
+            // composition)" - said the same thing on every one of thirteen rows, so twelve repetitions
+            // were carrying no information while costing a line each. The qualifier moves to the
+            // screen's own header; the row keeps the verdict, which is the part that varies.
+            // "PENDING" when a bill is already in flight, because then the live question is not whether
+            // introducing one would pass.
+            string text = pendingBill != null ? "PENDING" : wouldPass ? "WOULD PASS" : "WOULD FAIL";
+            Color ink = pendingBill != null
+                ? PoliSimTheme.TextMuted
+                : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
+
+            LedgerRow.Cell(rect, text, _labelStyle, ink, TextAnchor.MiddleRight);
         }
 
         /// <summary>Every WelfareProgramType for the player's country: an Implement/Remove toggle (immediate - see DrawWelfareProgramRow) plus, only while implemented, a slider that directly sets this turn's target GenerosityLevel. Mirrors DrawTaxPolicyContent/DrawTaxLineRow exactly. Master Sequence step 5e, Phase A: the old standalone Welfare Policy tab is retired (folds into Tax/Spending, same as Tax) - reached exclusively via DrawBudgetProcessTab now.</summary>
