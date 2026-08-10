@@ -908,7 +908,7 @@ namespace PoliSim.UI
             switch (_consolidatedTab)
             {
                 case ConsolidatedTab.Statistics:
-                    DrawStatisticsTab(tabContentHeight);
+                    DrawStatisticsTab(tabContentHeight, rightColumnWidth);
                     break;
                 case ConsolidatedTab.Decisions:
                     DrawDecisionsTab(tabContentHeight);
@@ -925,7 +925,7 @@ namespace PoliSim.UI
                     DrawPolicyLawsTab(tabContentHeight, rightColumnWidth);
                     break;
                 case ConsolidatedTab.Politics:
-                    DrawPoliticsTab(tabContentHeight);
+                    DrawPoliticsTab(tabContentHeight, rightColumnWidth);
                     break;
             }
 
@@ -2902,7 +2902,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above).</summary>
-        private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory) where T : struct, System.Enum
+        private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory, float maxWidth = 0f) where T : struct, System.Enum
         {
             bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);
             GUIStyle style = BuildSubTabStyle(selected);
@@ -2916,12 +2916,36 @@ namespace PoliSim.UI
             // "and this much is the minimum I need". With a floor measured in the style the text actually
             // renders in, GUILayout gives each button at least its own content and the row wraps or
             // compresses evenly instead of silently truncating the end of it.
+            // ⚠ AND THAT FIX THEN OVERFLOWED THE ROW - measured 2026-08-10, not guessed. MinWidth is a
+            // FLOOR, so when the floors sum to more than the container the row grows past it: it stopped
+            // truncating the label and started truncating the PANEL. Policy/Laws measured at five
+            // minimums summing to 791.8px against an availableWidth of 814.1 - which looks like it fits -
+            // and a usable width of 786.1 once `_boxStyle`'s 28px horizontal padding comes out. A 5.7px
+            // overflow: exactly enough to clip the tail of the last button, and enough to widen the whole
+            // content group so the ledger rows' trailing column clipped as well.
+            //
+            // The budget was computed against the width passed IN rather than the width available INSIDE
+            // the container. `maxWidth` is that corrected budget - a floor is still a floor, but never
+            // larger than this button's share of what actually exists. When a label cannot fit its share,
+            // BuildSubTabStyle clears fixedHeight precisely so the button WRAPS to two lines, which is
+            // why capping is safe rather than a return to truncation.
             float minWidth = PoliSimWidgets.MeasuredWidth(label, style, style.padding.horizontal + 6f);
+            if (maxWidth > 0f)
+            {
+                minWidth = Mathf.Min(minWidth, maxWidth);
+            }
+
             if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinWidth(minWidth),
                 GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 selectedCategory = category;
             }
+        }
+
+        /// <summary>The width one button of an <paramref name="count"/>-button sub-tab row may claim as its floor, given the row's OUTER width and the container padding it will actually be drawn inside.</summary>
+        private float SubTabShare(float availableWidth, int count)
+        {
+            return Mathf.Max(1f, (availableWidth - _boxStyle.padding.horizontal) / count);
         }
 
         /// <summary>
@@ -2957,13 +2981,14 @@ namespace PoliSim.UI
         /// favors reusing existing rendering wholesale over extracting content-only pieces that don't
         /// already exist, even at the cost of a harmless nested box for those two categories.
         /// </summary>
-        private void DrawStatisticsTab(float availableHeight)
+        private void DrawStatisticsTab(float availableHeight, float availableWidth)
         {
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Statistics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.BeginHorizontal();
-            DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory);
-            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory);
+            float subTabShare = SubTabShare(availableWidth, 2);
+            DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory, subTabShare);
+            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
@@ -3208,11 +3233,12 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
             GUILayout.BeginHorizontal();
-            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory);
-            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory);
-            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory);
-            DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory);
-            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory);
+            float subTabShare = SubTabShare(availableWidth, 5);
+            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare);
+            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare);
+            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare);
+            DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare);
+            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
@@ -3263,15 +3289,16 @@ namespace PoliSim.UI
         /// Fed/Eurozone exemption means it's never Parliament-gated). Per-category gating matches the
         /// old dispatch exactly - Parliament/Compass were never gated, Cabinet/FederalReserve were.
         /// </summary>
-        private void DrawPoliticsTab(float availableHeight)
+        private void DrawPoliticsTab(float availableHeight, float availableWidth)
         {
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Politics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
             GUILayout.BeginHorizontal();
-            DrawSubCategoryButton("Parliament", PoliticsCategory.Parliament, ref _politicsCategory);
-            DrawSubCategoryButton("Compass", PoliticsCategory.Compass, ref _politicsCategory);
-            DrawSubCategoryButton("Cabinet", PoliticsCategory.Cabinet, ref _politicsCategory);
-            DrawSubCategoryButton(GetCentralBankName(PlayerCountryId), PoliticsCategory.FederalReserve, ref _politicsCategory);
+            float subTabShare = SubTabShare(availableWidth, 4);
+            DrawSubCategoryButton("Parliament", PoliticsCategory.Parliament, ref _politicsCategory, subTabShare);
+            DrawSubCategoryButton("Compass", PoliticsCategory.Compass, ref _politicsCategory, subTabShare);
+            DrawSubCategoryButton("Cabinet", PoliticsCategory.Cabinet, ref _politicsCategory, subTabShare);
+            DrawSubCategoryButton(GetCentralBankName(PlayerCountryId), PoliticsCategory.FederalReserve, ref _politicsCategory, subTabShare);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
