@@ -263,7 +263,10 @@ namespace PoliSim.Testing
         /// 3 turns x 365 days clears `WindowSize` (50) history points on the quarterly series, which is
         /// what makes the pagination row real rather than merely present.
         /// </summary>
-        private const int WarmupDays = 365 * 3;
+        private const int MinWarmupDays = 365 * 3;
+
+        /// <summary>Ceiling on the search for a preliminary release, so a schedule change can never turn the warm-up into an unbounded loop - the same bounded-retry discipline UiScreenshotCapture applies to waiting for play mode.</summary>
+        private const int MaxWarmupDays = 365 * 5;
 
         /// <summary>
         /// Drives the simulation forward through the real `AdvanceDay` / `AdvanceTurn` pair, so warmed-up
@@ -290,16 +293,36 @@ namespace PoliSim.Testing
             // meant to be a picture of the UI.
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
             int turns = 0;
-            for (int i = 0; i < WarmupDays; i++)
+            int days = 0;
+            for (int i = 0; i < MaxWarmupDays; i++)
             {
                 if (sim.AdvanceDay())
                 {
                     sim.AdvanceTurn(noDecisions);
                     turns++;
                 }
+
+                days++;
+
+                // ⚠ STOP ON A PRELIMINARY RELEASE, not on a day count.
+                //
+                // Behaviour 6's whole point is the state where a figure is published but not yet
+                // revised - badged, dated AND dashed at once. A fixed warm-up cannot capture it except
+                // by luck: three years of history left every series reading FINAL, because everything
+                // old enough to plot is also old enough to have been revised. The window between a
+                // release and its revision is narrow and moves, so the driver has to WATCH for it
+                // rather than guess a date.
+                //
+                // Minimum days first, so the graphs still have a trend to draw - a preliminary figure on
+                // an empty chart would prove B6 and nothing else.
+                if (days >= MinWarmupDays && AnyPreliminary(sim))
+                {
+                    Debug.Log($"SHOT: stopped on a PRELIMINARY release at day {days} / turn {turns} - behaviour 6's provisional state is on screen.");
+                    return;
+                }
             }
 
-            Debug.Log($"SHOT: advanced {WarmupDays} days / {turns} turns before capture.");
+            Debug.LogWarning($"SHOT: advanced {days} days / {turns} turns without catching a preliminary release - B6's provisional case will NOT be in this capture.");
         }
 
         /// <summary>
@@ -336,6 +359,27 @@ namespace PoliSim.Testing
 
             f.SetValue(target, value);
             return true;
+        }
+
+        /// <summary>True when ANY published series on the player country is currently sitting on a preliminary release - the state behaviour 6 exists to distinguish, and the one a fixed-length warm-up reliably misses.</summary>
+        private static bool AnyPreliminary(SimulationManager sim)
+        {
+            Country country = sim.World?.GetCountry(CountryId.USA);
+            if (country?.Published == null)
+            {
+                return false;
+            }
+
+            foreach (KeyValuePair<PublishedStat, PublishedSeries> kv in country.Published.Series)
+            {
+                PublishedEntry latest = kv.Value.Latest();
+                if (latest != null && latest.Status == RevisionStatus.Preliminary)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
