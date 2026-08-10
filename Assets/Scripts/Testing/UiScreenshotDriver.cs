@@ -83,6 +83,7 @@ namespace PoliSim.Testing
             yield return Settle();
 
             AdvanceDays(controller);
+            DivergeSwfWeights(controller);
             yield return Settle();
 
             for (int i = 0; i < Tabs.Length; i++)
@@ -295,6 +296,42 @@ namespace PoliSim.Testing
             }
 
             Debug.Log($"SHOT: advanced {WarmupDays} days / {turns} turns before capture.");
+        }
+
+        /// <summary>
+        /// Drafts a Sovereign Wealth Fund and pushes ONE asset-class weight off its default.
+        ///
+        /// ⚠ **Without this the SWF trailing column cannot be judged, and was verified by argument only
+        /// for two sessions.** The four weights default to 40/30/15/15, which sums to exactly 100 - so
+        /// raw weight and normalised "% of fund" print identical numbers and the column looks like a
+        /// restatement of the figure beside it. Its actual purpose is that dragging ONE weight moves the
+        /// other three, and that is invisible until the four stop summing to 100.
+        ///
+        /// Equities to 80 makes the sum 140, so every share diverges from its raw weight at once
+        /// (80 -> 57%, 30 -> 21%, 15 -> 11%) and the three untouched rows visibly move. Drafting the fund
+        /// as well so the rows render interactive rather than disabled, which is also what puts the amber
+        /// draft cue on screen - the row differs from standing, which is exactly what behaviour 1 marks.
+        /// </summary>
+        private static void DivergeSwfWeights(object controller)
+        {
+            if (!SetPrivateField(controller, "_swfExistsDraft", true)
+                || !SetPrivateField(controller, "_swfEquitiesWeightInput", 80f))
+            {
+                Debug.LogWarning("SHOT: could not diverge SWF weights - the normalised column will read identical to raw and prove nothing.");
+            }
+        }
+
+        private static bool SetPrivateField(object target, string field, object value)
+        {
+            FieldInfo f = target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (f == null || !f.FieldType.IsInstanceOfType(value))
+            {
+                Debug.LogError($"SHOT: field {field} not found or wrong type.");
+                return false;
+            }
+
+            f.SetValue(target, value);
+            return true;
         }
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
