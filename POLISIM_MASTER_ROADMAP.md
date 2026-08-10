@@ -503,18 +503,33 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
    ### ⚠ NEXT SESSION STARTS HERE — end of 2026-08-10
 
-   **Spending rows.** Convert `DrawSpendingLineRow` to `LedgerRow`, capture, and only then move to
-   welfare, infrastructure and SWF — **one row type per capture, never batched.** That sequence is not
-   ceremony: converting the tax row took three capture rounds, and each round found a defect the code
-   review had passed (a shared-style mutation that degraded every screen in the session, columns that
-   overflowed their panel, and a button measured in the wrong style).
+   **The Budget screen is FULLY CONVERTED** — all five row types, each captured before the next was
+   started. It is the densest screen in the game and the one the spec was stress-tested against, so it
+   is the right thing to have finished first.
+
+   | row type | mapping | control |
+   |---|---|---|
+   | Tax | standing tick at the enacted **rate** | button + slider |
+   | Spending | standing tick at **zero** — the slider carries a percentage *change* | slider |
+   | Welfare | standing tick at the enacted **generosity** | button + slider |
+   | Infrastructure | **read-only gauge** — condition is an output, not a dial | **none** |
+   | SWF | tick at the standing value, on a range that **spans zero**; trailing column carries normalised share | button + 6 sliders |
+
+   **One widget, five semantics, and the shape held for all of them.** The two that looked like they
+   would need special handling did not: a negative contribution just puts the knob left of centre, and
+   normalised weights turned out to be what the trailing column was always for.
+
+   **Next: pick the following screen.** Statistics, Politics/Parliament and Policy/Laws all carry rows
+   of the same family. Keep the sequence — **one type per capture, never batched.** That is not
+   ceremony: the tax row took three capture rounds, and each found a defect the code review had passed
+   (a shared-style mutation degrading every screen at once, columns overflowing their panel, a button
+   measured in the wrong style).
 
    | | |
    |---|---|
-   | Capture harness | **In the repo and working.** `UiScreenshotCapture` + `UiScreenshotDriver`, 12 shots at 1600×900, per-sub-category on Budget. **No `-batchmode`** — `WaitForEndOfFrame` never resumes there |
-   | Ledger row | **Built and captured.** `LedgerRow` — name · track with standing tick and draft hatch · figures · trailing column |
-   | Tax rows | **Converted.** One line per instrument: name, track, rate, est. revenue, verdict, action |
-   | Spending / Welfare / Infrastructure / SWF | **Still the stacked form.** Next |
+   | Capture harness | **In the repo and working.** `UiScreenshotCapture` + `UiScreenshotDriver`, 17 shots at 1600×900, per-sub-category on Budget with a scrolled second pass. **No `-batchmode`** — `WaitForEndOfFrame` never resumes there |
+   | `LedgerRow` | **Built, captured, proven across five semantics.** `Draw` for controlled rows, `DrawReadOnly` for gauges, shared `Columns` so both align |
+   | Budget screen | **Done.** Tax · Spending · Welfare · Infrastructure · SWF |
 
    **Two rules carried into that work:**
 

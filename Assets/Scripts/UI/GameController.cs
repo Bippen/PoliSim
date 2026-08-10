@@ -5041,23 +5041,60 @@ namespace PoliSim.UI
             GUILayout.Space(8f);
 
             SovereignWealthFund standingDefaults = fund ?? new SovereignWealthFund();
-            bool ambientEnabled = GUI.enabled;
 
+            // v2.0 (POLISIM_V2_SCREEN_SPEC.md §A.9): six ledger rows. SWF exercises the mapping harder
+            // than any other sub-screen, and both of its awkward cases turned out to fit the shape the
+            // other four already use rather than needing a new one.
+            //
+            // ⚠ A NEGATIVE CONTRIBUTION NEEDS NO SPECIAL HANDLING. The rate spans
+            // MinSwfContributionRate..Max across zero, so a drawdown is simply a knob left of centre.
+            // The standing tick keeps its exact meaning - "where it stands today" - and the hatch still
+            // spans standing to draft in whichever direction. A negative value changes where the tick
+            // SITS, not what it IS, which is the whole reason for putting it on the track rather than
+            // encoding it in a label.
+            //
+            // Every row emits exactly one control, in the same order as before: Create/Dissolve button
+            // above, then contribution, domestic, and the four weights. See DrawTaxPolicyContent's doc
+            // comment for why that ordering is a hang trigger rather than a preference.
+            float SwfRow(string name, float standing, float draft, float min, float max,
+                string format, string suffix, string trailing)
+            {
+                Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+                bool changed = !Mathf.Approximately(standing, draft);
+                return LedgerRow.Draw(
+                    rowRect, name, standing, draft, min, max,
+                    standing.ToString(format, CultureInfo.InvariantCulture) + suffix,
+                    changed ? draft.ToString(format, CultureInfo.InvariantCulture) + suffix : null,
+                    trailing,
+                    draftExists,
+                    _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle);
+            }
+
+            // Trailing column = what this rate AMOUNTS TO, which is the same question it answers on Tax
+            // (estimated revenue) and Spending (share of GDP). Here it is the fund movement this rate
+            // actually produces this turn - already computed and cached for the estimate line above, so
+            // the row and that line can never disagree.
             float draftContributionRate = GetSwfContributionRateInput(standingDefaults.ContributionRatePercent);
-            DrawDraftLabel($"Contribution/Withdrawal Rate: {draftContributionRate:+0.0;-0.0;0}% of GDP per turn (negative draws the fund down - use during a recession or emergency instead of borrowing)", standingDefaults.ContributionRatePercent, draftContributionRate);
-            GUI.enabled = ambientEnabled && draftExists;
-            float newContributionRate = GUILayout.HorizontalSlider(draftContributionRate, MinSwfContributionRate, MaxSwfContributionRate, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
+            float newContributionRate = SwfRow(
+                "Contribution / Withdrawal",
+                standingDefaults.ContributionRatePercent, draftContributionRate,
+                MinSwfContributionRate, MaxSwfContributionRate,
+                "+0.0;-0.0;0", "%",
+                fund != null ? _cachedSwfContributionText : "-");
             if (draftExists)
             {
                 _swfContributionRateInput = newContributionRate;
             }
 
+            // The complement, not a restatement: the slider sets the domestic share, so the useful
+            // context is what is therefore international.
             float draftDomesticAllocation = GetSwfDomesticAllocationInput(standingDefaults.DomesticAllocationPercent);
-            DrawDraftLabel($"Domestic Allocation: {draftDomesticAllocation:F0}% (rest international - this pass doesn't model differing returns by allocation)", standingDefaults.DomesticAllocationPercent, draftDomesticAllocation);
-            GUI.enabled = ambientEnabled && draftExists;
-            float newDomesticAllocation = GUILayout.HorizontalSlider(draftDomesticAllocation, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
+            float newDomesticAllocation = SwfRow(
+                "Domestic Allocation",
+                standingDefaults.DomesticAllocationPercent, draftDomesticAllocation,
+                MinPolicyDialLevel, MaxPolicyDialLevel,
+                "F0", "%",
+                (100f - draftDomesticAllocation).ToString("F0", CultureInfo.InvariantCulture) + "% intl");
             if (draftExists)
             {
                 _swfDomesticAllocationInput = newDomesticAllocation;
@@ -5066,12 +5103,20 @@ namespace PoliSim.UI
             GUILayout.Space(8f);
             GUILayout.Label("Asset Class Mix (weights, normalized automatically - don't need to sum to 100)", _labelStyle);
 
-            // Each bar's fraction IS the already-normalized weight (0-1) - no further scaling needed,
-            // unlike the spending-line/trade-volume bars above which normalize against a group max.
-            // Normalized against the DRAFT weights (a throwaway SovereignWealthFund, never the real
+            // ⚠ THE TRAILING COLUMN IS WHAT MAKES NORMALISED WEIGHTS LEGIBLE, and it is why the per-row
+            // bars are gone rather than merely moved.
+            //
+            // These four sliders set RAW weights that normalise against each other, so dragging one
+            // silently changes what the other three amount to. Putting each class's normalised "% of
+            // fund" in the trailing column means the three rows you did NOT touch visibly move when you
+            // drag the fourth - the interaction becomes something you watch rather than something you
+            // deduce. The column has answered "what does this row amount to in context" on every
+            // sub-screen (revenue on Tax, share of GDP on Spending); on this one the context IS the
+            // other rows.
+            //
+            // Normalised against the DRAFT weights (a throwaway SovereignWealthFund, never the real
             // one) via the same GetNormalizedWeight the real fund uses, rather than duplicating its
             // sum-and-divide logic here.
-            Color swfColor = UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth);
             float draftEquities = GetSwfEquitiesWeightInput(standingDefaults.EquitiesWeight);
             float draftBonds = GetSwfBondsWeightInput(standingDefaults.BondsWeight);
             float draftInfrastructure = GetSwfInfrastructureWeightInput(standingDefaults.InfrastructureWeight);
@@ -5084,41 +5129,32 @@ namespace PoliSim.UI
                 RealEstateWeight = draftRealEstate
             };
 
-            GUILayout.Label($"Equities: {draftEquities:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Equities) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Equities), swfColor, 8f);
-            GUI.enabled = ambientEnabled && draftExists;
-            float newEquities = GUILayout.HorizontalSlider(draftEquities, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
+            string Share(SovereignWealthAssetClass assetClass) =>
+                (draftWeights.GetNormalizedWeight(assetClass) * 100f).ToString("F0", CultureInfo.InvariantCulture) + "% of fund";
+
+            float newEquities = SwfRow("Equities", standingDefaults.EquitiesWeight, draftEquities,
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, Share(SovereignWealthAssetClass.Equities));
             if (draftExists)
             {
                 _swfEquitiesWeightInput = newEquities;
             }
 
-            GUILayout.Label($"Bonds: {draftBonds:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Bonds) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Bonds), swfColor, 8f);
-            GUI.enabled = ambientEnabled && draftExists;
-            float newBonds = GUILayout.HorizontalSlider(draftBonds, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
+            float newBonds = SwfRow("Bonds", standingDefaults.BondsWeight, draftBonds,
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, Share(SovereignWealthAssetClass.Bonds));
             if (draftExists)
             {
                 _swfBondsWeightInput = newBonds;
             }
 
-            GUILayout.Label($"Infrastructure: {draftInfrastructure:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.Infrastructure), swfColor, 8f);
-            GUI.enabled = ambientEnabled && draftExists;
-            float newInfrastructure = GUILayout.HorizontalSlider(draftInfrastructure, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
+            float newInfrastructure = SwfRow("Infrastructure", standingDefaults.InfrastructureWeight, draftInfrastructure,
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, Share(SovereignWealthAssetClass.Infrastructure));
             if (draftExists)
             {
                 _swfInfrastructureWeightInput = newInfrastructure;
             }
 
-            GUILayout.Label($"Real Estate: {draftRealEstate:F0} ({draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate) * 100f:F0}% of fund)", _labelStyle);
-            UiPalette.DrawBar(draftWeights.GetNormalizedWeight(SovereignWealthAssetClass.RealEstate), swfColor, 8f);
-            GUI.enabled = ambientEnabled && draftExists;
-            float newRealEstate = GUILayout.HorizontalSlider(draftRealEstate, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
+            float newRealEstate = SwfRow("Real Estate", standingDefaults.RealEstateWeight, draftRealEstate,
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, Share(SovereignWealthAssetClass.RealEstate));
             if (draftExists)
             {
                 _swfRealEstateWeightInput = newRealEstate;
