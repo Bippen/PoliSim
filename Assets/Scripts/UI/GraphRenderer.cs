@@ -188,8 +188,10 @@ namespace PoliSim.UI
 
         private TimeRange _timeRange = TimeRange.All;
 
-        private static readonly Color ReleaseMarkerColor = new Color(0.95f, 0.80f, 0.30f, 1f);
-        private static readonly Color PreliminaryLineColor = new Color(0.95f, 0.65f, 0.25f, 1f);
+        /// <summary>A release marker on the timeline - furniture rather than data, so it takes the brass the pack uses for furniture instead of the screen yellow it was.</summary>
+        private static readonly Color ReleaseMarkerColor = PoliSimTheme.Brass;
+        /// <summary>The aged draft/caution amber, not the screen orange it was - a preliminary release is the published-data cousin of a draft, and they should read as the same idea.</summary>
+        private static readonly Color PreliminaryLineColor = PoliSimTheme.Caution;
 
         /// <summary>
         /// Master Sequence step 9, Step B: draws a PUBLISHED series - lagged, revisable figures as the
@@ -306,9 +308,30 @@ namespace PoliSim.UI
 
             PublishedEntry newest = latestForPeriod[visiblePeriods[visiblePeriods.Count - 1]];
             string lag = $"{(newest.PublicationDate - newest.ReferencePeriodEnd).Days}d lag";
-            string status = newest.Status == RevisionStatus.Preliminary ? "PRELIMINARY" : newest.Status.ToString().ToUpperInvariant();
-            DrawColoredOverlayLabel(rect, $"latest: {FormatValue(newest.Value)} ({status}, {lag})",
-                newest.Status == RevisionStatus.Preliminary ? PreliminaryLineColor : Color.white, anyPreliminary);
+            // ⚠ BEHAVIOUR 6, AS AMENDED BY D8 - TWO INDEPENDENT CHANNELS, drawn here for the first time.
+            //
+            // The old §1C.2 rule collapsed them into one ("published = solid + badge; live = dashed,
+            // unbadged"), which made the commonest state in this game inexpressible: a PRELIMINARY
+            // PUBLISHED figure is published AND provisional at once. D8 struck that sentence. The rule
+            // now is:
+            //
+            //   badge chip + reference period + publication date  ->  PUBLISHED-NESS
+            //   frame style: dashed = provisional, solid = final  ->  REVISION STATUS
+            //
+            // So a preliminary release reads badged, dated AND dashed simultaneously, and a revised one
+            // keeps its badge and date while its frame goes solid. Two facts, two carriers, neither
+            // inferable from the other.
+            bool preliminary = newest.Status == RevisionStatus.Preliminary;
+            string status = preliminary ? "PRELIMINARY" : newest.Status.ToString().ToUpperInvariant();
+
+            // Channel 2 first, so the frame sits under the badge rather than over it.
+            DrawRevisionFrame(rect, preliminary);
+
+            // Channel 1: the badge carries the status; the line beneath carries the reference period and
+            // publication date, which are what make it a PUBLICATION rather than a desk reading.
+            DrawPublicationBadge(rect, status, preliminary);
+            DrawColoredOverlayLabel(rect, $"latest: {FormatValue(newest.Value)} ({lag})",
+                PoliSimTheme.TextPrimary, anyPreliminary);
         }
 
         /// <summary>Range selector. Bounded ranges filter on real elapsed time, so a monthly stat and a quarterly one both show the same calendar span rather than the same number of points.</summary>
@@ -464,6 +487,72 @@ namespace PoliSim.UI
             GUI.Label(left, periods[0].ToString("MMM yyyy"), _axisLabelStyle);
             var rightStyle = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.UpperRight };
             GUI.Label(right, periods[periods.Count - 1].ToString("MMM yyyy"), rightStyle);
+        }
+
+        /// <summary>
+        /// Behaviour 6, channel 2: REVISION STATUS as frame style. Dashed while a figure is still
+        /// provisional, solid once revised - a hairline rule drawn as dashes along the plate's own edge,
+        /// so the "this may still move" fact is carried by the frame rather than by a word someone has
+        /// to read.
+        /// </summary>
+        private static void DrawRevisionFrame(Rect rect, bool preliminary)
+        {
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Color previous = GUI.color;
+            GUI.color = preliminary ? PoliSimTheme.Caution : PoliSimTheme.HairlineStrong;
+
+            const float thickness = 1f;
+            if (!preliminary)
+            {
+                GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width, thickness), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), Texture2D.whiteTexture);
+            }
+            else
+            {
+                // Dashes rather than a tinted solid: a dashed rule reads as provisional at any size,
+                // where a colour alone would be one more hue competing with the eleven that key areas.
+                const float dash = 6f;
+                const float gap = 4f;
+                for (float x = rect.x; x < rect.xMax; x += dash + gap)
+                {
+                    float w = Mathf.Min(dash, rect.xMax - x);
+                    GUI.DrawTexture(new Rect(x, rect.y, w, thickness), Texture2D.whiteTexture);
+                    GUI.DrawTexture(new Rect(x, rect.yMax - thickness, w, thickness), Texture2D.whiteTexture);
+                }
+            }
+
+            GUI.color = previous;
+        }
+
+        /// <summary>Behaviour 6, channel 1: a printed chip saying what KIND of figure this is. `ui_chip_outline` is the pack's outlined chip, specified in §1C.5 for exactly this - PRELIMINARY and ACTION REQUIRED - with `ui_chip` reserved for solid ones.</summary>
+        private void DrawPublicationBadge(Rect rect, string status, bool preliminary)
+        {
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            var style = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.MiddleCenter, fontSize = Mathf.Max(9, _axisLabelStyle.fontSize - 1) };
+            float width = PoliSimWidgets.MeasuredWidth(status, style, style.fontSize * 1.6f);
+            float height = style.fontSize + 6f;
+            var badge = new Rect(rect.x + 4f, rect.y + 4f, width, height);
+
+            Color ink = preliminary ? PoliSimTheme.Caution : PoliSimTheme.TextSecondary;
+            Texture2D chip = IconLibrary.GetChrome("ui_chip_outline");
+            Color previous = GUI.color;
+            GUI.color = ink;
+            if (chip != null)
+            {
+                GUI.DrawTexture(badge, chip, ScaleMode.StretchToFill);
+            }
+            GUI.color = previous;
+
+            style.normal.textColor = ink;
+            GUI.Label(badge, status, style);
         }
 
         private void DrawColoredOverlayLabel(Rect rect, string text, Color color, bool anyPreliminary)

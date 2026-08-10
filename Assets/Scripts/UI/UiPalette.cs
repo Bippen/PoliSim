@@ -247,7 +247,8 @@ namespace PoliSim.UI
         private static Color Lighten(Color c, float amount) => Color.Lerp(c, Color.white, amount);
         private static Color Darken(Color c, float amount) => Color.Lerp(c, Color.black, amount);
 
-        private static readonly Color BarTrackColor = new Color(0.22f, 0.22f, 0.24f);
+        /// <summary>The unfilled part of any bar. PoliSimTheme already carries the aged one; this private copy was left on the dark-dashboard value and is every bar in the game, so it read as a black gutter on paper.</summary>
+        private static readonly Color BarTrackColor = PoliSimTheme.BarTrack;
 
         /// <summary>
         /// Proportionally-sized bar for breakdown/comparison data (Phase 4 of the UI revamp) - a

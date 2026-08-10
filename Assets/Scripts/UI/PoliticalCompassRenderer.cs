@@ -28,8 +28,9 @@ namespace PoliSim.UI
         private const float DotDiameter = 14f;
         private const float PlayerRingExtraDiameter = 8f;
 
-        private static readonly Color BackgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
-        private static readonly Color GridColor = new Color(0.28f, 0.28f, 0.28f, 1f);
+        /// <summary>Paper, not near-black - the FIFTH renderer carrying this literal, found by sweeping rather than by looking at the screen it breaks.</summary>
+        private static readonly Color BackgroundColor = PoliSimTheme.Card;
+        private static readonly Color GridColor = PoliSimTheme.Hairline;
         private static readonly Color AxisLabelColor = new Color(0.65f, 0.65f, 0.65f, 1f);
         private static readonly Color PlayerRingColor = Color.white;
 

@@ -390,7 +390,9 @@ namespace PoliSim.UI
             if (_tooltipBackground == null)
             {
                 _tooltipBackground = new Texture2D(2, 2, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-                var color = new Color(0.05f, 0.05f, 0.06f, 0.92f);
+                // The map's own label backdrop - a near-black plate behind text, which on paper needs to be
+                // paper. Alpha kept so it still lifts a label off whatever it overlaps.
+                var color = new Color(PoliSimTheme.Card.r, PoliSimTheme.Card.g, PoliSimTheme.Card.b, 0.92f);
                 _tooltipBackground.SetPixels(new[] { color, color, color, color });
                 _tooltipBackground.Apply(false);
             }

@@ -61,7 +61,11 @@ namespace PoliSim.Testing
                 { "Budget", new KeyValuePair<string, string[]>("_budgetProcessCategory",
                     new[] { "Tax", "Spending", "Welfare", "Infrastructure", "Swf" }) },
                 { "PolicyLaws", new KeyValuePair<string, string[]>("_policyLawsCategory",
-                    new[] { "LaborMarket", "CrimeJustice", "Sectors", "PolicyWeb", "Trade" }) }
+                    new[] { "LaborMarket", "CrimeJustice", "Sectors", "PolicyWeb", "Trade" }) },
+                { "Statistics", new KeyValuePair<string, string[]>("_statisticsCategory",
+                    new[] { "Domestic", "International" }) },
+                { "Politics", new KeyValuePair<string, string[]>("_politicsCategory",
+                    new[] { "Parliament", "Compass", "Cabinet", "FederalReserve" }) }
             };
 
         private IEnumerator Start()

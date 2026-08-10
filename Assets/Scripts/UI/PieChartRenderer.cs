@@ -32,8 +32,11 @@ namespace PoliSim.UI
     {
         private const int Diameter = 120;
 
-        private static readonly Color BackgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
-        private static readonly Color EmptyColor = new Color(0.28f, 0.28f, 0.28f, 1f);
+        /// <summary>Paper, not the dark-dashboard near-black - see GraphRenderer's own note. Rule 10: the plate is the pack's business, the wedges are not.</summary>
+        private static readonly Color BackgroundColor = PoliSimTheme.Card;
+
+        /// <summary>The "no data" wedge. Was mid-grey against black; on paper it needs to read as absence without reading as a category, so it is the palette's own bar track.</summary>
+        private static readonly Color EmptyColor = PoliSimTheme.BarTrack;
 
         private Texture2D _texture;
         private readonly List<float> _drawnValues = new List<float>();
