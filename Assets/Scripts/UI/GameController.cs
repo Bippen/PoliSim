@@ -3130,7 +3130,7 @@ namespace PoliSim.UI
 
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
-                BeginAreaCard("FEDERAL RESERVE", UiPalette.SystemArea.Political);
+                BeginAreaCard("FEDERAL RESERVE", UiPalette.SystemArea.Political, blocksTime: true);
                 DrawFedChairSelectionModal();
                 EndAreaCard(UiPalette.SystemArea.Political);
                 anyPending = true;
@@ -3139,7 +3139,7 @@ namespace PoliSim.UI
             ForeignPolicyMeeting pendingMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId);
             if (pendingMeeting != null)
             {
-                BeginAreaCard("FOREIGN POLICY", UiPalette.SystemArea.Global);
+                BeginAreaCard("FOREIGN POLICY", UiPalette.SystemArea.Global, blocksTime: true);
                 DrawForeignPolicyMeetingModal(pendingMeeting, drawOwnFrame: false);
                 EndAreaCard(UiPalette.SystemArea.Global);
                 anyPending = true;
@@ -3150,7 +3150,7 @@ namespace PoliSim.UI
                 // Tinted by the PORTFOLIO's own area, not one flat "cabinet" color - two simultaneous
                 // cabinet decisions from different portfolios should not read as the same thing.
                 UiPalette.SystemArea portfolioArea = UiPalette.GetPortfolioArea(portfolio);
-                BeginAreaCard("CABINET", portfolioArea);
+                BeginAreaCard("CABINET", portfolioArea, blocksTime: true);
                 DrawCabinetDecisionModal(portfolio, decision, drawOwnFrame: false);
                 EndAreaCard(portfolioArea);
                 anyPending = true;
@@ -3158,7 +3158,7 @@ namespace PoliSim.UI
 
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
-                BeginAreaCard("BUDGET PROCESS", UiPalette.SystemArea.Fiscal);
+                BeginAreaCard("BUDGET PROCESS", UiPalette.SystemArea.Fiscal, blocksTime: true);
                 DrawBudgetBillStatusAndIntroduce();
                 EndAreaCard(UiPalette.SystemArea.Fiscal);
                 anyPending = true;
@@ -3187,13 +3187,36 @@ namespace PoliSim.UI
         /// are shared across tabs belonging to different batches, so rewriting their internals would
         /// silently restyle a screen this batch was not supposed to touch.
         /// </summary>
-        private void BeginAreaCard(string kind, UiPalette.SystemArea area)
+        private void BeginAreaCard(string kind, UiPalette.SystemArea area, bool blocksTime = false)
         {
             GUILayout.BeginVertical(UiPalette.BuildCardStyle(AreaCardFill, AreaCardCornerRadius, AreaCardPadding, AreaCardSpineWidth));
-            if (!string.IsNullOrEmpty(kind))
+            if (string.IsNullOrEmpty(kind))
             {
-                DrawColoredLabel(kind, _cardKindStyle, UiPalette.GetAreaColor(area));
+                return;
             }
+
+            // ⚠ THE URGENCY CUE WAS MISSING ENTIRELY, not miscoloured - found by capture, 2026-08-10.
+            //
+            // A Decisions card can be the reason the clock has stopped, and the left column says so
+            // loudly ("TIME PAUSED: choose the next Fed Chair"). The card that RESOLVES it said nothing
+            // at all. Behaviour 8 asks that a player can always see why time stopped AND which screen
+            // fixes it; half of that was on screen, and the half at the fixing end was not.
+            //
+            // This is the "a highlight is not a ground" class from the Compass ring, one step further
+            // out: there, an emphasis colour stopped working when the ground inverted. Here the emphasis
+            // was never drawn, so no amount of repointing could have surfaced it - only looking could.
+            //
+            // Driven by the SAME booleans that build the TIME PAUSED line rather than by a per-card
+            // constant, so the two can never disagree and a decision that stops holding time loses its
+            // chip without anyone remembering to. All four block in this build, which makes the chip look
+            // redundant today - but that is a fact about the build, not about the cue, and board 1d
+            // already specifies the CAN WAIT case it will need.
+            GUILayout.BeginHorizontal();
+            DrawColoredLabel(kind, _cardKindStyle, UiPalette.GetAreaColor(area));
+            GUILayout.FlexibleSpace();
+            DrawColoredLabel(blocksTime ? "HOLDS TIME" : "CAN WAIT", _cardKindStyle,
+                blocksTime ? PoliSimTheme.Bad : PoliSimTheme.TextMuted);
+            GUILayout.EndHorizontal();
         }
 
         /// <summary>Closes a card opened by BeginDecisionCard and draws its area spine, using the rect GUILayout just resolved for the whole card - the height isn't knowable until now, which is the entire reason the spine is drawn here rather than up front.</summary>
