@@ -524,6 +524,15 @@ namespace PoliSim.Data
         /// </summary>
         public StatHistory History = new StatHistory();
 
+        /// <summary>
+        /// Bounded history of resolved parliamentary divisions - see DivisionRecord.cs. Written by
+        /// ParliamentSystem.RecordDivision at the moment each bill resolves, read by the UI only.
+        /// **Nothing in the simulation may read it back** - DivisionLog's own doc comment explains why
+        /// that constraint is the whole point rather than a style preference. Distinct from History
+        /// above (numeric per-turn series) and from the turn-activity text log (UI-side prose).
+        /// </summary>
+        public DivisionLog Divisions = new DivisionLog();
+
         public Country() { }
 
         public Country(

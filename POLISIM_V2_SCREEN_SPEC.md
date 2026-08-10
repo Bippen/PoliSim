@@ -312,8 +312,32 @@ every row prints at a different size reads as an error rather than as a fit. Ord
    Mand.`. A table, so the abbreviation is chosen once and is stable between frames.
 4. **Best-fit shrink, floor `11px`** — last resort only.
 
-⚠ See `§C.2`: this ladder is specified for the **name** column. B4's original defect was numeric, and
-the numeric cells did not get it.
+**The numeric variant — extended 2026-08-10 per `§C.2`.** Design's ladder is a *name* ladder, and two of
+its four steps cannot apply to a figure: a number must not wrap (a money value broken across two lines
+is unreadable, and worse, is briefly readable as a different number), and a number has no abbreviation
+table (`MoneyUnit` tiering has already done that job by the time the string exists). So for every cell
+that holds a figure the ladder is two steps, not four:
+
+1. **Widen the fixed column.**
+2. **Best-fit shrink, floor `11px`.** Never a wrap, never a table, and never a clip.
+
+**This applies wherever a number appears, not only in ledger rows** — B4 is a class-level rule and its
+original defect was numeric. The cells it governs:
+
+| site | measure | holds |
+|---|---|---|
+| ledger `STANDING ✎ DRAFT` | `150px` | two money figures + the pencil sprite |
+| ledger `SHARE` | `88px` | `6.5% GDP` |
+| ledger totals | right-aligned, panel-width | `$4.73T ✎ $4.74T` |
+| stat tile value / delta | ~`133px` tile (3-up in 430px) | hero figure + signed delta |
+| legend seats / delta (1c) | `70px` / `56px` / `52px` | seat counts and swings |
+| legend seats / delta (1h) | `60px` / `56px` | as above |
+| country card figure strip (1f) | 3-up in card width | population · GDP · debt-to-GDP |
+| calendar pad day | `64px` | day number |
+
+None of these is demonstrably broken today — `MoneyUnit` tiering bounds a money figure to about six
+characters, so `150px` is comfortable. The point is that it is comfortable **by assumption** rather than
+by construction, and that assumption is exactly the one B4 exists because someone already made.
 
 ### A.10 Buttons
 

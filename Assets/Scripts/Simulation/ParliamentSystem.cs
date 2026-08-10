@@ -224,6 +224,35 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// Records one resolved division into the country's bounded DivisionLog.
+        ///
+        /// **Why this is not inside the eight Apply*BillResult methods.** There is no single choke
+        /// point to put it in: each tier resolves through its own Apply*BillResult - eight in total -
+        /// and none of them receives the bill's direction or the current date, only an already-decided
+        /// `passed` flag. Threading two more parameters through eight signatures would buy nothing over
+        /// calling this once per resolution site, where direction, verdict and date are all already in
+        /// scope. So: ONE implementation, eight callers - the same shape WouldBillPass already has, and
+        /// for the same reason.
+        ///
+        /// ALIGNMENT IS CAPTURED, NEVER RECOMPUTED. The caller passes the same `direction` it just
+        /// scored, so a record can never disagree with the verdict printed beside it. The
+        /// zero-direction case mirrors the live estimate's own handling exactly (see
+        /// GameController.DrawBillLiveEstimate): an uncontested bill records alignment 0 rather than
+        /// GetSeatWeightedAlignment's raw net stance, which is negative in the documented tied-parties
+        /// case and would contradict a PASSED verdict.
+        ///
+        /// WRITE-ONLY. Nothing in the Simulation namespace reads country.Divisions back. It is a record
+        /// OF the simulation, never an input TO it - see DivisionLog's own doc comment for why that
+        /// constraint is load-bearing rather than tidiness.
+        /// </summary>
+        public static void RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date)
+        {
+            bool contested = !Mathf.Approximately(direction, 0f);
+            float alignment = contested ? GetSeatWeightedAlignment(country, direction) : 0f;
+            country.Divisions.Append(title, date, alignment, passed);
+        }
+
+        /// <summary>
         /// Applies a resolved BudgetBill's effect. PASS: every ALREADY-IMPLEMENTED TaxLine's Rate is
         /// written directly (clamped to that TaxType's own range, the same clamp
         /// SimulationManager.ApplyTaxRateChanges already applies) with the SAME one-time TaxHike

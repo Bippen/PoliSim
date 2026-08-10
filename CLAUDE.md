@@ -1315,6 +1315,25 @@ that never adopted it. Not fixed here — it was found during a survey and fixin
 is the wrong moment — but it should be the first thing v2.0 touches on that screen, and it is a reminder
 that the helper only helps where someone remembered to call it.
 
+⚠ **Instance #9, found 2026-08-10 in a design specification rather than in code.** Pass 3's redrawn
+Budget board fixes the ledger row at `36px` and permits generated names to wrap to two lines at `13px`
+with `line-height 1.1`. That is `28.6px` inside `36px` — fine at 1080p, about 7px spare. But §3.2 of the
+asset request states the governing constraint in its own words: *"every style in this UI rescales with
+`Screen.height`, so there is no single fixed render size."* At 1440p the same name sets at ~`17.3px` and
+two lines become `38.1px` — **taller than the row meant to contain it.**
+
+Same defect, one layer earlier: a height fixed in absolute pixels while the type inside it scales.
+**`36px` is the value at 1080p, not the row height.** The fix is the one that worked at instances #1–#8
+— derive it from the font metric:
+
+```
+RowHeight = max(2 x LineHeightFor(nameStyle) + pad, SliderTrackHeight + pad)
+```
+
+The general lesson, now that it has appeared nine times: **a number that came out of a mockup is a
+measurement at one resolution, never a constant.** Catching this one in the spec rather than in a
+capture is the first time the class has been found before it shipped.
+
 ### The screenshot harness, and the batchmode trap that cost the first attempt
 
 The project had **no screenshot tooling at all** (zero `ScreenCapture` references), so every visual

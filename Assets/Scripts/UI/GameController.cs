@@ -473,8 +473,12 @@ namespace PoliSim.UI
         private readonly PoliticalCompassRenderer _politicalCompassRenderer = new PoliticalCompassRenderer();
         private readonly PieChartRenderer _dependencyRatioPieChart = new PieChartRenderer();
         private readonly PieChartRenderer _sectorEmploymentPieChart = new PieChartRenderer();
-        private readonly PieChartRenderer _spendingAllocationPieChart = new PieChartRenderer();
-        private readonly PieChartRenderer _taxRevenuePieChart = new PieChartRenderer();
+        // Spending (29 categories) and tax revenue (13 types) both outgrew the eight-ink categorical
+        // cap, so they render as ranked single-ink bar ledgers rather than as pies - see
+        // UiPalette.GetCategoricalColor and RankedBarLedgerRenderer. Sector employment (8) sits exactly
+        // at the cap and stays a pie.
+        private readonly RankedBarLedgerRenderer _spendingAllocationLedger = new RankedBarLedgerRenderer();
+        private readonly RankedBarLedgerRenderer _taxRevenueLedger = new RankedBarLedgerRenderer();
         private readonly PieChartRenderer _populationPieChart = new PieChartRenderer();
         private readonly HemicycleRenderer _hemicycleRenderer = new HemicycleRenderer();
         private Vector2 _compassAndDemographicsScrollPosition;
@@ -3937,16 +3941,18 @@ namespace PoliSim.UI
             _sectorEmploymentPieChart.Draw($"{_playerCountry.Name}: Employment Share by Sector", sectorSlices, _labelStyle, "F1", moneyUnit: null);
             GUILayout.Space(10f);
 
+            // 29 SpendingCategory members against an eight-ink cap, so this is a ranked ledger, not a
+            // pie. No index into GetCategoricalColor at all - which is the point: the old code walked
+            // to index 28 and the palette silently generated a hue for every one of them.
             if (_playerCountry.SpendingLines.Count > 0)
             {
-                var spendingSlices = new List<PieSlice>();
-                int spendingIndex = 0;
+                var spendingRows = new List<(string Label, float Value)>();
                 foreach (SpendingLine line in _playerCountry.SpendingLines)
                 {
-                    spendingSlices.Add(new PieSlice(line.Category.ToString(), line.Amount, UiPalette.GetCategoricalColor(spendingIndex)));
-                    spendingIndex++;
+                    spendingRows.Add((line.Category.ToString(), line.Amount));
                 }
-                _spendingAllocationPieChart.Draw($"{_playerCountry.Name}: Spending Allocation", spendingSlices, _labelStyle, valueFormat: null, moneyUnit: MoneyUnit.Billions);
+                _spendingAllocationLedger.Draw($"{_playerCountry.Name}: Spending Allocation", spendingRows, _labelStyle,
+                    UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
             }
             else
             {
@@ -3955,16 +3961,16 @@ namespace PoliSim.UI
             }
             GUILayout.Space(10f);
 
-            var taxSlices = new List<PieSlice>();
-            int taxIndex = 0;
+            // 13 TaxType members - also over the cap, same treatment.
+            var taxRows = new List<(string Label, float Value)>();
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
             {
                 if (!taxLine.IsImplemented) continue;
                 float revenue = state.GDP * (taxLine.Rate / 100f) * taxLine.BaseShareOfGdp;
-                taxSlices.Add(new PieSlice(taxLine.Type.ToString(), revenue, UiPalette.GetCategoricalColor(taxIndex)));
-                taxIndex++;
+                taxRows.Add((taxLine.Type.ToString(), revenue));
             }
-            _taxRevenuePieChart.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxSlices, _labelStyle, valueFormat: null, moneyUnit: MoneyUnit.Billions);
+            _taxRevenueLedger.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxRows, _labelStyle,
+                UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
             GUILayout.Space(10f);
 
             var populationSlices = new List<PieSlice>();

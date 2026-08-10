@@ -1,0 +1,85 @@
+# PoliSim v2.0 chrome manifest — the SPECIFIED set.
+#
+# Read by ChromeV2CoverageCheck. This file is the answer to "what is supposed to be there", which is
+# the one question a folder listing can never answer. Enumerating the disk tells you whether what is
+# PRESENT resolves; only a manifest tells you whether what is SPECIFIED is present. The check needs
+# both directions, because until 2026-08-10 it had only the first and would have reported a clean
+# 52/52 with four specified assets missing entirely.
+#
+# Source of truth: assets/polisim_ui_v2/MANIFEST.md in the Claude Design project, reproduced in
+# CLAUDE_DESIGN_ASSET_REQUEST.md §1C. Update this file in the same commit that imports a pass.
+#
+# Syntax: one sprite name per line, no extension. `#` comments. A leading `!` marks a sprite that is
+# present on disk but deliberately NOT specified — superseded art kept until its replacement is wired.
+
+# ---- pass 1, 2026-08-03 (30) ----
+ui_panel_paper
+ui_frame_double
+ui_frame_ornate
+ui_tab_folder_on
+ui_tab_folder_off
+ui_tab_folder_hover
+ui_tab_spine
+ui_subtab_on
+ui_subtab_off
+ui_btn_brass
+ui_btn_paper
+ui_btn_disabled
+ui_slider_track
+ui_slider_tick
+ui_slider_knob
+ui_slider_knob_disabled
+ui_hatch_draft
+ui_stamp_carried
+ui_stamp_rejected
+ui_stamp_draft
+ui_seal_official
+ui_folder_dossier
+ui_plate_tile
+ui_portrait_frame
+ui_portrait_frame_oval
+ui_banner_hold
+ui_calendar_pad
+ui_scrim_takeover
+ui_grain_tile
+ui_pixel
+
+# ---- pass 2, 2026-08-03 (11) ----
+ui_scrollbar_track_v
+ui_scrollbar_thumb_v
+ui_scrollbar_thumb_v_hover
+ui_scrollbar_thumb_v_pressed
+ui_scrollbar_track_h
+ui_scrollbar_thumb_h
+ui_scrollbar_thumb_h_hover
+ui_scrollbar_thumb_h_pressed
+ui_scrollbar_button_none
+ui_chip
+ui_chip_outline
+
+# ---- pass 3, 2026-08-10 (4) ----
+# DELIVERED AS SVG SOURCES ONLY. These are specified and absent, so the check fails on them by
+# design — that failure is the whole reason this manifest exists. PNG delivery is an open follow-up
+# with Design (see CLAUDE_DESIGN_ASSET_REQUEST.md §1E). Two further open questions before import:
+# emblem_state_seal is white-on-alpha and so violates what the emblem_ prefix means (§3.1 makes that
+# family the full-colour exemption — it should ship as ui_seal_state), and canvas_btn_brass/_paper
+# are three-cell state strips needing Sprite Mode Multiple rather than §3's single-sprite meta.
+canvas_folder_country
+canvas_btn_brass
+canvas_btn_paper
+emblem_state_seal
+
+# ---- superseded pre-v2.0 chrome (11) ----
+# Present on disk, fully superseded by the passes above, removable in one pass once the v2.0 wiring
+# is confirmed live. Listed so they read as a known state rather than as unexpected files.
+!ui_button_normal
+!ui_button_hover
+!ui_button_pressed
+!ui_button_disabled
+!ui_panel
+!ui_scrollbar_track
+!ui_scrollbar_thumb
+!ui_scrollbar_track_vertical
+!ui_scrollbar_thumb_vertical
+!ui_slider_fill
+!ui_slider_thumb

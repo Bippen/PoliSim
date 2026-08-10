@@ -663,7 +663,9 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            bool passed = ParliamentSystem.WouldBillPass(country, bill);
+            float direction = ParliamentSystem.GetBillDirection(country, bill);
+            bool passed = ParliamentSystem.WouldBillPass(country, direction);
+            ParliamentSystem.RecordDivision(country, "Annual budget bill", direction, passed, CurrentDate);
             ParliamentSystem.ApplyBillResult(country, bill, passed, ApplyBudgetBillSpendingAndSwf);
             _pendingBudgetBillByCountry.Remove(countryId);
         }
@@ -747,7 +749,9 @@ namespace PoliSim.Simulation
                     continue;
                 }
 
-                bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetTaxProgramBillDirection(country, bill));
+                float direction = ParliamentSystem.GetTaxProgramBillDirection(country, bill);
+                bool passed = ParliamentSystem.WouldBillPass(country, direction);
+                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", direction, passed, CurrentDate);
                 ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed);
                 resolved.Add(bill.Type);
             }
@@ -800,7 +804,9 @@ namespace PoliSim.Simulation
                     continue;
                 }
 
-                bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetWelfareProgramBillDirection(country, bill));
+                float direction = ParliamentSystem.GetWelfareProgramBillDirection(country, bill);
+                bool passed = ParliamentSystem.WouldBillPass(country, direction);
+                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", direction, passed, CurrentDate);
                 ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed);
                 resolved.Add(bill.Type);
             }
@@ -845,7 +851,9 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetLaborBillDirection(country, bill));
+            float direction = ParliamentSystem.GetLaborBillDirection(country, bill);
+            bool passed = ParliamentSystem.WouldBillPass(country, direction);
+            ParliamentSystem.RecordDivision(country, "Labor Market bill", direction, passed, CurrentDate);
             ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects);
             _pendingLaborBillByCountry.Remove(countryId);
         }
@@ -901,7 +909,9 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetCrimeJusticeBillDirection(country, bill));
+            float direction = ParliamentSystem.GetCrimeJusticeBillDirection(country, bill);
+            bool passed = ParliamentSystem.WouldBillPass(country, direction);
+            ParliamentSystem.RecordDivision(country, "Crime & Justice bill", direction, passed, CurrentDate);
             ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects);
             _pendingCrimeJusticeBillByCountry.Remove(countryId);
         }
@@ -956,7 +966,9 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetSectorBillDirection(country, bill));
+            float direction = ParliamentSystem.GetSectorBillDirection(country, bill);
+            bool passed = ParliamentSystem.WouldBillPass(country, direction);
+            ParliamentSystem.RecordDivision(country, "Economic Sectors bill", direction, passed, CurrentDate);
             ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects);
             _pendingSectorBillByCountry.Remove(countryId);
         }
@@ -1020,7 +1032,9 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetSwfDrawdownBillDirection(country, bill));
+            float direction = ParliamentSystem.GetSwfDrawdownBillDirection(country, bill);
+            bool passed = ParliamentSystem.WouldBillPass(country, direction);
+            ParliamentSystem.RecordDivision(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", direction, passed, CurrentDate);
             ParliamentSystem.ApplySwfDrawdownBillResult(country, bill, passed, ApplySwfDrawdownBillEffects);
             _pendingSwfDrawdownBillByCountry.Remove(countryId);
         }
@@ -1089,7 +1103,9 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            bool passed = ParliamentSystem.WouldBillPass(country, ParliamentSystem.GetTradeBillDirection(country, bill));
+            float direction = ParliamentSystem.GetTradeBillDirection(country, bill);
+            bool passed = ParliamentSystem.WouldBillPass(country, direction);
+            ParliamentSystem.RecordDivision(country, "Trade bill", direction, passed, CurrentDate);
             ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);
             _pendingTradeBillByCountry.Remove(countryId);
         }

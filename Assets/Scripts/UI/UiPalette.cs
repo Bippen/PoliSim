@@ -175,11 +175,55 @@ namespace PoliSim.UI
         /// avoids that ever regressing toward evenly-spaced-but-visually-clustered as index grows,
         /// without needing a hand-picked table sized to the largest N any call site might ever pass.
         /// </summary>
+        /// <remarks>
+        /// SUPERSEDED 2026-08-10. The golden-angle walk above answered "N varies per call site
+        /// (4-20+), so a fixed table isn't practical", and it did answer it - but in saturated screen
+        /// colour, which is the one thing the v2.0 palette exists to remove. Every other hue in the
+        /// game was aged in that pass; these four charts were missed, and they are the largest colour
+        /// areas on the Statistics tab. The answer to a long series is now a different chart, not a
+        /// generated hue.
+        /// </remarks>
+        private static Color CategoricalHex(int rgb) =>
+            new Color(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f);
+
+        private static readonly Color[] CategoricalSeries =
+        {
+            CategoricalHex(0x9C5233), CategoricalHex(0x8A7A2C), CategoricalHex(0x5C7434), CategoricalHex(0x2F7458),
+            CategoricalHex(0x2E6E7E), CategoricalHex(0x46608F), CategoricalHex(0x745394), CategoricalHex(0x95517A)
+        };
+
+        /// <summary>The hard cap. Eight is what can be cut aged and stay mutually distinguishable at a 12px legend swatch; a ninth cannot, and pretending otherwise is how a legend stops keying its chart.</summary>
+        public const int MaxCategoricalSeries = 8;
+
+        /// <summary>
+        /// One aged ink per slice of a categorical breakdown, assigned in series order.
+        ///
+        /// EIGHT IS A HARD CAP, AND A NINTH INDEX THROWS. It deliberately does NOT wrap. A modulo
+        /// would keep every existing call site compiling and running while category 0 and category 8
+        /// printed in the same ink on the same chart - behaviour 9 (a legend swatch must be drawn in
+        /// the colour of the element it explains) broken with nothing failing anywhere. That is the
+        /// exact class of defect that had to be found by eye last time, and a silent wrap is how it
+        /// would come back. A series that outgrows the cap is not a palette problem to absorb here; it
+        /// is a signal that the chart form is wrong.
+        ///
+        /// WHAT TO DO INSTEAD OF CATCHING THIS: a series longer than eight renders as a ranked
+        /// single-ink bar ledger in its owning area's ink - see RankedBarLedgerRenderer. One ink,
+        /// sorted descending, every row carrying its own inline label, so there is no legend left to
+        /// disagree with the chart. Spending (29 categories) and tax revenue (13 types) both went that
+        /// way on 2026-08-10; sector employment (8) sits exactly at the cap and stays hue-keyed.
+        /// </summary>
         public static Color GetCategoricalColor(int index)
         {
-            const float goldenAngle = 137.508f;
-            float hue = (index * goldenAngle % 360f) / 360f;
-            return Color.HSVToRGB(hue, 0.65f, 0.9f);
+            if (index < 0 || index >= MaxCategoricalSeries)
+            {
+                throw new System.ArgumentOutOfRangeException(
+                    nameof(index), index,
+                    $"The categorical palette holds exactly {MaxCategoricalSeries} aged inks and does not wrap. " +
+                    "A series longer than that must render as a ranked single-ink bar ledger " +
+                    "(RankedBarLedgerRenderer) rather than as a hue-keyed chart - see this method's doc comment.");
+            }
+
+            return CategoricalSeries[index];
         }
 
         private static readonly Dictionary<Color, Texture2D> SwatchCache = new Dictionary<Color, Texture2D>();

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -5,22 +6,30 @@ using UnityEngine;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// Asks the RUNTIME question about the v2.0 chrome pack: does every delivered sprite actually resolve
-    /// through <see cref="PoliSim.UI.IconLibrary.GetChrome"/>, which is `Resources.Load`, which is the only
-    /// path the game itself uses?
+    /// Asks TWO questions about the v2.0 chrome pack, in both directions:
     ///
-    /// **This exists because "delivered" and "reachable" are two different states**, and this project has
-    /// now been caught by the gap twice: `menu_pattern_tile` sat imported-but-unreferenced for weeks, and
-    /// the six country flags plus four party emblems sat under `Assets/Art/UI/` — outside any `Resources/`
-    /// folder — where `Resources.Load` could never have found them. `DeliveredAssetCheck` passed on all of
-    /// them and was right to; it asks whether a delivered file landed under `Assets/`. The v2.0 pack's own
-    /// manifest opens with the same warning ("Delivered ≠ reachable: verify a load in-play"), so this is
-    /// that verification rather than a reading of the folder.
+    /// 1. **Does everything PRESENT resolve** through `Resources.Load`, the only path the game itself
+    ///    uses? (Enumerated from the files on disk.)
+    /// 2. **Is everything SPECIFIED present at all?** (Compared against `ChromeManifest.txt`.)
     ///
-    /// Names are enumerated from the FILES ON DISK rather than from a hardcoded list. A hardcoded list
-    /// would pass while silently omitting whatever it forgot, which is the failure it exists to catch —
-    /// and `StatIconCoverageCheck`'s own 19-name list has exactly that limitation by design, since it
-    /// checks the names the UI hard-codes rather than the art that exists.
+    /// **The second question is new, and it exists because the first one is not enough.** Until
+    /// 2026-08-10 this check only enumerated the disk, which means it validated that what was there
+    /// worked and said nothing about what was missing. Pass 3 specified four Canvas assets and shipped
+    /// them as SVG sources only; the old check would have reported a clean 52/52 while all four were
+    /// absent from `Resources/` entirely. A check that can only pass when art is missing is not
+    /// measuring coverage.
+    ///
+    /// That is the delivered-versus-reachable lesson arriving from the other side. The original gap was
+    /// "the file exists but nothing can load it" (`menu_pattern_tile`, the flags and emblems under
+    /// `Assets/Art/UI/`). This one is "the specification names it and no file exists", and no amount of
+    /// reading the folder can catch it — a folder cannot report an absence it was never told to expect.
+    ///
+    /// <para><b>On the hardcoded-list objection.</b> This check's previous doc comment argued against a
+    /// hardcoded name list, because "a hardcoded list would pass while silently omitting whatever it
+    /// forgot". That argument is still correct — for question 1, where the disk is the right source.
+    /// For question 2 an external list is not a shortcut, it IS the specification, and there is no way
+    /// to ask "what should be here?" without one. Two questions, two sources, and neither alone is
+    /// sufficient.</para>
     ///
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod
     /// PoliSim.EditorTools.ChromeV2CoverageCheck.Run -logFile &lt;path&gt;`
@@ -28,39 +37,112 @@ namespace PoliSim.EditorTools
     public static class ChromeV2CoverageCheck
     {
         private const string ChromeFolder = "Assets/Resources/Art/UI/Chrome";
+        private const string ManifestPath = "Assets/Editor/ChromeManifest.txt";
+        private const string ResourcePrefix = "Art/UI/Chrome/";
 
         public static void Run()
         {
             // SELF-TEST FIRST, per the standing rule: if a known-good sprite does not resolve, the whole
             // run is measuring a broken harness rather than a broken import.
-            Texture2D selfTest = Resources.Load<Texture2D>("Art/UI/Chrome/ui_button_normal");
-            Debug.Log($"SELFTEST ui_button_normal -> {(selfTest != null ? selfTest.width + "x" + selfTest.height + " OK" : "BROKEN - results below are void")}");
+            Texture2D selfTest = Resources.Load<Texture2D>(ResourcePrefix + "ui_panel_paper");
+            Debug.Log($"SELFTEST ui_panel_paper -> {(selfTest != null ? selfTest.width + "x" + selfTest.height + " OK" : "BROKEN - results below are void")}");
 
-            string[] files = Directory.GetFiles(ChromeFolder, "*.png", SearchOption.TopDirectoryOnly);
-            int ok = 0;
-
-            foreach (string file in files)
+            if (!File.Exists(ManifestPath))
             {
-                string name = Path.GetFileNameWithoutExtension(file);
-                Texture2D loaded = Resources.Load<Texture2D>("Art/UI/Chrome/" + name);
+                Debug.Log($"FAIL manifest not found at {ManifestPath} - cannot answer 'is everything specified present?'");
+                EditorApplication.Exit(1);
+                return;
+            }
 
-                if (loaded == null)
+            var specified = new List<string>();
+            var superseded = new HashSet<string>();
+            foreach (string raw in File.ReadAllLines(ManifestPath))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#"))
                 {
-                    Debug.Log($"  FAIL {name,-26} does not resolve through Resources.Load");
                     continue;
                 }
 
-                var importer = AssetImporter.GetAtPath(file.Replace('\\', '/')) as TextureImporter;
-                string wrap = importer != null ? importer.wrapMode.ToString() : "?";
-                bool alpha = importer != null && importer.alphaIsTransparency;
-                bool npot = importer != null && importer.npotScale == TextureImporterNPOTScale.None;
-
-                Debug.Log($"  ok   {name,-26} {loaded.width,4}x{loaded.height,-4} wrap={wrap,-6} alphaIsTransparency={alpha} nPOTScale=None:{npot}");
-                ok++;
+                if (line.StartsWith("!"))
+                {
+                    superseded.Add(line.Substring(1));
+                }
+                else
+                {
+                    specified.Add(line);
+                }
             }
 
-            Debug.Log($"=== v2.0 chrome pack: {ok} of {files.Length} resolve through Resources.Load ===");
-            EditorApplication.Exit(ok == files.Length ? 0 : 1);
+            var present = new HashSet<string>();
+            foreach (string file in Directory.GetFiles(ChromeFolder, "*.png", SearchOption.TopDirectoryOnly))
+            {
+                present.Add(Path.GetFileNameWithoutExtension(file));
+            }
+
+            // ---- direction 1: everything present must resolve ----
+            int resolved = 0;
+            var unresolvable = new List<string>();
+            foreach (string name in present)
+            {
+                Texture2D loaded = Resources.Load<Texture2D>(ResourcePrefix + name);
+                if (loaded == null)
+                {
+                    unresolvable.Add(name);
+                    Debug.Log($"  FAIL {name,-30} does not resolve through Resources.Load");
+                    continue;
+                }
+
+                var importer = AssetImporter.GetAtPath($"{ChromeFolder}/{name}.png") as TextureImporter;
+                string wrap = importer != null ? importer.wrapMode.ToString() : "?";
+                bool alpha = importer != null && importer.alphaIsTransparency;
+                bool readable = importer != null && importer.isReadable;
+                string tag = specified.Contains(name) ? "ok  " : superseded.Contains(name) ? "supd" : "EXTRA";
+
+                Debug.Log($"  {tag,-5} {name,-30} {loaded.width,4}x{loaded.height,-4} wrap={wrap,-6} alphaIsTransparency={alpha} isReadable={readable}");
+                resolved++;
+            }
+
+            // ---- direction 2: everything specified must be present ----
+            var missing = new List<string>();
+            foreach (string name in specified)
+            {
+                if (!present.Contains(name))
+                {
+                    missing.Add(name);
+                }
+            }
+
+            var unexpected = new List<string>();
+            foreach (string name in present)
+            {
+                if (!specified.Contains(name) && !superseded.Contains(name))
+                {
+                    unexpected.Add(name);
+                }
+            }
+
+            Debug.Log("");
+            Debug.Log($"=== PRESENT      {resolved} of {present.Count} resolve through Resources.Load ===");
+            Debug.Log($"=== SPECIFIED    {specified.Count - missing.Count} of {specified.Count} are present on disk ===");
+            Debug.Log($"=== SUPERSEDED   {superseded.Count} known-legacy sprites, removable once v2.0 wiring is confirmed ===");
+
+            foreach (string name in missing)
+            {
+                Debug.Log($"  MISSING  {name,-30} specified in the manifest, no file in {ChromeFolder}");
+            }
+
+            foreach (string name in unexpected)
+            {
+                Debug.Log($"  UNEXPECTED {name,-28} on disk but neither specified nor marked superseded - add it to the manifest or delete it");
+            }
+
+            bool ok = unresolvable.Count == 0 && missing.Count == 0 && unexpected.Count == 0;
+            Debug.Log(ok
+                ? "=== CHROME COVERAGE OK - both directions clean ==="
+                : $"=== CHROME COVERAGE FAILED - {unresolvable.Count} unresolvable, {missing.Count} missing, {unexpected.Count} unexpected ===");
+
+            EditorApplication.Exit(ok ? 0 : 1);
         }
     }
 }
