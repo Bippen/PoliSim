@@ -4455,6 +4455,16 @@ namespace PoliSim.UI
         {
             GUILayout.BeginVertical(_boxStyle);
 
+            // ⚠ availableWidth IS THE WIDTH OF THE PAPER, NOT OF THE SPACE ON IT. Everything below this
+            // line sits inside _boxStyle, so the width anything may claim is the paper minus its own
+            // padding. Measured at runtime 2026-08-10: a label given availableWidth laid out at 1536
+            // starting at x=14, while the box's content ran 14..1522 - overflowing by exactly 28.0,
+            // which is padding.horizontal to the pixel.
+            //
+            // This is the SAME idiom already used by SubTabShare and the Policy/Laws sub-screens; those
+            // sites subtract padding and do not clip. These three did not, which is the whole defect.
+            float contentWidth = availableWidth - _boxStyle.padding.horizontal;
+
             DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             DrawFullScreenPendingInterruptBanner();
             // Explicit Width, not left to GUILayout's own inference - the horizontal 3-column row
@@ -4463,7 +4473,7 @@ namespace PoliSim.UI
             // up to more than requested), which made this label wrap against an inflated width and
             // clip mid-word rather than wrap. Tying it directly to availableWidth makes its wrap
             // boundary correct regardless of what the row does.
-            GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle, GUILayout.Width(availableWidth));
+            GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(8f);
 
             DrawBudgetBillStatusAndIntroduce();
@@ -4497,7 +4507,7 @@ namespace PoliSim.UI
             // home in the 45%-wide LEFT column, and was never re-derived when it was reused inside the
             // much narrower right column.
             float scrollbarAllowance = 18f;
-            float usableWidth = availableWidth - columnSpacing * 2f - scrollbarAllowance;
+            float usableWidth = contentWidth - columnSpacing * 2f - scrollbarAllowance;
             // Floor raised from 5x to 7x the label font: even with wrapping, a button's minimum width is
             // its longest WORD, and "Sovereign" needs ~97px at the smallest supported font - more than the
             // 94px this column got at 16% on a 1227x690 window. Below this floor the category buttons
@@ -4507,7 +4517,7 @@ namespace PoliSim.UI
             float centerColumnWidth = usableWidth - categoryColumnWidth - summaryColumnWidth;
             float totalRowWidth = categoryColumnWidth + columnSpacing + centerColumnWidth + columnSpacing + summaryColumnWidth;
 
-            _budgetProcessRowScrollPosition = GUILayout.BeginScrollView(_budgetProcessRowScrollPosition, GUILayout.Width(availableWidth), GUILayout.Height(columnsHeight));
+            _budgetProcessRowScrollPosition = GUILayout.BeginScrollView(_budgetProcessRowScrollPosition, GUILayout.Width(contentWidth), GUILayout.Height(columnsHeight));
             GUILayout.BeginHorizontal(GUILayout.Width(totalRowWidth), GUILayout.Height(columnsHeight));
 
             GUILayout.BeginVertical(GUILayout.Width(categoryColumnWidth));
