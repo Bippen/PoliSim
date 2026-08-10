@@ -1797,6 +1797,37 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// One Policy/Laws dial as a ledger row - the shared shape behind Labor Market, Crime & Justice,
+        /// Economic Sectors and Trade.
+        ///
+        /// **All four sub-screens were the same two lines repeated**: a `DrawDraftLabel` naming the
+        /// standing and draft values plus an explanatory parenthetical, then a bare
+        /// `GUILayout.HorizontalSlider`. That is precisely what `LedgerRow` collapses - the standing
+        /// value becomes a tick, the draft becomes the knob, and the span between them hatches amber - so
+        /// this helper exists so each sub-screen's dials become one line each rather than four
+        /// near-identical conversions.
+        ///
+        /// <para><b>The parenthetical goes to the trailing column, not into the name.</b> Those hints
+        /// ("0 = light-touch, 100 = heavily regulated") are what the dial's endpoints MEAN, which is the
+        /// same question the trailing column answers everywhere else - estimated revenue on Tax, share of
+        /// GDP on Spending, normalised share on SWF. A dial's context is its scale.</para>
+        ///
+        /// Emits exactly one control, always, enabled or not.
+        /// </summary>
+        private float DrawDialRow(string name, float standing, float draft, float min, float max,
+            string format, string suffix, string trailing, bool interactive = true)
+        {
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            bool changed = interactive && !Mathf.Approximately(standing, draft);
+            return LedgerRow.Draw(
+                rowRect, name, standing, draft, min, max,
+                interactive ? standing.ToString(format, CultureInfo.InvariantCulture) + suffix : "n/a",
+                changed ? draft.ToString(format, CultureInfo.InvariantCulture) + suffix : null,
+                trailing, interactive,
+                _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle);
+        }
+
+        /// <summary>
         /// Labor Market tab (Phase 4 - moved off the dashboard into its own home, now also including
         /// Minimum Wage since it's a labor-market lever like the other three): Minimum Wage / Paid
         /// Family Leave / Overtime Regulation / Retraining Program, plus a LaborForceParticipationRate
@@ -1820,26 +1851,26 @@ namespace PoliSim.UI
 
             DrawMinimumWageControl();
 
-            float draftPaidLeave = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks);
-            DrawDraftLabel($"Paid Family Leave - Standing: {_playerCountry.PaidFamilyLeaveWeeks:F0}, Draft: {draftPaidLeave:F0} weeks", _playerCountry.PaidFamilyLeaveWeeks, draftPaidLeave);
-            _paidFamilyLeaveWeeksInput = GUILayout.HorizontalSlider(draftPaidLeave, MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, _sliderStyle, _sliderThumbStyle);
+            _paidFamilyLeaveWeeksInput = DrawDialRow("Paid Family Leave",
+                _playerCountry.PaidFamilyLeaveWeeks, GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks),
+                MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, "F0", string.Empty, "weeks");
 
-            float draftOvertimeRegulation = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel);
-            DrawDraftLabel($"Overtime/Working-Hour Regulation - Standing: {_playerCountry.OvertimeRegulationLevel:F0}, Draft: {draftOvertimeRegulation:F0} (0 = unregulated, 100 = strict caps)", _playerCountry.OvertimeRegulationLevel, draftOvertimeRegulation);
-            _overtimeRegulationInput = GUILayout.HorizontalSlider(draftOvertimeRegulation, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
+            _overtimeRegulationInput = DrawDialRow("Overtime / Working-Hour Regulation",
+                _playerCountry.OvertimeRegulationLevel, GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel),
+                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty, "0 unregulated - 100 strict");
 
-            float draftRetraining = GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel);
-            DrawDraftLabel($"Workforce Retraining Programs - Standing: {_playerCountry.RetrainingProgramLevel:F0}, Draft: {draftRetraining:F0}", _playerCountry.RetrainingProgramLevel, draftRetraining);
-            _retrainingProgramInput = GUILayout.HorizontalSlider(draftRetraining, MinLaborDialLevel, MaxLaborDialLevel, _sliderStyle, _sliderThumbStyle);
+            _retrainingProgramInput = DrawDialRow("Workforce Retraining Programs",
+                _playerCountry.RetrainingProgramLevel, GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel),
+                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty, null);
 
             GUILayout.Space(8f);
-            float draftFamilyPolicy = GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel);
-            DrawDraftLabel($"Family Policy - Standing: {_playerCountry.FamilyPolicyLevel:F0}, Draft: {draftFamilyPolicy:F0} (0 = minimal support, 100 = maximal pro-natalist support)", _playerCountry.FamilyPolicyLevel, draftFamilyPolicy);
-            _familyPolicyInput = GUILayout.HorizontalSlider(draftFamilyPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _familyPolicyInput = DrawDialRow("Family Policy",
+                _playerCountry.FamilyPolicyLevel, GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 minimal - 100 pro-natalist");
 
-            float draftImmigrationPolicy = GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel);
-            DrawDraftLabel($"Immigration Policy - Standing: {_playerCountry.ImmigrationPolicyLevel:F0}, Draft: {draftImmigrationPolicy:F0} (0 = maximally restrictive, 100 = maximally open)", _playerCountry.ImmigrationPolicyLevel, draftImmigrationPolicy);
-            _immigrationPolicyInput = GUILayout.HorizontalSlider(draftImmigrationPolicy, MinPolicyDialLevel, MaxPolicyDialLevel, _sliderStyle, _sliderThumbStyle);
+            _immigrationPolicyInput = DrawDialRow("Immigration Policy",
+                _playerCountry.ImmigrationPolicyLevel, GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 restrictive - 100 open");
 
             GUILayout.Space(10f);
             _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true, moneyUnit: null);
@@ -1939,15 +1970,25 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawMinimumWageControl()
         {
-            if (!_playerCountry.MinimumWageImplemented)
-            {
-                GUILayout.Label("Minimum Wage: no statutory minimum wage (relies on collective bargaining).", _labelStyle);
-                return;
-            }
+            // ⚠ BEHAVIOUR 5 FIX, found during the v2.0 conversion rather than by a capture. This used to
+            // `return` early for a country with no statutory minimum wage (Sweden, which bargains
+            // collectively), drawing a sentence and NO SLIDER - an omitted control, which is exactly what
+            // behaviour 5 forbids and exactly the hazard DrawTaxPolicyContent's doc comment describes:
+            // GUILayout allocates control IDs positionally, so a screen whose control COUNT depends on
+            // mutable state can desync a live drag. It is now always drawn, disabled when there is no
+            // statutory wage, with the reason in the column that explains a dial's meaning.
+            bool hasStatutoryWage = _playerCountry.MinimumWageImplemented;
+            float newMinimumWage = DrawDialRow("Minimum Wage",
+                _playerCountry.MinimumWagePercentOfMedian,
+                GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian),
+                MinMinimumWagePercent, MaxMinimumWagePercent, "F0", "%",
+                hasStatutoryWage ? "% of median wage" : "none - collective bargaining",
+                hasStatutoryWage);
 
-            float draftMinimumWage = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian);
-            DrawDraftLabel($"Minimum Wage - Standing: {_playerCountry.MinimumWagePercentOfMedian:F0}%, Draft: {draftMinimumWage:F0}% of median wage", _playerCountry.MinimumWagePercentOfMedian, draftMinimumWage);
-            _minimumWageInput = GUILayout.HorizontalSlider(draftMinimumWage, MinMinimumWagePercent, MaxMinimumWagePercent, _sliderStyle, _sliderThumbStyle);
+            if (hasStatutoryWage)
+            {
+                _minimumWageInput = newMinimumWage;
+            }
         }
 
         /// <summary>

@@ -90,7 +90,7 @@ namespace PoliSim.UI
 
             Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
 
-            DrawCell(nameRect, name, nameStyle, rowInk, TextAnchor.MiddleLeft);
+            DrawNameCell(nameRect, name, nameStyle, rowInk);
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -267,7 +267,7 @@ namespace PoliSim.UI
         {
             Columns(row, nameStyle, out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
-            DrawCell(nameRect, name, nameStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            DrawNameCell(nameRect, name, nameStyle, PoliSimTheme.TextPrimary);
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -299,6 +299,52 @@ namespace PoliSim.UI
             GUIStyle style = CellStyle(source);
             style.alignment = alignment;
             style.normal.textColor = ink;
+            PoliSimWidgets.MeasuredLabel(rect, text, style);
+        }
+
+        /// <summary>
+        /// The NAME cell, which wraps to two lines before it shrinks - §A.9a's resort ladder, step 2
+        /// ahead of step 4.
+        ///
+        /// ⚠ **Found by the first Policy/Laws capture, and it is D7's own objection landing on this
+        /// build.** Every cell went straight through `MeasuredLabel`, which only ever shrinks. On the
+        /// Budget screen the names were short enough that nothing triggered it; on Labor Market
+        /// "Overtime / Working-Hour Regulation" is long enough to shrink while "Minimum Wage" above it is
+        /// not, so the two rows printed at visibly different sizes. Design's exact words when they
+        /// amended D7: *"a ledger column where every row prints at a different size reads as an error"*.
+        ///
+        /// So: try one line at full size, then two wrapped lines at full size, and only then fall back to
+        /// shrinking. `Height` already reserves two lines, so the wrap costs no layout.
+        /// </summary>
+        private static void DrawNameCell(Rect rect, string text, GUIStyle source, Color ink)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            GUIStyle style = CellStyle(source);
+            style.alignment = TextAnchor.MiddleLeft;
+            style.normal.textColor = ink;
+
+            style.wordWrap = false;
+            var content = new GUIContent(text);
+            if (style.CalcSize(content).x <= rect.width)
+            {
+                GUI.Label(rect, content, style);
+                return;
+            }
+
+            style.wordWrap = true;
+            if (style.CalcHeight(content, rect.width) <= rect.height)
+            {
+                GUI.Label(rect, content, style);
+                return;
+            }
+
+            // Two lines still will not hold it - shrink, which is the floor of the ladder rather than
+            // its first move. MeasuredLabel re-seeds wordWrap itself, so the cached style is safe to
+            // hand over in whatever state this left it.
             PoliSimWidgets.MeasuredLabel(rect, text, style);
         }
     }
