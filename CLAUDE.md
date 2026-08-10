@@ -1289,6 +1289,47 @@ place. Phase 3's write-up in this file said "39/39 within 3%" and drew the concl
 is validated". Had it said "the conversion is faithful; nothing here checks whether the turn form was
 right", the 3.017x error would have been visible in the sentence that shipped it.
 
+## The overflow assert, and what it found in its first run (2026-08-10)
+
+`UiOverflowGuard` hooks `PoliSimWidgets.MeasuredLabel` — the choke point for every shrink-to-fit label
+in the UI. It records anything still too wide after shrinking has hit the 8px floor, and the capture
+driver now **exits 1** on any distinct violation. Editor-only; compiled out of player builds.
+
+**Why it was worth building.** Clipping has recurred eleven times and every instance was found by a
+person, never by a check. Fifty-five screens have been captured and approved by eye with overflows in
+them — eye-approval is precisely what has been missing them.
+
+⚠ **The guard's own first version crashed the Editor.** It appended a violation per label *per frame*,
+so a few hundred settle frames became an unbounded list. Dedupe now happens at RECORD time with a
+200-entry hard cap. A guard that brings down the run it is guarding reads as flakiness, which is worse
+than no guard.
+
+**First run: 55 captured, 0 failed, 200 overflows (cap reached).** Almost all are money figures in
+`LedgerRow`'s figure column on Budget → Tax and Spending, e.g. `"$1.62T" needs 22.9 in 11.3 at 8px`.
+
+⚠ **NOT YET ESTABLISHED whether these pre-date the trailing-column change of the same day.** That
+change lets the trailing column claim up to 34% of the row, which raises `fixedTotal` and so makes
+`Columns()`'s squeeze bite harder and more often — the squeeze floor is 0.35, low enough to crush a
+figure column to single digits. That is a *plausible* mechanism, not a measured one, and this class
+has punished plausible mechanisms twice. Measure `row.width` and the squeeze factor at these sites
+before changing anything.
+
+## Caption column: fixed truncation, introduced unevenness (2026-08-10)
+
+`LedgerRow.Columns` now sizes the trailing column from its content, because that column holds two
+kinds of thing — figures (~57px) where the board specified it, and dial scale legends (160–243px)
+where it was reused. The 11%-of-row proportion served the first and truncated the second.
+
+⚠ **Known consequence, logged rather than left in a commit message: track lengths now vary between
+rows in the same group,** because each row's caption differs in width. Strictly better than
+truncation, but visibly uneven — the same dial range renders at different physical lengths, which
+weakens row-to-row comparison.
+
+**The proper fix is a per-screen shared caption width**, using the same group-maximum pattern as the
+spending bars: take the widest caption on the screen, give every row that width, and all tracks match
+again. It needs plumbing through the call sites rather than a change inside `LedgerRow`, which is why
+it was not done in the same pass.
+
 ## Publication cadence, measured — five of six stats never revise (2026-08-10)
 
 `PublicationCadenceCheck` runs headless (`PublicationSystem.PublishDueFigures` is static, so no play

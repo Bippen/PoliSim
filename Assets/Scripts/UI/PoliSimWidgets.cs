@@ -177,6 +177,33 @@ namespace PoliSim.UI
             return scratch;
         }
 
+        /// <summary>
+        /// What one child of <paramref name="container"/> may actually claim, given the container's OUTER
+        /// width. The single implementation of a subtraction that has been forgotten at four sites and
+        /// hand-rolled at two.
+        ///
+        /// <para><b>Three terms, and each one has been the bug.</b> The container's PADDING is space the
+        /// child never sees (Budget Process, three sites, overflowing by exactly padding.horizontal). The
+        /// child's MARGINS are inserted between siblings and come out of the same budget (the Policy/Laws
+        /// sub-tab row, 20px short across five buttons). And the CHILD COUNT divides what is left - the
+        /// term a style-only accessor could not carry, and the one that went missing.</para>
+        ///
+        /// <para>Pass <paramref name="childCount"/> 1 and no <paramref name="child"/> for the common case:
+        /// "how wide may content inside this box be". Pass both for a row of n siblings.</para>
+        ///
+        /// ⚠ This answers a LAYOUT question, not a CONTENT one. It says what space exists, never whether
+        /// what you intend to put there fits - the trailing caption column overflowed by 159px with the
+        /// arithmetic entirely correct, because the column was sized for figures and given prose.
+        /// <see cref="UiOverflowGuard"/> is what catches that.
+        /// </summary>
+        public static float InnerWidth(float outerWidth, GUIStyle container, int childCount = 1, GUIStyle child = null)
+        {
+            int count = Mathf.Max(1, childCount);
+            float padding = container != null ? container.padding.horizontal : 0f;
+            float margins = child != null ? count * child.margin.horizontal : 0f;
+            return Mathf.Max(1f, (outerWidth - padding - margins) / count);
+        }
+
         public static Vector2 MeasuredLabel(Rect rect, string text, GUIStyle style, float reserveWidth = 0f)
         {
             if (string.IsNullOrEmpty(text))
@@ -196,6 +223,10 @@ namespace PoliSim.UI
                 fitted.fontSize = Mathf.Max(MinMeasuredLabelFontSize, Mathf.FloorToInt(fitted.fontSize * (available / size.x)));
                 size = fitted.CalcSize(new GUIContent(text));
             }
+
+            // Shrink-to-fit has now done everything it can. If it still does not fit, the label clips -
+            // there is no further resort below the floor - so record it rather than drawing it quietly.
+            UiOverflowGuard.Check(text, size.x, available, fitted.fontSize);
 
             GUI.Label(new Rect(rect.x, rect.y, available, rect.height), text, fitted);
             return size;

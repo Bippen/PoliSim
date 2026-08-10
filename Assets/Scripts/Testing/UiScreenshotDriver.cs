@@ -144,7 +144,10 @@ namespace PoliSim.Testing
             }
 
             Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
-            Finish(_failed == 0 ? 0 : 1);
+
+            int overflows = ReportOverflows();
+            Debug.Log($"SHOT: {overflows} text overflow(s) recorded.");
+            Finish(_failed == 0 && overflows == 0 ? 0 : 1);
         }
 
         private IEnumerator Settle()
@@ -171,6 +174,15 @@ namespace PoliSim.Testing
             // the Game View is a real size instead of batchmode's 640x480 default - which matters more
             // than usual here, because every style in this UI derives its font size from Screen.height,
             // so a 640x480 capture would be showing font sizes no player ever sees.
+            // ⚠ THE SCREENSHOT IS NOT THE VERDICT. Every one of this project's eleven clipping instances
+            // was found by a person looking at a screen, and twelve screens were captured and APPROVED
+            // by eye with overflows still in them. So each shot is CHECKED as well as taken.
+            //
+            // Labelled here rather than after the capture because MeasuredLabel records during the OnGUI
+            // of the frame being captured - naming the screen afterwards would file this screen's
+            // overflows under the next one.
+            UiOverflowGuard.CurrentScreen = name;
+
             yield return new WaitForEndOfFrame();
 
             Texture2D shot = ScreenCapture.CaptureScreenshotAsTexture();
@@ -186,6 +198,21 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: wrote {path} at {shot.width}x{shot.height}");
             _captured++;
             Destroy(shot);
+        }
+
+        /// <summary>Prints every overflow the guard recorded and returns the count. Already deduped by the guard itself - see the note there on why that has to happen at record time.</summary>
+        private static int ReportOverflows()
+        {
+#if UNITY_EDITOR
+            foreach (UiOverflowGuard.Violation v in UiOverflowGuard.Violations)
+            {
+                Debug.LogError($"OVERFLOW: {v}");
+            }
+
+            return UiOverflowGuard.Violations.Count;
+#else
+            return 0;
+#endif
         }
 
         private static void Finish(int exitCode)

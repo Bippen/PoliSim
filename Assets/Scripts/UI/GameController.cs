@@ -2977,8 +2977,7 @@ namespace PoliSim.UI
         /// </summary>
         private float SubTabShare(float availableWidth, int count)
         {
-            float margins = count * GUI.skin.button.margin.horizontal;
-            return Mathf.Max(1f, (availableWidth - _boxStyle.padding.horizontal - margins) / count);
+            return PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, count, GUI.skin.button);
         }
 
         /// <summary>
@@ -3319,7 +3318,7 @@ namespace PoliSim.UI
             // numbers change with the screen. Measured before it is drawn and subtracted from the
             // content budget below, so it takes space from the tab rather than pushing the content
             // scroll view past the bottom of the tab.
-            float statRowWidth = availableWidth - _boxStyle.padding.horizontal - 8f;
+            float statRowWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - 8f;
             UiPalette.SystemArea statArea = GetPolicyScreenArea(_policyLawsCategory);
             float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
             PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
@@ -4487,7 +4486,7 @@ namespace PoliSim.UI
             //
             // This is the SAME idiom already used by SubTabShare and the Policy/Laws sub-screens; those
             // sites subtract padding and do not clip. These three did not, which is the whole defect.
-            float contentWidth = availableWidth - _boxStyle.padding.horizontal;
+            float contentWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle);
 
             DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             DrawFullScreenPendingInterruptBanner();
@@ -4560,7 +4559,7 @@ namespace PoliSim.UI
             // the line items below it move, so scrolling the list must not scroll the summary of the
             // list out of sight - the same reasoning that keeps the calendar panel outside the left
             // column's scroll view.
-            float statRowWidth = centerColumnWidth - _boxStyle.padding.horizontal - 8f;
+            float statRowWidth = PoliSimWidgets.InnerWidth(centerColumnWidth, _boxStyle) - 8f;
             UiPalette.SystemArea statArea = GetPolicyScreenArea(_budgetProcessCategory);
             float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
             PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
