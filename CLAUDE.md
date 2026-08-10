@@ -32,6 +32,31 @@
 > fix), and before `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating
 > that commit came from an unseeded run.
 
+> ## ⚠ THREE BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
+>
+> **Three, all within about a fortnight.** A figure recorded on one side of any of these cannot be
+> compared with a figure recorded on the other. When quoting a number from this file, check which era it
+> came from first.
+>
+> | # | date | what changed | what it invalidates |
+> |---|---|---|---|
+> | 1 | 2026-08-01 | **near-zero swing floor** in the anomaly detector | every anomaly count recorded before it — the floor lowers counts against all historical figures |
+> | 2 | 2026-08-01 | **pre-epoch calendar fix** (the frozen-calendar harness bug) | every run before it, which never advanced the calendar and so never exercised any date-driven system |
+> | 3 | **2026-08-10** | **`DaysPerTurn` 121 → 365**, the 3.017x fiscal defect | **every trajectory, debt path, deficit, population figure and anomaly count ever recorded before it** |
+>
+> ⚠ **Discontinuity 3 is the widest of the three.** The first two changed what was *measured*; this one
+> changed what the simulation *was*. Every baseline captured before 2026-08-10 measured a fiscal engine
+> charging a full year of spending, revenue and interest every 121 days, on a calendar where 100 turns
+> was 33 years. Per-turn fiscal figures happen to be unchanged by the fix — the flows were always a
+> year's worth and a turn is now a year — but **population, calendar span, election frequency and the SWF
+> draw all moved**, so a post-fix run compared against a pre-fix number will agree on debt and disagree
+> on everything demographic, which is the most misleading possible shape for a false match. See "A turn
+> is now a year" below.
+>
+> There is also a fourth, narrower caveat that is not a discontinuity but bites the same way: before
+> `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating it came from an
+> unseeded run and is not reproducible at all.
+
 ## Overview
 PoliSim is a turn-based political/economic simulation game built in Unity (C#). The player governs a country — starting with six real-world-seeded countries (USA, Sweden, Germany, France, Italy, Poland) — and makes policy decisions (a portfolio of individual taxes, category-specific spending, tariffs, interest rates) each turn. The core of the economy (GDP, unemployment, inflation) is driven by named macroeconomic theory rather than tuned-by-feel curves; a handful of surrounding mechanics (approval rating, currency strength, trade/tariff dampening) are still intentionally simple heuristics, though approval is now itself a Phillips-curve-adjacent formula rather than an ad hoc one (see "Political Layer" below). The player must balance economic performance against public approval to stay in power — literally: they face re-election every `ElectionCycle` turns and lose (game over) if approval has fallen below `ElectionSystem.LosingThreshold`.
 
@@ -1206,6 +1231,14 @@ same direction.
 
 ### Validation
 
+⚠ **CORRECTED 2026-08-10 — this section overstated what it had established.** As originally written it
+presented "39/39 within 3%" as validating the fiscal engine. **It validated the MIGRATION, not the
+engine.** The daily form was verified to reproduce the turn form, and it does, exactly — while the turn
+form was charging a full year of spending, revenue and interest every 121 days. Every number below is
+still true and still correctly measured; what was wrong was the conclusion drawn from them. Read this
+section as "the conversion is faithful", never as "the fiscal engine is right". See "A turn is now a
+year" below, and the verification-integrity note in the working discipline.
+
 Aggregation-equivalence 39/39 within 3%. Full matrix (15 scenarios x 100/500 turns) run before and after
 under the same seed against real Unity `6000.5.6f1`: **25 of 30 combinations byte-identical**, 1629 → 1637
 anomalies total, and the only categories that moved are the two directly downstream of the debt path
@@ -1219,6 +1252,42 @@ One tool is now slightly approximate and it is worth knowing: `DebtClampDiagnost
 "unclamped" debt as `previousDebt - budgetBalance` to detect clamp hits. With interest compounding within
 a period that reconstruction is no longer exact. It is a diagnostic rather than a gate, and its clamp-hit
 counts were zero in both runs, so nothing rests on it today.
+
+## Verification integrity: an equivalence check is not a correctness check
+
+**A new variant, and the most dangerous one this project has produced so far** — because unlike every
+previous verification failure here, **nothing was broken.**
+
+The catalogue up to now had two shapes. A **broken check**: one that cannot fail, or measures the
+harness instead of the thing (`WaitForEndOfFrame` under `-batchmode`; the render-order spike where
+neither canvas drew; the guard that caught `UnityException` while Unity threw `ArgumentException`). And
+an **overestimated check**: one that runs correctly but is read as covering more than it does
+(`DeliveredAssetCheck` answering "did the file land under `Assets/`?" and being read as "can the game
+load it?").
+
+This is neither. **Phase 3's aggregation bar covered spending, passed, and was RIGHT to pass.**
+
+> *"Its flows are exact by construction (121 × flow/121)"* — the check's own doc comment.
+
+That identity holds **whether or not the annual figure was the right figure.** The check asks "does the
+daily form reproduce the turn form?" It got the right answer. A faithful migration reproduces an error
+perfectly, and faithfulness was precisely what it was built to establish.
+
+⚠ **The gap was the assertion NEXT TO it that nobody wrote.** Nothing in this project has ever asserted
+that a turn's fiscal flows equal a turn's worth of money. That assertion did not exist, so it could not
+fail, so nothing drew attention to its absence — and the check sitting beside it looked like it covered
+the ground, because it covered *adjacent* ground convincingly.
+
+**The generalisation, and it is the useful part:** a correct, passing check creates a *shadow* — the
+region a reader assumes is covered because something nearby is. A broken check gets found when it lets a
+bug through. An overestimated check gets found when someone reads its scope. **A correct check's shadow
+is found only by asking, explicitly, what it does NOT assert** — and that question gets asked least
+often precisely when the check is green and well-written.
+
+Practically: **when a check passes, write down what it did not test**, in the same breath and the same
+place. Phase 3's write-up in this file said "39/39 within 3%" and drew the conclusion "the fiscal engine
+is validated". Had it said "the conversion is faithful; nothing here checks whether the turn form was
+right", the 3.017x error would have been visible in the sentence that shipped it.
 
 ## A turn is now a year — the 3.017x fiscal defect (2026-08-10)
 
