@@ -1,6 +1,6 @@
 # PoliSim — Pass 3 follow-ups
 
-**Status: OPEN — five import blockers, plus two declared deviations.**
+**Status: OPEN — five import blockers, two declared deviations, two open questions.**
 **Date:** 2026-08-10.
 **Not a revision round.** Pass 3 answered all nine §1D items and none of this disputes a design
 decision. Five delivery-side problems stop delivered assets from importing; one deviation is declared
@@ -149,6 +149,47 @@ is inventing, not implementing, which is the line this section exists to keep vi
 ✅ **If you want it expressed differently, that is a real design question and worth answering** — the two
 groups differ by orders of magnitude ($1.53T against $9B), which is exactly the kind of thing a period
 ledger has conventions for. But it needs a decision, not a guess from us.
+
+### OPEN QUESTIONS — raised rather than decided in code
+
+Two things the first Spending capture surfaced. Neither is a defect and neither is blocking; both are
+choices we would rather you made than have us settle silently in an implementation.
+
+**Q1 — `SHARE` loses discriminating power on the discretionary tail.**
+
+The board's trailing column for a spending row is SHARE, as % of GDP. It works on Mandatory, where the
+lines are large. On Discretionary it reads:
+
+`0.4% · 0.4% · 0.3% · 0.3% · 0.2% · 0.2% · 0.1%`
+
+Seven rows, three distinct values, and the tail below that rounds to `0.0%`. The column is still
+*correct* — those really are the shares — it has simply stopped distinguishing anything, on the group
+where there are 23 rows to distinguish. The money column beside it (`$105B`, `$130B`, `$80.0B`) carries
+the size perfectly well.
+
+Three ways we can see, and it is your call which:
+1. **Switch basis within the group** — share of the *group's* total rather than of GDP, so Discretionary
+   lines are compared against each other and spread across the full range.
+2. **Drop the column for Discretionary**, keep it for Mandatory. Different groups, different useful
+   facts.
+3. **Leave it.** Consistency across the two groups may be worth more than resolution within one, and a
+   run of near-identical small numbers does itself say "these are all small".
+
+**Q2 — the row pitch is a spec number nobody has confirmed.**
+
+Rows currently sit about **57px** apart at 1600×900, so Spending's 29 categories run to roughly
+**1650px** and scroll. Scrolling handles it and nothing breaks.
+
+But per this project's suspect-number rule, that pitch was **derived from the font metric rather than
+chosen** — it is whatever two lines of body type plus padding come to, not a decision anyone took.
+Board 1b quotes `36px` at 1920×1080, which is a different number at a different size, so the two cannot
+be compared directly.
+
+**The question is whether the tail should be denser than "two lines of type" implies.** A ledger that
+wants 29 rows visible at once is a different instrument from one that wants 8 legible ones, and that is
+a design position rather than an arithmetic result. ✅ **"The pitch should be N at 1080p, deriving from
+the font as it does now" is a perfectly good answer** — we only need it to be an answer rather than a
+default.
 
 ### What this blocks, precisely
 

@@ -4743,9 +4743,6 @@ namespace PoliSim.UI
         {
             WelfareProgramBill pendingBill = FindPendingWelfareProgramBill(welfareProgram.Type);
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(welfareProgram.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
-
             string toggleLabel = pendingBill != null
                 // Short labels on purpose. "Introduce Implement Bill" plus the tax/program name beside it
                 // needed ~362px inside a column that is 293px at ordinary window sizes, so the button drew
@@ -4755,33 +4752,60 @@ namespace PoliSim.UI
                 ? $"Pending ({pendingBill.DaysRemaining}d)"
                 : welfareProgram.IsImplemented ? "Remove" : "Implement";
             GUIStyle toggleStyle = welfareProgram.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
+
+            // Identical shape to DrawTaxLineRow - see that method for the control-order reasoning, which
+            // applies here unchanged: button, then slider, every frame, same sequence at different rects.
+            float draftGenerosity = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
+            bool hasDraft = welfareProgram.IsImplemented
+                && !Mathf.Approximately(draftGenerosity, welfareProgram.GenerosityLevel);
+
+            Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            float gap = _labelStyle.fontSize * 0.6f;
+            float actionWidth = Mathf.Max(fullRow.width * 0.15f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);
+            float verdictWidth = fullRow.width * 0.13f;
+
+            var actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);
+            var verdictRect = new Rect(actionRect.x - verdictWidth - gap, fullRow.y, verdictWidth, fullRow.height);
+            var ledgerRect = new Rect(fullRow.x, fullRow.y, verdictRect.x - fullRow.x - gap, fullRow.height);
+
+            // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (GUILayout.Button(toggleLabel, toggleStyle, GUILayout.ExpandWidth(true)))
+            if (GUI.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceWelfareProgramBill(PlayerCountryId, welfareProgram.Type, !welfareProgram.IsImplemented);
             }
             GUI.enabled = ambientEnabledForButton;
-            GUILayout.EndHorizontal();
 
-            DrawWelfareProgramBillEstimate(welfareProgram, pendingBill);
-            GUILayout.Label($"Standing: {(welfareProgram.IsImplemented ? $"{welfareProgram.GenerosityLevel:F0}%" : "not implemented")}", _labelStyle);
+            DrawWelfareProgramBillVerdict(welfareProgram, pendingBill, verdictRect);
 
-            // The slider IS the current draft (defaulting to the standing GenerosityLevel until
-            // dragged), bounded 0-100% - not a small per-turn delta, so a meaningful policy shift is
-            // reachable in one bill.
-            float draftGenerosity = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
-            string draftLabel = welfareProgram.IsImplemented
-                ? $"Draft generosity: {draftGenerosity:F0}% (applies via the next Annual Budget bill)"
-                : "Draft generosity: not implemented";
-            // See DrawTaxLineRow's equivalent - an unimplemented program is changed by its own
-            // standalone bill, not by this slider, so it never shows the amber pending-change cue.
-            DrawDraftLabel(draftLabel, welfareProgram.IsImplemented && !Mathf.Approximately(draftGenerosity, welfareProgram.GenerosityLevel));
+            // Control 2 of 2. The slider IS the current draft (defaulting to the standing
+            // GenerosityLevel until dragged), bounded 0-100% - not a small per-turn delta, so a
+            // meaningful policy shift is reachable in one bill. An unimplemented program is changed by
+            // its own standalone bill rather than by this slider, so it never shows the amber cue.
+            float newGenerosity = LedgerRow.Draw(
+                ledgerRect,
+                welfareProgram.Type.ToString(),
+                welfareProgram.GenerosityLevel,
+                draftGenerosity,
+                0f,
+                100f,
+                welfareProgram.IsImplemented
+                    ? welfareProgram.GenerosityLevel.ToString("F0", CultureInfo.InvariantCulture) + "%"
+                    : "not implemented",
+                hasDraft ? draftGenerosity.ToString("F0", CultureInfo.InvariantCulture) + "%" : null,
+                // Cost at FULL generosity, which is what the share is defined against - a real seeded
+                // figure rather than one scaled by the draft, so the column answers "how big is this
+                // programme" rather than restating the slider.
+                welfareProgram.IsImplemented
+                    ? welfareProgram.CostShareOfGdp.ToString("F1", CultureInfo.InvariantCulture) + "% GDP"
+                    : "-",
+                welfareProgram.IsImplemented,
+                _labelStyle,
+                _labelStyle,
+                _sliderStyle,
+                _sliderThumbStyle);
 
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && welfareProgram.IsImplemented;
-            float newGenerosity = GUILayout.HorizontalSlider(draftGenerosity, 0f, 100f, _sliderStyle, _sliderThumbStyle);
-            GUI.enabled = ambientEnabled;
             if (welfareProgram.IsImplemented)
             {
                 _welfareGenerosityInputs[welfareProgram.Type] = newGenerosity;
@@ -4789,14 +4813,20 @@ namespace PoliSim.UI
         }
 
         /// <summary>See DrawTaxProgramBillEstimate's own doc comment - identical pattern (GenerosityLevel in place of Rate, WelfareProgramBill in place of TaxProgramBill).</summary>
-        private void DrawWelfareProgramBillEstimate(WelfareProgram welfareProgram, WelfareProgramBill pendingBill)
+        private void DrawWelfareProgramBillVerdict(WelfareProgram welfareProgram, WelfareProgramBill pendingBill, Rect rect)
         {
             WelfareProgramBill bill = pendingBill ?? new WelfareProgramBill { Type = welfareProgram.Type, IsAdd = !welfareProgram.IsImplemented };
             float direction = ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill);
             bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
-            string prefix = pendingBill != null ? "Pending bill" : "If introduced now";
-            DrawColoredLabel($"{prefix}: {(wouldPass ? "WOULD PASS" : "WOULD FAIL")} (current seat composition)",
-                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+
+            // See DrawTaxProgramBillVerdict - the "(current seat composition)" qualifier moved to the
+            // screen header there for the same reason it moves here, and it is declared to Design as V1.
+            string text = pendingBill != null ? "PENDING" : wouldPass ? "WOULD PASS" : "WOULD FAIL";
+            Color ink = pendingBill != null
+                ? PoliSimTheme.TextMuted
+                : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
+
+            LedgerRow.Cell(rect, text, _labelStyle, ink, TextAnchor.MiddleRight);
         }
 
         /// <summary>
