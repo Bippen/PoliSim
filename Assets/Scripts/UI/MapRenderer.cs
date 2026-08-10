@@ -55,9 +55,21 @@ namespace PoliSim.UI
         private const float MinLineAlpha = 0.22f;
         private const float MaxLineAlpha = 0.65f;
 
-        private static readonly Color BackgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
-        private static readonly Color GridLineColor = new Color(0.14f, 0.14f, 0.15f, 1f);
-        private static readonly Color TradeLineColor = new Color(0.62f, 0.62f, 0.68f, 1f);
+        /// <summary>
+        /// The plate a procedural chart is drawn ON - paper, not the dark-dashboard near-black this was
+        /// until 2026-08-10.
+        ///
+        /// ⚠ **Three renderers carried this identical value and all three were missed**, because a chart
+        /// with no data yet draws no plate: at turn 0 the graphs say "No data yet" and the map is empty,
+        /// so every v2.0 capture to date showed paper where real play would show black. PolicyWeb was
+        /// only found first because its ring renders immediately.
+        ///
+        /// Rule 10 draws the line exactly here: the plate and frame AROUND a procedural chart are the
+        /// v2.0 pack's business, the marks inside are not. Node inks, edge good/bad and area accents all
+        /// stay exactly as they were - they are already on the aged palette.
+        private static readonly Color BackgroundColor = PoliSimTheme.Card;
+        private static readonly Color GridLineColor = PoliSimTheme.Hairline;
+        private static readonly Color TradeLineColor = PoliSimTheme.TextSecondary;
 
         /// <summary>
         /// Fixed illustrative node position per country, normalized (0-1) - two loose clusters (USA

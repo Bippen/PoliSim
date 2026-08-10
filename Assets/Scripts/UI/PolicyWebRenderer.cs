@@ -83,9 +83,23 @@ namespace PoliSim.UI
         private const float MinLineThickness = 1.1f;
         private const float MaxLineThickness = 3.4f;
 
-        private static readonly Color BackgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
-        private static readonly Color StatNodeColor = new Color(0.72f, 0.72f, 0.75f, 1f);
-        private static readonly Color WedgeDividerColor = new Color(0.35f, 0.35f, 0.38f, 0.85f);
+        /// <summary>
+        /// The plate a procedural chart is drawn ON - paper, not the dark-dashboard near-black this was
+        /// until 2026-08-10.
+        ///
+        /// ⚠ **Three renderers carried this identical value and all three were missed**, because a chart
+        /// with no data yet draws no plate: at turn 0 the graphs say "No data yet" and the map is empty,
+        /// so every v2.0 capture to date showed paper where real play would show black. PolicyWeb was
+        /// only found first because its ring renders immediately.
+        ///
+        /// Rule 10 draws the line exactly here: the plate and frame AROUND a procedural chart are the
+        /// v2.0 pack's business, the marks inside are not. Node inks, edge good/bad and area accents all
+        /// stay exactly as they were - they are already on the aged palette.
+        private static readonly Color BackgroundColor = PoliSimTheme.Card;
+        /// <summary>A stat node keys no area, so it is deliberately neutral - but light grey was neutral against BLACK, and on paper it is invisible. Neutral ink is the same intent re-expressed for the ground it now sits on.</summary>
+        private static readonly Color StatNodeColor = PoliSimTheme.Accent(UiPalette.SystemArea.Neutral);
+        // Furniture, not data - a wedge divider is a rule, and the palette has a rule colour.
+        private static readonly Color WedgeDividerColor = PoliSimTheme.Hairline;
 
         private Texture2D _backgroundTexture;
         private Texture2D _circleTexture;

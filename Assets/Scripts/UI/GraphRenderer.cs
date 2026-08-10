@@ -32,17 +32,31 @@ namespace PoliSim.UI
         /// <summary>How many turns one page shows - unchanged from the graph's original fixed display window, just now one page of potentially several rather than the only page.</summary>
         private const int WindowSize = 50;
 
-        private static readonly Color BackgroundColor = new Color(0.10f, 0.10f, 0.10f, 1f);
-        private static readonly Color GridColor = new Color(0.28f, 0.28f, 0.28f, 1f);
-        private static readonly Color HistoryLineColor = new Color(0.35f, 0.85f, 0.45f, 1f);
+        /// <summary>
+        /// The plate a procedural chart is drawn ON - paper, not the dark-dashboard near-black this was
+        /// until 2026-08-10.
+        ///
+        /// ⚠ **Three renderers carried this identical value and all three were missed**, because a chart
+        /// with no data yet draws no plate: at turn 0 the graphs say "No data yet" and the map is empty,
+        /// so every v2.0 capture to date showed paper where real play would show black. PolicyWeb was
+        /// only found first because its ring renders immediately.
+        ///
+        /// Rule 10 draws the line exactly here: the plate and frame AROUND a procedural chart are the
+        /// v2.0 pack's business, the marks inside are not. Node inks, edge good/bad and area accents all
+        /// stay exactly as they were - they are already on the aged palette.
+        private static readonly Color BackgroundColor = PoliSimTheme.Card;
+        private static readonly Color GridColor = PoliSimTheme.Hairline;
+        // Was a bright screen green that meant nothing - the series is not direction-keyed, the TITLE ROW
+        // carries good/bad. A plain dark ink is the honest reading and the one that works on paper.
+        private static readonly Color HistoryLineColor = PoliSimTheme.TextPrimary;
 
         /// <summary>Lighter/translucent, drawn dashed - the projected segment must read as "estimate, not committed" the same way the existing live policy preview text already does, not as a real recorded data point.</summary>
-        private static readonly Color ProjectedLineColor = new Color(0.35f, 0.85f, 0.45f, 0.45f);
+        private static readonly Color ProjectedLineColor = new Color(PoliSimTheme.TextPrimary.r, PoliSimTheme.TextPrimary.g, PoliSimTheme.TextPrimary.b, 0.45f);
 
-        private static readonly Color AxisLabelColor = new Color(0.65f, 0.65f, 0.65f, 1f);
+        private static readonly Color AxisLabelColor = PoliSimTheme.TextSecondary;
 
         /// <summary>Distinct from GridColor (the plain midline) and from HistoryLineColor/ProjectedLineColor, so a threshold/target reference line is never confused with either - a warm amber reads as "reference marker," not "recorded data."</summary>
-        private static readonly Color ThresholdLineColor = new Color(0.90f, 0.70f, 0.25f, 0.9f);
+        private static readonly Color ThresholdLineColor = PoliSimTheme.Caution;
 
         private Texture2D _texture;
         private readonly List<float> _drawnHistory = new List<float>();
