@@ -4066,9 +4066,14 @@ namespace PoliSim.UI
             DrawTradeLiveEstimate();
             EndAreaCard(UiPalette.SystemArea.Trade);
 
-            float draftTariffRate = GetTariffRateInput(_playerCountry.BaseTariffRate);
-            DrawDraftLabel($"General Base Tariff Rate - Standing: {_playerCountry.BaseTariffRate:F2}%, Draft: {draftTariffRate:F2}% (range {MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}%; applies to any partner with no override, and only where it isn't superseded by trade-bloc membership)", _playerCountry.BaseTariffRate, draftTariffRate);
-            _tariffRateInput = GUILayout.HorizontalSlider(draftTariffRate, MinBaseTariffRate, MaxBaseTariffRate, _sliderStyle, _sliderThumbStyle);
+            // The long qualifier - "applies to any partner with no override, and only where it isn't
+            // superseded by trade-bloc membership" - is a property of the SCREEN, not of this row, and it
+            // is already said by the paragraph below about overrides beating the usual resolution. The
+            // row keeps the range, which is what the trailing column carries everywhere else.
+            _tariffRateInput = DrawDialRow("General Base Tariff",
+                _playerCountry.BaseTariffRate, GetTariffRateInput(_playerCountry.BaseTariffRate),
+                MinBaseTariffRate, MaxBaseTariffRate, "F2", "%",
+                $"{MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}% range");
             GUILayout.Space(10f);
 
             GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. Doesn't affect what that partner charges on our exports to them.", _labelStyle);
@@ -4104,11 +4109,20 @@ namespace PoliSim.UI
             float tariffOnOurExports = TradeSystem.GetTariffRate(partner, _playerCountry, _world.TradeBlocs);
             float tariffOnOurImports = TradeSystem.GetTariffRate(_playerCountry, partner, _world.TradeBlocs);
 
+            // ⚠ THE PARTNER IS A GROUP HEADER, exactly as a sector is on Economic Sectors. It was a plain
+            // label, which was survivable while its override slider sat tight beneath its button - but
+            // the behaviour-5 fix below adds a row, and the first capture after it made the boundaries
+            // genuinely ambiguous: with no separation, one partner's override row reads as belonging to
+            // the partner named beneath it. The name now carries the same weight Manufacturing/Retail do,
+            // and the volumes and tariffs follow as its context line.
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(partner.Name, _headerStyle, GUILayout.Width(GetSectorNameColumnWidth()));
             GUILayout.Label(
-                $"{partner.Name}: Exports={link.ExportVolume:F1}, Imports={link.ImportVolume:F1}, " +
-                $"Tariff on our exports={tariffOnOurExports:F2}%, Tariff on our imports={tariffOnOurImports:F2}%" +
+                $"Exports={link.ExportVolume:F1}, Imports={link.ImportVolume:F1}, " +
+                $"Tariff on our exports={tariffOnOurExports:F2}%, on our imports={tariffOnOurImports:F2}%" +
                 (link.HasPlayerTariffOverride ? " (override active)" : ""),
                 _labelStyle);
+            GUILayout.EndHorizontal();
 
             GUILayout.Label("Exports:", _labelStyle);
             UiPalette.DrawBar(link.ExportVolume / maxVolume, UiPalette.PositiveChangeColor, 10f);
@@ -4117,35 +4131,41 @@ namespace PoliSim.UI
 
             float buttonWidth = _labelStyle.fontSize * 8f;
             GUILayout.BeginHorizontal();
-            if (link.HasPlayerTariffOverride)
-            {
-                if (GUILayout.Button("Reset to Default", _removeButtonStyle, GUILayout.Width(buttonWidth)))
-                {
-                    // Reset is immediate (a structural on/off, like TaxLine.IsImplemented), not a
-                    // this-turn delta - the preview cache is invalidated right away so it reflects
-                    // the reset the moment it happens, rather than waiting for the usual
-                    // slider-changed check to catch up.
-                    link.PlayerTariffOverride = -1f;
-                    RecomputePolicyPreview();
-                }
+            // ⚠ BEHAVIOUR 5 FIX, the same shape as DrawMinimumWageControl's. This used to emit a button
+            // AND a slider when an override existed, and a button ALONE when it did not - two different
+            // control counts on a condition the buttons themselves toggle, which is precisely the
+            // positional-control-ID desync DrawTaxPolicyContent's doc comment describes. Both controls
+            // are now always emitted; the slider is disabled when there is no override to move.
+            bool hasOverride = link.HasPlayerTariffOverride;
 
-                float draftRate = GetPartnerTariffInput(link.PartnerId, link.PlayerTariffOverride);
-                DrawDraftLabel($"Override rate - Standing: {link.PlayerTariffOverride:F2}%, Draft: {draftRate:F2}% (range {PartnerTariffOverrideMin:F0}-{PartnerTariffOverrideMax:F0}%; applies via the Trade bill below)", link.PlayerTariffOverride, draftRate);
-                float newRate = GUILayout.HorizontalSlider(draftRate, PartnerTariffOverrideMin, PartnerTariffOverrideMax, _sliderStyle, _sliderThumbStyle);
-                _partnerTariffInputs[link.PartnerId] = newRate;
-            }
-            else
+            // Control 1 of 2 - the toggle. One button whose label and style switch, rather than two
+            // buttons in exclusive branches, so the control COUNT never depends on state.
+            if (GUILayout.Button(hasOverride ? "Reset to Default" : "Set Override",
+                    hasOverride ? _removeButtonStyle : _implementButtonStyle, GUILayout.Width(buttonWidth)))
             {
-                if (GUILayout.Button("Set Override", _implementButtonStyle, GUILayout.Width(buttonWidth)))
-                {
-                    // Enabling is immediate too - starts the override at today's effective rate
-                    // (rather than 0) so turning it on never itself changes the tariff; the slider
-                    // then lets the player move it from there.
-                    link.PlayerTariffOverride = Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
-                    RecomputePolicyPreview();
-                }
+                // Both directions are immediate (a structural on/off, like TaxLine.IsImplemented), not a
+                // this-turn delta - the preview cache is invalidated right away rather than waiting for
+                // the usual slider-changed check. Enabling starts the override at today's EFFECTIVE rate
+                // rather than 0, so turning it on never itself changes the tariff.
+                link.PlayerTariffOverride = hasOverride
+                    ? -1f
+                    : Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
+                RecomputePolicyPreview();
             }
             GUILayout.EndHorizontal();
+
+            // Control 2 of 2 - always drawn, disabled when there is no override.
+            float standingOverride = hasOverride ? link.PlayerTariffOverride : tariffOnOurImports;
+            float newRate = DrawDialRow("    Override rate",
+                standingOverride, GetPartnerTariffInput(link.PartnerId, standingOverride),
+                PartnerTariffOverrideMin, PartnerTariffOverrideMax, "F2", "%",
+                hasOverride ? "via the Trade bill" : "no override set",
+                hasOverride);
+
+            if (hasOverride)
+            {
+                _partnerTariffInputs[link.PartnerId] = newRate;
+            }
         }
 
         /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceTradeBill/GetPendingTradeBill).</summary>
