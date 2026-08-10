@@ -4583,7 +4583,12 @@ namespace PoliSim.UI
             TaxProgramBill pendingBill = FindPendingTaxProgramBill(taxLine.Type);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(taxLine.Type.ToString(), _labelStyle, GUILayout.Width(labelWidth));
+
+            // The name used to be drawn here, ahead of the button. The v2.0 ledger row below carries it
+            // in its own name column, and the first live capture showed the two rendering one above the
+            // other - the same instrument named twice, three lines apart. The button keeps its own
+            // left-hand gutter so it still aligns with the ledger row's name column beneath it.
+            GUILayout.Space(labelWidth);
 
             string toggleLabel = pendingBill != null
                 // Short labels on purpose. "Introduce Implement Bill" plus the tax/program name beside it

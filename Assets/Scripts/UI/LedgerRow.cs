@@ -87,16 +87,37 @@ namespace PoliSim.UI
         {
             float scale = Scale(nameStyle);
             float gap = RefColumnGap * scale;
-            float nameWidth = RefNameWidth * scale;
-            float figureWidth = RefFigureWidth * scale;
-            float trailingWidth = RefTrailingWidth * scale;
 
-            // The slider column is what absorbs a narrow window - the fixed columns are fixed because
-            // their contents are, and shrinking a figure column to gain slider width would trade a
-            // legible number for a longer track.
-            float trackWidth = Mathf.Max(
-                RefKnobWidth * scale * 3f,
-                row.width - nameWidth - figureWidth - trailingWidth - gap * 3f);
+            // ⚠ THE COLUMNS ARE PROPORTIONAL TO THE ROW, NOT TO THE FONT. The first cut scaled the
+            // spec's 250/150/88 by font size alone, and the first live capture killed it immediately:
+            // the spec quotes those measures against board 1b's ~1100px ledger panel, this screen's
+            // centre column is ~745px, and at this screen's font size the three fixed columns summed to
+            // more than the row was wide. The track collapsed to its floor and both figure columns were
+            // pushed past the panel edge, where they simply did not render.
+            //
+            // Proportions are taken from the board (fixed columns are ~44% of its ledger width), with
+            // font-derived FLOORS so they cannot shrink below legibility on a narrow window. This is the
+            // same lesson as the row height one line below - a number from a mockup is a measurement at
+            // one size, and here it was a measurement against one panel width too.
+            float nameWidth = Mathf.Max(row.width * 0.26f, RefKnobWidth * scale * 4f);
+            float figureWidth = Mathf.Max(row.width * 0.19f, RefKnobWidth * scale * 3f);
+            float trailingWidth = Mathf.Max(row.width * 0.11f, RefKnobWidth * scale * 2f);
+            float minTrack = RefKnobWidth * scale * 4f;
+
+            // If the floors still do not fit - a very narrow window - the fixed columns give ground
+            // together rather than one of them collapsing, so the row degrades evenly instead of losing
+            // a whole column. MeasuredLabel shrinks the text inside whatever is left; nothing clips.
+            float fixedTotal = nameWidth + figureWidth + trailingWidth;
+            float available = row.width - gap * 3f - minTrack;
+            if (fixedTotal > available && fixedTotal > 0f)
+            {
+                float squeeze = Mathf.Max(0.35f, available / fixedTotal);
+                nameWidth *= squeeze;
+                figureWidth *= squeeze;
+                trailingWidth *= squeeze;
+            }
+
+            float trackWidth = Mathf.Max(minTrack, row.width - nameWidth - figureWidth - trailingWidth - gap * 3f);
 
             var nameRect = new Rect(row.x, row.y, nameWidth, row.height);
             var trackRect = new Rect(nameRect.xMax + gap, row.y + (row.height - RefTrackHeight * scale) * 0.5f, trackWidth, RefTrackHeight * scale);
@@ -186,20 +207,48 @@ namespace PoliSim.UI
             DrawCell(new Rect(rect.x + half, rect.y, half, rect.height), draftText, style, PoliSimTheme.Draft, TextAnchor.MiddleRight);
         }
 
-        private static void DrawCell(Rect rect, string text, GUIStyle style, Color ink, TextAnchor alignment)
+        /// <summary>
+        /// ⚠ **`MeasuredLabel` SHRINKS THE STYLE IT IS HANDED**, permanently, as its way of fitting text.
+        ///
+        /// Handing it the caller's `_labelStyle` therefore shrinks the whole UI's shared label style a
+        /// little more on every frame, compounding until the layout collapses. The first live capture
+        /// after this row was wired showed exactly that: rows losing their track and figures entirely,
+        /// and text drifting up into the line above.
+        ///
+        /// **This is the second time this trap has been hit in this project** - `PolicyScreenStatsRenderer`
+        /// solved it with a private cached `ChipTextStyle` for the same reason. A per-row cached copy,
+        /// rebuilt only when the source style's size actually changes, is the same fix: MeasuredLabel
+        /// gets something disposable to shrink, and the caller's style is never touched.
+        /// </summary>
+        private static GUIStyle _cellStyle;
+        private static int _cellStyleSourceSize = -1;
+
+        private static GUIStyle CellStyle(GUIStyle source)
+        {
+            if (_cellStyle == null || _cellStyleSourceSize != source.fontSize)
+            {
+                _cellStyle = new GUIStyle(source) { wordWrap = true, clipping = TextClipping.Overflow };
+                _cellStyleSourceSize = source.fontSize;
+            }
+
+            // Reset the size every call: MeasuredLabel may have shrunk the cached copy for a previous
+            // cell, and a row whose columns each print at whatever size the last one needed is the
+            // "reads as an error rather than as a fit" failure §A.9a exists to prevent.
+            _cellStyle.fontSize = source.fontSize;
+            return _cellStyle;
+        }
+
+        private static void DrawCell(Rect rect, string text, GUIStyle source, Color ink, TextAnchor alignment)
         {
             if (string.IsNullOrEmpty(text))
             {
                 return;
             }
 
-            TextAnchor previousAlignment = style.alignment;
-            Color previousColor = style.normal.textColor;
+            GUIStyle style = CellStyle(source);
             style.alignment = alignment;
             style.normal.textColor = ink;
             PoliSimWidgets.MeasuredLabel(rect, text, style);
-            style.alignment = previousAlignment;
-            style.normal.textColor = previousColor;
         }
     }
 }

@@ -1,14 +1,14 @@
 # Claude Design asset request — PoliSim
 
-**Status: PASS 3 DELIVERED AND ACCEPTED — four import blockers open (§1E).**
+**Status: PASS 3 DELIVERED AND ACCEPTED — five import blockers open (§1E).**
 **Date:** 2026-08-10.
 
-➡ **START AT [§1E](#1e-pass-3-follow-ups--four-import-blockers-2026-08-10).** Pass 3 answered all nine
+➡ **START AT [§1E](#1e-pass-3-follow-ups--five-import-blockers-2026-08-10).** Pass 3 answered all nine
 items of the §1D revision request — seven accepted as raised, two amended with reasoning better than the
-request had. What remains is **four delivery-side items that stop the pass-3 Canvas assets from
-importing**: a prefix that contradicts §3.1's tint rule, a second namespace inside `Chrome/`, two sprite
-sheets that need an import recipe §3 does not carry, and SVG-only delivery where every previous pass
-shipped PNGs. None disputes a design decision.
+request had. What remains is **five delivery-side items that stop delivered assets from importing**:
+a prefix that contradicts §3.1's tint rule, a second namespace inside `Chrome/`, two sprite sheets that
+need an import recipe §3 does not carry, SVG-only delivery where every previous pass shipped PNGs, and
+D1's own agreed draft carrier which has no PNG at all. None disputes a design decision.
 
 **§1D is retained below as the record** of what was raised and how it was answered — read it for the
 reasoning behind D4's hue cap and D7's resort ladder, both of which are now implemented.
@@ -700,7 +700,7 @@ treatment, the dual-siting build rule, and the envelope timings.
 
 ---
 
-## 1E. PASS 3 FOLLOW-UPS — four import blockers, 2026-08-10
+## 1E. PASS 3 FOLLOW-UPS — five import blockers, 2026-08-10
 
 **Pass 3 closed all nine. This is not a fourth revision round** — the design decisions are settled and
 none of what follows disputes one. Two of the amended answers were better than what was asked for: D4
@@ -708,7 +708,7 @@ refusing to invent 29 distinguishable aged hues and changing the chart form inst
 uniform auto-shrink because a column printing at four different sizes reads as an error rather than a
 fit. Both are now implemented on our side.
 
-These are **four things that stop the pass-3 assets from being importable**, all in the delivery rather
+These are **five things that stop delivered assets from being importable**, all in the delivery rather
 than the design.
 
 ### E1 — `emblem_state_seal` violates §3.1's prefix rule
@@ -768,6 +768,27 @@ different image from yours in ways neither of us would see until they are side b
 ✅ **Requested: PNG delivery at @2×, as in passes 1 and 2**, with the SVGs retained as sources. If
 rasterizing on our side is the intent going forward, say so explicitly and we will record it — the
 concern is the silent change of who owns the pixels, not the work.
+
+### E5 — `icon_pencil_draft` has no PNG either, and it is D1's agreed carrier
+
+Found while implementing the Budget ledger row, 2026-08-10.
+
+D1's resolution — accepted by both sides — is that the draft marker is **the `icon_pencil_draft`
+sprite, never a font glyph**, because no shipped font carries `U+270F`. But that sprite has only ever
+existed as `svg/icon_pencil_draft.svg`. Pass 1's manifest lists it under "SVG sources", not among the 30
+PNGs, and there is no `icon_pencil_draft.png` anywhere in `Assets/Resources/`.
+
+So the agreed fix for D1 is currently not importable, by the same E4 problem one file wider.
+
+⚠ **This is a FIDELITY gap, not a broken behaviour, and the distinction matters for how you prioritise
+it.** Behaviour 1 is satisfied today without the pencil: the drafted figure prints in draft amber
+`#BE8A00`, and the span between the standing tick and the draft knob is hatched with `ui_hatch_draft`
+tinted the same. If even the hatch sprite is missing, the row falls back to a flat amber wash at the
+hatch's own weight — **the cue may change form, but at no point does it become nothing.** What is
+missing is the pencil's identity, not the amber's meaning.
+
+✅ **Requested: `icon_pencil_draft.png` at @2×, white-on-alpha**, alongside E4's four. Same delivery
+question, same answer needed.
 
 ### What this blocks, precisely
 

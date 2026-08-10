@@ -1,9 +1,9 @@
 # PoliSim — Pass 3 follow-ups
 
-**Status: OPEN — four import blockers.**
+**Status: OPEN — five import blockers.**
 **Date:** 2026-08-10.
 **Not a revision round.** Pass 3 answered all nine §1D items and none of this disputes a design
-decision. These are four delivery-side problems that stop the pass-3 Canvas assets from importing.
+decision. These are five delivery-side problems that stop delivered assets from importing.
 
 ⚠ **GENERATED FILE — do not edit.** The body below is §1E of `CLAUDE_DESIGN_ASSET_REQUEST.md`, the
 source of truth. Regenerate after any edit to §1E:
@@ -14,7 +14,7 @@ awk '/^## 1E\./{f=1} /^## 2\./{f=0} f' CLAUDE_DESIGN_ASSET_REQUEST.md
 
 ---
 
-## 1E. PASS 3 FOLLOW-UPS — four import blockers, 2026-08-10
+## 1E. PASS 3 FOLLOW-UPS — five import blockers, 2026-08-10
 
 **Pass 3 closed all nine. This is not a fourth revision round** — the design decisions are settled and
 none of what follows disputes one. Two of the amended answers were better than what was asked for: D4
@@ -22,7 +22,7 @@ refusing to invent 29 distinguishable aged hues and changing the chart form inst
 uniform auto-shrink because a column printing at four different sizes reads as an error rather than a
 fit. Both are now implemented on our side.
 
-These are **four things that stop the pass-3 assets from being importable**, all in the delivery rather
+These are **five things that stop delivered assets from being importable**, all in the delivery rather
 than the design.
 
 ### E1 — `emblem_state_seal` violates §3.1's prefix rule
@@ -82,6 +82,27 @@ different image from yours in ways neither of us would see until they are side b
 ✅ **Requested: PNG delivery at @2×, as in passes 1 and 2**, with the SVGs retained as sources. If
 rasterizing on our side is the intent going forward, say so explicitly and we will record it — the
 concern is the silent change of who owns the pixels, not the work.
+
+### E5 — `icon_pencil_draft` has no PNG either, and it is D1's agreed carrier
+
+Found while implementing the Budget ledger row, 2026-08-10.
+
+D1's resolution — accepted by both sides — is that the draft marker is **the `icon_pencil_draft`
+sprite, never a font glyph**, because no shipped font carries `U+270F`. But that sprite has only ever
+existed as `svg/icon_pencil_draft.svg`. Pass 1's manifest lists it under "SVG sources", not among the 30
+PNGs, and there is no `icon_pencil_draft.png` anywhere in `Assets/Resources/`.
+
+So the agreed fix for D1 is currently not importable, by the same E4 problem one file wider.
+
+⚠ **This is a FIDELITY gap, not a broken behaviour, and the distinction matters for how you prioritise
+it.** Behaviour 1 is satisfied today without the pencil: the drafted figure prints in draft amber
+`#BE8A00`, and the span between the standing tick and the draft knob is hatched with `ui_hatch_draft`
+tinted the same. If even the hatch sprite is missing, the row falls back to a flat amber wash at the
+hatch's own weight — **the cue may change form, but at no point does it become nothing.** What is
+missing is the pencil's identity, not the amber's meaning.
+
+✅ **Requested: `icon_pencil_draft.png` at @2×, white-on-alpha**, alongside E4's four. Same delivery
+question, same answer needed.
 
 ### What this blocks, precisely
 
