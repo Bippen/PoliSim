@@ -77,13 +77,38 @@ namespace PoliSim.Simulation
         public int CurrentTurn { get; private set; }
 
         /// <summary>
-        /// Continuous Time Migration Phase 0 (Master Sequence step 3): 1 turn = 121 in-game days
-        /// (~4 months), the SAME conversion "Why this exists" in POLISIM_MASTER_ROADMAP.md's Part One
-        /// has used implicitly since ElectionCycle (12 turns = ~4 years, a real presidential term)
-        /// was first calibrated. Unchanged by this phase - no constant here gets translated to a daily
-        /// rate yet; that's Phases 1-5 (Master Sequence step 7), deliberately much later.
+        /// 1 turn = 1 in-game year.
+        ///
+        /// **Was 121 days (~4 months) until 2026-08-10, and that was the source of a live 3.017x fiscal
+        /// defect.** Every fiscal quantity in this game is an ANNUAL-rate figure - the spending seeds are
+        /// FY2025 federal outlays ($1,530B Social Security, $850B Defense, 25 lines totalling $5,761B),
+        /// GDP is annual ($29T for the USA), tax revenue is `GDP x rate x BaseShareOfGdp`, and interest
+        /// is an annual rate on the debt stock. None of them was ever divided by a period. So a 121-day
+        /// turn charged a full year of spending, revenue and interest every 121 days: 365/121 = 3.017x
+        /// too fast, which is what Elias saw as "a full year's deficit every turn".
+        ///
+        /// **The same defect was found and fixed once before, in demographics.** See
+        /// `MacroSystem.YearsPerTurn` - its doc comment describes "3x over-compounding via too many
+        /// applications of an annual-scale rate", diagnosed and fixed there by scaling each turn's growth
+        /// to the turn's real-time slice. The fiscal path has the identical defect and was never brought
+        /// along. `SwfStructuralDrawPerTurnFraction` was the one flow that got the conversion.
+        ///
+        /// **Why the turn moved to the year rather than the flows moving to the turn** (Elias's ruling,
+        /// 2026-08-10): the economy was already annual-per-turn in every respect, so making the calendar
+        /// agree with the model is one constant, while making the model agree with the calendar is a
+        /// divisor on every flow plus a recalibration of every debt-anchored constant. This direction
+        /// also costs nothing in the continuous-time migration, because **every per-day constant in
+        /// Phases 1-3 was derived from this value rather than typed** - see `MacroSystem`'s
+        /// `PerDayReversion`, `CrimeEffectsDailyScale`, `InfrastructureDecayRatePerDay` and
+        /// `FiscalFlowPerDayFraction`, all of which retune themselves. That discipline is what made a
+        /// one-line change possible here.
+        ///
+        /// **`ElectionSystem.ElectionCycle` moved with it**, 12 turns to 4, so a presidential term stays
+        /// four years. The two constants are a pair: they are this project's only two statements of how
+        /// long a turn is, and they disagreed by 0.5% before this change (121/365 = 0.3315 years against
+        /// `YearsPerTurn`'s 4/12 = 0.3333). They now agree exactly at 1.0.
         /// </summary>
-        public const int DaysPerTurn = 121;
+        public const int DaysPerTurn = 365;
 
         /// <summary>The in-game calendar's epoch (Turn 0's date) - a clean, honestly-arbitrary flavor choice, not independently researched, chosen to roughly align with this project's own "seeded with real mid-2026 policy rates" starting data (see WorldFactory).</summary>
         /// <summary>Game start. Public since Step A: PublicationSystem must know it to suppress releases for reference periods that predate the simulation, which have no data behind them.</summary>

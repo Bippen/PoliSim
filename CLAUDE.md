@@ -1220,6 +1220,95 @@ One tool is now slightly approximate and it is worth knowing: `DebtClampDiagnost
 a period that reconstruction is no longer exact. It is a diagnostic rather than a gate, and its clamp-hit
 counts were zero in both runs, so nothing rests on it today.
 
+## A turn is now a year — the 3.017x fiscal defect (2026-08-10)
+
+Elias reported from a live Editor session: **spending was running a full year's deficit every turn.**
+He was exactly right about the symptom, and the mechanism was not where any of us expected.
+
+**Every fiscal quantity in this game is an annual-rate figure, and none of them was ever divided by a
+period.** The spending seeds are FY2025 federal outlays (`SocialSecurity 1530`, `Defense 850`, 25 lines
+totalling **$5,761B**); GDP is annual (`29000` = $29T); revenue is `GDP x rate x BaseShareOfGdp`;
+interest is an annual rate on the debt stock. A 121-day turn charged all of it every 121 days:
+**365/121 = 3.017x** too fast.
+
+**Three things this was NOT, each worth recording because each was a live hypothesis:**
+
+- **Not a `/91.25` quarter-versus-year divisor.** There is no `91.25` anywhere in the simulation, and the
+  only `365` in `SimulationManager.cs` is the SWF draw. The estimated ~4x was an eyeball reading of a
+  3.02x error.
+- **Not introduced by Continuous Time Phase 3.** Pre-Phase-3, `ApplyRevenueAndSpending` took the same raw
+  annual sums once per turn. Phase 3 preserved the magnitude exactly — `121 x (annual/121) = annual`.
+  The error predates the migration by the whole project.
+- **Not a verification-integrity failure.** See below.
+
+### The aggregation bar covered spending, passed, and was RIGHT to pass
+
+`AggregationEquivalenceCheck` compares `GovernmentDebt` and `BudgetBalance` — both spending-driven —
+turn-form against 121 daily steps. Its own doc comment says why it passed: *"Its flows are exact by
+construction (121 × flow/121)."* **That identity holds whether or not the annual figure was the right
+figure.**
+
+It is an **equivalence** check, not a **correctness** check. It answers "does the daily form reproduce
+the turn form?" and cannot answer "was the turn form right?" A faithful migration reproduces an error
+perfectly, and a faithful migration is exactly what it was built to verify.
+
+⚠ **The failure was in how the bar was read, including in this file.** Phase 3's validation notes were
+written as though 39/39 within 3% validated the fiscal engine. It validated the migration. **No check in
+this project has ever asserted that a turn's fiscal flows correspond to a turn's worth of real money** —
+that assertion did not exist to fail.
+
+### The same defect was found and fixed once before, in demographics
+
+`MacroSystem.YearsPerTurn`'s doc comment describes *"3x over-compounding via too many applications of an
+annual-scale rate"* — diagnosed and fixed there by scaling each turn's population growth to the turn's
+real-time slice. **The fiscal path had the identical defect and was never brought along.**
+`SwfStructuralDrawPerTurnFraction` was the single flow that did get the conversion, which is why it read
+as deliberate rather than as an oversight everywhere else.
+
+### The fix, and why this direction
+
+**Elias's ruling: move the turn to the year, not the flows to the turn.** `DaysPerTurn` 121 → 365 and
+`ElectionSystem.ElectionCycle` 12 → 4. The economy was already annual-per-turn in every respect, so
+making the calendar agree with the model is two constants; making the model agree with the calendar is a
+divisor on every flow plus a recalibration of every debt-anchored constant.
+
+**It cost one line each because every per-day constant was derived rather than typed** — `PerDayReversion`,
+`CrimeEffectsDailyScale`, `InfrastructureDecayRatePerDay`, `FiscalFlowPerDayFraction` all retune
+themselves. That discipline, chosen during Phase 0 for a different reason, is the whole reason this was
+cheap. `MacroSystem.YearsPerTurn` derives from `ElectionCycle` (`4f / ElectionCycle`) and lands at 1.0.
+
+⚠ **The two constants are a PAIR and must always move together.** They are the project's only two
+statements of turn length, and before this change they already disagreed by 0.5%: `121/365 = 0.3315`
+years per turn against `YearsPerTurn`'s `4/12 = 0.3333`. They now agree exactly at 1.0.
+
+### What the new baseline shows (seed 987654, 15 scenarios x 100/500)
+
+⚠ **Per-turn fiscal figures are UNCHANGED, and that is the point rather than a null result.** The flows
+were always one year's worth per turn; a turn is now a year, so they are correct without moving. Debt,
+GDP, unemployment, inflation and debt-to-GDP all land where they did (USA turn 100: debt 286074.4 →
+286074.6, DebtToGdp 139.2% both). What changed is what a turn *means*.
+
+| moved | before | after |
+|---|---|---|
+| USA population, turn 100 | 374.8M | **450.6M** — `YearsPerTurn` 0.333 → 1.0 |
+| USA population, turn 500 | 483.7M | 967.9M |
+| Italy population, turn 500 | 33.9M | **11.2M** |
+| calendar span, 100 turns | 33 years | 100 years |
+| elections in a 100-turn run | 8 | 25 |
+| SWF structural draw | 0.994%/turn | 3%/turn (= 3%/yr, correct) |
+
+Gates after the change: **aggregation-equivalence 39/39 within 3%** (max drift 1.36%, unmoved),
+**`CreditRatingAnchorCheck` 5/6** with Poland's known expected failure, anomalies **30 → 30**, no
+population clamp hits.
+
+⚠ **A 500-turn run is now 500 years, and the demographic tail is the honest consequence** — Italy falls
+to 11.2M under five centuries of sustained negative growth. That is arithmetic, not a bug, but the
+500-turn scenarios are now well past the horizon anything in this model is calibrated for, and results
+there should be read as a stress test rather than as a projection.
+
+**Every baseline captured before 2026-08-10 measured a 3.017x fiscal engine on a 121-day turn.** Anything
+validated against one needs re-checking against the new capture.
+
 ## v2.0 preparation — three measured findings and one live defect (2026-08-03)
 
 Four pieces of groundwork Elias ordered before the v2.0 design brief goes out. Each produced something
