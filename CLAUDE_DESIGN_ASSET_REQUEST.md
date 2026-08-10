@@ -790,6 +790,33 @@ missing is the pencil's identity, not the amber's meaning.
 ✅ **Requested: `icon_pencil_draft.png` at @2×, white-on-alpha**, alongside E4's four. Same delivery
 question, same answer needed.
 
+### DEVIATIONS — declared, not requests
+
+**A different category from E1–E5.** Those are things we cannot build. These are places the build has
+deliberately departed from the boards, declared so the divergence is visible and yours to accept or
+reject. **The build should never diverge silently**, which is the only reason this section exists — none
+of it is blocked on you, and none of it needs a reply unless you disagree.
+
+**V1 — the "(current seat composition)" qualifier moved from the row to the screen header.**
+
+| | |
+|---|---|
+| board | each tax row carries the full sentence *"If introduced now: WOULD PASS (current seat composition)"* |
+| build | the row carries `WOULD PASS` / `WOULD FAIL` / `PENDING`; the qualifier appears once, in the screen's header |
+
+**Why:** the board drew **eight** rows. `TaxType` has **thirteen**, so the inline version prints the
+identical parenthetical twelve times on one screen — a line each, carrying nothing after the first. The
+verdict varies per row; the qualifier is a property of the screen.
+
+This is D3's arithmetic again — a board tested against a row count the game does not have — landing on
+copy rather than on layout. Genuinely your call whether the qualifier belongs on the row; we have taken
+the reading that it does not, and will put it back on request.
+
+⚠ **This per-row verdict is NOT the per-instrument `VOTES` column D2 deleted.** That column scored each
+tax instrument's own legislative support, which does not exist. This scores the standalone
+Implement/Remove bill for that one program — a real whole-bill direction the model does compute. Same
+row, different quantity, and they look alike enough to be worth keeping straight.
+
 ### What this blocks, precisely
 
 Nothing in the IMGUI path. All four items are Canvas-side, and the Canvas path was already gated behind

@@ -498,9 +498,35 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | Sprites | **136 on disk, 52 chrome resolving.** Passes 1+2 imported and verified |
    | Wiring | **Systemic layer live** — palette, buttons, panels, tabs, stat plates, chips, sliders, scrollbars |
 
-   ⚠ **NEXT SESSION STARTS HERE: the wiring is built, NOT confirmed.** Elias has the captures and has
-   not yet reviewed them in a live Editor. Nothing further should be layered on top until he has, because
-   every remaining item below changes the same screens.
+   ⚠ *Superseded 2026-08-10 — the wiring gate was lifted and the Budget restyle has begun. See below.*
+   The wiring was built but not confirmed; Elias reviewed it live and directed the restyle forward.
+
+   ### ⚠ NEXT SESSION STARTS HERE — end of 2026-08-10
+
+   **Spending rows.** Convert `DrawSpendingLineRow` to `LedgerRow`, capture, and only then move to
+   welfare, infrastructure and SWF — **one row type per capture, never batched.** That sequence is not
+   ceremony: converting the tax row took three capture rounds, and each round found a defect the code
+   review had passed (a shared-style mutation that degraded every screen in the session, columns that
+   overflowed their panel, and a button measured in the wrong style).
+
+   | | |
+   |---|---|
+   | Capture harness | **In the repo and working.** `UiScreenshotCapture` + `UiScreenshotDriver`, 12 shots at 1600×900, per-sub-category on Budget. **No `-batchmode`** — `WaitForEndOfFrame` never resumes there |
+   | Ledger row | **Built and captured.** `LedgerRow` — name · track with standing tick and draft hatch · figures · trailing column |
+   | Tax rows | **Converted.** One line per instrument: name, track, rate, est. revenue, verdict, action |
+   | Spending / Welfare / Infrastructure / SWF | **Still the stacked form.** Next |
+
+   **Two rules carried into that work:**
+
+   1. ⚠ **Every number the spec supplies is suspect until derived or explicitly confirmed as fixed** —
+      see the banner at the top of `POLISIM_V2_SCREEN_SPEC.md`. Two instances in one day, the second
+      written a method away from the warning about the first. "This one is genuinely fixed" is a real
+      answer; a number that survived because nobody questioned it is not.
+   2. **Declare deviations from the boards rather than diverging silently** — the request doc now
+      carries a DEVIATIONS section, distinct from the import blockers, holding V1 (the
+      "(current seat composition)" qualifier moved to the screen header).
+
+   **Open with Design:** five import blockers in §1E, none of which block the IMGUI path.
 
    **Still unwired, and each needs CALL-SITE work rather than a style assignment** — a stamp goes on a
    resolved bill, hatch on a draft delta, the seal on a signing: `ui_stamp_carried/rejected/draft` ·

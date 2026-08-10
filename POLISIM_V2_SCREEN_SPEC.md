@@ -18,6 +18,33 @@ something to discover mid-implementation.
 
 ---
 
+## ⚠ EVERY NUMBER IN THIS DOCUMENT IS SUSPECT UNTIL DERIVED OR CONFIRMED
+
+**Read this before copying any measurement below.** Two instances in one day, in the same file, the
+second written a method away from the warning about the first:
+
+| # | number | copied as | actually was |
+|---|---|---|---|
+| 9 | ledger row height `36px` | a row height | a height at 1080p — two 13px lines overflow it at 1440p |
+| 10 | column widths `250 / 150 / 88` | fixed widths, font-scaled | widths against board 1b's ~1100px panel — they overflow this screen's ~745px column |
+
+**A number on a design board is a measurement taken against that board's conditions — its resolution,
+its font size, AND its container width.** Every one of those varies here. Deriving against one axis
+while copying another still ships the bug, which is exactly how #10 happened immediately after #9 was
+written down.
+
+**So: paddings, insets, tick sizes, the `14px` scrollbar track, the `6px` inset, the `40px` minimum
+thumb, the `11px` shrink floor, the `44/26/22px` panel paddings, the `2px` standing tick, the `15px`
+track height — none of them is a constant until someone decides it is.**
+
+✅ **"This one is genuinely fixed" is a real answer, not a dodge.** A hairline rule should not scale; a
+1px separator at 1440p is still 1px. The requirement is that it be a *decision taken*, recorded where
+the number is used — not a number that survived because nobody questioned it. The tell in both
+instances so far: the number arrived with no unit of comparison attached, so it read as a constant
+purely because the board had nothing else in view to measure it against.
+
+---
+
 ## A. THE EXTRACTED SPEC
 
 ### A.0 What the eight boards cover
