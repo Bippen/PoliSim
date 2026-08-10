@@ -2938,23 +2938,47 @@ namespace PoliSim.UI
             // larger than this button's share of what actually exists. When a label cannot fit its share,
             // BuildSubTabStyle clears fixedHeight precisely so the button WRAPS to two lines, which is
             // why capping is safe rather than a return to truncation.
-            float minWidth = PoliSimWidgets.MeasuredWidth(label, style, style.padding.horizontal + 6f);
-            if (maxWidth > 0f)
-            {
-                minWidth = Mathf.Min(minWidth, maxWidth);
-            }
+            // ⚠ THE FLOOR IS THE ROW'S SHARE, NOT THIS BUTTON'S OWN CONTENT - and that is what makes the
+            // row EVEN. Measured 2026-08-10: with a per-button floor, "Trade" (a short label, floor
+            // 87.4) laid out at 109px beside siblings at 172px, because ExpandWidth distributes surplus
+            // in proportion to what each child asked for, and the button that asked for least got least.
+            // The row fitted; it just looked broken, which is the same complaint by a different route.
+            //
+            // A shared floor makes every button request the same width, so five equal buttons fill the
+            // row. A label too long for its share still wraps rather than truncates - BuildSubTabStyle
+            // clears fixedHeight for exactly that - so uniformity costs nothing.
+            float minWidth = maxWidth > 0f
+                ? maxWidth
+                : PoliSimWidgets.MeasuredWidth(label, style, style.padding.horizontal + 6f);
 
             if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinWidth(minWidth),
                 GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 selectedCategory = category;
             }
+
         }
 
-        /// <summary>The width one button of an <paramref name="count"/>-button sub-tab row may claim as its floor, given the row's OUTER width and the container padding it will actually be drawn inside.</summary>
+        /// <summary>
+        /// The width one button of a <paramref name="count"/>-button sub-tab row may claim as its floor,
+        /// given the row's OUTER width, the container padding it will be drawn inside, and the margins
+        /// GUILayout puts BETWEEN the buttons.
+        ///
+        /// ⚠ **The margins are not decoration, they are part of the budget.** Measured 2026-08-10 on
+        /// Policy/Laws' five-button row: the row spans 806px, five floors of 157.2 sum to 786 - which
+        /// looks like it fits - but each button also carries 4px of margin a side, so the row actually
+        /// needs 826. GUILayout does not distribute that 20px shortfall evenly; it satisfies the earlier
+        /// children and takes the whole deficit out of the last one, so Trade laid out at 102px beside
+        /// siblings at 172px and read as a cut-off button rather than as a squeezed row.
+        ///
+        /// This is the third term in the same subtraction. The first version divided the outer width,
+        /// the second subtracted the container padding (the 5.7px case), and this one subtracts the
+        /// margins - each fix correct as far as it went, each leaving a smaller residue behind.
+        /// </summary>
         private float SubTabShare(float availableWidth, int count)
         {
-            return Mathf.Max(1f, (availableWidth - _boxStyle.padding.horizontal) / count);
+            float margins = count * GUI.skin.button.margin.horizontal;
+            return Mathf.Max(1f, (availableWidth - _boxStyle.padding.horizontal - margins) / count);
         }
 
         /// <summary>

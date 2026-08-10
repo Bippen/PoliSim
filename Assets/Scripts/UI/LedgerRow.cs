@@ -87,7 +87,8 @@ namespace PoliSim.UI
             float barFraction = -1f)
         {
             float scale = Scale(nameStyle);
-            Columns(row, nameStyle, out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
+            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle),
+                out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
             Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
 
@@ -128,6 +129,8 @@ namespace PoliSim.UI
             GUI.enabled = ambient;
 
             DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk);
+
+
             DrawCell(trailingRect, trailingText, figureStyle, rowInk, TextAnchor.MiddleRight);
 
             return interactive ? result : draft;
@@ -137,7 +140,13 @@ namespace PoliSim.UI
         /// The four column rects, shared by <see cref="Draw"/> and <see cref="DrawReadOnly"/> so a
         /// read-only sub-screen lines up with the ones carrying sliders.
         /// </summary>
-        private static void Columns(Rect row, GUIStyle nameStyle,
+        /// <summary>What the trailing column's content actually needs, so <see cref="Columns"/> can size it rather than assume it. Zero for an empty cell, which leaves the proportional width untouched.</summary>
+        private static float TrailingNeed(string trailingText, GUIStyle figureStyle)
+        {
+            return string.IsNullOrEmpty(trailingText) ? 0f : figureStyle.CalcSize(new GUIContent(trailingText)).x;
+        }
+
+        private static void Columns(Rect row, GUIStyle nameStyle, float trailingNeed,
             out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect)
         {
             float scale = Scale(nameStyle);
@@ -158,6 +167,24 @@ namespace PoliSim.UI
             float figureWidth = Mathf.Max(row.width * 0.19f, RefKnobWidth * scale * 3f);
             float trailingWidth = Mathf.Max(row.width * 0.11f, RefKnobWidth * scale * 2f);
             float minTrack = RefKnobWidth * scale * 4f;
+
+            // ⚠ THE TRAILING COLUMN IS SIZED FROM ITS CONTENT, because it holds two different KINDS of
+            // thing. Everywhere the board specified it, it holds a figure - estimated revenue, share of
+            // GDP - and 11% of the row is ample. The dial rows put a SCALE LEGEND there instead ("0
+            // minimal - 100 pro-natalist"), which is prose, and prose does not fit a column sized for
+            // "$1.05T".
+            //
+            // Measured 2026-08-10: the legends need 160-243px against the 83.8px this proportion gives
+            // them, up to 2.9x over. That is not a number to tune - no proportion satisfies both content
+            // kinds - and it cannot be shrunk out of either, since 243->84 needs roughly 5px type
+            // against §A.9a's 11px floor. So the column asks what it is holding.
+            //
+            // Capped at a third of the row so a long legend can never starve the track, with the squeeze
+            // below as the second backstop and minTrack as the third.
+            if (trailingNeed > trailingWidth)
+            {
+                trailingWidth = Mathf.Min(trailingNeed, row.width * 0.34f);
+            }
 
             // If the floors still do not fit - a very narrow window - the fixed columns give ground
             // together rather than one of them collapsing, so the row degrades evenly instead of losing
@@ -313,7 +340,8 @@ namespace PoliSim.UI
             Rect row, string name, float fill, string figureText, string trailingText,
             Color barInk, GUIStyle nameStyle, GUIStyle figureStyle)
         {
-            Columns(row, nameStyle, out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
+            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle),
+                out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
             DrawNameCell(nameRect, name, nameStyle, PoliSimTheme.TextPrimary);
 
