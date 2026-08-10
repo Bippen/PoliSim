@@ -32,7 +32,17 @@ namespace PoliSim.UI
         private static readonly Color BackgroundColor = PoliSimTheme.Card;
         private static readonly Color GridColor = PoliSimTheme.Hairline;
         private static readonly Color AxisLabelColor = new Color(0.65f, 0.65f, 0.65f, 1f);
-        private static readonly Color PlayerRingColor = Color.white;
+        /// <summary>
+        /// The ring marking the player's own dot. Was Color.white - correct against a black ground, and
+        /// INVISIBLE against paper.
+        ///
+        /// ⚠ **The ground sweep could not have caught this one.** It repointed BackgroundColor and
+        /// GridColor, which is why this screen otherwise arrived correct - but a highlight is not a
+        /// ground, and "white" only reads as emphasis while the thing behind it is dark. Inverting a
+        /// theme inverts what "stands out" means, and every such choice has to be re-decided rather than
+        /// re-tinted. The copy said "ringed in white" too, so the text was wrong in the same breath.
+        /// </summary>
+        private static readonly Color PlayerRingColor = PoliSimTheme.TextPrimary;
 
         private Texture2D _backgroundTexture;
         private Texture2D _circleTexture;
@@ -96,7 +106,7 @@ namespace PoliSim.UI
         /// <summary>
         /// Draws the whole compass into <paramref name="rect"/> - one dot per country in
         /// <paramref name="countries"/>, colored via UiPalette.GetCountryColor, the player's own
-        /// ringed in white so it's never ambiguous which dot is "mine" among six similarly-sized
+        /// ringed in ink so it's never ambiguous which dot is "mine" among six similarly-sized
         /// ones. Both axes auto-scale to the OBSERVED min/max across the given countries (padded),
         /// the same "zoom into whatever real variance exists" philosophy GraphRenderer's own Y-axis
         /// auto-scaling already uses - six countries' real policy differences are often modest
