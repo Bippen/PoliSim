@@ -1,5 +1,6 @@
 using PoliSim.Data;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace PoliSim.UI
@@ -711,22 +712,26 @@ namespace PoliSim.UI
         {
             float magnitude = Mathf.Abs(value);
 
+            // ⚠ InvariantCulture on every branch, 2026-08-11. These four were the last unpinned numeric
+            // sites in the UI: on this sv-SE machine an axis read "18,2" directly beneath a tile reading
+            // "$29.9T", in the same capture. Mixed separators are worse than either convention, because
+            // neither reading is available - see UiFormat.Number, which carries the full reasoning.
             if (magnitude >= 1_000_000_000f)
             {
-                return (value / 1_000_000_000f).ToString("0.#") + "B";
+                return (value / 1_000_000_000f).ToString("0.#", CultureInfo.InvariantCulture) + "B";
             }
 
             if (magnitude >= 1_000_000f)
             {
-                return (value / 1_000_000f).ToString("0.#") + "M";
+                return (value / 1_000_000f).ToString("0.#", CultureInfo.InvariantCulture) + "M";
             }
 
             if (magnitude >= 1_000f)
             {
-                return (value / 1_000f).ToString("0.#") + "k";
+                return (value / 1_000f).ToString("0.#", CultureInfo.InvariantCulture) + "k";
             }
 
-            return value.ToString("F1");
+            return value.ToString("F1", CultureInfo.InvariantCulture);
         }
 
         /// <summary>Right-aligned label at the threshold line's own Y position, in ThresholdLineColor so it visually pairs with the line it describes rather than blending into the plain axis labels on the left.</summary>

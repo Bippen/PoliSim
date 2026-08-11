@@ -254,8 +254,55 @@ namespace PoliSim.UI
         // --- 1. Stat tile -----------------------------------------------------------------
 
         /// <summary>
+        /// The tile's vertical stack, in unscaled units, named once so the drawing code and the height
+        /// accessor cannot disagree.
+        ///
+        /// ⚠ **They DID disagree, and it is the defect Elias reported.** The caller sized every tile at
+        /// a flat `92 * scale` while this stack needs ~107 with a delta present, so the delta was drawn
+        /// BELOW the tile's own bottom edge and collided with the next tile's keyline
+        /// (`run_02_statistics.png`, top-left). A magic number in the caller and a cumulative `y` in the
+        /// widget are two statements of the same geometry, which is one more than can be kept true.
+        /// </summary>
+        private const float TilePadY = 16f;
+        private const float TileLabelHeight = 12f;
+        private const float TileLabelBlock = 20f;
+        private const float TileValueGap = 9f;
+        private const float TileDeltaHeight = 18f;
+        private const float TileDeltaGap = 8f;
+        private const float TileValueLeading = 1.05f;
+
+        /// <summary>
+        /// How tall a tile must be to hold what it will be asked to draw. Callers laying out a grid
+        /// should ask rather than assume — a tile shorter than this does not clip its overflow, it draws
+        /// it onto whatever is underneath.
+        /// </summary>
+        public static float StatTileHeight(float scale, bool hasDelta, bool hasBar)
+        {
+            float height = TilePadY + TileLabelBlock + PoliSimTheme.FontStatHero * TileValueLeading + TileValueGap;
+
+            if (hasDelta)
+            {
+                height += TileDeltaHeight;
+                if (hasBar)
+                {
+                    height += TileDeltaGap;
+                }
+            }
+
+            if (hasBar)
+            {
+                height += PoliSimTheme.BarHeightSm;
+            }
+
+            return (height + TilePadY) * scale;
+        }
+
+        /// <summary>
         /// Headline figure with a small caps label, an optional signed delta pill and an optional
         /// capacity bar with a threshold tick. <paramref name="barFraction"/> below zero hides the bar.
+        ///
+        /// ⚠ Size the <paramref name="rect"/> with <see cref="StatTileHeight"/>. Nothing here clamps to
+        /// it — the content stack draws where the arithmetic puts it, on top of the neighbour if need be.
         /// </summary>
         public static void StatTile(
             Rect rect,
@@ -291,7 +338,7 @@ namespace PoliSim.UI
             PoliSimTheme.TopAccent(rect, area, 2f * scale);
 
             float padX = 17f * scale;
-            float padY = 16f * scale;
+            float padY = TilePadY * scale;
             float x = rect.x + padX;
             float y = rect.y + padY;
             float innerWidth = rect.width - padX * 2f;
@@ -300,12 +347,12 @@ namespace PoliSim.UI
             // style inherits wordWrap from GUI.skin.label and is drawn into a fixed 12f*scale rect with a
             // middle anchor - so "DEBT-TO-GDP" wrapped to two lines and both lost their tops and bottoms.
             // The value field below has carried the fix since the "9,3" incident; this label never got it.
-            MeasuredLabel(new Rect(x, y, innerWidth, 12f * scale), label.ToUpperInvariant(),
+            MeasuredLabel(new Rect(x, y, innerWidth, TileLabelHeight * scale), label.ToUpperInvariant(),
                 Sized(_label, PoliSimTheme.FontLabel, PoliSimTheme.TextMuted, scale));
-            y += 20f * scale;
+            y += TileLabelBlock * scale;
 
             var valueStyle = Sized(_value, PoliSimTheme.FontStatHero, PoliSimTheme.TextPrimary, scale, TextAnchor.LowerLeft);
-            float valueHeight = PoliSimTheme.FontStatHero * scale * 1.05f;
+            float valueHeight = PoliSimTheme.FontStatHero * scale * TileValueLeading;
 
             // A stat tile must never be able to DISPLAY A DIFFERENT NUMBER than it was given. Two
             // properties conspired to let it: this style inherits wordWrap from GUI.skin.label, and the
@@ -343,7 +390,7 @@ namespace PoliSim.UI
                     Sized(_body, PoliSimTheme.FontBodySmall, PoliSimTheme.Neutral, scale, TextAnchor.LowerLeft));
             }
 
-            y += valueHeight + 9f * scale;
+            y += valueHeight + TileValueGap * scale;
 
             if (!string.IsNullOrEmpty(delta))
             {
@@ -364,18 +411,18 @@ namespace PoliSim.UI
                 var deltaStyle = Sized(_body, PoliSimTheme.FontBodySmall, tone, scale, TextAnchor.MiddleLeft);
                 deltaStyle.fontStyle = FontStyle.Bold;
                 float w = deltaStyle.CalcSize(new GUIContent(delta)).x + 6f * scale;
-                var pill = new Rect(x, y, w, 18f * scale);
+                var pill = new Rect(x, y, w, TileDeltaHeight * scale);
                 GUI.Label(pill, delta, deltaStyle);
 
                 if (!string.IsNullOrEmpty(subLabel))
                 {
                     // Was given `innerWidth` while starting at the pill's right edge, so its rect ran off
                     // the tile by exactly the pill's width - the same class, in its quietest form.
-                    MeasuredLabel(new Rect(pill.xMax + 7f * scale, y, x + innerWidth - pill.xMax - 7f * scale, 18f * scale), subLabel,
+                    MeasuredLabel(new Rect(pill.xMax + 7f * scale, y, x + innerWidth - pill.xMax - 7f * scale, TileDeltaHeight * scale), subLabel,
                         Sized(_body, PoliSimTheme.FontBodySmall - 1, PoliSimTheme.TextMuted, scale));
                 }
 
-                y += 26f * scale;
+                y += (TileDeltaHeight + TileDeltaGap) * scale;
             }
 
             if (barFraction >= 0f)

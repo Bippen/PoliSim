@@ -1382,7 +1382,7 @@ namespace PoliSim.UI
             // already derives its size from Screen.height; this one was the exception.
             float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.5f);
             const int columns = 3;
-            float tileHeight = 92f * scale;
+            float tileHeight = 0f;   // set from PoliSimWidgets.StatTileHeight once the tiles are known
             float gap = 8f * scale;
 
             var tiles = new List<(string label, string value, string suffix, string delta, bool deltaIsGood, UiPalette.SystemArea area)>
@@ -1396,20 +1396,20 @@ namespace PoliSim.UI
                 // and GetStatUnit(...).Value would throw inside OnGUI if that entry were ever cleared -
                 // the sparkline crash is what an exception in a draw call costs. Generic code that
                 // formats an arbitrary stat still asks the metadata, which is what it is for.
-                ("GDP", UiFormat.Money(state.GDP, MoneyUnit.Billions), null, _lastGrowthPercent.ToString("+0.00;-0.00;0") + "%", _lastGrowthPercent >= 0f, UiPalette.SystemArea.Global),
-                ("Unemployment", state.Unemployment.ToString("F2"), "%", null, false, UiPalette.SystemArea.Labor),
-                ("Inflation", state.Inflation.ToString("F2"), "%", null, false, UiPalette.SystemArea.Fiscal),
-                ("Approval Rating", state.ApprovalRating.ToString("F1"), null, null, false, UiPalette.SystemArea.Political),
+                ("GDP", UiFormat.Money(state.GDP, MoneyUnit.Billions), null, _lastGrowthPercent.ToString("+0.00;-0.00;0", CultureInfo.InvariantCulture) + "%", _lastGrowthPercent >= 0f, UiPalette.SystemArea.Global),
+                ("Unemployment", UiFormat.Number(state.Unemployment, 2), "%", null, false, UiPalette.SystemArea.Labor),
+                ("Inflation", UiFormat.Number(state.Inflation, 2), "%", null, false, UiPalette.SystemArea.Fiscal),
+                ("Approval Rating", UiFormat.Number(state.ApprovalRating, 1), null, null, false, UiPalette.SystemArea.Political),
             };
 
             if (hasIndependentCurrency)
             {
-                tiles.Add(("Currency Strength", state.CurrencyStrength.ToString("F1"), null, null, false, UiPalette.SystemArea.Trade));
+                tiles.Add(("Currency Strength", UiFormat.Number(state.CurrencyStrength, 1), null, null, false, UiPalette.SystemArea.Trade));
             }
 
-            tiles.Add(("Poverty Rate", state.PovertyRate.ToString("F1"), "%", null, false, UiPalette.SystemArea.Welfare));
+            tiles.Add(("Poverty Rate", UiFormat.Number(state.PovertyRate, 1), "%", null, false, UiPalette.SystemArea.Welfare));
             tiles.Add(("Government Debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, null, false, UiPalette.SystemArea.Fiscal));
-            tiles.Add(("Debt-to-GDP", state.DebtToGdpRatio.ToString("F1"), "%", null, false, UiPalette.SystemArea.Fiscal));
+            tiles.Add(("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1), "%", null, false, UiPalette.SystemArea.Fiscal));
 
             // Step C4, placed 2026-08-02 (PROVISIONAL - see roadmap; revisable after visual review).
             // Directly after Debt-to-GDP on purpose: a sovereign rating is a judgment ABOUT the fiscal
@@ -1442,6 +1442,22 @@ namespace PoliSim.UI
             // Signed on purpose: a budget balance's direction is the whole reading, and "+$120B" against
             // "-$120B" should not depend on the player noticing a minus sign in a headline-size figure.
             tiles.Add(("Budget Balance", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, null, false, UiPalette.SystemArea.Fiscal));
+
+            // ⚠ ASKED, NOT ASSUMED. `92 * scale` was a measurement of a tile WITHOUT a delta, applied to
+            // a grid where most tiles have one - so the delta drew past the tile's bottom edge onto the
+            // next row's keyline. The grid is uniform, so the question is whether ANY tile carries a
+            // delta; sizing every tile for the tallest is what keeps the rows aligned.
+            bool anyDelta = false;
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(tiles[i].delta))
+                {
+                    anyDelta = true;
+                    break;
+                }
+            }
+
+            tileHeight = PoliSimWidgets.StatTileHeight(scale, anyDelta, hasBar: false);
 
             int rows = Mathf.CeilToInt(tiles.Count / (float)columns);
             float totalHeight = rows * tileHeight + (rows - 1) * gap;
@@ -2027,7 +2043,7 @@ namespace PoliSim.UI
                 Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
                 LedgerRow.DrawReadOnly(
                     rowRect,
-                    asset.Type.ToString(),
+                    DisplayName.Of(asset.Type.ToString()),
                     asset.ConditionIndex / 100f,
                     asset.ConditionIndex.ToString("F0", CultureInfo.InvariantCulture) + " / 100",
                     null,
@@ -4112,7 +4128,7 @@ namespace PoliSim.UI
             int sectorIndex = 0;
             foreach (Sector sector in _playerCountry.Sectors)
             {
-                sectorSlices.Add(new PieSlice(sector.Type.ToString(), sector.EmploymentShare, UiPalette.GetCategoricalColor(sectorIndex)));
+                sectorSlices.Add(new PieSlice(DisplayName.Of(sector.Type.ToString()), sector.EmploymentShare, UiPalette.GetCategoricalColor(sectorIndex)));
                 sectorIndex++;
             }
             _sectorEmploymentPieChart.Draw($"{_playerCountry.Name}: Employment Share by Sector", sectorSlices, _labelStyle, "F1", moneyUnit: null);
@@ -4126,7 +4142,7 @@ namespace PoliSim.UI
                 var spendingRows = new List<(string Label, float Value)>();
                 foreach (SpendingLine line in _playerCountry.SpendingLines)
                 {
-                    spendingRows.Add((line.Category.ToString(), line.Amount));
+                    spendingRows.Add((DisplayName.Of(line.Category.ToString()), line.Amount));
                 }
                 _spendingAllocationLedger.Draw($"{_playerCountry.Name}: Spending Allocation", spendingRows, _labelStyle,
                     UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
@@ -4144,7 +4160,7 @@ namespace PoliSim.UI
             {
                 if (!taxLine.IsImplemented) continue;
                 float revenue = state.GDP * (taxLine.Rate / 100f) * taxLine.BaseShareOfGdp;
-                taxRows.Add((taxLine.Type.ToString(), revenue));
+                taxRows.Add((DisplayName.Of(taxLine.Type.ToString()), revenue));
             }
             _taxRevenueLedger.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxRows, _labelStyle,
                 UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
@@ -4865,7 +4881,7 @@ namespace PoliSim.UI
             // Control 2 of 2 - the slider, inside the ledger row.
             float newRate = LedgerRow.Draw(
                 ledgerRect,
-                taxLine.Type.ToString(),
+                DisplayName.Of(taxLine.Type.ToString()),
                 taxLine.Rate,
                 draftRate,
                 taxLine.MinRate,
@@ -4997,7 +5013,7 @@ namespace PoliSim.UI
             // its own standalone bill rather than by this slider, so it never shows the amber cue.
             float newGenerosity = LedgerRow.Draw(
                 ledgerRect,
-                welfareProgram.Type.ToString(),
+                DisplayName.Of(welfareProgram.Type.ToString()),
                 welfareProgram.GenerosityLevel,
                 draftGenerosity,
                 0f,
@@ -5111,7 +5127,7 @@ namespace PoliSim.UI
         private void DrawSectorRow(Sector sector, float nameColumnWidth)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(sector.Type.ToString(), _headerStyle, GUILayout.Width(nameColumnWidth));
+            GUILayout.Label(DisplayName.Of(sector.Type.ToString()), _headerStyle, GUILayout.Width(nameColumnWidth));
             GUILayout.Label(
                 $"Output {sector.OutputShareOfGdp:F1}% of GDP | Employment {sector.EmploymentShare:F1}% | {GetSectorMetricLabel(sector.Type)} {sector.SectorMetric:F1}",
                 _labelStyle);
@@ -5495,7 +5511,7 @@ namespace PoliSim.UI
 
             float newPercent = LedgerRow.Draw(
                 rowRect,
-                spendingLine.Category.ToString(),
+                DisplayName.Of(spendingLine.Category.ToString()),
                 0f,
                 draftPercent,
                 -rangePercent,

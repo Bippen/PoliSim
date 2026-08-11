@@ -1407,6 +1407,60 @@ reported.** The three clipping-#11 commits did not fix it and could not have.
 wrong place. This validates text against the rect it was handed and never validates the rect against
 its parent. **Child-rect containment is a third axis of this class with zero coverage.**
 
+### All three fixed 2026-08-11 — 144 → 0, and what each one actually was
+
+**The tall class was padding, not leading.** Measured on TeX Gyre Pagella at 20px: `lineHeight`
+20.00, `CalcSize().y` 26.13 — the style's vertical padding, which `lineHeight` excludes and
+`GUI.Label` obeys. `LineHeightFor` now returns `CalcSize().y`. Third version of that function and the
+third distinct reason the previous metric was wrong: `fontSize + 4` was wrong per SIZE, `lineHeight`
+was right about the FONT but not about the STYLE. The lesson holds unchanged — *derive the budget from
+the quantity that governs rendering*.
+
+⚠ **A claim in the previous section was overstated and is corrected here.** It said ring-accented
+glyphs (Å/Ä/Ö) would lose ink. Measured: `CalcSize().y` is *identical* for ASCII, ring-accented
+capitals and digits at every size from 16 to 22 — Unity reports the line box, which does not vary with
+content. The under-provision was real; the specific harm predicted for it was not measured, and
+should not have been asserted.
+
+**StatTile's delta was two statements of one geometry.** The caller sized tiles at a flat `92 * scale`
+while the widget's cumulative `y` needs ~107 with a delta present. Now `PoliSimWidgets.StatTileHeight`
+walks the same named constants the drawing uses, and the caller asks. A magic number in the caller and
+a cumulative `y` in the widget is one more statement of the same fact than can be kept true.
+
+**The wide class needed no formatter — the names already existed.** `PolicyWebRenderer`'s node
+metadata already held "Means-Tested Welfare", "Capital Gains Tax", "Veterans Benefits (Mand.)":
+hand-written, correctly hyphenated, abbreviated to fit. No formatter produces those. The ledger simply
+was not asking. `DisplayName.Of` bridges the model enums to that table by name identity — a parse, not
+forty hand-maintained pairs — and falls back to a CamelCase splitter for the members with no node
+(`VeteransAffairsDiscretionary`). **Restating the strings was rejected outright**: that is the "two
+tables that agree until one is edited" failure already written up twice in this file.
+
+**Verification: 55 captured, 0 failed, 0 overflows, exit 0** — and confirmed against pixels, not just
+the counter. `NegativeInco / meTax` now sets as `Negative / Income Tax`; the delta sits inside its
+tile.
+
+## OPEN ITEM — child-rect containment has no check, and it is a second check, not a wider first one
+
+The delta-escaping-its-tile defect was found **by eye**, in captures the overflow guard had just
+passed. That is not a coverage gap the guard can grow into:
+
+- `UiOverflowGuard` asks *"does this text fit the rect it was handed?"* The delta's answer was **yes**.
+- The unasked question is *"does that rect fit the container it was drawn into?"* — a different
+  relation, between two rects, with no text in it.
+
+Widening the guard cannot reach this. It hooks label drawing; a containment check has to hook
+*rect construction*, and the container is usually not in scope at the point a child rect is built.
+
+**Worth building? Probably yes, but narrowly.** A general "every rect inside its parent" check needs a
+container stack the codebase does not have, and building one is a large change to satisfy a check. The
+cheap 80% is a **debug-only assert on the composite widgets that own a fixed rect and lay out a
+stack inside it** — `StatTile`, `LedgerRow`, `PolicyScreenStatsRenderer` — each asserting its final
+cumulative `y` is within the rect it was given. That is ~3 call sites, catches exactly the defect that
+occurred, and needs no new infrastructure.
+
+⚠ **Not started.** Logged as its own item rather than folded into the guard, because folding it in is
+what would make it never get built.
+
 ### Scope, stated so a clean run is not over-read
 
 ~178 raw label calls exist across the UI layer; this covers fixed-rect drawing, which is where all

@@ -47,8 +47,9 @@ namespace PoliSim.UI
     /// chosen; and a locale-dependent formatter cannot have a fixed-string regression test, which this
     /// function above all others needs. Note the project's own history here - the "9,3" incident was a
     /// comma-decimal figure clipped in a narrow rect - so the separator is not a cosmetic detail.
-    /// Everything that is NOT money (percentages, rates, indices) keeps its existing locale formatting;
-    /// this class does not touch them.
+    /// Non-money readouts were originally left on machine locale as out of scope. That produced a
+    /// headline grid printing "$29.9T" beside "4,27" and has since been corrected - see
+    /// <see cref="Number"/>.
     ///
     /// **No simulation change.** Every stored value keeps its number and its unit; this changes only
     /// how it is read out.
@@ -126,6 +127,27 @@ namespace PoliSim.UI
         /// the point. Named separately so a call site reads as what it is at the point of use.
         /// </summary>
         public static string MoneyDelta(float value, MoneyUnit unit) => Money(value, unit, explicitPlus: true);
+
+        /// <summary>
+        /// A non-currency readout - a percentage, a rate, an index - pinned to InvariantCulture like
+        /// everything else the UI prints.
+        ///
+        /// ⚠ **This reverses the scoping note above, deliberately and with the reason recorded.** When
+        /// <see cref="Money"/> landed, non-money was left on machine locale as out of scope. The result
+        /// on a sv-SE machine is visible in every capture: the headline grid prints `$29.9T` beside
+        /// `4,27` and `48,0` - one tile with a period, the next with a comma, in the same three-column
+        /// block. Mixed separators are worse than either convention, because neither reading is
+        /// available: a Swedish player sees a broken decimal, a US player sees a comma.
+        ///
+        /// The codebase had already settled this in practice. Every other numeric site in
+        /// `GameController` passes `CultureInfo.InvariantCulture` explicitly; only the tile grid did
+        /// not. This makes the settled convention askable instead of remembered - the same argument
+        /// that produced <see cref="Money"/>, applied to the numbers <see cref="Money"/> declined.
+        /// </summary>
+        public static string Number(float value, int decimals)
+        {
+            return value.ToString("F" + decimals, CultureInfo.InvariantCulture);
+        }
 
         /// <summary>
         /// Three significant digits total, so the decimal places shrink as the integer part grows:

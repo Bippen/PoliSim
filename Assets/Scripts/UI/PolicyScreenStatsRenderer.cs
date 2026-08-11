@@ -62,8 +62,25 @@ namespace PoliSim.UI
         ///
         /// The `fontSize + 4f` floor is a guard, not the answer: `lineHeight` can read 0 before a
         /// dynamic font has rasterised at a given size.
+        ///
+        /// ⚠ **THIRD VERSION, 2026-08-11, and `lineHeight` was still the wrong metric — for a third
+        /// reason.** `fontSize + 4` was wrong per face; `lineHeight` asks the font and is right about the
+        /// FONT, but a label does not occupy its font's line height. It occupies that plus the style's
+        /// vertical padding, and `GUI.Label` lays out the second number. Measured on TeX Gyre Pagella at
+        /// 20px: `lineHeight` 20.00, `CalcSize().y` 26.13. Every stat chip was provisioned 24.0 for
+        /// something that renders at 26.1 — 111 of the 144 violations the overflow guard found.
+        ///
+        /// So it now asks for **the quantity that governs rendering**, which is the whole lesson of the
+        /// two previous versions rather than a new one: `CalcSize` is what `MeasuredLabel` compares
+        /// against and what `GUI.Label` obeys, so it is what a height budget must be derived from.
+        ///
+        /// The probe string is arbitrary BY MEASUREMENT, not by assumption: `CalcSize().y` returned an
+        /// identical value for ASCII, for ring-accented capitals (`Åtgärd Ö`) and for digits at every
+        /// size from 16 to 22. Unity reports the line box, which does not vary with content.
         /// </summary>
-        private static float LineHeightFor(GUIStyle s) => Mathf.Max(s.lineHeight, s.fontSize + 4f);
+        private static readonly GUIContent LineProbe = new GUIContent("Ag");
+
+        private static float LineHeightFor(GUIStyle s) => Mathf.Max(s.CalcSize(LineProbe).y, s.fontSize + 4f);
 
         private static float RowHeightFor(GUIStyle s) => LineHeightFor(s) * 2f + RowHeightPad;
         private static float IconSizeFor(GUIStyle s) => s.fontSize * IconSizePerFont;

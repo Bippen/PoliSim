@@ -718,6 +718,27 @@ namespace PoliSim.UI
         }
 
         public static string GetPolicyName(PolicyNodeId id) => PolicyInfo[id].Name;
+
+        /// <summary>
+        /// The curated name if this node has one, without throwing when it does not.
+        ///
+        /// Exposed for <see cref="DisplayName"/>, which reaches in here rather than restating these
+        /// strings. They are hand-written and better than any formatter would produce:
+        /// "Means-Tested Welfare" keeps its hyphen, "Veterans Benefits (Mand.)" is abbreviated to fit a
+        /// column, and "UBI" survives as an acronym instead of being split into initials.
+        /// </summary>
+        public static bool TryGetPolicyName(PolicyNodeId id, out string name)
+        {
+            if (PolicyInfo.TryGetValue(id, out PolicyNodeInfo info) && !string.IsNullOrEmpty(info.Name))
+            {
+                name = info.Name;
+                return true;
+            }
+
+            name = null;
+            return false;
+        }
+
         public static string GetPolicyDescription(PolicyNodeId id) => PolicyInfo[id].Description;
         public static string GetStatName(StatNodeId id) => StatInfo[id].Name;
         public static UiPalette.SystemArea GetPolicyArea(PolicyNodeId id) => PolicyInfo[id].Area;
