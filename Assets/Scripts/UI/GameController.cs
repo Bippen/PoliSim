@@ -868,7 +868,11 @@ namespace PoliSim.UI
             // second row for a temporary Acknowledge button (see git history) - removed now that step
             // 5c's real Budget Process introduce-bill flow replaced it, back to the original one-row
             // reservation.
-            float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight + sectionSpacing;
+            // ⚠ MEASURED FROM THE STRING THAT WILL BE DRAWN, not assumed from a font size. See
+            // CalendarAndSpeedControlsHeight for why the old one-line assumption cut the speed strip.
+            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
+            string timeStatusText = BuildTimeStatusText(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess);
+            float calendarAreaHeight = CalendarAndSpeedControlsHeight(timeStatusText, isTimePaused, leftColumnWidth) + sectionSpacing;
             // ⚠ INSTANCE #12, LEFT COLUMN. The scroll view was budgeted against the RAW area height,
             // though it lives inside a `_boxStyle` box whose padding and margin come out of that height
             // first - so the column stood `padding.vertical + margin.vertical` taller than the clip rect
@@ -892,7 +896,7 @@ namespace PoliSim.UI
             GUILayout.Space(sectionSpacing);
 
             GUI.enabled = !_isGameOver;
-            DrawCalendarAndSpeedControls(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess);
+            DrawCalendarAndSpeedControls(timeStatusText, isTimePaused);
             GUI.enabled = true;
 
             GUILayout.EndVertical();
@@ -906,7 +910,7 @@ namespace PoliSim.UI
 
             // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
             // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
-            float tabRowsHeight = _tabButtonStyle.fixedHeight;
+            float tabRowsHeight = ConsolidatedTabRowHeight();
             // ⚠ INSTANCE #12, RIGHT COLUMN — same defect, same line of reasoning. Every tab wraps its
             // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
             // before the content gets any. Budgeting against the raw height made the right column
@@ -2396,35 +2400,80 @@ namespace PoliSim.UI
         /// exactly one Label control either way (per DrawTaxPolicy's stable-control-layout pattern -
         /// content and style vary, the control itself never does).
         /// </summary>
-        private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions, bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess)
+        /// <summary>
+        /// ⚠ **THE STRING IS BUILT BY THE CALLER NOW, and that is a layout fix rather than a tidy-up.**
+        /// Every property the comment above describes — escalating to the larger `_eventBannerStyle`, and
+        /// naming every pending reason at once — makes this line TALLER, and the height had to be
+        /// reserved before the line could be drawn. Splitting the build out lets
+        /// <see cref="CalendarAndSpeedControlsHeight"/> measure the exact string that will be drawn,
+        /// rather than a guess about how tall it might be.
+        /// </summary>
+        private string BuildTimeStatusText(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions,
+            bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess)
+        {
+            string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
+            bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
+            if (!isPaused)
+            {
+                return dateText;
+            }
+
+            var reasons = new List<string>();
+            if (hasPendingFedChairSelection)
+            {
+                reasons.Add("choose the next Fed Chair (Federal Reserve tab)");
+            }
+            if (hasPendingCabinetDecisions)
+            {
+                reasons.Add("resolve the pending Cabinet decision (Cabinet tab)");
+            }
+            if (hasPendingBudgetProcess)
+            {
+                reasons.Add("introduce the annual budget bill (Budget Process tab)");
+            }
+            if (hasPendingForeignPolicyMeeting)
+            {
+                reasons.Add("respond to the pending Foreign Policy meeting (Foreign Policy tab)");
+            }
+
+            return $"{dateText} - TIME PAUSED: {string.Join("; ", reasons)} to continue.";
+        }
+
+        /// <summary>
+        /// How tall this block will be — the status label at the width it will actually wrap into, plus
+        /// the speed-button row, plus the margins GUILayout puts around each.
+        ///
+        /// ⚠ **THE RESERVE IS MEASURED, NOT ASSUMED, and the assumption is what cut the speed strip in
+        /// half.** The old figure was `_labelStyle.fontSize + 8f + _buttonStyle.fixedHeight` — one line of
+        /// body type plus a button — but the status line is neither of those things when the clock is
+        /// paused: it escalates to the larger `_eventBannerStyle` AND names every pending reason at once,
+        /// so it wraps. Two wrapped banner lines against a one-line reserve pushed the Pause/1x/2x/3x row
+        /// off the bottom — the single control this UI can least afford to lose, being the only one
+        /// visible from every tab.
+        ///
+        /// <para>This walks the same two controls the drawing walks, from the same string, so the two
+        /// cannot disagree — the separate-accessor discipline <see cref="UiContainmentGuard"/> documents
+        /// for <c>StatTile</c>, applied to a column instead of a tile.</para>
+        ///
+        /// <para><paramref name="columnWidth"/> is the left column's BUDGET, so the label's own width is
+        /// the <see cref="PoliSimWidgets.InnerWidth"/> of it. Measuring at the wrong width is the quiet
+        /// way to get this wrong again: too wide under-counts the lines, and under-counting lines is what
+        /// put the buttons off the screen in the first place.</para>
+        /// </summary>
+        private float CalendarAndSpeedControlsHeight(string statusText, bool isPaused, float columnWidth)
+        {
+            GUIStyle statusStyle = isPaused ? _eventBannerStyle : _labelStyle;
+            float statusWidth = PoliSimWidgets.InnerWidth(columnWidth, _boxStyle, 1, statusStyle);
+            float statusHeight = statusStyle.CalcHeight(new GUIContent(statusText), statusWidth) + statusStyle.margin.vertical;
+            float speedRowHeight = _buttonStyle.fixedHeight + _buttonStyle.margin.vertical;
+
+            return statusHeight + speedRowHeight;
+        }
+
+        private void DrawCalendarAndSpeedControls(string statusText, bool isPaused)
         {
             GUILayout.BeginVertical();
 
-            string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
-            bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
-
-            string statusText = dateText;
-            if (isPaused)
-            {
-                var reasons = new List<string>();
-                if (hasPendingFedChairSelection)
-                {
-                    reasons.Add("choose the next Fed Chair (Federal Reserve tab)");
-                }
-                if (hasPendingCabinetDecisions)
-                {
-                    reasons.Add("resolve the pending Cabinet decision (Cabinet tab)");
-                }
-                if (hasPendingBudgetProcess)
-                {
-                    reasons.Add("introduce the annual budget bill (Budget Process tab)");
-                }
-                if (hasPendingForeignPolicyMeeting)
-                {
-                    reasons.Add("respond to the pending Foreign Policy meeting (Foreign Policy tab)");
-                }
-                statusText = $"{dateText} - TIME PAUSED: {string.Join("; ", reasons)} to continue.";
-            }
             GUILayout.Label(statusText, isPaused ? _eventBannerStyle : _labelStyle);
 
             GUILayout.BeginHorizontal();
@@ -2834,6 +2883,38 @@ namespace PoliSim.UI
         private const float ConsolidatedTabLabelFontScale = 0.72f;
 
         /// <summary>
+        /// How tall a consolidated tab button actually is — the larger of its base `fixedHeight` and the
+        /// stacked icon+label height Phase C imposes.
+        ///
+        /// <para>Never smaller than the base height, so a very short window cannot produce a tab bar
+        /// shorter than the rest of the UI expects. That floor is also why the two figures could agree at
+        /// some font sizes and differ at others, which is the worst way for this kind of bug to
+        /// behave.</para>
+        ///
+        /// ⚠ Computed unconditionally, where <c>DrawConsolidatedTabButton</c> applies the stack only when
+        /// an icon actually loaded. That is deliberate and it errs in the safe direction: if every icon
+        /// were missing, this over-reserves by the stack height and leaves a gap, rather than
+        /// under-reserving and clipping.
+        /// </summary>
+        private float ConsolidatedTabButtonHeight()
+        {
+            float iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
+            int labelFontSize = Mathf.Max(11, Mathf.RoundToInt(_tabButtonStyle.fontSize * ConsolidatedTabLabelFontScale));
+            float labelBandHeight = labelFontSize + 6f;
+            float stackedHeight = Mathf.RoundToInt(ConsolidatedTabIconTopPadding + iconSize + ConsolidatedTabIconLabelGap)
+                                  + labelBandHeight
+                                  + ConsolidatedTabLabelBottomPadding;
+
+            return Mathf.Max(_tabButtonStyle.fixedHeight, stackedHeight);
+        }
+
+        /// <summary>The tab bar as a ROW: the button plus the margin GUILayout puts above and below it. Separate from <see cref="ConsolidatedTabButtonHeight"/> because the button's own style must not carry the margin term — a `fixedHeight` that included it would draw a taller BUTTON, not a taller row.</summary>
+        private float ConsolidatedTabRowHeight()
+        {
+            return ConsolidatedTabButtonHeight() + _tabButtonStyle.margin.vertical;
+        }
+
+        /// <summary>
         /// Explicitly divided evenly across <paramref name="availableWidth"/> - the SAME
         /// rightColumnWidth OnGUI already computes fresh from Screen.width every frame - so the row
         /// can never exceed its actual budget at any window size, matching the screen-relative
@@ -2902,7 +2983,6 @@ namespace PoliSim.UI
             {
                 iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
                 int labelFontSize = Mathf.Max(11, Mathf.RoundToInt(_tabButtonStyle.fontSize * ConsolidatedTabLabelFontScale));
-                float labelBandHeight = labelFontSize + 6f;
 
                 style.fontSize = labelFontSize;
                 style.alignment = TextAnchor.MiddleCenter;
@@ -2913,9 +2993,13 @@ namespace PoliSim.UI
                 // short window can't produce a tab bar shorter than the rest of the UI expects.
                 style.padding.left = 2;
                 style.padding.right = 2;
-                style.fixedHeight = Mathf.Max(
-                    _tabButtonStyle.fixedHeight,
-                    style.padding.top + labelBandHeight + ConsolidatedTabLabelBottomPadding);
+                // ⚠ ONE ACCESSOR, READ BY BOTH SITES. OnGUI must RESERVE this height before the bar is
+                // drawn and this method must IMPOSE it — exactly the separation UiContainmentGuard's doc
+                // names as the shape that drifts in silence, and it HAD already drifted: OnGUI reserved
+                // `_tabButtonStyle.fixedHeight` while this took the LARGER of that and the stacked
+                // icon+label height, so at any font size where the icon won, the tab content below was
+                // pushed down by the difference with nothing reporting it.
+                style.fixedHeight = ConsolidatedTabButtonHeight();
             }
 
             bool clicked = GUILayout.Button(label, style, GUILayout.Width(width));
