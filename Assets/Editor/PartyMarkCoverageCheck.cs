@@ -1,3 +1,9 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using PoliSim.UI;
 using UnityEditor;
 using UnityEngine;
@@ -5,94 +11,197 @@ using UnityEngine;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// Asks whether the delivered `mark_party_*` art RESOLVES through <see cref="IconLibrary"/>, which
-    /// is the runtime half of the question and the only half a filesystem listing cannot answer.
+    /// Asks whether every SEEDED POLITICAL PARTY has a ballot mark that resolves and imported correctly.
     ///
-    /// ⚠ **WRITTEN BECAUSE §1F PRESCRIBED A CHECK THAT CANNOT ANSWER THIS.** §1F closed with *"Still
-    /// unverified: that the marks RESOLVE through Resources.Load. Run DeliveredAssetCheck and
-    /// StatIconCoverageCheck on the next Editor open."* `StatIconCoverageCheck` enumerates
-    /// `StatNodeId` plus `menu_pattern_tile` - eighteen stats and a background - and never touches
-    /// `Emblems/`. It passes 19 of 19 with the marks absent, present, or corrupt, so its green result
-    /// says nothing whatever about them.
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): every party returned by every static
+    /// <c>BuildParties()</c> in the loaded assemblies — the party list, which is the display side. Not
+    /// the contents of <c>Emblems/</c>.</para>
     ///
-    /// That is the same defect shape as the diff argument in the same section: a procedure whose scope
-    /// does not contain the claim, read as evidence for it. A passing check that cannot fail for the
-    /// stated reason is worse than no check, because it retires the question.
+    /// ⚠ **IT ENUMERATED THE MARK FILES UNTIL 2026-08-11, AND THAT WAS THE WRONG SIDE.** Counting the
+    /// folder gives "4 of 4" and keeps giving it forever — including after a fifth party exists with no
+    /// mark, because a party with no art contributes no file to count. That is exactly the
+    /// `icon_stat_interestrate` lesson (*enumerate the display enum, not the storage struct*) applied to
+    /// parties, and it was **already live rather than hypothetical**: the US seed carries FOUR parties
+    /// and TWO `MarkName`s, so the folder-enumerated version reported green while half the seeded parties
+    /// had no mark at all.
     ///
-    /// The specific risk being tested is real and narrow: these four `.meta` files were HAND-WRITTEN
-    /// from the `emblem_party_*` settings with fresh GUIDs. A file can sit on disk at the right path
-    /// with a malformed meta and still return null from `Resources.Load`.
+    /// <para>It matters more from here, not less. The Sweden and Poland electoral work is in flight and
+    /// the four-archetype model is retiring; Sweden alone seats eight parties. A folder-enumerated check
+    /// would report green while eight parties shared two drawings.</para>
+    ///
+    /// <para><b>Both directions, because they fail differently.</b> A party with no mark is a GAP the UI
+    /// tolerates by design (<see cref="IconLibrary.GetPartyMark"/> returns null and every call site draws
+    /// the row without one) — so it is reported, never fatal. Two parties sharing one mark is a LIE: the
+    /// hemicycle renders them identically and the player reads one bloc where there are two. That fails.
+    /// </para>
+    ///
+    /// ⚠ **Reflection rather than a direct reference, deliberately.** The seed types are new and still
+    /// moving; a compile-time reference would make this check a build dependency of theirs and break the
+    /// Editor if they are renamed or absent. Reflection also means a NEW country's seed is covered the
+    /// day it lands, with no edit here — the same derive-don't-list argument the enumeration fix is about.
     /// </summary>
     public static class PartyMarkCoverageCheck
     {
-        private static readonly string[] DeliveredMarks =
-        {
-            "mark_party_us_rep",
-            "mark_party_us_dem",
-            "mark_party_se_s",
-            "mark_party_se_v",
-        };
+        private const string EmblemFolder = "Assets/Resources/Art/UI/Emblems";
 
         public static void Run()
         {
-            // SELF-TEST FIRST, matching StatIconCoverageCheck's own discipline: if a known-good emblem
-            // does not load, every "missing" below is a broken probe rather than a real gap.
+            // SELF-TEST FIRST: if a known-good emblem does not load, every "missing" below is a broken
+            // probe rather than a real gap.
             Texture2D reference = IconLibrary.GetPartyEmblem(PoliSim.Data.PartyArchetype.ProgressiveAlliance);
             Debug.Log($"SELFTEST emblem_party_progressivealliance -> " +
-                      $"{(reference != null ? $"{reference.width}x{reference.height} OK" : "NULL - BROKEN, results below are void")}");
+                      $"{(reference != null ? "OK" : "NULL - BROKEN, results below are void")}");
 
-            // ⚠ THE BAR IS THE CONVENTION, NOT THE NEIGHBOUR. The first version compared each mark
-            // against `emblem_party_*`'s runtime format, on the reasoning that the metas were copied
-            // from it. That passed 4 of 4 — and the reference itself is DXT5, so "matches the
-            // reference" was green while every mark was block-compressed. A check whose bar is another
-            // artifact inherits that artifact's defects, which is this session's own theme one level
-            // further down.
-            //
-            // `emblem_party_*` is FULL-COLOUR art (§3.1: authored in real colours, never tinted).
-            // `mark_party_*` is WHITE-ON-ALPHA and tinted at draw time — see IconLibrary.GetPartyMark,
-            // where the naming split exists precisely to mark that difference. §3.1 separates those two
-            // categories, and the separation governs importer settings too: compression on white-on-
-            // alpha at icon size is the documented damage vector. So the bar is Chrome/'s corrected
-            // convention (textureCompression 0), which is what the other white-on-alpha family uses.
-            Debug.Log($"SELFTEST reference emblem format -> {(reference != null ? reference.format.ToString() : "n/a")} " +
-                      $"(full-colour family; NOT the bar for these)");
-            const TextureFormat expected = TextureFormat.RGBA32;
-
-            int missing = 0, damaged = 0;
-            foreach (string mark in DeliveredMarks)
+            List<(string party, string mark)> parties = CollectSeededParties();
+            if (parties.Count == 0)
             {
+                Debug.LogError("  NO PARTY SEEDS FOUND - no static BuildParties() in any loaded assembly. " +
+                               "Either the seeds were removed or this check's discovery is broken; " +
+                               "either way it is not evidence of coverage.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            int errors = 0, gaps = 0;
+            var claimed = new Dictionary<string, string>();
+
+            foreach ((string party, string mark) in parties)
+            {
+                if (string.IsNullOrEmpty(mark))
+                {
+                    // Tolerated by design, but INVISIBLE to a folder-enumerated check, which is the whole
+                    // reason this one enumerates parties.
+                    Debug.LogWarning($"  no mark   {party} - MarkName unset; the row draws without one");
+                    gaps++;
+                    continue;
+                }
+
+                if (claimed.TryGetValue(mark, out string firstOwner))
+                {
+                    Debug.LogError($"  SHARED    {party} and {firstOwner} both use '{mark}'. " +
+                                   $"Two parties rendering identically reads as one bloc.");
+                    errors++;
+                    continue;
+                }
+
+                claimed[mark] = party;
+
                 Texture2D texture = IconLibrary.GetPartyMark(mark);
                 if (texture == null)
                 {
-                    Debug.LogError($"  MISSING party mark -> {mark} (on disk? check the hand-written .meta)");
-                    missing++;
+                    Debug.LogError($"  MISSING   {party} -> '{mark}' does not resolve through Resources.Load");
+                    errors++;
                     continue;
                 }
 
-                // ⚠ RESOLUTION IS NOT IMPORT VERIFICATION, and the first version of this check confused
-                // them. A handle coming back at 128x128 proves the GUID, the path and that the meta
-                // parses. It says nothing about whether BLOCK COMPRESSION took effect - and compression
-                // mangling white-on-alpha at icon sizes is the documented damage vector that produced
-                // these importer settings in the first place. A compressed mark resolves at 128x128 and
-                // reports green, so "resolves" was being read as "imported correctly" one level down
-                // from the defect this check was written to fix.
-                //
-                // `format` is the runtime ground truth and needs no `isReadable` - which is just as
-                // well, since these metas carry `isReadable: 0` and pixels cannot be sampled at all.
-                if (texture.format != expected)
+                // ⚠ KEPT FROM THE EXTENDED VERSION, and it is the half that caught the real defect.
+                // Resolution proves the GUID, the path and that the meta parses. It says nothing about
+                // whether block compression took effect - and compression on white-on-alpha at icon size
+                // is the documented damage vector. All four marks resolved at 128x128 while every one was
+                // DXT5. `ImporterSettingsCheck` now asserts this across all 149 sprites; it stays here
+                // too because this check is what a party-facing failure should name.
+                if (texture.format != TextureFormat.RGBA32)
                 {
-                    Debug.LogError($"  DAMAGED {mark} -> {texture.width}x{texture.height} format {texture.format}, " +
-                                   $"expected {expected}. Block compression on white-on-alpha at icon size.");
-                    damaged++;
+                    Debug.LogError($"  DAMAGED   {party} -> '{mark}' imported {texture.format}, expected RGBA32. " +
+                                   $"Marks are white-on-alpha and tinted at draw time.");
+                    errors++;
                     continue;
                 }
 
-                Debug.Log($"  OK {mark} -> {texture.width}x{texture.height} {texture.format}");
+                Debug.Log($"  ok        {party} -> {mark} {texture.width}x{texture.height} {texture.format}");
             }
 
-            Debug.Log($"=== Party marks: {DeliveredMarks.Length - missing} of {DeliveredMarks.Length} resolve, " +
-                      $"{DeliveredMarks.Length - missing - damaged} of {DeliveredMarks.Length - missing} at the reference format ===");
-            EditorApplication.Exit(missing == 0 && damaged == 0 ? 0 : 1);
+            // The other direction: art delivered ahead of the party that will use it. Not a failure -
+            // `mark_party_se_*` landed before Sweden's seed exists, which is the intended order - but
+            // worth naming so "delivered" and "used" do not silently diverge.
+            foreach (string orphan in OrphanMarks(claimed.Keys))
+            {
+                Debug.LogWarning($"  orphan    {orphan} - on disk, no seeded party references it");
+            }
+
+            Debug.Log($"=== Party marks: {parties.Count} seeded part(ies), {claimed.Count} with a resolving mark, " +
+                      $"{gaps} without one, {errors} error(s) ===");
+            EditorApplication.Exit(errors == 0 ? 0 : 1);
+        }
+
+        /// <summary>Every party from every seed, found by shape rather than by name so a new country is covered without an edit here.</summary>
+        private static List<(string party, string mark)> CollectSeededParties()
+        {
+            var found = new List<(string, string)>();
+
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type[] types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException)
+                {
+                    continue;
+                }
+
+                foreach (Type type in types)
+                {
+                    MethodInfo builder = type.GetMethod("BuildParties",
+                        BindingFlags.Public | BindingFlags.Static, null, Type.EmptyTypes, null);
+                    if (builder == null)
+                    {
+                        continue;
+                    }
+
+                    if (!(builder.Invoke(null, null) is IEnumerable list))
+                    {
+                        continue;
+                    }
+
+                    foreach (object party in list)
+                    {
+                        if (party == null)
+                        {
+                            continue;
+                        }
+
+                        Type partyType = party.GetType();
+                        string label = ReadString(party, partyType, "EnglishName")
+                                       ?? ReadString(party, partyType, "Id")
+                                       ?? partyType.Name;
+                        found.Add(($"{type.Name}/{label}", ReadString(party, partyType, "MarkName")));
+                    }
+                }
+            }
+
+            return found;
+        }
+
+        private static string ReadString(object instance, Type type, string member)
+        {
+            FieldInfo field = type.GetField(member, BindingFlags.Public | BindingFlags.Instance);
+            if (field != null)
+            {
+                return field.GetValue(instance) as string;
+            }
+
+            PropertyInfo property = type.GetProperty(member, BindingFlags.Public | BindingFlags.Instance);
+            return property?.GetValue(instance) as string;
+        }
+
+        private static IEnumerable<string> OrphanMarks(ICollection<string> used)
+        {
+            if (!Directory.Exists(EmblemFolder))
+            {
+                yield break;
+            }
+
+            foreach (string path in Directory.GetFiles(EmblemFolder, "mark_party_*.png", SearchOption.TopDirectoryOnly)
+                         .OrderBy(p => p))
+            {
+                string name = Path.GetFileNameWithoutExtension(path);
+                if (!used.Contains(name))
+                {
+                    yield return name;
+                }
+            }
         }
     }
 }
