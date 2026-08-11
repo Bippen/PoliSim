@@ -919,6 +919,15 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   works, and asks the question the player actually experiences.** Prefer running it over building the
   reflective one, and if the reflective one is ever built, it must be justified against this paragraph.
 
+- ⚠ **The four `mark_party_*` sprites are imported, corrected and guarded on `main` for a feature that
+  exists only on `stranded/politics-elections` (2026-08-11).** `main` has no `PoliticalParty`, no
+  `IconLibrary.GetPartyMark` and no party rendering at all — its Parliament screen still draws the four
+  fictional `PartyArchetype`s with `emblem_party_*`. So the art is present, correct (RGBA32, verified),
+  and covered by `PartyMarkCoverageCheck`, while **nothing on `main` draws it**. The check reports
+  `PARTY SYSTEM NOT PRESENT` and exits 0 there, which is honest rather than green. This is the
+  `menu_pattern_tile` shape — an asset landing ahead of its consumer — but recorded up front this time
+  instead of after weeks of three documents calling it a gap.
+
 - ⚠ **The 0.35 squeeze floor conclusion is NARROWER than it was recorded as (2026-08-11).**
   `LedgerRow.Columns`'s squeeze was measured across 106 Repaint geometries and found never to engage —
   **all of them at 1600×929**, the only resolution the capture harness produces. That is "confirmed at

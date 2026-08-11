@@ -1407,3 +1407,51 @@ Design drew, so the caveat stands.
 
 ⚠ This closes when a rasterizer exists here — not when the sprites look right in a capture. They
 already do, and that is exactly why this is easy to let lapse.
+
+---
+
+## 1G. ONE MARK — `mark_party_us_lib` (2026-08-11)
+
+**One drawing, not a batch.** §1F's proof-of-concept ruling stands and this does not reopen it: the
+screens that need forty marks still do not exist, and this is a gap in a set already on screen.
+
+### Why this one
+
+`PartyMarkCoverageCheck` enumerates the **party list** rather than the mark folder, and that change
+immediately surfaced what a folder count had been hiding: the US seed carries **four parties and two
+marks**. The Parliament rows draw a crest beside the Republicans and a torch beside the Democrats,
+verified in capture; the other two rows draw text with an empty space where a mark would sit.
+
+| Party | Mark | Status |
+|---|---|---|
+| Republican Party | `mark_party_us_rep` | ✅ crest, resolving, RGBA32 |
+| Democratic Party | `mark_party_us_dem` | ✅ torch, resolving, RGBA32 |
+| **Libertarian Party** | **`mark_party_us_lib`** | ⬅ **REQUESTED** |
+| Other and independent | — | **deliberately none — see below** |
+
+### The request
+
+**`mark_party_us_lib.png`, @2×, 128×128, WHITE-ON-ALPHA.**
+
+⚠ **White-on-alpha, NOT full colour — this is the trap §3.0a exists for.** `mark_party_*` is the
+tinted class: the mark takes its colour from `PoliticalParty.DisplayColor` at draw time, so a party
+rebrand is a seed-data edit rather than a redelivery. `emblem_party_*` is the *other* class,
+full-colour and never tinted, and the two are filename-adjacent. Import settings per §3.0a's
+white-on-alpha row — copy from `Chrome/`, never from `emblem_party_*`, which is how four marks came to
+be block-compressed.
+
+**Subject:** an original abstract mark, not the party's trademarked torch-and-statue logo, on the same
+terms as the first three. Legible as a silhouette at **~14px** beside a legend row — that is the size it
+actually renders at, verified in `marks_07a_politics_parliament.png`, and it is smaller than any brief so
+far has had to hold.
+
+### `Other and independent` — a deliberate NON-GAP, recorded so it is not requested later
+
+It gets no mark, and that is a decision rather than an omission. **It is a residual bucket, not a party**
+— it aggregates every vote not cast for the three named parties, has no organisation, no leader and no
+identity. Giving it a drawn mark would assert an entity that does not exist, and the row rendering
+without one is correct: `GetPartyMark` returns null and the row draws as text, which is precisely what a
+residual should look like beside three parties that have marks.
+
+**So `PartyMarkCoverageCheck` reporting "2 without one" is 1 request and 1 by design**, and it will keep
+reporting 1 after this lands.

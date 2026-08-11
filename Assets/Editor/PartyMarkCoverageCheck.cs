@@ -135,12 +135,18 @@ namespace PoliSim.EditorTools
                 Debug.Log($"  ok        {party} -> {mark} {texture.width}x{texture.height} {texture.format}");
             }
 
-            // The other direction: art delivered ahead of the party that will use it. Not a failure -
-            // `mark_party_se_*` landed before Sweden's seed exists, which is the intended order - but
-            // worth naming so "delivered" and "used" do not silently diverge.
+            // The other direction: art delivered ahead of the party that will use it.
+            //
+            // ⚠ ORPHANS BY SEQUENCING ARE NOT DEFECTS, and saying so in the output is the point.
+            // `mark_party_se_*` (Sweden's banner and star) landed before Sweden's seed exists, which is
+            // the INTENDED order - Design was asked for a proof of concept on three parties rather than
+            // forty precisely so a batch would not be drawn ahead of the screens that use it. Reported so
+            // "delivered" and "used" do not silently diverge, and worded so it is not re-triaged as a gap
+            // on every future run.
             foreach (string orphan in OrphanMarks(claimed.Keys))
             {
-                Debug.LogWarning($"  orphan    {orphan} - on disk, no seeded party references it");
+                Debug.Log($"  awaiting  {orphan} - delivered, no seeded party yet. Orphan by SEQUENCING, " +
+                          $"not a defect: art precedes the seed by design.");
             }
 
             Debug.Log($"=== Party marks: {parties.Count} seeded part(ies), {claimed.Count} with a resolving mark, " +
