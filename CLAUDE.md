@@ -1337,6 +1337,46 @@ work itself, and it was the only one missing.
 **Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
 branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
 
+## Nine checks existed and not one of them ever ran by itself (2026-08-11)
+
+**Audited after `ImporterSettingsCheck` reached "0 errors, 0 warnings", on the grounds that a clean
+result is only worth something if the check runs.** Every `*Check.cs` in `Assets/Editor/` was examined
+for `[InitializeOnLoadMethod]` and `[MenuItem]`:
+
+```
+AggregationEquivalenceCheck  MenuItem=0  InitializeOnLoad=0
+ChromeV2CoverageCheck        MenuItem=0  InitializeOnLoad=0
+CreditRatingAnchorCheck      MenuItem=0  InitializeOnLoad=0
+DeliveredAssetCheck          MenuItem=0  InitializeOnLoad=0
+ImporterSettingsCheck        MenuItem=0  InitializeOnLoad=0
+PartyMarkCoverageCheck       MenuItem=0  InitializeOnLoad=0
+PublicationCadenceCheck      MenuItem=0  InitializeOnLoad=0
+ScreenEdgeCheck              MenuItem=0  InitializeOnLoad=0
+StatIconCoverageCheck        MenuItem=0  InitializeOnLoad=0
+```
+
+**Nine of nine invokable only from a command line someone has to remember to type.** The premise that
+`DeliveredAssetCheck` fires on Editor open is false — §1F's *"run `DeliveredAssetCheck` and
+`StatIconCoverageCheck` on the next Editor open"* was a request for a human to remember, phrased as if it
+described automation. This is *"a delivery is not self-announcing"* pointed at the checks instead of the
+assets, and it is worse there: **a check nobody invokes goes silent without announcing it**, and its last
+known result stays quotable in a document indefinitely.
+
+⚠ **THE MECHANICAL CAUSE, WHICH IS WHY NOBODY JUST ADDED A MENU ITEM: every check ended in
+`EditorApplication.Exit`.** A menu item calling one would have closed the Editor on whoever clicked it,
+so batch-only was not a choice anyone made — it was the only shape available. `CheckExit.Finish`
+replaces those eight call sites and behaves identically under `-executeMethod` (verified: 0 on clean,
+1 on a known-clipped set) while merely recording the code when a suite is collecting.
+
+`CheckSuite` now runs the four project-scanning checks from a menu item and **once per Editor session**
+— not per domain reload, since a script edit reloads many times an hour and re-scanning 149 textures
+each time is how a check becomes the thing someone disables.
+
+⚠ `ScreenEdgeCheck` is **deliberately excluded from the automatic run**: it reads whatever PNGs are on
+disk, so on Editor open it would report on a capture set of unknown age, and a green result from stale
+captures is worse than none — it answers a question about a build nobody is looking at. It has its own
+menu item, to be run after a capture pass.
+
 ## Re-verified on clean `main` — because the first runs were not (2026-08-11)
 
 ⚠ **`ImporterSettingsCheck`'s 149/14/70 and `PartyMarkCoverageCheck`'s results were both produced in a

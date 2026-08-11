@@ -168,7 +168,7 @@ namespace PoliSim.EditorTools
 
             Debug.Log($"=== Importer settings: {files.Length} sprite(s) under {Root}, " +
                       $"{errors} error(s), {warnings} warning(s) ===");
-            EditorApplication.Exit(errors == 0 ? 0 : 1);
+            CheckExit.Finish(errors == 0 ? 0 : 1);
         }
 
         /// <summary>Every block-compressed format this project can plausibly produce. Listed rather than inferred, so a new one shows up as a compile-time gap instead of silently passing.</summary>

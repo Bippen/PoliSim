@@ -68,14 +68,14 @@ namespace PoliSim.EditorTools
                     Debug.LogWarning("  PARTY SYSTEM NOT PRESENT on this branch - PoliSim.Data.PoliticalParty " +
                                      "does not exist, so there are no seeded parties to check. " +
                                      "VERIFIED NOTHING; this is not evidence of coverage.");
-                    EditorApplication.Exit(0);
+                    CheckExit.Finish(0);
                     return;
                 }
 
                 Debug.LogError("  NO PARTY SEEDS FOUND - PoliticalParty exists but no static BuildParties() " +
                                "returned any. Either the seeds were removed or this check's discovery is " +
                                "broken; either way it is not evidence of coverage.");
-                EditorApplication.Exit(1);
+                CheckExit.Finish(1);
                 return;
             }
 
@@ -151,7 +151,7 @@ namespace PoliSim.EditorTools
 
             Debug.Log($"=== Party marks: {parties.Count} seeded part(ies), {claimed.Count} with a resolving mark, " +
                       $"{gaps} without one, {errors} error(s) ===");
-            EditorApplication.Exit(errors == 0 ? 0 : 1);
+            CheckExit.Finish(errors == 0 ? 0 : 1);
         }
 
         /// <summary>Every party from every seed, found by shape rather than by name so a new country is covered without an edit here.</summary>

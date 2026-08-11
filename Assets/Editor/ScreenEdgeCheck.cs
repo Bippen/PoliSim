@@ -61,7 +61,7 @@ namespace PoliSim.EditorTools
             {
                 Debug.LogError($"EDGE: no captures matched '{pattern}' in {ShotFolder}/ - " +
                                "this verified NOTHING rather than finding nothing.");
-                EditorApplication.Exit(2);
+                CheckExit.Finish(2);
                 return;
             }
 
@@ -98,7 +98,7 @@ namespace PoliSim.EditorTools
 
             Debug.Log($"=== Screen edges: {paths.Length} capture(s), {flagged} clipped " +
                       $"(4 pixel lines per screen; right/bottom only; flushness, not overrun) ===");
-            EditorApplication.Exit(flagged == 0 ? 0 : 1);
+            CheckExit.Finish(flagged == 0 ? 0 : 1);
         }
 
         private static bool Flush(int count) => count > FlushMinPixels;

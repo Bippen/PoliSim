@@ -87,7 +87,7 @@ namespace PoliSim.EditorTools
             // its scope entirely. `PartyMarkCoverageCheck` covers those.
             Debug.Log($"=== UI art coverage: {total - missing} of {total} names resolve " +
                       $"(every StatNodeId icon + menu_pattern_tile; NOT chrome, emblems, marks or portraits) ===");
-            EditorApplication.Exit(missing == 0 ? 0 : 1);
+            CheckExit.Finish(missing == 0 ? 0 : 1);
         }
     }
 }

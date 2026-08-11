@@ -105,7 +105,7 @@ namespace PoliSim.EditorTools
 
             Debug.Log($"=== Delivered assets: {rootGaps} missing from {rootZips} root zip(s), " +
                 $"{archiveGaps} missing from archived packs ===");
-            EditorApplication.Exit(rootGaps + archiveGaps == 0 ? 0 : 1);
+            CheckExit.Finish(rootGaps + archiveGaps == 0 ? 0 : 1);
         }
 
         /// <summary>Reports one zip, returning how many of its asset entries are absent under Assets/.</summary>
