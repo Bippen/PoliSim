@@ -30,11 +30,32 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 
    Assume a new mechanic is guilty of all six until the full-horizon batch run (for the first four) and direct live-Editor confirmation (for the last two, which batch runs cannot exercise) prove otherwise.
 3. **Commit per unit of work.** One feature, one commit, descriptive message. Confirm staged contents match the message before committing.
-4. **DECIDE IT YOURSELF (amended 2026-08-02 — the old rule was producing days of round-trips).** The
-   escalate-don't-guess rule was for genuine design forks; in practice it escalated things like where a UI
-   tile goes. **New standard: make the call, state the decision and its reasoning in the commit message,
-   and flag it for Elias to overrule.** Escalate only when undoing it would be expensive or irreversible —
-   a data model change, a mechanic other systems will build on, anything touching the fiscal engine.
+4. **⚠ REPLACED 2026-08-11 at Elias's direction — ESCALATE TO ELIAS IN THE REPORT, NOT TO A DOCUMENT.**
+   Recorded explicitly per rule 10's own requirement that a reversal never look like drift. **Previous
+   wording (2026-08-02):** *"make the call, state the reasoning in the commit message, and flag it for
+   Elias to overrule; escalate to Open Questions only when undoing it would be expensive or
+   irreversible."*
+
+   **Why it changed: Open Questions became a queue nobody drains.** An escalated question sat there
+   unruled until work reached it months later and halted — so the escalation deferred the interruption
+   instead of preventing it, and did so to the least convenient moment. Deciding-it-yourself still
+   applies to everything reversible; what changed is where the genuine forks go.
+
+   **The new standard:**
+   - Every report ends with a **`RULINGS NEEDED`** block. One entry per question: the question stated so
+     it can be answered **yes/no or A/B** wherever possible; the recommendation with one or two lines of
+     reasoning; and **what it blocks**, or *"nothing, decide when convenient."*
+   - **If a question blocks the pass in progress, STOP THERE and report it** rather than carrying it to
+     the end. *A blocked pass reported at minute 3 is worth more than a finished pass that guessed.*
+   - **"I can't call this one" is a legitimate entry.** A genuine coin-flip presented as a recommendation
+     is worse than an admitted one.
+
+   ⚠ **ONCE RULED, WRITE IT DOWN in whichever document owns the decision** — request doc, roadmap, or
+   `CLAUDE.md`. **A ruling given in chat and not recorded did not happen**: same class as *"a delivery is
+   not self-announcing"*, and the same failure mode, since the next session reads documents rather than
+   transcripts.
+
+   **Open Questions stops being a queue and becomes a record of decisions made.**
 5. **Ground new mechanics in real data.** Label anything stylized honestly — never let a placeholder look like real data.
 6. **Scope every new system small on the first pass.** Plumbing plus a few clearly-justified effects, not full theoretical richness.
 7. **Update CLAUDE.md after every item**, including validation results, so history stays traceable.
