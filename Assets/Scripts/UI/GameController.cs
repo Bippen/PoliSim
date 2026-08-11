@@ -4533,6 +4533,56 @@ namespace PoliSim.UI
         /// <summary>
         /// Re-surfaces any pending blocking interrupt inside the Budget screen itself.
         /// </summary>
+        /// <summary>
+        /// The Budget screen's standing explanation. A const rather than a literal at the draw site
+        /// because it is now DRAWN in one place and MEASURED in another
+        /// (<see cref="BudgetProcessHeaderHeight"/>), and at ordinary window sizes it is the tallest of
+        /// the pieces above the columns row — a copy that drifted from the original would take the
+        /// reserve with it.
+        /// </summary>
+        private const string BudgetProcessDescription =
+            "Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. " +
+            "Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits " +
+            "apply either place). Right: this turn's live estimate across your whole current draft.";
+
+        /// <summary>
+        /// Everything <see cref="DrawBudgetProcessTab"/> draws ABOVE its three-column row, measured from
+        /// the real strings at the real width rather than assumed from a multiple of the font size.
+        ///
+        /// ⚠ **This replaces the label-clipping class's original signature.** The old figure was
+        /// `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f` — a constant standing in for
+        /// content, which is precisely the shape CLAUDE.md's seven-instance write-up describes. Seven
+        /// site-specific fixes did not end that class; sharing one measurement between the reserve and
+        /// the drawing does.
+        ///
+        /// <para>Five pieces, in the order they are drawn: the header, the interrupt banner when one is
+        /// showing, the standing description, the bill-status line, and the Introduce button. Each is
+        /// measured in the style it renders in, at
+        /// <see cref="PoliSimWidgets.InnerWidth"/> of the available width — measuring at the raw width
+        /// would under-count the wrapped lines, which is the quiet way to reintroduce this bug.</para>
+        /// </summary>
+        private float BudgetProcessHeaderHeight(float availableWidth)
+        {
+            float textWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
+
+            float height = _headerStyle.CalcHeight(new GUIContent("Budget Process"), textWidth) + _headerStyle.margin.vertical;
+
+            string interruptText = BuildFullScreenInterruptText();
+            if (interruptText != null)
+            {
+                height += _eventBannerStyle.CalcHeight(new GUIContent(interruptText), textWidth) + _eventBannerStyle.margin.vertical + 4f;
+            }
+
+            height += _labelStyle.CalcHeight(new GUIContent(BudgetProcessDescription), textWidth) + _labelStyle.margin.vertical;
+            height += 8f;
+
+            height += _labelStyle.CalcHeight(new GUIContent(BuildBudgetBillStatusText()), textWidth) + _labelStyle.margin.vertical;
+            height += _neutralActionButtonStyle.fixedHeight + _neutralActionButtonStyle.margin.vertical;
+            height += 8f;
+
+            return height;
+        }
+
         private void DrawFullScreenPendingInterruptBanner()
         {
             // The Budget tab runs full-screen (see OnGUI), which hides the calendar/speed strip - and that
@@ -4544,6 +4594,27 @@ namespace PoliSim.UI
             //
             // The Budget Process's own pause is deliberately NOT listed: this screen already states that
             // status directly, and repeating it would train players to ignore the banner.
+            string interruptText = BuildFullScreenInterruptText();
+            if (interruptText == null)
+            {
+                return;
+            }
+
+            GUILayout.Label(interruptText, _eventBannerStyle);
+            GUILayout.Space(4f);
+        }
+
+        /// <summary>
+        /// The banner's text, or null when nothing is blocking.
+        ///
+        /// ⚠ **SPLIT OUT OF THE DRAW SITE SO IT CAN BE MEASURED — the precondition, not a tidy-up.**
+        /// <see cref="BudgetProcessHeaderHeight"/> must know how tall this banner will be BEFORE it is
+        /// drawn, and a string that exists only as an argument to `GUILayout.Label` cannot be measured by
+        /// anything. **You cannot measure what is not a value**, so building it first is step one of the
+        /// accessor pattern rather than an incidental cleanup.
+        /// </summary>
+        private string BuildFullScreenInterruptText()
+        {
             var blocking = new List<string>();
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
@@ -4560,15 +4631,9 @@ namespace PoliSim.UI
                 blocking.Add("a Foreign Policy meeting");
             }
 
-            if (blocking.Count == 0)
-            {
-                return;
-            }
-
-            GUILayout.Label(
-                $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. Open the Decisions tab to resolve it; speed controls are on any other tab.",
-                _eventBannerStyle);
-            GUILayout.Space(4f);
+            return blocking.Count == 0
+                ? null
+                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. Open the Decisions tab to resolve it; speed controls are on any other tab.";
         }
 
         /// <summary>
@@ -4611,14 +4676,18 @@ namespace PoliSim.UI
             // up to more than requested), which made this label wrap against an inflated width and
             // clip mid-word rather than wrap. Tying it directly to availableWidth makes its wrap
             // boundary correct regardless of what the row does.
-            GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle, GUILayout.Width(contentWidth));
+            GUILayout.Label(BudgetProcessDescription, _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(8f);
 
             DrawBudgetBillStatusAndIntroduce();
             GUILayout.Space(8f);
 
-            float headerAllowance = _labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f;
-            float columnsHeight = availableHeight - headerAllowance;
+            // ⚠ INSTANCE #12, BUDGET. The old reserve was
+            // `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f` - seven notional lines of body
+            // type - which is a CONSTANT STANDING IN FOR MEASURED CONTENT, the label-clipping class's
+            // original signature. It under-counted whenever the description wrapped past seven lines or
+            // the interrupt banner appeared, and the columns row below then ran past the clip rect.
+            float columnsHeight = Mathf.Max(0f, availableHeight - BudgetProcessHeaderHeight(availableWidth));
             float columnSpacing = 10f;
 
             // The right column reuses DrawPolicyPreview UNCHANGED from its original dashboard-left-
@@ -4741,12 +4810,7 @@ namespace PoliSim.UI
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             bool budgetProcessOpen = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
 
-            string statusText = pendingBill != null
-                ? $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : budgetProcessOpen
-                    ? "The annual budget process is open - introduce your current draft as a bill below to continue."
-                    : "No budget bill currently before Parliament. One can only be introduced on your country's own fiscal-year date.";
-            GUILayout.Label(statusText, _labelStyle);
+            GUILayout.Label(BuildBudgetBillStatusText(), _labelStyle);
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
@@ -4755,6 +4819,25 @@ namespace PoliSim.UI
                 _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
             }
             GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>
+        /// The bill-status line's text. Split out for the same reason as
+        /// <see cref="BuildFullScreenInterruptText"/>: it is drawn here and MEASURED in
+        /// <see cref="BudgetProcessHeaderHeight"/>, and its three variants differ in length enough to
+        /// change how many lines it wraps to.
+        /// </summary>
+        private string BuildBudgetBillStatusText()
+        {
+            BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            if (pendingBill != null)
+            {
+                return $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).";
+            }
+
+            return _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
+                ? "The annual budget process is open - introduce your current draft as a bill below to continue."
+                : "No budget bill currently before Parliament. One can only be introduced on your country's own fiscal-year date.";
         }
 
         /// <summary>

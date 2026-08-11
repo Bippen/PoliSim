@@ -891,8 +891,29 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   measures in the style text actually renders in, shrinks rather than truncates, recomputes per frame,
   and leaves margin — then sweep the seven known sites. Six site-specific fixes have not ended this class.
 
-- 🔴🔴 **INSTANCE #12 IS LIVE ON `main` RIGHT NOW — 54 of 55 screens, measured 2026-08-11, and the fix
-  is on a branch.** This is the single most urgent open item in this file.
+- ✅ **INSTANCE #12 — CLOSED ON `main` 2026-08-11. `ScreenEdgeCheck`: 55 captures, 0 clipped, exit 0**,
+  all four edges zero on every screen. Four commits, each measured against a fresh capture:
+
+  | | Commit | L | T | R | B | clipped |
+  |---|---|---|---|---|---|---|
+  | before | — | 0 | 0 | **841** | **663** | 54 |
+  | `InnerWidth` 4th term + tab margins | `b42ff20` | 0 | 0 | 0 | **663** | 54 |
+  | two accessors | `8a476bf` | 0 | 0 | 0 | 0 / **1508** | 16 (all Budget) |
+  | `BudgetProcessHeaderHeight` | this | 0 | 0 | 0 | 0 | **0** |
+
+  ⚠ **IT READ AS FIXED FOR HOURS WHILE `main` WAS BROKEN, and the reason is worth keeping.** The
+  `clipfix2_*` captures showed 0 of 55 and were cited as evidence. They were taken while a closed
+  session's uncommitted work sat in the shared tree, so they measured a build containing `InnerHeight`.
+  When that work was committed it went to `stranded/politics-elections` — correctly, since unreviewed
+  politics code sat beside it — and the layout fix went with it. **A capture is evidence about the tree
+  it was taken from, not about the branch of the same name.**
+
+  **What actually closed it: three accessors, each replacing a constant that stood in for measured
+  content** — the label-clipping class's original signature, and the shape seven site-specific fixes
+  never ended. Reserve and drawing now share one measurement apiece.
+
+- ~~🔴🔴 INSTANCE #12 IS LIVE ON `main`~~ — superseded by the entry above; kept so the progression is
+  legible rather than looking like it was always fine.
 
   **Measured, not inferred.** A fresh capture of current `main` (`p2main_*`) run through
   `ScreenEdgeCheck`: **55 captures, 54 clipped, exit 1.** Identical to the `run_*` set from before any
