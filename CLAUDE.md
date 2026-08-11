@@ -1439,7 +1439,39 @@ tables that agree until one is edited" failure already written up twice in this 
 the counter. `NegativeInco / meTax` now sets as `Negative / Income Tax`; the delta sits inside its
 tile.
 
-## OPEN ITEM — child-rect containment has no check, and it is a second check, not a wider first one
+## Child-rect containment: the second guard, BUILT 2026-08-11
+
+`UiContainmentGuard`, scoped to the three composite widgets that lay out a stack inside a fixed rect —
+`StatTile` (content stack vs tile), `LedgerRow` (four column rects vs row), `PolicyScreenStatsRenderer`
+(two line rects vs chip). Not a general container stack: that needs infrastructure this codebase does
+not have, and building infrastructure to satisfy a check is the wrong trade.
+
+**What it actually guards is a SEPARATION, not a rectangle.** Each of the three has a height accessor
+its caller uses to reserve space, and a drawing body that walks the same geometry independently.
+`StatTileHeight` walks the same named constants `StatTile` walks — correct today, and precisely the
+shape that drifts in silence: add an element to the stack, forget the accessor, and the tile overruns
+by exactly that element's height with nothing failing. Same reasoning as one accessor for arc and
+swatch, and `DisplayName.Of` over a copied table: make the agreement enforced rather than remembered.
+
+**Built with the overflow guard's lessons applied from the start rather than rediscovered:**
+Repaint-gated (Layout returns a dummy rect, which cost 608 false positives last time), deduped at
+record time with a hard cap (the first overflow guard appended per frame and took the Editor down),
+and `TotalViolations` counted before the cap (200 was read as a count when it was a ceiling).
+
+⚠ **PROVEN TO FIRE, not merely observed to pass.** A clean result from a new check is
+indistinguishable from a check that never runs — this project has been bitten by exactly that. So the
+tile height was temporarily reverted to the old `92 * scale` and the pass re-run: **40 escapes,
+"bottom by 13.0", content 92px in a 79px container.** It catches the defect it was built for. The
+other two sites are known live from earlier instrumentation: `LedgerRow.Columns` logged 106 Repaint
+geometries, and the stat chip's two rects produced 111 Repaint overflow violations before the
+`LineHeightFor` fix.
+
+**Both guards live and clean: 55 captured, 0 failed, 0 overflows, 0 escapes, exit 0.**
+
+The pair now covers both questions the class has ever failed on — *does the text fit its rect* and
+*does the rect fit its container* — which between them account for all eleven instances.
+
+## Superseded: the OPEN item this replaced
 
 The delta-escaping-its-tile defect was found **by eye**, in captures the overflow guard had just
 passed. That is not a coverage gap the guard can grow into:
@@ -1458,8 +1490,9 @@ stack inside it** — `StatTile`, `LedgerRow`, `PolicyScreenStatsRenderer` — e
 cumulative `y` is within the rect it was given. That is ~3 call sites, catches exactly the defect that
 occurred, and needs no new infrastructure.
 
-⚠ **Not started.** Logged as its own item rather than folded into the guard, because folding it in is
-what would make it never get built.
+✅ **Built as scoped, same day.** Kept here because the reasoning for making it a SECOND check rather
+than a wider first one is the durable part, and it is the question that will be asked again the next
+time a guard misses something.
 
 ### Scope, stated so a clean run is not over-read
 

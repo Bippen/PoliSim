@@ -232,12 +232,21 @@ namespace PoliSim.UI
             // NEVER TRUNCATE. A clipped stat name is merely ugly; a clipped VALUE is a plausible-looking
             // wrong number, which is the worst failure a readout can have - and both were happening here.
             float textWidth = rect.xMax - x - sparkWidth - 10f;
-            PoliSimWidgets.MeasuredLabel(new Rect(x, rect.y + 2f, textWidth, lineHeight), PolicyScreenStats.GetName(stat), text);
+            var nameRect = new Rect(x, rect.y + 2f, textWidth, lineHeight);
+            PoliSimWidgets.MeasuredLabel(nameRect, PolicyScreenStats.GetName(stat), text);
 
             Color previous = GUI.color;
             GUI.color = trendColor;
-            PoliSimWidgets.MeasuredLabel(new Rect(x, rect.y + lineHeight + 2f, textWidth, lineHeight), PolicyScreenStats.Format(stat, value), ChipTextStyle(labelStyle));
+            var valueRect = new Rect(x, rect.y + lineHeight + 2f, textWidth, lineHeight);
+            PoliSimWidgets.MeasuredLabel(valueRect, PolicyScreenStats.Format(stat, value), ChipTextStyle(labelStyle));
             GUI.color = previous;
+
+            // ⚠ `RowHeightFor` is `LineHeightFor * 2 + RowHeightPad` and these two rects are where that
+            // budget is SPENT - two lines plus a 2px inset. The two expressions are the same fact stated
+            // twice, and the height half has already been wrong three times (fontSize+4, then lineHeight,
+            // then padding). Asserting here means the next change to either one has to be right in both.
+            UiContainmentGuard.Check("StatChip name line", nameRect, rect);
+            UiContainmentGuard.Check("StatChip value line", valueRect, rect);
 
             GraphRenderer.DrawSparkline(
                 new Rect(rect.xMax - sparkWidth - 4f, rect.y + (rect.height - sparkHeight) * 0.5f, sparkWidth, sparkHeight),

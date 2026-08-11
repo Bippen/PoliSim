@@ -85,8 +85,7 @@ namespace PoliSim.UI
         /// </summary>
         public static int TotalViolations { get; private set; }
 
-        /// <summary>Labels the violations that follow, so a failure names the screen rather than only the string.</summary>
-        public static string CurrentScreen { get; set; } = "(unlabelled)";
+        private static string CurrentScreen => UiGuardContext.CurrentScreen;
 
         public static IReadOnlyList<Violation> Violations => Recorded;
 

@@ -205,6 +205,16 @@ namespace PoliSim.UI
             trackRect = new Rect(nameRect.xMax + gap, row.y + (row.height - RefTrackHeight * scale) * 0.5f, trackWidth, RefTrackHeight * scale);
             figureRect = new Rect(trackRect.xMax + gap, row.y, figureWidth, row.height);
             trailingRect = new Rect(figureRect.xMax + gap, row.y, trailingWidth, row.height);
+
+            // ⚠ THE TRAILING COLUMN IS THE ONE THAT CAN ESCAPE, and it is the one that recently learned
+            // to size itself from its content. Four widths, three gaps and a squeeze all feed its x, so
+            // "the last column ends inside the row" is a consequence of arithmetic nobody re-checks
+            // after touching any one term. The others are asserted too because they cost nothing and
+            // because the squeeze moves all of them together.
+            UiContainmentGuard.Check("LedgerRow name column", nameRect, row);
+            UiContainmentGuard.Check("LedgerRow track", trackRect, row);
+            UiContainmentGuard.Check("LedgerRow figure column", figureRect, row);
+            UiContainmentGuard.Check("LedgerRow trailing column", trailingRect, row);
         }
 
         /// <summary>The standing tick and the draft hatch band - drawn UNDER the slider so the knob reads as sitting on the track rather than beside it.</summary>

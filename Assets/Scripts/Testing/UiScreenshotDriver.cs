@@ -147,7 +147,11 @@ namespace PoliSim.Testing
 
             int overflows = ReportOverflows();
             Debug.Log($"SHOT: {overflows} text overflow(s) recorded.");
-            Finish(_failed == 0 && overflows == 0 ? 0 : 1);
+
+            int escapes = ReportContainmentEscapes();
+            Debug.Log($"SHOT: {escapes} containment escape(s) recorded.");
+
+            Finish(_failed == 0 && overflows == 0 && escapes == 0 ? 0 : 1);
         }
 
         private IEnumerator Settle()
@@ -181,7 +185,7 @@ namespace PoliSim.Testing
             // Labelled here rather than after the capture because MeasuredLabel records during the OnGUI
             // of the frame being captured - naming the screen afterwards would file this screen's
             // overflows under the next one.
-            UiOverflowGuard.CurrentScreen = name;
+            UiGuardContext.CurrentScreen = name;
 
             yield return new WaitForEndOfFrame();
 
@@ -217,6 +221,33 @@ namespace PoliSim.Testing
             {
                 Debug.LogError($"OVERFLOW: {total - UiOverflowGuard.Violations.Count} further violation(s) " +
                                $"beyond the {UiOverflowGuard.Violations.Count} printed above.");
+            }
+
+            return total;
+#else
+            return 0;
+#endif
+        }
+
+        /// <summary>
+        /// Prints every rect that escaped its container. Separate from <see cref="ReportOverflows"/>
+        /// because it is a separate defect: a label can fit its rect perfectly while the rect sits
+        /// outside the tile, which is exactly how the stat tile's delta came to be drawn on its
+        /// neighbour's keyline.
+        /// </summary>
+        private static int ReportContainmentEscapes()
+        {
+#if UNITY_EDITOR
+            foreach (UiContainmentGuard.Violation v in UiContainmentGuard.Violations)
+            {
+                Debug.LogError($"ESCAPE: {v}");
+            }
+
+            int total = UiContainmentGuard.TotalViolations;
+            if (total > UiContainmentGuard.Violations.Count)
+            {
+                Debug.LogError($"ESCAPE: {total - UiContainmentGuard.Violations.Count} further escape(s) " +
+                               $"beyond the {UiContainmentGuard.Violations.Count} printed above.");
             }
 
             return total;

@@ -347,6 +347,11 @@ namespace PoliSim.UI
             // style inherits wordWrap from GUI.skin.label and is drawn into a fixed 12f*scale rect with a
             // middle anchor - so "DEBT-TO-GDP" wrapped to two lines and both lost their tops and bottoms.
             // The value field below has carried the fix since the "9,3" incident; this label never got it.
+            // Tracks how far down the stack has actually reached, so the assert at the end measures what
+            // was DRAWN rather than the running cursor - `y` overshoots the last element by its trailing
+            // gap, and an assert that fires on padding is an assert that gets disabled.
+            float contentBottom = y + TileLabelHeight * scale;
+
             MeasuredLabel(new Rect(x, y, innerWidth, TileLabelHeight * scale), label.ToUpperInvariant(),
                 Sized(_label, PoliSimTheme.FontLabel, PoliSimTheme.TextMuted, scale));
             y += TileLabelBlock * scale;
@@ -383,6 +388,7 @@ namespace PoliSim.UI
             // The suffix is reserved rather than ignored: it was previously drawn at x + valueSize.x with
             // the value fitted to the FULL inner width, so a wide value pushed its own unit off the tile.
             valueSize = MeasuredLabel(new Rect(x, y, innerWidth, valueHeight), value, valueStyle, suffixWidth);
+            contentBottom = y + valueHeight;
 
             if (!string.IsNullOrEmpty(suffix))
             {
@@ -413,6 +419,7 @@ namespace PoliSim.UI
                 float w = deltaStyle.CalcSize(new GUIContent(delta)).x + 6f * scale;
                 var pill = new Rect(x, y, w, TileDeltaHeight * scale);
                 GUI.Label(pill, delta, deltaStyle);
+                contentBottom = pill.yMax;
 
                 if (!string.IsNullOrEmpty(subLabel))
                 {
@@ -429,7 +436,15 @@ namespace PoliSim.UI
             {
                 var bar = new Rect(x, y, innerWidth, PoliSimTheme.BarHeightSm * scale);
                 ThresholdBar(bar, barFraction, thresholdFraction, PoliSimTheme.Accent(area));
+                contentBottom = bar.yMax;
             }
+
+            // ⚠ THE POINT OF THIS ASSERT. `StatTileHeight` above walks the same constants this method
+            // walks, and the two agreeing is currently a property of nobody having broken it. Add an
+            // element here, forget the accessor, and the tile overruns by exactly that element's height
+            // with nothing failing - which is precisely how the delta came to be drawn onto the next
+            // row's keyline. This makes the agreement checkable instead of remembered.
+            UiContainmentGuard.CheckStackBottom("StatTile content stack", contentBottom, rect);
         }
 
         // --- 2. Threshold bar --------------------------------------------------------------
