@@ -1440,10 +1440,31 @@ full-colour and never tinted, and the two are filename-adjacent. Import settings
 white-on-alpha row — copy from `Chrome/`, never from `emblem_party_*`, which is how four marks came to
 be block-compressed.
 
-**Subject:** an original abstract mark, not the party's trademarked torch-and-statue logo, on the same
-terms as the first three. Legible as a silhouette at **~14px** beside a legend row — that is the size it
-actually renders at, verified in `marks_07a_politics_parliament.png`, and it is smaller than any brief so
-far has had to hold.
+**Subject:** an original abstract mark, on the same terms as the first three. Legible as a silhouette at
+**~14px** beside a legend row — that is the size it actually renders at, verified in
+`marks_07a_politics_parliament.png`, and it is smaller than any brief so far has had to hold.
+
+### ⚠ THE TRADEMARK CONSTRAINT — standing, applies to every party mark ever requested
+
+**A party mark is ORIGINAL ART. It is never the party's own mark, and never a recognisable derivative of
+one.** Real party *names* are text and we use them; real party *logos* are marks owned by organisations,
+and reproducing one in a commercial game on Steam is an entirely different proposition.
+
+**This has already decided three drawings, and the reasoning must be restated in every future request
+rather than re-derived by whoever writes the next one:**
+
+| Party | Delivered | NOT drawn, and why |
+|---|---|---|
+| Socialdemokraterna | a **banner** | **not a rose** — the rose is the subject of their registered mark |
+| Democratic Party | a **torch** | not the donkey |
+| Republican Party | a **crest** | not the elephant |
+
+A mark must therefore be recognisable by **silhouette plus the party's real colour**, carry no element of
+the registered mark, and be ours to own. Recorded as working-discipline **rule 9a**.
+
+⚠ **For `mark_party_us_lib` specifically:** the Libertarian Party's associated imagery raises exactly the
+same question, and this constraint is stated **before** the pack is produced rather than raised after it
+arrives — which is the only point at which saying it is cheap.
 
 ### `Other and independent` — a deliberate NON-GAP, recorded so it is not requested later
 
