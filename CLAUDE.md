@@ -1471,6 +1471,66 @@ against a −300% bound is not a risk, it is already pinning"*). Post-fix they a
 real, unpinned values. **`0386e83` plus the bound removal did precisely what it was ruled to do**, and
 Sweden's ~13% baseline does not reproduce pre-fix either, so it was never the number to defend.
 
+### ⚠ THE ASYMMETRY, CORRECTED 2026-08-11 — both feedbacks are capped, and neither is pinned
+
+**This supersedes what this file said an hour earlier** (*"a positive feedback bounded only by
+`MaxDebtRiskPremium` against a negative feedback capped at 1.5"*). Read from the constants:
+
+```csharp
+RiskFreeDebtToGdpPercent = 60f     // premium starts above 60% debt
+DebtRiskPremiumRate      = 0.02f   // 2bp per excess point
+MaxDebtRiskPremium       = 5f      // caps at +5 percentage points
+```
+
+**The positive feedback is capped too.** And Italy at 167% is 107 points over the risk-free level, so its
+premium is `0.02 × 107 = 2.14pp` — **well under the 5pp cap. Italy is not pinned on either side.**
+
+⚠ **So the asymmetry is not bounded-versus-unbounded. Both are bounded, and they are mismatched in
+EFFECT: the interest side compounds on a STOCK while the revenue side is a multiplier on a FLOW.** A
+flow multiplier cannot out-run stock compounding at high debt no matter where its cap sits — which is
+why neither of the two candidate fixes examined so far touches the actual mechanism, and why the next
+attempt should not be a third change inside the same loop.
+
+### ⚠ The original FRF calibration was fitted in the HARNESS, and real Unity disagrees with it
+
+The 2026-07-22 sweep swept `FiscalReactionSensitivity` 0.05→5.0 and settled on **1.5 with bounds
+`[0.5, 1.5]`**, recording: *"Confirmed as a GENUINE equilibrium, not a slower transient — identical to
+four significant figures at turn 500, turn 1000, and turn 2000 in the harness."*
+
+**Real Unity, same no-policy baseline, 2026-08-11: 157.3 / 81.3 / 166.3 / 48.9 at turn 1000 and still
+climbing.** The harness reported four-significant-figure flatness for a system that diverges.
+
+⚠ **This is the standing rule — "real Unity is the standard of truth, not the standalone harness" — with
+a concrete instance attached, and the instance is worse than the rule's existing examples** because the
+harness did not merely disagree, it reported *stability* to four significant figures across three
+horizons. **Anything fitted in that same sweep inherits the doubt**, and the record names them: the
+sensitivity itself, and the `[0.5, 1.5]` bounds, which were fitted TOGETHER as a pair rather than
+independently. `ComfortableDebtToGdpPercent` does not — it was seeded from each country's real starting
+ratio, not swept.
+
+⚠ **A constant is only as trustworthy as the tool that fitted it**, and re-deriving this pair belongs in
+real Unity before either value is moved by hand.
+
+### ⚠ Byte-identical output is a result to DISTRUST, not a null to accept (2026-08-11)
+
+The FRF trend term's first matrix run came back **byte-identical to the run without it** — every country
+to the decimal, and the same 1682 anomalies. That reads as a clean null result: *the term is reachable,
+it simply does not help.*
+
+**It was a bug.** `DebtToGdpAtPeriodStart` was stamped BEFORE the multiplier was computed, so the trend
+term differenced the ratio against itself and was identically zero. The change was never exercised at
+all.
+
+⚠ **A change that alters nothing is indistinguishable from a change that is not reached** — and the
+default reading, "it did not help", is the flattering one. Only the *anomaly count* matching to the unit
+gave it away; equilibria matching could have been coincidence, but 1682 twice could not.
+
+**Same class as the grep that found nothing.** Both are absences presented as findings, and both feel
+like results. **The guard is the same shape too: before accepting a null, prove the code ran** — a
+deliberately wrong value, a log line, or an assertion that the new term is non-zero at least once. With
+the ordering corrected the term *was* reached, and the real result was 5.6× the anomalies for no
+restoring effect — which is a genuine finding, and the opposite of the one the first run implied.
+
 ### ✅ THE DIAGNOSIS, read from the code 2026-08-11 — SATURATION, not a missing mechanism
 
 ⚠ **THE HYPOTHESIS THIS DISPROVES, recorded because Elias raised it and it was reasonable:** *"the
