@@ -1226,17 +1226,54 @@ sprites:
 | Filter Mode | `Bilinear` (`1`) | |
 | Compression | **None** (`textureCompression: 0`) | Block compression mangles white-on-alpha at icon sizes |
 | Mipmaps | **Off** (`enableMipMap: 0`) | UI sprites never minify |
-| Wrap Mode | **Clamp** (`wrapU/V/W: 1`) | |
+| Wrap Mode | **Clamp** (`wrapU/V/W: 1`) | Correct for every sprite drawn once. **Tiling art needs `Repeat` — see §3.0a** |
 
 The delivered `.meta` should match `Assets/Resources/Art/UI/Stats/icon_stat_gdp.png.meta` exactly apart
-from its `guid`. Copying that file and changing only the guid is the reliable route.
+from its `guid`.
 
-⚠ **ONE EXCEPTION, ADDED 2026-08-03 AFTER IT COST AN ENTIRE UI: CHROME NEEDS `isReadable: 1`.** The icon
-template carries `isReadable: 0`, which is correct for icons — they are drawn with a `GUI.color` tint and
-never read back. Chrome is different: `UiPalette.GetTintedChrome` calls `Texture2D.GetPixels` to tint the
-sprite per button state, and `GetPixels` throws on a non-readable texture. The v2.0 pass-1 metas were
-copied from the icon template exactly as instructed above, and the first wired build rendered as an empty
-desk. **Copy the template, then set `isReadable: 1` for anything under `Chrome/`.**
+### ⚠ 3.0a — COPY THE META **FROM WITHIN THE SAME RENDERING CLASS**, never from the nearest filename
+
+**"Copy that file and change only the guid" is reliable only inside one rendering class, and the
+filenames actively work against getting that right.** This qualifier was added 2026-08-11 after the rule,
+followed exactly as written, produced a defect for the third time.
+
+There are three classes, and the only thing that matters is what happens to the pixels between the file
+and the screen:
+
+| Class | Members | Compression | Why |
+|---|---|---|---|
+| **White-on-alpha, tinted** | `Chrome/`, `Icons/`, `Stats/`, **`mark_party_*`** | **None (`0`)** | The alpha edge *is* the drawing, and it is re-tinted at draw time. Block compression quantises it into visible fringing at icon size. |
+| **Full-colour, untinted** | `Flags/`, `Portraits/`, **`emblem_party_*`** | Currently `1` — undecided | §3.1's named exemption. Drawn as authored, so alpha-edge damage has no tint to amplify it. |
+| **Tiling** | `Textures/menu_pattern_tile` | **None (`0`)** | Repeats across a surface, so block edges repeat too and read as a grid. |
+
+⚠ **`Emblems/` STRADDLES TWO CLASSES, and that is where the last defect came from.** `emblem_party_*` is
+full-colour and never tinted; `mark_party_*` is white-on-alpha and tinted at draw time. They are
+**filename-adjacent and treatment-opposite**. Four `mark_party_*` metas were copied from
+`emblem_party_*` — the nearest neighbour by name, the wrong one by treatment — and all four imported as
+DXT5. `Chrome/` was the far neighbour by name and the correct one by class.
+
+**So the test is never "which file is next to it".** It is: *does this art get tinted at draw time?* If
+yes, copy from `Chrome/`. If no, copy from `Flags/`. If it tiles, see the row below.
+
+**Two instances of this same rule, both previously recorded as one-off exceptions:**
+
+- **Chrome needs `isReadable: 1`** (2026-08-03, after it cost an entire UI). The icon template carries
+  `isReadable: 0`, correct for icons, which are tinted via `GUI.color` and never read back.
+  `UiPalette.GetTintedChrome` instead calls `Texture2D.GetPixels`, which **throws** on a non-readable
+  texture. Pass-1 metas were copied from the icon template exactly as instructed, and the first wired
+  build rendered as an empty desk.
+- **`menu_pattern_tile` needs Wrap Mode `Repeat`, not `Clamp`.** It is drawn with
+  `DrawTextureWithTexCoords` across the whole menu. Clamp does not fail — it stretches the edge pixel
+  across the screen, which reads as a design choice rather than a broken import.
+
+Neither is an exception. Both are the same rule: **the template encodes its own class's treatment, and
+copying it across a class boundary carries the wrong treatment with it.**
+
+✅ **`ImporterSettingsCheck` now enforces this.** It enumerates every `*.png` under
+`Assets/Resources/Art/UI/` (149 files), classifies each by treatment rather than by folder, and asserts
+against stated values — reading the **imported texture**, not the `.meta` text, because the meta is the
+claim and the texture is the fact. It found a third instance on its first run: all 14 `icon_area_*` /
+`icon_nav_*` sprites were DXT5 while `Stats/`, the same class one folder over, was already correct.
 
 ---
 
