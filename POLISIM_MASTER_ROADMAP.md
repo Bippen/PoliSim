@@ -881,6 +881,52 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   measures in the style text actually renders in, shrinks rather than truncates, recomputes per frame,
   and leaves margin — then sweep the seven known sites. Six site-specific fixes have not ended this class.
 
+- 🔴 **P4 REOPENED 2026-08-11 — THE CLIPPING CLASS IS NOT CLOSED, AND "GUARDS GREEN" DOES NOT MEAN
+  "SCREENS DO NOT CLIP".** Two guards were built on 2026-08-11 and both are honestly scoped; the class
+  produced a **twelfth** instance that neither can see, and both reported zero while it was on screen.
+
+  **Instance #12 — the FRAME, not the text.** Five `GUILayout` groups laid out wider and taller than
+  `OnGUI`'s own `BeginArea`, so the area clipped them. Reported by Elias from live play (*"there are
+  borders at the sides which cutoff the game"*). It reproduced in that morning's own capture set with
+  nothing changed: **54 of 54 gameplay screens carried content on the last drawable pixel of the right
+  edge, and 54 of 54 on the bottom** — captured, written to disk, and left unexamined at exactly the
+  resolution the defect is visible at. Left and top were clean in every one, and that asymmetry is the
+  diagnosis: flush on one side with the opposite side inset is a clip; flush on all four is a full-bleed
+  background, which is why the menu screen is not a finding.
+
+  ⚠ **STATE THE SCOPES, because the zeros were correct and were nearly read as an all-clear:**
+  - `UiOverflowGuard` asks *does this text fit the rect it was handed?* Every clipped label here fitted
+    its rect perfectly.
+  - `UiContainmentGuard` asks *does this child rect sit inside its container?* — scoped to three
+    composite widgets that lay out a stack inside a fixed rect.
+  - Instance #12 is a **GUILayout group overrunning the one container everything is inside**, which is
+    neither question. `CLAUDE.md`'s own scope note said a clean run is evidence about fixed-rect drawing
+    and *"not about every label on screen"*. **#12 landed precisely in the excluded population.** The
+    guards reporting zero is that note coming true, not a contradiction.
+
+  **What caught it: `screenshot_edge_check.py`** (repo root) — a frame question asked of the PNGs the
+  capture pass already writes, needing no engine access. It counts non-desk pixels on the clip rect's
+  last row and column.
+
+  ⚠ **DO NOT BUILD A THIRD SITE-SPECIFIC GUARD.** Before writing a GUILayout-aware check, state what it
+  would have to enumerate — and the honest answer is that the two existing guards hook *drawing*, while
+  this defect lives in *layout*, one phase earlier and in a phase where (per the Repaint-gating lesson)
+  rect dimensions do not yet exist. A real check would need: every `BeginArea`/`BeginScrollView` on the
+  stack with its rect; every `GUILayout` group's *requested* min/max width from
+  `GUILayoutUtility.current.topLevel` rather than from a drawn rect; and a comparison at the moment
+  layout resolves, not at Repaint. None of that is reachable from the public IMGUI surface without
+  reflection into `GUILayoutUtility`'s internals. **The pixel check is cheaper, already exists, already
+  works, and asks the question the player actually experiences.** Prefer running it over building the
+  reflective one, and if the reflective one is ever built, it must be justified against this paragraph.
+
+- ⚠ **The 0.35 squeeze floor conclusion is NARROWER than it was recorded as (2026-08-11).**
+  `LedgerRow.Columns`'s squeeze was measured across 106 Repaint geometries and found never to engage —
+  **all of them at 1600×929**, the only resolution the capture harness produces. That is "confirmed at
+  one resolution", never "the floor is unreachable". `ledger_geometry_check.py` (repo root) exists
+  specifically because of this: it ports `Columns()` and the width chain feeding it to evaluate 2560×1440,
+  which no capture on disk uses. **A geometry conclusion drawn from captures is scoped to the capture
+  resolution**, which is the same shape as everything else in rule 14.
+
 ### Live, unblocked work carried out of section A
 
 - ✅ **SWF emergency drawdown fast-track (A2) — DONE 2026-08-02 (`b1c077f`).** `SwfDrawdownBill`, the
