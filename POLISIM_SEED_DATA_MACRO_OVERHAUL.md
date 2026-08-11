@@ -1079,3 +1079,60 @@ figures. Only an anchor landing on its own known value can catch it.
 **Cheapest form: carry the anchor inside the real query.** Add a known-value country to the same call
 rather than running a separate verification pass — the position check then rides along for free, on
 exactly the query whose results you intend to keep, instead of on a proxy for it.
+
+---
+
+## PART 5 — ELECTORAL SEED DATA: findings that constrain any future design (2026-08-11)
+
+⚠ **Findings only, extracted onto `main` deliberately.** The electoral code that produced them lives on
+`stranded/politics-elections`, a branch marked *preserved, not endorsed* — uninspected, unvalidated, and
+possibly never merged. **These constraints hold regardless of whether that code ever lands**, because
+they are properties of the real electoral systems rather than of one implementation. Leaving them on a
+branch nobody is required to read would mean rediscovering them at seed-design time.
+
+All were produced by porting the allocator to a standalone script and running it against real published
+results **before** the engine was depended on — no Unity, no compile. Two of three countries disagreed
+with the plan, and both disagreements surfaced in minutes.
+
+### The four results
+
+| Country | Method | Outcome |
+|---|---|---|
+| **Sweden 2022** | National modified Sainte-Laguë, first divisor 1.2, 349 seats | **EXACT** — all eight parties, 0 seats of error |
+| **Sweden 2014** | Same pipeline, pre-2018 law (first divisor 1.4) | **6 seats of absolute error** (S −1, M +1, SD −2, FP +1, KD +1) |
+| **Germany 2025** | National Sainte-Laguë/Schepers, 630 seats | Off by **1**: CDU 165, SPD 119 |
+| **Poland 2023** | National D'Hondt, 460 seats | Off by **70**: PiS 169 (−25), Konfederacja 34 (+16) |
+
+### What each one constrains
+
+**⚠ SEEDS MUST CARRY VOTE COUNTS, NEVER PUBLISHED PERCENTAGES.** Germany is an input-precision problem,
+not an algorithm problem — confirmed rather than assumed by re-running across the ±0.05 band that
+one-decimal published shares permit, where the exact real result is reachable at CDU 22.55–22.58%. **A
+rounded share is enough to move a Bundestag seat**, and it would have looked like an allocator bug
+forever. This is the single most load-bearing constraint here and it applies to every country.
+
+**⚠ POLAND AND ITALY REQUIRE CONSTITUENCY-LEVEL MODELLING.** National D'Hondt is **not** an approximation
+of D'Hondt run 41 times — it is a different and far more proportional system. The real Sejm is much more
+disproportionate than a national calculation suggests, because each of the 41 constituencies rounds in
+the large parties' favour independently. That means per-constituency seed data (41 × ~5 parties) or an
+explicitly modelled and explicitly labelled disproportionality correction. **Italy's 28 Camera
+constituencies and 20 Senato regions are the same open question and must be measured the same way before
+its allocator is trusted.**
+
+**⚠ "A NATIONAL ALLOCATION REPRODUCES THE REAL CHAMBER" IS CONFIRMED FOR SWEDEN 2022 ONLY.** The other
+session recorded this narrowing against its own earlier claim, which is why it is trustworthy: Sweden
+2014 does not reproduce, and the error is byte-identical whether the divisor is 1.4 (historically correct
+for 2014) or 1.2. Votes and real seats were each cross-checked against three independent sources before
+the discrepancy was trusted over the code. The leading explanation is not an allocator bug — the same
+code reproduced 2022 exactly — but the same national-vs-constituency gap Poland shows.
+
+**Sweden 2022 is the one solid anchor**, and it is solid for a structural reason: the Riksdag's 39
+levelling seats exist precisely to make the national result proportional, so a national allocation
+reproduces it exactly. Sweden needs no constituency model; that property does not generalise.
+
+### Also recorded: B3 recurring in the politics code
+
+The branch's election display prints `46,77% of the vote`, `44,6%`, `55,4%` — **decimal commas on a
+sv-SE machine**, beside money that goes through `UiFormat`'s InvariantCulture pinning. This is B3's exact
+defect in new code written after `UiFormat.Number` existed. Logged here so it is known before that stream
+resumes rather than found in a capture later.
