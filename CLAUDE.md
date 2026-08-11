@@ -1311,6 +1311,49 @@ trailing-column change of the same day raising `fixedTotal` into `Columns()`'s 0
 **RESOLVED 2026-08-11, and the suspect was innocent — see the next section. Every one of those 200
 was a false positive, including both figures quoted above.**
 
+## 188 commits existed on exactly one disk, and every check built that day pointed at sprites (2026-08-11)
+
+**The largest risk carried all day was not in the code.** `git status` showed `## main...origin/main
+[gone]`, which was read as *the remote is gone* and recorded as *"concurrent writers with no remote means
+a lost update has no recovery path at all."* Both halves of that were wrong in opposite directions, and
+the truth was worse than the diagnosis:
+
+- `origin` was **reachable the whole time** and had `main` at `1ee5fce`. What was missing was the LOCAL
+  TRACKING REF, not the remote.
+- Local was **188 ahead, 0 behind** — every commit since `1ee5fce` existed on one disk, in one
+  working tree, that a second agent was concurrently writing to. `git push` was a clean fast-forward and
+  had been available at any point.
+
+⚠ **A missing local tracking ref and a genuinely missing remote are indistinguishable from inside the
+repository**, and `[gone]` reads as the second. One `git ls-remote` separates them; nobody ran it for 188
+commits.
+
+**This is rule 14 pointed at the repo instead of at a sprite.** That day built four checks — coverage,
+containment, importer settings, party marks — every one of which asks *does this asset exist and is it
+correct*, and not one of which asks *does this work exist anywhere but here*. The enumeration gap was not
+inside any check; it was the population none of them was over. A backup is a check whose scope is the
+work itself, and it was the only one missing.
+
+**Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
+branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
+
+## The third compression instance, and what finally caught it (2026-08-11)
+
+`icon_area_*` and `icon_nav_*` — 14 sprites, every navigation and area icon in the game — had imported as
+**DXT5** for their whole life. Block compression on white-on-alpha at icon size, which is the one damage
+vector §3's import spec exists to prevent.
+
+**The first two instances were fixed in place; the third was found by a check built wide enough to
+contain it.** §3's Chrome correction fixed Chrome. `mark_party_*` fixed four marks. Both were correct and
+neither could see the next one — `Stats/`, 43 files of the same rendering class one folder over, was
+already right, and nothing compared the two. `ImporterSettingsCheck` enumerates all 149 sprites under
+`Art/UI/`, classifies each by **treatment rather than folder**, and found the 14 on its first run.
+
+That is this project's standing answer to a defect fixed twice in place, applied for the fourth time
+(`MeasuredLabel` for clipping, `InnerWidth` for the box model, `UiOverflowGuard`/`UiContainmentGuard` for
+the two containment questions, now this). **The rule it confirms: after the second site-specific fix, the
+next thing to build is the check, not the third fix.**
+
 ## Instance #4 of the wrong-plausible-mechanism pattern — and the phase split that caught it (2026-08-11)
 
 **The guard was measuring during the IMGUI Layout pass.** Raising its cap gave the true count: **608
