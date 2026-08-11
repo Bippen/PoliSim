@@ -924,8 +924,40 @@ list stays short enough to actually read.
      return never reaches it. This also closed a **double-count**, where the fund kept the return and the
      government spent the same figure.
 
-  🔴 **WHAT REMAINS IS MEASUREMENT, NOT CODE.** None of the ruling's stated consequences were ever
-  verified after `0386e83`:
+  ✅ **MEASURED 2026-08-11 — `DebtClampDiagnostic`, real Unity, seed 777, 120 turns, post-`0386e83`.**
+
+  **THE GUARD NEVER ENGAGES.** `negativeTurns = 0/120` and `ceilingHits = 0` for **all six countries** —
+  gross debt never goes negative at all, so `NetCreditorRunawayGuardPercent = 1000f` is **a backstop that
+  has never been reached**, not something holding a runaway back. Per the original ruling's own words,
+  *"if any country reaches it, that is a bug report, not a clamp"* — nothing does. Sweden shows
+  `netCreditorTurns = 120`, i.e. net position (debt minus fund) is negative every turn while gross debt
+  stays positive, which is exactly the state the −300% bound used to forbid.
+
+  **THE SIX EQUILIBRIA, against their recorded baselines:**
+
+  | | baseline | measured | move |
+  |---|---|---|---|
+  | USA | ~142% | 137.7% | −4.3 |
+  | Italy | ~107% | 114.0% | **+7.0** |
+  | France | ~90% | 92.9% | +2.9 |
+  | Germany | ~35% | 37.9% | +2.9 |
+  | Sweden | ~13% | 6.9% | **−6.1** |
+  | Poland | ~26% | 27.7% | +1.7 |
+
+  ⚠ **SWEDEN AND ITALY MOVED ENOUGH TO NAME THIS A RECALIBRATION, not a bug fix.** Sweden roughly halved,
+  which is the expected direction and the expected country — it has the largest fund, so it is where
+  putting SWF income inside the stabiliser bites hardest. Italy moved +7.0 with no fund to speak of,
+  which is **not** explained by the SWF change and is the one number here that wants its own look.
+
+  **FRANCE — the case that distinguishes a cause-fix from a symptom pushed further out.** It reached the
+  old bound and sat near it. Now: `1 of 117` years with a rating notch move, largest move **1 notch**,
+  largest year-over-year swing 7.6 points of GDP — and it is **no longer the outlier**, since Italy shows
+  the same 1 of 117 and every other country shows 0. The thrash is gone, not relocated.
+
+  🔴 **STILL NOT RUN: `BatchSimulationRunner` at 100 and 500 turns.** The above is a 120-turn diagnostic,
+  which answers the guard and the equilibria but is not the full matrix the standing discipline requires
+  for anything touching the fiscal engine. **Italy's +7.0 should be read against that matrix before it is
+  explained.**
   - **The guard.** `DebtClampDiagnostic` reports runaway-guard hits, and the roadmap's "zero hits before
     and after" predates this commit. Until it is re-run, whether
     `NetCreditorRunawayGuardPercent = 1000f` is **a backstop that never engages** or **still holding a
