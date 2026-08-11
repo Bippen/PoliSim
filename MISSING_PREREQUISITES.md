@@ -375,7 +375,37 @@ afterwards. That is a sequencing decision already made, not a party to wait on.
 
 # E. Waiting on Claude Design
 
-## ✅ NOTHING. Section E is empty as of 2026-08-02.
+## 🟡 E2. `mark_party_us_lib` — requested in `CLAUDE_DESIGN_ASSET_REQUEST.md` §1G, **WRITTEN, NOT SENT**
+
+⚠ **This section read "✅ NOTHING, empty as of 2026-08-02" while §1G already requested this mark — the
+THIRD instance of the `icon_stat_interestrate` class**: two documents describing the same outside world,
+one stale, neither wrong when written. Rule 12 exists for exactly this, and it recurred the same day
+rule 12 was cited twice.
+
+**What is needed:** one sprite, `mark_party_us_lib.png`, @2× 128×128, **white-on-alpha** — the tinted
+class, per §3.0a. Copying `emblem_party_*`'s importer settings is how four marks came to be
+block-compressed. Original abstract art under **rule 9a**: never the party's own mark, never a
+recognisable derivative of one.
+
+**Why it is a real gap:** the US seed carries four parties and two marks. `PartyMarkCoverageCheck`
+enumerates the party list and reports `2 without one` — **one is this request, one is deliberate**
+(`Other and independent` is a residual bucket, not a party, and stays unmarked by decision).
+
+⚠ **STATUS IS *WRITTEN*, NOT *SENT*.** It exists in a document and has not been transmitted to Claude
+Design. **A request in a document and not in anyone's inbox is the same failure one step earlier**, so
+this entry exists to keep that distinction visible. It closes when the sprite is on disk and
+`PartyMarkCoverageCheck` reports it resolving at RGBA32.
+
+**Blocks nothing today** — the Libertarian row renders as text, which is the designed degradation, and
+the screen it appears on exists only on `stranded/politics-elections`.
+
+## 🟡 E3. Design's rasterization diff — carried, previously recorded only in the request document
+
+`CLAUDE_DESIGN_ASSET_REQUEST.md` §1F.1: Design asked that their strip-cut PNGs be diffed against our own
+rasterization once before the pipeline is trusted. **No rasterizer exists on this machine**, so it has
+never been run. Recorded here as well as there, because a blocker living in one document is the same
+cached-status shape as E2 above. It closes when a rasterizer exists — **not** when the sprites look right
+in a capture, which they already do.
 
 **E1 — `icon_stat_interestrate`. DELIVERED AND IMPORTED**, the same day the request was sent. Elias
 pointed out that it had already arrived, in `Policy rate icon design.zip` at the project root — this

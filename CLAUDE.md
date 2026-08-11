@@ -1337,6 +1337,38 @@ work itself, and it was the only one missing.
 **Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
 branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
 
+## Rule 14, extended: a check is evidence only if it RUNS in the environment that cites it (2026-08-11)
+
+**Python is not installed on this machine.** The `py` launcher registers 3.11 at
+`C:\Users\elias\AppData\Local\Programs\Python\Python311\python.exe`, and that directory does not exist.
+
+**Four Python scripts are cited as evidence across `CLAUDE.md`, `COMPLETED.md`,
+`POLISIM_MASTER_ROADMAP.md` and `POLISIM_POLITICS_ELECTIONS_ROADMAP.md`. Not one of them could ever have
+run here.** This is not an incident hit while porting one of them; it is a property of the whole citation
+set, and it extends rule 14:
+
+> **A check is evidence only for claims its enumeration contains — and only if it runs in the environment
+> that cites it.**
+
+**Verified state of every cited check, 2026-08-11:**
+
+| Check | Runs here? | Evidence status |
+|---|---|---|
+| `DeliveredAssetCheck` | ✅ run, exit 0 | confirmed |
+| `ImporterSettingsCheck` | ✅ run, 149 sprites, 0/0 | confirmed |
+| `StatIconCoverageCheck` | ✅ run, 19 of 19 | confirmed |
+| `PartyMarkCoverageCheck` | ✅ run | confirmed (reports NOT PRESENT on `main`) |
+| `ScreenEdgeCheck` | ✅ run, verified both ways | confirmed — **C# port of the script below** |
+| `screenshot_edge_check.py` | ❌ never | superseded by the port |
+| `seat_allocation_check.py` | ❌ never | **read only** — Part D re-scoped accordingly |
+| `ledger_geometry_check.py` | ❌ never | **unread, unverified** — sole evidence about 1440p |
+| `usa_election_check.py` | ❌ never | scoped to item 10, out of scope until it is scheduled |
+
+⚠ **The dangerous property is not that a script cannot run — it is that its LAST REPORTED OUTPUT stays
+quotable in a document forever.** `screenshot_edge_check.py`'s "54/54 then 0/54" was cited in three
+documents as though it described the current build. It described a working tree that no longer exists,
+and `main` was clipping on 54 of 55 screens the whole time.
+
 ## Nine checks existed and not one of them ever ran by itself (2026-08-11)
 
 **Audited after `ImporterSettingsCheck` reached "0 errors, 0 warnings", on the grounds that a clean
