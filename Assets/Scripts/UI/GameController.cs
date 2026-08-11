@@ -3116,6 +3116,33 @@ namespace PoliSim.UI
         {
             GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
             style.fixedHeight = 0f;
+
+            // ⚠ v2.0 CHROME, 2026-08-11 — a sub-tab has its OWN pair of sprites, and using them is what
+            // makes a sub-tab read as a different KIND of control rather than a smaller button.
+            // `BuildButtonStyle` has already dressed this style as `ui_btn_brass`/`ui_btn_paper`; these
+            // replace the background and nothing else, so every other property it set survives.
+            //
+            // ⚠ DRAWN UNTINTED, per §3.0a's question — "does this art get tinted at draw time?" These are
+            // REAL-COLOUR paper furniture, exactly like `ui_btn_*`, whose own comment says so twenty
+            // lines up — NOT white-on-alpha. Tinting them would double-apply colour already in the
+            // pixels, which is the damage §3.0a exists to prevent.
+            Texture2D face = IconLibrary.GetChrome(selected ? "ui_subtab_on" : "ui_subtab_off");
+            if (face != null)
+            {
+                style.normal.background = face;
+                style.hover.background = face;
+                style.active.background = face;
+                style.focused.background = face;
+
+                // ⚠ THE INSET IS DERIVED, NOT QUOTED — the manifest gives no 9-slice for these two, and
+                // inventing one is the mockup-number trap this project has recorded twice. `ui_btn_*` is
+                // 128x64 @2x at 20/20/20/28; these are 128x56 @2x — the SAME WIDTH, 8px shorter. So the
+                // horizontal inset carries over exactly (20 @2x = 10 @1x) and the vertical scales by
+                // 56/64 (20 -> 17.5, 28 -> 24.5 @2x, so 9 and 12 @1x). `GUIStyle.border` is @1x, and
+                // IMGUI reads the slice from the STYLE, never from the texture's own spriteBorder.
+                style.border = new RectOffset(10, 10, 9, 12);
+            }
+
             return style;
         }
 

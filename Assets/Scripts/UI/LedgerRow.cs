@@ -224,6 +224,36 @@ namespace PoliSim.UI
             float standingX = track.x + track.width * Mathf.Clamp01((standing - min) / span);
             float draftX = track.x + track.width * Mathf.Clamp01((draft - min) / span);
 
+            // ⚠ v2.0 CHROME, 2026-08-11 — `ui_slider_tick` every 10%, per §A.9's track spec: *"ticks as
+            // repeating-linear 90° #B7A98C 0->1px, transparent 1->10% (every 10%)"*. Drawn FIRST, under
+            // the hatch and the standing tick, because they are the ruled scale the two markers are read
+            // AGAINST — a tick that sits on top of the draft band would compete with the thing it exists
+            // to measure.
+            //
+            // ⚠ TINTED TO `PoliSimTheme.Hairline`, WHICH IS §A.9's `#B7A98C` EXACTLY — and getting this
+            // wrong is what §3.0a's question exists to prevent. The first version drew it untinted, on
+            // the reasoning that `Chrome/`'s slider parts are real-colour paper furniture like
+            // `ui_btn_*`. **They are not: this sprite is white-on-alpha, and the first capture showed
+            // nine white bars across every track.** Reasoning by analogy from a NEIGHBOURING sprite is
+            // the reference-class trap again — the family a sprite sits in does not settle how it is
+            // drawn, only what it is drawn from.
+            //
+            // Null-safe by the same contract as the hatch below: no sprite means no ticks, and the track
+            // still reads. The scale is a refinement on a control that already works without it.
+            Texture2D tick = IconLibrary.GetChrome("ui_slider_tick");
+            if (tick != null && track.width > 0f)
+            {
+                float tickWidth = Mathf.Max(1f, RefTickWidth * scale * 0.5f);
+                Color tickPrev = GUI.color;
+                GUI.color = PoliSimTheme.Hairline;
+                for (int step = 1; step < 10; step++)
+                {
+                    float x = track.x + track.width * (step / 10f);
+                    GUI.DrawTexture(new Rect(x - tickWidth * 0.5f, track.y, tickWidth, track.height), tick, ScaleMode.StretchToFill);
+                }
+                GUI.color = tickPrev;
+            }
+
             // The hatch runs from whichever of the two is left to whichever is right, so a CUT hatches
             // exactly as visibly as a RISE. A one-directional fill would silently drop half the cases,
             // and "the player can see what they changed" is the whole of behaviour 1.
