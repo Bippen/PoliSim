@@ -1471,9 +1471,30 @@ against a −300% bound is not a risk, it is already pinning"*). Post-fix they a
 real, unpinned values. **`0386e83` plus the bound removal did precisely what it was ruled to do**, and
 Sweden's ~13% baseline does not reproduce pre-fix either, so it was never the number to defend.
 
-**What drives the four-country climb is still unidentified** — the ratio's numerator outpaces its
-denominator indefinitely, so either the fiscal reaction function never reaches the deficit or interest
-compounding outruns it. This run cannot distinguish those; both horizons show the same shape.
+### ✅ THE DRIVER, INSTRUMENTED 2026-08-11 — INTEREST COMPOUNDING, not a pinned stabiliser
+
+One 1000-turn baseline, seed 777, real Unity, logging `fiscalReactionMultiplier`, `interestOnDebt`,
+`budgetBalance`, debt and GDP per accrual for **Germany and Italy** — one climbing from a low base, one
+from an already-high one.
+
+| | multiplier (bounds 0.5–1.5) | interest as % of ALL spending |
+|---|---|---|
+| **Germany** early → late | 1.000 → 0.624 → **~1.27** | 6.3% → **25.7%** |
+| **Italy** early → late | 1.000 → 0.624 → **~1.19–1.45** | 20.5% → **45.7%** |
+
+**The stabiliser is NOT pinned.** It moves freely across the run — down to 0.62 while debt falls early,
+then back up above 1.0 as debt rises, sitting at ~1.27 (Germany) and ~1.19–1.45 (Italy) against a 1.5
+cap. **It is leaning hard in the correct direction and is simply being outrun.**
+
+⚠ **Interest goes from 6% to 26% of all spending in Germany, and from 20% to 46% in Italy.** By turn 1000
+Italy spends nearly half its budget servicing debt. The daily balance is only slightly negative
+(−0.9 / −3.9), so this is not profligacy — it is compounding on a stock the stabiliser can slow but not
+reverse.
+
+**Same mechanism in both, which is the stronger result**: Italy is simply further along, and its
+multiplier at 1.446 is approaching the 1.5 cap. **Italy is on a path to become the pinned case, without
+being it yet at turn 1000** — so the two hypotheses are not alternatives but stages, and a fix aimed only
+at the cap would arrive after the damage.
 
 ## An absence claim greped from ONE FILE is rule 14 inverted (2026-08-11)
 

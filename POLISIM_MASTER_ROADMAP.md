@@ -986,10 +986,33 @@ list stays short enough to actually read.
 
   **Sequenced ahead of the C4 deficit-term work**, which reads the value this unclamps.
 
-- 🔴 **RULED 2026-08-11 — THE C4 DEFICIT TERM IS THE NEXT FISCAL-ENGINE WORK *AFTER* THE SWF CAUSE-FIX,
-  not before it.** The reasoning is the sequencing itself: this investigation READS the net-creditor
-  value that the SWF fix unclamps, so running it first would investigate a signal that is about to
-  change — the same waste the debt floor caused when it hid this very term. Untouched since 2026-08-02.
+- 🔴🔴 **C4 SUPERSEDED 2026-08-11 — UNBOUNDED DEBT DIVERGENCE IS NOW THE FISCAL-ENGINE PRIORITY.** Ruled
+  by Elias after the 1000-turn matrix. **The reason, recorded so the sequencing change is visible rather
+  than implicit: C4's deficit-term investigation READS a series that never settles**, so it would be
+  investigating the divergence by proxy and calibrating against a moving target. Measured at turn 1000:
+  USA 157.3, Germany 81.3, Italy 166.3, Poland 48.9 — all still climbing.
+  *(Superseded ruling, kept: "the C4 deficit term is the next fiscal-engine work after the SWF
+  cause-fix" — correct when made, on a premise the matrix then replaced.)*
+
+  ✅ **`0386e83` IS INNOCENT FOR ALL FOUR.** Pre-fix and post-fix trajectories match to within ~3 points
+  at turn 1000. **The Fiscal Reaction Function has never equilibrated**, and every "equilibrium" quoted
+  since 2026-07-22 was a waypoint. **Italy's "+7.0" closes** — never attributable to the SWF change, one
+  of the four on the same path before and after.
+
+  ✅ **AND `0386e83` IS VINDICATED, which the record should say as plainly as it has said everything
+  else.** Pre-fix, **Sweden sits at −296/−288/−297 and France reaches −299 at every horizon** — flush
+  against the −300% bound, exactly the pinning Elias's 2026-08-02 ruling gave as its first reason
+  (*"France at −298% against a −300% bound is not a risk, it is already pinning"*). Post-fix they are at
+  **+11.2 and +108.8**: real, unpinned values. **A ruling made on reasoning, confirmed by measurement
+  nine days later.** Sweden's ~13% does not reproduce pre-fix either — **the fix exposed a broken
+  calibration rather than breaking a good one.** The record has been wrong in the pessimistic direction
+  all session; this one deserves stating.
+
+  ✅ **DRIVER IDENTIFIED — INTEREST COMPOUNDING, not a pinned stabiliser.** Instrumented on Germany and
+  Italy: the multiplier moves freely (0.62 early, ~1.27 and ~1.19–1.45 late, against a 1.5 cap) while
+  interest grows from **6%→26%** of Germany's spending and **20%→46%** of Italy's. It leans correctly and
+  is outrun. ⚠ Italy's 1.446 approaches the cap, so **the two hypotheses are stages rather than
+  alternatives** — a fix aimed only at the cap arrives after the damage. Series in `CLAUDE.md`.
 
 - 🔴 **NEW 2026-08-02 — the rating thrash's real cause is the DEFICIT term, and it is a separate defect.**
   Removing the floor cut debt-swing anomalies 60% (6,225 → 2,507) and moved rating anomalies by 1.6%
