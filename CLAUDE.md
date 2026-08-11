@@ -1337,6 +1337,75 @@ work itself, and it was the only one missing.
 **Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
 branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
 
+## A helper is not evidence its arithmetic is complete (2026-08-11)
+
+`PoliSimWidgets.InnerWidth` was built to end a subtraction that had been forgotten at four sites and
+hand-rolled at two. It shipped with **three of its four terms**, and the missing one —
+`container.margin.horizontal` — was wrong from the moment it was written, at every call site, for a full
+day, while four sites were presumed correct *because they now went through the helper.*
+
+⚠ **What made it invisible is that it had a name.** A raw subtraction invites checking; a call to
+`InnerWidth(availableWidth, _boxStyle)` reads as a solved case, and nobody re-derives a solved case.
+**Exactly the reference-class `.meta` trap one layer up**: "copy the reference meta" and "call the helper"
+both name a thing that looks decided.
+
+**What caught it: reviewing a SECOND implementation of the same idea.** `InnerHeight` arrived from
+another session with a fourth term already in it, and the only reason to look was that adopting foreign
+code demands a review that one's own does not. **Extracting a twin is the cheapest audit a helper ever
+gets** — and the twin here found a defect in the original.
+
+## The accessor pattern closed the label-clipping class where seven site-specific fixes did not (2026-08-11)
+
+The class's signature is **a constant standing in for measured content**. Seven site-specific fixes did
+not end it. Three accessors did, each replacing one constant, each read by BOTH the reserve and the
+drawing so the two cannot disagree:
+
+| Constant | Replaced by | Measures |
+|---|---|---|
+| `_labelStyle.fontSize + 8f + _buttonStyle.fixedHeight` | `CalendarAndSpeedControlsHeight` | the real status string, at the width it wraps into, in the style it renders in |
+| `_tabButtonStyle.fixedHeight` | `ConsolidatedTabRowHeight` | the larger of the base height and the stacked icon+label, plus row margin |
+| `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f` | `BudgetProcessHeaderHeight` | all five pieces drawn above the columns row |
+
+**Instance #12, measured against a fresh capture at every step:**
+
+| | Commit | L | T | R | B | clipped |
+|---|---|---|---|---|---|---|
+| before | — | 0 | 0 | **841** | **663** | 54 |
+| `InnerWidth` 4th term + tab margins | `b42ff20` | 0 | 0 | 0 | **663** | 54 |
+| two accessors | `8a476bf` | 0 | 0 | 0 | 0 / **1508** | 16 |
+| `BudgetProcessHeaderHeight` | `ea612d9` | 0 | 0 | 0 | 0 | **0** |
+
+Confirmed at **1600×929 and 2560×1419**. This is the same discipline `UiContainmentGuard`'s doc names for
+`StatTile`: one measurement, two readers.
+
+## You cannot measure what is not a value (2026-08-11)
+
+`headerAllowance` was a constant **because it had to be**: the three strings above the Budget columns row
+existed only as arguments to `GUILayout.Label`, and a string that exists only at its draw site cannot be
+measured by anything. The accessor was impossible until `BudgetProcessDescription` became a const and
+`BuildFullScreenInterruptText` / `BuildBudgetBillStatusText` became methods.
+
+⚠ **So "build it so it can be measured" is step ONE of the accessor pattern, not an incidental refactor
+that happened alongside it** — and it will recur at every remaining site, because every remaining
+constant-standing-in-for-content is standing in for something that is not yet a value. `BuildTimeStatusText`
+was the same move one screen earlier. Expect the split before expecting the accessor.
+
+## A ruling with an unbuilt half is worse than an open question (2026-08-11)
+
+The net-creditor bound was **ruled on 2026-08-02**, in detail, with four numbered reasons: fix the cause
+by routing SWF returns through the fiscal reaction multiplier, **and** keep a deliberately wide
+non-binding runaway guard.
+
+**Half shipped.** `NetCreditorRunawayGuardPercent = 1000f` exists and the −300% bound is retired. Routing
+SWF returns through the multiplier **appears nowhere in `MacroSystem`** — audited 2026-08-11, nine days
+later.
+
+⚠ **An open question is at least visibly open. A ruling reads as CLOSED, so nothing watches it** — the
+entry was skimmed as settled every time the document was read, including by the sessions that read it
+looking for work. The failure is not that the work was skipped; it is that the record made skipping it
+invisible. **When recording a ruling, record which half is built** — and re-derive that from the code, not
+from the ruling.
+
 ## Rule 14, extended: a check is evidence only if it RUNS in the environment that cites it (2026-08-11)
 
 **Python is not installed on this machine.** The `py` launcher registers 3.11 at
