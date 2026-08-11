@@ -1337,6 +1337,32 @@ work itself, and it was the only one missing.
 **Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
 branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
 
+## The reference-class trap — one shape, three instances, and a cheap guard (2026-08-11)
+
+**A name-keyed lookup crosses a category boundary without complaint.** Three instances in one week, all
+the same shape and all found by a capture rather than by review:
+
+| # | The lookup | Crossed into | Damage |
+|---|---|---|---|
+| 1 | copy the nearest `.meta` | icon template → **Chrome**, which needs `isReadable: 1` | first wired build rendered an empty desk |
+| 2 | copy the nearest `.meta` by filename | `emblem_party_*` (full-colour) → **`mark_party_*`** (white-on-alpha) | four marks imported DXT5 |
+| 3 | `DisplayName.Of(identifier)` | `SectorType.Energy` → **`PolicyNodeId.Energy`** | economic sector labelled "Energy (Spending)" |
+
+**The common structure: two things share a NAME while belonging to different classes**, and the lookup
+is keyed on the name. `Chrome/` and `Icons/` are both sprites; `emblem_party_*` and `mark_party_*` are
+both party art in one folder; `SectorType.Energy` and `PolicyNodeId.Energy` are both "Energy".
+**Adjacency is not sameness**, and every one of these reads as obviously correct at the call site.
+
+⚠ **`PolicyNodeId.Housing`'s own description says *"distinct from the HousingAssistance welfare
+program"*** — the collision was documented in the very table the lookup reads, and the lookup still
+crossed it. A warning in the data does not protect a lookup over that data.
+
+✅ **THE GUARD, and it is cheap: a name-keyed lookup must be scoped to ONE class, and the scope belongs
+in the API rather than in the caller's memory.** `DisplayName` now has two entry points —
+`Of` (curated policy names) and `Spaced` (spacing only) — so choosing wrongly requires naming the wrong
+method rather than forgetting a caveat. The same move as `InnerWidth`/`InnerHeight` and the three height
+accessors: **when two things must not be confused, give them two names.**
+
 ## A next-steps marker is a claim like any other, and goes stale the same way (2026-08-11)
 
 Item 9 §A's **"⚠ NEXT SESSION STARTS HERE"** block said Budget was the only converted screen and offered

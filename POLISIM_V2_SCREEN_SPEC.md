@@ -298,6 +298,37 @@ Totals: `1.5px #8A7A5C` above, label `10 bold ls .14em inkFaint`, value `16 bold
 
 29 rows × 36px = 1044px against a viewport of roughly 22 rows, so **it scrolls, and that is intended**.
 
+#### A.9b The read-only row, and the figure with no denominator — ADDED 2026-08-11
+
+Every read-only row this spec described was a **proportion**: a condition index out of 100, a share of
+GDP, a seat share. `LedgerRow.DrawReadOnly` was written assuming one, and the Statistics conversion found
+figures that are not — **GDP per capita is currency per person, with no ceiling to be a fraction of** —
+and any figure not yet computed has no value at all.
+
+⚠ **An empty track is NOT neutral. It reads as a gauge sitting at zero**, which is a confident wrong
+number: worse than drawing nothing, and exactly the failure class this project keeps finding.
+
+✅ **A NEGATIVE FILL MEANS "NO GAUGE" — draw nothing in the track lane.** It covers both cases, because
+in both the honest statement is *there is no proportion here*, never *the proportion is zero*.
+
+**This EXTENDS an existing convention rather than adding a second one.** `LedgerRow.Draw`'s `barFraction`
+has meant "no bar" at negative since the Budget conversion. One idiom, two methods, one sign rule.
+
+#### A.9c Where Parliament's row spec actually lives — CORRECTED 2026-08-11
+
+⚠ **§A.10 is BUTTONS.** It has been cited as Parliament's reference and does not resolve there.
+Parliament's legend rows are governed by **board 1c** and by the **D2 disposition** in the pass-3 table
+below (*"verdict + seat-weighted lean bar; per-row `VOTES` deleted"*).
+
+**Trailing column ruled 2026-08-11: the seat PERCENTAGE, with the seat count as the figure** — the same
+split the Statistics sector rows take. D2 having deleted the per-row `VOTES` column is precisely what
+leaves that column free for it.
+
+⚠ **The legend's colour is load-bearing and survives the conversion by moving, not by staying.** It keys
+each row to its own arc in the chart above; an emblem drawn *instead* of the swatch broke that once
+already. `DrawReadOnly` draws its gauge in `barInk`, so the party hue now colours a bar that is also
+proportional to the seat share — one mark carrying two readings where a solid swatch carried one.
+
 **Scroll view treatment — all 16 of them, not just this one:**
 `ui_scrollbar_track_v` recessed *into* the paper (baked inner shadow), **`14px` wide, inset `6px` from
 the paper's right edge**, full ledger height. `ui_scrollbar_thumb_v` brass, proportional, **minimum

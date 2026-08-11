@@ -110,7 +110,16 @@ namespace PoliSim.UI
                 float percent = totalSeats > 0 ? count / (float)totalSeats * 100f : 0f;
 
                 GUILayout.BeginHorizontal();
-                Rect swatchRect = GUILayoutUtility.GetRect(labelStyle.fontSize, labelStyle.fontSize, GUILayout.ExpandWidth(false));
+
+                // ⚠ THE MARKER LANE TAKES THE ROW'S FULL HEIGHT, and the swatch is centred inside it.
+                // Requesting a `fontSize`-tall rect left the swatch and emblem pinned to the TOP of a row
+                // that is now two lines tall, while the name beside them sits vertically centred — which
+                // read as a misalignment in the first capture after this conversion. The lane is sized to
+                // the row; only the mark inside it is small.
+                float markerSize = labelStyle.fontSize;
+                float rowHeight = LedgerRow.Height(labelStyle);
+                Rect markerLane = GUILayoutUtility.GetRect(markerSize, rowHeight, GUILayout.ExpandWidth(false));
+                var swatchRect = new Rect(markerLane.x, markerLane.y + (rowHeight - markerSize) * 0.5f, markerSize, markerSize);
 
                 // The party's own emblem, where a flat colour swatch used to be. These four sprites were
                 // delivered and imported weeks ago and had never once been drawn - see IconLibrary.GetFlag
@@ -143,10 +152,36 @@ namespace PoliSim.UI
                 Texture2D emblem = IconLibrary.GetPartyEmblem(archetype);
                 if (emblem != null)
                 {
-                    Rect emblemRect = GUILayoutUtility.GetRect(labelStyle.fontSize, labelStyle.fontSize, GUILayout.ExpandWidth(false));
-                    GUI.DrawTexture(emblemRect, emblem, ScaleMode.ScaleToFit);
+                    Rect emblemLane = GUILayoutUtility.GetRect(markerSize, rowHeight, GUILayout.ExpandWidth(false));
+                    GUI.DrawTexture(
+                        new Rect(emblemLane.x, emblemLane.y + (rowHeight - markerSize) * 0.5f, markerSize, markerSize),
+                        emblem, ScaleMode.ScaleToFit);
                 }
-                GUILayout.Label($"  {PartyArchetypeData.GetDisplayName(archetype)}: {count} seats ({percent:F0}%)", labelStyle);
+
+                // ⚠ v2.0 CONVERSION, 2026-08-11 — the legend row becomes a READ-ONLY LEDGER ROW, and the
+                // swatch's second job MOVES TO THE GAUGE rather than being dropped. The block above
+                // spells out why that colour cannot simply go: it is what keys each row to its own arc in
+                // the chart, and an emblem drawn INSTEAD of it broke that correspondence once already.
+                //
+                // `DrawReadOnly` draws its gauge in `barInk`, so passing the party's own hue keeps the
+                // correspondence exactly — and improves on a swatch, because a bar in that hue is
+                // PROPORTIONAL to the seat share as well as keyed to it. One mark carrying two readings
+                // where a solid block carried one. The swatch stays as well, since it is what the emblem
+                // is drawn over and what a missing emblem falls back to.
+                //
+                // Per Elias's ruling: seat COUNT is the figure, seat PERCENTAGE the trailing column — the
+                // same split the Statistics sector rows took. D2 deleted the only competing occupant of
+                // that column (the per-row VOTES figure), so nothing contends for it.
+                Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(labelStyle), GUILayout.ExpandWidth(true));
+                LedgerRow.DrawReadOnly(
+                    rowRect,
+                    PartyArchetypeData.GetDisplayName(archetype),
+                    totalSeats > 0 ? count / (float)totalSeats : -1f,
+                    count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " seats",
+                    percent.ToString("F0", System.Globalization.CultureInfo.InvariantCulture) + "%",
+                    PoliSimTheme.Party(archetype),
+                    labelStyle,
+                    labelStyle);
                 GUILayout.EndHorizontal();
             }
         }
