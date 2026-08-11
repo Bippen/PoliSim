@@ -45,8 +45,24 @@ namespace PoliSim.EditorTools
         /// `LedgerRow.Height` derives from the font metric: at this size two wrapped lines fit, and at
         /// 1440p they would not have under a fixed row height.
         /// </summary>
-        private const float ViewWidth = 1600f;
-        private const float ViewHeight = 950f;
+        /// ⚠ **OVERRIDABLE SINCE 2026-08-11 — `-shotwidth=` / `-shotheight=`, ruled by Elias.** Everything
+        /// this project has ever measured about layout came from ONE window size, and that turned out to
+        /// scope three separate conclusions without any of them saying so: the `LedgerRow` squeeze floor
+        /// ("never engages" — at 1600×929), instance #12's closure ("0 of 55 clipped" — at 1600×929), and
+        /// `ScreenEdgeCheck` itself, which can only ever answer for the captures it is given. A second
+        /// resolution is a capture-config change rather than a code change, and it converts those three
+        /// from resolution-scoped claims into real ones.
+        private static float ViewWidth => ArgFloat("-shotwidth=", 1600f);
+        private static float ViewHeight => ArgFloat("-shotheight=", 950f);
+
+        private static float ArgFloat(string prefix, float fallback)
+        {
+            string raw = Arg(prefix, null);
+            return raw != null && float.TryParse(raw, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out float value) && value > 0f
+                ? value
+                : fallback;
+        }
 
         [InitializeOnLoadMethod]
         private static void ReattachAfterDomainReload()

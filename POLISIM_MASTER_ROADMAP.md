@@ -832,16 +832,34 @@ against the actual code, never as a fit already established.**
 are genuinely open and not yet escalated. Once a question is waiting on a named party it moves, so this
 list stays short enough to actually read.
 
-- **UI has only ever been captured/checked at one window size (1600x929)** —
-  `screenshot_edge_check.py` and (new 2026-08-11) `ledger_geometry_check.py` both say so in their own
-  headers. The latter was built after Elias reported the Budget ledger's right-hand column looking cut
-  off at 1440p; it re-derives `LedgerRow.Columns`' geometry from source and finds no containment failure
-  at 2560x1440 (see `CLAUDE.md`, "1440p check on the Budget ledger's trailing column"), but that is
-  arithmetic, not a render. Nobody is blocked on this — a real Editor capture pass at 2560x1440 (and
-  ideally 1920x1080 and a narrow window) has simply never been run.
+- ✅ **RULED 2026-08-11 — CAPTURE AT 1440p AS WELL. Done the same day, and it came back clean.**
+  `UiScreenshotCapture` now takes `-shotwidth=` / `-shotheight=`, defaulting to the old 1600×950.
 
-- **Real reporting lag for data releases** (Continuous Time Migration) — optional realism refinement, not
-  required for a first pass. Nobody is blocked on it; it has simply never been prioritised.
+  **Result at 2560×1440** (actual Game View 2560×1419, the 21px being window chrome): **55 captured, 0
+  failed, 0 text overflows, 0 containment escapes, 0 clipped edges.** Clean at both sizes.
+
+  **Elias's reasoning, recorded so it is not re-litigated:** a second resolution is a capture-config
+  change rather than a code change, and it converts three separate resolution-scoped claims into real
+  ones. **All three had been stated without saying what they covered:**
+  1. `LedgerRow`'s 0.35 squeeze floor "never engages" — measured across 106 Repaint geometries, **all at
+     1600×929**. Now confirmed at 1440p too, by render rather than by arithmetic.
+  2. Instance #12's closure, "0 of 55 clipped" — same single size. Now 0 of 55 at both.
+  3. `ScreenEdgeCheck` itself, which can only ever answer for the captures it is handed.
+
+  ⚠ **This RETIRES `ledger_geometry_check.py` without porting it.** That script existed only because no
+  1440p *render* existed — it re-derived `LedgerRow.Columns` from source to answer arithmetically what
+  nobody could answer by looking. A real capture at that size answers it better, so the script is no
+  longer cited as evidence anywhere. It is also, as of 2026-08-11, unrunnable here (no Python), which is
+  the second reason not to port it.
+
+  **Still not covered:** 1920×1080 and a deliberately narrow window. Nobody is blocked; the two sizes now
+  captured bracket the range that has ever produced a report.
+
+- ✅ **RULED 2026-08-11 — REAL REPORTING LAG: CLOSED AS WON'T-DO. Reopenable on request.**
+  An optional realism refinement to Continuous Time, which is itself deferred behind v2.0 — so this is an
+  optional refinement to deferred work, and it has sat unprioritised without blocking anything since it
+  was raised. Closing it is not a judgement that it is a bad idea; it is a judgement that a question
+  nobody is waiting on should not sit in a list people read looking for work.
 
 - ✅ **RULED 2026-08-02 — the net-creditor bound: FIX THE CAUSE, keep a non-binding guard.** Route SWF
   returns through the fiscal reaction multiplier so the stabiliser can reach them, **and** retain a
@@ -861,6 +879,29 @@ list stays short enough to actually read.
 
   ⚠ **Report the mechanism before proposing the implementation** — same shape as the debt-floor
   investigation, and the same reason: three wrong theories preceded the right one on the batch-run hang.
+
+  🔴 **STATUS AUDIT 2026-08-11 — THIS RULING SHIPPED HALF.** The guard exists
+  (`SimulationManager.NetCreditorRunawayGuardPercent = 1000f`, applied at line ~2714) and the −300% bound
+  is gone. **The cause-fix does not exist**: routing SWF returns through the fiscal reaction multiplier
+  appears nowhere in `MacroSystem`. So the record read as closed while the principled half was never
+  built — which is worse than an open question, because nothing was watching it.
+
+  ✅ **RULED 2026-08-11 — BUILD IT, mechanism first.** Elias's ruling, with the original instruction
+  restated because it is the part most likely to be skipped: **report the mechanism before implementing.**
+
+  ⚠ **AND SAY WHAT HAPPENS TO THE GUARD.** Once the cause is fixed, `NetCreditorRunawayGuardPercent`
+  becomes one of two very different artifacts, and the record must state which: **a guard that never
+  engages** (the intended outcome — dead code kept as a runaway backstop, and per the original ruling *"if
+  any country reaches it, that is a bug report, not a clamp"*), or **a guard still holding a runaway
+  back**, which would mean the cause-fix did not work. Measuring that distinction is part of the job, not
+  a follow-up to it.
+
+  **Sequenced ahead of the C4 deficit-term work**, which reads the value this unclamps.
+
+- 🔴 **RULED 2026-08-11 — THE C4 DEFICIT TERM IS THE NEXT FISCAL-ENGINE WORK *AFTER* THE SWF CAUSE-FIX,
+  not before it.** The reasoning is the sequencing itself: this investigation READS the net-creditor
+  value that the SWF fix unclamps, so running it first would investigate a signal that is about to
+  change — the same waste the debt floor caused when it hid this very term. Untouched since 2026-08-02.
 
 - 🔴 **NEW 2026-08-02 — the rating thrash's real cause is the DEFICIT term, and it is a separate defect.**
   Removing the floor cut debt-swing anomalies 60% (6,225 → 2,507) and moved rating anomalies by 1.6%
@@ -936,6 +977,17 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 - ~~🔴🔴 INSTANCE #12 IS LIVE ON `main`~~ — superseded by the entry above; kept so the progression is
   legible rather than looking like it was always fine.
 
+- ✅ **RULED 2026-08-11 — DO NOT EXTRACT the remaining layout work from `stranded/politics-elections`.**
+  Elias's reasoning, which is the ruling: **instance #12 measures zero at both captured resolutions, so
+  nothing is pulling that code across** — and extracting layout code with no failing measurement to
+  verify it against is the exact failure mode this session spent its length on. Every extraction that did
+  land (`InnerWidth`'s fourth term, the three accessors) was justified by a number that moved. Revisit if
+  a capture shows something, or when item 10 lands.
+
+- ✅ **RULED 2026-08-11 — `stranded/politics-elections` STAYS AS-IS until item 10 is scheduled.** It is
+  pushed, so the work is safe off-machine; merging ~3,500 lines of unreviewed simulation code into `main`
+  is precisely what the branch exists to prevent.
+
   **Measured, not inferred.** A fresh capture of current `main` (`p2main_*`) run through
   `ScreenEdgeCheck`: **55 captures, 54 clipped, exit 1.** Identical to the `run_*` set from before any
   fix existed. The 55th is the full-bleed menu screen, correctly never flagged — which also resolves the
@@ -990,7 +1042,8 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 
   ⚠ **WHAT IT ENUMERATES** (rule 14): for each PNG matching the pattern it is given, **exactly four lines
   of pixels** — the margin column and row on each side. Not the interior, not any screen outside the
-  pattern, and **not any resolution other than the one captured**. It reports FLUSHNESS, never overrun
+  pattern, and **only the resolutions actually captured — which since 2026-08-11 is two, 1600×929 and
+  2560×1419, both clean.** It reports FLUSHNESS, never overrun
   magnitude: clipped content stops at the boundary, so the pixels past it are absent from the capture and
   cannot be measured. **A clean run says nothing about how much slack a screen has left.** It flags
   **right and bottom only** — GUILayout grows rightward and downward, so that is where an over-wide group
@@ -1025,13 +1078,13 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   `menu_pattern_tile` shape — an asset landing ahead of its consumer — but recorded up front this time
   instead of after weeks of three documents calling it a gap.
 
-- ⚠ **The 0.35 squeeze floor conclusion is NARROWER than it was recorded as (2026-08-11).**
-  `LedgerRow.Columns`'s squeeze was measured across 106 Repaint geometries and found never to engage —
-  **all of them at 1600×929**, the only resolution the capture harness produces. That is "confirmed at
-  one resolution", never "the floor is unreachable". `ledger_geometry_check.py` (repo root) exists
-  specifically because of this: it ports `Columns()` and the width chain feeding it to evaluate 2560×1440,
-  which no capture on disk uses. **A geometry conclusion drawn from captures is scoped to the capture
-  resolution**, which is the same shape as everything else in rule 14.
+- ✅ **The 0.35 squeeze floor — now confirmed at TWO resolutions (2026-08-11).** It was recorded as
+  "never engages" from 106 Repaint geometries **all at 1600×929**, which was "confirmed at one
+  resolution" stated as if it were "the floor is unreachable". Following Elias's 1440p ruling it is
+  confirmed by render at 2560×1419 as well: 0 overflows, 0 escapes, 0 clipped edges.
+
+  **A geometry conclusion drawn from captures is scoped to the capture resolution** — the same shape as
+  rule 14, and the reason this entry existed at all. Still scoped to those two sizes, not to all.
 
 ### Live, unblocked work carried out of section A
 
