@@ -1408,21 +1408,51 @@ that happened alongside it** — and it will recur at every remaining site, beca
 constant-standing-in-for-content is standing in for something that is not yet a value. `BuildTimeStatusText`
 was the same move one screen earlier. Expect the split before expecting the accessor.
 
-## A ruling with an unbuilt half is worse than an open question (2026-08-11)
+## An absence claim greped from ONE FILE is rule 14 inverted (2026-08-11)
 
-The net-creditor bound was **ruled on 2026-08-02**, in detail, with four numbered reasons: fix the cause
-by routing SWF returns through the fiscal reaction multiplier, **and** keep a deliberately wide
-non-binding runaway guard.
+⚠ **THIS ENTRY ORIGINALLY READ "A ruling with an unbuilt half is worse than an open question", and its
+worked example was false.** Corrected the same day, in place, with the original claim quoted rather than
+deleted — the discipline rule 10 requires for a reversal, applied to a lesson.
 
-**Half shipped.** `NetCreditorRunawayGuardPercent = 1000f` exists and the −300% bound is retired. Routing
-SWF returns through the multiplier **appears nowhere in `MacroSystem`** — audited 2026-08-11, nine days
-later.
+**The false claim:** that the 2026-08-02 net-creditor ruling *"shipped half"* — the 1000% guard built,
+the cause-fix never written.
 
-⚠ **An open question is at least visibly open. A ruling reads as CLOSED, so nothing watches it** — the
-entry was skimmed as settled every time the document was read, including by the sessions that read it
-looking for work. The failure is not that the work was skipped; it is that the record made skipping it
-invisible. **When recording a ruling, record which half is built** — and re-derive that from the code, not
-from the ruling.
+**What is actually true: `0386e83` shipped BOTH candidate fixes**, and a future reader who finds one
+should not assume the other was declined:
+1. **Returns run INSIDE the fiscal reaction multiplier.** `SimulationManager.cs:2682` —
+   `(theoreticalRevenue * effectiveCollectionEfficiency + swfReturns) * fiscalReactionMultiplier`. The
+   comment names the old `... * multiplier + swfReturns` form as what it replaced.
+2. **`SwfStructuralDrawPercentPerYear = 3f`** — Norway's *handlingsregel*. The budget receives a smooth
+   draw proportional to fund SIZE; **the realised market return no longer reaches the budget at all**,
+   which also closed a double-count where the fund kept the return and the government spent it.
+
+**How the error was made: `grep` over `MacroSystem.cs` returned nothing, and that was reported as
+absence from the codebase.** The fix lives in `SimulationManager.cs`.
+
+⚠ **This is rule 14 inverted, and it happened IN THE ACT OF WRITING THE RULE 14 ENTRY.** The rule says a
+check is evidence only for claims its enumeration contains. A one-file grep enumerates one file; the
+claim was about the whole tree. **A passing check that cannot fail is one failure mode; an absence claim
+whose search cannot find is the mirror of it, and it is easier to make, because a grep returning nothing
+feels like a result.**
+
+**What it cost — three artifacts downstream of one grep:**
+- an **escalation** to Elias, in a `RULINGS NEEDED` block;
+- a **ruling made on a false premise** ("SWF cause-fix: BUILD"), for work already built;
+- a **worked example in the permanent record** — this entry — teaching the wrong lesson from it.
+
+**How it surfaced, which is the part worth keeping:** *no check found it.* It surfaced because the next
+pass opened `SimulationManager.cs` to build the thing, and the thing was there. **A grep-shaped error in
+a file nobody reopens would still be standing** — and would have been "confirmed" by every later reading
+of the document it had been written into.
+
+✅ **THE CHEAP GUARD, and it costs one command: before escalating an absence, search the whole tree, not
+the file you expect.** `grep -rn <symbol> Assets/Scripts/` would have returned line 2682 immediately.
+State the search that was run when reporting an absence, so its scope is visible to the reader the way a
+check's enumeration now is. **"I did not find it in X" and "it does not exist" are different claims**, and
+only the first is ever what a grep supports.
+
+**The original lesson still holds** where it applies — a ruling reads as closed, so nothing watches it,
+and when recording one it is worth recording which half is built. It just was not what happened here.
 
 ## Rule 14, extended: a check is evidence only if it RUNS in the environment that cites it (2026-08-11)
 

@@ -906,14 +906,36 @@ list stays short enough to actually read.
   ⚠ **Report the mechanism before proposing the implementation** — same shape as the debt-floor
   investigation, and the same reason: three wrong theories preceded the right one on the batch-run hang.
 
-  🔴 **STATUS AUDIT 2026-08-11 — THIS RULING SHIPPED HALF.** The guard exists
-  (`SimulationManager.NetCreditorRunawayGuardPercent = 1000f`, applied at line ~2714) and the −300% bound
-  is gone. **The cause-fix does not exist**: routing SWF returns through the fiscal reaction multiplier
-  appears nowhere in `MacroSystem`. So the record read as closed while the principled half was never
-  built — which is worse than an open question, because nothing was watching it.
+  ⚠ **A "STATUS AUDIT 2026-08-11" ENTRY HERE CLAIMED THIS RULING SHIPPED HALF. THAT WAS WRONG, and the
+  claim is quoted rather than deleted** — it read *"The cause-fix does not exist: routing SWF returns
+  through the fiscal reaction multiplier appears nowhere in `MacroSystem`."* It was produced by grepping
+  **one file**. The fix is in `SimulationManager.cs`, and a tree-wide search finds it immediately. See
+  `CLAUDE.md`, *"An absence claim greped from ONE FILE is rule 14 inverted"*, for what that cost.
 
-  ✅ **RULED 2026-08-11 — BUILD IT, mechanism first.** Elias's ruling, with the original instruction
-  restated because it is the part most likely to be skipped: **report the mechanism before implementing.**
+  ✅ **FULLY IMPLEMENTED — `0386e83`, "Fix the cause: SWF returns now run through the fiscal reaction
+  multiplier". BOTH candidate fixes shipped, not one**, and both are recorded here because a reader who
+  finds one may otherwise assume the other was declined:
+  1. **Inside the multiplier.** `SimulationManager.cs:2682` —
+     `(theoreticalRevenue * effectiveCollectionEfficiency + swfReturns) * fiscalReactionMultiplier`,
+     replacing `... * fiscalReactionMultiplier + swfReturns`, which had put the fastest-growing component
+     of a net creditor's revenue permanently beyond the one mechanism that pushes back.
+  2. **Returns treated as a stock, not budget revenue.** `SwfStructuralDrawPercentPerYear = 3f` — Norway's
+     *handlingsregel*. The budget takes a smooth draw proportional to fund SIZE; the realised market
+     return never reaches it. This also closed a **double-count**, where the fund kept the return and the
+     government spent the same figure.
+
+  🔴 **WHAT REMAINS IS MEASUREMENT, NOT CODE.** None of the ruling's stated consequences were ever
+  verified after `0386e83`:
+  - **The guard.** `DebtClampDiagnostic` reports runaway-guard hits, and the roadmap's "zero hits before
+    and after" predates this commit. Until it is re-run, whether
+    `NetCreditorRunawayGuardPercent = 1000f` is **a backstop that never engages** or **still holding a
+    runaway back** is unknown — different artifacts, distinguished only by measurement.
+  - **The six debt equilibria**, against their recorded baselines (USA ~142%, Italy ~107%, France ~90%,
+    Germany ~35%, Sweden ~13%, Poland ~26%). ⚠ **If they moved, that is a RECALIBRATION and must be named
+    as one**, not absorbed as a bug fix.
+  - **France**, specifically: it reached the old bound, sat near it, and was the only country still
+    showing year-over-year rating movement. It is the case that distinguishes a cause-fix from a symptom
+    pushed further out.
 
   ⚠ **AND SAY WHAT HAPPENS TO THE GUARD.** Once the cause is fixed, `NetCreditorRunawayGuardPercent`
   becomes one of two very different artifacts, and the record must state which: **a guard that never
