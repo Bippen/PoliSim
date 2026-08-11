@@ -1304,15 +1304,114 @@ so a few hundred settle frames became an unbounded list. Dedupe now happens at R
 200-entry hard cap. A guard that brings down the run it is guarding reads as flakiness, which is worse
 than no guard.
 
-**First run: 55 captured, 0 failed, 200 overflows (cap reached).** Almost all are money figures in
-`LedgerRow`'s figure column on Budget → Tax and Spending, e.g. `"$1.62T" needs 22.9 in 11.3 at 8px`.
+**First run: 55 captured, 0 failed, 200 overflows (cap reached).** Almost all money figures in
+`LedgerRow`'s figure column, e.g. `"$1.62T" needs 22.9 in 11.3 at 8px`. The suspected cause was the
+trailing-column change of the same day raising `fixedTotal` into `Columns()`'s 0.35-floor squeeze.
 
-⚠ **NOT YET ESTABLISHED whether these pre-date the trailing-column change of the same day.** That
-change lets the trailing column claim up to 34% of the row, which raises `fixedTotal` and so makes
-`Columns()`'s squeeze bite harder and more often — the squeeze floor is 0.35, low enough to crush a
-figure column to single digits. That is a *plausible* mechanism, not a measured one, and this class
-has punished plausible mechanisms twice. Measure `row.width` and the squeeze factor at these sites
-before changing anything.
+**RESOLVED 2026-08-11, and the suspect was innocent — see the next section. Every one of those 200
+was a false positive, including both figures quoted above.**
+
+## Instance #4 of the wrong-plausible-mechanism pattern — and the phase split that caught it (2026-08-11)
+
+**The guard was measuring during the IMGUI Layout pass.** Raising its cap gave the true count: **608
+overflows, not 200** — 200 was the ceiling, not the number. Splitting by `Event.current.type` gave the
+real answer:
+
+```
+608  [Layout]        row.width = 1.0, -128.0, -157.8
+  0  [repaint]       row.width = 472.9 … 790.0,  squeeze = 1.000 everywhere
+```
+
+During Layout, `GUILayoutUtility` returns a dummy rect — measured here at width 1.0, and negative once
+a caller subtracts padding from it. Every width derived from it is meaningless, so every comparison
+against it "fails". **Nothing is drawn during Layout, so nothing can clip during Layout.**
+
+Both named suspects were cleared by measurement, not by argument:
+
+- **The trailing-column change.** At every real row width `fixedTotal` (406–505) sits well under
+  `available` (593–630); it never reaches the squeeze. Running the same build with the change disabled
+  produced **22 Repaint overflows** — the old caption bug at exactly 83.8px. The change *removes*
+  overflows. It was the fix, never the cause.
+- **The 0.35 squeeze floor.** `squeeze = 1.000` in all 106 Repaint geometries. It never engages at a
+  real row width. It is not too low; it is untested by any real layout, and appeared in the numbers
+  only because a bogus width forced it — pinning every column to floor × 0.35, which is precisely the
+  30.2 / 22.6 / 11.3 that got written up as evidence.
+
+⚠ **WHAT DISTINGUISHED THIS ONE, and the reason it is worth a section.** Neither reading the code nor
+measuring at a single site would have found it. Both suspects survive any amount of code reading, and
+a measurement at one site returns the same bogus width the guard already reported. What broke it was
+measuring **the same quantity across both event phases** and noticing that one of them was
+structurally meaningless. The generalisation: *when an instrument reports something implausible, check
+whether the instrument is sampling a state in which the quantity has no meaning* — before believing
+either the instrument or the theory that explains it.
+
+⚠ **AND THE MECHANISM THAT WAS WRONG WAS MINE**, proposed and written into this file the day before as
+"plausible, not measured". Recording the uncertainty honestly is what made it cheap to correct; it did
+not stop it from being wrong. Three counts to keep straight: **11 instances of the clipping class, 4
+of the wrong-plausible-mechanism pattern within it.**
+
+**Second lesson, unrelated to the class: the cap silently understated by two thirds.** A capped list
+bounds memory correctly and reports totals incorrectly. `TotalViolations` is now counted before the
+cap and the driver fails on that, printing how many went unprinted.
+
+## The widened guard: 144 at Repaint, and the class is NOT closed (2026-08-11)
+
+Coverage was widened past the single choke point, because hooking only `MeasuredLabel` instruments
+the labels that were *hardest* to fit and skips every label that fit on the first try.
+`LedgerRow.DrawNameCell`'s two fast paths draw through raw `GUI.Label`; each tests one axis and leaves
+the other unexamined. A vertical check was added at the same time — the row-pitch class had no
+coverage at all.
+
+**Result: 55 captured, 0 failed, 144 Repaint violations — 33 wide, 111 tall.** Two distinct defects,
+both invisible to the previous guard, both confirmed against the captures rather than argued.
+
+### The `wide` class — raw enum names, broken mid-word (33, 8 distinct)
+
+`MeansTestedWelfare` needs 183.1 in 123.0; `VeteransAffairsDiscretionary` needs 257.0 in 188.8. These
+are **unformatted enum identifiers reaching the UI** — no display-name formatter, so no space for the
+wrap to break on.
+
+⚠ **The failure is not what the check's name suggests, and the correction matters.** IMGUI does not
+overflow an unbreakable token — it breaks mid-word. `run_05c_budget_welfare_deep.png` renders
+`NegativeIncomeTax` as **"NegativeInco / meTax"**: measured as fitting, and unreadable. So the
+predicate (widest unbreakable run > column) selects the right rows, but the consequence is a mid-word
+break rather than a spill. *The check was right and the reasoning behind it was wrong* — which is the
+same shape as the section above, caught faster because the capture was looked at.
+
+The real fix is a CamelCase display-name formatter, which removes the cause and simultaneously gives
+the wrap something to break on. **Not yet done.**
+
+### The `tall` class — real geometry, currently inert ink (111, 14 distinct)
+
+Uniformly `needs 26.1 tall in 24.0 at 20px`, at `PolicyScreenStatsRenderer`'s stat chips.
+`LineHeightFor` returns `max(style.lineHeight, fontSize + 4)` = 24.0, but what renders is
+`CalcSize().y` = 26.1 — **a height derived from a font metric that is not the metric governing
+rendering.** Textbook row-pitch class.
+
+⚠ **Verified against pixels before being called a defect: it costs no ink today.** Three magnified
+crops (`tiles_3x`, `chips_5x`, `welfare_rows_3x`) show digits, capitals and the descender of "Poverty"
+all complete. The 2.1px shortfall lands in internal leading above the cap height. It is latent, not
+harmless — any glyph reaching higher in the line box (**Å / Ä / Ö, on a sv-SE machine**) or any font
+change makes it visible. Fixing it moves row pitch on every policy screen, so it is Elias's call, not
+a quiet edit.
+
+### A third defect, found by eye in the same captures and invisible to any text-fits-its-rect check
+
+`PoliSimWidgets.StatTile`'s delta label escapes the tile. Its cumulative `y` — padding, label, `20`,
+`valueHeight`, `9`, an 18px pill — exceeds `tileHeight` (92 × scale), so at 929px the green delta is
+drawn *below the tile's bottom edge*, colliding with the next tile's keyline
+(`run_02_statistics.png`, top-left). **This is text overlapping beyond its box, and it is what Elias
+reported.** The three clipping-#11 commits did not fix it and could not have.
+
+⚠ **No guard of this design can see it.** The label fits its own rect perfectly; the rect is in the
+wrong place. This validates text against the rect it was handed and never validates the rect against
+its parent. **Child-rect containment is a third axis of this class with zero coverage.**
+
+### Scope, stated so a clean run is not over-read
+
+~178 raw label calls exist across the UI layer; this covers fixed-rect drawing, which is where all
+eleven instances have landed. A clean run is evidence about that population — not about every label
+on screen, and (per the delta above) not about whether rects sit inside their containers.
 
 ## Caption column: fixed truncation, introduced unevenness (2026-08-10)
 

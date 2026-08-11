@@ -392,6 +392,32 @@ namespace PoliSim.UI
         /// So: try one line at full size, then two wrapped lines at full size, and only then fall back to
         /// shrinking. `Height` already reserves two lines, so the wrap costs no layout.
         /// </summary>
+        /// <summary>
+        /// The narrowest line word-wrapping can produce: no line can be shorter than the longest run
+        /// with no break opportunity in it. This is the width a wrapped label genuinely needs, as
+        /// distinct from the width the whole string would need unwrapped.
+        /// </summary>
+        private static float WidestUnbreakableRun(string text, GUIStyle style)
+        {
+            bool previousWrap = style.wordWrap;
+            style.wordWrap = false;
+
+            float widest = 0f;
+            string[] runs = text.Split(' ');
+            for (int i = 0; i < runs.Length; i++)
+            {
+                if (runs[i].Length == 0)
+                {
+                    continue;
+                }
+
+                widest = Mathf.Max(widest, style.CalcSize(new GUIContent(runs[i])).x);
+            }
+
+            style.wordWrap = previousWrap;
+            return widest;
+        }
+
         private static void DrawNameCell(Rect rect, string text, GUIStyle source, Color ink)
         {
             if (string.IsNullOrEmpty(text))
@@ -405,15 +431,34 @@ namespace PoliSim.UI
 
             style.wordWrap = false;
             var content = new GUIContent(text);
-            if (style.CalcSize(content).x <= rect.width)
+            Vector2 flat = style.CalcSize(content);
+            if (flat.x <= rect.width)
             {
+                // ⚠ CHECKED EVEN THOUGH IT FITS, because it was chosen on WIDTH ALONE. Nothing on this
+                // path has looked at height, and a name set at full size inside a row whose pitch was
+                // derived from a different font metric spills into the row beneath it - the row-pitch
+                // class, which has produced its own instances and which no width test can see.
+                UiOverflowGuard.Check(text, flat, rect.size, style.fontSize);
                 GUI.Label(rect, content, style);
                 return;
             }
 
             style.wordWrap = true;
-            if (style.CalcHeight(content, rect.width) <= rect.height)
+            float wrappedHeight = style.CalcHeight(content, rect.width);
+            if (wrappedHeight <= rect.height)
             {
+                // ⚠ AND THIS ONE WAS CHOSEN ON HEIGHT ALONE. CalcHeight answers "how tall once wrapped
+                // to this width" and is silent about what the wrap had to DO to get there. When a single
+                // token is wider than the column - a raw enum name like `NegativeIncomeTax`, which has no
+                // space to break on - IMGUI does not overflow. It breaks mid-word, and the row renders
+                // "NegativeInco / meTax": measured as fitting, and unreadable.
+                //
+                // So the quantity to test is the WIDEST PIECE THE WRAP CANNOT SPLIT. Wider than the
+                // column means the wrap can only proceed by cutting through a word, which is a defect
+                // whether or not any pixel leaves the box. Confirmed in
+                // screenshots/run_05c_budget_welfare_deep.png before this check was written.
+                UiOverflowGuard.Check(text, new Vector2(WidestUnbreakableRun(text, style), wrappedHeight),
+                    rect.size, style.fontSize);
                 GUI.Label(rect, content, style);
                 return;
             }

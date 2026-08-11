@@ -226,7 +226,9 @@ namespace PoliSim.UI
 
             // Shrink-to-fit has now done everything it can. If it still does not fit, the label clips -
             // there is no further resort below the floor - so record it rather than drawing it quietly.
-            UiOverflowGuard.Check(text, size.x, available, fitted.fontSize);
+            // Height goes in too: shrinking solves width, and a single line too tall for its rect is a
+            // different defect that this path has never looked at.
+            UiOverflowGuard.Check(text, size, new Vector2(available, rect.height), fitted.fontSize);
 
             GUI.Label(new Rect(rect.x, rect.y, available, rect.height), text, fitted);
             return size;

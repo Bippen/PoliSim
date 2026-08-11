@@ -209,7 +209,17 @@ namespace PoliSim.Testing
                 Debug.LogError($"OVERFLOW: {v}");
             }
 
-            return UiOverflowGuard.Violations.Count;
+            // ⚠ THE TOTAL, NOT THE LIST LENGTH. The list is capped at 200 to bound memory; the first
+            // pass reported exactly 200 and that was read as the count when it was the ceiling - the
+            // real figure was 608. Print both, and fail on the total.
+            int total = UiOverflowGuard.TotalViolations;
+            if (total > UiOverflowGuard.Violations.Count)
+            {
+                Debug.LogError($"OVERFLOW: {total - UiOverflowGuard.Violations.Count} further violation(s) " +
+                               $"beyond the {UiOverflowGuard.Violations.Count} printed above.");
+            }
+
+            return total;
 #else
             return 0;
 #endif
