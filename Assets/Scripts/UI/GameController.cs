@@ -869,7 +869,14 @@ namespace PoliSim.UI
             // 5c's real Budget Process introduce-bill flow replaced it, back to the original one-row
             // reservation.
             float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight + sectionSpacing;
-            float leftScrollHeight = areaHeight - calendarAreaHeight;
+            // ⚠ INSTANCE #12, LEFT COLUMN. The scroll view was budgeted against the RAW area height,
+            // though it lives inside a `_boxStyle` box whose padding and margin come out of that height
+            // first - so the column stood `padding.vertical + margin.vertical` taller than the clip rect
+            // containing it, and the overrun landed on whatever was drawn last: the Pause/1x/2x/3x strip,
+            // the one control visible from every tab. Floored at zero so a pathological status banner
+            // collapses the SCROLL VIEW, which can scroll, rather than pushing the pinned strip off the
+            // bottom, which cannot.
+            float leftScrollHeight = Mathf.Max(0f, PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - calendarAreaHeight);
 
             _leftColumnScrollPosition = GUILayout.BeginScrollView(_leftColumnScrollPosition, GUILayout.Height(leftScrollHeight));
             DrawTopBanner();
@@ -900,7 +907,11 @@ namespace PoliSim.UI
             // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
             // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
             float tabRowsHeight = _tabButtonStyle.fixedHeight;
-            float tabContentHeight = areaHeight - tabRowsHeight - sectionSpacing * 0.5f;
+            // ⚠ INSTANCE #12, RIGHT COLUMN — same defect, same line of reasoning. Every tab wraps its
+            // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
+            // before the content gets any. Budgeting against the raw height made the right column
+            // overrun its clip rect on every screen where it is the taller of the two.
+            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - tabRowsHeight - sectionSpacing * 0.5f;
             // Master Sequence step 5e, Phase A: game-over gating stays exactly where the OLD 18-tab
             // dispatch had it, not a blanket gate here - several old tabs were deliberately NEVER
             // gated (WorldMap/PolicyWeb/Parliament/Compass are read-only visualizations, still fully
@@ -2831,7 +2842,11 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawConsolidatedTabs(float availableWidth)
         {
-            float buttonWidth = availableWidth / ConsolidatedTabsPerRow;
+            // ⚠ EACH BUTTON ALSO CARRIES ITS OWN MARGIN, which a bare division does not account for -
+            // the exact shape InnerWidth's doc describes and exists to prevent, forgotten here because
+            // this row was written before the helper was. GUILayout inserts `_tabButtonStyle.margin`
+            // between every pair, so n buttons at `availableWidth / n` sum to wider than the row.
+            float buttonWidth = PoliSimWidgets.InnerWidth(availableWidth, null, ConsolidatedTabsPerRow, _tabButtonStyle);
 
             GUILayout.BeginHorizontal();
             // Master Sequence step 5e, Phase C: all 6 tabs carry their icon. The four icon_nav_* ones

@@ -182,7 +182,17 @@ namespace PoliSim.UI
         /// width. The single implementation of a subtraction that has been forgotten at four sites and
         /// hand-rolled at two.
         ///
-        /// <para><b>Three terms, and each one has been the bug.</b> The container's PADDING is space the
+        /// ⚠ **FOUR TERMS SINCE 2026-08-11 — the CONTAINER'S OWN MARGIN was missing, and it was missing
+        /// from my own first version.** <paramref name="outerWidth"/> is the budget the container is drawn
+        /// INTO, not the width the container ends up with, and that distinction is the whole of the fourth
+        /// term. Every caller here passes a column width that a `_boxStyle` box is then laid out inside,
+        /// and GUILayout takes that box's `margin` out of the column before the box gets anything — so the
+        /// subtraction was 8px short at all four sites from the day it was written. Measured at 1600×929:
+        /// the Politics sub-tab row ran past the clip rect and lost the right edge of "Federal Reserve" by
+        /// exactly `_boxStyle.margin.horizontal`. **A helper is not evidence that its arithmetic is
+        /// complete.**
+        ///
+        /// <para><b>Each term has been the bug.</b> The container's PADDING is space the
         /// child never sees (Budget Process, three sites, overflowing by exactly padding.horizontal). The
         /// child's MARGINS are inserted between siblings and come out of the same budget (the Policy/Laws
         /// sub-tab row, 20px short across five buttons). And the CHILD COUNT divides what is left - the
@@ -200,8 +210,38 @@ namespace PoliSim.UI
         {
             int count = Mathf.Max(1, childCount);
             float padding = container != null ? container.padding.horizontal : 0f;
+            float containerMargin = container != null ? container.margin.horizontal : 0f;
             float margins = child != null ? count * child.margin.horizontal : 0f;
-            return Mathf.Max(1f, (outerWidth - padding - margins) / count);
+            return Mathf.Max(1f, (outerWidth - padding - containerMargin - margins) / count);
+        }
+
+        /// <summary>
+        /// The vertical twin of <see cref="InnerWidth"/>, and it exists because the HEIGHT half of the
+        /// same subtraction had no helper at all — so it was never performed anywhere.
+        ///
+        /// <para>Same contract: <paramref name="outerHeight"/> is the budget the container is drawn INTO.
+        /// Both of this UI's full-height containers — the left column's box, and the box each tab wraps
+        /// its content in — reserved their internal rows against the RAW area height, so each stood
+        /// `padding.vertical + margin.vertical` taller than the clip rect containing it, and the overrun
+        /// landed on whatever was drawn last.</para>
+        ///
+        /// ⚠ **This is instance #12, and it is precisely what a width-only helper could not prevent.**
+        /// Measured 2026-08-11 at 1600×929: content sat flush against the bottom clip edge on **all 54
+        /// gameplay screens**, and the left column's Pause/1x/2x/3x strip — the control this UI can least
+        /// afford to lose, being the only always-visible one — was cut through the middle. Both text
+        /// guards reported zero throughout, correctly: every label fitted the rect it was handed.
+        ///
+        /// <para><b>No child-count or child-margin terms, deliberately.</b> A vertical row of n equal
+        /// siblings is not something this UI lays out — its stacks are heterogeneous (a status label,
+        /// then a button row), so their heights are measured individually rather than divided. Adding
+        /// the parameters "for symmetry" would invite dividing a column height by a count, which is not a
+        /// question anything here asks.</para>
+        /// </summary>
+        public static float InnerHeight(float outerHeight, GUIStyle container)
+        {
+            float padding = container != null ? container.padding.vertical : 0f;
+            float margin = container != null ? container.margin.vertical : 0f;
+            return Mathf.Max(1f, outerHeight - padding - margin);
         }
 
         public static Vector2 MeasuredLabel(Rect rect, string text, GUIStyle style, float reserveWidth = 0f)
