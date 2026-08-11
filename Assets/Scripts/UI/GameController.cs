@@ -758,6 +758,45 @@ namespace PoliSim.UI
         /// missing sprite, and this screen previously drew no background at all - so a failed import
         /// degrades to a flat dark panel, which is a fine screen, instead of taking the wash down with it.
         /// </summary>
+        /// <summary>
+        /// `ui_grain_tile` across the whole desk, tiled — v2.0 chrome, 2026-08-12.
+        ///
+        /// <para>The desk itself is `camera.backgroundColor`, not a drawn surface, so the grain is the
+        /// first thing GUI puts on it. **Drawn before everything else on purpose**: every panel, plate
+        /// and tile that follows covers it, which is exactly what §3.2 requires — *"ui_grain_tile must
+        /// never sit under a numeral plate"*, because grain behind a figure that redraws every frame
+        /// shimmers. Painting it first and letting the furniture occlude it satisfies that without any
+        /// site needing to know about it.</para>
+        ///
+        /// ⚠ **TILED WITH `DrawTextureWithTexCoords`, WHICH NEEDS WRAP MODE REPEAT — and that was checked
+        /// rather than assumed.** `ui_grain_tile.png.meta` carries `wrapU: 0` (Repeat), matching
+        /// `menu_pattern_tile`, whose Clamp-instead-of-Repeat defect is the recorded instance of getting
+        /// this wrong: Clamp does not fail, it stretches the edge pixel across the screen and reads as a
+        /// design choice.
+        ///
+        /// <para>Drawn untinted. The spec bakes the colour in — *"repeating-linear 93°
+        /// rgba(255,235,200,0.018)"* — so the sprite carries both its hue and its 1.8% opacity, and a
+        /// tint would multiply an alpha that is already deliberately almost nothing.</para>
+        /// </summary>
+        private void DrawDeskGrain()
+        {
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Texture2D grain = IconLibrary.GetChrome("ui_grain_tile");
+            if (grain == null || grain.width <= 0 || grain.height <= 0)
+            {
+                return;
+            }
+
+            GUI.DrawTextureWithTexCoords(
+                new Rect(0f, 0f, Screen.width, Screen.height),
+                grain,
+                new Rect(0f, 0f, Screen.width / (float)grain.width, Screen.height / (float)grain.height));
+        }
+
         private void DrawMenuBackground()
         {
             var screen = new Rect(0f, 0f, Screen.width, Screen.height);
@@ -799,6 +838,7 @@ namespace PoliSim.UI
         {
             InitializeStylesIfNeeded();
             RescaleStylesToScreen();
+            DrawDeskGrain();
 
             if (!_selectedPlayerCountryId.HasValue)
             {

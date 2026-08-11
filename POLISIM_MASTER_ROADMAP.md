@@ -572,11 +572,34 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
    ⚠ **SO THE NEXT v2.0 QUESTION IS NOT "WHICH SCREEN" — IT IS WHICH OF THE REMAINING TRACKS.** §A's own
    backlog names three, none of which is a row conversion:
-   1. **The unwired chrome** — 13 named sprites still needing CALL-SITE work (`ui_stamp_*`,
-      `ui_seal_official`, `ui_folder_dossier`, `ui_portrait_frame`, `ui_banner_hold`, `ui_grain_tile`,
-      `ui_scrim_takeover`, `ui_calendar_pad`, `ui_tab_spine`, `ui_subtab_on/off`, `ui_chip_outline`,
-      `ui_slider_tick`). A stamp goes on a resolved bill, a seal on a signing — each is a placement
-      decision, not a style assignment.
+   1. **The unwired chrome — ⚠ THE LIST OF 13 WAS WRONG, corrected 2026-08-12 by tracing call sites.**
+      Six of the thirteen were never IMGUI placement work at all. **This is a correction to the list, not
+      a deferral**, so nobody re-derives it:
+
+      | Sprite | Actual state |
+      |---|---|
+      | `ui_subtab_on` / `ui_subtab_off` | ✅ **WIRED** `d44ab2d` — sub-tab faces |
+      | `ui_slider_tick` | ✅ **WIRED** `d44ab2d` — ledger track scale, every 10% |
+      | `ui_chip_outline` | ✅ **NEVER UNWIRED** — 2 live call sites in `GraphRenderer` and `PublishedFigure`. It was on the list in error |
+      | `ui_stamp_carried` · `ui_stamp_rejected` | ⛔ **NO STATE TO MARK** — see below |
+      | `ui_seal_official` · `ui_seal_state` | ⛔ **CANVAS-PATH** — no signing moment exists in IMGUI |
+      | `ui_scrim_takeover` | ⛔ **CANVAS-PATH**, confirmed: no call site outside that track |
+      | `ui_tab_spine` · `ui_grain_tile` · `ui_calendar_pad` · `ui_portrait_frame` · `ui_folder_dossier` · `ui_banner_hold` | ⬅ **the real remaining placements** |
+
+      ⚠ **RULED 2026-08-12 — the stamps have nothing to stamp.** `ParliamentSystem.ApplyBillResult`
+      applies a bill's effects and the bill is discarded; there is **no resolved-bill record anywhere** —
+      no history list, no outcome field. `ui_stamp_carried` / `ui_stamp_rejected` cannot be placed
+      without one, and inventing a placement would put a state marker where no state exists, which reads
+      as a simulation bug rather than a style choice. **See the new roadmap item below.**
+
+      ⚠ **RULED 2026-08-12 — the seals are Canvas-path.** §A's own beat sheet puts them there
+      (*"SIGN → pen scratch 400ms → `ui_seal_official` drops 1.3 → 1.0 over 140ms"*), and no signing
+      moment exists in the IMGUI path to attach one to.
+
+   1a. **NEW ITEM — resolved-bill history, a SIMULATION feature rather than an art dependency.** Bills
+      currently resolve and vanish: effects applied, no record kept. That is what blocks the two stamps,
+      and **the Canvas path will want it independently** — a signing beat implies something signed, and
+      a division record implies a division to record. Scoped here so it is not mistaken for chrome work.
    2. **The Canvas path** — fully specified, nothing built: eight narrative screens, the hand-off
       envelope, the scrim. `CANVAS_SPEC.md`. The country selector is the obvious pilot, being
       self-contained and already a full-screen state.
