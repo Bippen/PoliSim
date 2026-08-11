@@ -30,7 +30,7 @@ namespace PoliSim.EditorTools
     /// would report green while eight parties shared two drawings.</para>
     ///
     /// <para><b>Both directions, because they fail differently.</b> A party with no mark is a GAP the UI
-    /// tolerates by design (<see cref="IconLibrary.GetPartyMark"/> returns null and every call site draws
+    /// tolerates by design (the mark accessor returns null and every call site draws
     /// the row without one) — so it is reported, never fatal. Two parties sharing one mark is a LIE: the
     /// hemicycle renders them identically and the player reads one bloc where there are two. That fails.
     /// </para>
@@ -43,6 +43,7 @@ namespace PoliSim.EditorTools
     public static class PartyMarkCoverageCheck
     {
         private const string EmblemFolder = "Assets/Resources/Art/UI/Emblems";
+        private const string MarkResourcePath = "Art/UI/Emblems/";
 
         public static void Run()
         {
@@ -55,9 +56,25 @@ namespace PoliSim.EditorTools
             List<(string party, string mark)> parties = CollectSeededParties();
             if (parties.Count == 0)
             {
-                Debug.LogError("  NO PARTY SEEDS FOUND - no static BuildParties() in any loaded assembly. " +
-                               "Either the seeds were removed or this check's discovery is broken; " +
-                               "either way it is not evidence of coverage.");
+                // ⚠ NOT PRESENT and BROKEN are different, and only one of them is a failure. The real
+                // party system lives on a feature branch; on a branch without it there is no claim for
+                // this check to falsify, so a red here would be permanent noise of exactly the kind that
+                // teaches people to stop reading a check. It still says loudly that it verified nothing.
+                bool partyTypeExists = AppDomain.CurrentDomain.GetAssemblies()
+                    .Any(a => a.GetType("PoliSim.Data.PoliticalParty", false) != null);
+
+                if (!partyTypeExists)
+                {
+                    Debug.LogWarning("  PARTY SYSTEM NOT PRESENT on this branch - PoliSim.Data.PoliticalParty " +
+                                     "does not exist, so there are no seeded parties to check. " +
+                                     "VERIFIED NOTHING; this is not evidence of coverage.");
+                    EditorApplication.Exit(0);
+                    return;
+                }
+
+                Debug.LogError("  NO PARTY SEEDS FOUND - PoliticalParty exists but no static BuildParties() " +
+                               "returned any. Either the seeds were removed or this check's discovery is " +
+                               "broken; either way it is not evidence of coverage.");
                 EditorApplication.Exit(1);
                 return;
             }
@@ -86,7 +103,14 @@ namespace PoliSim.EditorTools
 
                 claimed[mark] = party;
 
-                Texture2D texture = IconLibrary.GetPartyMark(mark);
+                // ⚠ Resources.Load DIRECTLY, not IconLibrary.GetPartyMark, and this is a correction.
+                // The accessor lives on the politics feature branch alongside the seeds; referencing it
+                // compiled here only because this check was verified while that branch's uncommitted
+                // code was still sitting in the working tree. On `main` it is CS0117 and takes the whole
+                // Editor assembly down with it. GetPartyMark is a one-line wrapper over exactly this
+                // call, so nothing is lost by asking Resources directly - and the check now compiles on
+                // any branch, which is the property it needed.
+                Texture2D texture = Resources.Load<Texture2D>(MarkResourcePath + mark);
                 if (texture == null)
                 {
                     Debug.LogError($"  MISSING   {party} -> '{mark}' does not resolve through Resources.Load");
