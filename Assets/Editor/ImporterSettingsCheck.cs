@@ -119,14 +119,16 @@ namespace PoliSim.EditorTools
                                    $"Block edges repeat with the tile and read as a grid.");
                     errors++;
                 }
-                else if (compressed)
-                {
-                    // ⚠ REPORTED, NOT FAILED, AND THE DIFFERENCE IS DELIBERATE. No document states a
-                    // compression rule for full-colour UI art, so failing on it would be this check
-                    // inventing policy and then citing itself as authority for it. Elias's call.
-                    Debug.LogWarning($"  compressed (full-colour, undecided) {assetPath} -> {texture.format}");
-                    warnings++;
-                }
+                // ⚠ FULL-COLOUR COMPRESSION IS RULED ACCEPTABLE AND IS NO LONGER REPORTED (2026-08-11).
+                // It was a warning while undecided; Elias ruled after checking flags against an
+                // uncompressed source at display size - flags are the worst case for block compression
+                // (large flat fields meeting at sharp edges) and show no visible damage, so portraits are
+                // covered a fortiori. The reasoning lives in the request doc, §3.0a.
+                //
+                // Dropped rather than kept as a passing note, because a permanent 26-line amber is a
+                // thing people learn to skim, and a check whose output is mostly noise stops being read
+                // at all - the same argument that made filing the eight SVG sources better than
+                // annotating an expected failure.
 
                 // NPOT RESCALE, read as a changed image rather than as a setting: if Unity resized the
                 // texture on import, the imported dimensions no longer match the file's own header.
@@ -146,12 +148,16 @@ namespace PoliSim.EditorTools
                     errors++;
                 }
 
-                // MIPMAPS. Every one of these is drawn at or near 1:1 by IMGUI, so a mip chain is memory
-                // spent to make the art blurrier.
+                // MIPMAPS — AN ERROR SINCE 2026-08-11, and promoted rather than invented. §3's settings
+                // table has said "Mipmaps **Off** (`enableMipMap: 0`) — UI sprites never minify" since it
+                // was written; 44 files across Emblems/, Flags/, Icons/ and Portraits/ carried them
+                // anyway, which is a rule that existed and was never checked. A mip chain on art drawn at
+                // 1:1 by IMGUI is memory spent to make it blurrier.
                 if (texture.mipmapCount > 1)
                 {
-                    Debug.LogWarning($"  mipmaps {assetPath} -> {texture.mipmapCount} levels on UI art drawn at 1:1");
-                    warnings++;
+                    Debug.LogError($"  MIPMAPS {assetPath} -> {texture.mipmapCount} levels on UI art drawn at 1:1. " +
+                                   $"§3 requires enableMipMap: 0.");
+                    errors++;
                 }
             }
 

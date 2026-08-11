@@ -1269,6 +1269,29 @@ yes, copy from `Chrome/`. If no, copy from `Flags/`. If it tiles, see the row be
 Neither is an exception. Both are the same rule: **the template encodes its own class's treatment, and
 copying it across a class boundary carries the wrong treatment with it.**
 
+### 3.0b — the two settings rulings, 2026-08-11
+
+**MIPMAPS — OFF, and this is an EXISTING rule now checked, not a new one.** The settings table above has
+said *"Mipmaps **Off** (`enableMipMap: 0`) — UI sprites never minify"* since it was written. 44 files
+across `Emblems/`, `Flags/`, `Icons/` and `Portraits/` carried them anyway. A mip chain on art IMGUI
+draws at 1:1 is memory spent making it blurrier. All 44 corrected (per-file before/after verification),
+and `ImporterSettingsCheck` promoted it from warning to **error**.
+
+⚠ Recorded here as pre-existing precisely so the check is not cited as the authority for it. **A check
+must never be the source of a rule it enforces** — that is circular, and the failure it creates is a
+rule nobody can argue with because nobody can find where it was decided.
+
+**FULL-COLOUR COMPRESSION — ACCEPTABLE, ruled after a visual check.** The 26 `Flags/`, `Portraits/` and
+`emblem_party_*` sprites import block-compressed. **Flags are the worst case for block compression** —
+large flat colour fields meeting at sharp edges is exactly what DXT quantises worst — and compared
+against an uncompressed source at display size they show no visible damage. Portraits, which are
+continuous-tone and have no hard colour boundaries, are covered *a fortiori*.
+
+So compression stays for this class, and **the warning was dropped rather than kept as a passing note.**
+A permanent 26-line amber is a thing people learn to skim, and a check whose output is mostly noise stops
+being read at all — the same argument that made filing the eight SVG sources better than annotating an
+expected failure. `ImporterSettingsCheck` now runs **149 sprites, 0 errors, 0 warnings**.
+
 ✅ **`ImporterSettingsCheck` now enforces this.** It enumerates every `*.png` under
 `Assets/Resources/Art/UI/` (149 files), classifies each by treatment rather than by folder, and asserts
 against stated values — reading the **imported texture**, not the `.meta` text, because the meta is the
