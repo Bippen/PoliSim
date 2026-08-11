@@ -1094,6 +1094,40 @@ All were produced by porting the allocator to a standalone script and running it
 results **before** the engine was depended on — no Unity, no compile. Two of three countries disagreed
 with the plan, and both disagreements surfaced in minutes.
 
+⚠⚠ **PROVENANCE — READ BEFORE RELYING ON ANY ROW ABOVE. The four results are NOT equally supported, and
+this section originally read as though they were.** Audited 2026-08-11 by reading
+`seat_allocation_check.py` (385 lines) in full:
+
+| Claim | Backing artifact | Status |
+|---|---|---|
+| Sweden 2022 exact | `seat_allocation_check.py` — in the repo, readable | **Reported by an unverified script**: read, never run |
+| Sweden 2014, 6 seats of error | same script | **Reported by an unverified script**: read, never run |
+| Germany 2025, off by 1 | **none — throwaway script, discarded** | ⚠ **UNVERIFIABLE.** No artifact survives |
+| Poland 2023, off by 70 | **none — throwaway script, discarded** | ⚠ **UNVERIFIABLE.** No artifact survives |
+
+**`seat_allocation_check.py` does not test Germany or Poland**, and says so in its own *"WHAT IT DOES NOT
+TEST"* section. It covers Sweden plus three synthetic cases — including one built so the first divisor is
+decisive, because neither real Swedish election exercises it.
+
+⚠ **AND NONE OF IT HAS BEEN RUN HERE. Python is not installed on this machine.** So even the two Sweden
+rows amount to *"a script says so"* — the script has been read and its logic is sound and unusually
+honest about its own limits, but no output has been reproduced. **Nothing in this section is
+independently confirmed.**
+
+**Kept rather than retired** because the constraints are probably right, cheap to honour, and expensive
+to rediscover at seed-design time. **Not treated as established** because three separate defects this
+week came from a green result whose environment did not contain the claim, and *"a script reported this
+once, on a machine that can no longer run it"* is that shape exactly.
+
+**Before any of it is relied on:** port `seat_allocation_check.py` to C# and reproduce its numbers
+exactly — the treatment `screenshot_edge_check.py` received — and **re-derive Germany and Poland from
+scratch**, since no artifact for them exists to port.
+
+⚠ **One code defect the script found, which is not a seed-data question and is recorded here only
+because nothing on `main` records it at all:** `ThresholdRule.CoalitionShare` exists on the struct
+(Poland 8%, Italy 10%) and **`SeatAllocation.ApplyThreshold` never reads it, for any country.** Coalition
+thresholds are unenforced. On the branch, so it blocks nothing today.
+
 ### The four results
 
 | Country | Method | Outcome |
