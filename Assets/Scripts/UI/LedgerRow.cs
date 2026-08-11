@@ -355,7 +355,20 @@ namespace PoliSim.UI
 
             DrawNameCell(nameRect, name, nameStyle, PoliSimTheme.TextPrimary);
 
-            if (Event.current.type == EventType.Repaint)
+            // ⚠ A NEGATIVE FILL MEANS "THIS FIGURE HAS NO DENOMINATOR" — no track, no gauge, nothing in
+            // the lane. §A.9 does not describe this case: every read-only row it specifies is a
+            // proportion (a condition index out of 100, a share of GDP), and `DrawReadOnly` was built
+            // assuming one. Statistics has figures that are genuinely unbounded — GDP per capita is
+            // currency per person, with no ceiling to be a fraction of.
+            //
+            // Drawing an empty track for those would be WORSE than drawing nothing, because an empty
+            // track is not neutral: it reads as a gauge sitting at zero, which is a confident wrong
+            // number of exactly the kind this project keeps finding.
+            //
+            // The `-1f` convention is NOT invented here — `Draw`'s own `barFraction` parameter already
+            // means "no bar" at negative, twelve lines up in this same file. Reusing it keeps one idiom
+            // rather than adding a second way to say the same thing.
+            if (fill >= 0f && Event.current.type == EventType.Repaint)
             {
                 Color previous = GUI.color;
                 GUI.color = PoliSimTheme.BarTrack;

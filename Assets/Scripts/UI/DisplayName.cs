@@ -63,6 +63,26 @@ namespace PoliSim.UI
             return resolved;
         }
 
+        /// <summary>
+        /// Spacing ONLY — never the curated policy names.
+        ///
+        /// ⚠ **For identifiers whose enum shares member names with `PolicyNodeId` while meaning something
+        /// different — a real collision, not a hypothetical one.** `SectorType.Energy` went through
+        /// <see cref="Of"/> and came back **"Energy (Spending)"**: `PolicyNodeId.Energy`'s curated name,
+        /// which is a *discretionary spending line*, not an economic sector. Caught in the first capture
+        /// after the Statistics conversion. `Housing` collides the same way, and `PolicyNodeId.Housing`'s
+        /// own description says so out loud — *"distinct from the HousingAssistance welfare program"*.
+        ///
+        /// **Third instance of the reference-class trap**, after the `.meta` copied from the wrong art
+        /// family and `emblem_party_*` versus `mark_party_*`. Name-adjacency is not sameness, and a lookup
+        /// keyed on a name will cross a category boundary without complaint. **Use <see cref="Of"/> only
+        /// for identifiers that live in policy space; use this for everything else.**
+        /// </summary>
+        public static string Spaced(string identifier)
+        {
+            return string.IsNullOrEmpty(identifier) ? identifier : Split(identifier);
+        }
+
         private static string Resolve(string identifier)
         {
             if (Enum.TryParse(identifier, out PolicyNodeId node) &&

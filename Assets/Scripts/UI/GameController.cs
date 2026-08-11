@@ -3620,46 +3620,69 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label("Derived", _headerStyle);
 
+            // ⚠ v2.0 CONVERSION, 2026-08-11 — five concatenated label lines become read-only ledger rows.
+            // Every figure here was previously built INTO its own label string ("Tax burden: 38.2% of
+            // GDP"), which is the pre-v2.0 pattern and the one §A.9 exists to replace: name, gauge,
+            // figure, unit, each in its own column, so a column can be read down instead of a sentence
+            // read across.
+            //
+            // These are `DrawReadOnly` rather than disabled sliders for the same reason Infrastructure is
+            // - a derived statistic is an OUTPUT, there is nothing to drag under any circumstances, and a
+            // disabled slider would assert a lever this screen has never had (behaviour 5).
+            Color fiscalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
+
+            // ⚠ GDP PER CAPITA HAS NO DENOMINATOR, so it passes a negative fill and draws no gauge -
+            // see LedgerRow.DrawReadOnly. It is currency per person, not a share of anything.
             float? perCapita = DerivedStats.GdpPerCapita(_playerCountry);
-            GUILayout.Label(perCapita.HasValue
-                ? $"GDP per capita: {UiFormat.Money(perCapita.Value, MoneyUnit.Thousands)}"
-                : "GDP per capita: n/a (no population)", _labelStyle);
+            DrawDerivedStatRow("GDP per capita", -1f,
+                perCapita.HasValue ? UiFormat.Money(perCapita.Value, MoneyUnit.Thousands) : "n/a",
+                perCapita.HasValue ? null : "no population",
+                UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
 
             // "advance a turn" rather than a zero: no turn has produced a FiscalTurnReport yet, and a
             // 0.0% tax burden is a confident wrong number of exactly the kind this project keeps finding.
+            // The gauge is suppressed in that state too - an empty track would BE that wrong number.
             float? taxBurden = DerivedStats.TaxBurdenPercentOfGdp(_playerCountry, report);
-            GUILayout.Label(taxBurden.HasValue
-                ? $"Tax burden: {taxBurden.Value:F1}% of GDP"
-                : "Tax burden: not yet computed (advance a turn)", _labelStyle);
+            DrawDerivedStatRow("Tax burden", taxBurden.HasValue ? taxBurden.Value / 100f : -1f,
+                taxBurden.HasValue ? UiFormat.Number(taxBurden.Value, 1) + "%" : "not yet computed",
+                taxBurden.HasValue ? "of GDP" : "advance a turn", fiscalInk);
 
             float? spending = DerivedStats.SpendingPercentOfGdp(_playerCountry, report);
-            GUILayout.Label(spending.HasValue
-                ? $"Government spending: {spending.Value:F1}% of GDP"
-                : "Government spending: not yet computed (advance a turn)", _labelStyle);
+            DrawDerivedStatRow("Government spending", spending.HasValue ? spending.Value / 100f : -1f,
+                spending.HasValue ? UiFormat.Number(spending.Value, 1) + "%" : "not yet computed",
+                spending.HasValue ? "of GDP" : "advance a turn", fiscalInk);
 
+            // Positive is a deficit, so "higher is better" is FALSE here - the opposite of the
+            // BudgetBalance colouring elsewhere, because the sign convention is the opposite too. The
+            // NAME changes with the sign rather than the number carrying a minus: a row headed "Surplus"
+            // showing 4.8% is unambiguous where "Deficit: -4.8%" needs a second reading.
             float? deficit = DerivedStats.DeficitPercentOfGdp(_playerCountry, report);
-            if (deficit.HasValue)
-            {
-                // Positive is a deficit, so "higher is better" is FALSE here - the opposite of the
-                // BudgetBalance colouring elsewhere, because the sign convention is the opposite too.
-                DrawColoredLabel($"{(deficit.Value >= 0f ? "Deficit" : "Surplus")}: {Mathf.Abs(deficit.Value):F1}% of GDP",
-                    _labelStyle, UiPalette.GetDeltaColor(deficit.Value, higherIsBetter: false));
-            }
-            else
-            {
-                GUILayout.Label("Deficit: not yet computed (advance a turn)", _labelStyle);
-            }
+            DrawDerivedStatRow(
+                deficit.HasValue && deficit.Value < 0f ? "Surplus" : "Deficit",
+                deficit.HasValue ? Mathf.Abs(deficit.Value) / 100f : -1f,
+                deficit.HasValue ? UiFormat.Number(Mathf.Abs(deficit.Value), 1) + "%" : "not yet computed",
+                deficit.HasValue ? "of GDP" : "advance a turn",
+                deficit.HasValue ? UiPalette.GetDeltaColor(deficit.Value, higherIsBetter: false) : fiscalInk);
 
+            // ⚠ EIGHT SECTORS WERE ONE CONCATENATED STRING - "Agriculture 2.1% | Commerce 18.3% | ..."
+            // joined with pipes into a single label. That is the densest thing on this screen and the
+            // least readable: no two shares can be compared without counting characters, and the line
+            // wrapped differently at every window width. One row each, each with its own gauge, is the
+            // whole argument for the ledger form.
             List<(SectorType Type, float SharePercent)> shares = DerivedStats.SectorSharesOfGdp(_playerCountry);
             if (shares.Count > 0)
             {
-                var sb = new System.Text.StringBuilder("Sector shares of GDP: ");
+                GUILayout.Space(6f);
+                GUILayout.Label("Sector shares of GDP", _labelStyle);
                 for (int i = 0; i < shares.Count; i++)
                 {
-                    if (i > 0) { sb.Append(" | "); }
-                    sb.Append($"{shares[i].Type} {shares[i].SharePercent:F1}%");
+                    // ⚠ Spaced, NOT Of — `SectorType.Energy` resolves through the curated policy table to
+                    // "Energy (Spending)", a discretionary spending line rather than an economic sector.
+                    // See DisplayName.Spaced.
+                    DrawDerivedStatRow(DisplayName.Spaced(shares[i].Type.ToString()), shares[i].SharePercent / 100f,
+                        UiFormat.Number(shares[i].SharePercent, 1) + "%", "of GDP",
+                        UiPalette.GetCategoricalColor(i));
                 }
-                GUILayout.Label(sb.ToString(), _labelStyle);
             }
             else
             {
@@ -3667,6 +3690,17 @@ namespace PoliSim.UI
             }
 
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// One derived statistic as a read-only ledger row, so the five sites above read as a table
+        /// rather than five bespoke label calls. <paramref name="fill"/> below zero draws no gauge — for
+        /// a figure with no denominator, or one not yet computed.
+        /// </summary>
+        private void DrawDerivedStatRow(string name, float fill, string figureText, string trailingText, Color barInk)
+        {
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            LedgerRow.DrawReadOnly(rowRect, name, fill, figureText, trailingText, barInk, _labelStyle, _labelStyle);
         }
 
         /// <summary>Read-only headline readout for the five non-player countries; the full dashboard-level detail set for USA (the player's own country) - matches the task's explicit "read-only for the five, full detail for USA" split.</summary>
@@ -4227,7 +4261,7 @@ namespace PoliSim.UI
             int sectorIndex = 0;
             foreach (Sector sector in _playerCountry.Sectors)
             {
-                sectorSlices.Add(new PieSlice(DisplayName.Of(sector.Type.ToString()), sector.EmploymentShare, UiPalette.GetCategoricalColor(sectorIndex)));
+                sectorSlices.Add(new PieSlice(DisplayName.Spaced(sector.Type.ToString()), sector.EmploymentShare, UiPalette.GetCategoricalColor(sectorIndex)));
                 sectorIndex++;
             }
             _sectorEmploymentPieChart.Draw($"{_playerCountry.Name}: Employment Share by Sector", sectorSlices, _labelStyle, "F1", moneyUnit: null);
@@ -5309,7 +5343,7 @@ namespace PoliSim.UI
         private void DrawSectorRow(Sector sector, float nameColumnWidth)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(DisplayName.Of(sector.Type.ToString()), _headerStyle, GUILayout.Width(nameColumnWidth));
+            GUILayout.Label(DisplayName.Spaced(sector.Type.ToString()), _headerStyle, GUILayout.Width(nameColumnWidth));
             GUILayout.Label(
                 $"Output {sector.OutputShareOfGdp:F1}% of GDP | Employment {sector.EmploymentShare:F1}% | {GetSectorMetricLabel(sector.Type)} {sector.SectorMetric:F1}",
                 _labelStyle);
