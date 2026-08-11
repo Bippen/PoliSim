@@ -104,7 +104,16 @@ namespace PoliSim.Testing
                 // Runs every (scenario, turn count) combination in one Play session, each against its
                 // own fresh World/SimulationManager, instead of requiring a separate Unity process
                 // launch (and a full script recompile) per combination.
-                foreach (int turnsToRun in MatrixTurnCounts)
+                // ⚠ HORIZON OVERRIDABLE SINCE 2026-08-11 — `-matrixturns=1000`. The fixed {100, 500}
+                // could not answer "slow transient or unbounded drift", which is a question about what
+                // happens AFTER the longest horizon ever run. A number that is still climbing at the last
+                // turn measured is not an equilibrium, and no amount of re-reading a 500-turn table says
+                // which it is.
+                int[] horizons = GetIntArg(args, "-matrixturns=", 0) > 0
+                    ? new[] { GetIntArg(args, "-matrixturns=", 0) }
+                    : MatrixTurnCounts;
+
+                foreach (int turnsToRun in horizons)
                 {
                     foreach (string scenario in MatrixScenarios)
                     {

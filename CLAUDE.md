@@ -1408,6 +1408,44 @@ that happened alongside it** — and it will recur at every remaining site, beca
 constant-standing-in-for-content is standing in for something that is not yet a value. `BuildTimeStatusText`
 was the same move one screen earlier. Expect the split before expecting the accessor.
 
+## A measurement is only comparable to another taken at the same horizon (2026-08-11)
+
+**Debt-to-GDP, seed 777, real Unity, `-runmatrix`, measured at three horizons:**
+
+| | baseline (2026-07-22, 100/500) | 100 | 500 | **1000** |
+|---|---|---|---|---|
+| USA | ~142–143% | 138.2 | 143.0 | **154.7** |
+| Sweden | ~13% | 4.6 | 5.7 | **11.2** |
+| Germany | ~35% | 37.8 | 45.4 | **80.4** |
+| France | ~90% | 93.8 | 92.4 | **108.8** |
+| Italy | ~107% | 113.9 | 125.8 | **165.6** |
+| Poland | ~26% | 27.7 | 30.1 | **45.6** |
+
+⚠ **NOT ONE OF THESE IS AN EQUILIBRIUM. All six are still climbing at turn 1000**, several steeply —
+Germany nearly doubles between 500 and 1000, Italy adds 40 points. **The figures recorded on 2026-07-22
+as "Fiscal Reaction Function equilibria" are waypoints on a rising path**, and they have been quoted as
+equilibria in this file and the roadmap ever since.
+
+**How the error compounded, three times in one day, each time by comparing across horizons:**
+1. A **120-turn** `DebtClampDiagnostic` snapshot was compared against **100/500-turn** baselines, and
+   produced four wrong conclusions — USA "−4.3", France "+2.9", Germany "+2.9", Poland "+1.7", all
+   artifacts of the horizon mismatch.
+2. Corrected to a like-for-like 100/500 matrix, which said **"USA and France did not move, three others
+   are climbing"** — also wrong. They had not settled either; they merely passed near their baselines at
+   that horizon.
+3. At 1000 turns, **every** country is climbing. The distinction between "moved" and "did not move"
+   never existed.
+
+**The rule: a number is comparable only to one taken at the same horizon, and a number at the last turn
+measured is a WAYPOINT until a longer run says otherwise.** Record horizon and seed beside every figure.
+⚠ **And never write "equilibrium" for a value that has not been shown to stop changing** — the word
+asserts a property that only a longer run can establish, and once written it is quoted as though it had
+been.
+
+**What this does NOT yet establish:** whether the drift predates `0386e83`. That needs the same matrix on
+the commit before it, which has not been run. **Until then the drift is UNATTRIBUTED** — and attributing
+it to the SWF fix would be exactly the mistake this entry is about.
+
 ## An absence claim greped from ONE FILE is rule 14 inverted (2026-08-11)
 
 ⚠ **THIS ENTRY ORIGINALLY READ "A ruling with an unbuilt half is worse than an open question", and its

@@ -924,6 +924,14 @@ list stays short enough to actually read.
      return never reaches it. This also closed a **double-count**, where the fund kept the return and the
      government spent the same figure.
 
+  🔴🔴 **SUPERSEDED BY THE 1000-TURN RUN — SEE `CLAUDE.md`, "A measurement is only comparable to another
+  taken at the same horizon". NOTHING BELOW IS AN EQUILIBRIUM.** At turn 1000 all six countries are still
+  climbing (USA 154.7, Sweden 11.2, Germany 80.4, France 108.8, Italy 165.6, Poland 45.6), so the
+  "moved / did not move" reading below is an artifact of stopping at 500. **The drift is UNATTRIBUTED** —
+  the same matrix has not been run on the commit before `0386e83`, and blaming the SWF fix without that
+  run would repeat the error. Measurements retained below with their horizons; the word *equilibrium*
+  stays out until a longer run earns it.
+
   ✅ **MEASURED 2026-08-11 — `DebtClampDiagnostic`, real Unity, seed 777, 120 turns, post-`0386e83`.**
 
   **THE GUARD NEVER ENGAGES.** `negativeTurns = 0/120` and `ceilingHits = 0` for **all six countries** —
