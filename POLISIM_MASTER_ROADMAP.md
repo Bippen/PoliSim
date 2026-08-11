@@ -540,11 +540,36 @@ If a step's own validation fails, fix it before moving to the next — never pro
    ⚠ *Superseded 2026-08-10 — the wiring gate was lifted and the Budget restyle has begun. See below.*
    The wiring was built but not confirmed; Elias reviewed it live and directed the restyle forward.
 
-   ### ⚠ NEXT SESSION STARTS HERE — end of 2026-08-10
+   ### ⚠ NEXT SESSION STARTS HERE — re-derived 2026-08-11
 
-   **The Budget screen is FULLY CONVERTED** — all five row types, each captured before the next was
-   started. It is the densest screen in the game and the one the spec was stress-tested against, so it
-   is the right thing to have finished first.
+   ⚠ **THIS MARKER IS DERIVED, NOT NARRATED. Re-derive it; do not edit it forward.** The state below
+   comes from `grep LedgerRow.Draw` over `GameController` plus the commit history — not from what the
+   previous marker said. **It had been wrong for a day**: it read "Budget is the only converted screen,
+   next pick one of Statistics / Politics / Policy-Laws" while `ba2c3c8`, `1589008` and `665e0a8` had
+   already converted Policy/Laws, so it offered a finished screen as a candidate.
+   **A next-steps marker is a claim like any other and goes stale the same way** — and this one is worse
+   than most, because it is the first thing read each session, so a stale marker misdirects the pass
+   before anything else runs. A pointer that outlived its target, rather than a claim that outlived its
+   evidence.
+
+   **Derived conversion state, 2026-08-11** — `LedgerRow` call sites are the marker:
+
+   | Screen | Converted | Evidence |
+   |---|---|---|
+   | **Budget** | ✅ all five row types | `DrawTaxLineRow`, `DrawSpendingLineRow`, `DrawWelfareProgramRow`, `DrawInfrastructureContent` (read-only), `DrawSwfPolicyContent` |
+   | **Policy/Laws** | ✅ via `DrawDialRow` (20 call sites) | `DrawLaborMarketTab`, `DrawCrimeJusticeTab`, `DrawTradePolicyContent` — commits `ba2c3c8`, `1589008`, `665e0a8` |
+   | **Statistics** | ❌ **NOT CONVERTED** | zero `LedgerRow` call sites |
+   | **Politics / Parliament** | ❌ **NOT CONVERTED** | zero `LedgerRow` call sites |
+
+   ➡ **NEXT: Statistics, then Politics/Parliament.** Statistics first because its rows are the simpler
+   family — read-only figures against `DrawReadOnly`, no control to draw — where Parliament's party rows
+   carry a legend swatch and a seat count that the trailing column has to be decided for. Spec reference:
+   **`POLISIM_V2_SCREEN_SPEC.md` §A.9** (the ledger row atom) and **§A.9a** (the resort ladder), the same
+   two the Budget conversion was built against.
+
+   **The Budget screen was the right thing to finish first** — all five row types, each captured before
+   the next was started. It is the densest screen in the game and the one the spec was stress-tested
+   against.
 
    | row type | mapping | control |
    |---|---|---|
@@ -558,8 +583,9 @@ If a step's own validation fails, fix it before moving to the next — never pro
    would need special handling did not: a negative contribution just puts the knob left of centre, and
    normalised weights turned out to be what the trailing column was always for.
 
-   **Next: pick the following screen.** Statistics, Politics/Parliament and Policy/Laws all carry rows
-   of the same family. Keep the sequence — **one type per capture, never batched.** That is not
+   **The next screen is named in the derived table above, not here** — this line offered Policy/Laws as
+   a candidate for a day after it was converted. Keep the sequence — **one type per capture, never
+   batched.** That is not
    ceremony: the tax row took three capture rounds, and each found a defect the code review had passed
    (a shared-style mutation degrading every screen at once, columns overflowing their panel, a button
    measured in the wrong style).
@@ -987,6 +1013,30 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 - ✅ **RULED 2026-08-11 — `stranded/politics-elections` STAYS AS-IS until item 10 is scheduled.** It is
   pushed, so the work is safe off-machine; merging ~3,500 lines of unreviewed simulation code into `main`
   is precisely what the branch exists to prevent.
+
+  **Full contents, enumerated so nobody has to check out the branch to find out what is on it** (commit
+  `228a111`, 30 files):
+
+  | Group | Files |
+  |---|---|
+  | **New data model** (6) | `Chamber`, `ElectoralFormula`, `ElectorateCohort`, `PoliticalParty`, `ThresholdRule`, `UnitedStatesSeed` |
+  | **New simulation** (4) | `NationalVoteModel`, `SeatAllocation`, `UnitedStatesElectionCycle`, `UnitedStatesElections` |
+  | **Modified, layout half now on `main`** (3) | `GameController`, `PoliSimWidgets`, `IconLibrary` |
+  | **Modified, not extracted** (1) | `SimulationManager` |
+  | **Python** (4) | `seat_allocation_check`, `usa_election_check`, `ledger_geometry_check`, `screenshot_edge_check` |
+  | **Docs** (6) | `POLISIM_POLITICS_ELECTIONS_ROADMAP` (new), plus branch-side edits to `CLAUDE`, `CLAUDE_DESIGN_ASSET_REQUEST`, `MISSING_PREREQUISITES`, `POLISIM_MASTER_ROADMAP`, `POLISIM_SEED_DATA_MACRO_OVERHAUL` |
+  | **Editor, since superseded on `main`** (6) | `CheckSuite`, `DeliveredAssetCheck`, `ImporterSettingsCheck`, `PartyMarkCoverageCheck`, `ScreenEdgeCheck`, `StatIconCoverageCheck`, `UiScreenshotCapture` — these differ only because `main` moved on; **nothing on the branch is newer** |
+
+  ⚠ **Two of the Python scripts are already superseded**: `screenshot_edge_check` by `ScreenEdgeCheck`,
+  and `ledger_geometry_check` by the 1440p capture ruling. `seat_allocation_check` is the surviving
+  evidence behind Part D's Sweden rows; `usa_election_check` is scoped to item 10.
+
+- ⚠ **CAPTURE RESOLUTIONS NOT COVERED — 1920×1080 and a deliberately narrow window (2026-08-11).**
+  Two sizes are captured, 1600×929 and 2560×1419, and both are clean. **That brackets every window size
+  that has ever produced a REPORT — which is a claim about report history, not about what players run.**
+  1920×1080 is the single most common desktop resolution and has never been captured here; a narrow
+  window is where the `LedgerRow` squeeze floor would engage if it ever does. Neither is blocking, and
+  adding either is now a command-line argument rather than a code change (`-shotwidth=` / `-shotheight=`).
 
   **Measured, not inferred.** A fresh capture of current `main` (`p2main_*`) run through
   `ScreenEdgeCheck`: **55 captures, 54 clipped, exit 1.** Identical to the `run_*` set from before any

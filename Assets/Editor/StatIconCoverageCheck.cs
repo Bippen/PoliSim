@@ -85,6 +85,14 @@ namespace PoliSim.EditorTools
             // `menu_pattern_tile` - 19 names. It was cited twice as proof that four newly imported party
             // marks resolved; it never touches `Emblems/` and passed 19 of 19 while they were absent from
             // its scope entirely. `PartyMarkCoverageCheck` covers those.
+            // ⚠ AN EMPTY ENUMERATION IS NOT A PASS. "19 of 19" and "0 of 0" both read as clean.
+            if (total == 0)
+            {
+                Debug.LogError("  EMPTY ENUMERATION — no StatNodeId values. VERIFIED NOTHING.");
+                CheckExit.Finish(1);
+                return;
+            }
+
             Debug.Log($"=== UI art coverage: {total - missing} of {total} names resolve " +
                       $"(every StatNodeId icon + menu_pattern_tile; NOT chrome, emblems, marks or portraits) ===");
             CheckExit.Finish(missing == 0 ? 0 : 1);

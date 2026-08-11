@@ -1337,6 +1337,24 @@ work itself, and it was the only one missing.
 **Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
 branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
 
+## A next-steps marker is a claim like any other, and goes stale the same way (2026-08-11)
+
+Item 9 §A's **"⚠ NEXT SESSION STARTS HERE"** block said Budget was the only converted screen and offered
+*"Statistics, Politics/Parliament and Policy/Laws"* as the candidates for next. **Policy/Laws had been
+converted for a day** — `ba2c3c8` Labor Market, `1589008` Crime & Justice and Sectors, `665e0a8` Trade.
+The marker was offering a finished screen as work.
+
+⚠ **This is worse than an ordinary stale status, and the difference is worth naming.** A stale claim in
+the body of a document misleads whoever reads that paragraph. **A stale next-steps marker is the FIRST
+thing read each session, so it misdirects the pass before anything else runs** — a pointer that outlived
+its target, rather than a claim that outlived its evidence.
+
+**The fix is not "remember to update it".** The marker now carries a line saying it is **derived, not
+narrated**, and states its derivation: `grep LedgerRow.Draw` over `GameController`, plus the commit
+history. Re-derive it at the start of a pass; do not edit it forward. The derived table found the true
+state in one command — the same move as re-deriving asset status from the filesystem under rule 12,
+applied to a plan instead of to a delivery.
+
 ## A helper is not evidence its arithmetic is complete (2026-08-11)
 
 `PoliSimWidgets.InnerWidth` was built to end a subtraction that had been forgotten at four sites and

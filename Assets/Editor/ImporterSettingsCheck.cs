@@ -86,6 +86,16 @@ namespace PoliSim.EditorTools
             string[] files = Directory.GetFiles(Root, "*.png", SearchOption.AllDirectories);
             System.Array.Sort(files);
 
+            // ⚠ AN EMPTY ENUMERATION IS NOT A PASS — rule 14 enforced by the check on itself, every run.
+            // "0 errors over 149 sprites" and "0 errors over 0 sprites" print almost identically and mean
+            // opposite things; the second is what a moved folder or a renamed root looks like.
+            if (files.Length == 0)
+            {
+                Debug.LogError($"  EMPTY ENUMERATION — no *.png found under {Root}. VERIFIED NOTHING.");
+                CheckExit.Finish(1);
+                return;
+            }
+
             int errors = 0, warnings = 0;
             var byClass = new Dictionary<RenderClass, int>();
 
