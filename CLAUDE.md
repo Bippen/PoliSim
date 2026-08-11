@@ -1337,6 +1337,32 @@ work itself, and it was the only one missing.
 **Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
 branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
 
+## The guards answer CONTAINMENT, not COMPOSITION — a green CheckSuite is not a visual pass (2026-08-11)
+
+**The Parliament legend's swatch and emblem sat pinned to the TOP of a row that had just become two
+lines tall, while the party name beside them was vertically centred.** Visibly misaligned. **Every check
+reported zero, and every one of them was right to.**
+
+| Check | Asks | Why it cannot see this |
+|---|---|---|
+| `UiOverflowGuard` | does this text fit the rect it was handed? | it fitted perfectly |
+| `UiContainmentGuard` | does this child rect sit inside its container? | it did |
+| `ScreenEdgeCheck` | does content sit on the clip rect's last pixel? | it did not |
+
+⚠ **All three enumerate ONE element at a time. Alignment is a relation BETWEEN elements, so it is
+outside every enumeration** — rule 14's shape applied to the visual class. There is no rect that is
+wrong; there are two rects that disagree.
+
+**And a fourth guard would not close it either.** Containment, overflow and clipping are decidable from
+geometry; *"these two things should share a baseline"* is a claim about intent that only the design
+knows. A check could compare baselines of adjacent GUILayout siblings, but it could not know which pairs
+are meant to align — and one that guessed would fire on every deliberate offset in the game.
+
+✅ **So the standing form: a clean CheckSuite means nothing overflows, escapes or clips. It does not mean
+the screen looks right.** Every conversion still needs a human looking at a capture, and this defect —
+like instance #12, and like the "Energy (Spending)" mislabel — was caught by looking, not by running.
+**Three defects this session found by eye after the checks went green.**
+
 ## The reference-class trap — one shape, three instances, and a cheap guard (2026-08-11)
 
 **A name-keyed lookup crosses a category boundary without complaint.** Three instances in one week, all

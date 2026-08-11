@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
                 Debug.Log("NOTE Poland's failure is EXPECTED and documented - the model has no term that " +
                     "rates a country BELOW its debt curve. Exit code reflects the other five only.");
             }
-            EditorApplication.Exit(expressiblePassed >= Anchors.Length - 1 ? 0 : 1);
+            CheckExit.Finish(expressiblePassed >= Anchors.Length - 1 ? 0 : 1);
         }
 
         private static void ReportUsaDeficitBand()

@@ -115,6 +115,52 @@ namespace PoliSim.EditorTools
                 : $"CHECKS: ScreenEdgeCheck FAILED ({code}).");
         }
 
+        /// <summary>
+        /// The three simulation checks, on demand.
+        ///
+        /// ⚠ **THEIR EXCLUSION WAS RECORDED AS "they need a seeded world rather than a project scan",
+        /// AND THAT REASON WAS WRONG.** All three run headless: `WorldFactory.CreateDefault()` is a plain
+        /// static call building a `World` in memory — no Play mode, no scene, no `GameObject`.
+        /// `CreditRatingAnchorCheck` does not build one at all. There was never a capability barrier; the
+        /// real one was the same `EditorApplication.Exit` that kept every other check off a menu, and it
+        /// is fixed for these three now too.
+        ///
+        /// <para><b>What genuinely separates them is COST, not capability.</b>
+        /// `AggregationEquivalenceCheck` alone constructs four Worlds and advances them — a real per-open
+        /// expense where scanning 149 textures is not. So they get their own menu item and stay out of the
+        /// once-per-session run: a stated trade rather than an inherited assumption. ⚠ **The cost has not
+        /// been measured**; if it turns out small they belong in the automatic suite, and this note is the
+        /// reason to go and check.</para>
+        /// </summary>
+        [MenuItem("PoliSim/Run Simulation Checks (slower — builds Worlds)")]
+        private static void RunSimulationChecksFromMenu()
+        {
+            var simulation = new (string Name, Action Run)[]
+            {
+                ("AggregationEquivalenceCheck", AggregationEquivalenceCheck.Run),
+                ("CreditRatingAnchorCheck", CreditRatingAnchorCheck.Run),
+                ("PublicationCadenceCheck", PublicationCadenceCheck.Run),
+            };
+
+            var failed = new List<string>();
+            foreach ((string name, Action run) in simulation)
+            {
+                try
+                {
+                    if (CheckExit.Collect(run) != 0) { failed.Add(name); }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"CHECKS: {name} THREW {e.GetType().Name}: {e.Message}");
+                    failed.Add(name);
+                }
+            }
+
+            Debug.Log(failed.Count == 0
+                ? $"CHECKS: {simulation.Length} of {simulation.Length} simulation checks clean."
+                : $"CHECKS: {failed.Count} of {simulation.Length} FAILED — {string.Join(", ", failed)}.");
+        }
+
         private static void RunAll(bool announceClean)
         {
             var failed = new List<string>();

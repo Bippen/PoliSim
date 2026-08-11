@@ -552,20 +552,39 @@ If a step's own validation fails, fix it before moving to the next — never pro
    before anything else runs. A pointer that outlived its target, rather than a claim that outlived its
    evidence.
 
-   **Derived conversion state, 2026-08-11** — `LedgerRow` call sites are the marker:
+   **Derived conversion state, RE-DERIVED 2026-08-12** — `LedgerRow` call sites mapped to their
+   containing methods, plus a label-shape count on the screens that have none:
 
    | Screen | Converted | Evidence |
    |---|---|---|
-   | **Budget** | ✅ all five row types | `DrawTaxLineRow`, `DrawSpendingLineRow`, `DrawWelfareProgramRow`, `DrawInfrastructureContent` (read-only), `DrawSwfPolicyContent` |
-   | **Policy/Laws** | ✅ via `DrawDialRow` (20 call sites) | `DrawLaborMarketTab`, `DrawCrimeJusticeTab`, `DrawTradePolicyContent` — commits `ba2c3c8`, `1589008`, `665e0a8` |
-   | **Statistics** | ❌ **NOT CONVERTED** | zero `LedgerRow` call sites |
-   | **Politics / Parliament** | ❌ **NOT CONVERTED** | zero `LedgerRow` call sites |
+   | **Budget** | ✅ all five row types | `DrawTaxLineRow`, `DrawSpendingLineRow`, `DrawWelfareProgramRow`, `DrawInfrastructureContent`, `DrawSwfPolicyContent` |
+   | **Policy/Laws** | ✅ via `DrawDialRow`, 20 sites | Labor Market, Crime & Justice, Trade — `ba2c3c8`, `1589008`, `665e0a8` |
+   | **Statistics / Domestic** | ✅ **NEW** | `DrawDerivedStatRow` — `7b8858e` |
+   | **Politics / Parliament** | ✅ **NEW** | `HemicycleRenderer.Draw` legend — `967d6c0` |
+   | Statistics / International | ⚠ 2 concatenated labels | small |
+   | Politics / Federal Reserve | ⚠ 5 concatenated labels | small |
+   | Decisions · Demographics · Policy Web | — | no row family; cards, dials and a diagram |
 
-   ➡ **NEXT: Statistics, then Politics/Parliament.** Statistics first because its rows are the simpler
-   family — read-only figures against `DrawReadOnly`, no control to draw — where Parliament's party rows
-   carry a legend swatch and a seat count that the trailing column has to be decided for. Spec reference:
-   **`POLISIM_V2_SCREEN_SPEC.md` §A.9** (the ledger row atom) and **§A.9a** (the resort ladder), the same
-   two the Budget conversion was built against.
+   ➡ **THE ROW FAMILY IS DONE.** Every screen carrying a ledger-shaped list is converted. What remains
+   are **two small residues** — International's 2 and the Fed's 5 concatenated labels — which are
+   leftovers of the same pattern rather than a screen conversion, and are worth folding into whatever
+   next touches those screens rather than being a pass of their own.
+
+   ⚠ **SO THE NEXT v2.0 QUESTION IS NOT "WHICH SCREEN" — IT IS WHICH OF THE REMAINING TRACKS.** §A's own
+   backlog names three, none of which is a row conversion:
+   1. **The unwired chrome** — 13 named sprites still needing CALL-SITE work (`ui_stamp_*`,
+      `ui_seal_official`, `ui_folder_dossier`, `ui_portrait_frame`, `ui_banner_hold`, `ui_grain_tile`,
+      `ui_scrim_takeover`, `ui_calendar_pad`, `ui_tab_spine`, `ui_subtab_on/off`, `ui_chip_outline`,
+      `ui_slider_tick`). A stamp goes on a resolved bill, a seal on a signing — each is a placement
+      decision, not a style assignment.
+   2. **The Canvas path** — fully specified, nothing built: eight narrative screens, the hand-off
+      envelope, the scrim. `CANVAS_SPEC.md`. The country selector is the obvious pilot, being
+      self-contained and already a full-screen state.
+   3. **The eleven superseded pre-v2.0 chrome sprites**, removable in one pass once v2.0 chrome is
+      confirmed.
+
+   Spec reference for anything row-shaped remains **§A.9** with **§A.9a** (resort ladder), **§A.9b**
+   (negative fill = no gauge) and **§A.9c** (Parliament's real pointer; §A.10 is Buttons).
 
    **The Budget screen was the right thing to finish first** — all five row types, each captured before
    the next was started. It is the densest screen in the game and the one the spec was stress-tested

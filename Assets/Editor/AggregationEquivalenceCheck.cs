@@ -190,7 +190,7 @@ namespace PoliSim.EditorTools
             }
 
             Debug.Log($"=== Phases 1-3 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% ===");
-            EditorApplication.Exit(passed == total ? 0 : 1);
+            CheckExit.Finish(passed == total ? 0 : 1);
         }
 
         private static bool Compare(string label, float turnValue, float dailyValue)

@@ -96,7 +96,7 @@ namespace PoliSim.EditorTools
                           $"{(firstPrelim == 0 ? "never" : firstPrelim.ToString()),13}{prelimDays,13}{releases,10}   {verdict}");
             }
 
-            EditorApplication.Exit(0);
+            CheckExit.Finish(0);
         }
     }
 }
