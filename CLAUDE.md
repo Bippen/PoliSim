@@ -1337,6 +1337,21 @@ work itself, and it was the only one missing.
 **Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
 branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
 
+## Re-verified on clean `main` — because the first runs were not (2026-08-11)
+
+⚠ **`ImporterSettingsCheck`'s 149/14/70 and `PartyMarkCoverageCheck`'s results were both produced in a
+working tree carrying a closed session's uncommitted code.** That tree no longer exists, and between
+`001b3a0` and `2a63cce` the Editor assembly did not compile on `main` at all — so those numbers described
+an environment that never shipped. A green run in the wrong context is the defect this whole day is
+about; it applies to a check's own verification as much as to anything the check reports.
+
+Re-run on clean `main`, 0 compile errors: **149 sprites, 122 white-on-alpha / 26 full-colour / 1 tiling,
+0 errors, 70 warnings (26 compression + 44 mipmaps)** — reproduced exactly. `PartyMarkCoverageCheck`
+correctly reports `PARTY SYSTEM NOT PRESENT`, exit 0.
+
+The 14 asset fixes were never in doubt: each was verified per-file by before/after count at the point of
+edit, which is independent of the assembly state. It was the RUNS that needed redoing, not the fixes.
+
 ## The third compression instance, and what finally caught it (2026-08-11)
 
 `icon_area_*` and `icon_nav_*` — 14 sprites, every navigation and area icon in the game — had imported as
