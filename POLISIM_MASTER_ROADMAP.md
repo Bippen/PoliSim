@@ -1008,6 +1008,22 @@ list stays short enough to actually read.
   calibration rather than breaking a good one.** The record has been wrong in the pessimistic direction
   all session; this one deserves stating.
 
+  ✅ **DIAGNOSED — SATURATION, NOT A MISSING MECHANISM.** The FRF already contains a debt-**stock** term
+  measured against each country's own `ComfortableDebtToGdpPercent`, correctly signed. It hard-clamps at
+  **1.5**, reached 33.3 points above comfortable, and 1.5× effective revenue cannot cover interest at
+  45.7% of spending. **Two feedbacks, asymmetrically bounded:** `GetDebtRiskPremium` already responds to
+  the debt stock and already reaches the live interest path, so a *positive* feedback bounded only by
+  `MaxDebtRiskPremium` runs against a *negative* one capped at 1.5. **That asymmetry is the mechanism.**
+  No primary balance exists in the model, and Italy already runs an implied ~+75 primary surplus, so a
+  primary-balance term was examined and **rejected on evidence**. Full reading in `CLAUDE.md`.
+
+  ⚠ **SCOPING, RULED BY ELIAS 2026-08-11 — TURN 1000 IS A DIAGNOSTIC, NOT A TARGET.** A turn is 121 days,
+  so turn 1000 is ~330 years and nobody's playthrough. **Calibration stays at turns 100–200.** The reason
+  the long horizon matters is that it reveals whether a restoring force exists **at all** — a model
+  without one is wrong at turn 150 too, just not yet visibly. **Judge any fix by whether the mechanism is
+  present, correctly signed, and whether the asymmetry is defensible — never by whether turn 1000
+  converges.**
+
   ✅ **DRIVER IDENTIFIED — INTEREST COMPOUNDING, not a pinned stabiliser.** Instrumented on Germany and
   Italy: the multiplier moves freely (0.62 early, ~1.27 and ~1.19–1.45 late, against a 1.5 cap) while
   interest grows from **6%→26%** of Germany's spending and **20%→46%** of Italy's. It leans correctly and

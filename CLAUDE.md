@@ -1471,6 +1471,46 @@ against a −300% bound is not a risk, it is already pinning"*). Post-fix they a
 real, unpinned values. **`0386e83` plus the bound removal did precisely what it was ruled to do**, and
 Sweden's ~13% baseline does not reproduce pre-fix either, so it was never the number to defend.
 
+### ✅ THE DIAGNOSIS, read from the code 2026-08-11 — SATURATION, not a missing mechanism
+
+⚠ **THE HYPOTHESIS THIS DISPROVES, recorded because Elias raised it and it was reasonable:** *"the
+missing piece is a debt-level term in the primary balance response — real sovereigns run primary
+surpluses when debt is high, and if that isn't in there, that single absence explains everything."*
+**It is in there.** `GetFiscalReactionMultiplier`:
+
+```csharp
+float debtGap = country.State.DebtToGdpRatio - country.ComfortableDebtToGdpPercent;
+float multiplier = 1f + FiscalReactionSensitivity * debtGap / 100f;   // sensitivity 1.5
+return Mathf.Clamp(multiplier, 0.5f, 1.5f);
+```
+
+`DebtToGdpRatio` is the **STOCK**, measured against each country's own comfort anchor, and the sign is
+correct. **The restoring force exists and responds to exactly the quantity it should.**
+
+**THE DEFECT IS SATURATION.** The multiplier hard-clamps at **1.5**, reached once debt is 33.3 points
+above comfortable — and **1.5× effective revenue cannot cover interest running at 45.7% of all
+spending**. The stabiliser does not fail to respond; it responds, maxes out, and the gap keeps widening.
+
+⚠ **CORRECTION to this file's own earlier line, "the multiplier moves freely, not pinned."** True for
+Germany at ~1.27. **Italy at 1.446 is effectively saturated already** — it is the saturated case, not a
+country on the way to becoming one.
+
+**TWO FEEDBACKS, ASYMMETRICALLY BOUNDED — and that asymmetry is the mechanism.** `GetDebtRiskPremium`
+already responds to the debt stock (`excessDebtToGdp` above `RiskFreeDebtToGdpPercent`) and already
+reaches the live interest path via `effectiveRate = baseRate + premium * RiskPremiumSensitivity`. So the
+model contains a **positive** feedback (more debt → higher r → more interest → more debt) bounded only by
+`MaxDebtRiskPremium`, running against a **negative** feedback capped at 1.5. Both are present, both are
+correctly signed, and only one of them is tightly bounded.
+
+⚠ **A debt-responsive rate is therefore NOT an available fix — it is already there and is half the
+problem.** Adding one would sharpen the trap.
+
+**NO PRIMARY BALANCE EXISTS IN THE MODEL.** `budgetBalance = actualRevenue - totalSpending`, and
+`totalSpending` includes `interestOnDebt` as one of six terms. **Candidate examined and rejected on
+evidence:** Italy's headline −3.9 with 45.7% of spending on interest implies a primary surplus of roughly
+**+75** in the same units. Italy is already doing everything a primary-balance response would ask of it,
+so adding that term would change nothing for the country that most needs it.
+
 ### ✅ THE DRIVER, INSTRUMENTED 2026-08-11 — INTEREST COMPOUNDING, not a pinned stabiliser
 
 One 1000-turn baseline, seed 777, real Unity, logging `fiscalReactionMultiplier`, `interestOnDebt`,
