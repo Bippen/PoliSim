@@ -1442,9 +1442,38 @@ measured is a WAYPOINT until a longer run says otherwise.** Record horizon and s
 asserts a property that only a longer run can establish, and once written it is quoted as though it had
 been.
 
-**What this does NOT yet establish:** whether the drift predates `0386e83`. That needs the same matrix on
-the commit before it, which has not been run. **Until then the drift is UNATTRIBUTED** — and attributing
-it to the SWF fix would be exactly the mistake this entry is about.
+### ✅ ATTRIBUTED 2026-08-11 — pre-fix matrix run at `4de6a1e`, and the answer is PER COUNTRY
+
+Same seed, same 15 scenarios, real Unity, all three horizons, on the commit **before** `0386e83`
+(verified by the old form on the checked-out tree: `theoreticalRevenue * efficiency * multiplier +
+swfReturns` — returns added AFTER the multiplier).
+
+| | pre 100 | pre 500 | **pre 1000** | post 1000 |
+|---|---|---|---|---|
+| USA | 142.4 | 145.8 | **157.3** | 154.7 |
+| Germany | 38.5 | 45.7 | **81.3** | 80.4 |
+| Italy | 115.2 | 126.3 | **166.3** | 165.6 |
+| Poland | 29.9 | 32.3 | **48.9** | 45.6 |
+| **Sweden** | **−296.1** | **−287.9** | **−297.0** | +11.2 |
+| **France** | −69.1 | **−296.7** | **−299.0** | +108.8 |
+
+**Four countries diverge IDENTICALLY before and after.** USA, Germany, Italy and Poland climb on the same
+trajectory to within ~3 points at turn 1000. **`0386e83` is innocent for all four.** The Fiscal Reaction
+Function has never equilibrated for them — the 2026-07-22 figures were waypoints on the day they were
+recorded, and every "equilibrium" quoted since has been a waypoint quoted as a resting place.
+
+⚠ **THE DEFECT IS OLDER AND LARGER THAN THIS SESSION'S WORK, and Italy needs no separate explanation** —
+its "+7.0" was never attributable to the SWF change, and neither was anything else.
+
+**Two countries were PINNED AT THE −300% BOUND pre-fix.** Sweden sits at −296/−288/−297 and France
+reaches −299 — exactly the pinning Elias's 2026-08-02 ruling named as its first reason (*"France at −298%
+against a −300% bound is not a risk, it is already pinning"*). Post-fix they are at +11.2 and +108.8:
+real, unpinned values. **`0386e83` plus the bound removal did precisely what it was ruled to do**, and
+Sweden's ~13% baseline does not reproduce pre-fix either, so it was never the number to defend.
+
+**What drives the four-country climb is still unidentified** — the ratio's numerator outpaces its
+denominator indefinitely, so either the fiscal reaction function never reaches the deficit or interest
+compounding outruns it. This run cannot distinguish those; both horizons show the same shape.
 
 ## An absence claim greped from ONE FILE is rule 14 inverted (2026-08-11)
 
