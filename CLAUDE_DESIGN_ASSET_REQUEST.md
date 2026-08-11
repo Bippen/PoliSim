@@ -1070,10 +1070,14 @@ IS that blocker, and it resolved — the delivery came back as `ui_*` and no `ca
 There is no open question about where these belong: `Chrome/Source/` already holds 19 SVG sources under
 exactly this convention. They are not blocked. They are unfiled.
 
-**`DeliveredAssetCheck` exits 1 on precisely these eight** (run 2026-08-11: *"0 missing from 0 root
-zip(s), 8 missing from archived packs"*). That is the check working, not a new defect — but it is a
-standing red that will read as a surprise on the next Editor open unless it is filed or waived.
-**Recorded as OPEN.**
+✅ **FILED 2026-08-11.** Extracted from `AssetPackArchive/PoliSim v2 Design Progress3.zip` into
+`Chrome/Source/`, which now holds 27 SVG sources. `DeliveredAssetCheck` went **exit 1 → exit 0, "0
+missing from 0 root zip(s), 0 missing from archived packs"**.
+
+⚠ **Filed rather than annotated, deliberately.** The alternative was to document the red as expected. A
+check that is *supposed* to exit 1 is a check people stop reading — the annotation buys a week before
+the red goes invisible, and then the next real gap arrives in a channel nobody watches. Filing them cost
+one extraction; maintaining the exception would have cost attention indefinitely.
 
 ### The marks DO resolve — verified, but not by the check that was prescribed
 
@@ -1085,9 +1089,32 @@ the diff argument in this same section: a procedure whose scope does not contain
 evidence for it. **A passing check that cannot fail for the stated reason is worse than no check,
 because it retires the question.**
 
-✅ **`PartyMarkCoverageCheck` written to ask it properly, and run: 4 of 4 resolve at 128×128**, behind a
-self-test on a known-good emblem so a broken probe cannot masquerade as coverage. The hand-written
-`.meta` files are sound.
+✅ **`PartyMarkCoverageCheck` written to ask it properly**, behind a self-test on a known-good emblem so
+a broken probe cannot masquerade as coverage.
+
+⚠ **ITS FIRST VERSION HAD THE SAME DEFECT, ONE LEVEL DOWN — and reporting "4 of 4 resolve at 128×128,
+the hand-written metas are sound" was the overclaim.** A handle coming back proves the GUID, the path
+and that the meta parses. It proves nothing about whether **block compression** took effect, and
+compression mangling white-on-alpha at icon size is the documented damage vector these settings exist to
+prevent. A compressed mark resolves at 128×128 and reports green.
+
+Extended to assert `texture.format`, which is runtime ground truth and needs no `isReadable` — just as
+well, since these metas carry `isReadable: 0` and pixels cannot be sampled at all. **It failed
+immediately: all four imported as DXT5.**
+
+⚠ **THE CAUSE: the metas were copied from the wrong art category.** §1F recorded them as *"copied from
+the existing `emblem_party_*` importer settings … already proven at legend size"*, and that is true about
+provenance — the files are byte-identical to that reference apart from GUID. But `emblem_party_*` is
+**full-colour** art (§3.1: authored in real colours, never tinted) and `mark_party_*` is
+**white-on-alpha, tinted at draw time** — the naming split exists to mark exactly that difference. The
+emblem family carries `textureCompression: 1`; `Chrome/`, the other white-on-alpha family, carries `0`
+after §3's correction. **"Already proven" was proven for a different category**, which is the
+cached-claim shape again with the cache one art family over.
+
+✅ Corrected to `textureCompression: 0` / `nPOTScale: 0` on all four and re-verified: **4 of 4 resolve at
+128×128, RGBA32.** The check's own bar was corrected too — it first compared each mark against the
+reference emblem's format, which passed 4 of 4 while every mark was DXT5. **A check whose bar is another
+artifact inherits that artifact's defects.**
 
 ### Scale this gates, for planning only
 

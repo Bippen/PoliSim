@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+
+<g fill="none" stroke="#ffffff">
+<circle cx="128" cy="128" r="112" stroke-width="6"></circle>
+<circle cx="128" cy="128" r="100" stroke-width="2"></circle>
+<circle cx="128" cy="128" r="78" stroke-width="2.5" stroke-dasharray="9 7"></circle>
+<circle cx="128" cy="128" r="44" stroke-width="2.5"></circle>
+<line x1="184" y1="128" x2="194" y2="128" stroke-width="2.5"></line>
+<line x1="176.5" y1="156" x2="185.2" y2="161" stroke-width="2.5"></line>
+<line x1="156" y1="176.5" x2="161" y2="185.2" stroke-width="2.5"></line>
+<line x1="128" y1="184" x2="128" y2="194" stroke-width="2.5"></line>
+<line x1="100" y1="176.5" x2="95" y2="185.2" stroke-width="2.5"></line>
+<line x1="79.5" y1="156" x2="70.8" y2="161" stroke-width="2.5"></line>
+<line x1="72" y1="128" x2="62" y2="128" stroke-width="2.5"></line>
+<line x1="79.5" y1="100" x2="70.8" y2="95" stroke-width="2.5"></line>
+<line x1="100" y1="79.5" x2="95" y2="70.8" stroke-width="2.5"></line>
+<line x1="128" y1="72" x2="128" y2="62" stroke-width="2.5"></line>
+<line x1="156" y1="79.5" x2="161" y2="70.8" stroke-width="2.5"></line>
+<line x1="176.5" y1="100" x2="185.2" y2="95" stroke-width="2.5"></line>
+</g>
+<polygon fill="#ffffff" points="128,92 136.5,116.3 162.2,116.9 141.8,132.5 149.2,157.1 128,142.5 106.8,157.1 114.2,132.5 93.8,116.9 119.5,116.3"></polygon>
+</svg>

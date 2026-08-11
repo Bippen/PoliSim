@@ -41,7 +41,24 @@ namespace PoliSim.EditorTools
             Debug.Log($"SELFTEST emblem_party_progressivealliance -> " +
                       $"{(reference != null ? $"{reference.width}x{reference.height} OK" : "NULL - BROKEN, results below are void")}");
 
-            int missing = 0;
+            // ⚠ THE BAR IS THE CONVENTION, NOT THE NEIGHBOUR. The first version compared each mark
+            // against `emblem_party_*`'s runtime format, on the reasoning that the metas were copied
+            // from it. That passed 4 of 4 — and the reference itself is DXT5, so "matches the
+            // reference" was green while every mark was block-compressed. A check whose bar is another
+            // artifact inherits that artifact's defects, which is this session's own theme one level
+            // further down.
+            //
+            // `emblem_party_*` is FULL-COLOUR art (§3.1: authored in real colours, never tinted).
+            // `mark_party_*` is WHITE-ON-ALPHA and tinted at draw time — see IconLibrary.GetPartyMark,
+            // where the naming split exists precisely to mark that difference. §3.1 separates those two
+            // categories, and the separation governs importer settings too: compression on white-on-
+            // alpha at icon size is the documented damage vector. So the bar is Chrome/'s corrected
+            // convention (textureCompression 0), which is what the other white-on-alpha family uses.
+            Debug.Log($"SELFTEST reference emblem format -> {(reference != null ? reference.format.ToString() : "n/a")} " +
+                      $"(full-colour family; NOT the bar for these)");
+            const TextureFormat expected = TextureFormat.RGBA32;
+
+            int missing = 0, damaged = 0;
             foreach (string mark in DeliveredMarks)
             {
                 Texture2D texture = IconLibrary.GetPartyMark(mark);
@@ -52,11 +69,30 @@ namespace PoliSim.EditorTools
                     continue;
                 }
 
-                Debug.Log($"  OK {mark} -> {texture.width}x{texture.height}");
+                // ⚠ RESOLUTION IS NOT IMPORT VERIFICATION, and the first version of this check confused
+                // them. A handle coming back at 128x128 proves the GUID, the path and that the meta
+                // parses. It says nothing about whether BLOCK COMPRESSION took effect - and compression
+                // mangling white-on-alpha at icon sizes is the documented damage vector that produced
+                // these importer settings in the first place. A compressed mark resolves at 128x128 and
+                // reports green, so "resolves" was being read as "imported correctly" one level down
+                // from the defect this check was written to fix.
+                //
+                // `format` is the runtime ground truth and needs no `isReadable` - which is just as
+                // well, since these metas carry `isReadable: 0` and pixels cannot be sampled at all.
+                if (texture.format != expected)
+                {
+                    Debug.LogError($"  DAMAGED {mark} -> {texture.width}x{texture.height} format {texture.format}, " +
+                                   $"expected {expected}. Block compression on white-on-alpha at icon size.");
+                    damaged++;
+                    continue;
+                }
+
+                Debug.Log($"  OK {mark} -> {texture.width}x{texture.height} {texture.format}");
             }
 
-            Debug.Log($"=== Party mark coverage: {DeliveredMarks.Length - missing} of {DeliveredMarks.Length} resolve ===");
-            EditorApplication.Exit(missing == 0 ? 0 : 1);
+            Debug.Log($"=== Party marks: {DeliveredMarks.Length - missing} of {DeliveredMarks.Length} resolve, " +
+                      $"{DeliveredMarks.Length - missing - damaged} of {DeliveredMarks.Length - missing} at the reference format ===");
+            EditorApplication.Exit(missing == 0 && damaged == 0 ? 0 : 1);
         }
     }
 }

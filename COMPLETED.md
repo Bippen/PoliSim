@@ -702,10 +702,18 @@ does not announce itself, and the status outlived the fact — twice.
   reconciled names (`icon_crime` → `icon_area_crimejustice`, and so on), verified against the files on
   disk rather than taken from the README's "and so on" — without it the check would report 16 permanent
   false misses and become noise that gets ignored.
-- **`StatIconCoverageCheck`** asks the runtime half: that every name the UI hard-codes resolves through
-  `Resources.Load`. **19 of 19.** A file existing on disk does not guarantee this when its `.meta` is
-  hand-written — a malformed importer block leaves the asset present and unloadable, and the
-  null-on-missing contract would swallow that silently.
+- **`StatIconCoverageCheck`** asks the runtime half for **the 19 names it enumerates** — every
+  `StatNodeId` icon, plus `menu_pattern_tile` — resolving through `Resources.Load`. **19 of 19.** A file
+  existing on disk does not guarantee this when its `.meta` is hand-written: a malformed importer block
+  leaves the asset present and unloadable, and the null-on-missing contract would swallow that silently.
+
+  ⚠ **This read "every name the UI hard-codes" until 2026-08-11, and the overclaim was load-bearing.**
+  The UI hard-codes far more than 19 — chrome, emblems, portraits, party marks — none of which this
+  check touches. §1F of the design request and `PARTY_EMBLEM_QUESTION.md` both cited it as proof that
+  four newly imported party marks resolved; it passed 19 of 19, and would have passed with those marks
+  absent or corrupt. `CLAUDE.md` had the scope right the whole time ("only covers the 19 names the UI
+  hard-codes"); this document's looser phrasing is what licensed the misuse. **A check is evidence only
+  for claims its enumeration contains.** `PartyMarkCoverageCheck` answers the emblem question.
 
 **The project root now holds no zips at all**, for the first time. That state is itself the signal: a zip
 at the root means something in it is unfinished.
@@ -786,3 +794,55 @@ not by re-testing:
 
 **A pass is only valid for what was on screen.** Both caveats invalidated a confirmation that looked
 complete, and neither would have surfaced from the review notes alone.
+
+## 17. Screen-edge clipping — the frame itself, fixed and measured (2026-08-11)
+
+Elias, from live play: *"There are borders at the sides which cutoff the game. For example the time
+selector at bottom and the politics tab top right."* The desk margin is intentional; `OnGUI`'s
+`BeginArea` clipping content laid out past it was not.
+
+**It was already sitting in that morning's capture set.** `screenshots/run_*` had been written at the
+resolution the defect is visible at and not looked at closely, which is the eleven-instances pattern
+repeating one more time — and this time with two purpose-built guards reporting clean.
+
+### The numbers
+
+Content pixels on the last drawable column/row of the 1536x891 clip rect, at 1600x929:
+
+| | right edge | bottom edge |
+|---|---|---|
+| before | **54 / 54** gameplay screens | **54 / 54** |
+| after | 0 / 54 | 0 / 54 |
+
+Left and top were clean throughout — the asymmetry is what identifies a clip rather than a design
+margin. `01_country_selector` reads flush on all four edges in both passes and is not a finding:
+`DrawMenuBackground` is full-bleed by design.
+
+### What was wrong
+
+Five budgets, one mistake: each computed from the space a container was *allocated* rather than the
+space its children can *use*. `DrawConsolidatedTabs` divided by six without the per-button margins
+(~32px, the Politics tab); the left column box was handed its full column width with its own margin
+added outside (8px, carrying the right column with it); `InnerWidth` carried three of the four terms
+(~9px, "Federal Reserve"); no `InnerHeight` existed, so `_boxStyle`'s vertical chrome was never
+subtracted from `areaHeight`; and two reserves were fixed multiples of the font size standing in for
+wrapped prose — the calendar strip's one line against a two-line pause banner, and the Budget screen's
+186px against ~290px drawn, which put the columns row ~100px below the screen.
+
+Fixed with a fourth term in `InnerWidth`, a new `InnerHeight`, one shared accessor for the tab bar's
+height, and two measured header accessors reading the same strings the drawing prints.
+
+### Validation
+
+Two independent Editor capture passes at 1600x929, exit code 0 both times, `55 captured, 0 failed`,
+0 text overflows, 0 containment escapes, identical across runs. Not covered: any other aspect ratio.
+
+### The transferable part
+
+Both guards passed while this was on screen, and correctly so — one asks whether text fits its rect,
+the other whether a child rect sits in its container, and this was a layout group overrunning the clip
+rect everything is inside. **A guard that reads the content cannot see a defect in the frame.** The
+check that did find it reads the PNGs the capture pass already writes and needs no engine access — it is
+now `screenshot_edge_check.py` at the repository root, exit 1 on any clipped screen, verified against the
+pre-fix set as a negative control. Full record, including the two standing rules it produced, in
+`CLAUDE.md`.
