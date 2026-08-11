@@ -1500,6 +1500,136 @@ time a guard misses something.
 eleven instances have landed. A clean run is evidence about that population — not about every label
 on screen, and (per the delta above) not about whether rects sit inside their containers.
 
+## Instance #12 — the FRAME, not the text, and both guards clean while it was on screen (2026-08-11)
+
+Reported by Elias from live play: *"There are borders at the sides which cutoff the game. For example the
+time selector at bottom and the politics tab top right."* The borders are `ScreenMarginFraction`'s desk
+margin and are meant to be there; what was wrong is that `OnGUI`'s `BeginArea` was clipping content laid
+out wider and taller than the area itself.
+
+**It reproduced in this project's own capture set with nothing changed** — `screenshots/run_*` from that
+morning's pass, which had been captured, written to disk, and left unexamined at exactly the resolution
+the defect is visible at.
+
+### How it was found: a check on the FRAME rather than on the text
+
+Both existing guards had just run clean on the broken build — 0 overflows, 0 escapes. What found it was a
+different question asked of the same PNGs: *does content sit on the last drawable pixel of the clip
+rect?* Counting non-desk pixels on column `areaRight-1` and row `areaBottom-1`, at 1600x929:
+
+| | right edge | bottom edge |
+|---|---|---|
+| `run_*` (before) | **54 / 54** gameplay screens | **54 / 54** |
+| `clipfix2_*` (after) | 0 / 54 | 0 / 54 |
+
+**The left and top edges were clean in every before-capture, and that asymmetry is the whole diagnosis.**
+Content flush on one side and inset on the opposite side is a clip; content flush on all four is a
+full-bleed background — which is why `01_country_selector` reads flush in both passes and is not a
+finding. `DrawMenuBackground` fills the screen on purpose.
+
+### Why neither guard could see it
+
+`UiOverflowGuard` asks *does this text fit the rect it was handed?* — every clipped label here fitted its
+rect perfectly. `UiContainmentGuard` asks *does this child rect sit inside its container?* — scoped, as
+its own doc says, to the three composite widgets that lay out a stack inside a fixed rect. This defect is
+a GUILayout GROUP overrunning the one container everything in the game is inside, which is neither
+question. The scope note under "Child-rect containment" above says a clean run is evidence about
+fixed-rect drawing and *"not about every label on screen"*. **Instance #12 landed precisely in the
+excluded population**, and the two guards reporting zero is not a contradiction — it is that note coming
+true.
+
+### Five budgets, one mistake
+
+Every site computed a budget from the space a container was *allocated* rather than the space its
+children can *use*:
+
+| Site | Missing term | Measured overrun |
+|---|---|---|
+| `DrawConsolidatedTabs` | per-button margins; `availableWidth / 6` never adopted `InnerWidth` | ~32px — the right third of the Politics tab, on every screen |
+| `OnGUI`, left column box | `_boxStyle.margin.horizontal` on the width handed to the box | 8px, carrying the whole right column with it |
+| `PoliSimWidgets.InnerWidth` | the CONTAINER's own margin — three terms, needed four | ~9px — the right edge of "Federal Reserve" |
+| `OnGUI`, left column + tab content heights | `_boxStyle` padding+margin never subtracted from `areaHeight`; no `InnerHeight` existed to subtract them with | 34px + a one-line reserve for a two-line wrapped banner — the Pause/1x/2x/3x strip, cut through the middle |
+| `DrawBudgetProcessTab` | `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f` as the header reserve | 186px reserved against ~290px drawn — the columns row, ~100px below the clip rect |
+
+Fixed by: the fourth term in `InnerWidth`; a new `InnerHeight` twin; `ConsolidatedTabButtonHeight` /
+`ConsolidatedTabRowHeight` as one accessor both the reserve and the button style read; and
+`CalendarAndSpeedControlsHeight` / `BudgetProcessHeaderHeight` measuring the strings they will actually
+draw, which required `BuildTimeStatusText`, `BuildBudgetBillStatusText`, `BuildFullScreenInterruptText`
+and a `BudgetProcessDescription` const so the drawn and measured copies cannot drift.
+
+### The two standing lessons
+
+> **A reserve expressed as a multiple of the font size is a guess about wrapped prose, and it fails in
+> the direction that clips.** Both height defects here were reserves that were correct for the content
+> the author had in mind — one line, seven lines — and wrong for the content the screen actually shows,
+> which varies with window width AND with which interrupt happens to be pending. Every such reserve
+> should call an accessor that walks the same controls the drawing walks, from the same strings, and
+> where the two cannot be made exact the error must be pointed at over-reserving.
+
+> **A guard that reads the CONTENT cannot see a defect in the FRAME.** Eleven instances of the clipping
+> class were text inside a rect, so two guards were built to check text inside rects. The twelfth was
+> the rect itself, and it was found by measuring pixels against the clip rectangle on a capture the
+> guards had just passed. **The cheap version of this check is a per-capture edge test, and it needs no
+> engine access at all** — it reads the PNGs the pass already writes. Shipped as
+> `screenshot_edge_check.py` at the repository root:
+> `python3 screenshot_edge_check.py "screenshots/clipfix2_*.png"`, exit 1 on any clipped screen.
+> Negative control run the same day: the pre-fix `run_*` set returns 54 and exit 1.
+
+### Validation, and what it does not cover
+
+Two independent Editor capture passes (`-shotlabel=clipfix`, then `clipfix2`) at 1600x929: exit code 0,
+`55 captured, 0 failed`, 0 text overflows, 0 containment escapes, identical results across both runs.
+The edge check reports 0 on all 54 gameplay screens on both edges. `Demographics` was confirmed by eye to
+still set on one line at the ~8px narrower tab width the fix produces.
+
+**This is one aspect ratio.** The margins removed are absolute pixels against fractional layout, so the
+proportions differ at other window sizes; nothing here has been captured at 1920x1080, 2560x1440 or a
+narrow window, and the edge check reports flush-ness rather than overrun magnitude, so it cannot say how
+much slack any screen has left. The `Start-Process -Wait -PassThru` invocation form Elias established
+during this pass is what makes the capture self-reporting — `&` returns before Unity finishes, so a red
+pass and a green pass look identical at the prompt.
+
+### 1440p check on the Budget ledger's trailing column — ported, not captured (2026-08-11)
+
+Elias, from play, the same day as Instance #12 above: *"The ledger rows on the budget screen look like
+the right-hand column is getting cut off when I play at 1440p."* `screenshots/` was searched, not
+assumed clean: no shotlabel, past or present, has ever captured at 2560x1440 — the gap the paragraph
+above already names by hand. `clipfix2`, written that same morning, is 0/55 clipped on every edge on
+every Budget sub-tab (`05a`..`05e`, both the full-tab and the zoomed `_rows` captures) — real, current,
+same-day evidence, but at 1600x929 only.
+
+**`LedgerRow.Columns` documents its own failure mode, which is what made 1440p checkable without a
+capture.** Its trailing-column squeeze is floored at `Mathf.Max(0.35f, available / fixedTotal)` so
+columns never shrink into illegibility — meaning containment past that floor is not guaranteed by
+construction. Whether the floor is ever reached at 2560x1440 is arithmetic, not pixels, so it was
+answered in Python rather than by eye: `ledger_geometry_check.py` (repo root) ports the exact width
+chain feeding `Columns()` — `GameController.OnGUI` -> `DrawBudgetProcessTab` -> `DrawTaxLineRow` /
+`DrawWelfareProgramRow` / `DrawSpendingLineRow` / `DrawInfrastructureContent` / the SWF rows, all five of
+which share this one container chain — using constants transcribed from source (cited by line in the
+script's own header) plus the two runtime-measured `GUI.skin.box` constants this file already reports
+elsewhere (`padding.horizontal` 28px at line ~4655, `margin.horizontal` 8px at line ~858).
+
+**Calibrated against the real capture before trusting it at a resolution nobody has captured.** At
+1600x929 the port gives `row.width = 728.9px`, squeeze factor `1.000` (never engaged), trailing column
+flush with the row to the sub-pixel — agreeing with `clipfix2`'s real 0/55. At 2560x1440 (native
+fullscreen, 16:9 — the ordinary reading of "1440p"), the same port gives `row.width = 1257.2px`, squeeze
+factor still `1.000`, trailing column again flush to the sub-pixel: the three fixed columns need 326.9px
+and have 1071.9px available to them before any squeeze would even begin. The reason is `labelFontSize`'s
+own clamp (`RescaleStylesToScreen`, line 1165: `Clamp(round(Screen.height*0.022), 16, 28)`) — it tops
+out at 28px for any window taller than ~1273px, 1440p included, while `row.width` keeps growing with
+`Screen.width`. On a standard 16:9 monitor the column floors this mechanism can hit stop growing well
+before the row does, so 1440p carries MORE headroom than the captured resolution, not less.
+
+⚠ **What this does not close.** This is a model, not a render, and it cannot see Unity's own vertical
+scrollbar width inside the ledger's scroll view — an unmeasured residual that only narrows `row.width`
+further, so it can bias a PASS optimistic, never turn a real FAIL into a false pass. It also assumes a
+fullscreen native 2560x1440 window; a much narrower window at the same height is the shape closest to
+still tripping the 0.35 floor, and neither this port nor any capture has ever tested that shape. **The
+"nothing here has been captured at 1920x1080, 2560x1440 or a narrow window" gap named above is NOT
+closed by this** — only the one question "does the Budget ledger's trailing column mathematically fit
+its row at 2560x1440" is answered, and today's source says yes. A real Editor capture at 2560x1440 is
+still the only way to see the whole screen rather than one column's arithmetic, and has not been run.
+
 ## Caption column: fixed truncation, introduced unevenness (2026-08-10)
 
 `LedgerRow.Columns` now sizes the trailing column from its content, because that column holds two

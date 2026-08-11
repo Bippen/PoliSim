@@ -188,6 +188,32 @@ namespace PoliSim.Simulation
                 }
             }
 
+            // USA vertical slice (2026-08-11): driven here, once per simulated day, for exactly the
+            // reason PublicationSystem is - an election is an event on a DATE (the Tuesday after the
+            // first Monday in November), not something that happens every Nth turn. Trying to express it
+            // as a turn multiple is what ElectionSystem.ElectionCycle does, and that constant is really a
+            // statement about turn LENGTH: MacroSystem.YearsPerTurn is derived from it.
+            //
+            // It reads EconomyState and writes only its own chambers and its own pending slot, so like
+            // publishing it cannot influence the turn boundary computed below, and it draws no
+            // randomness, so the seeded trajectory is unaffected.
+            if (_world != null)
+            {
+                Country usaCountry = _world.GetCountry(CountryId.USA);
+                if (usaCountry != null)
+                {
+                    _usaElections.AdvanceDay(CurrentDate, new VoteModelInputs
+                    {
+                        ApprovalRating = usaCountry.State.ApprovalRating,
+                        // Null before enough history exists to measure growth. Falling back to trend
+                        // means "no growth signal, no growth effect", which is the honest neutral.
+                        GdpGrowthPercent = DerivedStats.RealGdpGrowthPercent(usaCountry) ?? NationalVoteModel.TrendGrowthPercent,
+                        UnemploymentPercent = usaCountry.State.Unemployment,
+                        InflationPercent = usaCountry.State.Inflation
+                    });
+                }
+            }
+
             int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
             return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
         }
@@ -196,6 +222,36 @@ namespace PoliSim.Simulation
         private World _world;
 
         public World World => _world;
+
+        /// <summary>
+        /// USA vertical slice (2026-08-11): the live American election cycle - chambers, parties,
+        /// cohorts, the next election date and the pending result - seeded from UnitedStatesSeed at the
+        /// real 119th Congress.
+        ///
+        /// <para>ONE instance rather than a per-country dictionary, deliberately. The other five
+        /// countries need coalitions, investiture votes and indirectly-elected chambers that this class
+        /// cannot represent, so an abstraction generalised from the single implemented case would have to
+        /// be rebuilt the moment Sweden arrives. See the roadmap's Phase 4.</para>
+        /// </summary>
+        private readonly UnitedStatesElectionCycle _usaElections = UnitedStatesElectionCycle.CreateSeeded();
+
+        /// <summary>The USA's election cycle, for the UI to read. Only AdvanceDay and AcknowledgeElectionResult move it.</summary>
+        public UnitedStatesElectionCycle UsaElections => _usaElections;
+
+        /// <summary>The election result waiting to be shown, or null. Same single-slot shape as GetPendingBudgetProcess/GetPendingForeignPolicyMeeting, so GameController's existing pause gate and banner can name it with machinery they already have.</summary>
+        public UnitedStatesElectionResult GetPendingElectionResult(CountryId countryId)
+        {
+            return countryId == CountryId.USA ? _usaElections.PendingResult : null;
+        }
+
+        /// <summary>Clears the pending result once the player has seen it, releasing the day loop.</summary>
+        public void AcknowledgeElectionResult(CountryId countryId)
+        {
+            if (countryId == CountryId.USA)
+            {
+                _usaElections.AcknowledgePendingResult();
+            }
+        }
 
         // --- Fiscal accounting: automatic stabilizers + sovereign risk premium on debt ---
 

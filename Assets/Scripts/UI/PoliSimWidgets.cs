@@ -182,11 +182,23 @@ namespace PoliSim.UI
         /// width. The single implementation of a subtraction that has been forgotten at four sites and
         /// hand-rolled at two.
         ///
-        /// <para><b>Three terms, and each one has been the bug.</b> The container's PADDING is space the
+        /// <para><b>Four terms, and each one has been the bug.</b> The container's PADDING is space the
         /// child never sees (Budget Process, three sites, overflowing by exactly padding.horizontal). The
         /// child's MARGINS are inserted between siblings and come out of the same budget (the Policy/Laws
-        /// sub-tab row, 20px short across five buttons). And the CHILD COUNT divides what is left - the
-        /// term a style-only accessor could not carry, and the one that went missing.</para>
+        /// sub-tab row, 20px short across five buttons). The CHILD COUNT divides what is left - the
+        /// term a style-only accessor could not carry, and the one that went missing. And the
+        /// CONTAINER'S OWN MARGIN is space the container itself never gets, because GUILayout charges it
+        /// to the budget OUTSIDE the box - added 2026-08-11.</para>
+        ///
+        /// <para><b><paramref name="outerWidth"/> is the budget the container is drawn INTO, not the width
+        /// the container ends up with.</b> That distinction is the whole of the fourth term, and it is
+        /// what every caller here already means: each passes a column width that a `_boxStyle` box is then
+        /// laid out inside, and GUILayout takes that box's `margin` out of the column before the box gets
+        /// anything - so dividing `outerWidth` was 8px over before padding was even considered. Measured
+        /// 2026-08-11 at 1600x929: the Politics sub-tab row ran past the screen's clip rect and lost the
+        /// right edge of "Federal Reserve" by exactly `_boxStyle.margin.horizontal`. To size a CONTAINER
+        /// rather than its contents, subtract only that margin - `GameController.OnGUI`'s left column is
+        /// the one site asking that other question, and it says so there.</para>
         ///
         /// <para>Pass <paramref name="childCount"/> 1 and no <paramref name="child"/> for the common case:
         /// "how wide may content inside this box be". Pass both for a row of n siblings.</para>
@@ -200,8 +212,35 @@ namespace PoliSim.UI
         {
             int count = Mathf.Max(1, childCount);
             float padding = container != null ? container.padding.horizontal : 0f;
+            float containerMargin = container != null ? container.margin.horizontal : 0f;
             float margins = child != null ? count * child.margin.horizontal : 0f;
-            return Mathf.Max(1f, (outerWidth - padding - margins) / count);
+            return Mathf.Max(1f, (outerWidth - padding - containerMargin - margins) / count);
+        }
+
+        /// <summary>
+        /// The vertical twin of <see cref="InnerWidth"/>. It exists because the HEIGHT half of the same
+        /// subtraction had no helper at all, and was therefore never performed anywhere.
+        ///
+        /// <para>Same contract: <paramref name="outerHeight"/> is the budget the container is drawn INTO.
+        /// Both of this UI's full-height containers - the left column's box, and the box each tab wraps
+        /// its content in - reserved their internal rows against the RAW area height, so each stood
+        /// `padding.vertical + margin.vertical` taller than the clip rect containing it and the overrun
+        /// landed on whatever was drawn last. Measured 2026-08-11 at 1600x929: content sat flush against
+        /// the bottom clip edge on all 54 gameplay screens, and the left column's Pause/1x/2x/3x strip -
+        /// the control this UI most needs never to lose, since it is the only always-visible one - was
+        /// cut through the middle.</para>
+        ///
+        /// <para>No child-count or child-margin terms, deliberately. A vertical row of n equal siblings
+        /// is not something this UI lays out: its stacks are heterogeneous (a status label, then a button
+        /// row), so their heights are measured individually rather than divided. Adding the parameters
+        /// "for symmetry" would invite dividing a column height by a count, which is not a question
+        /// anything here asks.</para>
+        /// </summary>
+        public static float InnerHeight(float outerHeight, GUIStyle container)
+        {
+            float padding = container != null ? container.padding.vertical : 0f;
+            float margin = container != null ? container.margin.vertical : 0f;
+            return Mathf.Max(1f, outerHeight - padding - margin);
         }
 
         public static Vector2 MeasuredLabel(Rect rect, string text, GUIStyle style, float reserveWidth = 0f)

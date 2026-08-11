@@ -137,6 +137,28 @@ namespace PoliSim.UI
             return Load(EmblemResourcesPath + "emblem_party_" + archetype.ToString().ToLowerInvariant());
         }
 
+        /// <summary>
+        /// A real party's ballot stamp, by the mark name carried in its seed data.
+        ///
+        /// <para><b>WHITE-ON-ALPHA, AND THEREFORE TINTED AT DRAW TIME - the opposite of
+        /// <see cref="GetPartyEmblem"/> above, which must never be tinted.</b> That difference is the
+        /// whole reason the family is named `mark_party_*` rather than `emblem_party_*`, and it is a
+        /// deliberate convention call by Design (2026-08-11): a mark carries silhouette only and takes
+        /// its colour from <c>PoliticalParty.DisplayColor</c>, so a party rebrand - or Sweden's
+        /// 13 September election changing a whole party set - is a SEED-DATA edit and never a
+        /// redelivery. `emblem_*` keeps its already-coloured, never-tint meaning and retires with the
+        /// archetypes.</para>
+        ///
+        /// <para>The name is stored on the party rather than derived from its id, because these are
+        /// authored drawings and a derivation rule would silently point at the wrong file the first time
+        /// a party id and a filename disagree. Returns null for a party with no mark yet, which every
+        /// call site already treats as "draw the row without one".</para>
+        /// </summary>
+        public static Texture2D GetPartyMark(string markName)
+        {
+            return string.IsNullOrEmpty(markName) ? null : Load(EmblemResourcesPath + markName);
+        }
+
         private const string PortraitResourcesPath = "Art/UI/Portraits/";
 
         /// <summary>

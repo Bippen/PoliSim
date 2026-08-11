@@ -606,7 +606,8 @@ namespace PoliSim.UI
             }
             if (UpdateFedChairSelectionState() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                 || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
+                || _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
+                || _simulationManager.GetPendingElectionResult(PlayerCountryId) != null)
             {
                 return;
             }
@@ -660,7 +661,8 @@ namespace PoliSim.UI
                 if (_isGameOver || _pendingElectionResult != null || UpdateFedChairSelectionState()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                    || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
+                    || _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
+                    || _simulationManager.GetPendingElectionResult(PlayerCountryId) != null)
                 {
                     break;
                 }
@@ -826,6 +828,10 @@ namespace PoliSim.UI
             // Part B design's explicit instruction to extend the existing pattern rather than build a
             // fourth separate ad-hoc pause-check system.
             bool hasPendingBudgetProcess = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
+            // USA vertical slice: an election night is the fifth condition on this same gate, extending
+            // the existing pattern rather than building a fifth ad-hoc pause system - the instruction
+            // Master Sequence step 5a gave for the fourth.
+            bool hasPendingElectionResult = _simulationManager.GetPendingElectionResult(PlayerCountryId) != null;
 
             float marginX = Screen.width * ScreenMarginFraction;
             float marginY = Screen.height * ScreenMarginFraction;
@@ -858,7 +864,15 @@ namespace PoliSim.UI
             {
             // v2.0: the left column stands on paper like every other panel. Without a sheet under it its
             // banner, dashboard headings and preview text were ink on bare desk - present, and unreadable.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(leftColumnWidth));
+            //
+            // ⚠ THE BOX IS HANDED ITS OWN WIDTH MINUS ITS OWN MARGIN, and this is the one site in this
+            // class asking the opposite question to PoliSimWidgets.InnerWidth. Everywhere else a width is
+            // a budget something is drawn INSIDE; here it is the width of the container itself, and
+            // GUILayout adds `margin` OUTSIDE whatever we hand it. Handing over the whole leftColumnWidth
+            // made the two columns claim areaWidth + margin.horizontal between them, which pushed the
+            // right column - and with it the tab bar's last tab - past this area's clip rect. Measured
+            // 2026-08-11 at 1600x929: 8px, exactly `_boxStyle.margin.horizontal`.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(leftColumnWidth - _boxStyle.margin.horizontal));
 
             // Continuous Time Migration Phase 0: the calendar/speed control panel replaces the old
             // Advance Turn button in this same pinned-outside-scroll-view slot, for the same reason -
@@ -868,8 +882,27 @@ namespace PoliSim.UI
             // second row for a temporary Acknowledge button (see git history) - removed now that step
             // 5c's real Budget Process introduce-bill flow replaced it, back to the original one-row
             // reservation.
-            float calendarAreaHeight = _labelStyle.fontSize + 8f + _buttonStyle.fixedHeight + sectionSpacing;
-            float leftScrollHeight = areaHeight - calendarAreaHeight;
+            //
+            // ⚠ THE RESERVE IS MEASURED NOW, NOT ASSUMED, and the assumption is what cut this strip in
+            // half. The old figure was `_labelStyle.fontSize + 8f + _buttonStyle.fixedHeight` - one line
+            // of body type, plus a button - and the status line above the buttons is neither of those
+            // things whenever the clock is paused: it escalates to the larger `_eventBannerStyle` AND
+            // names every pending reason at once (see DrawCalendarAndSpeedControls on why all four are
+            // listed), so it wraps. Measured 2026-08-11 at 1600x929 with a Fed Chair pause outstanding:
+            // two wrapped banner lines against a one-line reserve, and the Pause/1x/2x/3x row left the
+            // screen - the single control this UI most needs never to lose, since it is the only one
+            // visible from every tab. CalendarAndSpeedControlsHeight walks the same two controls the
+            // drawing walks, from the same string, so the two cannot disagree: the separate-accessor
+            // discipline UiContainmentGuard documents for StatTile, applied here.
+            //
+            // The column's own budget is InnerHeight, not areaHeight - `_boxStyle`'s padding and margin
+            // are space this box never gets. Floored at zero so a pathological four-reason banner
+            // collapses the SCROLL VIEW (which can scroll) rather than pushing the pinned strip off the
+            // bottom (which cannot).
+            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingElectionResult;
+            string timeStatusText = BuildTimeStatusText(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess, hasPendingElectionResult);
+            float calendarAreaHeight = CalendarAndSpeedControlsHeight(timeStatusText, isTimePaused, leftColumnWidth) + sectionSpacing;
+            float leftScrollHeight = Mathf.Max(0f, PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - calendarAreaHeight);
 
             _leftColumnScrollPosition = GUILayout.BeginScrollView(_leftColumnScrollPosition, GUILayout.Height(leftScrollHeight));
             DrawTopBanner();
@@ -885,7 +918,7 @@ namespace PoliSim.UI
             GUILayout.Space(sectionSpacing);
 
             GUI.enabled = !_isGameOver;
-            DrawCalendarAndSpeedControls(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess);
+            DrawCalendarAndSpeedControls(timeStatusText, isTimePaused);
             GUI.enabled = true;
 
             GUILayout.EndVertical();
@@ -899,8 +932,18 @@ namespace PoliSim.UI
 
             // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
             // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
-            float tabRowsHeight = _tabButtonStyle.fixedHeight;
-            float tabContentHeight = areaHeight - tabRowsHeight - sectionSpacing * 0.5f;
+            //
+            // ⚠ BOTH TERMS WERE WRONG, in the same direction, and their errors added. `tabRowsHeight`
+            // read `_tabButtonStyle.fixedHeight`, but Phase C's icon stack makes each tab button take
+            // the LARGER of that and its own icon+label height (see DrawConsolidatedTabButton), so the
+            // reserve understated the bar it was reserving for whenever the icon won - the same
+            // separate-accessor drift UiContainmentGuard exists to prevent, which is why the height is
+            // now one accessor both sites read. And the content below it was budgeted against the raw
+            // areaHeight, though every tab wraps itself in a `_boxStyle` box whose padding and margin
+            // come out of that same height first. Measured 2026-08-11 at 1600x929: content flush against
+            // the bottom clip edge on every screen where the right column is the taller one.
+            float tabRowsHeight = ConsolidatedTabRowHeight();
+            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - tabRowsHeight - sectionSpacing * 0.5f;
             // Master Sequence step 5e, Phase A: game-over gating stays exactly where the OLD 18-tab
             // dispatch had it, not a blanket gate here - several old tabs were deliberately NEVER
             // gated (WorldMap/PolicyWeb/Parliament/Compass are read-only visualizations, still fully
@@ -2384,36 +2427,23 @@ namespace PoliSim.UI
         /// consequential of the four) - "time is paused and here's why" must never be ambiguous. Still
         /// exactly one Label control either way (per DrawTaxPolicy's stable-control-layout pattern -
         /// content and style vary, the control itself never does).
+        ///
+        /// **THE STRING IS BUILT BY THE CALLER NOW (2026-08-11), and that is a layout fix rather than a
+        /// tidy-up.** Every property this comment describes above - escalating to the larger banner
+        /// style, and naming all four reasons at once instead of one - makes this line TALLER, and the
+        /// line is the thing OnGUI has to reserve space for before it can draw the scroll view above it.
+        /// While the text was built in here, the reserve was committed before the string existed, so it
+        /// could only ever assume one line of body type; with a Fed Chair pause outstanding at 1600x929
+        /// the real line wrapped to two of banner type and pushed the speed buttons off the bottom of
+        /// the screen. `BuildTimeStatusText` now runs first and its result is both measured (see
+        /// <see cref="CalendarAndSpeedControlsHeight"/>) and drawn, so the reserve is for the string
+        /// that actually renders. **Nothing about the message itself changed** - the same four reasons,
+        /// the same order, the same one-Label-either-way discipline.
         /// </summary>
-        private void DrawCalendarAndSpeedControls(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions, bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess)
+        private void DrawCalendarAndSpeedControls(string statusText, bool isPaused)
         {
             GUILayout.BeginVertical();
 
-            string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
-            bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
-
-            string statusText = dateText;
-            if (isPaused)
-            {
-                var reasons = new List<string>();
-                if (hasPendingFedChairSelection)
-                {
-                    reasons.Add("choose the next Fed Chair (Federal Reserve tab)");
-                }
-                if (hasPendingCabinetDecisions)
-                {
-                    reasons.Add("resolve the pending Cabinet decision (Cabinet tab)");
-                }
-                if (hasPendingBudgetProcess)
-                {
-                    reasons.Add("introduce the annual budget bill (Budget Process tab)");
-                }
-                if (hasPendingForeignPolicyMeeting)
-                {
-                    reasons.Add("respond to the pending Foreign Policy meeting (Foreign Policy tab)");
-                }
-                statusText = $"{dateText} - TIME PAUSED: {string.Join("; ", reasons)} to continue.";
-            }
             GUILayout.Label(statusText, isPaused ? _eventBannerStyle : _labelStyle);
 
             GUILayout.BeginHorizontal();
@@ -2424,6 +2454,70 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// The date line, plus every currently-true reason the clock is paused. Split out of
+        /// <see cref="DrawCalendarAndSpeedControls"/> so the height reserved for it and the text drawn
+        /// in it come from one string - see that method's doc for why the two used to disagree.
+        ///
+        /// Order is Fed Chair / Cabinet (structural, pre-existing), then Budget Process, then Foreign
+        /// Policy (an optional meeting being the least consequential of the four) - unchanged from when
+        /// this lived inline, and load-bearing: "time is paused and here's why" must never be ambiguous.
+        /// </summary>
+        private string BuildTimeStatusText(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions, bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess, bool hasPendingElectionResult)
+        {
+            string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
+
+            var reasons = new List<string>();
+            // First in the list because it is the most consequential of the five: everything else pauses
+            // a policy decision, this one has just changed who holds the chambers.
+            if (hasPendingElectionResult)
+            {
+                reasons.Add("review the election result (Politics tab)");
+            }
+            if (hasPendingFedChairSelection)
+            {
+                reasons.Add("choose the next Fed Chair (Federal Reserve tab)");
+            }
+            if (hasPendingCabinetDecisions)
+            {
+                reasons.Add("resolve the pending Cabinet decision (Cabinet tab)");
+            }
+            if (hasPendingBudgetProcess)
+            {
+                reasons.Add("introduce the annual budget bill (Budget Process tab)");
+            }
+            if (hasPendingForeignPolicyMeeting)
+            {
+                reasons.Add("respond to the pending Foreign Policy meeting (Foreign Policy tab)");
+            }
+
+            return reasons.Count == 0
+                ? dateText
+                : $"{dateText} - TIME PAUSED: {string.Join("; ", reasons)} to continue.";
+        }
+
+        /// <summary>
+        /// How tall <see cref="DrawCalendarAndSpeedControls"/> will actually be, walking the same two
+        /// controls it draws in the same order: the status label - at the style and the wrapped line
+        /// count THIS string produces at THIS column width - and the speed-button row, each with the
+        /// margin GUILayout puts around it.
+        ///
+        /// <para><paramref name="columnWidth"/> is the left column's budget, so the label's own width is
+        /// the InnerWidth of it: `_boxStyle`'s padding and margin, and the label's own margin, are all
+        /// gone before the text gets a line to wrap into. Measuring at the wrong width is the quiet way
+        /// to get this wrong again - too wide under-counts the lines, and under-counting lines is what
+        /// put the speed buttons off the screen in the first place.</para>
+        /// </summary>
+        private float CalendarAndSpeedControlsHeight(string statusText, bool isPaused, float columnWidth)
+        {
+            GUIStyle statusStyle = isPaused ? _eventBannerStyle : _labelStyle;
+            float statusWidth = PoliSimWidgets.InnerWidth(columnWidth, _boxStyle, 1, statusStyle);
+            float statusHeight = statusStyle.CalcHeight(new GUIContent(statusText), statusWidth) + statusStyle.margin.vertical;
+            float speedRowHeight = _buttonStyle.fixedHeight + _buttonStyle.margin.vertical;
+
+            return statusHeight + speedRowHeight;
         }
 
         private void DrawSpeedButton(string label, GameSpeed speed)
@@ -2824,14 +2918,27 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Explicitly divided evenly across <paramref name="availableWidth"/> - the SAME
-        /// rightColumnWidth OnGUI already computes fresh from Screen.width every frame - so the row
-        /// can never exceed its actual budget at any window size, matching the screen-relative
-        /// approach already used everywhere else in this class (see the old DrawRightColumnTabs' own
-        /// doc comment on why this matters, kept in git history).
+        /// rightColumnWidth OnGUI already computes fresh from Screen.width every frame - matching the
+        /// screen-relative approach already used everywhere else in this class (see the old
+        /// DrawRightColumnTabs' own doc comment on why this matters, kept in git history).
+        ///
+        /// ⚠ **THIS SAID "the row can never exceed its actual budget at any window size" AND IT DID,
+        /// AT EVERY WINDOW SIZE.** A bare `availableWidth / count` is precisely the first version
+        /// PoliSimWidgets.InnerWidth's own doc describes and rejects: each button also carries the
+        /// margin GUILayout inserts around it, so six buttons summing to exactly the budget need the
+        /// budget PLUS six margins. This row never adopted the helper the sub-tab rows did - it was
+        /// written before SubTabShare existed and nothing pulled it forward when the lesson landed -
+        /// so it kept overrunning while the rows below it were being fixed twice over. Measured
+        /// 2026-08-11 at 1600x929: ~32px past the screen's clip rect, which is the right-hand third of
+        /// the Politics tab, on every screen in the game.
+        ///
+        /// The child style passed is `_tabButtonStyle` rather than `GUI.skin.button` (SubTabShare's
+        /// choice) because these buttons are literally clones of it - UiPalette.BuildButtonStyle copies
+        /// the base style's margin - so it is the same figure without the assumption in the middle.
         /// </summary>
         private void DrawConsolidatedTabs(float availableWidth)
         {
-            float buttonWidth = availableWidth / ConsolidatedTabsPerRow;
+            float buttonWidth = PoliSimWidgets.InnerWidth(availableWidth, null, ConsolidatedTabsPerRow, _tabButtonStyle);
 
             GUILayout.BeginHorizontal();
             // Master Sequence step 5e, Phase C: all 6 tabs carry their icon. The four icon_nav_* ones
@@ -2852,6 +2959,43 @@ namespace PoliSim.UI
             DrawConsolidatedTabButton("Policy/Laws", ConsolidatedTab.PolicyLaws, buttonWidth, "icon_nav_policylaws");
             DrawConsolidatedTabButton("Politics", ConsolidatedTab.Politics, buttonWidth, "icon_area_political");
             GUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// The height one consolidated-tab button ACTUALLY takes, and the single place that answers it.
+        ///
+        /// <para>Two sites need this number and they are nowhere near each other: OnGUI has to RESERVE
+        /// the tab bar's height before the bar is drawn, and DrawConsolidatedTabButton has to IMPOSE it
+        /// on the per-call style. That is exactly the separation UiContainmentGuard's doc names as the
+        /// shape that drifts in silence, and it had already drifted - OnGUI reserved
+        /// `_tabButtonStyle.fixedHeight` while the button takes the LARGER of that and its own stacked
+        /// icon+label height, so at any font size where the icon stack wins, the tab content below was
+        /// pushed down by the difference with nothing reporting it.</para>
+        ///
+        /// <para>Never smaller than the base height, so a very short window cannot produce a tab bar
+        /// shorter than the rest of the UI expects - that floor is why the two figures could differ at
+        /// some sizes and agree at others, which is the worst way for a bug like this to behave.</para>
+        /// </summary>
+        private float ConsolidatedTabButtonHeight()
+        {
+            float iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
+            int labelFontSize = Mathf.Max(11, Mathf.RoundToInt(_tabButtonStyle.fontSize * ConsolidatedTabLabelFontScale));
+            float labelBandHeight = labelFontSize + 6f;
+            float stackedHeight = Mathf.RoundToInt(ConsolidatedTabIconTopPadding + iconSize + ConsolidatedTabIconLabelGap)
+                                  + labelBandHeight
+                                  + ConsolidatedTabLabelBottomPadding;
+
+            return Mathf.Max(_tabButtonStyle.fixedHeight, stackedHeight);
+        }
+
+        /// <summary>
+        /// The tab bar as a ROW: the button, plus the margin GUILayout puts above and below it. Separate
+        /// from <see cref="ConsolidatedTabButtonHeight"/> because the button's own style must not carry
+        /// the margin term - a fixedHeight that included it would draw a taller button, not a taller row.
+        /// </summary>
+        private float ConsolidatedTabRowHeight()
+        {
+            return ConsolidatedTabButtonHeight() + _tabButtonStyle.margin.vertical;
         }
 
         /// <summary>
@@ -2887,20 +3031,19 @@ namespace PoliSim.UI
             {
                 iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
                 int labelFontSize = Mathf.Max(11, Mathf.RoundToInt(_tabButtonStyle.fontSize * ConsolidatedTabLabelFontScale));
-                float labelBandHeight = labelFontSize + 6f;
 
                 style.fontSize = labelFontSize;
                 style.alignment = TextAnchor.MiddleCenter;
                 style.padding.top = Mathf.RoundToInt(ConsolidatedTabIconTopPadding + iconSize + ConsolidatedTabIconLabelGap);
                 style.padding.bottom = Mathf.RoundToInt(ConsolidatedTabLabelBottomPadding);
                 // Left/right trimmed to near-zero so the label gets the button's full width on one
-                // line - the whole point of stacking. Never smaller than the base height, so a very
-                // short window can't produce a tab bar shorter than the rest of the UI expects.
+                // line - the whole point of stacking.
                 style.padding.left = 2;
                 style.padding.right = 2;
-                style.fixedHeight = Mathf.Max(
-                    _tabButtonStyle.fixedHeight,
-                    style.padding.top + labelBandHeight + ConsolidatedTabLabelBottomPadding);
+                // Read from the accessor rather than recomputed here, so OnGUI's reserve for the tab bar
+                // and the height the bar actually takes are the same number by construction - see
+                // ConsolidatedTabButtonHeight for the drift this closes.
+                style.fixedHeight = ConsolidatedTabButtonHeight();
             }
 
             bool clicked = GUILayout.Button(label, style, GUILayout.Width(width));
@@ -3860,16 +4003,152 @@ namespace PoliSim.UI
             _parliamentScrollPosition = GUILayout.BeginScrollView(_parliamentScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Parliament", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            GUILayout.Label("Seats shift gradually with your ApprovalRating. The annual budget bill and any standalone bills are gated by Parliament - see the Budget Process tab to introduce one.", _labelStyle);
-            GUILayout.Space(6f);
 
-            _hemicycleRenderer.Draw($"{_playerCountry.Name} - {ParliamentConstants.TotalSeats} seats", _playerCountry.ParliamentSeats, _labelStyle);
+            // USA vertical slice (2026-08-11): the real Congress replaces the shared fictional archetypes
+            // for this one country. The other five still draw the archetype hemicycle because their
+            // systems are unbuilt - branching here is the honest state of the migration, rather than
+            // pretending one renderer already covers both.
+            if (PlayerCountryId == CountryId.USA)
+            {
+                DrawUnitedStatesCongress();
+            }
+            else
+            {
+                GUILayout.Label("Seats shift gradually with your ApprovalRating. The annual budget bill and any standalone bills are gated by Parliament - see the Budget Process tab to introduce one.", _labelStyle);
+                GUILayout.Space(6f);
+                _hemicycleRenderer.Draw($"{_playerCountry.Name} - {ParliamentConstants.TotalSeats} seats", _playerCountry.ParliamentSeats, _labelStyle);
+            }
 
             GUILayout.Space(10f);
             DrawPendingLegislation();
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// The real United States Congress: the pending election result if there is one, the countdown to
+        /// the next election, and the composition of both chambers.
+        ///
+        /// <para>Drawn as coloured party rows rather than through <c>HemicycleRenderer</c>, which takes a
+        /// <c>Dictionary&lt;PartyArchetype, int&gt;</c> and cannot express a real party set without being
+        /// re-plumbed. That re-plumbing is worth doing - a 435-seat hemicycle beside a 100-seat one is
+        /// the picture this screen wants - but it touches every existing call site, so it is a separate
+        /// change rather than a rider on this one.</para>
+        /// </summary>
+        private void DrawUnitedStatesCongress()
+        {
+            UnitedStatesElectionCycle cycle = _simulationManager.UsaElections;
+            if (cycle == null)
+            {
+                return;
+            }
+
+            UnitedStatesElectionResult pending = _simulationManager.GetPendingElectionResult(PlayerCountryId);
+            if (pending != null)
+            {
+                // The one screen that resolves the pause, so it leads. The banner on every other tab
+                // names this tab; arriving and having to hunt for the button would defeat that.
+                DrawColoredLabel(pending.WasMidterm ? "MIDTERM RESULT" : "ELECTION RESULT", _headerStyle, PoliSimTheme.Draft);
+                GUILayout.Label(pending.Summary, _eventBannerStyle);
+                GUILayout.Space(4f);
+
+                if (pending.VoteShares != null)
+                {
+                    foreach (PoliticalParty party in cycle.Parties)
+                    {
+                        if (!pending.VoteShares.TryGetValue(party.Id, out double share))
+                        {
+                            continue;
+                        }
+
+                        DrawColoredLabel($"{party.ShortCode}  {share * 100.0:F2}% of the vote", _labelStyle, PoliSimTheme.Hex(party.DisplayColor));
+                    }
+                }
+
+                GUILayout.Space(6f);
+                if (GUILayout.Button("Acknowledge result", _primaryButtonStyle))
+                {
+                    _simulationManager.AcknowledgeElectionResult(PlayerCountryId);
+                }
+
+                GUILayout.Space(12f);
+            }
+
+            int days = cycle.DaysUntilElection(_simulationManager.CurrentDate);
+            string kind = UnitedStatesElections.IsMidterm(cycle.NextElectionDate.Year) ? "midterm" : "presidential";
+            GUILayout.Label($"Next {kind} election: {cycle.NextElectionDate:MMMM d, yyyy} - {days} day(s) away.", _labelStyle);
+
+            // Divided government is the ordinary American condition rather than an edge case, and it is
+            // what gives the existing bill-gating its teeth - so it is stated plainly rather than left
+            // for the player to infer from two seat counts.
+            GUILayout.Label(
+                cycle.DividedGovernment
+                    ? "Divided government - the presidency does not control both chambers."
+                    : "Unified government - the presidency controls both chambers.",
+                _labelStyle);
+            GUILayout.Space(8f);
+
+            DrawChamberComposition(cycle.House, cycle);
+            GUILayout.Space(10f);
+            DrawChamberComposition(cycle.Senate, cycle);
+        }
+
+        /// <summary>One chamber's composition: every party holding seats, in its own colour, with the majority marked.</summary>
+        private void DrawChamberComposition(Chamber chamber, UnitedStatesElectionCycle cycle)
+        {
+            if (chamber == null)
+            {
+                return;
+            }
+
+            DrawColoredLabel(
+                $"{chamber.Name} - {chamber.TotalSeats} seats, {chamber.MajorityThreshold} for a majority",
+                _headerStyle,
+                UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+
+            foreach (PoliticalParty party in cycle.Parties)
+            {
+                if (!chamber.Seats.TryGetValue(party.Id, out int seats) || seats <= 0)
+                {
+                    continue;
+                }
+
+                float share = chamber.TotalSeats > 0 ? (float)seats / chamber.TotalSeats : 0f;
+                string majority = seats >= chamber.MajorityThreshold ? "   - MAJORITY" : string.Empty;
+                Color ink = PoliSimTheme.Hex(party.DisplayColor);
+
+                // The ballot stamp, tinted from the same seed-data colour the label is inked in, so the
+                // mark and the text can never disagree about what colour a party is. Reserved BEFORE the
+                // label draws rather than overlaid after it - the icon-over-text collision Elias reported
+                // on the tab bar came from overlaying, since GUILayout centres a label in whatever box it
+                // is given and neither party knew about the other.
+                Texture2D mark = IconLibrary.GetPartyMark(party.MarkName);
+                GUILayout.BeginHorizontal();
+                if (mark != null)
+                {
+                    float markSize = _labelStyle.fontSize;
+                    Rect markRect = GUILayoutUtility.GetRect(markSize, markSize, GUILayout.Width(markSize), GUILayout.Height(markSize));
+                    UiPalette.DrawTintedIcon(markRect, mark, ink);
+                    GUILayout.Space(6f);
+                }
+
+                DrawColoredLabel(
+                    $"{party.ShortCode}   {party.EnglishName} - {seats} seats ({share * 100f:F1}%){majority}",
+                    _labelStyle,
+                    ink);
+                GUILayout.EndHorizontal();
+            }
+
+            // The staggering is the mechanically interesting part of the Senate - no single election can
+            // hand a president the whole chamber - so the contested class is named rather than implied.
+            if (chamber.Renewal == ChamberRenewal.StaggeredThirds && chamber.ClassSeats != null && chamber.ClassSeats.Length > 0)
+            {
+                int classIndex = Mathf.Clamp(chamber.NextClassUp, 0, chamber.ClassSeats.Length - 1);
+                GUILayout.Label(
+                    $"Class {classIndex + 1} faces the voters next: {chamber.ClassSeats[classIndex]} of {chamber.TotalSeats} seats contested.",
+                    _labelStyle);
+            }
         }
 
         /// <summary>
@@ -4445,6 +4724,24 @@ namespace PoliSim.UI
             //
             // The Budget Process's own pause is deliberately NOT listed: this screen already states that
             // status directly, and repeating it would train players to ignore the banner.
+            string text = BuildFullScreenInterruptText();
+            if (text == null)
+            {
+                return;
+            }
+
+            GUILayout.Label(text, _eventBannerStyle);
+            GUILayout.Space(4f);
+        }
+
+        /// <summary>
+        /// The banner's text, or null when nothing is blocking. Split out for the same reason
+        /// <see cref="BuildTimeStatusText"/> was: this line is drawn here and MEASURED in
+        /// <see cref="BudgetProcessHeaderHeight"/>, and a banner whose height nobody reserved is exactly
+        /// how the three-column row below it ran off the bottom of the screen.
+        /// </summary>
+        private string BuildFullScreenInterruptText()
+        {
             var blocking = new List<string>();
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
@@ -4461,16 +4758,22 @@ namespace PoliSim.UI
                 blocking.Add("a Foreign Policy meeting");
             }
 
-            if (blocking.Count == 0)
-            {
-                return;
-            }
-
-            GUILayout.Label(
-                $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. Open the Decisions tab to resolve it; speed controls are on any other tab.",
-                _eventBannerStyle);
-            GUILayout.Space(4f);
+            return blocking.Count == 0
+                ? null
+                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. Open the Decisions tab to resolve it; speed controls are on any other tab.";
         }
+
+        /// <summary>
+        /// The Budget screen's standing explanation. A const rather than a literal at the draw site
+        /// because it is now DRAWN in one place and MEASURED in another
+        /// (<see cref="BudgetProcessHeaderHeight"/>), and at ordinary window sizes it is the tallest of
+        /// the five pieces above the columns row - a copy that drifted from the original would take the
+        /// reserve with it.
+        /// </summary>
+        private const string BudgetProcessDescription =
+            "Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. " +
+            "Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply " +
+            "either place). Right: this turn's live estimate across your whole current draft.";
 
         /// <summary>
         /// Master Sequence step 5b: the Budget Process full-screen UI shell - left category selector /
@@ -4512,14 +4815,17 @@ namespace PoliSim.UI
             // up to more than requested), which made this label wrap against an inflated width and
             // clip mid-word rather than wrap. Tying it directly to availableWidth makes its wrap
             // boundary correct regardless of what the row does.
-            GUILayout.Label("Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits apply either place). Right: this turn's live estimate across your whole current draft.", _labelStyle, GUILayout.Width(contentWidth));
+            GUILayout.Label(BudgetProcessDescription, _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(8f);
 
             DrawBudgetBillStatusAndIntroduce();
             GUILayout.Space(8f);
 
-            float headerAllowance = _labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f;
-            float columnsHeight = availableHeight - headerAllowance;
+            // Measured, not assumed - see BudgetProcessHeaderHeight for what the old fixed multiple of
+            // the font size missed and by how much. Floored at zero so a pathological header (every
+            // interrupt pending at once, on a narrow window) collapses the columns rather than pushing
+            // them below the screen, which is the failure this replaces.
+            float columnsHeight = Mathf.Max(0f, availableHeight - BudgetProcessHeaderHeight(availableWidth));
             float columnSpacing = 10f;
 
             // The right column reuses DrawPolicyPreview UNCHANGED from its original dashboard-left-
@@ -4642,12 +4948,7 @@ namespace PoliSim.UI
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             bool budgetProcessOpen = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
 
-            string statusText = pendingBill != null
-                ? $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : budgetProcessOpen
-                    ? "The annual budget process is open - introduce your current draft as a bill below to continue."
-                    : "No budget bill currently before Parliament. One can only be introduced on your country's own fiscal-year date.";
-            GUILayout.Label(statusText, _labelStyle);
+            GUILayout.Label(BuildBudgetBillStatusText(), _labelStyle);
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
@@ -4656,6 +4957,65 @@ namespace PoliSim.UI
                 _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
             }
             GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>
+        /// The bill-status line's text. Drawn above, measured in <see cref="BudgetProcessHeaderHeight"/> -
+        /// one string, two readers, for the same reason as <see cref="BuildTimeStatusText"/>.
+        /// </summary>
+        private string BuildBudgetBillStatusText()
+        {
+            BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            if (pendingBill != null)
+            {
+                return $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).";
+            }
+
+            return _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
+                ? "The annual budget process is open - introduce your current draft as a bill below to continue."
+                : "No budget bill currently before Parliament. One can only be introduced on your country's own fiscal-year date.";
+        }
+
+        /// <summary>
+        /// Everything <see cref="DrawBudgetProcessTab"/> draws ABOVE its three-column row, measured
+        /// rather than guessed.
+        ///
+        /// <para>⚠ **The guess it replaces was `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f`,
+        /// and it was short by more than half.** Measured 2026-08-11 at 1600x929 with a Fed Chair pause
+        /// outstanding: 186px reserved against roughly 290px actually drawn, so the columns row - the
+        /// whole point of the screen - hung ~100px below the clip rect and lost its bottom rows on all
+        /// 16 Budget captures. A fixed multiple of the font size cannot track this block, because three
+        /// of its five pieces are wrapped prose whose line count depends on the window width and on
+        /// which interrupt happens to be pending: the banner is absent entirely most of the time and two
+        /// lines when a Fed Chair appointment is due. That is the same failure as the calendar strip's,
+        /// on the same day, for the same reason - see OnGUI's left column.</para>
+        ///
+        /// <para>Everything is measured at the width a PLAIN label inside the box gets, which is 8px
+        /// narrower than the `contentWidth` the description label is explicitly handed. The difference
+        /// can only ever over-count that one label's lines, and over-reserving costs a few pixels of
+        /// unused paper while under-reserving costs content off the bottom of the screen - so the error
+        /// is deliberately pointed that way.</para>
+        /// </summary>
+        private float BudgetProcessHeaderHeight(float availableWidth)
+        {
+            float textWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
+
+            float height = _headerStyle.CalcHeight(new GUIContent("Budget Process"), textWidth) + _headerStyle.margin.vertical;
+
+            string interruptText = BuildFullScreenInterruptText();
+            if (interruptText != null)
+            {
+                height += _eventBannerStyle.CalcHeight(new GUIContent(interruptText), textWidth) + _eventBannerStyle.margin.vertical + 4f;
+            }
+
+            height += _labelStyle.CalcHeight(new GUIContent(BudgetProcessDescription), textWidth) + _labelStyle.margin.vertical;
+            height += 8f;
+
+            height += _labelStyle.CalcHeight(new GUIContent(BuildBudgetBillStatusText()), textWidth) + _labelStyle.margin.vertical;
+            height += _neutralActionButtonStyle.fixedHeight + _neutralActionButtonStyle.margin.vertical;
+            height += 8f;
+
+            return height;
         }
 
         /// <summary>
