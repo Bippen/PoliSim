@@ -71,19 +71,22 @@ namespace PoliSim.EditorTools
                 }
                 else
                 {
-                    // A seamless tile is drawn with DrawTextureWithTexCoords and MUST be imported with
-                    // Wrap Mode Repeat - the one place its .meta deliberately departs from the icon
-                    // convention. Clamp would not fail; it would stretch the edge pixel across the
-                    // screen, which reads as a design choice rather than as a broken import.
-                    string wrap = texture.wrapMode.ToString();
-                    bool repeats = texture.wrapMode == TextureWrapMode.Repeat;
-                    if (!repeats) { missing++; }
-                    Debug.Log($"  {(repeats ? "ok  " : "FAIL")} {textureName} -> {texture.width}x{texture.height}, " +
-                        $"wrap {wrap}{(repeats ? string.Empty : " - expected Repeat for a seamless tile")}");
+                    // ⚠ THE WRAP-MODE ASSERTION MOVED OUT OF HERE 2026-08-11, to
+                    // `ImporterSettingsCheck`'s Tiling class. It was the only importer-settings test in
+                    // this file, and leaving it would have meant two checks asserting overlapping
+                    // properties of the same texture with no rule about which is authoritative. This
+                    // file asks ONE question - does a name the UI hard-codes resolve - and that is now
+                    // all it asks.
+                    Debug.Log($"  ok   {textureName} -> {texture.width}x{texture.height} (settings: see ImporterSettingsCheck)");
                 }
             }
 
-            Debug.Log($"=== UI art coverage: {total - missing} of {total} resolve ===");
+            // ⚠ NAME THE ENUMERATION, NOT THE INTENT (rule 14). This covers every `StatNodeId` icon plus
+            // `menu_pattern_tile` - 19 names. It was cited twice as proof that four newly imported party
+            // marks resolved; it never touches `Emblems/` and passed 19 of 19 while they were absent from
+            // its scope entirely. `PartyMarkCoverageCheck` covers those.
+            Debug.Log($"=== UI art coverage: {total - missing} of {total} names resolve " +
+                      $"(every StatNodeId icon + menu_pattern_tile; NOT chrome, emblems, marks or portraits) ===");
             EditorApplication.Exit(missing == 0 ? 0 : 1);
         }
     }
