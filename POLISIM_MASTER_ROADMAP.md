@@ -904,9 +904,28 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
     and *"not about every label on screen"*. **#12 landed precisely in the excluded population.** The
     guards reporting zero is that note coming true, not a contradiction.
 
-  **What caught it: `screenshot_edge_check.py`** (repo root) — a frame question asked of the PNGs the
-  capture pass already writes, needing no engine access. It counts non-desk pixels on the clip rect's
-  last row and column.
+  **What caught it: `ScreenEdgeCheck`** (`Assets/Editor/`, ported to C# 2026-08-11 from the original
+  `screenshot_edge_check.py`, **because Python is not installed on this machine** — the `py` launcher's
+  registration points at a directory that does not exist, so the script cited in three documents as this
+  class's detector could not be executed here at all. A detector that cannot run in the environment that
+  ships is not a detector).
+
+  ⚠ **WHAT IT ENUMERATES** (rule 14): for each PNG matching the pattern it is given, **exactly four lines
+  of pixels** — the margin column and row on each side. Not the interior, not any screen outside the
+  pattern, and **not any resolution other than the one captured**. It reports FLUSHNESS, never overrun
+  magnitude: clipped content stops at the boundary, so the pixels past it are absent from the capture and
+  cannot be measured. **A clean run says nothing about how much slack a screen has left.** It flags
+  **right and bottom only** — GUILayout grows rightward and downward, so that is where an over-wide group
+  runs off; content clipped at the left or top would pass. Full-bleed on an axis (both sides flush) is a
+  background rather than a clip, which is why the menu screen is correctly never a finding.
+
+  **Verified in both directions before being trusted**, per the self-test discipline: against `run_*`
+  (known clipped) it reports **54 of 55**, exit 1, with `L 0 / T 0 / R 841 / B 663` — an asymmetry far too
+  large to be a threshold call; against `clipfix2_*` (known clean) **0 of 55**, exit 0. Those numbers
+  reproduce the Python original's exactly, which is the evidence the port is faithful. It also reads
+  `ScreenMarginFraction` from `GameController` rather than duplicating it — the original carried a copy
+  with a comment saying *"if that constant changes, this must change with it"*, which is two statements of
+  one fact.
 
   ⚠ **DO NOT BUILD A THIRD SITE-SPECIFIC GUARD.** Before writing a GUILayout-aware check, state what it
   would have to enumerate — and the honest answer is that the two existing guards hook *drawing*, while
