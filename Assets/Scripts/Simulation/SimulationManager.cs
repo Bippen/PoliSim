@@ -225,6 +225,18 @@ namespace PoliSim.Simulation
         /// </summary>
         private const float FiscalReactionSensitivity = 1.5f;
 
+        /// <summary>
+        /// How much the multiplier moves per POINT OF CHANGE in `DebtToGdpRatio` over one fiscal period —
+        /// the trend half of the reaction function, added 2026-08-11 (Elias's option-3 ruling).
+        ///
+        /// **Started at the level term's own 1.5**, so one period's worth of trend counts as much as an
+        /// equal number of points of level gap. ⚠ **That is a calibration GUESS, not a derivation** — the
+        /// level term's 1.5 was itself reached empirically after every value in 0.05–0.3 failed. Calibrate
+        /// DOWNWARD from here if the matrix shows oscillation: this term reacts to a quantity the
+        /// multiplier moves, and too high a sensitivity is exactly the shape that rings.
+        /// </summary>
+        private const float FiscalReactionTrendSensitivity = 1.5f;
+
         /// <summary>Bounds on GetFiscalReactionMultiplier's output - a 2x range (0.5x-1.5x effective revenue) is what the calibration above needed to actually overcome the debt-risk-premium's own reinforcing loop at realistic debt-to-GDP extremes, not a "modest" single-digit-percent cap that empirically failed to do so.</summary>
         private const float MinFiscalReactionMultiplier = 0.5f;
         private const float MaxFiscalReactionMultiplier = 1.5f;
@@ -243,7 +255,32 @@ namespace PoliSim.Simulation
         private float GetFiscalReactionMultiplier(Country country)
         {
             float debtGap = country.State.DebtToGdpRatio - country.ComfortableDebtToGdpPercent;
-            float multiplier = 1f + FiscalReactionSensitivity * debtGap / 100f;
+
+            // ⚠ THE TREND TERM (2026-08-11, Elias's option-3 ruling). A country whose ratio is RISING
+            // tightens more than one sitting still at the same level, because the level term alone
+            // reaches its 1.5 cap and then stops distinguishing "stable at 80%" from "80% and climbing".
+            //
+            // There is no comfort anchor for trend, and there should not be: the target trend is always
+            // zero. Rising is bad at every level, which is why this is a raw delta rather than a gap.
+            //
+            // Composed ADDITIVELY inside the existing expression, and the clamp is UNCHANGED. That is
+            // deliberate and it is what makes the change attributable: one term, one loop, the same
+            // bounds, so any movement in a before/after matrix is this term's.
+            //
+            // ⚠ AND IT MEANS THIS CANNOT HELP AN ALREADY-SATURATED COUNTRY. Italy sits at 1.446 against
+            // a 1.5 cap, so the clamp eats whatever the trend term adds. This is a fix for the
+            // TRAJECTORY, not for the STATE: it should improve Germany and prevent Italy, and do nothing
+            // for a country already at the bound. That is the predicted result, recorded before the run
+            // so the run can contradict it.
+            // ⚠ TryGetValue, NOT GetOrSeedFiscalPeriod — that method seeds a period by calling THIS
+            // method, so asking it here would recurse forever. No period yet means no prior ratio to
+            // difference against, and trend is zero by definition on the first turn.
+            float debtTrend = _fiscalPeriods.TryGetValue(country.Id, out FiscalPeriod current)
+                ? country.State.DebtToGdpRatio - current.DebtToGdpAtPeriodStart
+                : 0f;
+
+            float multiplier = 1f + (FiscalReactionSensitivity * debtGap
+                                     + FiscalReactionTrendSensitivity * debtTrend) / 100f;
             return Mathf.Clamp(multiplier, MinFiscalReactionMultiplier, MaxFiscalReactionMultiplier);
         }
 
@@ -468,6 +505,18 @@ namespace PoliSim.Simulation
             public float AccruedSwfReturns;
             public float AccruedTotalSpending;
             public float AccruedBudgetBalance;
+
+            /// <summary>
+            /// `DebtToGdpRatio` as it stood when this period opened, so the fiscal reaction function can
+            /// see the ratio's TREND and not only its level.
+            ///
+            /// ⚠ Per PERIOD, not per accrual, and the window is deliberate. A per-day difference would
+            /// mostly measure daily noise; and this term feeds a multiplier that itself moves the
+            /// quantity being differenced, so a one-period window makes that a damped response rather
+            /// than a same-tick feedback on its own output. This project has an oscillation failure
+            /// pattern on record — that is the shape it would take here.
+            /// </summary>
+            public float DebtToGdpAtPeriodStart;
 
             public void ResetAccrual()
             {
@@ -1375,6 +1424,13 @@ namespace PoliSim.Simulation
             // period adopts responds to the debt the country actually ended this one with - the same
             // instant the turn form read it, for the same reason.
             period.PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
+
+            // ⚠ RE-STAMPED AFTER THE MULTIPLIER IS COMPUTED, AND THE ORDER IS THE WHOLE MECHANISM.
+            // Stamping before it made the multiplier difference the ratio against itself, so the trend
+            // term was identically zero and the first matrix run came back BYTE-IDENTICAL to the run
+            // without it. A change that alters nothing looks exactly like a change that is not reached;
+            // only the identical anomaly count gave it away.
+            period.DebtToGdpAtPeriodStart = country.State.DebtToGdpRatio;
 
             MacroSystem.ApplyNationalAccounts(country, spendingResult.GovernmentSpending, interestRate);
             MacroSystem.ApplyPotentialGdpGrowth(country);
@@ -2497,7 +2553,11 @@ namespace PoliSim.Simulation
                 PlannedSwfReturn = country.SovereignWealthFund != null
                     ? SovereignWealthFundSystem.GetAverageReturnEstimate(country.SovereignWealthFund)
                     : 0f,
-                PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country)
+                PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
+                // The opening period has no prior period to difference against, so trend is zero by
+                // construction on turn 1 - seeding this to the CURRENT ratio makes that explicit rather
+                // than letting a default 0f read as "the ratio just fell by its whole value".
+                DebtToGdpAtPeriodStart = country.State.DebtToGdpRatio
             };
 
             _fiscalPeriods[country.Id] = seeded;
