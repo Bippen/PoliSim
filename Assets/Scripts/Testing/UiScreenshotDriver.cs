@@ -37,6 +37,12 @@ namespace PoliSim.Testing
         /// <summary>The parsed <see cref="Country"/>, held so the warm-up's publication check and the held-state pass read the country actually being captured rather than a hardcoded USA.</summary>
         private CountryId _countryId = CountryId.USA;
 
+        /// <summary>Set by `-shotstates`: run the state-pinning pass (cabinet, budget pause, decision search, pending bills) after the main sweep. Off by default so ordinary chrome runs stay fast and their sets comparable with history.</summary>
+        public bool PinStates;
+
+        /// <summary>Set by `-shotlocale=` (e.g. "en-US"): overrides the thread culture before anything draws, so number/date formatting can be captured in a locale other than the OS's. Empty = OS culture, which is what every set before 2026-08-12 rendered in (sv-SE on this machine — the decimal-comma set).</summary>
+        public string Locale = "";
+
         /// <summary>Frames to let IMGUI settle before a capture. IMGUI lays out on the frame it draws, so a screen switched to on frame N is not fully measured until N+1; four is cheap insurance rather than a measured minimum.</summary>
         private const int SettleFrames = 4;
 
@@ -75,6 +81,14 @@ namespace PoliSim.Testing
 
         private IEnumerator Start()
         {
+            if (!string.IsNullOrEmpty(Locale))
+            {
+                var culture = new System.Globalization.CultureInfo(Locale);
+                System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+                System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+                Debug.Log($"SHOT: thread culture overridden to {Locale}.");
+            }
+
             Directory.CreateDirectory(OutputDirectory);
 
             GameController controller = FindAnyObjectByType<GameController>();
@@ -168,6 +182,11 @@ namespace PoliSim.Testing
             }
 
             yield return CaptureHeldState(controller);
+
+            if (PinStates)
+            {
+                yield return CaptureStatePins(controller);
+            }
 
             Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
 
@@ -608,6 +627,217 @@ namespace PoliSim.Testing
             ResetScrolls(controller);
             yield return Settle();
             yield return Capture("91_interrupt_held_budget");
+        }
+
+        /// <summary>Bound on each state search (budget pause, decision/meeting rolls). Generous — four sim years — but a bound, per this harness's standing rule that an unbounded wait is a hang with no log line.</summary>
+        private const int MaxStateSearchDays = 365 * 4;
+
+        /// <summary>
+        /// The state-pinning pass (2026-08-12, Elias: pin the reachable axes the way the interrupt
+        /// state was pinned). Every state here is produced through the REAL path — the public sim API
+        /// and the same day-advance play uses — with two reflective touches into GameController's
+        /// private draft state (`_cabinetCandidatesByPortfolio`, the sub-screen selectors), the same
+        /// idiom the rest of this driver already runs on.
+        ///
+        /// ⚠ ORDER IS LOAD-BEARING: pending BILLS are introduced LAST, after every day-advancing
+        /// search, so their countdowns never tick and their (arbitrary) dial values can never resolve
+        /// into the economy and mangle the state other captures show.
+        ///
+        /// What is deliberately NOT here, reported rather than half-pinned: an ELECTION resolving
+        /// leaves no observable UI state (no record, no results screen — the Canvas election night is
+        /// its future home), so there is nothing a capture could pin; same shape as the stamps, and
+        /// the DivisionLog precedent now exists for the record it would need.
+        /// </summary>
+        private IEnumerator CaptureStatePins(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(simField?.GetValue(controller) is SimulationManager sim))
+            {
+                Debug.LogError("SHOT: could not reach SimulationManager - state pins skipped.");
+                yield break;
+            }
+
+            Country player = sim.World?.GetCountry(_countryId);
+            if (player == null)
+            {
+                Debug.LogError("SHOT: could not reach the player country - state pins skipped.");
+                yield break;
+            }
+
+            // --- A. CABINET: the search state, then the appointed roster. ---
+            FieldInfo candField = controller.GetType().GetField("_cabinetCandidatesByPortfolio", BindingFlags.Instance | BindingFlags.NonPublic);
+            var searchResults = new Dictionary<CabinetPortfolio, List<CabinetMinister>>();
+            foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                // Guarded because only 3 of the 6 portfolios have authored candidate pools — an
+                // unimplemented portfolio throwing must cost one portfolio, not the whole pass.
+                try
+                {
+                    List<CabinetMinister> candidates = CabinetSystem.GenerateCandidates(portfolio);
+                    if (candidates != null && candidates.Count > 0)
+                    {
+                        searchResults[portfolio] = candidates;
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log($"SHOT: no candidate pool for {portfolio} ({e.GetType().Name}) - skipped.");
+                }
+            }
+
+            if (candField?.GetValue(controller) is System.Collections.IDictionary candDict)
+            {
+                foreach (var kv in searchResults)
+                {
+                    candDict[kv.Key] = kv.Value;
+                }
+            }
+
+            SetEnumField(controller, "_consolidatedTab", "Politics");
+            SetEnumField(controller, "_politicsCategory", "Cabinet");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("82a_cabinet_search");
+
+            foreach (var kv in searchResults)
+            {
+                player.CabinetMinisters[kv.Key] = kv.Value[0];
+                (candField?.GetValue(controller) as System.Collections.IDictionary)?.Remove(kv.Key);
+            }
+
+            Debug.Log($"SHOT: appointed {searchResults.Count} minister(s) through the public candidate pool.");
+            yield return Settle();
+            yield return Capture("82b_cabinet_appointed");
+
+            // --- B. THE BUDGET-PROCESS PAUSE: advance to the country's own fiscal-year date. ---
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+            int days = 0;
+            while (!sim.GetPendingBudgetProcess(_countryId) && days < MaxStateSearchDays)
+            {
+                if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                days++;
+            }
+
+            if (sim.GetPendingBudgetProcess(_countryId))
+            {
+                Debug.Log($"SHOT: budget-process pause reached after {days} day(s).");
+                SetEnumField(controller, "_consolidatedTab", "Decisions");
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture("83a_budget_pause_decisions");
+
+                SetEnumField(controller, "_consolidatedTab", "Budget");
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture("83b_budget_pause_budget");
+            }
+            else
+            {
+                Debug.LogWarning($"SHOT: no budget-process pause within {MaxStateSearchDays} days - NOT pinned for {_countryId}.");
+            }
+
+            // --- C. A CABINET DECISION and/or FOREIGN POLICY MEETING: real rolls, bounded search. ---
+            days = 0;
+            while (sim.GetPendingCabinetDecisions(_countryId).Count == 0
+                   && sim.GetPendingForeignPolicyMeeting(_countryId) == null
+                   && days < MaxStateSearchDays)
+            {
+                if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                days++;
+            }
+
+            int cabinetPending = sim.GetPendingCabinetDecisions(_countryId).Count;
+            bool meetingPending = sim.GetPendingForeignPolicyMeeting(_countryId) != null;
+            if (cabinetPending > 0 || meetingPending)
+            {
+                Debug.Log($"SHOT: decision search after {days} day(s): {cabinetPending} cabinet decision(s), foreign-policy meeting: {meetingPending}.");
+                SetEnumField(controller, "_consolidatedTab", "Decisions");
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture("84_decisions_pending");
+            }
+            else
+            {
+                Debug.LogWarning($"SHOT: neither a cabinet decision nor a foreign-policy meeting within {MaxStateSearchDays} days - the CABINET and FOREIGN POLICY dossiers stay unpinned for {_countryId}.");
+            }
+
+            // --- D. PENDING BILLS, one of every type — LAST, so no day ever ticks their countdowns. ---
+            TaxType? taxPick = null;
+            foreach (TaxLine line in player.TaxLines)
+            {
+                if (!line.IsImplemented) { taxPick = line.Type; break; }
+            }
+            if (taxPick == null && player.TaxLines.Count > 0) { taxPick = player.TaxLines[0].Type; }
+            bool taxOk = taxPick != null && sim.IntroduceTaxProgramBill(_countryId, taxPick.Value,
+                isAdd: !FindTaxLine(player, taxPick.Value).IsImplemented);
+
+            WelfareProgramType? welfarePick = null;
+            bool welfareAdd = true;
+            foreach (WelfareProgram program in player.WelfarePrograms)
+            {
+                if (!program.IsImplemented) { welfarePick = program.Type; break; }
+            }
+            if (welfarePick == null && player.WelfarePrograms.Count > 0)
+            {
+                welfarePick = player.WelfarePrograms[0].Type;
+                welfareAdd = false;
+            }
+            bool welfareOk = welfarePick != null && sim.IntroduceWelfareProgramBill(_countryId, welfarePick.Value, welfareAdd);
+
+            bool laborOk = sim.IntroduceLaborBill(_countryId, new LaborPolicyBill { MinimumWage = 12f });
+            bool crimeOk = sim.IntroduceCrimeJusticeBill(_countryId, new CrimeJusticePolicyBill { PoliceFunding = 55f });
+
+            var sectorBill = new SectorPolicyBill();
+            foreach (Sector sector in player.Sectors)
+            {
+                sectorBill.SubsidyLevels[sector.Type] = 10f;
+                sectorBill.RegulationLevels[sector.Type] = 50f;
+                sectorBill.TaxCreditLevels[sector.Type] = 10f;
+                sectorBill.ResearchGrantsLevels[sector.Type] = 10f;
+                sectorBill.DeregulationLevels[sector.Type] = 0f;
+            }
+            bool sectorOk = sim.IntroduceSectorBill(_countryId, sectorBill);
+
+            bool tradeOk = sim.IntroduceTradeBill(_countryId, new TradePolicyBill { NewBaseTariffRate = player.BaseTariffRate + 2f });
+            bool swfOk = sim.IntroduceSwfDrawdownBill(_countryId, new SwfDrawdownBill { WithdrawalPercentOfGdp = 1f });
+
+            Debug.Log($"SHOT: bills introduced - tax:{taxOk} welfare:{welfareOk} labor:{laborOk} crime:{crimeOk} " +
+                      $"sector:{sectorOk} trade:{tradeOk} swfDrawdown:{swfOk} (a false is a finding to read, not an error).");
+
+            SetEnumField(controller, "_consolidatedTab", "Politics");
+            SetEnumField(controller, "_politicsCategory", "Parliament");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("85a_bills_parliament");
+
+            SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+            foreach ((string sub, string stem) in new[]
+            {
+                ("LaborMarket", "85b_bill_labormarket"), ("CrimeJustice", "85c_bill_crimejustice"),
+                ("Sectors", "85d_bill_sectors"), ("Trade", "85e_bill_trade")
+            })
+            {
+                SetEnumField(controller, "_policyLawsCategory", sub);
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture(stem);
+            }
+
+            SetEnumField(controller, "_consolidatedTab", "Budget");
+            SetEnumField(controller, "_budgetProcessCategory", "Tax");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("85f_bill_tax_rows");
+        }
+
+        private static TaxLine FindTaxLine(Country country, TaxType type)
+        {
+            foreach (TaxLine line in country.TaxLines)
+            {
+                if (line.Type == type) { return line; }
+            }
+
+            return country.TaxLines[0];
         }
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);

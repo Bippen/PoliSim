@@ -136,7 +136,10 @@ namespace PoliSim.EditorTools
             // -shotwidth=: a capture-config argument, defaulting to the only country ever captured
             // before it existed. The driver validates the name and fails LOUDLY on a bad one.
             driver.Country = Arg("-shotcountry=", "USA");
-            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, {Screen.width}x{Screen.height}");
+            // State pinning and locale override (2026-08-12): flags of the same capture-config family.
+            driver.PinStates = Environment.GetCommandLineArgs().Contains("-shotstates");
+            driver.Locale = Arg("-shotlocale=", "");
+            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 
         private static string Arg(string prefix, string fallback)
