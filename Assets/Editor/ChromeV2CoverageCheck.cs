@@ -125,7 +125,7 @@ namespace PoliSim.EditorTools
             Debug.Log("");
             Debug.Log($"=== PRESENT      {resolved} of {present.Count} resolve through Resources.Load ===");
             Debug.Log($"=== SPECIFIED    {specified.Count - missing.Count} of {specified.Count} are present on disk ===");
-            Debug.Log($"=== SUPERSEDED   {superseded.Count} known-legacy sprites, removable once v2.0 wiring is confirmed ===");
+            Debug.Log($"=== SUPERSEDED   {superseded.Count} known-legacy names on record, REMOVED from disk by the Track 3 ruling ===");
 
             foreach (string name in missing)
             {

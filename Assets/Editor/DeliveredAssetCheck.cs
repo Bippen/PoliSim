@@ -63,10 +63,40 @@ namespace PoliSim.EditorTools
             { "icon_welfare", "icon_area_welfare" },
         };
 
+        /// <summary>
+        /// Names ChromeManifest.txt rules superseded (its '!'-prefixed rows): delivered once, later
+        /// replaced by the v2.0 chrome set, and REMOVED from Assets/ by the Track 3 ruling. Read from
+        /// the manifest itself rather than duplicated here, so this allowance cannot drift from the
+        /// ruling that grants it. An archived pack that shipped one of these is not a regression —
+        /// the deletion was deliberate — but each skip is still logged, so the allowance stays
+        /// visible rather than becoming a silent hole in the check.
+        /// </summary>
+        private static HashSet<string> LoadSuperseded()
+        {
+            var set = new HashSet<string>();
+            string manifest = Path.Combine(Application.dataPath, "Editor", "ChromeManifest.txt");
+            if (!File.Exists(manifest))
+            {
+                return set;
+            }
+
+            foreach (string raw in File.ReadAllLines(manifest))
+            {
+                string line = raw.Trim();
+                if (line.StartsWith("!"))
+                {
+                    set.Add(line.Substring(1));
+                }
+            }
+
+            return set;
+        }
+
         public static void Run()
         {
             string projectRoot = Path.GetDirectoryName(Application.dataPath);
             Dictionary<string, string> assetsByName = IndexAssets();
+            HashSet<string> superseded = LoadSuperseded();
 
             // SELF-TEST FIRST: the index must be able to see a file known to exist, or every "missing"
             // below is an artefact of a broken index rather than a real gap.
@@ -79,7 +109,7 @@ namespace PoliSim.EditorTools
             foreach (string zipPath in Directory.GetFiles(projectRoot, "*.zip", SearchOption.TopDirectoryOnly))
             {
                 rootZips++;
-                rootGaps += Report(zipPath, assetsByName, isAtRoot: true);
+                rootGaps += Report(zipPath, assetsByName, superseded, isAtRoot: true);
             }
 
             if (rootZips == 0)
@@ -95,7 +125,7 @@ namespace PoliSim.EditorTools
             {
                 foreach (string zipPath in Directory.GetFiles(archive, "*.zip", SearchOption.TopDirectoryOnly))
                 {
-                    archiveGaps += Report(zipPath, assetsByName, isAtRoot: false);
+                    archiveGaps += Report(zipPath, assetsByName, superseded, isAtRoot: false);
                 }
             }
             else
@@ -109,10 +139,10 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>Reports one zip, returning how many of its asset entries are absent under Assets/.</summary>
-        private static int Report(string zipPath, Dictionary<string, string> assetsByName, bool isAtRoot)
+        private static int Report(string zipPath, Dictionary<string, string> assetsByName, HashSet<string> superseded, bool isAtRoot)
         {
             string label = Path.GetFileName(zipPath);
-            int entries = 0, missing = 0;
+            int entries = 0, missing = 0, supd = 0;
 
             using (FileStream stream = File.OpenRead(zipPath))
             using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
@@ -126,28 +156,36 @@ namespace PoliSim.EditorTools
                     entries++;
                     if (Resolve(entry.Name, assetsByName) == null)
                     {
+                        if (superseded.Contains(Path.GetFileNameWithoutExtension(entry.Name)))
+                        {
+                            Debug.Log($"  supd {label}: {entry.Name} - removed by ruling (ChromeManifest '!'), not a regression");
+                            supd++;
+                            continue;
+                        }
+
                         Debug.Log($"  MISSING {label}: {entry.Name}");
                         missing++;
                     }
                 }
             }
 
+            string supdNote = supd > 0 ? $" ({supd} superseded-by-ruling)" : "";
             if (missing > 0)
             {
-                Debug.Log($"{(isAtRoot ? "GAP" : "REGRESSION")} {label}: {entries - missing} of {entries} " +
-                    $"asset entries present. {missing} NOT imported.");
+                Debug.Log($"{(isAtRoot ? "GAP" : "REGRESSION")} {label}: {entries - missing - supd} of {entries} " +
+                    $"asset entries present{supdNote}. {missing} NOT imported.");
             }
             else if (isAtRoot && entries > 0)
             {
                 // Not a failure, but it violates the standing convention: a pack whose contents are all
                 // present belongs in /AssetPackArchive/, because a zip left at the root IS the reminder
                 // that something in it is unfinished.
-                Debug.Log($"ARCHIVE ME {label}: all {entries} asset entries are present under Assets/, " +
-                    "so this zip should be moved to /AssetPackArchive/.");
+                Debug.Log($"ARCHIVE ME {label}: all {entries} asset entries are accounted for under " +
+                    $"Assets/{supdNote}, so this zip should be moved to /AssetPackArchive/.");
             }
             else
             {
-                Debug.Log($"ok   {label}: {entries} of {entries} asset entries present.");
+                Debug.Log($"ok   {label}: {entries - supd} of {entries} asset entries present{supdNote}.");
             }
 
             return missing;

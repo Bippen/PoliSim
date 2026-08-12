@@ -79,8 +79,10 @@ ui_btn_paper_canvas_hover
 ui_btn_paper_canvas_pressed
 
 # ---- superseded pre-v2.0 chrome (11) ----
-# Present on disk, fully superseded by the passes above, removable in one pass once the v2.0 wiring
-# is confirmed live. Listed so they read as a known state rather than as unexpected files.
+# REMOVED from disk 2026-08-12 (Track 3): the v2.0 wiring was confirmed live by the derived
+# call-site statement, so the removal pass ran. These rows STAY - DeliveredAssetCheck reads them as
+# its superseded allowance (an archived pack shipping one of these is not a regression), so
+# deleting a row here would resurrect a false REGRESSION for that name.
 !ui_button_normal
 !ui_button_hover
 !ui_button_pressed
