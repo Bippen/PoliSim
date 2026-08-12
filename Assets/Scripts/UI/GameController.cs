@@ -551,6 +551,8 @@ namespace PoliSim.UI
         private GUIStyle _calendarMonthStyle;
         private GUIStyle _calendarDayStyle;
         private GUIStyle _calendarMetaStyle;
+        /// <summary>Item 1a: the Division Records panel's mono date column — Courier per §A.4 (dates and timestamps are document artifacts). Built in InitializeStylesIfNeeded, sized in RescaleStylesToScreen.</summary>
+        private GUIStyle _divisionMetaStyle;
         /// <summary>v2.0 chrome: `ui_tab_spine` (B7) — the white-on-alpha area-hue strip drawn across each consolidated tab's top edge, tinted per area at the draw site through GUI.color. Background + border only; empty background when the sprite is missing, and the spine simply doesn't draw.</summary>
         private GUIStyle _tabSpineStyle;
         // v2.0 chrome: the Decisions dossier (§A.11) — `ui_folder_dossier` as a card background with
@@ -1122,6 +1124,10 @@ namespace PoliSim.UI
             if (PoliSimTheme.Document != null) { _calendarMetaStyle.font = PoliSimTheme.Document; }
             _calendarMetaStyle.normal.textColor = PoliSimTheme.TextSecondary;
 
+            _divisionMetaStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight, wordWrap = false };
+            if (PoliSimTheme.Document != null) { _divisionMetaStyle.font = PoliSimTheme.Document; }
+            _divisionMetaStyle.normal.textColor = PoliSimTheme.TextSecondary;
+
             // ⚠ v2.0 CHROME, 2026-08-12 — B7's spine (see DrawConsolidatedTabButton). WoA, so unlike
             // every real-colour plate above it IS tinted at draw time — through GUI.color, which
             // multiplies the white pixels into the area hue. A style rather than
@@ -1348,6 +1354,7 @@ namespace PoliSim.UI
             _calendarMonthStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (8.5f / 12.5f)));
             _calendarDayStyle.fontSize = Mathf.RoundToInt(labelFontSize * (26f / 12.5f));
             _calendarMetaStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (9f / 12.5f)));
+            _divisionMetaStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * 0.85f));
             // Deliberately the smallest text on screen - a card's kind caption is a wayfinding label,
             // not content, and must not compete with the decision's own headline underneath it.
             _cardKindStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * 0.62f));
@@ -4474,8 +4481,95 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             DrawPendingLegislation();
 
+            GUILayout.Space(10f);
+            DrawRecentDivisions();
+
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// ⚠ ITEM 1a, IN ITS CORRECTED SHAPE (Elias, 2026-08-12) — the FIRST reader of
+        /// <c>Country.Divisions</c>. Eight resolution sites had written this log since `a7bd40d` with
+        /// nothing reading it back; this block is what closes the stamps ruling, whose "nothing to
+        /// stamp" premise the same correction retired.
+        ///
+        /// NOT LedgerRow, stated per the ruling's own "say why rather than forcing it": LedgerRow's
+        /// columns are policy-control furniture — name | tick track | STANDING ✎ DRAFT | SHARE — and
+        /// its read-only form is a condition GAUGE. A division has no dial, no draft, no share, and a
+        /// verdict is not a meter; what it shares with the ledger is only "rows on paper". The row
+        /// here is the record's own five fields: number + title, date (mono — a document artifact, per
+        /// §A.4's Courier register), the same diverging lean bar the live estimate draws (the record's
+        /// Alignment is captured from the same GetSeatWeightedAlignment precisely so the two can never
+        /// disagree — and per DivisionRecord's own doc, never a "186–164" headcount, which is a
+        /// quantity this model does not compute), and the verdict stamp.
+        ///
+        /// ⚠ STAMP TINT FAMILY, checked through the accessors BEFORE drawing — the question four
+        /// instances got wrong: `ui_stamp_carried`/`ui_stamp_rejected` are WoA and land on the
+        /// parliament PAPER panel, so they take the INK weights — <see cref="PoliSimTheme.Good"/> /
+        /// <see cref="PoliSimTheme.Bad"/> — never the lifted on-desk set, which exists solely for the
+        /// dark desk ground (the hold banner's lamp is its one current user). The manifest's own note:
+        /// "−2° baked; tint good / tint bad" — the rotation ships in the pixels, no runtime transform.
+        ///
+        /// Newest first — "recent" is the panel's claim. The empty state follows THIS SCREEN's own
+        /// precedent (Pending Legislation prints its no-bill line), which is a different case from the
+        /// suppressed empty spending GROUP: that was a sub-group with a degenerate denominator inside
+        /// a populated screen; this is a top-level section whose emptiness is itself the honest
+        /// reading. The stamp fallback draws into the SAME reserved rect (a rect draw, not a control),
+        /// so sprite availability never changes the control count.
+        /// </summary>
+        private void DrawRecentDivisions()
+        {
+            GUILayout.Label("Division Records", _headerStyle);
+
+            List<DivisionRecord> entries = _playerCountry.Divisions.Entries;
+            if (entries.Count == 0)
+            {
+                GUILayout.Label("No divisions recorded yet - bills that resolve appear here.", _labelStyle);
+                return;
+            }
+
+            Texture2D carried = IconLibrary.GetChrome("ui_stamp_carried");
+            Texture2D rejected = IconLibrary.GetChrome("ui_stamp_rejected");
+
+            for (int i = entries.Count - 1; i >= 0; i--)
+            {
+                DivisionRecord record = entries[i];
+                Color verdictInk = record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad;
+                float rowHeight = Mathf.Max(20f, _labelStyle.fontSize * 1.2f);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label($"No. {record.Number} · {record.Title}", _labelStyle, GUILayout.ExpandWidth(true));
+                GUILayout.Label(record.Date.ToString("yyyy-MM-dd"), _divisionMetaStyle, GUILayout.Width(_divisionMetaStyle.fontSize * 6.5f));
+
+                // The lean bar sits in a slot as tall as the stamp beside it and is drawn centred in
+                // it — a GetRect slot is layout, not a control, so the row's control set stays fixed.
+                float barWidth = _labelStyle.fontSize * 5f;
+                Rect barSlot = GUILayoutUtility.GetRect(barWidth, rowHeight, GUILayout.Width(barWidth), GUILayout.Height(rowHeight));
+                if (Event.current.type == EventType.Repaint)
+                {
+                    float barHeight = _labelStyle.fontSize * 0.55f;
+                    var barRect = new Rect(barSlot.x, barSlot.y + (barSlot.height - barHeight) * 0.5f, barSlot.width, barHeight);
+                    UiPalette.DrawDivergingBar(barRect, record.Alignment, PendingBillLeanDisplayRange);
+                }
+
+                // Stamp geometry from the sprite's own 170x50 @1x proportion.
+                float stampWidth = Mathf.Round(rowHeight * (170f / 50f));
+                Rect stampRect = GUILayoutUtility.GetRect(stampWidth, rowHeight, GUILayout.Width(stampWidth), GUILayout.Height(rowHeight));
+                Texture2D stamp = record.Passed ? carried : rejected;
+                if (stamp != null)
+                {
+                    UiPalette.DrawTintedIcon(stampRect, stamp, verdictInk);
+                }
+                else if (Event.current.type == EventType.Repaint)
+                {
+                    Color saved = GUI.color;
+                    GUI.color = verdictInk;
+                    GUI.Label(stampRect, record.Passed ? "CARRIED" : "REJECTED", _cardKindStyle);
+                    GUI.color = saved;
+                }
+                GUILayout.EndHorizontal();
+            }
         }
 
         /// <summary>
