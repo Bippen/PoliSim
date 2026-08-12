@@ -136,6 +136,10 @@ namespace PoliSim.UI
                 mastSeal.transform.SetParent(content.transform, false);
                 Image mastImage = mastSeal.AddComponent<Image>();
                 mastImage.sprite = CanvasChrome.Whole(stateSeal, "ui_seal_state#whole");
+                // ui_seal_state is WoA — untinted it printed WHITE on the paper (caught by eye in
+                // the first sgn run, the tint-family class doing exactly what it always does). On
+                // paper it takes an ink, the institution line's own muted tone.
+                mastImage.color = PoliSimTheme.Hex(0x6B6250);
                 mastImage.raycastTarget = false;
                 mastImage.preserveAspect = true;
                 var le = mastSeal.AddComponent<LayoutElement>();
