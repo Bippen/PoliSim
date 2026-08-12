@@ -871,12 +871,25 @@ namespace PoliSim.Testing
             // introduction order above protects, which is why it runs after every bill capture: the
             // arbitrary dial values now DO resolve into the economy, and everything captured from here
             // on shows the post-resolution state.
+            // ⚠ THE COUNTDOWNS ARE CONTROLLER-DAILY TOO — the third member of the same artifact class,
+            // measured the same way: the first version of this loop advanced 23 days and recorded ZERO
+            // divisions, because every Advance*BillDay tick lives in GameController.Update's day loop,
+            // not in sim.AdvanceDay. The eight calls below are the controller's own, made by the
+            // harness the way play makes them.
             int resolveDays = ParliamentSystem.BillDurationDays + 2;
             for (int i = 0; i < resolveDays; i++)
             {
                 if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
                 sim.TryOpenBudgetProcess(_countryId, sim.CurrentDate);
                 sim.TryRollForeignPolicyMeeting(_countryId);
+                sim.AdvanceBudgetBillDay(_countryId);
+                sim.AdvanceTaxProgramBillsDay(_countryId);
+                sim.AdvanceWelfareProgramBillsDay(_countryId);
+                sim.AdvanceLaborBillDay(_countryId);
+                sim.AdvanceCrimeJusticeBillDay(_countryId);
+                sim.AdvanceSectorBillDay(_countryId);
+                sim.AdvanceSwfDrawdownBillDay(_countryId);
+                sim.AdvanceTradeBillDay(_countryId);
             }
 
             Debug.Log($"SHOT: advanced {resolveDays} day(s) to resolve the introduced bills - divisions recorded: {player.Divisions.Entries.Count}.");
