@@ -710,11 +710,19 @@ namespace PoliSim.Testing
             yield return Capture("82b_cabinet_appointed");
 
             // --- B. THE BUDGET-PROCESS PAUSE: advance to the country's own fiscal-year date. ---
+            //
+            // ⚠ THE DAILY ARM CALLS ARE THE CONTROLLER'S, NOT AdvanceDay's — measured, not assumed:
+            // the first version of this search advanced 1460 days on three countries and pinned
+            // NOTHING, because TryOpenBudgetProcess and TryRollForeignPolicyMeeting are called once
+            // per day from GameController.Update's day loop, which a sim-side advance never runs.
+            // The driver now makes the same daily calls the controller makes — the real path,
+            // invoked by the harness the way play invokes it.
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
             int days = 0;
             while (!sim.GetPendingBudgetProcess(_countryId) && days < MaxStateSearchDays)
             {
                 if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                sim.TryOpenBudgetProcess(_countryId, sim.CurrentDate);
                 days++;
             }
 
@@ -743,6 +751,7 @@ namespace PoliSim.Testing
                    && days < MaxStateSearchDays)
             {
                 if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                sim.TryRollForeignPolicyMeeting(_countryId); // the controller's own daily roll — see B
                 days++;
             }
 
