@@ -7904,3 +7904,57 @@ frame-rate-dependent and can be imperceptible; recorded honestly rather than ret
 - Poland's hue strip (SovereignWealth brown) is low-contrast against the manila folder - plainly
   visible at 2560, near-invisible at 1600. An ink-contrast question for the boards, not a bug.
 - Flags render horizontally centred; the board reads as left-aligned. Declared with V-C1..V-C3.
+
+## Canvas screen 2 - the signing ceremony (1g), and a count correction (2026-08-12)
+
+### ⚠ COUNT CORRECTION first: there are THREE §A.14 Canvas screens, not eight
+
+The pilot record's "the patterns seven screens copy" conflated the EIGHT DESIGN BOARDS (1a-1h,
+which cover every screen including the IMGUI conversions) with the CANVAS subset. §A.14 defines
+three: country selector (1f, done), signing (1g, done below), election night (1h, R2-gated). The
+copy-audience for the pilot's patterns is the remaining Canvas work - election night when item 10
+opens, and any screen §1C.4 adds later. Same absence-guard moral as ever: the number was cited,
+never enumerated.
+
+### The pick and the build
+
+Signing (1g): the only remaining ungated §A.14 screen AND the selector's true nearest neighbour -
+full-screen takeover, clean swap, document over the wash, no mid-screen IMGUI compositing. Data
+fully carried by `DivisionRecord`; consumes `ui_seal_official`, `ui_seal_state`,
+`ui_frame_ornate` (its B-ruled Canvas-path purpose), the per-state canvas brass buttons, and
+gives `ui_scrim_takeover` its canvas-side call site (the wash under the document). Verified both
+sizes (77 captures each, 0 failed/overflows/escapes/clipped): document up (89), seal beat
+mid-drop (89a), Parliament restored with zero residue (89b). **B8 on film**: the hold banner draws
+IMGUI-side above the live takeover.
+
+### Patterns ADDED to the discipline statement
+
+- **Mid-game takeovers STOP THE CLOCK** - Update gate + day-loop re-check. The selector never
+  exposed this (the no-selection gate already froze time); days ticking behind a ceremony would
+  resolve more bills behind the document.
+- **CoverIn no longer suppresses** - it overlays the LIVE dashboard and is now exactly symmetric
+  with Restore. The selector masked this too: behind it was only the void.
+- **The ceremony trigger fires ONLY from play's own day tick** (high-water mark by
+  `DivisionRecord.Number`, since the log evicts) - harness sim-advances never fire ceremonies,
+  and the driver pins the screen through the same queue (`TriggerSigningForNewestDivision`).
+- **Canvas brass button**: uGUI `Button` + `SpriteSwap` over the delivered state strips.
+- **Diverging lean bar as a two-Image widget** - retained-mode's `DrawDivergingBar`.
+- **`ui_frame_ornate` as border-only sliced Image** (`fillCenter = false`).
+- Build failure DROPS the ceremony (class 8): a dropped ceremony is a silent resolution - today's
+  exact behaviour, so degradation costs the moment, never correctness.
+- The tint-family class visited this screen too: `ui_seal_state` is WoA and printed WHITE on
+  paper untinted - caught by eye in the first sgn run, fixed to the institution ink (`c6b9b1c`).
+
+### The Canvas text guard - SCOPED, not built (awaiting ruling)
+
+**What it enumerates:** every active uGUI `Text` under every loaded Canvas at check time - walk
+`GetComponentsInChildren<Text>()` after `Canvas.ForceUpdateCanvases()`, flag
+`preferredHeight > rect.height` (and width when wrapping is off). Driver-attachable beside the
+existing guards, asserting after each Canvas capture into the run summary.
+**What it cannot see (rule 14):** screens not instantiated at check time (our canvases build on
+demand - coverage equals the states the driver pins, like every guard); `Overflow`-mode text
+that ESCAPES rather than clips (containment, needs an ancestor-bounds sweep); a fitting Text
+whose RECT clips against an ancestor mask (bounded extension, not v1); TMP if it ever arrives
+(different preferred-size API - that belongs to the deferred-TMP record); non-text content.
+**Cost: CHEAP** - ~40 lines, legacy-Text-only, no layout-system internals beyond preferredHeight.
+Recommend building on ruling.

@@ -534,7 +534,8 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
    | # | Startable today | Gate |
    |---|---|---|
-   | 1 | ✅ **Canvas pilot — DONE 2026-08-12** (`4c6abba`+`e278a1a`): the takeover seam (8 named defect classes, one found by the pilot's own first run), `CanvasChrome` (host at the 1920 board basis; the THIRD border-order convention resolved in one place), the selector per §A.14, `ui_scrim_takeover` wired at last. Verified both sizes, full round trip on film, rec-set comparison clean. **The discipline-carryover statement is in `CLAUDE.md` "The Canvas pilot"** — the next seven screens copy it. Next Canvas screen unblocked; ELECTION NIGHT alone stays gated (R2) |
+   | 1 | ✅ **Canvas pilot — DONE 2026-08-12** (`4c6abba`+`e278a1a`): the takeover seam (8 named defect classes, one found by the pilot's own first run), `CanvasChrome`, the selector per §A.14, `ui_scrim_takeover` wired. Discipline-carryover statement in `CLAUDE.md`. *(⚠ Count corrected same day: §A.14 defines THREE Canvas screens, not eight — the eight are the design boards.)* |
+   | 1b | ✅ **Canvas screen 2 — SIGNING (1g), DONE 2026-08-12** (`bd23e3c`+`c6b9b1c`): the nearest neighbour, on the pilot's patterns plus the mid-game additions (takeovers stop the clock; CoverIn overlays the live dashboard; ceremonies fire only from play's day tick). Verified both sizes, B8 on film. **The §A.14 Canvas set is now 2 of 3 — ELECTION NIGHT (1h) alone remains, R2-gated on item 10.** The Canvas TEXT GUARD is scoped in `CLAUDE.md` (cheap, ~40 lines, driver-attachable) — awaiting ruling |
    | 2 | **Track 3 — remove the eleven superseded pre-v2.0 sprites** | none — "when convenient" (ruled); `DeliveredAssetCheck` allowance in the same commit |
    | 3 | **Folder-tongue faces (`ui_tab_folder_*`) as their own pass** | none — ruled B |
    | 4 | **WIN-form election reveal pin** (the one remaining state-axis form) | none — fold into the next driver touch (ruled) |
