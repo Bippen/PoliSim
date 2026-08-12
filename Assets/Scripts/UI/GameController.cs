@@ -3380,6 +3380,19 @@ namespace PoliSim.UI
                 // 56/64 (20 -> 17.5, 28 -> 24.5 @2x, so 9 and 12 @1x). `GUIStyle.border` is @1x, and
                 // IMGUI reads the slice from the STYLE, never from the texture's own spriteBorder.
                 style.border = new RectOffset(10, 10, 9, 12);
+
+                // ⚠ FIX 2026-08-12 — d44ab2d replaced the brass with this pale paper face and left the
+                // Primary kind's CREAM text in place: cream on pale paper, and the selected sub-tab
+                // label ("Domestic") was unreadable in every holdcal capture while the pre-conversion
+                // set read fine as white-on-brass. A face swap changes what ink reads on it — the two
+                // are one decision. §A.8's own spec: active = bold inkText, inactive = inkFaint.
+                // Re-inked only inside this block, so the degraded brass/paper form keeps the cream
+                // that suits it.
+                Color subTabInk = selected ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary;
+                style.normal.textColor = subTabInk;
+                style.hover.textColor = subTabInk;
+                style.active.textColor = subTabInk;
+                style.focused.textColor = subTabInk;
             }
 
             return style;

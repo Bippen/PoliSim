@@ -86,6 +86,14 @@ namespace PoliSim.Testing
             Invoke(controller, "SelectPlayerCountry", CountryId.USA);
             yield return Settle();
 
+            // ⚠ THE ONE GUARANTEED RUNNING-STATE CAPTURE, taken before the warm-up. The 2026-08-12 run
+            // showed every post-warm-up capture in the HELD state — the preliminary-release stop lands
+            // on an election eve, so the fed-chair pause is live for the whole main set (and was in
+            // every earlier set too). Turn 0 is the one moment guaranteed unpaused: no election eve,
+            // no pending decisions, nothing rolled yet. Without this shot the status line's RUNNING
+            // form exists in no capture this harness can produce.
+            yield return Capture("01b_running_strip");
+
             AdvanceDays(controller);
             DivergeSwfWeights(controller);
             DraftSpendingLines(controller);
@@ -518,11 +526,14 @@ namespace PoliSim.Testing
         /// (DrawFullScreenPendingInterruptBanner's re-surfaced copy). Those are the two sites of B8's
         /// always-visible interrupt indicator, and the `ui_banner_hold` plate dressed onto them.
         ///
-        /// ⚠ **Without this pass the hold banner exists in NO capture.** The warm-up advances the sim
-        /// directly and never populates GameController's pending-interrupt state, so every capture
-        /// above shows the RUNNING line — the banner would stay "built, not confirmed" in every set
-        /// this harness can ever produce, which for the one carrier whose whole job is demanding
-        /// attention is the least acceptable screen to leave unseen.
+        /// ⚠ **Without this pass the hold banner's presence in the set is LUCK, not a guarantee.**
+        /// This method's first draft claimed the banner would otherwise exist in NO capture — the
+        /// 2026-08-12 run disproved that in the other direction: the warm-up's preliminary-release
+        /// stop happened to land on an election eve (turn 3), so the fed-chair pause was live in
+        /// EVERY main capture. That is a coincidence of two unrelated constants — the election cycle
+        /// and the publication cadence — and either moving would silently drop the HELD state from
+        /// the set with nothing reporting it. This pass pins it; `01b_running_strip` pins the
+        /// opposite state, which that same coincidence currently excludes from the main set.
         ///
         /// The state is produced by the REAL trigger — an election eve reached through the same
         /// AdvanceDay/AdvanceTurn pair play uses — not by injecting a candidate list. An injected list
