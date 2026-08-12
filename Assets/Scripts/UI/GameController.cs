@@ -3365,7 +3365,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above). RULED 2026-08-12 (Elias): the no-area-tint decision STANDS against §A.8's "bottom 3px area ink" strip and the manifest's "ui_subtab_on's bottom hue strip = ui_tab_spine flipped" - the main-tab spine carries area identity one level up, so the strip would be redundant, not missing.</summary>
-        private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory, float maxWidth = 0f) where T : struct, System.Enum
+        private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory, float maxWidth = 0f, float rowHeight = 0f) where T : struct, System.Enum
         {
             bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);
             GUIStyle style = BuildSubTabStyle(selected);
@@ -3405,8 +3405,13 @@ namespace PoliSim.UI
                 ? maxWidth
                 : PoliSimWidgets.MeasuredWidth(label, style, style.padding.horizontal + 6f);
 
+            // ⚠ INSTANCE #13: when the caller measured the row (SubTabRowHeight), the height is IMPOSED
+            // rather than left to GUILayout, whose own wrap-height derivation is what garbled the ECB
+            // label. All three current callers (the Statistics/Policy-Laws/Politics rows) pass a
+            // measured height; the MinHeight arm is the pre-#13 form, kept so an unmeasured future
+            // caller degrades to the old floor rather than to zero height.
             if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinWidth(minWidth),
-                GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
+                rowHeight > 0f ? GUILayout.Height(rowHeight) : GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 selectedCategory = category;
             }
@@ -3432,6 +3437,37 @@ namespace PoliSim.UI
         private float SubTabShare(float availableWidth, int count)
         {
             return PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, count, GUI.skin.button);
+        }
+
+        /// <summary>
+        /// ⚠ LABEL-CLIPPING INSTANCE #13 — and the first reached through the COUNTRY axis (2026-08-12).
+        /// The height one sub-tab row needs: the tallest label's measured wrap height at the row's own
+        /// share width, in the ACTIVE face's style (the taller padding), floored at the tab bar's
+        /// height so an all-short row stays even with the rest of the UI.
+        ///
+        /// GUILayout cannot be trusted to derive this itself: a wrapping button with flexible width
+        /// computes its layout height at a width that is not the width it renders at, so "European
+        /// Central Bank (ECB)" laid out two lines tall and rendered three — centred, overflowing BOTH
+        /// edges, garbling into the panel above. Only when SELECTED, because the active face's padding
+        /// is what pushed it to a third line at 1600-class sizes; clean at 1440p and clean for every
+        /// shorter institution name — which is why eleven USA-only capture passes never saw it, and the
+        /// evidence Elias named that this class is not exhausted by its known sites.
+        ///
+        /// ⚠ ONE MEASUREMENT, TWO SITES, per the instance-#12 accessor discipline: each tab's content
+        /// reserve subtracts this value and <see cref="DrawSubCategoryButton"/> imposes it via
+        /// GUILayout.Height. Measuring at the SHARE width is the safe direction — ExpandWidth can only
+        /// widen a button beyond its share, which wraps FEWER lines than measured, never more.
+        /// </summary>
+        private float SubTabRowHeight(float share, params string[] labels)
+        {
+            GUIStyle active = BuildSubTabStyle(true);
+            float height = _tabButtonStyle.fixedHeight;
+            foreach (string label in labels)
+            {
+                height = Mathf.Max(height, active.CalcHeight(new GUIContent(label), share));
+            }
+
+            return height;
         }
 
         /// <summary>
@@ -3513,12 +3549,15 @@ namespace PoliSim.UI
             DrawColoredLabel("Statistics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 2);
-            DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory, subTabShare);
-            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare);
+            // Instance #13: the row's height is measured once (SubTabRowHeight) and shared between the
+            // buttons and the content reserve below - see the accessor's own doc for the ECB case.
+            float subTabRowHeight = SubTabRowHeight(subTabShare, "Domestic", "International");
+            DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f;
+            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f;
             float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
             _statisticsContentScrollPosition = GUILayout.BeginScrollView(_statisticsContentScrollPosition, GUILayout.Height(scrollHeight));
             switch (_statisticsCategory)
@@ -3848,11 +3887,13 @@ namespace PoliSim.UI
             DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 5);
-            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare);
-            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare);
-            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare);
-            DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare);
-            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare);
+            // Instance #13: one measured row height, shared with the content reserve below.
+            float subTabRowHeight = SubTabRowHeight(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade");
+            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
@@ -3865,7 +3906,7 @@ namespace PoliSim.UI
             float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
             PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f - statRowHeight;
+            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - statRowHeight;
             switch (_policyLawsCategory)
             {
                 case PolicyLawsCategory.LaborMarket:
@@ -3909,14 +3950,19 @@ namespace PoliSim.UI
             DrawColoredLabel("Politics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 4);
-            DrawSubCategoryButton("Parliament", PoliticsCategory.Parliament, ref _politicsCategory, subTabShare);
-            DrawSubCategoryButton("Compass", PoliticsCategory.Compass, ref _politicsCategory, subTabShare);
-            DrawSubCategoryButton("Cabinet", PoliticsCategory.Cabinet, ref _politicsCategory, subTabShare);
-            DrawSubCategoryButton(GetCentralBankName(PlayerCountryId), PoliticsCategory.FederalReserve, ref _politicsCategory, subTabShare);
+            // Instance #13's OWN row: GetCentralBankName is the label that varies by country, and
+            // "European Central Bank (ECB)" is the one that garbled. Measured, imposed, and shared
+            // with the reserve below.
+            string centralBankName = GetCentralBankName(PlayerCountryId);
+            float subTabRowHeight = SubTabRowHeight(subTabShare, "Parliament", "Compass", "Cabinet", centralBankName);
+            DrawSubCategoryButton("Parliament", PoliticsCategory.Parliament, ref _politicsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Compass", PoliticsCategory.Compass, ref _politicsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Cabinet", PoliticsCategory.Cabinet, ref _politicsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton(centralBankName, PoliticsCategory.FederalReserve, ref _politicsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - _tabButtonStyle.fixedHeight - 14f;
+            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f;
             switch (_politicsCategory)
             {
                 case PoliticsCategory.Parliament:
@@ -6081,34 +6127,55 @@ namespace PoliSim.UI
             // because the bar now carries within-group discrimination that the share column cannot.
             // Ship one without the other and the discretionary tail reads 0.4/0.4/0.3/0.3/0.2 with
             // nothing to tell those rows apart - which is exactly the state Q1 was raised about.
-            float mandatoryMax = GroupSpendingMax(isMandatory: true);
-            float discretionaryMax = GroupSpendingMax(isMandatory: false);
-
-            GUILayout.Label(
-                $"Mandatory (narrower range, higher approval cost) - bars to {UiFormat.Money(mandatoryMax, MoneyUnit.Billions)}",
-                _headerStyle);
+            // ⚠ COUNTRY-COVERAGE FINDING 2, FIXED 2026-08-12 (ruled A): AN EMPTY GROUP RENDERS NOTHING.
+            // All five non-USA countries have no Mandatory lines (SeedGenericSpendingLines is
+            // discretionary-only), and this method rendered the Mandatory header over zero rows with
+            // "bars to $100k" — GroupSpendingMax's divide-by-zero guard formatted as a real money
+            // figure. A group header is furniture for its group — the stamps ruling's own logic — and
+            // suppressing it is also what keeps the guard value where it belongs: in the arithmetic,
+            // never on screen. Group presence varies by COUNTRY, not by frame, so the control set is
+            // stable within any session.
+            bool hasMandatory = false;
+            bool hasDiscretionary = false;
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
-                if (!spendingLine.IsMandatory)
-                {
-                    continue;
-                }
-
-                DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange, mandatoryMax);
+                if (spendingLine.IsMandatory) { hasMandatory = true; } else { hasDiscretionary = true; }
             }
 
-            GUILayout.Space(10f);
-            GUILayout.Label(
-                $"Discretionary - bars to {UiFormat.Money(discretionaryMax, MoneyUnit.Billions)}",
-                _headerStyle);
-            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
+            if (hasMandatory)
             {
-                if (spendingLine.IsMandatory)
+                float mandatoryMax = GroupSpendingMax(isMandatory: true);
+                GUILayout.Label(
+                    $"Mandatory (narrower range, higher approval cost) - bars to {UiFormat.Money(mandatoryMax, MoneyUnit.Billions)}",
+                    _headerStyle);
+                foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
                 {
-                    continue;
+                    if (!spendingLine.IsMandatory)
+                    {
+                        continue;
+                    }
+
+                    DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange, mandatoryMax);
                 }
 
-                DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, discretionaryMax);
+                GUILayout.Space(10f);
+            }
+
+            if (hasDiscretionary)
+            {
+                float discretionaryMax = GroupSpendingMax(isMandatory: false);
+                GUILayout.Label(
+                    $"Discretionary - bars to {UiFormat.Money(discretionaryMax, MoneyUnit.Billions)}",
+                    _headerStyle);
+                foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
+                {
+                    if (spendingLine.IsMandatory)
+                    {
+                        continue;
+                    }
+
+                    DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, discretionaryMax);
+                }
             }
         }
 

@@ -7652,3 +7652,53 @@ shape rule 12 names.
 
 Set-comparison note (rule 15's measured limit): the warm-up is unseeded, so USA figures differ from
 the dosport_* set (economy re-rolled); the comparison was structural.
+
+## Instance 13 of the label-clipping class, and the two fixes from country coverage (2026-08-12)
+
+### Instance 13 - the ECB sub-tab, the first instance reached through the COUNTRY axis
+
+The class's thirteenth confirmed instance, and the first whose trigger was a country rather than a
+window size or a label edit: "European Central Bank (ECB)" wraps to three lines on the SELECTED
+sub-tab face at 1600-class sizes, and GUILayout's own wrap-height derivation laid the button out two
+lines tall - the text centred and overflowed both edges, garbling into the panel above. Eleven prior
+capture passes could not have seen it: every one photographed a country whose institution name fits.
+**Fix: `SubTabRowHeight`** - the row's tallest label measured at the row's own share width in the
+active face's style, floored at the tab-bar height, imposed via `GUILayout.Height` and subtracted
+by the same tab's content reserve. One measurement, two sites (the instance-12 discipline); measuring
+at the share width is the safe direction, since ExpandWidth can only widen a button, which wraps
+fewer lines than measured.
+
+**Sibling survey (named, not fixed, per Elias):** other chrome whose size is a constant or a fixed
+fraction while its text can grow:
+
+1. **The main tab bar** - `ConsolidatedTabButtonHeight` accounts for icon + label at an ASSUMED two
+   lines (`lineHeight * 2f`), not a measured wrap at the actual share width. Six fixed English
+   labels today; a narrow-enough window or a renamed tab could produce the three-line case.
+2. **The dossier shoulder caption** - fixed 11px type in the fixed ~13px baked band, wordWrap off,
+   width = card minus a constant. The horizontal variant: a longer kind string than today's four
+   would clip rightward with nothing measuring it.
+3. **The calendar pad's three text rects** - fixed fractions of the pad with font sizes derived by
+   ratio, never measured against content ("2045 - T19" at high turns is wider than "2029 - T3").
+4. **The Budget category COLUMN** - same style family, but VERTICAL: GUILayout resolves a vertical
+   child's width before its height, so its wrap heights are correct - confirmed by capture ("Sovereign
+   Wealth Fund" wraps cleanly). Named to record why it is NOT a sibling.
+
+### Finding 2's fix, and the sentinel survey
+
+Empty spending groups now render nothing (ruled A): a group header is furniture for its group, and
+suppressing it keeps `GroupSpendingMax`'s 0.0001f guard where it belongs - in the arithmetic.
+**Sentinel survey (a divide-by-zero guard formatted as a display value is a class):** exactly ONE
+site ever formatted its sentinel - the one fixed. `GraphRenderer`'s two range guards and
+`LedgerRow`'s span guard feed pixel math only; `PoliSimWidgets`' epsilon is a comparison. **One
+named residual**: a group whose lines are all exactly $0 would resurface the "" header through
+the same string - unreachable from seed data, approachable by a player cutting every line toward
+zero. Recorded rather than engineered around.
+
+### Finding 3, restated the honest way (per Elias)
+
+The coverage pass's premise ("the legacy four-slider UI is live for five countries") was a stale
+cached claim - and the pass was still right to run, **because it justified itself on what it found,
+not on what it was predicted to find**: two real defects reachable only through the country axis,
+the per-country deltas confirmed working (Currency Strength tile presence, central-bank naming,
+5-line ledgers), and the stale premise itself. A pass justified by its predictions would have been
+cancelled on discovering the premise wrong; a pass justified by coverage cannot be.
