@@ -534,7 +534,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
    | # | Startable today | Gate |
    |---|---|---|
-   | 1 | **Canvas pilot — the country selector** (item 9-v2.0's next major track; spec §1C.4/`CANVAS_SPEC`) | none — coverage and 1a both discharged. ⚠ Of the eight Canvas screens, ELECTION NIGHT alone is further gated (RULINGS R2) |
+   | 1 | ✅ **Canvas pilot — DONE 2026-08-12** (`4c6abba`+`e278a1a`): the takeover seam (8 named defect classes, one found by the pilot's own first run), `CanvasChrome` (host at the 1920 board basis; the THIRD border-order convention resolved in one place), the selector per §A.14, `ui_scrim_takeover` wired at last. Verified both sizes, full round trip on film, rec-set comparison clean. **The discipline-carryover statement is in `CLAUDE.md` "The Canvas pilot"** — the next seven screens copy it. Next Canvas screen unblocked; ELECTION NIGHT alone stays gated (R2) |
    | 2 | **Track 3 — remove the eleven superseded pre-v2.0 sprites** | none — "when convenient" (ruled); `DeliveredAssetCheck` allowance in the same commit |
    | 3 | **Folder-tongue faces (`ui_tab_folder_*`) as their own pass** | none — ruled B |
    | 4 | **WIN-form election reveal pin** (the one remaining state-axis form) | none — fold into the next driver touch (ruled) |

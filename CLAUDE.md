@@ -7844,3 +7844,63 @@ blocks (chrome table detail, coverage, state pins) from the roadmap's item-9-v2.
 COMPLETED.md; migrating the two consumed Open-Questions rulings (1440p, reporting-lag); a line-level
 audit of CLAUDE.md itself (644KB - its 2026-08-12 entries are current and its historical eras carry
 the discontinuity banners); the three asset-folder READMEs.
+
+## The Canvas pilot - the country selector, and the patterns seven screens copy (2026-08-12)
+
+Ruled by Elias: a pilot in the strict sense - decisions made deliberately and recorded, not
+improvised per screen later. Built, verified at 1600x950 and 2560x1440 (59 captures each, 0
+failed / 0 overflows / 0 escapes / 0 clipped), full round trip on film: Canvas entry (01), a
+reflection-driven selection exiting the screen exactly like a click, IMGUI dashboard back with
+zero residue (01b), 57 further IMGUI captures unchanged against the rec set per rule 15 - the 01
+diff IS the deliberate replacement.
+
+### The seam (the piece most likely to matter)
+
+A four-phase machine in GameController: CoverIn (IMGUI scrim to FULL opacity - A.13's 85% hold is
+a declared deviation, a swap behind 85% shows through), swap, Reveal (the scrim fades OVER the
+live Canvas - possible precisely because IMGUI is always topmost, the same measured fact that
+forces the suppression), live (IMGUI draws ONLY the hold banner: B8 survives by render order),
+CoverOut on selection, Restore at OnGUI's end. Phases advance on the Layout event only.
+**EIGHT seam defect classes named at the machine**, seven in advance and one found by the pilot's
+own first run: a THROWING screen builder aborted OnGUI mid-Layout (the exact Layout/Repaint
+corruption the machine exists to prevent, arriving through an exception) and retried every frame
+because the failure flag was only set on a null RETURN. Class 8: any build failure - null or
+throw - fails INTO the IMGUI degradation path exactly once, loudly.
+
+### How Canvas content gets captured (the coverage gap, closed in the pilot)
+
+`ScreenCapture` reads the composited backbuffer, so captures and `ScreenEdgeCheck` see Canvas
+content natively - no harness change needed there. What DID need building: the driver waits on the
+seam's own flags (`CanvasTransitionSettled` + `CanvasSelectorActive` - three states two
+booleans carry) instead of frame counts, and drives Canvas state through the SAME
+`SelectPlayerCountry` the click path uses. ⚠ NAMED, not solved: `UiOverflowGuard` and
+`UiContainmentGuard` hook IMGUI and are structurally blind to Canvas - the Canvas cousin of the
+clipping class (uGUI `Text` clips silently inside a fixed `sizeDelta`) currently has NO guard.
+The 01a "yielding" capture pins the moment, not the wash - two frames into CoverOut the alpha is
+frame-rate-dependent and can be imperceptible; recorded honestly rather than retimed.
+
+### Which disciplines carry, per the charter
+
+- **3.0a tinting: CARRIES.** WoA tints via `Image.color` (the same multiply); real-colour art
+  stays white. Verified on the runtime-tinted `ui_tab_spine` hue strips.
+- **Importer families: CARRY UNCHANGED.** Canvas reads the same textures through IconLibrary;
+  `Sprite.Create` wraps at runtime; no importer settings changed.
+- **Slicing: CARRIES, third convention resolved in ONE place.** `CanvasChrome.Sliced` takes the
+  manifest's L/R/T/B @2x unhalved and maps to `Sprite.Create`'s X=left Y=bottom Z=right W=top;
+  `pixelsPerUnitMultiplier = 2` renders slices @1x.
+- **Measured-not-constant sizing: DOES NOT CARRY as-is.** Canvas screens are composed at the
+  1920x1080 reference (the board basis - spec px are canvas units) under a scaler; retained-mode
+  layout groups own both reserve and draw, so the accessor discipline has no analogue. The failure
+  class to watch instead is silent Text clipping (above).
+- **Rule 15: CARRIES.** Backbuffer captures diff identically.
+- **Stable control layout: transforms into seam class 1** (Layout-event-only phase advancement).
+- Legacy uGUI `Text` by recorded decision; TMP deferred until a screen needs masks/effects.
+- `menu_pattern_tile` now has TWO call sites: the Canvas ground (primary) and IMGUI's
+  `DrawMenuBackground` (the live degradation path - a broken canvas build costs the new look,
+  never the ability to start a game).
+
+### Composition notes from the captures (not fixed)
+
+- Poland's hue strip (SovereignWealth brown) is low-contrast against the manila folder - plainly
+  visible at 2560, near-invisible at 1600. An ink-contrast question for the boards, not a bug.
+- Flags render horizontally centred; the board reads as left-aligned. Declared with V-C1..V-C3.
