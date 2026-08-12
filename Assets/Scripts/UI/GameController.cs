@@ -706,6 +706,9 @@ namespace PoliSim.UI
         //      draw site; cannot co-occur with the selector.
         //   7. IMGUI furniture washing the Canvas from above (the desk grain) — skipped during
         //      suppression; any future always-on IMGUI draw must make the same choice explicitly.
+        //   8. A THROWING screen builder retrying every frame while corrupting IMGUI's Layout pass —
+        //      found by the pilot's first run, not named in advance. Prevented: any build failure,
+        //      null OR throw, sets the failed flag exactly once (see the entry case).
         private enum CanvasPhase { None, CoverIn, Reveal, CoverOut, Restore }
 
         private CanvasPhase _canvasPhase = CanvasPhase.None;
@@ -730,7 +733,23 @@ namespace PoliSim.UI
             switch (_canvasPhase)
             {
                 case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_canvasSelectorFailed:
-                    _countrySelector = CountrySelectorScreen.Build(_world, SelectPlayerCountry);
+                    // ⚠ SEAM DEFECT CLASS 8, found by the pilot's own FIRST run rather than named in
+                    // advance: a THROWING screen builder is worse than a null one. The throw escaped
+                    // this Layout-event call, aborted OnGUI mid-Layout (corrupting the Layout/Repaint
+                    // balance the whole machine exists to protect), and — because the failure flag was
+                    // only set on a null RETURN — the build retried every frame forever. A builder
+                    // failure of ANY kind must fail INTO the degradation path exactly once.
+                    try
+                    {
+                        _countrySelector = CountrySelectorScreen.Build(_world, SelectPlayerCountry);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogError($"CANVAS: selector build THREW ({e.GetType().Name}: {e.Message}) - IMGUI selector stays the live path.");
+                        _countrySelector?.Destroy();
+                        _countrySelector = null;
+                    }
+
                     if (_countrySelector == null)
                     {
                         _canvasSelectorFailed = true; // IMGUI selector stays the live path

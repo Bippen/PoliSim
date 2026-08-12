@@ -225,7 +225,10 @@ namespace PoliSim.UI
 
             var strip = new GameObject("Figures");
             strip.transform.SetParent(parent, false);
-            strip.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 44f);
+            // A bare GameObject carries only a Transform — the RectTransform must be added before
+            // anything sizes it. The pilot's first run threw exactly here (well, at MakeRulePair, the
+            // same shape) and the throw became seam defect class 8 below.
+            strip.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 44f);
             HorizontalLayoutGroup stripLayout = strip.AddComponent<HorizontalLayoutGroup>();
             stripLayout.childAlignment = TextAnchor.UpperLeft;
             stripLayout.childControlWidth = true;
@@ -260,7 +263,7 @@ namespace PoliSim.UI
         {
             var pair = new GameObject("RulePair");
             pair.transform.SetParent(parent, false);
-            pair.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 1f);
+            pair.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 1f);
             HorizontalLayoutGroup layout = pair.AddComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
             layout.spacing = 0f;
