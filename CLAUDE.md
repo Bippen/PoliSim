@@ -7958,3 +7958,71 @@ whose RECT clips against an ancestor mask (bounded extension, not v1); TMP if it
 (different preferred-size API - that belongs to the deferred-TMP record); non-text content.
 **Cost: CHEAP** - ~40 lines, legacy-Text-only, no layout-system internals beyond preferredHeight.
 Recommend building on ruling.
+
+## The Canvas track close-out: text guard built, tint accessors, loose ends (2026-08-12)
+
+Ruled and executed the same day the scoping above was written.
+
+### CanvasTextGuard - built EXACTLY as scoped (`a642c69`)
+
+`Assets/Scripts/Testing/CanvasTextGuard.cs`, the scoping's limits recorded verbatim in the class
+doc. What the scoping named, the build kept: CLIP (`preferredHeight > rect.height`) and ESCAPE
+(wrap off, `preferredWidth > rect.width`) under one summary; `-1`/"VERIFIED NOTHING" when zero
+texts enumerate, counted as a FAILURE by the driver (PartyMarkCoverageCheck's precedent - a probe
+over an empty set must not report clean); a both-directions SELF-TEST before the first assert
+(known-clipping probe + known-fitting probe on a throwaway canvas), so a broken probe fails the
+run instead of blessing it. Driver-attached after each Canvas capture (01 selector, 89 signing),
+enumeration counts in the run summary, `Finish` fails on any violation.
+
+**Verified live, both sizes**: `SELFTEST canvas-text -> OK`; 50 texts asserted on the selector,
+5 on the signing document, 0 violations across 2 asserts, at 1600x950 and 2560x1440, all other
+counts clean (77 captures, 0 failed/overflows/escapes/clipped each). The guard asserts on TWO
+pinned Canvas states because two exist - coverage equals pinned states, per its own limits.
+
+### The tint-family accessors - the sixth instance needs a compiler error, not an eye (`a642c69`)
+
+After the class's FIFTH visit (the seal above), `CanvasChrome` gained the pair the ruling asked
+for: `TintedImage` (WoA - the ink is a REQUIRED argument) and `AsAuthoredImage` (real-colour -
+locked white, no caller can tint). Every chrome `Image` in `CountrySelectorScreen` (hue strip,
+flag) and `SigningScreen` (masthead seal, official seal, stamp, ornate frame) now constructs
+through one of the two, so the family choice is forced at the call site. **Two sites stay raw
+with the constraint named in place**: the SIGN button face and the folder-card face are `Button`
+raycast surfaces (`raycastTarget` must stay true; the accessors lock it false) and each needs a
+non-white degradation/hover colour - "if it doesn't fit, say why rather than forcing it".
+`SigningScreen.cs.meta` rode this commit: the signing commits had missed it, the exact
+meta-generated-after-commit trap; this pass ran Unity BEFORE committing so the guard's own meta
+could not repeat it.
+
+### The WIN reveal pinned; the FP variant was already built (`4b74dec`)
+
+The queued driver touch, folded in while the ceremony idioms were warm. Section F pins BOTH
+reveal forms in one chain: approval forced HIGH at the first election turn ->
+`88w_election_reveal_win` (green RE-ELECTED, 60,0 against the 35 threshold, on film at
+`winusa1600`, 78 captures all clean) -> a win's dismissal sets no state, returns to the
+dashboard -> the SAME search runs to the next election for the existing loss chain (88a/88b,
+both re-verified). The election search existed once, was about to exist twice, and became
+`AdvanceToElectionTurn` - the copy-drift shape `AdvanceCountryDayTick` just ended, declined at
+birth this time. The FP-meeting search variant queued alongside was found ALREADY BUILT (C2's
+continuation loop, `84b_meeting_decisions`) - stated, not re-built.
+
+### Track 3 executed (`8d86587`)
+
+The manifest's 11 `!`-rows deleted from disk (+ metas), verified absent from code first: zero
+exact-name references (the GameController scrollbar hits are the v2 `_v`/`_h` names; IconLibrary's
+is a doc comment), zero GUID references in any scene/prefab/asset. `DeliveredAssetCheck`'s
+superseded allowance landed IN THE SAME COMMIT, reading the manifest's own `!` rows rather than a
+duplicated list, each skip logged (`supd ... not a regression`) so the allowance stays visible.
+Verified: 0 missing with 21 supd skips across the two archived chrome packs; ChromeV2CoverageCheck
+50/50 both directions (no logic edit needed - its stale "removable once confirmed" wording and the
+manifest's comment block were updated to the removed-by-ruling reality); UpstreamCheck green; the
+full 78-capture run compiles and stays clean post-deletion. **The `!` rows STAY in the manifest** -
+they are the allowance's source now, and the manifest comment says so.
+
+### What this close-out leaves
+
+- **Folder-tongue faces (`ui_tab_folder_*`)** - ruled B, its OWN pass (an IMGUI change to every
+  screen's tab bar; needs its own full rule-15 cycle). The one remaining ungated startable item.
+- **Reconciliation residue** (COMPLETED migration of finished v2.0 blocks, asset READMEs) - folds
+  into whatever next touches those documents.
+- **The big gates, untouched by ruling**: item 10 priced after 13 Sept 2026; the fiscal-divergence
+  pass PARKED; save/load 2nd in the execution order. Sequencing is Elias's conversation, not a pass.

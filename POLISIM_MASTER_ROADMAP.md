@@ -535,10 +535,10 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | # | Startable today | Gate |
    |---|---|---|
    | 1 | ✅ **Canvas pilot — DONE 2026-08-12** (`4c6abba`+`e278a1a`): the takeover seam (8 named defect classes, one found by the pilot's own first run), `CanvasChrome`, the selector per §A.14, `ui_scrim_takeover` wired. Discipline-carryover statement in `CLAUDE.md`. *(⚠ Count corrected same day: §A.14 defines THREE Canvas screens, not eight — the eight are the design boards.)* |
-   | 1b | ✅ **Canvas screen 2 — SIGNING (1g), DONE 2026-08-12** (`bd23e3c`+`c6b9b1c`): the nearest neighbour, on the pilot's patterns plus the mid-game additions (takeovers stop the clock; CoverIn overlays the live dashboard; ceremonies fire only from play's day tick). Verified both sizes, B8 on film. **The §A.14 Canvas set is now 2 of 3 — ELECTION NIGHT (1h) alone remains, R2-gated on item 10.** The Canvas TEXT GUARD is scoped in `CLAUDE.md` (cheap, ~40 lines, driver-attachable) — awaiting ruling |
-   | 2 | **Track 3 — remove the eleven superseded pre-v2.0 sprites** | none — "when convenient" (ruled); `DeliveredAssetCheck` allowance in the same commit |
+   | 1b | ✅ **Canvas screen 2 — SIGNING (1g), DONE 2026-08-12** (`bd23e3c`+`c6b9b1c`): the nearest neighbour, on the pilot's patterns plus the mid-game additions (takeovers stop the clock; CoverIn overlays the live dashboard; ceremonies fire only from play's day tick). Verified both sizes, B8 on film. **The §A.14 Canvas set is now 2 of 3 — ELECTION NIGHT (1h) alone remains, R2-gated on item 10.** ✅ The Canvas TEXT GUARD was ruled and BUILT same day (`a642c69`, `CanvasTextGuard`): self-testing both directions, driver-attached after each Canvas capture, fails at zero enumerated; limits verbatim in the class doc. Same commit: `CanvasChrome.TintedImage`/`AsAuthoredImage`, the tint-family choice forced at construction after the class's fifth visit |
+   | 2 | ✅ **Track 3 — DONE 2026-08-12** (`8d86587`): the eleven superseded sprites removed, `DeliveredAssetCheck`'s superseded allowance in the same commit (reads the manifest's own `!` rows, each skip logged). Verified: 0 missing / 21 supd skips, ChromeV2 50/50 both directions, full capture run clean post-deletion |
    | 3 | **Folder-tongue faces (`ui_tab_folder_*`) as their own pass** | none — ruled B |
-   | 4 | **WIN-form election reveal pin** (the one remaining state-axis form) | none — fold into the next driver touch (ruled) |
+   | 4 | ✅ **WIN-form election reveal pin — DONE 2026-08-12** (`4b74dec`): both reveal forms + game over pinned in one chain; election search extracted to one helper. The FP-meeting search variant queued with it was found ALREADY BUILT (C2's continuation loop, capture 84b) — stated, not re-built |
    | — | *Item 8 save/load* | sequencing: 2nd in the execution order, behind v2.0 |
    | — | *The fiscal-divergence pass* | PARKED by ruling — Elias schedules it |
    | — | *CT Phases 4–5, then Round 4* | 3rd/4th in the execution order; Phases 4–5 now calibrate against 365-day turns |
@@ -587,6 +587,11 @@ If a step's own validation fails, fix it before moving to the next — never pro
       (LOSS form), and game over. Still unpinned: the WIN reveal — one chain pins one form, stated
       rather than implied. The driver's day-tick is now a COPY of the controller's list (arm calls
       + eight countdowns + CheckElection) — the drift risk this creates is raised for ruling.
+      *(Both closed same-day/next-day: the copy became `SimulationManager.AdvanceCountryDayTick`,
+      one method both callers share — see `CLAUDE.md` "Item 1a closed" — and the WIN reveal pinned
+      2026-08-12 (`4b74dec`, `winusa1600_88w`): approval forced high at the first election turn, a
+      win's dismissal returns to the dashboard, so the same run then searches to the next election
+      for the loss chain. Both reveal forms and game over are now on film.)*
 
       🔴 **NEW FINDING from the reveal's first-ever capture: `DrawElectionResultsScreen` prints its
       body in the paper-ink ramp on the BARE DESK** — "Approval Rating / needed to win / Margin"
@@ -646,6 +651,11 @@ If a step's own validation fails, fix it before moving to the next — never pro
       v2.0 chrome set is confirmed"; this is that claim, derived by exact-name call-site trace
       (`git grep '"<name>"'` over `Assets/Scripts`, load calls distinguished from comments) across all
       **61 sprites on disk**. 29 wired + 11 Canvas-path + 2 no-state + 8 orphaned + 11 superseded = 61.
+      *(Amended 2026-08-12: the 11 superseded are now REMOVED (`8d86587`, Track 3) — **50 on disk**,
+      and ChromeV2CoverageCheck reports 50/50 both directions. The manifest's `!` rows remain as
+      `DeliveredAssetCheck`'s allowance source. The stamps' "no state to mark" row below also stands
+      corrected — both wired `6bc5ec1` per item 2a. The families below are otherwise unchanged as the
+      dated record; a fresh call-site trace, not this note, is what re-derives them.)*
 
       **WIRED — 29, each with a live `IconLibrary.GetChrome` load:** `ui_panel_paper` (boxes + cards) ·
       `ui_btn_brass` / `ui_btn_paper` (every button kind) · `ui_plate_tile` (stat tiles) ·
