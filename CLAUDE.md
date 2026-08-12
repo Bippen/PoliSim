@@ -7521,3 +7521,67 @@ a cached value; the set is the authority.**
 - **`GUI.DrawTexture`'s Vector4 borderWidths edge order was sidestepped, not resolved**: every
   9-slice this pass draws goes through a `GUIStyle` with a `RectOffset` border, whose edge order is
   unambiguous. If anyone later needs the Vector4 overload, verify the order by render first.
+
+## The capture driver's state axes - pinned, incidental, never captured (2026-08-12, report only)
+
+Requested by Elias after the HELD-state finding: the harness had full SCREEN coverage and half the
+STATE coverage, and nothing reported it. This enumerates the axes a capture can land on, derived from
+`UiScreenshotDriver` plus GameController's conditional draws. **Report, not fixes** - per the request,
+the length of the list is itself the finding. The set-comparison method this feeds is now
+working-discipline rule 15 (three layers: guards answer containment, one set answers plausibility,
+only the old-beside-new diff answers regression).
+
+### PINNED - deliberately produced by the driver, guaranteed in every set
+
+1. **Draft state** - SWF drafted with diverged weights; all 29 spending lines drafted, alternating
+   sign (B1's hatch/pencil/figure carriers render).
+2. **Publication state** - warm-up stops on a PRELIMINARY release (badged + dashed on screen).
+3. **History depth** - >=3 years, so graphs plot, pagination is real, the map has trade lines.
+4. **Scroll depth** - three per sub-screen (top / rows / deep).
+5. **Sub-screen coverage** - every sub-selector enumerated from the table in the driver.
+6. **Interrupt HELD** - CaptureHeldState, real election-eve trigger, standard tab + Budget full-screen
+   (new 2026-08-12).
+7. **Interrupt RUNNING** - 01b_running_strip at turn 0 (new 2026-08-12).
+8. **Resolution** - 1600x929 every run; 2560x1419 confirmed once by ruling (2026-08-11). 1920x1080 and
+   a deliberately narrow window remain uncaptured (already recorded in the roadmap).
+
+### INCIDENTAL - present in some sets by coincidence, guaranteed by nothing
+
+1. **The fed-chair pause during the main set** - the warm-up's preliminary-release stop happens to land
+   on an election eve. Was the only HELD coverage for every set before 2026-08-12.
+2. **Random events** - dosport happened to catch a BREAKING banner (trade summit); most sets have none.
+   Map event markers likewise.
+3. **The economy itself** - the warm-up is UNSEEDED, so every figure differs run to run (AA+ vs AAA
+   between consecutive 2026-08-12 sets). Fine for chrome; it means set comparison is structural/by-eye,
+   never pixel-wise, and no capture is reproducible.
+
+### NEVER CAPTURED - state the harness has never put on screen
+
+1. **A cabinet with ministers** - every capture has all portfolios VACANT: the roster with portraits,
+   competence rows, reshuffle flow, and the candidate-search results have never been in any set. (The
+   portrait frame shipped verified via the fed-chair picker only - same DrawPersonPortrait path, but
+   the roster context itself is unseen.)
+2. **A pending CABINET decision card** and **a pending FOREIGN POLICY meeting card** on Decisions - the
+   dossier treatment is verified only on FEDERAL RESERVE.
+3. **The BUDGET PROCESS pause** - the annual budget introduce flow, its dossier card, and the Budget
+   full-screen banner during it (the 91 capture shows the fed-chair reason there, not the budget one).
+4. **Any pending bill mid-countdown** - TaxProgramBill, WelfareProgramBill, the five tier-3 standalone
+   bills, a BudgetBill mid-vote: every pending-bill card, countdown and division/lean readout under a
+   REAL bill has never been captured (the live-estimate renderers show from drafts; the pending state
+   does not).
+5. **Game over** - the losing-election path and _gameOverStyle banner.
+6. **An election turn itself / election results** - the held pass stops on the EVE by design.
+7. **Any country but the USA** - never captured: the Eurozone shared-currency branches (no independent
+   rate controls), the EU-membership tariff view, a non-Fed institution name on the central-bank tab,
+   and - largest - **the legacy spending UI**: five of six countries have no SpendingLines portfolio
+   and draw the four category sliders instead of the 29-line ledger. A whole alternate Budget
+   sub-screen, never in any set.
+8. **A STANDING sovereign wealth fund** - the driver drafts one; the post-enactment standing-fund UI is
+   unseen.
+9. **A pending Implement/Remove program bill** - the tax-line/welfare-program toggle flow mid-bill.
+10. **Any locale but sv-SE** - every capture renders OS-culture dates ("januari"); the open 1D.3 locale
+    decision has never had its EN rendering captured.
+
+The axis that bit on 2026-08-12 (interrupt state) was #6/#7 - pinned only after it bit. Items 1-3 of
+"never captured" are the same shape: Decisions-tab states that the warm-up cannot reach determin-
+istically, which is exactly where the next silent coverage gap lives.

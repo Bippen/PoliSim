@@ -3364,7 +3364,7 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above).</summary>
+        /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above). RULED 2026-08-12 (Elias): the no-area-tint decision STANDS against §A.8's "bottom 3px area ink" strip and the manifest's "ui_subtab_on's bottom hue strip = ui_tab_spine flipped" - the main-tab spine carries area identity one level up, so the strip would be redundant, not missing.</summary>
         private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory, float maxWidth = 0f) where T : struct, System.Enum
         {
             bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);

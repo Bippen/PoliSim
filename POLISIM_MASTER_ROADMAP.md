@@ -83,6 +83,24 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 
     The same defect recurred twice more in one session, which is what makes it a rule. A **57-file byte-identical diff** was read as proof that five import blockers were closed — but two of those blockers are about NAMING, which is not a byte-level property, so the diff structurally could not see them. And `PartyMarkCoverageCheck`'s own first version reported *"4 of 4 resolve at 128×128, the metas are sound"* when it only checked that a handle came back; extended to assert `texture.format`, it immediately found all four imported as **DXT5** — block compression on white-on-alpha, the exact damage vector the settings exist to prevent. **When citing a check, name what it enumerates.** When a check's bar is another artifact ("matches the reference"), it inherits that artifact's defects — the reference emblem was itself DXT5.
 
+15. **NEW (2026-08-12, Elias) — COMPARE AGAINST THE PREVIOUS CAPTURE SET; DO NOT JUST LOOK AT THE NEW
+    ONE.** `d44ab2d` shipped the selected sub-tab's label as cream on pale paper — unreadable — and its
+    own capture run was **approved by eye with the defect on screen**. It was caught a day later
+    (`01eb29a`) not by looking harder but by putting the pre-conversion `accessors_*` set beside the new
+    one: readable white-on-brass next to unreadable cream-on-paper is a finding no single image
+    produces. **The three verification layers each answer a different question, and only the third
+    answers regression:**
+
+    | Layer | Answers | Cannot answer |
+    |---|---|---|
+    | Guards (`UiOverflowGuard` / `UiContainmentGuard` / `ScreenEdgeCheck`) | containment — does content fit and stay inside? | composition — does it READ? |
+    | A single capture set, by eye | plausibility — does this look like a working screen? | change — is anything worse than before? |
+    | The set DIFF, old beside new | **did this change break something?** | — |
+
+    ⚠ One practical limit, measured 2026-08-12: the capture warm-up is **unseeded**, so two sets differ
+    in every simulated figure (AA+ vs AAA between consecutive runs) — the comparison is structural and
+    by eye, never pixel-wise, until someone decides seeding the warm-up is worth it.
+
 ---
 
 ## Where things stand right now
@@ -573,7 +591,9 @@ If a step's own validation fails, fix it before moving to the next — never pro
    ⚠ **SO THE NEXT v2.0 QUESTION IS NOT "WHICH SCREEN" — IT IS WHICH OF THE REMAINING TRACKS.** §A's own
    backlog names three, none of which is a row conversion. **Track 1 CLOSED 2026-08-12** (see its table);
    what remains startable is **1a (resolved-bill history)** and **2 (the Canvas path)** — track 3 waits on
-   Elias confirming the v2.0 chrome visually:
+   Elias ruling on **Phase 2's derived statement** below (per his 2026-08-12 direction: the statement,
+   not the screenshots, is the "v2.0 chrome confirmed" claim — its 8 orphans need dispositions before
+   deleting anything is safe to call complete):
    1. **The unwired chrome — ⚠ THE LIST OF 13 WAS WRONG, corrected 2026-08-12 by tracing call sites.**
       Six of the thirteen were never IMGUI placement work at all. **This is a correction to the list, not
       a deferral**, so nobody re-derives it:
@@ -597,8 +617,54 @@ If a step's own validation fails, fix it before moving to the next — never pro
       is **Canvas-path** per the manifest's own "Canvas hero size" note, joining the seals and scrim.
       One defect found and fixed en route (`01eb29a`): `d44ab2d`'s sub-tab face left the Primary kind's
       cream text on pale paper — the selected sub-tab label was unreadable in every capture, and the
-      commit that introduced it had been approved by eye. Everything here still awaits **Elias's visual
-      review**, which is also what gates track 3 below.
+      commit that introduced it had been approved by eye (now working-discipline rule 15).
+
+      ✅ **RULED 2026-08-12 (Elias) — the sub-tab keeps its recorded no-area-tint decision.** §A.8 specs
+      an active-sub-tab "bottom 3px area ink" strip and the manifest says "= ui_tab_spine flipped", but
+      `DrawSubCategoryButton`'s recorded decision ("no per-area tinting at this second level") stands:
+      the main-tab spine now carries area identity one level up, so the strip would be redundant, not
+      missing. The "Clock running" status copy may be renamed when convenient — cosmetic, nothing waits.
+
+      ### PHASE 2's DERIVED STATEMENT — every chrome sprite's disposition, FROM CALL SITES (2026-08-12)
+
+      **This statement is what track 3 gates on** — four screenshots looking right is not the claim "the
+      v2.0 chrome set is confirmed"; this is that claim, derived by exact-name call-site trace
+      (`git grep '"<name>"'` over `Assets/Scripts`, load calls distinguished from comments) across all
+      **61 sprites on disk**. 29 wired + 11 Canvas-path + 2 no-state + 8 orphaned + 11 superseded = 61.
+
+      **WIRED — 29, each with a live `IconLibrary.GetChrome` load:** `ui_panel_paper` (boxes + cards) ·
+      `ui_btn_brass` / `ui_btn_paper` (every button kind) · `ui_plate_tile` (stat tiles) ·
+      `ui_chip` / `ui_chip_outline` (badges, published figures) · 8 scrollbar pieces +
+      `ui_scrollbar_button_none` · `ui_slider_track` / `ui_slider_knob` / `ui_slider_knob_disabled` ·
+      `ui_slider_tick` · `ui_hatch_draft` · `icon_pencil_draft` · `ui_subtab_on` / `ui_subtab_off` ·
+      `ui_grain_tile` · `ui_banner_hold` · `ui_calendar_pad` · `ui_tab_spine` · `ui_folder_dossier` ·
+      `ui_portrait_frame`.
+
+      **DELIBERATELY UNWIRED, reason recorded — 13:** the six `ui_btn_*_canvas` states, `ui_folder_country`,
+      `ui_scrim_takeover`, `ui_seal_official`, `ui_seal_state`, `ui_portrait_frame_oval` (all Canvas-path,
+      rulings of 2026-08-12 and the manifest's own notes); `ui_stamp_carried` / `ui_stamp_rejected`
+      (no state to mark — blocked on item 1a, resolved-bill history).
+
+      **ORPHANED — 8, present and specified with NO call site and NO recorded disposition. These are the
+      statement's findings, raised for ruling rather than resolved silently:**
+
+      | Orphan | The question it poses |
+      |---|---|
+      | `ui_tab_folder_on` / `_off` / `_hover` (3) | The §A.7 folder-tongue faces. The main tabs draw on `ui_btn_brass`/`ui_btn_paper` instead. **Never on any list** — not the 13, not the corrected 6. Either the btn-face treatment is accepted (record it) or this is a missed IMGUI placement |
+      | `ui_frame_ornate` | Manifest: *"standalone modules (Fed chair etc, drawOwnFrame=true)"* — and the standalone IMGUI modals EXIST today (`DrawCabinetDecisionModal`/`DrawForeignPolicyMeetingModal` default `drawOwnFrame: true` on their own tabs). A plausible live IMGUI placement no list contained — OR Canvas-path if those modals are destined to migrate. Needs a ruling either way |
+      | `ui_frame_double` | *"overlays panels & hero documents"* — no home was ever named on the IMGUI side |
+      | `ui_stamp_draft` | The stamps ruling covered carried/rejected ("nothing to stamp"); the DRAFT stamp was not part of that ruling and D1 made `icon_pencil_draft` the inline draft carrier. Probably redundant — but that is a guess, not a record |
+      | `ui_btn_disabled` | B5's stamped-grey face. Disabled buttons today are `GUI.enabled` dimming over brass/paper — B5's *"rendered, never omitted"* is satisfied, the dedicated face unused, no record says which was chosen |
+      | `ui_pixel` | *"rules, spines, keylines — tint anything"* — every use it was cut for is served procedurally (`PoliSimTheme.Rule`/`RoundedBox`, `Texture2D.whiteTexture`). Functionally superseded, never marked so |
+
+      **SUPERSEDED — 11, `!`-marked in `ChromeManifest.txt`, and REMOVAL-SAFE from the code side:**
+      `ui_button_normal/hover/pressed/disabled`, `ui_panel`, `ui_scrollbar_track/thumb`,
+      `ui_scrollbar_track_vertical/thumb_vertical`, `ui_slider_fill/thumb`. Exact-name trace: **zero load
+      calls** — the only textual hit is a doc-comment mention of `ui_button_normal` in `IconLibrary.cs`.
+      `ChromeV2CoverageCheck` tolerates their removal by construction (`!` names are exempt from both
+      directions). ⚠ **One execution note for track 3:** `DeliveredAssetCheck` fails on any
+      zip-content-vs-disk gap, so the removal pass must teach it the superseded allowance (or archive the
+      relevant zips out of its scope) in the same commit — otherwise the deletion turns a passing check red.
 
       ⚠ **RULED 2026-08-12 — the stamps have nothing to stamp.** `ParliamentSystem.ApplyBillResult`
       applies a bill's effects and the bill is discarded; there is **no resolved-bill record anywhere** —
@@ -617,8 +683,9 @@ If a step's own validation fails, fix it before moving to the next — never pro
    2. **The Canvas path** — fully specified, nothing built: eight narrative screens, the hand-off
       envelope, the scrim. `CANVAS_SPEC.md`. The country selector is the obvious pilot, being
       self-contained and already a full-screen state.
-   3. **The eleven superseded pre-v2.0 chrome sprites**, removable in one pass once v2.0 chrome is
-      confirmed.
+   3. **The eleven superseded pre-v2.0 chrome sprites** — removal-safe from the code side per Phase 2's
+      derived statement (zero load calls, checks tolerate removal, one `DeliveredAssetCheck` execution
+      note recorded there). Gated on Elias's ruling on that statement, including its 8 orphans.
 
    Spec reference for anything row-shaped remains **§A.9** with **§A.9a** (resort ladder), **§A.9b**
    (negative fill = no gauge) and **§A.9c** (Parliament's real pointer; §A.10 is Buttons).
