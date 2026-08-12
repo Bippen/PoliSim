@@ -845,7 +845,13 @@ is inventing, not implementing, which is the line this section exists to keep vi
 groups differ by orders of magnitude ($1.53T against $9B), which is exactly the kind of thing a period
 ledger has conventions for. But it needs a decision, not a guess from us.
 
-### OPEN QUESTIONS — raised rather than decided in code
+### OPEN QUESTIONS — ✅ BOTH ANSWERED BY LATER WORK (reconciled 2026-08-12)
+
+*(Q1: answered — SHARE stays global, survivable because the group-scaled bars carry within-group
+discrimination; the reasoning is recorded at the Spending draw site and in the roadmap's V2/Q1 notes.
+Q2: answered — pass 3's §A.9 re-derived the row pitch as a DECIDED 36px at board scale, replacing the
+font-derived default this question flagged. Closed citing that work rather than left as a queue nobody
+drains. Original text follows.)*
 
 Two things the first Spending capture surfaced. Neither is a defect and neither is blocking; both are
 choices we would rather you made than have us settle silently in an implementation.
@@ -889,17 +895,21 @@ default.
 ### What this blocks, precisely
 
 Nothing in the IMGUI path. All four items are Canvas-side, and the Canvas path was already gated behind
-the IMGUI wiring being confirmed live. **Our coverage check now fails on these four by design** — it
-gained a second direction this pass (does everything *specified* exist, not just: does everything
-*present* load), and these are the first four entries it has ever reported missing. That failure is the
-check working, not a regression.
+the IMGUI wiring being confirmed live. ~~**Our coverage check now fails on these four by design**~~
+*(reconciled 2026-08-12: pass 3 delivered the four as PNGs and they imported cleanly —
+`ChromeV2CoverageCheck` has read both directions clean since 2026-08-11, e.g. 61/61 resolve, 50/50
+present in the chrome-track runs)* — it gained a second direction this pass (does everything
+*specified* exist, not just: does everything *present* load), and these were the first four entries it
+ever reported missing. That failure was the check working, not a regression.
 
 ---
 
 ## 1F. PARTY EMBLEMS — ONE QUESTION, BEFORE ANY ART (2026-08-11)
 
 **Status: ANSWERED 2026-08-11. Decision taken, four marks delivered, batch correctly not started.
-Awaiting IMPORT on our side — see §1F.1.**
+~~Awaiting IMPORT on our side~~** *(reconciled 2026-08-12: IMPORTED the same day — §1F.2 below records
+it, RGBA32-verified under `PartyMarkCoverageCheck`; this line and that section briefly disagreed
+within one document)*.
 
 This was a question, not a request for assets. It gates roughly forty of them, it has a long lead time,
 and answering it wrong after the batch is drawn is expensive. §1B.3 set the precedent for asking exactly
