@@ -7745,3 +7745,67 @@ absent. **Consequence: roadmap item 1a (resolved-bill history) is mostly DONE on
 - what remains is the UI (a Recent Divisions block on Parliament, where the stamps then have their
 state to mark) plus whatever retention/enrichment the Canvas election night needs. The absence claim
 was an ungrepped absence claim - the same shape rule 14's SWF instance already recorded.
+
+## Item 1a closed; the absence-claim class named with a guard; the day-tick artifact (2026-08-12)
+
+### The Division Records panel - built, verified at both sizes on two countries
+
+`DrawRecentDivisions` (`6bc5ec1`) is the first reader of `Country.Divisions`: number + title,
+mono ISO date, the same diverging lean bar the live estimate draws, and the verdict stamps -
+`ui_stamp_carried`/`ui_stamp_rejected`, WoA on paper, INK weights (Good/Bad; the lifted set is
+desk-only). NOT LedgerRow: its columns are policy-control furniture and its read-only form is a
+condition gauge - a verdict is not a meter. Verified: div2 sets, USA + Germany x 1600 + 2560, six
+real divisions per set (bills resolved through the real countdown path), 0 failed / 0 overflows /
+0 escapes / 0 clipped on all four; rule-15 comparison against the st2/cov sets shows the panel as
+the one structural addition, hemicycle and legend unchanged. **The stamps ruling is closed with
+real state.**
+
+### The absence-claim class, now at SIX instances, and the guard that follows
+
+Elias named four: the SWF one-file grep, `icon_stat_interestrate`'s stale status, the section-E
+drift, and the stamps ruling. **This session added two of its own while correcting the fourth**:
+"an election resolving leaves no observable UI state" (DrawElectionResultsScreen existed; the
+DRIVER's turn path never ran CheckElection) and CaptureHeldState's first comment ("the banner
+exists in NO capture" - every capture was HELD). The stamps instance and both of this session's
+were NOT failed searches - **no search was ever run**. Each was inferred from reading behaviour at
+one altitude: ApplyBillResult (a callee, missing its caller's bookkeeping), the sim's turn path
+(missing the controller's), the warm-up's shape (missing its coincidence). The SWF guard ("name
+the search") could not hold, because there was nothing to name.
+
+**The guard, both halves:**
+> **Before recording an absence as a blocker, name the search that establishes it - pattern and
+> scope quoted. If there is no search to name, the claim is INFERRED FROM READING: say so, and name
+> what was read - because a reading covers the code it read, not the model.** Absence of a record
+> is established by searching for WRITERS, not by reading one applier; absence of a behaviour is
+> established by driving the REAL entry path, not a partial one.
+
+### The day-tick artifact - three families in one pass, and a refactor question it raises
+
+`sim.AdvanceDay` is not a play-day. GameController.Update's day loop also makes: the two arm
+calls (`TryOpenBudgetProcess`, `TryRollForeignPolicyMeeting`), the EIGHT bill countdowns
+(`Advance*BillDay`), and post-turn `CheckElection`. The driver discovered each by pinning
+nothing, measuring, and adding the controller's own calls (`0220898`, `0f3d2cf`, `84bec8c`).
+**Every "never captured" entry recorded before this was partly a driver artifact.** The driver now
+carries a COPY of the controller's day-tick list - which will drift silently the day Update gains
+an eleventh call. Raised in the session report: extract the controller's sim-side day tick into
+one method both call.
+
+### Election-night scoping (report only, per the earlier directive)
+
+- **What the log does NOT carry and the election screen needs: an ElectionRecord.** DivisionLog is
+  bill votes; elections leave only a transient `ElectionResult` discarded on dismissal. Election
+  night wants persisted: approval at election vs threshold, margin, won/lost, the turn, and the
+  seat composition at the time (for the declaration-wave beat). Few per game (one per cycle) -
+  keep all, no retention rule needed.
+- **DivisionLog retention: 24 is right.** "Recent votes" is the panel's claim; the election screen
+  reads elections, not divisions. Enrichment at WRITE time is the only kind possible - and D2's own
+  ruling already rejects the ayes/noes headcount the Canvas division bar would want: alignment is
+  the honest scalar. The Canvas division bar inherits D2's blocker, not a log gap.
+
+### NEW FINDING - the election reveal's body ink, from the screen's first capture ever
+
+`DrawElectionResultsScreen` prints its body ("Approval Rating: 5,0 (needed 35 to win)",
+"Margin: -30,0") in the PAPER ink ramp on the BARE DESK - near-invisible. Only the brick headline
+and the brass button read. The ink-needs-paper inversion class, on the one screen that never had
+paper under it - reachable only by pinning the state, which is the coverage argument made twice in
+one day. Not fixed silently; raised in the report.

@@ -620,6 +620,21 @@ If a step's own validation fails, fix it before moving to the next — never pro
       drivable), an election resolving (NO observable UI state exists — needs the model record below),
       game over (left for a deliberate pass).
 
+      **⚠ TWO OF THOSE THREE "UNPINNED" CLAIMS FELL WITHIN HOURS, later the same day:** the FOREIGN
+      POLICY dossier pinned itself through real rolls once the driver made the controller's daily
+      arm calls, and **the election claim was the absence-claim class's sixth instance** —
+      `DrawElectionResultsScreen` existed all along; the driver's sim-side turn path simply never
+      ran `CheckElection`. The `div2_*` sets (USA + Germany × both sizes, all edge-clean) now pin:
+      the FP dossier, six real divisions on the new Division Records panel, the election reveal
+      (LOSS form), and game over. Still unpinned: the WIN reveal — one chain pins one form, stated
+      rather than implied. The driver's day-tick is now a COPY of the controller's list (arm calls
+      + eight countdowns + CheckElection) — the drift risk this creates is raised for ruling.
+
+      🔴 **NEW FINDING from the reveal's first-ever capture: `DrawElectionResultsScreen` prints its
+      body in the paper-ink ramp on the BARE DESK** — "Approval Rating / needed to win / Margin"
+      near-invisible; only the brick headline and brass button read. The ink-needs-paper inversion
+      class on the one screen that never had paper. **Not fixed — awaiting the ruling.**
+
    2a. ⚠ **THE STAMPS RULING'S PREMISE WAS WRONG WHEN MADE — `DivisionLog` has existed since
       `a7bd40d` (2026-08-10), two days before the ruling declared no record existed.** Every bill
       type's resolution appends to `Country.Divisions` (last 24: title, date, alignment, passed,
@@ -642,7 +657,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
       | `ui_subtab_on` / `ui_subtab_off` | ✅ **WIRED** `d44ab2d` — sub-tab faces |
       | `ui_slider_tick` | ✅ **WIRED** `d44ab2d` — ledger track scale, every 10% |
       | `ui_chip_outline` | ✅ **NEVER UNWIRED** — 2 live call sites in `GraphRenderer` and `PublishedFigure`. It was on the list in error |
-      | `ui_stamp_carried` · `ui_stamp_rejected` | ⛔ **NO STATE TO MARK** — see below |
+      | `ui_stamp_carried` · `ui_stamp_rejected` | ✅ **WIRED** `6bc5ec1` — the Division Records panel's verdict stamps, ink weights on paper. *(The "no state to mark" ruling's premise was false when made — see item 2a and the absence-claim guard in `CLAUDE.md`)* |
       | `ui_seal_official` · `ui_seal_state` | ⛔ **CANVAS-PATH** — no signing moment exists in IMGUI |
       | `ui_scrim_takeover` | ⛔ **CANVAS-PATH**, confirmed: no call site outside that track |
       | `ui_grain_tile` | ✅ **WIRED** `da9b935` — desk grain, drawn first in OnGUI |
@@ -717,10 +732,13 @@ If a step's own validation fails, fix it before moving to the next — never pro
       (*"SIGN → pen scratch 400ms → `ui_seal_official` drops 1.3 → 1.0 over 140ms"*), and no signing
       moment exists in the IMGUI path to attach one to.
 
-   1a. **NEW ITEM — resolved-bill history, a SIMULATION feature rather than an art dependency.** Bills
-      currently resolve and vanish: effects applied, no record kept. That is what blocks the two stamps,
-      and **the Canvas path will want it independently** — a signing beat implies something signed, and
-      a division record implies a division to record. Scoped here so it is not mistaken for chrome work.
+   1a. ✅ **CLOSED 2026-08-12 — and its premise was false when written** (see 2a below): the record
+      already existed (`DivisionLog`, `a7bd40d`), the UI half was the missing piece, and `6bc5ec1`
+      built it — the Division Records panel on Parliament, stamps placed, verified at both sizes on
+      USA and Germany with six real divisions per set. **What the Canvas election night still needs
+      is a different record entirely — an ElectionRecord** (elections leave only a transient result
+      discarded on dismissal); scoped in `CLAUDE.md` "Election-night scoping", not built, per the
+      ruling that the Canvas pilot is a separate pass.
    2. **The Canvas path** — fully specified, nothing built: eight narrative screens, the hand-off
       envelope, the scrim. `CANVAS_SPEC.md`. The country selector is the obvious pilot, being
       self-contained and already a full-screen state.
