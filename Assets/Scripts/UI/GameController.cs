@@ -553,6 +553,18 @@ namespace PoliSim.UI
         private GUIStyle _calendarMetaStyle;
         /// <summary>v2.0 chrome: `ui_tab_spine` (B7) — the white-on-alpha area-hue strip drawn across each consolidated tab's top edge, tinted per area at the draw site through GUI.color. Background + border only; empty background when the sprite is missing, and the spine simply doesn't draw.</summary>
         private GUIStyle _tabSpineStyle;
+        // v2.0 chrome: the Decisions dossier (§A.11) — `ui_folder_dossier` as a card background with
+        // its baked tab shoulder, plus the shoulder's own caption style. Empty background = sprite
+        // missing = BeginAreaCard falls back to the ordinary procedural area card.
+        private GUIStyle _dossierCardStyle;
+        private GUIStyle _dossierShoulderStyle;
+        /// <summary>Set by BeginAreaCard, consumed by EndAreaCard in the same OnGUI pass — Begin is the single authority on whether the open card is a dossier and what its shoulder reads, so the two halves cannot be told different stories. Cards never nest, so one pair of fields suffices.</summary>
+        private bool _openCardDossier;
+        private string _openCardKind;
+        /// <summary>v2.0 chrome: `ui_portrait_frame` — the brass roster frame drawn over every DrawPersonPortrait through its transparent opening. Empty background = sprite missing = the old unframed draw.</summary>
+        private GUIStyle _portraitFrameStyle;
+        /// <summary>How far the portrait art is inset inside the frame's rect, so the ~7px bezel (native pixel scale, like all 9-sliced chrome) overlaps the art's edge with no seam at any size.</summary>
+        private const float PortraitFrameArtInset = 5f;
         private GUIStyle _gameOverStyle;
         private GUIStyle _cardKindStyle;
 
@@ -1122,6 +1134,42 @@ namespace PoliSim.UI
             {
                 _tabSpineStyle.normal.background = tabSpine;
                 _tabSpineStyle.border = new RectOffset(7, 7, 0, 0);
+            }
+
+            // ⚠ v2.0 CHROME, 2026-08-12 — the Decisions dossier (§A.11). Real-colour furniture, drawn
+            // untinted (§3.0a); border 14/14/26/15 @1x halves the manifest's 28/28/52/30 @2x. The deep
+            // TOP slice is the baked tab shoulder — it sits in the fixed band, so content needs the
+            // padding to clear it (top 32); the bottom slice carries the baked drop shadow (bottom
+            // padding keeps content off it). Left padding reserves the area spine's width on top of
+            // §A.11's 18px, mirroring what BuildCardStyle does for the procedural card. The shoulder
+            // caption is a FIXED small size (set here, not in RescaleStylesToScreen): the shoulder
+            // band is baked art at native pixel scale — ~13px tall at every resolution — so a caption
+            // that scaled with the window would overflow the band it sits in. Ink `#6B6250` is the
+            // spec's own shoulder ink, quoted literally like the calendar month's.
+            _dossierCardStyle = new GUIStyle(GUIStyle.none);
+            Texture2D dossier = IconLibrary.GetChrome("ui_folder_dossier");
+            if (dossier != null)
+            {
+                _dossierCardStyle.normal.background = dossier;
+                _dossierCardStyle.border = new RectOffset(14, 14, 26, 15);
+                _dossierCardStyle.padding = new RectOffset(18 + AreaCardSpineWidth, 18, 32, 20);
+                _dossierCardStyle.margin = new RectOffset(0, 0, 0, 0);
+            }
+
+            _dossierShoulderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = false, fontSize = 11 };
+            PoliSimTheme.WithDisplay(_dossierShoulderStyle);
+            _dossierShoulderStyle.normal.textColor = PoliSimTheme.Hex(0x6B6250);
+
+            // ⚠ v2.0 CHROME, 2026-08-12 — the brass roster frame (§A.12's embedded/"rect, roster size"
+            // column; the OVAL variant is Canvas-path per the manifest's own "Canvas hero size" note,
+            // like the seals and the scrim). Real colour, drawn untinted (§3.0a); border 10/10/10/10
+            // @1x halves the manifest's 20/20/20/20 @2x. See DrawPersonPortrait for the draw order.
+            _portraitFrameStyle = new GUIStyle(GUIStyle.none);
+            Texture2D portraitFrame = IconLibrary.GetChrome("ui_portrait_frame");
+            if (portraitFrame != null)
+            {
+                _portraitFrameStyle.normal.background = portraitFrame;
+                _portraitFrameStyle.border = new RectOffset(10, 10, 10, 10);
             }
 
             StyleScrollbars();
@@ -1812,21 +1860,39 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawPersonPortrait(Texture2D portrait, UiPalette.SystemArea area)
         {
-            float size = _labelStyle.fontSize * 3.2f;
-            Rect rect = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size), GUILayout.Height(size));
+            // ⚠ v2.0 CHROME, 2026-08-12 — `ui_portrait_frame`, the brass roster frame (§A.12's
+            // embedded column). The rect takes the frame's own 74x92 @1x proportion instead of the
+            // old square — a portrait frame is portrait-shaped, and ScaleAndCrop has always cropped
+            // the art to whatever rect it was given, so no assumption about the art changes. Draw
+            // order: art first, inset so the bezel overlaps its edge with no seam, then the frame
+            // over it through its transparent opening. Frame missing → the old square unframed draw.
+            Texture2D frame = _portraitFrameStyle.normal.background;
+            float height = _labelStyle.fontSize * 3.2f;
+            float width = frame != null ? Mathf.Round(height * (74f / 92f)) : height;
+            Rect rect = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width), GUILayout.Height(height));
 
             if (Event.current.type != EventType.Repaint)
             {
                 return;
             }
 
+            Rect artRect = frame != null
+                ? new Rect(rect.x + PortraitFrameArtInset, rect.y + PortraitFrameArtInset,
+                    rect.width - PortraitFrameArtInset * 2f, rect.height - PortraitFrameArtInset * 2f)
+                : rect;
+
             if (portrait != null)
             {
-                GUI.DrawTexture(rect, portrait, ScaleMode.ScaleAndCrop, true);
+                GUI.DrawTexture(artRect, portrait, ScaleMode.ScaleAndCrop, true);
             }
             else
             {
-                PoliSimWidgets.Portrait(rect, area, 1f);
+                PoliSimWidgets.Portrait(artRect, area, 1f);
+            }
+
+            if (frame != null)
+            {
+                _portraitFrameStyle.Draw(rect, false, false, false, false);
             }
         }
 
@@ -3607,7 +3673,7 @@ namespace PoliSim.UI
 
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
-                BeginAreaCard("FEDERAL RESERVE", UiPalette.SystemArea.Political, blocksTime: true);
+                BeginAreaCard("FEDERAL RESERVE", UiPalette.SystemArea.Political, blocksTime: true, dossier: true);
                 DrawFedChairSelectionModal();
                 EndAreaCard(UiPalette.SystemArea.Political);
                 anyPending = true;
@@ -3616,7 +3682,7 @@ namespace PoliSim.UI
             ForeignPolicyMeeting pendingMeeting = _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId);
             if (pendingMeeting != null)
             {
-                BeginAreaCard("FOREIGN POLICY", UiPalette.SystemArea.Global, blocksTime: true);
+                BeginAreaCard("FOREIGN POLICY", UiPalette.SystemArea.Global, blocksTime: true, dossier: true);
                 DrawForeignPolicyMeetingModal(pendingMeeting, drawOwnFrame: false);
                 EndAreaCard(UiPalette.SystemArea.Global);
                 anyPending = true;
@@ -3627,7 +3693,7 @@ namespace PoliSim.UI
                 // Tinted by the PORTFOLIO's own area, not one flat "cabinet" color - two simultaneous
                 // cabinet decisions from different portfolios should not read as the same thing.
                 UiPalette.SystemArea portfolioArea = UiPalette.GetPortfolioArea(portfolio);
-                BeginAreaCard("CABINET", portfolioArea, blocksTime: true);
+                BeginAreaCard("CABINET", portfolioArea, blocksTime: true, dossier: true);
                 DrawCabinetDecisionModal(portfolio, decision, drawOwnFrame: false);
                 EndAreaCard(portfolioArea);
                 anyPending = true;
@@ -3635,7 +3701,7 @@ namespace PoliSim.UI
 
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
-                BeginAreaCard("BUDGET PROCESS", UiPalette.SystemArea.Fiscal, blocksTime: true);
+                BeginAreaCard("BUDGET PROCESS", UiPalette.SystemArea.Fiscal, blocksTime: true, dossier: true);
                 DrawBudgetBillStatusAndIntroduce();
                 EndAreaCard(UiPalette.SystemArea.Fiscal);
                 anyPending = true;
@@ -3664,11 +3730,36 @@ namespace PoliSim.UI
         /// are shared across tabs belonging to different batches, so rewriting their internals would
         /// silently restyle a screen this batch was not supposed to touch.
         /// </summary>
-        private void BeginAreaCard(string kind, UiPalette.SystemArea area, bool blocksTime = false)
+        private void BeginAreaCard(string kind, UiPalette.SystemArea area, bool blocksTime = false, bool dossier = false)
         {
-            GUILayout.BeginVertical(UiPalette.BuildCardStyle(AreaCardFill, AreaCardCornerRadius, AreaCardPadding, AreaCardSpineWidth));
-            if (string.IsNullOrEmpty(kind))
+            // ⚠ v2.0 CHROME, 2026-08-12 — §A.11: a Decisions card is a DOSSIER, drawn on
+            // `ui_folder_dossier` with its baked tab shoulder; the kind caption moves ONTO the
+            // shoulder (drawn by EndAreaCard, which is the first point the card's rect is known), so
+            // the in-flow header row keeps only the urgency chip. Dossier-ness is a per-call-site
+            // constant, so within any one screen the control sequence never varies — the
+            // stable-control-layout guarantee is per screen, and this holds it. Sprite missing →
+            // ordinary procedural area card, kind caption back in the flow, exactly as before.
+            // Begin is the single authority on dossier-ness: EndAreaCard reads these two fields
+            // rather than taking its own copies of the same facts as parameters, so a call site can
+            // never tell Begin "dossier" and End "plain" and put the spine through the shoulder.
+            _openCardDossier = dossier && _dossierCardStyle.normal.background != null;
+            _openCardKind = kind;
+
+            GUILayout.BeginVertical(_openCardDossier
+                ? _dossierCardStyle
+                : UiPalette.BuildCardStyle(AreaCardFill, AreaCardCornerRadius, AreaCardPadding, AreaCardSpineWidth));
+            if (string.IsNullOrEmpty(kind) && !_openCardDossier)
             {
+                return;
+            }
+
+            if (_openCardDossier)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                DrawColoredLabel(blocksTime ? "HOLDS TIME" : "CAN WAIT", _cardKindStyle,
+                    blocksTime ? PoliSimTheme.Bad : PoliSimTheme.TextMuted);
+                GUILayout.EndHorizontal();
                 return;
             }
 
@@ -3696,13 +3787,36 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>Closes a card opened by BeginDecisionCard and draws its area spine, using the rect GUILayout just resolved for the whole card - the height isn't knowable until now, which is the entire reason the spine is drawn here rather than up front.</summary>
+        /// <summary>Closes a card opened by BeginAreaCard and draws its area spine, using the rect GUILayout just resolved for the whole card - the height isn't knowable until now, which is the entire reason the spine is drawn here rather than up front. For a dossier card (see BeginAreaCard) this is also where the shoulder caption lands, for the same reason: the shoulder is part of the card's own background, and the card has no rect until now.</summary>
         private void EndAreaCard(UiPalette.SystemArea area)
         {
             GUILayout.EndVertical();
             if (Event.current.type == EventType.Repaint)
             {
-                UiPalette.DrawCardSpine(GUILayoutUtility.GetLastRect(), area, AreaCardSpineWidth - 1f);
+                Rect cardRect = GUILayoutUtility.GetLastRect();
+                if (_openCardDossier)
+                {
+                    // §A.11's left hue spine, placed against the SPRITE's geometry rather than
+                    // DrawCardSpine's symmetric inset: it starts below the shoulder slice (26px, the
+                    // fixed top band) and stops above the baked drop shadow (the 15px bottom slice) —
+                    // a symmetric inset would run the spine through the transparent corner beside the
+                    // shoulder and down the shadow.
+                    var spineRect = new Rect(cardRect.x + 3f, cardRect.y + 26f, 6f, Mathf.Max(0f, cardRect.height - 26f - 15f));
+                    PoliSimTheme.RoundedBox(spineRect, UiPalette.GetAreaColor(area), 2f);
+
+                    if (!string.IsNullOrEmpty(_openCardKind))
+                    {
+                        // The shoulder caption: `DOSSIER · <KIND>` in the spec's shoulder ink, at a
+                        // FIXED size matched to the shoulder band's native-pixel height (see the
+                        // style's construction note). x offset clears the shoulder's own left corner.
+                        var shoulderRect = new Rect(cardRect.x + 22f, cardRect.y + 1f, cardRect.width - 44f, 13f);
+                        GUI.Label(shoulderRect, $"DOSSIER · {_openCardKind}", _dossierShoulderStyle);
+                    }
+                }
+                else
+                {
+                    UiPalette.DrawCardSpine(cardRect, area, AreaCardSpineWidth - 1f);
+                }
             }
 
             GUILayout.Space(10f);
