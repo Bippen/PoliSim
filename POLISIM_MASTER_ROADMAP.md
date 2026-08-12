@@ -541,8 +541,16 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | — | *Item 8 save/load* | sequencing: 2nd in the execution order, behind v2.0 |
    | — | *The fiscal-divergence pass* | PARKED by ruling — Elias schedules it |
    | — | *CT Phases 4–5, then Round 4* | 3rd/4th in the execution order; Phases 4–5 now calibrate against 365-day turns |
-   | — | *Step C batches C1/C2/C3/C5* | buildable since 2026-08-02, **position in the order never ruled** — RULINGS R1 |
+   | — | *Step C batches C1/C2/C3/C5* | buildable since 2026-08-02; ✅ **RULED 2026-08-12 (R1): folds into Round 4's slot** — both add new systems, same don't-build-twice logic |
    | — | *Item 10 — elections* | priced after Sweden votes **13 Sept 2026** |
+
+   ✅ **THE THREE RECONCILIATION RULINGS, RECORDED 2026-08-12 (Elias):**
+   - **R1** — Step C folds into Round 4's slot (table row above).
+   - **R2** — the ElectionRecord waits for item 10's model; **the Canvas ELECTION NIGHT screen is
+     item-10-gated, the other seven Canvas screens are not.**
+   - **R3** — the item-10 collision map stands; **no main-side changes until item 10 opens.** One note
+     added at Elias's direction: `PartyMarkCoverageCheck`'s reflection over `BuildParties()` *should*
+     survive the model swap — **to be VERIFIED when item 10 opens, not trusted now.**
 
    **The discharged ruling, kept for the record — CAPTURE COVERAGE BEFORE NEW FEATURES (2026-08-12):**
    both 1a and the Canvas pilot were to wait on coverage. The work, as it ran:
