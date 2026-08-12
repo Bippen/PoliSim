@@ -644,18 +644,15 @@ namespace PoliSim.UI
                 _daySpeedTimer -= secondsPerDay;
                 bool turnBoundaryCrossed = _simulationManager.AdvanceDay();
 
-                // TEMP-SPLIT-MARKER: day-tick block restored for the ink-fix commit; replaced by
-                // AdvanceCountryDayTick in the immediately following commit.
-                _simulationManager.TryRollForeignPolicyMeeting(PlayerCountryId);
-                _simulationManager.AdvanceBudgetBillDay(PlayerCountryId);
-                _simulationManager.AdvanceTaxProgramBillsDay(PlayerCountryId);
-                _simulationManager.AdvanceWelfareProgramBillsDay(PlayerCountryId);
-                _simulationManager.AdvanceLaborBillDay(PlayerCountryId);
-                _simulationManager.AdvanceCrimeJusticeBillDay(PlayerCountryId);
-                _simulationManager.AdvanceSectorBillDay(PlayerCountryId);
-                _simulationManager.AdvanceTradeBillDay(PlayerCountryId);
-                _simulationManager.AdvanceSwfDrawdownBillDay(PlayerCountryId);
-                _simulationManager.TryOpenBudgetProcess(PlayerCountryId, _simulationManager.CurrentDate);
+                // ⚠ EXTRACTED 2026-08-12 (ruled) — the ten sim-side daily calls that used to sit here
+                // verbatim now live in AdvanceCountryDayTick, in the same order, so the capture driver
+                // makes the SAME day play makes instead of a copy that drifts (the copy produced three
+                // "never captured" findings in one day). The gate reasoning those lines carried, kept
+                // where the gates are: the foreign-policy roll and the budget-process date check both
+                // need the re-check below (each opens a mandatory pause); the nine bill countdowns
+                // never do — a bill resolving is a deterministic countdown, not something awaiting a
+                // player response (the idiom the retired TaxBill/AdvanceLegislativeDay established).
+                _simulationManager.AdvanceCountryDayTick(PlayerCountryId);
 
                 if (turnBoundaryCrossed)
                 {

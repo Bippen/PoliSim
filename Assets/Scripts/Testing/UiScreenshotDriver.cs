@@ -717,12 +717,16 @@ namespace PoliSim.Testing
             // per day from GameController.Update's day loop, which a sim-side advance never runs.
             // The driver now makes the same daily calls the controller makes — the real path,
             // invoked by the harness the way play invokes it.
+            // ⚠ ONE DAY MODEL, SHARED WITH PLAY (2026-08-12, ruled): every search below advances via
+            // AdvanceCountryDayTick — the extracted controller day tick — instead of a hand-copied
+            // subset of its calls. The copies are what produced three "never captured" findings in one
+            // day; a call added to the controller's day now reaches these searches automatically.
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
             int days = 0;
             while (!sim.GetPendingBudgetProcess(_countryId) && days < MaxStateSearchDays)
             {
                 if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
-                sim.TryOpenBudgetProcess(_countryId, sim.CurrentDate);
+                sim.AdvanceCountryDayTick(_countryId);
                 days++;
             }
 
@@ -751,7 +755,7 @@ namespace PoliSim.Testing
                    && days < MaxStateSearchDays)
             {
                 if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
-                sim.TryRollForeignPolicyMeeting(_countryId); // the controller's own daily roll — see B
+                sim.AdvanceCountryDayTick(_countryId);
                 days++;
             }
 
@@ -779,7 +783,7 @@ namespace PoliSim.Testing
                 while (sim.GetPendingForeignPolicyMeeting(_countryId) == null && days < MaxStateSearchDays)
                 {
                     if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
-                    sim.TryRollForeignPolicyMeeting(_countryId);
+                    sim.AdvanceCountryDayTick(_countryId);
                     days++;
                 }
 
@@ -871,25 +875,15 @@ namespace PoliSim.Testing
             // introduction order above protects, which is why it runs after every bill capture: the
             // arbitrary dial values now DO resolve into the economy, and everything captured from here
             // on shows the post-resolution state.
-            // ⚠ THE COUNTDOWNS ARE CONTROLLER-DAILY TOO — the third member of the same artifact class,
-            // measured the same way: the first version of this loop advanced 23 days and recorded ZERO
-            // divisions, because every Advance*BillDay tick lives in GameController.Update's day loop,
-            // not in sim.AdvanceDay. The eight calls below are the controller's own, made by the
-            // harness the way play makes them.
+            // The countdowns tick through the same shared day model as every search above — this loop's
+            // first version hand-copied the eight countdown calls and its PREVIOUS version omitted
+            // them entirely (23 days, zero divisions, measured). AdvanceCountryDayTick is the fix's
+            // structural form: the controller's day, made by the harness the way play makes it.
             int resolveDays = ParliamentSystem.BillDurationDays + 2;
             for (int i = 0; i < resolveDays; i++)
             {
                 if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
-                sim.TryOpenBudgetProcess(_countryId, sim.CurrentDate);
-                sim.TryRollForeignPolicyMeeting(_countryId);
-                sim.AdvanceBudgetBillDay(_countryId);
-                sim.AdvanceTaxProgramBillsDay(_countryId);
-                sim.AdvanceWelfareProgramBillsDay(_countryId);
-                sim.AdvanceLaborBillDay(_countryId);
-                sim.AdvanceCrimeJusticeBillDay(_countryId);
-                sim.AdvanceSectorBillDay(_countryId);
-                sim.AdvanceSwfDrawdownBillDay(_countryId);
-                sim.AdvanceTradeBillDay(_countryId);
+                sim.AdvanceCountryDayTick(_countryId);
             }
 
             Debug.Log($"SHOT: advanced {resolveDays} day(s) to resolve the introduced bills - divisions recorded: {player.Divisions.Entries.Count}.");
@@ -924,8 +918,7 @@ namespace PoliSim.Testing
                     }
                 }
 
-                sim.TryOpenBudgetProcess(_countryId, sim.CurrentDate);
-                sim.TryRollForeignPolicyMeeting(_countryId);
+                sim.AdvanceCountryDayTick(_countryId);
                 days++;
             }
 

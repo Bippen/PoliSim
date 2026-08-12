@@ -126,6 +126,38 @@ namespace PoliSim.Simulation
         /// only tracks calendar time and signals when a resolution is due - it never calls
         /// AdvanceTurn itself, and never touches any economic state.
         /// </summary>
+        /// <summary>
+        /// The sim-side calls one simulated day makes for a country BEYOND <see cref="AdvanceDay"/>
+        /// itself, in the order GameController.Update has always made them: the foreign-policy roll,
+        /// the nine bill countdowns, and the budget-process date check.
+        ///
+        /// ⚠ EXTRACTED 2026-08-12 (ruled) after the capture driver re-derived this list by COPYING it,
+        /// and the copy immediately proved the point: three separate "never captured" findings in one
+        /// day were the driver's day differing from the controller's day (the arm calls, then the
+        /// countdowns, then CheckElection — each family found by pinning nothing and measuring). One
+        /// method, two callers — GameController.Update and UiScreenshotDriver's state searches — so a
+        /// call added here reaches both, which is the entire reason it exists.
+        ///
+        /// <para>Deliberately NOT here: <c>AdvanceDay</c>, whose turn-boundary return belongs to the
+        /// caller; and the controller's <c>CheckElection</c>/<c>UpdateFedChairSelectionState</c>, which
+        /// build UI-pending state rather than simulation state. The per-call comments that used to sit
+        /// on these ten lines in Update — which calls need a gate re-check and why — are preserved at
+        /// the call site, where the gates are.</para>
+        /// </summary>
+        public void AdvanceCountryDayTick(CountryId countryId)
+        {
+            TryRollForeignPolicyMeeting(countryId);
+            AdvanceBudgetBillDay(countryId);
+            AdvanceTaxProgramBillsDay(countryId);
+            AdvanceWelfareProgramBillsDay(countryId);
+            AdvanceLaborBillDay(countryId);
+            AdvanceCrimeJusticeBillDay(countryId);
+            AdvanceSectorBillDay(countryId);
+            AdvanceTradeBillDay(countryId);
+            AdvanceSwfDrawdownBillDay(countryId);
+            TryOpenBudgetProcess(countryId, CurrentDate);
+        }
+
         public bool AdvanceDay()
         {
             CurrentDate = CurrentDate.AddDays(1);
