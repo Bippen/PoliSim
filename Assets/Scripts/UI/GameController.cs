@@ -551,6 +551,8 @@ namespace PoliSim.UI
         private GUIStyle _calendarMonthStyle;
         private GUIStyle _calendarDayStyle;
         private GUIStyle _calendarMetaStyle;
+        /// <summary>v2.0 chrome: `ui_tab_spine` (B7) — the white-on-alpha area-hue strip drawn across each consolidated tab's top edge, tinted per area at the draw site through GUI.color. Background + border only; empty background when the sprite is missing, and the spine simply doesn't draw.</summary>
+        private GUIStyle _tabSpineStyle;
         private GUIStyle _gameOverStyle;
         private GUIStyle _cardKindStyle;
 
@@ -1107,6 +1109,20 @@ namespace PoliSim.UI
             _calendarMetaStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
             if (PoliSimTheme.Document != null) { _calendarMetaStyle.font = PoliSimTheme.Document; }
             _calendarMetaStyle.normal.textColor = PoliSimTheme.TextSecondary;
+
+            // ⚠ v2.0 CHROME, 2026-08-12 — B7's spine (see DrawConsolidatedTabButton). WoA, so unlike
+            // every real-colour plate above it IS tinted at draw time — through GUI.color, which
+            // multiplies the white pixels into the area hue. A style rather than
+            // GUI.DrawTexture-with-borders so the 9-slice comes from a RectOffset, whose edge order
+            // is unambiguous; the manifest's 14/14/0/0 @2x halves to 7/7/0/0 @1x — rounded ends,
+            // full vertical stretch.
+            _tabSpineStyle = new GUIStyle(GUIStyle.none);
+            Texture2D tabSpine = IconLibrary.GetChrome("ui_tab_spine");
+            if (tabSpine != null)
+            {
+                _tabSpineStyle.normal.background = tabSpine;
+                _tabSpineStyle.border = new RectOffset(7, 7, 0, 0);
+            }
 
             StyleScrollbars();
             StyleSliders();
@@ -3242,10 +3258,10 @@ namespace PoliSim.UI
             }
 
             bool clicked = GUILayout.Button(label, style, GUILayout.Width(width));
+            Rect buttonRect = GUILayoutUtility.GetLastRect();
 
             if (icon != null)
             {
-                Rect buttonRect = GUILayoutUtility.GetLastRect();
                 var iconRect = new Rect(
                     buttonRect.x + (buttonRect.width - iconSize) * 0.5f,
                     buttonRect.y + ConsolidatedTabIconTopPadding,
@@ -3253,6 +3269,24 @@ namespace PoliSim.UI
                     iconSize);
                 Color iconTint = selected ? Color.white : UiPalette.MutedIconTint;
                 UiPalette.DrawTintedIcon(iconRect, icon, iconTint);
+            }
+
+            // ⚠ v2.0 CHROME, 2026-08-12 — B7: `ui_tab_spine` across the tab's top edge. §A.7's tongue
+            // spec: the active tab carries the area INK, the inactive its LIFTED weight — identity on
+            // every tongue, full strength only on the folder pulled forward. Height at the board's own
+            // ratio (a 3px edge on 15px tab type), floored so it never vanishes at the small clamp.
+            // An overlay draw like the icon above — not a control, so the stable-control-layout
+            // guarantee is untouched — and Repaint-gated because GUIStyle.Draw is a paint call.
+            // GUI.color multiplies the white-on-alpha sprite into the hue (this sprite is WoA — the
+            // one rendering class where tinting is the CORRECT handling per §3.0a, unlike the
+            // real-colour plates around it).
+            if (_tabSpineStyle.normal.background != null && Event.current.type == EventType.Repaint)
+            {
+                float spineHeight = Mathf.Max(3f, Mathf.Round(_tabButtonStyle.fontSize * (3f / 15f)));
+                Color savedColor = GUI.color;
+                GUI.color = selected ? UiPalette.GetAreaColor(area) : PoliSimTheme.AccentOnDesk(area);
+                _tabSpineStyle.Draw(new Rect(buttonRect.x, buttonRect.y, buttonRect.width, spineHeight), false, false, false, false);
+                GUI.color = savedColor;
             }
 
             if (clicked)
