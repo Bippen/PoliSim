@@ -644,22 +644,10 @@ namespace PoliSim.UI
                 _daySpeedTimer -= secondsPerDay;
                 bool turnBoundaryCrossed = _simulationManager.AdvanceDay();
 
-                // Short-term gameplay scaffolding (Phase 0): rolled every simulated day, independent
-                // of the 121-day turn cadence, since these are explicitly meant to land BETWEEN turns.
+                // TEMP-SPLIT-MARKER: day-tick block restored for the ink-fix commit; replaced by
+                // AdvanceCountryDayTick in the immediately following commit.
                 _simulationManager.TryRollForeignPolicyMeeting(PlayerCountryId);
-
-                // Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): a pending
-                // omnibus BudgetBill counts down daily too, independent of the turn boundary - unlike
-                // the two calls above, this never needs a gate re-check afterward, since resolving a
-                // bill doesn't pause time (it's a deterministic countdown, not something needing a
-                // player response) - the same idiom the retired TaxBill/AdvanceLegislativeDay already
-                // established.
                 _simulationManager.AdvanceBudgetBillDay(PlayerCountryId);
-
-                // Master Sequence step 5d: the six standalone tier-2/tier-3 bill mechanisms count down
-                // daily too, the exact same non-blocking idiom as AdvanceBudgetBillDay above - none of
-                // these ever pause time (introducible anytime, no mandatory-pause phase the way the
-                // annual budget process has), so none needs a gate re-check either.
                 _simulationManager.AdvanceTaxProgramBillsDay(PlayerCountryId);
                 _simulationManager.AdvanceWelfareProgramBillsDay(PlayerCountryId);
                 _simulationManager.AdvanceLaborBillDay(PlayerCountryId);
@@ -667,11 +655,6 @@ namespace PoliSim.UI
                 _simulationManager.AdvanceSectorBillDay(PlayerCountryId);
                 _simulationManager.AdvanceTradeBillDay(PlayerCountryId);
                 _simulationManager.AdvanceSwfDrawdownBillDay(PlayerCountryId);
-
-                // Master Sequence step 5a: same daily idiom as the two calls above - deterministic
-                // date check, not a chance roll, mirroring AdvanceBudgetBillDay's own reasoning.
-                // Unlike AdvanceBudgetBillDay, THIS one DOES need the gate re-check below, since
-                // opening the budget process is a mandatory pause (see the revised Part B design).
                 _simulationManager.TryOpenBudgetProcess(PlayerCountryId, _simulationManager.CurrentDate);
 
                 if (turnBoundaryCrossed)
@@ -3152,12 +3135,19 @@ namespace PoliSim.UI
             var electionBannerStyle = new GUIStyle(_gameOverStyle) { };
             electionBannerStyle.normal.textColor = outcomeColor;
             GUILayout.Label(result.Won ? "RE-ELECTED" : "ELECTION LOST", electionBannerStyle);
-            GUILayout.Label($"Turn {_pendingElectionTurn} Election - {_playerCountry.Name}", _labelStyle);
+
+            // ⚠ FIX 2026-08-12 (ruled): this takeover draws on the BARE DESK — the one screen with no
+            // paper under it — and its body printed the paper-ink ramp, near-invisible. Found by the
+            // screen's FIRST capture ever (div2 88a), which is the coverage argument in one line.
+            // Desk ground takes the desk ink, same reasoning as the hold banner.
+            var deskLabelStyle = new GUIStyle(_labelStyle);
+            deskLabelStyle.normal.textColor = PoliSimTheme.TextOnDesk;
+            GUILayout.Label($"Turn {_pendingElectionTurn} Election - {_playerCountry.Name}", deskLabelStyle);
             GUILayout.Space(16f);
 
-            GUILayout.Label($"Approval Rating: {result.ApprovalAtElection:F1} (needed {ElectionSystem.LosingThreshold:F0} to win)", _labelStyle);
+            GUILayout.Label($"Approval Rating: {result.ApprovalAtElection:F1} (needed {ElectionSystem.LosingThreshold:F0} to win)", deskLabelStyle);
             UiPalette.DrawBarWithThreshold(result.ApprovalAtElection / 100f, ElectionSystem.LosingThreshold / 100f, outcomeColor, 24f);
-            GUILayout.Label($"Margin: {result.Margin:+0.0;-0.0}", _labelStyle);
+            GUILayout.Label($"Margin: {result.Margin:+0.0;-0.0}", deskLabelStyle);
 
             GUILayout.Space(24f);
             GUIStyle continueStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
