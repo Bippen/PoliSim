@@ -7585,3 +7585,18 @@ only the old-beside-new diff answers regression).
 The axis that bit on 2026-08-12 (interrupt state) was #6/#7 - pinned only after it bit. Items 1-3 of
 "never captured" are the same shape: Decisions-tab states that the warm-up cannot reach determin-
 istically, which is exactly where the next silent coverage gap lives.
+
+## The scope correction (2026-08-12, Elias) - every visual confirmation is one country in one state
+
+**Every visual-confirmation claim this project holds - instance #12's closure, the clipping class at
+zero, the four screen conversions, the chrome placements - is scoped to the USA, in the default
+capture state, and says so now** (amendments in the roadmap entries that make each claim). This is
+rule 14 at the largest scale it has appeared: `ScreenEdgeCheck` and the guards enumerate SCREENS,
+and nobody had enumerated STATES - the state-axis report above is that enumeration, and the country
+axis is its widest gap. Five of six countries have never been photographed, and they reach code the
+USA does not: the legacy four-slider spending UI (five countries), the Eurozone shared-currency
+branches (three), the EU tariff view (five), the non-Fed central-bank naming (five).
+
+Ruled sequencing: **capture coverage before new features** - both 1a and the Canvas pilot wait on it.
+The orphan rulings landed at the same time (all eight dispositioned; folder faces become their own
+pass; frame_ornate joins the Canvas set; four marked served-by-current-treatment, revivable).

@@ -571,7 +571,10 @@ If a step's own validation fails, fix it before moving to the next — never pro
    evidence.
 
    **Derived conversion state, RE-DERIVED 2026-08-12** — `LedgerRow` call sites mapped to their
-   containing methods, plus a label-shape count on the screens that have none:
+   containing methods, plus a label-shape count on the screens that have none.
+   ⚠ **SCOPE (2026-08-12): every "converted" and "captured" claim in this table is verified on the USA
+   in the default capture state.** Five of six countries have never been photographed, and they reach
+   code the USA does not (the legacy four-slider spending UI most of all):
 
    | Screen | Converted | Evidence |
    |---|---|---|
@@ -589,11 +592,26 @@ If a step's own validation fails, fix it before moving to the next — never pro
    next touches those screens rather than being a pass of their own.
 
    ⚠ **SO THE NEXT v2.0 QUESTION IS NOT "WHICH SCREEN" — IT IS WHICH OF THE REMAINING TRACKS.** §A's own
-   backlog names three, none of which is a row conversion. **Track 1 CLOSED 2026-08-12** (see its table);
-   what remains startable is **1a (resolved-bill history)** and **2 (the Canvas path)** — track 3 waits on
-   Elias ruling on **Phase 2's derived statement** below (per his 2026-08-12 direction: the statement,
-   not the screenshots, is the "v2.0 chrome confirmed" claim — its 8 orphans need dispositions before
-   deleting anything is safe to call complete):
+   backlog names three, none of which is a row conversion. **Track 1 CLOSED 2026-08-12** (see its table).
+
+   ⚠⚠ **SEQUENCING RULED BY ELIAS 2026-08-12 — CAPTURE COVERAGE BEFORE NEW FEATURES.** Both 1a and the
+   Canvas pilot **wait on coverage**: they build on a surface where five of six countries have never
+   been photographed. The live work, in order:
+   1. **Country coverage** — capture all six countries at both sizes (1600×929, 2560×1419),
+      `ScreenEdgeCheck` per set, **report per country before fixing anything**. Five countries reach
+      code the USA does not — the legacy four-slider spending UI is live and has never been in any set.
+      *Expect defects: six screens' worth of conversions, four chrome placements and a clipping class
+      were all verified on one country.*
+   2. **Then the reachable state axes** — pin cabinet-with-ministers, a pending bill per type, the
+      other two Decisions dossiers, the budget-process pause, an election turn — the way the interrupt
+      state was pinned. Report what needs a model change and leave it. (Locale: every capture is sv-SE;
+      the decimal-comma defect class is what a second locale would surface — noted, not yet pinned.)
+   3. **Track 3 (superseded sprite removal) proceeds when convenient** — `DeliveredAssetCheck` gets the
+      superseded allowance in the same commit as the deletion.
+   4. **The folder-tongue faces (`ui_tab_folder_*`) as their own pass** — ruled B, nothing blocks on it.
+   5. **1a (resolved-bill history)** and **the Canvas pilot** — Elias rules between them after coverage.
+
+   The original three-track backlog, kept for the record:
    1. **The unwired chrome — ⚠ THE LIST OF 13 WAS WRONG, corrected 2026-08-12 by tracing call sites.**
       Six of the thirteen were never IMGUI placement work at all. **This is a correction to the list, not
       a deferral**, so nobody re-derives it:
@@ -615,6 +633,9 @@ If a step's own validation fails, fix it before moving to the next — never pro
       verified in real Unity by capture (57–58 shots per run, 0 failed / 0 overflows / 0 escapes /
       0 clipped edges on every run — `holdcal_*`, `spineink_*`, `dosport_*` sets). `ui_portrait_frame_oval`
       is **Canvas-path** per the manifest's own "Canvas hero size" note, joining the seals and scrim.
+      ⚠ **SCOPE (corrected 2026-08-12, Elias): verified on the USA, in the default capture state, at
+      1600×929** — one country, one state, rule 14 at the largest scale it has appeared. The country
+      coverage pass above is what widens this claim.
       One defect found and fixed en route (`01eb29a`): `d44ab2d`'s sub-tab face left the Primary kind's
       cream text on pale paper — the selected sub-tab label was unreadable in every capture, and the
       commit that introduced it had been approved by eye (now working-discipline rule 15).
@@ -645,17 +666,16 @@ If a step's own validation fails, fix it before moving to the next — never pro
       rulings of 2026-08-12 and the manifest's own notes); `ui_stamp_carried` / `ui_stamp_rejected`
       (no state to mark — blocked on item 1a, resolved-bill history).
 
-      **ORPHANED — 8, present and specified with NO call site and NO recorded disposition. These are the
-      statement's findings, raised for ruling rather than resolved silently:**
+      **ORPHANED — 8, present and specified with NO call site. ✅ ALL EIGHT RULED by Elias 2026-08-12:**
 
-      | Orphan | The question it poses |
+      | Orphan | Ruling |
       |---|---|
-      | `ui_tab_folder_on` / `_off` / `_hover` (3) | The §A.7 folder-tongue faces. The main tabs draw on `ui_btn_brass`/`ui_btn_paper` instead. **Never on any list** — not the 13, not the corrected 6. Either the btn-face treatment is accepted (record it) or this is a missed IMGUI placement |
-      | `ui_frame_ornate` | Manifest: *"standalone modules (Fed chair etc, drawOwnFrame=true)"* — and the standalone IMGUI modals EXIST today (`DrawCabinetDecisionModal`/`DrawForeignPolicyMeetingModal` default `drawOwnFrame: true` on their own tabs). A plausible live IMGUI placement no list contained — OR Canvas-path if those modals are destined to migrate. Needs a ruling either way |
-      | `ui_frame_double` | *"overlays panels & hero documents"* — no home was ever named on the IMGUI side |
-      | `ui_stamp_draft` | The stamps ruling covered carried/rejected ("nothing to stamp"); the DRAFT stamp was not part of that ruling and D1 made `icon_pencil_draft` the inline draft carrier. Probably redundant — but that is a guess, not a record |
-      | `ui_btn_disabled` | B5's stamped-grey face. Disabled buttons today are `GUI.enabled` dimming over brass/paper — B5's *"rendered, never omitted"* is satisfied, the dedicated face unused, no record says which was chosen |
-      | `ui_pixel` | *"rules, spines, keylines — tint anything"* — every use it was cut for is served procedurally (`PoliSimTheme.Rule`/`RoundedBox`, `Texture2D.whiteTexture`). Functionally superseded, never marked so |
+      | `ui_tab_folder_on` / `_off` / `_hover` (3) | **B — place the folder faces, as their OWN PASS.** The §A.7 tongue anatomy; the btn-face treatment is interim. Nothing blocks on it; it joins the startable list below |
+      | `ui_frame_ornate` | **B — CANVAS-PATH.** The `drawOwnFrame: true` modals exist in IMGUI today, but dressing screens the Canvas path rebuilds is doing the work twice |
+      | `ui_frame_double` | **Served-by-current-treatment, revivable by ruling** — no IMGUI home was ever named |
+      | `ui_stamp_draft` | **Served-by-current-treatment, revivable** — D1 made `icon_pencil_draft` the inline draft carrier |
+      | `ui_btn_disabled` | **Served-by-current-treatment, revivable** — `GUI.enabled` dimming over brass/paper satisfies B5's "rendered, never omitted" |
+      | `ui_pixel` | **Served-by-current-treatment, revivable** — every use it was cut for is served procedurally |
 
       **SUPERSEDED — 11, `!`-marked in `ChromeManifest.txt`, and REMOVAL-SAFE from the code side:**
       `ui_button_normal/hover/pressed/disabled`, `ui_panel`, `ui_scrollbar_track/thumb`,
@@ -1206,7 +1226,10 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   and leaves margin — then sweep the seven known sites. Six site-specific fixes have not ended this class.
 
 - ✅ **INSTANCE #12 — CLOSED ON `main` 2026-08-11. `ScreenEdgeCheck`: 55 captures, 0 clipped, exit 0**,
-  all four edges zero on every screen. Four commits, each measured against a fresh capture:
+  all four edges zero on every screen. ⚠ **SCOPE (corrected 2026-08-12, Elias): "every screen" means
+  every screen of the USA in the default capture state** — the guards enumerate screens; nobody had
+  enumerated states, and no other country's screens have ever been measured. Four commits, each
+  measured against a fresh capture:
 
   | | Commit | L | T | R | B | clipped |
   |---|---|---|---|---|---|---|
@@ -1361,6 +1384,8 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 
   **A geometry conclusion drawn from captures is scoped to the capture resolution** — the same shape as
   rule 14, and the reason this entry existed at all. Still scoped to those two sizes, not to all.
+  ⚠ **And scoped to the USA in the default capture state (correction 2026-08-12)** — the squeeze floor
+  has never been rendered against the legacy spending screen or any non-USA ledger content.
 
 ### Live, unblocked work carried out of section A
 
