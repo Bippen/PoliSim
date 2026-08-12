@@ -846,3 +846,92 @@ check that did find it reads the PNGs the capture pass already writes and needs 
 now `screenshot_edge_check.py` at the repository root, exit 1 on any clipped screen, verified against the
 pre-fix set as a negative control. Full record, including the two standing rules it produced, in
 `CLAUDE.md`.
+
+---
+
+## 18. The debt-to-zero bimodality — FIXED 2026-08-02 (migrated from the roadmap 2026-08-12)
+
+Migrated intact in the reconciliation pass; the roadmap keeps a pointer. The "successor defect" its
+closing line names (the deficit-term thrash) was itself closed by the SWF cause-fix (F1's 98.7%
+reduction), whose own successor — the unbounded divergence — is the parked fiscal pass.
+
+## ✅ The debt-to-zero bimodality — FIXED 2026-08-02. Its successor defect is named at the end.
+
+**The floor is gone, debt may go negative, and the 0.00% pinning with it** — debt-swing anomalies fell
+60% across the full matrix (6,225 → 2,507, 100 and 500 turns, seed 777, like-for-like before/after).
+A symmetric −300% bound was needed to stop an unbounded negative runaway; see Open Questions, because that
+bound is my call rather than Elias's.
+
+🔴 **What it was hiding, and what now carries the priority: the rating thrash is the DEFICIT term's.**
+Removing the floor moved rating anomalies by 1.6% (1,416 → 1,394) while
+`DebtClampDiagnostic` reports the debt stock's own contribution as almost perfectly stable — 0 notch moves
+in 117 years for four of six countries. **Step C4's closure waits on the deficit term, not on this.**
+Full evidence in `CLAUDE.md`. The original entry follows, kept because the mechanism reasoning is what
+made the fix possible.
+
+### Original entry — the defect as it stood before the fix
+
+**What:** Sweden's, France's and Germany's `DebtToGdpRatio` collapses to exactly **0.00%** and, under
+stress, spikes back to ~44% and collapses again within a year. Sweden in plain `baseline`: 21.8% (turn 1)
+→ 0.90% (turn 25) → **0.00%** from turn 50 on. Full technical history in CLAUDE.md, "SpendingLine Amount
+Ceiling — Debt-to-Zero Fix"; this is roadmap failure pattern 4, bimodal attractors.
+
+**Not new. Its PRIORITY is new**, and for two specific reasons:
+
+1. **It now blocks a step.** Step C4's closure waits on it — see `MISSING_PREREQUISITES.md` section F1.
+   No previously-known consequence of this defect blocked anything; it was a background modelling
+   concern that batch runs reported and nothing acted on.
+2. **It is now player-visible.** Until 2026-08-02 this defect was **log-only** — it lived in anomaly
+   counts, batch summaries and prose. Step C4's credit rating is the **first instrument that surfaces it
+   on screen**: the tile sits in the dashboard grid on every tab and reports its input faithfully, so a
+   debt stock swinging 0%↔45% now reads as a rating visibly collapsing and recovering. **The defect did
+   not get worse — it got a display.**
+
+**Do not fix this by damping the rating.** That option was raised and explicitly rejected in A1, and
+doing it now would return the defect to log-only while making C4 dishonest. A derived stat that stayed
+calm while its inputs did this would be the broken one.
+
+**Scope note:** the affected set is exactly the documented one. USA, Italy and Poland have well-behaved
+debt trajectories and produce **zero** rating anomalies both before and after the cadence change, which
+is itself evidence the rating is reading faithfully rather than misbehaving.
+
+### DECIDED 2026-08-02 (Elias, delegated) — allow net government debt to go NEGATIVE
+
+**Approach: remove the zero floor rather than damp the symptom.** `Mathf.Clamp(debt, 0f, maxDebt)` is
+what creates the bounce artifact — a stock driven below zero is held at zero and then released, which is
+exactly the shape a bimodal attractor takes.
+
+**Why negative debt is correct rather than a hack.** A country whose sovereign wealth fund exceeds its
+debt is a **net creditor**, which is a real fiscal state — and specifically **Norway's**, the country this
+project already used to calibrate SWF returns. The game *already displays* "Net Government Position (debt
+minus fund assets)"; it is only the simulation that refuses to represent it. Clamping at zero encodes an
+assumption the UI has already rejected.
+
+⚠ **DO NOT IMPLEMENT UNTIL THE MECHANISM IS CONFIRMED.** Verify against a real trajectory that the zero
+clamp is what produces the 0.00% → ~44% swings, and establish whether it **fully** explains the −135.5% to
++170.8% settled-deficit range or whether something else contributes. **Three wrong theories preceded the
+right one on the Unity batch-run hang** — that precedent is why this is gated. Report the mechanism before
+proposing an implementation.
+
+**MECHANISM CONFIRMED 2026-08-02 — the gate is satisfied, implementation may be scoped.** Full evidence in
+CLAUDE.md. In short: the FLOOR is the mechanism (Sweden 67/120 baseline turns, France 14/120); the
+**ceiling is never hit by anyone**, so `MaxDebtToGdpPercent` is not involved; and the affected set is
+exactly "countries whose SWF drives net position negative" — which explains Germany, whose anomalies occur
+**only in `swfstress`**, where its debt does reach 0.0% repeatedly. Elias's premise holds and is stronger
+than stated: Sweden is a net creditor from **turn 1**, reaching a net position of −599 by turn 16, with
+single-turn excursions to −64.3% of GDP.
+
+⚠ **It does NOT fully explain the deficit range.** The per-turn budget balance is itself volatile
+(Sweden: +79, +16, +48, +0.8, +30, −40 …) and that volatility is upstream of the clamp. Removing the floor
+should eliminate the 0.00% pinning and the bounce; whether it eliminates the rating thrash entirely is
+**not** established. Re-run `DebtClampDiagnostic` with the floor removed and check year-over-year deltas
+against the notch threshold — if they still clear it, the residual is budget-balance volatility and is a
+separate defect this one was hiding.
+
+⚠ **Design decision to settle before building:** with debt clamped at zero, interest on debt is zero, so a
+net creditor currently earns nothing on its net assets. Removing the floor without deciding how negative
+debt interacts with `GetInterestOnDebt` creates either free money or a new asymmetry.
+
+---
+
+

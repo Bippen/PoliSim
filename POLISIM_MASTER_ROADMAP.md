@@ -26,7 +26,7 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 1. **Real Unity is the standard of truth, not the standalone harness.** It has been wrong about project state multiple times this project (a stale swing threshold, an interest-rate crash mischaracterized as noise, a debt trajectory that flatly contradicted real Unity). Use it for fast iteration only. Before considering *anything* done, validate via `BatchSimulationRunner` against real Unity (`G:\UNITY\Unity Hub\6000.5.6f1\` - migrated from `6000.5.4f1` on 2026-08-01 after the older install became corrupted; see CLAUDE.md's "Real-Unity Validation is the Standard Path" for the full story) at both 100 and 500 turn horizons (or their day-equivalent, once the continuous-time migration changes the unit).
 2. **Watch for the six failure patterns already seen repeatedly**: turn-1 discontinuities, oscillation, unbounded/compounding growth, bimodal attractors, and two new ones (both new as of Continuous Time + Parliament + Cabinet/Foreign-Policy coexisting, both surfaced investigating the SAME reported live-play freeze):
    - **Background/timed state mutation vs. active UI interaction** — a background system (a bill resolving, or any future timed/probabilistic mechanic) mutating live state that a GUILayout control is reading, on a day/frame the player has an active multi-frame drag in progress on that exact control. GUILayout allocates control IDs positionally, not by a stable key, so a control disappearing or a preceding control's count changing mid-drag is a documented Unity IMGUI hang/desync trigger, especially inside a ScrollView — and it's invisible to `BatchSimulationRunner`, which applies policy decisions programmatically and never drives real OnGUI/mouse-drag events, so no batch run can ever catch it. First hypothesized in the Tax Policy tab (Master Sequence step 4 pilot) when a pending TaxBill could resolve while the player was mid-drag on a rate slider; hardened there via the stable-control-layout pattern (see `GameController.DrawTaxPolicy`'s doc comment, commit `adb34ae`) regardless — every control a gated tab can ever draw renders every frame, in the same order, with "not currently applicable" expressed via `GUI.enabled = false` (composed with, not clobbering, any ambient enabled state) rather than by omitting or swapping the control. **Caveat, recorded honestly**: this fix did NOT resolve the reported freeze — Elias reproduced it again under the same conditions after commit `adb34ae`. The pattern and fix are still real and worth keeping (every one of the seven remaining tabs gains this exact same theoretical exposure once Master Sequence step 5 wires them into the draft/bill/vote model), but it was not the actual trigger of the original report. See the next pattern for what the investigation found instead.
-   - **A legitimately time-blocking decision with no globally-visible indicator** — Fed Chair term appointment, a Cabinet decision, and a Foreign Policy meeting all correctly pause `GameController.Update`'s day-loop (every gate is checked correctly - this is NOT a simulation bug), but each one's actual resolution UI (the Fed Chair candidate picker, `DrawCabinetDecisionModal`, `DrawForeignPolicyMeetingModal`) renders ONLY inside its own specific tab's draw call - never globally. A player on any other tab (e.g. Tax Policy) when one of these fires sees simulated days silently stop advancing with no visible cause - indistinguishable from a hang. Before the fix, `DrawCalendarAndSpeedControls`'s always-visible status line (the one piece of UI pinned outside the scroll view on every tab) named the reason for Fed Chair and Cabinet only, in a modest, easy-to-miss label style, and said NOTHING for a pending Foreign Policy meeting - the one of the three statistically most likely to fire early in a fresh session, since it rolls per DAY (~1% chance) rather than per 121-day TURN like the other two. Fixed by escalating that line to the same bold/orange `_eventBannerStyle` used for the dashboard's own BREAKING banner whenever ANY of the three is pending, always naming which one and which tab resolves it - still exactly one Label control either way, per the stable-control-layout pattern above. This is a genuine UX gap, not a code crash: every future interrupt/decision system (gated legislation on the remaining seven tabs very much included) needs its "something needs your attention" state represented somewhere visible from every tab, not only on the tab where it originated.
+   - **A legitimately time-blocking decision with no globally-visible indicator** — Fed Chair term appointment, a Cabinet decision, and a Foreign Policy meeting all correctly pause `GameController.Update`'s day-loop (every gate is checked correctly - this is NOT a simulation bug), but each one's actual resolution UI (the Fed Chair candidate picker, `DrawCabinetDecisionModal`, `DrawForeignPolicyMeetingModal`) renders ONLY inside its own specific tab's draw call - never globally. A player on any other tab (e.g. Tax Policy) when one of these fires sees simulated days silently stop advancing with no visible cause - indistinguishable from a hang. Before the fix, `DrawCalendarAndSpeedControls`'s always-visible status line (the one piece of UI pinned outside the scroll view on every tab) named the reason for Fed Chair and Cabinet only, in a modest, easy-to-miss label style, and said NOTHING for a pending Foreign Policy meeting - the one of the three statistically most likely to fire early in a fresh session, since it rolls per DAY (~1% chance) rather than per TURN (121-day then, 365-day since `d8f55ce`) like the other two. Fixed by escalating that line to the same bold/orange `_eventBannerStyle` used for the dashboard's own BREAKING banner whenever ANY of the three is pending, always naming which one and which tab resolves it - still exactly one Label control either way, per the stable-control-layout pattern above. This is a genuine UX gap, not a code crash: every future interrupt/decision system (gated legislation on the remaining seven tabs very much included) needs its "something needs your attention" state represented somewhere visible from every tab, not only on the tab where it originated.
 
    Assume a new mechanic is guilty of all six until the full-horizon batch run (for the first four) and direct live-Editor confirmation (for the last two, which batch runs cannot exercise) prove otherwise.
 3. **Commit per unit of work.** One feature, one commit, descriptive message. Confirm staged contents match the message before committing.
@@ -139,106 +139,33 @@ because they are not done.
   being authored). ~~16 figures needing database access~~ — **all sourced 2026-08-02; section B is empty
   and C1/C2/C3/C5 are buildable.** *Decisions, database access, Claude Design and the visual reviews all
   emptied on 2026-08-02.* Three quality debts survive in section B — none blocks a batch.
-- 🔴 **HIGHEST-PRIORITY DEFECT — the debt-to-zero bimodality.** Dedicated entry immediately below.
-  Promoted 2026-08-02: it now blocks a step AND is player-visible, neither of which was true before.
-- **NOT STARTED, UNBLOCKED** — Master Sequence item 6 (**Round 4 — now scopeable, its gate cleared when
-  step 5 closed**) and item 7 (Continuous Time Phases 1–5), both **weeks** of work; item 8 (save/load,
-  scoped only, and first in the agreed execution order).
+- 🔴 **FISCAL-ENGINE PRIORITY — the unbounded debt divergence, PARKED pending its own dedicated pass**
+  (ruled 2026-08-11; diagnosis complete — interest compounding against an asymmetrically bounded
+  stabiliser, see Open Questions). It supersedes C4's closure, which waits on it
+  (`MISSING_PREREQUISITES.md` §F1, reconciled 2026-08-12). *(The former entry here — "highest-priority
+  defect: the debt-to-zero bimodality" — was FIXED 2026-08-02; its full record migrated to
+  `COMPLETED.md` in the 2026-08-12 reconciliation.)*
+- **IN FLIGHT — v2.0 (item 9-v2.0):** the IMGUI half is COMPLETE through the chrome placement track
+  (2026-08-12 — row family, six placements, Division Records, every chrome sprite dispositioned by
+  Phase 2's derived statement). Coverage machinery standing: six countries × two sizes captured, the
+  reachable state axes pinned, rule 15 in the discipline. **Next major track: the Canvas path** (pilot:
+  country selector), with track 3's superseded-sprite removal proceeding when convenient.
+- **NOT STARTED, UNBLOCKED OR GATED** — item 8 (save/load: scoped, zero persistence code exists —
+  re-verified 2026-08-12, search `persistentDataPath|JsonConvert|CaptureSaveState` over
+  `Assets/Scripts`, no hits); item 7 Phases 4–5 (deferred behind v2.0, now against 365-day turns);
+  item 6 (Round 4, after 7/8); **item 10 (elections — gated: priced after Sweden votes 13 Sept 2026)**.
 
-**Built 2026-08-01/02, all now reachable**: macro Step A4 (`70798e9`), Step C4 (`76a8f35`), and B2
-rendering (`5701a04`) wired at sub-screen granularity (`4869476`). C4 is placed on the dashboard tile
-grid beside Debt-to-GDP (`3d77b11`) — **placement CONFIRMED** by review item 11.
-
-**Trajectory validation, run 2026-08-02** (`3d77b11`; full matrix, 15 scenarios × 100 and 500 turns,
-`-seed=777`, real Unity 6000.5.6f1). Both were validatable only once `SimulationTestRunner` evaluated
-them per turn — a dashboard tile is OnGUI code and `BatchSimulationRunner` never calls `OnGUI`, so
-placement alone would not have covered them.
-
-- **A4 — PASSES.** Zero finiteness failures across all 30 runs, all six countries, every turn. Its
-  outstanding "NOT trajectory-validated" caveat from `70798e9` is discharged.
-- **C4 — IMPLEMENTATION COMPLETE** (`a4155ca`). The first run failed with 3,421 rating-thrash anomalies;
-  Elias's A1 ruling fixed it by review CADENCE rather than damping. Anchors hold **5 of 5, unchanged**;
-  matrix anomalies fell to **1,416**. The residual is **not a C4 defect** — see the entry directly below.
-  **Closure, not the build, is what remains outstanding.**
+*(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
+historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and
+`CLAUDE.md`.)*
 
 ---
 
-## ✅ The debt-to-zero bimodality — FIXED 2026-08-02. Its successor defect is named at the end.
+## The debt-to-zero bimodality — FIXED 2026-08-02, record migrated
 
-**The floor is gone, debt may go negative, and the 0.00% pinning with it** — debt-swing anomalies fell
-60% across the full matrix (6,225 → 2,507, 100 and 500 turns, seed 777, like-for-like before/after).
-A symmetric −300% bound was needed to stop an unbounded negative runaway; see Open Questions, because that
-bound is my call rather than Elias's.
-
-🔴 **What it was hiding, and what now carries the priority: the rating thrash is the DEFICIT term's.**
-Removing the floor moved rating anomalies by 1.6% (1,416 → 1,394) while
-`DebtClampDiagnostic` reports the debt stock's own contribution as almost perfectly stable — 0 notch moves
-in 117 years for four of six countries. **Step C4's closure waits on the deficit term, not on this.**
-Full evidence in `CLAUDE.md`. The original entry follows, kept because the mechanism reasoning is what
-made the fix possible.
-
-### Original entry — the defect as it stood before the fix
-
-**What:** Sweden's, France's and Germany's `DebtToGdpRatio` collapses to exactly **0.00%** and, under
-stress, spikes back to ~44% and collapses again within a year. Sweden in plain `baseline`: 21.8% (turn 1)
-→ 0.90% (turn 25) → **0.00%** from turn 50 on. Full technical history in CLAUDE.md, "SpendingLine Amount
-Ceiling — Debt-to-Zero Fix"; this is roadmap failure pattern 4, bimodal attractors.
-
-**Not new. Its PRIORITY is new**, and for two specific reasons:
-
-1. **It now blocks a step.** Step C4's closure waits on it — see `MISSING_PREREQUISITES.md` section F1.
-   No previously-known consequence of this defect blocked anything; it was a background modelling
-   concern that batch runs reported and nothing acted on.
-2. **It is now player-visible.** Until 2026-08-02 this defect was **log-only** — it lived in anomaly
-   counts, batch summaries and prose. Step C4's credit rating is the **first instrument that surfaces it
-   on screen**: the tile sits in the dashboard grid on every tab and reports its input faithfully, so a
-   debt stock swinging 0%↔45% now reads as a rating visibly collapsing and recovering. **The defect did
-   not get worse — it got a display.**
-
-**Do not fix this by damping the rating.** That option was raised and explicitly rejected in A1, and
-doing it now would return the defect to log-only while making C4 dishonest. A derived stat that stayed
-calm while its inputs did this would be the broken one.
-
-**Scope note:** the affected set is exactly the documented one. USA, Italy and Poland have well-behaved
-debt trajectories and produce **zero** rating anomalies both before and after the cadence change, which
-is itself evidence the rating is reading faithfully rather than misbehaving.
-
-### DECIDED 2026-08-02 (Elias, delegated) — allow net government debt to go NEGATIVE
-
-**Approach: remove the zero floor rather than damp the symptom.** `Mathf.Clamp(debt, 0f, maxDebt)` is
-what creates the bounce artifact — a stock driven below zero is held at zero and then released, which is
-exactly the shape a bimodal attractor takes.
-
-**Why negative debt is correct rather than a hack.** A country whose sovereign wealth fund exceeds its
-debt is a **net creditor**, which is a real fiscal state — and specifically **Norway's**, the country this
-project already used to calibrate SWF returns. The game *already displays* "Net Government Position (debt
-minus fund assets)"; it is only the simulation that refuses to represent it. Clamping at zero encodes an
-assumption the UI has already rejected.
-
-⚠ **DO NOT IMPLEMENT UNTIL THE MECHANISM IS CONFIRMED.** Verify against a real trajectory that the zero
-clamp is what produces the 0.00% → ~44% swings, and establish whether it **fully** explains the −135.5% to
-+170.8% settled-deficit range or whether something else contributes. **Three wrong theories preceded the
-right one on the Unity batch-run hang** — that precedent is why this is gated. Report the mechanism before
-proposing an implementation.
-
-**MECHANISM CONFIRMED 2026-08-02 — the gate is satisfied, implementation may be scoped.** Full evidence in
-CLAUDE.md. In short: the FLOOR is the mechanism (Sweden 67/120 baseline turns, France 14/120); the
-**ceiling is never hit by anyone**, so `MaxDebtToGdpPercent` is not involved; and the affected set is
-exactly "countries whose SWF drives net position negative" — which explains Germany, whose anomalies occur
-**only in `swfstress`**, where its debt does reach 0.0% repeatedly. Elias's premise holds and is stronger
-than stated: Sweden is a net creditor from **turn 1**, reaching a net position of −599 by turn 16, with
-single-turn excursions to −64.3% of GDP.
-
-⚠ **It does NOT fully explain the deficit range.** The per-turn budget balance is itself volatile
-(Sweden: +79, +16, +48, +0.8, +30, −40 …) and that volatility is upstream of the clamp. Removing the floor
-should eliminate the 0.00% pinning and the bounce; whether it eliminates the rating thrash entirely is
-**not** established. Re-run `DebtClampDiagnostic` with the floor removed and check year-over-year deltas
-against the notch threshold — if they still clear it, the residual is budget-balance volatility and is a
-separate defect this one was hiding.
-
-⚠ **Design decision to settle before building:** with debt clamped at zero, interest on debt is zero, so a
-net creditor currently earns nothing on its net assets. Removing the floor without deciding how negative
-debt interacts with `GetInterestOnDebt` creates either free money or a new asymmetry.
+Full entry (mechanism, Elias's negative-debt ruling, the gate, the confirmation) moved to COMPLETED.md §18
+in the 2026-08-12 reconciliation — finished work leaves the live file, per the three-way test. The
+successor chain it named ends in the PARKED unbounded-divergence pass; see Open Questions.
 
 ---
 
@@ -256,11 +183,13 @@ debt interacts with `GetInterestOnDebt` creates either free money or a new asymm
 | **3rd** | **7 — Continuous Time Phases 4–5** | Phases 1–3 are DONE. **Deferred indefinitely behind v2.0 — see the consequence below** |
 | **4th** | **6 — Round 4** | Round 4 would add systems Phases 4–5 must then convert — **doing the work twice** |
 
-⚠ **THE CONSEQUENCE, STATED PLAINLY: the game stays on 121-day turns for the whole of v2.0, and that is
-not a temporary state with a known end date.** Continuous Time Phases 4 and 5 are **deferred, not
-cancelled**. Until they land:
+⚠ **THE CONSEQUENCE, STATED PLAINLY: the game stays on turn-stepped macro for the whole of v2.0, and
+that is not a temporary state with a known end date.** *(⚠ CORRECTED 2026-08-12: this block was written
+when a turn was 121 days; since `d8f55ce` on 2026-08-10 — discontinuity 3 — **a turn is 365 days, one
+year**. The hybrid description below survives with the number changed; every "121" in it reads "365".)*
+Continuous Time Phases 4 and 5 are **deferred, not cancelled**. Until they land:
 
-- **A turn is 121 days and moves as one step.** Demographics (Phase 4) and the entire core macro engine —
+- **A turn is ~~121~~ 365 days and moves as one step.** Demographics (Phase 4) and the entire core macro engine —
   GDP identity, Okun's Law, Phillips Curve, interest-rate transmission, the fiscal reaction function's
   own transmission path (Phase 5) — all still resolve at the turn boundary, in one jump.
 - **Nothing breaks, and specifically Phase 0's automatic tick keeps working.** The calendar advances a day
@@ -270,7 +199,7 @@ cancelled**. Until they land:
   move daily. **The daily layer is real and half the simulation already lives in it.**
 - **So the honest description of the state we are shipping v2.0 on is a HYBRID SIMULATION**: a daily
   calendar with daily fiscal and social systems, and a turn-shaped macro core underneath. A player
-  watching debt tick daily while GDP jumps every 121 days is seeing exactly that seam. **The v2.0 UI must
+  watching debt tick daily while GDP jumps every 365 days is seeing exactly that seam. **The v2.0 UI must
   not present the macro figures as if they were continuous** — the published/live distinction already
   carries most of this weight, and it should keep carrying it.
 - **Phase 4's and Phase 5's handoff notes stay live and unmodified** below. They are not stale; they are
@@ -481,7 +410,12 @@ This is the one authoritative order, replacing whatever each original document s
 
 If a step's own validation fails, fix it before moving to the next — never proceed past a failing step to "make progress" on the next one.
 
-9. **NEW (2026-08-03) — v2.0 UI OVERHAUL. Elias's decision, and it is now FIRST in the work order.**
+9. ⚠ *(NUMBERING COLLISION, recorded 2026-08-12 rather than renumbered: TWO items carry "9" — the
+   macro overhaul above (2026-08-01, cited as "step 9" in code comments) and this v2.0 overhaul
+   (2026-08-03, the "9" the execution-order table means). Renumbering would break references in both
+   directions, the exact reason items 1–8 were never renumbered; disambiguate by name when citing.)*
+
+   **NEW (2026-08-03) — v2.0 UI OVERHAUL. Elias's decision, and it is now FIRST in the work order.**
    A total visual redirection to the Suzerain (Torpor Games) idiom: a 1950s-republic aesthetic built as
    physical furniture — desk surfaces, paper documents, folders, ornate frames — with painted portraits,
    textured backgrounds and full-screen focus for consequential moments. The current UI is a dark-mode
@@ -552,7 +486,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | Architecture | **Decided and measured.** Hybrid at screen granularity; render order confirmed in a built player |
    | Typography | **Done.** TeX Gyre Pagella + Courier Prime, open-licence, owned by `PoliSimTheme` |
    | Design brief | **Sent and answered in full.** Two chrome passes delivered; spec reproduced in the request doc §1C |
-   | Sprites | **136 on disk, 52 chrome resolving.** Passes 1+2 imported and verified |
+   | Sprites | ~~136 on disk, 52 chrome resolving~~ *(counts as of 2026-08-03; superseded by Phase 2's derived statement below — 61 chrome on disk, 29 wired, all dispositioned)* |
    | Wiring | **Systemic layer live** — palette, buttons, panels, tabs, stat plates, chips, sliders, scrollbars |
 
    ⚠ *Superseded 2026-08-10 — the wiring gate was lifted and the Budget restyle has begun. See below.*
@@ -788,7 +722,11 @@ If a step's own validation fails, fix it before moving to the next — never pro
       carries a DEVIATIONS section, distinct from the import blockers, holding V1 (the
       "(current seat composition)" qualifier moved to the screen header).
 
-   **Open with Design:** five import blockers in §1E, none of which block the IMGUI path.
+   ~~**Open with Design:** five import blockers in §1E, none of which block the IMGUI path.~~
+   *(RECONCILED 2026-08-12: §1E closed, all five, verified 2026-08-11 by per-item enumeration against
+   disk — the request doc's own status line records it. What remains open with Design is §1G's
+   `mark_party_us_lib` — WRITTEN, NOT SENT — and the §1F.1 rasterization diff; both live in
+   `MISSING_PREREQUISITES.md` §E.)*
 
    ~~**Still unwired, and each needs CALL-SITE work rather than a style assignment** — a stamp goes on a
    resolved bill, hatch on a draft delta, the seal on a signing: `ui_stamp_carried/rejected/draft` ·
@@ -804,6 +742,21 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
    **One inherited defect worth fixing early**: the eleven pre-v2.0 chrome sprites are now entirely
    superseded and removable in one pass, once the v2.0 chrome is confirmed.
+
+10. **DEFINED 2026-08-12 — REALISTIC POLITICS AND ELECTIONS.** This number was referenced in three Open
+   Questions entries ("when item 10 lands", "`usa_election_check` is scoped to item 10") **without ever
+   being defined on `main`** — a dangling pointer the reconciliation closes. **Item 10 IS the work
+   specified in `POLISIM_POLITICS_ELECTIONS_ROADMAP.md` on `stranded/politics-elections`** (commit
+   `228a111`, contents enumerated in Open Questions): real parties and institutions under the split
+   rule 9, per-country chambers and electoral formulas, the hybrid national-swing vote model, USA as
+   the first vertical slice. **Gate, per Elias 2026-08-12: priced after Sweden votes 13 September
+   2026** — the branch's own seed data carries retrieval dates for exactly this expiry. ⚠ The branch
+   doc's §1 maps precisely what item 10 replaces on `main` (`PartyArchetype`, `TotalSeats = 200`,
+   `ElectionSystem`'s approval threshold) and what it keeps (seat drift, bill scoring, the renderers,
+   `PublicationSystem` for polling) — **main's documents describe the four-archetype system as current
+   because it IS current on main; the branch doc plans its replacement. Neither is stale; the
+   disposition of the collision is item 10's own work, not a documentation fix.** See RULINGS for the
+   one main-side dependency this creates (the ElectionRecord).
 
    ### RESOLVED — was blocking the design brief
 
@@ -824,6 +777,13 @@ If a step's own validation fails, fix it before moving to the next — never pro
 *(Full original plan preserved — becomes step 3 and step 7 of the master sequence above.)*
 
 ## Why this exists
+
+> ⚠ **TURN LENGTH CORRECTION, 2026-08-12: a turn has been 365 days since `d8f55ce` (2026-08-10,
+> discontinuity 3).** Everything below was written at 121 days and is preserved as the original plan;
+> every `/121`, `^(1/121)` and "121 consecutive days" reads `/DaysPerTurn` — the constant, which
+> Phases 1–3's implementations already read rather than baking in, which is why they survived the
+> change. **Phases 4–5, when picked up, calibrate against 365**, and Phase 4's `YearsPerTurn` note is
+> doubly live: that constant is now exactly 1.
 
 Migrating from turn-based (1 turn ≈ 121 days / 4 months) to true daily-granularity continuous time with Pause/1x/2x/3x speed controls. Nearly every tuned constant in the game is implicitly calibrated against a ~121-day step. This is the largest single risk in the project's history — do not attempt it as one pass.
 
@@ -1006,11 +966,11 @@ themselves are precisely what has not changed.
 
 #### Phase C status — the visual rollout is functionally complete
 
-Batches 1-6 cover every tab, and nothing further is planned under 5e's visual scope. **Batches 4-6 are
-BUILT but NOT live-confirmed** — that confirmation is the only outstanding 5e work, and until it happens
-they must not be described as done. Suggested check: Policy/Laws (all five sub-categories), Budget
-Process (all five categories, watching the amber cue appear on drag and the three columns hold at a
-narrow window), and one bill introduced end to end.
+Batches 1-6 cover every tab, and nothing further is planned under 5e's visual scope. ~~**Batches 4-6 are
+BUILT but NOT live-confirmed** — that confirmation is the only outstanding 5e work~~ *(RECONCILED
+2026-08-12: this sentence outlived its own closure by ten days — step 5 CLOSED 2026-08-02 when Elias
+confirmed all eleven review items, this file's own "Where things stand" said so, and `COMPLETED.md` §16
+holds the record. Two statements of one fact, one stale; the closure is the one with evidence.)*
 
 **5e retrospective, worth carrying into any future art/widget work.** The design pack's components fell
 into two groups. `StatTile`, the card/rounded-box primitives and the icon tinting were built against
@@ -1202,7 +1162,9 @@ list stays short enough to actually read.
   primary-balance term was examined and **rejected on evidence**. Full reading in `CLAUDE.md`.
 
   ⚠ **SCOPING, RULED BY ELIAS 2026-08-11 — TURN 1000 IS A DIAGNOSTIC, NOT A TARGET.** A turn is 121 days,
-  so turn 1000 is ~330 years and nobody's playthrough. **Calibration stays at turns 100–200.** The reason
+  so turn 1000 is ~330 years and nobody's playthrough *(⚠ corrected 2026-08-12: a turn has been 365 days
+  since `d8f55ce` — turn 1000 is ~1000 years, so the ruling holds a fortiori)*. **Calibration stays at
+  turns 100–200.** The reason
   the long horizon matters is that it reveals whether a restoring force exists **at all** — a model
   without one is wrong at turn 150 too, just not yet visibly. **Judge any fix by whether the mechanism is
   present, correctly signed, and whether the asymmetry is defensible — never by whether turn 1000
