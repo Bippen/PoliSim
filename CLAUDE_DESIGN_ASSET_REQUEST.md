@@ -16,7 +16,13 @@ D1's own agreed draft carrier which has no PNG at all. None disputes a design de
 **§1D is retained below as the record** of what was raised and how it was answered — read it for the
 reasoning behind D4's hue cap and D7's resort ladder, both of which are now implemented.
 
-⚠ **§1D is mirrored at `uploads/REVISION_REQUEST_PASS3.md` in the Design project, and at
+⚠ *(RECONCILED 2026-08-12: the three repo-side mirrors — `REVISION_REQUEST_PASS3.md`,
+`FOLLOWUPS_PASS3.md`, `PARTY_EMBLEM_QUESTION.md` — are RETIRED and deleted. Each mirrored a section of
+this document whose request has been answered, delivered and imported (§1D answered by pass 3; §1E
+closed per this document's own status line; §1F answered and imported per §1F.2), and each carried a
+stale "OPEN" status header of its own — precisely the two-documents-one-fact drift the consolidation
+rule exists to remove. The Design-project uploads are outside this repo and unaffected. The original
+note follows.)* **§1D is mirrored at `uploads/REVISION_REQUEST_PASS3.md` in the Design project, and at
 `REVISION_REQUEST_PASS3.md` in this repo, so it arrives as a new file rather than an in-place overwrite
 of a document a week old.** **This document is the source of truth**; the mirror is generated from §1D by
 the command recorded at the top of the mirror, so regenerating it is how they are kept from drifting.
