@@ -16,7 +16,7 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 | ~~**Elias — database access**~~ | ~~16~~ **0 blocking** | ✅ **ALL FOUR BATCHES SOURCED 2026-08-02.** C1/C2/C3/C5 can be built. Three *quality debts* remain — see below — but no batch waits on a missing figure |
 | ~~**Elias — visual review**~~ | ~~11~~ **0 — all confirmed 2026-08-02** | Step 5 CLOSED |
 | ~~**Claude Design**~~ | **0 — delivered and imported 2026-08-02** | — |
-| **Another task first** | ~~3~~ **2** | Cabinet portraits, Step C4 closure. *Round 4 scoping released 2026-08-02* |
+| **Another task first** | ~~3~~ **2** | Cabinet portraits (waiting on three portfolios being authored), Step C4 closure (waiting on the **parked fiscal-divergence pass** — see F1's 2026-08-12 reconciliation). *Round 4 scoping released 2026-08-02* |
 
 ---
 
@@ -427,7 +427,19 @@ and `DeliveredAssetCheck` compares every zip's contents against what exists unde
 
 # F. Waiting on an upstream simulation defect
 
-## F1. 🟢 Step C4's CLOSURE — the blocker is RESOLVED as of 2026-08-02. Awaiting Elias's sign-off.
+## F1. 🔴 Step C4's CLOSURE — SUPERSEDED 2026-08-11: it now waits on the UNBOUNDED DEBT DIVERGENCE work
+
+⚠ **RECONCILED 2026-08-12.** This entry read *"the blocker is RESOLVED as of 2026-08-02. Awaiting
+Elias's sign-off"* for eleven days after Elias's 2026-08-11 ruling superseded it (roadmap, Open
+Questions): **the 1000-turn matrix showed all six countries' debt still climbing — every "equilibrium"
+below is a WAYPOINT measured at 120 turns — and C4's deficit-term reading never settles, so its closure
+waits on the fiscal-engine divergence work** (diagnosed: interest compounding against an asymmetrically
+bounded stabiliser; parked pending its own dedicated pass, per `e8de02d` "the re-sweep needs its own
+pass"). The supplier for this entry is therefore *that parked pass*, not a sign-off. Everything below
+is retained as the measurement record it is, with its horizons — the 98.7% anomaly reduction was real
+and remains the largest single fiscal improvement recorded; it closed the THRASH, not the trajectory.
+
+**The original 2026-08-02 entry follows.**
 
 **Rating anomalies across the full matrix: 1,416 → 19.** A 98.7% reduction, and the deficit-term
 volatility that blocked C4 is gone with it. Nothing about C4 itself was changed — the fix was entirely
@@ -447,9 +459,11 @@ fiscal rule — so it moves rather than duplicating, and is smooth by constructi
 
 **Sanity-checked as fixed rather than frozen:** no country pins the fiscal reaction multiplier any more
 (was 104/120 turns for Sweden, 51/120 for France), no country goes net-creditor, and trajectories still
-move — Sweden settles near 10.5% of GDP, France 92.3%, Germany 38.6%, Italy 115.2%, Poland 29.9%, USA
-142.2%. Inflation, unemployment and interest-rate anomaly counts are byte-identical throughout, which is
-the evidence of no leakage into the macro engine.
+move — Sweden ~~settles~~ **reads at 120 turns** near 10.5% of GDP, France 92.3%, Germany 38.6%, Italy
+115.2%, Poland 29.9%, USA 142.2% *(⚠ waypoints, not equilibria — the 1000-turn matrix of 2026-08-11
+shows all six still climbing; "settles" was this document using the word the roadmap has since
+banned)*. Inflation, unemployment and interest-rate anomaly counts are byte-identical throughout, which
+is the evidence of no leakage into the macro engine.
 
 ⚠ **One thing worth Elias's eye, and it is a NEW question rather than a leftover:** Sweden's debt ratio is
 now very flat — 13.3% → 10.7% across 120 turns. That is a plausible equilibrium for a country whose fund
