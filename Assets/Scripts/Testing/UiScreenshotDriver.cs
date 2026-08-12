@@ -946,6 +946,25 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("87b_divisions_parliament_rows");
 
+            // --- E2. THE SIGNING CEREMONY (Canvas screen 2) — pinned via the controller's own queue
+            // method (ceremonies fire only from play's day tick, never from harness sim-advances, so
+            // this pass stays clean; TriggerSigningForNewestDivision fills the same queue the day
+            // tick fills). SignPendingDivision is the SIGN button's own method — the reflection call
+            // exits the screen exactly like a click, the selector's idiom.
+            InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: true);
+            yield return Settle();
+            yield return Capture("89_signing_document");
+
+            InvokeNoArg(controller, "SignPendingDivision");
+            yield return null;
+            yield return null;
+            yield return Capture("89a_signing_yielding");
+
+            yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
+            yield return Capture("89b_signing_restored");
+
             // --- F. THE ELECTION REVEAL AND GAME OVER — through the controller's own path. The sim
             // never shows a reveal because CheckElection is the CONTROLLER's post-turn call (the same
             // driver-artifact class as the daily arm calls: the first state pass recorded "an election

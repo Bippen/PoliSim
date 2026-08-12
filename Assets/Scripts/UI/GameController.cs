@@ -626,6 +626,14 @@ namespace PoliSim.UI
             {
                 return;
             }
+            // A Canvas takeover stops the clock — the signing-screen pattern addition to the seam's
+            // discipline statement. The selector never exposed this (the no-selection gate above
+            // already froze time); a mid-game ceremony with days ticking behind it would resolve
+            // MORE bills behind the document being signed.
+            if (_canvasLive || _canvasPhase != CanvasPhase.None || _signingQueue.Count > 0)
+            {
+                return;
+            }
             if (_gameSpeed == GameSpeed.Paused)
             {
                 return;
@@ -654,6 +662,10 @@ namespace PoliSim.UI
                 // player response (the idiom the retired TaxBill/AdvanceLegislativeDay established).
                 _simulationManager.AdvanceCountryDayTick(PlayerCountryId);
 
+                // The signing trigger — play's own day tick, and only this (see
+                // QueueNewlyResolvedDivisions for why the harness never fires ceremonies).
+                QueueNewlyResolvedDivisions();
+
                 if (turnBoundaryCrossed)
                 {
                     AdvanceTurn();
@@ -663,7 +675,8 @@ namespace PoliSim.UI
                 // meeting/budget process (or game over) must stop the clock immediately, not keep
                 // draining _daySpeedTimer toward days/turns that can't happen yet - re-check every gate
                 // before this same frame's loop continues.
-                if (_isGameOver || _pendingElectionResult != null || UpdateFedChairSelectionState()
+                if (_isGameOver || _pendingElectionResult != null || _signingQueue.Count > 0
+                    || UpdateFedChairSelectionState()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
                     || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
@@ -711,6 +724,18 @@ namespace PoliSim.UI
         //      null OR throw, sets the failed flag exactly once (see the entry case).
         private enum CanvasPhase { None, CoverIn, Reveal, CoverOut, Restore }
 
+        /// <summary>Which Canvas screen the takeover currently owns. One screen at a time by design — the seam is a single boundary, not a window manager.</summary>
+        private enum CanvasScreenKind { None, Selector, Signing }
+
+        private CanvasScreenKind _canvasScreenKind = CanvasScreenKind.None;
+        private SigningScreen _signingScreen;
+
+        /// <summary>Divisions awaiting their signing ceremony, drained one takeover at a time. Filled ONLY from the controller's own day tick (see QueueNewlyResolvedDivisions) — harness sim-advances never fire ceremonies mid-pass; the driver pins the screen through TriggerSigningForNewestDivision, the same queue the day tick fills.</summary>
+        private readonly System.Collections.Generic.Queue<DivisionRecord> _signingQueue = new System.Collections.Generic.Queue<DivisionRecord>();
+
+        /// <summary>High-water mark by DivisionRecord.Number, NOT list count — the log evicts past 24 entries, so a count comparison would miss resolutions once the buffer rolls.</summary>
+        private int _seenDivisionNumber;
+
         private CanvasPhase _canvasPhase = CanvasPhase.None;
         private float _canvasPhaseStart;
         private bool _canvasLive;
@@ -756,13 +781,44 @@ namespace PoliSim.UI
                         return;
                     }
 
+                    _canvasScreenKind = CanvasScreenKind.Selector;
                     _countrySelector.SetVisible(false);
+                    BeginCanvasPhase(CanvasPhase.CoverIn);
+                    break;
+
+                // SIGNING entry — the first MID-GAME takeover: CoverIn fades over the live dashboard
+                // (see CanvasSeamSuppressesImgui for why CoverIn no longer suppresses). Never fires
+                // over another takeover screen, and drops the ceremony per class 8 on any build
+                // failure — a dropped ceremony is a silent resolution, which is today's behaviour.
+                case CanvasPhase.None when !_canvasLive && _canvasScreenKind == CanvasScreenKind.None
+                    && _signingQueue.Count > 0 && _selectedPlayerCountryId.HasValue
+                    && _pendingElectionResult == null && !_isGameOver:
+                    DivisionRecord signing = _signingQueue.Dequeue();
+                    try
+                    {
+                        _signingScreen = SigningScreen.Build(_playerCountry, signing, SignPendingDivision);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogError($"CANVAS: signing build THREW ({e.GetType().Name}: {e.Message}) - ceremony dropped, resolution stays silent.");
+                        _signingScreen?.Destroy();
+                        _signingScreen = null;
+                    }
+
+                    if (_signingScreen == null)
+                    {
+                        return;
+                    }
+
+                    _canvasScreenKind = CanvasScreenKind.Signing;
+                    _signingScreen.SetVisible(false);
                     BeginCanvasPhase(CanvasPhase.CoverIn);
                     break;
 
                 case CanvasPhase.CoverIn when elapsed >= CanvasCoverSeconds:
                     _canvasLive = true;
-                    _countrySelector.SetVisible(true);
+                    _countrySelector?.SetVisible(true);
+                    _signingScreen?.SetVisible(true);
                     BeginCanvasPhase(CanvasPhase.Reveal);
                     break;
 
@@ -770,13 +826,25 @@ namespace PoliSim.UI
                     BeginCanvasPhase(CanvasPhase.None);
                     break;
 
-                case CanvasPhase.None when _canvasLive && _selectedPlayerCountryId.HasValue:
+                case CanvasPhase.None when _canvasLive && _canvasScreenKind == CanvasScreenKind.Selector
+                    && _selectedPlayerCountryId.HasValue:
+                    BeginCanvasPhase(CanvasPhase.CoverOut);
+                    break;
+
+                // The signing exits when the seal has settled — watching the RESULT of the SIGN
+                // action, so the driver's reflection call exits exactly like a click (the selector's
+                // own idiom).
+                case CanvasPhase.None when _canvasLive && _canvasScreenKind == CanvasScreenKind.Signing
+                    && _signingScreen != null && _signingScreen.Sealed:
                     BeginCanvasPhase(CanvasPhase.CoverOut);
                     break;
 
                 case CanvasPhase.CoverOut when elapsed >= CanvasCoverSeconds:
-                    _countrySelector.Destroy();
+                    _countrySelector?.Destroy();
                     _countrySelector = null;
+                    _signingScreen?.Destroy();
+                    _signingScreen = null;
+                    _canvasScreenKind = CanvasScreenKind.None;
                     _canvasLive = false;
                     BeginCanvasPhase(CanvasPhase.Restore);
                     break;
@@ -793,10 +861,18 @@ namespace PoliSim.UI
             _canvasPhaseStart = Time.unscaledTime;
         }
 
-        /// <summary>IMGUI is suppressed while the Canvas surface is live or being covered/revealed — every phase except Restore, whose scrim overlays the REDRAWN normal UI instead.</summary>
+        /// <summary>
+        /// IMGUI is suppressed only while the Canvas surface is LIVE. ⚠ REFINED for the signing
+        /// screen (the first mid-game takeover): CoverIn originally suppressed too, which the
+        /// selector masked — behind IT was only the void, so nobody saw the pop. A mid-game entry
+        /// suppressing at CoverIn would vanish the dashboard a full cover-fade before the scrim
+        /// reached opacity. CoverIn now mirrors Restore exactly: the normal UI draws, and the scrim
+        /// overlays it at OnGUI's end. The two edge phases are symmetric; the two inner phases
+        /// (Reveal/CoverOut) draw over the live Canvas from the suppressed path.
+        /// </summary>
         private bool CanvasSeamSuppressesImgui()
         {
-            return _canvasLive || _canvasPhase == CanvasPhase.CoverIn;
+            return _canvasLive;
         }
 
         /// <summary>The seam's own IMGUI: the hold banner (B8 — above the Canvas by render order) and the scrim at its phase alpha.</summary>
@@ -818,7 +894,6 @@ namespace PoliSim.UI
             float elapsed = Time.unscaledTime - _canvasPhaseStart;
             float alpha = _canvasPhase switch
             {
-                CanvasPhase.CoverIn => Mathf.Clamp01(elapsed / CanvasCoverSeconds),
                 CanvasPhase.Reveal => 1f - Mathf.Clamp01(elapsed / CanvasRevealSeconds),
                 CanvasPhase.CoverOut => Mathf.Clamp01(elapsed / CanvasCoverSeconds),
                 _ => 0f,
@@ -830,16 +905,19 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Restore only: the lift over the redrawn IMGUI, called at OnGUI's very end so it draws above everything.</summary>
+        /// <summary>The two EDGE phases — CoverIn rising, Restore falling — drawn over the live IMGUI at OnGUI's very end so the scrim sits above everything. The symmetric halves of the same cover.</summary>
         private void DrawCanvasRestoreScrim()
         {
-            if (_canvasPhase != CanvasPhase.Restore)
-            {
-                return;
-            }
-
             float elapsed = Time.unscaledTime - _canvasPhaseStart;
-            DrawCanvasScrim(1f - Mathf.Clamp01(elapsed / CanvasRevealSeconds));
+            switch (_canvasPhase)
+            {
+                case CanvasPhase.CoverIn:
+                    DrawCanvasScrim(Mathf.Clamp01(elapsed / CanvasCoverSeconds));
+                    break;
+                case CanvasPhase.Restore:
+                    DrawCanvasScrim(1f - Mathf.Clamp01(elapsed / CanvasRevealSeconds));
+                    break;
+            }
         }
 
         /// <summary>
@@ -871,6 +949,47 @@ namespace PoliSim.UI
             _selectedPlayerCountryId = countryId;
             _playerCountry = _world.GetCountry(countryId);
             _prevGdp = _playerCountry.State.GDP;
+
+            // Signing high-water mark starts at the current newest division, so pre-existing history
+            // never fires a backlog of ceremonies on selection.
+            System.Collections.Generic.List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
+            _seenDivisionNumber = divisions.Count > 0 ? divisions[divisions.Count - 1].Number : 0;
+        }
+
+        /// <summary>
+        /// Enqueues every division newer than the high-water mark for its signing ceremony. Called
+        /// ONLY from the controller's own day loop — the deliberate trigger pattern: ceremonies fire
+        /// from PLAY's day tick, never from harness sim-advances, so capture passes stay clean and
+        /// the driver pins the screen through <see cref="TriggerSigningForNewestDivision"/>, which
+        /// fills the same queue.
+        /// </summary>
+        private void QueueNewlyResolvedDivisions()
+        {
+            foreach (DivisionRecord record in _playerCountry.Divisions.Entries)
+            {
+                if (record.Number > _seenDivisionNumber)
+                {
+                    _signingQueue.Enqueue(record);
+                    _seenDivisionNumber = record.Number;
+                }
+            }
+        }
+
+        /// <summary>Harness entry: pin the signing screen for the newest division on demand — the same queue the day tick fills, so the driver exercises the REAL path minus only the trigger.</summary>
+        private void TriggerSigningForNewestDivision()
+        {
+            System.Collections.Generic.List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
+            if (divisions.Count > 0)
+            {
+                _signingQueue.Enqueue(divisions[divisions.Count - 1]);
+                _seenDivisionNumber = divisions[divisions.Count - 1].Number;
+            }
+        }
+
+        /// <summary>The SIGN button's own method (and the driver's, by reflection — one path): starts the seal beat; the seam watches SigningScreen.Sealed to cover out.</summary>
+        private void SignPendingDivision()
+        {
+            _signingScreen?.Sign();
         }
 
         /// <summary>
@@ -1063,10 +1182,21 @@ namespace PoliSim.UI
 
             if (!_selectedPlayerCountryId.HasValue)
             {
-                // Degradation path only: the Canvas selector failed to build (missing sprite), so the
-                // IMGUI selector remains the live screen — a broken import costs the new look, never
-                // the ability to start a game.
-                DrawCountrySelector();
+                if (_canvasSelectorFailed)
+                {
+                    // Degradation path only: the Canvas selector failed to build (missing sprite), so
+                    // the IMGUI selector remains the live screen — a broken import costs the new
+                    // look, never the ability to start a game.
+                    DrawCountrySelector();
+                }
+                else
+                {
+                    // CoverIn is in flight over the startup void — the pattern ground under the
+                    // rising scrim, never the IMGUI selector (which would flash for a cover-fade).
+                    DrawMenuBackground();
+                    DrawCanvasRestoreScrim();
+                }
+
                 return;
             }
 
