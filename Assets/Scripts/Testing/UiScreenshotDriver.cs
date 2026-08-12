@@ -770,6 +770,33 @@ namespace PoliSim.Testing
                 Debug.LogWarning($"SHOT: neither a cabinet decision nor a foreign-policy meeting within {MaxStateSearchDays} days - the CABINET and FOREIGN POLICY dossiers stay unpinned for {_countryId}.");
             }
 
+            // --- C2. THE FOREIGN-POLICY MEETING specifically (fold-in, Elias 2026-08-12): the search
+            // above stops on whichever fires first, and cabinet decisions always won. This one keeps
+            // rolling PAST pending cabinet decisions until a meeting lands.
+            if (!meetingPending)
+            {
+                days = 0;
+                while (sim.GetPendingForeignPolicyMeeting(_countryId) == null && days < MaxStateSearchDays)
+                {
+                    if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                    sim.TryRollForeignPolicyMeeting(_countryId);
+                    days++;
+                }
+
+                if (sim.GetPendingForeignPolicyMeeting(_countryId) != null)
+                {
+                    Debug.Log($"SHOT: foreign-policy meeting landed after {days} further day(s).");
+                    SetEnumField(controller, "_consolidatedTab", "Decisions");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    yield return Capture("84b_meeting_decisions");
+                }
+                else
+                {
+                    Debug.LogWarning($"SHOT: no foreign-policy meeting within {MaxStateSearchDays} further days - the FOREIGN POLICY dossier stays unpinned for {_countryId}.");
+                }
+            }
+
             // --- D. PENDING BILLS, one of every type — LAST, so no day ever ticks their countdowns. ---
             TaxType? taxPick = null;
             foreach (TaxLine line in player.TaxLines)
@@ -837,6 +864,85 @@ namespace PoliSim.Testing
             ResetScrolls(controller);
             yield return Settle();
             yield return Capture("85f_bill_tax_rows");
+
+            // --- E. DIVISION RECORDS: let the introduced bills RESOLVE, which is what writes the log
+            // (ParliamentSystem.RecordDivision, eight sites) — then capture item 1a's panel with real
+            // divisions on it. This deliberately breaks the "bills never resolve" invariant the
+            // introduction order above protects, which is why it runs after every bill capture: the
+            // arbitrary dial values now DO resolve into the economy, and everything captured from here
+            // on shows the post-resolution state.
+            int resolveDays = ParliamentSystem.BillDurationDays + 2;
+            for (int i = 0; i < resolveDays; i++)
+            {
+                if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                sim.TryOpenBudgetProcess(_countryId, sim.CurrentDate);
+                sim.TryRollForeignPolicyMeeting(_countryId);
+            }
+
+            Debug.Log($"SHOT: advanced {resolveDays} day(s) to resolve the introduced bills - divisions recorded: {player.Divisions.Entries.Count}.");
+            SetEnumField(controller, "_consolidatedTab", "Politics");
+            SetEnumField(controller, "_politicsCategory", "Parliament");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("87_divisions_parliament");
+
+            // The Division Records panel sits below the hemicycle and the pending list, so the scrolled
+            // capture is the one that actually shows it — the same lesson the _rows captures encode.
+            ScrollBy(controller, 900f);
+            yield return Settle();
+            yield return Capture("87b_divisions_parliament_rows");
+
+            // --- F. THE ELECTION REVEAL AND GAME OVER — through the controller's own path. The sim
+            // never shows a reveal because CheckElection is the CONTROLLER's post-turn call (the same
+            // driver-artifact class as the daily arm calls: the first state pass recorded "an election
+            // resolving leaves no observable UI state", and the truth was that the DRIVER's turn path
+            // never ran the method that shows it). Approval is forced low first so one chain pins both
+            // states: the reveal in its LOSS form, then game over on dismissal — the WIN form of the
+            // reveal stays unpinned this pass, stated rather than implied.
+            days = 0;
+            while (days < MaxStateSearchDays)
+            {
+                if (sim.AdvanceDay())
+                {
+                    sim.AdvanceTurn(noDecisions);
+                    if (ElectionSystem.IsElectionTurn(sim.CurrentTurn))
+                    {
+                        break;
+                    }
+                }
+
+                sim.TryOpenBudgetProcess(_countryId, sim.CurrentDate);
+                sim.TryRollForeignPolicyMeeting(_countryId);
+                days++;
+            }
+
+            if (ElectionSystem.IsElectionTurn(sim.CurrentTurn))
+            {
+                player.State.ApprovalRating = 5f;
+                InvokeNoArg(controller, "CheckElection");
+                yield return Settle();
+                yield return Capture("88a_election_reveal_loss");
+
+                InvokeNoArg(controller, "DismissElectionResult");
+                yield return Settle();
+                yield return Capture("88b_game_over");
+            }
+            else
+            {
+                Debug.LogWarning($"SHOT: no election turn within {MaxStateSearchDays} days - the reveal and game-over states stay unpinned for {_countryId}.");
+            }
+        }
+
+        private static void InvokeNoArg(object target, string method)
+        {
+            MethodInfo m = target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (m == null)
+            {
+                Debug.LogError($"SHOT: method {method} not found - the state its caller pins will be WRONG, not missing.");
+                return;
+            }
+
+            m.Invoke(target, null);
         }
 
         private static TaxLine FindTaxLine(Country country, TaxType type)
