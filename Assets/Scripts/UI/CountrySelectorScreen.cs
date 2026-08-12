@@ -138,6 +138,8 @@ namespace PoliSim.UI
 
             var card = new GameObject($"Folder_{country.Id}");
             card.transform.SetParent(parent, false);
+            // Not through the tint accessors: the face is the Button's raycast surface
+            // (raycastTarget must stay true) and CountryFolderCard drives its hover/press colour.
             Image face = card.AddComponent<Image>();
             face.sprite = folder;
             face.type = Image.Type.Sliced;
@@ -155,9 +157,9 @@ namespace PoliSim.UI
             Sprite spine = CanvasChrome.Sliced("ui_tab_spine", 14f, 14f, 0f, 0f);
             if (spine != null)
             {
-                var strip = new GameObject("HueStrip");
-                strip.transform.SetParent(card.transform, false);
-                var stripRect = strip.AddComponent<RectTransform>();
+                // WoA through the tint accessor — the family choice forced at construction.
+                Image stripImage = CanvasChrome.TintedImage(card.transform, "HueStrip", spine, ink, sliced: true);
+                RectTransform stripRect = stripImage.rectTransform;
                 stripRect.anchorMin = new Vector2(0f, 1f);
                 stripRect.anchorMax = new Vector2(1f, 1f);
                 stripRect.pivot = new Vector2(0.5f, 1f);
@@ -165,11 +167,6 @@ namespace PoliSim.UI
                 stripRect.offsetMax = new Vector2(-26f, 0f);
                 stripRect.anchoredPosition = new Vector2(0f, -36f);
                 stripRect.sizeDelta = new Vector2(stripRect.sizeDelta.x, 5f);
-                Image stripImage = strip.AddComponent<Image>();
-                stripImage.sprite = spine;
-                stripImage.type = Image.Type.Sliced;
-                stripImage.color = ink;
-                stripImage.raycastTarget = false;
             }
 
             // Content column, inset below the baked tab shoulder (top 72 @2× = 36 canvas units).
@@ -190,16 +187,14 @@ namespace PoliSim.UI
             Texture2D flagTexture = IconLibrary.GetFlag(country.Id);
             if (flagTexture != null)
             {
-                var flag = new GameObject("Flag");
-                flag.transform.SetParent(content.transform, false);
-                Image flagImage = flag.AddComponent<Image>();
-                flagImage.sprite = CanvasChrome.Whole(flagTexture, $"flag_{country.Id}");
-                flagImage.raycastTarget = false;
-                LayoutElement flagElement = flag.AddComponent<LayoutElement>();
+                // Real-colour art through the as-authored accessor — no caller can tint a flag.
+                Image flagImage = CanvasChrome.AsAuthoredImage(content.transform, "Flag",
+                    CanvasChrome.Whole(flagTexture, $"flag_{country.Id}"));
+                LayoutElement flagElement = flagImage.gameObject.AddComponent<LayoutElement>();
                 flagElement.preferredWidth = 86f;
                 flagElement.preferredHeight = 56f;
                 flagImage.preserveAspect = true;
-                flag.GetComponent<RectTransform>().sizeDelta = new Vector2(86f, 56f);
+                flagImage.rectTransform.sizeDelta = new Vector2(86f, 56f);
             }
 
             Text name = CanvasChrome.MakeText(content.transform, "Name", country.Name, PoliSimTheme.Display, 24,

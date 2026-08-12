@@ -112,6 +112,48 @@ namespace PoliSim.UI
             return sprite;
         }
 
+        /// <summary>
+        /// ⚠ THE TINT-FAMILY ACCESSORS (2026-08-12, ruled after the class's FIFTH visit — the WoA
+        /// masthead seal printing white on paper, caught by eye). These are the Canvas answer to the
+        /// question the IMGUI accessors answer: every chrome Image is constructed through one of the
+        /// two, so the family choice is FORCED at the call site instead of defaulting to white and
+        /// waiting for an eye. `TintedImage` for WoA art (the ink is a required argument — ink
+        /// weights on paper, lifted weights on the desk, per §3.0a); `AsAuthoredImage` for
+        /// real-colour art (flags, seals-official, the scrim, ornate frames), where the colour is
+        /// LOCKED to white and no caller can accidentally tint. The sixth instance should need a
+        /// compiler error, not an eye.
+        /// </summary>
+        public static Image TintedImage(Transform parent, string name, Sprite sprite, Color ink, bool sliced = false)
+        {
+            Image image = MakeImage(parent, name, sprite, sliced);
+            image.color = ink;
+            return image;
+        }
+
+        /// <summary>Real-colour art, drawn exactly as authored — see <see cref="TintedImage"/>.</summary>
+        public static Image AsAuthoredImage(Transform parent, string name, Sprite sprite, bool sliced = false)
+        {
+            Image image = MakeImage(parent, name, sprite, sliced);
+            image.color = Color.white;
+            return image;
+        }
+
+        private static Image MakeImage(Transform parent, string name, Sprite sprite, bool sliced)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            Image image = go.AddComponent<Image>();
+            image.sprite = sprite;
+            image.raycastTarget = false;
+            if (sliced)
+            {
+                image.type = Image.Type.Sliced;
+                image.pixelsPerUnitMultiplier = 2f;
+            }
+
+            return image;
+        }
+
         /// <summary>Legacy-uGUI Text, deliberately: the pilot's PATTERN decision, recorded in its charter — the fonts already load as `Font` assets through PoliSimTheme, TMP would need font-asset generation, and every pattern the pilot exists to prove (host, slicing, states, the seam) is orthogonal to the text backend. Revisit when a Canvas screen needs masks/outline/per-character effects.</summary>
         public static Text MakeText(Transform parent, string name, string content, Font font, int size, Color color, TextAnchor anchor, FontStyle style = FontStyle.Normal)
         {

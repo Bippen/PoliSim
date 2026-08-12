@@ -99,6 +99,14 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // The canvas text guard self-tests BOTH directions before its first assert, per the
+            // standing guard discipline — a broken probe must not be able to report clean. A failed
+            // self-test voids every later canvas-text count, so it fails the run outright.
+            if (!CanvasTextGuard.SelfTest())
+            {
+                _canvasTextViolations++;
+            }
+
             // CANVAS PILOT: the selector now ENTERS through the takeover envelope (~0.4s, ~25 frames
             // at 60fps) — far past the 4-frame settle, so the capture waits on the seam's own flag
             // (seam defect class 5: the harness racing the envelope). Falls through after the bound:
@@ -107,6 +115,7 @@ namespace PoliSim.Testing
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
             yield return Capture("01_country_selector");
+            RecordCanvasTextAssert("01_country_selector", controller);
 
             try
             {
@@ -211,7 +220,9 @@ namespace PoliSim.Testing
             int escapes = ReportContainmentEscapes();
             Debug.Log($"SHOT: {escapes} containment escape(s) recorded.");
 
-            Finish(_failed == 0 && overflows == 0 && escapes == 0 ? 0 : 1);
+            Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
+
+            Finish(_failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0 ? 0 : 1);
         }
 
         private IEnumerator Settle()
@@ -220,6 +231,23 @@ namespace PoliSim.Testing
             {
                 yield return null;
             }
+        }
+
+        private int _canvasTextViolations;
+        private int _canvasTextAsserts;
+
+        /// <summary>One canvas-text assert per pinned Canvas capture. A Canvas that failed to build asserts nothing and says so — the guard's own "verified nothing" path counts as a violation here, so a silent degradation can't launder a clean count.</summary>
+        private void RecordCanvasTextAssert(string context, GameController controller)
+        {
+            if (!controller.CanvasSelectorActive)
+            {
+                Debug.LogWarning($"CANVAS TEXT [{context}]: no canvas surface live - nothing asserted (the IMGUI fallback is up).");
+                return;
+            }
+
+            _canvasTextAsserts++;
+            int violations = CanvasTextGuard.Assert(context);
+            _canvasTextViolations += violations < 0 ? 1 : violations;
         }
 
         /// <summary>Bound on the canvas-settle wait — generous against a ~25-frame envelope, but a bound, per the standing rule that an unbounded wait is a hang with no log line.</summary>
@@ -955,6 +983,7 @@ namespace PoliSim.Testing
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
             yield return Capture("89_signing_document");
+            RecordCanvasTextAssert("89_signing_document", controller);
 
             InvokeNoArg(controller, "SignPendingDivision");
             yield return null;

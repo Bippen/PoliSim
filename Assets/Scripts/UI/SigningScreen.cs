@@ -99,19 +99,14 @@ namespace PoliSim.UI
             Image paper = document.AddComponent<Image>();
             paper.color = PoliSimTheme.Hex(0xF2EADB);
 
-            var ornate = new GameObject("OrnateFrame");
-            ornate.transform.SetParent(document.transform, false);
-            var ornateRect = ornate.AddComponent<RectTransform>();
+            // ui_frame_ornate is real-colour (gilt) — as-authored, border only.
+            Image ornateImage = CanvasChrome.AsAuthoredImage(document.transform, "OrnateFrame", frame, sliced: true);
+            ornateImage.fillCenter = false;
+            RectTransform ornateRect = ornateImage.rectTransform;
             ornateRect.anchorMin = Vector2.zero;
             ornateRect.anchorMax = Vector2.one;
             ornateRect.offsetMin = new Vector2(14f, 14f);
             ornateRect.offsetMax = new Vector2(-14f, -14f);
-            Image ornateImage = ornate.AddComponent<Image>();
-            ornateImage.sprite = frame;
-            ornateImage.type = Image.Type.Sliced;
-            ornateImage.fillCenter = false;
-            ornateImage.pixelsPerUnitMultiplier = 2f;
-            ornateImage.raycastTarget = false;
 
             // Content column, inside the 1g padding.
             var content = new GameObject("Content");
@@ -132,18 +127,13 @@ namespace PoliSim.UI
             Texture2D stateSeal = IconLibrary.GetChrome("ui_seal_state");
             if (stateSeal != null)
             {
-                var mastSeal = new GameObject("MastheadSeal");
-                mastSeal.transform.SetParent(content.transform, false);
-                Image mastImage = mastSeal.AddComponent<Image>();
-                mastImage.sprite = CanvasChrome.Whole(stateSeal, "ui_seal_state#whole");
                 // ui_seal_state is WoA — untinted it printed WHITE on the paper (caught by eye in
-                // the first sgn run, the tint-family class doing exactly what it always does). On
-                // paper it takes an ink, the institution line's own muted tone.
-                mastImage.color = PoliSimTheme.Hex(0x6B6250);
-                mastImage.raycastTarget = false;
+                // the first sgn run: the class's fifth visit, and the reason the tint accessors now
+                // exist). On paper it takes an ink, the institution line's own muted tone.
+                Image mastImage = CanvasChrome.TintedImage(content.transform, "MastheadSeal",
+                    CanvasChrome.Whole(stateSeal, "ui_seal_state#whole"), PoliSimTheme.Hex(0x6B6250));
                 mastImage.preserveAspect = true;
-                var le = mastSeal.AddComponent<LayoutElement>();
-                le.preferredHeight = 56f;
+                mastImage.gameObject.AddComponent<LayoutElement>().preferredHeight = 56f;
             }
 
             Text institution = CanvasChrome.MakeText(content.transform, "Institution",
@@ -201,17 +191,15 @@ namespace PoliSim.UI
             landing.transform.SetParent(signRow.transform, false);
             landing.AddComponent<RectTransform>().sizeDelta = new Vector2(104f, 104f);
             Texture2D sealTexture = IconLibrary.GetChrome("ui_seal_official");
-            var sealGo = new GameObject("Seal");
-            sealGo.transform.SetParent(landing.transform, false);
-            var sealRect = sealGo.AddComponent<RectTransform>();
+            // The wax seal is real-colour: as-authored, locked white.
+            Image sealImage = CanvasChrome.AsAuthoredImage(landing.transform, "Seal",
+                CanvasChrome.Whole(sealTexture, "ui_seal_official#whole"));
+            RectTransform sealRect = sealImage.rectTransform;
             sealRect.anchorMin = sealRect.anchorMax = new Vector2(0.5f, 0.5f);
             sealRect.sizeDelta = new Vector2(104f, 104f);
-            Image sealImage = sealGo.AddComponent<Image>();
-            sealImage.sprite = CanvasChrome.Whole(sealTexture, "ui_seal_official#whole");
             sealImage.preserveAspect = true;
-            sealImage.raycastTarget = false;
-            screen._seal = sealGo.AddComponent<SealDrop>();
-            sealGo.SetActive(false);
+            screen._seal = sealImage.gameObject.AddComponent<SealDrop>();
+            sealImage.gameObject.SetActive(false);
 
             BuildSignButton(signRow.transform, onSign);
 
@@ -283,14 +271,11 @@ namespace PoliSim.UI
             Texture2D stampTexture = IconLibrary.GetChrome(record.Passed ? "ui_stamp_carried" : "ui_stamp_rejected");
             if (stampTexture != null)
             {
-                var stamp = new GameObject("Stamp");
-                stamp.transform.SetParent(plate.transform, false);
-                stamp.AddComponent<RectTransform>().sizeDelta = new Vector2(122f, 36f);
-                Image stampImage = stamp.AddComponent<Image>();
-                stampImage.sprite = CanvasChrome.Whole(stampTexture, stampTexture.name + "#whole");
-                stampImage.color = verdictInk;
+                // WoA on paper: ink weights, through the tint accessor.
+                Image stampImage = CanvasChrome.TintedImage(plate.transform, "Stamp",
+                    CanvasChrome.Whole(stampTexture, stampTexture.name + "#whole"), verdictInk);
+                stampImage.rectTransform.sizeDelta = new Vector2(122f, 36f);
                 stampImage.preserveAspect = true;
-                stampImage.raycastTarget = false;
             }
         }
 
@@ -304,6 +289,8 @@ namespace PoliSim.UI
             var button = new GameObject("SignButton");
             button.transform.SetParent(parent, false);
             button.AddComponent<RectTransform>().sizeDelta = new Vector2(220f, 56f);
+            // Not through the tint accessors: a Button face must keep raycastTarget true, and the
+            // missing-sprite degradation needs the brass fill, not locked white.
             Image face = button.AddComponent<Image>();
             if (normal != null)
             {
