@@ -597,11 +597,20 @@ If a step's own validation fails, fix it before moving to the next — never pro
    ⚠⚠ **SEQUENCING RULED BY ELIAS 2026-08-12 — CAPTURE COVERAGE BEFORE NEW FEATURES.** Both 1a and the
    Canvas pilot **wait on coverage**: they build on a surface where five of six countries have never
    been photographed. The live work, in order:
-   1. **Country coverage** — capture all six countries at both sizes (1600×929, 2560×1419),
-      `ScreenEdgeCheck` per set, **report per country before fixing anything**. Five countries reach
-      code the USA does not — the legacy four-slider spending UI is live and has never been in any set.
-      *Expect defects: six screens' worth of conversions, four chrome placements and a clipping class
-      were all verified on one country.*
+   1. ✅ **Country coverage — RUN 2026-08-12, reported before fixing.** 12 runs (6 countries × 2
+      sizes), 676 captures, every automated check clean on every set; the different-code screens then
+      eyeballed per country (rule 15: the zeros answer containment, not composition). **Two defects
+      and one stale premise, full report in `CLAUDE.md` "Country coverage":**
+      - 🔴 **The ECB sub-tab label garbles when SELECTED at 1600-class sizes** (Germany+Italy
+        confirmed, France same branch; clean inactive, clean at 1440p, clean for shorter names).
+        Both guards structurally blind to it — a button label in the panel interior. **Fix not yet
+        applied** — awaiting the ruling below.
+      - 🔴 **The empty Mandatory spending group leaks `GroupSpendingMax`'s 0.0001f guard as a real
+        figure** — "bars to $100k" over zero rows, all five non-USA countries. **Fix not yet applied.**
+      - ⚠ The pass's own premise was stale: all six countries HAVE spending portfolios
+        (`SeedGenericSpendingLines`, 5 lines each) and the legacy category-delta UI path is
+        unreachable for every seeded country. The Overview line that said otherwise is corrected in
+        `CLAUDE.md`; the conversion HOLDS on the 5-line sets.
    2. **Then the reachable state axes** — pin cabinet-with-ministers, a pending bill per type, the
       other two Decisions dossiers, the budget-process pause, an election turn — the way the interrupt
       state was pinned. Report what needs a model change and leave it. (Locale: every capture is sv-SE;

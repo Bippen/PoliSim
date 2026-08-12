@@ -94,7 +94,7 @@ the simulation can be tested independently of the engine.
 
 ## Core Concepts
 - **EconomyState**: plain C# data class holding one country's economic/political indicators for a turn — GDP, inflation, unemployment, approval rating, budget, trade balance, currency strength, `GovernmentDebt`, `PovertyRate` (seeded from real OECD data, mean-reverts toward a baseline — see "Welfare Policy" below), plus the macro-theory fields: `Consumption`, `Investment`, `PotentialGDP`, `InflationExpectations`, `ConsumerConfidence`, `BusinessConfidence`. No single tax-rate field — see `TaxType`/`TaxLine` below. `DebtToGdpRatio` is a derived read-only property (`GovernmentDebt / GDP * 100`, expressed as a percentage like `Unemployment`/`Inflation`), not a stored field, so it's always consistent with the current GDP and debt.
-- **Country**: identity (`CountryId` enum) + `EconomyState` + the `CurrencyZone` it belongs to + its list of `TradePartner` links + its `TaxLines` portfolio (see below) + its `SpendingLines` portfolio (empty for five of the six countries — see "Detailed Spending Portfolio" below) + its `WelfarePrograms` portfolio (see "Welfare Policy" below - unlike `SpendingLines`, present and adjustable for all six countries) + structural (non-turn-mutated) constants: `BaseTariffRate` (used only when it isn't in a trade bloc), `NaturalUnemploymentRate` (NAIRU), `PotentialGrowthRate` (trend GDP growth, %/turn), `GovernmentSpendingRate` (baseline government consumption as % of GDP — ignored for a country with a non-empty `SpendingLines`), `BenefitRatePerUnemployed` (automatic-stabilizer generosity — % of GDP spent on unemployment benefits per point of unemployment), `CollectionEfficiency` (0.0-1.0, how much of the theoretical tax base is actually collected — enforcement quality/informal economy/evasion — see "Tax Collection Efficiency" below), `BaseDebtInterestRateOverride` (-1 = unset/use `CurrencyZone.InterestRate`, otherwise a country-specific real blended average rate on existing debt), `RiskPremiumSensitivity` (1.0 = full market exposure, the default — see "Reserve-Currency Debt Interest Treatment" below), `ComfortableDebtToGdpPercent` (see "Fiscal Reaction Function" below), and `BaselinePovertyRate` (see "Welfare Policy" below).
+- **Country**: identity (`CountryId` enum) + `EconomyState` + the `CurrencyZone` it belongs to + its list of `TradePartner` links + its `TaxLines` portfolio (see below) + its `SpendingLines` portfolio (⚠ CORRECTED 2026-08-12: present for ALL SIX countries — USA's 25 detailed lines via `SeedUsaSpendingLines`, the other five a generic 5-line Social/Defense/Infrastructure/PublicServices/Administration split via `SeedGenericSpendingLines`. This line said "empty for five of the six" long after the generic seeding landed, and the 2026-08-12 country-coverage pass inherited that stale claim as its premise — see "Country coverage" below. The legacy category-delta path is now unreachable for every seeded country) + its `WelfarePrograms` portfolio (see "Welfare Policy" below - unlike `SpendingLines`, present and adjustable for all six countries) + structural (non-turn-mutated) constants: `BaseTariffRate` (used only when it isn't in a trade bloc), `NaturalUnemploymentRate` (NAIRU), `PotentialGrowthRate` (trend GDP growth, %/turn), `GovernmentSpendingRate` (baseline government consumption as % of GDP — ignored for a country with a non-empty `SpendingLines`), `BenefitRatePerUnemployed` (automatic-stabilizer generosity — % of GDP spent on unemployment benefits per point of unemployment), `CollectionEfficiency` (0.0-1.0, how much of the theoretical tax base is actually collected — enforcement quality/informal economy/evasion — see "Tax Collection Efficiency" below), `BaseDebtInterestRateOverride` (-1 = unset/use `CurrencyZone.InterestRate`, otherwise a country-specific real blended average rate on existing debt), `RiskPremiumSensitivity` (1.0 = full market exposure, the default — see "Reserve-Currency Debt Interest Treatment" below), `ComfortableDebtToGdpPercent` (see "Fiscal Reaction Function" below), and `BaselinePovertyRate` (see "Welfare Policy" below).
 - **TaxType** / **TaxLine**: `TaxType` is the enum of individual tax instruments a country's fiscal portfolio can hold — `IncomeTax`, `CorporateTax`, `VAT`, `PayrollTax`, `CapitalGainsTax`, `SalesTax`, `ExciseTax`, `PropertyTax`, `EstateTax`, `WealthTax`, `CarbonTax`, `Tariffs`, `StampDuty`. `Tariffs` is listed for completeness but deliberately never gets a `TaxLine` — tariff revenue is already handled by `BaseTariffRate`/`TradeSystem`, not duplicated here (`TaxTypeBaseShares.GetBaseShareOfGdp` returns 0 for it as a defensive fallback, and `SimulationManager.GetTotalTaxRevenue` skips it explicitly too). A `TaxLine` is one instrument in a country's portfolio: `Type`, `Rate` (%, persistent — *set* turn to turn by `PolicyDecision.TaxRateOverrides`, not reset), `IsImplemented` (toggled *immediately* by the player, not deferred to Advance Turn — see `GameController`'s Tax Policy tab), a derived `BaseShareOfGdp` (looked up from `TaxTypeBaseShares` by `Type`, never stored per-instance, so every `TaxLine` of the same `Type` always agrees), and derived `MinRate`/`MaxRate` (looked up from `TaxTypeRateRanges` by `Type` — see "Tax Rate Ranges" below). `TaxLine.Clone()` exists because `PreviewTurn`'s throwaway country clone needs its own copies — `ApplyTaxRateChanges` mutates `Rate`, so these can't be shared references the way the `CurrencyZone` reference is. `WelfareProgramType`/`WelfareProgram` (see "Welfare Policy" below) mirror this exact pattern for the country's welfare portfolio.
 - **CurrencyZone**: a shared, settable interest rate. Countries that use the same currency (e.g. Germany/France/Italy) reference the *same* `CurrencyZone` instance, so a rate change affects all of them at once; independent-currency countries (USA, Sweden, Poland) each get their own instance and set their rate independently.
 - **TradeBloc**: a group of member countries (identified by `CountryId`) with a shared internal tariff rate (near zero) between members and one common external tariff rate applied by every member to non-member imports. The EU bloc is built from Germany, France, Italy, Sweden, and Poland.
@@ -7600,3 +7600,55 @@ branches (three), the EU tariff view (five), the non-Fed central-bank naming (fi
 Ruled sequencing: **capture coverage before new features** - both 1a and the Canvas pilot wait on it.
 The orphan rulings landed at the same time (all eight dispositioned; folder faces become their own
 pass; frame_ornate joins the Canvas set; four marked served-by-current-treatment, revivable).
+
+## Country coverage - all six countries photographed for the first time (2026-08-12)
+
+12 capture runs (6 countries x 1600x929 and 2560x1419), 676 captures total, each set through
+`ScreenEdgeCheck` at its own size. Every automated check clean on every set: 0 failed, 0 overflows,
+0 escapes, 0 clipped - and per rule 15 those answer containment, so the different-code screens were
+then eyeballed per country. **Two composition defects and one stale-record finding, reported before
+fixing per Elias's instruction:**
+
+### Finding 1 - the ECB sub-tab label garbles when SELECTED, at 1600-class sizes only
+
+Germany and Italy (France same branch): "European Central Bank (ECB)" wraps to three lines on the
+SELECTED `ui_subtab_on` face and overflows the face upward, garbling into the content panel's top
+edge. Clean when INACTIVE on the same screen (two lines), clean at 2560x1419 (fits two lines), clean
+for every shorter institution name ("Sveriges Riksbank" and "Narodowy Bank Polski (NBP)" both fit).
+**Both guards structurally blind to it**: it is a BUTTON label (UiOverflowGuard hooks MeasuredLabel),
+and it garbles in the panel interior (ScreenEdgeCheck reads the screen's edge pixels). Only the eye
+catches it, which is rule 15's point. The USA never showed it because "Federal Reserve" is short -
+the defect was reachable only through the country axis.
+
+### Finding 2 - the empty Mandatory spending group leaks its divide-by-zero guard into the UI
+
+All five non-USA countries have no Mandatory spending lines, so Budget/Spending renders the
+"Mandatory (narrower range, higher approval cost) - bars to $100k" header over ZERO rows -
+`GroupSpendingMax`'s 0.0001f guard, formatted as a real money figure. A header with no group and a
+nonsense denominator. USA never showed it because USA has mandatory lines.
+
+### Finding 3 - the coverage premise itself was stale (recorded in the Overview correction above)
+
+"The legacy four-slider spending UI, live and reachable by five countries" was the stated premise of
+this pass, inherited from the Overview's "empty for five of the six" line - which predates
+`SeedGenericSpendingLines`. Reality: all six countries have portfolios (5 generic lines vs USA's
+25), the LedgerRow conversion HOLDS on the 5-line sets, and the legacy category-delta path is
+unreachable for every seeded country. The pass was still right to run - it found two real defects
+and the actual per-country deltas - but its premise was a cached claim nobody re-derived, the exact
+shape rule 12 names.
+
+### What the sets confirmed clean, per country
+
+- **Sweden / Poland** (independent currency): 10-tile dashboard with Currency Strength, own
+  central-bank tab with rate slider (Riksbank / NBP), 5-line spending ledger with B1 amber drafts,
+  Parliament hemicycle + converted legend, empty-Decisions state ("No pending decisions." - a
+  never-captured axis, now covered incidentally). HELD honestly skipped: the fed-chair mechanic is
+  USA-only, logged by the driver rather than mislabelled.
+- **Germany / France / Italy** (Eurozone): 9-tile dashboard WITHOUT Currency Strength (correct -
+  shared currency), ECB tab with National Rate Push slider and shared-rate text, findings 1-2 as
+  above, everything else clean at both sizes.
+- **USA** (re-run under the new driver): 58 captures per size including both interrupt states,
+  clean at both sizes - the first USA set at 2560x1419 since the 2026-08-11 ruling run.
+
+Set-comparison note (rule 15's measured limit): the warm-up is unseeded, so USA figures differ from
+the dosport_* set (economy re-rolled); the comparison was structural.
