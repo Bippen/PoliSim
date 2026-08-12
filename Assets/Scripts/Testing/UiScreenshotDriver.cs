@@ -99,6 +99,12 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // CANVAS PILOT: the selector now ENTERS through the takeover envelope (~0.4s, ~25 frames
+            // at 60fps) — far past the 4-frame settle, so the capture waits on the seam's own flag
+            // (seam defect class 5: the harness racing the envelope). Falls through after the bound:
+            // if the Canvas build failed, the IMGUI selector is up instead and the capture is still
+            // the right capture.
+            yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
             yield return Capture("01_country_selector");
 
@@ -114,6 +120,15 @@ namespace PoliSim.Testing
             }
 
             Invoke(controller, "SelectPlayerCountry", _countryId);
+
+            // The YIELDING state: two frames into CoverOut, the scrim is mid-cover over the Canvas —
+            // the seam's other half on film. Alpha varies with frame rate (time-based envelope);
+            // presence is what the capture pins, not a pixel value.
+            yield return null;
+            yield return null;
+            yield return Capture("01a_selector_yielding");
+
+            yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
 
             // ⚠ THE ONE GUARANTEED RUNNING-STATE CAPTURE, taken before the warm-up. The 2026-08-12 run
@@ -205,6 +220,38 @@ namespace PoliSim.Testing
             {
                 yield return null;
             }
+        }
+
+        /// <summary>Bound on the canvas-settle wait — generous against a ~25-frame envelope, but a bound, per the standing rule that an unbounded wait is a hang with no log line.</summary>
+        private const int MaxCanvasSettleFrames = 600;
+
+        /// <summary>
+        /// Waits until the takeover seam is settled in the REQUESTED state: <paramref name="wantActive"/>
+        /// true = the Canvas surface live and its envelope finished; false = handed back to IMGUI.
+        /// Falls through after the bound (or immediately when the Canvas build failed and the IMGUI
+        /// selector is the live path), logging which — a capture of the wrong state must be a named
+        /// event, never a silent one.
+        /// </summary>
+        private IEnumerator WaitForCanvasSettle(GameController controller, bool wantActive)
+        {
+            FieldInfo failedField = controller.GetType().GetField("_canvasSelectorFailed", BindingFlags.Instance | BindingFlags.NonPublic);
+            for (int i = 0; i < MaxCanvasSettleFrames; i++)
+            {
+                if (failedField?.GetValue(controller) is bool failed && failed)
+                {
+                    Debug.Log("SHOT: canvas selector build FAILED - the IMGUI fallback is the live path; capturing that.");
+                    yield break;
+                }
+
+                if (controller.CanvasTransitionSettled && controller.CanvasSelectorActive == wantActive)
+                {
+                    yield break;
+                }
+
+                yield return null;
+            }
+
+            Debug.LogWarning($"SHOT: canvas seam never settled to active={wantActive} within {MaxCanvasSettleFrames} frames - capturing whatever is up.");
         }
 
         private int _captured;

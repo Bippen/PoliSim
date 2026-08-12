@@ -673,6 +673,179 @@ namespace PoliSim.UI
             }
         }
 
+        // ── CANVAS PILOT (2026-08-12): THE TAKEOVER SEAM ──────────────────────────────────────────
+        //
+        // The state machine every future Canvas screen shares. Four phases around a live surface:
+        //
+        //   CoverIn  — the IMGUI scrim fades 0→100% over whatever IMGUI was showing.
+        //   (swap)   — at full cover the Canvas screen activates; nothing visible changes, which is
+        //              the point: full opacity is what hides the swap. (§A.13 quotes an 85% hold; a
+        //              swap behind 85% shows through, so the cover goes to 100% — declared deviation.)
+        //   Reveal   — the scrim fades 100→0% OVER the now-active Canvas (possible precisely because
+        //              IMGUI is always topmost — the same fact that forces the suppression).
+        //   [live]   — phase None with _canvasLive: IMGUI draws only the hold banner (B8 survives the
+        //              takeover by construction: the banner is IMGUI, IMGUI is above Canvas).
+        //   CoverOut — selection made (detected by the machine, so a reflection-driven
+        //              SelectPlayerCountry triggers the exit exactly like a click): scrim covers the
+        //              Canvas, screen deactivates behind it.
+        //   Restore  — the scrim lifts over the redrawn IMGUI, drawn at OnGUI's end.
+        //
+        // ⚠ SEAM DEFECT CLASSES, NAMED (the pilot's charter asked what can go wrong here):
+        //   1. Layout/Repaint divergence — a phase advancing mid-frame gives the two passes different
+        //      control sets. Prevented: phases advance on the Layout event only.
+        //   2. Input falling through to suppressed IMGUI — impossible by construction: suppressed
+        //      IMGUI emits no controls, and an overlay draw is not a control.
+        //   3. The swap showing — prevented by covering to 100%, checked by eye in the entering
+        //      capture.
+        //   4. State set on Canvas not reaching the sim — prevented by routing selection through the
+        //      SAME SelectPlayerCountry the IMGUI path uses; the machine watches the RESULT, not the
+        //      caller.
+        //   5. The harness racing the envelope — the transitions span ~25 frames against the driver's
+        //      4-frame settle; CanvasTransitionSettled is the flag the driver waits on.
+        //   6. An early-returning IMGUI takeover during Restore dropping the scrim — named at the
+        //      draw site; cannot co-occur with the selector.
+        //   7. IMGUI furniture washing the Canvas from above (the desk grain) — skipped during
+        //      suppression; any future always-on IMGUI draw must make the same choice explicitly.
+        private enum CanvasPhase { None, CoverIn, Reveal, CoverOut, Restore }
+
+        private CanvasPhase _canvasPhase = CanvasPhase.None;
+        private float _canvasPhaseStart;
+        private bool _canvasLive;
+        private bool _canvasSelectorFailed;
+        private CountrySelectorScreen _countrySelector;
+
+        private const float CanvasCoverSeconds = 0.18f;
+        private const float CanvasRevealSeconds = 0.24f;
+
+        /// <summary>True when no takeover transition is in flight — the harness waits on this instead of guessing frame counts (seam defect class 5).</summary>
+        public bool CanvasTransitionSettled => _canvasPhase == CanvasPhase.None;
+
+        /// <summary>True while the Canvas surface is the live screen. With <see cref="CanvasTransitionSettled"/>, the pair distinguishes settled-before-entry from settled-canvas-live from settled-after-exit — three states one boolean cannot carry.</summary>
+        public bool CanvasSelectorActive => _canvasLive;
+
+        /// <summary>Phase transitions, Layout-event only (seam defect class 1). Time-based rather than frame-based so the envelope reads the same at any frame rate.</summary>
+        private void AdvanceCanvasSeam()
+        {
+            float elapsed = Time.unscaledTime - _canvasPhaseStart;
+            switch (_canvasPhase)
+            {
+                case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_canvasSelectorFailed:
+                    _countrySelector = CountrySelectorScreen.Build(_world, SelectPlayerCountry);
+                    if (_countrySelector == null)
+                    {
+                        _canvasSelectorFailed = true; // IMGUI selector stays the live path
+                        return;
+                    }
+
+                    _countrySelector.SetVisible(false);
+                    BeginCanvasPhase(CanvasPhase.CoverIn);
+                    break;
+
+                case CanvasPhase.CoverIn when elapsed >= CanvasCoverSeconds:
+                    _canvasLive = true;
+                    _countrySelector.SetVisible(true);
+                    BeginCanvasPhase(CanvasPhase.Reveal);
+                    break;
+
+                case CanvasPhase.Reveal when elapsed >= CanvasRevealSeconds:
+                    BeginCanvasPhase(CanvasPhase.None);
+                    break;
+
+                case CanvasPhase.None when _canvasLive && _selectedPlayerCountryId.HasValue:
+                    BeginCanvasPhase(CanvasPhase.CoverOut);
+                    break;
+
+                case CanvasPhase.CoverOut when elapsed >= CanvasCoverSeconds:
+                    _countrySelector.Destroy();
+                    _countrySelector = null;
+                    _canvasLive = false;
+                    BeginCanvasPhase(CanvasPhase.Restore);
+                    break;
+
+                case CanvasPhase.Restore when elapsed >= CanvasRevealSeconds:
+                    BeginCanvasPhase(CanvasPhase.None);
+                    break;
+            }
+        }
+
+        private void BeginCanvasPhase(CanvasPhase phase)
+        {
+            _canvasPhase = phase;
+            _canvasPhaseStart = Time.unscaledTime;
+        }
+
+        /// <summary>IMGUI is suppressed while the Canvas surface is live or being covered/revealed — every phase except Restore, whose scrim overlays the REDRAWN normal UI instead.</summary>
+        private bool CanvasSeamSuppressesImgui()
+        {
+            return _canvasLive || _canvasPhase == CanvasPhase.CoverIn;
+        }
+
+        /// <summary>The seam's own IMGUI: the hold banner (B8 — above the Canvas by render order) and the scrim at its phase alpha.</summary>
+        private void DrawCanvasSeamOverlay()
+        {
+            if (_selectedPlayerCountryId.HasValue)
+            {
+                string interrupt = BuildFullScreenInterruptText();
+                if (interrupt != null)
+                {
+                    float marginX = Screen.width * ScreenMarginFraction;
+                    float marginY = Screen.height * ScreenMarginFraction;
+                    GUILayout.BeginArea(new Rect(marginX, marginY, Screen.width - marginX * 2f, Screen.height - marginY * 2f));
+                    DrawHoldBannerLabel(interrupt);
+                    GUILayout.EndArea();
+                }
+            }
+
+            float elapsed = Time.unscaledTime - _canvasPhaseStart;
+            float alpha = _canvasPhase switch
+            {
+                CanvasPhase.CoverIn => Mathf.Clamp01(elapsed / CanvasCoverSeconds),
+                CanvasPhase.Reveal => 1f - Mathf.Clamp01(elapsed / CanvasRevealSeconds),
+                CanvasPhase.CoverOut => Mathf.Clamp01(elapsed / CanvasCoverSeconds),
+                _ => 0f,
+            };
+
+            if (alpha > 0f)
+            {
+                DrawCanvasScrim(alpha);
+            }
+        }
+
+        /// <summary>Restore only: the lift over the redrawn IMGUI, called at OnGUI's very end so it draws above everything.</summary>
+        private void DrawCanvasRestoreScrim()
+        {
+            if (_canvasPhase != CanvasPhase.Restore)
+            {
+                return;
+            }
+
+            float elapsed = Time.unscaledTime - _canvasPhaseStart;
+            DrawCanvasScrim(1f - Mathf.Clamp01(elapsed / CanvasRevealSeconds));
+        }
+
+        /// <summary>
+        /// `ui_scrim_takeover`'s call site at last — stretched whole, opacity the only animated
+        /// property, exactly as its manifest row specifies. Real-colour art, so the tint is pure
+        /// white at the phase alpha (§3.0a). Degrades to a desk-coloured wash when missing — a
+        /// takeover without its wash still covers, it just covers plainly.
+        /// </summary>
+        private void DrawCanvasScrim(float alpha)
+        {
+            var screen = new Rect(0f, 0f, Screen.width, Screen.height);
+            Texture2D scrim = IconLibrary.GetChrome("ui_scrim_takeover");
+            if (scrim != null)
+            {
+                GUI.DrawTexture(screen, scrim, ScaleMode.StretchToFill, true, 0f,
+                    new Color(1f, 1f, 1f, alpha), Vector4.zero, Vector4.zero);
+            }
+            else
+            {
+                Color desk = PoliSimTheme.DeskDeep;
+                GUI.DrawTexture(screen, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f,
+                    new Color(desk.r, desk.g, desk.b, alpha), Vector4.zero, Vector4.zero);
+            }
+        }
+
         /// <summary>Commits the player's country choice from DrawCountrySelector - the one place _selectedPlayerCountryId is ever set.</summary>
         private void SelectPlayerCountry(CountryId countryId)
         {
@@ -844,10 +1017,36 @@ namespace PoliSim.UI
         {
             InitializeStylesIfNeeded();
             RescaleStylesToScreen();
+
+            // ── CANVAS PILOT: THE SEAM ─────────────────────────────────────────────────────────────
+            // The takeover machine ticks ONCE per frame, on the Layout event only — advancing a phase
+            // between one frame's Layout and Repaint would give the two passes different control
+            // sets, which is the documented IMGUI desync trigger the stable-control-layout pattern
+            // exists to prevent, arriving through time instead of through state.
+            if (Event.current.type == EventType.Layout)
+            {
+                AdvanceCanvasSeam();
+            }
+
+            // While the Canvas surface is active (or being covered/revealed), IMGUI draws ONLY the
+            // seam overlay: the scrim and the hold banner. This suppression is not a workaround — the
+            // render-order spike measured IMGUI as ALWAYS topmost, so "a Canvas screen is visible
+            // exactly when OnGUI suppresses itself" is the architecture's own screen-granularity rule,
+            // enforced by the renderer. The desk grain is skipped too: it is desk furniture, and
+            // drawing it here would wash the Canvas from above.
+            if (CanvasSeamSuppressesImgui())
+            {
+                DrawCanvasSeamOverlay();
+                return;
+            }
+
             DrawDeskGrain();
 
             if (!_selectedPlayerCountryId.HasValue)
             {
+                // Degradation path only: the Canvas selector failed to build (missing sprite), so the
+                // IMGUI selector remains the live screen — a broken import costs the new look, never
+                // the ability to start a game.
                 DrawCountrySelector();
                 return;
             }
@@ -997,6 +1196,13 @@ namespace PoliSim.UI
 
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
+
+            // CANVAS SEAM, Restore phase: the scrim lifts OVER the just-redrawn IMGUI, so it draws
+            // last. ⚠ Named seam risk, not yet bitten: an early-returning takeover screen (the
+            // election reveal) during Restore would skip this line and drop the scrim for its frames.
+            // No such state can co-occur with the SELECTOR's exit; re-audit when Canvas screen #2
+            // can fire mid-game.
+            DrawCanvasRestoreScrim();
         }
 
         private void InitializeStylesIfNeeded()
