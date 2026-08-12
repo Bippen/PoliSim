@@ -994,30 +994,30 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("89b_signing_restored");
 
-            // --- F. THE ELECTION REVEAL AND GAME OVER — through the controller's own path. The sim
-            // never shows a reveal because CheckElection is the CONTROLLER's post-turn call (the same
-            // driver-artifact class as the daily arm calls: the first state pass recorded "an election
-            // resolving leaves no observable UI state", and the truth was that the DRIVER's turn path
-            // never ran the method that shows it). Approval is forced low first so one chain pins both
-            // states: the reveal in its LOSS form, then game over on dismissal — the WIN form of the
-            // reveal stays unpinned this pass, stated rather than implied.
-            days = 0;
-            while (days < MaxStateSearchDays)
+            // --- F. THE ELECTION REVEAL, BOTH FORMS, AND GAME OVER — through the controller's own
+            // path. The sim never shows a reveal because CheckElection is the CONTROLLER's post-turn
+            // call (the same driver-artifact class as the daily arm calls: the first state pass
+            // recorded "an election resolving leaves no observable UI state", and the truth was that
+            // the DRIVER's turn path never ran the method that shows it). The WIN form first: a win's
+            // dismissal sets no state and returns to the dashboard, so the same run can then search
+            // to the NEXT election and pin the loss chain — reveal in its loss form, then game over
+            // on dismissal. This closes "the WIN form stays unpinned, stated rather than implied".
+            if (AdvanceToElectionTurn(sim, noDecisions))
             {
-                if (sim.AdvanceDay())
-                {
-                    sim.AdvanceTurn(noDecisions);
-                    if (ElectionSystem.IsElectionTurn(sim.CurrentTurn))
-                    {
-                        break;
-                    }
-                }
+                player.State.ApprovalRating = 60f;
+                InvokeNoArg(controller, "CheckElection");
+                yield return Settle();
+                yield return Capture("88w_election_reveal_win");
 
-                sim.AdvanceCountryDayTick(_countryId);
-                days++;
+                InvokeNoArg(controller, "DismissElectionResult");
+                yield return Settle();
+            }
+            else
+            {
+                Debug.LogWarning($"SHOT: no election turn within {MaxStateSearchDays} days - the WIN reveal stays unpinned for {_countryId}.");
             }
 
-            if (ElectionSystem.IsElectionTurn(sim.CurrentTurn))
+            if (AdvanceToElectionTurn(sim, noDecisions))
             {
                 player.State.ApprovalRating = 5f;
                 InvokeNoArg(controller, "CheckElection");
@@ -1030,8 +1030,32 @@ namespace PoliSim.Testing
             }
             else
             {
-                Debug.LogWarning($"SHOT: no election turn within {MaxStateSearchDays} days - the reveal and game-over states stay unpinned for {_countryId}.");
+                Debug.LogWarning($"SHOT: no election turn within {MaxStateSearchDays} days - the loss reveal and game-over states stay unpinned for {_countryId}.");
             }
+        }
+
+        /// <summary>
+        /// Advances sim days (turns through the driver's own no-decisions path, each day ticked via
+        /// AdvanceCountryDayTick like play does) until CurrentTurn is an election turn, bounded by
+        /// MaxStateSearchDays. False when the bound ran out — the caller states the unpinned state.
+        /// </summary>
+        private bool AdvanceToElectionTurn(SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
+        {
+            for (int days = 0; days < MaxStateSearchDays; days++)
+            {
+                if (sim.AdvanceDay())
+                {
+                    sim.AdvanceTurn(noDecisions);
+                    if (ElectionSystem.IsElectionTurn(sim.CurrentTurn))
+                    {
+                        return true;
+                    }
+                }
+
+                sim.AdvanceCountryDayTick(_countryId);
+            }
+
+            return false;
         }
 
         private static void InvokeNoArg(object target, string method)
