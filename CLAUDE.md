@@ -7472,3 +7472,52 @@ Both were mine, and both were confident:
 **The generalisable point beyond APIs:** an exhaustive search that returns nothing is evidence about the
 *source as it exists now*, never about whether a value was ever true. Absence is only evidence of error
 when the source is capable of remembering.
+
+## v2.0 chrome placement track closed (2026-08-12) - six placements, one defect found by set comparison
+
+Four commits closed the roadmap's `"six real IMGUI placements"` list: `54c6ce2` (`ui_banner_hold` +
+`ui_calendar_pad`), `01eb29a` (sub-tab ink fix + harness corrections), `1cdd3fb` (`ui_tab_spine`),
+`a6d268d` (`ui_folder_dossier` + `ui_portrait_frame`). Every run validated in real Unity 6000.5.6f1:
+57-58 captures, 0 failed / 0 overflows / 0 escapes, `ScreenEdgeCheck` 0 clipped, three sets
+(`holdcal_*`, `spineink_*`, `dosport_*`). Commit messages carry the per-placement detail; the
+findings that generalise are recorded here.
+
+### A face swap changes what ink reads on it - the two are one decision
+
+`d44ab2d` replaced the selected sub-tab's brass with the pale `ui_subtab_on` paper face and left the
+Primary kind's cream text in place. Cream on pale paper: "Domestic" was unreadable in every capture of
+the new set, and **the commit that introduced it had its own capture run, approved by eye, with the
+defect on screen** - the recorded limit of eye checks, recurring. What actually caught it was comparing
+the new set against the PRE-conversion `accessors_*` set side by side: readable white-on-brass beside
+unreadable cream-on-paper. **A single capture set shows you a state; only two sets show you a
+regression.** Fixed in `01eb29a` per A.8's own spec (active = bold inkText, inactive = inkFaint),
+re-inked only inside the face-loaded block so the degraded fallback keeps the cream that suits brass.
+
+### The capture set's paused/running split was a coincidence of two unrelated constants
+
+The warm-up stops on a preliminary release, which lands on turn 3 - an election eve - so the fed-chair
+pause was live in EVERY main capture, of every set ever taken. Two consequences, both now pinned in the
+harness rather than left to luck: `CaptureHeldState` drives to an election eve through the real
+`AdvanceDay`/`AdvanceTurn` pair and captures the HELD banner on a standard tab AND on Budget
+full-screen (an injected candidate list would light only the Budget site, which reads the field
+directly, while the calendar site's flag is recomputed per frame from election timing - half-real
+evidence); `01b_running_strip` captures at turn 0, the one moment guaranteed unpaused. My own first
+comment on `CaptureHeldState` claimed the opposite failure ("the banner exists in NO capture") -
+wrong within the hour, corrected in `01eb29a`. **A claim about what a capture set contains is itself
+a cached value; the set is the authority.**
+
+### Placement notes that will matter later
+
+- **Native-pixel chrome bounds type that sits on it.** The dossier shoulder band is ~13px at every
+  resolution (9-slice fixed bands do not scale), so its caption is a FIXED 11px, deliberately exempt
+  from `RescaleStylesToScreen` - a scaled caption would overflow the band at 1440p. Same reasoning
+  bounds the calendar pad's slice geometry and the portrait frame's bezel inset.
+- **`ui_portrait_frame_oval` is Canvas-path** (manifest: "Canvas hero size"), joining the seals and
+  scrim. The IMGUI roster frame reshaped `DrawPersonPortrait`'s rect from square to the frame's own
+  74x92 proportion - safe because ScaleAndCrop has always cropped to the given rect.
+- **The date's carrier moved.** `BuildTimeStatusText` no longer prefixes the date; the calendar pad
+  owns it in both states. The running form is now the invented-but-minimal "Clock running"; the paused
+  form keeps every reason, which was the load-bearing part.
+- **`GUI.DrawTexture`'s Vector4 borderWidths edge order was sidestepped, not resolved**: every
+  9-slice this pass draws goes through a `GUIStyle` with a `RectOffset` border, whose edge order is
+  unambiguous. If anyone later needs the Vector4 overload, verify the order by render first.

@@ -571,7 +571,9 @@ If a step's own validation fails, fix it before moving to the next — never pro
    next touches those screens rather than being a pass of their own.
 
    ⚠ **SO THE NEXT v2.0 QUESTION IS NOT "WHICH SCREEN" — IT IS WHICH OF THE REMAINING TRACKS.** §A's own
-   backlog names three, none of which is a row conversion:
+   backlog names three, none of which is a row conversion. **Track 1 CLOSED 2026-08-12** (see its table);
+   what remains startable is **1a (resolved-bill history)** and **2 (the Canvas path)** — track 3 waits on
+   Elias confirming the v2.0 chrome visually:
    1. **The unwired chrome — ⚠ THE LIST OF 13 WAS WRONG, corrected 2026-08-12 by tracing call sites.**
       Six of the thirteen were never IMGUI placement work at all. **This is a correction to the list, not
       a deferral**, so nobody re-derives it:
@@ -584,7 +586,19 @@ If a step's own validation fails, fix it before moving to the next — never pro
       | `ui_stamp_carried` · `ui_stamp_rejected` | ⛔ **NO STATE TO MARK** — see below |
       | `ui_seal_official` · `ui_seal_state` | ⛔ **CANVAS-PATH** — no signing moment exists in IMGUI |
       | `ui_scrim_takeover` | ⛔ **CANVAS-PATH**, confirmed: no call site outside that track |
-      | `ui_tab_spine` · `ui_grain_tile` · `ui_calendar_pad` · `ui_portrait_frame` · `ui_folder_dossier` · `ui_banner_hold` | ⬅ **the real remaining placements** |
+      | `ui_grain_tile` | ✅ **WIRED** `da9b935` — desk grain, drawn first in OnGUI |
+      | `ui_banner_hold` · `ui_calendar_pad` | ✅ **WIRED** `54c6ce2` — the interrupt's dark desk plate (both B8 sites, amber lamp, HELD and RUNNING states pinned by capture) and the desk calendar, now the date's carrier |
+      | `ui_tab_spine` | ✅ **WIRED** `1cdd3fb` — area-hue strip on every tab tongue, ink active / lifted inactive |
+      | `ui_folder_dossier` · `ui_portrait_frame` | ✅ **WIRED** `a6d268d` — the four Decisions dossier cards (shoulder caption, hue spine against the sprite's geometry) and the brass roster frame on every `DrawPersonPortrait` |
+
+      ✅ **THE PLACEMENT TRACK IS CLOSED — 2026-08-12.** All six real IMGUI placements are wired, each
+      verified in real Unity by capture (57–58 shots per run, 0 failed / 0 overflows / 0 escapes /
+      0 clipped edges on every run — `holdcal_*`, `spineink_*`, `dosport_*` sets). `ui_portrait_frame_oval`
+      is **Canvas-path** per the manifest's own "Canvas hero size" note, joining the seals and scrim.
+      One defect found and fixed en route (`01eb29a`): `d44ab2d`'s sub-tab face left the Primary kind's
+      cream text on pale paper — the selected sub-tab label was unreadable in every capture, and the
+      commit that introduced it had been approved by eye. Everything here still awaits **Elias's visual
+      review**, which is also what gates track 3 below.
 
       ⚠ **RULED 2026-08-12 — the stamps have nothing to stamp.** `ParliamentSystem.ApplyBillResult`
       applies a bill's effects and the bill is discarded; there is **no resolved-bill record anywhere** —
@@ -650,11 +664,13 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
    **Open with Design:** five import blockers in §1E, none of which block the IMGUI path.
 
-   **Still unwired, and each needs CALL-SITE work rather than a style assignment** — a stamp goes on a
+   ~~**Still unwired, and each needs CALL-SITE work rather than a style assignment** — a stamp goes on a
    resolved bill, hatch on a draft delta, the seal on a signing: `ui_stamp_carried/rejected/draft` ·
    `ui_seal_official` · `ui_folder_dossier` · `ui_portrait_frame(_oval)` · `ui_banner_hold` ·
    `ui_hatch_draft` · `ui_grain_tile` · `ui_scrim_takeover` · `ui_calendar_pad` · `ui_tab_spine` ·
-   `ui_subtab_on/off` · `ui_chip_outline` · `ui_slider_tick`.
+   `ui_subtab_on/off` · `ui_chip_outline` · `ui_slider_tick`.~~ **SUPERSEDED 2026-08-12** — this was the
+   original list of 13; the corrected table above is authoritative, and its IMGUI half is now fully
+   wired. (`ui_hatch_draft` and `ui_stamp_draft`'s pencil carrier were already live in `LedgerRow`.)
 
    **Then the Canvas path**, which has a full specification and nothing built: eight narrative screens,
    the hand-off envelope, and the scrim. `CANVAS_SPEC.md` is reproduced in the request doc; the country
