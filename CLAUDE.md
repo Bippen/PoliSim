@@ -7809,3 +7809,38 @@ one method both call.
 and the brass button read. The ink-needs-paper inversion class, on the one screen that never had
 paper under it - reachable only by pinning the state, which is the coverage argument made twice in
 one day. Not fixed silently; raised in the report.
+
+## The full roadmap reconciliation (2026-08-12)
+
+Ruled by Elias: every planning document brought into agreement with the code, the commits, and each
+other. Eleven documents on main + the stranded branch's elections roadmap enumerated; none
+unanticipated; ROADMAP_BRIEF and the claude_* research docs confirmed already deleted (search:
+`git ls-files "*.md"`, whole tree). The per-document deltas live in the reconciliation commits
+(8f5d9fc..the final one); what generalises:
+
+- **Two riding fixes**: the election reveal's body ink (TextOnDesk - desk ground takes the desk ink)
+  and `AdvanceCountryDayTick` (the sim-side day tick extracted; controller and driver share one list,
+  ending the copy-drift class that produced three findings in one day). Both verified by the rec run:
+  every state pin identical (244-day budget pause, 6 divisions), 73/0 clean, the 88a body legible.
+- **The turn length had four stale statements** in the roadmap alone (121-day claims surviving
+  d8f55ce's 365); the 2026-08-11 turn-1000 ruling itself carried one, corrected a fortiori.
+- **Both "9"s recorded as a numbering collision; item 10 defined on main for the first time** - it was
+  cited three times and defined nowhere. Its spec is the stranded branch's roadmap; its gate is
+  13 Sept 2026; its collision map is the branch's own section 1 plus the main-side consequences
+  (emblem_party_* retires with PartyArchetype, PartyInks re-keys, ElectionSystem replaced wholesale -
+  which is why the ElectionRecord waits, R2).
+- **The mirrors pattern ended**: three generated request-mirrors deleted at answered+delivered+imported,
+  each carrying its own stale OPEN header - the two-documents-one-fact drift in its purest form.
+- **The directive and F1 both held closures ten-plus days stale** in the optimistic direction (A4 "not
+  done" after it shipped) AND the pessimistic (F1 "awaiting sign-off" after supersession) - staleness
+  has no preferred sign.
+- **No drift check exists between CLAUDE.md and the roadmap** - CheckSuite's suite is six checks, all
+  asset/upstream; stated per the run-the-drift-check instruction.
+- Verification: all six checks green post-push (DeliveredAsset 0 missing; ImporterSettings 149/0/0;
+  StatIcon 19/19; PartyMark honest not-present; ChromeV2 both directions; Upstream 0 ahead).
+
+**Left at the coherent boundary, stated rather than thinned**: migrating the finished 2026-08-12
+blocks (chrome table detail, coverage, state pins) from the roadmap's item-9-v2.0 section into
+COMPLETED.md; migrating the two consumed Open-Questions rulings (1440p, reporting-lag); a line-level
+audit of CLAUDE.md itself (644KB - its 2026-08-12 entries are current and its historical eras carry
+the discontinuity banners); the three asset-folder READMEs.

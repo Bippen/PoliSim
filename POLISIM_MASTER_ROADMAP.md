@@ -528,9 +528,24 @@ If a step's own validation fails, fix it before moving to the next — never pro
    ⚠ **SO THE NEXT v2.0 QUESTION IS NOT "WHICH SCREEN" — IT IS WHICH OF THE REMAINING TRACKS.** §A's own
    backlog names three, none of which is a row conversion. **Track 1 CLOSED 2026-08-12** (see its table).
 
-   ⚠⚠ **SEQUENCING RULED BY ELIAS 2026-08-12 — CAPTURE COVERAGE BEFORE NEW FEATURES.** Both 1a and the
-   Canvas pilot **wait on coverage**: they build on a surface where five of six countries have never
-   been photographed. The live work, in order:
+   ⚠⚠ **THE ONE ORDERED STARTABLE-TODAY LIST — reconciliation, 2026-08-12. This replaces every
+   contradictory ordering; each item names its gate.** *(The coverage-before-features ruling below it
+   is DISCHARGED: country coverage ran, the state axes are pinned, and item 1a closed the same day.)*
+
+   | # | Startable today | Gate |
+   |---|---|---|
+   | 1 | **Canvas pilot — the country selector** (item 9-v2.0's next major track; spec §1C.4/`CANVAS_SPEC`) | none — coverage and 1a both discharged. ⚠ Of the eight Canvas screens, ELECTION NIGHT alone is further gated (RULINGS R2) |
+   | 2 | **Track 3 — remove the eleven superseded pre-v2.0 sprites** | none — "when convenient" (ruled); `DeliveredAssetCheck` allowance in the same commit |
+   | 3 | **Folder-tongue faces (`ui_tab_folder_*`) as their own pass** | none — ruled B |
+   | 4 | **WIN-form election reveal pin** (the one remaining state-axis form) | none — fold into the next driver touch (ruled) |
+   | — | *Item 8 save/load* | sequencing: 2nd in the execution order, behind v2.0 |
+   | — | *The fiscal-divergence pass* | PARKED by ruling — Elias schedules it |
+   | — | *CT Phases 4–5, then Round 4* | 3rd/4th in the execution order; Phases 4–5 now calibrate against 365-day turns |
+   | — | *Step C batches C1/C2/C3/C5* | buildable since 2026-08-02, **position in the order never ruled** — RULINGS R1 |
+   | — | *Item 10 — elections* | priced after Sweden votes **13 Sept 2026** |
+
+   **The discharged ruling, kept for the record — CAPTURE COVERAGE BEFORE NEW FEATURES (2026-08-12):**
+   both 1a and the Canvas pilot were to wait on coverage. The work, as it ran:
    1. ✅ **Country coverage — RUN 2026-08-12, reported before fixing.** 12 runs (6 countries × 2
       sizes), 676 captures, every automated check clean on every set; the different-code screens then
       eyeballed per country (rule 15: the zeros answer containment, not composition). **Two defects
