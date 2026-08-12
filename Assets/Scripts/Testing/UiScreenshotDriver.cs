@@ -31,6 +31,11 @@ namespace PoliSim.Testing
     {
         public string OutputDirectory = "screenshots";
         public string Label = "run";
+        /// <summary>Which country to play as, set from `-shotcountry=` (default USA — the only country any set contained before 2026-08-12). Parsed against CountryId in Start and FAILS the run on a bad name: a typo must not silently capture the default country under the requested country's label.</summary>
+        public string Country = "USA";
+
+        /// <summary>The parsed <see cref="Country"/>, held so the warm-up's publication check and the held-state pass read the country actually being captured rather than a hardcoded USA.</summary>
+        private CountryId _countryId = CountryId.USA;
 
         /// <summary>Frames to let IMGUI settle before a capture. IMGUI lays out on the frame it draws, so a screen switched to on frame N is not fully measured until N+1; four is cheap insurance rather than a measured minimum.</summary>
         private const int SettleFrames = 4;
@@ -83,7 +88,18 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("01_country_selector");
 
-            Invoke(controller, "SelectPlayerCountry", CountryId.USA);
+            try
+            {
+                _countryId = (CountryId)System.Enum.Parse(typeof(CountryId), Country, ignoreCase: true);
+            }
+            catch (System.ArgumentException)
+            {
+                Debug.LogError($"SHOT: '{Country}' is not a CountryId - failing rather than capturing the wrong country under this label.");
+                Finish(1);
+                yield break;
+            }
+
+            Invoke(controller, "SelectPlayerCountry", _countryId);
             yield return Settle();
 
             // ⚠ THE ONE GUARANTEED RUNNING-STATE CAPTURE, taken before the warm-up. The 2026-08-12 run
@@ -94,7 +110,7 @@ namespace PoliSim.Testing
             // form exists in no capture this harness can produce.
             yield return Capture("01b_running_strip");
 
-            AdvanceDays(controller);
+            AdvanceDays(controller, _countryId);
             DivergeSwfWeights(controller);
             DraftSpendingLines(controller);
             yield return Settle();
@@ -358,7 +374,7 @@ namespace PoliSim.Testing
         /// and every graph saying "No data yet". A warm-up that moves the economy without producing
         /// history is precisely the failure this whole pass exists to correct, in miniature.
         /// </summary>
-        private static void AdvanceDays(object controller)
+        private static void AdvanceDays(object controller, CountryId playerCountry)
         {
             FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
             if (!(simField?.GetValue(controller) is SimulationManager sim))
@@ -394,7 +410,7 @@ namespace PoliSim.Testing
                 //
                 // Minimum days first, so the graphs still have a trend to draw - a preliminary figure on
                 // an empty chart would prove B6 and nothing else.
-                if (days >= MinWarmupDays && AnyPreliminary(sim))
+                if (days >= MinWarmupDays && AnyPreliminary(sim, playerCountry))
                 {
                     Debug.Log($"SHOT: stopped on a PRELIMINARY release at day {days} / turn {turns} - behaviour 6's provisional state is on screen.");
                     return;
@@ -495,10 +511,10 @@ namespace PoliSim.Testing
             return true;
         }
 
-        /// <summary>True when ANY published series on the player country is currently sitting on a preliminary release - the state behaviour 6 exists to distinguish, and the one a fixed-length warm-up reliably misses.</summary>
-        private static bool AnyPreliminary(SimulationManager sim)
+        /// <summary>True when ANY published series on the player country is currently sitting on a preliminary release - the state behaviour 6 exists to distinguish, and the one a fixed-length warm-up reliably misses. Reads the country actually being captured — this hardcoded USA until 2026-08-12, which was invisible only because USA was the only country ever captured.</summary>
+        private static bool AnyPreliminary(SimulationManager sim, CountryId playerCountry)
         {
-            Country country = sim.World?.GetCountry(CountryId.USA);
+            Country country = sim.World?.GetCountry(playerCountry);
             if (country?.Published == null)
             {
                 return false;
@@ -571,6 +587,21 @@ namespace PoliSim.Testing
 
             SetEnumField(controller, "_consolidatedTab", "Statistics");
             yield return Settle();
+
+            // ⚠ VERIFY THE PAUSE ACTUALLY ENGAGED before writing captures whose NAMES claim it did.
+            // The fed-chair selection is a no-op for a country without an independent chair (the
+            // Eurozone three share the ECB), so on those countries an election eve pauses nothing —
+            // and a capture named "interrupt_held" showing the RUNNING strip would be the harness
+            // lying in the filename. Skipped with a log instead: HELD is pinned only where the
+            // fed-chair path exists, and the per-country coverage report says so.
+            FieldInfo candidatesField = controller.GetType().GetField("_fedChairCandidates", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(candidatesField?.GetValue(controller) is System.Collections.ICollection candidates) || candidates.Count == 0)
+            {
+                Debug.LogWarning($"SHOT: election eve reached but no fed-chair selection engaged for {_countryId} " +
+                                 "(no independent chair) - HELD captures skipped rather than mislabelled.");
+                yield break;
+            }
+
             yield return Capture("90_interrupt_held");
 
             SetEnumField(controller, "_consolidatedTab", "Budget");

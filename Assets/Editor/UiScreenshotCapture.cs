@@ -132,7 +132,11 @@ namespace PoliSim.EditorTools
             UiScreenshotDriver driver = go.AddComponent<UiScreenshotDriver>();
             driver.OutputDirectory = Arg("-shotdir=", "screenshots");
             driver.Label = label;
-            Debug.Log($"SHOT: driver attached, label={label}, {Screen.width}x{Screen.height}");
+            // Country coverage (2026-08-12, Elias's ruling: coverage before features). Same idiom as
+            // -shotwidth=: a capture-config argument, defaulting to the only country ever captured
+            // before it existed. The driver validates the name and fails LOUDLY on a bad one.
+            driver.Country = Arg("-shotcountry=", "USA");
+            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, {Screen.width}x{Screen.height}");
         }
 
         private static string Arg(string prefix, string fallback)
