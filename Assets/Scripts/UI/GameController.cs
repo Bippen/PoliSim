@@ -541,6 +541,16 @@ namespace PoliSim.UI
         private GUIStyle _boxStyle;
         private GUIStyle _tabButtonStyle;
         private GUIStyle _eventBannerStyle;
+        /// <summary>v2.0 chrome: `_eventBannerStyle` dressed in the `ui_banner_hold` dark desk plate — the B8 interrupt indicator's own style, built in InitializeStylesIfNeeded and drawn via DrawHoldBannerLabel. Degrades to a plain clone of `_eventBannerStyle` when the sprite is missing.</summary>
+        private GUIStyle _holdBannerStyle;
+        // v2.0 chrome: the desk calendar (see DrawCalendarPad). The plate style carries only the
+        // ui_calendar_pad background and its 9-slice border; the three text styles are the pad's own
+        // type — month band, day numeral, year·turn line — scaled beside the pad in
+        // RescaleStylesToScreen so furniture and type track together.
+        private GUIStyle _calendarPadPlateStyle;
+        private GUIStyle _calendarMonthStyle;
+        private GUIStyle _calendarDayStyle;
+        private GUIStyle _calendarMetaStyle;
         private GUIStyle _gameOverStyle;
         private GUIStyle _cardKindStyle;
 
@@ -1050,6 +1060,54 @@ namespace PoliSim.UI
             _eventBannerStyle.normal.textColor = PoliSimTheme.Draft;
             _gameOverStyle.normal.textColor = PoliSimTheme.Bad;
 
+            // ⚠ v2.0 CHROME, 2026-08-12 — B8's carrier gets its own furniture: `ui_banner_hold`, the
+            // desk-mounted dark plate, behind the one indicator that must be visible from every tab.
+            // The manifest: 256x64 @2x, 9-slice 16/16/16/16 @2x, real colour — so drawn UNTINTED per
+            // §3.0a (paper/desk furniture ships in its pixels; tinting would double-apply), and the
+            // border is half the manifest's figure because GUIStyle.border is @1x. Text switches from
+            // draft amber to TextOnDesk: the amber was cut for a paper ground and sinks into the dark
+            // set — the spec's HELD state prints its type in the desk cream and lets the amber lamp
+            // (see DrawHoldBannerLabel) carry the urgency. Padding is the spec's 6/10 with the left
+            // edge widened per frame by RescaleStylesToScreen to hold the lamp dot. A missing sprite
+            // leaves this a plain clone of `_eventBannerStyle` — the pre-chrome amber label, exactly
+            // what every other chrome site degrades to.
+            _holdBannerStyle = new GUIStyle(_eventBannerStyle);
+            Texture2D holdPlate = IconLibrary.GetChrome("ui_banner_hold");
+            if (holdPlate != null)
+            {
+                _holdBannerStyle.normal.background = holdPlate;
+                _holdBannerStyle.border = new RectOffset(8, 8, 8, 8);
+                _holdBannerStyle.padding = new RectOffset(HoldBannerPadX, HoldBannerPadX, HoldBannerPadY, HoldBannerPadY);
+                _holdBannerStyle.normal.textColor = PoliSimTheme.TextOnDesk;
+            }
+
+            // ⚠ v2.0 CHROME, 2026-08-12 — the desk calendar (see DrawCalendarPad). The plate is
+            // real-colour furniture (drawn untinted, §3.0a), 9-sliced at half the manifest's
+            // 18/18/44/22 @2x — the deep top inset is the baked month band above the rule, the bottom
+            // the baked drop shadow. The month prints in the spec's own `#9C4238`, which is the same
+            // hex as the bad ink BY AUTHORING — referenced literally rather than through
+            // PoliSimTheme.Bad, so a future re-tune of the semantic ink cannot silently recolor a
+            // calendar that carries no judgment (the draft-amber/Political lesson, pre-empted).
+            // The year·turn line is Courier: a date stamp is a document artifact, which is exactly
+            // what the mono face is reserved for.
+            _calendarPadPlateStyle = new GUIStyle(GUIStyle.none);
+            Texture2D calendarPlate = IconLibrary.GetChrome("ui_calendar_pad");
+            if (calendarPlate != null)
+            {
+                _calendarPadPlateStyle.normal.background = calendarPlate;
+                _calendarPadPlateStyle.border = new RectOffset(9, 9, 22, 11);
+            }
+
+            _calendarMonthStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = false };
+            PoliSimTheme.WithDisplay(_calendarMonthStyle);
+            _calendarMonthStyle.normal.textColor = PoliSimTheme.Hex(0x9C4238);
+            _calendarDayStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = false };
+            PoliSimTheme.WithDisplay(_calendarDayStyle);
+            _calendarDayStyle.normal.textColor = PoliSimTheme.TextPrimary;
+            _calendarMetaStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
+            if (PoliSimTheme.Document != null) { _calendarMetaStyle.font = PoliSimTheme.Document; }
+            _calendarMetaStyle.normal.textColor = PoliSimTheme.TextSecondary;
+
             StyleScrollbars();
             StyleSliders();
             StyleBoxAsPaper(_boxStyle);
@@ -1211,6 +1269,21 @@ namespace PoliSim.UI
 
             _eventBannerStyle.fontSize = bannerFontSize;
             _gameOverStyle.fontSize = bannerFontSize;
+            _holdBannerStyle.fontSize = bannerFontSize;
+            if (_holdBannerStyle.normal.background != null)
+            {
+                // The lamp dot lives inside the plate's left padding, so the reserve tracks the dot's
+                // own font-derived size (see HoldBannerLampSize's one-accessor note). Only when the
+                // plate loaded - the degraded plain-label form keeps its inherited padding.
+                _holdBannerStyle.padding.left = HoldBannerPadX + HoldBannerLampSize() + HoldBannerLampGap;
+            }
+
+            // The calendar pad's type, at the board's own ratios to body type (month 8.5 / day 26 /
+            // mono 9 beside 12.5 body — §A.6). The pad itself scales from the same labelFontSize base
+            // in CalendarPadSize, so type and furniture cannot drift apart.
+            _calendarMonthStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (8.5f / 12.5f)));
+            _calendarDayStyle.fontSize = Mathf.RoundToInt(labelFontSize * (26f / 12.5f));
+            _calendarMetaStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (9f / 12.5f)));
             // Deliberately the smallest text on screen - a card's kind caption is a wayfinding label,
             // not content, and must not compete with the decision's own headline underneath it.
             _cardKindStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * 0.62f));
@@ -2418,7 +2491,8 @@ namespace PoliSim.UI
         /// fresh session, since it rolls per DAY (~1%) rather than per 121-day TURN like the other two.
         /// Now: exactly one Label control either way (per DrawTaxPolicy's stable-control-layout
         /// pattern - content and style vary, the control itself never does), escalated to
-        /// _eventBannerStyle (the same bold/orange weight as the dashboard's own BREAKING banner)
+        /// _holdBannerStyle (banner weight on the ui_banner_hold desk plate - originally
+        /// _eventBannerStyle's bare bold/orange, dressed by the v2.0 chrome pass of 2026-08-12)
         /// whenever ANY of the three is true, always naming which one and which tab resolves it.
         ///
         /// Master Sequence step 5a added a fourth condition, hasPendingBudgetProcess, per the revised
@@ -2442,7 +2516,7 @@ namespace PoliSim.UI
         /// </summary>
         /// <summary>
         /// ⚠ **THE STRING IS BUILT BY THE CALLER NOW, and that is a layout fix rather than a tidy-up.**
-        /// Every property the comment above describes — escalating to the larger `_eventBannerStyle`, and
+        /// Every property the comment above describes — escalating to the larger `_holdBannerStyle`, and
         /// naming every pending reason at once — makes this line TALLER, and the height had to be
         /// reserved before the line could be drawn. Splitting the build out lets
         /// <see cref="CalendarAndSpeedControlsHeight"/> measure the exact string that will be drawn,
@@ -2451,11 +2525,14 @@ namespace PoliSim.UI
         private string BuildTimeStatusText(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions,
             bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess)
         {
-            string dateText = _simulationManager.CurrentDate.ToString("MMMM d, yyyy");
+            // v2.0 chrome (2026-08-12): the date is no longer this string's prefix — the calendar pad
+            // beside it (DrawCalendarPad) is the date's carrier now, in both states. The running form
+            // becomes a quiet state readout; the paused form keeps every reason, which is the part
+            // that was ever load-bearing.
             bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
             if (!isPaused)
             {
-                return dateText;
+                return "Clock running";
             }
 
             var reasons = new List<string>();
@@ -2476,7 +2553,7 @@ namespace PoliSim.UI
                 reasons.Add("respond to the pending Foreign Policy meeting (Foreign Policy tab)");
             }
 
-            return $"{dateText} - TIME PAUSED: {string.Join("; ", reasons)} to continue.";
+            return $"TIME PAUSED: {string.Join("; ", reasons)} to continue.";
         }
 
         /// <summary>
@@ -2486,7 +2563,7 @@ namespace PoliSim.UI
         /// ⚠ **THE RESERVE IS MEASURED, NOT ASSUMED, and the assumption is what cut the speed strip in
         /// half.** The old figure was `_labelStyle.fontSize + 8f + _buttonStyle.fixedHeight` — one line of
         /// body type plus a button — but the status line is neither of those things when the clock is
-        /// paused: it escalates to the larger `_eventBannerStyle` AND names every pending reason at once,
+        /// paused: it escalates to the larger `_holdBannerStyle` AND names every pending reason at once,
         /// so it wraps. Two wrapped banner lines against a one-line reserve pushed the Pause/1x/2x/3x row
         /// off the bottom — the single control this UI can least afford to lose, being the only one
         /// visible from every tab.
@@ -2500,21 +2577,143 @@ namespace PoliSim.UI
         /// way to get this wrong again: too wide under-counts the lines, and under-counting lines is what
         /// put the buttons off the screen in the first place.</para>
         /// </summary>
+        /// <summary>ui_banner_hold plate padding — the spec's `6/10` (vertical/horizontal), plus the lamp's clearance gap. The left padding actually applied each frame is PadX + lamp + gap (see RescaleStylesToScreen), so the type never sits under the dot.</summary>
+        private const int HoldBannerPadX = 10;
+        private const int HoldBannerPadY = 6;
+        private const int HoldBannerLampGap = 6;
+
+        /// <summary>Clearance between the calendar pad and the status line beside it.</summary>
+        private const float CalendarPadGap = 12f;
+
+        /// <summary>
+        /// Calendar pad geometry — the board's own proportion (a 64px pad beside 12.5px body type,
+        /// §A.6) applied to the label size this UI actually renders at, then the sprite's native
+        /// 72×80 @1x aspect for the height. ⚠ ONE ACCESSOR, READ BY BOTH SITES:
+        /// <see cref="CalendarAndSpeedControlsHeight"/> reserves against it and
+        /// <see cref="DrawCalendarPad"/> draws at it — the separation that drifts in silence when
+        /// either side keeps its own copy.
+        /// </summary>
+        private Vector2 CalendarPadSize()
+        {
+            float width = Mathf.Round(_labelStyle.fontSize * (64f / 12.5f));
+            return new Vector2(width, Mathf.Round(width * (80f / 72f)));
+        }
+
+        /// <summary>
+        /// v2.0 chrome: the desk calendar — `ui_calendar_pad` with the date drawn on it, which is now
+        /// the date's home (BuildTimeStatusText no longer carries it as a prefix). Month in the band
+        /// above the sprite's baked rule, day numeral in the body, year · turn in Courier beneath it.
+        /// The text rects are laid out from the sprite's own proportions (rule closing the top 22/80
+        /// of the height, baked shadow below 69/80) so the type tracks the furniture at any scale.
+        /// Degrades to a procedural plate when the sprite is missing — the date must never vanish
+        /// with the art. The plate draw is Repaint-gated because a GUIStyle.Draw is a paint call, not
+        /// a control: layout still reserves the rect every frame, so the control count never changes.
+        /// </summary>
+        private void DrawCalendarPad()
+        {
+            Vector2 size = CalendarPadSize();
+            Rect pad = GUILayoutUtility.GetRect(size.x, size.y, GUILayout.Width(size.x), GUILayout.Height(size.y));
+
+            if (_calendarPadPlateStyle.normal.background != null)
+            {
+                if (Event.current.type == EventType.Repaint)
+                {
+                    _calendarPadPlateStyle.Draw(pad, false, false, false, false);
+                }
+            }
+            else
+            {
+                PoliSimTheme.RoundedCard(pad, PoliSimTheme.Hex(0xF4ECDC), PoliSimTheme.Hairline, 4f);
+            }
+
+            System.DateTime date = _simulationManager.CurrentDate;
+            var monthRect = new Rect(pad.x, pad.y + pad.height * (2f / 80f), pad.width, pad.height * (18f / 80f));
+            var dayRect = new Rect(pad.x, pad.y + pad.height * (24f / 80f), pad.width, pad.height * (34f / 80f));
+            var metaRect = new Rect(pad.x, pad.y + pad.height * (56f / 80f), pad.width, pad.height * (13f / 80f));
+
+            GUI.Label(monthRect, date.ToString("MMM").ToUpperInvariant(), _calendarMonthStyle);
+            GUI.Label(dayRect, date.Day.ToString(), _calendarDayStyle);
+            GUI.Label(metaRect, $"{date.Year} · T{_simulationManager.CurrentTurn}", _calendarMetaStyle);
+        }
+
+        /// <summary>
+        /// The HELD lamp dot's diameter. Derived from the banner's own type size at the spec's own
+        /// proportion — §A.6 draws an 8px dot beside 10.5px type, and the ratio is what carries over,
+        /// not either absolute number (this banner renders at RescaleStylesToScreen's escalated size,
+        /// not at board scale). ⚠ ONE ACCESSOR, READ BY BOTH SITES: RescaleStylesToScreen reserves this
+        /// much extra left padding and DrawHoldBannerLabel draws the dot into it — a copy in either
+        /// place is how a reserve and its drawing drift apart (the instance-#12 shape).
+        /// </summary>
+        private int HoldBannerLampSize()
+        {
+            return Mathf.RoundToInt(_holdBannerStyle.fontSize * (8f / 10.5f));
+        }
+
+        /// <summary>
+        /// B8's carrier: one Label in the `ui_banner_hold` desk plate, with the amber lamp dot drawn
+        /// over its reserved left padding. Exactly ONE control either way (the dot is an overlay draw,
+        /// not a control), so both call sites keep the stable-control-layout guarantee they had when
+        /// this was a bare `_eventBannerStyle` label. The dot centres on the FIRST text line — a
+        /// wrapped banner reads top-down and the lamp belongs beside the headline, not mid-paragraph.
+        /// No glow: §3.2 says effects are baked or absent, and the plate ships without one.
+        /// </summary>
+        private void DrawHoldBannerLabel(string text)
+        {
+            GUILayout.Label(text, _holdBannerStyle);
+
+            if (_holdBannerStyle.normal.background == null)
+            {
+                return; // degraded to the plain amber label - no plate, so no lamp to mount on it
+            }
+
+            Rect plate = GUILayoutUtility.GetLastRect();
+            float lamp = HoldBannerLampSize();
+            var dotRect = new Rect(
+                plate.x + HoldBannerPadX,
+                plate.y + HoldBannerPadY + (_holdBannerStyle.lineHeight - lamp) * 0.5f,
+                lamp,
+                lamp);
+            PoliSimTheme.Pill(dotRect, PoliSimTheme.DraftOnDesk);
+        }
+
         private float CalendarAndSpeedControlsHeight(string statusText, bool isPaused, float columnWidth)
         {
-            GUIStyle statusStyle = isPaused ? _eventBannerStyle : _labelStyle;
-            float statusWidth = PoliSimWidgets.InnerWidth(columnWidth, _boxStyle, 1, statusStyle);
+            GUIStyle statusStyle = isPaused ? _holdBannerStyle : _labelStyle;
+            // v2.0 chrome: the top row is now [calendar pad | status], so the status wraps into the
+            // width REMAINING beside the pad, and the row is as tall as the taller of the two. The
+            // same subtraction the drawing performs, from the same accessors — measuring at the full
+            // width would under-count the wrapped lines, which is the exact quiet failure this
+            // method's own doc comment describes.
+            Vector2 pad = CalendarPadSize();
+            float statusWidth = PoliSimWidgets.InnerWidth(columnWidth, _boxStyle, 1, statusStyle) - pad.x - CalendarPadGap;
             float statusHeight = statusStyle.CalcHeight(new GUIContent(statusText), statusWidth) + statusStyle.margin.vertical;
             float speedRowHeight = _buttonStyle.fixedHeight + _buttonStyle.margin.vertical;
 
-            return statusHeight + speedRowHeight;
+            return Mathf.Max(pad.y, statusHeight) + speedRowHeight;
         }
 
         private void DrawCalendarAndSpeedControls(string statusText, bool isPaused)
         {
             GUILayout.BeginVertical();
 
-            GUILayout.Label(statusText, isPaused ? _eventBannerStyle : _labelStyle);
+            // v2.0 chrome: [calendar pad | status line] over the speed row. The board (§A.6) lays all
+            // three in one row, but this UI's speed buttons are deliberately outsized and would not
+            // survive losing the pad's width — so the pad shares the STATUS row, whose text wraps.
+            GUILayout.BeginHorizontal();
+            DrawCalendarPad();
+            GUILayout.Space(CalendarPadGap);
+
+            // One Label either way (DrawHoldBannerLabel is itself a single Label plus an overlay), so
+            // the paused/running switch stays a style-and-content change, never a control-count change.
+            if (isPaused)
+            {
+                DrawHoldBannerLabel(statusText);
+            }
+            else
+            {
+                GUILayout.Label(statusText, _labelStyle);
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             DrawSpeedButton("Pause", GameSpeed.Paused);
@@ -4671,7 +4870,7 @@ namespace PoliSim.UI
             string interruptText = BuildFullScreenInterruptText();
             if (interruptText != null)
             {
-                height += _eventBannerStyle.CalcHeight(new GUIContent(interruptText), textWidth) + _eventBannerStyle.margin.vertical + 4f;
+                height += _holdBannerStyle.CalcHeight(new GUIContent(interruptText), textWidth) + _holdBannerStyle.margin.vertical + 4f;
             }
 
             height += _labelStyle.CalcHeight(new GUIContent(BudgetProcessDescription), textWidth) + _labelStyle.margin.vertical;
@@ -4701,7 +4900,7 @@ namespace PoliSim.UI
                 return;
             }
 
-            GUILayout.Label(interruptText, _eventBannerStyle);
+            DrawHoldBannerLabel(interruptText);
             GUILayout.Space(4f);
         }
 

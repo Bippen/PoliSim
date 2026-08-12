@@ -62,6 +62,14 @@ namespace PoliSim.UI
         /// </summary>
         public static readonly Color Draft = Caution;
 
+        /// <summary>
+        /// Draft/caution amber at DESK weight — `polisim_palette.json`'s `semantic.draftAmber.lifted`
+        /// (`#D4A72C`), an authored value like the <see cref="AreaAccentsOnDesk"/> set, not a computed
+        /// lightening. The ink amber above was cut for paper and sinks into the dark desk ground; this
+        /// is the value the spec's HELD status lamp and anything else amber-on-desk uses.
+        /// </summary>
+        public static readonly Color DraftOnDesk = Hex(0xD4A72C);
+
         // --- Geometry. All radii in unscaled px; multiply by the caller's UI scale. ---
         public const float RadiusPanel = 19f;
         public const float RadiusCard = 16f;

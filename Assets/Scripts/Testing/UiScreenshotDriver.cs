@@ -143,6 +143,8 @@ namespace PoliSim.Testing
                 SetEnumField(controller, sub.Key, sub.Value[0]);
             }
 
+            yield return CaptureHeldState(controller);
+
             Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
 
             int overflows = ReportOverflows();
@@ -504,6 +506,66 @@ namespace PoliSim.Testing
             }
 
             return false;
+        }
+
+        /// <summary>Ceiling on the search for an election eve — bounded like every other wait in this harness. Election cycles are measured in (365-day) turns, so six years covers any cycle this game has ever configured.</summary>
+        private const int MaxHeldSearchDays = 365 * 6;
+
+        /// <summary>
+        /// Drives the calendar to the eve of an election turn so the Fed-chair selection fires through
+        /// its own real path (GameController.UpdateFedChairSelectionState), then captures the HELD
+        /// state twice — on a standard tab (the calendar strip's banner) and on Budget full-screen
+        /// (DrawFullScreenPendingInterruptBanner's re-surfaced copy). Those are the two sites of B8's
+        /// always-visible interrupt indicator, and the `ui_banner_hold` plate dressed onto them.
+        ///
+        /// ⚠ **Without this pass the hold banner exists in NO capture.** The warm-up advances the sim
+        /// directly and never populates GameController's pending-interrupt state, so every capture
+        /// above shows the RUNNING line — the banner would stay "built, not confirmed" in every set
+        /// this harness can ever produce, which for the one carrier whose whole job is demanding
+        /// attention is the least acceptable screen to leave unseen.
+        ///
+        /// The state is produced by the REAL trigger — an election eve reached through the same
+        /// AdvanceDay/AdvanceTurn pair play uses — not by injecting a candidate list. An injected list
+        /// would light the Budget site (which reads `_fedChairCandidates` directly) while leaving the
+        /// calendar site dark (its flag is recomputed per frame from election timing), which is
+        /// exactly the half-real evidence rule 14 warns about: a capture that proves one of the two
+        /// sites while appearing to prove both.
+        /// </summary>
+        private IEnumerator CaptureHeldState(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(simField?.GetValue(controller) is SimulationManager sim))
+            {
+                Debug.LogError("SHOT: could not reach SimulationManager - the HELD banner will not be captured.");
+                yield break;
+            }
+
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+            int guard = 0;
+            while (!ElectionSystem.IsElectionTurn(sim.CurrentTurn + 1) && guard < MaxHeldSearchDays)
+            {
+                if (sim.AdvanceDay())
+                {
+                    sim.AdvanceTurn(noDecisions);
+                }
+
+                guard++;
+            }
+
+            if (!ElectionSystem.IsElectionTurn(sim.CurrentTurn + 1))
+            {
+                Debug.LogWarning($"SHOT: no election eve within {MaxHeldSearchDays} days - the HELD banner will NOT be in this capture set.");
+                yield break;
+            }
+
+            SetEnumField(controller, "_consolidatedTab", "Statistics");
+            yield return Settle();
+            yield return Capture("90_interrupt_held");
+
+            SetEnumField(controller, "_consolidatedTab", "Budget");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("91_interrupt_held_budget");
         }
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
