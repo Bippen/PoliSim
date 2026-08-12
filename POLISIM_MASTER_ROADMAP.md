@@ -611,10 +611,22 @@ If a step's own validation fails, fix it before moving to the next — never pro
         (`SeedGenericSpendingLines`, 5 lines each) and the legacy category-delta UI path is
         unreachable for every seeded country. The Overview line that said otherwise is corrected in
         `CLAUDE.md`; the conversion HOLDS on the 5-line sets.
-   2. **Then the reachable state axes** — pin cabinet-with-ministers, a pending bill per type, the
-      other two Decisions dossiers, the budget-process pause, an election turn — the way the interrupt
-      state was pinned. Report what needs a model change and leave it. (Locale: every capture is sv-SE;
-      the decimal-comma defect class is what a second locale would surface — noted, not yet pinned.)
+   2. ✅ **The reachable state axes — PINNED 2026-08-12** (`-shotstates`; USA/Germany/Sweden sets, all
+      edge-clean; full record in `CLAUDE.md` "The state axes pinned"): cabinet search + appointed
+      roster, the cabinet-decision dossier (real rolls), the budget-process pause with the
+      multi-reason hold banner, a pending bill of every introducible type (7/7 on Sweden — its seeded
+      standing fund is the SwfDrawdownBill's real precondition), and an en-US locale set beside the
+      sv-SE eleven. **Still unpinned, reasons named:** the foreign-policy dossier (search refinement,
+      drivable), an election resolving (NO observable UI state exists — needs the model record below),
+      game over (left for a deliberate pass).
+
+   2a. ⚠ **THE STAMPS RULING'S PREMISE WAS WRONG WHEN MADE — `DivisionLog` has existed since
+      `a7bd40d` (2026-08-10), two days before the ruling declared no record existed.** Every bill
+      type's resolution appends to `Country.Divisions` (last 24: title, date, alignment, passed,
+      number); zero UI readers. **Item 1a is therefore mostly DONE on the simulation side** — what
+      remains is the UI (a Recent Divisions block on Parliament, where `ui_stamp_carried`/`_rejected`
+      then have their state to mark) plus whatever retention/enrichment the Canvas election night
+      needs. The item below stands corrected by this entry.
    3. **Track 3 (superseded sprite removal) proceeds when convenient** — `DeliveredAssetCheck` gets the
       superseded allowance in the same commit as the deletion.
    4. **The folder-tongue faces (`ui_tab_folder_*`) as their own pass** — ruled B, nothing blocks on it.

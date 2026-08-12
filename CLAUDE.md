@@ -7702,3 +7702,46 @@ not on what it was predicted to find**: two real defects reachable only through 
 the per-country deltas confirmed working (Currency Strength tile presence, central-bank naming,
 5-line ledgers), and the stale premise itself. A pass justified by its predictions would have been
 cancelled on discovering the premise wrong; a pass justified by coverage cannot be.
+
+## The state axes pinned, and the DivisionLog correction (2026-08-12)
+
+### Pinned through real paths (-shotstates; USA st2/, Germany st/, Sweden st/ sets, all edge-clean)
+
+- **Cabinet search and appointed roster** - candidates from the public pool, ministers appointed the
+  way the UI appoints them. The portrait frame verified at its actual roster site.
+- **The cabinet-decision dossier** - real rolls from ministers actually serving (fired within 0-91
+  days on all three countries).
+- **The budget-process pause** - the real fiscal date (USA: 244 days), with the BUDGET PROCESS
+  dossier, the full-screen budget banner, and the multi-reason hold banner ("choose the next Fed
+  Chair; introduce the annual budget bill") all on screen for the first time.
+- **A pending bill of every introducible type** - 6 of 7 on USA/Germany, 7 of 7 on Sweden, whose
+  seeded standing fund is what makes IntroduceSwfDrawdownBill accept; the false elsewhere is the
+  real precondition, not an error.
+- **en-US locale** (locusa1600) - decimal-point rendering captured beside eleven sv-SE sets.
+
+**The measured lesson of the pass**: the first version advanced 1460 days on three countries and
+pinned NEITHER the budget pause NOR a meeting - `TryOpenBudgetProcess` and
+`TryRollForeignPolicyMeeting` are the CONTROLLER's daily calls, which sim-side `AdvanceDay` never
+runs. The driver now makes the same calls play makes (`0220898`). A state that will not arm under
+the harness is evidence about the harness's model of a day, not about the state.
+
+### Still unpinned, with the reason named
+
+- **The foreign-policy-meeting dossier** - the decision search stops on whichever fires first, and
+  cabinet decisions always won. Drivable: a search variant that keeps rolling past pending cabinet
+  decisions. Small refinement, not a model change.
+- **An election resolving** - leaves NO observable UI state: no record, no results screen. Needs a
+  model record (the Canvas election night's own dependency). Same shape as the stamps - and see below.
+- **Game over** - drivable in principle (force approval below threshold); left for a deliberate pass.
+
+### ⚠ THE STAMPS RULING'S PREMISE WAS WRONG WHEN MADE - DivisionLog has existed since 2026-08-10
+
+The 2026-08-12 ruling ("the stamps have nothing to stamp - no history list, no outcome field, no
+record anywhere") was made TWO DAYS AFTER `a7bd40d` built exactly that record:
+`Country.Divisions`, a `DivisionLog` of the last 24 divisions - title, date, alignment, passed,
+division number - appended by `ParliamentSystem.RecordDivision` from EIGHT resolution sites
+covering every bill type. Zero UI readers: built-but-uncalled, the state this project mistakes for
+absent. **Consequence: roadmap item 1a (resolved-bill history) is mostly DONE on the simulation side**
+- what remains is the UI (a Recent Divisions block on Parliament, where the stamps then have their
+state to mark) plus whatever retention/enrichment the Canvas election night needs. The absence claim
+was an ungrepped absence claim - the same shape rule 14's SWF instance already recorded.
