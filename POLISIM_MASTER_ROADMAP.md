@@ -370,9 +370,9 @@ This is the one authoritative order, replacing whatever each original document s
      not done while it displayed nothing — for a full day, with four of its six methods reachable only
      from the test harness. **The lesson is the roadmap's own: check callers before believing a feature
      exists.**
-   - **Step B — graph overhaul + contextual policy-screen stats.** Display only, depends on A. EXTEND
-     `GraphRenderer`, do not build a parallel system. **B1 built (`dd7e323`), B2 built and wired
-     (`4869476`) — both await visual confirmation**, backlog items 3 and 10. Neither is done.
+   - **Step B — graph overhaul + contextual policy-screen stats. ✅ DONE 2026-08-02** *(reconciled
+     2026-08-12 — "both await visual confirmation" outlived the review's closure: items 3 and 10 were
+     among the eleven Elias confirmed, `COMPLETED.md` §16)*. B1 `dd7e323`, B2 `5701a04`/`4869476`.
    - **Step C — the seven new tracked stats, in four batches** (C1 housing, C2 inequality + real wages,
      C3 youth unemployment + life expectancy, C4 credit rating as a DERIVED value). Never all at once.
      Rule 11 applies to every batch: any effect on an existing tracked variable folds into that
@@ -1288,32 +1288,31 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   window is where the `LedgerRow` squeeze floor would engage if it ever does. Neither is blocking, and
   adding either is now a command-line argument rather than a code change (`-shotwidth=` / `-shotheight=`).
 
-  **Measured, not inferred.** A fresh capture of current `main` (`p2main_*`) run through
-  `ScreenEdgeCheck`: **55 captures, 54 clipped, exit 1.** Identical to the `run_*` set from before any
-  fix existed. The 55th is the full-bleed menu screen, correctly never flagged — which also resolves the
-  apparent "54 vs 55" discrepancy in earlier reports: **both sets contain 55 captures**, and 54 is the
-  count of *clipped* screens, not of screens.
+  *(⚠ RECONCILED 2026-08-12: everything below this line described the PRE-extraction state and was
+  superseded within hours of being written — the instance-#12 closure entry above records the outcome:
+  `InnerHeight` WAS extracted onto `main` (`b42ff20`), the two accessors and
+  `BudgetProcessHeaderHeight` followed, and `ScreenEdgeCheck` has read 0 clipped on every set since.
+  Kept struck-through because its middle paragraph — "a capture is evidence about the tree it was taken
+  from" — is the lesson rule 15 grew from.)*
 
-  **The fix exists and is not here.** It is `PoliSimWidgets.InnerHeight` — the vertical twin of
-  `InnerWidth` — plus **9 call sites** in `GameController`, replacing `areaHeight` with the height a
-  child can actually use once `_boxStyle`'s padding and margin are removed. `grep InnerHeight` on `main`
-  returns **0**; on `stranded/politics-elections` it returns the method and its callers.
+  ~~**Measured, not inferred.** A fresh capture of current `main` (`p2main_*`) run through
+  `ScreenEdgeCheck`: **55 captures, 54 clipped, exit 1.**~~ The 55th is the full-bleed menu screen,
+  correctly never flagged — which also resolves the apparent "54 vs 55" discrepancy in earlier reports:
+  **both sets contain 55 captures**, and 54 is the count of *clipped* screens, not of screens.
 
   ⚠ **Why the `clipfix2_*` captures looked clean, and why that was not evidence about `main`.** They were
   taken while the closed session's uncommitted changes were still sitting in the shared working tree, so
   they measured a build that included `InnerHeight`. When that work was committed it went to the stranded
   branch — correctly, since the politics code alongside it is unreviewed — and the layout fix went with
   it. **A capture is evidence about the tree it was taken from, not about the branch of the same name.**
-  Fifth instance today of a green result whose environment did not contain the claim.
-
-  **Not fixed here, per instruction to report first.** The decision is whether to extract `InnerHeight`
-  and its 9 call sites from a 492-line diff that also carries unreviewed politics rendering. The layout
-  fix is separable in principle — it touches only height budgets — but "separable in principle" is what
-  the diff looks like before anyone reads it.
 
 - 🔴 **P4 REOPENED 2026-08-11 — THE CLIPPING CLASS IS NOT CLOSED, AND "GUARDS GREEN" DOES NOT MEAN
   "SCREENS DO NOT CLIP".** Two guards were built on 2026-08-11 and both are honestly scoped; the class
   produced a **twelfth** instance that neither can see, and both reported zero while it was on screen.
+  *(Vindicated 2026-08-12: **instance #13** — the ECB sub-tab label, the first instance reached through
+  the COUNTRY axis, both guards structurally blind again. Fixed by `SubTabRowHeight` (`28e7f6c`);
+  the sibling survey — constant-sized chrome under wrappable labels, named not fixed — is in
+  `CLAUDE.md`. The class stays open.)*
 
   **Instance #12 — the FRAME, not the text.** Five `GUILayout` groups laid out wider and taller than
   `OnGUI`'s own `BeginArea`, so the area clipped them. Reported by Elias from live play (*"there are

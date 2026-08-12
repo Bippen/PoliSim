@@ -14,9 +14,9 @@
 record in `COMPLETED.md` section 6 — including the one-directional rule (`PublicationSystem` writes
 `Country.Published` and reads `Country.State`, never the reverse) and the two real bugs fixed.
 
-**A4 (Tier 0 derived stats): LIVE, not done.** Built (`70798e9`) and trajectory-validated (`3d77b11`),
-but it surfaces nothing to the player — and this step defines A4 as *"pure display arithmetic"*. See the
-roadmap for the remaining work.
+**A4 (Tier 0 derived stats): ✅ DONE 2026-08-02** *(reconciled 2026-08-12 — this line still said "LIVE,
+not done" ten days after A4 shipped: built `70798e9`, trajectory-validated `3d77b11`, DISPLAYED on
+Statistics → Domestic's Derived panel, and confirmed in the closed visual review)*.
 
 ⚠ **The critical correctness risk this step was built around — still binding on everything downstream.**
 The player-facing UI reads the PUBLISHED (lagged, possibly-revised) series. Every internal system —
@@ -31,9 +31,10 @@ hundreds of turns. Retained here rather than consolidated because it governs Ste
 ## STEP B — Graph overhaul and contextual policy-screen stats
 *Depends on A. Pure display, lower risk.*
 
-**Status: B1 and B2 both BUILT, neither CONFIRMED.** B1's graph overhaul (`dd7e323`) and B2's
-contextual stat row (`5701a04`, wired `4869476`) await visual review items 3 and 10. **Spec retained in
-full below** rather than consolidated, because a rejected review sends the work straight back to it.
+**Status: ✅ B1 AND B2 CONFIRMED 2026-08-02** *(reconciled 2026-08-12 — "neither CONFIRMED" outlived
+the review's closure: all eleven items including 3 and 10 were confirmed by Elias on 2026-08-02,
+`COMPLETED.md` §16)*. B1 `dd7e323`, B2 `5701a04` wired at `4869476`. Spec below retained as the record
+of what was built.
 
 **B1. Graph overhaul** — extend `GraphRenderer`, do NOT build a parallel system:
 - Real calendar date axis instead of turn numbers.
@@ -92,7 +93,7 @@ Consider modeling outlook (stable/negative) as a separate signal — a cheap way
 **C5. Productivity — GDP per hour worked** *(added 2026-08-01, correcting an error in this directive)*
 This directive named **seven** new stats and then batched only **six**: productivity appeared in no batch at all. That was an authoring error, not a decision to drop it. Elias's ruling: **add it as C5 rather than leave it unassigned.**
 
-**Basis requirement, non-negotiable: OECD PPP, GDP per hour worked, all six countries on that one basis.** The seed file currently mixes sources — USA ~97 and France 90.86 are OECD PPP, but Sweden ~70 and Poland ~24.5 came from Statista and are almost certainly not PPP-adjusted on the same footing (Poland at $24.5 against an OECD PPP average of $67.5 is implausible). Germany and Italy are `[GAP]`. So all four of Germany, Italy, Sweden and Poland need sourcing or re-sourcing before C5 can start.
+**Basis requirement, non-negotiable: OECD PPP, GDP per hour worked, all six countries on that one basis.** *(SOURCING CLOSED 2026-08-02 — reconciled 2026-08-12: all six sourced from the OECD SDMX API, one basis, one vintage, and promoted to `[VERIFIED]` when the DBnomics anchor reproduced both original seeds; the seed file §6 is the authority. The mixed-sources warning below is retained as the record of why the re-sourcing was required — Poland's Statista figure was off by more than 2×.)* ~~The seed file currently mixes sources~~ — USA ~97 and France 90.86 are OECD PPP, but Sweden ~70 and Poland ~24.5 came from Statista and are almost certainly not PPP-adjusted on the same footing (Poland at $24.5 against an OECD PPP average of $67.5 is implausible). ~~Germany and Italy are `[GAP]`. So all four of Germany, Italy, Sweden and Poland need sourcing or re-sourcing before C5 can start.~~
 
 Note the OECD's own caution that cross-country comparison of this measure is not meaningful — it considers a country against its own past the valid use. That suits this game: seed each country's level, then let the player watch their own trajectory rather than treating rank as meaningful.
 
@@ -110,7 +111,9 @@ Record in `COMPLETED.md` section 6.
 **One gap, root-caused 2026-08-02:** `icon_stat_interestrate` was never requested, because this step's
 "derive the list from the real stat enum" instruction was satisfied against `EconomyState`'s 29 fields —
 and `InterestRate` is not one of them. It lives on `CurrencyZone`. **Enumerate the display enum
-(`StatNodeId`), not the storage struct.** Now the sole item in `CLAUDE_DESIGN_ASSET_REQUEST.md`.
+(`StatNodeId`), not the storage struct.** ~~Now the sole item in `CLAUDE_DESIGN_ASSET_REQUEST.md`.~~
+*(Delivered and imported the same day the request was sent — the `E1` instance of rule 12; the request
+doc has since become the v2.0 brief and carries §1G as its one open art item.)*
 
 *Spec consolidated out 2026-08-02; git history holds it in full.*
 
@@ -118,9 +121,14 @@ and `InterestRate` is not one of them. It lives on `CurrencyZone`. **Enumerate t
 
 ## Sequencing summary
 
-1. ~~**Step A**~~ — A1–A3 done; A4 built but not surfaced.
-2. ~~**Step B**~~ — B1 and B2 built; both await visual confirmation.
-3. **Step C** — FIVE batches (C5 added 2026-08-01), each independently validated. **C1, C2, C3 and C5 are blocked on figures; C4 is built and blocked on a re-calibration decision** — see `MISSING_PREREQUISITES.md`. This is the only genuinely outstanding step.
+1. ~~**Step A**~~ — DONE in full: A1–A3 2026-08-01, A4 2026-08-02 *(status corrected 2026-08-12)*.
+2. ~~**Step B**~~ — DONE: built and review-confirmed 2026-08-02 *(status corrected 2026-08-12)*.
+3. **Step C** — FIVE batches (C5 added 2026-08-01), each independently validated. *(Reconciled
+   2026-08-12:)* **C1, C2, C3 and C5 are BUILDABLE — every blocking figure was sourced 2026-08-02**
+   (`MISSING_PREREQUISITES.md` §B, three quality debts remain, none blocking); **C4 is built, and its
+   CLOSURE waits on the parked fiscal-divergence pass** (§F1), not on a re-calibration decision.
+   ⚠ Sequencing note: C batches sit BEHIND the v2.0/save-load/CT execution order — buildable is not
+   scheduled. This is the only outstanding step.
 4. ~~**Step D**~~ — delivered, imported and wired.
 
 Standing rules apply throughout: real Unity validation before anything is "done," one commit per unit of work, escalate genuine design forks to Open Questions rather than deciding silently, never mark a phase done without a live check.

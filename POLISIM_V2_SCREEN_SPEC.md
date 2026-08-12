@@ -530,7 +530,14 @@ changed the chart form instead — the right answer, and the one that keeps B9 i
 uniform auto-shrink on the grounds that a column printing at four different sizes reads as an error
 rather than as a fit, which is a real observation the request missed.
 
-### C.1 ⛔ BLOCKING — division records have no backing data at all
+### C.1 ~~⛔ BLOCKING~~ ✅ CLOSED — division records have backing data AND a reader (2026-08-12)
+
+*(RECONCILED 2026-08-12: closed in two halves — `a7bd40d` built `DivisionRecord`/`DivisionLog` on
+2026-08-10 as this blocker's direct resolution, all five fields exactly as board 1c prints them; and
+`6bc5ec1` built the Parliament panel that reads it, stamps included, verified at both sizes on two
+countries. ⚠ The roadmap's 2026-08-12 stamps ruling briefly re-declared this record absent — two days
+after this very item had caused it to be built; that correction is the absence-claim guard's origin
+story, recorded in `CLAUDE.md`. The original blocker text follows.)*
 
 Design's D2 caveat reads: *"division records keep the verdict stamp plus the alignment captured at the
 vote."* Board 1c prints, per row: `No. 214` · title · `29 apr 2026 · alignment −0.12, seat-weighted` ·
