@@ -533,6 +533,33 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// SAVE/LOAD UI (item 8's menu pass): a text field in the paper idiom - plate ground, ink
+        /// text - because Unity's default textField is dark-grey chrome with white type, which on
+        /// the paper modal is foreign furniture AND the inversion class's cousin (light type on a
+        /// mid ground). Clones the skin's textField so caret/selection behaviour is untouched; only
+        /// the ground and the ink change. Focused keeps the same ground - IMGUI needs a focused
+        /// state or the field flashes grey the moment it is clicked.
+        /// </summary>
+        public static GUIStyle BuildTextFieldStyle(int fontSize)
+        {
+            var style = new GUIStyle(GUI.skin.textField)
+            {
+                fontSize = fontSize
+            };
+            Texture2D plate = GetSolidTexture(PoliSimTheme.CardInset);
+            style.normal.background = plate;
+            style.hover.background = plate;
+            style.focused.background = GetSolidTexture(PoliSimTheme.Tile);
+            style.active.background = plate;
+            style.normal.textColor = PoliSimTheme.TextPrimary;
+            style.hover.textColor = PoliSimTheme.TextPrimary;
+            style.focused.textColor = PoliSimTheme.TextPrimary;
+            style.active.textColor = PoliSimTheme.TextPrimary;
+            style.padding = new RectOffset(8, 8, 6, 6);
+            return style;
+        }
+
+        /// <summary>
         /// Master Sequence step 5e, Phase C batch 3: a bar that fills OUTWARD FROM THE CENTRE - right
         /// and green when <paramref name="value"/> is positive, left and red when negative - with the
         /// centre line marking the decision threshold.

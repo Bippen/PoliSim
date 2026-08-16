@@ -573,6 +573,30 @@ namespace PoliSim.UI
         private float _activeTongueIconSize;
         private float _activeTongueIconTop;
         private UiPalette.SystemArea _activeTongueArea;
+
+        // ── SAVE/LOAD UI (item 8's menu pass, 2026-08-16) ──
+        /// <summary>While true, OnGUI draws ONLY the saves screen (the codebase's screen-swap idiom -
+        /// an IMGUI overlay cannot block events to controls drawn earlier, so exclusivity is how a
+        /// modal actually modals here) and Update's day loop holds.</summary>
+        private bool _savesMenuOpen;
+        private string _saveNameInput = "";
+        private List<SaveGameService.SaveHeader> _saveList = new List<SaveGameService.SaveHeader>();
+        /// <summary>Path whose Delete button is in its confirm beat - the confirmation is the SAME
+        /// button re-labelled, never an extra control (stable-control-layout).</summary>
+        private string _confirmDeletePath;
+        /// <summary>Path whose Load button awaits the unsaved-progress confirmation.</summary>
+        private string _confirmLoadPath;
+        /// <summary>Set by the menu's confirmed Load, EXECUTED by Update at its safe point - a load
+        /// swaps the world, and doing that mid-OnGUI is the Layout/Repaint corruption class the
+        /// canvas seam exists to prevent. F5/F9 already run in Update; the menu defers to the same
+        /// safe point.</summary>
+        private string _pendingLoadPath;
+        private string _savesMenuStatus = "";
+        private Vector2 _savesScrollPosition;
+        /// <summary>The calendar stamp at the last save, load or new game - "unsaved progress" =
+        /// CurrentDate has moved past this. Draft-only changes (sliders dragged, nothing advanced)
+        /// deliberately do NOT trip it; stated in the menu record rather than silently true.</summary>
+        private System.DateTime _lastPersistenceDate;
         // v2.0 chrome: the Decisions dossier (§A.11) — `ui_folder_dossier` as a card background with
         // its baked tab shoulder, plus the shoulder's own caption style. Empty background = sprite
         // missing = BeginAreaCard falls back to the ordinary procedural area card.
@@ -662,6 +686,22 @@ namespace PoliSim.UI
                 }
             }
 
+            // The saves MENU's confirmed load, executed at the same safe point the F9 path uses -
+            // OnGUI only ever queues it (see _pendingLoadPath's own doc for why).
+            if (_pendingLoadPath != null)
+            {
+                string path = _pendingLoadPath;
+                _pendingLoadPath = null;
+                LoadFromPath(path);
+            }
+
+            // The saves screen holds time exactly like the interrupt modals below - browsing saves
+            // with days ticking underneath would be the background-mutation class in miniature.
+            if (_savesMenuOpen)
+            {
+                return;
+            }
+
             if (!_selectedPlayerCountryId.HasValue || _isGameOver || _pendingElectionResult != null)
             {
                 return;
@@ -738,32 +778,59 @@ namespace PoliSim.UI
 
         private void DebugSaveGame()
         {
-            try
-            {
-                SaveGame save = SaveGameService.CreateSaveGame(_simulationManager, _world, PlayerCountryId, CaptureUiDrafts());
-                SaveGameService.SaveToFile(SaveGameService.DefaultSlotPath, save);
-                Debug.Log($"SAVE: wrote {SaveGameService.DefaultSlotPath} (turn {_simulationManager.CurrentTurn}, {_simulationManager.CurrentDate:yyyy-MM-dd}).");
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"SAVE: FAILED - {e.Message}");
-            }
+            SaveToPath(SaveGameService.DefaultSlotPath);
         }
 
         private void DebugLoadGame()
         {
+            LoadFromPath(SaveGameService.DefaultSlotPath);
+        }
+
+        /// <summary>Writes the running game to <paramref name="path"/>. Returns whether it landed;
+        /// the outcome line goes to both the console and the saves menu's status label.</summary>
+        private bool SaveToPath(string path)
+        {
             try
             {
-                SaveGame save = SaveGameService.LoadFromFile(SaveGameService.DefaultSlotPath);
+                SaveGame save = SaveGameService.CreateSaveGame(_simulationManager, _world, PlayerCountryId, CaptureUiDrafts());
+                bool overwrote = System.IO.File.Exists(path);
+                SaveGameService.SaveToFile(path, save);
+                _lastPersistenceDate = _simulationManager.CurrentDate;
+                _savesMenuStatus = overwrote
+                    ? $"Saved over {System.IO.Path.GetFileNameWithoutExtension(path)} - the previous file is kept as .bak."
+                    : $"Saved {System.IO.Path.GetFileNameWithoutExtension(path)}.";
+                Debug.Log($"SAVE: wrote {path} (turn {_simulationManager.CurrentTurn}, {_simulationManager.CurrentDate:yyyy-MM-dd}).");
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                _savesMenuStatus = $"Save FAILED - {e.Message}";
+                Debug.LogError($"SAVE: FAILED - {e.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>The one load path - F9 and the menu's confirmed Load both land here, always from
+        /// Update's safe point, never from OnGUI.</summary>
+        private void LoadFromPath(string path)
+        {
+            try
+            {
+                SaveGame save = SaveGameService.LoadFromFile(path);
                 RestoreFromSave(save);
-                Debug.Log($"LOAD: restored {SaveGameService.DefaultSlotPath} (turn {_simulationManager.CurrentTurn}, {_simulationManager.CurrentDate:yyyy-MM-dd}) - PAUSED.");
+                _lastPersistenceDate = _simulationManager.CurrentDate;
+                _savesMenuOpen = false;
+                _savesMenuStatus = "";
+                Debug.Log($"LOAD: restored {path} (turn {_simulationManager.CurrentTurn}, {_simulationManager.CurrentDate:yyyy-MM-dd}) - PAUSED.");
             }
             catch (SaveLoadException e)
             {
+                _savesMenuStatus = $"Load refused - {e.Message}";
                 Debug.LogError($"LOAD: refused - {e.Message}");
             }
             catch (System.Exception e)
             {
+                _savesMenuStatus = $"Load FAILED - {e.Message}";
                 Debug.LogError($"LOAD: FAILED - {e.Message}");
             }
         }
@@ -919,6 +986,138 @@ namespace PoliSim.UI
             {
                 target[pair.Key] = pair.Value;
             }
+        }
+
+        /// <summary>Opens the saves screen: list refreshed once (the menu never polls the disk per
+        /// frame), name field pre-filled with a country-and-turn suggestion, stale confirm beats
+        /// cleared.</summary>
+        private void OpenSavesMenu()
+        {
+            _savesMenuOpen = true;
+            _savesMenuStatus = "";
+            _confirmDeletePath = null;
+            _confirmLoadPath = null;
+            _saveNameInput = $"{_playerCountry.Name}_turn{_simulationManager.CurrentTurn}".Replace(" ", "_");
+            RefreshSaveList();
+        }
+
+        private void RefreshSaveList()
+        {
+            _saveList = SaveGameService.ListSaves(SaveGameService.DefaultSaveDirectory);
+        }
+
+        /// <summary>
+        /// The saves screen (item 8's menu pass): the discoverable path over the batch-proven core -
+        /// list, load-with-confirmation, save-as, delete-with-confirmation. Every row renders its
+        /// Load and Delete buttons every frame; a confirmation beat is the SAME button re-labelled
+        /// (stable-control-layout), and an incompatible save still lists, disabled, with its reason
+        /// in the row - a save that vanished from the menu would read as data loss. The row list
+        /// itself only changes through this menu's own actions; no background system writes the
+        /// saves directory, so the list cannot mutate under a drag.
+        /// </summary>
+        private void DrawSavesMenuScreen()
+        {
+            DrawMenuBackground();
+
+            float width = Mathf.Min(Screen.width * 0.62f, 1100f);
+            float height = Screen.height * 0.8f;
+            var area = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            GUILayout.BeginArea(area);
+            GUILayout.BeginVertical(_boxStyle);
+
+            GUILayout.Label("SAVED GAMES", _headerStyle);
+            // One label either way, per the stable-layout idiom the status line downstairs uses.
+            GUILayout.Label(string.IsNullOrEmpty(_savesMenuStatus) ? " " : _savesMenuStatus, _labelStyle);
+
+            GUILayout.BeginHorizontal();
+            // Paper-idiom field, not Unity's grey default - caught by eye on this screen's first
+            // capture (savusa1600_92), the dark-chrome-on-paper cousin of the inversion class.
+            _saveNameInput = GUILayout.TextField(_saveNameInput, 48,
+                UiPalette.BuildTextFieldStyle(_labelStyle.fontSize), GUILayout.ExpandWidth(true));
+            string sanitized = SaveGameService.SanitizeSaveName(_saveNameInput);
+            bool couldSave = sanitized.Length > 0;
+            GUI.enabled = couldSave;
+            if (GUILayout.Button("Save", _implementButtonStyle, GUILayout.Width(width * 0.18f)) && couldSave)
+            {
+                if (SaveToPath(System.IO.Path.Combine(SaveGameService.DefaultSaveDirectory, sanitized + ".json")))
+                {
+                    RefreshSaveList();
+                }
+            }
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+
+            _savesScrollPosition = GUILayout.BeginScrollView(_savesScrollPosition);
+            bool anySaves = _saveList.Count > 0;
+            if (!anySaves)
+            {
+                GUILayout.Label("No saved games yet. Name one above and Save, or press F5 in play for a quicksave (slot1).", _labelStyle);
+            }
+
+            foreach (SaveGameService.SaveHeader header in _saveList)
+            {
+                GUILayout.BeginHorizontal();
+                string summary = header.Compatible
+                    ? $"{header.Name}   -   {DisplayName.Of(header.PlayerCountryId.ToString())}, Turn {header.Turn}, {header.Date:yyyy-MM-dd}   (saved {header.SavedAtUtc:yyyy-MM-dd HH:mm} UTC)"
+                    : $"{header.Name}   -   incompatible: {header.Error}";
+                GUILayout.Label(summary, _labelStyle, GUILayout.ExpandWidth(true));
+
+                bool confirmingLoad = header.Path == _confirmLoadPath;
+                bool dirty = _simulationManager.CurrentDate != _lastPersistenceDate;
+                GUI.enabled = header.Compatible;
+                if (GUILayout.Button(confirmingLoad ? "Replace unsaved game?" : "Load", _neutralActionButtonStyle, GUILayout.Width(width * 0.2f)))
+                {
+                    if (confirmingLoad || !dirty)
+                    {
+                        _pendingLoadPath = header.Path;
+                        _confirmLoadPath = null;
+                    }
+                    else
+                    {
+                        _confirmLoadPath = header.Path;
+                        _confirmDeletePath = null;
+                    }
+                }
+                GUI.enabled = true;
+
+                bool confirmingDelete = header.Path == _confirmDeletePath;
+                if (GUILayout.Button(confirmingDelete ? "Really delete?" : "Delete", _removeButtonStyle, GUILayout.Width(width * 0.15f)))
+                {
+                    if (confirmingDelete)
+                    {
+                        try
+                        {
+                            SaveGameService.DeleteSave(header.Path);
+                            _savesMenuStatus = $"Deleted {header.Name} (and its .bak backup).";
+                        }
+                        catch (System.Exception e)
+                        {
+                            _savesMenuStatus = $"Delete FAILED - {e.Message}";
+                        }
+
+                        _confirmDeletePath = null;
+                        RefreshSaveList();
+                        GUILayout.EndHorizontal();
+                        break;
+                    }
+
+                    _confirmDeletePath = header.Path;
+                    _confirmLoadPath = null;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndScrollView();
+
+            GUILayout.Label("Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F5 quicksaves to slot1, F9 loads it.", _labelStyle);
+            if (GUILayout.Button("Close", _neutralActionButtonStyle))
+            {
+                _savesMenuOpen = false;
+                _confirmDeletePath = null;
+                _confirmLoadPath = null;
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
         }
 
         // ── CANVAS PILOT (2026-08-12): THE TAKEOVER SEAM ──────────────────────────────────────────
@@ -1189,6 +1388,9 @@ namespace PoliSim.UI
             // never fires a backlog of ceremonies on selection.
             System.Collections.Generic.List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
             _seenDivisionNumber = divisions.Count > 0 ? divisions[divisions.Count - 1].Number : 0;
+
+            // A brand-new game starts clean: "unsaved progress" means days advanced past this stamp.
+            _lastPersistenceDate = _simulationManager.CurrentDate;
         }
 
         /// <summary>
@@ -1438,6 +1640,15 @@ namespace PoliSim.UI
             if (_pendingElectionResult != null)
             {
                 DrawElectionResultsScreen(_pendingElectionResult);
+                return;
+            }
+
+            // The saves screen is exclusive for the same reason the selector and the reveal are: an
+            // IMGUI overlay cannot stop events reaching the controls drawn under it, so a modal here
+            // IS a screen swap. Update holds the clock while it is open (its own gate).
+            if (_savesMenuOpen)
+            {
+                DrawSavesMenuScreen();
                 return;
             }
 
@@ -3401,6 +3612,22 @@ namespace PoliSim.UI
             DrawSpeedButton("1x", GameSpeed.Normal);
             DrawSpeedButton("2x", GameSpeed.Fast);
             DrawSpeedButton("3x", GameSpeed.VeryFast);
+
+            // SAVE/LOAD UI (item 8's menu pass): the discoverable path to the saves screen, in the
+            // one panel visible on every tab. Enabled UNCONDITIONALLY on purpose - the caller wraps
+            // this whole panel in GUI.enabled = !_isGameOver, and a game-over player is exactly the
+            // player who most needs Load; composed (saved and restored), not clobbered, per the
+            // stable-layout discipline's own GUI.enabled rule.
+            bool wasEnabled = GUI.enabled;
+            GUI.enabled = true;
+            // Same base style as the speed buttons beside it, so the row stays one even rank -
+            // the first capture had it on the smaller tab-button metric, floating short of its
+            // neighbours.
+            if (GUILayout.Button("Saves", UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Neutral)))
+            {
+                OpenSavesMenu();
+            }
+            GUI.enabled = wasEnabled;
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();

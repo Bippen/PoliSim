@@ -217,6 +217,7 @@ namespace PoliSim.Testing
             }
 
             yield return CaptureHeldState(controller);
+            yield return CaptureSavesMenu(controller);
 
             if (PinStates)
             {
@@ -234,6 +235,46 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
 
             Finish(_failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// SAVE/LOAD UI (item 8's menu pass): pins the saves screen with real rows on it. Two saves
+        /// are written through the REAL service into the REAL saves directory (names prefixed
+        /// `zz_driver_capture_` so they read as synthetic and sort last), the menu is opened through
+        /// the controller's own OpenSavesMenu, one capture is taken, and the driver's saves are
+        /// deleted again through the same service. A crash mid-coroutine can strand the two files;
+        /// their names are the cleanup instruction. ⚠ This pins the SCREEN, not the round trip -
+        /// layer 3's live checklist stays in the OPEN VERIFICATION GAP block regardless.
+        /// </summary>
+        private IEnumerator CaptureSavesMenu(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo worldField = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo open = controller.GetType().GetMethod("OpenSavesMenu", BindingFlags.Instance | BindingFlags.NonPublic);
+            var sim = simField?.GetValue(controller) as PoliSim.Simulation.SimulationManager;
+            var world = worldField?.GetValue(controller) as World;
+            if (sim == null || world == null || open == null)
+            {
+                Debug.LogError("SHOT: saves-menu reflection failed - the 92 capture is MISSING, not clean.");
+                yield break;
+            }
+
+            string dir = PoliSim.Persistence.SaveGameService.DefaultSaveDirectory;
+            string pathA = System.IO.Path.Combine(dir, "zz_driver_capture_a.json");
+            string pathB = System.IO.Path.Combine(dir, "zz_driver_capture_b.json");
+            PoliSim.Persistence.SaveGameService.SaveToFile(pathA,
+                PoliSim.Persistence.SaveGameService.CreateSaveGame(sim, world, _countryId, controller.CaptureUiDrafts()));
+            PoliSim.Persistence.SaveGameService.SaveToFile(pathB,
+                PoliSim.Persistence.SaveGameService.CreateSaveGame(sim, world, _countryId, controller.CaptureUiDrafts()));
+
+            open.Invoke(controller, null);
+            yield return Settle();
+            yield return Capture("92_saves_menu");
+
+            SetPrivateField(controller, "_savesMenuOpen", false);
+            PoliSim.Persistence.SaveGameService.DeleteSave(pathA);
+            PoliSim.Persistence.SaveGameService.DeleteSave(pathB);
+            yield return Settle();
         }
 
         private IEnumerator Settle()

@@ -247,5 +247,105 @@ namespace PoliSim.Persistence
         public static string DefaultSaveDirectory => Path.Combine(UnityEngine.Application.persistentDataPath, "saves");
 
         public static string DefaultSlotPath => Path.Combine(DefaultSaveDirectory, "slot1.json");
+
+        /// <summary>One save file as the saves MENU sees it - the root header fields read without a
+        /// full deserialize. An unreadable or wrong-version file still LISTS (Compatible=false with
+        /// the reason), because a save that silently vanishes from the menu reads as data loss.</summary>
+        public class SaveHeader
+        {
+            public string Path;
+            public string Name;
+            public bool Compatible;
+            public int Version = -1;
+            public CountryId PlayerCountryId;
+            public int Turn;
+            public DateTime Date;
+            public DateTime SavedAtUtc;
+            public string Error;
+        }
+
+        /// <summary>
+        /// Every *.json in <paramref name="directory"/> as a header row, newest save first. Parses
+        /// the whole file (JObject has no partial mode) but touches only root fields - a handful of
+        /// ~1 MB parses on menu open, never per frame; the menu caches the result and refreshes only
+        /// after its own save/delete actions. `.tmp`/`.bak` siblings are deliberately not listed -
+        /// the .bak story is the menu's footer text, not a second row per save.
+        /// </summary>
+        public static List<SaveHeader> ListSaves(string directory)
+        {
+            var headers = new List<SaveHeader>();
+            if (!Directory.Exists(directory))
+            {
+                return headers;
+            }
+
+            foreach (string path in Directory.GetFiles(directory, "*.json"))
+            {
+                var header = new SaveHeader
+                {
+                    Path = path,
+                    Name = System.IO.Path.GetFileNameWithoutExtension(path)
+                };
+                headers.Add(header);
+                try
+                {
+                    JObject root = JObject.Parse(File.ReadAllText(path));
+                    header.Version = root.Value<int?>("SaveVersion") ?? -1;
+                    if (header.Version != CurrentSaveVersion)
+                    {
+                        header.Error = $"format {header.Version} - this build reads {CurrentSaveVersion}";
+                        continue;
+                    }
+
+                    header.PlayerCountryId = (CountryId)System.Enum.Parse(typeof(CountryId), root.Value<string>("PlayerCountryId") ?? "", true);
+                    header.Turn = root.Value<int?>("CurrentTurn") ?? 0;
+                    header.Date = root.Value<DateTime?>("CurrentDate") ?? default;
+                    header.SavedAtUtc = root.Value<DateTime?>("SavedAtUtc") ?? default;
+                    header.Compatible = true;
+                }
+                catch (Exception e)
+                {
+                    header.Error = e is JsonException ? "not a readable save" : e.Message;
+                }
+            }
+
+            headers.Sort((a, b) => b.SavedAtUtc.CompareTo(a.SavedAtUtc));
+            return headers;
+        }
+
+        /// <summary>Deletes a save and its .bak/.tmp siblings together - stated in the menu's footer,
+        /// so "delete" never leaves a ghost backup the player believes is gone.</summary>
+        public static void DeleteSave(string path)
+        {
+            foreach (string target in new[] { path, path + ".bak", path + ".tmp" })
+            {
+                if (File.Exists(target))
+                {
+                    File.Delete(target);
+                }
+            }
+        }
+
+        /// <summary>A player-typed save name reduced to a safe filename stem - invalid filename
+        /// characters and dots stripped (dots would collide with the .bak/.tmp sibling scheme),
+        /// whitespace collapsed. Empty result = not saveable under this name.</summary>
+        public static string SanitizeSaveName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return "";
+            }
+
+            var builder = new System.Text.StringBuilder(name.Length);
+            foreach (char c in name.Trim())
+            {
+                if (char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == ' ')
+                {
+                    builder.Append(c == ' ' ? '_' : c);
+                }
+            }
+
+            return builder.ToString();
+        }
     }
 }
