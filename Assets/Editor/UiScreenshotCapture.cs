@@ -130,7 +130,7 @@ namespace PoliSim.EditorTools
             string label = Arg("-shotlabel=", "run");
             var go = new GameObject("UiScreenshotDriver");
             UiScreenshotDriver driver = go.AddComponent<UiScreenshotDriver>();
-            driver.OutputDirectory = Arg("-shotdir=", "screenshots");
+            driver.OutputDirectory = Arg("-shotdir=", UiScreenshotDriver.DefaultOutputDirectory);
             driver.Label = label;
             // Country coverage (2026-08-12, Elias's ruling: coverage before features). Same idiom as
             // -shotwidth=: a capture-config argument, defaulting to the only country ever captured

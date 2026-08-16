@@ -29,7 +29,18 @@ namespace PoliSim.Testing
     /// </summary>
     public class UiScreenshotDriver : MonoBehaviour
     {
-        public string OutputDirectory = "screenshots";
+        /// <summary>
+        /// Where captures land when `-shotdir=` is not given: a SIBLING of the project, outside the
+        /// repository tree. Until 2026-08-16 this was in-repo `screenshots/`, and five days of capture
+        /// passes put 2,003 PNGs (~874 MiB of blobs) into git history — see CLAUDE.md "The repository
+        /// weight finding". Relative to the project root because Unity's CWD is the project root for
+        /// both the Editor run and `-executeMethod` batch runs. ⚠ ONE default, THREE readers — this
+        /// constant, `UiScreenshotCapture`'s `-shotdir=` fallback, and `ScreenEdgeCheck`'s folder —
+        /// so a future move edits one line, not three.
+        /// </summary>
+        public const string DefaultOutputDirectory = "../PoliSim-captures";
+
+        public string OutputDirectory = DefaultOutputDirectory;
         public string Label = "run";
         /// <summary>Which country to play as, set from `-shotcountry=` (default USA — the only country any set contained before 2026-08-12). Parsed against CountryId in Start and FAILS the run on a bad name: a typo must not silently capture the default country under the requested country's label.</summary>
         public string Country = "USA";

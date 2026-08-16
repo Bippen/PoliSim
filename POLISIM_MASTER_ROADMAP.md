@@ -101,6 +101,22 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
     in every simulated figure (AA+ vs AAA between consecutive runs) — the comparison is structural and
     by eye, never pixel-wise, until someone decides seeding the warm-up is worth it.
 
+    **RETENTION (added 2026-08-16, the repository-weight pass).** "Keep old sets to compare against"
+    is why captures reached 5,316 PNGs / 5.1 GiB in five days, 2,003 of them committed (~874 MiB of
+    git blobs — see CLAUDE.md "The repository weight finding"). The comparison this rule actually
+    needs is **one good baseline per axis, plus the run under judgment**:
+    - **Keep**: the current baseline set per axis — the main sweep per size, the per-country coverage
+      sets, the state-pin sets — and the most recent run per size. A superseded baseline is kept only
+      until its successor is confirmed, then it becomes prunable.
+    - **Prunable**: every older iteration set, the moment its finding is recorded in `CLAUDE.md`. The
+      set is EVIDENCE while the finding is open and a cache once it is written down — rule 12's shape
+      applied to pixels.
+    - **Mechanics**: captures live OUTSIDE the tree at `../PoliSim-captures/` (driver, capture entry
+      point and `ScreenEdgeCheck` all read one shared default, `-shotdir=` still overrides;
+      `/screenshots/` is gitignored defensively). Nothing under the capture dir is ever committed.
+    - Applying this policy today keeps roughly 1,900 files (~1.9 GiB) and marks ~3.2 GiB prunable —
+      proposed, not yet executed; prune at convenience.
+
 ---
 
 ## Where things stand right now

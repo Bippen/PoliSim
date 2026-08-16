@@ -48,18 +48,20 @@ namespace PoliSim.EditorTools
         /// <summary>Sub-pixel seams and antialiasing leave a handful of stray pixels on any edge; a real clipped panel leaves hundreds. Same "a guard that cries wolf gets switched off" reasoning as the two C# guards. ⚠ Also asserted rather than measured.</summary>
         private const int FlushMinPixels = 20;
 
-        private const string ShotFolder = "screenshots";
-
         public static void Run()
         {
             string pattern = Arg("-edgepattern=", "clipfix2_*.png");
-            string[] paths = Directory.Exists(ShotFolder)
-                ? Directory.GetFiles(ShotFolder, pattern).OrderBy(p => p).ToArray()
+            // Same `-shotdir=` argument and same out-of-tree default as the capture side, so the
+            // check reads where the driver writes without a second path to drift (2026-08-16, the
+            // repository-weight pass — captures no longer live inside the repo).
+            string shotFolder = Arg("-shotdir=", PoliSim.Testing.UiScreenshotDriver.DefaultOutputDirectory);
+            string[] paths = Directory.Exists(shotFolder)
+                ? Directory.GetFiles(shotFolder, pattern).OrderBy(p => p).ToArray()
                 : Array.Empty<string>();
 
             if (paths.Length == 0)
             {
-                Debug.LogError($"EDGE: no captures matched '{pattern}' in {ShotFolder}/ - " +
+                Debug.LogError($"EDGE: no captures matched '{pattern}' in {shotFolder}/ - " +
                                "this verified NOTHING rather than finding nothing.");
                 CheckExit.Finish(2);
                 return;

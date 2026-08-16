@@ -13,6 +13,11 @@
 # MemoryCaptures can get excessive in size. They also could contain extremely sensitive project information
 /[Mm]emoryCaptures/
 
+# UI capture output (2026-08-16): captures live OUTSIDE the tree at ../PoliSim-captures/ —
+# 2,003 tracked PNGs put ~874 MiB into history in five days before this was stopped. This entry is
+# defensive, catching any stray in-tree write if a tool is ever pointed back here by mistake.
+/[Ss]creenshots/
+
 # Recordings can get excessive in size
 /[Rr]ecordings/
 
