@@ -8436,3 +8436,30 @@ speed row's five-button rank and the new screen are the deliberate changes; noth
 serialization or capture/restore surface (`ListSaves`/`DeleteSave`/`SanitizeSaveName` are additive
 reads beside it). ⚠ The OPEN VERIFICATION GAP block stands untouched: this pass pins the SCREEN;
 the live click-through of load/save and the layer-3 round trip still wait on Editor access.
+
+## Aggregation-equivalence re-proven on the 365-day turn (2026-08-16)
+
+A directed CT-Phase-1 pass arrived built on a stale premise — Phase 1 (and 2, and 3) shipped
+2026-08-02/03 (`321a10e`/`275e014`, Phase 3 in two parts) and their daily systems are live in
+`AdvanceDay`, re-verified at the call sites before reporting. The pass was stopped at its premise
+per rule 4 rather than run; what it DID surface as genuinely open was this: **every
+aggregation-equivalence figure on record predates discontinuity 3** — the phases were validated
+against a 121-day turn, and the check was never explicitly re-run after `DaysPerTurn` became 365
+(the constants derive themselves from `DaysPerTurn`, so they retuned; the derivation had simply
+never been re-MEASURED).
+
+**Re-run fresh on HEAD (post-365, post-save/load, post-rewrite): 39 of 39 within the 3% bar,
+selftest OK, exit 0.** What the check enumerates (rule 14): Phases 1–3 only — per-sector
+Output/Employment/Metric, infrastructure ConditionIndex, the labor/crime set (LFPR,
+OrganizedCrime, Corruption, CrimeIndex, PrisonPopulation, the confidence drift), and per-country
+GovernmentDebt/BudgetBalance/SwfTotalAssets. It says nothing about Phases 4–5, which do not exist
+yet. Largest observed drift: Germany BudgetBalance 1.36% — the Phase 3 within-period feedback
+residual the check's own doc names as EXPECTED, comfortably inside the bar.
+
+**Two seam questions from the directed pass, answered from the record rather than re-derived**:
+sector output reaching the display live is a RECORDED DECISION, not a leak (`PublishedStat`'s own
+doc: only stats with a sourced release rule publish; everything else reads live until a schedule
+is sourced); and the multi-resolution buckets have been POPULATED in every validation since the
+calendar fix (`e15cb49`), but their CONTENT divergence (Daily genuinely differing from Quarterly
+once daily systems vary intra-turn) has never been asserted by any check — a one-line residual
+that belongs in whatever tooling the Phase 4 pass builds.
