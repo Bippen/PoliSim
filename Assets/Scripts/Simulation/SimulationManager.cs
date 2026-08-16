@@ -309,11 +309,44 @@ namespace PoliSim.Simulation
         /// bimodal 0%/~294% outcome; 1.0+ genuinely stabilizes all six countries at distinct,
         /// country-appropriate levels, confirmed flat from turn 500 through turn 2000).
         /// </summary>
-        private const float FiscalReactionSensitivity = 1.5f;
+        // ⚠ FRF SWEEP (2026-08-16): `static` fields rather than `const`, because the ruled real-Unity
+        // sweep of this PAIR (the harness-fitted values the record itself says to re-derive) needs to
+        // vary them per run and a const is folded at compile time. The DEFAULTS are the standing
+        // values, bit-identical in normal play; ONLY FrfSweepDiagnostic may write them, through
+        // SetFiscalReactionPairForSweep below, and always restores the defaults. The doc comments
+        // above and below carry the original calibration story unchanged - including that it was
+        // fitted in the harness whose four-significant-figure stability claim real Unity refuted.
+        internal const float DefaultFiscalReactionSensitivity = 1.5f;
+        internal const float DefaultMinFiscalReactionMultiplier = 0.5f;
+        internal const float DefaultMaxFiscalReactionMultiplier = 1.5f;
+        private static float FiscalReactionSensitivity = DefaultFiscalReactionSensitivity;
+        private static float MinFiscalReactionMultiplier = DefaultMinFiscalReactionMultiplier;
+        private static float MaxFiscalReactionMultiplier = DefaultMaxFiscalReactionMultiplier;
 
-        /// <summary>Bounds on GetFiscalReactionMultiplier's output - a 2x range (0.5x-1.5x effective revenue) is what the calibration above needed to actually overcome the debt-risk-premium's own reinforcing loop at realistic debt-to-GDP extremes, not a "modest" single-digit-percent cap that empirically failed to do so.</summary>
-        private const float MinFiscalReactionMultiplier = 0.5f;
-        private const float MaxFiscalReactionMultiplier = 1.5f;
+        /// <summary>SWEEP-ONLY hook - see the field block above. PUBLIC because the sweep lives in
+        /// the Editor assembly (the ApplyPeriodFiscalStepForValidation precedent); nothing in play
+        /// code calls it. The revenue-capacity wall is enforced HERE, not left to the caller's
+        /// discipline: an upper bound meaningfully above 1.5 asserts something false about fiscal
+        /// capacity (the standing ruling), so this throws rather than accepts one.</summary>
+        public static void SetFiscalReactionPairForSweep(float sensitivity, float minMultiplier, float maxMultiplier)
+        {
+            if (maxMultiplier > 1.5001f)
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(maxMultiplier),
+                    "The revenue-capacity wall: no upper bound meaningfully above 1.5 (ruled).");
+            }
+
+            FiscalReactionSensitivity = sensitivity;
+            MinFiscalReactionMultiplier = minMultiplier;
+            MaxFiscalReactionMultiplier = maxMultiplier;
+        }
+
+        public static void ResetFiscalReactionPair()
+        {
+            FiscalReactionSensitivity = DefaultFiscalReactionSensitivity;
+            MinFiscalReactionMultiplier = DefaultMinFiscalReactionMultiplier;
+            MaxFiscalReactionMultiplier = DefaultMaxFiscalReactionMultiplier;
+        }
 
         /// <summary>
         /// The missing negative feedback in the debt-to-GDP system: a country's own government
