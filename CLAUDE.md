@@ -8463,3 +8463,103 @@ is sourced); and the multi-resolution buckets have been POPULATED in every valid
 calendar fix (`e15cb49`), but their CONTENT divergence (Daily genuinely differing from Quarterly
 once daily systems vary intra-turn) has never been asserted by any check — a one-line residual
 that belongs in whatever tooling the Phase 4 pass builds.
+
+## Continuous Time Phase 4 — Demographics daily (2026-08-16, `37c9003`)
+
+Run in the directive's order, each gate before the next; the full arithmetic is in the commit and
+the checks — this entry carries what the next phase needs.
+
+### Step 0 — the untainted baseline, dual-purpose as recorded
+
+`TrajectoryBaselineDump` (new, `Assets/Editor/`): every public `EconomyState` field by reflection
+(28 today — a field added later joins the dump unedited) plus `Country.PotentialGrowthRate` and
+the zone rate, per country per turn, seeds 777/424242 × 100/500/1000 turns, written OUT OF TREE
+(`../PoliSim-captures/trajectories/`, ~20 MB — the repository-weight lesson applied before the
+first file existed). Label `pre4_18fe08d`. **This baseline is simultaneously the Phases 1–3
+full-matrix re-baseline at the current era** (post-365-day turn, post-rewrite, post-save/load) —
+the thing the 2026-08-16 39/39 equivalence run had only partially discharged.
+
+### Step 1 — the throwaway diagnostic earned its gate
+
+`Phase4YearsPerTurnDiagnostic`, run BEFORE any conversion existed: **9/9.** The project's two
+turn-length statements agree exactly (`ElectionCycle`=4 → `YearsPerTurn`=1.0 ==
+`DaysPerTurn`/365); the MEASURED population step applies exactly one year of an annual per-1000
+rate per turn at both signs (reversion pinned to a no-op so the factor is isolated); the drift
+constants measure to spec. Its one first-run FAIL was the probe's own tolerance —
+`Mathf.Approximately` at 1e-8 against a subtraction of two ~10.6 floats whose representation
+noise is ~2e-7 — fixed as a PROBE defect with the reasoning at the site. A gate that fails
+self-honestly before blessing anything is the discipline working, and is why the gate exists.
+
+### Step 2 — the classification, published before the arithmetic
+
+Seventeen constants, five dispositions, the stance-vs-flow question asked of each:
+
+| shape | constants | transform |
+|---|---|---|
+| Accumulating flows (no target) | `BirthRateSecularDeclineRate`, `DependencyRatioDriftSensitivity`, `DeathRateAgingDriftSensitivity`, `MigrationAgingDriftSensitivity` | LINEAR ÷ `DaysPerTurn` (the `ApplyCrimeEffects` precedent) |
+| Reverting quantity | `PopulationGrowthReversionSpeed` | `PerDayReversion` (Phase 2's shared helper) |
+| Annual rate applied to a stock | the `YearsPerTurn` population factor | **NEW SHAPE — the POWER SLICE**: `(1 + r/1000·Y)^(1/DaysPerTurn)`, algebraically exact at constant rate; a `sliceFraction==1` branch keeps the turn form bit-identical for PreviewTurn |
+| Level→offset sensitivities | `FamilyPolicyBirthRateSensitivity`, `ImmigrationPolicyNetMigrationSensitivity` | **NONE** — recomputed fresh each application; scaling would change what a slider position MEANS |
+| Target-shapers | `PopulationGrowthRateSensitivity`, `MaxPopulationGrowthRateDeviation` | **NONE** — they shape the reversion TARGET; no time dimension (the deviation cap is the table's own named ceiling trap) |
+| Clamps | the eight Min/Max bounds | **NONE** — approach speed changes, bounds do not |
+
+Nothing ambiguous — no shape went to rulings. Calls moved to `AdvanceDay` ahead of the Phase 2
+block (LFPR now reads daily-moving `DependencyRatio`/`NetMigrationRate` gaps, which is the point);
+the `ResolveSpendingForTurn` ordering contract holds by construction (the boundary day's
+`AdvanceDay` completes first); one stated 1/365 timing shift — a boundary-committed
+Family/Immigration policy change reaches the rates from the next day (Phase 3's
+cash-lands-next-period precedent in miniature). `YearsPerTurn`'s doc comment stopped narrating
+the 121-day era as current.
+
+### The finding — the buckets had never been fed
+
+`History.Append` sat in `AdvanceTurn` from Phase 0 until this pass: the multi-resolution buckets
+BUILT for daily data never received a daily offer, so Daily/Weekly/Monthly/Quarterly held
+identical one-point-per-turn series straight through Phases 1–3's genuinely daily variation —
+plumbing unexercised because nothing asserted its output, the rule-14 class exactly. Moved to
+`AdvanceDay` (each resolution's own gate accepts at its cadence, the class doc's stated intent);
+the preview-clone phantom-point protection STRENGTHENS (AdvanceDay never runs on clones). On a
+boundary day the point records before the macro core applies — a one-day presentation shift on
+turn-stepped stats, stated at the site.
+
+### Step 3 — equivalence, buckets, matrix
+
+- **Equivalence: 61 of 61 on the FIRST conversion** (39 existing + 16 demographic + 6 bucket
+  asserts). Demographic max drift **0.0042%** (Sweden Population — the expected
+  reversion-path residual) against the 3% bar. Enumeration extended: Sweden (growing) and Germany
+  (shrinking), both with policy dials off-neutral so the non-conversions are exercised.
+- **The bucket assert** (enumeration in its comment, per rule 14): a real 200-day sim, then for
+  PovertyRate and DebtToGdpRatio three families — cadence (D=200/W=29/M=7/Q=3, within one),
+  daily-variation (distinct consecutive dailies), resolution-divergence (Daily tail ≠ Quarterly
+  last). It owns bucket PLUMBING, not value correctness (the matrix owns values) and says nothing
+  about turn-stepped stats.
+- **The matrix** (full trajectory diffs vs `pre4_18fe08d`, ~1.08M comparisons): demographic fields
+  move by the intended smoothing (rates ≤0.58%, Population ≤0.85% at 1000 turns, accumulating
+  smoothly — no compounding); **LFPR ≤0.0033% end-of-run, `Country.PotentialGrowthRate`
+  byte-identical everywhere** (the per-country tables are in the run log; note the directive's
+  premise correction: potential growth's writers are infrastructure+sectors, so demographics
+  reaching it unchanged is the expected result, not a surprise); GDP below every section's
+  top-14; Unemployment 0.257% momentary / 0.001% end; 6 of 30 fields byte-identical across whole
+  trajectories. **Every large relative spike was traced to raw values and is a metric artifact**:
+  France's growth rate crossing zero at t103 (abs dev 0.0006 per-1000), Italy's approval hitting
+  its 0 floor one turn apart (abs dev 0.002 points), Poland's approval collapse near zero (abs
+  0.012 points). Reported, not tuned away. The 1000-turn runs: nothing newly divergent at depth.
+
+### The methodology verdict, for Phase 5
+
+1. **The taxonomy is now sufficient for first-try conversion** — Phase 4 passed equivalence
+   without iteration. Phase 5's risk is NOT shape classification; it is the feedback WEB (Phase
+   3's within-period-feedback lesson, which will be everywhere in the GDP identity).
+2. **Two shapes joined the table** (recorded there): the annual-rate POWER SLICE — and Phase 5
+   should note `ApplyPotentialGdpGrowth` (`PotentialGDP × (1 + rate/100)` per turn) is exactly
+   this shape; and TARGET-SHAPERS take no transform — the Taylor rule's
+   `InflationGapWeight`/`OutputGapWeight` are the same class.
+3. **The throwaway-diagnostic gate re-earned its place** and Phase 5 should open with one: pin
+   the no-feedback paths (PotentialGDP growth at fixed rate; expectations adaptation at pinned
+   inflation) before the web is touched.
+4. **The diff tooling needs an absolute-deviation column before Phase 5** — the GDP identity is
+   full of signed, zero-crossing quantities (TradeBalance, output gap, budget balance), and this
+   matrix produced three relative-metric artifacts that each cost an investigation. Cheap fix,
+   real cost avoided.
+5. **Phase 5 starts fresh, never at the end of a long session** — the notes' own instruction,
+   restated here so it survives this pass's momentum. It did: this pass stops at the boundary.

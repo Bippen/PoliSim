@@ -868,20 +868,39 @@ If a step's own validation fails, fix it before moving to the next — never pro
 > change. **Phases 4–5, when picked up, calibrate against 365**, and Phase 4's `YearsPerTurn` note is
 > doubly live: that constant is now exactly 1.
 
-Migrating from turn-based (1 turn ≈ 121 days / 4 months) to true daily-granularity continuous time with Pause/1x/2x/3x speed controls. Nearly every tuned constant in the game is implicitly calibrated against a ~121-day step. This is the largest single risk in the project's history — do not attempt it as one pass.
+Migrating from turn-based to true daily-granularity continuous time with Pause/1x/2x/3x speed
+controls. Nearly every tuned constant in the game is implicitly calibrated against a full-turn step.
+This is the largest single risk in the project's history — do not attempt it as one pass.
+*(⚠ CORRECTED 2026-08-16: this section was written when a turn was 121 days and still said so;
+since `d8f55ce` a turn is `SimulationManager.DaysPerTurn` = **365** days, and every conversion since
+Phase 1 derives from that constant rather than typing a number — the correction below follows the
+same rule.)*
 
 ## The translation methodology — do not guess new constants
 
-Identify which mathematical shape a constant is before touching it:
+Identify which mathematical shape a constant is before touching it (denominators are
+`DaysPerTurn`, never a typed number — 365 today, and a future turn-length change must land in one
+constant, which is the discipline that made 121→365 a one-line edit):
 
-1. **Linear/additive rates**: `rate_per_day ≈ rate_per_turn / 121`
-2. **Multiplicative/compounding rates**: `rate_per_day = (1 + rate_per_turn)^(1/121) − 1`
-3. **Probabilities**: `p_per_day = 1 − (1 − p_per_turn)^(1/121)`
-4. **Hard clamps/ceilings do NOT shrink by 121x** — a ceiling bounds the state itself, not a per-step increment. Only the *speed of approach* changes (via #1 or #2 above). Treating a ceiling as something to also divide by 121 is a likely first-attempt bug.
+1. **Linear/additive rates**: `rate_per_day = rate_per_turn / DaysPerTurn`
+2. **Multiplicative/compounding rates**: `rate_per_day = (1 + rate_per_turn)^(1/DaysPerTurn) − 1`
+   (`MacroSystem.PerDayReversion` is the standing implementation for reverting quantities)
+3. **Probabilities**: `p_per_day = 1 − (1 − p_per_turn)^(1/DaysPerTurn)`
+4. **Hard clamps/ceilings do NOT shrink** — a ceiling bounds the state itself, not a per-step
+   increment. Only the *speed of approach* changes (via #1 or #2 above). Treating a ceiling as
+   something to also divide by the day count is a likely first-attempt bug.
+5. *(Added by Phases 1–4 in practice:)* **Sensitivities and target-shapers take NO transform** — a
+   constant that maps a LEVEL to an offset, or shapes a reversion TARGET, has no time dimension;
+   scaling it changes what a policy position *means*. **Annual-rates-applied-to-stocks take the
+   POWER slice** (`(1+x)^(1/DaysPerTurn)`, exact at constant rate — Phase 4's population factor).
+   And per Phase 3: **a constant that is a POLICY STANCE stays frozen for its period.** Ask the
+   stance-vs-flow question of every constant before assigning any shape.
 
 ## The validation bar: aggregation-equivalence
 
-Before any system's daily version is trusted: simulate 121 consecutive days and confirm the result is within ±3-5% of what the existing, already-validated single turn-level step produces for the same inputs. This is the ground truth every phase below must pass before moving to the next.
+Before any system's daily version is trusted: simulate `DaysPerTurn` consecutive days and confirm
+the result is within ±3-5% of what the existing, already-validated single turn-level step produces
+for the same inputs. This is the ground truth every phase below must pass before moving to the next.
 
 ## Real-world data release cadence (cross-cutting, applies to every phase)
 
@@ -898,11 +917,12 @@ Optional refinement (Open Question, not required for a first pass): real reporti
 
 ## Phases 1-5 — daily-granularity conversion (MASTER SEQUENCE STEP 7, safest-first)
 
-> ⏸ **PHASES 4 AND 5 ARE DEFERRED BEHIND v2.0 (Elias, 2026-08-03) — deferred, NOT cancelled.** Phases 1–3
-> are done and their daily systems are live. Until 4 and 5 land, demographics and the core macro engine
-> stay turn-shaped and the game runs a **hybrid simulation**: a daily calendar with daily fiscal and
-> social systems over a 121-day macro core. See the execution-order block at the top of this file for the
-> full consequence. **Everything below stays live and unmodified — these notes are waiting, not stale.**
+> ⏸ ~~PHASES 4 AND 5 ARE DEFERRED BEHIND v2.0~~ **The deferral DISCHARGED in order (2026-08-16):
+> v2.0's ungated work and item 8 both shipped, and Phase 4 ran as the next ruled step.** Phases 1–4
+> are done and their daily systems are live. Until Phase 5 lands, the core macro engine alone stays
+> turn-shaped and the game runs a **hybrid simulation**: a daily calendar with daily fiscal, social
+> and demographic systems over a 365-day macro core. **Phase 5's notes below stay live — waiting,
+> not stale — and its own instruction stands: it starts FRESH, never at the end of a long session.**
 
 - **Phase 1: Sectors and Infrastructure. ✅ DONE 2026-08-02 (`321a10e`).** Aggregation-equivalence 28/28,
   max drift 0.0004% against a 3% bar; full matrix anomaly counts identical to the pre-phase baseline.
@@ -956,7 +976,19 @@ Optional refinement (Open Question, not required for a first pass): real reporti
   walks down its own surplus during the period it is supposed to be governing. Freezing it per period
   passes at 0.45%/1.35% **and is the better model**, because the mechanism is a fiscal *stance* and a
   stance is adopted when the budget is set. Full write-up in `CLAUDE.md`.
-- **Phase 4**: Demographics (its YearsPerTurn scaling is a direct dependency on turn-length — cannot start until the new day-length constant is threaded through correctly; use the same throwaway-diagnostic-before-full-matrix discipline that caught its two prior structural bugs).
+- **Phase 4: Demographics. ✅ DONE 2026-08-16 (`37c9003`).** The throwaway diagnostic ran FIRST and
+  earned its gate (9/9 — the two turn-length statements agree exactly at 1.0; the measured population
+  step applies exactly one year per turn; its one first-run FAIL was the probe's own float tolerance,
+  a probe defect). Aggregation-equivalence **61/61 on the first conversion** (demographics max drift
+  0.0042%); full trajectory matrix vs the untainted `pre4_18fe08d` baseline (2 seeds × 100/500/1000
+  turns, all six countries, every EconomyState field): LFPR ≤0.0033%, `PotentialGrowthRate`
+  byte-identical, GDP below every top-14, no macro leak — every large relative spike traced to its
+  raw values and confirmed a zero-crossing/clamp-boundary metric artifact. **Two additions to the
+  shape taxonomy** (now in the translation table above): the annual-rate POWER SLICE, and
+  target-shapers/sensitivities taking no transform. **One finding**: `History.Append` had sat on the
+  turn boundary since Phase 0 — the multi-resolution buckets had never received a daily offer; moved
+  to `AdvanceDay`, with the bucket-divergence assert now standing in `AggregationEquivalenceCheck`.
+  Full record in `CLAUDE.md` "Continuous Time Phase 4".
 - **Phase 5**: The core macro engine — GDP identity, Okun's Law, Phillips Curve, interest rate transmission, Fiscal Reaction Function, debt dynamics. Highest risk, last on purpose — this system has the worst track record for hidden instability in the project. Do not start until every other phase has proven the methodology reliable.
 
 Each phase: apply the correct transform per constant, aggregation-equivalence check FIRST, full scenario matrix SECOND, one commit per phase, escalate ambiguous constant shapes to Open Questions rather than guessing.
