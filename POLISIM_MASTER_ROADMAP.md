@@ -205,8 +205,11 @@ successor chain it named ends in the PARKED unbounded-divergence pass; see Open 
 | **3rd** | **7 — Continuous Time Phases 4–5** | Phases 1–3 are DONE. **Deferred indefinitely behind v2.0 — see the consequence below** |
 | **4th** | **6 — Round 4** | Round 4 would add systems Phases 4–5 must then convert — **doing the work twice** |
 
-⚠ **THE CONSEQUENCE, STATED PLAINLY: the game stays on turn-stepped macro for the whole of v2.0, and
-that is not a temporary state with a known end date.** *(⚠ CORRECTED 2026-08-12: this block was written
+⚠ ~~THE CONSEQUENCE, STATED PLAINLY: the game stays on turn-stepped macro for the whole of v2.0, and
+that is not a temporary state with a known end date.~~ ✅ **DISCHARGED 2026-08-16 — the sequence ran
+to completion in its ruled order (v2.0 → item 8 → Phases 4–5) and item 7 is CLOSED; the hybrid
+description below is HISTORY.** *(Original block kept as the record of what shipped between
+2026-08-03 and 2026-08-16:)* *(⚠ CORRECTED 2026-08-12: this block was written
 when a turn was 121 days; since `d8f55ce` on 2026-08-10 — discontinuity 3 — **a turn is 365 days, one
 year**. The hybrid description below survives with the number changed; every "121" in it reads "365".)*
 Continuous Time Phases 4 and 5 are **deferred, not cancelled**. Until they land:
@@ -589,7 +592,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | 3 | ✅ **Folder-tongue faces — DONE 2026-08-16** (`9497673`): `BuildFolderTabStyle` + the deferred active-tongue paint (§A.7's joined look — the sheet would otherwise close the tongue with its keyline); tongue-edge constants MEASURED from the PNGs' alpha, not the manifest's stated 12px; ink-on-paper labels both ways (the cream selected label would be the inversion class on paper). Verified 78 captures × both sizes, all guards 0, rule-15 diff against `winusa1600`/`grdusa2560`. ⚠ Hover face and the real click on the deferred-painted tab are not harness-drivable — awaiting Elias's live look | none — ruled B |
    | 4 | ✅ **WIN-form election reveal pin — DONE 2026-08-12** (`5eb5dc7`): both reveal forms + game over pinned in one chain; election search extracted to one helper. The FP-meeting search variant queued with it was found ALREADY BUILT (C2's continuation loop, capture 84b) — stated, not re-built |
    | — | *Item 8 save/load* — ✅ **CORE BUILT AND GATE-GREEN 2026-08-16**: all three layers implemented on the mechanism report, `SaveLoadRoundTripDiagnostic` 12/12 scenarios clean (six countries × two seeds, continuation-identical, saves string-equal). Remaining: the load/save UI (its own pass), and the UI-draft/F5-F9 live checklist in the OPEN VERIFICATION GAP block | UI pass startable; live checklist waits on Editor access |
-   | — | *The fiscal-divergence pass* | PARKED by ruling — Elias schedules it |
+   | — | *The fiscal-divergence pass (the FRF sweep)* — ✅ **SEQUENCED BY RULING 2026-08-16: runs AFTER Phase 5, in the daily regime it will live in** (sweeping in the turn regime then converting is calibration done twice — the don't-build-twice logic). Phase 5 is now DONE and converted the FRF's *shape* only (values untouched, as ruled). **The sweep's subject**: `FiscalReactionSensitivity` (1.5) + the `[0.5, 1.5]` clamp pair, swept AS THE PAIR they were fitted as, judged per the standing scoping (mechanism present and correctly signed at turns 100–200, never turn-1000 convergence). **What Phase 5's runs already reveal for its starting conditions**: the daily regime reproduces the turn regime's divergence signature within ~1 point, so the sweep starts from the same measured baseline (USA 155.9 / Germany 80.1 / Italy 165.9 / Poland 46.0 at t1000, `post5` trajectory files on disk); interest accrues daily against the live debt stock, so the asymmetry the diagnosis named (risk premium unbounded-ish vs stance capped at 1.5) now compounds daily and the sweep's granularity argument is stronger, not weaker | startable — Elias schedules it |
    | — | *CT Phases 4–5, then Round 4* | 3rd/4th in the execution order; Phases 4–5 now calibrate against 365-day turns |
    | — | *Step C batches C1/C2/C3/C5* | buildable since 2026-08-02; ✅ **RULED 2026-08-12 (R1): folds into Round 4's slot** — both add new systems, same don't-build-twice logic |
    | — | *Item 10 — elections* | priced after Sweden votes **13 Sept 2026** |
@@ -917,12 +920,13 @@ Optional refinement (Open Question, not required for a first pass): real reporti
 
 ## Phases 1-5 — daily-granularity conversion (MASTER SEQUENCE STEP 7, safest-first)
 
-> ⏸ ~~PHASES 4 AND 5 ARE DEFERRED BEHIND v2.0~~ **The deferral DISCHARGED in order (2026-08-16):
-> v2.0's ungated work and item 8 both shipped, and Phase 4 ran as the next ruled step.** Phases 1–4
-> are done and their daily systems are live. Until Phase 5 lands, the core macro engine alone stays
-> turn-shaped and the game runs a **hybrid simulation**: a daily calendar with daily fiscal, social
-> and demographic systems over a 365-day macro core. **Phase 5's notes below stay live — waiting,
-> not stale — and its own instruction stands: it starts FRESH, never at the end of a long session.**
+> ✅ **ALL FIVE PHASES ARE DONE — MASTER SEQUENCE ITEM 7 CLOSED 2026-08-16** (`22e2b49`, Phase 5's
+> own record below). **The hybrid simulation is over**: the daily calendar now carries daily
+> sectors, infrastructure, labor, crime, fiscal flows, demographics AND the core macro engine —
+> every economic quantity moves on the day its history point records. The turn boundary remains
+> what a boundary is for: resolutions, plans, stances, elections and events. The per-day constants
+> all derive from `DaysPerTurn`; the four-fixed-reference anchor set (plan G, FRF stance, Okun's
+> references, the identity's attractor) is the period's frozen plan, re-adopted at each boundary.
 
 - **Phase 1: Sectors and Infrastructure. ✅ DONE 2026-08-02 (`321a10e`).** Aggregation-equivalence 28/28,
   max drift 0.0004% against a 3% bar; full matrix anomaly counts identical to the pre-phase baseline.
@@ -989,7 +993,22 @@ Optional refinement (Open Question, not required for a first pass): real reporti
   turn boundary since Phase 0 — the multi-resolution buckets had never received a daily offer; moved
   to `AdvanceDay`, with the bucket-divergence assert now standing in `AggregationEquivalenceCheck`.
   Full record in `CLAUDE.md` "Continuous Time Phase 4".
-- **Phase 5**: The core macro engine — GDP identity, Okun's Law, Phillips Curve, interest rate transmission, Fiscal Reaction Function, debt dynamics. Highest risk, last on purpose — this system has the worst track record for hidden instability in the project. Do not start until every other phase has proven the methodology reliable.
+- **Phase 5: The core macro engine. ✅ DONE 2026-08-16 (`22e2b49`) — and with it ITEM 7 CLOSES.**
+  The no-feedback diagnostic gated first (4/4: PotentialGDP independence, published-corruption
+  immunity asserted dynamically, the interest chain's indirection pinned both directions). The
+  conversion's story is the phase: **four first-try shapes failed the bar, every failure measured
+  and kept**, and all four resolved into ONE pattern — Phase 3's **fixed period reference** (Okun's
+  reversion against period-open unemployment; the growth increment against period-open GDP; the
+  identity's attractor at period-open PotentialGDP via the new AFFINE POWER SLICE; and inflation
+  expectations staying AT the boundary outright, because "adapt to the closing print" is a boundary
+  semantics with no faithful daily form). No constant VALUE changed — the FRF pair untouched per
+  the up-front ruling. Equivalence **81/81 near-exact** (GDP 0.0001%, unemployment 0.006% at an 8%
+  drive); matrix vs `pre5_0034eff` at both seeds × 100/500/1000 with both diff columns: 13 of 30
+  fields byte-identical, bounded mean-reverting transients, **the four-country debt signature
+  REPRODUCED within ~1 point** (USA 155.9, Germany 80.1, Italy 165.9, Poland 46.0; Sweden/France
+  settled shapes intact) — not fixed, not worsened, per the pass condition. Save/load round trip
+  re-proven 12/12 for `FiscalPeriod`'s three new anchors. **The hybrid simulation is over: every
+  economic quantity moves on the day its history point records.** Full record in `CLAUDE.md`.
 
 Each phase: apply the correct transform per constant, aggregation-equivalence check FIRST, full scenario matrix SECOND, one commit per phase, escalate ambiguous constant shapes to Open Questions rather than guessing.
 

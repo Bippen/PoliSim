@@ -8563,3 +8563,74 @@ turn-stepped stats, stated at the site.
    real cost avoided.
 5. **Phase 5 starts fresh, never at the end of a long session** — the notes' own instruction,
    restated here so it survives this pass's momentum. It did: this pass stops at the boundary.
+
+## Continuous Time Phase 5 — the core macro engine daily, and ITEM 7 CLOSES (2026-08-16, `22e2b49`)
+
+Run on its gate list: the absolute-deviation diff column FIRST (`TrajectoryDiffCheck`, committed
+separately at `0034eff`, self-tested on a known zero-crossing and validated against the real Phase
+4 France case); the untainted `pre5_0034eff` baseline; then `Phase5NoFeedbackDiagnostic` (4/4 —
+PotentialGDP independent under a 30% actual shock; two turns of daily published-data AND
+period-closings corruption moving NO simulated state, which also proves the credit-rating path
+dynamically; the Phillips step blind to a +10pt rate while the identity feels it). The up-front
+ruling was respected throughout: **no FRF value moved** — the sweep owns calibration, now
+sequenced after this phase in the daily regime (its queue entry carries the ruling and its
+starting conditions).
+
+### The story of the phase: four shapes failed, one pattern answered
+
+The equivalence bar rejected the first daily form of every response-side mechanism, each failure
+measured and kept in the code comments where the shape now lives:
+
+1. **Self-referencing Okun reversion** (PerDayReversion, the "obvious" form): 325% drift at an 8%
+   drive — the reversion and the growth response fight day-by-day across the NAIRU crossing where
+   the turn form applies both against the period-start state at once.
+2. **Per-day-base growth percents**: a second-order (log-vs-linear) residual of 0.21 unemployment
+   points on the USA's seeded 13% output gap.
+3. **A live identity attractor**: PotentialGDP compounding daily under the identity lands GDP
+   0.65% high — inside GDP's own bar, but Okun amplifies it to a failing 0.34 points.
+4. **Daily inflation expectations**: 6–10% drift with NO fixable variant, because the turn
+   semantics — adapt once toward the period's CLOSING print — is boundary-anchored by definition.
+
+All four resolve into **Phase 3's fixed-period-reference pattern**: Okun's reversion references
+period-open unemployment (LINEAR distribution — exact for fixed references, where PerDayReversion
+is exact for self-referencing forms — a distinction now IN the translation table); the growth
+increment is measured against period-open GDP; the identity's attractor anchors at period-open
+PotentialGDP; and expectations stay AT the boundary as a period stance. The identity itself takes
+the phase's one genuinely new shape, the **AFFINE POWER SLICE** (`A^(1/D)` on the contraction with
+the geometric partial sum on the attractor term — D compositions telescope exactly to the turn
+map at constant inputs; iterating the raw turn map daily was rejected as different, unvalidated
+dynamics). After the fourth reference: **equivalence 81/81 NEAR-EXACT — GDP 0.0001%, unemployment
+0.006%, at the violent 8% drive.** C/I are logged as INFO with their display-semantics reasoning
+(nothing reads them back; the two regimes report different, individually-correct levels).
+
+### The matrix, both columns, and the signature that had to reproduce
+
+Six configurations (2 seeds × 100/500/1000) against `pre5_0034eff`: **13 of 30 fields
+byte-identical in every configuration** (Population at literal zero — Phase 4 untouched). The
+movers are the converted quantities feeling the daily path they previously sampled at boundaries:
+unemployment max 0.51 points at the one-time t1 regime seam, ending 0.003–0.024; GDP ≤1.0%
+momentary, ≤0.64% at t1000; rates ≤0.3 points of discrete-meeting steps; approval ≤2.8 points
+momentary (its million-percent relatives are the 0-floor artifact — the absolute column's third
+vindication in one pass). Debt ends 1.9–4.6% apart on 1000-YEAR cumulative paths, and **the
+four-country divergence signature reproduces within ~1 point** (USA 154.7→155.9, Germany
+80.4→80.1, Italy 165.6→165.9, Poland 45.6→46.0; Sweden 11.2→10.6, France 108.8→108.9) — the pass
+condition stated up front: not fixed, not worsened. `SaveLoadRoundTripDiagnostic` re-run for
+`FiscalPeriod`'s three new anchor fields: **12/12 clean.**
+
+### The item-7 close-out verdict
+
+- **The taxonomy's final state** (all in the roadmap's table): linear slice, PerDayReversion,
+  probability, clamps-never-scale, sensitivities/target-shapers take nothing, the power slice,
+  the affine power slice, and the governing distinction the whole migration ends on: **linear
+  distribution for fixed references, compounding for self-references, and boundary residence for
+  boundary semantics.** The stance-vs-flow question, asked constant by constant, was the method.
+- **What the feedback web did that shape classification couldn't predict**: nothing broke as a
+  SHAPE — every failure was an interaction (interleaving, amplification, anchor drift) that only
+  the equivalence bar could see, which is the strongest possible argument for the
+  equivalence-first discipline the migration was built on.
+- **The sweep's starting conditions** are recorded in its queue entry: same measured divergence
+  baseline, daily interest against the live stock, values untouched and awaiting calibration in
+  the regime they will live in.
+- **The hybrid simulation is over.** Every economic quantity now moves on the day its history
+  point records; the boundary keeps what belongs to it — resolutions, plans, stances, elections,
+  events. PreviewTurn keeps every turn form as its own single-step estimator, correctly.
