@@ -1393,7 +1393,7 @@ accessors: **when two things must not be confused, give them two names.**
 
 Item 9 §A's **"⚠ NEXT SESSION STARTS HERE"** block said Budget was the only converted screen and offered
 *"Statistics, Politics/Parliament and Policy/Laws"* as the candidates for next. **Policy/Laws had been
-converted for a day** — `ba2c3c8` Labor Market, `1589008` Crime & Justice and Sectors, `665e0a8` Trade.
+converted for a day** — `d3cd281` Labor Market, `df03e97` Crime & Justice and Sectors, `d4083fe` Trade.
 The marker was offering a finished screen as work.
 
 ⚠ **This is worse than an ordinary stale status, and the difference is worth naming.** A stale claim in
@@ -1441,9 +1441,9 @@ drawing so the two cannot disagree:
 | | Commit | L | T | R | B | clipped |
 |---|---|---|---|---|---|---|
 | before | — | 0 | 0 | **841** | **663** | 54 |
-| `InnerWidth` 4th term + tab margins | `b42ff20` | 0 | 0 | 0 | **663** | 54 |
-| two accessors | `8a476bf` | 0 | 0 | 0 | 0 / **1508** | 16 |
-| `BudgetProcessHeaderHeight` | `ea612d9` | 0 | 0 | 0 | 0 | **0** |
+| `InnerWidth` 4th term + tab margins | `f3cbea4` | 0 | 0 | 0 | **663** | 54 |
+| two accessors | `b16b816` | 0 | 0 | 0 | 0 / **1508** | 16 |
+| `BudgetProcessHeaderHeight` | `4dbb779` | 0 | 0 | 0 | 0 | **0** |
 
 Confirmed at **1600×929 and 2560×1419**. This is the same discipline `UiContainmentGuard`'s doc names for
 `StatTile`: one measurement, two readers.
@@ -1770,7 +1770,7 @@ menu item, to be run after a capture pass.
 
 ⚠ **`ImporterSettingsCheck`'s 149/14/70 and `PartyMarkCoverageCheck`'s results were both produced in a
 working tree carrying a closed session's uncommitted code.** That tree no longer exists, and between
-`001b3a0` and `2a63cce` the Editor assembly did not compile on `main` at all — so those numbers described
+`c1d11bc` and `857bc3e` the Editor assembly did not compile on `main` at all — so those numbers described
 an environment that never shipped. A green run in the wrong context is the defect this whole day is
 about; it applies to a check's own verification as much as to anything the check reports.
 
@@ -7475,22 +7475,22 @@ when the source is capable of remembering.
 
 ## v2.0 chrome placement track closed (2026-08-12) - six placements, one defect found by set comparison
 
-Four commits closed the roadmap's `"six real IMGUI placements"` list: `54c6ce2` (`ui_banner_hold` +
-`ui_calendar_pad`), `01eb29a` (sub-tab ink fix + harness corrections), `1cdd3fb` (`ui_tab_spine`),
-`a6d268d` (`ui_folder_dossier` + `ui_portrait_frame`). Every run validated in real Unity 6000.5.6f1:
+Four commits closed the roadmap's `"six real IMGUI placements"` list: `7933696` (`ui_banner_hold` +
+`ui_calendar_pad`), `4192042` (sub-tab ink fix + harness corrections), `a220849` (`ui_tab_spine`),
+`fc16304` (`ui_folder_dossier` + `ui_portrait_frame`). Every run validated in real Unity 6000.5.6f1:
 57-58 captures, 0 failed / 0 overflows / 0 escapes, `ScreenEdgeCheck` 0 clipped, three sets
 (`holdcal_*`, `spineink_*`, `dosport_*`). Commit messages carry the per-placement detail; the
 findings that generalise are recorded here.
 
 ### A face swap changes what ink reads on it - the two are one decision
 
-`d44ab2d` replaced the selected sub-tab's brass with the pale `ui_subtab_on` paper face and left the
+`cbdde4e` replaced the selected sub-tab's brass with the pale `ui_subtab_on` paper face and left the
 Primary kind's cream text in place. Cream on pale paper: "Domestic" was unreadable in every capture of
 the new set, and **the commit that introduced it had its own capture run, approved by eye, with the
 defect on screen** - the recorded limit of eye checks, recurring. What actually caught it was comparing
 the new set against the PRE-conversion `accessors_*` set side by side: readable white-on-brass beside
 unreadable cream-on-paper. **A single capture set shows you a state; only two sets show you a
-regression.** Fixed in `01eb29a` per A.8's own spec (active = bold inkText, inactive = inkFaint),
+regression.** Fixed in `4192042` per A.8's own spec (active = bold inkText, inactive = inkFaint),
 re-inked only inside the face-loaded block so the degraded fallback keeps the cream that suits brass.
 
 ### The capture set's paused/running split was a coincidence of two unrelated constants
@@ -7503,7 +7503,7 @@ full-screen (an injected candidate list would light only the Budget site, which 
 directly, while the calendar site's flag is recomputed per frame from election timing - half-real
 evidence); `01b_running_strip` captures at turn 0, the one moment guaranteed unpaused. My own first
 comment on `CaptureHeldState` claimed the opposite failure ("the banner exists in NO capture") -
-wrong within the hour, corrected in `01eb29a`. **A claim about what a capture set contains is itself
+wrong within the hour, corrected in `4192042`. **A claim about what a capture set contains is itself
 a cached value; the set is the authority.**
 
 ### Placement notes that will matter later
@@ -7722,7 +7722,7 @@ cancelled on discovering the premise wrong; a pass justified by coverage cannot 
 **The measured lesson of the pass**: the first version advanced 1460 days on three countries and
 pinned NEITHER the budget pause NOR a meeting - `TryOpenBudgetProcess` and
 `TryRollForeignPolicyMeeting` are the CONTROLLER's daily calls, which sim-side `AdvanceDay` never
-runs. The driver now makes the same calls play makes (`0220898`). A state that will not arm under
+runs. The driver now makes the same calls play makes (`4836c59`). A state that will not arm under
 the harness is evidence about the harness's model of a day, not about the state.
 
 ### Still unpinned, with the reason named
@@ -7750,7 +7750,7 @@ was an ungrepped absence claim - the same shape rule 14's SWF instance already r
 
 ### The Division Records panel - built, verified at both sizes on two countries
 
-`DrawRecentDivisions` (`6bc5ec1`) is the first reader of `Country.Divisions`: number + title,
+`DrawRecentDivisions` (`ab1b72f`) is the first reader of `Country.Divisions`: number + title,
 mono ISO date, the same diverging lean bar the live estimate draws, and the verdict stamps -
 `ui_stamp_carried`/`ui_stamp_rejected`, WoA on paper, INK weights (Good/Bad; the lifted set is
 desk-only). NOT LedgerRow: its columns are policy-control furniture and its read-only form is a
@@ -7784,7 +7784,7 @@ the search") could not hold, because there was nothing to name.
 `sim.AdvanceDay` is not a play-day. GameController.Update's day loop also makes: the two arm
 calls (`TryOpenBudgetProcess`, `TryRollForeignPolicyMeeting`), the EIGHT bill countdowns
 (`Advance*BillDay`), and post-turn `CheckElection`. The driver discovered each by pinning
-nothing, measuring, and adding the controller's own calls (`0220898`, `0f3d2cf`, `84bec8c`).
+nothing, measuring, and adding the controller's own calls (`4836c59`, `c82315f`, `dfeb7cf`).
 **Every "never captured" entry recorded before this was partly a driver artifact.** The driver now
 carries a COPY of the controller's day-tick list - which will drift silently the day Update gains
 an eleventh call. Raised in the session report: extract the controller's sim-side day tick into
@@ -7816,7 +7816,7 @@ Ruled by Elias: every planning document brought into agreement with the code, th
 other. Eleven documents on main + the stranded branch's elections roadmap enumerated; none
 unanticipated; ROADMAP_BRIEF and the claude_* research docs confirmed already deleted (search:
 `git ls-files "*.md"`, whole tree). The per-document deltas live in the reconciliation commits
-(8f5d9fc..the final one); what generalises:
+(bfbd9ba..the final one); what generalises:
 
 - **Two riding fixes**: the election reveal's body ink (TextOnDesk - desk ground takes the desk ink)
   and `AdvanceCountryDayTick` (the sim-side day tick extracted; controller and driver share one list,
@@ -7943,7 +7943,7 @@ IMGUI-side above the live takeover.
 - Build failure DROPS the ceremony (class 8): a dropped ceremony is a silent resolution - today's
   exact behaviour, so degradation costs the moment, never correctness.
 - The tint-family class visited this screen too: `ui_seal_state` is WoA and printed WHITE on
-  paper untinted - caught by eye in the first sgn run, fixed to the institution ink (`c6b9b1c`).
+  paper untinted - caught by eye in the first sgn run, fixed to the institution ink (`38363c6`).
 
 ### The Canvas text guard - SCOPED, not built (awaiting ruling)
 
@@ -7963,7 +7963,7 @@ Recommend building on ruling.
 
 Ruled and executed the same day the scoping above was written.
 
-### CanvasTextGuard - built EXACTLY as scoped (`a642c69`)
+### CanvasTextGuard - built EXACTLY as scoped (`6adb7c6`)
 
 `Assets/Scripts/Testing/CanvasTextGuard.cs`, the scoping's limits recorded verbatim in the class
 doc. What the scoping named, the build kept: CLIP (`preferredHeight > rect.height`) and ESCAPE
@@ -7979,7 +7979,7 @@ enumeration counts in the run summary, `Finish` fails on any violation.
 counts clean (77 captures, 0 failed/overflows/escapes/clipped each). The guard asserts on TWO
 pinned Canvas states because two exist - coverage equals pinned states, per its own limits.
 
-### The tint-family accessors - the sixth instance needs a compiler error, not an eye (`a642c69`)
+### The tint-family accessors - the sixth instance needs a compiler error, not an eye (`6adb7c6`)
 
 After the class's FIFTH visit (the seal above), `CanvasChrome` gained the pair the ruling asked
 for: `TintedImage` (WoA - the ink is a REQUIRED argument) and `AsAuthoredImage` (real-colour -
@@ -7993,7 +7993,7 @@ non-white degradation/hover colour - "if it doesn't fit, say why rather than for
 meta-generated-after-commit trap; this pass ran Unity BEFORE committing so the guard's own meta
 could not repeat it.
 
-### The WIN reveal pinned; the FP variant was already built (`4b74dec`)
+### The WIN reveal pinned; the FP variant was already built (`5eb5dc7`)
 
 The queued driver touch, folded in while the ceremony idioms were warm. Section F pins BOTH
 reveal forms in one chain: approval forced HIGH at the first election turn ->
@@ -8005,7 +8005,7 @@ both re-verified). The election search existed once, was about to exist twice, a
 birth this time. The FP-meeting search variant queued alongside was found ALREADY BUILT (C2's
 continuation loop, `84b_meeting_decisions`) - stated, not re-built.
 
-### Track 3 executed (`8d86587`)
+### Track 3 executed (`10f713e`)
 
 The manifest's 11 `!`-rows deleted from disk (+ metas), verified absent from code first: zero
 exact-name references (the GameController scrollbar hits are the v2 `_v`/`_h` names; IconLibrary's
@@ -8027,7 +8027,7 @@ they are the allowance's source now, and the manifest comment says so.
 - **The big gates, untouched by ruling**: item 10 priced after 13 Sept 2026; the fiscal-divergence
   pass PARKED; save/load 2nd in the execution order. Sequencing is Elias's conversation, not a pass.
 
-## The folder-tongue pass - the tab bar's real §A.7 anatomy (2026-08-16, `80d3e48`)
+## The folder-tongue pass - the tab bar's real §A.7 anatomy (2026-08-16, `9497673`)
 
 Startable row 3, the close-out's one remaining ungated item, and with it **item 9-v2.0 has no
 ungated work left** - what remains of v2.0 (the Canvas ELECTION NIGHT screen) is item-10-gated. The
@@ -8040,7 +8040,7 @@ degradation screen's button style, which this pass deliberately does not touch) 
 
 - **Real-colour furniture means the SELECTED label flips cream→ink.** The interim treatment printed
   cream on brass; on the paper tongue that is the sub-tabs' exact ink-needs-paper inversion class
-  (`01eb29a`), caught at build time this once rather than by capture. Inactive labels take
+  (`4192042`), caught at build time this once rather than by capture. Inactive labels take
   `PoliSimTheme.InkOnStock` (`#45392A`, §A.7's own inactive type value - the paper ink ramp's faint
   values die on the mid-tone stock). The selected ICON tints area ink rather than white for the
   same reason; full ink strength stays the selected tongue's privilege, matching the spine rule.
@@ -8132,7 +8132,7 @@ until its checklist runs.
 | All other blobs | 1,772 = 105.8 MiB uncompressed, which packs small: mostly CLAUDE.md's own revisions (600+ KB each, text) plus ~2.6 MiB of fonts — the three largest non-capture blobs in history |
 | Tracked capture paths | **2,003** (→ the 1,073 unique blobs: ~930 tracked PNGs are byte-identical duplicates across sets) |
 | Working tree captures | 5,316 PNGs, **5.1 GiB**, all dated 2026-08-11..16 — **~1 GiB/day** |
-| First capture commit | `b0d0b9c`, 2026-08-10 17:24 ("Stand up the capture harness in the repo"); 24 commits touched `screenshots/` in the six days since |
+| First capture commit | `30a6287`, 2026-08-10 17:24 ("Stand up the capture harness in the repo"); 24 commits touched `screenshots/` in the six days since |
 | Confirmed NOT tracked | `AssetPackArchive/` (1.9 MiB, disk only), `baselines/` (11 MiB), `Library/`/`Temp/`/`obj/`/`Logs/` (gitignored) — **no other weight class exists** |
 | Remote | `github.com/Bippen/PoliSim` — the history weight is on the remote too |
 
@@ -8140,7 +8140,7 @@ So the shape is: **the captures are in history**, they went in with the harness 
 2026-08-10, and in six days they became ~nine-tenths of the repository. Everything else about the
 repo is healthy — a ~15-25 MiB project wearing a 742 MiB pack.
 
-### What was DONE (prevention, `af971f0` — nothing destroyed, no hash touched)
+### What was DONE (prevention, `9f4ec0d` — nothing destroyed, no hash touched)
 
 - `screenshots/` relocated wholesale to the sibling **`../PoliSim-captures/`** (5,316 files, disk
   move). The 2,003 tracked PNGs left the index — a tip deletion, explicitly NOT a recovery: every
@@ -8159,7 +8159,7 @@ repo is healthy — a ~15-25 MiB project wearing a 742 MiB pack.
 
 Deleting the captures from the tip recovers **zero bytes**: every clone still downloads the 742
 MiB pack. Only a history rewrite (`git filter-repo` dropping `screenshots/` from every commit)
-recovers the ~**730 MiB**, and it costs: **every commit hash after `b0d0b9c` changes**, which
+recovers the ~**730 MiB**, and it costs: **every commit hash after `30a6287` changes**, which
 invalidates every hash cited across CLAUDE.md, the roadmap and COMPLETED.md (this file alone
 cites dozens); the remote needs a force-push and any other clone a re-clone; and it wants a fresh
 full backup first.
@@ -8167,7 +8167,7 @@ full backup first.
 **Elias's ruling (2026-08-16): the rewrite happens — but as its OWN gated pass, after save/load
 (item 8) ships, never riding a feature pass.** Its gate list, so the pass that runs it starts
 complete: (1) a fresh full backup of the repository first; (2) a citation sweep over every hash
-after `b0d0b9c` in CLAUDE.md / the roadmap / COMPLETED.md, mapping old→new or annotating them as
+after `30a6287` in CLAUDE.md / the roadmap / COMPLETED.md, mapping old→new or annotating them as
 pre-rewrite citations; (3) the force-push and re-clone coordination. Until that pass runs, the
 742 MiB pack is a known, accepted cost. **Pruning of superseded capture sets in
 `../PoliSim-captures/` was approved at convenience in the same ruling** (see rule 15's retention

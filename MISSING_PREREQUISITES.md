@@ -434,7 +434,7 @@ Elias's sign-off"* for eleven days after Elias's 2026-08-11 ruling superseded it
 Questions): **the 1000-turn matrix showed all six countries' debt still climbing — every "equilibrium"
 below is a WAYPOINT measured at 120 turns — and C4's deficit-term reading never settles, so its closure
 waits on the fiscal-engine divergence work** (diagnosed: interest compounding against an asymmetrically
-bounded stabiliser; parked pending its own dedicated pass, per `e8de02d` "the re-sweep needs its own
+bounded stabiliser; parked pending its own dedicated pass, per `60233af` "the re-sweep needs its own
 pass"). The supplier for this entry is therefore *that parked pass*, not a sign-off. Everything below
 is retained as the measurement record it is, with its horizons — the 98.7% anomaly reduction was real
 and remains the largest single fiscal improvement recorded; it closed the THRASH, not the trajectory.

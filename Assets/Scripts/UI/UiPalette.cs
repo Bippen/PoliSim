@@ -492,7 +492,7 @@ namespace PoliSim.UI
         /// `ui_tab_spine` overlay (full-strength ink when selected, lifted when not - already §A.7's "top
         /// edge" rule), never on the face. That is also why the selected label flips from the interim
         /// cream-on-brass to ink-on-paper: the on-face IS paper, and cream on paper is the exact
-        /// inversion class rule 15 caught on the sub-tabs (`01eb29a`).
+        /// inversion class rule 15 caught on the sub-tabs (`4192042`).
         ///
         /// Borders halve the delivery manifest's @2× insets (on 28/28/30/12, off 28/28/34/12). One
         /// approximation, recorded: `hover` is a STATE of the unselected style and IMGUI has one border

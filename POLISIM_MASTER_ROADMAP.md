@@ -75,7 +75,7 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
 11. **Any new mechanic that nudges an existing tracked variable must fold into that variable's existing combined ceiling**, not add an uncounted new source — audit the actual ceiling code before adding a contributor, don't assume there's room.
 12. **NEW (2026-08-02) — "awaiting delivery" is a status that must be RE-DERIVED FROM THE FILESYSTEM, never trusted from a document.** Two separate assets were recorded as outstanding while already sitting in zips at the project root: `icon_stat_interestrate` (registered *"REQUEST SENT, awaiting delivery"* on the day it in fact arrived) and `menu_pattern_tile.png` (delivered, then unimported for weeks while three documents named it as a gap). **Neither register was wrong when written.** Nothing watches the project root, a delivery does not announce itself, and so the status simply outlived the fact — twice, which is what makes it a pattern rather than an oversight. Both gaps were eventually closed only because Elias happened to say the file already existed. **Run `DeliveredAssetCheck` before reporting any asset as outstanding**: it compares every zip's contents against what exists under `Assets/` and fails on any gap, which is the one comparison that cannot go stale. Its companion `StatIconCoverageCheck` asks the runtime half of the same question — that a name the UI hard-codes actually resolves through `Resources.Load`, which a file merely existing on disk does not guarantee when its `.meta` is hand-written. The general form: **a status describing the outside world is a cached value, and needs an expiry.** ⚠ *Amended 2026-08-11: `StatIconCoverageCheck` covers the 19 names it ENUMERATES — every `StatNodeId` icon plus `menu_pattern_tile` — not "a name the UI hard-codes" generally. See rule 14.*
 
-13. **NEW (2026-08-11) — TWO AGENTS IN ONE WORKING TREE NEED A LOCK, not a cleanup afterwards.** On 2026-08-11 two sessions wrote this repo concurrently with no coordination, and it produced three distinct failures, none of which either session could see from inside. **A merged contradiction:** one session recorded "§1E is closed" while the other recorded "I will not file these because §1E's namespace blocker is open" — read together as one agent reasoning badly, when it was two agents' claims merged without attribution. **A silent co-commit:** commit `c6207cf` staged three files by explicit path and still carried ~150 lines of the other session's uncommitted §1F prose, because staging by path does not stop a path carrying another author's changes. **A stale lock read as litter:** a 2.2-hour-old `.git/index.lock` with no `git` process alive — correctly diagnosed as stale, but *"no process is running now"* and *"no session owns this"* are different propositions, and only the first is observable.
+13. **NEW (2026-08-11) — TWO AGENTS IN ONE WORKING TREE NEED A LOCK, not a cleanup afterwards.** On 2026-08-11 two sessions wrote this repo concurrently with no coordination, and it produced three distinct failures, none of which either session could see from inside. **A merged contradiction:** one session recorded "§1E is closed" while the other recorded "I will not file these because §1E's namespace blocker is open" — read together as one agent reasoning badly, when it was two agents' claims merged without attribution. **A silent co-commit:** commit `452bf68` staged three files by explicit path and still carried ~150 lines of the other session's uncommitted §1F prose, because staging by path does not stop a path carrying another author's changes. **A stale lock read as litter:** a 2.2-hour-old `.git/index.lock` with no `git` process alive — correctly diagnosed as stale, but *"no process is running now"* and *"no session owns this"* are different propositions, and only the first is observable.
 
     **The rules.** Before any commit, run `git status` and confirm every staged path is one this session actually modified — `git show --stat HEAD` afterwards is the backstop, not the check. **Never `git add -A` / `git add .` in a tree that may be shared**; stage by explicit path, and inspect the diff of any path you did not create. **Never clear an `index.lock` without first confirming no live session owns it** — a dead process's litter and a live session mid-operation are indistinguishable from the lock's mtime alone, the same way a closed Unity window is not proof Unity exited. When a document's claims contradict each other, **suspect two authors before suspecting bad reasoning**, and check `git log`/`git blame` for authorship before writing a correction that may be arguing with a version that never existed.
 
@@ -84,9 +84,9 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
     The same defect recurred twice more in one session, which is what makes it a rule. A **57-file byte-identical diff** was read as proof that five import blockers were closed — but two of those blockers are about NAMING, which is not a byte-level property, so the diff structurally could not see them. And `PartyMarkCoverageCheck`'s own first version reported *"4 of 4 resolve at 128×128, the metas are sound"* when it only checked that a handle came back; extended to assert `texture.format`, it immediately found all four imported as **DXT5** — block compression on white-on-alpha, the exact damage vector the settings exist to prevent. **When citing a check, name what it enumerates.** When a check's bar is another artifact ("matches the reference"), it inherits that artifact's defects — the reference emblem was itself DXT5.
 
 15. **NEW (2026-08-12, Elias) — COMPARE AGAINST THE PREVIOUS CAPTURE SET; DO NOT JUST LOOK AT THE NEW
-    ONE.** `d44ab2d` shipped the selected sub-tab's label as cream on pale paper — unreadable — and its
+    ONE.** `cbdde4e` shipped the selected sub-tab's label as cream on pale paper — unreadable — and its
     own capture run was **approved by eye with the defect on screen**. It was caught a day later
-    (`01eb29a`) not by looking harder but by putting the pre-conversion `accessors_*` set beside the new
+    (`4192042`) not by looking harder but by putting the pre-conversion `accessors_*` set beside the new
     one: readable white-on-brass next to unreadable cream-on-paper is a finding no single image
     produces. **The three verification layers each answer a different question, and only the third
     answers regression:**
@@ -167,8 +167,8 @@ because they are not done.
   (2026-08-12 — row family, six placements, Division Records, every chrome sprite dispositioned by
   Phase 2's derived statement). Coverage machinery standing: six countries × two sizes captured, the
   reachable state axes pinned, rule 15 in the discipline. ~~**Next major track: the Canvas path**~~
-  **The Canvas track CLOSED 2026-08-12** (`ff703b7`; §A.14 set 2 of 3, ELECTION NIGHT item-10-gated
-  per R2) and **the folder-tongue pass closed 2026-08-16** (`80d3e48`, startable row 3) — **item
+  **The Canvas track CLOSED 2026-08-12** (`e0a510f`; §A.14 set 2 of 3, ELECTION NIGHT item-10-gated
+  per R2) and **the folder-tongue pass closed 2026-08-16** (`9497673`, startable row 3) — **item
   9-v2.0 now has NO ungated work left.** What remains of it waits on item 10.
 - **NOT STARTED, UNBLOCKED OR GATED** — item 8 (save/load: scoped, zero persistence code exists —
   re-verified 2026-08-12, search `persistentDataPath|JsonConvert|CaptureSaveState` over
@@ -537,7 +537,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
    ⚠ **THIS MARKER IS DERIVED, NOT NARRATED. Re-derive it; do not edit it forward.** The state below
    comes from `grep LedgerRow.Draw` over `GameController` plus the commit history — not from what the
    previous marker said. **It had been wrong for a day**: it read "Budget is the only converted screen,
-   next pick one of Statistics / Politics / Policy-Laws" while `ba2c3c8`, `1589008` and `665e0a8` had
+   next pick one of Statistics / Politics / Policy-Laws" while `d3cd281`, `df03e97` and `d4083fe` had
    already converted Policy/Laws, so it offered a finished screen as a candidate.
    **A next-steps marker is a claim like any other and goes stale the same way** — and this one is worse
    than most, because it is the first thing read each session, so a stale marker misdirects the pass
@@ -553,9 +553,9 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | Screen | Converted | Evidence |
    |---|---|---|
    | **Budget** | ✅ all five row types | `DrawTaxLineRow`, `DrawSpendingLineRow`, `DrawWelfareProgramRow`, `DrawInfrastructureContent`, `DrawSwfPolicyContent` |
-   | **Policy/Laws** | ✅ via `DrawDialRow`, 20 sites | Labor Market, Crime & Justice, Trade — `ba2c3c8`, `1589008`, `665e0a8` |
-   | **Statistics / Domestic** | ✅ **NEW** | `DrawDerivedStatRow` — `7b8858e` |
-   | **Politics / Parliament** | ✅ **NEW** | `HemicycleRenderer.Draw` legend — `967d6c0` |
+   | **Policy/Laws** | ✅ via `DrawDialRow`, 20 sites | Labor Market, Crime & Justice, Trade — `d3cd281`, `df03e97`, `d4083fe` |
+   | **Statistics / Domestic** | ✅ **NEW** | `DrawDerivedStatRow` — `397d829` |
+   | **Politics / Parliament** | ✅ **NEW** | `HemicycleRenderer.Draw` legend — `f877915` |
    | Statistics / International | ⚠ 2 concatenated labels | small |
    | Politics / Federal Reserve | ⚠ 5 concatenated labels | small |
    | Decisions · Demographics · Policy Web | — | no row family; cards, dials and a diagram |
@@ -574,11 +574,11 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
    | # | Startable today | Gate |
    |---|---|---|
-   | 1 | ✅ **Canvas pilot — DONE 2026-08-12** (`4c6abba`+`e278a1a`): the takeover seam (8 named defect classes, one found by the pilot's own first run), `CanvasChrome`, the selector per §A.14, `ui_scrim_takeover` wired. Discipline-carryover statement in `CLAUDE.md`. *(⚠ Count corrected same day: §A.14 defines THREE Canvas screens, not eight — the eight are the design boards.)* |
-   | 1b | ✅ **Canvas screen 2 — SIGNING (1g), DONE 2026-08-12** (`bd23e3c`+`c6b9b1c`): the nearest neighbour, on the pilot's patterns plus the mid-game additions (takeovers stop the clock; CoverIn overlays the live dashboard; ceremonies fire only from play's day tick). Verified both sizes, B8 on film. **The §A.14 Canvas set is now 2 of 3 — ELECTION NIGHT (1h) alone remains, R2-gated on item 10.** ✅ The Canvas TEXT GUARD was ruled and BUILT same day (`a642c69`, `CanvasTextGuard`): self-testing both directions, driver-attached after each Canvas capture, fails at zero enumerated; limits verbatim in the class doc. Same commit: `CanvasChrome.TintedImage`/`AsAuthoredImage`, the tint-family choice forced at construction after the class's fifth visit |
-   | 2 | ✅ **Track 3 — DONE 2026-08-12** (`8d86587`): the eleven superseded sprites removed, `DeliveredAssetCheck`'s superseded allowance in the same commit (reads the manifest's own `!` rows, each skip logged). Verified: 0 missing / 21 supd skips, ChromeV2 50/50 both directions, full capture run clean post-deletion |
-   | 3 | ✅ **Folder-tongue faces — DONE 2026-08-16** (`80d3e48`): `BuildFolderTabStyle` + the deferred active-tongue paint (§A.7's joined look — the sheet would otherwise close the tongue with its keyline); tongue-edge constants MEASURED from the PNGs' alpha, not the manifest's stated 12px; ink-on-paper labels both ways (the cream selected label would be the inversion class on paper). Verified 78 captures × both sizes, all guards 0, rule-15 diff against `winusa1600`/`grdusa2560`. ⚠ Hover face and the real click on the deferred-painted tab are not harness-drivable — awaiting Elias's live look | none — ruled B |
-   | 4 | ✅ **WIN-form election reveal pin — DONE 2026-08-12** (`4b74dec`): both reveal forms + game over pinned in one chain; election search extracted to one helper. The FP-meeting search variant queued with it was found ALREADY BUILT (C2's continuation loop, capture 84b) — stated, not re-built |
+   | 1 | ✅ **Canvas pilot — DONE 2026-08-12** (`14cbad6`+`257ed39`): the takeover seam (8 named defect classes, one found by the pilot's own first run), `CanvasChrome`, the selector per §A.14, `ui_scrim_takeover` wired. Discipline-carryover statement in `CLAUDE.md`. *(⚠ Count corrected same day: §A.14 defines THREE Canvas screens, not eight — the eight are the design boards.)* |
+   | 1b | ✅ **Canvas screen 2 — SIGNING (1g), DONE 2026-08-12** (`5f64554`+`38363c6`): the nearest neighbour, on the pilot's patterns plus the mid-game additions (takeovers stop the clock; CoverIn overlays the live dashboard; ceremonies fire only from play's day tick). Verified both sizes, B8 on film. **The §A.14 Canvas set is now 2 of 3 — ELECTION NIGHT (1h) alone remains, R2-gated on item 10.** ✅ The Canvas TEXT GUARD was ruled and BUILT same day (`6adb7c6`, `CanvasTextGuard`): self-testing both directions, driver-attached after each Canvas capture, fails at zero enumerated; limits verbatim in the class doc. Same commit: `CanvasChrome.TintedImage`/`AsAuthoredImage`, the tint-family choice forced at construction after the class's fifth visit |
+   | 2 | ✅ **Track 3 — DONE 2026-08-12** (`10f713e`): the eleven superseded sprites removed, `DeliveredAssetCheck`'s superseded allowance in the same commit (reads the manifest's own `!` rows, each skip logged). Verified: 0 missing / 21 supd skips, ChromeV2 50/50 both directions, full capture run clean post-deletion |
+   | 3 | ✅ **Folder-tongue faces — DONE 2026-08-16** (`9497673`): `BuildFolderTabStyle` + the deferred active-tongue paint (§A.7's joined look — the sheet would otherwise close the tongue with its keyline); tongue-edge constants MEASURED from the PNGs' alpha, not the manifest's stated 12px; ink-on-paper labels both ways (the cream selected label would be the inversion class on paper). Verified 78 captures × both sizes, all guards 0, rule-15 diff against `winusa1600`/`grdusa2560`. ⚠ Hover face and the real click on the deferred-painted tab are not harness-drivable — awaiting Elias's live look | none — ruled B |
+   | 4 | ✅ **WIN-form election reveal pin — DONE 2026-08-12** (`5eb5dc7`): both reveal forms + game over pinned in one chain; election search extracted to one helper. The FP-meeting search variant queued with it was found ALREADY BUILT (C2's continuation loop, capture 84b) — stated, not re-built |
    | — | *Item 8 save/load* — ✅ **CORE BUILT AND GATE-GREEN 2026-08-16**: all three layers implemented on the mechanism report, `SaveLoadRoundTripDiagnostic` 12/12 scenarios clean (six countries × two seeds, continuation-identical, saves string-equal). Remaining: the load/save UI (its own pass), and the UI-draft/F5-F9 live checklist in the OPEN VERIFICATION GAP block | UI pass startable; live checklist waits on Editor access |
    | — | *The fiscal-divergence pass* | PARKED by ruling — Elias schedules it |
    | — | *CT Phases 4–5, then Round 4* | 3rd/4th in the execution order; Phases 4–5 now calibrate against 365-day turns |
@@ -629,7 +629,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
       + eight countdowns + CheckElection) — the drift risk this creates is raised for ruling.
       *(Both closed same-day/next-day: the copy became `SimulationManager.AdvanceCountryDayTick`,
       one method both callers share — see `CLAUDE.md` "Item 1a closed" — and the WIN reveal pinned
-      2026-08-12 (`4b74dec`, `winusa1600_88w`): approval forced high at the first election turn, a
+      2026-08-12 (`5eb5dc7`, `winusa1600_88w`): approval forced high at the first election turn, a
       win's dismissal returns to the dashboard, so the same run then searches to the next election
       for the loss chain. Both reveal forms and game over are now on film.)*
 
@@ -657,16 +657,16 @@ If a step's own validation fails, fix it before moving to the next — never pro
 
       | Sprite | Actual state |
       |---|---|
-      | `ui_subtab_on` / `ui_subtab_off` | ✅ **WIRED** `d44ab2d` — sub-tab faces |
-      | `ui_slider_tick` | ✅ **WIRED** `d44ab2d` — ledger track scale, every 10% |
+      | `ui_subtab_on` / `ui_subtab_off` | ✅ **WIRED** `cbdde4e` — sub-tab faces |
+      | `ui_slider_tick` | ✅ **WIRED** `cbdde4e` — ledger track scale, every 10% |
       | `ui_chip_outline` | ✅ **NEVER UNWIRED** — 2 live call sites in `GraphRenderer` and `PublishedFigure`. It was on the list in error |
-      | `ui_stamp_carried` · `ui_stamp_rejected` | ✅ **WIRED** `6bc5ec1` — the Division Records panel's verdict stamps, ink weights on paper. *(The "no state to mark" ruling's premise was false when made — see item 2a and the absence-claim guard in `CLAUDE.md`)* |
+      | `ui_stamp_carried` · `ui_stamp_rejected` | ✅ **WIRED** `ab1b72f` — the Division Records panel's verdict stamps, ink weights on paper. *(The "no state to mark" ruling's premise was false when made — see item 2a and the absence-claim guard in `CLAUDE.md`)* |
       | `ui_seal_official` · `ui_seal_state` | ⛔ **CANVAS-PATH** — no signing moment exists in IMGUI |
       | `ui_scrim_takeover` | ⛔ **CANVAS-PATH**, confirmed: no call site outside that track |
-      | `ui_grain_tile` | ✅ **WIRED** `da9b935` — desk grain, drawn first in OnGUI |
-      | `ui_banner_hold` · `ui_calendar_pad` | ✅ **WIRED** `54c6ce2` — the interrupt's dark desk plate (both B8 sites, amber lamp, HELD and RUNNING states pinned by capture) and the desk calendar, now the date's carrier |
-      | `ui_tab_spine` | ✅ **WIRED** `1cdd3fb` — area-hue strip on every tab tongue, ink active / lifted inactive |
-      | `ui_folder_dossier` · `ui_portrait_frame` | ✅ **WIRED** `a6d268d` — the four Decisions dossier cards (shoulder caption, hue spine against the sprite's geometry) and the brass roster frame on every `DrawPersonPortrait` |
+      | `ui_grain_tile` | ✅ **WIRED** `b4108a3` — desk grain, drawn first in OnGUI |
+      | `ui_banner_hold` · `ui_calendar_pad` | ✅ **WIRED** `7933696` — the interrupt's dark desk plate (both B8 sites, amber lamp, HELD and RUNNING states pinned by capture) and the desk calendar, now the date's carrier |
+      | `ui_tab_spine` | ✅ **WIRED** `a220849` — area-hue strip on every tab tongue, ink active / lifted inactive |
+      | `ui_folder_dossier` · `ui_portrait_frame` | ✅ **WIRED** `fc16304` — the four Decisions dossier cards (shoulder caption, hue spine against the sprite's geometry) and the brass roster frame on every `DrawPersonPortrait` |
 
       ✅ **THE PLACEMENT TRACK IS CLOSED — 2026-08-12.** All six real IMGUI placements are wired, each
       verified in real Unity by capture (57–58 shots per run, 0 failed / 0 overflows / 0 escapes /
@@ -675,7 +675,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
       ⚠ **SCOPE (corrected 2026-08-12, Elias): verified on the USA, in the default capture state, at
       1600×929** — one country, one state, rule 14 at the largest scale it has appeared. The country
       coverage pass above is what widens this claim.
-      One defect found and fixed en route (`01eb29a`): `d44ab2d`'s sub-tab face left the Primary kind's
+      One defect found and fixed en route (`4192042`): `cbdde4e`'s sub-tab face left the Primary kind's
       cream text on pale paper — the selected sub-tab label was unreadable in every capture, and the
       commit that introduced it had been approved by eye (now working-discipline rule 15).
 
@@ -691,10 +691,10 @@ If a step's own validation fails, fix it before moving to the next — never pro
       v2.0 chrome set is confirmed"; this is that claim, derived by exact-name call-site trace
       (`git grep '"<name>"'` over `Assets/Scripts`, load calls distinguished from comments) across all
       **61 sprites on disk**. 29 wired + 11 Canvas-path + 2 no-state + 8 orphaned + 11 superseded = 61.
-      *(Amended 2026-08-12: the 11 superseded are now REMOVED (`8d86587`, Track 3) — **50 on disk**,
+      *(Amended 2026-08-12: the 11 superseded are now REMOVED (`10f713e`, Track 3) — **50 on disk**,
       and ChromeV2CoverageCheck reports 50/50 both directions. The manifest's `!` rows remain as
       `DeliveredAssetCheck`'s allowance source. The stamps' "no state to mark" row below also stands
-      corrected — both wired `6bc5ec1` per item 2a. The families below are otherwise unchanged as the
+      corrected — both wired `ab1b72f` per item 2a. The families below are otherwise unchanged as the
       dated record; a fresh call-site trace, not this note, is what re-derives them.)*
 
       **WIRED — 29, each with a live `IconLibrary.GetChrome` load:** `ui_panel_paper` (boxes + cards) ·
@@ -741,7 +741,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
       moment exists in the IMGUI path to attach one to.
 
    1a. ✅ **CLOSED 2026-08-12 — and its premise was false when written** (see 2a below): the record
-      already existed (`DivisionLog`, `a7bd40d`), the UI half was the missing piece, and `6bc5ec1`
+      already existed (`DivisionLog`, `a7bd40d`), the UI half was the missing piece, and `ab1b72f`
       built it — the Division Records panel on Parliament, stamps placed, verified at both sizes on
       USA and Germany with six real divisions per set. **What the Canvas election night still needs
       is a different record entirely — an ElectionRecord** (elections leave only a transient result
@@ -821,7 +821,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
    Questions entries ("when item 10 lands", "`usa_election_check` is scoped to item 10") **without ever
    being defined on `main`** — a dangling pointer the reconciliation closes. **Item 10 IS the work
    specified in `POLISIM_POLITICS_ELECTIONS_ROADMAP.md` on `stranded/politics-elections`** (commit
-   `228a111`, contents enumerated in Open Questions): real parties and institutions under the split
+   `ca6c510`, contents enumerated in Open Questions): real parties and institutions under the split
    rule 9, per-country chambers and electoral formulas, the hybrid national-swing vote model, USA as
    the first vertical slice. **Gate, per Elias 2026-08-12: priced after Sweden votes 13 September
    2026** — the branch's own seed data carries retrieval dates for exactly this expiry. ⚠ The branch
@@ -1309,8 +1309,8 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   | | Commit | L | T | R | B | clipped |
   |---|---|---|---|---|---|---|
   | before | — | 0 | 0 | **841** | **663** | 54 |
-  | `InnerWidth` 4th term + tab margins | `b42ff20` | 0 | 0 | 0 | **663** | 54 |
-  | two accessors | `8a476bf` | 0 | 0 | 0 | 0 / **1508** | 16 (all Budget) |
+  | `InnerWidth` 4th term + tab margins | `f3cbea4` | 0 | 0 | 0 | **663** | 54 |
+  | two accessors | `b16b816` | 0 | 0 | 0 | 0 / **1508** | 16 (all Budget) |
   | `BudgetProcessHeaderHeight` | this | 0 | 0 | 0 | 0 | **0** |
 
   ⚠ **IT READ AS FIXED FOR HOURS WHILE `main` WAS BROKEN, and the reason is worth keeping.** The
@@ -1339,7 +1339,7 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   is precisely what the branch exists to prevent.
 
   **Full contents, enumerated so nobody has to check out the branch to find out what is on it** (commit
-  `228a111`, 30 files):
+  `ca6c510`, 30 files):
 
   | Group | Files |
   |---|---|
@@ -1364,7 +1364,7 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
 
   *(⚠ RECONCILED 2026-08-12: everything below this line described the PRE-extraction state and was
   superseded within hours of being written — the instance-#12 closure entry above records the outcome:
-  `InnerHeight` WAS extracted onto `main` (`b42ff20`), the two accessors and
+  `InnerHeight` WAS extracted onto `main` (`f3cbea4`), the two accessors and
   `BudgetProcessHeaderHeight` followed, and `ScreenEdgeCheck` has read 0 clipped on every set since.
   Kept struck-through because its middle paragraph — "a capture is evidence about the tree it was taken
   from" — is the lesson rule 15 grew from.)*
@@ -1384,7 +1384,7 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   "SCREENS DO NOT CLIP".** Two guards were built on 2026-08-11 and both are honestly scoped; the class
   produced a **twelfth** instance that neither can see, and both reported zero while it was on screen.
   *(Vindicated 2026-08-12: **instance #13** — the ECB sub-tab label, the first instance reached through
-  the COUNTRY axis, both guards structurally blind again. Fixed by `SubTabRowHeight` (`28e7f6c`);
+  the COUNTRY axis, both guards structurally blind again. Fixed by `SubTabRowHeight` (`d072286`);
   the sibling survey — constant-sized chrome under wrappable labels, named not fixed — is in
   `CLAUDE.md`. The class stays open.)*
 

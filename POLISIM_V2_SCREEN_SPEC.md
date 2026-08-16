@@ -534,7 +534,7 @@ rather than as a fit, which is a real observation the request missed.
 
 *(RECONCILED 2026-08-12: closed in two halves — `a7bd40d` built `DivisionRecord`/`DivisionLog` on
 2026-08-10 as this blocker's direct resolution, all five fields exactly as board 1c prints them; and
-`6bc5ec1` built the Parliament panel that reads it, stamps included, verified at both sizes on two
+`ab1b72f` built the Parliament panel that reads it, stamps included, verified at both sizes on two
 countries. ⚠ The roadmap's 2026-08-12 stamps ruling briefly re-declared this record absent — two days
 after this very item had caused it to be built; that correction is the absence-claim guard's origin
 story, recorded in `CLAUDE.md`. The original blocker text follows.)*

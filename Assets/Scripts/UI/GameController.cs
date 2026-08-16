@@ -4286,7 +4286,7 @@ namespace PoliSim.UI
                 // IMGUI reads the slice from the STYLE, never from the texture's own spriteBorder.
                 style.border = new RectOffset(10, 10, 9, 12);
 
-                // ⚠ FIX 2026-08-12 — d44ab2d replaced the brass with this pale paper face and left the
+                // ⚠ FIX 2026-08-12 — cbdde4e replaced the brass with this pale paper face and left the
                 // Primary kind's CREAM text in place: cream on pale paper, and the selected sub-tab
                 // label ("Domestic") was unreadable in every holdcal capture while the pre-conversion
                 // set read fine as white-on-brass. A face swap changes what ink reads on it — the two
