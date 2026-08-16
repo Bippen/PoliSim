@@ -115,7 +115,9 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
       point and `ScreenEdgeCheck` all read one shared default, `-shotdir=` still overrides;
       `/screenshots/` is gitignored defensively). Nothing under the capture dir is ever committed.
     - Applying this policy today keeps roughly 1,900 files (~1.9 GiB) and marks ~3.2 GiB prunable —
-      proposed, not yet executed; prune at convenience.
+      ✅ **APPROVED 2026-08-16 (Elias), execute at convenience.** The history rewrite that recovers
+      the ~730 MiB already in the pack was ruled YES the same day, **deferred to its own gated pass
+      after item 8 ships** — see CLAUDE.md "The repository weight finding" for its gate list.
 
 ---
 
@@ -286,9 +288,17 @@ This is the one authoritative order, replacing whatever each original document s
    bump, not migrated — item 10's collision map gains that line), and the batch-mode round-trip
    diagnostic that validates all of it without a live Editor. **The RNG layer was found already
    built and diagnostic-proven** (`SimulationRandom.CaptureDrawCounts`/`RestoreState`).
-   Implementation is unblocked on this report's shape; the version-policy recommendation awaits
-   Elias's ruling only in the sense that it is stated A/B in the session report — the recommended
-   default (refuse-load across breaks) is what gets built absent an overrule.
+   Implementation is unblocked on this report's shape. ✅ **Version policy RULED A 2026-08-16
+   (Elias): refuse-load with a plain message, `SaveVersion` bump on model swaps, no migration
+   machinery pre-release** — built as ruled.
+
+   ✅ **CORE BUILT AND GATE-GREEN, same day** — see CLAUDE.md "Save/load BUILT and gate-green" for
+   the implementation record, including the one finding the gate caught (Json.NET's
+   populate-in-place discard of the tuple-dict surrogate, isolated against the project's own DLL,
+   fixed with a load-bearing `ObjectCreationHandling.Replace`). F5 saves / F9 loads as the
+   temporary debug entry point; loads resume PAUSED; saves live in `persistentDataPath/saves/`.
+   **Still open**: the load/save UI (next pass), and the layer-3 live checklist (OPEN VERIFICATION
+   GAP block in CLAUDE.md — batch cannot reach OnGUI or the keyboard).
 
    **Dependency is in place and proven (commit `ebcc2d2`)**: the package resolved, and a throwaway probe
    serializing a NESTED dictionary — the precise case `JsonUtility` cannot express — compiled clean
@@ -569,7 +579,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | 2 | ✅ **Track 3 — DONE 2026-08-12** (`8d86587`): the eleven superseded sprites removed, `DeliveredAssetCheck`'s superseded allowance in the same commit (reads the manifest's own `!` rows, each skip logged). Verified: 0 missing / 21 supd skips, ChromeV2 50/50 both directions, full capture run clean post-deletion |
    | 3 | ✅ **Folder-tongue faces — DONE 2026-08-16** (`80d3e48`): `BuildFolderTabStyle` + the deferred active-tongue paint (§A.7's joined look — the sheet would otherwise close the tongue with its keyline); tongue-edge constants MEASURED from the PNGs' alpha, not the manifest's stated 12px; ink-on-paper labels both ways (the cream selected label would be the inversion class on paper). Verified 78 captures × both sizes, all guards 0, rule-15 diff against `winusa1600`/`grdusa2560`. ⚠ Hover face and the real click on the deferred-painted tab are not harness-drivable — awaiting Elias's live look | none — ruled B |
    | 4 | ✅ **WIN-form election reveal pin — DONE 2026-08-12** (`4b74dec`): both reveal forms + game over pinned in one chain; election search extracted to one helper. The FP-meeting search variant queued with it was found ALREADY BUILT (C2's continuation loop, capture 84b) — stated, not re-built |
-   | — | *Item 8 save/load* | sequencing: 2nd in the execution order, behind v2.0 |
+   | — | *Item 8 save/load* — ✅ **CORE BUILT AND GATE-GREEN 2026-08-16**: all three layers implemented on the mechanism report, `SaveLoadRoundTripDiagnostic` 12/12 scenarios clean (six countries × two seeds, continuation-identical, saves string-equal). Remaining: the load/save UI (its own pass), and the UI-draft/F5-F9 live checklist in the OPEN VERIFICATION GAP block | UI pass startable; live checklist waits on Editor access |
    | — | *The fiscal-divergence pass* | PARKED by ruling — Elias schedules it |
    | — | *CT Phases 4–5, then Round 4* | 3rd/4th in the execution order; Phases 4–5 now calibrate against 365-day turns |
    | — | *Step C batches C1/C2/C3/C5* | buildable since 2026-08-02; ✅ **RULED 2026-08-12 (R1): folds into Round 4's slot** — both add new systems, same don't-build-twice logic |

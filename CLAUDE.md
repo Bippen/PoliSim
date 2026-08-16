@@ -8108,6 +8108,18 @@ the newly active tongue paints forward and joined, the click lands even though t
 in-bar pixels are painted after the sheet). Anything off → the folder-tongue entry above has every
 constant and mechanism. When done, flip this block to CLOSED with what was seen.
 
+**SECOND ENTRY (2026-08-16) — the save/load UI-DRAFT round trip.** The batch round-trip
+diagnostic proves layers 1 and 2 (world + pending state) but structurally cannot reach layer 3:
+the draft capture pair lives in GameController and the batch has no OnGUI and no keyboard. Never
+exercised: `CaptureUiDrafts`/`RestoreUiDrafts` against a live controller, and the F5/F9 debug
+hook itself (new-Input-System path). **The two-minute close**: enter Play, pick a country, drag a
+few tax/welfare/sector sliders WITHOUT introducing them, note the values, press **F5** (console:
+`SAVE: wrote ...`), exit Play, enter Play again, pick any country, press **F9** — the game must
+come back at the saved date PAUSED, on the saved country, with the dragged draft values intact
+and the dashboard sane. Then advance a few days and confirm bills/interrupts behave. Anything
+off → the save/load entry below has the mechanism. Neither entry in this block is assumed-good
+until its checklist runs.
+
 ## The repository weight finding (2026-08-16, measured before diagnosed)
 
 ### The numbers
@@ -8143,15 +8155,23 @@ repo is healthy — a ~15-25 MiB project wearing a 742 MiB pack.
   recorded. Applied today that keeps ~1.9 GiB and marks **~3.2 GiB prunable — proposed, not
   executed.**
 
-### What was NOT done — the history question, queued as a ruling
+### The history question — RULED YES 2026-08-16, deferred to its own gated pass
 
 Deleting the captures from the tip recovers **zero bytes**: every clone still downloads the 742
 MiB pack. Only a history rewrite (`git filter-repo` dropping `screenshots/` from every commit)
 recovers the ~**730 MiB**, and it costs: **every commit hash after `b0d0b9c` changes**, which
 invalidates every hash cited across CLAUDE.md, the roadmap and COMPLETED.md (this file alone
 cites dozens); the remote needs a force-push and any other clone a re-clone; and it wants a fresh
-full backup first. That is a ruled pass of its own or it is nothing — parked with these numbers
-attached, per the boundary set when this investigation was commissioned.
+full backup first.
+
+**Elias's ruling (2026-08-16): the rewrite happens — but as its OWN gated pass, after save/load
+(item 8) ships, never riding a feature pass.** Its gate list, so the pass that runs it starts
+complete: (1) a fresh full backup of the repository first; (2) a citation sweep over every hash
+after `b0d0b9c` in CLAUDE.md / the roadmap / COMPLETED.md, mapping old→new or annotating them as
+pre-rewrite citations; (3) the force-push and re-clone coordination. Until that pass runs, the
+742 MiB pack is a known, accepted cost. **Pruning of superseded capture sets in
+`../PoliSim-captures/` was approved at convenience in the same ruling** (see rule 15's retention
+policy in the roadmap).
 
 ## Save/load mechanism report (2026-08-16) — item 8's shape, derived from the code as it stands
 
@@ -8239,6 +8259,10 @@ compression first pass (a save is a few hundred KB; `StatHistory` dominates and 
 
 ### Version tolerance, given that item 10 replaces the political model wholesale
 
+✅ **RULED A, 2026-08-16 (Elias): refuse-load with a plain message, `SaveVersion` bump on model
+swaps, no migration machinery pre-release.** The policy below is now the ruling, not a
+recommendation.
+
 - **`SaveVersion` int, starting at 1.** `TypeNameHandling.None` always (no `$type` — rename
   tolerance and the standard Newtonsoft security posture). `MissingMemberHandling.Ignore`.
 - **Additive model changes cost nothing by construction**: new fields default, removed fields are
@@ -8265,3 +8289,60 @@ simulation state.
 GUI styles/textures/fonts (rebuilt every frame), the policy-preview cache (recomputes), scroll
 positions and selected tab/category (navigation, cheap to add later if exact-seat resume is ever
 wanted), and `CabinetSystem.DecisionPool` (authored content, not state).
+
+## Save/load BUILT and gate-green (2026-08-16) — item 8's core, on the mechanism as reported
+
+Implemented exactly to the mechanism report above, hazards first per the pass directive, and
+accepted by `SaveLoadRoundTripDiagnostic`: **12 of 12 scenarios (all six countries as player ×
+seeds 777 and 424242) — 8 continuation turns identical field-by-field, restore-point snapshot
+identical, original and re-serialized-restored saves string-equal, end-state saves string-equal,
+zone identity asserted on every load, RNG draw counts exact, version gate refusing as ruled,
+atomic file IO with .bak proven. Exit 0.**
+
+### What was built, where
+
+- `Assets/Scripts/Persistence/SaveGame.cs` — the root shape + `SimulationPendingState` (the 14
+  pending structures) + `UiDraftState` (~30 controller drafts) + `PendingCabinetDecisionRecord`.
+- `Assets/Scripts/Persistence/SaveGameService.cs` — Newtonsoft settings (PreserveReferences /
+  MissingMember.Ignore / TypeNameHandling.None), the version gate (ruling A verbatim in the
+  message), `CaptureZoneGroups` + `AssertZoneIdentity` (hazard 1, throws on a split zone),
+  `RestoreInto` (ONE orchestrator pairing RNG restore with manager restore - the
+  AdvanceCountryDayTick one-list lesson applied at birth), atomic `SaveToFile` (tmp → Replace →
+  .bak), `persistentDataPath/saves/` default.
+- `SimulationManager.CaptureSaveState()`/`RestoreSaveState(...)` — the explicit pending-state pair;
+  `FiscalPeriod` promoted to public-nested so mid-period accruals persist whole.
+- `GameController.CaptureUiDrafts()`/`RestoreUiDrafts(...)` + `RestoreFromSave` (hazard 2: every
+  controller ref re-resolved by id from the restored world) + the **F5/F9 debug entry point**
+  (new-Input-System `Keyboard.current`, since `activeInputHandler: 1` makes legacy `Input` throw —
+  caught at build time by checking before writing the obvious thing). Loads always resume PAUSED.
+  A null-Ui save (batch-written) treats every logged division as already-seen rather than
+  replaying up to 24 ceremonies.
+- Hazard 4's five private fields carry `[JsonProperty]` (`MultiResolutionSeries._last*Date` ×4,
+  `DivisionLog._lastNumber`); hazard 5's tuple-keyed dictionary rides a private list surrogate on
+  `PublishedData`.
+- `Assets/Editor/SaveLoadRoundTripDiagnostic.cs` — the gate. Mirrors the controller's day order
+  exactly (AdvanceDay → AdvanceCountryDayTick → AdvanceTurn), saves MID-TURN at day 37 with three
+  player bills 11 days into their 21-day countdowns plus two never-counting bills on a neighbour,
+  a Finance minister appointed so cabinet decisions roll and resolve through the restored-copy
+  path, and compares by reflection over EconomyState (28 fields - a new field joins the compare
+  without editing the diagnostic) plus counts, cadence, division numbers and pending day-counters.
+
+### The finding the gate caught (one, and exactly where the report pointed)
+
+**The first run failed all 12 scenarios the same way: `PeriodClosingValues` restored as 0 entries
+on every country** - serialized fine, silently discarded on load. Isolated OUTSIDE Unity against
+the project's own Newtonsoft DLL: under default `ObjectCreationHandling.Auto`, Json.NET treats a
+READABLE collection member as populate-in-place - during deserialization it calls the surrogate's
+GETTER, populates the temporary list the getter returns, and never calls the setter, so the data
+lands in a throwaway. **`ObjectCreationHandling.Replace` on the `[JsonProperty]` is load-bearing**
+and is commented as such at the site. This is hazard 5's class (the report's "murky
+converter-on-unwritable-member path" suspicion, manifested one door over), caught by the master
+string-equality assert on its first run - which is the argument for that assert existing.
+
+### Honest scope, restated
+
+Layers 1 and 2 are batch-proven. **Layer 3 (UI drafts) and the F5/F9 hook are NOT** - no OnGUI or
+keyboard in batch - and are recorded as the second entry in the OPEN VERIFICATION GAP block above,
+with the two-minute Editor checklist. **No load/save UI this pass** (ruled: batch-proven system
+with a debug entry point beats a UI over an unproven one); the menu is the next pass. Saves live
+outside the repository at `persistentDataPath/saves/` and nothing writes them into the tree.
