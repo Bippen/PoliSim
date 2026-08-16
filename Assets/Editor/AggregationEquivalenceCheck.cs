@@ -287,7 +287,84 @@ namespace PoliSim.EditorTools
                 }
             }
 
-            Debug.Log($"=== Phases 1-4 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% (plus the bucket asserts) ===");
+            // --- PHASE 5: the core macro engine ---------------------------------------------------
+            // Two countries with different profiles (USA healthy, Italy high-debt), both driven off
+            // baseline (an 8% output shock plus a 2-point unemployment gap) so the identity has a
+            // real gap to close and Okun/Phillips have real gaps to respond to. Both paths get the
+            // IDENTICAL plan level and rate. Residual expectations, stated: the identity's affine
+            // slice is exact at constant inputs but its attractor moves daily (PotentialGDP compounds
+            // under it); Okun's daily growth sums differ from the turn growth at second order
+            // (compounding vs sum); the expectations chain adapts along the intra-period path rather
+            // than once at its end. All are the Phase 3 class - small by construction, real, and the
+            // thing being measured. None of the seven compared quantities is near a zero crossing at
+            // these drives, so the relative bar is honest here; the MATRIX is where the signed
+            // near-zero quantities (TradeBalance, growth rates, budget balance) live, and those are
+            // judged on TrajectoryDiffCheck's absolute column per the Phase 4 verdict.
+            foreach ((CountryId id, float gdpShock, float unemploymentShock) in new (CountryId, float, float)[]
+                     { (CountryId.USA, 0.92f, 2f), (CountryId.Italy, 0.92f, 2f),
+                       (CountryId.USA, 0.98f, 0.5f), (CountryId.Italy, 0.98f, 0.5f) })
+            {
+                World m1 = WorldFactory.CreateDefault();
+                World m2 = WorldFactory.CreateDefault();
+                Country cm = m1.GetCountry(id);
+                Country cn = m2.GetCountry(id);
+                foreach (Country x in new[] { cm, cn })
+                {
+                    x.State.GDP *= gdpShock;
+                    x.State.Unemployment += unemploymentShock;
+                }
+
+                float plannedG = cm.State.GDP * (cm.GovernmentSpendingRate / 100f);
+                float rate = cm.CurrencyZone.InterestRate;
+
+                // Turn path, AdvanceTurn's exact order.
+                float gdpBefore = cm.State.GDP;
+                MacroSystem.ApplyNationalAccounts(cm, plannedG, rate);
+                MacroSystem.ApplyPotentialGdpGrowth(cm);
+                float turnGrowth = (cm.State.GDP - gdpBefore) / Mathf.Max(gdpBefore, 1f) * 100f;
+                MacroSystem.ApplyOkunsLaw(cm, turnGrowth);
+                MacroSystem.ApplyPhillipsCurveInflation(cm);
+                MacroSystem.ApplyInflationExpectations(cm.State);
+
+                // Daily path, AdvanceDay's exact order, with the period-open unemployment as Okun's
+                // fixed reversion reference (the shape that replaced the self-referencing form after
+                // it failed this very bar - the failure is kept in ApplyOkunsLaw's own comment).
+                float unemploymentAtOpen = cn.State.Unemployment;
+                float gdpAtOpen = cn.State.GDP;
+                float potentialAtOpen = cn.State.PotentialGDP;
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
+                {
+                    float dayBefore = cn.State.GDP;
+                    MacroSystem.ApplyNationalAccountsDaily(cn, plannedG, rate, potentialAtOpen);
+                    MacroSystem.ApplyPotentialGdpGrowthDaily(cn);
+                    float annualized = (cn.State.GDP - dayBefore) / Mathf.Max(gdpAtOpen, 1f) * 100f * SimulationManager.DaysPerTurn;
+                    MacroSystem.ApplyOkunsLawDaily(cn, annualized, unemploymentAtOpen);
+                    MacroSystem.ApplyPhillipsCurveInflation(cn);
+                }
+
+                // Expectations at the boundary, both regimes - a period stance, not a flow (the
+                // measured failure of the daily form is recorded at MacroSystem's Phase 5 block).
+                MacroSystem.ApplyInflationExpectations(cn.State);
+
+                string label = $"{id}@{(1f - gdpShock) * 100f:F0}%shock";
+                total += 5;
+                passed += Compare($"{label}.GDP", cm.State.GDP, cn.State.GDP) ? 1 : 0;
+                passed += Compare($"{label}.PotentialGDP", cm.State.PotentialGDP, cn.State.PotentialGDP) ? 1 : 0;
+                passed += Compare($"{label}.Unemployment", cm.State.Unemployment, cn.State.Unemployment) ? 1 : 0;
+                passed += Compare($"{label}.Inflation", cm.State.Inflation, cn.State.Inflation) ? 1 : 0;
+                passed += Compare($"{label}.InflationExpectations", cm.State.InflationExpectations, cn.State.InflationExpectations) ? 1 : 0;
+
+                // C and I are INFO, not counted: nothing reads them back (display decompositions),
+                // and the two forms report different, individually-correct things - the turn form's
+                // levels reflect the period-START GDP, the daily form's the day it is - so under a
+                // within-period recovery the comparison measures the recovery, not a defect. Judged
+                // here honestly rather than silently: the deviation should track GDP's own
+                // within-period movement and nothing else.
+                Compare($"{label}.Consumption (INFO)", cm.State.Consumption, cn.State.Consumption);
+                Compare($"{label}.Investment (INFO)", cm.State.Investment, cn.State.Investment);
+            }
+
+            Debug.Log($"=== Phases 1-5 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% (plus the bucket asserts) ===");
             CheckExit.Finish(passed == total ? 0 : 1);
         }
 

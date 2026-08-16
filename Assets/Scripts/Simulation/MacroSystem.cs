@@ -160,19 +160,50 @@ namespace PoliSim.Simulation
         /// GetWelfareAdjustedReversionSpeed), both small and clamped so this stays a subtle secondary
         /// effect, not a new primary driver of unemployment.
         /// </summary>
-        public static void ApplyOkunsLaw(Country country, float actualGrowthRatePercent)
+        public static void ApplyOkunsLaw(Country country, float actualGrowthRatePercent, float sliceFraction = 1f,
+            float? reversionReferenceUnemployment = null)
         {
+            // CONTINUOUS TIME PHASE 5: `sliceFraction` scales the flow families - the Okun RESPONSE
+            // (the growth gap arrives annualized either way, so the per-step response is its slice;
+            // daily growth stays CAUSAL - a mid-period shock moves unemployment the same day) and
+            // the four level-gap nudges (ongoing per-turn flows, linear like Phase 4's drifts).
+            // OkunCoefficient itself takes NO transform - a relationship, not a flow.
+            //
+            // ⚠ THE REVERSION IS THE SHAPE THAT FAILED FIRST, and the record keeps the failure: the
+            // obvious PerDayReversion form (self-referencing, compounding) interleaves with the
+            // daily Okun response - each day's reversion acts on a U the response already moved, and
+            // under a large within-period transient the two fight across the NAIRU crossing
+            // (measured: USA at an 8% shock, turn 0.60 vs daily 2.54 - 325% drift against a 3% bar;
+            // still failing at a 2% shock on the seeded 13% output gap). The turn form applies both
+            // terms against the PERIOD-START state simultaneously, so the equivalent daily shape is
+            // Phase 3's own precedent - the FIXED-REFERENCE DISTRIBUTED APPLICATION, the FRF's
+            // frozen-stance pattern: the reversion references the unemployment the period OPENED at
+            // (<paramref name="reversionReferenceUnemployment"/>) and distributes LINEARLY (a
+            // fixed-reference distribution sums exactly to the turn's single application - the
+            // linear slice, NOT PerDayReversion, which is exact only for self-referencing forms).
+            // "Drift home to NAIRU" is structural, computed against where the period started - a
+            // stance, per Phase 3's stance-vs-flow question. No constant VALUE changed.
             EconomyState state = country.State;
             float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
-            float unemploymentChange = -OkunCoefficient * growthGap;
-            unemploymentChange += GetWelfareAdjustedReversionSpeed(country) * (country.NaturalUnemploymentRate - state.Unemployment);
-            unemploymentChange += GetMinimumWageUnemploymentAdjustment(country);
-            unemploymentChange += GetOvertimeUnemploymentAdjustment(country);
-            unemploymentChange += GetRetrainingUnemploymentAdjustment(country);
-            unemploymentChange += GetSectorUnemploymentAdjustment(country);
+            float unemploymentChange = -OkunCoefficient * growthGap * sliceFraction;
+            float reversionReference = reversionReferenceUnemployment ?? state.Unemployment;
+            unemploymentChange += GetWelfareAdjustedReversionSpeed(country) * sliceFraction
+                * (country.NaturalUnemploymentRate - reversionReference);
+            unemploymentChange += (GetMinimumWageUnemploymentAdjustment(country)
+                + GetOvertimeUnemploymentAdjustment(country)
+                + GetRetrainingUnemploymentAdjustment(country)
+                + GetSectorUnemploymentAdjustment(country)) * sliceFraction;
 
             state.Unemployment = Mathf.Clamp(state.Unemployment + unemploymentChange, 0f, MaxUnemploymentPercent);
         }
+
+        /// <summary>Phase 5 daily wrapper. <paramref name="annualizedDailyGrowthPercent"/> is the
+        /// day's realized GDP growth times DaysPerTurn - annualized so the gap against the annual
+        /// PotentialGrowthRate is dimensionally honest, then sliced back down inside.
+        /// <paramref name="unemploymentAtPeriodOpen"/> is the reversion's fixed reference - see the
+        /// turn form's Phase 5 comment for why it is the period-open value, not today's.</summary>
+        public static void ApplyOkunsLawDaily(Country country, float annualizedDailyGrowthPercent, float unemploymentAtPeriodOpen)
+            => ApplyOkunsLaw(country, annualizedDailyGrowthPercent, MacroSliceFractionPerDay, unemploymentAtPeriodOpen);
 
         /// <summary>
         /// UnemploymentReversionSpeed, nudged by any implemented UBI (real debated labor-supply
@@ -232,10 +263,86 @@ namespace PoliSim.Simulation
         /// <summary>How quickly inflation expectations adapt toward realized inflation each turn (0-1).</summary>
         private const float ExpectationsAdaptationSpeed = 0.5f;
 
-        /// <summary>Adaptive expectations: next turn's expected inflation moves partway toward this turn's realized inflation.</summary>
-        public static void ApplyInflationExpectations(EconomyState state)
+        /// <summary>Adaptive expectations: next turn's expected inflation moves partway toward this turn's realized inflation. Phase 5: the speed converts through PerDayReversion in the daily wrapper below - the adaptation is a plain reversion, Phase 2's mechanical shape.</summary>
+        public static void ApplyInflationExpectations(EconomyState state, float adaptationSpeed = ExpectationsAdaptationSpeed)
         {
-            state.InflationExpectations += (state.Inflation - state.InflationExpectations) * ExpectationsAdaptationSpeed;
+            state.InflationExpectations += (state.Inflation - state.InflationExpectations) * adaptationSpeed;
+        }
+
+        // --- Continuous Time Phase 5: the core macro engine's daily forms ---
+        // Derived, never typed in - the standing discipline.
+        //
+        // ⚠ EXPECTATIONS DELIBERATELY HAVE NO DAILY FORM, and a failed one existed briefly: a
+        // PerDayReversion adaptation toward the day's inflation fails the equivalence bar wherever
+        // inflation moves materially within a period (measured: Italy 6.2%, USA 10.3% at an 8%
+        // drive) - and no fixed-reference variant can reproduce the turn semantics, because the
+        // turn form adapts ONCE toward the period's CLOSING print, a boundary-anchored quantity by
+        // its own definition. That is not an implementation obstacle but a model statement worth
+        // keeping: expectations anchor to the period's headline figure, so adaptation is a PERIOD
+        // STANCE (the Phase 3 lesson at full strength - not everything becomes a flow), applied at
+        // the boundary in ApplyDomesticPolicy, reading the boundary day's inflation exactly as the
+        // turn regime always did. InflationExpectations is CONSTANT within a period - "sticky
+        // expectations" - which the daily Phillips step then reads all period long.
+        private const float MacroSliceFractionPerDay = 1f / SimulationManager.DaysPerTurn;
+
+        /// <summary>Phase 5 daily wrapper for trend output - the annual-rate POWER SLICE, the shape
+        /// Phase 4's verdict predicted for exactly this method.</summary>
+        public static void ApplyPotentialGdpGrowthDaily(Country country)
+        {
+            EconomyState state = country.State;
+            state.PotentialGDP = Mathf.Max(0f, state.PotentialGDP * Mathf.Pow(1f + country.PotentialGrowthRate / 100f, MacroSliceFractionPerDay));
+        }
+
+        /// <summary>
+        /// Phase 5: the identity's daily form - the AFFINE POWER SLICE, the one genuinely new shape
+        /// this phase adds to the taxonomy. The turn form is an affine contraction
+        /// `GDP' = A·GDP + B` with `A = (1−s)·a` (s = OutputGapReversionSpeed, a = the C+I share of
+        /// prior GDP after rate/confidence factors) and `B = (1−s)(G+NX) + s·PotentialGDP`. Neither
+        /// the plain power slice nor PerDayReversion fits an affine map, but its exact per-day
+        /// factorization does: `A_d = A^(1/D)`, `GDP_{d+1} = A_d·GDP_d + B·(1−A_d)/(1−A)` - D
+        /// compositions telescope to exactly `A·GDP + B` at constant inputs, so the validated
+        /// per-period dynamics (including how fast a shock decays) are preserved rather than
+        /// re-derived. Inputs DO move within a period (PotentialGDP grows daily, confidences drift),
+        /// so a small residual is EXPECTED at the equivalence bar, Phase 3's class.
+        ///
+        /// Iterating the raw turn map daily was considered and rejected: 365 applications of a
+        /// ~0.4-contraction snap GDP to its fixed point within days - a different, unvalidated
+        /// dynamics, not a finer version of the validated one. Consumption/Investment stay
+        /// annualized LEVELS recomputed from prior-day GDP, same semantics the turn form set.
+        /// `A` is clamped to 0.99 before the pow so the geometric-sum denominator (1−A) is never
+        /// near zero; with shares ≤0.8 and confidences ~1, A sits near 0.4.
+        /// </summary>
+        public static void ApplyNationalAccountsDaily(Country country, float governmentSpending, float interestRate,
+            float potentialGdpAtPeriodOpen)
+        {
+            // <paramref name="potentialGdpAtPeriodOpen"/> is the FOURTH fixed reference of this
+            // phase, and the one the equivalence bar demanded last: the turn form's identity read
+            // the PERIOD-OPEN PotentialGDP (trend growth applied AFTER the identity in
+            // AdvanceTurn's order), so a daily attractor that tracks the live, daily-compounding
+            // PotentialGDP lands GDP ~0.65% high per period - within GDP's own bar, but Okun
+            // multiplies it into a failing unemployment residual (measured 0.34 points on the US
+            // seeded gap). "The gap pulls toward the trend as assessed at the period's planning
+            // boundary" - the same anchor semantics as the planned G beside it and the FRF stance.
+            // PotentialGDP itself still compounds daily as a stat; the next period anchors afresh.
+            EconomyState state = country.State;
+            float priorGdp = state.GDP;
+            float rateAboveNeutral = interestRate - TaylorRule.NeutralRealRate;
+
+            float consumptionInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * ConsumptionInterestSensitivity);
+            float investmentInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * InvestmentInterestSensitivity);
+
+            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * state.ConsumerConfidence;
+            state.Investment = priorGdp * BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
+
+            float share = BaseConsumptionRate * consumptionInterestFactor * state.ConsumerConfidence
+                + BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
+            float contraction = Mathf.Clamp((1f - OutputGapReversionSpeed) * share, 0f, 0.99f);
+            float attractorTerm = (1f - OutputGapReversionSpeed) * (governmentSpending + state.TradeBalance)
+                + OutputGapReversionSpeed * potentialGdpAtPeriodOpen;
+
+            float contractionPerDay = Mathf.Pow(contraction, MacroSliceFractionPerDay);
+            state.GDP = Mathf.Max(MinGdp,
+                contractionPerDay * priorGdp + attractorTerm * (1f - contractionPerDay) / (1f - contraction));
         }
 
         // --- Poverty Rate: mean-reverts toward a baseline driven by the same unemployment/inflation gaps that already drive Approval's misery index ---

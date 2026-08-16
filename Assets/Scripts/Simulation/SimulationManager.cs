@@ -232,11 +232,44 @@ namespace PoliSim.Simulation
                     // system has finished with, and reads the same GDP the rest of the day did.
                     AccrueDailyFiscalFlows(country);
 
+                    // CONTINUOUS TIME PHASE 5 (2026-08-16): the core macro engine, daily - the last
+                    // and riskiest conversion, deliberately last. Order preserved from AdvanceTurn's
+                    // own sequence: identity (reading the CURRENT period's planned G - the same plan
+                    // the fiscal accrual above spends - and the live zone rate), then trend growth,
+                    // then Okun from the day's realized growth (annualized for the gap, sliced back
+                    // inside), then Phillips (a level map, same form both regimes), then expectations.
+                    // The day's growth is measured across the WHOLE day-step so far... deliberately
+                    // NOT: it is measured across this block alone (gdp before the identity vs after),
+                    // matching the turn form's own "growth produced by the identity" semantics rather
+                    // than folding in event shocks, which land at boundaries and decay through the
+                    // identity exactly as they always did.
+                    FiscalPeriod macroPeriod = GetOrSeedFiscalPeriod(country);
+                    float gdpBeforeMacroStep = country.State.GDP;
+                    float anchoredPotential = macroPeriod.PotentialGdpAtPeriodOpen > 0f
+                        ? macroPeriod.PotentialGdpAtPeriodOpen
+                        : country.State.PotentialGDP;
+                    MacroSystem.ApplyNationalAccountsDaily(country, macroPeriod.PlannedGovernmentSpending, country.CurrencyZone.InterestRate, anchoredPotential);
+                    MacroSystem.ApplyPotentialGdpGrowthDaily(country);
+                    // The day's growth increment is measured against the PERIOD-OPEN GDP, not the
+                    // day's own base - the third fixed reference of this phase: daily linear
+                    // increments over a fixed denominator sum EXACTLY to the turn form's linear
+                    // period growth, where per-day-base percents sum to log growth and leave a
+                    // second-order Okun residual that failed the bar on the seeded US output gap
+                    // (measured 0.21 unemployment points at a 2% drive). Still causal - the
+                    // increment is today's.
+                    float openGdp = macroPeriod.GdpAtPeriodOpen > 0f ? macroPeriod.GdpAtPeriodOpen : gdpBeforeMacroStep;
+                    float annualizedDailyGrowth = (country.State.GDP - gdpBeforeMacroStep) / Mathf.Max(openGdp, 1f) * 100f * DaysPerTurn;
+                    MacroSystem.ApplyOkunsLawDaily(country, annualizedDailyGrowth, macroPeriod.UnemploymentAtPeriodOpen);
+                    MacroSystem.ApplyPhillipsCurveInflation(country);
+                    // Expectations deliberately absent here - a boundary stance; see MacroSystem's
+                    // Phase 5 block comment for the measured failure of the daily form.
+
                     // PHASE 4: the history point, moved here from AdvanceTurn - see the comment at its
                     // old site for the finding. After every system, so the day's point is the state the
-                    // day actually produced (the publication-placement reasoning). On a boundary day
-                    // this records BEFORE AdvanceTurn's macro core runs - the turn-stepped stats' jump
-                    // lands on the next day's point, a one-day presentation shift on a 365-day cadence.
+                    // day actually produced (the publication-placement reasoning). Phase 5 note: with
+                    // the macro core daily too, the old "turn-stepped stats jump on the next day's
+                    // point" caveat has retired itself - every economic quantity now moves on the day
+                    // its point records.
                     country.History.Append(CurrentDate, country.State, country.CurrencyZone.InterestRate);
                 }
             }
@@ -514,6 +547,26 @@ namespace PoliSim.Simulation
             /// other budget decision in this game is made.
             /// </summary>
             public float PlannedFiscalReactionMultiplier;
+
+            /// <summary>PHASE 5: GDP as the period opened. With the identity daily, "this turn's
+            /// realized growth" (ApprovalRating's input) is the PERIOD's growth, measured from here -
+            /// the top-of-AdvanceTurn snapshot the turn form used no longer exists, because by the
+            /// boundary the days have already moved GDP. A zero (an old save from before this field)
+            /// reads as "no growth measurable yet" via the guard at the read site.</summary>
+            public float GdpAtPeriodOpen;
+
+            /// <summary>PHASE 5: unemployment as the period opened - the FIXED REFERENCE for Okun's
+            /// distributed reversion (the FRF frozen-stance pattern; see ApplyOkunsLaw's own Phase 5
+            /// comment for the measured failure of the self-referencing form). A zero from an old
+            /// save degrades to "revert toward NAIRU from zero" for one period's remainder - visible
+            /// and self-correcting at the next boundary, preferred over a special case.</summary>
+            public float UnemploymentAtPeriodOpen;
+
+            /// <summary>PHASE 5: PotentialGDP as the period opened - the identity's attractor anchor
+            /// (the fourth fixed reference; see ApplyNationalAccountsDaily for the measured Okun
+            /// amplification that a live attractor causes). Old-save zero degrades through the same
+            /// guard the identity call site applies to GdpAtPeriodOpen.</summary>
+            public float PotentialGdpAtPeriodOpen;
 
             // THE ACCRUAL - summed day by day, closed out into a FiscalTurnReport at the next boundary.
             public float AccruedRevenue;
@@ -1506,8 +1559,6 @@ namespace PoliSim.Simulation
         private void ApplyDomesticPolicy(Country country, PolicyDecision decision, float tariffRevenue)
         {
             EconomyState state = country.State;
-            float interestRate = country.CurrencyZone.InterestRate;
-            float gdpBeforeThisTurn = state.GDP;
 
             float totalTaxHike = ApplyTaxRateChanges(country, decision);
             ApplyWelfareGenerosityChanges(country, decision);
@@ -1568,6 +1619,14 @@ namespace PoliSim.Simulation
                 BudgetBalance = period.AccruedBudgetBalance
             };
 
+            // CONTINUOUS TIME PHASE 5: "this turn's realized growth" is now the PERIOD's growth,
+            // measured from the GDP the closing period opened at - by the time a boundary runs, the
+            // days have already moved GDP, so the old top-of-method snapshot would read ~zero. The
+            // guard covers a pre-Phase-5 save whose restored period carries no opening GDP.
+            float actualGrowthRate = period.GdpAtPeriodOpen > 0f
+                ? (state.GDP - period.GdpAtPeriodOpen) / Mathf.Max(period.GdpAtPeriodOpen, 1f) * 100f
+                : 0f;
+
             // Open the next period. The SWF return is drawn ONCE here and accrued daily - see
             // FiscalPeriod's doc comment for that decision and why daily draws were rejected. The draw
             // sits at the same point in ApplyDomesticPolicy the old ApplyReturns call did, so the
@@ -1585,18 +1644,28 @@ namespace PoliSim.Simulation
             // period adopts responds to the debt the country actually ended this one with - the same
             // instant the turn form read it, for the same reason.
             period.PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
+            period.GdpAtPeriodOpen = state.GDP;
+            period.UnemploymentAtPeriodOpen = state.Unemployment;
+            period.PotentialGdpAtPeriodOpen = state.PotentialGDP;
 
-            MacroSystem.ApplyNationalAccounts(country, spendingResult.GovernmentSpending, interestRate);
-            MacroSystem.ApplyPotentialGdpGrowth(country);
+            // CONTINUOUS TIME PHASE 5: the identity, trend growth, Okun, Phillips and expectations
+            // have already been charged day by day in AdvanceDay - applying any of them again here
+            // would double-count a full turn's worth on top of the daily steps (the standing Phase
+            // 1/4 wording, for the last time: this was the final turn-stepped economic system).
+            // PreviewTurn keeps ALL the turn forms as their only remaining callers - it models one
+            // whole turn on a throwaway clone without advancing days, which is exactly what the turn
+            // forms are. ApplySectorGrowthEffect stays at the boundary above deliberately: it
+            // FINALIZES PotentialGrowthRate from sources Phases 1-3 already move daily, and a
+            // finalization tied to the spending resolution is a boundary decision, not a flow -
+            // PotentialGDP then compounds daily at that standing rate.
+            // Phase 2/3: PovertyRate, LFPR, the three crime indices and prison population run DAILY
+            // in AdvanceDay; the Round 3 ordering constraint moved with them and is preserved there.
 
-            float actualGrowthRate = (state.GDP - gdpBeforeThisTurn) / Mathf.Max(gdpBeforeThisTurn, 1f) * 100f;
-            MacroSystem.ApplyOkunsLaw(country, actualGrowthRate);
-            MacroSystem.ApplyPhillipsCurveInflation(country);
+            // PHASE 5: the ONE macro step that stays at the boundary, deliberately - adaptive
+            // expectations anchor to the period's closing print, and every daily form measurably
+            // fails the equivalence bar (see MacroSystem's Phase 5 block comment). Reads the
+            // boundary day's inflation, exactly what the turn regime always read.
             MacroSystem.ApplyInflationExpectations(state);
-            // Phase 2/3: PovertyRate, LFPR, the three crime indices and prison population now run DAILY in AdvanceDay.
-            // Applying them again here would add a full turn's reversion on top of 121 daily steps. The
-            // Round 3 ordering constraint (OrganizedCrime before CrimeIndex, which reads its freshly-
-            // updated value) moved with them and is preserved in AdvanceDay.
 
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
 
@@ -2707,7 +2776,10 @@ namespace PoliSim.Simulation
                 PlannedSwfReturn = country.SovereignWealthFund != null
                     ? SovereignWealthFundSystem.GetAverageReturnEstimate(country.SovereignWealthFund)
                     : 0f,
-                PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country)
+                PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
+                GdpAtPeriodOpen = country.State.GDP,
+                UnemploymentAtPeriodOpen = country.State.Unemployment,
+                PotentialGdpAtPeriodOpen = country.State.PotentialGDP
             };
 
             _fiscalPeriods[country.Id] = seeded;
