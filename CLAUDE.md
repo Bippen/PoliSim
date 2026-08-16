@@ -8634,3 +8634,46 @@ condition stated up front: not fixed, not worsened. `SaveLoadRoundTripDiagnostic
 - **The hybrid simulation is over.** Every economic quantity now moves on the day its history
   point records; the boundary keeps what belongs to it — resolutions, plans, stances, elections,
   events. PreviewTurn keeps every turn form as its own single-step estimator, correctly.
+
+## The FRF sweep — empty, and empty is the deliverable (2026-08-16, `afe0f24`)
+
+The ruled re-derivation of the harness-fitted pair, in real Unity, in the daily regime. The
+seven-point grid is enumerated in `FrfSweepDiagnostic`'s own doc (S ∈ {1.5, 2.5, 4, 6, 10} at
+[0.5, 1.5], the [0.8, 1.5] floor arm, the [0.5, 1.25] wall-direction probe; two seeds, six
+countries, 200 turns each, judged at the ruled 100–200 window; 1000-turn shape checks at S=2.5
+and 4 only). The consts became sweep-settable fields — defaults proven bit-identical against the
+`post5` trajectory at t200 to the decimal — with the revenue-capacity wall enforced in the hook
+itself. The byte-identical-distrust rule ran as a per-point flag; every point was measurably
+reached (the U=1.25 probe's one-decimal identity at seed 777 concealed real sub-decimal
+differences — USA's stance grazes 1.26 near t150, so even the tighter cap participates briefly).
+
+**The map**: at turns 100–200 the CURRENT pair is defensible — no country's stance saturates
+(USA peaks at 1.238), slopes near-flat, mechanism present and correctly signed, which is the
+standing scoping's own bar. At the 1000-turn diagnostic horizon, S=2.5–4 lands the climbers
+10–20 points lower with terminal slopes roughly halved (USA 142.5/135.4 vs 155.9; slopes
++0.014…+0.037/turn) — **strictly milder, never converging**. S≥6 destabilizes into limit cycles
+(France swings 32 points in 50 turns at S=10; stances slam floor-to-free). The loosened floor
+[0.8, 1.5] is catastrophic — five countries spiral to −300…−1010% ratios on compounding
+surpluses. Stances at t1000 sit at 1.32–1.46: approaching the cap while already outrun,
+confirming the record's stages-not-alternatives reading empirically.
+
+**The verdict, per the directive's own framing**: NO PAIR CONVERGES WITHIN THE WALL, and that is
+the finding, not a failure — a flow multiplier cannot outrun stock compounding at high debt
+wherever its cap sits. Values untouched. **The next fiscal-engine item is the stock-versus-flow
+mechanism report** (the candidates live outside the flow loop: maturity structure, inflation
+erosion of the nominal stock, primary-surplus rules above thresholds) — **its own pass with its
+own ruling, deliberately not started at this pass's tail.**
+
+**The harness comparison, as scoped**: the standalone harness no longer exists on disk (verified —
+`G:/UNITY/Projects` holds PoliSim and the captures sibling, nothing else), so the
+tool-disagreement map reduces to its one recorded instance: at this exact pair the harness
+claimed four-significant-figure stability across three horizons for a system real Unity shows
+diverging. Every sweep number is real Unity; there is no harness left to disagree at the new
+points, and nothing fitted by it should be trusted without the re-derivation this sweep just
+performed for its most consequential output.
+
+**Sequence state after this pass**: item 7 closed, item 8 shipped, the sweep closed empty —
+**Round 4 is the next Master Sequence item**, scoped fresh per its own gate against both finished
+foundations (daily simulation, gated legislation), with Step C folded in per R1. Dated edges:
+the GitHub GC re-check falls due ~2026-08-23 (one command); the Editor checklist stays
+access-gated.

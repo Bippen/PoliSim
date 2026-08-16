@@ -159,12 +159,17 @@ because they are not done.
   being authored). ~~16 figures needing database access~~ — **all sourced 2026-08-02; section B is empty
   and C1/C2/C3/C5 are buildable.** *Decisions, database access, Claude Design and the visual reviews all
   emptied on 2026-08-02.* Three quality debts survive in section B — none blocks a batch.
-- 🔴 **FISCAL-ENGINE PRIORITY — the unbounded debt divergence, PARKED pending its own dedicated pass**
-  (ruled 2026-08-11; diagnosis complete — interest compounding against an asymmetrically bounded
-  stabiliser, see Open Questions). It supersedes C4's closure, which waits on it
-  (`MISSING_PREREQUISITES.md` §F1, reconciled 2026-08-12). *(The former entry here — "highest-priority
-  defect: the debt-to-zero bimodality" — was FIXED 2026-08-02; its full record migrated to
-  `COMPLETED.md` in the 2026-08-12 reconciliation.)*
+- 🔴→📋 **FISCAL-ENGINE: the unbounded debt divergence — SWEPT AND EMPTY (2026-08-16, `afe0f24`).**
+  The ruled FRF sweep ran in real Unity in the daily regime and **no pair converges within the
+  revenue-capacity wall** — steeper in-wall slopes strictly mildew the divergence (S=4 roughly
+  halves the terminal slope) but every climber still climbs; S≥6 oscillates; the loosened floor is
+  catastrophic. The diagnosis stands confirmed AS A MECHANISM LIMIT: a flow multiplier cannot
+  outrun stock compounding wherever its cap sits. **Next: the STOCK-VERSUS-FLOW MECHANISM REPORT**
+  — what real sovereigns do outside this loop (maturity structure, inflation erosion of the nominal
+  stock, primary-surplus rules above thresholds) — **its own pass with its own ruling, not started
+  at the sweep's tail.** C4's closure (`MISSING_PREREQUISITES.md` §F1) now waits on that report.
+  *(History: diagnosis 2026-08-11; the debt-to-zero bimodality FIXED 2026-08-02, record in
+  `COMPLETED.md`.)*
 - **IN FLIGHT — v2.0 (item 9-v2.0):** the IMGUI half is COMPLETE through the chrome placement track
   (2026-08-12 — row family, six placements, Division Records, every chrome sprite dispositioned by
   Phase 2's derived statement). Coverage machinery standing: six countries × two sizes captured, the
@@ -592,7 +597,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | 3 | ✅ **Folder-tongue faces — DONE 2026-08-16** (`9497673`): `BuildFolderTabStyle` + the deferred active-tongue paint (§A.7's joined look — the sheet would otherwise close the tongue with its keyline); tongue-edge constants MEASURED from the PNGs' alpha, not the manifest's stated 12px; ink-on-paper labels both ways (the cream selected label would be the inversion class on paper). Verified 78 captures × both sizes, all guards 0, rule-15 diff against `winusa1600`/`grdusa2560`. ⚠ Hover face and the real click on the deferred-painted tab are not harness-drivable — awaiting Elias's live look | none — ruled B |
    | 4 | ✅ **WIN-form election reveal pin — DONE 2026-08-12** (`5eb5dc7`): both reveal forms + game over pinned in one chain; election search extracted to one helper. The FP-meeting search variant queued with it was found ALREADY BUILT (C2's continuation loop, capture 84b) — stated, not re-built |
    | — | *Item 8 save/load* — ✅ **CORE BUILT AND GATE-GREEN 2026-08-16**: all three layers implemented on the mechanism report, `SaveLoadRoundTripDiagnostic` 12/12 scenarios clean (six countries × two seeds, continuation-identical, saves string-equal). Remaining: the load/save UI (its own pass), and the UI-draft/F5-F9 live checklist in the OPEN VERIFICATION GAP block | UI pass startable; live checklist waits on Editor access |
-   | — | *The fiscal-divergence pass (the FRF sweep)* — ✅ **SEQUENCED BY RULING 2026-08-16: runs AFTER Phase 5, in the daily regime it will live in** (sweeping in the turn regime then converting is calibration done twice — the don't-build-twice logic). Phase 5 is now DONE and converted the FRF's *shape* only (values untouched, as ruled). **The sweep's subject**: `FiscalReactionSensitivity` (1.5) + the `[0.5, 1.5]` clamp pair, swept AS THE PAIR they were fitted as, judged per the standing scoping (mechanism present and correctly signed at turns 100–200, never turn-1000 convergence). **What Phase 5's runs already reveal for its starting conditions**: the daily regime reproduces the turn regime's divergence signature within ~1 point, so the sweep starts from the same measured baseline (USA 155.9 / Germany 80.1 / Italy 165.9 / Poland 46.0 at t1000, `post5` trajectory files on disk); interest accrues daily against the live debt stock, so the asymmetry the diagnosis named (risk premium unbounded-ish vs stance capped at 1.5) now compounds daily and the sweep's granularity argument is stronger, not weaker | startable — Elias schedules it |
+   | — | *The FRF sweep* — ✅ **RUN AND CLOSED EMPTY 2026-08-16 (`afe0f24`)**, in the daily regime as sequenced. Seven-point grid (S ∈ {1.5, 2.5, 4, 6, 10} at [0.5,1.5]; the [0.8,1.5] floor arm; the [0.5,1.25] wall-direction probe), two seeds, six countries, real Unity, every point measurably reached. **No pair converges within the revenue-capacity wall**: the current pair is defensible at the ruled 100–200 window (no saturation, near-flat slopes); S=2.5–4 strictly mildews the deep divergence at no in-window cost but the climb never equilibrates; S≥6 oscillates; the loosened floor spirals five countries to −300…−1010%; the tighter cap is near-inert in-window. Values untouched. The harness that fitted the pair no longer exists on disk — its four-sig-fig stability claim at this exact pair stands as the one recorded tool-disagreement. **Next fiscal-engine item: the STOCK-VS-FLOW MECHANISM REPORT, its own pass with its own ruling** | closed — the mechanism report is Elias's to schedule |
    | — | *CT Phases 4–5, then Round 4* | 3rd/4th in the execution order; Phases 4–5 now calibrate against 365-day turns |
    | — | *Step C batches C1/C2/C3/C5* | buildable since 2026-08-02; ✅ **RULED 2026-08-12 (R1): folds into Round 4's slot** — both add new systems, same don't-build-twice logic |
    | — | *Item 10 — elections* | priced after Sweden votes **13 Sept 2026** |
@@ -1309,6 +1314,16 @@ list stays short enough to actually read.
   interest grows from **6%→26%** of Germany's spending and **20%→46%** of Italy's. It leans correctly and
   is outrun. ⚠ Italy's 1.446 approaches the cap, so **the two hypotheses are stages rather than
   alternatives** — a fix aimed only at the cap arrives after the damage. Series in `CLAUDE.md`.
+
+  ✅ **THE SWEEP RAN AND CAME BACK EMPTY (2026-08-16, `afe0f24`)** — the ruled real-Unity re-derivation
+  of the pair, in the daily regime, seven points enumerated, every point reached. It CONFIRMS this
+  block empirically: no in-wall pair converges; steeper slopes mildew the climb without ending it;
+  the overdriven end oscillates; the loosened floor spirals negative. The stages-not-alternatives
+  reading confirmed too — stances sit at 1.32–1.46 at t1000, approaching the cap while already
+  outrun. **The finding graduates from diagnosis to measured mechanism limit**, and the next step is
+  the stock-versus-flow mechanism report (maturity structure, inflation erosion of the nominal
+  stock, primary-surplus rules above thresholds — the candidates outside the flow loop), its own
+  pass with its own ruling.
 
 - 🔴 **NEW 2026-08-02 — the rating thrash's real cause is the DEFICIT term, and it is a separate defect.**
   Removing the floor cut debt-swing anomalies 60% (6,225 → 2,507) and moved rating anomalies by 1.6%
