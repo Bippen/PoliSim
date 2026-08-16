@@ -8026,3 +8026,71 @@ they are the allowance's source now, and the manifest comment says so.
   into whatever next touches those documents.
 - **The big gates, untouched by ruling**: item 10 priced after 13 Sept 2026; the fiscal-divergence
   pass PARKED; save/load 2nd in the execution order. Sequencing is Elias's conversation, not a pass.
+
+## The folder-tongue pass - the tab bar's real §A.7 anatomy (2026-08-16, `80d3e48`)
+
+Startable row 3, the close-out's one remaining ungated item, and with it **item 9-v2.0 has no
+ungated work left** - what remains of v2.0 (the Canvas ELECTION NIGHT screen) is item-10-gated. The
+consolidated bar's six tabs move off the interim brass/paper treatment (`ButtonKind.Tab`/
+`TabSelected`, kept intact as the wholesale degradation path AND as the old country-selector
+degradation screen's button style, which this pass deliberately does not touch) onto
+`ui_tab_folder_on/_off/_hover` via `UiPalette.BuildFolderTabStyle`.
+
+### What placing three sprites actually took
+
+- **Real-colour furniture means the SELECTED label flips cream→ink.** The interim treatment printed
+  cream on brass; on the paper tongue that is the sub-tabs' exact ink-needs-paper inversion class
+  (`01eb29a`), caught at build time this once rather than by capture. Inactive labels take
+  `PoliSimTheme.InkOnStock` (`#45392A`, §A.7's own inactive type value - the paper ink ramp's faint
+  values die on the mid-tone stock). The selected ICON tints area ink rather than white for the
+  same reason; full ink strength stays the selected tongue's privilege, matching the spine rule.
+- **The measured constants beat the manifest's stated one.** The manifest says the off tongue "sits
+  12px lower"; the PNGs' own alpha puts the visible edges at y=3/14/20 @2× (on/hover/off) -
+  `FolderOnTongueTop`/`FolderHoverTongueTop`/`FolderOffTongueTop` = 2/7/10 @1×, constant SCREEN
+  pixels at every window size because they live inside `GUIStyle.border`'s top band, which IMGUI
+  never scales. The `ui_tab_spine` strip now rides each tongue's real edge (hover-aware via a
+  `Contains` check on the inactive tongues), inset 3px so its rounded ends stay inside the tongue's
+  own corner curve.
+- **The stacked-icon inset DERIVES instead of being the Phase C constant**: off-tongue drop + spine
+  height + 2px of air, through `ConsolidatedTabIconTopInset()` - one accessor read by the reserve
+  (`ConsolidatedTabButtonHeight`) and the imposition (`DrawConsolidatedTabButton`), the instance-#12
+  separation. The bar is ~9px taller for it, and the same inset serves both states so selection
+  never shifts layout.
+- **The joined look is a DEFERRED PAINT, not a z-order.** The content sheet draws after the bar and
+  would close the active tongue with its baked top keyline. So: the bar-to-sheet gap goes to zero
+  (`BuildFolderTabStyle` zeroes clone `margin.bottom`; `ConsolidatedTabRowHeight` keeps only the
+  top margin; one `tabPanelGap` local feeds both the Space and the content-height budget), and the
+  selected tab's button lays out and click-handles in bar order through a FULLY INVISIBLE clone,
+  its visuals painted by `DrawActiveFolderTongue` after the tab switch, extended
+  `FolderTongueJoinOverlap` (2px) down over the keyline. Painting the tongue twice instead would
+  double its baked semi-transparent shadow into a visible rim. Control count and order are
+  untouched - the stable-control-layout guarantee needs the CONTROL every frame, not its pixels.
+- **One approximation, recorded rather than engineered around**: hover is a STATE of the unselected
+  style and IMGUI has one `border` per style, so the hover face renders under the off face's 17px
+  top inset instead of its ideal 16 - one @1× pixel of extra top-band compression, invisible at
+  both capture sizes.
+- **§A.7's `0 14px` strip inset** keeps tongues off the sheet's rounded top corners
+  (`FolderTabStripSideInset`, constant px by the same unscaled-border reasoning; the width budget
+  shrinks in the same expression).
+- **Degradation is wholesale, per-frame, one authority**: `_folderTabsLive` (all three faces
+  resolve, refreshed in `RescaleStylesToScreen`) gates every branch the pass added - faces, gap,
+  reserve, insets, deferred paint - so a missing sprite degrades the whole bar to the interim
+  treatment coherently, never one mixed tongue.
+
+### Verification (the full rule-15 cycle the ruling asked for)
+
+Real Unity 6000.5.6f1, USA, `-shotstates`, both sizes: **78 captures each at 1600×950 and
+2560×1440 - 0 failed / 0 overflows / 0 escapes / 0 canvas-text violations (2 asserts, selftest
+OK), exit 0 both runs** (`fldusa1600`/`fldusa2560`). MSBuild compile check green before the first
+Unity run. Sets compared against `winusa1600` and `grdusa2560` (the close-out's own sets) by eye
+per rule 15: the tab-bar diff IS the deliberate change - selected tongue paper/forward/joined,
+inactive tongues stock/lower/tucked behind the sheet edge, spines on the real edges, labels
+legible both ways at both sizes - and nothing else moved structurally (unseeded warm-up, so every
+figure differs; the comparison is structural per rule 15's measured limit). The Budget screen's
+wider bar is that screen's own pre-existing layout, confirmed present in the baseline crop before
+being dismissed.
+
+**What capture cannot see, stated per rule 14**: the HOVER face and the spine's hover
+repositioning (the driver has no mouse), and the real CLICK path on the deferred-painted active
+tab (the driver selects tabs by reflection, so the invisible-clone button has never been clicked
+on film). Both are plain IMGUI state/button mechanics; both await Elias's live look.

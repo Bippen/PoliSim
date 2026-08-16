@@ -148,8 +148,10 @@ because they are not done.
 - **IN FLIGHT — v2.0 (item 9-v2.0):** the IMGUI half is COMPLETE through the chrome placement track
   (2026-08-12 — row family, six placements, Division Records, every chrome sprite dispositioned by
   Phase 2's derived statement). Coverage machinery standing: six countries × two sizes captured, the
-  reachable state axes pinned, rule 15 in the discipline. **Next major track: the Canvas path** (pilot:
-  country selector), with track 3's superseded-sprite removal proceeding when convenient.
+  reachable state axes pinned, rule 15 in the discipline. ~~**Next major track: the Canvas path**~~
+  **The Canvas track CLOSED 2026-08-12** (`ff703b7`; §A.14 set 2 of 3, ELECTION NIGHT item-10-gated
+  per R2) and **the folder-tongue pass closed 2026-08-16** (`80d3e48`, startable row 3) — **item
+  9-v2.0 now has NO ungated work left.** What remains of it waits on item 10.
 - **NOT STARTED, UNBLOCKED OR GATED** — item 8 (save/load: scoped, zero persistence code exists —
   re-verified 2026-08-12, search `persistentDataPath|JsonConvert|CaptureSaveState` over
   `Assets/Scripts`, no hits); item 7 Phases 4–5 (deferred behind v2.0, now against 365-day turns);
@@ -537,7 +539,7 @@ If a step's own validation fails, fix it before moving to the next — never pro
    | 1 | ✅ **Canvas pilot — DONE 2026-08-12** (`4c6abba`+`e278a1a`): the takeover seam (8 named defect classes, one found by the pilot's own first run), `CanvasChrome`, the selector per §A.14, `ui_scrim_takeover` wired. Discipline-carryover statement in `CLAUDE.md`. *(⚠ Count corrected same day: §A.14 defines THREE Canvas screens, not eight — the eight are the design boards.)* |
    | 1b | ✅ **Canvas screen 2 — SIGNING (1g), DONE 2026-08-12** (`bd23e3c`+`c6b9b1c`): the nearest neighbour, on the pilot's patterns plus the mid-game additions (takeovers stop the clock; CoverIn overlays the live dashboard; ceremonies fire only from play's day tick). Verified both sizes, B8 on film. **The §A.14 Canvas set is now 2 of 3 — ELECTION NIGHT (1h) alone remains, R2-gated on item 10.** ✅ The Canvas TEXT GUARD was ruled and BUILT same day (`a642c69`, `CanvasTextGuard`): self-testing both directions, driver-attached after each Canvas capture, fails at zero enumerated; limits verbatim in the class doc. Same commit: `CanvasChrome.TintedImage`/`AsAuthoredImage`, the tint-family choice forced at construction after the class's fifth visit |
    | 2 | ✅ **Track 3 — DONE 2026-08-12** (`8d86587`): the eleven superseded sprites removed, `DeliveredAssetCheck`'s superseded allowance in the same commit (reads the manifest's own `!` rows, each skip logged). Verified: 0 missing / 21 supd skips, ChromeV2 50/50 both directions, full capture run clean post-deletion |
-   | 3 | **Folder-tongue faces (`ui_tab_folder_*`) as their own pass** | none — ruled B |
+   | 3 | ✅ **Folder-tongue faces — DONE 2026-08-16** (`80d3e48`): `BuildFolderTabStyle` + the deferred active-tongue paint (§A.7's joined look — the sheet would otherwise close the tongue with its keyline); tongue-edge constants MEASURED from the PNGs' alpha, not the manifest's stated 12px; ink-on-paper labels both ways (the cream selected label would be the inversion class on paper). Verified 78 captures × both sizes, all guards 0, rule-15 diff against `winusa1600`/`grdusa2560`. ⚠ Hover face and the real click on the deferred-painted tab are not harness-drivable — awaiting Elias's live look | none — ruled B |
    | 4 | ✅ **WIN-form election reveal pin — DONE 2026-08-12** (`4b74dec`): both reveal forms + game over pinned in one chain; election search extracted to one helper. The FP-meeting search variant queued with it was found ALREADY BUILT (C2's continuation loop, capture 84b) — stated, not re-built |
    | — | *Item 8 save/load* | sequencing: 2nd in the execution order, behind v2.0 |
    | — | *The fiscal-divergence pass* | PARKED by ruling — Elias schedules it |
