@@ -8290,6 +8290,41 @@ GUI styles/textures/fonts (rebuilt every frame), the policy-preview cache (recom
 positions and selected tab/category (navigation, cheap to add later if exact-seat resume is ever
 wanted), and `CabinetSystem.DecisionPool` (authored content, not state).
 
+## The history rewrite — executed 2026-08-16, on its gate list, in order
+
+The ruled pass (see "The repository weight finding" above for the ruling and its gates). What
+happened, in the order it happened:
+
+- **Backup first, verified**: `C:\Users\elias\PoliSim-backup-2026-08-16` (a different physical
+  drive, outside `G:\UNITY`) — 778 MiB, working tree + `.git` complete (Library/Temp/Logs/obj
+  excluded as regenerable caches; `.git/logs` reflogs explicitly included after robocopy's `/XD
+  Logs` name-match caught them), 1342/1342 files, HEAD and all three branch refs matching, `fsck`
+  connectivity clean. GitHub held pre-rewrite state as the second copy until the force-push.
+- **The rewrite**: `git filter-repo --path screenshots --invert-paths` (v2.47.0, run from a
+  scratchpad-local embeddable Python — nothing installed on the system). **Pack: 742.03 MiB →
+  4.92 MiB**; objects 3,986 → 3,298; 112 of 335 commits re-hashed (the pre-capture era kept its
+  hashes). All three branches rewrote: `main`, `stranded/politics-elections`, **and
+  `frf/trend-term` — a third branch the gate list did not name**, included because a fresh clone
+  fetches every branch, so leaving it on old history would have kept the old pack reachable and
+  defeated the pass.
+- **The citation sweep**: every 7-40 char hex token in the 121 tracked text files checked against
+  the commit-map. **76 citations rewritten across 6 files** (CLAUDE.md 32, roadmap 40, one each in
+  MISSING_PREREQUISITES / the screen spec / GameController / UiPalette); 141 more cited unchanged
+  pre-capture commits and stand; **zero ambiguous, zero citations to commits that never existed**
+  (the two unmapped hex tokens are the screen spec's Claude Design project id and
+  ProjectVersion.txt's Unity build revision — benign, named so nobody re-investigates them).
+  Commit-MESSAGE citations were rewritten by filter-repo itself; every message-cited hash resolves,
+  verified across all three branches.
+- **Verification**: fresh clone at **4.89 MiB**, five swept citations `git show`n in the clone with
+  matching subjects (including `30a6287`, the new identity of the old first-capture commit), the
+  six asset checks run in the clone.
+
+⚠ **THE STANDING FACT this entry exists to carry: any commit hash recorded before 2026-08-16 in
+chat logs, external notes, or anything else outside this repository NO LONGER RESOLVES** unless it
+predates the capture era. The lookup path for archaeology is the backup above (pre-rewrite history
+intact, reflogs included) — or the commit-map preserved beside it as
+`PoliSim-backup-2026-08-16\commit-map`. In-repo documents were swept and are correct.
+
 ## Save/load BUILT and gate-green (2026-08-16) — item 8's core, on the mechanism as reported
 
 Implemented exactly to the mechanism report above, hazards first per the pass directive, and

@@ -115,9 +115,11 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
       point and `ScreenEdgeCheck` all read one shared default, `-shotdir=` still overrides;
       `/screenshots/` is gitignored defensively). Nothing under the capture dir is ever committed.
     - Applying this policy today keeps roughly 1,900 files (~1.9 GiB) and marks ~3.2 GiB prunable —
-      ✅ **APPROVED 2026-08-16 (Elias), execute at convenience.** The history rewrite that recovers
-      the ~730 MiB already in the pack was ruled YES the same day, **deferred to its own gated pass
-      after item 8 ships** — see CLAUDE.md "The repository weight finding" for its gate list.
+      ✅ **APPROVED 2026-08-16 (Elias), execute at convenience.** The history rewrite was ruled YES
+      the same day and ✅ **EXECUTED later that day as its own gated pass** — pack 742.03 → 4.92
+      MiB, 76 citations swept, fresh clone at 4.89 MiB with all six checks green. Full record in
+      CLAUDE.md "The history rewrite — executed 2026-08-16"; backup + commit-map at
+      `C:\Users\elias\PoliSim-backup-2026-08-16`.
 
 ---
 
