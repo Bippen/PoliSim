@@ -8325,6 +8325,23 @@ predates the capture era. The lookup path for archaeology is the backup above (p
 intact, reflogs included) — or the commit-map preserved beside it as
 `PoliSim-backup-2026-08-16\commit-map`. In-repo documents were swept and are correct.
 
+### Post-push close-out (2026-08-16, same day)
+
+- **The force-push landed whole** (run by Elias's explicit command after the permission layer
+  correctly held it): all three branches forced-updated. `UpstreamCheck` against the real remote:
+  0 ahead, resolving. A fresh clone FROM GITHUB — what the world sees, not what local state says —
+  downloads **4.89 MiB**, carries all three branches, and resolves the swept citations.
+- **GitHub's own size metric still reports ~746 MiB** — the anticipated server-side GC lag after a
+  force-push, NOT a failure: unreachable objects linger on GitHub until its background maintenance
+  collects them, but no clone downloads them (the 4.89 MiB clone is the proof). **Re-check
+  ~2026-08-23**; if it still reads ~746 MiB then, GitHub support can force a GC.
+- **The approved pruning executed**: `../PoliSim-captures/` went from **5,316 files / 5.1 GiB to
+  1,533 files / 1.8 GiB** (3,783 files, ~3.3 GiB freed). Kept, per the recorded retention policy:
+  the main-sweep pair per size (`fldusa*` newest + `winusa1600`/`grdusa2560` predecessors, held
+  until the folder-tongue gap closes), all twelve country-coverage sets (`cov*`), the newest
+  state-pin sets (`st2usa1600`, `stgermany1600`, `stsweden1600`, the four `div2*`), and the locale
+  set (`locusa1600`) — 24 label families. Everything pruned had its findings recorded.
+
 ## Save/load BUILT and gate-green (2026-08-16) — item 8's core, on the mechanism as reported
 
 Implemented exactly to the mechanism report above, hazards first per the pass directive, and
@@ -8381,3 +8398,41 @@ keyboard in batch - and are recorded as the second entry in the OPEN VERIFICATIO
 with the two-minute Editor checklist. **No load/save UI this pass** (ruled: batch-proven system
 with a debug entry point beats a UI over an unproven one); the menu is the next pass. Saves live
 outside the repository at `persistentDataPath/saves/` and nothing writes them into the tree.
+
+## The saves menu (2026-08-16) — item 8's UI pass, on clean history
+
+The discoverable path over the batch-proven core, IMGUI per the ruling — and the spec was checked
+before building, per the same ruling's own condition: **the v2 screen spec is SILENT on save/load**
+(no §A surface mentions it; §A.14's Canvas set is a closed three), so dashboard furniture
+contradicts nothing.
+
+- **The screen**: `DrawSavesMenuScreen`, an EXCLUSIVE screen state like the selector and the
+  reveal — an IMGUI overlay cannot stop events reaching controls drawn under it, so a modal here
+  IS a screen swap. Update holds the clock while it is open. Reached by a **Saves** button on the
+  speed row (the one panel visible on every tab), enabled THROUGH game over by composed
+  `GUI.enabled` — a game-over player is exactly who most needs Load.
+- **List** from `SaveGameService.ListSaves` (root-header reads, cached on open, never per-frame
+  disk polling): name, country, turn, in-game date, saved-at. **An incompatible save still LISTS**,
+  disabled with its reason in the row — a save that vanishes from the menu reads as data loss.
+- **Load** defers to `_pendingLoadPath`, executed at Update's safe point beside F5/F9 — a load
+  swaps the world, and doing that mid-OnGUI is the Layout/Repaint corruption class. Confirmation
+  ("Replace unsaved game?") appears only when days have advanced past the last save/load/new-game
+  stamp; **draft-only changes deliberately do not trip it**, stated here rather than silently true.
+  Every confirm beat is the SAME button re-labelled, never an extra control.
+- **Save-as** with `SanitizeSaveName` (dots stripped — they would collide with the .bak/.tmp
+  scheme); overwrites keep .bak and the status line says so. **Delete** removes the save AND its
+  .bak/.tmp, two-beat confirmed, the story stated in the footer verbatim.
+- **Driver**: `92_saves_menu` joins the main sweep — two saves written through the real service
+  (`zz_driver_capture_*`, deleted after the capture), the menu opened through the controller's own
+  `OpenSavesMenu`.
+
+**Verified**: 79 captures × both sizes (`sav2usa1600`/`sav2usa2560`), 0 failed / 0 overflows /
+0 escapes / 0 canvas violations, and the first capture run caught two composition defects fixed
+before the final sets — Unity's default grey TextField on paper (now `UiPalette.BuildTextFieldStyle`,
+plate ground + ink) and the Saves button on the smaller tab metric floating short of the speed
+buttons (now the same `_buttonStyle` base as its neighbours). Rule-15 diff against `fldusa*`: the
+speed row's five-button rank and the new screen are the deliberate changes; nothing else moved.
+**The round-trip diagnostic was not re-run and did not need to be** — this pass touched no
+serialization or capture/restore surface (`ListSaves`/`DeleteSave`/`SanitizeSaveName` are additive
+reads beside it). ⚠ The OPEN VERIFICATION GAP block stands untouched: this pass pins the SCREEN;
+the live click-through of load/save and the layer-3 round trip still wait on Editor access.

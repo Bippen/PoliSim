@@ -299,8 +299,15 @@ This is the one authoritative order, replacing whatever each original document s
    populate-in-place discard of the tuple-dict surrogate, isolated against the project's own DLL,
    fixed with a load-bearing `ObjectCreationHandling.Replace`). F5 saves / F9 loads as the
    temporary debug entry point; loads resume PAUSED; saves live in `persistentDataPath/saves/`.
-   **Still open**: the load/save UI (next pass), and the layer-3 live checklist (OPEN VERIFICATION
-   GAP block in CLAUDE.md — batch cannot reach OnGUI or the keyboard).
+
+   ✅ **THE SAVES MENU BUILT, same day, on clean history** — see CLAUDE.md "The saves menu". The
+   spec was checked and is silent on save/load, so IMGUI dashboard furniture contradicts nothing;
+   Saves button on the speed row (alive through game over), exclusive screen, deferred load at
+   Update's safe point, incompatible saves listed-not-hidden, the .bak story in the footer.
+   Verified 79 captures × both sizes, two first-capture composition defects fixed before the final
+   sets. **Item 8's one remaining opening: the layer-3 live checklist** (OPEN VERIFICATION GAP
+   block in CLAUDE.md — batch cannot reach OnGUI or the keyboard; closes in minutes with Editor
+   access).
 
    **Dependency is in place and proven (commit `ebcc2d2`)**: the package resolved, and a throwaway probe
    serializing a NESTED dictionary — the precise case `JsonUtility` cannot express — compiled clean
