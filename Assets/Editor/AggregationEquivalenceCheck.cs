@@ -189,8 +189,112 @@ namespace PoliSim.EditorTools
                 Object.DestroyImmediate(dailyGo);
             }
 
-            Debug.Log($"=== Phases 1-3 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% ===");
+            // --- PHASE 4: Demographics --------------------------------------------------------------
+            // Two countries with OPPOSITE demographic signs (Sweden grows, Germany shrinks), both
+            // driven off baseline through the real policy dials (family pro-natal, immigration
+            // restrictive) so the sensitivity non-conversions are exercised, not just the drifts.
+            // The rate chain should land near-exact (linear drifts sum identically; DependencyRatio's
+            // mid-period reads give a tiny path dependence); Population carries the Phase-3-class
+            // EXPECTED residual - the daily path compounds through a rate that reverts daily.
+            foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany })
+            {
+                World g1 = WorldFactory.CreateDefault();
+                World g2 = WorldFactory.CreateDefault();
+                Country cg = g1.GetCountry(id);
+                Country ch = g2.GetCountry(id);
+                foreach (Country x in new[] { cg, ch })
+                {
+                    x.FamilyPolicyLevel = 80f;
+                    x.ImmigrationPolicyLevel = 20f;
+                }
+
+                MacroSystem.ApplyDemographicRates(cg);                                  // one turn step
+                MacroSystem.ApplyPopulationGrowth(cg);
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
+                {
+                    MacroSystem.ApplyDemographicRatesDaily(ch);
+                    MacroSystem.ApplyPopulationGrowthDaily(ch);
+                }
+
+                total += 8;
+                passed += Compare($"{id}.NaturalBirthRate", cg.State.NaturalBirthRate, ch.State.NaturalBirthRate) ? 1 : 0;
+                passed += Compare($"{id}.BirthRate", cg.State.BirthRate, ch.State.BirthRate) ? 1 : 0;
+                passed += Compare($"{id}.DeathRate", cg.State.DeathRate, ch.State.DeathRate) ? 1 : 0;
+                passed += Compare($"{id}.NaturalNetMigrationRate", cg.State.NaturalNetMigrationRate, ch.State.NaturalNetMigrationRate) ? 1 : 0;
+                passed += Compare($"{id}.NetMigrationRate", cg.State.NetMigrationRate, ch.State.NetMigrationRate) ? 1 : 0;
+                passed += Compare($"{id}.DependencyRatio", cg.State.DependencyRatio, ch.State.DependencyRatio) ? 1 : 0;
+                passed += Compare($"{id}.PopulationGrowthRate", cg.State.PopulationGrowthRate, ch.State.PopulationGrowthRate) ? 1 : 0;
+                passed += Compare($"{id}.Population", cg.State.Population, ch.State.Population) ? 1 : 0;
+            }
+
+            // --- PHASE 4: the bucket-divergence assert ----------------------------------------------
+            // The multi-resolution buckets were built in Phase 0 for daily data and (finding, this
+            // pass) never received a daily offer until History.Append moved to AdvanceDay. This
+            // section is the first check that can fail if that plumbing regresses. WHAT IT
+            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for TWO
+            // daily-varying series - PovertyRate and DebtToGdpRatio - three assert families:
+            // cadence (Daily/Weekly/Monthly/Quarterly counts within one of 200/1, /7, /30, /91,
+            // Daily capped at StatHistory.MaxEntries), variation (Daily holds at least two DISTINCT
+            // consecutive values - the stat genuinely moves intra-week), and divergence (the Daily
+            // series' last value differs from Quarterly's last accepted value - the resolutions no
+            // longer mirror each other). It says nothing about bucket CONTENTS being the right
+            // values (the trajectory matrix owns value correctness) and nothing about stats that
+            // legitimately step per-turn (GDP stays turn-shaped until Phase 5).
+            {
+                var bucketGo = new GameObject("AggEq_Buckets");
+                try
+                {
+                    World bw = WorldFactory.CreateDefault();
+                    SimulationManager bSim = bucketGo.AddComponent<SimulationManager>();
+                    bSim.SetWorld(bw);
+                    const int BucketDays = 200;
+                    for (int i = 0; i < BucketDays; i++)
+                    {
+                        bSim.AdvanceDay();
+                    }
+
+                    Country bc = bw.GetCountry(CountryId.Sweden);
+                    foreach ((string name, MultiResolutionSeries series) in new (string, MultiResolutionSeries)[]
+                             { ("PovertyRate", bc.History.PovertyRate), ("DebtToGdpRatio", bc.History.DebtToGdpRatio) })
+                    {
+                        total += 3;
+                        int expectedDaily = Mathf.Min(BucketDays, StatHistory.MaxEntries);
+                        bool cadence = Mathf.Abs(series.Daily.Count - expectedDaily) <= 1
+                            && Mathf.Abs(series.Weekly.Count - Mathf.CeilToInt(BucketDays / 7f)) <= 1
+                            && Mathf.Abs(series.Monthly.Count - Mathf.CeilToInt(BucketDays / 30f)) <= 1
+                            && Mathf.Abs(series.Quarterly.Count - Mathf.CeilToInt(BucketDays / 91f)) <= 1;
+                        passed += Assert($"Buckets[{name}].cadence", cadence,
+                            $"D={series.Daily.Count} W={series.Weekly.Count} M={series.Monthly.Count} Q={series.Quarterly.Count}") ? 1 : 0;
+
+                        bool varies = false;
+                        for (int i = 1; i < series.Daily.Count; i++)
+                        {
+                            if (!Mathf.Approximately(series.Daily[i], series.Daily[i - 1])) { varies = true; break; }
+                        }
+
+                        passed += Assert($"Buckets[{name}].daily-variation", varies,
+                            varies ? "distinct consecutive dailies found" : "every daily point identical - daily data is not reaching the buckets") ? 1 : 0;
+
+                        bool diverges = series.Daily.Count > 0 && series.Quarterly.Count > 0
+                            && !Mathf.Approximately(series.Daily[series.Daily.Count - 1], series.Quarterly[series.Quarterly.Count - 1]);
+                        passed += Assert($"Buckets[{name}].resolution-divergence", diverges,
+                            "Daily tail vs Quarterly last accepted") ? 1 : 0;
+                    }
+                }
+                finally
+                {
+                    Object.DestroyImmediate(bucketGo);
+                }
+            }
+
+            Debug.Log($"=== Phases 1-4 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% (plus the bucket asserts) ===");
             CheckExit.Finish(passed == total ? 0 : 1);
+        }
+
+        private static bool Assert(string label, bool ok, string detail)
+        {
+            Debug.Log($"  {(ok ? "ok  " : "FAIL")} {label,-42} {detail}");
+            return ok;
         }
 
         private static bool Compare(string label, float turnValue, float dailyValue)

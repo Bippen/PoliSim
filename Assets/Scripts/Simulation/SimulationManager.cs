@@ -196,6 +196,20 @@ namespace PoliSim.Simulation
                     MacroSystem.ApplySectorEffectsDaily(country);
                     MacroSystem.ApplyInfrastructureConditionDaily(country);
 
+                    // CONTINUOUS TIME PHASE 4 (2026-08-16): Demographics daily. Rates BEFORE population
+                    // (ApplyPopulationGrowth reads the same-step freshly-updated Birth/Death/Migration,
+                    // the turn form's own documented contract), and BOTH before the Phase 2 block below
+                    // (ApplyLaborForceParticipationRateDaily reads DependencyRatio/NetMigrationRate gaps -
+                    // it now sees them move daily instead of jumping once per turn, which is the point).
+                    // The boundary-day ordering contract survives unchanged: AdvanceDay completes before
+                    // AdvanceTurn, so ResolveSpendingForTurn still reads a DependencyRatio that finished
+                    // this period's accumulation. One deliberate 1/365 timing shift, stated: a
+                    // Family/Immigration policy change committed at a boundary reaches the rates from the
+                    // NEXT day rather than the same instant - Phase 3's cash-lands-next-period precedent
+                    // in miniature.
+                    MacroSystem.ApplyDemographicRatesDaily(country);
+                    MacroSystem.ApplyPopulationGrowthDaily(country);
+
                     // CONTINUOUS TIME PHASE 2: Labor Market and Crime & Justice. The ORDER matters and is
                     // preserved exactly from AdvanceTurn - OrganizedCrime and Corruption run BEFORE
                     // CrimeIndex, which reads that day's freshly-updated OrganizedCrimeIndex, and
@@ -217,6 +231,13 @@ namespace PoliSim.Simulation
                     // Placed last in the day so it charges interest against the debt every earlier
                     // system has finished with, and reads the same GDP the rest of the day did.
                     AccrueDailyFiscalFlows(country);
+
+                    // PHASE 4: the history point, moved here from AdvanceTurn - see the comment at its
+                    // old site for the finding. After every system, so the day's point is the state the
+                    // day actually produced (the publication-placement reasoning). On a boundary day
+                    // this records BEFORE AdvanceTurn's macro core runs - the turn-stepped stats' jump
+                    // lands on the next day's point, a one-day presentation shift on a 365-day cadence.
+                    country.History.Append(CurrentDate, country.State, country.CurrencyZone.InterestRate);
                 }
             }
 
@@ -1457,11 +1478,14 @@ namespace PoliSim.Simulation
                 // what the seat-share formula actually reads, not last turn's stale value.
                 ParliamentSystem.UpdateSeats(country);
 
-                // Recorded here (once per real, committed turn) rather than inside
-                // ApplyDomesticPolicy itself, so PreviewTurn's throwaway clone - which calls
-                // ApplyDomesticPolicy's constituent steps directly, not this loop - never appends a
-                // phantom data point into the real history.
-                country.History.Append(CurrentDate, country.State, country.CurrencyZone.InterestRate);
+                // PHASE 4 FINDING (2026-08-16): History.Append lived HERE, once per turn, from Phase 0
+                // until this pass - which meant the multi-resolution buckets built FOR daily data had
+                // never received a daily offer, and Daily/Weekly/Monthly/Quarterly held identical
+                // one-point-per-turn series through Phases 1-3's genuinely daily variation. The append
+                // now runs in AdvanceDay (offered daily; each resolution's own gate accepts at its
+                // cadence, exactly the design intent its class doc always stated). PreviewTurn's
+                // phantom-point protection carries over unchanged: AdvanceDay never runs on the
+                // preview clone at all - stronger isolation than the old once-per-turn site had.
             }
 
             CurrentTurn++;
@@ -1496,11 +1520,14 @@ namespace PoliSim.Simulation
             // Round 3 item 5, Part B: must run BEFORE ApplyDemographicRates, same reasoning as
             // ApplyCrimeJusticeDeeperChanges above.
             ApplyDemographicPolicyChanges(country, decision);
-            // Round 3 item 5, Part A: must run BEFORE ResolveSpendingForTurn (pension/healthcare
-            // pressure read this turn's freshly-updated DependencyRatio) and before
-            // ApplyLaborForceParticipationRate below (reads DependencyRatio/NetMigrationRate).
-            MacroSystem.ApplyDemographicRates(country);
-            MacroSystem.ApplyPopulationGrowth(country);
+            // CONTINUOUS TIME PHASE 4: the demographic rates and population growth have already been
+            // charged day by day in AdvanceDay - applying either again here would double-count a full
+            // turn's worth on top of the daily steps (Phase 1's exact wording, same reason). The old
+            // ordering contract this comment carried - "must run BEFORE ResolveSpendingForTurn, which
+            // reads this turn's freshly-updated DependencyRatio" - still holds by construction:
+            // AdvanceDay finishes the boundary day before AdvanceTurn runs, so the DependencyRatio
+            // read below completed this period's accumulation. PreviewTurn keeps the turn forms as
+            // their only remaining callers, correctly rather than as dead code.
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             // Phase 1: the DECAY and the sector reversion have already been charged day by day in

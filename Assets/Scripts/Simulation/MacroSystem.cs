@@ -600,28 +600,50 @@ namespace PoliSim.Simulation
         /// freshly-updated rates - the same "must see this turn's just-updated value" timing
         /// requirement Infrastructure Feedback's condition-drag already established.
         /// </summary>
-        public static void ApplyDemographicRates(Country country)
+        public static void ApplyDemographicRates(Country country, float sliceFraction = 1f)
         {
+            // CONTINUOUS TIME PHASE 4: `sliceFraction` scales ONLY the four accumulating drift terms
+            // (secular decline, dependency drift, the two aging drifts) - they are flows with no
+            // target, so they take the LINEAR transform (the ApplyCrimeEffects precedent). The two
+            // policy SENSITIVITIES take no transform at all: each maps a slider LEVEL to a standing
+            // offset recomputed fresh every application (idempotent per day by construction), so
+            // scaling them would change what a slider position MEANS, not how fast it arrives -
+            // Phase 1's sector-sensitivity distinction, and Phase 3's stance-not-flow question
+            // answered per constant. Clamps unscaled, per the translation table's own warning.
             EconomyState state = country.State;
 
-            state.NaturalBirthRate = Mathf.Clamp(state.NaturalBirthRate - BirthRateSecularDeclineRate, MinBirthRate, MaxBirthRate);
+            state.NaturalBirthRate = Mathf.Clamp(state.NaturalBirthRate - BirthRateSecularDeclineRate * sliceFraction, MinBirthRate, MaxBirthRate);
             float familyPolicyEffect = FamilyPolicyBirthRateSensitivity * (country.FamilyPolicyLevel - 50f);
             state.BirthRate = Mathf.Clamp(state.NaturalBirthRate + familyPolicyEffect, MinBirthRate, MaxBirthRate);
 
             float birthDeathGap = state.DeathRate - state.BirthRate;
             state.DependencyRatio = Mathf.Clamp(
-                state.DependencyRatio + DependencyRatioDriftSensitivity * Mathf.Max(0f, birthDeathGap),
+                state.DependencyRatio + DependencyRatioDriftSensitivity * sliceFraction * Mathf.Max(0f, birthDeathGap),
                 MinDependencyRatio, MaxDependencyRatio);
 
             float dependencyGap = Mathf.Max(0f, state.DependencyRatio - country.BaselineDependencyRatio);
-            state.DeathRate = Mathf.Clamp(state.DeathRate + DeathRateAgingDriftSensitivity * dependencyGap, 0f, MaxDeathRate);
+            state.DeathRate = Mathf.Clamp(state.DeathRate + DeathRateAgingDriftSensitivity * sliceFraction * dependencyGap, 0f, MaxDeathRate);
 
             state.NaturalNetMigrationRate = Mathf.Clamp(
-                state.NaturalNetMigrationRate + MigrationAgingDriftSensitivity * dependencyGap,
+                state.NaturalNetMigrationRate + MigrationAgingDriftSensitivity * sliceFraction * dependencyGap,
                 MinNetMigrationRate, MaxNetMigrationRate);
             float immigrationPolicyEffect = ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - 50f);
             state.NetMigrationRate = Mathf.Clamp(state.NaturalNetMigrationRate + immigrationPolicyEffect, MinNetMigrationRate, MaxNetMigrationRate);
         }
+
+        // --- Continuous Time Phase 4: Demographics daily forms ---
+        // Derived, never typed in - the Phase 1 discipline that made the 121->365 turn change a
+        // one-line edit applies here from birth.
+        private const float DemographicSliceFractionPerDay = 1f / SimulationManager.DaysPerTurn;
+        private static readonly float PopulationGrowthReversionSpeedPerDay = PerDayReversion(PopulationGrowthReversionSpeed);
+
+        /// <summary>Phase 4 daily wrapper - the four drift flows at their per-day slice; sensitivities
+        /// and clamps untouched (see the turn form's own Phase 4 comment for the shape reasoning).</summary>
+        public static void ApplyDemographicRatesDaily(Country country) => ApplyDemographicRates(country, DemographicSliceFractionPerDay);
+
+        /// <summary>Phase 4 daily wrapper - reversion at PerDayReversion speed, the population factor
+        /// as the 1/DaysPerTurn power slice (algebraically exact at constant rate).</summary>
+        public static void ApplyPopulationGrowthDaily(Country country) => ApplyPopulationGrowth(country, PopulationGrowthReversionSpeedPerDay, DemographicSliceFractionPerDay);
 
         /// <summary>Small positive floor so a shrinking population can still recover instead of locking at exactly 0 (0 times anything is still 0) - mirrors MacroSystem.MinGdp's own reasoning.</summary>
         private const float MinPopulation = 0.1f;
@@ -682,21 +704,21 @@ namespace PoliSim.Simulation
         private const float PopulationGrowthReversionSpeed = 0.05f;
 
         /// <summary>
-        /// Real years represented by one turn, derived from this project's own established
-        /// turn-to-calendar-time convention (`ElectionSystem.ElectionCycle` = 12 turns per presidential
-        /// term = 4 real years - NOT the looser "1 turn ~= 1 year" approximation this section originally
-        /// assumed). BirthRate/DeathRate/NetMigrationRate/SteadyStateGrowthRate are all real, per-1,000-
-        /// population-PER-YEAR figures (that's how the source data is expressed and how they're
-        /// documented) - applying them to Population UNSCALED on every turn would apply a full year's
-        /// worth of demographic change 3x too often relative to real elapsed time (500 turns is ~167
-        /// real years, not 500), which is exactly what the original version of this fix did: the growth
-        /// RATE itself plateaued correctly, but Population still ended up compounding roughly 3x more
-        /// cumulative change than a faithful real-world extrapolation over the correct 167-year horizon
-        /// supports. Scaling each turn's applied growth by this fraction is the actual fix - tightening
-        /// MaxPopulationGrowthRateDeviation/PopulationGrowthReversionSpeed alone was tried first and
-        /// confirmed (empirically, via a throwaway diagnostic) insufficient, since neither one addresses
-        /// the real defect (over-compounding via too many applications of an annual-scale rate), only how
-        /// far/fast the rate itself moves.
+        /// Real years represented by one turn, derived from `ElectionSystem.ElectionCycle` (turns per
+        /// 4-year presidential term) rather than typed - since `d8f55ce` made a turn 365 days and a
+        /// term 4 turns, this derives to EXACTLY 1.0, and the Phase 4 throwaway diagnostic asserts
+        /// that agreement (with `DaysPerTurn`/365) before trusting anything downstream.
+        ///
+        /// ⚠ HISTORY, kept because it is the reason this constant exists at all:
+        /// BirthRate/DeathRate/NetMigrationRate/SteadyStateGrowthRate are real per-1,000-per-YEAR
+        /// figures, and in the 121-day-turn era applying them unscaled each turn compounded a year's
+        /// demographic change 3x too often - demographics' first structural bug, found by a throwaway
+        /// diagnostic after tightening the cap/reversion constants was tried first and measured
+        /// insufficient. The turn-length change did not retire the constant: it is the ONE place the
+        /// annual-rate-to-turn conversion is stated, and Phase 4's daily form slices through the same
+        /// statement (`YearsPerTurn`/`DaysPerTurn`), so a future turn-length change still lands here
+        /// exactly once. *(This comment previously still narrated the 121-day derivation as current -
+        /// corrected 2026-08-16, the Phase 4 pass's stale-comment catch.)*
         /// </summary>
         private const float YearsPerTurn = 4f / ElectionSystem.ElectionCycle;
 
@@ -723,14 +745,30 @@ namespace PoliSim.Simulation
         /// continues. Must run AFTER ApplyDemographicRates, which updates the three rates this reads for
         /// the same turn.
         /// </summary>
-        public static void ApplyPopulationGrowth(Country country)
+        public static void ApplyPopulationGrowth(Country country, float reversionSpeed = PopulationGrowthReversionSpeed, float sliceFraction = 1f)
         {
+            // CONTINUOUS TIME PHASE 4: three constants, three different non-conversions and one
+            // conversion, stated so the shapes stay reviewable. `PopulationGrowthRateSensitivity`
+            // shapes the TARGET (no time dimension - unscaled); `MaxPopulationGrowthRateDeviation`
+            // bounds the gap feeding that target (a state-space clamp - the translation table's own
+            // named trap, unscaled); the REVERSION converts through PerDayReversion like every
+            // reverting quantity since Phase 2; and the population application takes the POWER slice
+            // below. The `sliceFraction == 1f` branch keeps the turn form bit-identical to its
+            // pre-Phase-4 arithmetic (PreviewTurn and the equivalence check's turn side still run it).
             EconomyState state = country.State;
             float impliedRate = state.BirthRate - state.DeathRate + state.NetMigrationRate;
             float boundedGap = Mathf.Clamp(impliedRate - country.SteadyStateGrowthRate, -MaxPopulationGrowthRateDeviation, MaxPopulationGrowthRateDeviation);
             float target = country.SteadyStateGrowthRate + PopulationGrowthRateSensitivity * boundedGap;
-            state.PopulationGrowthRate += PopulationGrowthReversionSpeed * (target - state.PopulationGrowthRate);
-            state.Population = Mathf.Clamp(state.Population * (1f + state.PopulationGrowthRate / 1000f * YearsPerTurn), MinPopulation, MaxPopulation);
+            state.PopulationGrowthRate += reversionSpeed * (target - state.PopulationGrowthRate);
+
+            // The annual factor taken as a per-day POWER, not a divided rate: 365 daily
+            // multiplications by (1+x)^(1/365) compose to exactly (1+x) at constant rate - the same
+            // algebraic-equivalence-over-approximation choice Phase 1's sector translation made. The
+            // rate does move daily under reversion, so a small residual is EXPECTED at the
+            // equivalence check, same class as Phase 3's moving-debt-stock drift.
+            float annualFactor = 1f + state.PopulationGrowthRate / 1000f * YearsPerTurn;
+            float factor = sliceFraction == 1f ? annualFactor : Mathf.Pow(annualFactor, sliceFraction);
+            state.Population = Mathf.Clamp(state.Population * factor, MinPopulation, MaxPopulation);
         }
 
         /// <summary>
