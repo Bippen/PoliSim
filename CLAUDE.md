@@ -8152,3 +8152,116 @@ invalidates every hash cited across CLAUDE.md, the roadmap and COMPLETED.md (thi
 cites dozens); the remote needs a force-push and any other clone a re-clone; and it wants a fresh
 full backup first. That is a ruled pass of its own or it is nothing — parked with these numbers
 attached, per the boundary set when this investigation was commissioned.
+
+## Save/load mechanism report (2026-08-16) — item 8's shape, derived from the code as it stands
+
+The two 2026-08-01 rulings stand unchanged (Newtonsoft — `com.unity.nuget.newtonsoft-json` 3.2.1,
+confirmed in the manifest; all three layers). This report is the mechanism UNDER those rulings,
+written against the real state surface, not the remembered one. Re-derived first, per rule 12:
+`persistentDataPath|JsonConvert|CaptureSaveState` still has zero hits — no persistence code exists.
+**One exception, better than remembered: the RNG layer is already BUILT for this.**
+`SimulationRandom` carries `MasterSeed` (always exists, clock-drawn on first use precisely so an
+unseeded real playthrough is saveable), `CaptureDrawCounts()`/`RestoreState()` with fast-forward,
+append-only `Stream`-enum tolerance for old saves — and `SimulationRandomRestoreDiagnostic` already
+proves the continuation-after-restore property in batch mode. The rest of the design below follows
+the pattern that layer set.
+
+### One root shape, three captures
+
+```
+SaveGame {
+  int SaveVersion;                          // format epoch — see version policy below
+  DateTime SavedAtUtc;
+  CountryId PlayerCountryId;
+  int MasterSeed;                           // SimulationRandom.MasterSeed
+  Dictionary<Stream,int> RngDrawCounts;     // SimulationRandom.CaptureDrawCounts()  [BUILT]
+  int CurrentTurn;  DateTime CurrentDate;   // SimulationManager's two private-setter properties
+  World World;                              // the whole graph, close to as-is (Decision 1)
+  SimulationPendingState Sim;               // SimulationManager.CaptureSaveState()  [layer 2]
+  UiDraftState Ui;                          // GameController.CaptureUiDrafts()      [layer 3]
+}
+```
+
+- **`SimulationPendingState`** is the explicit, reviewable object the 2026-08-01 implementation
+  note asked for, over the 14 private structures inventoried today: `_fiscalPeriods`,
+  `_pendingBudgetProcessByCountry` (HashSet → array), `_pendingBudgetBillByCountry`, the two NESTED
+  bill dicts (tax, welfare), the five single-slot bill dicts (labor, crime/justice, sector, trade,
+  SWF drawdown), `_pendingForeignPolicyMeetingByCountry`, `_pendingCabinetDecisionsByCountry`, and
+  `_lastFiscalReports` + `_lastEventsByCountry` (INCLUDED: the dashboard and fiscal panel read
+  them, and a reload that blanks the BREAKING banner mid-event is a lie of omission).
+- **`UiDraftState`** covers the controller's ~30 draft fields inventoried at GameController lines
+  147-299: the six draft dictionaries (tax, welfare, 5× sector, spending, partner-tariff), the
+  ~18 nullable dials (labor/crime/justice/family/immigration/SWF settings/minimum wage/tariff),
+  `_swfExistsDraft`/`_swfDrawdownPercentInput`, `_interestRateChangeInput`, `_gameSpeed`,
+  `_isGameOver`/`_gameOverReason`/`_pendingElectionResult`/`_pendingElectionTurn`,
+  `_fedChairCandidates` + `_fedChairCandidatesForTurn` (the Fed Chair interrupt lives HERE, not in
+  the manager), and the signing ceremony's division-number high-water mark. Losing any of these is
+  the original 5c incident again.
+
+### The five hazards, each named from the actual code
+
+1. **`CurrencyZone` shared identity is load-bearing.** Germany/France/Italy hold ONE instance;
+   naive JSON writes three copies and a naive load creates three zones — the shared-rate mechanic
+   silently dies, and everything LOOKS fine. `PreserveReferencesHandling.Objects` on the World
+   serialization ($id/$ref), plus a restore-time assert that the three are reference-equal.
+2. **References into the graph re-RESOLVE, never re-deserialize.** `GameController._playerCountry`
+   and every cached Country ref must come from `world.GetCountry(savedId)` after restore — a
+   second deserialized copy is the same identity bug as #1 by another door.
+3. **readonly collections + populated defaults = append-duplication.** Newtonsoft POPULATES an
+   existing collection; fields initialized at declaration (`Sectors = new List<Sector>()`, every
+   `StatHistory` series, `DivisionLog.Entries`, `PublishedData.Entries/Series`) get doubled unless
+   handled: `ObjectCreationHandling.Replace` for settable members, and for the `readonly` ones
+   (unsettable by construction) a resolver/converter that CLEARS before populating. This is the
+   single most likely silent-corruption source in the whole system.
+4. **Private cadence/counter state must ride along or mechanics quietly reset:**
+   `MultiResolutionSeries._lastDailyDate/_lastWeeklyDate/_lastMonthlyDate/_lastQuarterlyDate`
+   (append cadence — omitted, every resolution double-appends on the first post-load day) and
+   `DivisionLog._lastNumber` (division numbering — omitted, numbers restart and the signing
+   ceremony's high-water trigger misfires). `[JsonProperty]` on those five fields.
+5. **Two key/tuple shapes JSON cannot express as-is:** `PublishedData.PeriodClosingValues` is
+   `Dictionary<(ClosingStat, DateTime), float>` — a tuple KEY needs a converter (serialize as a
+   list of `{stat, periodStart, value}`); and `_pendingCabinetDecisionsByCountry`'s
+   `List<(CabinetPortfolio, CabinetDecision)>` value-tuples round-trip as Item1/Item2 — works, but
+   the capture object should carry a small named pair instead, since the capture layer exists
+   anyway. (A restored `CabinetDecision` is a VALUE COPY of a static `DecisionPool` entry, and
+   that is fine: `ResolveCabinetDecision`'s reference-equality removal compares against the same
+   restored instance the UI read from `GetPendingCabinetDecisions` — verified at the call sites,
+   lines 619-633.)
+
+### Where saves live, and how they are written
+
+`Application.persistentDataPath/saves/` (`%USERPROFILE%\AppData\LocalLow\<company>\PoliSim\saves\`)
+— outside the repository by construction, which the repository-weight finding above now makes a
+requirement rather than a preference. Atomic write: serialize to `slot.json.tmp`,
+`File.Replace` over `slot.json` keeping `slot.json.bak` — a crash mid-save must not destroy the
+previous save, or the system reintroduces the exact loss it exists to prevent. Plain JSON, no
+compression first pass (a save is a few hundred KB; `StatHistory` dominates and is capped).
+
+### Version tolerance, given that item 10 replaces the political model wholesale
+
+- **`SaveVersion` int, starting at 1.** `TypeNameHandling.None` always (no `$type` — rename
+  tolerance and the standard Newtonsoft security posture). `MissingMemberHandling.Ignore`.
+- **Additive model changes cost nothing by construction**: new fields default, removed fields are
+  ignored, new RNG streams start fresh (the append-only enum rule already models this).
+- **Item-10-class swaps are SAVE-BREAKING BY DECLARATION, not migrated.** `ParliamentSeats` is
+  keyed by `PartyArchetype`, which item 10 retires; `ElectionSystem` is replaced wholesale. The
+  loader refuses a save whose `SaveVersion` predates the break, with a message that says so
+  plainly — pre-release, migration machinery is work item 10 would immediately invalidate.
+  **Item 10's collision map gains one line: bump `SaveVersion`.** Revisit migration at the first
+  build that ships to anyone.
+
+### Validation shape (buildable in batch mode, no live Editor needed)
+
+`SaveLoadRoundTripDiagnostic`, `-batchmode`: seeded run N turns → capture + serialize →
+deserialize + restore into a FRESH manager/world → run the original AND the restored M further
+turns → compare trajectories field-by-field. That is `SimulationRandomRestoreDiagnostic`'s
+check-2 shape generalized to the whole state, and it catches every hazard above except the UI
+layer: the draft round-trip needs a driver pass, which queues behind Editor access with the
+folder-tongue gap. Real-Unity full-matrix validation applies on top, per rule 0 — this touches
+simulation state.
+
+### Deliberately NOT serialized, so absence reads as decision
+
+GUI styles/textures/fonts (rebuilt every frame), the policy-preview cache (recomputes), scroll
+positions and selected tab/category (navigation, cheap to add later if exact-seat resume is ever
+wanted), and `CabinetSystem.DecisionPool` (authored content, not state).

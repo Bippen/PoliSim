@@ -278,6 +278,18 @@ This is the one authoritative order, replacing whatever each original document s
    type that nobody wired into the save shows up as an obvious omission instead of silently
    half-persisting. Same for `GameController`'s drafts.
 
+   ✅ **MECHANISM REPORT WRITTEN 2026-08-16** — see CLAUDE.md "Save/load mechanism report". The state
+   surface re-inventoried from the code (14 pending structures in the manager, ~30 controller drafts,
+   the five serialization hazards named from real call sites — shared `CurrencyZone` identity first
+   among them), the save location (`persistentDataPath`, outside the repo, atomic write), the version
+   policy (additive changes free; item-10-class model swaps SAVE-BREAKING by declared `SaveVersion`
+   bump, not migrated — item 10's collision map gains that line), and the batch-mode round-trip
+   diagnostic that validates all of it without a live Editor. **The RNG layer was found already
+   built and diagnostic-proven** (`SimulationRandom.CaptureDrawCounts`/`RestoreState`).
+   Implementation is unblocked on this report's shape; the version-policy recommendation awaits
+   Elias's ruling only in the sense that it is stated A/B in the session report — the recommended
+   default (refuse-load across breaks) is what gets built absent an overrule.
+
    **Dependency is in place and proven (commit `ebcc2d2`)**: the package resolved, and a throwaway probe
    serializing a NESTED dictionary — the precise case `JsonUtility` cannot express — compiled clean
    against it before being deleted. One local-only gotcha for whoever picks this up: Unity had not
