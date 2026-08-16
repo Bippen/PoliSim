@@ -251,7 +251,60 @@ This is the one authoritative order, replacing whatever each original document s
 4. **Part B, PILOT (Tax Policy tab). DONE** — see `COMPLETED.md`.
 5. **Part B, full rollout (5a–5f). DONE 2026-08-02** — see `COMPLETED.md` sections 10 and 16. 5e's Phase C
    batches 4–6 were the last live part, and Elias's review confirmed them. Scope absorbed 5f.
-6. **Resume Roadmap work (a new Round 4)** — only scope this once step 5 is done, so anything new is built directly against the gated-legislation model from day one.
+6. **Resume Roadmap work (a new Round 4)** — ✅ **SCOPED 2026-08-16, awaiting Elias's ruling on the
+   package below. NOTHING BUILDS until the ruling** (the scoping session's own gate).
+
+   ### Round 4 — the scoped plan (read/map/propose session, 2026-08-16)
+
+   Scoped fresh against both finished foundations — every candidate builds against the
+   gated-legislation model and the daily engine from day one. Step C folds in per R1, **except C4**.
+
+   **CANDIDATES IN (proposed), with sources:**
+   | batch | candidate | source | seed status | fiscal coupling |
+   |---|---|---|---|---|
+   | R4-1 | **C3: youth unemployment + life expectancy** | directive §C3 | 6/6 both, `[VERIFIED]` (§B3 closed; the rate-not-ratio warning and the life-expectancy verified-but-wrong incident both live in the seed doc) | none |
+   | R4-2 | **C2: Gini + real wages** | directive §C2 | Gini 6/6 (normalize the US basis first); ⚠ **real wages carries the seed doc's 🔴 "mixes three bases, must not be seeded as-is"** — the batch's pre-report names this as its one data blocker | none debt-side; the wage↔inflation adjacency flagged for the batch's stress scenario |
+   | R4-3 | **C1: housing** | directive §C1 ("confirmed first" there, third here — the two batches ahead of it carry no forks) | homeownership 4/6 `[VERIFIED]` + 2 honest estimates; overburden EU-five `[VERIFIED]` (the B6 gaps closed via the Eurostat API 2026-08-02 — hours AFTER overburden lost the primary-metric slot on data grounds, so **the metric choice is REOPENED**, ruling #3); HPI at index-100 by convention | **monetary-coupled** (rate-sensitive by design — reads the policy rate, writes nothing to the rate path); not debt-coupled |
+   | R4-4 | **The three unbuilt cabinet portfolios: Defense, Foreign Affairs, Education** | COMPLETED §2's lasting limitation; unblocks `MISSING_PREREQUISITES` §D1 (portraits) | none needed — ministers are ORIGINAL FICTIONAL PERSONS per rule 9's unreversed half | decision budget-impacts at event scale only |
+   | R4-5 | **C5: productivity (GDP/hour, OECD PPP)** | directive §C5; LAST per Elias's own B4 priority ruling | 6/6 `[VERIFIED]`, one basis, one vintage; own-past-only display per the OECD caution | indirect ONLY if coupled to PotentialGrowthRate — which this scope defers (ruling #4) |
+
+   **CANDIDATES OUT, explicitly:**
+   - **C4 / credit-rating follow-ons** (§A1 deficit-term recalibration, Poland's monotonicity break,
+     C4 closure): fiscal-coupled — **sequenced behind the stock-vs-flow mechanism report** (§F1
+     chain). The one Step C batch that does not fold in.
+   - **Item 10 and everything the collision map marks**: gated 13 Sept. Checked per candidate — no
+     candidate touches `ParliamentSeats`/`PartyArchetype`/`ElectionSystem`/`PartyInks`/party art.
+     The portfolios add PERSONS, not parties. ElectionRecord/election-night enrichment stays
+     R2-gated.
+   - **A bond-market mechanic**: in no source list. Stated as a FINDING for the mechanism report:
+     the bond/debt-instrument design space is unclaimed by Round 4, so maturity-structure or
+     primary-surplus designs face no collision — and the report should CLAIM that namespace.
+
+   **THE RULE-11 STACKING POSTURE (the scope's one structural decision):** first pass for every new
+   stat is **inputs-only** — new stats READ existing state (youth-U off the unemployment gap, life
+   expectancy off poverty/healthcare, Gini off welfare/tax/unemployment, housing off the rate and
+   HousingAssistance) and **write nothing back** to any existing tracked variable. No new entrant
+   into `PotentialGrowthRate`'s or LFPR's combined ceilings (both named heavily-stacked by rule 11's
+   own text); couplings become separately-ruled follow-ons with their ceiling audits attached.
+
+   **VALIDATION BAR PER BATCH** (named up front): aggregation-equivalence extension for any new
+   daily model (enumeration stated), full trajectory matrix vs a fresh pre-batch baseline (both
+   diff columns), captures at both sizes for the new rows/screens, the save round-trip re-run
+   (the reflection dump and SaveGame absorb new `EconomyState` fields automatically — verify, don't
+   assume), publication cadences wired where the seed doc has real release rules and live-until-
+   sourced otherwise (Step A's recorded pattern), and each batch's pre-report listing its `[GAP]`/
+   blocker figures — currently exactly ONE across the whole scope: C2's real-wage basis
+   reconciliation.
+
+   **RULINGS NEEDED (the package):** (1) scope in/out as above; (2) batch order R4-1→R4-5;
+   (3) C1's primary metric — homeownership (status quo of the B6 record) vs overburden (the
+   directive's original recommendation, now `[VERIFIED]` for the EU five; USA needs one of B6's
+   three stated treatments — recommend overburden-primary with USA-on-homeownership, since the
+   data-honesty objection died 2026-08-02); (4) C5↔PotentialGrowthRate coupling deferred out of
+   Round 4 (recommend YES, defer); (5) the inputs-only posture as the standing first-pass rule for
+   Round 4 (recommend YES); (6) whether Elias wants naming/content veto on the three portfolios
+   before R4-4 builds (they are player-facing fictional characters — recommend a name list for
+   sign-off in the batch's pre-report).
 7. **Continuous Time Migration — Phases 1 through 5** (the actual daily-granularity conversion of each system's math, safest-first, core macro engine last). This is deliberately positioned after the political-systems work — it's a separate concern (simulation granularity, not who can change policy) and touching the same files for two unrelated reasons in the same window is worth avoiding.
 8. **NEW (2026-07-31) — Build a save/load system.** Not yet scoped, not yet sequenced into the numbered order above (appended here rather than renumbering 1-7, which are referenced extensively throughout this document and `CLAUDE.md`). **Recommendation, pending Elias's confirmation**: scope and build this before or alongside Round 4 (item 6) — Round 4 is already unscoped and is the natural next planning point, and building more features on top of an unpersisted game only compounds the amount of state a save system will eventually need to cover. Reasoning this is a real severity issue, not a nice-to-have: confirmed via direct investigation (zero `PlayerPrefs`/`JsonUtility`/`BinaryFormatter`/any persistence mechanism anywhere in the codebase) that every Unity Editor/Play-mode restart discards ALL game state silently, with no error or warning - and the amount of state that now matters has grown substantially since this was last a non-issue: Cabinet ministers and their competence/philosophy, Parliament seat composition, any pending TaxBill/BudgetBill and its DaysRemaining countdown, every draft dictionary across every gated tab, the calendar date itself, Fed Chair terms, SWF holdings - losing any of this on an ordinary restart is a real loss of play, not a cosmetic gap. This was the leading suspect for a live-play anomaly where an SWF draft never became standing across two observed fiscal-year cycles - **now confirmed as the actual cause**: Elias confirmed Unity was closed/reopened multiple times between setting the draft and the next fiscal date, and the underlying bill mechanism itself was independently proven correct across two full fiscal years via a targeted diagnostic (see CLAUDE.md's "Master Sequence step 5a/5b/5c" writeup). Needs its own design pass before implementation starts, not a guess: what serializes cleanly under Unity's own `JsonUtility` (which - like Unity's Inspector serialization generally - doesn't support `Dictionary<>` natively either, the same limitation already visible as `UAC1009` warnings on several existing fields, e.g. `PolicyDecision.TaxRateOverrides`/`SpendingLineChanges`/every Sector-override dictionary; `BudgetBill`'s own dictionaries would hit the same wall), whether a mid-cycle pending bill's DaysRemaining and a real save timestamp interact cleanly, and how much of `World`/`Country`'s current in-memory object graph can serialize as-is versus needs a dedicated save-data shape. Escalate format/scope decisions rather than guessing, per this document's own working discipline item 4.
 
