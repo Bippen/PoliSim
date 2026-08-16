@@ -8090,7 +8090,65 @@ figure differs; the comparison is structural per rule 15's measured limit). The 
 wider bar is that screen's own pre-existing layout, confirmed present in the baseline crop before
 being dismissed.
 
-**What capture cannot see, stated per rule 14**: the HOVER face and the spine's hover
-repositioning (the driver has no mouse), and the real CLICK path on the deferred-painted active
-tab (the driver selects tabs by reflection, so the invisible-clone button has never been clicked
-on film). Both are plain IMGUI state/button mechanics; both await Elias's live look.
+### ⚠ OPEN VERIFICATION GAP (2026-08-16) — three folder-tongue behaviours have NEVER been seen
+
+Recorded as OPEN, not assumed good, per rule 14: the driver has no mouse, and Editor access is
+currently unavailable, so there is **no path to close this until access returns**. What has never
+been on film:
+
+1. **The hover face** (`ui_tab_folder_hover`) — an inactive tongue lifting on mouse-over.
+2. **The spine's hover shift** — the area strip should ride UP from the off edge (10px) to the
+   hover edge (7px) as the tongue lifts, via the `Contains` check.
+3. **A real CLICK on the deferred-painted active tab** — the invisible-clone button has only ever
+   been "clicked" by the driver's reflection path, never by a mouse.
+
+**The thirty-second close, for the next person in the Editor**: enter Play, hover each inactive
+tab (tongue lightens and lifts, strip rides the edge up with it), click any tab (selection moves,
+the newly active tongue paints forward and joined, the click lands even though the active tab's
+in-bar pixels are painted after the sheet). Anything off → the folder-tongue entry above has every
+constant and mechanism. When done, flip this block to CLOSED with what was seen.
+
+## The repository weight finding (2026-08-16, measured before diagnosed)
+
+### The numbers
+
+| Measure | Value |
+|---|---|
+| `.git` on disk | **755 MiB** (pack 742.03 MiB across 3 packs, 3,986 in-pack objects; 10.82 MiB loose) |
+| Blobs in all history | 2,845 |
+| `screenshots/` blobs | **1,073 unique = 873.7 MiB uncompressed — ~85-90% of the pack** (PNGs neither delta nor deflate) |
+| All other blobs | 1,772 = 105.8 MiB uncompressed, which packs small: mostly CLAUDE.md's own revisions (600+ KB each, text) plus ~2.6 MiB of fonts — the three largest non-capture blobs in history |
+| Tracked capture paths | **2,003** (→ the 1,073 unique blobs: ~930 tracked PNGs are byte-identical duplicates across sets) |
+| Working tree captures | 5,316 PNGs, **5.1 GiB**, all dated 2026-08-11..16 — **~1 GiB/day** |
+| First capture commit | `b0d0b9c`, 2026-08-10 17:24 ("Stand up the capture harness in the repo"); 24 commits touched `screenshots/` in the six days since |
+| Confirmed NOT tracked | `AssetPackArchive/` (1.9 MiB, disk only), `baselines/` (11 MiB), `Library/`/`Temp/`/`obj/`/`Logs/` (gitignored) — **no other weight class exists** |
+| Remote | `github.com/Bippen/PoliSim` — the history weight is on the remote too |
+
+So the shape is: **the captures are in history**, they went in with the harness itself on
+2026-08-10, and in six days they became ~nine-tenths of the repository. Everything else about the
+repo is healthy — a ~15-25 MiB project wearing a 742 MiB pack.
+
+### What was DONE (prevention, `af971f0` — nothing destroyed, no hash touched)
+
+- `screenshots/` relocated wholesale to the sibling **`../PoliSim-captures/`** (5,316 files, disk
+  move). The 2,003 tracked PNGs left the index — a tip deletion, explicitly NOT a recovery: every
+  blob stays in the pack and on the remote, every cited hash stays valid.
+- One shared out-of-tree default (`UiScreenshotDriver.DefaultOutputDirectory`) now feeds the
+  driver, `UiScreenshotCapture`'s `-shotdir=` fallback and `ScreenEdgeCheck` — the check reads
+  where the driver writes, one line to move it again. `/screenshots/` gitignored defensively.
+  Compile-checked green both assemblies; the next capture run is the real-Unity validation (rule
+  0's tooling tier — no Editor available today).
+- Rule 15 gained its retention policy (roadmap): one baseline per axis plus the run under
+  judgment; an older set is evidence while its finding is open and prunable once the finding is
+  recorded. Applied today that keeps ~1.9 GiB and marks **~3.2 GiB prunable — proposed, not
+  executed.**
+
+### What was NOT done — the history question, queued as a ruling
+
+Deleting the captures from the tip recovers **zero bytes**: every clone still downloads the 742
+MiB pack. Only a history rewrite (`git filter-repo` dropping `screenshots/` from every commit)
+recovers the ~**730 MiB**, and it costs: **every commit hash after `b0d0b9c` changes**, which
+invalidates every hash cited across CLAUDE.md, the roadmap and COMPLETED.md (this file alone
+cites dozens); the remote needs a force-push and any other clone a re-clone; and it wants a fresh
+full backup first. That is a ruled pass of its own or it is nothing — parked with these numbers
+attached, per the boundary set when this investigation was commissioned.
