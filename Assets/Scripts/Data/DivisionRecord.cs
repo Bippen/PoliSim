@@ -57,7 +57,11 @@ namespace PoliSim.Data
 
         public readonly List<DivisionRecord> Entries = new List<DivisionRecord>();
 
-        private int _lastNumber;
+        // ⚠ SAVE/LOAD (item 8, hazard 4): the numbering counter must survive a round trip - omitted,
+        // numbering restarts at 1 while evicted entries keep their real numbers, and the signing
+        // ceremony's high-water trigger (which compares against DivisionRecord.Number precisely
+        // because the log evicts) misfires. [JsonProperty] because Json.NET skips private fields.
+        [Newtonsoft.Json.JsonProperty] private int _lastNumber;
 
         /// <summary>Appends one division and evicts the oldest past <see cref="MaxEntries"/>. The caller supplies an alignment already captured at the vote rather than a bill, so this class never needs to know what a bill is.</summary>
         public void Append(string title, DateTime date, float alignment, bool passed)

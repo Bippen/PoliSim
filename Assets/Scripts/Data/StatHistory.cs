@@ -27,10 +27,15 @@ namespace PoliSim.Data
         /// <summary>91 days, not exactly 121 (a turn) or 90 - the real calendar length of a quarter, so this resolution reads as "genuinely quarterly" once Phases 1-5 add sub-turn variation, not just "another name for a turn."</summary>
         public readonly List<float> Quarterly = new List<float>();
 
-        private DateTime? _lastDailyDate;
-        private DateTime? _lastWeeklyDate;
-        private DateTime? _lastMonthlyDate;
-        private DateTime? _lastQuarterlyDate;
+        // ⚠ SAVE/LOAD (item 8, hazard 4): these four are the append CADENCE, and they must survive a
+        // round trip - omitted, every resolution accepts a duplicate point on the first post-load
+        // day and the buckets silently drift one entry apart. [JsonProperty] because Json.NET skips
+        // private fields by default; the readonly public lists above need no attribute (Json.NET
+        // populates them in place, into the empty defaults the initializers guarantee).
+        [Newtonsoft.Json.JsonProperty] private DateTime? _lastDailyDate;
+        [Newtonsoft.Json.JsonProperty] private DateTime? _lastWeeklyDate;
+        [Newtonsoft.Json.JsonProperty] private DateTime? _lastMonthlyDate;
+        [Newtonsoft.Json.JsonProperty] private DateTime? _lastQuarterlyDate;
 
         /// <summary>Offers this turn's value to all four resolutions - each one only actually accepts it (and evicts its own oldest entry past StatHistory.MaxEntries) if at least that resolution's own period has elapsed since its last accepted point.</summary>
         public void Append(DateTime date, float value)

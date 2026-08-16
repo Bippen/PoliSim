@@ -164,8 +164,63 @@ namespace PoliSim.Data
         /// Not itself published, and never read by the simulation: this is the underlying truth the
         /// published series is a lagged, noisy view OF.
         /// </summary>
+        [Newtonsoft.Json.JsonIgnore]
         public readonly Dictionary<(ClosingStat Stat, System.DateTime PeriodStart), float> PeriodClosingValues =
             new Dictionary<(ClosingStat, System.DateTime), float>();
+
+        /// <summary>One recorded period closing, in the flat shape the save file carries - see
+        /// <see cref="SerializedPeriodClosings"/> for why the dictionary above cannot go to JSON
+        /// directly.</summary>
+        public class PeriodClosing
+        {
+            public ClosingStat Stat;
+            public System.DateTime PeriodStart;
+            public float Value;
+        }
+
+        // ⚠ SAVE/LOAD (item 8, hazard 5): a JSON object key must be a string, and a ValueTuple key
+        // stringifies via ToString into something nothing can parse back - so the dictionary above
+        // is [JsonIgnore]d and THIS private surrogate is what the save file carries, as a flat list.
+        // A settable private property with [JsonProperty] is used instead of a JsonConverter on the
+        // readonly field deliberately: Json.NET's converter-on-unwritable-member path is murky
+        // enough that the mechanism report chose the boring shape that cannot be misread.
+        //
+        // ⚠ ObjectCreationHandling.Replace is LOAD-BEARING, proven by the round-trip diagnostic's
+        // first run (289 closings -> 0 on every country, every scenario) and then isolated against
+        // this exact Newtonsoft DLL: under the default Auto handling Json.NET treats a readable
+        // collection member as populate-in-place - it calls THIS GETTER during deserialization,
+        // populates the temporary list the getter returns, and never calls the setter, so the
+        // incoming data is discarded into a throwaway. Replace forces "build the list, call the
+        // setter", which is the entire point of a surrogate. (The payload name differing from the
+        // ignored field's name is cosmetic by comparison - kept because two members claiming one
+        // name is asking Json.NET to pick.)
+        [Newtonsoft.Json.JsonProperty("PeriodClosings", ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace)]
+        private List<PeriodClosing> SerializedPeriodClosings
+        {
+            get
+            {
+                var closings = new List<PeriodClosing>(PeriodClosingValues.Count);
+                foreach (KeyValuePair<(ClosingStat Stat, System.DateTime PeriodStart), float> pair in PeriodClosingValues)
+                {
+                    closings.Add(new PeriodClosing { Stat = pair.Key.Stat, PeriodStart = pair.Key.PeriodStart, Value = pair.Value });
+                }
+
+                return closings;
+            }
+            set
+            {
+                PeriodClosingValues.Clear();
+                if (value == null)
+                {
+                    return;
+                }
+
+                foreach (PeriodClosing closing in value)
+                {
+                    PeriodClosingValues[(closing.Stat, closing.PeriodStart)] = closing.Value;
+                }
+            }
+        }
 
         /// <summary>
         /// The settled value this stat closed the period at, or null if that period was never recorded -

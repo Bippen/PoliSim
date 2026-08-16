@@ -459,7 +459,11 @@ namespace PoliSim.Simulation
         /// consume 121x the RNG and invalidate every recorded baseline in the project, for no modelling
         /// gain - the draw's granularity is not what this migration is about.
         /// </summary>
-        private class FiscalPeriod
+        // PUBLIC since save/load (item 8, 2026-08-16): SimulationPendingState carries these whole -
+        // plan, frozen multiplier and mid-period accruals - because a save taken mid-period that
+        // dropped the accruals would close its next boundary against a partial year. Public-NESTED,
+        // not promoted to its own file: nothing but this class and the save shape may construct one.
+        public class FiscalPeriod
         {
             // THE PLAN - set by the boundary that opened this period, spent across its days.
             public float PlannedGovernmentSpending;
@@ -1233,6 +1237,153 @@ namespace PoliSim.Simulation
         {
             _world = world;
             SeedPublishedHistory();
+        }
+
+        /// <summary>
+        /// SAVE/LOAD (item 8): the explicit capture of every private pending structure - the
+        /// reviewable surface the 2026-08-01 scoping asked for, so a future pending-bill type nobody
+        /// wired in reads as an obvious omission in this method rather than silently half-persisting.
+        /// Containers are copied one level deep (fresh dictionaries/lists holding the same bill
+        /// instances) so the returned state object cannot alias this manager's live collections;
+        /// the bills themselves are snapshotted by the serializer immediately after.
+        /// </summary>
+        public Persistence.SimulationPendingState CaptureSaveState()
+        {
+            var state = new Persistence.SimulationPendingState
+            {
+                FiscalPeriods = new Dictionary<CountryId, FiscalPeriod>(_fiscalPeriods),
+                PendingBudgetProcess = new List<CountryId>(_pendingBudgetProcessByCountry),
+                PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
+                PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>(_pendingLaborBillByCountry),
+                PendingCrimeJusticeBills = new Dictionary<CountryId, CrimeJusticePolicyBill>(_pendingCrimeJusticeBillByCountry),
+                PendingSectorBills = new Dictionary<CountryId, SectorPolicyBill>(_pendingSectorBillByCountry),
+                PendingTradeBills = new Dictionary<CountryId, TradePolicyBill>(_pendingTradeBillByCountry),
+                PendingSwfDrawdownBills = new Dictionary<CountryId, SwfDrawdownBill>(_pendingSwfDrawdownBillByCountry),
+                PendingForeignPolicyMeetings = new Dictionary<CountryId, ForeignPolicyMeeting>(_pendingForeignPolicyMeetingByCountry),
+                LastFiscalReports = new Dictionary<CountryId, FiscalTurnReport>(_lastFiscalReports),
+                LastEvents = new Dictionary<CountryId, EconomicEvent>(_lastEventsByCountry)
+            };
+
+            foreach (KeyValuePair<CountryId, Dictionary<TaxType, TaxProgramBill>> pair in _pendingTaxProgramBillsByCountry)
+            {
+                state.PendingTaxProgramBills[pair.Key] = new Dictionary<TaxType, TaxProgramBill>(pair.Value);
+            }
+
+            foreach (KeyValuePair<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>> pair in _pendingWelfareProgramBillsByCountry)
+            {
+                state.PendingWelfareProgramBills[pair.Key] = new Dictionary<WelfareProgramType, WelfareProgramBill>(pair.Value);
+            }
+
+            foreach (KeyValuePair<CountryId, List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>> pair in _pendingCabinetDecisionsByCountry)
+            {
+                var records = new List<Persistence.PendingCabinetDecisionRecord>(pair.Value.Count);
+                foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in pair.Value)
+                {
+                    records.Add(new Persistence.PendingCabinetDecisionRecord { Portfolio = portfolio, Decision = decision });
+                }
+
+                state.PendingCabinetDecisions[pair.Key] = records;
+            }
+
+            return state;
+        }
+
+        /// <summary>
+        /// SAVE/LOAD (item 8): the restore half. Adopts the restored world (through SetWorld, whose
+        /// published-history seeding is idempotent by that method's own contract), sets the clock
+        /// through the private setters, then rebuilds every pending structure from the state object.
+        /// Every section tolerates null - a save from before a structure existed restores it empty,
+        /// the same forward-tolerance MissingMemberHandling gives the serialized layer. Callers do
+        /// not call this directly in normal play: SaveGameService.RestoreInto pairs it with the RNG
+        /// restore so the two cannot drift apart across call sites.
+        /// </summary>
+        public void RestoreSaveState(World world, int currentTurn, System.DateTime currentDate, Persistence.SimulationPendingState state)
+        {
+            SetWorld(world);
+            CurrentTurn = currentTurn;
+            CurrentDate = currentDate;
+
+            _fiscalPeriods.Clear();
+            _pendingBudgetProcessByCountry.Clear();
+            _pendingBudgetBillByCountry.Clear();
+            _pendingTaxProgramBillsByCountry.Clear();
+            _pendingWelfareProgramBillsByCountry.Clear();
+            _pendingLaborBillByCountry.Clear();
+            _pendingCrimeJusticeBillByCountry.Clear();
+            _pendingSectorBillByCountry.Clear();
+            _pendingTradeBillByCountry.Clear();
+            _pendingSwfDrawdownBillByCountry.Clear();
+            _pendingForeignPolicyMeetingByCountry.Clear();
+            _pendingCabinetDecisionsByCountry.Clear();
+            _lastFiscalReports.Clear();
+            _lastEventsByCountry.Clear();
+
+            if (state == null)
+            {
+                return;
+            }
+
+            CopyInto(state.FiscalPeriods, _fiscalPeriods);
+            if (state.PendingBudgetProcess != null)
+            {
+                foreach (CountryId id in state.PendingBudgetProcess)
+                {
+                    _pendingBudgetProcessByCountry.Add(id);
+                }
+            }
+
+            CopyInto(state.PendingBudgetBills, _pendingBudgetBillByCountry);
+            CopyInto(state.PendingLaborBills, _pendingLaborBillByCountry);
+            CopyInto(state.PendingCrimeJusticeBills, _pendingCrimeJusticeBillByCountry);
+            CopyInto(state.PendingSectorBills, _pendingSectorBillByCountry);
+            CopyInto(state.PendingTradeBills, _pendingTradeBillByCountry);
+            CopyInto(state.PendingSwfDrawdownBills, _pendingSwfDrawdownBillByCountry);
+            CopyInto(state.PendingForeignPolicyMeetings, _pendingForeignPolicyMeetingByCountry);
+            CopyInto(state.LastFiscalReports, _lastFiscalReports);
+            CopyInto(state.LastEvents, _lastEventsByCountry);
+
+            if (state.PendingTaxProgramBills != null)
+            {
+                foreach (KeyValuePair<CountryId, Dictionary<TaxType, TaxProgramBill>> pair in state.PendingTaxProgramBills)
+                {
+                    _pendingTaxProgramBillsByCountry[pair.Key] = new Dictionary<TaxType, TaxProgramBill>(pair.Value);
+                }
+            }
+
+            if (state.PendingWelfareProgramBills != null)
+            {
+                foreach (KeyValuePair<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>> pair in state.PendingWelfareProgramBills)
+                {
+                    _pendingWelfareProgramBillsByCountry[pair.Key] = new Dictionary<WelfareProgramType, WelfareProgramBill>(pair.Value);
+                }
+            }
+
+            if (state.PendingCabinetDecisions != null)
+            {
+                foreach (KeyValuePair<CountryId, List<Persistence.PendingCabinetDecisionRecord>> pair in state.PendingCabinetDecisions)
+                {
+                    var pending = new List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>(pair.Value.Count);
+                    foreach (Persistence.PendingCabinetDecisionRecord record in pair.Value)
+                    {
+                        pending.Add((record.Portfolio, record.Decision));
+                    }
+
+                    _pendingCabinetDecisionsByCountry[pair.Key] = pending;
+                }
+            }
+        }
+
+        private static void CopyInto<TKey, TValue>(Dictionary<TKey, TValue> source, Dictionary<TKey, TValue> target)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<TKey, TValue> pair in source)
+            {
+                target[pair.Key] = pair.Value;
+            }
         }
 
         private void Awake()

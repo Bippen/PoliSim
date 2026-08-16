@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using PoliSim.Data;
+using PoliSim.Persistence;
 using PoliSim.Simulation;
 using UnityEngine;
 
@@ -639,6 +640,28 @@ namespace PoliSim.UI
         /// </summary>
         private void Update()
         {
+            // SAVE/LOAD (item 8): the TEMPORARY debug entry point - F5 saves, F9 loads, both logged
+            // loudly. Deliberately ahead of the game-over/election gates (a finished game should
+            // still be saveable and a load should rescue it) but behind country selection and the
+            // Canvas takeover (mid-ceremony state is deliberately not a save point - the queue
+            // drains first). The real load/save UI is the NEXT pass, after the round-trip diagnostic
+            // is green; this hook exists so a batch-proven system is reachable in play at all.
+            // New Input System exclusively (activeInputHandler: 1, see CanvasChrome) - the legacy
+            // Input class would throw here. Keyboard.current is null on a machine with no keyboard.
+            UnityEngine.InputSystem.Keyboard keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard != null && _selectedPlayerCountryId.HasValue && !_canvasLive
+                && _canvasPhase == CanvasPhase.None && _signingQueue.Count == 0)
+            {
+                if (keyboard.f5Key.wasPressedThisFrame)
+                {
+                    DebugSaveGame();
+                }
+                else if (keyboard.f9Key.wasPressedThisFrame)
+                {
+                    DebugLoadGame();
+                }
+            }
+
             if (!_selectedPlayerCountryId.HasValue || _isGameOver || _pendingElectionResult != null)
             {
                 return;
@@ -700,6 +723,201 @@ namespace PoliSim.UI
                 {
                     break;
                 }
+            }
+        }
+
+        // ── SAVE/LOAD (item 8, 2026-08-16): layer 3's capture pair and the debug entry point ──────
+        //
+        // Built to the mechanism report in CLAUDE.md. The capture/restore pair is the explicit,
+        // reviewable surface over this class's ~30 draft fields (the exact inventory the report
+        // enumerates at "UiDraftState") - a draft added to this class and not to this pair is an
+        // obvious omission HERE, which is the property the shape exists for. ⚠ OPEN VERIFICATION
+        // GAP: the UI-draft round trip cannot be exercised by the batch diagnostic (no OnGUI, no
+        // keyboard) - it queues behind Editor access beside the folder-tongue hover items, and must
+        // not be read as proven until that checklist runs.
+
+        private void DebugSaveGame()
+        {
+            try
+            {
+                SaveGame save = SaveGameService.CreateSaveGame(_simulationManager, _world, PlayerCountryId, CaptureUiDrafts());
+                SaveGameService.SaveToFile(SaveGameService.DefaultSlotPath, save);
+                Debug.Log($"SAVE: wrote {SaveGameService.DefaultSlotPath} (turn {_simulationManager.CurrentTurn}, {_simulationManager.CurrentDate:yyyy-MM-dd}).");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"SAVE: FAILED - {e.Message}");
+            }
+        }
+
+        private void DebugLoadGame()
+        {
+            try
+            {
+                SaveGame save = SaveGameService.LoadFromFile(SaveGameService.DefaultSlotPath);
+                RestoreFromSave(save);
+                Debug.Log($"LOAD: restored {SaveGameService.DefaultSlotPath} (turn {_simulationManager.CurrentTurn}, {_simulationManager.CurrentDate:yyyy-MM-dd}) - PAUSED.");
+            }
+            catch (SaveLoadException e)
+            {
+                Debug.LogError($"LOAD: refused - {e.Message}");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"LOAD: FAILED - {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Adopts a deserialized save wholesale. Hazard 2 lives here: every reference this class
+        /// holds INTO the world graph is re-resolved by id from the restored world - never kept from
+        /// the old graph, never deserialized separately - or the controller and the simulation would
+        /// quietly govern two different worlds.
+        /// </summary>
+        private void RestoreFromSave(SaveGame save)
+        {
+            SaveGameService.RestoreInto(_simulationManager, save);
+            _world = save.World;
+            _selectedPlayerCountryId = save.PlayerCountryId;
+            _playerCountry = _world.GetCountry(save.PlayerCountryId);
+            RestoreUiDrafts(save.Ui);
+
+            // The preview cache indexes into the OLD world's figures; the signing queue's entries
+            // reference the OLD log's records. Both rebuild from live state on their own.
+            _hasCachedPreview = false;
+            _cachedPreviewTurn = -1;
+            _signingQueue.Clear();
+            _daySpeedTimer = 0f;
+        }
+
+        internal UiDraftState CaptureUiDrafts()
+        {
+            return new UiDraftState
+            {
+                TaxRateInputs = new Dictionary<TaxType, float>(_taxRateInputs),
+                WelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>(_welfareGenerosityInputs),
+                SectorSubsidyInputs = new Dictionary<SectorType, float>(_sectorSubsidyInputs),
+                SectorRegulationInputs = new Dictionary<SectorType, float>(_sectorRegulationInputs),
+                SectorTaxCreditInputs = new Dictionary<SectorType, float>(_sectorTaxCreditInputs),
+                SectorResearchGrantsInputs = new Dictionary<SectorType, float>(_sectorResearchGrantsInputs),
+                SectorDeregulationInputs = new Dictionary<SectorType, float>(_sectorDeregulationInputs),
+                SpendingLineInputs = new Dictionary<SpendingCategory, float>(_spendingLineInputs),
+                PartnerTariffInputs = new Dictionary<CountryId, float>(_partnerTariffInputs),
+                SwfExistsDraft = _swfExistsDraft,
+                SwfDrawdownPercentInput = _swfDrawdownPercentInput,
+                SwfContributionRateInput = _swfContributionRateInput,
+                SwfDomesticAllocationInput = _swfDomesticAllocationInput,
+                SwfEquitiesWeightInput = _swfEquitiesWeightInput,
+                SwfBondsWeightInput = _swfBondsWeightInput,
+                SwfInfrastructureWeightInput = _swfInfrastructureWeightInput,
+                SwfRealEstateWeightInput = _swfRealEstateWeightInput,
+                InterestRateChangeInput = _interestRateChangeInput,
+                TariffRateInput = _tariffRateInput,
+                MinimumWageInput = _minimumWageInput,
+                PaidFamilyLeaveWeeksInput = _paidFamilyLeaveWeeksInput,
+                OvertimeRegulationInput = _overtimeRegulationInput,
+                RetrainingProgramInput = _retrainingProgramInput,
+                PoliceFundingInput = _policeFundingInput,
+                SentencingSeverityInput = _sentencingSeverityInput,
+                BailReformInput = _bailReformInput,
+                DrugPolicyInput = _drugPolicyInput,
+                JudicialFundingInput = _judicialFundingInput,
+                BorderEnforcementInput = _borderEnforcementInput,
+                FamilyPolicyInput = _familyPolicyInput,
+                ImmigrationPolicyInput = _immigrationPolicyInput,
+                IsGameOver = _isGameOver,
+                GameOverReason = _gameOverReason,
+                PendingElectionResult = _pendingElectionResult,
+                PendingElectionTurn = _pendingElectionTurn,
+                GameSpeedValue = (int)_gameSpeed,
+                FedChairCandidates = _fedChairCandidates == null ? null : new List<FedChair>(_fedChairCandidates),
+                FedChairCandidatesForTurn = _fedChairCandidatesForTurn,
+                SeenDivisionNumber = _seenDivisionNumber,
+                PrevGdp = _prevGdp,
+                LastGrowthPercent = _lastGrowthPercent
+            };
+        }
+
+        /// <summary>Null-tolerant (a batch-written save has no UI layer): null restores every draft
+        /// to its virgin default, which is exactly what a fresh controller holds. A load always
+        /// resumes PAUSED regardless of the recorded speed - the player rejoins an unfamiliar
+        /// moment, and time running before they have looked at it is the hostile default; the
+        /// recorded GameSpeedValue is data for a future load UI, not an instruction.</summary>
+        private void RestoreUiDrafts(UiDraftState ui)
+        {
+            _taxRateInputs.Clear();
+            _welfareGenerosityInputs.Clear();
+            _sectorSubsidyInputs.Clear();
+            _sectorRegulationInputs.Clear();
+            _sectorTaxCreditInputs.Clear();
+            _sectorResearchGrantsInputs.Clear();
+            _sectorDeregulationInputs.Clear();
+            _spendingLineInputs.Clear();
+            _partnerTariffInputs.Clear();
+
+            if (ui != null)
+            {
+                CopyDrafts(ui.TaxRateInputs, _taxRateInputs);
+                CopyDrafts(ui.WelfareGenerosityInputs, _welfareGenerosityInputs);
+                CopyDrafts(ui.SectorSubsidyInputs, _sectorSubsidyInputs);
+                CopyDrafts(ui.SectorRegulationInputs, _sectorRegulationInputs);
+                CopyDrafts(ui.SectorTaxCreditInputs, _sectorTaxCreditInputs);
+                CopyDrafts(ui.SectorResearchGrantsInputs, _sectorResearchGrantsInputs);
+                CopyDrafts(ui.SectorDeregulationInputs, _sectorDeregulationInputs);
+                CopyDrafts(ui.SpendingLineInputs, _spendingLineInputs);
+                CopyDrafts(ui.PartnerTariffInputs, _partnerTariffInputs);
+            }
+
+            _swfExistsDraft = ui?.SwfExistsDraft;
+            _swfDrawdownPercentInput = ui?.SwfDrawdownPercentInput ?? 0f;
+            _swfContributionRateInput = ui?.SwfContributionRateInput;
+            _swfDomesticAllocationInput = ui?.SwfDomesticAllocationInput;
+            _swfEquitiesWeightInput = ui?.SwfEquitiesWeightInput;
+            _swfBondsWeightInput = ui?.SwfBondsWeightInput;
+            _swfInfrastructureWeightInput = ui?.SwfInfrastructureWeightInput;
+            _swfRealEstateWeightInput = ui?.SwfRealEstateWeightInput;
+            _interestRateChangeInput = ui?.InterestRateChangeInput ?? 0f;
+            _tariffRateInput = ui?.TariffRateInput;
+            _minimumWageInput = ui?.MinimumWageInput;
+            _paidFamilyLeaveWeeksInput = ui?.PaidFamilyLeaveWeeksInput;
+            _overtimeRegulationInput = ui?.OvertimeRegulationInput;
+            _retrainingProgramInput = ui?.RetrainingProgramInput;
+            _policeFundingInput = ui?.PoliceFundingInput;
+            _sentencingSeverityInput = ui?.SentencingSeverityInput;
+            _bailReformInput = ui?.BailReformInput;
+            _drugPolicyInput = ui?.DrugPolicyInput;
+            _judicialFundingInput = ui?.JudicialFundingInput;
+            _borderEnforcementInput = ui?.BorderEnforcementInput;
+            _familyPolicyInput = ui?.FamilyPolicyInput;
+            _immigrationPolicyInput = ui?.ImmigrationPolicyInput;
+            _isGameOver = ui?.IsGameOver ?? false;
+            _gameOverReason = ui?.GameOverReason;
+            _pendingElectionResult = ui?.PendingElectionResult;
+            _pendingElectionTurn = ui?.PendingElectionTurn ?? 0;
+            _fedChairCandidates = ui?.FedChairCandidates == null ? null : new List<FedChair>(ui.FedChairCandidates);
+            _fedChairCandidatesForTurn = ui?.FedChairCandidatesForTurn ?? -1;
+            // A save with no UI layer (batch-written) carries no high-water mark; defaulting to 0
+            // would replay a ceremony for every division still in the 24-entry log. Everything
+            // already in the log counts as seen; only divisions resolved AFTER the load ceremonial.
+            _seenDivisionNumber = ui?.SeenDivisionNumber
+                ?? (_playerCountry != null && _playerCountry.Divisions.Entries.Count > 0
+                    ? _playerCountry.Divisions.Entries[_playerCountry.Divisions.Entries.Count - 1].Number
+                    : 0);
+            _prevGdp = ui?.PrevGdp ?? 0f;
+            _lastGrowthPercent = ui?.LastGrowthPercent ?? 0f;
+            _gameSpeed = GameSpeed.Paused;
+        }
+
+        private static void CopyDrafts<TKey>(Dictionary<TKey, float> source, Dictionary<TKey, float> target)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<TKey, float> pair in source)
+            {
+                target[pair.Key] = pair.Value;
             }
         }
 
