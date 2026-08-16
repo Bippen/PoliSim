@@ -237,12 +237,37 @@ namespace PoliSim.Data
             poland.BaselineLifeExpectancy = 78.5f;  // ⚠ [PROVISIONAL] Eurostat flag `ep`
             sweden.BaselineLifeExpectancy = 83.8f;  // [VERIFIED] Eurostat API (replaces the wrong 84.1)
 
+            // ROUND 4 BATCH 2 (C2): Gini coefficient, equivalised disposable income, 0-100 scale
+            // (seed doc §2). The EU five are Eurostat `ilc_di12` `GINI_HND` 2024, confirmed at the
+            // API 2026-08-02 with no status flags - the 0-100 scale is the SOURCE's own label, so
+            // the scale trap is closed by construction. The USA is [ESTIMATED], not [VERIFIED], for
+            // two unfixable reasons the seed doc documents: OECD IDD reference year 2019 carried
+            // forward (band 38.5-41.0), and the square-root vs modified-OECD equivalence scales,
+            // which produce different Ginis FROM IDENTICAL DATA - comparable in spirit, never in
+            // construction. Already 0-100 at source (OECD publishes 0.395): NO conversion step, so
+            // there is no factor-of-100 opportunity. The US-outlier claim survives the caveat; the
+            // exact number does not.
+            usa.BaselineGini = 39.5f;     // ⚠ [ESTIMATED] OECD IDD, 2019 carried forward, sqrt scale
+            germany.BaselineGini = 29.5f; // [VERIFIED] Eurostat ilc_di12, 2024
+            france.BaselineGini = 30.0f;  // [VERIFIED] Eurostat ilc_di12, 2024
+            italy.BaselineGini = 32.2f;   // [VERIFIED] Eurostat ilc_di12, 2024 - highest of the five
+            poland.BaselineGini = 26.0f;  // [VERIFIED] Eurostat API - the corrected figure (Statista's ~29 was 3 points high; Poland is the MOST equal of the five, not middling)
+            sweden.BaselineGini = 27.6f;  // [VERIFIED] Eurostat ilc_di12, 2024
+
             // States open AT their baselines - the standing zero-gap idiom, from one authority
             // rather than twelve constructor arguments that could drift from the block above.
+            // RealWageIndex opens at 100 for ALL SIX by ruling (2026-08-16): the seed doc's §5
+            // growth row mixes three bases (net vs gross vs economy-wide) and must not seed a
+            // level; base-100-at-epoch is the HPI convention applied for the HPI reason. The level
+            // is display furniture, cross-country level comparison is NOT claimed, and the
+            // simulation consumes only growth - which needs no seed at all (trend growth comes from
+            // PotentialGrowthRate, already differentiated per country).
             foreach (Country seeded in new[] { usa, germany, france, italy, poland, sweden })
             {
                 seeded.State.YouthUnemployment = seeded.BaselineYouthUnemploymentRate;
                 seeded.State.LifeExpectancy = seeded.BaselineLifeExpectancy;
+                seeded.State.Gini = seeded.BaselineGini;
+                seeded.State.RealWageIndex = 100f;
             }
 
             // Minimum wage as a percent of median wage (the "Kaitz index" economists use for
@@ -726,6 +751,10 @@ namespace PoliSim.Data
             float estateTax, bool estateTaxImplemented,
             float carbonTax, bool carbonTaxImplemented)
         {
+            // ROUND 4 BATCH 2 (C2): the Gini model's redistribution anchor, captured HERE - the one
+            // place the seeded income-tax rate exists - so the anchor and the TaxLine cannot drift.
+            country.BaselineIncomeTaxRate = incomeTax;
+
             country.TaxLines.AddRange(new[]
             {
                 new TaxLine(TaxType.IncomeTax, incomeTax, isImplemented: true),

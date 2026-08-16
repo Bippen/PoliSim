@@ -36,6 +36,11 @@ namespace PoliSim.Simulation
                     return IsFirstFridayOfMonth(date);
 
                 case PublishedStat.Inflation:
+                // ROUND 4 BATCH 2: real wages release WITH CPI for the USA (BLS Real Earnings, same
+                // day - sourced via the seed doc's own recorded release date); the EU five have no
+                // wage rule in the seed file and follow the family cadence, the unemployment
+                // precedent exactly.
+                case PublishedStat.RealWageIndex:
                     // USA CPI lands mid-month; the EU flash lands on the last working day of the month
                     // it describes, which is why European inflation reaches the player sooner.
                     return isUsa ? date.Day == 12 : IsLastWorkingDayOfMonth(date);
@@ -48,6 +53,7 @@ namespace PoliSim.Simulation
                 case PublishedStat.Population:
                 case PublishedStat.CrimeIndex:
                 case PublishedStat.LifeExpectancy: // ROUND 4 BATCH 1: annual at both real sources
+                case PublishedStat.Gini: // ROUND 4 BATCH 2: the same SILC/Census release as PovertyRate
                     // Annual cadence. Published on the country's own fiscal-year start (USA October 1,
                     // the European five January 1) rather than an invented date - that boundary already
                     // exists in this project via FiscalYearData, and is when annual figures settle.
@@ -104,6 +110,7 @@ namespace PoliSim.Simulation
                 case PublishedStat.Population:
                 case PublishedStat.CrimeIndex:
                 case PublishedStat.LifeExpectancy:
+                case PublishedStat.Gini:
                     end = publicationDate.AddDays(-1);
                     start = end.AddYears(-1).AddDays(1);
                     return;
@@ -151,6 +158,7 @@ namespace PoliSim.Simulation
                 case ClosingStat.Population:
                 case ClosingStat.CrimeIndex:
                 case ClosingStat.LifeExpectancy:
+                case ClosingStat.Gini:
                     return new System.DateTime(date.Year, 1, 1);
 
                 default:

@@ -185,6 +185,8 @@ namespace PoliSim.Simulation
                 case ClosingStat.DebtToGdpRatio: return state.DebtToGdpRatio;
                 case ClosingStat.YouthUnemployment: return state.YouthUnemployment;
                 case ClosingStat.LifeExpectancy: return state.LifeExpectancy;
+                case ClosingStat.Gini: return state.Gini;
+                case ClosingStat.RealWageIndex: return state.RealWageIndex;
                 default: return 0f;
             }
         }

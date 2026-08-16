@@ -27,7 +27,21 @@ namespace PoliSim.Data
 
         /// <summary>ROUND 4 BATCH 1: annual-class, like Population - Eurostat `demo_mlexpec` and
         /// CDC/NCHS both publish yearly.</summary>
-        LifeExpectancy
+        LifeExpectancy,
+
+        /// <summary>ROUND 4 BATCH 2: annual-class BY THE SAME-RELEASE ARGUMENT youth unemployment
+        /// used for monthly - Gini is literally the same survey release as the poverty rate at both
+        /// sources (Eurostat EU-SILC `ilc_di12`; the US Census Income &amp; Poverty report carries
+        /// both figures), so it publishes with the annual family rather than on an invented
+        /// schedule.</summary>
+        Gini,
+
+        /// <summary>ROUND 4 BATCH 2: monthly for the USA BY SOURCE - BLS "Real Earnings" is
+        /// released WITH CPI, same day (the seed doc's §5 records the 2025-01-15 release, which is
+        /// CPI day) - so it rides the recorded CPI rule. The EU five have no wage release rule in
+        /// the seed file and follow the same cadence rather than inventing one, the exact
+        /// unemployment-family precedent.</summary>
+        RealWageIndex
     }
 
     /// <summary>
@@ -66,7 +80,11 @@ namespace PoliSim.Data
         // mapping was always the explicit throw-on-unmapped switch below, never positional, so the
         // append is safe; the enum stays append-only per the save format's standing rule.
         YouthUnemployment,
-        LifeExpectancy
+        LifeExpectancy,
+
+        // ROUND 4 BATCH 2: the two C2 stats, appended per the same standing rule.
+        Gini,
+        RealWageIndex
     }
 
     public static class ClosingStatExtensions
@@ -84,6 +102,8 @@ namespace PoliSim.Data
                 case PublishedStat.CrimeIndex: return ClosingStat.CrimeIndex;
                 case PublishedStat.YouthUnemployment: return ClosingStat.YouthUnemployment;
                 case PublishedStat.LifeExpectancy: return ClosingStat.LifeExpectancy;
+                case PublishedStat.Gini: return ClosingStat.Gini;
+                case PublishedStat.RealWageIndex: return ClosingStat.RealWageIndex;
                 default: throw new System.ArgumentOutOfRangeException(nameof(stat), stat, "PublishedStat has no ClosingStat counterpart - add one.");
             }
         }

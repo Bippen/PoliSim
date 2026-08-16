@@ -4632,6 +4632,17 @@ namespace PoliSim.UI
             DrawDerivedStatRow("Life expectancy", -1f,
                 UiFormat.Number(state.LifeExpectancy, 1), "years at birth",
                 UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
+            // ROUND 4 BATCH 2 (C2). Gini lives on a genuine 0-100 scale (the source's own label),
+            // so it earns a gauge; the trailing text names the scale rather than a fake unit.
+            DrawDerivedStatRow("Income inequality (Gini)", state.Gini / 100f,
+                UiFormat.Number(state.Gini, 1), "0-100 scale", UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
+            // ⚠ A BASE-100 INDEX IS UNBOUNDED BY CONSTRUCTION - §A.9b's negative-fill treatment,
+            // decided deliberately per the batch directive, not defaulted: any fill denominator
+            // would be an invented ceiling. The trailing text carries the one honest comparison
+            // (its own starting level); cross-country level comparison is NOT claimed, by ruling.
+            DrawDerivedStatRow("Real wages", -1f,
+                UiFormat.Number(state.RealWageIndex, 1), "index, 100 = start of term",
+                UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
             GUILayout.EndVertical();
 
             GUILayout.Space(12f);

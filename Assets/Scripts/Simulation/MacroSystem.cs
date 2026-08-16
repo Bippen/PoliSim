@@ -699,6 +699,151 @@ namespace PoliSim.Simulation
         public static void ApplyYouthUnemploymentDaily(Country country) => ApplyYouthUnemployment(country, YouthUnemploymentReversionSpeedPerDay);
         public static void ApplyLifeExpectancyDaily(Country country) => ApplyLifeExpectancy(country, LifeExpectancyReversionSpeedPerDay);
 
+        // --- ROUND 4 BATCH 2 (C2): Gini and the real wage index - inputs-only tracked stats ---
+        // Both READ existing state and WRITE nothing back, per the standing Round 4 first-pass rule.
+        // Gini is a reverting quantity on the PovertyRate idiom exactly (baseline + slack push,
+        // minus redistribution pulls); the real wage index is a COMPOUNDING quantity on the
+        // PotentialGDP idiom (annual-rate POWER SLICE), because a wage level is a stock of
+        // accumulated growth, not a gap closing toward an anchor.
+
+        /// <summary>Gini points added per point Unemployment sits above NAIRU - recessions raise
+        /// measured inequality modestly (job loss concentrates at the bottom of the distribution);
+        /// directionally grounded, deliberately small against the policy pulls below.</summary>
+        private const float GiniUnemploymentSensitivity = 0.4f;
+
+        /// <summary>Gini points removed per point of income-tax rate above the country's own seeded
+        /// rate (SIGNED - cutting below the seed raises inequality by the same coefficient).
+        /// Modest by design: marginal-rate changes move measured Gini slowly, and the strong
+        /// redistribution levers are the transfer programs, matching the real pre/post-transfer
+        /// decomposition where transfers do most of the work.</summary>
+        private const float GiniIncomeTaxSensitivity = 0.08f;
+
+        /// <summary>Gini points removed per 100 points of MinimumWagePercentOfMedian above the
+        /// country's own anchor - a wage floor compresses the bottom of the distribution; smaller
+        /// than the transfer programs for the same only-reaches-low-wage-workers reason
+        /// MinimumWagePovertyReductionSensitivity documents.</summary>
+        private const float GiniMinimumWageSensitivity = 2f;
+
+        /// <summary>Slower than PovertyRate's 0.15 - inequality is a structural distribution, and
+        /// real national Ginis move by tenths of a point per year outside genuine upheavals.</summary>
+        private const float GiniReversionSpeed = 0.1f;
+
+        /// <summary>Historical extremes as honest gameplay bounds: no national equivalised-income
+        /// Gini sits below ~20 (the Nordics' floor era) or above ~65 (South Africa ~63, the recorded
+        /// world maximum).</summary>
+        private const float MinGiniPercent = 15f;
+        private const float MaxGiniPercent = 65f;
+
+        /// <summary>Gini-points-per-100%-GenerosityLevel each program removes from the baseline -
+        /// the GetPovertyReductionSensitivity idiom at roughly half scale, because the Gini range in
+        /// this set is compressed (26.0-39.5) where poverty spans wider: direct transfers (UBI/NIT/
+        /// MeansTested) do the heavy redistribution, the in-kind three are modest.</summary>
+        internal static float GetGiniReductionSensitivity(WelfareProgramType type)
+        {
+            switch (type)
+            {
+                case WelfareProgramType.UBI: return 4f;
+                case WelfareProgramType.NegativeIncomeTax: return 3.5f;
+                case WelfareProgramType.MeansTestedWelfare: return 3f;
+                case WelfareProgramType.UniversalHealthcare: return 1f;
+                case WelfareProgramType.HousingAssistance: return 1f;
+                case WelfareProgramType.ChildcareSubsidies: return 1f;
+                default: return 0f;
+            }
+        }
+
+        /// <summary>Reverts EconomyState.Gini toward the structural baseline pushed by labour-market
+        /// slack and pulled by welfare programs, income tax above its seeded anchor
+        /// (Country.BaselineIncomeTaxRate) and a minimum wage above its own anchor. Inputs-only.
+        /// Zero-gap at world creation: gap 0, no program implemented, tax at seed, wage at anchor.</summary>
+        public static void ApplyGini(Country country, float reversionSpeed = GiniReversionSpeed)
+        {
+            EconomyState state = country.State;
+            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+
+            float welfareReduction = 0f;
+            foreach (WelfareProgram program in country.WelfarePrograms)
+            {
+                if (!program.IsImplemented)
+                {
+                    continue;
+                }
+
+                welfareReduction += GetGiniReductionSensitivity(program.Type) * (program.GenerosityLevel / 100f);
+            }
+
+            // Effective rate 0 when the line is removed entirely - abolishing the income tax raises
+            // inequality through the same signed coefficient, which is the correct direction.
+            float incomeTaxRate = 0f;
+            foreach (TaxLine line in country.TaxLines)
+            {
+                if (line.IsImplemented && line.Type == TaxType.IncomeTax)
+                {
+                    incomeTaxRate = line.Rate;
+                    break;
+                }
+            }
+            float taxReduction = GiniIncomeTaxSensitivity * (incomeTaxRate - country.BaselineIncomeTaxRate);
+
+            float minimumWageReduction = 0f;
+            if (country.MinimumWageImplemented)
+            {
+                minimumWageReduction = GiniMinimumWageSensitivity
+                    * (country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian) / 100f;
+            }
+
+            float target = country.BaselineGini
+                + GiniUnemploymentSensitivity * unemploymentGap
+                - welfareReduction - taxReduction - minimumWageReduction;
+            state.Gini = Mathf.Clamp(state.Gini + reversionSpeed * (target - state.Gini), MinGiniPercent, MaxGiniPercent);
+        }
+
+        /// <summary>Real wage growth tracks trend productivity one-for-one at equilibrium - the
+        /// textbook long-run relation, and the reason the index needs NO per-country growth seed:
+        /// PotentialGrowthRate already differentiates the six countries.</summary>
+        private const float RealWageProductivityPassThrough = 1f;
+
+        /// <summary>Per-turn growth points per point Unemployment sits BELOW NAIRU - the wage
+        /// Phillips channel: tight labour markets bid wages up, slack suppresses them.</summary>
+        private const float RealWageTightnessSensitivity = 0.3f;
+
+        /// <summary>Per-turn growth points lost per point actual Inflation runs above
+        /// InflationExpectations - settlements anchor to expectations, so SURPRISE inflation erodes
+        /// real wages until they catch up. SIGNED deliberately: disinflation surprise boosts real
+        /// wages by the same channel, which is exactly the seed doc's own Poland 2024 story
+        /// ("strong nominal growth plus rapidly falling inflation").</summary>
+        private const float RealWageInflationErosionSensitivity = 0.3f;
+
+        /// <summary>Safety clamp on the per-turn growth rate, not on the index level - the index is
+        /// unbounded by construction (display furniture per the ruling); clamps never scale.</summary>
+        private const float MaxRealWageGrowthPerTurnPercent = 10f;
+        private const float MinRealWageIndex = 1f;
+
+        /// <summary>Compounds EconomyState.RealWageIndex by the period's real wage growth: trend
+        /// pass-through + labour-market tightness − inflation surprise. Inputs-only: reads
+        /// PotentialGrowthRate/Unemployment/NAIRU/Inflation/InflationExpectations, writes only
+        /// itself. The LEVEL means nothing across countries (base 100 at epoch per country, by
+        /// ruling); only growth is consumed and displayed with meaning.
+        /// <paramref name="sliceExponent"/> is 1 for the turn form (equivalence's caller) and
+        /// MacroSliceFractionPerDay for the daily wrapper - the annual-rate POWER SLICE, exact by
+        /// telescoping at constant inputs.</summary>
+        public static void ApplyRealWageIndex(Country country, float sliceExponent = 1f)
+        {
+            EconomyState state = country.State;
+            float growthPerTurnPercent = Mathf.Clamp(
+                RealWageProductivityPassThrough * country.PotentialGrowthRate
+                + RealWageTightnessSensitivity * (country.NaturalUnemploymentRate - state.Unemployment)
+                - RealWageInflationErosionSensitivity * (state.Inflation - state.InflationExpectations),
+                -MaxRealWageGrowthPerTurnPercent, MaxRealWageGrowthPerTurnPercent);
+            state.RealWageIndex = Mathf.Max(MinRealWageIndex,
+                state.RealWageIndex * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
+        }
+
+        private static readonly float GiniReversionSpeedPerDay = PerDayReversion(GiniReversionSpeed);
+
+        public static void ApplyGiniDaily(Country country) => ApplyGini(country, GiniReversionSpeedPerDay);
+        public static void ApplyRealWageIndexDaily(Country country) => ApplyRealWageIndex(country, MacroSliceFractionPerDay);
+
         // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
 
         /// <summary>Points BirthRate declines per turn on its own - a real, well-documented, near-universal secular fertility decline across developed nations, not a country-specific policy response. Deliberately small (over a 500-turn run this alone would move BirthRate by 5 points, well before which the lower-starting countries hit MinBirthRate and stop).</summary>

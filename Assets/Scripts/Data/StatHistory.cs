@@ -115,6 +115,10 @@ namespace PoliSim.Data
         public readonly MultiResolutionSeries YouthUnemployment = new MultiResolutionSeries();
         public readonly MultiResolutionSeries LifeExpectancy = new MultiResolutionSeries();
 
+        // ROUND 4 BATCH 2 (C2): same daily-native-from-birth reasoning as the batch-1 pair above.
+        public readonly MultiResolutionSeries Gini = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries RealWageIndex = new MultiResolutionSeries();
+
         /// <summary>
         /// Appends this turn's already-settled values. <paramref name="date"/> is the in-game
         /// calendar date the turn resolved on (Continuous Time Migration Phase 0 - see
@@ -140,6 +144,8 @@ namespace PoliSim.Data
             CorruptionIndex.Append(date, state.CorruptionIndex);
             YouthUnemployment.Append(date, state.YouthUnemployment);
             LifeExpectancy.Append(date, state.LifeExpectancy);
+            Gini.Append(date, state.Gini);
+            RealWageIndex.Append(date, state.RealWageIndex);
         }
     }
 }

@@ -94,6 +94,24 @@ namespace PoliSim.Data
         /// the negative-fill convention (§A.9b), never a gauge.</summary>
         public float LifeExpectancy;
 
+        /// <summary>ROUND 4 BATCH 2 (C2): Gini coefficient of equivalised disposable income on the
+        /// 0-100 scale (Eurostat's own label for `GINI_HND`). Inputs-only: reverts toward the
+        /// country's structural baseline, pushed up by labour-market slack and pulled down by
+        /// implemented welfare programs, income tax above its seeded rate, and a minimum wage above
+        /// its own anchor - the PovertyRate idiom exactly (see MacroSystem.ApplyGini). The USA seed
+        /// is [ESTIMATED] on a different equivalence scale, documented-irreconcilable at source -
+        /// comparable in spirit, never in construction.</summary>
+        public float Gini;
+
+        /// <summary>ROUND 4 BATCH 2 (C2): real wage INDEX, base 100 at epoch per country - the HPI
+        /// convention, applied by ruling for the HPI reason: the seed doc's growth figures mix three
+        /// bases (net vs gross vs economy-wide), so the LEVEL series is display furniture and
+        /// cross-country level comparison is explicitly not claimed. The simulation consumes GROWTH
+        /// (nominal minus inflation), which the bases agree on directionally. Unbounded by
+        /// construction, so the UI draws it on the negative-fill convention (§A.9b), never a
+        /// gauge.</summary>
+        public float RealWageIndex;
+
         /// <summary>
         /// A stylized 0-100 crime index (higher = more crime), NOT a literal transformation of any
         /// single real indicator - "crime" as a broad concept has no single clean cross-country
@@ -248,7 +266,8 @@ namespace PoliSim.Data
             float population = 50f, float birthRate = 10f, float deathRate = 10f, float netMigrationRate = 1f,
             float dependencyRatio = 30f, float populationGrowthRate = float.NaN,
             float naturalBirthRate = float.NaN, float naturalNetMigrationRate = float.NaN,
-            float youthUnemployment = 15f, float lifeExpectancy = 80f)
+            float youthUnemployment = 15f, float lifeExpectancy = 80f,
+            float gini = 30f, float realWageIndex = 100f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -269,6 +288,8 @@ namespace PoliSim.Data
             CrimeIndex = crimeIndex;
             YouthUnemployment = youthUnemployment;
             LifeExpectancy = lifeExpectancy;
+            Gini = gini;
+            RealWageIndex = realWageIndex;
             Population = population;
             BirthRate = birthRate;
             DeathRate = deathRate;
@@ -287,13 +308,19 @@ namespace PoliSim.Data
         /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
         public EconomyState Clone()
         {
+            // ⚠ R4-1 ESCAPE, fixed in R4-2: YouthUnemployment/LifeExpectancy were added to the ctor
+            // but never to this call, so a clone silently reset both to their ctor defaults. Harmless
+            // in practice only because Clone feeds PreviewTurn's throwaway, which computes neither -
+            // but any future Clone consumer would have read fabricated values. Every new EconomyState
+            // field must be added HERE as well as to the ctor; the R4-2 record carries the escape.
             return new EconomyState(
                 GDP, Inflation, Unemployment, ApprovalRating, Budget,
                 TradeBalance, CurrencyStrength, Consumption, Investment,
                 PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
                 GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate,
                 OrganizedCrimeIndex, CorruptionIndex, Population, BirthRate, DeathRate, NetMigrationRate,
-                DependencyRatio, PopulationGrowthRate, NaturalBirthRate, NaturalNetMigrationRate);
+                DependencyRatio, PopulationGrowthRate, NaturalBirthRate, NaturalNetMigrationRate,
+                YouthUnemployment, LifeExpectancy, Gini, RealWageIndex);
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

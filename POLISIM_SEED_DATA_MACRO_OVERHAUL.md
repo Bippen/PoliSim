@@ -541,7 +541,19 @@ values.* The US sitting ~3 years below comparable countries is real and worth pr
 | Sweden | **1.3** | ⚠ **[ESTIMATED]** — nominal 4.1% (Medlingsinstitutet, whole economy, full-year 2024) minus 2.84% KPI annual average. The nominal figure is sourced, the deflator is secondary, **the subtraction is derived** |
 | USA | **1.0** | [VERIFIED] BLS Real Earnings (released 2025-01-15) — real average hourly earnings, all employees, Dec 2023→Dec 2024, SA, CPI-U deflated |
 
-### 🔴 THIS ROW NOW MIXES THREE BASES AND MUST NOT BE SEEDED AS-IS
+### 🟡 THE THREE-BASES MIX: BLOCKER → CONVENTION, BY RULING (Elias, 2026-08-16, R4-2)
+
+**The row below must still never be seeded as levels** — that half stands unchanged. What the ruling
+resolves is that it no longer needs to be: **the real wage stat seeds as an INDEX, base 100 at epoch
+per country** (the HPI convention, applied for the HPI reason). The simulation consumes **growth**
+(nominal minus inflation), which the three bases agree on directionally; the level series is display
+furniture, and cross-country level comparison is explicitly not claimed. The figures below therefore
+serve as **directional validation anchors** for the growth model, never as seeds. If a future build
+finds the model genuinely needs a level, that is a RULINGS NEEDED stop naming the specific need —
+the OECD Taxing Wages re-sourcing recommendation below remains the path to a coherent level set if
+one is ever actually required.
+
+### The original finding (kept verbatim — the incoherence is real, only its consequence changed)
 
 Every figure is correct; the **set** is incoherent — the same class of defect as the housing-overburden
 variant error, and worth as much attention:

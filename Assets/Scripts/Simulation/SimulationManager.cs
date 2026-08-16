@@ -232,6 +232,13 @@ namespace PoliSim.Simulation
                     MacroSystem.ApplyYouthUnemploymentDaily(country);
                     MacroSystem.ApplyLifeExpectancyDaily(country);
 
+                    // ROUND 4 BATCH 2 (C2): same slot, same reasoning - Gini reads the same
+                    // start-of-day Unemployment youth-U reads; the wage index reads yesterday's
+                    // settled Inflation/Expectations and the structural trend rate. Neither writes
+                    // anything any later system reads (inputs-only, the ruled posture).
+                    MacroSystem.ApplyGiniDaily(country);
+                    MacroSystem.ApplyRealWageIndexDaily(country);
+
                     // CONTINUOUS TIME PHASE 3, part 2: the money resolution. Revenue, benefits, welfare,
                     // interest, the SWF's contribution/return/draw and the debt stock itself all move
                     // daily now; only the BUDGET RESOLUTION that decides what to spend stays on the turn

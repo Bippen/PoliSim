@@ -231,10 +231,10 @@ namespace PoliSim.EditorTools
             // The multi-resolution buckets were built in Phase 0 for daily data and (finding, this
             // pass) never received a daily offer until History.Append moved to AdvanceDay. This
             // section is the first check that can fail if that plumbing regresses. WHAT IT
-            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for THREE
-            // daily-varying series - PovertyRate, DebtToGdpRatio, and (Round 4 batch 1) the
-            // daily-native YouthUnemployment, asserted rather than assumed per the batch directive -
-            // three assert families:
+            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for FOUR
+            // daily-varying series - PovertyRate, DebtToGdpRatio, the daily-native
+            // YouthUnemployment (Round 4 batch 1) and RealWageIndex (batch 2), each asserted rather
+            // than assumed per the batch directives - three assert families:
             // cadence (Daily/Weekly/Monthly/Quarterly counts within one of 200/1, /7, /30, /91,
             // Daily capped at StatHistory.MaxEntries), variation (Daily holds at least two DISTINCT
             // consecutive values - the stat genuinely moves intra-week), and divergence (the Daily
@@ -246,6 +246,11 @@ namespace PoliSim.EditorTools
             // the target sits exactly at the seeded value and a flat daily series is CORRECT - the
             // variation assert would report that correctness as a plumbing failure. Its buckets ride
             // the same StatHistory.Append line as everything else; the matrix judges its values.
+            // Gini (Round 4 batch 2) is excluded on the numerical variant of the same reason: its
+            // slow reversion (PerDayReversion of 0.1 ~ 0.0009/day) times a no-policy target
+            // wiggle lands the daily increment at float32 epsilon on a ~30-point value, so the
+            // variation assert would measure rounding, not plumbing. RealWageIndex is IN - it
+            // compounds daily by construction, the clearest daily-native series in the set.
             {
                 var bucketGo = new GameObject("AggEq_Buckets");
                 try
@@ -262,7 +267,8 @@ namespace PoliSim.EditorTools
                     Country bc = bw.GetCountry(CountryId.Sweden);
                     foreach ((string name, MultiResolutionSeries series) in new (string, MultiResolutionSeries)[]
                              { ("PovertyRate", bc.History.PovertyRate), ("DebtToGdpRatio", bc.History.DebtToGdpRatio),
-                               ("YouthUnemployment", bc.History.YouthUnemployment) })
+                               ("YouthUnemployment", bc.History.YouthUnemployment),
+                               ("RealWageIndex", bc.History.RealWageIndex) })
                     {
                         total += 3;
                         int expectedDaily = Mathf.Min(BucketDays, StatHistory.MaxEntries);
@@ -406,6 +412,55 @@ namespace PoliSim.EditorTools
                 total += 2;
                 passed += Compare($"{id}.YouthUnemployment", cr.State.YouthUnemployment, cs.State.YouthUnemployment) ? 1 : 0;
                 passed += Compare($"{id}.LifeExpectancy", cr.State.LifeExpectancy, cs.State.LifeExpectancy) ? 1 : 0;
+            }
+
+            // --- ROUND 4 BATCH 2 (C2): Gini and the real wage index ---------------------------------
+            // WHAT IT ENUMERATES (rule 14): two countries chosen for their structural opposites on
+            // exactly these stats (USA: the [ESTIMATED] Gini outlier WITH a statutory minimum wage;
+            // Sweden: near the equality floor WITHOUT one - so both MinimumWageImplemented branches
+            // run), each driven through every input channel at once: +3pt unemployment (slack pushes
+            // Gini up AND suppresses wage growth), +2pt inflation surprise over expectations (the
+            // erosion channel), MeansTestedWelfare implemented at generosity 60 (the strongest
+            // transfer pull), and the income-tax line raised 10 points over its seeded anchor (the
+            // signed redistribution pull). Inputs HELD (no other system runs): Gini's constant-target
+            // PerDayReversion and the wage index's constant-growth POWER SLICE are both EXACT by
+            // construction, so this section carries no drift budget - float noise only, same as the
+            // R4-1 section above. Live path-dependence is the matrix's to judge.
+            foreach (CountryId id in new[] { CountryId.Sweden, CountryId.USA })
+            {
+                World w1 = WorldFactory.CreateDefault();
+                World w2 = WorldFactory.CreateDefault();
+                Country ct = w1.GetCountry(id);
+                Country cu = w2.GetCountry(id);
+                foreach (Country x in new[] { ct, cu })
+                {
+                    x.State.Unemployment += 3f;
+                    x.State.Inflation = x.State.InflationExpectations + 2f;
+                    foreach (WelfareProgram program in x.WelfarePrograms)
+                    {
+                        if (program.Type == WelfareProgramType.MeansTestedWelfare)
+                        {
+                            program.IsImplemented = true;
+                            program.GenerosityLevel = 60f;
+                        }
+                    }
+                    foreach (TaxLine line in x.TaxLines)
+                    {
+                        if (line.Type == TaxType.IncomeTax) { line.Rate += 10f; }
+                    }
+                }
+
+                MacroSystem.ApplyGini(ct);                                              // one turn step
+                MacroSystem.ApplyRealWageIndex(ct);
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
+                {
+                    MacroSystem.ApplyGiniDaily(cu);
+                    MacroSystem.ApplyRealWageIndexDaily(cu);
+                }
+
+                total += 2;
+                passed += Compare($"{id}.Gini", ct.State.Gini, cu.State.Gini) ? 1 : 0;
+                passed += Compare($"{id}.RealWageIndex", ct.State.RealWageIndex, cu.State.RealWageIndex) ? 1 : 0;
             }
 
             Debug.Log($"=== Phases 1-5 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% (plus the bucket asserts) ===");

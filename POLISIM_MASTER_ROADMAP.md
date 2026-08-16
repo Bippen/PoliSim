@@ -252,10 +252,12 @@ This is the one authoritative order, replacing whatever each original document s
 5. **Part B, full rollout (5a–5f). DONE 2026-08-02** — see `COMPLETED.md` sections 10 and 16. 5e's Phase C
    batches 4–6 were the last live part, and Elias's review confirmed them. Scope absorbed 5f.
 6. **Resume Roadmap work (a new Round 4)** — ✅ **RULED 2026-08-16: all six rulings APPROVED**
-   (order carries a C1/C2 swap clause pending C2's basis reconciliation; the overburden reversal is
-   noted in B6). **R4-1 SHIPPED 2026-08-16** — see CLAUDE.md "Round 4 batch R4-1". The C2 real-wage
-   basis (the scope's one data blocker) remains unreconciled as of R4-1's close, so the swap clause
-   is LIVE: if it stays unreconciled when R4-2 would start, C1 builds next instead.
+   (the overburden reversal is noted in B6). **R4-1 SHIPPED 2026-08-16** — see CLAUDE.md "Round 4
+   batch R4-1". **R4-2 SHIPPED 2026-08-16** — the swap clause never fired: Elias resolved the
+   real-wage basis by ruling (index base 100 at epoch, the HPI convention; seed doc §5's 🔴 is now
+   a 🟡 convention with the reasoning recorded in place). See CLAUDE.md "Round 4 batch R4-2".
+   **Next: R4-3 (C1 housing)** — its step 0 confirms the recorded overburden-primary +
+   USA-on-homeownership rulings against the seed doc at HEAD.
 
    ### Round 4 — the scoped plan (read/map/propose session, 2026-08-16)
 
@@ -266,7 +268,7 @@ This is the one authoritative order, replacing whatever each original document s
    | batch | candidate | source | seed status | fiscal coupling |
    |---|---|---|---|---|
    | R4-1 | ✅ **SHIPPED 2026-08-16** — **C3: youth unemployment + life expectancy** | directive §C3 | ⚠ scoping's "6/6 both" OVERSTATED, caught at the batch's step-0 re-read (rule 12): youth-U 6/6 `[VERIFIED]`; life expectancy **4/6 + France `p` / Poland `ep` PROVISIONAL-seedable** — seeded with flags carried inline in `WorldFactory`. Also monthly-class at source (`une_rt_m`/Employment Situation), not annual as the batch brief said — wiring follows the source | none |
-   | R4-2 | **C2: Gini + real wages** | directive §C2 | Gini 6/6 (normalize the US basis first); ⚠ **real wages carries the seed doc's 🔴 "mixes three bases, must not be seeded as-is"** — the batch's pre-report names this as its one data blocker | none debt-side; the wage↔inflation adjacency flagged for the batch's stress scenario |
+   | R4-2 | ✅ **SHIPPED 2026-08-16** — **C2: Gini + real wages** | directive §C2 | ⚠ scoping's "Gini 6/6" OVERSTATED, caught at step 0 (the R4-1 pattern repeating): **5/6 `[VERIFIED]` Eurostat 0-100 + USA 39.5 `[ESTIMATED]`** (OECD IDD 2019 carried forward, band 38.5-41.0; already 0-100 at source so NO conversion — "normalize first" was already closed; the equivalence-scale difference is documented-irreconcilable). Real wages: the 🔴 resolved by RULING as an index convention (base 100 at epoch; sim consumes growth; level = display furniture); the model needed no level, so the named RULINGS-stop never fired | none debt-side; the wage↔inflation adjacency is now a MODEL TERM (inflation-surprise erosion, signed), exercised in the equivalence drive |
    | R4-3 | **C1: housing** | directive §C1 ("confirmed first" there, third here — the two batches ahead of it carry no forks) | homeownership 4/6 `[VERIFIED]` + 2 honest estimates; overburden EU-five `[VERIFIED]` (the B6 gaps closed via the Eurostat API 2026-08-02 — hours AFTER overburden lost the primary-metric slot on data grounds, so **the metric choice is REOPENED**, ruling #3); HPI at index-100 by convention | **monetary-coupled** (rate-sensitive by design — reads the policy rate, writes nothing to the rate path); not debt-coupled |
    | R4-4 | **The three unbuilt cabinet portfolios: Defense, Foreign Affairs, Education** | COMPLETED §2's lasting limitation; unblocks `MISSING_PREREQUISITES` §D1 (portraits) | none needed — ministers are ORIGINAL FICTIONAL PERSONS per rule 9's unreversed half | decision budget-impacts at event scale only |
    | R4-5 | **C5: productivity (GDP/hour, OECD PPP)** | directive §C5; LAST per Elias's own B4 priority ruling | 6/6 `[VERIFIED]`, one basis, one vintage; own-past-only display per the OECD caution | indirect ONLY if coupled to PotentialGrowthRate — which this scope defers (ruling #4) |

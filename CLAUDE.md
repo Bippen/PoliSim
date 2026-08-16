@@ -8763,3 +8763,96 @@ for the process TREE, and a batch Unity run can leave a `Unity.Licensing.Client`
 indefinitely — the wait then hangs forever after Unity itself exits. Wait on
 `-PassThru`+`.WaitForExit()` (the process alone) instead; one diff run wedged 24 minutes this way
 before diagnosis.
+
+## Round 4 batch R4-2 — C2 ships on the proven shape (2026-08-16)
+
+Second batch on the R4-1 shape, against pre-batch HEAD `019a314`, with the real-wage basis
+blocker resolved by ruling up front: **the stat seeds as an INDEX, base 100 at epoch per country**
+(the HPI convention for the HPI reason), the simulation consumes growth, the level is display
+furniture, and cross-country level comparison is explicitly not claimed. The seed doc's §5 🔴 is
+now a 🟡 convention with the reasoning recorded in place — the incoherence finding kept verbatim,
+only its consequence changed. **The model needed no level, so the named RULINGS-stop never fired.**
+
+### Step 0 caught the scoping snapshot again — the R4-1 pattern is now a trend
+
+"Gini 6/6 (normalize the US basis first)" was wrong on both halves at HEAD: the set is
+**5/6 `[VERIFIED]`** (Eurostat `ilc_di12` 2024, no flags, four anchors reproduced exactly at the
+API) **plus USA 39.5 `[ESTIMATED]`** — OECD IDD with reference year 2019 carried forward (band
+38.5–41.0) on the square-root equivalence scale, which produces a different Gini FROM IDENTICAL
+DATA than Eurostat's modified-OECD scale: documented-irreconcilable, comparable in spirit and
+never in construction. And the "normalize first" instruction was already closed at source —
+39.5 is 0–100 at the origin (OECD publishes 0.395), so there is NO conversion step and no
+factor-of-100 opportunity. Both corrections ride inline on the `WorldFactory` seed lines.
+
+### What shipped
+
+Two `EconomyState` fields (30 → 32), both inputs-only. **Gini** is the PovertyRate idiom exactly:
+reverts (slower — 0.1, inequality is structural) toward `BaselineGini` pushed by the unemployment
+gap and pulled by implemented welfare programs (transfer-heavy sensitivities at half poverty
+scale), income tax **signed** against a new `Country.BaselineIncomeTaxRate` anchor (captured in
+`SeedTaxLines`, the one place the seeded rate exists — `TaxLine.Rate` is player-mutable with no
+stored seed, which is why the anchor must be its own field; abolishing the income tax RAISES
+inequality through the same coefficient), and the minimum wage against its existing anchor.
+Clamped [15, 65] (the Nordic floor era to South Africa's ~63). **RealWageIndex** is the
+PotentialGDP idiom, not a reversion — a wage level is a stock of accumulated growth — compounding
+per turn at trend pass-through (1:1 on `PotentialGrowthRate`, the textbook long-run relation,
+which is why the index needs NO per-country growth seed) plus labour-market tightness minus
+**signed** inflation surprise (settlements anchor to expectations; the sign is the seed doc's own
+Poland-2024 story, "strong nominal growth plus rapidly falling inflation"). Daily form is the
+annual-rate POWER SLICE; growth is clamped ±10/turn, the level deliberately unbounded.
+
+**Publication, stated at source per the directive**: Gini is annual **by the same-release
+argument youth-U used for monthly** — literally the same survey release as the poverty rate at
+both sources (EU-SILC; the Census Income & Poverty report). Real wages are monthly-with-CPI for
+the USA **by source** (BLS Real Earnings ships on CPI day — §5's own recorded release date), with
+the EU five following the family cadence per the unemployment precedent (no separate rule in the
+seed file; not invented, extended). Verified at the seam: Gini day 638 / 11 releases in 12 years
+(PovertyRate's exact row), RealWageIndex day 42 / 143 (Inflation's exact row), no invented
+revision cycles.
+
+### An R4-1 escape, caught and fixed here
+
+`EconomyState.Clone()` never received the two C3 fields — a clone silently reset
+YouthUnemployment/LifeExpectancy to their ctor defaults. Harmless in practice only because Clone
+feeds PreviewTurn's throwaway, which computes neither; any future Clone consumer would have read
+fabricated values. Fixed with all four Round 4 fields and a warning comment at the call: **every
+new EconomyState field goes to the ctor AND to Clone**, and the batch checklist now carries it.
+
+### The bar
+
+- **Equivalence 95/95 within 3%**, new rows at 0.0000–0.0019% — float noise, per the stated
+  exact-by-construction expectation (constant-target reversion; constant-growth power slice).
+  The enumeration drives every C2 input channel at once on the two structural opposites (USA:
+  Gini outlier WITH a minimum wage; Sweden: near the equality floor WITHOUT one).
+- **Buckets**: RealWageIndex IN (the clearest daily-native series — compounds by construction),
+  **Gini EXCLUDED with the numerical variant of the LifeExpectancy reason**: PerDayReversion(0.1)
+  times a no-policy target wiggle lands the daily increment at float32 epsilon on a ~30-point
+  value — the variation assert would measure rounding, not plumbing.
+- **Matrix 6/6 vs `pre_r4_2_019a314`: 32 of 32 shared fields byte-identical**, exactly `Gini` and
+  `RealWageIndex` named NEW — the directive's own stated inputs-only test, met bit-for-bit.
+- **Save/load 12/12** at 32 reflected fields (30→32 verified in the compare).
+- **Captures 79/79 at both sizes, 0 failed, 0 overflows** — symmetric this run (the warm-up found
+  the same states both times). Society carries four rows: Gini gauged on its genuine 0–100 scale;
+  **Real wages negative-fill per §A.9b, decided deliberately as the directive required** — a
+  base-100 index is unbounded by construction, any fill denominator would be an invented ceiling;
+  the trailing text carries the one honest comparison ("index, 100 = start of term"). The Gini
+  label's two-line wrap at 1600 renders clean.
+
+### Batch-shape verdict (what R4-2 adds to the arc)
+
+**The shape held with zero new tooling** — the diff allowance, the exclusion-with-reason pattern,
+and the enum-iterating cadence check all absorbed the batch as designed; nothing was too heavy,
+nothing missing. What R4-2 adds: (1) the **step-0 scoping-snapshot correction is now 2-for-2**
+and should be treated as expected batch work, not a surprise; (2) a new stat class entered the
+inventory — the **compounding index** (PotentialGDP idiom, power slice, §A.9b display, no
+level seed) — R4-3's HPI is the same class and should reuse all of it; (3) the **ctor+Clone
+pairing** joins the checklist after the R4-1 escape. Follow-on candidates noted, not built: a
+Gini→ApprovalRating channel (inequality as a political force), a real-wage→ConsumerConfidence
+channel, and C5's productivity coupling replacing the 1:1 pass-through — all write-backs or new
+couplings, all separately-ruled per the standing posture.
+
+**R4-3 handoff (C1 housing)**: overburden-primary with USA-on-homeownership is the recorded
+ruling; its step 0 confirms that and the seed rows against the doc at HEAD (homeownership 4/6 +
+2 honest estimates with stated bands; HPI index-100 — the convention R4-2 just built the class
+for; the EU-five overburden `[VERIFIED]` closure of 2026-08-02). Monetary-coupled by design
+(reads the policy rate, writes nothing back) — inputs-only holds without a new ruling.

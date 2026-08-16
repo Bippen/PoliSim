@@ -204,6 +204,20 @@ namespace PoliSim.Data
         /// to the same real 2024 figure the state opens at.</summary>
         public float BaselineLifeExpectancy = 80f;
 
+        /// <summary>ROUND 4 BATCH 2 (C2): the structural inequality anchor - ApplyGini's reversion
+        /// target when unemployment sits at NAIRU, no welfare program is implemented, income tax is
+        /// at its seeded rate and the minimum wage at its own anchor. Seeded to the same real 2024
+        /// Eurostat/OECD figure EconomyState.Gini opens at (zero-gap idiom).</summary>
+        public float BaselineGini = 30f;
+
+        /// <summary>ROUND 4 BATCH 2 (C2): the income-tax rate this country SEEDED with - the anchor
+        /// ApplyGini measures redistribution against, captured once in WorldFactory from the seeded
+        /// TaxLine (one authority; TaxLine.Rate itself is player-mutable with no stored seed, which
+        /// is exactly why this anchor must exist as its own field). NOT a lever and never mutated
+        /// after world creation - the same role BaselineMinimumWagePercentOfMedian plays for the
+        /// minimum-wage gap.</summary>
+        public float BaselineIncomeTaxRate = 30f;
+
         /// <summary>
         /// Whether this country has a statutory minimum wage at all - false for Sweden and Italy,
         /// matching real-world fact (both rely on sector-level collective bargaining instead of a
