@@ -183,6 +183,8 @@ namespace PoliSim.Simulation
                 case ClosingStat.Population: return state.Population;
                 case ClosingStat.CrimeIndex: return state.CrimeIndex;
                 case ClosingStat.DebtToGdpRatio: return state.DebtToGdpRatio;
+                case ClosingStat.YouthUnemployment: return state.YouthUnemployment;
+                case ClosingStat.LifeExpectancy: return state.LifeExpectancy;
                 default: return 0f;
             }
         }

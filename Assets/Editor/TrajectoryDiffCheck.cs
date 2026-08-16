@@ -30,6 +30,14 @@ namespace PoliSim.EditorTools
     /// tool, not a gate: exit 0 on a completed compare (thresholds are per-phase judgment), 1 on a
     /// self-test failure, 2 on structural mismatch (differing key sets - which means the two dumps
     /// are not comparable at all).
+    ///
+    /// **NEW-FIELD ALLOWANCE (Round 4 batch 1).** A round whose whole point is adding EconomyState
+    /// fields makes "post-batch dump has fields the pre-batch dump lacks" the EXPECTED shape, not a
+    /// structural mismatch - the old strict key-set equality would have exit-2'd every inputs-only
+    /// batch on its own success. Fields present only in B are NAMED in the output as NEW and excluded
+    /// from comparison (there is nothing to compare them against); every asymmetry in the other
+    /// direction stays fatal - a field present only in A means the batch DELETED state, which no
+    /// additive batch may do, and extra B keys inside a shared field still mean differing runs.
     /// </summary>
     public static class TrajectoryDiffCheck
     {
@@ -65,9 +73,43 @@ namespace PoliSim.EditorTools
 
             Dictionary<(int Turn, string Country, string Field), double> a = Load(pathA);
             Dictionary<(int, string, string), double> b = Load(pathB);
-            if (a.Count != b.Count)
+
+            // The new-field allowance, exactly as scoped in the class comment: B-only FIELDS are
+            // named and excluded; every other asymmetry is still the old exit-2 mismatch.
+            var fieldsA = new HashSet<string>();
+            var fieldsB = new HashSet<string>();
+            foreach ((_, _, string field) in a.Keys) { fieldsA.Add(field); }
+            int bKeysInNewFields = 0;
+            foreach ((_, _, string field) in b.Keys)
             {
-                Debug.LogError($"DIFF: key counts differ ({a.Count} vs {b.Count}) - the dumps are not comparable.");
+                fieldsB.Add(field);
+                if (!fieldsA.Contains(field)) { bKeysInNewFields++; }
+            }
+
+            var removedFields = new List<string>();
+            foreach (string field in fieldsA)
+            {
+                if (!fieldsB.Contains(field)) { removedFields.Add(field); }
+            }
+
+            if (removedFields.Count > 0)
+            {
+                Debug.LogError($"DIFF: field(s) present in A but MISSING from B: {string.Join(", ", removedFields)} - state was deleted, the dumps are not comparable.");
+                CheckExit.Finish(2);
+                return;
+            }
+
+            foreach (string field in fieldsB)
+            {
+                if (!fieldsA.Contains(field))
+                {
+                    Debug.Log($"DIFF: NEW field in B (no A counterpart, excluded from comparison): {field}");
+                }
+            }
+
+            if (a.Count + bKeysInNewFields != b.Count)
+            {
+                Debug.LogError($"DIFF: key counts differ beyond the named NEW fields ({a.Count} + {bKeysInNewFields} new-field keys vs {b.Count}) - the dumps are not comparable.");
                 CheckExit.Finish(2);
                 return;
             }

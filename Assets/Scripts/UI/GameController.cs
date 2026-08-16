@@ -4613,6 +4613,27 @@ namespace PoliSim.UI
             _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
                 thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable");
 
+            // ROUND 4 BATCH 1 (C3): the two new social stats, as read-only ledger rows via the
+            // Derived-panel pattern rather than headline tiles or StatNodeId entries - a stat can
+            // land on screen icon-free this way with zero asset work, which is the pilot batch's
+            // display answer (icon/StatNodeId promotion is an arc-level batching decision, deferred).
+            //
+            // These are STORED simulation stats, not derived arithmetic, so they get their own small
+            // block rather than a seat inside "Derived" - putting them there would misstate what the
+            // panel's own doc comment promises ("every figure here is DERIVED, never stored").
+            GUILayout.Space(12f);
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("Society", _headerStyle);
+            DrawDerivedStatRow("Youth unemployment", state.YouthUnemployment / 100f,
+                UiFormat.Number(state.YouthUnemployment, 1) + "%",
+                "of youth labor force", UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
+            // ⚠ LIFE EXPECTANCY HAS NO DENOMINATOR - years at birth are not a share of anything, so
+            // the fill is negative and no gauge is drawn, per §A.9b (the GDP-per-capita precedent).
+            DrawDerivedStatRow("Life expectancy", -1f,
+                UiFormat.Number(state.LifeExpectancy, 1), "years at birth",
+                UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
+            GUILayout.EndVertical();
+
             GUILayout.Space(12f);
             DrawColoredLabel("As published", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.Label("What the public sees: lagged, and revised as later estimates arrive. Compare against the live figures above.", _labelStyle);

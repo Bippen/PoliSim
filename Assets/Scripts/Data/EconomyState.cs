@@ -80,6 +80,20 @@ namespace PoliSim.Data
         /// </summary>
         public float LaborForceParticipationRate;
 
+        /// <summary>ROUND 4 BATCH 1 (C3): under-25 unemployment, % of the YOUTH labour force - a RATE,
+        /// never a ratio (the seed doc's closed-by-construction trap: `unit=PC_ACT`). More cyclical
+        /// than headline unemployment, which is how every existing lever reaches it - inputs-only,
+        /// writes nothing back (the Round 4 standing rule). The US seed is the 16-24 bracket by design
+        /// (the OECD-harmonised US equivalent); that difference must never be "corrected".</summary>
+        public float YouthUnemployment;
+
+        /// <summary>ROUND 4 BATCH 1 (C3): life expectancy at birth, years. Inputs-only: reverts
+        /// generationally toward the country's baseline, dragged by poverty above its own baseline and
+        /// lifted by an implemented UniversalHealthcare program - both real, documented directions at
+        /// modest scales (see MacroSystem.ApplyLifeExpectancy). No denominator, so the UI draws it on
+        /// the negative-fill convention (§A.9b), never a gauge.</summary>
+        public float LifeExpectancy;
+
         /// <summary>
         /// A stylized 0-100 crime index (higher = more crime), NOT a literal transformation of any
         /// single real indicator - "crime" as a broad concept has no single clean cross-country
@@ -233,7 +247,8 @@ namespace PoliSim.Data
             float prisonPopulationRate = 100f, float organizedCrimeIndex = 25f, float corruptionIndex = 30f,
             float population = 50f, float birthRate = 10f, float deathRate = 10f, float netMigrationRate = 1f,
             float dependencyRatio = 30f, float populationGrowthRate = float.NaN,
-            float naturalBirthRate = float.NaN, float naturalNetMigrationRate = float.NaN)
+            float naturalBirthRate = float.NaN, float naturalNetMigrationRate = float.NaN,
+            float youthUnemployment = 15f, float lifeExpectancy = 80f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -252,6 +267,8 @@ namespace PoliSim.Data
             PovertyRate = povertyRate;
             LaborForceParticipationRate = laborForceParticipationRate;
             CrimeIndex = crimeIndex;
+            YouthUnemployment = youthUnemployment;
+            LifeExpectancy = lifeExpectancy;
             Population = population;
             BirthRate = birthRate;
             DeathRate = deathRate;

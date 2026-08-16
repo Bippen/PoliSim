@@ -108,6 +108,13 @@ namespace PoliSim.Data
         public readonly MultiResolutionSeries OrganizedCrimeIndex = new MultiResolutionSeries();
         public readonly MultiResolutionSeries CorruptionIndex = new MultiResolutionSeries();
 
+        // ROUND 4 BATCH 1 (C3): the two new inputs-only stats. Daily-native from birth - unlike
+        // every series above, these never had a turn-cadence era, so their Daily/Weekly/Monthly
+        // buckets genuinely diverge from Quarterly on day one (the equivalence tool asserts this
+        // rather than assuming it).
+        public readonly MultiResolutionSeries YouthUnemployment = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries LifeExpectancy = new MultiResolutionSeries();
+
         /// <summary>
         /// Appends this turn's already-settled values. <paramref name="date"/> is the in-game
         /// calendar date the turn resolved on (Continuous Time Migration Phase 0 - see
@@ -131,6 +138,8 @@ namespace PoliSim.Data
             PrisonPopulationRate.Append(date, state.PrisonPopulationRate);
             OrganizedCrimeIndex.Append(date, state.OrganizedCrimeIndex);
             CorruptionIndex.Append(date, state.CorruptionIndex);
+            YouthUnemployment.Append(date, state.YouthUnemployment);
+            LifeExpectancy.Append(date, state.LifeExpectancy);
         }
     }
 }

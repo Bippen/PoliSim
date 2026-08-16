@@ -612,6 +612,93 @@ namespace PoliSim.Simulation
             state.CorruptionIndex = Mathf.Clamp(state.CorruptionIndex + reversionSpeed * (target - state.CorruptionIndex), 0f, MaxCrimeIndexPercent);
         }
 
+        // --- ROUND 4 BATCH 1 (C3): Youth unemployment and life expectancy - inputs-only tracked stats ---
+        // Both READ existing state and WRITE nothing back (the Round 4 standing first-pass rule,
+        // ruled 2026-08-16) - neither enters any existing combined ceiling. Both are reverting
+        // quantities and take the taxonomy's standard shapes: parameterized turn form (whose only
+        // caller is the equivalence check) + PerDayReversion daily wrapper, daily-native from day one.
+
+        /// <summary>Youth unemployment points per point of headline unemployment gap versus NAIRU -
+        /// the well-documented youth-cyclicality multiplier: under-25 unemployment swings roughly
+        /// twice as hard as headline through a cycle (directionally grounded, not precisely fitted,
+        /// like every sensitivity in this file). This is the ONE channel every existing lever reaches
+        /// the stat through.</summary>
+        private const float YouthUnemploymentCyclicalSensitivity = 2f;
+
+        /// <summary>Faster than the structural drifts, slower than headline's own reversion - youth
+        /// labour markets churn quickly, but the stat still follows the cycle rather than snapping.</summary>
+        private const float YouthUnemploymentReversionSpeed = 0.3f;
+
+        /// <summary>Generous gameplay ceiling - southern-Europe crisis peaks reached the high 50s
+        /// (Spain 55.5% in 2013, Greece ~60%), so 60 is the honest historical extreme, not a guess.</summary>
+        private const float MaxYouthUnemploymentPercent = 60f;
+
+        /// <summary>Reverts EconomyState.YouthUnemployment toward the country's structural baseline
+        /// plus the amplified headline-unemployment gap. Inputs-only: reads Unemployment/NAIRU,
+        /// writes only itself.</summary>
+        public static void ApplyYouthUnemployment(Country country, float reversionSpeed = YouthUnemploymentReversionSpeed)
+        {
+            EconomyState state = country.State;
+            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float target = country.BaselineYouthUnemploymentRate + YouthUnemploymentCyclicalSensitivity * unemploymentGap;
+            state.YouthUnemployment = Mathf.Clamp(
+                state.YouthUnemployment + reversionSpeed * (target - state.YouthUnemployment),
+                0f, MaxYouthUnemploymentPercent);
+        }
+
+        /// <summary>Years of life expectancy lost per point PovertyRate sits above the country's own
+        /// baseline - the poverty-mortality link is among the best-documented social gradients; the
+        /// scale here is modest (5 points of excess poverty costs 0.4 years).</summary>
+        private const float LifeExpectancyPovertySensitivity = 0.08f;
+
+        /// <summary>Years added at FULL generosity of an implemented UniversalHealthcare program -
+        /// universal-coverage literature puts the effect at one to two years; 1.5 sits mid-range,
+        /// scaled by GenerosityLevel like every welfare effect.</summary>
+        private const float LifeExpectancyHealthcareSensitivity = 1.5f;
+
+        /// <summary>Generational reversion - the same "slowest-moving quantities in the model" reasoning
+        /// PopulationGrowthReversionSpeed documents; life expectancy moves over decades, not quarters.</summary>
+        private const float LifeExpectancyReversionSpeed = 0.05f;
+
+        private const float MinLifeExpectancyYears = 60f;
+        private const float MaxLifeExpectancyYears = 95f;
+
+        /// <summary>Reverts EconomyState.LifeExpectancy toward the structural baseline, dragged by
+        /// excess poverty and lifted by an implemented UniversalHealthcare program. Inputs-only.
+        ///
+        /// ⚠ Zero-gap seeding leans on every country starting with UniversalHealthcare
+        /// UNIMPLEMENTED (WorldFactory's welfare block): the seeded real-world figures already
+        /// contain each country's actual health system, so the baseline absorbs it and the lift
+        /// models a NEW program on top. If countries ever start with the program implemented,
+        /// their BaselineLifeExpectancy must absorb the starting lift or every seeded value
+        /// drifts upward from turn one with no player action.</summary>
+        public static void ApplyLifeExpectancy(Country country, float reversionSpeed = LifeExpectancyReversionSpeed)
+        {
+            EconomyState state = country.State;
+            float povertyGap = Mathf.Max(0f, state.PovertyRate - country.BaselinePovertyRate);
+
+            float healthcareLift = 0f;
+            foreach (WelfareProgram program in country.WelfarePrograms)
+            {
+                if (program.IsImplemented && program.Type == WelfareProgramType.UniversalHealthcare)
+                {
+                    healthcareLift = LifeExpectancyHealthcareSensitivity * (program.GenerosityLevel / 100f);
+                    break;
+                }
+            }
+
+            float target = country.BaselineLifeExpectancy - LifeExpectancyPovertySensitivity * povertyGap + healthcareLift;
+            state.LifeExpectancy = Mathf.Clamp(
+                state.LifeExpectancy + reversionSpeed * (target - state.LifeExpectancy),
+                MinLifeExpectancyYears, MaxLifeExpectancyYears);
+        }
+
+        private static readonly float YouthUnemploymentReversionSpeedPerDay = PerDayReversion(YouthUnemploymentReversionSpeed);
+        private static readonly float LifeExpectancyReversionSpeedPerDay = PerDayReversion(LifeExpectancyReversionSpeed);
+
+        public static void ApplyYouthUnemploymentDaily(Country country) => ApplyYouthUnemployment(country, YouthUnemploymentReversionSpeedPerDay);
+        public static void ApplyLifeExpectancyDaily(Country country) => ApplyLifeExpectancy(country, LifeExpectancyReversionSpeedPerDay);
+
         // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
 
         /// <summary>Points BirthRate declines per turn on its own - a real, well-documented, near-universal secular fertility decline across developed nations, not a country-specific policy response. Deliberately small (over a 500-turn run this alone would move BirthRate by 5 points, well before which the lower-starting countries hit MinBirthRate and stop).</summary>

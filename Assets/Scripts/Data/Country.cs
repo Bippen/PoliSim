@@ -193,6 +193,17 @@ namespace PoliSim.Data
         /// </summary>
         public float BaselineLaborForceParticipationRate = 62f;
 
+        /// <summary>ROUND 4 BATCH 1 (C3): the structural youth-unemployment anchor - the target of
+        /// ApplyYouthUnemployment's reversion when headline Unemployment sits exactly at NAIRU. Seeded
+        /// to the same real Feb 2026 figure EconomyState.YouthUnemployment opens at (the standing
+        /// zero-gap-at-start idiom).</summary>
+        public float BaselineYouthUnemploymentRate = 15f;
+
+        /// <summary>ROUND 4 BATCH 1 (C3): the structural life-expectancy anchor, years at birth -
+        /// ApplyLifeExpectancy's reversion target before the poverty drag and healthcare lift. Seeded
+        /// to the same real 2024 figure the state opens at.</summary>
+        public float BaselineLifeExpectancy = 80f;
+
         /// <summary>
         /// Whether this country has a statutory minimum wage at all - false for Sweden and Italy,
         /// matching real-world fact (both rely on sector-level collective bargaining instead of a

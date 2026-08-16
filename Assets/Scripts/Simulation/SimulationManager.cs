@@ -223,6 +223,15 @@ namespace PoliSim.Simulation
                     MacroSystem.ApplyCrimeEffectsDaily(country);
                     MacroSystem.ApplyPrisonPopulationRateDaily(country);
 
+                    // ROUND 4 BATCH 1 (C3): daily-native from day one, per the foundations gate.
+                    // Youth unemployment AFTER the Phase 5 macro block below would read yesterday's
+                    // headline... it sits here, BEFORE the macro block, so it reads the same
+                    // start-of-day Unemployment its inputs-only contract names - and life expectancy
+                    // reads the PovertyRate the poverty daily above just settled. Neither writes
+                    // anything any later system reads (inputs-only, the ruled Round 4 posture).
+                    MacroSystem.ApplyYouthUnemploymentDaily(country);
+                    MacroSystem.ApplyLifeExpectancyDaily(country);
+
                     // CONTINUOUS TIME PHASE 3, part 2: the money resolution. Revenue, benefits, welfare,
                     // interest, the SWF's contribution/return/draw and the debt stock itself all move
                     // daily now; only the BUDGET RESOLUTION that decides what to spend stays on the turn

@@ -8677,3 +8677,89 @@ performed for its most consequential output.
 foundations (daily simulation, gated legislation), with Step C folded in per R1. Dated edges:
 the GitHub GC re-check falls due ~2026-08-23 (one command); the Editor checklist stays
 access-gated.
+
+## Round 4 batch R4-1 — C3 ships inputs-only, and the batch shape holds (2026-08-16)
+
+The pilot batch for the Round 4 shape, run against pre-batch HEAD `cb79713` with all six scoping
+rulings approved. One commit carries the whole batch (this record included), per the directive.
+
+### Step 0 caught the scoping snapshot twice — both flagged, neither absorbed
+
+- **The seed doc at HEAD says 4/6 + 2/6, not the scoping table's "6/6 both"**: youth unemployment
+  is 6/6 `[VERIFIED]` (EU five Eurostat `une_rt_m` `PC_ACT` SA 15-24; USA BLS CPS `LNS14024887`
+  **16-24, never to be "corrected"**; France>Italy real on this vintage), but life expectancy is
+  4/6 `[VERIFIED]` with **France flag `p` and Poland flag `ep` — PROVISIONAL-seedable**, per the
+  doc's own words good enough to seed and never to be quoted as settled. The flags ride inline on
+  the `WorldFactory` seed lines and in the roadmap's corrected R4-1 row.
+- **The batch brief said "both are annual-class"; the SOURCE says youth-U is monthly** — the same
+  monthly LFS/Employment-Situation family as headline unemployment at both agencies. Wiring
+  follows the source: YouthUnemployment shares Unemployment's first-Friday rule, LifeExpectancy
+  joins the Population/PovertyRate/CrimeIndex annual group.
+
+### What shipped
+
+Two `EconomyState` fields (28 → 30 public fields), both **inputs-only per the standing Round 4
+ruling** — youth-U reverts to baseline + 2× the unemployment-vs-NAIRU gap (the documented youth
+cyclicality multiplier), life expectancy to baseline − 0.08/pt excess poverty + up to 1.5 years
+for an implemented UniversalHealthcare program (zero-gap holds because every country starts with
+it UNIMPLEMENTED — the dependency is documented at the method). Neither wanted a write-back, so
+the rulings-stop never fired. Both daily-native via the taxonomy's standard shapes (parameterized
+turn form whose only caller is the equivalence check + `PerDayReversion` wrapper); clamps
+[0, 60] (Spain 55.5 / Greece ~60 crisis peaks) and [60, 95]. Zero-gap seeding from one authority;
+publication, `StatHistory` buckets, and two Domestic-screen **Society** ledger rows (youth-U
+gauged /100; life expectancy **negative-fill, no gauge — years are not a share, §A.9b**) — the
+pilot's display answer is the Derived-panel ledger pattern, icon-free, with StatNodeId/icon
+promotion deferred as an arc-level asset-batching decision.
+
+### The bar, run in full
+
+- **Equivalence 88/88 within 3%** (self-tests intact). The four new rows land at 0.0002–0.0006% —
+  the stated expectation was EXACT-by-construction (constant-target PerDayReversion telescopes to
+  the turn step), so that is float noise, and this section carries no Phase-3-class drift budget.
+  The bucket assert now enumerates THREE series — YouthUnemployment added, asserted not assumed
+  (D=200/W=29/M=7/Q=3, daily variation, resolution divergence). LifeExpectancy is deliberately NOT
+  in the bucket assert: no-policy poverty never exceeds baseline, so its flat daily series is
+  CORRECT and the variation assert would report correctness as failure.
+- **The matrix, 2 seeds × 3 horizons vs `pre_r4_1_cb79713`: 30 of 30 shared fields byte-identical
+  in all six configurations**, with exactly `YouthUnemployment` and `LifeExpectancy` named NEW.
+  The byte-identical-distrust rule INVERTS here by design: inputs-only + no RNG stream consumption
+  means bit-for-bit zero movement of pre-existing state is the claim under test, and it held
+  everywhere. (Field arithmetic, for the next reader: the dump carries 2 non-EconomyState extras —
+  `Country.PotentialGrowthRate`, `Zone.InterestRate` — so pre CSV = 28+2 shared, post = 30+2.)
+- **`TrajectoryDiffCheck` gained the NEW-FIELD ALLOWANCE** this round makes necessary: B-only
+  FIELDS are named and excluded (a round that adds state would otherwise exit-2 on its own
+  success); A-only fields stay fatal (deleted state), and extra B keys inside shared fields stay
+  fatal (differing runs).
+- **Save/load 12/12 clean**, reflection compare at 30 EconomyState fields — both new fields inside
+  the reflected set, surface growth 28→30 verified rather than assumed.
+- **The publication seam, verified at the seam** (`PublicationCadenceCheck`, which iterates the
+  enum — zero edits needed): YouthUnemployment first release day 36, 143 releases/12yr — the same
+  row as Unemployment; LifeExpectancy first release day 638, 11 releases — the same row as the
+  annual group; neither invents a revision cycle.
+- **Captures 80 @1600×950 / 79 @2560×1440, 0 failed, 0 overflows both.** The one-capture asymmetry
+  is the known warm-up variance, chased not absorbed: the 1600 run found 1 cabinet decision after
+  91 days (captured `84b_meeting_decisions`), the 2560 run hit a foreign-policy meeting at day 0
+  with 0 cabinet decisions. Eyeball: the Society block renders at both sizes — youth-U 10.4% live
+  (above its 9.5 seed with unemployment above NAIRU: the cyclical channel visibly working),
+  life expectancy 79.0 gauge-free with the CDC seed intact under generational reversion.
+
+### Batch-shape verdict (the pilot's actual deliverable)
+
+**The bar is right-sized — nothing was too heavy, nothing was missing that mattered.** One tool
+gap was predicted-by-construction and is now standing equipment (the diff allowance); the
+publication check needed zero work because it iterates the enum — the pattern to preserve.
+Two decisions the pilot sets for the remaining batches: display lands icon-free via ledger rows
+(no per-batch asset work), and **`PreviewTurn`/PolicyPreview intentionally untouched** — inputs-only
+stats show no next-turn preview line; a preview estimator per new stat is a follow-on if wanted,
+not an accidental omission. Candidates noted for follow-on rulings, not built: a youth-retraining
+term (RetrainingProgramLevel → youth-U), life-expectancy secular drift (the BirthRate precedent).
+
+**C2 basis status for the swap clause**: the seed doc's 🔴 on real wages ("mixes three bases, must
+not be seeded as-is") is **still unreconciled** — an Elias-sourced data task, not a build task.
+Per the approved order's clause: unresolved at R4-2's start ⇒ C1 (housing) builds next.
+
+**One workflow trap for the tooling record**: Windows PowerShell 5.1 `Start-Process -Wait` waits
+for the process TREE, and a batch Unity run can leave a `Unity.Licensing.Client` child idling
+indefinitely — the wait then hangs forever after Unity itself exits. Wait on
+`-PassThru`+`.WaitForExit()` (the process alone) instead; one diff run wedged 24 minutes this way
+before diagnosis.

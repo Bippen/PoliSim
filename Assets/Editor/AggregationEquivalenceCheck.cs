@@ -231,15 +231,21 @@ namespace PoliSim.EditorTools
             // The multi-resolution buckets were built in Phase 0 for daily data and (finding, this
             // pass) never received a daily offer until History.Append moved to AdvanceDay. This
             // section is the first check that can fail if that plumbing regresses. WHAT IT
-            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for TWO
-            // daily-varying series - PovertyRate and DebtToGdpRatio - three assert families:
+            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for THREE
+            // daily-varying series - PovertyRate, DebtToGdpRatio, and (Round 4 batch 1) the
+            // daily-native YouthUnemployment, asserted rather than assumed per the batch directive -
+            // three assert families:
             // cadence (Daily/Weekly/Monthly/Quarterly counts within one of 200/1, /7, /30, /91,
             // Daily capped at StatHistory.MaxEntries), variation (Daily holds at least two DISTINCT
             // consecutive values - the stat genuinely moves intra-week), and divergence (the Daily
             // series' last value differs from Quarterly's last accepted value - the resolutions no
             // longer mirror each other). It says nothing about bucket CONTENTS being the right
             // values (the trajectory matrix owns value correctness) and nothing about stats that
-            // legitimately step per-turn (GDP stays turn-shaped until Phase 5).
+            // legitimately step per-turn (GDP stays turn-shaped until Phase 5). LifeExpectancy is
+            // deliberately NOT here: in a no-policy run PovertyRate never exceeds its baseline, so
+            // the target sits exactly at the seeded value and a flat daily series is CORRECT - the
+            // variation assert would report that correctness as a plumbing failure. Its buckets ride
+            // the same StatHistory.Append line as everything else; the matrix judges its values.
             {
                 var bucketGo = new GameObject("AggEq_Buckets");
                 try
@@ -255,7 +261,8 @@ namespace PoliSim.EditorTools
 
                     Country bc = bw.GetCountry(CountryId.Sweden);
                     foreach ((string name, MultiResolutionSeries series) in new (string, MultiResolutionSeries)[]
-                             { ("PovertyRate", bc.History.PovertyRate), ("DebtToGdpRatio", bc.History.DebtToGdpRatio) })
+                             { ("PovertyRate", bc.History.PovertyRate), ("DebtToGdpRatio", bc.History.DebtToGdpRatio),
+                               ("YouthUnemployment", bc.History.YouthUnemployment) })
                     {
                         total += 3;
                         int expectedDaily = Mathf.Min(BucketDays, StatHistory.MaxEntries);
@@ -362,6 +369,43 @@ namespace PoliSim.EditorTools
                 // within-period movement and nothing else.
                 Compare($"{label}.Consumption (INFO)", cm.State.Consumption, cn.State.Consumption);
                 Compare($"{label}.Investment (INFO)", cm.State.Investment, cn.State.Investment);
+            }
+
+            // --- ROUND 4 BATCH 1 (C3): youth unemployment and life expectancy ----------------------
+            // WHAT IT ENUMERATES (rule 14): two countries with opposite seed profiles (Sweden holds
+            // the highest youth-U seed at 22.5, USA the lowest life expectancy at 79.0), each driven
+            // off baseline through the stats' actual INPUTS - a +3pt headline-unemployment shock
+            // (youth-U target moves +6 via the 2x cyclicality) and a +5pt PovertyRate shock (life
+            // expectancy target drops 0.4 years) - so both reversions have a real gap to close.
+            // Inputs are then HELD (neither Okun nor the poverty system runs here), which makes both
+            // stats' targets constant, and a constant-target PerDayReversion is EXACT by
+            // construction: 121 daily steps at 1-(1-s)^(1/121) compound to precisely one turn step
+            // at s. A residual above float noise therefore means the wrapper took the wrong shape -
+            // this section carries no Phase-3-class expected drift. The live path-dependence (targets
+            // that move daily under the real sim) is the matrix's to judge, not this section's.
+            foreach (CountryId id in new[] { CountryId.Sweden, CountryId.USA })
+            {
+                World r1 = WorldFactory.CreateDefault();
+                World r2 = WorldFactory.CreateDefault();
+                Country cr = r1.GetCountry(id);
+                Country cs = r2.GetCountry(id);
+                foreach (Country x in new[] { cr, cs })
+                {
+                    x.State.Unemployment += 3f;
+                    x.State.PovertyRate += 5f;
+                }
+
+                MacroSystem.ApplyYouthUnemployment(cr);                                 // one turn step
+                MacroSystem.ApplyLifeExpectancy(cr);
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
+                {
+                    MacroSystem.ApplyYouthUnemploymentDaily(cs);
+                    MacroSystem.ApplyLifeExpectancyDaily(cs);
+                }
+
+                total += 2;
+                passed += Compare($"{id}.YouthUnemployment", cr.State.YouthUnemployment, cs.State.YouthUnemployment) ? 1 : 0;
+                passed += Compare($"{id}.LifeExpectancy", cr.State.LifeExpectancy, cs.State.LifeExpectancy) ? 1 : 0;
             }
 
             Debug.Log($"=== Phases 1-5 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% (plus the bucket asserts) ===");

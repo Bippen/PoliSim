@@ -208,6 +208,43 @@ namespace PoliSim.Data
             poland.BaselineLaborForceParticipationRate = 58.5f;
             sweden.BaselineLaborForceParticipationRate = 72.6f;
 
+            // ROUND 4 BATCH 1 (C3): youth unemployment, RULED SEED = the Feb 2026 cross-section, one
+            // period, all six (Elias, 2026-08-02; seed doc §3). ALL RATES (% of the youth labour
+            // force), the rate/ratio trap closed at source by construction (`unit=PC_ACT`).
+            // Per-country basis: the EU five are Eurostat API `une_rt_m`, age Y_LT25 (15-24),
+            // seasonally adjusted, retrieved 2026-08-02; the USA is BLS CPS `LNS14024887` via FRED,
+            // **16-24 bracket** (the OECD-harmonised US equivalent - there IS no 15-24 US series;
+            // never "correct" this), rate, SA, same retrieval date. France ABOVE Italy is real on
+            // this vintage (the Feb 2026 reversal, recorded in the seed doc); Sweden-highest and
+            // Germany-lowest hold. States seeded equal to baselines in the loop below - zero gap.
+            usa.BaselineYouthUnemploymentRate = 9.5f;      // [VERIFIED] BLS CPS, 16-24
+            germany.BaselineYouthUnemploymentRate = 7.3f;  // [VERIFIED] Eurostat SA rate
+            france.BaselineYouthUnemploymentRate = 21.1f;  // [VERIFIED] Eurostat SA rate
+            italy.BaselineYouthUnemploymentRate = 17.7f;   // [VERIFIED] Eurostat SA rate
+            poland.BaselineYouthUnemploymentRate = 11.9f;  // [VERIFIED] Eurostat SA rate
+            sweden.BaselineYouthUnemploymentRate = 22.5f;  // [VERIFIED] Eurostat SA rate - genuinely Europe's worst alongside a strong overall market
+
+            // ROUND 4 BATCH 1 (C3): life expectancy at birth, 2024 figures (seed doc §4 as corrected
+            // 2026-08-02 from the PRIMARY sources after the 84.1 verified-but-wrong incident).
+            // ⚠ NOT 6/6 VERIFIED, and the record must not overstate it: France carries Eurostat
+            // status flag `p` (provisional) and Poland `ep` (estimated+provisional) - per the seed
+            // doc's own words, good enough to seed a game and never to be quoted as settled. The USA
+            // figure is CDC/NCHS FINAL mortality data - the strongest figure in the row.
+            usa.BaselineLifeExpectancy = 79.0f;     // [VERIFIED] CDC/NCHS final, 2024
+            germany.BaselineLifeExpectancy = 81.2f; // [VERIFIED] Eurostat API, no flag
+            france.BaselineLifeExpectancy = 83.0f;  // ⚠ [PROVISIONAL] Eurostat flag `p`
+            italy.BaselineLifeExpectancy = 83.7f;   // [VERIFIED] Eurostat API (replaces the wrong 84.1)
+            poland.BaselineLifeExpectancy = 78.5f;  // ⚠ [PROVISIONAL] Eurostat flag `ep`
+            sweden.BaselineLifeExpectancy = 83.8f;  // [VERIFIED] Eurostat API (replaces the wrong 84.1)
+
+            // States open AT their baselines - the standing zero-gap idiom, from one authority
+            // rather than twelve constructor arguments that could drift from the block above.
+            foreach (Country seeded in new[] { usa, germany, france, italy, poland, sweden })
+            {
+                seeded.State.YouthUnemployment = seeded.BaselineYouthUnemploymentRate;
+                seeded.State.LifeExpectancy = seeded.BaselineLifeExpectancy;
+            }
+
             // Minimum wage as a percent of median wage (the "Kaitz index" economists use for
             // cross-country comparison) - real, illustrative-precision figures for the four countries
             // with a statutory minimum wage; Sweden and Italy have none (they rely on sector-level

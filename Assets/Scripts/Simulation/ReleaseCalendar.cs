@@ -27,6 +27,9 @@ namespace PoliSim.Simulation
             switch (stat)
             {
                 case PublishedStat.Unemployment:
+                // ROUND 4 BATCH 1: youth unemployment releases WITH the headline figure - it is the
+                // same monthly LFS/Employment-Situation family at both sources, not a separate event.
+                case PublishedStat.YouthUnemployment:
                     // USA: BLS Employment Situation, first Friday. The EU five have no separate monthly
                     // unemployment rule in the seed file, so they follow the same monthly cadence rather
                     // than inventing a different one.
@@ -44,6 +47,7 @@ namespace PoliSim.Simulation
                 case PublishedStat.PovertyRate:
                 case PublishedStat.Population:
                 case PublishedStat.CrimeIndex:
+                case PublishedStat.LifeExpectancy: // ROUND 4 BATCH 1: annual at both real sources
                     // Annual cadence. Published on the country's own fiscal-year start (USA October 1,
                     // the European five January 1) rather than an invented date - that boundary already
                     // exists in this project via FiscalYearData, and is when annual figures settle.
@@ -99,6 +103,7 @@ namespace PoliSim.Simulation
                 case PublishedStat.PovertyRate:
                 case PublishedStat.Population:
                 case PublishedStat.CrimeIndex:
+                case PublishedStat.LifeExpectancy:
                     end = publicationDate.AddDays(-1);
                     start = end.AddYears(-1).AddDays(1);
                     return;
@@ -145,6 +150,7 @@ namespace PoliSim.Simulation
                 case ClosingStat.PovertyRate:
                 case ClosingStat.Population:
                 case ClosingStat.CrimeIndex:
+                case ClosingStat.LifeExpectancy:
                     return new System.DateTime(date.Year, 1, 1);
 
                 default:

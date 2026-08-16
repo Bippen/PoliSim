@@ -17,7 +17,17 @@ namespace PoliSim.Data
         Gdp,
         PovertyRate,
         Population,
-        CrimeIndex
+        CrimeIndex,
+
+        /// <summary>ROUND 4 BATCH 1: publishes with the monthly LFS family - Eurostat releases it in
+        /// the same monthly series as headline unemployment (`une_rt_m`), the BLS in the same
+        /// Employment Situation. The scoping brief called both C3 stats annual-class; the SOURCE says
+        /// monthly for this one, and the source wins (flagged, not absorbed).</summary>
+        YouthUnemployment,
+
+        /// <summary>ROUND 4 BATCH 1: annual-class, like Population - Eurostat `demo_mlexpec` and
+        /// CDC/NCHS both publish yearly.</summary>
+        LifeExpectancy
     }
 
     /// <summary>
@@ -49,7 +59,14 @@ namespace PoliSim.Data
         /// a settled annual fiscal position rather than one turn's state. A STOCK, so its closing value
         /// is the settled position directly - no averaging needed or wanted.
         /// </summary>
-        DebtToGdpRatio
+        DebtToGdpRatio,
+
+        // ROUND 4 BATCH 1: the two C3 stats. ⚠ The "first six mirror PublishedStat in the same
+        // order" note above now reads "the first six, then DebtToGdpRatio, then these two" - the
+        // mapping was always the explicit throw-on-unmapped switch below, never positional, so the
+        // append is safe; the enum stays append-only per the save format's standing rule.
+        YouthUnemployment,
+        LifeExpectancy
     }
 
     public static class ClosingStatExtensions
@@ -65,6 +82,8 @@ namespace PoliSim.Data
                 case PublishedStat.PovertyRate: return ClosingStat.PovertyRate;
                 case PublishedStat.Population: return ClosingStat.Population;
                 case PublishedStat.CrimeIndex: return ClosingStat.CrimeIndex;
+                case PublishedStat.YouthUnemployment: return ClosingStat.YouthUnemployment;
+                case PublishedStat.LifeExpectancy: return ClosingStat.LifeExpectancy;
                 default: throw new System.ArgumentOutOfRangeException(nameof(stat), stat, "PublishedStat has no ClosingStat counterpart - add one.");
             }
         }
