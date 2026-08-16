@@ -555,6 +555,23 @@ namespace PoliSim.UI
         private GUIStyle _divisionMetaStyle;
         /// <summary>v2.0 chrome: `ui_tab_spine` (B7) — the white-on-alpha area-hue strip drawn across each consolidated tab's top edge, tinted per area at the draw site through GUI.color. Background + border only; empty background when the sprite is missing, and the spine simply doesn't draw.</summary>
         private GUIStyle _tabSpineStyle;
+
+        // ── v2.0 folder-tongue pass ──
+        /// <summary>Whether all three `ui_tab_folder_*` faces resolved — refreshed every frame in
+        /// RescaleStylesToScreen (a cached-dictionary hit, not a load) because everything the pass
+        /// touches (row height, bar-to-sheet gap, deferred paint) must branch the SAME way within a
+        /// frame.</summary>
+        private bool _folderTabsLive;
+        /// <summary>The selected tongue's deferred-paint state — written by DrawConsolidatedTabButton
+        /// every event, consumed by DrawActiveFolderTongue later the SAME OnGUI pass (see the
+        /// paintDeferred comment there for why the tongue cannot paint in bar order).</summary>
+        private GUIStyle _activeTongueStyle;
+        private Rect _activeTongueRect;
+        private string _activeTongueLabel;
+        private Texture2D _activeTongueIcon;
+        private float _activeTongueIconSize;
+        private float _activeTongueIconTop;
+        private UiPalette.SystemArea _activeTongueArea;
         // v2.0 chrome: the Decisions dossier (§A.11) — `ui_folder_dossier` as a card background with
         // its baked tab shoulder, plus the shoulder's own caption style. Empty background = sprite
         // missing = BeginAreaCard falls back to the ordinary procedural area card.
@@ -1300,7 +1317,16 @@ namespace PoliSim.UI
 
             GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
             DrawConsolidatedTabs(rightColumnWidth);
-            GUILayout.Space(sectionSpacing * 0.5f);
+            // v2.0 folder-tongue pass: with the real faces live there is NO gap — the tongues end flush
+            // against the content sheet (§A.7's joined look; the clones zero margin.bottom for the same
+            // reason), and the selected tongue is re-painted over the sheet's top keyline after the
+            // sheet draws (DrawActiveFolderTongue, below the tab switch). The interim treatment keeps
+            // its floating bar.
+            float tabPanelGap = _folderTabsLive ? 0f : sectionSpacing * 0.5f;
+            if (tabPanelGap > 0f)
+            {
+                GUILayout.Space(tabPanelGap);
+            }
 
             // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
             // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
@@ -1309,7 +1335,7 @@ namespace PoliSim.UI
             // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
             // before the content gets any. Budgeting against the raw height made the right column
             // overrun its clip rect on every screen where it is the taller of the two.
-            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - tabRowsHeight - sectionSpacing * 0.5f;
+            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - tabRowsHeight - tabPanelGap;
             // Master Sequence step 5e, Phase A: game-over gating stays exactly where the OLD 18-tab
             // dispatch had it, not a blanket gate here - several old tabs were deliberately NEVER
             // gated (WorldMap/PolicyWeb/Parliament/Compass are read-only visualizations, still fully
@@ -1340,6 +1366,11 @@ namespace PoliSim.UI
                     DrawPoliticsTab(tabContentHeight, rightColumnWidth);
                     break;
             }
+
+            // Folder-tongue pass: the selected tongue paints HERE, after the content sheet, so it sits
+            // over the sheet's top keyline — the folder pulled forward. See DrawConsolidatedTabButton's
+            // paintDeferred comment for the full reasoning.
+            DrawActiveFolderTongue();
 
             GUILayout.EndVertical();
 
@@ -1662,6 +1693,14 @@ namespace PoliSim.UI
             _sliderStyle.fixedHeight = sliderHeight;
             _sliderThumbStyle.fixedHeight = sliderHeight;
             _sliderThumbStyle.fixedWidth = sliderThumbWidth;
+
+            // v2.0 folder-tongue pass: the one per-frame authority on whether the real §A.7 faces are
+            // in play — every branch this pass adds (row height, bar-to-sheet gap, deferred paint,
+            // strip insets) reads this field, so a mid-session import failure degrades every site
+            // together rather than one at a time.
+            _folderTabsLive = IconLibrary.GetChrome("ui_tab_folder_on") != null
+                              && IconLibrary.GetChrome("ui_tab_folder_off") != null
+                              && IconLibrary.GetChrome("ui_tab_folder_hover") != null;
 
             _tabButtonStyle.fontSize = tabFontSize;
             // A tab/category button WRAPS to two lines for the long labels ("Sovereign Wealth Fund"), and
@@ -3552,6 +3591,51 @@ namespace PoliSim.UI
         private const float ConsolidatedTabIconFontMultiple = 1.15f;
         private const float ConsolidatedTabLabelFontScale = 0.72f;
 
+        // ⚠ v2.0 FOLDER-TONGUE PASS — where each tongue's visible top edge sits inside the shared
+        // 256×112 canvas, MEASURED from the delivered PNGs (first pixel row with alpha > 32, halved to
+        // @1×), not taken from the manifest: the manifest's "sits 12px lower" note @2× understates the
+        // measured on→off delta (y=3 vs y=20 @2×). These are constant SCREEN pixels at every window
+        // size, because they live inside GUIStyle.border's top band, which IMGUI never scales.
+        private const float FolderOnTongueTop = 2f;     // y=3 @2×
+        private const float FolderHoverTongueTop = 7f;  // y=14 @2×
+        private const float FolderOffTongueTop = 10f;   // y=20 @2×
+        /// <summary>How far the re-painted active tongue extends DOWN over the content sheet — the
+        /// manifest's "joined look: draw overlapping content sheet by 2px" (@2× = 1px, taken at 2 so the
+        /// sheet's baked top keyline is covered at both capture sizes).</summary>
+        private const float FolderTongueJoinOverlap = 2f;
+        /// <summary>§A.7: the tab strip is padded `0 14px` — tongues never sit on the content sheet's
+        /// rounded top corners. Constant screen px for the same reason the tongue-top offsets are: the
+        /// sheet's corner geometry lives in its border bands, which do not scale.</summary>
+        private const float FolderTabStripSideInset = 14f;
+        /// <summary>The spine sprite's rounded ends stop just inside each tongue's own r≈5 top-corner
+        /// curve instead of poking past it.</summary>
+        private const float FolderSpineSideInset = 3f;
+
+        /// <summary>The `ui_tab_spine` strip's height — the board's 3px edge on 15px tab type, floored so
+        /// it never vanishes at the small clamp. One accessor: the icon inset below budgets around it and
+        /// the two spine draw sites size with it, so they cannot drift.</summary>
+        private float TabSpineHeight()
+        {
+            return Mathf.Max(3f, Mathf.Round(_tabButtonStyle.fontSize * (3f / 15f)));
+        }
+
+        /// <summary>
+        /// Where the stacked icon starts below the button's top. With the folder faces live this is
+        /// DERIVED, not the Phase C constant: the OFF tongue's visible edge is 10px down its canvas
+        /// (baked) and the spine rides that edge, so the icon must clear tongue drop + spine + 2px of
+        /// air on the INACTIVE tabs — and the same inset is used for the selected tab so the stack sits
+        /// at one height across the bar and selection never shifts layout. Falls back to the original
+        /// constant when the faces are missing, keeping the degraded bar byte-identical to the interim
+        /// treatment. One accessor, read by <see cref="ConsolidatedTabButtonHeight"/> (the reserve) and
+        /// <see cref="DrawConsolidatedTabButton"/> (the imposition) — the instance-#12 discipline.
+        /// </summary>
+        private float ConsolidatedTabIconTopInset()
+        {
+            return _folderTabsLive
+                ? FolderOffTongueTop + TabSpineHeight() + 2f
+                : ConsolidatedTabIconTopPadding;
+        }
+
         /// <summary>
         /// How tall a consolidated tab button actually is — the larger of its base `fixedHeight` and the
         /// stacked icon+label height Phase C imposes.
@@ -3571,17 +3655,18 @@ namespace PoliSim.UI
             float iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
             int labelFontSize = Mathf.Max(11, Mathf.RoundToInt(_tabButtonStyle.fontSize * ConsolidatedTabLabelFontScale));
             float labelBandHeight = labelFontSize + 6f;
-            float stackedHeight = Mathf.RoundToInt(ConsolidatedTabIconTopPadding + iconSize + ConsolidatedTabIconLabelGap)
+            float stackedHeight = Mathf.RoundToInt(ConsolidatedTabIconTopInset() + iconSize + ConsolidatedTabIconLabelGap)
                                   + labelBandHeight
                                   + ConsolidatedTabLabelBottomPadding;
 
             return Mathf.Max(_tabButtonStyle.fixedHeight, stackedHeight);
         }
 
-        /// <summary>The tab bar as a ROW: the button plus the margin GUILayout puts above and below it. Separate from <see cref="ConsolidatedTabButtonHeight"/> because the button's own style must not carry the margin term — a `fixedHeight` that included it would draw a taller BUTTON, not a taller row.</summary>
+        /// <summary>The tab bar as a ROW: the button plus the margin GUILayout puts above and below it. Separate from <see cref="ConsolidatedTabButtonHeight"/> because the button's own style must not carry the margin term — a `fixedHeight` that included it would draw a taller BUTTON, not a taller row. With the folder faces live only the TOP margin survives: `BuildFolderTabStyle` zeroes `margin.bottom` so the tongues end flush against the content sheet, and this reserve must agree with what the clones actually lay out.</summary>
         private float ConsolidatedTabRowHeight()
         {
-            return ConsolidatedTabButtonHeight() + _tabButtonStyle.margin.vertical;
+            return ConsolidatedTabButtonHeight()
+                   + (_folderTabsLive ? _tabButtonStyle.margin.top : _tabButtonStyle.margin.vertical);
         }
 
         /// <summary>
@@ -3597,9 +3682,18 @@ namespace PoliSim.UI
             // the exact shape InnerWidth's doc describes and exists to prevent, forgotten here because
             // this row was written before the helper was. GUILayout inserts `_tabButtonStyle.margin`
             // between every pair, so n buttons at `availableWidth / n` sum to wider than the row.
-            float buttonWidth = PoliSimWidgets.InnerWidth(availableWidth, null, ConsolidatedTabsPerRow, _tabButtonStyle);
+            //
+            // v2.0 folder-tongue pass: §A.7 pads the strip `0 14px`, so with the faces live the row is
+            // inset from both edges (and the width budget shrinks to match) - tongues must not sit on
+            // the content sheet's rounded top corners. The degraded bar keeps the full-width row.
+            float stripInset = _folderTabsLive ? FolderTabStripSideInset : 0f;
+            float buttonWidth = PoliSimWidgets.InnerWidth(availableWidth - stripInset * 2f, null, ConsolidatedTabsPerRow, _tabButtonStyle);
 
             GUILayout.BeginHorizontal();
+            if (stripInset > 0f)
+            {
+                GUILayout.Space(stripInset);
+            }
             // Master Sequence step 5e, Phase C: all 6 tabs carry their icon. The four icon_nav_* ones
             // exist precisely because Statistics/Decisions/Demographics/Policy-Laws map to no single
             // UiPalette.SystemArea; Budget and Politics instead reuse the existing area icons directly,
@@ -3617,6 +3711,10 @@ namespace PoliSim.UI
             DrawConsolidatedTabButton("Budget", ConsolidatedTab.Budget, buttonWidth, "icon_area_fiscal");
             DrawConsolidatedTabButton("Policy/Laws", ConsolidatedTab.PolicyLaws, buttonWidth, "icon_nav_policylaws");
             DrawConsolidatedTabButton("Politics", ConsolidatedTab.Politics, buttonWidth, "icon_area_political");
+            if (stripInset > 0f)
+            {
+                GUILayout.Space(stripInset);
+            }
             GUILayout.EndHorizontal();
         }
 
@@ -3645,10 +3743,18 @@ namespace PoliSim.UI
         {
             UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
             bool selected = _consolidatedTab == tab;
-            GUIStyle style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
+            // v2.0 folder-tongue pass: the real §A.7 faces when all three loaded, the interim
+            // brass/paper treatment otherwise - BuildFolderTabStyle returns null on any missing face so
+            // the bar degrades wholesale, never one mixed tongue at a time.
+            GUIStyle style = _folderTabsLive ? UiPalette.BuildFolderTabStyle(_tabButtonStyle, selected) : null;
+            if (style == null)
+            {
+                style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
+            }
 
             Texture2D icon = iconName != null ? IconLibrary.Get(iconName) : null;
             float iconSize = 0f;
+            float iconTop = ConsolidatedTabIconTopInset();
             if (icon != null)
             {
                 iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
@@ -3656,7 +3762,7 @@ namespace PoliSim.UI
 
                 style.fontSize = labelFontSize;
                 style.alignment = TextAnchor.MiddleCenter;
-                style.padding.top = Mathf.RoundToInt(ConsolidatedTabIconTopPadding + iconSize + ConsolidatedTabIconLabelGap);
+                style.padding.top = Mathf.RoundToInt(iconTop + iconSize + ConsolidatedTabIconLabelGap);
                 style.padding.bottom = Mathf.RoundToInt(ConsolidatedTabLabelBottomPadding);
                 // Left/right trimmed to near-zero so the label gets the button's full width on one
                 // line - the whole point of stacking. Never smaller than the base height, so a very
@@ -3672,16 +3778,55 @@ namespace PoliSim.UI
                 style.fixedHeight = ConsolidatedTabButtonHeight();
             }
 
-            bool clicked = GUILayout.Button(label, style, GUILayout.Width(width));
-            Rect buttonRect = GUILayoutUtility.GetLastRect();
+            // ⚠ THE SELECTED TONGUE IS LAID OUT HERE AND PAINTED LATER (folder faces only). The content
+            // sheet draws after this bar and would paint its top keyline across the tongue's bottom -
+            // the opposite of §A.7's "folder pulled forward". So the selected tab's BUTTON renders
+            // through a fully invisible clone (same geometry, same control, same click handling; the
+            // stable-control-layout guarantee needs the control, not its pixels) and its visuals are
+            // re-painted OVER the sheet by DrawActiveFolderTongue, extended FolderTongueJoinOverlap
+            // over the sheet's edge. Painting it twice instead would double the face's baked
+            // semi-transparent shadow into a visible dark rim.
+            bool paintDeferred = _folderTabsLive && selected;
+            GUIStyle buttonStyle = style;
+            if (paintDeferred)
+            {
+                buttonStyle = new GUIStyle(style);
+                buttonStyle.normal.background = null;
+                buttonStyle.hover.background = null;
+                buttonStyle.active.background = null;
+                buttonStyle.focused.background = null;
+                Color hidden = new Color(0f, 0f, 0f, 0f);
+                buttonStyle.normal.textColor = hidden;
+                buttonStyle.hover.textColor = hidden;
+                buttonStyle.active.textColor = hidden;
+                buttonStyle.focused.textColor = hidden;
+            }
 
-            if (icon != null)
+            bool clicked = GUILayout.Button(label, buttonStyle, GUILayout.Width(width));
+            Rect buttonRect = GUILayoutUtility.GetLastRect();
+            bool hovered = buttonRect.Contains(Event.current.mousePosition);
+
+            if (paintDeferred)
+            {
+                // Stored fresh every event and consumed later the same OnGUI pass, so a stale rect can
+                // never be painted (a takeover-suppressed frame never reaches the paint site either).
+                _activeTongueStyle = style;
+                _activeTongueRect = buttonRect;
+                _activeTongueLabel = label;
+                _activeTongueIcon = icon;
+                _activeTongueIconSize = iconSize;
+                _activeTongueIconTop = iconTop;
+                _activeTongueArea = area;
+            }
+            else if (icon != null)
             {
                 var iconRect = new Rect(
                     buttonRect.x + (buttonRect.width - iconSize) * 0.5f,
-                    buttonRect.y + ConsolidatedTabIconTopPadding,
+                    buttonRect.y + iconTop,
                     iconSize,
                     iconSize);
+                // Ink-weight tints both ways on the folder faces: white read on the interim brass but
+                // vanishes on paper stock. (The selected tongue's area-ink icon is painted deferred.)
                 Color iconTint = selected ? Color.white : UiPalette.MutedIconTint;
                 UiPalette.DrawTintedIcon(iconRect, icon, iconTint);
             }
@@ -3695,12 +3840,25 @@ namespace PoliSim.UI
             // GUI.color multiplies the white-on-alpha sprite into the hue (this sprite is WoA — the
             // one rendering class where tinting is the CORRECT handling per §3.0a, unlike the
             // real-colour plates around it).
-            if (_tabSpineStyle.normal.background != null && Event.current.type == EventType.Repaint)
+            //
+            // Folder-tongue pass: the spine rides the TONGUE's visible top edge, which the off/hover
+            // faces bake lower on their canvas (the measured FolderXTongueTop constants), and stops
+            // just inside the tongue's own corner curve. The selected tab's spine is painted deferred
+            // with the rest of its tongue.
+            if (!paintDeferred && _tabSpineStyle.normal.background != null && Event.current.type == EventType.Repaint)
             {
-                float spineHeight = Mathf.Max(3f, Mathf.Round(_tabButtonStyle.fontSize * (3f / 15f)));
+                float spineHeight = TabSpineHeight();
+                float spineTop = 0f;
+                float spineSideInset = 0f;
+                if (_folderTabsLive)
+                {
+                    spineTop = selected ? FolderOnTongueTop : (hovered ? FolderHoverTongueTop : FolderOffTongueTop);
+                    spineSideInset = FolderSpineSideInset;
+                }
                 Color savedColor = GUI.color;
                 GUI.color = selected ? UiPalette.GetAreaColor(area) : PoliSimTheme.AccentOnDesk(area);
-                _tabSpineStyle.Draw(new Rect(buttonRect.x, buttonRect.y, buttonRect.width, spineHeight), false, false, false, false);
+                _tabSpineStyle.Draw(new Rect(buttonRect.x + spineSideInset, buttonRect.y + spineTop,
+                    buttonRect.width - spineSideInset * 2f, spineHeight), false, false, false, false);
                 GUI.color = savedColor;
             }
 
@@ -3710,6 +3868,50 @@ namespace PoliSim.UI
                 // screen's own category selector is now the only thing that sets _budgetProcessCategory,
                 // so it keeps whatever the player last chose instead of a tab click silently resetting it.
                 _consolidatedTab = tab;
+            }
+        }
+
+        /// <summary>
+        /// The deferred half of the folder-tongue treatment: paints the SELECTED tab's face, label,
+        /// icon and spine after the content sheet has drawn, extended <see cref="FolderTongueJoinOverlap"/>
+        /// down over the sheet's top keyline — §A.7's folder pulled forward, and the manifest's own
+        /// "joined look: draw overlapping content sheet by 2px". Pure paint over a control that already
+        /// laid out and handled its click in bar order (see DrawConsolidatedTabButton's paintDeferred
+        /// block), so control count and order are untouched. The 9-slice centre band absorbs the extra
+        /// height; the label's position comes from padding.top and does not move.
+        /// </summary>
+        private void DrawActiveFolderTongue()
+        {
+            if (!_folderTabsLive || _activeTongueStyle == null || Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            var tongueRect = new Rect(_activeTongueRect.x, _activeTongueRect.y,
+                _activeTongueRect.width, _activeTongueRect.height + FolderTongueJoinOverlap);
+            _activeTongueStyle.Draw(tongueRect, new GUIContent(_activeTongueLabel), false, false, false, false);
+
+            if (_activeTongueIcon != null)
+            {
+                var iconRect = new Rect(
+                    _activeTongueRect.x + (_activeTongueRect.width - _activeTongueIconSize) * 0.5f,
+                    _activeTongueRect.y + _activeTongueIconTop,
+                    _activeTongueIconSize,
+                    _activeTongueIconSize);
+                // Area INK, not white: the interim treatment's white icon read on brass and would
+                // vanish on the paper tongue. Full ink strength is the selected tab's privilege, the
+                // same rule the spine below follows.
+                UiPalette.DrawTintedIcon(iconRect, _activeTongueIcon, UiPalette.GetAreaColor(_activeTongueArea));
+            }
+
+            if (_tabSpineStyle.normal.background != null)
+            {
+                Color savedColor = GUI.color;
+                GUI.color = UiPalette.GetAreaColor(_activeTongueArea);
+                _tabSpineStyle.Draw(new Rect(_activeTongueRect.x + FolderSpineSideInset,
+                    _activeTongueRect.y + FolderOnTongueTop,
+                    _activeTongueRect.width - FolderSpineSideInset * 2f, TabSpineHeight()), false, false, false, false);
+                GUI.color = savedColor;
             }
         }
 

@@ -36,6 +36,10 @@ namespace PoliSim.UI
         public static readonly Color BrassBorder = Hex(0x6F5A30);
         public static readonly Color StockOff = Hex(0xB9A886);
         public static readonly Color StockHover = Hex(0xC4B28E);
+        /// <summary>Label ink on the CLOSED folder stock — §A.7's inactive tab type colour. Darker than
+        /// the paper ink ramp's faint values because the stock ground is itself mid-tone: TextSecondary
+        /// on #B9A886 has barely any contrast left.</summary>
+        public static readonly Color InkOnStock = Hex(0x45392A);
 
         // --- Text ramp: ink on paper. ---
         public static readonly Color TextPrimary = Hex(0x2B2620);   // inkText

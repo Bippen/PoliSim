@@ -480,6 +480,59 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// v2.0 folder-tongue pass: the consolidated tab bar's REAL faces (`ui_tab_folder_on/_off/_hover`),
+        /// replacing the interim brass/paper button treatment (`ButtonKind.Tab`/`TabSelected`, which the
+        /// caller falls back to when this returns null). §A.7's tongue anatomy, carried by the art rather
+        /// than by style geometry: the three sprites share one 256×112 canvas and the OFF tongue sits
+        /// lower on it (baked, with its own top shading), so selected and unselected buttons keep
+        /// IDENTICAL rects - no layout shift on selection, and the stable-control-layout guarantee is
+        /// untouched.
+        ///
+        /// Real-colour furniture per §3.0a: every face is drawn UNTINTED. Area identity lives on the
+        /// `ui_tab_spine` overlay (full-strength ink when selected, lifted when not - already §A.7's "top
+        /// edge" rule), never on the face. That is also why the selected label flips from the interim
+        /// cream-on-brass to ink-on-paper: the on-face IS paper, and cream on paper is the exact
+        /// inversion class rule 15 caught on the sub-tabs (`01eb29a`).
+        ///
+        /// Borders halve the delivery manifest's @2× insets (on 28/28/30/12, off 28/28/34/12). One
+        /// approximation, recorded: `hover` is a STATE of the unselected style and IMGUI has one border
+        /// per style, so the hover face renders under the off-face's 17px top inset instead of its own
+        /// ideal 16 - one @1× pixel of extra compression in the top band, invisible in practice.
+        ///
+        /// `margin.bottom` is zeroed because the tongues sit ON the content sheet (§A.7: overlapping the
+        /// panel, closed by nothing) - the caller removes the bar-to-panel gap in the same pass, and the
+        /// active tongue is re-painted over the sheet's top keyline after the sheet draws (see
+        /// `GameController.DrawActiveFolderTongue`).
+        /// </summary>
+        public static GUIStyle BuildFolderTabStyle(GUIStyle baseStyle, bool selected)
+        {
+            Texture2D on = IconLibrary.GetChrome("ui_tab_folder_on");
+            Texture2D off = IconLibrary.GetChrome("ui_tab_folder_off");
+            Texture2D hover = IconLibrary.GetChrome("ui_tab_folder_hover");
+            if (on == null || off == null || hover == null)
+            {
+                // All three or none: mixing folder faces with brass/paper fallbacks per state would
+                // read as broken chrome rather than as a degraded-but-coherent bar.
+                return null;
+            }
+
+            var style = new GUIStyle(baseStyle);
+            Color text = selected ? PoliSimTheme.TextPrimary : PoliSimTheme.InkOnStock;
+            style.normal.background = selected ? on : off;
+            style.hover.background = selected ? on : hover;
+            style.active.background = selected ? on : hover;
+            style.focused.background = selected ? on : off;
+            style.border = selected ? new RectOffset(14, 14, 15, 6) : new RectOffset(14, 14, 17, 6);
+            style.normal.textColor = text;
+            style.hover.textColor = text;
+            style.active.textColor = text;
+            style.focused.textColor = text;
+            style.fontStyle = selected ? FontStyle.Bold : baseStyle.fontStyle;
+            style.margin.bottom = 0;
+            return style;
+        }
+
+        /// <summary>
         /// Master Sequence step 5e, Phase C batch 3: a bar that fills OUTWARD FROM THE CENTRE - right
         /// and green when <paramref name="value"/> is positive, left and red when negative - with the
         /// centre line marking the decision threshold.
