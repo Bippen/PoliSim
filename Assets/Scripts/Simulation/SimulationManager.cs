@@ -2766,6 +2766,35 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// F1 (mechanism-report finding, ruling R5; built as the close-out's Phase 2): the ONE
+        /// path an interrupt-layer BudgetImpact takes to the books. Before this method existed,
+        /// CabinetSystem.ApplyDecisionOption and ForeignPolicySystem.ApplyMeetingOption wrote
+        /// state.Budget ONLY - the cumulative display accumulator - and the debt stock, which
+        /// moves solely by budgetBalance in ApplyRevenueAndSpending, never saw them: "Bank it
+        /// against the debt: +200" had never touched the debt path. (EventSystem was named in
+        /// F1's first statement and is corrected here: EconomicEvent carries no budget field -
+        /// the writers were exactly two.)
+        ///
+        /// THE ROUTING CLAIM, derived before wiring: every authored interrupt impact is a
+        /// ONE-TIME SETTLEMENT (a windfall banked, a package funded, an evacuation chartered) -
+        /// none is a recurring cost - so the honest entry is STOCK-SIDE: debt falls by a positive
+        /// impact and rises by a negative one, clamped exactly as the main stock update clamps,
+        /// with the SAME entry recorded in the Budget accumulator so it remains a TRUE READING of
+        /// the one real path rather than a parallel ledger (two books for one quantity was the
+        /// defect). ⚠ THE BOUNDARY, for future authors: a RECURRING cost is the budget process's
+        /// channel (spending lines, welfare programs) and must never be expressed as a repeated
+        /// interrupt impact - if a decision wants an ongoing program, it routes through Part B.
+        /// </summary>
+        public static void ApplyOneTimeBudgetImpact(Country country, float amount)
+        {
+            EconomyState state = country.State;
+            state.Budget += amount;
+            float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
+            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.GDP;
+            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - amount, -netCreditorGuard, maxDebt);
+        }
+
+        /// <summary>
         /// THE MATURITY RATE-LAG (ruling R4): the rate NEW ISSUANCE prices at today - base rate
         /// (the reserve-currency override where set, else the zone's spot rate) plus the risk
         /// premium scaled by sensitivity. **The premium reprices at ISSUANCE ONLY** - it is a

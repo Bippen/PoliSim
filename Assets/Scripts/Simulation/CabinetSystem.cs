@@ -473,7 +473,9 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
             state.CrimeIndex = Mathf.Clamp(state.CrimeIndex + option.CrimeIndexShock, 0f, 100f);
             state.PovertyRate = Mathf.Clamp(state.PovertyRate + option.PovertyRateShock, 0f, 100f);
-            state.Budget += option.BudgetImpact;
+            // F1: routed through the one real path (stock + accumulator together) - see
+            // SimulationManager.ApplyOneTimeBudgetImpact for the routing claim and the boundary.
+            SimulationManager.ApplyOneTimeBudgetImpact(country, option.BudgetImpact);
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + option.ApprovalEffect, 0f, 100f);
             // R4-4 (ruling R2): unclamped like ApplyMeetingOption's identical trade shock - the
             // trade system recomputes the balance every turn, which is the fade that qualifies it.

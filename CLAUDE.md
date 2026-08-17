@@ -9474,3 +9474,45 @@ identity gaps), and its trajectory effect at no-policy baselines is deliberately
 small. The per-tranche form stays rejected (its reason — state cost for the same aggregate
 effect — holds a fortiori now the aggregate form is measured). **F1 is the next fiscal item**
 (Phase 2 of the standing close-out directive): the interrupt layer's BudgetImpact routing.
+
+## F1 ships — the interrupt layer's budget impacts reach the books (2026-08-17)
+
+Ruling R5's item, built as the close-out's Phase 2 against fresh baselines at `b05150f`
+(`pre_f1_b05150f`, plus fresh cabinetstress envelope runs — 83/69, reproducing the R4-4-era
+counts at the new HEAD). The defect, restated from the mechanism report: every interrupt-layer
+`BudgetImpact` wrote `state.Budget` only — the cumulative display accumulator — while the debt
+stock moves solely by `budgetBalance`, so "Bank it against the debt: +200" had never touched the
+debt path. (One correction to F1's first statement, made at the derivation: **the writers were
+exactly two** — `CabinetSystem.ApplyDecisionOption` and `ForeignPolicySystem.ApplyMeetingOption`;
+`EconomicEvent` carries no budget field.)
+
+**The routing, derived before wiring**: every authored impact is a ONE-TIME SETTLEMENT — no
+recurring cost exists in any pool — so the honest entry is STOCK-SIDE, and one kind suffices:
+`SimulationManager.ApplyOneTimeBudgetImpact` moves the stock (clamped exactly as the main update
+clamps) and records the SAME entry in the accumulator, which thereby becomes a TRUE READING of
+the one real path — the parallel ledger retired, which was the defect. **The boundary, named for
+future authors at the helper**: a recurring cost is the budget process's channel and must never
+be expressed as a repeated interrupt impact. The `CabinetDecisionOption` doc's original
+"contained landing spot" reasoning is corrected in place — the containment argument survives;
+it just stopped being fictional.
+
+### The bar
+
+- **Equivalence 117/117 unchanged** — zero new rows BY DERIVATION, stated: an instantaneous
+  apply has no daily shape (the same reason no interrupt shock has ever had one).
+- **Matrix 6/6 vs `pre_f1_b05150f`: 39 of 39 fields byte-identical, zero NEW** — a no-policy
+  run resolves no interrupt, so the criterion returned to byte-identical and held.
+- **Cabinetstress: counts EXACTLY baseline (83/83, 69/69), zero new anomaly types — and the
+  distrust rule closed at the dollar**: 485 of 500 USA turn lines differ; the first gap is
+  **+100.0 exactly** (one authored face value, a −100 cost landing on the stock), and by turn 6
+  the post-run sits BELOW base — a +200 windfall banked against the debt, working for the first
+  time. Movement face-value-bounded, signs both directions, relatively vanishing as the economy
+  grows (the t500 stock prints identically at display precision against 3.6×10⁸).
+- **Save/load 12/12** — the round-trip's pending interrupts (Defense/FinanceTreasury decisions
+  with BudgetImpact-carrying options) cross the save and resolve onto the debt path post-load.
+- **Captures 81/81 both sizes, 0 failed, 0 overflows** — no display change: the Budget tile's
+  semantics are unchanged (it was always the cumulative; it is now a faithful one).
+
+**F1 closes.** The fiscal queue emptied with it: the mechanism report's findings are all
+dispositioned — R1–R3 shipped (erosion), R4 shipped (maturity lag), R5 shipped (this), F2
+recorded as a known artifact.

@@ -73,7 +73,9 @@ namespace PoliSim.Simulation
         public static void ApplyMeetingOption(Country country, ForeignPolicyMeetingOption option)
         {
             EconomyState state = country.State;
-            state.Budget += option.BudgetImpact;
+            // F1: routed through the one real path (stock + accumulator together) - see
+            // SimulationManager.ApplyOneTimeBudgetImpact for the routing claim and the boundary.
+            SimulationManager.ApplyOneTimeBudgetImpact(country, option.BudgetImpact);
             state.TradeBalance += option.TradeBalanceShock;
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + option.ApprovalEffect, 0f, 100f);
         }

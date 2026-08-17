@@ -14,9 +14,13 @@ namespace PoliSim.Data
     /// naturally fades rather than needing its own separate ceiling. BudgetImpact is Finance/
     /// Treasury's channel instead of a CollectionEfficiency shock specifically BECAUSE
     /// CollectionEfficiency has no reversion mechanism of its own (a structural per-country constant,
-    /// only ever nudged by CabinetMinister.CompetenceBias at point-of-use, never mutated in place) -
-    /// a one-time addition to the already-cumulative, already-turn-adjusted EconomyState.Budget is the
-    /// contained, bounded landing spot the Master Roadmap's own Finance/Treasury guidance asked for.
+    /// only ever nudged by CabinetMinister.CompetenceBias at point-of-use, never mutated in place).
+    /// ⚠ F1 (2026-08-17) corrected where BudgetImpact LANDS: the original "contained landing spot"
+    /// wrote EconomyState.Budget only - the cumulative display accumulator - so no decision had
+    /// ever touched the debt stock. It now routes through
+    /// SimulationManager.ApplyOneTimeBudgetImpact (stock + accumulator together, one real path);
+    /// the containment reasoning survives - a one-time settlement is still bounded and still
+    /// avoids CollectionEfficiency's no-reversion trap - it just stopped being fictional.
     /// </summary>
     public struct CabinetDecisionOption
     {
