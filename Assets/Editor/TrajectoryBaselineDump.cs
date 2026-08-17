@@ -97,6 +97,11 @@ namespace PoliSim.EditorTools
                           .Append(country.PotentialGrowthRate.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
                         sb.Append(turn).Append(',').Append(country.Id).Append(",Zone.InterestRate,")
                           .Append((country.CurrencyZone?.InterestRate ?? -999f).ToString("R", CultureInfo.InvariantCulture)).Append('\n');
+                        // R4 (maturity rate-lag): the third Country-level extra, so the lag effect
+                        // is directly decomposable from any dump (spot vs effective, per turn) -
+                        // a B-only NEW field to any pre-R4 diff, which the allowance names.
+                        sb.Append(turn).Append(',').Append(country.Id).Append(",Country.EffectiveDebtRate,")
+                          .Append(country.EffectiveDebtInterestRate.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
                     }
                 }
 

@@ -236,6 +236,67 @@ namespace PoliSim.EditorTools
                 Object.DestroyImmediate(dailyGo);
             }
 
+            // --- THE MATURITY RATE-LAG (ruling R4) --------------------------------------------------
+            // WHAT IT ENUMERATES (rule 14): the effective-rate reversion under a +4-point spot-rate
+            // shock, on the two countries the mechanism's boundary runs between - Italy (spot-priced
+            // issuance in the premium-loaded shared zone: the lag's actual target) and the USA
+            // (override-anchored issuance: the CONTROL - its target ignores the spot drive by
+            // construction, and the assert below checks the anchor held rather than assuming it).
+            // r_eff is set to the PRE-DRIVE spot explicitly (letting the sentinel initialize AFTER
+            // the drive would seed it at the driven rate and leave no gap to close). EXPECTATION:
+            // the reversion itself telescopes at constant target, but the target carries the
+            // premium, which moves with the daily ratio - Phase-3-class drift, inside the standard
+            // tolerance; a large residual means the slice took the wrong shape.
+            foreach (CountryId id in new[] { CountryId.Italy, CountryId.USA })
+            {
+                var turnGo = new GameObject($"AggEq_LagTurn_{id}");
+                var dailyGo = new GameObject($"AggEq_LagDaily_{id}");
+                World turnWorld = WorldFactory.CreateDefault();
+                World dailyWorld = WorldFactory.CreateDefault();
+                SimulationManager turnSim = turnGo.AddComponent<SimulationManager>();
+                SimulationManager dailySim = dailyGo.AddComponent<SimulationManager>();
+                turnSim.SetWorld(turnWorld);
+                dailySim.SetWorld(dailyWorld);
+
+                Country turnCountry = turnWorld.GetCountry(id);
+                Country dailyCountry = dailyWorld.GetCountry(id);
+                foreach (Country x in new[] { turnCountry, dailyCountry })
+                {
+                    x.EffectiveDebtInterestRate = x.CurrencyZone.InterestRate;
+                    x.CurrencyZone.InterestRate += 4f;
+                }
+
+                float governmentSpending = turnCountry.State.GDP * (turnCountry.GovernmentSpendingRate / 100f);
+                float swfPeriodReturn = turnCountry.SovereignWealthFund != null
+                    ? turnCountry.SovereignWealthFund.TotalAssets * 0.02f
+                    : 0f;
+
+                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, 0f, swfPeriodReturn);
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
+                {
+                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, 0f, swfPeriodReturn);
+                }
+
+                total += 2;
+                passed += Compare($"{id}.EffectiveDebtRate@+4spot", turnCountry.EffectiveDebtInterestRate, dailyCountry.EffectiveDebtInterestRate) ? 1 : 0;
+                passed += Compare($"{id}.GovernmentDebt@+4spot", turnCountry.State.GovernmentDebt, dailyCountry.State.GovernmentDebt) ? 1 : 0;
+
+                if (id == CountryId.USA)
+                {
+                    // The override's fate, asserted not assumed: the USA's issuance target is its
+                    // blended override (+ near-zero premium), so a +4 SPOT drive must leave its
+                    // effective rate anchored near 3.3 - if this rate chased the spot the general
+                    // lag would NOT subsume the override, and the boundary claim would be false.
+                    total++;
+                    passed += Assert("USA.EffectiveDebtRate ANCHORED (override subsumed)",
+                        turnCountry.EffectiveDebtInterestRate < 4f && dailyCountry.EffectiveDebtInterestRate < 4f,
+                        $"turn={turnCountry.EffectiveDebtInterestRate:F3} daily={dailyCountry.EffectiveDebtInterestRate:F3} - both must sit near the 3.3 blended anchor, not the +4-driven spot") ? 1 : 0;
+                }
+
+                Object.DestroyImmediate(turnGo);
+                Object.DestroyImmediate(dailyGo);
+            }
+
             // --- PHASE 4: Demographics --------------------------------------------------------------
             // Two countries with OPPOSITE demographic signs (Sweden grows, Germany shrinks), both
             // driven off baseline through the real policy dials (family pro-natal, immigration

@@ -1935,6 +1935,11 @@ namespace PoliSim.Simulation
                 CollectionEfficiency = country.CollectionEfficiency,
                 BaseDebtInterestRateOverride = country.BaseDebtInterestRateOverride,
                 RiskPremiumSensitivity = country.RiskPremiumSensitivity,
+                // R4: both maturity-lag fields ride the preview clone's hand-list - the R4-1
+                // Clone-escape lesson applies to THIS list too (a missed field here silently
+                // previews at the sentinel fallback, i.e. instant repricing).
+                AverageDebtMaturityYears = country.AverageDebtMaturityYears,
+                EffectiveDebtInterestRate = country.EffectiveDebtInterestRate,
                 ComfortableDebtToGdpPercent = country.ComfortableDebtToGdpPercent,
                 BaselinePovertyRate = country.BaselinePovertyRate,
                 BaselineLaborForceParticipationRate = country.BaselineLaborForceParticipationRate,
@@ -2761,21 +2766,66 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// Interest on the country's existing debt stock, at its base rate (CurrencyZone.InterestRate,
-        /// unless overridden - see Country.BaseDebtInterestRateOverride) plus the risk premium, scaled
-        /// by the country's RiskPremiumSensitivity. For most countries this is unchanged: today's
-        /// policy rate plus the full risk premium. A reserve-currency issuer (the USA) uses a real
-        /// blended average rate on existing debt instead of today's policy rate, and a near-zero
-        /// sensitivity to the risk-premium curve - see "Reserve-Currency Debt Interest Treatment" in
-        /// CLAUDE.md for why market risk premium at a given debt-to-GDP ratio isn't equivalent across
-        /// countries.
+        /// THE MATURITY RATE-LAG (ruling R4): the rate NEW ISSUANCE prices at today - base rate
+        /// (the reserve-currency override where set, else the zone's spot rate) plus the risk
+        /// premium scaled by sensitivity. **The premium reprices at ISSUANCE ONLY** - it is a
+        /// market price set at auction, so existing bondholders keep their coupons and today's
+        /// risk price reaches the stock only at rollover speed. That is the derivation's answer
+        /// to "what does the premium reprice": the claim it makes about the world is that a
+        /// sovereign's borrowing cost responds to its debt ratio with a lag of years, not days -
+        /// and it is exactly the channel the erosion pass measured as the residual (instant
+        /// repricing at premium-loaded zone rates outrunning π).
+        ///
+        /// THE OVERRIDE'S FATE, derived as the build directive required: the general lag with the
+        /// USA's real maturity does NOT reproduce the frozen 3.3% - the model's own Fed path sits
+        /// at spot 0-6% for long stretches, so a lag toward SPOT would drift the USA's rate away
+        /// from the validated blended figure. What the override captures that a spot-lag doesn't
+        /// is reserve-currency ISSUANCE-YIELD ANCHORING (Treasury auctions clear near the blended
+        /// rate regardless of the model Fed's excursions - the global-reserve-asset demand the
+        /// original treatment reasoned from). So the override RETIRES INTO the general mechanism
+        /// as the USA's issuance-rate claim rather than being deleted or duplicated: it feeds the
+        /// lag TARGET here, the lag applies uniformly to all six, and the USA's effective rate
+        /// stays anchored (~3.3 + its near-zero premium) by construction - the boundary named,
+        /// both mechanisms kept, one line each.
         /// </summary>
-        private float GetInterestOnDebt(Country country)
+        private float GetDebtIssuanceRate(Country country)
         {
-            EconomyState state = country.State;
             float baseRate = country.BaseDebtInterestRateOverride >= 0f
                 ? country.BaseDebtInterestRateOverride
                 : country.CurrencyZone.InterestRate;
+            return baseRate + GetDebtRiskPremium(country.State) * country.RiskPremiumSensitivity;
+        }
+
+        /// <summary>
+        /// Advances the effective (blended) rate toward the current issuance rate at
+        /// 1/AverageDebtMaturityYears per year - a stock with average maturity M rolls ~1/M of
+        /// itself over each year, and only that share reprices. SHAPE (the taxonomy): a reversion
+        /// whose speed is an annual fraction, so the daily form is the standard
+        /// 1-(1-s)^fraction slice - PerDayReversion's exact composition at constant target; the
+        /// target moves with the ratio's premium, which is the Phase-3 within-period feedback
+        /// class, budgeted as such in the equivalence check's enumeration. Sentinel init on first
+        /// advance: a fresh world or a pre-mechanism save starts AT the issuance rate - exactly
+        /// what the old code charged - so behavior diverges only once rates move (the
+        /// recalibration is confined to rate-moving regimes by construction). Called once per
+        /// daily accrual and once per turn-form validation step; never from preview.
+        /// </summary>
+        private void AdvanceEffectiveDebtRate(Country country, float periodFraction)
+        {
+            float issuanceRate = GetDebtIssuanceRate(country);
+            if (country.EffectiveDebtInterestRate < 0f)
+            {
+                country.EffectiveDebtInterestRate = issuanceRate;
+                return;
+            }
+
+            float rolloverPerYear = 1f / Mathf.Max(1f, country.AverageDebtMaturityYears);
+            float slice = 1f - Mathf.Pow(1f - rolloverPerYear, periodFraction);
+            country.EffectiveDebtInterestRate += slice * (issuanceRate - country.EffectiveDebtInterestRate);
+        }
+
+        private float GetInterestOnDebt(Country country)
+        {
+            EconomyState state = country.State;
             // A NET CREDITOR PAYS NOTHING AND EARNS NOTHING (2026-08-02, Elias's ruling, made when the
             // zero floor was removed and negative debt became representable).
             //
@@ -2795,7 +2845,13 @@ namespace PoliSim.Simulation
                 return 0f;
             }
 
-            float effectiveRate = baseRate + GetDebtRiskPremium(state) * country.RiskPremiumSensitivity;
+            // THE MATURITY RATE-LAG (ruling R4): charge the BLENDED rate the stock actually pays,
+            // not today's issuance price - the sentinel fallback is READ-ONLY (the R4-3 pattern:
+            // preview must never mutate), returning the issuance rate itself, which is bit-for-bit
+            // what this method charged before the lag existed.
+            float effectiveRate = country.EffectiveDebtInterestRate >= 0f
+                ? country.EffectiveDebtInterestRate
+                : GetDebtIssuanceRate(country);
             return state.GovernmentDebt * (effectiveRate / 100f);
         }
 
@@ -2876,6 +2932,11 @@ namespace PoliSim.Simulation
             FiscalPeriod period = GetOrSeedFiscalPeriod(country);
             EconomyState state = country.State;
 
+            // THE MATURITY RATE-LAG (ruling R4): the blended rate rolls toward today's issuance
+            // price before interest is charged - repricing is continuous, so advance-then-charge;
+            // the one-day ordering difference is inside Phase 3's stated drift class either way.
+            AdvanceEffectiveDebtRate(country, FiscalFlowPerDayFraction);
+
             float governmentSpending = period.PlannedGovernmentSpending * FiscalFlowPerDayFraction;
             float mandatorySpending = period.PlannedMandatorySpending * FiscalFlowPerDayFraction;
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country) * FiscalFlowPerDayFraction;
@@ -2924,6 +2985,9 @@ namespace PoliSim.Simulation
         public void ApplyPeriodFiscalStepForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn)
         {
             EconomyState state = country.State;
+            // R4: the turn form advances the rate lag one whole period, mirroring the daily path's
+            // advance-then-charge order - the equivalence bar's two sides must share the shape.
+            AdvanceEffectiveDebtRate(country, 1f);
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(country);
             float interestOnDebt = GetInterestOnDebt(country);
             float welfareCost = GetTotalWelfareCost(country);

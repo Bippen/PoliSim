@@ -160,6 +160,29 @@ namespace PoliSim.Data
         /// </summary>
         public float RiskPremiumSensitivity = 1f;
 
+        /// <summary>THE MATURITY RATE-LAG (2026-08-17, mechanism-report ruling R4, ruled IN with
+        /// its target quantified by the erosion pass): this country's average debt maturity in
+        /// YEARS - the stock rolls over at ~1/M per year, so the effective rate it pays reverts
+        /// toward the current issuance rate at that speed (see
+        /// SimulationManager.AdvanceEffectiveDebtRate). A structural per-country constant, seeded
+        /// in WorldFactory from real debt-office data with source and date per line - Sweden's
+        /// figure is a TIME-TO-REFIXING steering range, which for a repricing lag is the
+        /// mechanism-relevant basis, stated there; Germany's is the batch's one REPORTED [GAP],
+        /// seeded [ESTIMATED] with its bound stated.</summary>
+        public float AverageDebtMaturityYears = 6f;
+
+        /// <summary>THE MATURITY RATE-LAG's one piece of state: the blended rate this country's
+        /// existing debt stock currently pays, in percent - reverting toward
+        /// SimulationManager.GetDebtIssuanceRate at 1/AverageDebtMaturityYears per year.
+        /// ⚠ -1 is a SENTINEL (the R4-3 HousingRateAnchor pattern): a pre-mechanism save
+        /// deserializes with this initializer and every reader falls back to the CURRENT issuance
+        /// rate - exactly what the old code charged - so old saves behave identically until the
+        /// lag has something to lag. AdvanceEffectiveDebtRate initializes it on first advance;
+        /// GetInterestOnDebt reads through a non-mutating fallback and never writes it (preview
+        /// safety). Rides the World save layer as a public field; snapshotted explicitly in the
+        /// round-trip diagnostic - confirmed, not assumed.</summary>
+        public float EffectiveDebtInterestRate = -1f;
+
         /// <summary>
         /// This country's own fiscal-comfort anchor for SimulationManager.GetFiscalReactionMultiplier
         /// - the debt-to-GDP level at which the automatic fiscal reaction (see that method) is

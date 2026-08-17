@@ -32,9 +32,9 @@
 > fix), and before `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating
 > that commit came from an unseeded run.
 
-> ## ⚠ FOUR BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
+> ## ⚠ FIVE BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
 >
-> **Four, all within about a fortnight.** A figure recorded on one side of any of these cannot be
+> **Five, all within about a fortnight.** A figure recorded on one side of any of these cannot be
 > compared with a figure recorded on the other. When quoting a number from this file, check which era it
 > came from first.
 >
@@ -44,6 +44,7 @@
 > | 2 | 2026-08-01 | **pre-epoch calendar fix** (the frozen-calendar harness bug) | every run before it, which never advanced the calendar and so never exercised any date-driven system |
 > | 3 | **2026-08-10** | **`DaysPerTurn` 121 → 365**, the 3.017x fiscal defect | **every trajectory, debt path, deficit, population figure and anomaly count ever recorded before it** |
 > | 4 | **2026-08-17** | **the EROSION TERM** — the debt identity's missing −π·b arrives (rulings R1–R3; a RECALIBRATION BY CONSTRUCTION) | every debt path, debt-to-GDP figure, rating trajectory and divergence-signature number recorded before it — deliberately: the pre-erosion signature was the defect being closed. Non-debt figures are largely comparable (the term touches only the stock's drift) |
+> | 5 | **2026-08-17** | **the MATURITY RATE-LAG** (ruling R4; recalibration by construction, MEASURED NARROW) | debt paths in RATE-MOVING regimes only — exactly {GovernmentDebt, Budget} moved of 38 dumped fields, ≤0.2 ratio-points at every baseline horizon except France's s777 overshoot window. Stable-rate figures are effectively comparable across it |
 >
 > ⚠ **Discontinuity 3 is the widest of the three.** The first two changed what was *measured*; this one
 > changed what the simulation *was*. Every baseline captured before 2026-08-10 measured a fiscal engine
@@ -9369,3 +9370,107 @@ safety case is structural (self-limiting factor + the −1000% guard).
 - **R4 (maturity effective-rate lag): deferred-pending-measurement, and the measurement now
   exists** (above). When Elias rules it in, it runs against THIS commit's fresh baselines with
   its own attribution, per one-change-per-baseline.
+
+## The maturity rate-lag ships — R4 closes, and the lag's true character is measured (2026-08-17)
+
+Ruling R4, ruled IN with the erosion pass's measurement as its warrant; built against `685ebd5`
+with **`post_erosion` as the baseline** (the standing label — same commit, no re-dump needed and
+none faked). Discontinuity #5 in the table above, MEASURED NARROW: exactly {GovernmentDebt,
+Budget} moved of 38 dumped fields, and stable-rate figures are effectively comparable across it.
+
+### What shipped
+
+`Country.AverageDebtMaturityYears` (structural, seeded from real debt-office data, source and
+date per line) and `Country.EffectiveDebtInterestRate` (the mechanism's ONE piece of state, −1
+sentinel per the R4-3 pattern — pre-mechanism saves and fresh worlds initialize to the current
+issuance rate, bit-for-bit the old charge, so behavior diverges only when rates move).
+`GetDebtIssuanceRate` = (override where set, else zone spot) + premium × sensitivity — **the
+premium reprices at ISSUANCE ONLY** (a market price set at auction; existing bondholders keep
+their coupons), and `AdvanceEffectiveDebtRate` rolls the blended rate toward it at
+1/M per year (the PerDayReversion slice daily; advance-then-charge in both fiscal forms).
+**The USA override RETIRES INTO the mechanism as its issuance-rate claim** — reserve-currency
+yield anchoring named as the boundary (Treasury auctions clear near the blended rate regardless
+of the model Fed's excursions), the lag applying uniformly to all six. Preview-clone hand-list
+extended (the R4-1 escape lesson applied to Country's list); the trajectory dump gained
+`Country.EffectiveDebtRate` as its third extra so the lag is decomposable in every future
+baseline; the round-trip diagnostic snapshots the new state explicitly.
+
+**Seeds** (searched 2026-08-17): USA 5.9 `[VERIFIED]` (Treasury WAM ~70–72 months, 2025);
+France 8.5 `[VERIFIED]` (AFT 8y180d at 2026-05-31); Poland 5.65 `[VERIFIED-secondary]` (2024);
+Italy 7.0 `[ESTIMATED]` band 6.9–7.7 (MEF, mixed vintages); Sweden 4.75 `[ESTIMATED]` from
+Riksgälden's 3.5–6y TIME-TO-REFIXING steering range — which for a REPRICING lag is the
+mechanism-relevant basis, stated not glossed; **Germany 7.0 — the batch's one REPORTED [GAP]**,
+seeded `[ESTIMATED]` band 6–8 bounded by Finanzagentur portfolio structure. **The ruled
+band-sensitivity rider resolves it: the whole mechanism moves Germany's ratio ≤ 0.1 points at
+every horizon, so any M in [6, 8] is inside noise — BAND-STABLE, the estimate STANDS**, no desk
+graduation needed (annotated at the seed line).
+
+### The bar
+
+- **Equivalence 117/117 within 3%** — the lag enumeration at a +4-point spot drive: Italy
+  (spot-priced, premium-loaded) 1.12% on the rate and 0.50% on debt (the moving-premium target,
+  the stated Phase-3 class); the USA near-EXACT (0.0017% — constant override target telescopes);
+  and **the ANCHORED assert held: USA effective rate 3.685 under the +4 drive, reverting toward
+  its 3.36 blended target and ignoring the driven spot — the override-subsumption boundary
+  claim verified at the mechanism level**, before any trajectory ran.
+- **The matrix, judged (count-reconciliation per the rider: pre CSV = 36+2 shared, post =
+  36+3): 36 of 38 shared fields byte-identical in all six configurations** — the moved set is
+  exactly {GovernmentDebt, Budget}, `Country.EffectiveDebtRate` named NEW, and the macro engine
+  provably untouched a second time. End-state debt differences: 0.02% both seeds.
+- **Save/load 12/12 clean at 36 reflected EconomyState fields, with the new Country-level state
+  snapshotted explicitly** — a load that dropped `EffectiveDebtInterestRate` would now fail the
+  compare rather than silently reverting a game to instant repricing via the sentinel.
+- **Captures 81/81 both sizes, 0 failed, 0 overflows**; rule-15 on the debt tiles: the warm-up
+  screen is value-identical to the erosion era ($38.7T / 129.4% / AAA) — the USA control
+  visible on-screen.
+
+### The analysis — what the lag actually is, measured
+
+- **The USA control: HELD, direction zero** — identical to `post_erosion` at one decimal at
+  every horizon, both seeds (end-state 0.02%). No stop; the override captured nothing the
+  subsumption loses, because the subsumption kept its claim.
+- **The Eurozone climbers: ≤ 0.2 ratio-points of movement at every horizon, both seeds** — and
+  this is the pass's honest headline finding: **at stable-rate baselines a converged lag IS
+  instant repricing.** The zone rate holds ~5.51 flat through the ruled window and drifts slowly
+  late; a 7-year lag shadows a slow drift with modest delay, so the interest actually paid is
+  nearly what spot charged. The erosion pass's attribution is hereby REFINED, not retracted:
+  the residual climb is driven by the LEVEL of premium-loaded nominal rates exceeding π — the
+  lag changes WHEN that level arrives, not WHETHER. The maturity mechanism's value at these
+  baselines is REGIME INSURANCE (rate spikes, the S≥6 limit-cycle class, policy-driven rate
+  paths a player produces) plus realism — not a signature-changer. Slopes did not visibly
+  reduce toward the USA's shape; the record says so plainly.
+- **France's s777 overshoot: FED, moderately, still bounded.** Trough 5.6 points deeper (32.5
+  vs 38.1 at t275), recovery ~100 turns longer (t350: 63.2 vs 84.0) — the recovery leg's
+  mechanism is clean (the lag holds the dive-era cheaper blended rate into the recovery, so
+  deficits rebuild the ratio more slowly); the deeper trough is measured-not-fully-decomposed.
+  Reconverged by t500 (87.3 vs 87.4), identical at t1000 (96.7). One seed; s424242's France is
+  unchanged (90.0/96.6). The finding, per the directive: a lag interacting with an overshoot
+  FEEDS this one — amplitude up, period up, stability unchanged.
+- **The decomposition, three parts without pretense**: (1) the stable-rate NULL is itself the
+  measured decomposition — converged r_eff = spot, gap growth ≈ 0, which the climbers' ≤0.2
+  confirms; (2) in rate-MOVE regimes the signs close in both directions — turn 1's rate-CUT
+  cycle has the maturity era paying MORE (mat t1 debt 2683.4 vs 2677.8: the lag slows the
+  benefit of cuts exactly as it slows the pain of hikes), and the equal-stock turn (Italy
+  t2→t3, stocks 0.07% apart) closes to first order: measured gap 8.54 vs interest differential
+  ~12.3 minus FRF give-back and within-turn integration, terms of the derived sign and size;
+  (3) the EXACT closure lives where it belongs — the 117/117 equivalence bar, which is the
+  turn-vs-daily algebra verified at machine precision. The erosion pass's without-remainder
+  standard is met at the algebra level; the trajectory level closes to first order with the
+  integration term named.
+- **Sweden holds** (4.4/8.8, identical both eras). **The creditor-gap one-liner, standing in
+  the scenario record**: R3's symmetric erosion branch remains code-verified and
+  live-unexercised — no scenario at HEAD builds a net creditor (swfstress 500t: zero negative
+  ratios); its safety case is structural.
+- **The equilibrium word: NOT EARNED.** The t1000 shapes are the erosion pass's — USA still
+  declining, three climbers still climbing at 60–70% of pre-erosion rates — and the lag moved
+  none of them materially. Waypoints, all. The two-identity-terms sentence stays holstered.
+
+### Closure
+
+**R4 CLOSES against this commit, with the measurement that ruled it in and the measurement it
+produced**: the residual-attribution warrant was correct about mechanism and refined about
+regime — instant repricing is gone from the model (the last of the mechanism report's two
+identity gaps), and its trajectory effect at no-policy baselines is deliberately, measurably
+small. The per-tranche form stays rejected (its reason — state cost for the same aggregate
+effect — holds a fortiori now the aggregate form is measured). **F1 is the next fiscal item**
+(Phase 2 of the standing close-out directive): the interrupt layer's BudgetImpact routing.

@@ -310,6 +310,10 @@ namespace PoliSim.EditorTools
                 snap[$"{p}.CabinetMinisters.Count"] = country.CabinetMinisters.Count;
                 snap[$"{p}.ParliamentSeats.Count"] = country.ParliamentSeats.Count;
                 snap[$"{p}.Swf.Exists"] = country.SovereignWealthFund != null ? 1 : 0;
+                // R4 (maturity rate-lag): the mechanism's one piece of state, snapshotted so a
+                // save/load that dropped it would fail HERE rather than silently reverting a
+                // loaded game to instant repricing via the sentinel fallback.
+                snap[$"{p}.EffectiveDebtRate"] = country.EffectiveDebtInterestRate;
 
                 snap[$"{p}.Pending.BudgetBillDays"] = sim.GetPendingBudgetBill(country.Id)?.DaysRemaining ?? -1;
                 snap[$"{p}.Pending.LaborBillDays"] = sim.GetPendingLaborBill(country.Id)?.DaysRemaining ?? -1;
