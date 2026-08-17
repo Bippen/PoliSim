@@ -9633,3 +9633,40 @@ GAP block's third entry, two shots specified, zero prep.
 exist on main to send; recorded in §1G so Design waits on a calendar, not on us. **The carried
 strip-cut diff**: Design's half CLOSED in their manifest (6/6 re-raster identical); our half
 remains E3, gated on a rasterizer — status split recorded at E3, nothing ambiguous.
+
+## Two closures, and the board ends at all-gates (2026-08-17)
+
+**A1/C4 — CLOSED.** Ruled proceed; `CreditRatingAnchorCheck` ran against current HEAD (erosion +
+maturity + F1 all shipped since the flag's post-erosion label — the rating reads today's
+trajectories): **5 of 6 PASS, every calibration anchor HELD with zero drift**, the USA's
+deficit-window condition included (AA+ for deficits in [4.6%, 7.5%]; the anchor uses 6.4%). The
+one FAIL is Poland's EXPECTED fail — the recorded monotonicity limitation, a known property
+since 2026-08-02 and not part of the 5-anchor bar. The meaningful reading, per the directive:
+the anchors were calibrated against a divergence that no longer exists and SURVIVED its removal
+— they encode seed-state fiscal positions, not trajectory artifacts, so the fiscal arc's
+recalibrations passed through them cleanly. **C4 closes; A1 closes with it** (thrash closed by
+cadence long ago; the deficit term validates unrecalibrated; the cap-and-average recommendation
+stays recorded as the answer if the term ever drifts). **The F register's count: ZERO.**
+
+**The strip-cut diff — both halves dispositioned, ours to the component.** Design's half: closed
+in their manifest (6/6 re-raster identical). Ours: ATTEMPTED, not merely re-gated —
+`StripCutDiffCheck` now exists (standing equipment: enumerate Source/ SVGs with sibling PNGs,
+render at exact size, tolerant structural compare — channel tolerance 32, 2% mismatch budget,
+UNRASTERIZABLE-HERE named per file). The attempt found and named the real blocker, probed not
+guessed: the machine's one rasterizer (the built-in vectorgraphics module) tessellates every
+SVG, but its `RenderSpriteToTexture2D` path yields a BLANK texture under the batch harness —
+three runs with mismatch shares equal to each PNG's ink coverage, identical to the decimal
+across two different sprite framings, and the dumped probe artifact viewed as an empty sheet.
+One true parse limit besides (`ui_slider_track`'s SVG `<pattern>`). **E3's gate is sharpened
+from "a rasterizer exists" to "a rasterizer whose OUTPUT is comparable"** — the compare
+machinery is finished and waiting; the harness's own first two runs are recorded inside the
+check as the defect they were.
+
+**THE BOARD, confirmed at all-gates**: item 10 (13 Sept) · D1's batch of nine (the Editor
+register side-by-side — OPEN VERIFICATION GAP third entry) · the R5 hex exchange (item 10) ·
+E2's branch accounting (item 10) · E3 (a working raster path) · the Editor checklist (hands-on
+session) · the GC re-check (~08-23) · FA cadence (playtesting) · TMP (a masks/effects screen) ·
+swing coverage (its condition) · the interrupt-system slice (design-arc ruling) · A3 (ruling) ·
+Q1–Q10 (rulings) · R3's creditor branch (a scenario that builds one) · F2 (future nominal-rates
+work). **Nothing ungated remains. Nothing on this roadmap is open except what waits on the
+world — and the F register, born 🔴, ends empty.**

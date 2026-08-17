@@ -100,7 +100,13 @@ than changing it.
 <details>
 <summary>Original section A text, as raised (kept for the record)</summary>
 
-## A1. 🔴 Step C4's deficit term needs re-calibrating
+## ~~A1. Step C4's deficit term needs re-calibrating~~ — ✅ CLOSED 2026-08-17: ruled proceed, re-run PASSED, nothing to recalibrate
+
+> The 5-anchor check at HEAD holds without any deficit-term change (see §F1's closure note for
+> the run). The thrash this entry was born from was closed by the review-cadence fix; the
+> divergence that made the deficit reading unstable was closed by the fiscal arc. The
+> recommendation below (cap + multi-turn average) stays recorded as the answer IF the term ever
+> drifts — the expected-fail Poland row and the anchor check itself are the standing tripwires.
 
 **Task:** make the sovereign credit rating stop thrashing.
 
@@ -436,6 +442,16 @@ Corroborating datum from this delivery's origin verification: all 19 re-delivere
 disk by LINE ENDINGS ONLY (git's CRLF conversion), so source and raster remain in lockstep as far
 as byte evidence can show without a rasterizer.
 
+⚠ **THE GATE SHARPENED, same day — our half was ATTEMPTED and the blocker is now named to the
+component**: a rasterizer DOES exist on this machine (Unity's built-in vectorgraphics module,
+demonstrably tessellating every Source/ SVG at import), and `StripCutDiffCheck` now exists with
+the full tolerant-compare machinery — but the module's `RenderSpriteToTexture2D` path yields a
+BLANK texture under the batch harness, probed and viewed rather than inferred (mismatch shares
+equal to ink coverage, identical across two framings; the dumped artifact is an empty sheet).
+One file (`ui_slider_track`) additionally hits the module's one true parse limit
+(SVG `<pattern>`). **E3 closes when the render path works or an external rasterizer lands** —
+the compare is finished and waiting; nothing about this entry is ambiguous.
+
 **E1 — `icon_stat_interestrate`. DELIVERED AND IMPORTED**, the same day the request was sent. Elias
 pointed out that it had already arrived, in `Policy rate icon design.zip` at the project root — this
 register still said "awaiting delivery" because nothing watches for a delivery landing.
@@ -456,7 +472,19 @@ and `DeliveredAssetCheck` compares every zip's contents against what exists unde
 
 # F. Waiting on an upstream simulation defect
 
-## F1. 🔴 Step C4's CLOSURE — ⚠ GATE DISSOLVED 2026-08-17: the divergence work SHIPPED; C4 now waits on A1's ruling ONLY
+## ~~F1. Step C4's CLOSURE~~ — ✅ **CLOSED 2026-08-17. C4 IS DONE; the F register's count is ZERO**
+
+> Elias ruled proceed on A1's re-run; `CreditRatingAnchorCheck` ran against current HEAD
+> (erosion + maturity + F1 all shipped): **5 of 6 PASS — every calibration anchor HELD with no
+> drift**, including the USA's deficit-window condition (AA+ for deficits in [4.6%, 7.5%];
+> anchor at 6.4%). The one FAIL is Poland's EXPECTED fail — the recorded monotonicity
+> limitation (lower debt than Germany, four notches worse, no penalising term exists), a known
+> property since 2026-08-02, not part of the 5-anchor bar. The anchors were calibrated against
+> a divergence that no longer exists and survived its removal — seed-state fiscal positions,
+> not trajectory artifacts. **C4 closes; A1 closes with it** (the thrash was closed by review
+> cadence 2026-08-02; the deficit term validates at HEAD unrecalibrated; there is nothing left
+> to damp). Poland's monotonicity stays a recorded limitation with the expected-fail row as its
+> standing tripwire.
 
 > ✅ **The parked fiscal-divergence pass this entry waited on ran and closed** (the mechanism
 > report `bcbba47`, the erosion term `685ebd5`, the maturity rate-lag `b05150f` — two identity
