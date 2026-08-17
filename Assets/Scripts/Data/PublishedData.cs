@@ -41,7 +41,24 @@ namespace PoliSim.Data
         /// CPI day) - so it rides the recorded CPI rule. The EU five have no wage release rule in
         /// the seed file and follow the same cadence rather than inventing one, the exact
         /// unemployment-family precedent.</summary>
-        RealWageIndex
+        RealWageIndex,
+
+        /// <summary>ROUND 4 BATCH 3: annual via the same-release argument - `ilc_lvho07a` is
+        /// EU-SILC, the identical survey release the poverty rate and Gini publish from. EU five
+        /// only; the USA never publishes a figure it does not track (the asymmetry ruling), which
+        /// the release calendar enforces via Country.TracksHousingOverburden.</summary>
+        HousingOverburden,
+
+        /// <summary>ROUND 4 BATCH 3: annual - Eurostat SILC tenure statistics and the OECD AHD
+        /// basis are both yearly survey outputs, the same family argument. All six; the USA's
+        /// primary housing metric per the ruling.
+        ///
+        /// ⚠ HousePriceIndex is DELIBERATELY NOT HERE: real HPIs are quarterly (Eurostat t+~65,
+        /// Case-Shiller monthly) but the seed doc records NO housing-price release rule and no
+        /// same-release bridge to any wired family - so it stays LIVE-UNTIL-SOURCED, Step A's other
+        /// branch, first exercised by Round 4 here. Wiring t+65 from general knowledge would be
+        /// exactly the fabrication this enum's doc comment forbids.</summary>
+        Homeownership
     }
 
     /// <summary>
@@ -84,7 +101,13 @@ namespace PoliSim.Data
 
         // ROUND 4 BATCH 2: the two C2 stats, appended per the same standing rule.
         Gini,
-        RealWageIndex
+        RealWageIndex,
+
+        // ROUND 4 BATCH 3: the two PUBLISHED housing stats (HPI is live-until-sourced and needs no
+        // closing record either - nothing consumes a settled HPI, unlike DebtToGdpRatio's rating
+        // review).
+        HousingOverburden,
+        Homeownership
     }
 
     public static class ClosingStatExtensions
@@ -104,6 +127,8 @@ namespace PoliSim.Data
                 case PublishedStat.LifeExpectancy: return ClosingStat.LifeExpectancy;
                 case PublishedStat.Gini: return ClosingStat.Gini;
                 case PublishedStat.RealWageIndex: return ClosingStat.RealWageIndex;
+                case PublishedStat.HousingOverburden: return ClosingStat.HousingOverburden;
+                case PublishedStat.Homeownership: return ClosingStat.Homeownership;
                 default: throw new System.ArgumentOutOfRangeException(nameof(stat), stat, "PublishedStat has no ClosingStat counterpart - add one.");
             }
         }

@@ -8856,3 +8856,129 @@ ruling; its step 0 confirms that and the seed rows against the doc at HEAD (home
 2 honest estimates with stated bands; HPI index-100 — the convention R4-2 just built the class
 for; the EU-five overburden `[VERIFIED]` closure of 2026-08-02). Monetary-coupled by design
 (reads the policy rate, writes nothing back) — inputs-only holds without a new ruling.
+
+## Round 4 batch R4-3 — C1 ships housing, the arc's first monetary coupling (2026-08-16, recorded 2026-08-17)
+
+Third batch on the R4-1 shape, against pre-batch HEAD `9d5f077`. One provenance note the prior
+records never needed: **the batch session was interrupted between updating the roadmap row and
+writing this record/committing** — the close-out happened 2026-08-17 from the session's persisted
+run logs (`r43_*.log`), with every source file verified older than the bar that tested it, so the
+tree committed is bit-for-bit the tree that passed. Every number below is from those logs, not
+from memory.
+
+### Step 0 — CLEAN, and the correction streak ends at two
+
+The doc at HEAD matched the handoff for the first time: overburden EU-five `[VERIFIED]`
+whole-population `ilc_lvho07a` (`rskpovth=TOTAL` — the variant recorded per the doc's own rule for
+this unusually variant-prone indicator; Sweden alone reads 5.1/10.6/10.8/17.9 across published
+cuts, and 10.6 is the one seeded); homeownership 3/6 `[VERIFIED]` OECD AHD (USA 65.3, France 58.5,
+Germany 41.0 — the genuine structural outlier) + 3 `[ESTIMATED]` via the doc's own fitted bridge
+with stated 95% bands (Poland 86.8 [78.4–95.2], Italy 74.4 [66.8–82.1], Sweden 62.1 [54.9–69.4]);
+HPI index-100, the R4-2 class's third member. Step 0 stays mandatory — 2-for-2 became 2-for-3,
+not zero-for-anything.
+
+### What shipped
+
+Three `EconomyState` fields (32 → 35), inputs-only, and **the arc's first monetary coupling,
+one-way by construction**: all three read `CurrencyZone.InterestRate` against the zone's new
+epoch anchor and write nothing back to the rate, the zone, or any monetary quantity — stated at
+the MacroSystem C1 header for the mechanism report's namespace claim. The anchor is
+`CurrencyZone.BaselineInterestRate` (the `BaselineIncomeTaxRate` logic verbatim: the live rate is
+player-mutable with no stored seed, so the anchor is captured in the ctor, the one place the
+seeded rate exists) with a **−1 sentinel and a read-only `HousingRateAnchor` fallback**: a
+pre-R4-3 save deserializes to the sentinel and reads gap 0 — the rate channel INERT, exactly the
+behaviour that save had before the field existed — and the fallback deliberately never writes the
+field, so loading an old save never fabricates an epoch the world was not created with.
+
+- **HousingOverburden** (% of population spending >40% of disposable income on housing) — the
+  PovertyRate idiom: reversion 0.15 toward baseline + 1.5/pt of rate above the anchor − 4× an
+  implemented HousingAssistance's generosity fraction (the program's own dedicated stat, stronger
+  than its poverty side-effect); clamp [0, 50] over Greece's recorded 28.9 EU max. **THE USA
+  ASYMMETRY IS DELIBERATE EVERYWHERE**: US sources measure >30%/>50% of gross income where
+  Eurostat measures >40% of disposable — no comparable figure exists, so per the recorded ruling
+  `Country.TracksHousingOverburden=false` carries the fact into the model (early-out), the UI
+  (row ABSENT, not zero — drawing "0.0%" would fabricate a figure no source publishes), the
+  release calendar (a country never publishes a stat it does not track) and the equivalence
+  check (the USA-unmoved assert).
+- **Homeownership** (% of HOUSEHOLDS, OECD AHD basis only — population-basis figures are a
+  different, larger number) — all six, the USA's PRIMARY housing metric per the ruling.
+  Generational reversion 0.05 (the LifeExpectancy class — tenure is a stock that turns over in
+  years), −0.5/pt rate drag, +2× HousingAssistance; clamp [10, 95] around Germany's real 41.0
+  and Poland's 86.8.
+- **HousePriceIndex** — the R4-2 compounding-index kit verbatim (power slice, growth clamp
+  ±10/turn, level floor, base 100 at epoch, §A.9b negative-fill display): growth = 1:1 trend
+  pass-through − 0.5× the rate gap, SIGNED — cheap credit inflates house prices, the
+  best-documented rate channel of the three; tightening drags by the same coefficient.
+
+Two structural notes. **The ctor+Clone checklist entry died structurally**: `Clone()` was a
+positional hand-list into the ctor — the shape R4-1 proved drifts silently — and EconomyState is
+pure value state, so it is now `MemberwiseClone()`: absorbs every future field with no list to
+forget, and skips the ctor's seed-time fallback branches a copy should never re-run. The one
+residue is a warning at the method: a future REFERENCE-TYPE field makes it a shallow copy of that
+field and must be revisited. And **HPI is deliberately NOT in the publication enum**: real HPIs
+are quarterly, but the seed doc records no housing-price release rule and no same-release bridge
+to any wired family, so it stays LIVE-UNTIL-SOURCED — Step A's other branch, first exercised by
+Round 4 here; wiring t+65 from general knowledge would be exactly the fabrication the enum's doc
+comment forbids. HousingOverburden and Homeownership publish annual on the same-release argument
+(the SILC / annual-survey family — PovertyRate/Gini's row).
+
+In passing, comment-only: six stale "121 daily steps" comments in
+`AggregationEquivalenceCheck` (pre-existing, from before the DaysPerTurn 121→365 fix — the loops
+always referenced the constant, so behaviour was right and the comments lied) now say
+DaysPerTurn; the one surviving "121" is the verbatim quote of the original phase directive, which
+was true when written and stays a quote.
+
+### The bar
+
+- **Equivalence 104/104 within 3%** — the C1 enumeration drives Sweden (tracks overburden, own
+  zone) and the USA (does not) through both input channels at once: rate +2 over the anchor,
+  HousingAssistance implemented at generosity 60. New rows at 0.0000–0.0019% against the stated
+  exact-by-construction expectation (constant-target reversions; constant-growth power slice),
+  and **the asymmetry assert held: USA overburden EXACTLY 0, turn form and a full turn of daily
+  steps alike, under the same drives** — the ruling enforced as a check, not a comment.
+- **Buckets**: HousePriceIndex IN (compounds daily regardless of the rate path — the
+  RealWageIndex reasoning), asserted D=200/W=29/M=7/Q=3 + daily variation + resolution
+  divergence. Overburden/homeownership EXCLUDED on a **third variant of the
+  exclusion-with-reason pattern**: their targets move only when the policy rate steps at a
+  discrete meeting, so whether a 200-day no-policy window shows variation depends on the
+  central-bank calendar, not on bucket plumbing — the assert would test the wrong thing.
+- **Matrix 6/6 vs `pre_r4_3_9d5f077`: 34 of 34 shared fields byte-identical in every
+  configuration**, exactly `Homeownership`/`HousePriceIndex`/`HousingOverburden` named NEW — the
+  inputs-only inversion held bit-for-bit a third time. Note it holds THROUGH the monetary
+  coupling: a no-policy run never moves the rate off its anchor, so the gap term is structurally
+  zero there — the coupling is live only when someone actually moves the rate, which is the
+  design. (Field arithmetic: pre CSV = 32+2 shared, post = 35+2.)
+- **Save/load 12/12 clean at 35 reflected fields** (32→35 verified in the compare).
+  `BaselineInterestRate` rides `CurrencyZone`'s normal serialization on new saves; pre-R4-3
+  saves take the sentinel path by construction.
+- **Cadence at the seam** (the enum-iterating check, zero edits a third time): USA
+  HousingOverburden **never / 0 releases — the calendar guard live at the seam**; Homeownership
+  day 638 / 11 releases in 12 years (the annual group's exact row); HPI has no row because it
+  has no publication — the absence is the design, not a miss.
+- **Captures 79/79 at both sizes, 0 failed, 0 overflows, symmetric.** Society carries the
+  housing three for the EU five and exactly two housing rows for the USA — homeownership leads
+  with the "(primary metric)" tail, house prices §A.9b negative-fill, and the overburden row is
+  absent: the ruling visible on screen.
+
+### Batch-shape verdict, and which parts of the bar R4-4 inherits
+
+Third consecutive batch with **zero new tooling** — the diff allowance, exclusion-with-reason
+(now three variants), and the enum-iterating cadence check absorbed a monetary-coupled batch
+unchanged. What R4-3 adds to the arc: the **epoch-anchor + sentinel-fallback pattern** for
+measuring live policy against creation-time state without breaking old saves, and the namespace
+statement the mechanism report will need — housing owns the one-way rate READ; nothing in Round 4
+writes the rate path.
+
+**R4-4 (Defense/Foreign Affairs/Education portfolios) is a CONTENT batch, and per the scoped
+plan this verdict states which parts of the stat bar apply to it**: the pre-report with the
+minister name list for Elias's sign-off per ruling 6 (original fictional persons, rule 9's
+unreversed half); captures at both sizes (new screens/rows are its real surface); the save
+round-trip (ministers persist — verify, don't assume); and the matrix as PURE REGRESSION — no
+new `EconomyState` fields, so the diff allowance should name ZERO new fields, with one question
+R4-4's step 0 must answer before trusting byte-identical as its bar: whether the new portfolios'
+decisions consume the shared RNG stream (if they do, trajectory movement is EXPECTED and must be
+judged, not asserted away). Aggregation-equivalence and cadence apply only as
+unchanged-regression — no new daily model, no new published stat. Follow-on candidates noted,
+not built, all write-backs and separately-ruled per the standing posture: a housing-supply /
+construction channel (HPI ↔ Investment), and overburden → ApprovalRating (housing stress as a
+political force).

@@ -187,6 +187,8 @@ namespace PoliSim.Simulation
                 case ClosingStat.LifeExpectancy: return state.LifeExpectancy;
                 case ClosingStat.Gini: return state.Gini;
                 case ClosingStat.RealWageIndex: return state.RealWageIndex;
+                case ClosingStat.HousingOverburden: return state.HousingOverburden;
+                case ClosingStat.Homeownership: return state.Homeownership;
                 default: return 0f;
             }
         }

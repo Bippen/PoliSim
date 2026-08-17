@@ -54,6 +54,16 @@ namespace PoliSim.Simulation
                 case PublishedStat.CrimeIndex:
                 case PublishedStat.LifeExpectancy: // ROUND 4 BATCH 1: annual at both real sources
                 case PublishedStat.Gini: // ROUND 4 BATCH 2: the same SILC/Census release as PovertyRate
+                case PublishedStat.HousingOverburden: // ROUND 4 BATCH 3: same SILC release again (EU five only - guard below)
+                case PublishedStat.Homeownership: // ROUND 4 BATCH 3: annual survey output at both bases
+                    // ROUND 4 BATCH 3: the asymmetry ruling enforced AT the calendar - a country
+                    // never releases a statistic it does not track, so the USA publishes no
+                    // overburden figure rather than an eternally-zero one.
+                    if (stat == PublishedStat.HousingOverburden && !country.TracksHousingOverburden)
+                    {
+                        return false;
+                    }
+
                     // Annual cadence. Published on the country's own fiscal-year start (USA October 1,
                     // the European five January 1) rather than an invented date - that boundary already
                     // exists in this project via FiscalYearData, and is when annual figures settle.
@@ -111,6 +121,8 @@ namespace PoliSim.Simulation
                 case PublishedStat.CrimeIndex:
                 case PublishedStat.LifeExpectancy:
                 case PublishedStat.Gini:
+                case PublishedStat.HousingOverburden:
+                case PublishedStat.Homeownership:
                     end = publicationDate.AddDays(-1);
                     start = end.AddYears(-1).AddDays(1);
                     return;
@@ -159,6 +171,8 @@ namespace PoliSim.Simulation
                 case ClosingStat.CrimeIndex:
                 case ClosingStat.LifeExpectancy:
                 case ClosingStat.Gini:
+                case ClosingStat.HousingOverburden:
+                case ClosingStat.Homeownership:
                     return new System.DateTime(date.Year, 1, 1);
 
                 default:

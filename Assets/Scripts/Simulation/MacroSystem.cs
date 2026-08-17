@@ -844,6 +844,144 @@ namespace PoliSim.Simulation
         public static void ApplyGiniDaily(Country country) => ApplyGini(country, GiniReversionSpeedPerDay);
         public static void ApplyRealWageIndexDaily(Country country) => ApplyRealWageIndex(country, MacroSliceFractionPerDay);
 
+        // --- ROUND 4 BATCH 3 (C1): housing - overburden, homeownership, house prices ---
+        // Inputs-only per the standing rule, and THE ARC'S FIRST MONETARY COUPLING, stated
+        // explicitly for the mechanism report's namespace claim: all three stats READ
+        // country.CurrencyZone.InterestRate (the live policy rate) against
+        // CurrencyZone.HousingRateAnchor (the zone's rate at epoch; inert-fallback on pre-R4-3
+        // saves) and WRITE NOTHING back to the rate, the zone, or any monetary quantity. One-way
+        // by construction, same as PublishedData's read/write split. Rate-sensitivity is C1's
+        // design feature, not a side effect.
+        //
+        // ⚠ THE DELIBERATE ASYMMETRY: overburden runs for the EU five only
+        // (Country.TracksHousingOverburden; the USA has no source-comparable figure and takes
+        // homeownership as primary, per the recorded ruling). The early-out below, the missing UI
+        // row, the seed comments and the equivalence check's USA-unmoved assert all state the same
+        // fact - anywhere it appears without explanation would read as a gap, so it never does.
+
+        /// <summary>Overburden points added per point the policy rate sits above the zone's epoch
+        /// anchor - mortgage and rent costs track rates with force; this is the strongest of the
+        /// three rate sensitivities because the >40%-of-income threshold is exactly where rate
+        /// pass-through bites (directionally grounded like every sensitivity here).</summary>
+        private const float OverburdenRateSensitivity = 1.5f;
+
+        /// <summary>Overburden points removed per 100% GenerosityLevel of an implemented
+        /// HousingAssistance program - the program's own dedicated stat, stronger than its poverty
+        /// side-effect (3) because housing support reaches the housing-cost margin directly.</summary>
+        private const float OverburdenHousingAssistanceSensitivity = 4f;
+
+        /// <summary>Moderate-slow, the PovertyRate class - housing stress follows rate moves within
+        /// quarters (mortgage resets, rent renewals), faster than tenure change, slower than markets.</summary>
+        private const float HousingOverburdenReversionSpeed = 0.15f;
+
+        /// <summary>Greece 28.9 is the recorded EU maximum - 50 is the honest generous ceiling.</summary>
+        private const float MaxHousingOverburdenPercent = 50f;
+
+        /// <summary>Homeownership points lost per point of rate above the epoch anchor - higher
+        /// rates price buyers out; smaller than overburden's sensitivity and much slower to arrive
+        /// (see the reversion speed), because tenure is a stock that turns over in years.</summary>
+        private const float HomeownershipRateSensitivity = 0.5f;
+
+        /// <summary>Homeownership points added per 100% GenerosityLevel of an implemented
+        /// HousingAssistance program - deposit/purchase support at the margin, modest.</summary>
+        private const float HomeownershipHousingAssistanceSensitivity = 2f;
+
+        /// <summary>Generational, the LifeExpectancy class - a housing stock's tenure mix moves
+        /// over decades.</summary>
+        private const float HomeownershipReversionSpeed = 0.05f;
+
+        /// <summary>Germany's real 41.0 is the low structural outlier and Poland's 86.8 the high -
+        /// [10, 95] leaves honest room beyond both without being reachable in practice.</summary>
+        private const float MinHomeownershipPercent = 10f;
+        private const float MaxHomeownershipPercent = 95f;
+
+        /// <summary>Reverts EconomyState.HousingOverburden toward the structural baseline plus the
+        /// rate-gap push, minus HousingAssistance relief. EARLY-OUTS where the country does not
+        /// track the stat (the USA) - see the asymmetry note on the section header.</summary>
+        public static void ApplyHousingOverburden(Country country, float reversionSpeed = HousingOverburdenReversionSpeed)
+        {
+            if (!country.TracksHousingOverburden)
+            {
+                return;
+            }
+
+            EconomyState state = country.State;
+            float rateGap = country.CurrencyZone.InterestRate - country.CurrencyZone.HousingRateAnchor;
+            float target = country.BaselineHousingOverburden
+                + OverburdenRateSensitivity * rateGap
+                - OverburdenHousingAssistanceSensitivity * GetImplementedGenerosityFraction(country, WelfareProgramType.HousingAssistance);
+            state.HousingOverburden = Mathf.Clamp(
+                state.HousingOverburden + reversionSpeed * (target - state.HousingOverburden),
+                0f, MaxHousingOverburdenPercent);
+        }
+
+        /// <summary>Reverts EconomyState.Homeownership toward the structural baseline minus the
+        /// rate-gap drag, plus HousingAssistance support. Runs for all six countries - this is the
+        /// USA's PRIMARY housing metric per the ruling.</summary>
+        public static void ApplyHomeownership(Country country, float reversionSpeed = HomeownershipReversionSpeed)
+        {
+            EconomyState state = country.State;
+            float rateGap = country.CurrencyZone.InterestRate - country.CurrencyZone.HousingRateAnchor;
+            float target = country.BaselineHomeownership
+                - HomeownershipRateSensitivity * rateGap
+                + HomeownershipHousingAssistanceSensitivity * GetImplementedGenerosityFraction(country, WelfareProgramType.HousingAssistance);
+            state.Homeownership = Mathf.Clamp(
+                state.Homeownership + reversionSpeed * (target - state.Homeownership),
+                MinHomeownershipPercent, MaxHomeownershipPercent);
+        }
+
+        /// <summary>House-price growth tracks trend growth one-for-one long-run (the same
+        /// income-tracking argument RealWageIndex documents - and the same reason the index needs
+        /// no per-country growth seed).</summary>
+        private const float HpiTrendPassThrough = 1f;
+
+        /// <summary>Per-turn growth points per point the policy rate sits BELOW the epoch anchor -
+        /// cheap credit inflates house prices, the best-documented rate channel of the three.
+        /// Signed: tightening above the anchor drags prices by the same coefficient.</summary>
+        private const float HpiRateSensitivity = 0.5f;
+
+        /// <summary>Same safety clamp shape as the real wage index: growth clamps, the level never
+        /// does (unbounded by construction, display furniture per the R4-2 convention).</summary>
+        private const float MaxHpiGrowthPerTurnPercent = 10f;
+        private const float MinHousePriceIndex = 1f;
+
+        /// <summary>Compounds EconomyState.HousePriceIndex - the R4-2 compounding-index kit
+        /// verbatim (power slice via <paramref name="sliceExponent"/>, growth clamp, level floor,
+        /// base 100 at epoch, §A.9b display). Growth = trend pass-through + rate gap, SIGNED.</summary>
+        public static void ApplyHousePriceIndex(Country country, float sliceExponent = 1f)
+        {
+            EconomyState state = country.State;
+            float rateGap = country.CurrencyZone.InterestRate - country.CurrencyZone.HousingRateAnchor;
+            float growthPerTurnPercent = Mathf.Clamp(
+                HpiTrendPassThrough * country.PotentialGrowthRate - HpiRateSensitivity * rateGap,
+                -MaxHpiGrowthPerTurnPercent, MaxHpiGrowthPerTurnPercent);
+            state.HousePriceIndex = Mathf.Max(MinHousePriceIndex,
+                state.HousePriceIndex * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
+        }
+
+        /// <summary>The one implemented program's GenerosityLevel as a 0-1 fraction, or 0 when not
+        /// implemented - the recurring welfare-read shape, extracted because the two housing stats
+        /// above both need it for the same program.</summary>
+        private static float GetImplementedGenerosityFraction(Country country, WelfareProgramType type)
+        {
+            foreach (WelfareProgram program in country.WelfarePrograms)
+            {
+                if (program.IsImplemented && program.Type == type)
+                {
+                    return program.GenerosityLevel / 100f;
+                }
+            }
+
+            return 0f;
+        }
+
+        private static readonly float HousingOverburdenReversionSpeedPerDay = PerDayReversion(HousingOverburdenReversionSpeed);
+        private static readonly float HomeownershipReversionSpeedPerDay = PerDayReversion(HomeownershipReversionSpeed);
+
+        public static void ApplyHousingOverburdenDaily(Country country) => ApplyHousingOverburden(country, HousingOverburdenReversionSpeedPerDay);
+        public static void ApplyHomeownershipDaily(Country country) => ApplyHomeownership(country, HomeownershipReversionSpeedPerDay);
+        public static void ApplyHousePriceIndexDaily(Country country) => ApplyHousePriceIndex(country, MacroSliceFractionPerDay);
+
         // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
 
         /// <summary>Points BirthRate declines per turn on its own - a real, well-documented, near-universal secular fertility decline across developed nations, not a country-specific policy response. Deliberately small (over a 500-turn run this alone would move BirthRate by 5 points, well before which the lower-starting countries hit MinBirthRate and stop).</summary>

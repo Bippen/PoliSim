@@ -4643,6 +4643,26 @@ namespace PoliSim.UI
             DrawDerivedStatRow("Real wages", -1f,
                 UiFormat.Number(state.RealWageIndex, 1), "index, 100 = start of term",
                 UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
+            // ROUND 4 BATCH 3 (C1): the housing three, with THE ASYMMETRY DECIDED DELIBERATELY -
+            // the primary metric leads per the ruling: overburden first for the EU five,
+            // homeownership first for the USA, whose overburden row is ABSENT (not zero, not
+            // greyed - absent). Drawing "0.0%" would fabricate a figure no source publishes;
+            // the missing row IS the recorded USA-on-homeownership ruling made visible.
+            Color housingInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
+            if (_playerCountry.TracksHousingOverburden)
+            {
+                DrawDerivedStatRow("Housing overburden", state.HousingOverburden / 100f,
+                    UiFormat.Number(state.HousingOverburden, 1) + "%",
+                    "spend >40% of income on housing", housingInk);
+            }
+            DrawDerivedStatRow("Homeownership", state.Homeownership / 100f,
+                UiFormat.Number(state.Homeownership, 1) + "%",
+                _playerCountry.TracksHousingOverburden ? "of households" : "of households (primary metric)",
+                housingInk);
+            // House prices: the R4-2 unbounded-index treatment verbatim (§A.9b negative-fill).
+            DrawDerivedStatRow("House prices", -1f,
+                UiFormat.Number(state.HousePriceIndex, 1), "index, 100 = start of term",
+                housingInk);
             GUILayout.EndVertical();
 
             GUILayout.Space(12f);

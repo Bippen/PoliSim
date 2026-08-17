@@ -112,6 +112,29 @@ namespace PoliSim.Data
         /// gauge.</summary>
         public float RealWageIndex;
 
+        /// <summary>ROUND 4 BATCH 3 (C1): housing cost overburden - % of the population in
+        /// households spending &gt;40% of disposable income on housing, the Eurostat `ilc_lvho07a`
+        /// WHOLE-POPULATION variant (`rskpovth=TOTAL`; the doc's own rule: this indicator is
+        /// unusually variant-prone, record which cut or the number means nothing).
+        /// ⚠ DELIBERATELY ASYMMETRIC: tracked for the EU five only. The USA has NO comparable
+        /// figure at source (>40% disposable vs the US convention's >30%/>50% gross cuts), and the
+        /// recorded ruling takes the seed doc's option 3 - homeownership is the USA's primary
+        /// housing metric instead. Where Country.TracksHousingOverburden is false this field parks
+        /// at 0 and the model never runs; that absence is the ruling made visible, not a gap.</summary>
+        public float HousingOverburden;
+
+        /// <summary>ROUND 4 BATCH 3 (C1): homeownership rate, % of HOUSEHOLDS owning (OECD
+        /// Affordable Housing Database basis - "use this basis only" per the seed doc; the
+        /// population-basis Eurostat figures are a different, larger number). All six tracked;
+        /// the USA's PRIMARY housing metric per the asymmetry ruling. Generationally slow.</summary>
+        public float Homeownership;
+
+        /// <summary>ROUND 4 BATCH 3 (C1): house price index, base 100 at epoch per country - the
+        /// R4-2 compounding-index class VERBATIM (level = display furniture, no cross-country level
+        /// claim, sim consumes growth, §A.9b negative-fill display). The arc's first monetary
+        /// coupling lives in its growth term: low policy rates inflate house prices.</summary>
+        public float HousePriceIndex;
+
         /// <summary>
         /// A stylized 0-100 crime index (higher = more crime), NOT a literal transformation of any
         /// single real indicator - "crime" as a broad concept has no single clean cross-country
@@ -267,7 +290,8 @@ namespace PoliSim.Data
             float dependencyRatio = 30f, float populationGrowthRate = float.NaN,
             float naturalBirthRate = float.NaN, float naturalNetMigrationRate = float.NaN,
             float youthUnemployment = 15f, float lifeExpectancy = 80f,
-            float gini = 30f, float realWageIndex = 100f)
+            float gini = 30f, float realWageIndex = 100f,
+            float housingOverburden = 0f, float homeownership = 65f, float housePriceIndex = 100f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -290,6 +314,9 @@ namespace PoliSim.Data
             LifeExpectancy = lifeExpectancy;
             Gini = gini;
             RealWageIndex = realWageIndex;
+            HousingOverburden = housingOverburden;
+            Homeownership = homeownership;
+            HousePriceIndex = housePriceIndex;
             Population = population;
             BirthRate = birthRate;
             DeathRate = deathRate;
@@ -305,22 +332,21 @@ namespace PoliSim.Data
             CorruptionIndex = corruptionIndex;
         }
 
-        /// <summary>Returns a shallow copy so the simulation can compute a next state without mutating the current one.</summary>
+        /// <summary>Returns a copy so the simulation can compute a next state without mutating the
+        /// current one.
+        ///
+        /// ⚠ R4-3 STRUCTURAL FIX, derived not assumed: this was a positional hand-list into the ctor,
+        /// and R4-1 proved that shape drifts silently (two fields added to the ctor never reached the
+        /// list - clones reset them to defaults; caught and patched in R4-2, class-fixed here). This
+        /// type is PURE VALUE STATE - every field is a public float, the one property is derived with
+        /// no backing field - so MemberwiseClone IS an exact copy, absorbs every future field with no
+        /// hand list to forget, and skips the ctor's seed-time fallback branches (PotentialGDP&lt;=0,
+        /// NaN-defaulting) that a copy should never re-run. If a REFERENCE-TYPE field is ever added
+        /// here, this becomes a shallow copy of that field and must be revisited - that is the one
+        /// residue of the retired checklist entry.</summary>
         public EconomyState Clone()
         {
-            // ⚠ R4-1 ESCAPE, fixed in R4-2: YouthUnemployment/LifeExpectancy were added to the ctor
-            // but never to this call, so a clone silently reset both to their ctor defaults. Harmless
-            // in practice only because Clone feeds PreviewTurn's throwaway, which computes neither -
-            // but any future Clone consumer would have read fabricated values. Every new EconomyState
-            // field must be added HERE as well as to the ctor; the R4-2 record carries the escape.
-            return new EconomyState(
-                GDP, Inflation, Unemployment, ApprovalRating, Budget,
-                TradeBalance, CurrencyStrength, Consumption, Investment,
-                PotentialGDP, InflationExpectations, ConsumerConfidence, BusinessConfidence,
-                GovernmentDebt, PovertyRate, LaborForceParticipationRate, CrimeIndex, PrisonPopulationRate,
-                OrganizedCrimeIndex, CorruptionIndex, Population, BirthRate, DeathRate, NetMigrationRate,
-                DependencyRatio, PopulationGrowthRate, NaturalBirthRate, NaturalNetMigrationRate,
-                YouthUnemployment, LifeExpectancy, Gini, RealWageIndex);
+            return (EconomyState)MemberwiseClone();
         }
 
         /// <summary>A generic, fictional developed mixed economy - starting point for the player's country.</summary>

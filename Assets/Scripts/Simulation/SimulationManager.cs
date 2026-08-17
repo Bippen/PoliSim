@@ -239,6 +239,14 @@ namespace PoliSim.Simulation
                     MacroSystem.ApplyGiniDaily(country);
                     MacroSystem.ApplyRealWageIndexDaily(country);
 
+                    // ROUND 4 BATCH 3 (C1): same slot; all three read the policy rate against the
+                    // zone's epoch anchor (the arc's first monetary coupling - one-way, stated at
+                    // MacroSystem's C1 header) and write nothing any later system reads. Overburden
+                    // early-outs for the USA per the recorded asymmetry ruling.
+                    MacroSystem.ApplyHousingOverburdenDaily(country);
+                    MacroSystem.ApplyHomeownershipDaily(country);
+                    MacroSystem.ApplyHousePriceIndexDaily(country);
+
                     // CONTINUOUS TIME PHASE 3, part 2: the money resolution. Revenue, benefits, welfare,
                     // interest, the SWF's contribution/return/draw and the debt stock itself all move
                     // daily now; only the BUDGET RESOLUTION that decides what to spend stays on the turn

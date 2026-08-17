@@ -218,6 +218,24 @@ namespace PoliSim.Data
         /// minimum-wage gap.</summary>
         public float BaselineIncomeTaxRate = 30f;
 
+        /// <summary>ROUND 4 BATCH 3 (C1): whether housing cost overburden is a tracked stat for
+        /// this country - TRUE for the EU five ([VERIFIED] Eurostat whole-population figures),
+        /// FALSE for the USA, whose sources measure a different threshold on a different income
+        /// basis (no comparable figure exists; the recorded ruling gives the USA homeownership as
+        /// its primary housing metric instead). The MinimumWageImplemented idiom: a structural
+        /// per-country fact, not a lever. Where false, ApplyHousingOverburden early-outs and the
+        /// UI draws no overburden row - the asymmetry is deliberate everywhere it appears.</summary>
+        public bool TracksHousingOverburden = true;
+
+        /// <summary>ROUND 4 BATCH 3 (C1): structural overburden anchor, % of population - the
+        /// reversion target at the epoch policy rate with no HousingAssistance. Meaningless where
+        /// TracksHousingOverburden is false (left at 0 for the USA).</summary>
+        public float BaselineHousingOverburden = 0f;
+
+        /// <summary>ROUND 4 BATCH 3 (C1): structural homeownership anchor, % of households (OECD
+        /// AHD basis). Seeded for all six; the USA's primary housing metric per the ruling.</summary>
+        public float BaselineHomeownership = 65f;
+
         /// <summary>
         /// Whether this country has a statutory minimum wage at all - false for Sweden and Italy,
         /// matching real-world fact (both rely on sector-level collective bargaining instead of a

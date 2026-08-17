@@ -18,7 +18,7 @@ namespace PoliSim.EditorTools
     /// approximately so — a residual above float noise means a constant took the wrong shape.
     ///
     /// **Phase 3 is the first section where a residual is EXPECTED rather than suspicious**, and reading
-    /// it as a bug would be the mistake. Its flows are exact by construction (121 × flow/121), but the
+    /// it as a bug would be the mistake. Its flows are exact by construction (DaysPerTurn × flow/DaysPerTurn), but the
     /// daily path charges interest against a debt stock that is itself moving daily and re-reads that
     /// stock through GetFiscalReactionMultiplier — a within-period feedback loop the turn form could not
     /// have had. A small drift is that loop; a LARGE one means a component took the wrong shape.
@@ -48,7 +48,7 @@ namespace PoliSim.EditorTools
             foreach (Sector s in cb.Sectors) { s.SubsidyLevel = 90f; }
 
             MacroSystem.ApplySectorEffects(ca);                                        // one turn step
-            for (int d = 0; d < SimulationManager.DaysPerTurn; d++)                     // 121 daily steps
+            for (int d = 0; d < SimulationManager.DaysPerTurn; d++)                     // DaysPerTurn daily steps
             {
                 MacroSystem.ApplySectorEffectsDaily(cb);
             }
@@ -71,7 +71,7 @@ namespace PoliSim.EditorTools
             var noSpending = PolicyDecision.None();
 
             MacroSystem.ApplyInfrastructureCondition(cc, noSpending);                   // one turn step
-            for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                     // 121 daily steps
+            for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                     // DaysPerTurn daily steps
             {
                 MacroSystem.ApplyInfrastructureConditionDaily(cd);
             }
@@ -107,7 +107,7 @@ namespace PoliSim.EditorTools
             MacroSystem.ApplyCrimeEffects(ce);
             MacroSystem.ApplyPrisonPopulationRate(ce);
 
-            // Daily path: 121 steps, same order preserved.
+            // Daily path: DaysPerTurn steps, same order preserved.
             for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
             {
                 MacroSystem.ApplyLaborForceParticipationRateDaily(cf);
@@ -231,10 +231,11 @@ namespace PoliSim.EditorTools
             // The multi-resolution buckets were built in Phase 0 for daily data and (finding, this
             // pass) never received a daily offer until History.Append moved to AdvanceDay. This
             // section is the first check that can fail if that plumbing regresses. WHAT IT
-            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for FOUR
+            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for FIVE
             // daily-varying series - PovertyRate, DebtToGdpRatio, the daily-native
-            // YouthUnemployment (Round 4 batch 1) and RealWageIndex (batch 2), each asserted rather
-            // than assumed per the batch directives - three assert families:
+            // YouthUnemployment (Round 4 batch 1), RealWageIndex (batch 2) and HousePriceIndex
+            // (batch 3), each asserted rather than assumed per the batch directives - three assert
+            // families:
             // cadence (Daily/Weekly/Monthly/Quarterly counts within one of 200/1, /7, /30, /91,
             // Daily capped at StatHistory.MaxEntries), variation (Daily holds at least two DISTINCT
             // consecutive values - the stat genuinely moves intra-week), and divergence (the Daily
@@ -251,6 +252,11 @@ namespace PoliSim.EditorTools
             // wiggle lands the daily increment at float32 epsilon on a ~30-point value, so the
             // variation assert would measure rounding, not plumbing. RealWageIndex is IN - it
             // compounds daily by construction, the clearest daily-native series in the set.
+            // HousingOverburden/Homeownership (Round 4 batch 3) are excluded on a THIRD variant:
+            // their targets move only when the policy rate steps at a discrete meeting, so whether
+            // a 200-day no-policy window shows variation depends on the central-bank calendar, not
+            // on bucket plumbing - the assert would test the wrong thing. HousePriceIndex is IN,
+            // same reasoning as RealWageIndex (compounds daily regardless of the rate path).
             {
                 var bucketGo = new GameObject("AggEq_Buckets");
                 try
@@ -268,7 +274,8 @@ namespace PoliSim.EditorTools
                     foreach ((string name, MultiResolutionSeries series) in new (string, MultiResolutionSeries)[]
                              { ("PovertyRate", bc.History.PovertyRate), ("DebtToGdpRatio", bc.History.DebtToGdpRatio),
                                ("YouthUnemployment", bc.History.YouthUnemployment),
-                               ("RealWageIndex", bc.History.RealWageIndex) })
+                               ("RealWageIndex", bc.History.RealWageIndex),
+                               ("HousePriceIndex", bc.History.HousePriceIndex) })
                     {
                         total += 3;
                         int expectedDaily = Mathf.Min(BucketDays, StatHistory.MaxEntries);
@@ -385,7 +392,7 @@ namespace PoliSim.EditorTools
             // expectancy target drops 0.4 years) - so both reversions have a real gap to close.
             // Inputs are then HELD (neither Okun nor the poverty system runs here), which makes both
             // stats' targets constant, and a constant-target PerDayReversion is EXACT by
-            // construction: 121 daily steps at 1-(1-s)^(1/121) compound to precisely one turn step
+            // construction: DaysPerTurn daily steps at 1-(1-s)^(1/DaysPerTurn) compound to precisely one turn step
             // at s. A residual above float noise therefore means the wrapper took the wrong shape -
             // this section carries no Phase-3-class expected drift. The live path-dependence (targets
             // that move daily under the real sim) is the matrix's to judge, not this section's.
@@ -461,6 +468,64 @@ namespace PoliSim.EditorTools
                 total += 2;
                 passed += Compare($"{id}.Gini", ct.State.Gini, cu.State.Gini) ? 1 : 0;
                 passed += Compare($"{id}.RealWageIndex", ct.State.RealWageIndex, cu.State.RealWageIndex) ? 1 : 0;
+            }
+
+            // --- ROUND 4 BATCH 3 (C1): housing ------------------------------------------------------
+            // WHAT IT ENUMERATES (rule 14): Sweden (tracks overburden, own currency zone) and the
+            // USA (does NOT track it - the asymmetry ruling), each driven through both input
+            // channels at once: the policy rate raised 2 points over the zone's epoch anchor (the
+            // arc's first monetary coupling - overburden up, homeownership down, house-price growth
+            // dragged) and HousingAssistance implemented at generosity 60 (relief on both reverting
+            // stats). Inputs HELD: constant-target reversions and a constant-growth power slice are
+            // EXACT by construction - float noise only, no drift budget, same as both prior
+            // sections. PLUS the asymmetry assert: the USA's overburden must sit EXACTLY at its
+            // untracked 0 after a full turn of daily steps under the same drives - the ruling enforced as a
+            // check, not a comment.
+            foreach (CountryId id in new[] { CountryId.Sweden, CountryId.USA })
+            {
+                World h1 = WorldFactory.CreateDefault();
+                World h2 = WorldFactory.CreateDefault();
+                Country cv = h1.GetCountry(id);
+                Country cw = h2.GetCountry(id);
+                foreach (Country x in new[] { cv, cw })
+                {
+                    x.CurrencyZone.InterestRate = x.CurrencyZone.HousingRateAnchor + 2f;
+                    foreach (WelfareProgram program in x.WelfarePrograms)
+                    {
+                        if (program.Type == WelfareProgramType.HousingAssistance)
+                        {
+                            program.IsImplemented = true;
+                            program.GenerosityLevel = 60f;
+                        }
+                    }
+                }
+
+                MacroSystem.ApplyHousingOverburden(cv);                                 // one turn step
+                MacroSystem.ApplyHomeownership(cv);
+                MacroSystem.ApplyHousePriceIndex(cv);
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
+                {
+                    MacroSystem.ApplyHousingOverburdenDaily(cw);
+                    MacroSystem.ApplyHomeownershipDaily(cw);
+                    MacroSystem.ApplyHousePriceIndexDaily(cw);
+                }
+
+                if (id == CountryId.USA)
+                {
+                    total++;
+                    passed += Assert("USA.HousingOverburden UNMOVED (asymmetry ruling)",
+                        cv.State.HousingOverburden == 0f && cw.State.HousingOverburden == 0f,
+                        $"turn={cv.State.HousingOverburden} daily={cw.State.HousingOverburden} - both must be exactly the untracked 0") ? 1 : 0;
+                }
+                else
+                {
+                    total++;
+                    passed += Compare($"{id}.HousingOverburden", cv.State.HousingOverburden, cw.State.HousingOverburden) ? 1 : 0;
+                }
+
+                total += 2;
+                passed += Compare($"{id}.Homeownership", cv.State.Homeownership, cw.State.Homeownership) ? 1 : 0;
+                passed += Compare($"{id}.HousePriceIndex", cv.State.HousePriceIndex, cw.State.HousePriceIndex) ? 1 : 0;
             }
 
             Debug.Log($"=== Phases 1-5 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% (plus the bucket asserts) ===");

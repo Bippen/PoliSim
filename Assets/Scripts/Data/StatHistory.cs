@@ -119,6 +119,13 @@ namespace PoliSim.Data
         public readonly MultiResolutionSeries Gini = new MultiResolutionSeries();
         public readonly MultiResolutionSeries RealWageIndex = new MultiResolutionSeries();
 
+        // ROUND 4 BATCH 3 (C1): the housing three. The USA's HousingOverburden series records a
+        // flat untracked 0 - honest (that IS its state), cheap, and simpler than a per-country
+        // series set.
+        public readonly MultiResolutionSeries HousingOverburden = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries Homeownership = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries HousePriceIndex = new MultiResolutionSeries();
+
         /// <summary>
         /// Appends this turn's already-settled values. <paramref name="date"/> is the in-game
         /// calendar date the turn resolved on (Continuous Time Migration Phase 0 - see
@@ -146,6 +153,9 @@ namespace PoliSim.Data
             LifeExpectancy.Append(date, state.LifeExpectancy);
             Gini.Append(date, state.Gini);
             RealWageIndex.Append(date, state.RealWageIndex);
+            HousingOverburden.Append(date, state.HousingOverburden);
+            Homeownership.Append(date, state.Homeownership);
+            HousePriceIndex.Append(date, state.HousePriceIndex);
         }
     }
 }

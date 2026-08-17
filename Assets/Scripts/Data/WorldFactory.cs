@@ -254,6 +254,37 @@ namespace PoliSim.Data
             poland.BaselineGini = 26.0f;  // [VERIFIED] Eurostat API - the corrected figure (Statista's ~29 was 3 points high; Poland is the MOST equal of the five, not middling)
             sweden.BaselineGini = 27.6f;  // [VERIFIED] Eurostat ilc_di12, 2024
 
+            // ROUND 4 BATCH 3 (C1): housing cost overburden, % of population, Eurostat
+            // `ilc_lvho07a` 2024 - THE WHOLE-POPULATION VARIANT (`unit=PC, rskpovth=TOTAL,
+            // age=TOTAL, sex=T`), recorded per the doc's own rule for this unusually variant-prone
+            // indicator (Sweden alone reads 5.1/10.6/10.8/17.9 across published cuts - a bare
+            // number carries no meaning). All five [VERIFIED], no status flags; France/Poland/Italy
+            // are the 2026-08-02 API closures that landed inside the 4.0-9.0 bound.
+            // ⚠ THE USA IS DELIBERATELY ABSENT - not a gap, the RULING: US sources measure >30%/>50%
+            // of gross income where Eurostat measures >40% of disposable, no comparable figure
+            // exists, and the seed doc's option 3 gives the USA homeownership as its primary
+            // housing metric. TracksHousingOverburden=false carries that fact into the model
+            // (early-out), the UI (no row) and the checks (the USA-unmoved assert).
+            usa.TracksHousingOverburden = false;           // ⚠ RULED: homeownership-primary instead
+            germany.BaselineHousingOverburden = 12.0f;     // [VERIFIED] whole-population, highest of the five
+            sweden.BaselineHousingOverburden = 10.6f;      // [VERIFIED] whole-population (NOT the 5.1 tenure-cut variant)
+            france.BaselineHousingOverburden = 7.0f;       // [VERIFIED] Eurostat API 2026-08-02
+            poland.BaselineHousingOverburden = 5.2f;       // [VERIFIED] Eurostat API 2026-08-02
+            italy.BaselineHousingOverburden = 5.1f;        // [VERIFIED] Eurostat API 2026-08-02
+
+            // ROUND 4 BATCH 3 (C1): homeownership, % of HOUSEHOLDS (OECD Affordable Housing
+            // Database basis - the doc's "use this basis only"; population-basis figures are a
+            // different, larger number). The USA's PRIMARY housing metric per the ruling. Three are
+            // [VERIFIED] OECD; three are the doc's own four-point fitted regression from the
+            // Eurostat population basis - honest estimates with STATED 95% bands, seeded at the
+            // point estimate and never to be quoted as settled.
+            usa.BaselineHomeownership = 65.3f;     // [VERIFIED] OECD AHD - the ruled primary metric
+            france.BaselineHomeownership = 58.5f;  // [VERIFIED] OECD AHD
+            germany.BaselineHomeownership = 41.0f; // [VERIFIED] OECD AHD - the genuine structural outlier
+            poland.BaselineHomeownership = 86.8f;  // ⚠ [ESTIMATED] fitted bridge, 95% band 78.4-95.2
+            italy.BaselineHomeownership = 74.4f;   // ⚠ [ESTIMATED] fitted bridge, 95% band 66.8-82.1
+            sweden.BaselineHomeownership = 62.1f;  // ⚠ [ESTIMATED] fitted bridge, 95% band 54.9-69.4
+
             // States open AT their baselines - the standing zero-gap idiom, from one authority
             // rather than twelve constructor arguments that could drift from the block above.
             // RealWageIndex opens at 100 for ALL SIX by ruling (2026-08-16): the seed doc's §5
@@ -268,6 +299,12 @@ namespace PoliSim.Data
                 seeded.State.LifeExpectancy = seeded.BaselineLifeExpectancy;
                 seeded.State.Gini = seeded.BaselineGini;
                 seeded.State.RealWageIndex = 100f;
+                // C1: overburden parks at 0 (the field's own default) where untracked - the USA's
+                // BaselineHousingOverburden is deliberately never set, so this assignment is a
+                // 0=0 no-op there and the zero-gap idiom holds for the five that track it.
+                seeded.State.HousingOverburden = seeded.BaselineHousingOverburden;
+                seeded.State.Homeownership = seeded.BaselineHomeownership;
+                seeded.State.HousePriceIndex = 100f; // the R4-2 index convention, third member: HPI
             }
 
             // Minimum wage as a percent of median wage (the "Kaitz index" economists use for
