@@ -1350,7 +1350,40 @@ status has two parts, **delivered** and **reachable**, and only the first is vis
 
 ---
 
-## 5. REQUEST — cabinet portraits for the three new portfolios. WRITTEN 2026-08-17, per D1's unblock
+## 5. REQUEST — cabinet portraits. ⚠ PoC IMPORTED 2026-08-17; THE BATCH OF NINE STAYS GATED
+
+> **`portrait_cabinet_defense_katarzyna_ekelund` (512×640 @2×) is on disk in `Portraits/`** (meta
+> from the Portraits family, fresh GUID; SVG to the new `Portraits/Source/`), so the Editor
+> side-by-side needs zero prep. Of Design's three named gates, the two code-side ones are
+> ANSWERED — this block is the deliverable back to Design:
+>
+> **1 — The pixel envelope (Design's missing fact):** all 16 existing portraits are **256×256
+> SQUARE, transparent-background flat busts** — textureType Default (not Sprite), spriteMode 0,
+> alphaIsTransparency 0, compression ON, maxTextureSize 2048, drawn via
+> `GUI.DrawTexture(ScaleMode.ScaleAndCrop)` into a **74:92 (≈0.804) roster rect** at ~3.2
+> line-heights. Consequences: 512×640 (0.80) matches the roster crop to **0.5%** — better than
+> the existing squares, which lose ~20% of their width to the same crop; the resolution and size
+> clear the importer as-is (2048 cap). **The envelope is ACCEPTED — no obstacle.** The real
+> difference is REGISTER (opaque painted plate vs transparent bust), which is the Editor gate's
+> question, not an envelope question.
+>
+> **2 — Oval vignette ownership: FRAME-OWNED, confirmed by what shipped.** At roster size the
+> treatment is `ui_portrait_frame` — RECT brass over every portrait, art cropped underneath; the
+> 16 bake NO vignette of any kind. The only oval vignette in the project lives in
+> **`ui_portrait_frame_oval`'s alpha** (Design's own manifest row: "oval vignette in alpha"),
+> delivered, byte-identical on disk, and **unwired** — it is the Canvas hero path, which is not
+> built. The PoC's baked "vignette" is an opaque painted background glow — rect-safe, verified
+> by pixel inspection; it does not fight the rect roster bezel and reads as the painting's own
+> lighting under any future oval frame. **The §5 "1 source → 2 files" vs §3.2 conflict resolves
+> on these facts: portraits bake their PAINTING (grain, glow, ground — §3.2 honored); the FRAME
+> owns the oval SILHOUETTE. Bake the art, never the cutout.**
+>
+> **3 — The register side-by-side: ACCESS-GATED**, recorded as the OPEN VERIFICATION GAP block's
+> third entry (CLAUDE.md) with the two comparison shots specified (PoC beside an existing
+> portrait at roster size inside the brass frame, both display scales). The batch of nine
+> unblocks on its verdict.
+
+### The original request follows (2026-08-17)
 
 **This section was "known future need — NOT yet requestable" until Round 4 batch R4-4 authored the
 ministers.** The blocker was real and is now gone: the nine names below are the shipped values in
@@ -1442,7 +1475,27 @@ already do, and that is exactly why this is easy to let lapse.
 
 ---
 
-## 1G. ONE MARK — `mark_party_us_lib` (2026-08-11)
+## 1G. ONE MARK — `mark_party_us_lib` — ✅ DELIVERED AND IMPORTED 2026-08-17
+
+> Arrived in "PoliSim v2 Design Progress2.zip" (origin-verified: 81 files, no executables, no
+> path escapes; 54 of 56 PNGs byte-identical re-delivery, the two NEW being exactly this mark and
+> the §5 PoC; all 19 SVG "differences" proved line-endings-only against the git-converted disk
+> copies). Class keystone, one counter, rule-9a distance stated in the pack manifest. Imported to
+> `Emblems/` with meta copied from `mark_party_us_dem` (the MARK family per §3.0a — the tinted
+> class, not `emblem_*`), fresh GUID; SVG to `Emblems/Source/`. WoA verified from pixels by
+> `ImporterSettingsCheck`'s family classification, and `PartyMarkCoverageCheck`'s accounting
+> gains it (art-on-main for the `stranded/politics-elections` feature — orphan-by-sequencing,
+> the same recorded status as the other four marks). Design's stale-file deletion note verified
+> a NO-OP: zero `canvas_*`/`emblem_state_seal*` files exist anywhere under Assets (E1/E2's
+> renames already closed them; search stated in the import record).
+>
+> ⚠ Design's R5 flag rode along ("LP gold needs an ink-safe darkened DisplayColor — pass it with
+> Sweden's set"): **the hex exchange is GATED BY NAME on item 10 (13 Sept)** — the Libertarian
+> and Sweden party SEEDS do not exist on main, so no `DisplayColor` hexes exist to send. What
+> unblocks it: item 10's gate opening and the party seeds landing; the exchange fires then, not
+> before. Recorded so Design is waiting on a calendar, not on us.
+
+### The original request follows (2026-08-11)
 
 **One drawing, not a batch.** §1F's proof-of-concept ruling stands and this does not reopen it: the
 screens that need forty marks still do not exist, and this is a gap in a set already on screen.

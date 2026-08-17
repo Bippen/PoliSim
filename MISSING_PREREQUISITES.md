@@ -351,7 +351,14 @@ Poland; the defect is logged and should not be re-reported as a review finding.
 
 # D. Waiting on another task
 
-## 🟡 D1. Cabinet portraits — ✅ UNBLOCKED by R4-4; request **SENT 2026-08-17** (Elias, per the R4-5 directive). Awaiting delivery
+## 🟡 D1. Cabinet portraits — PoC DELIVERED + IMPORTED 2026-08-17; **the batch of nine GATED on the Editor register side-by-side**
+
+⚠ **Progress, same day:** Design answered with a PROOF, not the batch —
+`portrait_cabinet_defense_katarzyna_ekelund` (512×640 @2×, opaque painted plate: a REGISTER none
+of the 16 transparent-bust portraits has ever shipped in). Imported to `Portraits/`; the two
+code-side gates are answered in the request doc §5 (envelope ACCEPTED, vignette FRAME-OWNED);
+the third — the Editor side-by-side — is the OPEN VERIFICATION GAP block's third entry, two
+shots specified, zero prep. **8 of 9 portraits wait on that verdict.**
 
 **Task:** portrait art for Defense, Foreign Affairs and Education ministers — 9 portraits, request in
 `CLAUDE_DESIGN_ASSET_REQUEST.md` §5, filenames derived from the signed names.
@@ -379,7 +386,18 @@ afterwards. That is a sequencing decision already made, not a party to wait on.
 
 # E. Waiting on Claude Design
 
-## 🟡 E2. `mark_party_us_lib` — requested in `CLAUDE_DESIGN_ASSET_REQUEST.md` §1G, **WRITTEN, NOT SENT**
+## 🟡 E2. `mark_party_us_lib` — ✅ DELIVERED AND IMPORTED 2026-08-17; the branch-side accounting is the residual
+
+> Arrived in "PoliSim v2 Design Progress2.zip", imported to `Emblems/` (meta from the MARK
+> family, fresh GUID, `ImporterSettingsCheck` green — the WoA classification read from pixels,
+> not the label). ⚠ This entry's own close condition was "PartyMarkCoverageCheck reports it
+> resolving at RGBA32" — and on MAIN that check now honestly reports **"PARTY SYSTEM NOT
+> PRESENT on this branch... VERIFIED NOTHING"**: the party seeds live on
+> `stranded/politics-elections`, item-10-gated (13 Sept). The sprite-side conditions are met;
+> the accounting half runs when the branch does. Orphan-by-sequencing, the same recorded status
+> as the other four marks.
+
+### The original entry follows
 
 ⚠ **This section read "✅ NOTHING, empty as of 2026-08-02" while §1G already requested this mark — the
 THIRD instance of the `icon_stat_interestrate` class**: two documents describing the same outside world,
@@ -410,6 +428,13 @@ rasterization once before the pipeline is trusted. **No rasterizer exists on thi
 never been run. Recorded here as well as there, because a blocker living in one document is the same
 cached-status shape as E2 above. It closes when a rasterizer exists — **not** when the sprites look right
 in a capture, which they already do.
+
+⚠ **Status split 2026-08-17 (the Progress2 delivery's manifest): Design's HALF is CLOSED** — they
+re-rasterized the six per-state button PNGs fresh from SVG and pixel-diffed 6/6 identical, zero
+differing channels. **Our half stays exactly this entry**: gated on a rasterizer existing here.
+Corroborating datum from this delivery's origin verification: all 19 re-delivered SVGs differ from
+disk by LINE ENDINGS ONLY (git's CRLF conversion), so source and raster remain in lockstep as far
+as byte evidence can show without a rasterizer.
 
 **E1 — `icon_stat_interestrate`. DELIVERED AND IMPORTED**, the same day the request was sent. Elias
 pointed out that it had already arrived, in `Policy rate icon design.zip` at the project root — this

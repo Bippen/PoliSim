@@ -8146,6 +8146,18 @@ and the dashboard sane. Then advance a few days and confirm bills/interrupts beh
 off → the save/load entry below has the mechanism. Neither entry in this block is assumed-good
 until its checklist runs.
 
+**THIRD ENTRY (2026-08-17) — the §5 portrait REGISTER side-by-side.** The portrait PoC
+(`portrait_cabinet_defense_katarzyna_ekelund`, 512×640 opaque painted plate) is IMPORTED beside
+sixteen 256×256 transparent-background flat busts — a register no portrait has ever shipped in,
+which is exactly Design's own named gate for the batch of nine. The batch stays GATED until this
+runs. **The two comparison shots, specified**: (1) the Cabinet roster with the PoC beside an
+existing minister's portrait at roster size (both inside `ui_portrait_frame` — does the opaque
+plate sit in the brass bezel as an upgrade or as a mismatch against its transparent-bust
+neighbours?); (2) the same pairing at the other display scale (1600-class vs 2560-class window)
+— the register question is a legibility question at the SMALL size. Zero prep needed: the PoC
+resolves through `IconLibrary.GetCabinetPortrait` the moment Defense's Reformist is appointed
+via the Cabinet tab. Verdict → Design; the batch of nine unblocks or the register adjusts.
+
 ## The repository weight finding (2026-08-16, measured before diagnosed)
 
 ### The numbers
@@ -9573,3 +9585,51 @@ errand.
 
 **And the sentence the sweep leaves true: nothing on this roadmap is open except what waits on
 the world.**
+
+## The Progress2 delivery — one mark, one portrait proof, and a byte-faithful re-delivery (2026-08-17)
+
+Three dispositions, exactly as directed — never one import.
+
+**Origin verification, per the standing discipline**: 81 files, all rooted under
+`assets/polisim_ui_v2/`, zero executables, zero path escapes. Byte-diff against disk: **54 of 56
+PNGs IDENTICAL** (re-delivery), **exactly 2 NEW** — `mark_party_us_lib` and the §5 portrait PoC —
+**zero DIFFERS**. All 19 "differing" SVGs proved LINE-ENDINGS ONLY against the git-CRLF disk
+copies (verified with `--strip-trailing-cr`, per-file). Design's stale-file deletion note
+verified a NO-OP: `find Assets -name "canvas_*" -o -name "emblem_state_seal*"` → **0** (E1/E2's
+renames had already closed them; re-executing a cleanup was correctly refused).
+
+**The mark** (`mark_party_us_lib`, 128×128 WoA, class keystone): imported to `Emblems/` with meta
+from `mark_party_us_dem` — **the MARK family per §3.0a, not `emblem_*` and not Design's own
+"meta from Chrome/" suggestion** (both are WoA-class, the mark family is the exact
+reference) — fresh GUID, SVG to `Emblems/Source/`. `ImporterSettingsCheck` green with the WoA
+family classification read from pixels. ⚠ The orphan accounting: on MAIN,
+`PartyMarkCoverageCheck` reports **"PARTY SYSTEM NOT PRESENT on this branch — VERIFIED
+NOTHING"** — the honest output; the accounting that gains this mark runs on
+`stranded/politics-elections` when item 10's gate opens. Art-on-main, orphan-by-sequencing,
+the other four marks' recorded status.
+
+**The portrait PoC** (`portrait_cabinet_defense_katarzyna_ekelund`, 512×640 @2×): imported to
+`Portraits/` (meta from the Portraits family, fresh GUID; SVG opens `Portraits/Source/` — the
+first portrait source on disk). **The import check caught a real defect on its first run**: the
+blind-copied family meta RESCALED 512×640 → 512×512 (`nPOTScale` was never exercised by sixteen
+square-POT sources — the family meta was right for the family's envelope, silently wrong for the
+first non-POT member; the reference-class trap's benign cousin). Fixed with the one deliberate
+divergence — `nPOTScale: None`, the Chrome convention — re-run green, unscaled. **The batch of
+nine inherits this meta, not the fed-chair one.** DeliveredAssetCheck absorbed the zip: 77/77
+asset entries present. Full suite: 5/5 green after the fix.
+
+**The two §5 answers, derived and recorded in the request doc (the deliverable back to Design)**:
+(1) **envelope ACCEPTED** — the 16 are 256×256 transparent-bust Default-textures drawn
+ScaleAndCrop into a 74:92 roster rect; 512×640's 0.80 aspect matches that crop to 0.5% (the
+squares lose ~20% of width to it), and the importer clears it as-is; the real question is
+REGISTER, which is the Editor gate's. (2) **vignette FRAME-OWNED, confirmed by what shipped** —
+the 16 bake no vignette; the only oval vignette in the project is `ui_portrait_frame_oval`'s
+alpha (Design's own manifest), delivered and UNWIRED pending the Canvas path; the PoC's baked
+glow is an opaque painted ground, rect-safe by pixel inspection. §5-vs-§3.2 resolves: **bake the
+art, never the cutout.** The third gate — the register side-by-side — is the OPEN VERIFICATION
+GAP block's third entry, two shots specified, zero prep.
+
+**The R5 hex exchange**: GATED BY NAME on item 10 (13 Sept) — no LP/Sweden `DisplayColor` seeds
+exist on main to send; recorded in §1G so Design waits on a calendar, not on us. **The carried
+strip-cut diff**: Design's half CLOSED in their manifest (6/6 re-raster identical); our half
+remains E3, gated on a rasterizer — status split recorded at E3, nothing ambiguous.
