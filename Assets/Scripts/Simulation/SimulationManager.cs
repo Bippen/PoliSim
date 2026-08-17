@@ -3056,7 +3056,26 @@ namespace PoliSim.Simulation
             // bound that no country has ever reached either, but it predates this and stays as it was.
             float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
             float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.GDP;
-            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, -netCreditorGuard, maxDebt);
+
+            // THE EROSION TERM (2026-08-17; mechanism-report rulings R1-R3). The standard
+            // debt-dynamics identity's −π·b, previously missing: per R2's DECLARATION (recorded in
+            // CLAUDE.md's "Accounting Convention" section) this model's dollars are constant-price
+            // units and GovernmentDebt is the ONE nominal quantity - as sovereign debt is - so
+            // inflation erodes its real value at π per year and deflation grows it, correctly
+            // signed with no special case. SYMMETRIC per R3's reasoning: a net creditor's real
+            // claim erodes the same way, so the factor applies to whichever position exists and
+            // always shrinks it toward zero under inflation - no free money in either direction,
+            // and no interaction with the surplus-spiral hazard (the term is self-limiting: it
+            // scales with the position it erodes).
+            //
+            // SHAPE (the taxonomy): an annual rate on a SELF-REFERENCE, so the daily form is the
+            // COMPOUNDING (power) slice - (1 − π/100)^fraction - not the linear slice. At constant
+            // π the slices compose to the turn factor exactly; the interleaving with the daily
+            // budgetBalance subtraction is the same within-period feedback Phase 3's stated drift
+            // budget already covers (see the equivalence check's erosion enumeration). The inner
+            // Max is defensive only - Inflation is produced clamped far below 100 everywhere.
+            float erosionFactor = Mathf.Pow(Mathf.Max(0.01f, 1f - state.Inflation / 100f), revenuePeriodFraction);
+            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt * erosionFactor - budgetBalance, -netCreditorGuard, maxDebt);
 
             return actualRevenue;
         }

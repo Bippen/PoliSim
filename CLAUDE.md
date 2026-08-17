@@ -32,9 +32,9 @@
 > fix), and before `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating
 > that commit came from an unseeded run.
 
-> ## ⚠ THREE BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
+> ## ⚠ FOUR BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
 >
-> **Three, all within about a fortnight.** A figure recorded on one side of any of these cannot be
+> **Four, all within about a fortnight.** A figure recorded on one side of any of these cannot be
 > compared with a figure recorded on the other. When quoting a number from this file, check which era it
 > came from first.
 >
@@ -43,6 +43,7 @@
 > | 1 | 2026-08-01 | **near-zero swing floor** in the anomaly detector | every anomaly count recorded before it — the floor lowers counts against all historical figures |
 > | 2 | 2026-08-01 | **pre-epoch calendar fix** (the frozen-calendar harness bug) | every run before it, which never advanced the calendar and so never exercised any date-driven system |
 > | 3 | **2026-08-10** | **`DaysPerTurn` 121 → 365**, the 3.017x fiscal defect | **every trajectory, debt path, deficit, population figure and anomaly count ever recorded before it** |
+> | 4 | **2026-08-17** | **the EROSION TERM** — the debt identity's missing −π·b arrives (rulings R1–R3; a RECALIBRATION BY CONSTRUCTION) | every debt path, debt-to-GDP figure, rating trajectory and divergence-signature number recorded before it — deliberately: the pre-erosion signature was the defect being closed. Non-debt figures are largely comparable (the term touches only the stock's drift) |
 >
 > ⚠ **Discontinuity 3 is the widest of the three.** The first two changed what was *measured*; this one
 > changed what the simulation *was*. Every baseline captured before 2026-08-10 measured a fiscal engine
@@ -61,6 +62,23 @@
 PoliSim is a turn-based political/economic simulation game built in Unity (C#). The player governs a country — starting with six real-world-seeded countries (USA, Sweden, Germany, France, Italy, Poland) — and makes policy decisions (a portfolio of individual taxes, category-specific spending, tariffs, interest rates) each turn. The core of the economy (GDP, unemployment, inflation) is driven by named macroeconomic theory rather than tuned-by-feel curves; a handful of surrounding mechanics (approval rating, currency strength, trade/tariff dampening) are still intentionally simple heuristics, though approval is now itself a Phillips-curve-adjacent formula rather than an ad hoc one (see "Political Layer" below). The player must balance economic performance against public approval to stay in power — literally: they face re-election every `ElectionCycle` turns and lose (game over) if approval has fallen below `ElectionSystem.LosingThreshold`.
 
 This is an early scaffold: core data model and a minimal simulation loop, plus a first functional (unstyled) play loop - not final game content or polished UI.
+
+## Accounting Convention — a stated model property (ruling R2, 2026-08-17)
+
+**The model's dollars are constant-price (real) units.** GDP is a volume identity (C+I+G+NX
+reverting to potential); no price level scales any dollar quantity; all growth is real growth.
+Inflation exists as a RATE (driving confidence, approval, wages, the Taylor rule's nominal
+convention) — never as a deflator. **The one nominal quantity is `GovernmentDebt`**, as sovereign
+debt is nominal in reality, bridged to the real ledger by the EROSION TERM at the stock update
+(`ApplyRevenueAndSpending`): the real stock erodes at π per year, deflation grows it, and per
+ruling R3 the erosion is SYMMETRIC — a net creditor's real claim erodes the same way (no free
+money in either direction; the term shrinks whichever position exists toward zero). This is the
+standard debt-dynamics identity's −π·b term, previously missing — see
+`POLISIM_STOCKFLOW_MECHANISM_REPORT.md` (the derivation) and "The erosion term" below (the
+build). Flows (interest bills, revenue, balances) remain in the single-unit convention they were
+validated in; only the stock's drift carries the bridge. Anyone comparing debt figures across
+the erosion commit is comparing across a RECALIBRATION BY CONSTRUCTION — the fourth baseline
+discontinuity, listed with the other three at the top of this file.
 
 ## Genre & Scope
 - Turn-based (not real-time). One "turn" = one simulated period (e.g. a quarter or year — exact cadence still TBD).
@@ -1624,6 +1642,13 @@ evidence:** Italy's headline −3.9 with 45.7% of spending on interest implies a
 so adding that term would change nothing for the country that most needs it.
 
 ### ✅ THE DRIVER, INSTRUMENTED 2026-08-11 — INTEREST COMPOUNDING, not a pinned stabiliser
+
+> ✅ **CLOSED 2026-08-17 against the erosion commit** — the mechanism report derived that the
+> stock's compounding was missing the debt identity's −π·b term entirely (nominal rates charged
+> on a real stock), and the term now exists: see "The erosion term ships" below. The four-country
+> signature is broken as a class (USA reversed; the EU three halved); the RESIDUAL late-run climb
+> is a new, smaller, attributed question (instant repricing at premium-loaded zone rates — the
+> deferred R4 maturity lag's measured target), not this finding's.
 
 One 1000-turn baseline, seed 777, real Unity, logging `fiscalReactionMultiplier`, `interestOnDebt`,
 `budgetBalance`, debt and GDP per accrual for **Germany and Italy** — one climbing from a low base, one
@@ -8664,6 +8689,13 @@ mechanism report** (the candidates live outside the flow loop: maturity structur
 erosion of the nominal stock, primary-surplus rules above thresholds) — **its own pass with its
 own ruling, deliberately not started at this pass's tail.**
 
+> ✅ **QUEUE ENTRY CLOSED 2026-08-17** — the report ran (`POLISIM_STOCKFLOW_MECHANISM_REPORT.md`,
+> `bcbba47`), Elias ruled R1–R5, and the erosion term shipped against this entry: see "The
+> erosion term ships" below. Primary-surplus rules died in the report on the Italy evidence;
+> maturity structure is R4, deferred-pending-measurement — and the erosion pass delivered its
+> measurement (the residual climb is concentrated exactly where instant repricing at
+> premium-loaded zone rates exceeds π).
+
 **The harness comparison, as scoped**: the standalone harness no longer exists on disk (verified —
 `G:/UNITY/Projects` holds PoliSim and the captures sibling, nothing else), so the
 tool-disagreement map reduces to its one recorded instance: at this exact pair the harness
@@ -9250,3 +9282,90 @@ turns — intended or inherited?) is a PLAYTESTING question, deliberately not tu
 **Round 4 is closed in the Master Sequence (item 6 → DONE), the roadmap block moved to
 `COMPLETED.md` §19, and the roadmap is smaller than it was this morning — which is the standing
 pattern doing what it says.**
+
+## The erosion term ships — the debt identity's missing −π·b, and what it did to the signature (2026-08-17)
+
+Rulings R1–R5 recorded; built against pre-change HEAD `bcbba47` with the baseline
+(`pre_erosion_bcbba47`) dumped before the line was written. **This is a RECALIBRATION BY
+CONSTRUCTION — the fourth baseline discontinuity, listed in the table at the top of this file:
+every debt-side figure recorded before this commit was measured on an engine missing a textbook
+term.** Non-debt figures remain comparable — verified below at the strongest possible level.
+
+### What shipped
+
+One guarded line at the stock update (`ApplyRevenueAndSpending`):
+`GovernmentDebt = clamp(GovernmentDebt × (1 − π/100)^fraction − budgetBalance, guard, ceiling)`.
+Per R2's declaration (now a stated model property in the "Accounting Convention" section near the
+top of this file): the model's dollars are constant-price units, `GovernmentDebt` is the one
+nominal quantity, and this factor is the bridge. Symmetric per R3 — the factor applies to
+whichever position exists and shrinks it toward zero under inflation; deflation grows it,
+correctly signed, no special case. **Shape (the taxonomy): an annual rate on a SELF-REFERENCE,
+so the daily form is the COMPOUNDING (power) slice** — at constant π the slices compose to the
+turn factor exactly; the interleaving with the daily balance subtraction is Phase-3-class
+within-period feedback, budgeted as such. Zero new state: the reflection compare and save/load
+were CONFIRMED untouched, not assumed (12/12 at 36 fields, same as R4-5).
+
+### The bar
+
+- **Equivalence 112/112 within 3%.** The erosion enumeration (stated): a violent 8% drive on
+  the two structural extremes — Italy (highest ratio, largest term) and Sweden (near-zero debt,
+  term must stay negligible while the SWF path runs), π held constant by construction of the
+  validation accruals. Expectation stated up front as NOT exact-by-construction (the affine
+  interleaving is Phase 3's own drift class): Italy landed 0.14%, Sweden 2.21% — the larger
+  relative figure on a tiny stock, the absolute column's standing caveat. The pre-existing
+  Phase 3 rows now exercise the term at seed inflation as well.
+- **The matrix, judged on both columns as an intended change**: debt-side quantities move;
+  macro paths are UNTOUCHED at the strongest checkable level — France's Inflation and GDP are
+  **identical to the digit** pre-vs-post through its largest excursion window, which proves the
+  term writes the stock and nothing else reaches the macro engine.
+- **The magnitude check the directive required — the term sits at π·b, verified twice.**
+  Algebraically: the 8% equivalence drive's turn form IS `stock × 0.92 − balance`, verified
+  against the daily form. Inside the live feedback web: USA's t1→t2 step decomposes EXACTLY —
+  pre-run Δdebt +1534.4; post-run +895.2; difference −639.2 = erosion −861.9 (2.331% × stock,
+  π·b to the decimal) + FRF give-back +222.7 (the multiplier loosening at the lower ratio). The
+  year-one gap (916 ≈ π·b on the seed stock) closes the same arithmetic from the other side.
+- **Save/load 12/12 at 36 reflected fields; captures 81/81 both sizes, 0 failed, 0 overflows.**
+  Rule-15 on the debt surfaces: at the identical warm-up state the debt tile reads $38.7T (was
+  $40.8T), the ratio 129.4% (was 136.4%), **the rating tile re-derives to AAA (was AA+)** —
+  C4's reader responding to the recalibrated ratio through its normal derivation — and Budget
+  Balance shows the FRF's endogenous offset (−$5.44T vs −$4.85T). GDP, unemployment, inflation,
+  approval, and the whole Society block are pixel-consistent with the pre-erosion captures.
+
+### The signature's fate, recorded with the divergence's own precision (both seeds; s777 quoted)
+
+| | pre t100→t200→t1000 | post t100→t200→t1000 | the verdict, per country |
+|---|---|---|---|
+| USA | 140.1 → 139.8 → 155.9 | 125.9 → 122.3 → **114.7** | **REVERSED — declines monotonically through t1000 at both seeds** (s424242: 123.8/119.9/119.9). Still moving at t1000 (−0.005/turn): a waypoint, NOT an equilibrium |
+| Germany | 38.0 → 38.9 → 80.1 | 35.0 → 35.6 → 64.2 | window slope reduced; t1000 −16; late slope −30% |
+| Italy | 114.6 → 116.0 → 165.9 | 109.8 → 111.7 → 139.8 | **level −5 by t100 and late slope −40%, but the WINDOW slope is NOT reduced** (+0.019 vs +0.014/turn; same at s424242) — the FRF loosens against the term locally and the two forces re-balance at a lower level. Stated by the letter: 3 of 4 climbers meet "slopes reduced or reversed at the window"; Italy meets the force's existence by level and long horizon instead |
+| Poland | 28.0 → 28.3 → 46.0 | 26.6 → 26.7 → 39.5 | window slope reduced; t1000 −6.5 |
+| Sweden | 4.5 → 6.2 → 10.6 | 4.4 → 6.0 → 9.5 | **settled shape HELD** (both seeds) |
+| France | 94.1 → 88.9 → 108.9 | 89.2 → 70.5 → 96.7 | held at s424242 (90.1/83.8/96.6). At s777: a ONE-SEED damped overshoot — under identical macro forcing (π/GDP bit-identical pre-vs-post), sustained 4.2–4.6% inflation eroded France below its comfortable anchor, the FRF loosened toward its floor, deficits returned, and it recovered to a NEW band (84–96) held for 650 turns. Bounded, recovering, never creditor-side: **R3's hazard never engages — this is R1's restoring force overshooting through the FRF floor, not a destabilization of R3's class.** Not a stop; recorded as the term's one overshoot mode |
+
+**No equilibrium is claimed anywhere.** USA declines through t1000; Germany/Italy/Poland still
+climb at 60–70% of the pre rate. The 1000-turn shape check therefore does NOT earn the word,
+and the engine's open question CHANGES CHARACTER rather than closing outright: it is no longer
+"the stock has no restoring force" (it does now, at π·b, proven to the decimal) — it is "the
+three Eurozone climbers' instant repricing at premium-loaded zone rates (6–15% nominal) still
+exceeds π late-run." **That is precisely the deferred R4 maturity lag's target, and this pass
+delivered the measurement R4 was deferred pending**: the residual climb is concentrated
+exactly where spot-rate repricing outruns erosion, and nowhere else (the USA, whose blended
+3.3% override IS a frozen maturity treatment, is the one country that reversed).
+
+**R3's symmetric branch, stated honestly**: code-verified (the factor applies to either sign by
+construction, exercised at +8% in the equivalence drive) but UNEXERCISED live — a 500-turn
+swfstress run (86 anomalies, the scenario's historically-elevated class, zero new types by
+census) produced zero negative ratios: no scenario at HEAD creates a net creditor since SWF
+returns were routed through the multiplier. The creditor branch waits for a live creditor; its
+safety case is structural (self-limiting factor + the −1000% guard).
+
+### Closures and the queue
+
+- **The divergence finding (2026-08-11) and the FRF sweep's queue entry CLOSE against this
+  commit** — closure notes annotated at both sections in place.
+- **F1 queues as the NEXT FISCAL ITEM** (per R5): the interrupt layer's `BudgetImpact` writes
+  the display accumulator only and has never touched the debt stock — its own small pass, where
+  option text and fiscal reality get aligned at event scale.
+- **R4 (maturity effective-rate lag): deferred-pending-measurement, and the measurement now
+  exists** (above). When Elias rules it in, it runs against THIS commit's fresh baselines with
+  its own attribution, per one-change-per-baseline.

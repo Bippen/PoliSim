@@ -189,6 +189,53 @@ namespace PoliSim.EditorTools
                 Object.DestroyImmediate(dailyGo);
             }
 
+            // --- THE EROSION TERM (mechanism report, rulings R1-R3) ---------------------------------
+            // WHAT IT ENUMERATES (rule 14): the −π·b stock erosion at a VIOLENT 8% inflation drive
+            // (the Phase 5 precedent) on the two structural extremes - Italy (the highest debt
+            // ratio, where the term is largest) and Sweden (a near-zero-debt SWF country, where the
+            // erosion must stay negligible while the fund path runs). π is HELD (the validation
+            // accruals never run the macro engine), so both forms see the identical constant rate.
+            // EXPECTATION, stated up front per the directive: NOT exact-by-construction - the power
+            // slice composes to the turn factor at constant π, but its interleaving with the daily
+            // budgetBalance subtraction is an affine composition, the same within-period feedback
+            // Phase 3's own drift budget exists for; the rows must land inside the standard 3%,
+            // and a LARGE residual means the slice took the wrong shape. The Phase 3 rows above
+            // also now exercise the term at each country's seed inflation - these rows exist to
+            // exercise it at a rate no seed reaches.
+            foreach (CountryId id in new[] { CountryId.Italy, CountryId.Sweden })
+            {
+                var turnGo = new GameObject($"AggEq_ErosionTurn_{id}");
+                var dailyGo = new GameObject($"AggEq_ErosionDaily_{id}");
+                World turnWorld = WorldFactory.CreateDefault();
+                World dailyWorld = WorldFactory.CreateDefault();
+                SimulationManager turnSim = turnGo.AddComponent<SimulationManager>();
+                SimulationManager dailySim = dailyGo.AddComponent<SimulationManager>();
+                turnSim.SetWorld(turnWorld);
+                dailySim.SetWorld(dailyWorld);
+
+                Country turnCountry = turnWorld.GetCountry(id);
+                Country dailyCountry = dailyWorld.GetCountry(id);
+                turnCountry.State.Inflation = 8f;
+                dailyCountry.State.Inflation = 8f;
+
+                float governmentSpending = turnCountry.State.GDP * (turnCountry.GovernmentSpendingRate / 100f);
+                float swfPeriodReturn = turnCountry.SovereignWealthFund != null
+                    ? turnCountry.SovereignWealthFund.TotalAssets * 0.02f
+                    : 0f;
+
+                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, 0f, swfPeriodReturn);
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
+                {
+                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, 0f, swfPeriodReturn);
+                }
+
+                total++;
+                passed += Compare($"{id}.GovernmentDebt@8%erosion", turnCountry.State.GovernmentDebt, dailyCountry.State.GovernmentDebt) ? 1 : 0;
+
+                Object.DestroyImmediate(turnGo);
+                Object.DestroyImmediate(dailyGo);
+            }
+
             // --- PHASE 4: Demographics --------------------------------------------------------------
             // Two countries with OPPOSITE demographic signs (Sweden grows, Germany shrinks), both
             // driven off baseline through the real policy dials (family pro-natal, immigration
