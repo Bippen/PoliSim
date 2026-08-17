@@ -262,7 +262,9 @@ This is the one authoritative order, replacing whatever each original document s
    writes nothing back — stated for the mechanism report's namespace claim). **Next: R4-4 (the
    three cabinet portfolios)** — a CONTENT batch, not a stats batch: the name list for Elias's
    sign-off comes in its pre-report per ruling 6, and the R4-3 verdict states which parts of the
-   stat bar apply to it.
+   stat bar apply to it. **PRE-REPORT WRITTEN 2026-08-17 — see `POLISIM_R4_4_PREREPORT.md`
+   (name list, bar inheritance, decision spaces, rulings R1–R7). Awaiting Elias's rulings;
+   nothing built.**
 
    ### Round 4 — the scoped plan (read/map/propose session, 2026-08-16)
 
