@@ -123,6 +123,14 @@ namespace PoliSim.EditorTools
                 playerCountry.CabinetMinisters[CabinetPortfolio.FinanceTreasury] =
                     CabinetSystem.GenerateCandidates(CabinetPortfolio.FinanceTreasury)[0];
 
+                // R4-4 bar item, confirmed-not-assumed: a NEW-portfolio appointment (and any
+                // pending decision it rolls) must actually cross a save in this run - enum growth
+                // being append-only makes old saves fine by construction, but the new keys
+                // round-tripping is the claim under test, so one of the three new portfolios is
+                // appointed here alongside the original coverage.
+                playerCountry.CabinetMinisters[CabinetPortfolio.Defense] =
+                    CabinetSystem.GenerateCandidates(CabinetPortfolio.Defense)[0];
+
                 Dictionary<CountryId, PolicyDecision> decisionsA = BuildNoOpDecisions(world);
 
                 RunDays(simA, world, decisionsA, player, TurnsBeforeSave * SimulationManager.DaysPerTurn, null);

@@ -5396,14 +5396,21 @@ namespace PoliSim.UI
                 case CabinetPortfolio.FinanceTreasury: return "Finance & Treasury";
                 case CabinetPortfolio.InteriorJustice: return "Interior & Justice";
                 case CabinetPortfolio.HealthSocialAffairs: return "Health & Social Affairs";
+                // R4-4. This switch IS the scoped name lookup the pre-report's hazard note requires:
+                // portfolio display names come from here and only here - never DisplayName.Of/Spaced,
+                // which is how "Education" avoids becoming reference-class-trap instance #4 against
+                // SpendingCategory.Education/PolicyNodeId.Education.
+                case CabinetPortfolio.Defense: return "Defense";
+                case CabinetPortfolio.ForeignAffairs: return "Foreign Affairs";
+                case CabinetPortfolio.Education: return "Education";
                 default: return portfolio.ToString();
             }
         }
 
         /// <summary>
-        /// Cabinet tab (Political Systems Overhaul Part A, Master Sequence step 1): one panel per
-        /// implemented portfolio (see CabinetPortfolio's own doc comment for why only three of the
-        /// confirmed six exist yet) showing the appointed minister (or a candidate picker if vacant),
+        /// Cabinet tab (Political Systems Overhaul Part A, Master Sequence step 1; all six confirmed
+        /// portfolios since R4-4): one panel per
+        /// implemented portfolio showing the appointed minister (or a candidate picker if vacant),
         /// plus any pending interactive decisions at the top, presented with the same visual weight as
         /// the dashboard's own "BREAKING" event banner (see DrawTopBanner) per the Master Roadmap's own
         /// spec - reusing _eventBannerStyle rather than inventing a separate modal style.
@@ -5430,7 +5437,10 @@ namespace PoliSim.UI
         private void DrawCabinetManagementContent()
         {
             DrawColoredLabel("Cabinet", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            GUILayout.Label("Each appointed minister quietly nudges their own portfolio's existing channels every turn just by serving, and occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime. Pending decisions themselves now show under the Decisions tab.", _labelStyle);
+            // R4-4: "most" is deliberate - Defense and Foreign Affairs ministers are decisions-only
+            // this pass (ruling R3), so the old "each appointed minister quietly nudges" wording
+            // would claim a passive effect four of six portfolios have and two do not.
+            GUILayout.Label("Most appointed ministers quietly nudge their own portfolio's existing channels every turn just by serving, and any minister occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime. Pending decisions themselves now show under the Decisions tab.", _labelStyle);
             GUILayout.Space(6f);
 
             foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))

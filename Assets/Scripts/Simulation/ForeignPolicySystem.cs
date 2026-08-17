@@ -21,9 +21,13 @@ namespace PoliSim.Simulation
     {
         /// <summary>
         /// Chance PER DAY that a meeting fires, only rolled while no meeting is already pending (see
-        /// SimulationManager.TryRollForeignPolicyMeeting). 0.01 targets roughly one meeting per
-        /// 121-day turn on average (1 - 0.99^121 =~ 70% chance of at least one; expected count =~1.2) -
-        /// deliberately modest for a first proof-of-pattern slice, not tuned against playtesting.
+        /// SimulationManager.TryRollForeignPolicyMeeting). 0.01 was calibrated as "roughly one
+        /// meeting per turn" when a turn was 121 days; at DaysPerTurn = 365 the same rate is ~3.65
+        /// expected meetings per turn (97% chance of at least one), while the DAY-denominated
+        /// experience - about one meeting per 100 days of play - is exactly what it always was.
+        /// ⚠ R4-4 corrected this comment only (the 121-sweep precedent, zero behavior); whether
+        /// ~3.65/turn is the INTENDED pacing or an inherited one is flagged for playtesting in the
+        /// R4-4 record, deliberately not tuned here.
         /// </summary>
         private const float MeetingChancePerDay = 0.01f;
 

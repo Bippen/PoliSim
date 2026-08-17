@@ -8982,3 +8982,134 @@ unchanged-regression — no new daily model, no new published stat. Follow-on ca
 not built, all write-backs and separately-ruled per the standing posture: a housing-supply /
 construction channel (HPI ↔ Investment), and overburden → ApprovalRating (housing stress as a
 political force).
+
+## Round 4 batch R4-4 — the three portfolios ship, and the content-batch bar form holds (2026-08-17)
+
+The first CONTENT batch of the arc, built against pre-batch HEAD `dd3ccfc` only after all seven
+pre-report rulings were recorded (R1 names signed as checked-on-2026-08-17; R2–R3 as recommended
+with R3's asymmetry reasoning written down; R4 coexist with FA-competence independence and the
+cadence comment corrected; R5 parity; R6 the concrete two-part criterion; R7 defaulted).
+Everything below is against `POLISIM_R4_4_PREREPORT.md`, which remains the scoping record.
+
+### What shipped
+
+**Defense, ForeignAffairs, Education join `CabinetPortfolio`** (appended — append-only enum
+growth keeps every pre-R4-4 save loading unchanged), with 9 signed ministers (3 per portfolio,
+one per philosophy, the Part A global-pool structure) and 18 decision scenarios (9 pools × 2,
+Part A parity per R5), every magnitude inside the authored envelope (|Approval| ≤ 2,
+|Budget| ≤ $250B, |youth-U| ≤ 1.5, |TradeBalance| ≤ 0.5 — actual maxima: 1.5 / 180 / 1.2 / 0.4).
+`CabinetDecisionOption` gained the two ruled shock fields (R2): **TradeBalanceShock** (the
+`ForeignPolicyMeetingOption` precedent verbatim — that struct's "the one field
+CabinetDecisionOption doesn't have" comment corrected in place) and **YouthUnemploymentShock**
+(the mean-reverting-stat rule; youth-U has no downstream readers, so the rule-11 audit is
+empty). Defense writes Budget/Approval only and NEVER touches `SpendingCategory.Defense` —
+spending lines stay the player's lever. No scenario promises a legislative act: bills are
+Part B's channel, decisions are executive.
+
+**The R3 asymmetry, built as ruled and recorded everywhere it shows**: Education's competence
+is LIVE — the one model term of the batch, a target-side reduction in
+`ApplyYouthUnemployment` (the ApplyPovertyRate idiom exactly; the "youth retraining" follow-on
+the R4-1 record itself named). Defense and ForeignAffairs are DECISIONS-ONLY, their
+CompetenceBias values authored but inert (no call site reads them), stated at the pool, at
+`CabinetPortfolio`, at `CabinetMinister`, and in the Cabinet screen's intro text — which now
+says "most appointed ministers" because "each" would claim a passive effect two portfolios
+don't have. ForeignAffairs is fully independent of `ForeignPolicySystem` this batch (R4
+coexist); the seam is recorded as a possible follow-on ruling, not built.
+
+UI: `GetPortfolioName` gained the three cases — that switch IS the scoped lookup the
+pre-report's hazard note requires, so "Education" never routes through `DisplayName` and
+reference-class-trap instance #4 (against `SpendingCategory.Education`/`PolicyNodeId.Education`)
+never gets its chance. `GetPortfolioArea`: ForeignAffairs → Trade, Education → Labor, Defense
+rides the Political default (R7 defaulted). The `cabinetstress` worst-case selector learned the
+two new shock fields — without that line it would have silently under-stressed the new channels.
+
+**The ForeignPolicySystem cadence comment** is corrected in this commit (comment-only, the
+121-sweep precedent): 0.01/day was calibrated as "~1.2 meetings per 121-day turn"; at
+`DaysPerTurn = 365` it is ~3.65 expected per turn (97% ≥ 1) while the per-day experience — one
+meeting per ~100 days — is unchanged. **The pacing question is hereby flagged for playtesting,
+deliberately not tuned: is ~3.65/turn intended, or inherited?**
+
+**D1 unblocked on this commit**: the portraits request is WRITTEN into
+`CLAUDE_DESIGN_ASSET_REQUEST.md` §5 (converted from "known future need — NOT yet requestable"),
+all nine filenames derived from the signed names; `MISSING_PREREQUISITES` §D1 moved to
+WRITTEN-NOT-SENT (the E2 convention — sending is Elias's action) and the waiting-on-another-task
+count dropped to 1. Until art lands the nine render the pre-existing procedural-placeholder null
+branch — verified on camera, below. COMPLETED §2's lasting limitation is struck through in place.
+
+### The bar, in its content-batch form — every item as the ruled inheritance statement
+
+- **Trajectory matrix, the R6(i) criterion: 6/6 configurations vs `pre_r4_4_dd3ccfc`, 37 of 37
+  fields byte-identical, ZERO fields named NEW.** The no-appointment isolation derivation held
+  bit-for-bit — and per the ruling's own framing, any movement would have been a broken
+  isolation claim, a finding rather than noise. (Pre-batch code was verified identical to
+  `9f12c96` — the pre-report commit touched only .md files — and the baseline was still dumped
+  fresh at `dd3ccfc` rather than relabeled: verify, don't assume.)
+- **Cabinetstress, the R6(ii) criterion, vs its own fresh pre-batch baseline runs (500 turns ×
+  seeds 777/424242): ZERO new anomaly types** — the census is swing-only on the same four
+  fields (Inflation/Unemployment/DebtToGdpRatio/InterestRate), all on the five NPC countries,
+  before and after — **with counts landing EXACTLY on baseline: 83/83 and 69/69.** The
+  byte-identical-distrust rule was applied to that suspicious equality and the runs are
+  demonstrably different: USA's own per-turn lines differ on 203 of 500 (s777, first divergence
+  turn 21 — the first new-portfolio decision landing) and 346 of 500 (s424242), and s424242's
+  anomaly line-set differs while its count ties. Six ministers firing instead of three moves
+  the played country and never pushes any NPC swing across a threshold — executive shocks at
+  event scale behaving exactly as scoped.
+- **Equivalence 105/105 within 3%** — one row ADDED, not inherited silently: the R3 term is a
+  change to an existing daily model, and the standing bar's own "any new daily model,
+  enumeration stated" clause covers a new term in one. `Sweden.YouthU+EducationMinister`
+  (appointment picked deterministically by max bias — GenerateCandidates shuffles, and two
+  worlds calling it in sequence would draw different orders) landed at 0.0002% — the stated
+  exact-by-construction expectation. The 6 Consumption/Investment INFO lines are count-identical
+  to R4-3's log (the documented Phase 5 display-semantics rows, not counted, not new).
+- **Save/load 12/12 clean at 35 reflected fields — with the new-portfolio keys actually
+  crossing a save**: the round-trip diagnostic now appoints Defense alongside FinanceTreasury,
+  so a new-portfolio appointment and any pending decision it rolls round-trip in the bar run
+  itself. Enum growth is append-only; old saves contain no new keys by construction.
+- **Cadence: the enum-iterating check's stat table is md5-identical to R4-3's** — the pure
+  unchanged-regression the inheritance statement prescribed for a batch with no published stat.
+- **Captures 81 @1600 / 82 @2560, 0 failed, 0 overflows** — including TWO NEW PINNED STATES
+  built for exactly the surfaces the bar names, because the warm-up's natural search kept
+  hitting 0 cabinet decisions and the top-anchored roster capture cannot reach panels four
+  through six: `82c_cabinet_new_portfolios` (the roster's new bottom half — all three panels,
+  headers in their ruled hues, names/philosophies/descriptions clean, and the procedural
+  placeholders visibly distinct from the painted portraits above them) and
+  `82d_cabinet_new_decision` (one REAL decision rolled from the live pools — never fabricated —
+  pinned, captured as a HOLDS-TIME cabinet dossier with both authored options and the
+  paused-time banner naming it, then cleared so the pending gate cannot wedge later states;
+  Defense's "Veterans' Commemoration Package" at 1600, Education's "Apprenticeship Guilds
+  Revival" at 2560). The one-capture asymmetry is the known warm-up variance again
+  (`84b_meeting_decisions` at 2560 only — chased, not absorbed). Captures re-ran after a
+  driver-only edit; no simulation code changed after the matrix/equivalence runs.
+
+### The verdict — what a content batch taught that the stat batches couldn't
+
+**The bar form held with one deliberate extension and one new tool-class.** The extension:
+"equivalence applies only as unchanged-regression" was premised on no new daily model, and the
+moment ruling R3 added a model term the premise shifted — the check followed the code (one row,
+exact). The lesson for future content batches: **a content batch's bar is a function of its
+rulings, not its label** — R3 quietly made this a one-term model batch, and the bar noticed.
+The new tool-class: the PINNED capture state. The stat batches' surfaces (ledger rows) always
+render; interactive content is probabilistic, and a bar that names "the decision screen" cannot
+depend on a 12%/turn roll landing during a warm-up — pin real content, capture, clear. That
+pattern (and its never-fabricate rule) is now standing equipment for content work. Also
+confirmed at scale: the enum-iterated automation surface (stress appointments, capture search,
+the cadence check) absorbed three new portfolios with zero edits beyond the worst-case
+selector's two new terms — the R4-1 "pattern to preserve" verdict, now proven on a batch that
+tripled the roster.
+
+Anomaly-count identity (83/83, 69/69) deserves its one-line honest reading: it is NOT evidence
+the batch changed nothing (the distrust check proved otherwise) — it is evidence that
+event-scale executive shocks on the played country do not propagate 20% swings into NPC
+countries, which is the isolation the scoped plan claimed.
+
+### R4-5 handoff (C5 productivity — the LAST Round 4 batch, per Elias's B4 priority ruling)
+
+GDP per hour worked, OECD PPP basis. Step 0 confirms the **6/6 `[VERIFIED]` single-basis,
+single-vintage seed** against the doc at HEAD (the scoping table's cleanest seed row — but the
+step-0 correction streak stands at 2-of-4, so run it anyway). Display is **own-past-only** per
+the OECD caution recorded in the scoping. The one known question — coupling productivity into
+`PotentialGrowthRate` — is **already ruled OUT of Round 4** (ruling #4: deferred, with rule 11's
+ceiling audit attached whenever it returns), so R4-5 ships inputs-only on the standing posture
+with no new ruling needed beyond its pre-report's own step-0 confirmation. After R4-5, Round 4's
+Step C is complete except C4, which stays sequenced behind the stock-vs-flow mechanism report
+per the F1 chain.

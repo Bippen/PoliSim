@@ -6,11 +6,13 @@ namespace PoliSim.Data
     /// One response a player can pick for a fired ForeignPolicyMeeting - a one-time, bounded shock
     /// applied immediately when chosen (see ForeignPolicySystem.ApplyMeetingOption), the SAME shape
     /// CabinetDecisionOption already established (most options only ever set 1-2 fields, the rest
-    /// stay 0). TradeBalanceShock is the one field CabinetDecisionOption doesn't have - a meeting
-    /// with a foreign counterpart is the natural place for a trade-relations nudge, landing on a stat
-    /// that already mean-reverts every turn (MacroSystem's own trade balance computation), so a
-    /// one-time nudge fades naturally rather than needing its own ceiling, matching CrimeIndexShock/
-    /// PovertyRateShock's own reasoning on CabinetDecisionOption.
+    /// stay 0). TradeBalanceShock originated here as the one field CabinetDecisionOption didn't
+    /// have - a meeting with a foreign counterpart being the natural place for a trade-relations
+    /// nudge, landing on a stat that already mean-reverts every turn (MacroSystem's own trade
+    /// balance computation), so a one-time nudge fades naturally rather than needing its own
+    /// ceiling, matching CrimeIndexShock/PovertyRateShock's own reasoning. R4-4's Foreign Affairs
+    /// portfolio adopted the same field onto CabinetDecisionOption (ruling R2), so the two
+    /// interrupt channels now share it - deliberately, as they share the apply-on-pick idiom.
     /// </summary>
     public struct ForeignPolicyMeetingOption
     {

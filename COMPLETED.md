@@ -56,7 +56,11 @@ confirming directional correctness.
 
 **Lasting limitation worth remembering:** only **3 of the 6 confirmed portfolios** were implemented
 (Finance/Treasury, Interior/Justice, Health & Social Affairs), deliberately, per Part A's own
-content-authoring warning. The remaining three are unbuilt — not forgotten, but not done either.
+content-authoring warning. ~~The remaining three are unbuilt — not forgotten, but not done either.~~
+✅ **Limitation CLOSED by Round 4 batch R4-4 (2026-08-17)** — Defense, Foreign Affairs and Education
+authored on the proven pattern (with the ruled passive-competence asymmetry: Education live on the
+youth-U target, Defense/Foreign Affairs decisions-only). All six confirmed portfolios now exist.
+See CLAUDE.md "Round 4 batch R4-4".
 
 ---
 

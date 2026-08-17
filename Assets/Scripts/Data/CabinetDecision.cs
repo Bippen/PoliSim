@@ -26,13 +26,31 @@ namespace PoliSim.Data
         public float BudgetImpact;
         public float ApprovalEffect;
 
-        public CabinetDecisionOption(string label, float crimeIndexShock = 0f, float povertyRateShock = 0f, float budgetImpact = 0f, float approvalEffect = 0f)
+        /// <summary>ROUND 4 BATCH R4-4 (ruling R2): the Foreign Affairs channel -
+        /// ForeignPolicyMeetingOption established this exact one-time shock (TradeBalance is
+        /// recomputed by the trade system every turn, so a nudge fades naturally, the same
+        /// qualification CrimeIndexShock/PovertyRateShock passed). That struct's doc comment used
+        /// to call this "the one field CabinetDecisionOption doesn't have" - true until a cabinet
+        /// portfolio existed whose decisions are foreign-relations-shaped.</summary>
+        public float TradeBalanceShock;
+
+        /// <summary>ROUND 4 BATCH R4-4 (ruling R2): the Education channel - lands on
+        /// EconomyState.YouthUnemployment, which mean-reverts by construction (R4-1's model), so
+        /// the same fade rule applies. Youth-U has no downstream readers (a Round 4 inputs-only
+        /// stat), so this write's rule-11 ceiling audit is empty - and the direction is compatible
+        /// with the standing posture, which bars new STATS from writing existing variables, not
+        /// decisions from nudging new stats.</summary>
+        public float YouthUnemploymentShock;
+
+        public CabinetDecisionOption(string label, float crimeIndexShock = 0f, float povertyRateShock = 0f, float budgetImpact = 0f, float approvalEffect = 0f, float tradeBalanceShock = 0f, float youthUnemploymentShock = 0f)
         {
             Label = label;
             CrimeIndexShock = crimeIndexShock;
             PovertyRateShock = povertyRateShock;
             BudgetImpact = budgetImpact;
             ApprovalEffect = approvalEffect;
+            TradeBalanceShock = tradeBalanceShock;
+            YouthUnemploymentShock = youthUnemploymentShock;
         }
     }
 

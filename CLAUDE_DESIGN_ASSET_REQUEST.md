@@ -1350,21 +1350,37 @@ status has two parts, **delivered** and **reachable**, and only the first is vis
 
 ---
 
-## 5. Known future need — NOT yet requestable
+## 5. REQUEST — cabinet portraits for the three new portfolios. WRITTEN 2026-08-17, per D1's unblock
 
-**Cabinet portraits for the three unimplemented portfolios** (Defense, Foreign Affairs, Education): 3
-candidates each, 9 portraits.
+**This section was "known future need — NOT yet requestable" until Round 4 batch R4-4 authored the
+ministers.** The blocker was real and is now gone: the nine names below are the shipped values in
+`CabinetSystem.CandidatePool`, signed by Elias (R4-4 ruling R1, checked against real officeholders of
+the six countries on 2026-08-17 — the collision search is recorded in `POLISIM_R4_4_PREREPORT.md` §4),
+and every filename below is derived from them via the standing rule
+(`portrait_cabinet_<portfolio>_<name_slug>`, `Slug()` per §4). All nine are ORIGINAL FICTIONAL
+characters (working-discipline rule 9) — none may resemble any real person.
 
-**Deliberately not requested, and this is a hard blocker rather than a scheduling choice.** Portrait
-filenames derive from each minister's generated name — `portrait_cabinet_<portfolio>_<name_slug>`, resolved
-at runtime from the candidate pools in `CabinetSystem`. Those three portfolios have no ministers authored
-yet, so there are no names to derive filenames from, and **inventing them would break the
-derive-filenames-from-real-values rule this whole request format is built on.**
+**The ask: 9 portraits, same envelope as the 16 existing** (delivered pack: rect roster framing +
+oval-vignette hero treatment baked per the v2.0 conventions in §1C; 1 source asset → 2 files,
+`.png` + `.svg`; destination `Assets/Resources/Art/UI/Portraits/`; the game renders a procedural
+placeholder until each file lands, so partial delivery is safe).
 
-Current portrait coverage is complete: 9 ministers (3 portfolios × 3 candidates) + 7 Fed chairs = 16
-files, all present and name-matched.
+| filename | who they are (for the brush, not the label) |
+|---|---|
+| `portrait_cabinet_defense_katarzyna_ekelund` | Defense, Reformist. Wants procurement audited in the open — believes opaque contracting is where readiness actually dies. Sharp, forensic, unimpressed by braid. |
+| `portrait_cabinet_defense_rafael_iwasaki` | Defense, Pragmatic. Capability-planning technocrat; buys what the threat assessment says, not what the parade needs. |
+| `portrait_cabinet_defense_gunnar_petrakis` | Defense, Traditionalist. Deterrence through visible strength; distrusts any reform that reads as weakness abroad. Weathered, formal. |
+| `portrait_cabinet_foreignaffairs_camille_adeyemi` | Foreign Affairs, Reformist. Institution-builder; thinks the multilateral table is where middle powers actually win. |
+| `portrait_cabinet_foreignaffairs_zofia_nakamura` | Foreign Affairs, Pragmatic. Interests-first dealmaker; judges every communiqué by what it moves, not what it says. |
+| `portrait_cabinet_foreignaffairs_aleksander_whitfield` | Foreign Affairs, Traditionalist. Alliances and protocol; believes predictability is a foreign policy, and a good one. |
+| `portrait_cabinet_education_yuki_dahlberg` | Education, Reformist. Curriculum modernizer; argues the system trains students for an economy that no longer exists. |
+| `portrait_cabinet_education_nadia_fitzgerald` | Education, Pragmatic. Evidence-based incrementalist; pilots before mandates, data before both. |
+| `portrait_cabinet_education_tobias_marchetti` | Education, Traditionalist. Standards and fundamentals; wary of every reform that trades rigor for relevance. |
 
-Tracked in `MISSING_PREREQUISITES.md` §D1.
+Coverage after delivery: 18 ministers + 7 Fed chairs = 25 portraits. Import per §3's treatment rules
+(`ImporterSettingsCheck` will enforce); `DeliveredAssetCheck` gains 18 entries (9 × 2 files).
+
+Tracked in `MISSING_PREREQUISITES.md` §D1 — status there is now WRITTEN, NOT SENT (the E2 convention).
 
 ---
 

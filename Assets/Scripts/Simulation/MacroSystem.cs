@@ -634,13 +634,20 @@ namespace PoliSim.Simulation
         private const float MaxYouthUnemploymentPercent = 60f;
 
         /// <summary>Reverts EconomyState.YouthUnemployment toward the country's structural baseline
-        /// plus the amplified headline-unemployment gap. Inputs-only: reads Unemployment/NAIRU,
-        /// writes only itself.</summary>
+        /// plus the amplified headline-unemployment gap, minus the Education Cabinet minister's
+        /// passive competence bias if one is appointed (ROUND 4 BATCH R4-4, ruling R3 - the
+        /// ApplyPovertyRate idiom exactly: a target-side reduction term at point-of-use, landing
+        /// inside the same final clamp that already serves as this stat's ceiling; the "youth
+        /// retraining" follow-on the R4-1 record itself named). Inputs-only otherwise: reads
+        /// Unemployment/NAIRU and the appointment, writes only itself - and youth-U still has no
+        /// downstream readers, so the term's rule-11 ceiling audit is empty.</summary>
         public static void ApplyYouthUnemployment(Country country, float reversionSpeed = YouthUnemploymentReversionSpeed)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
-            float target = country.BaselineYouthUnemploymentRate + YouthUnemploymentCyclicalSensitivity * unemploymentGap;
+            float target = country.BaselineYouthUnemploymentRate
+                + YouthUnemploymentCyclicalSensitivity * unemploymentGap
+                - CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.Education);
             state.YouthUnemployment = Mathf.Clamp(
                 state.YouthUnemployment + reversionSpeed * (target - state.YouthUnemployment),
                 0f, MaxYouthUnemploymentPercent);

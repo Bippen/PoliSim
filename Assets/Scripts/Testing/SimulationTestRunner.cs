@@ -193,8 +193,10 @@ namespace PoliSim.Testing
                 // them ever appoint a minister, so GetPendingCabinetDecisions is always empty there.
                 foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in simulationManager.GetPendingCabinetDecisions(CountryId.USA).ToList())
                 {
+                    // R4-4: the two new shock fields join the worst-case sum - without them the
+                    // selector would silently under-stress the ForeignAffairs/Education channels.
                     CabinetDecisionOption worstCaseOption = decision.Options
-                        .OrderByDescending(o => Mathf.Abs(o.CrimeIndexShock) + Mathf.Abs(o.PovertyRateShock) + Mathf.Abs(o.BudgetImpact) + Mathf.Abs(o.ApprovalEffect))
+                        .OrderByDescending(o => Mathf.Abs(o.CrimeIndexShock) + Mathf.Abs(o.PovertyRateShock) + Mathf.Abs(o.BudgetImpact) + Mathf.Abs(o.ApprovalEffect) + Mathf.Abs(o.TradeBalanceShock) + Mathf.Abs(o.YouthUnemploymentShock))
                         .First();
                     simulationManager.ResolveCabinetDecision(CountryId.USA, portfolio, decision, worstCaseOption);
                 }
@@ -351,9 +353,11 @@ namespace PoliSim.Testing
 
         /// <summary>
         /// Political Systems Overhaul Part A: appoints the HIGHEST-CompetenceBias candidate available
-        /// for each of the three implemented portfolios at turn 1 and never reshuffles - the worst-case
+        /// for EVERY implemented portfolio at turn 1 (enum-iterated, so R4-4's three joined with zero
+        /// edits here) and never reshuffles - the worst-case
         /// SUSTAINED stress on each portfolio's passive competence bias (see CabinetSystem.
-        /// GetCompetenceBias and its three point-of-use call sites), which only ever pushes its target
+        /// GetCompetenceBias and its point-of-use call sites - four since R4-4; Defense/ForeignAffairs
+        /// biases are inert by ruling R3, so their "stress" runs through decisions only), which only ever pushes its target
         /// in one beneficial direction, so "worst case for the ceiling" here means "largest possible
         /// bias, held for the whole run," not a symmetric slider extreme. RunOne's own per-turn loop
         /// (see the ResolveCabinetDecision call there) additionally auto-resolves every decision this

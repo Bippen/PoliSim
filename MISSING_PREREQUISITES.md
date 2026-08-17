@@ -16,7 +16,7 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 | ~~**Elias — database access**~~ | ~~16~~ **0 blocking** | ✅ **ALL FOUR BATCHES SOURCED 2026-08-02.** C1/C2/C3/C5 can be built. Three *quality debts* remain — see below — but no batch waits on a missing figure |
 | ~~**Elias — visual review**~~ | ~~11~~ **0 — all confirmed 2026-08-02** | Step 5 CLOSED |
 | ~~**Claude Design**~~ | **0 — delivered and imported 2026-08-02** | — |
-| **Another task first** | ~~3~~ **2** | Cabinet portraits (waiting on three portfolios being authored), Step C4 closure (waiting on the **parked fiscal-divergence pass** — see F1's 2026-08-12 reconciliation). *Round 4 scoping released 2026-08-02* |
+| **Another task first** | ~~3~~ ~~2~~ **1** | Step C4 closure (waiting on the **parked fiscal-divergence pass** — see F1's 2026-08-12 reconciliation). *Round 4 scoping released 2026-08-02; cabinet portraits released 2026-08-17 by R4-4 (request written, D1 → E class)* |
 
 ---
 
@@ -348,17 +348,17 @@ Poland; the defect is logged and should not be re-reported as a review finding.
 
 # D. Waiting on another task
 
-## D1. Cabinet portraits for the three unimplemented portfolios
+## 🟡 D1. Cabinet portraits — ✅ UNBLOCKED by R4-4 (2026-08-17). Request WRITTEN, NOT SENT — moved to the E class
 
 **Task:** portrait art for Defense, Foreign Affairs and Education ministers.
 
-**Needs:** those three portfolios to be *authored first*. Portrait filenames derive from each minister's
-generated name (`portrait_cabinet_<portfolio>_<slug>`), and those ministers do not exist yet — Part A
-deliberately implemented 3 of 6 portfolios. **The request cannot be written without inventing names**,
-which would violate the derive-filenames-from-real-values rule the asset requests are built on.
+**Was:** waiting on those portfolios being authored — filenames derive from minister names, and the
+names did not exist. R4-4 authored all nine (signed list, ruling R1), and the request is now written in
+`CLAUDE_DESIGN_ASSET_REQUEST.md` §5 with all nine derived filenames. Per the E2 convention, sending it
+is Elias's action.
 
-**Blocks:** nothing. Current coverage is complete — 9 ministers + 7 Fed chairs = 16 portraits, all
-present and name-matched.
+**Blocks:** nothing. The game renders the procedural placeholder for the nine until art lands —
+coverage of the EXISTING 16 (9 ministers + 7 Fed chairs) is unaffected.
 
 ## ~~D2. Round 4 scoping~~ — ✅ RELEASED 2026-08-02. Not blocked; moved to the roadmap as live work.
 

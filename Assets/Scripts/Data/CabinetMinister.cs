@@ -9,7 +9,9 @@ namespace PoliSim.Data
     /// CabinetMinisterPhilosophy); CompetenceBias is the only field with a passive, always-on
     /// mechanical effect - see CabinetSystem.GetCompetenceBias and each portfolio's own point-of-use
     /// comment (SimulationManager.ApplyRevenueAndSpending for FinanceTreasury, MacroSystem.
-    /// ApplyCrimeIndex for InteriorJustice, MacroSystem.ApplyPovertyRate for HealthSocialAffairs).
+    /// ApplyCrimeIndex for InteriorJustice, MacroSystem.ApplyPovertyRate for HealthSocialAffairs,
+    /// MacroSystem.ApplyYouthUnemployment for Education). ⚠ For Defense and ForeignAffairs the
+    /// field is authored but INERT this pass - R4-4 ruling R3, see CabinetPortfolio's doc comment.
     /// </summary>
     [Serializable]
     public class CabinetMinister

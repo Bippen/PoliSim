@@ -158,6 +158,11 @@ namespace PoliSim.UI
                 case CabinetPortfolio.FinanceTreasury: return SystemArea.Fiscal;
                 case CabinetPortfolio.InteriorJustice: return SystemArea.CrimeJustice;
                 case CabinetPortfolio.HealthSocialAffairs: return SystemArea.Welfare;
+                // R4-4: the two new portfolios with a natural area adjacency get it; Defense rides
+                // the Political default below per ruling R7 (defaulted - no military SystemArea
+                // exists, and inventing a hue for one roster panel wasn't worth a ruling).
+                case CabinetPortfolio.ForeignAffairs: return SystemArea.Trade;
+                case CabinetPortfolio.Education: return SystemArea.Labor;
                 default: return SystemArea.Political;
             }
         }

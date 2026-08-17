@@ -421,6 +421,47 @@ namespace PoliSim.EditorTools
                 passed += Compare($"{id}.LifeExpectancy", cr.State.LifeExpectancy, cs.State.LifeExpectancy) ? 1 : 0;
             }
 
+            // --- ROUND 4 BATCH R4-4: the Education competence term ----------------------------------
+            // WHAT IT ENUMERATES (rule 14): the one model term a content batch added (ruling R3 - an
+            // appointed Education minister's CompetenceBias subtracts from the youth-U reversion
+            // target at point-of-use). One country suffices: the term is a constant target shift, so
+            // it cannot interact with country structure beyond the baseline it shifts - Sweden,
+            // whose 22.5 seed is the highest, driven with the same +3pt unemployment shock as the
+            // R4-1 section so gap and term are both live at once. The appointment is picked
+            // DETERMINISTICALLY by max CompetenceBias (GenerateCandidates shuffles, and two worlds
+            // calling it in sequence would receive different orders from the shared Cabinet
+            // stream). Inputs held; constant-target PerDayReversion stays EXACT by construction -
+            // float noise only, no drift budget, same as every Round 4 section here.
+            {
+                World e1 = WorldFactory.CreateDefault();
+                World e2 = WorldFactory.CreateDefault();
+                Country cy = e1.GetCountry(CountryId.Sweden);
+                Country cz = e2.GetCountry(CountryId.Sweden);
+                foreach (Country x in new[] { cy, cz })
+                {
+                    CabinetMinister best = null;
+                    foreach (CabinetMinister candidate in CabinetSystem.GenerateCandidates(CabinetPortfolio.Education))
+                    {
+                        if (best == null || candidate.CompetenceBias > best.CompetenceBias)
+                        {
+                            best = candidate;
+                        }
+                    }
+
+                    x.CabinetMinisters[CabinetPortfolio.Education] = best;
+                    x.State.Unemployment += 3f;
+                }
+
+                MacroSystem.ApplyYouthUnemployment(cy);                                 // one turn step
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
+                {
+                    MacroSystem.ApplyYouthUnemploymentDaily(cz);
+                }
+
+                total++;
+                passed += Compare("Sweden.YouthU+EducationMinister", cy.State.YouthUnemployment, cz.State.YouthUnemployment) ? 1 : 0;
+            }
+
             // --- ROUND 4 BATCH 2 (C2): Gini and the real wage index ---------------------------------
             // WHAT IT ENUMERATES (rule 14): two countries chosen for their structural opposites on
             // exactly these stats (USA: the [ESTIMATED] Gini outlier WITH a statutory minimum wage;

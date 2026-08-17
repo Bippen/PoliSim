@@ -259,12 +259,16 @@ This is the one authoritative order, replacing whatever each original document s
    **R4-3 SHIPPED 2026-08-16** — see CLAUDE.md "Round 4 batch R4-3". The Clone() drift class died
    structurally (MemberwiseClone; EconomyState is pure value state), and the arc's first monetary
    coupling is live and one-way (housing reads the policy rate against the zone's epoch anchor,
-   writes nothing back — stated for the mechanism report's namespace claim). **Next: R4-4 (the
-   three cabinet portfolios)** — a CONTENT batch, not a stats batch: the name list for Elias's
-   sign-off comes in its pre-report per ruling 6, and the R4-3 verdict states which parts of the
-   stat bar apply to it. **PRE-REPORT WRITTEN 2026-08-17 — see `POLISIM_R4_4_PREREPORT.md`
-   (name list, bar inheritance, decision spaces, rulings R1–R7). Awaiting Elias's rulings;
-   nothing built.**
+   writes nothing back — stated for the mechanism report's namespace claim). **R4-4 SHIPPED 2026-08-17** — all seven
+   pre-report rulings recorded and built as ruled; see CLAUDE.md "Round 4 batch R4-4". The
+   content-batch bar form HELD: trajectory matrix byte-identical 37/37 with zero NEW fields
+   (the no-appointment isolation derivation, proven), cabinetstress zero new anomaly types with
+   counts landing exactly on baseline (83/83, 69/69) while USA's own trajectory demonstrably
+   moved (203 and 346 of 500 turn lines), equivalence extended by one row for the R3 Education
+   competence term (105/105). D1 portraits request WRITTEN (request doc §5) — sending is
+   Elias's action. **Next: R4-5 (C5 productivity, GDP/hour)** — LAST per the standing B4
+   priority ruling; its step 0 confirms the 6/6 single-basis seed at HEAD, and the
+   PotentialGrowthRate coupling is already ruled OUT of Round 4 (ruling #4).
 
    ### Round 4 — the scoped plan (read/map/propose session, 2026-08-16)
 
@@ -277,7 +281,7 @@ This is the one authoritative order, replacing whatever each original document s
    | R4-1 | ✅ **SHIPPED 2026-08-16** — **C3: youth unemployment + life expectancy** | directive §C3 | ⚠ scoping's "6/6 both" OVERSTATED, caught at the batch's step-0 re-read (rule 12): youth-U 6/6 `[VERIFIED]`; life expectancy **4/6 + France `p` / Poland `ep` PROVISIONAL-seedable** — seeded with flags carried inline in `WorldFactory`. Also monthly-class at source (`une_rt_m`/Employment Situation), not annual as the batch brief said — wiring follows the source | none |
    | R4-2 | ✅ **SHIPPED 2026-08-16** — **C2: Gini + real wages** | directive §C2 | ⚠ scoping's "Gini 6/6" OVERSTATED, caught at step 0 (the R4-1 pattern repeating): **5/6 `[VERIFIED]` Eurostat 0-100 + USA 39.5 `[ESTIMATED]`** (OECD IDD 2019 carried forward, band 38.5-41.0; already 0-100 at source so NO conversion — "normalize first" was already closed; the equivalence-scale difference is documented-irreconcilable). Real wages: the 🔴 resolved by RULING as an index convention (base 100 at epoch; sim consumes growth; level = display furniture); the model needed no level, so the named RULINGS-stop never fired | none debt-side; the wage↔inflation adjacency is now a MODEL TERM (inflation-surprise erosion, signed), exercised in the equivalence drive |
    | R4-3 | ✅ **SHIPPED 2026-08-16** — **C1: housing** | directive §C1 | step-0 confirmation CLEAN this time (the doc at HEAD matched the handoff — the 2-for-2 correction streak ends at two): overburden EU-five `[VERIFIED]` whole-population `ilc_lvho07a` with the variant recorded per the doc's own rule; homeownership 3/6 `[VERIFIED]` OECD + 3 `[ESTIMATED]` fitted-bridge with stated 95% bands; HPI index-100 (the R4-2 class, third member). **The USA asymmetry is deliberate everywhere**: `TracksHousingOverburden=false`, model early-out, no UI row, calendar guard (0 releases at the seam), and an equivalence assert that the USA's overburden sits EXACTLY at 0 under drives | **monetary-coupled, one-way**: reads `CurrencyZone.InterestRate` vs the zone's new epoch anchor (`HousingRateAnchor`; inert-fallback on pre-R4-3 saves), writes nothing back |
-   | R4-4 | **The three unbuilt cabinet portfolios: Defense, Foreign Affairs, Education** | COMPLETED §2's lasting limitation; unblocks `MISSING_PREREQUISITES` §D1 (portraits) | none needed — ministers are ORIGINAL FICTIONAL PERSONS per rule 9's unreversed half | decision budget-impacts at event scale only |
+   | R4-4 | ✅ **SHIPPED 2026-08-17** — **The three cabinet portfolios: Defense, Foreign Affairs, Education** | COMPLETED §2's lasting limitation closed (6 of 6 portfolios); `MISSING_PREREQUISITES` §D1 unblocked — portraits request WRITTEN | none needed — all nine ministers ORIGINAL FICTIONAL PERSONS per rule 9's unreversed half, names signed (ruling R1, collision search in the pre-report §4) | decision Budget/Approval deltas at event scale + the two ruled shock fields (TradeBalance per the meeting precedent, YouthUnemployment per the mean-reverting-stat rule); ONE passive term — Education → youth-U reversion target (R3); Defense/FA decisions-only, biases authored-but-inert |
    | R4-5 | **C5: productivity (GDP/hour, OECD PPP)** | directive §C5; LAST per Elias's own B4 priority ruling | 6/6 `[VERIFIED]`, one basis, one vintage; own-past-only display per the OECD caution | indirect ONLY if coupled to PotentialGrowthRate — which this scope defers (ruling #4) |
 
    **CANDIDATES OUT, explicitly:**

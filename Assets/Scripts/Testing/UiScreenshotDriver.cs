@@ -836,6 +836,55 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("82b_cabinet_appointed");
 
+            // R4-4: the roster's NEW bottom half - Defense/ForeignAffairs/Education panels, whose
+            // appointed ministers render the PROCEDURAL PLACEHOLDER until the D1 portrait delivery
+            // lands. The batch bar names this state explicitly, and the top-anchored 82b capture
+            // cannot reach it (six panels no longer fit one screen at either size).
+            ScrollBy(controller, 1500f);
+            yield return Settle();
+            yield return Capture("82c_cabinet_new_portfolios");
+
+            // R4-4: pin one REAL new-portfolio decision - rolled from the live pools, never
+            // fabricated - so the new content's decision card is on camera too. The warm-up's
+            // natural search keeps hitting 0 cabinet decisions (the known day-0 variance), and
+            // waiting on a 12%/minister/turn roll to land organically would make this capture a
+            // coin flip per run. Draws consumed on the Cabinet stream are a capture-run concern
+            // only. The pin is REMOVED after the shot so the pending-decision Advance-Turn gate
+            // cannot wedge the later day-driven states.
+            {
+                FieldInfo pendingField = typeof(SimulationManager).GetField("_pendingCabinetDecisionsByCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (pendingField?.GetValue(sim) is Dictionary<CountryId, List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>> pendingByCountry)
+                {
+                    var pinned = new List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>();
+                    for (int i = 0; i < 1000 && pinned.Count == 0; i++)
+                    {
+                        foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in CabinetSystem.TryRollDecisions(player))
+                        {
+                            if (portfolio == CabinetPortfolio.Defense || portfolio == CabinetPortfolio.ForeignAffairs || portfolio == CabinetPortfolio.Education)
+                            {
+                                pinned.Add((portfolio, decision));
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pinned.Count > 0)
+                    {
+                        pendingByCountry[_countryId] = pinned;
+                        SetEnumField(controller, "_consolidatedTab", "Decisions");
+                        ResetScrolls(controller);
+                        yield return Settle();
+                        yield return Capture("82d_cabinet_new_decision");
+                        pendingByCountry.Remove(_countryId);
+                        Debug.Log($"SHOT: pinned a {pinned[0].Portfolio} decision ({pinned[0].Decision.Name}), then cleared it.");
+                    }
+                    else
+                    {
+                        Debug.Log("SHOT: no new-portfolio decision rolled in 1000 tries - card capture skipped.");
+                    }
+                }
+            }
+
             // --- B. THE BUDGET-PROCESS PAUSE: advance to the country's own fiscal-year date. ---
             //
             // ⚠ THE DAILY ARM CALLS ARE THE CONTROLLER'S, NOT AdvanceDay's — measured, not assumed:
