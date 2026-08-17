@@ -160,6 +160,22 @@ namespace PoliSim.Data
         /// </summary>
         public float RiskPremiumSensitivity = 1f;
 
+        /// <summary>Q3 (Master Sequence II step 1, rulings R-Q3a/b, 2026-08-17): the trend growth
+        /// rate of labour PRODUCTIVITY, percent per year - the quantity the potential-growth
+        /// ledger's sum now IS, per Design B's causal re-rooting: {infrastructure, sector}
+        /// adjustments flow through productivity, wages read productivity's own growth, and
+        /// PotentialGrowthRate reads productivity at 1:1 through the pipe
+        /// (MacroSystem.ApplySectorGrowthEffect writes both, same sum, same clamps - a pure
+        /// re-rooting, byte-identical by construction and by bar).
+        /// ⚠ -1 is a SENTINEL (the R4-3 pattern): pre-Q3 saves and any read before the
+        /// finalizer's first write fall back to PotentialGrowthRate via
+        /// <see cref="ProductivityTrendGrowth"/> - bit-for-bit the value the old readers read,
+        /// in every ordering. Readers use the property, never the raw field.</summary>
+        public float ProductivityTrendGrowthRate = -1f;
+
+        /// <summary>The read-side of the Q3 sentinel - see the field above.</summary>
+        public float ProductivityTrendGrowth => ProductivityTrendGrowthRate >= 0f ? ProductivityTrendGrowthRate : PotentialGrowthRate;
+
         /// <summary>THE MATURITY RATE-LAG (2026-08-17, mechanism-report ruling R4, ruled IN with
         /// its target quantified by the erosion pass): this country's average debt maturity in
         /// YEARS - the stock rolls over at ~1/M per year, so the effective rate it pays reverts

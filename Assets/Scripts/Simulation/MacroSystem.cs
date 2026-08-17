@@ -837,8 +837,11 @@ namespace PoliSim.Simulation
         public static void ApplyRealWageIndex(Country country, float sliceExponent = 1f)
         {
             EconomyState state = country.State;
+            // Q3 (Design B): wages read PRODUCTIVITY'S OWN growth - the pass-through constant's
+            // name is finally literally true. Same value as the old potential read (the 1:1
+            // pipe), different and correct causation; cyclical terms untouched per the ruling.
             float growthPerTurnPercent = Mathf.Clamp(
-                RealWageProductivityPassThrough * country.PotentialGrowthRate
+                RealWageProductivityPassThrough * country.ProductivityTrendGrowth
                 + RealWageTightnessSensitivity * (country.NaturalUnemploymentRate - state.Unemployment)
                 - RealWageInflationErosionSensitivity * (state.Inflation - state.InflationExpectations),
                 -MaxRealWageGrowthPerTurnPercent, MaxRealWageGrowthPerTurnPercent);
@@ -1020,8 +1023,10 @@ namespace PoliSim.Simulation
         public static void ApplyProductivity(Country country, float sliceExponent = 1f)
         {
             EconomyState state = country.State;
+            // Q3 (Design B): the stat compounds at its OWN trend - the ledger's sum, read at
+            // source rather than through potential. Same value (the 1:1 pipe), true causation.
             float growthPerTurnPercent = Mathf.Clamp(
-                ProductivityTrendPassThrough * country.PotentialGrowthRate,
+                ProductivityTrendPassThrough * country.ProductivityTrendGrowth,
                 -MaxProductivityGrowthPerTurnPercent, MaxProductivityGrowthPerTurnPercent);
             state.Productivity = Mathf.Max(MinProductivityLevel,
                 state.Productivity * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
@@ -1726,7 +1731,18 @@ namespace PoliSim.Simulation
             float infrastructureAdjustment = ApplyInfrastructureGrowthEffect(country);
             float sectorAdjustment = GetSectorGrowthAdjustment(country);
             float totalAdjustment = Mathf.Clamp(infrastructureAdjustment + sectorAdjustment, -MaxTotalPotentialGrowthAdjustment, MaxTotalPotentialGrowthAdjustment);
-            country.PotentialGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + totalAdjustment, 0f, MaxPotentialGrowthRate);
+            // Q3 (Design B, rulings R-Q3a/b): THE CAUSAL RE-ROOTING. The ledger's sum - base
+            // trend plus the two ceilinged adjustments - IS trend productivity growth
+            // (infrastructure decay and sector booms are labour-productivity channels), and
+            // potential growth reads productivity at 1:1 through this pipe: same sum, same
+            // clamps, same single finalizer, so every value equals its pre-Q3 self and the bar
+            // is BYTE-IDENTICAL by claim. What changed is only what is true: wages and the
+            // productivity stat now read the trend at its source (ProductivityTrendGrowth)
+            // instead of through potential, and any future productivity-mover (the Q5 cyclical
+            // pair) enters potential AND wages coherently through here, folding into the
+            // existing ceiling at its own ruling.
+            country.ProductivityTrendGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + totalAdjustment, 0f, MaxPotentialGrowthRate);
+            country.PotentialGrowthRate = country.ProductivityTrendGrowthRate;
         }
 
         /// <summary>Unemployment points removed per point the aggregate Sector Employment (summed gap vs. each sector's own BaselineEmploymentShare) sits above its own trend - sector employment growth nudges economy-wide Unemployment down, contraction nudges it up. Mirrors GetMinimumWageUnemploymentAdjustment/GetOvertimeUnemploymentAdjustment's own "small, additive term inside ApplyOkunsLaw" pattern exactly.</summary>

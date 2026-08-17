@@ -9670,3 +9670,49 @@ swing coverage (its condition) · the interrupt-system slice (design-arc ruling)
 Q1–Q10 (rulings) · R3's creditor branch (a scenario that builds one) · F2 (future nominal-rates
 work). **Nothing ungated remains. Nothing on this roadmap is open except what waits on the
 world — and the F register, born 🔴, ends empty.**
+
+## Q3 ships as Design B — the queue's second graduation, and the first of the re-rooting kind (2026-08-17)
+
+Rulings R-Q3a (Design B: byte-identical is the bar AND the claim — the R4-4 inversion), R-Q3b
+(1:1 per the audit) and R-MS2 (the canonical six steps, now in the roadmap) recorded; built
+against `pre_q3_6d6decb`. **The premise correction, stated as ruled**: the pass brief's
+"trajectory-moving by construction" was WRONG for the correct design — the derivation found it
+(`POLISIM_Q3_COUPLING_REPORT.md`), the stop held, and the ruling picked truth over motion.
+**Q3's trajectory movement arrives when Q5's cyclical pair lands in the now-correct pipe.**
+
+### What shipped
+
+The causal re-rooting, five small edits: `Country.ProductivityTrendGrowthRate` (−1 sentinel +
+read-only fallback property — the R4-3 pattern, keeping pre-Q3 saves and every ordering
+bit-exact); the finalizer (`ApplySectorGrowthEffect`) now writes the ledger's sum AS trend
+productivity growth and pipes `PotentialGrowthRate` from it at 1:1 (same sum, same clamps, one
+finalizer); `ApplyRealWageIndex` and `ApplyProductivity` read the trend at source — the
+pass-through constant's name is finally literally true; the preview hand-list carries the field
+(exact-by-fallback would be a coincidence to a future edit; exact-by-copy is not). HPI's trend
+read: untouched, as the report scoped. RealWageIndex's cyclical terms: untouched, per the
+ruling. **The audit rode along as ruled: zero new ceiling headroom at 1:1; the two contributors,
+their caps, the ±1.0 all-sources ceiling and the [0, 8] range stand exactly as they were — and
+every future productivity-mover now enters potential AND wages coherently through this pipe,
+folding into the ceiling at its own ruling.**
+
+### The bar — byte-identical as claim, met exactly
+
+Equivalence **117/117 unchanged** (zero new rows by derivation: no daily shape changed, every
+reader's input value identical through the pipe). Matrix **6/6 vs `pre_q3_6d6decb`: 39 of 39
+fields byte-identical — zero moved, zero NEW — both stated up front, both held**; a single
+moved value would have been the re-rooting doing more than re-rooting, a stop and a finding,
+and there was none. Save/load **12/12** untouched-confirmed; cadence **md5-identical**; no
+captures — no display changed (the UI's potential stat reads the same field; stated, not
+assumed).
+
+### The template amendment — standing equipment for the rest of the queue
+
+**Graduations now come in two kinds, with different honest bars:**
+- **Coupling-adds-force** (the Education term; Q1 Gini → Approval next; Q2 after): a real new
+  force enters the web — the bar is DECOMPOSABLE MOVEMENT (magnitude visible in the
+  diagnostics, sitting where the derivation says).
+- **Re-rooting** (Q3): the web's causes are corrected without changing its values — the bar is
+  BYTE-IDENTICAL, and any movement is the pass having done more than it claimed.
+
+One ruling, one audit, one baseline, one kind — named up front. Q1 is next: the other kind,
+its own baseline, decomposable movement against ApprovalRating's combined formula.

@@ -253,26 +253,27 @@ ahead of Round 4 now puts v2.0 ahead of both.
 >    starts with win/lose conditions — NOT an election clock (election-loss game-over stays
 >    sandbox furniture, not the challenge frame). STORY MODE builds on the political layer,
 >    LATER.
-> 2. **The sequence**: step 1 — the three write-back couplings from the standing queue, one
->    baseline each: Q3 (productivity → potential) first, on the Education-term graduation
->    template; then Q1 (Gini → Approval); then Q2 (real wages → ConsumerConfidence). Step 2 —
->    the LEGIBILITY feature, scoped only after step 1's three couplings land (its job is
->    explaining the web those passes densify). Later steps: challenge-mode scoping; story mode
->    on the political layer. ⚠ The canonical six-step enumeration is Elias's text — recorded
->    here are the steps his directive names; the full list is a standing RULING ITEM until he
->    writes it into this block.
-> 3. **The gate change**: challenge mode's content territory (the old item 10's
->    elections/parties work) dissolves its 13 Sept date-gate — **scoped-when-scoped**, a
->    sequencing decision inside this sequence, not a calendar entry. Board consequence: the
->    item-10-keyed entries (the R5 hex exchange, E2's branch accounting, the party-mark orphan
->    accounting) now key on challenge-mode scoping, not a date.
+> 2. **The sequence — CANONICAL per ruling R-MS2 (2026-08-17), Elias's enumeration:**
+>    **1.** the three write-back couplings, one baseline each: Q3 (productivity → potential,
+>    Design B per R-Q3a) → Q1 (Gini → Approval) → Q2 (real wages → ConsumerConfidence).
+>    **2.** the LEGIBILITY feature — scoped only after step 1 lands (its job is explaining the
+>    web those passes densify).
+>    **3.** challenge-mode SCOPING (scoped-when-scoped per ruling 3 below).
+>    **4.** item 10 — the elections/parties territory, at its 13 Sept date.
+>    **5.** the Q5 cyclical pair (labour hoarding; investment deepening — entering potential
+>    through Q3's pipe, wages coherently with it).
+>    **6.** story mode, on the political layer.
+> 3. **The gate change**: challenge-mode SCOPING (step 3) is **scoped-when-scoped** — no date;
+>    item 10's CONTENT work is step 4 at its 13 Sept date, per R-MS2. Board consequence: the
+>    formerly item-10-keyed entries (the R5 hex exchange, E2's branch accounting, the
+>    party-mark orphan accounting) key on step 4.
 >
-> **Step 1 status: Q3 derivation COMPLETE, ESCALATED per rule 4** — see
-> `POLISIM_Q3_COUPLING_REPORT.md`: the stacking audit ran, the no-policy adjustment path is
-> MEASURED (zero at the ruled window, −0.5 late), and the economically-correct wiring proves
-> VALUE-IDENTICAL at HEAD — the ruled "trajectory-moving by construction" premise fails for
-> it, so the A/B design fork and the coupling magnitude go to Elias, exactly the escalations
-> the directive named as expected. Q1/Q2 queue behind the ruling.
+> **Step 1 status: Q3 RULED (R-Q3a = Design B — byte-identical is the bar AND the claim, the
+> R4-4 inversion; R-Q3b = 1:1 per the audit) and BUILT — the queue's second graduation, the
+> re-rooting kind.** See `POLISIM_Q3_COUPLING_REPORT.md` (the derivation and fork) and
+> CLAUDE.md's Q3 record (the build, the bar, and the template amendment: graduations now come
+> in two kinds — coupling-adds-force and re-rooting — with different honest bars). Q1 is next:
+> the other kind, decomposable movement, its own baseline.
 
 *The closed first sequence follows, kept as the record it is.*
 

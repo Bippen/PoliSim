@@ -1940,6 +1940,11 @@ namespace PoliSim.Simulation
                 // previews at the sentinel fallback, i.e. instant repricing).
                 AverageDebtMaturityYears = country.AverageDebtMaturityYears,
                 EffectiveDebtInterestRate = country.EffectiveDebtInterestRate,
+                // Q3: the trend field rides too (its sentinel fallback happens to be exact here
+                // - the property falls back to PotentialGrowthRate, copied above via the ctor -
+                // but the hand-list carries it anyway: exact-by-fallback is a coincidence to a
+                // future edit, exact-by-copy is not).
+                ProductivityTrendGrowthRate = country.ProductivityTrendGrowthRate,
                 ComfortableDebtToGdpPercent = country.ComfortableDebtToGdpPercent,
                 BaselinePovertyRate = country.BaselinePovertyRate,
                 BaselineLaborForceParticipationRate = country.BaselineLaborForceParticipationRate,
