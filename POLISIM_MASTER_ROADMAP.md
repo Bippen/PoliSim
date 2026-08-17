@@ -243,6 +243,39 @@ ahead of Round 4 now puts v2.0 ahead of both.
 
 *Item 6 also remains gated on step 5 closing — that dependency is unchanged.*
 
+> ## ✅ THE FIRST MASTER SEQUENCE CLOSED 2026-08-17 — MASTER SEQUENCE II OPENS HERE
+>
+> Every numbered item below is DONE (1–8, plus the fiscal arc and the derived close-out that
+> followed item 6); the sweep left the board at all-gates. **Master Sequence II opens on three
+> rulings, recorded before any code (2026-08-17):**
+>
+> 1. **The design ruling**: the game's BASE is a SANDBOX. CHALLENGE MODE is authored scenario
+>    starts with win/lose conditions — NOT an election clock (election-loss game-over stays
+>    sandbox furniture, not the challenge frame). STORY MODE builds on the political layer,
+>    LATER.
+> 2. **The sequence**: step 1 — the three write-back couplings from the standing queue, one
+>    baseline each: Q3 (productivity → potential) first, on the Education-term graduation
+>    template; then Q1 (Gini → Approval); then Q2 (real wages → ConsumerConfidence). Step 2 —
+>    the LEGIBILITY feature, scoped only after step 1's three couplings land (its job is
+>    explaining the web those passes densify). Later steps: challenge-mode scoping; story mode
+>    on the political layer. ⚠ The canonical six-step enumeration is Elias's text — recorded
+>    here are the steps his directive names; the full list is a standing RULING ITEM until he
+>    writes it into this block.
+> 3. **The gate change**: challenge mode's content territory (the old item 10's
+>    elections/parties work) dissolves its 13 Sept date-gate — **scoped-when-scoped**, a
+>    sequencing decision inside this sequence, not a calendar entry. Board consequence: the
+>    item-10-keyed entries (the R5 hex exchange, E2's branch accounting, the party-mark orphan
+>    accounting) now key on challenge-mode scoping, not a date.
+>
+> **Step 1 status: Q3 derivation COMPLETE, ESCALATED per rule 4** — see
+> `POLISIM_Q3_COUPLING_REPORT.md`: the stacking audit ran, the no-policy adjustment path is
+> MEASURED (zero at the ruled window, −0.5 late), and the economically-correct wiring proves
+> VALUE-IDENTICAL at HEAD — the ruled "trajectory-moving by construction" premise fails for
+> it, so the A/B design fork and the coupling magnitude go to Elias, exactly the escalations
+> the directive named as expected. Q1/Q2 queue behind the ruling.
+
+*The closed first sequence follows, kept as the record it is.*
+
 This is the one authoritative order, replacing whatever each original document separately suggested. It exists because Political Systems Overhaul Part B depends on Continuous Time Phase 0, and because building new Roadmap features or converting existing systems to daily granularity while Parliament's gating is mid-rollout would mean touching the same code for two different reasons at once — exactly the kind of overlap this project's discipline exists to avoid.
 
 1. **Part A (Cabinet). DONE** — see `COMPLETED.md`. *Limitation: 3 of 6 portfolios implemented.*
