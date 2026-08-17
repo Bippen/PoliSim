@@ -9716,3 +9716,53 @@ assumed).
 
 One ruling, one audit, one baseline, one kind — named up front. Q1 is next: the other kind,
 its own baseline, decomposable movement against ApprovalRating's combined formula.
+
+## Q1 ships — Gini → Approval, the first force-kind graduation, and the two templates side by side (2026-08-17)
+
+Rulings R-Q1a/b/c recorded; built against `pre_q1_c9c4ec8`. One constant
+(`GiniApprovalSensitivity = 0.05` — 1.0 EQUILIBRIUM point per Gini point through the 0.05
+reversion, the honest unit, band 0.5–1.5 ruled), one term in the standing delta formula
+(`−0.05 × (Gini − BaselineGini)` — the paidLeave/welfare gap idiom exactly, zero at seed for
+all six, turn-boundary-resident so NO daily shape and NO equivalence rows, by derivation).
+**No new field** — `BaselineGini` has existed since R4-2 (the brief's "new Country field
+snapshotted" was stale at ruling time; flagged in the MS II transcription, save/load
+untouched-confirmed instead).
+
+**The containment check caught an R4-1-class escape BEFORE the bar**: `BaselineGini` was never
+in the preview clone's hand-list (nothing preview-relevant read it until today), and
+`ApplyApprovalRating` runs in preview — without the added line, previews would compute the gap
+against the 30f field default, a phantom −0.5/turn for the USA at its 39.5 seed. Caught by
+derivation, fixed in the same commit, recorded here as the pattern's third appearance (ctor
+hand-list, Country hand-list at R4, Country hand-list again).
+
+### The bar — the force-kind template, met exactly
+
+- **Matrix 6/6 vs `pre_q1_c9c4ec8`: 38 of 39 byte-identical — ApprovalRating the ONLY moved
+  field** (the containment claim verified: approval's readers are elections/seats/UI, none in
+  a no-policy run's economy). Movement: maxABS 0.117 points (t848 USA), end-state 0.035 — the
+  predicted ≤~0.2 class from the flat Gini's ±0.15 wiggle. (The 73% relative max is the
+  near-zero-denominator artifact; judged on the absolute column per the tool's own rule.)
+- **The decomposition, erosion-standard, WITHOUT REMAINDER**: at USA t199→t200 with
+  boundary-time Gini 39.54 (gap +0.04): predicted Δdiff = −0.05×gap − 0.05×accumulated-diff =
+  −0.0040; measured −0.0040, at the dump's four decimals.
+- **Equivalence 117/117 unchanged** (turn-boundary term — the zero-rows reason derived, then
+  verified). **Save/load 12/12; cadence md5-identical.**
+- **Cabinetstress 83/83, 69/69 with ZERO differing log lines — and the distrust rule closes it
+  structurally**: the scenario's per-turn log and anomaly snapshot BOTH omit ApprovalRating,
+  and approval feeds nothing the scenario logs — the instruments are blind to the one moved
+  variable; the term's execution in the shared AdvanceTurn path is what the matrix already
+  proved. Bounded-and-explained, the explanation being blindness, verified against the
+  runner's own field lists.
+- **No captures**: approval displays at one decimal; the warm-up-state term is ±0.003 —
+  display-invisible, derived and stated.
+
+### The two templates, demonstrated in practice (the record the amendment asked for)
+
+Back to back: **Q3 (re-rooting)** — 39/39 byte-identical, zero moved, and any movement would
+have been failure; **Q1 (force)** — exactly one moved field, movement decomposed to the stated
+magnitude without remainder, everything else byte-identical as the CONTAINMENT half of the
+same discipline. The two bars are the same epistemology pointed at different claims: identity
+where the pass claims nothing changed, decomposability where it claims one thing did. **Q2
+inherits the force template next — with the transcribed warning that its natural gap is
+growth-versus-trend (real wages have no baseline level), a different shape than Q1's,
+derived not assumed.**

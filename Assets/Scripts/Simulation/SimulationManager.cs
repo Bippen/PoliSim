@@ -1940,6 +1940,11 @@ namespace PoliSim.Simulation
                 // previews at the sentinel fallback, i.e. instant repricing).
                 AverageDebtMaturityYears = country.AverageDebtMaturityYears,
                 EffectiveDebtInterestRate = country.EffectiveDebtInterestRate,
+                // Q1: BaselineGini joins the hand-list the day ApplyApprovalRating started reading
+                // it - without this line the preview computes the Gini gap against the 30f field
+                // default (a phantom -0.5/turn for the USA at its 39.5 seed). The R4-1
+                // Clone-escape class, caught by the containment check BEFORE the bar this time.
+                BaselineGini = country.BaselineGini,
                 // Q3: the trend field rides too (its sentinel fallback happens to be exact here
                 // - the property falls back to PotentialGrowthRate, copied above via the ctor -
                 // but the hand-list carries it anyway: exact-by-fallback is a coincidence to a

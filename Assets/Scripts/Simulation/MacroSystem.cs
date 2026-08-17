@@ -1788,6 +1788,21 @@ namespace PoliSim.Simulation
         /// <summary>Approval points gained per week Country.PaidFamilyLeaveWeeks sits above its own seeded BaselinePaidFamilyLeaveWeeks (and lost per week below) - a small, real political effect (paid-leave policy tends to be popular).</summary>
         internal const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
 
+        /// <summary>Q1 (Master Sequence II step 1, rulings R-Q1a/b/c, 2026-08-17): approval-delta
+        /// points per turn per Gini point ABOVE the country's own BaselineGini - the GAP form,
+        /// chosen by measurement (Gini is flat at no-policy baselines to ±0.15, so a change term
+        /// is inert and a raw level term is a per-country recalibration; the gap is zero at seed
+        /// for all six and active exactly when POLICY moves inequality off the nation's own norm -
+        /// habituation to the level is the form's own claim). SIGNED: pushing inequality below the
+        /// norm earns approval. THE HONEST UNIT is equilibrium: with ApprovalReversionSpeed 0.05,
+        /// this 0.05/turn = 1.0 EQUILIBRIUM approval point per Gini point (ruled band 0.5-1.5) -
+        /// a +3-Gini redistribution reversal costs 3 sustained points, one serious authored
+        /// shock's size but permanent, legible beside the ±2-5 interrupts and never dominant over
+        /// misery/growth. R-Q1c: NO combined ceiling exists on approval's sustained gap terms
+        /// (drug policy alone can shift ±20 eq-pts) and none is added - the absence is a named
+        /// standing property, handed to the legibility feature (MS II step 2).</summary>
+        internal const float GiniApprovalSensitivity = 0.05f;
+
         /// <summary>Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
         internal const float DrugPolicyApprovalSensitivity = 0.02f;
 
@@ -1958,8 +1973,13 @@ namespace PoliSim.Simulation
             // shared neutral 50.
             float drugPolicyApprovalEffect = DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
 
+            // Q1 (gap form, R-Q1a): the paidLeave/welfare idiom exactly - a sustained term on the
+            // gap versus the country's OWN baseline, zero at seed, no daily shape needed because
+            // this whole formula is turn-boundary-resident (politics lives at boundaries).
+            float giniApprovalEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
+
             float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - state.ApprovalRating);
-            float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect + drugPolicyApprovalEffect;
+            float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect + drugPolicyApprovalEffect + giniApprovalEffect;
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + delta, 0f, 100f);
         }
 

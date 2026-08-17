@@ -243,37 +243,76 @@ ahead of Round 4 now puts v2.0 ahead of both.
 
 *Item 6 also remains gated on step 5 closing — that dependency is unchanged.*
 
-> ## ✅ THE FIRST MASTER SEQUENCE CLOSED 2026-08-17 — MASTER SEQUENCE II OPENS HERE
->
-> Every numbered item below is DONE (1–8, plus the fiscal arc and the derived close-out that
-> followed item 6); the sweep left the board at all-gates. **Master Sequence II opens on three
-> rulings, recorded before any code (2026-08-17):**
->
-> 1. **The design ruling**: the game's BASE is a SANDBOX. CHALLENGE MODE is authored scenario
->    starts with win/lose conditions — NOT an election clock (election-loss game-over stays
->    sandbox furniture, not the challenge frame). STORY MODE builds on the political layer,
->    LATER.
-> 2. **The sequence — CANONICAL per ruling R-MS2 (2026-08-17), Elias's enumeration:**
->    **1.** the three write-back couplings, one baseline each: Q3 (productivity → potential,
->    Design B per R-Q3a) → Q1 (Gini → Approval) → Q2 (real wages → ConsumerConfidence).
->    **2.** the LEGIBILITY feature — scoped only after step 1 lands (its job is explaining the
->    web those passes densify).
->    **3.** challenge-mode SCOPING (scoped-when-scoped per ruling 3 below).
->    **4.** item 10 — the elections/parties territory, at its 13 Sept date.
->    **5.** the Q5 cyclical pair (labour hoarding; investment deepening — entering potential
->    through Q3's pipe, wages coherently with it).
->    **6.** story mode, on the political layer.
-> 3. **The gate change**: challenge-mode SCOPING (step 3) is **scoped-when-scoped** — no date;
->    item 10's CONTENT work is step 4 at its 13 Sept date, per R-MS2. Board consequence: the
->    formerly item-10-keyed entries (the R5 hex exchange, E2's branch accounting, the
->    party-mark orphan accounting) key on step 4.
->
-> **Step 1 status: Q3 RULED (R-Q3a = Design B — byte-identical is the bar AND the claim, the
-> R4-4 inversion; R-Q3b = 1:1 per the audit) and BUILT — the queue's second graduation, the
-> re-rooting kind.** See `POLISIM_Q3_COUPLING_REPORT.md` (the derivation and fork) and
-> CLAUDE.md's Q3 record (the build, the bar, and the template amendment: graduations now come
-> in two kinds — coupling-adds-force and re-rooting — with different honest bars). Q1 is next:
-> the other kind, decomposable movement, its own baseline.
+# MASTER SEQUENCE II — the roadmap's spine (canonical per Elias's enumeration, 2026-08-17)
+
+*The first Master Sequence closed 2026-08-17 with every item done and the board at all-gates —
+its record follows below this block, kept as it is. Every gate and date here was VERIFIED at
+HEAD during transcription; the contradictions found are flagged inline rather than absorbed.*
+
+## Step 1 — Deepen the sandbox: the coupling graduations
+
+- **Q3 productivity → potential: ✅ DONE (`d1cb1de`)** — the re-rooting kind; byte-identical
+  bar met exactly (39/39, 6/6, zero moved). Trajectory movement deferred to Q5 BY DESIGN.
+- **Q1 Gini → Approval: ✅ DONE (this pass)** — the force kind, gap form per R-Q1a
+  (−0.05 × (Gini − BaselineGini), 1.0 equilibrium pt/Gini pt per R-Q1b, no new ceiling per
+  R-Q1c with the absence handed to step 2). ⚠ *Transcription flag: the brief's "new Country
+  field snapshotted" was already false at ruling time — `BaselineGini` has existed since R4-2;
+  Q1 adds NO field, and save/load is untouched-confirmed instead.*
+- **Q2 real-wage → ConsumerConfidence: NEXT** — force kind; inherits gap-versus-own-norm as its
+  NATURAL CANDIDATE, derived not assumed (⚠ real wages are an unbounded index with no
+  per-country baseline level — "own norm" needs deriving: growth-versus-trend is the likelier
+  gap, which is a DIFFERENT shape than Q1's level-gap; the derivation reports before wiring).
+  Own baseline; own audit (ConsumerConfidence's writers enumerated at HEAD first).
+
+## Step 2 — Causality legibility (the sandbox's explanatory layer)
+
+Scoped AFTER step 1 lands — its job is explaining the web steps 1 and 5 densify. Inherits by
+name: the approval no-ceiling absence (R-Q1c), the FRF/erosion/maturity decomposition story,
+the coupling graph. The scoping pass produces a RULING PACKAGE — surface (trace panel? tooltip
+chains? ledger annotations?), depth, and cost — before any build. Design work; Elias's ruling.
+
+## Step 3 — Challenge-mode scoping (gate: NONE — scoped-when-scoped)
+
+Authored scenario starts with win/lose conditions, NOT an election clock (ruled). Scoping
+produces the ruling package: the scenario format (seed deltas + objectives + fail states); the
+first slate — **creditor start "inherit the fund" (closes R3's creditor-branch coverage gap AS
+CONTENT), Italy debt start, Poland convergence run**; scoring posture; the minimum playable
+slate. **FA-cadence playtesting graduates from a riding gate to real work here.**
+
+## Step 4 — Item 10: the political game (gate: 13 Sept 2026, Sweden votes)
+
+Opens as ONE package: the seed-data refresh from the real result; the Italy allocator pricing
+(constituency D'Hondt — the 70-seat error's fix) with the Sweden 2014 six-seat error explained
+in the same pass *(branch-side claims, recorded here and VERIFIED AT STEP 4 — the stranded
+branch's work is proposals to verify, never merged as-is)*; the collision-map disposition
+executed (PartyArchetype retires, `emblem_*` → `mark_*`, renderers re-key,
+`PartyMarkCoverageCheck`'s "PARTY SYSTEM NOT PRESENT" honest-nothing flips to real accounting);
+ElectionRecord designed against the real model (R2's gate dissolves); election night (Canvas
+3 of 3); **the R5 hex exchange and E2's branch accounting unblock here.**
+
+## Step 5 — Q5: the cyclical pair (labour hoarding; investment deepening)
+
+First water through Q3's pipe — the deferred trajectory movement arrives here, entering
+potential AND wages coherently. Force kind; own baselines, one per term if separable. ⚠ *Q5
+also revives the residual of Q4: once realized productivity growth ≠ trend, "do wages read
+trend or realized?" becomes a live ruling — decided inside Q5's derivation.*
+
+## Step 6 — Story mode (gate: item 10 shipped)
+
+Scoped fresh on the political layer: authored multi-beat arcs with memory on the
+minister/interrupt/ceremony skeleton. Nothing pre-scoped now beyond the gate.
+
+## Riding gates (close when the world moves) — verified at HEAD 2026-08-17
+
+| gate | status at transcription |
+|---|---|
+| **~23 Aug** — GitHub GC re-check | one command; not yet due |
+| **Delivery** — D1's portraits | ⚠ nuance the brief's wording misses: the PoC (1 of 9) is IMPORTED; **8 remain**, gated on the Editor side-by-side below; import checks standing |
+| **Delivery** — E3's rasterizer | the gate is the sharpened form: a raster path whose OUTPUT is comparable (the module tessellates; `RenderSpriteToTexture2D` renders blank — probed); `StripCutDiffCheck`'s compare machinery finished and waiting |
+| **Access** — the Editor checklist | THREE entries verified in the OPEN VERIFICATION GAP block (~20 min): folder-tongue hover/click; save/load layer 3 + F5/F9; the portrait register side-by-side **that gates the batch of nine** |
+| **Play** — FA cadence | → step 3 (graduates to scenario work) |
+| **Play** — the creditor scenario | → step 3's slate ("inherit the fund") |
+| **Rulings (Elias)** — the queue remainder | Q6–Q10 at their named triggers; **⚠ Q4 is SUBSTANTIALLY ABSORBED BY Q3-Design-B** (wages already read the productivity trend; the residual — trend vs realized — is moot until Q5 splits them and is decided there, per step 5's flag). A3 at its trigger; F2 stands recorded |
 
 *The closed first sequence follows, kept as the record it is.*
 
