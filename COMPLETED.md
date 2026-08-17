@@ -939,3 +939,43 @@ debt interacts with `GetInterestOnDebt` creates either free money or a new asymm
 ---
 
 
+
+## 19. Round 4 — the five-batch stat-and-content arc (Master Sequence item 6)
+
+*Scoped 2026-08-16 (read/map/propose session, six rulings approved). Shipped R4-1 through R4-5,
+2026-08-16 → 2026-08-17. CLOSED 2026-08-17.* The five CLAUDE.md "Round 4 batch" records are the
+detailed authority; R4-5's record carries the arc verdict, the consolidated write-back ruling
+queue, and the post-Round-4 board. This section absorbs the scoped plan the roadmap held while
+the arc was live.
+
+**The five batches, as shipped:**
+
+| batch | shipped | content | step-0 finding | coupling |
+|---|---|---|---|---|
+| R4-1 | 2026-08-16 | **C3: youth unemployment + life expectancy** (EconomyState 28→30) | scoping's "6/6 both" overstated — life expectancy 4/6 + France `p`/Poland `ep` provisional; monthly-class at source, not annual | none |
+| R4-2 | 2026-08-16 | **C2: Gini + real wage index** (30→32; the compounding-index class born) | "Gini 6/6, normalize first" wrong on both halves — 5/6 + USA `[ESTIMATED]`, normalization already closed at source; real-wage basis resolved BY RULING (index 100 at epoch) | wage↔inflation as a signed model term |
+| R4-3 | 2026-08-16 | **C1: housing** — overburden (EU five), homeownership (USA-primary), HPI (32→35); `Clone()` → MemberwiseClone | CLEAN (streak ends at two) | **the arc's first monetary coupling** — one-way rate READ vs the zone's epoch anchor |
+| R4-4 | 2026-08-17 | **Defense, Foreign Affairs, Education** — 9 signed ministers, 18 scenarios, 2 new shock fields; Education competence live on youth-U (the one model term); D1 portraits unblocked | the R4-3 verdict's open RNG question answered at step 0: no shared stream exists | decision shocks at event scale; ONE passive term |
+| R4-5 | 2026-08-17 | **C5: productivity** (35→36) — GDP/hour USD PPP, real levels, own-past-only, live-until-sourced | CLEAN (final tally: 2 corrections in 5 batches — step 0 stays mandatory) | none — the PotentialGrowthRate coupling ruled OUT (ruling #4) |
+
+**The standing posture that governed the arc (rule 11):** first pass inputs-only — new stats read
+existing state and write nothing back; no new entrant into `PotentialGrowthRate`'s or LFPR's
+heavily-stacked ceilings; every coupling is a separately-ruled follow-on with its stacking audit
+attached. The one deliberate exception was itself ruled (R4-4's R3: Education competence →
+youth-U target, whose audit is empty because nothing reads youth-U back).
+
+**The validation bar, held five times:** fresh pre-batch trajectory baseline + full matrix (every
+batch byte-identical on all shared fields with exactly the new fields named — including R4-4's
+content-batch form, where byte-identical WAS the criterion and held); aggregation-equivalence
+extension with stated enumeration for every new daily model/term (88 → 110 rows across the arc,
+all exact-by-construction); bucket asserts or exclusion-with-reason (three exclusion variants
+now recorded); save/load round-trip at every new field count (28 → 36, with R4-4's new-portfolio
+keys crossing a save); publication wired only where the seed doc records a real release rule —
+live-until-sourced otherwise (HPI, Productivity); captures at both sizes with zero overflows,
+plus R4-4's pinned-capture pattern for probabilistic content.
+
+**Candidates the scoping excluded, still excluded at close:** C4/credit-rating follow-ons
+(behind the stock-vs-flow mechanism report, §F1); item 10's collision-mapped territory (gated
+13 Sept); a bond-market mechanic (namespace deliberately left to the mechanism report to claim).
+
+---

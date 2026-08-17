@@ -251,76 +251,19 @@ This is the one authoritative order, replacing whatever each original document s
 4. **Part B, PILOT (Tax Policy tab). DONE** — see `COMPLETED.md`.
 5. **Part B, full rollout (5a–5f). DONE 2026-08-02** — see `COMPLETED.md` sections 10 and 16. 5e's Phase C
    batches 4–6 were the last live part, and Elias's review confirmed them. Scope absorbed 5f.
-6. **Resume Roadmap work (a new Round 4)** — ✅ **RULED 2026-08-16: all six rulings APPROVED**
-   (the overburden reversal is noted in B6). **R4-1 SHIPPED 2026-08-16** — see CLAUDE.md "Round 4
-   batch R4-1". **R4-2 SHIPPED 2026-08-16** — the swap clause never fired: Elias resolved the
-   real-wage basis by ruling (index base 100 at epoch, the HPI convention; seed doc §5's 🔴 is now
-   a 🟡 convention with the reasoning recorded in place). See CLAUDE.md "Round 4 batch R4-2".
-   **R4-3 SHIPPED 2026-08-16** — see CLAUDE.md "Round 4 batch R4-3". The Clone() drift class died
-   structurally (MemberwiseClone; EconomyState is pure value state), and the arc's first monetary
-   coupling is live and one-way (housing reads the policy rate against the zone's epoch anchor,
-   writes nothing back — stated for the mechanism report's namespace claim). **R4-4 SHIPPED 2026-08-17** — all seven
-   pre-report rulings recorded and built as ruled; see CLAUDE.md "Round 4 batch R4-4". The
-   content-batch bar form HELD: trajectory matrix byte-identical 37/37 with zero NEW fields
-   (the no-appointment isolation derivation, proven), cabinetstress zero new anomaly types with
-   counts landing exactly on baseline (83/83, 69/69) while USA's own trajectory demonstrably
-   moved (203 and 346 of 500 turn lines), equivalence extended by one row for the R3 Education
-   competence term (105/105). D1 portraits request WRITTEN (request doc §5) — sending is
-   Elias's action. **Next: R4-5 (C5 productivity, GDP/hour)** — LAST per the standing B4
-   priority ruling; its step 0 confirms the 6/6 single-basis seed at HEAD, and the
-   PotentialGrowthRate coupling is already ruled OUT of Round 4 (ruling #4).
+6. **Resume Roadmap work (Round 4)** — ✅ **DONE 2026-08-17. THE ARC IS CLOSED: five batches, all
+   shipped** (R4-1 C3 youth-U + life expectancy · R4-2 C2 Gini + real wages · R4-3 C1 housing ·
+   R4-4 the three cabinet portfolios · R4-5 C5 productivity). See `COMPLETED.md` §19 for the arc
+   summary and CLAUDE.md's five "Round 4 batch" records — R4-5's carries the arc verdict, the
+   consolidated WRITE-BACK RULING QUEUE, and the post-Round-4 board. The scoped plan, rulings
+   package and batch table that lived here moved to COMPLETED §19 per the standing finished-items
+   pattern. Still OUT of the closed arc, by its own scoping: C4/credit-rating follow-ons
+   (sequenced behind the stock-vs-flow mechanism report, §F1 chain) and item 10's
+   collision-mapped territory (gated 13 Sept).
 
-   ### Round 4 — the scoped plan (read/map/propose session, 2026-08-16)
-
-   Scoped fresh against both finished foundations — every candidate builds against the
-   gated-legislation model and the daily engine from day one. Step C folds in per R1, **except C4**.
-
-   **CANDIDATES IN (proposed), with sources:**
-   | batch | candidate | source | seed status | fiscal coupling |
-   |---|---|---|---|---|
-   | R4-1 | ✅ **SHIPPED 2026-08-16** — **C3: youth unemployment + life expectancy** | directive §C3 | ⚠ scoping's "6/6 both" OVERSTATED, caught at the batch's step-0 re-read (rule 12): youth-U 6/6 `[VERIFIED]`; life expectancy **4/6 + France `p` / Poland `ep` PROVISIONAL-seedable** — seeded with flags carried inline in `WorldFactory`. Also monthly-class at source (`une_rt_m`/Employment Situation), not annual as the batch brief said — wiring follows the source | none |
-   | R4-2 | ✅ **SHIPPED 2026-08-16** — **C2: Gini + real wages** | directive §C2 | ⚠ scoping's "Gini 6/6" OVERSTATED, caught at step 0 (the R4-1 pattern repeating): **5/6 `[VERIFIED]` Eurostat 0-100 + USA 39.5 `[ESTIMATED]`** (OECD IDD 2019 carried forward, band 38.5-41.0; already 0-100 at source so NO conversion — "normalize first" was already closed; the equivalence-scale difference is documented-irreconcilable). Real wages: the 🔴 resolved by RULING as an index convention (base 100 at epoch; sim consumes growth; level = display furniture); the model needed no level, so the named RULINGS-stop never fired | none debt-side; the wage↔inflation adjacency is now a MODEL TERM (inflation-surprise erosion, signed), exercised in the equivalence drive |
-   | R4-3 | ✅ **SHIPPED 2026-08-16** — **C1: housing** | directive §C1 | step-0 confirmation CLEAN this time (the doc at HEAD matched the handoff — the 2-for-2 correction streak ends at two): overburden EU-five `[VERIFIED]` whole-population `ilc_lvho07a` with the variant recorded per the doc's own rule; homeownership 3/6 `[VERIFIED]` OECD + 3 `[ESTIMATED]` fitted-bridge with stated 95% bands; HPI index-100 (the R4-2 class, third member). **The USA asymmetry is deliberate everywhere**: `TracksHousingOverburden=false`, model early-out, no UI row, calendar guard (0 releases at the seam), and an equivalence assert that the USA's overburden sits EXACTLY at 0 under drives | **monetary-coupled, one-way**: reads `CurrencyZone.InterestRate` vs the zone's new epoch anchor (`HousingRateAnchor`; inert-fallback on pre-R4-3 saves), writes nothing back |
-   | R4-4 | ✅ **SHIPPED 2026-08-17** — **The three cabinet portfolios: Defense, Foreign Affairs, Education** | COMPLETED §2's lasting limitation closed (6 of 6 portfolios); `MISSING_PREREQUISITES` §D1 unblocked — portraits request WRITTEN | none needed — all nine ministers ORIGINAL FICTIONAL PERSONS per rule 9's unreversed half, names signed (ruling R1, collision search in the pre-report §4) | decision Budget/Approval deltas at event scale + the two ruled shock fields (TradeBalance per the meeting precedent, YouthUnemployment per the mean-reverting-stat rule); ONE passive term — Education → youth-U reversion target (R3); Defense/FA decisions-only, biases authored-but-inert |
-   | R4-5 | **C5: productivity (GDP/hour, OECD PPP)** | directive §C5; LAST per Elias's own B4 priority ruling | 6/6 `[VERIFIED]`, one basis, one vintage; own-past-only display per the OECD caution | indirect ONLY if coupled to PotentialGrowthRate — which this scope defers (ruling #4) |
-
-   **CANDIDATES OUT, explicitly:**
-   - **C4 / credit-rating follow-ons** (§A1 deficit-term recalibration, Poland's monotonicity break,
-     C4 closure): fiscal-coupled — **sequenced behind the stock-vs-flow mechanism report** (§F1
-     chain). The one Step C batch that does not fold in.
-   - **Item 10 and everything the collision map marks**: gated 13 Sept. Checked per candidate — no
-     candidate touches `ParliamentSeats`/`PartyArchetype`/`ElectionSystem`/`PartyInks`/party art.
-     The portfolios add PERSONS, not parties. ElectionRecord/election-night enrichment stays
-     R2-gated.
-   - **A bond-market mechanic**: in no source list. Stated as a FINDING for the mechanism report:
-     the bond/debt-instrument design space is unclaimed by Round 4, so maturity-structure or
-     primary-surplus designs face no collision — and the report should CLAIM that namespace.
-
-   **THE RULE-11 STACKING POSTURE (the scope's one structural decision):** first pass for every new
-   stat is **inputs-only** — new stats READ existing state (youth-U off the unemployment gap, life
-   expectancy off poverty/healthcare, Gini off welfare/tax/unemployment, housing off the rate and
-   HousingAssistance) and **write nothing back** to any existing tracked variable. No new entrant
-   into `PotentialGrowthRate`'s or LFPR's combined ceilings (both named heavily-stacked by rule 11's
-   own text); couplings become separately-ruled follow-ons with their ceiling audits attached.
-
-   **VALIDATION BAR PER BATCH** (named up front): aggregation-equivalence extension for any new
-   daily model (enumeration stated), full trajectory matrix vs a fresh pre-batch baseline (both
-   diff columns), captures at both sizes for the new rows/screens, the save round-trip re-run
-   (the reflection dump and SaveGame absorb new `EconomyState` fields automatically — verify, don't
-   assume), publication cadences wired where the seed doc has real release rules and live-until-
-   sourced otherwise (Step A's recorded pattern), and each batch's pre-report listing its `[GAP]`/
-   blocker figures — currently exactly ONE across the whole scope: C2's real-wage basis
-   reconciliation.
-
-   **RULINGS NEEDED (the package):** (1) scope in/out as above; (2) batch order R4-1→R4-5;
-   (3) C1's primary metric — homeownership (status quo of the B6 record) vs overburden (the
-   directive's original recommendation, now `[VERIFIED]` for the EU five; USA needs one of B6's
-   three stated treatments — recommend overburden-primary with USA-on-homeownership, since the
-   data-honesty objection died 2026-08-02); (4) C5↔PotentialGrowthRate coupling deferred out of
-   Round 4 (recommend YES, defer); (5) the inputs-only posture as the standing first-pass rule for
-   Round 4 (recommend YES); (6) whether Elias wants naming/content veto on the three portfolios
-   before R4-4 builds (they are player-facing fictional characters — recommend a name list for
-   sign-off in the batch's pre-report).
+   *(The scoped plan, batch table, stacking posture and rulings package that lived here moved to
+   `COMPLETED.md` §19 on close-out, 2026-08-17. The five CLAUDE.md batch records remain the
+   detailed authority.)*
 7. **Continuous Time Migration — Phases 1 through 5** (the actual daily-granularity conversion of each system's math, safest-first, core macro engine last). This is deliberately positioned after the political-systems work — it's a separate concern (simulation granularity, not who can change policy) and touching the same files for two unrelated reasons in the same window is worth avoiding.
 8. **NEW (2026-07-31) — Build a save/load system.** Not yet scoped, not yet sequenced into the numbered order above (appended here rather than renumbering 1-7, which are referenced extensively throughout this document and `CLAUDE.md`). **Recommendation, pending Elias's confirmation**: scope and build this before or alongside Round 4 (item 6) — Round 4 is already unscoped and is the natural next planning point, and building more features on top of an unpersisted game only compounds the amount of state a save system will eventually need to cover. Reasoning this is a real severity issue, not a nice-to-have: confirmed via direct investigation (zero `PlayerPrefs`/`JsonUtility`/`BinaryFormatter`/any persistence mechanism anywhere in the codebase) that every Unity Editor/Play-mode restart discards ALL game state silently, with no error or warning - and the amount of state that now matters has grown substantially since this was last a non-issue: Cabinet ministers and their competence/philosophy, Parliament seat composition, any pending TaxBill/BudgetBill and its DaysRemaining countdown, every draft dictionary across every gated tab, the calendar date itself, Fed Chair terms, SWF holdings - losing any of this on an ordinary restart is a real loss of play, not a cosmetic gap. This was the leading suspect for a live-play anomaly where an SWF draft never became standing across two observed fiscal-year cycles - **now confirmed as the actual cause**: Elias confirmed Unity was closed/reopened multiple times between setting the draft and the next fiscal date, and the underlying bill mechanism itself was independently proven correct across two full fiscal years via a targeted diagnostic (see CLAUDE.md's "Master Sequence step 5a/5b/5c" writeup). Needs its own design pass before implementation starts, not a guess: what serializes cleanly under Unity's own `JsonUtility` (which - like Unity's Inspector serialization generally - doesn't support `Dictionary<>` natively either, the same limitation already visible as `UAC1009` warnings on several existing fields, e.g. `PolicyDecision.TaxRateOverrides`/`SpendingLineChanges`/every Sector-override dictionary; `BudgetBill`'s own dictionaries would hit the same wall), whether a mid-cycle pending bill's DaysRemaining and a real save timestamp interact cleanly, and how much of `World`/`Country`'s current in-memory object graph can serialize as-is versus needs a dedicated save-data shape. Escalate format/scope decisions rather than guessing, per this document's own working discipline item 4.
 

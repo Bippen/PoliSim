@@ -247,6 +247,11 @@ namespace PoliSim.Simulation
                     MacroSystem.ApplyHomeownershipDaily(country);
                     MacroSystem.ApplyHousePriceIndexDaily(country);
 
+                    // ROUND 4 BATCH R4-5 (C5): same slot, the arc's last stat - pure trend
+                    // compounding, reads PotentialGrowthRate only, nothing consumes it (the
+                    // coupling is ruled out of Round 4; see MacroSystem's C5 header).
+                    MacroSystem.ApplyProductivityDaily(country);
+
                     // CONTINUOUS TIME PHASE 3, part 2: the money resolution. Revenue, benefits, welfare,
                     // interest, the SWF's contribution/return/draw and the debt stock itself all move
                     // daily now; only the BUDGET RESOLUTION that decides what to spend stays on the turn

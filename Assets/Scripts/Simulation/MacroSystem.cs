@@ -989,6 +989,46 @@ namespace PoliSim.Simulation
         public static void ApplyHomeownershipDaily(Country country) => ApplyHomeownership(country, HomeownershipReversionSpeedPerDay);
         public static void ApplyHousePriceIndexDaily(Country country) => ApplyHousePriceIndex(country, MacroSliceFractionPerDay);
 
+        // --- ROUND 4 BATCH R4-5 (C5): labour productivity - the arc's last stat ---
+        // Inputs-only per the standing rule, and deliberately the MINIMAL member of the compounding
+        // class: the RealWageIndex kit with its two cyclical terms removed. Growth is pure 1:1
+        // trend pass-through on PotentialGrowthRate - which is the textbook long-run identity in
+        // the other direction (trend growth IS productivity growth to first order), keeps
+        // Productivity consistent-by-construction with the real wage index's own
+        // RealWageProductivityPassThrough constant, and preserves the seed doc's recorded
+        // euro-area/US divergence through the PotentialGrowthRate seeds without any new per-country
+        // figure. Cyclical channels (labour hoarding, investment deepening) are NOTED-NOT-BUILT
+        // follow-ons, as is the big one the scoping ruled out of Round 4 entirely (ruling #4):
+        // productivity REPLACING the wage index's direct PotentialGrowthRate read. Until that
+        // separately-ruled coupling lands, nothing consumes this stat - it reads and displays.
+
+        /// <summary>Productivity growth tracks trend growth one-for-one - see the section header;
+        /// the same argument RealWageIndex/HousePriceIndex document, applied to the quantity the
+        /// other two borrow it from.</summary>
+        private const float ProductivityTrendPassThrough = 1f;
+
+        /// <summary>Same safety-clamp shape as the other compounding members: growth clamps, the
+        /// level never does (a real USD-PPP-per-hour level, unbounded; §A.9b display).</summary>
+        private const float MaxProductivityGrowthPerTurnPercent = 10f;
+        private const float MinProductivityLevel = 1f;
+
+        /// <summary>Compounds EconomyState.Productivity - the compounding-class kit (power slice
+        /// via <paramref name="sliceExponent"/>, growth clamp, level floor). Unlike its two class
+        /// siblings the LEVEL is real (USD PPP per hour, one basis for all six) - but it is
+        /// OWN-PAST-ONLY per the OECD caution recorded in the seed doc: no cross-country level
+        /// comparison is claimed or displayed anywhere.</summary>
+        public static void ApplyProductivity(Country country, float sliceExponent = 1f)
+        {
+            EconomyState state = country.State;
+            float growthPerTurnPercent = Mathf.Clamp(
+                ProductivityTrendPassThrough * country.PotentialGrowthRate,
+                -MaxProductivityGrowthPerTurnPercent, MaxProductivityGrowthPerTurnPercent);
+            state.Productivity = Mathf.Max(MinProductivityLevel,
+                state.Productivity * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
+        }
+
+        public static void ApplyProductivityDaily(Country country) => ApplyProductivity(country, MacroSliceFractionPerDay);
+
         // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
 
         /// <summary>Points BirthRate declines per turn on its own - a real, well-documented, near-universal secular fertility decline across developed nations, not a country-specific policy response. Deliberately small (over a 500-turn run this alone would move BirthRate by 5 points, well before which the lower-starting countries hit MinBirthRate and stop).</summary>

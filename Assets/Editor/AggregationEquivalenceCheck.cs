@@ -231,10 +231,11 @@ namespace PoliSim.EditorTools
             // The multi-resolution buckets were built in Phase 0 for daily data and (finding, this
             // pass) never received a daily offer until History.Append moved to AdvanceDay. This
             // section is the first check that can fail if that plumbing regresses. WHAT IT
-            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for FIVE
+            // ENUMERATES (rule 14): a real 200-day sim (fresh world, no policy), then for SIX
             // daily-varying series - PovertyRate, DebtToGdpRatio, the daily-native
-            // YouthUnemployment (Round 4 batch 1), RealWageIndex (batch 2) and HousePriceIndex
-            // (batch 3), each asserted rather than assumed per the batch directives - three assert
+            // YouthUnemployment (Round 4 batch 1), RealWageIndex (batch 2), HousePriceIndex
+            // (batch 3) and Productivity (batch R4-5), each asserted rather than assumed per the
+            // batch directives - three assert
             // families:
             // cadence (Daily/Weekly/Monthly/Quarterly counts within one of 200/1, /7, /30, /91,
             // Daily capped at StatHistory.MaxEntries), variation (Daily holds at least two DISTINCT
@@ -257,6 +258,8 @@ namespace PoliSim.EditorTools
             // a 200-day no-policy window shows variation depends on the central-bank calendar, not
             // on bucket plumbing - the assert would test the wrong thing. HousePriceIndex is IN,
             // same reasoning as RealWageIndex (compounds daily regardless of the rate path).
+            // Productivity (Round 4 batch R4-5) is IN by the same compounding argument - pure
+            // trend growth means strictly monotone dailies, the cleanest variation case possible.
             {
                 var bucketGo = new GameObject("AggEq_Buckets");
                 try
@@ -275,7 +278,8 @@ namespace PoliSim.EditorTools
                              { ("PovertyRate", bc.History.PovertyRate), ("DebtToGdpRatio", bc.History.DebtToGdpRatio),
                                ("YouthUnemployment", bc.History.YouthUnemployment),
                                ("RealWageIndex", bc.History.RealWageIndex),
-                               ("HousePriceIndex", bc.History.HousePriceIndex) })
+                               ("HousePriceIndex", bc.History.HousePriceIndex),
+                               ("Productivity", bc.History.Productivity) })
                     {
                         total += 3;
                         int expectedDaily = Mathf.Min(BucketDays, StatHistory.MaxEntries);
@@ -567,6 +571,33 @@ namespace PoliSim.EditorTools
                 total += 2;
                 passed += Compare($"{id}.Homeownership", cv.State.Homeownership, cw.State.Homeownership) ? 1 : 0;
                 passed += Compare($"{id}.HousePriceIndex", cv.State.HousePriceIndex, cw.State.HousePriceIndex) ? 1 : 0;
+            }
+
+            // --- ROUND 4 BATCH R4-5 (C5): productivity ----------------------------------------------
+            // WHAT IT ENUMERATES (rule 14): the arc's simplest model - a constant-growth power
+            // slice reading exactly one input (PotentialGrowthRate), which never moves in this
+            // check, so there is nothing to drive and holding inputs is automatic. Two countries
+            // chosen for the structural extremes the seed doc's own qualitative claims name:
+            // Germany (the highest level, 94.54) and Poland (the lowest, 54.09, with the fastest
+            // catch-up trend - the largest per-turn growth in the set, hence the largest possible
+            // telescoping error if the slice took the wrong shape). Constant-growth power slices
+            // are EXACT by construction - float noise only, no drift budget, same as every Round 4
+            // section here.
+            foreach (CountryId id in new[] { CountryId.Germany, CountryId.Poland })
+            {
+                World p1 = WorldFactory.CreateDefault();
+                World p2 = WorldFactory.CreateDefault();
+                Country cp = p1.GetCountry(id);
+                Country cq = p2.GetCountry(id);
+
+                MacroSystem.ApplyProductivity(cp);                                      // one turn step
+                for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
+                {
+                    MacroSystem.ApplyProductivityDaily(cq);
+                }
+
+                total++;
+                passed += Compare($"{id}.Productivity", cp.State.Productivity, cq.State.Productivity) ? 1 : 0;
             }
 
             Debug.Log($"=== Phases 1-5 aggregation-equivalence: {passed} of {total} within {TolerancePercent}% (plus the bucket asserts) ===");

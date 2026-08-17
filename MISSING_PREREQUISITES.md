@@ -348,14 +348,15 @@ Poland; the defect is logged and should not be re-reported as a review finding.
 
 # D. Waiting on another task
 
-## 🟡 D1. Cabinet portraits — ✅ UNBLOCKED by R4-4 (2026-08-17). Request WRITTEN, NOT SENT — moved to the E class
+## 🟡 D1. Cabinet portraits — ✅ UNBLOCKED by R4-4; request **SENT 2026-08-17** (Elias, per the R4-5 directive). Awaiting delivery
 
-**Task:** portrait art for Defense, Foreign Affairs and Education ministers.
+**Task:** portrait art for Defense, Foreign Affairs and Education ministers — 9 portraits, request in
+`CLAUDE_DESIGN_ASSET_REQUEST.md` §5, filenames derived from the signed names.
 
-**Was:** waiting on those portfolios being authored — filenames derive from minister names, and the
-names did not exist. R4-4 authored all nine (signed list, ruling R1), and the request is now written in
-`CLAUDE_DESIGN_ASSET_REQUEST.md` §5 with all nine derived filenames. Per the E2 convention, sending it
-is Elias's action.
+**History:** was blocked on the portfolios being authored (no names → no derivable filenames). R4-4
+authored all nine (signed list, ruling R1); the request was written the same day and Elias sent it.
+Delivery lands per the E2 convention when it lands — import per §3's treatment rules,
+`ImporterSettingsCheck`/`DeliveredAssetCheck` pick up the 18 files (9 × 2).
 
 **Blocks:** nothing. The game renders the procedural placeholder for the nine until art lands —
 coverage of the EXISTING 16 (9 ministers + 7 Fed chairs) is unaffected.

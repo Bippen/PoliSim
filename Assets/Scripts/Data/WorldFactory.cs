@@ -285,6 +285,25 @@ namespace PoliSim.Data
             italy.BaselineHomeownership = 74.4f;   // ⚠ [ESTIMATED] fitted bridge, 95% band 66.8-82.1
             sweden.BaselineHomeownership = 62.1f;  // ⚠ [ESTIMATED] fitted bridge, 95% band 54.9-69.4
 
+            // ROUND 4 BATCH R4-5 (C5): labour productivity, GDP per hour worked. ALL SIX on ONE
+            // IDENTICAL basis, stated per line as the build directive requires: OECD `DSD_PDB`,
+            // MEASURE=GDPHRS, ACTIVITY=_T, UNIT_MEASURE=USD_PPP_H, PRICE_BASE=V (current prices),
+            // reference year 2022 (the newest complete same-basis cross-section - mixing France/
+            // USA's 2024 values in would fabricate a cross-section that never existed), LIVE
+            // VINTAGE RETRIEVED 2026-08-02. ⚠ The retrieval date is part of the basis: this series
+            // RESTATES WHOLESALE (the doc's verification-integrity instance - the 2026-04-07
+            // archive differs 1-2.3% at the same key), so a bare number is indistinguishable from
+            // an error. The old Statista Sweden/Poland placeholders are SUPERSEDED history, not a
+            // live basis split. Level is OWN-PAST-ONLY per the OECD methodology caution; the
+            // ordering Germany > USA > Sweden > France > Italy > Poland matches the doc's own
+            // recorded qualitative claims (Italian stagnation, Polish catch-up).
+            germany.State.Productivity = 94.54f; // [VERIFIED] OECD DSD_PDB GDPHRS USD_PPP_H V 2022, retrieved 2026-08-02
+            usa.State.Productivity = 90.83f;     // [VERIFIED] same basis, same vintage (revised DOWN vs the 2026-04 archive - the one negative restatement)
+            sweden.State.Productivity = 89.95f;  // [VERIFIED] same basis, same vintage (supersedes the Statista ~70 placeholder)
+            france.State.Productivity = 86.32f;  // [VERIFIED] same basis, same vintage
+            italy.State.Productivity = 78.20f;   // [VERIFIED] same basis, same vintage - narrowly above the OECD 72.59 average
+            poland.State.Productivity = 54.09f;  // [VERIFIED] same basis, same vintage (supersedes the Statista ~24.5 placeholder)
+
             // States open AT their baselines - the standing zero-gap idiom, from one authority
             // rather than twelve constructor arguments that could drift from the block above.
             // RealWageIndex opens at 100 for ALL SIX by ruling (2026-08-16): the seed doc's §5

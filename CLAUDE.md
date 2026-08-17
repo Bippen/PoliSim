@@ -9113,3 +9113,140 @@ ceiling audit attached whenever it returns), so R4-5 ships inputs-only on the st
 with no new ruling needed beyond its pre-report's own step-0 confirmation. After R4-5, Round 4's
 Step C is complete except C4, which stays sequenced behind the stock-vs-flow mechanism report
 per the F1 chain.
+
+## Round 4 batch R4-5 — C5 productivity ships, and the arc closes (2026-08-17)
+
+The fifth and last batch, against pre-batch HEAD `453e23f`, LAST per Elias's standing B4 priority
+ruling. Its second job — the Round 4 close-out — follows the batch record below.
+
+### Step 0 — CLEAN, and the arc's correction tally closes at 2-of-5
+
+The scoping claim ("6/6 `[VERIFIED]`, one basis, one vintage") is TRUE at HEAD: the seed doc's §6
+live table is all-OECD (`DSD_PDB` · `GDPHRS` · `ACTIVITY=_T` · `USD_PPP_H` · `PRICE_BASE=V` ·
+ref year 2022 · **live vintage retrieved 2026-08-02**, all nine key dimensions recorded). The
+directive's expected hazard — the Sweden ~70 / Poland ~24.5 Statista split — is SUPERSEDED
+history, not a live basis problem: those were the placeholders the doc's own source-conflict
+warning targeted, replaced by the OECD pull, and the warning survives below the table as audit
+trail. So "3-for-3 corrections expected" did not materialize; the tally ends **2 corrections in
+5 batches** — enough to keep step 0 mandatory forever, which is the tally's real lesson. Two
+caveats ride into the seed comments per the doc's own rules: the series RESTATES WHOLESALE (the
+retrieval date is part of the basis — the 2026-04 archive differs 1–2.3% at the identical key),
+and 2022 is the newest COMPLETE same-basis cross-section (mixing France/USA 2024 values in would
+fabricate a cross-section that never existed).
+
+### What shipped
+
+One `EconomyState` field (35 → 36): **Productivity**, GDP per hour worked, USD PPP — seeded as
+the six real levels with per-line basis comments (Germany 94.54 · USA 90.83 · Sweden 89.95 ·
+France 86.32 · Italy 78.20 · Poland 54.09), the ordering matching the doc's own recorded
+qualitative claims (Italian stagnation, Polish catch-up). Deliberately the **minimal member of
+the compounding class**: the RealWageIndex kit with its two cyclical terms removed — growth is
+pure 1:1 trend pass-through on `PotentialGrowthRate`, which is consistent-by-construction with
+the wage index's own `RealWageProductivityPassThrough` constant and preserves the seed doc's
+euro-area/US divergence through the existing per-country trend seeds with no new figure. Power
+slice daily, growth clamp ±10/turn, level floor, level unbounded. `Clone()` needed nothing —
+MemberwiseClone absorbed the field, the R4-3 structural fix earning its keep a second time.
+
+**Inputs-only at its strictest**: the stat reads exactly one input and NOTHING consumes it — the
+PotentialGrowthRate coupling is ruled OUT of Round 4 (ruling #4), and the wage index's direct
+trend read is UNTOUCHED. Both directions of the productivity coupling go on the write-back queue
+below. **Publication: live-until-sourced, the branch's second member** — §6 records basis and
+vintage in full but NO release rule and no same-release bridge, so the stat displays live rather
+than publishing on an invented calendar (the absence is documented at the `PublishedStat` enum
+beside HPI's). **Display: §A.9b negative-fill decided deliberately** — unlike the two index
+siblings the level is REAL, but it is still unbounded and any fill denominator would be an
+invented ceiling. The trailing text is the OECD's own usage rule ("$ per hour (PPP), against
+your own past"); the Society ledger shows only the player's country, so the OECD's
+own-past-only caution is satisfied structurally, and the text keeps it honest anyway.
+
+### The bar — the arc's fifth green run, every number on prediction
+
+- **Equivalence 110/110 within 3%** — Germany (highest level) and Poland (lowest level, fastest
+  catch-up trend — the largest possible telescoping error if the slice took the wrong shape) at
+  0.0007%/0.0015%; nothing to drive because the model's one input never moves in the check.
+  **Buckets: Productivity IN** (pure trend compounding — strictly monotone dailies, the cleanest
+  variation case in the set), asserted D=200/W=29/M=7/Q=3 + variation + divergence.
+- **Matrix 6/6 vs `pre_r4_5_453e23f`: 37 of 37 shared fields byte-identical**, exactly
+  `Productivity` named NEW — the inputs-only inversion, bit-for-bit, a fifth and final time.
+- **Save/load 12/12 clean at 36 reflected fields** (35→36 verified in the compare).
+- **Cadence: the stat table md5-identical a third consecutive time** — live-until-sourced means
+  no new row, and the check proves the absence rather than assuming it.
+- **Captures 81/81 at both sizes, 0 failed, 0 overflows, symmetric.** Society carries six rows;
+  Productivity renders beside Real wages (Labor ink, negative-fill) and the warm-up's own
+  trajectory shows the trend channel working on camera — USA 96.5 at turn 3 against the 90.83
+  seed, which is three years of ~2% compounding to the decimal. No pinned state needed: a
+  ledger row always renders, which is exactly why R4-4 needed the pinned pattern and the four
+  stat batches never did.
+
+---
+
+## ROUND 4 CLOSE-OUT — the arc verdict (2026-08-17)
+
+**Five batches, ~36 hours of shipped work, zero rollbacks, zero post-ship defects found so far.**
+EconomyState grew 28 → 36 tracked fields (seven new stats + the R4-2/R4-3 index conventions),
+the cabinet grew 3 → 6 portfolios (9 ministers, 18 scenarios, 2 shock channels, 1 model term),
+and every batch shipped against a fresh baseline with its full bar green on the first run —
+except R4-4's captures, which needed the driver extended, and that extension is itself the arc's
+tooling contribution.
+
+**What the batch discipline proved, stated as the five records prove it:**
+
+1. **Step 0 pays for itself**: 2 corrections in 5 batches (R4-1's provisional flags and
+   monthly-class wiring; R4-2's 5/6+ESTIMATED and already-closed normalization), both caught
+   before a wrong number entered code. The two CLEAN batches don't argue for skipping it — they
+   argue the streak is unpredictable.
+2. **The bar is a function of the rulings, not the batch label**: R4-4 entered as "content, no
+   stat bar" and left with an equivalence extension because one ruling (R3) added a model term.
+   The check follows the code.
+3. **Byte-identical is a usable criterion when it is DERIVED**: three stat batches and one
+   content batch held 37-of-37 bit-for-bit because isolation was proven structurally
+   (inputs-only; empty appointments; per-consumer RNG streams) — and when counts landed
+   suspiciously equal (83/83, 69/69), the distrust rule found real movement underneath rather
+   than accepting the coincidence.
+4. **Enum-iterated automation absorbs growth**: the stress appointments, capture search, cadence
+   check and reflection-based save compare took three new portfolios and one new field with two
+   edited lines between them (the worst-case selector's new terms).
+5. **Exclusion-with-reason beats blanket coverage**: three recorded bucket-exclusion variants
+   (flat-is-correct, float32-epsilon, calendar-dependent) each name why the assert would measure
+   the wrong thing — the anomaly-coverage philosophy from the file's own preamble, applied in
+   miniature.
+
+**THE WRITE-BACK RULING QUEUE — the arc's noted-not-built follow-ons, consolidated in one place
+as the standing queue.** Each entry is a separately-ruled future item carrying a rule-11
+stacking audit when it comes up; none is scheduled; the inputs-only posture holds until a ruling
+says otherwise:
+
+| # | coupling | origin | the audit it will need |
+|---|---|---|---|
+| Q1 | Gini → ApprovalRating (inequality as a political force) | R4-2 | ApprovalRating's combined formula |
+| Q2 | RealWageIndex → ConsumerConfidence | R4-2 | confidence inputs |
+| Q3 | Productivity ↔ PotentialGrowthRate (either direction — the ruling-#4 deferral) | scoping + R4-5 | **PotentialGrowthRate's heavily-stacked ceiling — the named rule-11 case** |
+| Q4 | Productivity replacing RealWageIndex's direct trend read | R4-5 | wage-index growth channel |
+| Q5 | Productivity cyclical terms (labour hoarding; investment deepening) | R4-5 | none if kept self-contained; Investment read otherwise |
+| Q6 | HPI ↔ Investment (housing-supply/construction channel) | R4-3 | Investment's GDP identity |
+| Q7 | HousingOverburden → ApprovalRating (housing stress as politics) | R4-3 | ApprovalRating (stacks with Q1) |
+| Q8 | LifeExpectancy secular drift (the BirthRate precedent) | R4-1 | none — self-contained |
+| Q9 | FA/Defense passive competence channels (their authored biases are inert) | R4-4 | per-channel |
+| Q10 | FA ↔ ForeignPolicySystem seam (absorb: philosophy-differentiated meeting pools) | R4-4 | none economic — content/design |
+
+(The R4-1 youth-retraining candidate left this queue by SHIPPING as R4-4's Education competence
+term — the queue's first graduation, and the template: one ruling, one audit, one batch.)
+
+**Also flagged, non-coupling:** the ForeignPolicySystem meeting cadence (~3.65/turn at 365-day
+turns — intended or inherited?) is a PLAYTESTING question, deliberately not tuned in code.
+
+### THE BOARD — where the project stands after Round 4 (the next sequencing conversation starts here)
+
+| item | state | gate |
+|---|---|---|
+| **Stock-versus-flow mechanism report** | NEXT fiscal item; its namespace is claimed and waiting (bond/debt-instrument space explicitly unclaimed by Round 4; candidates recorded: maturity structure, inflation erosion of the nominal stock, primary-surplus rules) | its own pass with its own ruling — deliberately not started at this close-out's tail |
+| **C4 / credit-rating follow-ons** | parked | behind the mechanism report (§F1 chain) |
+| **Item 10** | gated | 13 Sept 2026; collision map stands |
+| **GitHub GC re-check** | dated edge | ~2026-08-23, one command |
+| **Editor checklist** | parked | access-gated |
+| **D1 portraits** | request SENT 2026-08-17 (Elias) | delivery lands when it lands — import per §3 treatment rules; `ImporterSettingsCheck`/`DeliveredAssetCheck` absorb the 18 files; placeholder rendering until then |
+| **Write-back ruling queue Q1–Q10** | standing, unscheduled | one ruling + one audit each, per the posture |
+
+**Round 4 is closed in the Master Sequence (item 6 → DONE), the roadmap block moved to
+`COMPLETED.md` §19, and the roadmap is smaller than it was this morning — which is the standing
+pattern doing what it says.**

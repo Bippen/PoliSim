@@ -4643,6 +4643,15 @@ namespace PoliSim.UI
             DrawDerivedStatRow("Real wages", -1f,
                 UiFormat.Number(state.RealWageIndex, 1), "index, 100 = start of term",
                 UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
+            // ROUND 4 BATCH R4-5 (C5): productivity, beside its wage sibling. §A.9b negative-fill
+            // DECIDED DELIBERATELY: unlike the two index siblings the level is REAL (USD PPP per
+            // hour, one basis), but it is still unbounded, and any fill denominator would be an
+            // invented ceiling. The trailing text carries the OECD's own usage rule - this ledger
+            // shows only the player's country, so cross-country comparison is structurally absent,
+            // and the text keeps it honest anyway.
+            DrawDerivedStatRow("Productivity", -1f,
+                UiFormat.Number(state.Productivity, 1), "$ per hour (PPP), against your own past",
+                UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
             // ROUND 4 BATCH 3 (C1): the housing three, with THE ASYMMETRY DECIDED DELIBERATELY -
             // the primary metric leads per the ruling: overburden first for the EU five,
             // homeownership first for the USA, whose overburden row is ABSENT (not zero, not

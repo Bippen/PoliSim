@@ -57,7 +57,13 @@ namespace PoliSim.Data
         /// Case-Shiller monthly) but the seed doc records NO housing-price release rule and no
         /// same-release bridge to any wired family - so it stays LIVE-UNTIL-SOURCED, Step A's other
         /// branch, first exercised by Round 4 here. Wiring t+65 from general knowledge would be
-        /// exactly the fabrication this enum's doc comment forbids.</summary>
+        /// exactly the fabrication this enum's doc comment forbids.
+        ///
+        /// ⚠ Productivity (ROUND 4 BATCH R4-5) is the live-until-sourced branch's SECOND member,
+        /// by the same test: the seed doc's §6 records the OECD basis and vintage in full but NO
+        /// release rule and no same-release bridge (the annual Productivity Statistics update has
+        /// no recorded date there), so the stat displays live rather than publishing on an
+        /// invented calendar.</summary>
         Homeownership
     }
 

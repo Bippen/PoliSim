@@ -135,6 +135,18 @@ namespace PoliSim.Data
         /// coupling lives in its growth term: low policy rates inflate house prices.</summary>
         public float HousePriceIndex;
 
+        /// <summary>ROUND 4 BATCH R4-5 (C5): labour productivity - GDP per hour worked, USD PPP
+        /// (OECD DSD_PDB `GDPHRS`/`USD_PPP_H`, current prices, ref year 2022, live vintage
+        /// retrieved 2026-08-02 - the series restates wholesale, so the retrieval date is part of
+        /// the basis). Seeded as a real LEVEL, all six countries on the one identical basis - but
+        /// **OWN-PAST-ONLY by the OECD's own methodology caution**: cross-country level comparison
+        /// is not claimed anywhere (the Society ledger shows only the player's own country, which
+        /// satisfies the caution structurally). Compounding class (the RealWageIndex kit minus its
+        /// cyclical terms - pure 1:1 trend pass-through), level unbounded, §A.9b negative-fill
+        /// display. Inputs-only: the PotentialGrowthRate COUPLING is ruled OUT of Round 4
+        /// (ruling #4) - productivity reads and displays, nothing consumes it.</summary>
+        public float Productivity;
+
         /// <summary>
         /// A stylized 0-100 crime index (higher = more crime), NOT a literal transformation of any
         /// single real indicator - "crime" as a broad concept has no single clean cross-country
@@ -291,7 +303,8 @@ namespace PoliSim.Data
             float naturalBirthRate = float.NaN, float naturalNetMigrationRate = float.NaN,
             float youthUnemployment = 15f, float lifeExpectancy = 80f,
             float gini = 30f, float realWageIndex = 100f,
-            float housingOverburden = 0f, float homeownership = 65f, float housePriceIndex = 100f)
+            float housingOverburden = 0f, float homeownership = 65f, float housePriceIndex = 100f,
+            float productivity = 85f)
         {
             GDP = gdp;
             Inflation = inflation;
@@ -317,6 +330,7 @@ namespace PoliSim.Data
             HousingOverburden = housingOverburden;
             Homeownership = homeownership;
             HousePriceIndex = housePriceIndex;
+            Productivity = productivity;
             Population = population;
             BirthRate = birthRate;
             DeathRate = deathRate;
