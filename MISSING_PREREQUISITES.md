@@ -16,7 +16,7 @@ and 8 are weeks of work each and are **not** in this file, because nothing preve
 | ~~**Elias — database access**~~ | ~~16~~ **0 blocking** | ✅ **ALL FOUR BATCHES SOURCED 2026-08-02.** C1/C2/C3/C5 can be built. Three *quality debts* remain — see below — but no batch waits on a missing figure |
 | ~~**Elias — visual review**~~ | ~~11~~ **0 — all confirmed 2026-08-02** | Step 5 CLOSED |
 | ~~**Claude Design**~~ | **0 — delivered and imported 2026-08-02** | — |
-| **Another task first** | ~~3~~ ~~2~~ **1** | Step C4 closure (waiting on the **parked fiscal-divergence pass** — see F1's 2026-08-12 reconciliation). *Round 4 scoping released 2026-08-02; cabinet portraits released 2026-08-17 by R4-4 (request written, D1 → E class)* |
+| **Another task first** | ~~3~~ ~~2~~ ~~1~~ **0** | ✅ Step C4's gate DISSOLVED 2026-08-17 — the fiscal-divergence pass shipped (erosion + maturity); C4 moved to "waiting on Elias" (§A1's damping ruling, then one calibration pass on post-erosion baselines). *Nothing now waits on another task* |
 
 ---
 
@@ -119,6 +119,11 @@ full-ladder 16-notch moves. Present in plain `baseline` at both horizons.
 **Recommendation:** cap the deficit contribution at ~2–3 notches *and* feed it a multi-turn average, then
 re-run the 5-anchor check before the matrix. Also worth deciding whether a rating should update per turn
 at all — an annual review cycle would dissolve the thrash by construction rather than damping it.
+
+⚠ **Sweep note (2026-08-17): A1 is now the ONLY thing between C4 and done** (F1's divergence gate
+dissolved — see §F1), and whenever this ruling lands, the 5-anchor re-calibration runs against
+POST-EROSION baselines: discontinuities #4/#5 recalibrated every debt path the original
+calibration read, so the old anchor figures are not directly comparable.
 
 **Blocks:** Step C4 being called done. The tile ships meanwhile, correct for USA/Italy/Poland.
 
@@ -307,17 +312,15 @@ direction to the USA** — lower debt than Germany, four notches worse. `RiskPre
 discounts and never penalises, so `CreditRatingSystem` will over-rate Poland. **Run the 5-anchor check as
 a six-anchor check and expect Poland to fail first.** This belongs to F1's closure work; see seed §7.
 
-## B6. Deferred — housing cost overburden (4 items, only if re-adopted)
+## ~~B6. Deferred — housing cost overburden~~ — ✅ CLOSED 2026-08-17: every item here was answered by R4-3, and this entry never absorbed it
 
-Italy, France and Poland are `[BOUNDED]` 4.0–9.0 — real, honestly derived from Eurostat naming only
-countries above 9.0 and below 4.0, but **not values and never to be seeded as such**. Exact figures need
-direct `ilc_lvho07a` database access; summary articles cannot produce them.
-
-Plus the **USA methodology decision**: Eurostat measures >40% of disposable income, US convention >30% or
->50%. Nothing matches. Options: import with the bias documented, mark USA `[GAP]` and seed the EU five
-only, or use homeownership for the USA (65.3 exists and is comparable).
-
-**Blocks:** nothing. Overburden lost to homeownership as C1's primary metric on data-honesty grounds.
+All four items resolved when overburden was RE-ADOPTED (the R4-3 ruling reversed to
+overburden-primary): Italy/France/Poland's `[BOUNDED]` placeholders were superseded by exact
+`[VERIFIED]` whole-population `ilc_lvho07a` values from the 2026-08-02 API closures (5.1 / 7.0 /
+5.2, seeded in `WorldFactory`), and the USA methodology decision was made by ruling — option 3,
+homeownership as the USA's primary metric, the asymmetry deliberate everywhere (model early-out,
+absent UI row, calendar guard, equivalence assert). Closed by the Phase-3 derived sweep, which
+found the answered-but-never-absorbed state this register's own E1/E2 pattern warns about.
 
 ## Not gaps — do not spend time on these
 
@@ -428,7 +431,18 @@ and `DeliveredAssetCheck` compares every zip's contents against what exists unde
 
 # F. Waiting on an upstream simulation defect
 
-## F1. 🔴 Step C4's CLOSURE — SUPERSEDED 2026-08-11: it now waits on the UNBOUNDED DEBT DIVERGENCE work
+## F1. 🔴 Step C4's CLOSURE — ⚠ GATE DISSOLVED 2026-08-17: the divergence work SHIPPED; C4 now waits on A1's ruling ONLY
+
+> ✅ **The parked fiscal-divergence pass this entry waited on ran and closed** (the mechanism
+> report `bcbba47`, the erosion term `685ebd5`, the maturity rate-lag `b05150f` — two identity
+> terms the ledger was missing, found by measurement, shipped one per baseline; the divergence
+> finding closed in CLAUDE.md against the erosion commit). **What remains between C4 and "done"
+> is exactly §A1 above** — Elias's ruling on damping the deficit term — plus its calibration
+> pass, and ⚠ that pass's 5-anchor re-run must use POST-EROSION baselines: discontinuities #4
+> and #5 recalibrated every debt path the original calibration read. This entry's supplier is
+> now A1, not a parked pass. The section below stays as the measurement record it is.
+
+### The superseded 2026-08-11 framing follows
 
 ⚠ **RECONCILED 2026-08-12.** This entry read *"the blocker is RESOLVED as of 2026-08-02. Awaiting
 Elias's sign-off"* for eleven days after Elias's 2026-08-11 ruling superseded it (roadmap, Open

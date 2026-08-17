@@ -9516,3 +9516,60 @@ it just stopped being fictional.
 **F1 closes.** The fiscal queue emptied with it: the mechanism report's findings are all
 dispositioned — R1–R3 shipped (erosion), R4 shipped (maturity lag), R5 shipped (this), F2
 recorded as a known artifact.
+
+## The derived close-out sweep — every open item at HEAD, dispositioned (2026-08-17)
+
+Phase 3 of the close-out directive. The enumeration was DERIVED from the five records at HEAD
+(roadmap, this file, `MISSING_PREREQUISITES`, COMPLETED's limitation notes, the write-back
+queue), not inherited from any brief — briefs have been stale twice, and this sweep found a
+third instance (B6, below). Every item gets exactly one disposition; "gated on nothing" was
+treated as a contradiction to resolve, and none survived.
+
+### Closed in this pass
+
+| item | what closed it |
+|---|---|
+| **B6** (register): the deferred overburden items | Answered by R4-3 in full — exact `[VERIFIED]` values superseded the `[BOUNDED]` placeholders, the USA methodology decided by ruling — and the entry never absorbed it. The register's own E1/E2 answered-but-not-absorbed pattern, instance three. Closed in place. |
+| **F-register's C4 gate** ("waits on the parked fiscal-divergence pass") | The pass SHIPPED (report `bcbba47`, erosion `685ebd5`, lag `b05150f`). Gate dissolved; C4's supplier is now §A1's ruling alone, with the 5-anchor re-run flagged to use post-erosion baselines. The register's "waiting on another task" count: **0**. |
+| **The fiscal queue itself** | R1–R3, R4, R5 all shipped; the divergence finding and sweep queue entry closed against their commits in place. |
+
+### Gated, each gate NAMED — the complete list
+
+| item | the gate |
+|---|---|
+| Item 10 (elections/parties territory) | **the date: 13 Sept 2026**; collision map stands |
+| A1 — C4's deficit-term damping (now the only thing before C4 closes) | **a ruling of Elias's**, then one calibration pass |
+| A3 — cabinet appointment confirmation vote | **a ruling of Elias's** (pure preference; blocks nothing) |
+| D1 — the nine cabinet portraits | **delivery** (request sent 2026-08-17; import checks standing) |
+| E2 — `mark_party_us_lib` | **Elias sending the written request**, then delivery |
+| E3 — Design's rasterization diff | **a rasterizer existing on this machine** |
+| The Editor checklist (save/load pass) | **Elias's hands-on Editor session** |
+| GitHub GC re-check | **the date: ~2026-08-23** (one command; not due at this sweep) |
+| FA meeting cadence (~3.65/turn, intended-or-inherited) | **playtesting** |
+| TMP migration | **a screen needing masks/effects** (none exists; the v2.0 narrative screens would be the first) |
+| Anomaly swing-coverage extension | **the recorded condition: something slipping through unnoticed** |
+| Ongoing-process budgets / full interrupt system (Phase 0's deliberate slice) | **a design-arc ruling** — Part B owns law-passing; the fuller system is next-arc material |
+| R3's creditor-branch live exercise | **a scenario that builds a net creditor** (none exists at HEAD; code-verified meanwhile) |
+| F2 — the rate-cap nominal-on-real artifact | **any future nominal-rates work** (recorded property, softened in practice by the maturity lag) |
+
+### The standing queues, confirmed
+
+**Q1–Q10 (the write-back ruling queue)**: confirmed a ruling queue by design — every entry names
+its origin, its trigger (a ruling of Elias's electing it), and the rule-11 audit it will carry;
+none is scheduled; the fiscal arc changed none of their premises (the productivity couplings
+Q3–Q5 and the housing pair Q6–Q7 are exactly as recorded). **Deferred items' reasons re-verified
+at HEAD**: per-tranche maturity (state cost for the same aggregate effect — holds a fortiori now
+the aggregate form is measured), TMP (as gated above), the Phase-0 interrupt slice (as gated
+above). Nothing deferred has lost its reason.
+
+### THE FINAL BOARD
+
+Every open item above is gated on a **date** (13 Sept; ~23 Aug), a **delivery** (D1; E2→E3), an
+**access** (the Editor session; a rasterizer), a **ruling** (A1, A3, the Q-queue, the design
+arc), or **play** (the cadence question; the creditor scenario; the swing condition). The next
+sequencing conversation is the one the erosion close-out named: design-led — what the game DOES
+next — with the Q-queue and the v2.0 arc as its standing menu and A1 as its one quick fiscal
+errand.
+
+**And the sentence the sweep leaves true: nothing on this roadmap is open except what waits on
+the world.**
