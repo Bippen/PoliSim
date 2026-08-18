@@ -10272,3 +10272,60 @@ panel now exists to trace exactly what this report had to reconstruct from raw d
 premise works WITH Okun's reversion rather than fighting it, unlike this one. The Unequal
 Recovery (reads Q1's Gini-gap output) is the credible second choice. Content work continues
 behind Step 3's format until 13 Sept opens Step 4.
+
+## The Disinflation — MEASURED AND DROPPED too, and it's now a NAMED PATTERN, not two isolated results (2026-08-18)
+
+**⚠ Corrects the claim directly above, not silently — "works WITH Okun's reversion rather than
+fighting it" was the reasoned expectation before measuring, and it was wrong: the SAME
+reversion constant forecloses this scenario too, from the opposite direction.** Full record:
+`POLISIM_DISINFLATION_MEASUREMENT_REPORT.md`. Zero production code changed (confirmed via
+`git status`, every touched file under `Assets/Editor/`); `ScenarioLibrary` still carries only
+"Inherit the Fund".
+
+**The half-life, measured first as required: undefined — effectively infinite.** Ten runs
+(Poland at four rate levels 0/1.5/3/5 pp; Sweden at three; Germany with and without its Eurozone
+push; Italy uncontested), each seeded with inflation AND expectations elevated to 10%, 30 turns
+real day-loop: **every configuration ends within a point of where it started**, regardless of
+lever, regardless of magnitude. `ApplyPhillipsCurveInflation` makes an elevated-inflation-at-NAIRU
+start a fixed point BY CONSTRUCTION (inflation falls only when unemployment sits in genuine
+slack above NAIRU, and expectations only adapt toward realized inflation, which itself never
+moves without that slack) — and sustained slack is exactly what Wage Boom Management already
+measured as unreachable. **Okun's `UnemploymentReversionSpeed` pulls unemployment back to NAIRU
+from EITHER side**: Wage Boom found it prevents sustaining TIGHTNESS below NAIRU; this pass
+finds the identical constant prevents sustaining SLACK above NAIRU. Same cause, opposite
+direction, both dead.
+
+**The levers, quantified rather than waved at.** Poland's terminal inflation across
+0/1.5/3/5 pp one-time hikes: 9.343% → 9.244% → 9.146% → 9.017% — **a consistent ≈−0.065 points
+of relief per point of hike**; reaching 2% from 10% at that rate would need roughly a 120-point
+hike, an order of magnitude past `CurrencySystem.MaxInterestRate` (15%). Sweden: ≈−0.08/pp, same
+order. **The Eurozone's automatic mechanism makes it WORSE**: Germany's shared rate auto-climbed
+to 8.6% via `EurozoneRateSystem`'s own Taylor-rule blend with ZERO player input and still
+produced no measurable disinflation (10.12% at both t1 and t30); the player's own maximum
+capped push (±0.75, `EurozoneRateSystem.cs:32`) is **literally invisible against that** — t30
+inflation identical to three decimals with or without it. **Ruled on the Eurozone ambiguity by
+measurement**: a shared zone rate is a genuine, interesting constraint for a scenario where
+player action is decisive, and disqualifying for one needing a large lever, because the
+automatic mechanism already moves further than the player ever could and the result is still
+nothing.
+
+**A second, independent kill-shot, new to this pass**: elevated inflation alone — cleanest in
+Sweden's run, whose own unemployment transient is small — crashes `ApprovalRating` from ~47
+below the 35-point `ElectionSystem.LosingThreshold` within **3–7 turns across all five
+configurations**, via the standing misery-index mechanism, before any lever could plausibly show
+results even if one bit. A scenario here risks an automatic election-loss game-over before its
+own management phase begins.
+
+**TWO DROPS IS NOW A NAMED PATTERN, per the instruction that two would be.** This is not "wrong
+premise" twice — it is ONE finding encountered from two directions: `UnemploymentReversionSpeed`
+as currently tuned forecloses the entire class of "move the unemployment gap away from NAIRU and
+hold it there" scenarios, regardless of direction, country, or lever. A model-balance finding for
+whoever next scopes labour-market content or a rebalancing pass — not fixed by either content
+pass, per the same standing discipline both reports hold to.
+
+**What's next, now measured rather than assumed**: **Italy debt start** — its difficulty source
+(the debt identity, post-erosion/maturity) is the best-validated, most-measured mechanism in the
+whole model, the opposite risk profile from the two drops above, and structurally untouched by
+either finding. The Unequal Recovery (Gini-gap via Parliament) is the second candidate,
+similarly untested by either drop. Content work continues behind Step 3's format until 13 Sept
+opens Step 4.

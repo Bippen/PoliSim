@@ -326,8 +326,9 @@ a scenario (one grep hit, the test runner). Four gaps, each with its seam locate
 holds only the 12 stats with real sourced release rules and **deliberately never publishes
 DebtToGdpRatio** — so the slate's two strongest scenarios cannot be published-judged at all;
 GDP's three-stage revision would additionally let an objective flip after the fact. Slate of
-six proposed (the three named above plus **The Disinflation**, **Wage Boom Management** ⚠
-*flagged for after Step 5, and — measured post-Step-5 — DROPPED; see below*, and **The Unequal
+six proposed (the three named above plus **The Disinflation** ⚠ *measured — DROPPED, see below,
+same root cause as Wage Boom*, **Wage Boom Management** ⚠ *flagged for after Step 5, and —
+measured post-Step-5 — DROPPED; see below*, and **The Unequal
 Recovery** — the one that proves Step 2's output is load-bearing). Awaiting **R-S3a** (format +
 live evaluation), **R-S3b** (the slate),
 **R-S3c** (boundary-resident evaluator; IMGUI verdict, Canvas deferred to Step 4's election
@@ -376,7 +377,17 @@ measured the scenario against `UnemploymentReversionSpeed` (0.7/turn, pre-existi
 Q5) and found it forecloses the premise regardless of the loop — dominates every tested lever
 including the interest rate's absolute floor. DROPPED; see `POLISIM_WAGEBOOM_MEASUREMENT_REPORT.md`
 and CLAUDE.md's "Wage Boom Management — measured and dropped" entry. The `Sustained` form WAS
-exercised, on a synthetic diagnostic, and passed cleanly. **The Disinflation is next.**
+exercised, on a synthetic diagnostic, and passed cleanly.
+
+⚠ **The Disinflation was measured next, per this entry's own pointer, and ALSO DROPPED — for
+the identical constant, from the opposite direction.** `UnemploymentReversionSpeed` prevents
+sustaining tightness below NAIRU (Wage Boom) exactly as it prevents holding slack above NAIRU
+(Disinflation): ten configurations across four countries and every tested lever, up to a 5-point
+one-time hike and an auto-driven Eurozone climb to 8.6%, moved 30-turn terminal inflation by
+under a point in every case. **Two drops on one root cause is now a named model-balance
+finding**, not two isolated results — see `POLISIM_DISINFLATION_MEASUREMENT_REPORT.md` and
+CLAUDE.md's matching entry. **Italy debt start is next**, on the opposite risk profile: its
+mechanism is the model's best-validated, and untouched by either drop.
 
 **STEP 5 CLOSES.** Master Sequence II's explicitly-named items (Q1–Q5, Step 1–3) are all
 shipped or scoped; the spine's remainder is Step 4 (13 Sept) and Step 6 behind it, plus scenario
