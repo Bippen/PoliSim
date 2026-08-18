@@ -176,6 +176,20 @@ namespace PoliSim.Data
         /// <summary>The read-side of the Q3 sentinel - see the field above.</summary>
         public float ProductivityTrendGrowth => ProductivityTrendGrowthRate >= 0f ? ProductivityTrendGrowthRate : PotentialGrowthRate;
 
+        /// <summary>
+        /// Step 2 (R-S2d/R-S2e): last CLOSED period's approval attribution - what the trace panel
+        /// shows - and the ACCRUING one collecting this period's events until the boundary
+        /// formula closes it. Both persisted: the closed one is R-S2e's "one period in the save
+        /// shape"; the accruing one rides along so a mid-period save does not silently drop
+        /// recorded events (the exact silent-gap class R-S2e's no-case predicted). Null on old
+        /// saves and at seed - every reader guards, and the recorder lazily creates the accruing
+        /// ledger at first touch. ⚠ NEVER EconomyState fields: the trajectory dump reflects
+        /// EconomyState's public fields, and recording is OBSERVATION - it must not change the
+        /// dump.
+        /// </summary>
+        public ApprovalAttribution ApprovalLedgerLastPeriod;
+        public ApprovalAttribution ApprovalLedgerAccruing;
+
         /// <summary>THE MATURITY RATE-LAG (2026-08-17, mechanism-report ruling R4, ruled IN with
         /// its target quantified by the erosion pass): this country's average debt maturity in
         /// YEARS - the stock rolls over at ~1/M per year, so the effective rate it pays reverts

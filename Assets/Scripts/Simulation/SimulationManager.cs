@@ -48,6 +48,12 @@ namespace PoliSim.Simulation
     /// </summary>
     public class PolicyPreview
     {
+        /// <summary>Step 2: the preview clone's approval term ledger - the same named locals the
+        /// real boundary records, computed on the clone. Read by the preview-parity diagnostic
+        /// (term-by-term against the real boundary's ledger) and available to future preview
+        /// explanation UI.</summary>
+        public ApprovalAttribution ApprovalTerms;
+
         public float GdpGrowthPercent;
         public float UnemploymentChange;
         public float InflationChange;
@@ -757,6 +763,17 @@ namespace PoliSim.Simulation
             return _lastFiscalReports.TryGetValue(countryId, out FiscalTurnReport report) ? report : null;
         }
 
+        /// <summary>
+        /// Step 2: the wage-growth gap the daily identity is consuming THIS period - the period-open
+        /// stance (the fifth fixed reference), not the live gap. This is the number the trace panel's
+        /// single-book confidence line explains, because it is the number the economy actually used.
+        /// 0 before the first period exists (factor 1 - the honest nothing).
+        /// </summary>
+        public float GetWageGrowthGapAtPeriodOpen(CountryId countryId)
+        {
+            return _fiscalPeriods.TryGetValue(countryId, out FiscalPeriod period) ? period.WageGrowthGapAtPeriodOpen : 0f;
+        }
+
         /// <summary>The event that fired for a country this turn, or null if none did (most turns).</summary>
         public EconomicEvent GetLastEvent(CountryId countryId)
         {
@@ -773,7 +790,9 @@ namespace PoliSim.Simulation
         public void ResolveCabinetDecision(CountryId countryId, CabinetPortfolio portfolio, CabinetDecision decision, CabinetDecisionOption chosenOption)
         {
             Country country = _world.GetCountry(countryId);
+            float approvalBeforeOption = country.State.ApprovalRating;
             CabinetSystem.ApplyDecisionOption(country, chosenOption);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", country.State.ApprovalRating - approvalBeforeOption);
 
             if (_pendingCabinetDecisionsByCountry.TryGetValue(countryId, out var pending))
             {
@@ -813,7 +832,9 @@ namespace PoliSim.Simulation
         public void ResolveForeignPolicyMeeting(CountryId countryId, ForeignPolicyMeetingOption chosenOption)
         {
             Country country = _world.GetCountry(countryId);
+            float approvalBeforeOption = country.State.ApprovalRating;
             ForeignPolicySystem.ApplyMeetingOption(country, chosenOption);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Foreign policy: {chosenOption.Label}", country.State.ApprovalRating - approvalBeforeOption);
             _pendingForeignPolicyMeetingByCountry.Remove(countryId);
         }
 
@@ -871,7 +892,9 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetBillDirection(country, bill);
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, "Annual budget bill", direction, passed, CurrentDate);
+            float approvalBeforeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyBillResult(country, bill, passed, ApplyBudgetBillSpendingAndSwf);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax hike)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
             _pendingBudgetBillByCountry.Remove(countryId);
         }
 
@@ -957,7 +980,9 @@ namespace PoliSim.Simulation
                 float direction = ParliamentSystem.GetTaxProgramBillDirection(country, bill);
                 bool passed = ParliamentSystem.WouldBillPass(country, direction);
                 ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", direction, passed, CurrentDate);
+                float approvalBeforeTaxBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
                 resolved.Add(bill.Type);
             }
 
@@ -1012,7 +1037,9 @@ namespace PoliSim.Simulation
                 float direction = ParliamentSystem.GetWelfareProgramBillDirection(country, bill);
                 bool passed = ParliamentSystem.WouldBillPass(country, direction);
                 ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", direction, passed, CurrentDate);
+                float approvalBeforeWelfareBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeWelfareBill);
                 resolved.Add(bill.Type);
             }
 
@@ -1059,7 +1086,9 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetLaborBillDirection(country, bill);
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, "Labor Market bill", direction, passed, CurrentDate);
+            float approvalBeforeLaborBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Labor Market bill passed" : "Labor Market bill failed", country.State.ApprovalRating - approvalBeforeLaborBill);
             _pendingLaborBillByCountry.Remove(countryId);
         }
 
@@ -1117,7 +1146,9 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetCrimeJusticeBillDirection(country, bill);
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, "Crime & Justice bill", direction, passed, CurrentDate);
+            float approvalBeforeCrimeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Crime & Justice bill passed" : "Crime & Justice bill failed", country.State.ApprovalRating - approvalBeforeCrimeBill);
             _pendingCrimeJusticeBillByCountry.Remove(countryId);
         }
 
@@ -1174,7 +1205,9 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetSectorBillDirection(country, bill);
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, "Economic Sectors bill", direction, passed, CurrentDate);
+            float approvalBeforeSectorBill = country.State.ApprovalRating;
             ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Economic Sectors bill passed" : "Economic Sectors bill failed", country.State.ApprovalRating - approvalBeforeSectorBill);
             _pendingSectorBillByCountry.Remove(countryId);
         }
 
@@ -1240,7 +1273,9 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetSwfDrawdownBillDirection(country, bill);
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", direction, passed, CurrentDate);
+            float approvalBeforeSwfBill = country.State.ApprovalRating;
             ParliamentSystem.ApplySwfDrawdownBillResult(country, bill, passed, ApplySwfDrawdownBillEffects);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "SWF drawdown bill passed" : "SWF drawdown bill failed", country.State.ApprovalRating - approvalBeforeSwfBill);
             _pendingSwfDrawdownBillByCountry.Remove(countryId);
         }
 
@@ -1311,7 +1346,9 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetTradeBillDirection(country, bill);
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, "Trade bill", direction, passed, CurrentDate);
+            float approvalBeforeTradeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Trade bill passed" : "Trade bill failed", country.State.ApprovalRating - approvalBeforeTradeBill);
             _pendingTradeBillByCountry.Remove(countryId);
         }
 
@@ -1738,11 +1775,33 @@ namespace PoliSim.Simulation
             // boundary day's inflation, exactly what the turn regime always read.
             MacroSystem.ApplyInflationExpectations(state);
 
+            // Step 2: the formula keeps its exact pre-ledger body (the observation gate measured
+            // a one-ulp codegen shift when recording lived inside it); the recorder recomputes
+            // the terms AFTER, under the boundary audit's twin-drift detector. EnsureAccruing
+            // runs BEFORE the formula: a run's FIRST boundary lazy-creates the ledger, and a
+            // ledger created after the formula would open at the post-formula value - the audit
+            // caught exactly that (observed Δ 0 vs nonzero terms, 2026-08-18).
+            float approvalBeforeFormula = country.State.ApprovalRating;
+            ApprovalLedgerRecorder.EnsureAccruing(country, CurrentDate);
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
+            MacroSystem.RecordApprovalAttribution(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, approvalBeforeFormula);
 
             EconomicEvent economicEvent = EventSystem.TryRollEvent();
             _lastEventsByCountry[country.Id] = economicEvent;
+            // Step 2: observed, not recomputed - the ledger records the post-clamp delta the
+            // event actually landed (which can be smaller than its face value at the [0,100]
+            // edges). Zero deltas are skipped inside RecordEvent.
+            float approvalBeforeEvent = country.State.ApprovalRating;
             EventSystem.ApplyEvent(country, economicEvent);
+            if (economicEvent != null)
+            {
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, economicEvent.Name, country.State.ApprovalRating - approvalBeforeEvent);
+            }
+
+            // Step 2: the period closes AFTER the boundary event lands, so a boundary-day shock
+            // belongs to the period the player just watched, never silently to the next one. The
+            // close runs the Σ(events)+Σ(terms)+clamp == observed-Δ self-audit (ATTRIB: on red).
+            ApprovalLedgerRecorder.CloseAtBoundary(country, CurrentDate);
 
             // Political Systems Overhaul Part A: unlike EconomicEvent, a fired decision needs a
             // player-picked response before its effect lands (see ResolveCabinetDecision) - appended,
@@ -1878,10 +1937,16 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyCrimeEffects(previewCountry);
             MacroSystem.ApplyPrisonPopulationRate(previewCountry);
 
+            float previewApprovalBeforeFormula = state.ApprovalRating;
             MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
+            MacroSystem.RecordApprovalAttribution(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, previewApprovalBeforeFormula);
 
             return new PolicyPreview
             {
+                // Step 2: the clone's own ledger, filled by the ApplyApprovalRating call above -
+                // the preview-parity diagnostic compares these terms against the real boundary's,
+                // which is what turns a clone-escape into a mismatch that names its term.
+                ApprovalTerms = previewCountry.ApprovalLedgerAccruing,
                 GdpGrowthPercent = actualGrowthRate,
                 UnemploymentChange = state.Unemployment - unemploymentBefore,
                 InflationChange = state.Inflation - inflationBefore,
@@ -1954,6 +2019,17 @@ namespace PoliSim.Simulation
                 // default (a phantom -0.5/turn for the USA at its 39.5 seed). The R4-1
                 // Clone-escape class, caught by the containment check BEFORE the bar this time.
                 BaselineGini = country.BaselineGini,
+                // Step 2: a FRESH ledger, never the real country's reference - ApplyApprovalRating
+                // records into it on the clone, and sharing the reference would corrupt the real
+                // period's attribution the moment a preview ran. LastPeriod stays null: a preview
+                // has no history and nothing reads it. The open date mirrors the real accruing
+                // ledger's (this method is static, so no CurrentDate here); only the TERMS matter
+                // to the parity diagnostic either way.
+                ApprovalLedgerAccruing = new ApprovalAttribution
+                {
+                    PeriodOpenDate = country.ApprovalLedgerAccruing != null ? country.ApprovalLedgerAccruing.PeriodOpenDate : default,
+                    ApprovalAtPeriodOpen = country.State.ApprovalRating
+                },
                 // Q3: the trend field rides too (its sentinel fallback happens to be exact here
                 // - the property falls back to PotentialGrowthRate, copied above via the ctor -
                 // but the hand-list carries it anyway: exact-by-fallback is a coincidence to a

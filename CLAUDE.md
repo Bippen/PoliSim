@@ -9927,3 +9927,82 @@ the proof of the force)**. The queue's remainder (Q5–Q10) waits at its named t
 (causality legibility) is NEXT, inheriting by name: R-Q1c's approval no-ceiling, the
 confidence single-book founding and its base/effective distinction (this pass), the coupling
 graph as built, and the preview hand-list assertion question.
+
+## Step 2 v1 ships — the approval ledger, the trace panel, and the two standing checks (2026-08-18)
+
+Rulings R-S2a–e built as ruled: term ledger + trace panel (phase 1), term-level only under the
+honesty classes, the LIVE model, approval end-to-end first, the ledger persisted.
+
+**The ledger** (`ApprovalAttribution` on `Country` — NEVER EconomyState: the dump reflects
+EconomyState, and recording is observation). The boundary terms are recorded by
+`MacroSystem.RecordApprovalAttribution`; events record BY OBSERVATION at the call sites —
+snapshot approval around the write, record the applied post-clamp delta with date and label
+(zero signature changes in the political systems; the FiscalTurnReport
+recorded-not-recomputed principle) — eleven sites: the eight bill types, cabinet options,
+foreign-policy options, boundary events, and the reshuffle. TWO ledgers persist per country
+(R-S2e): the CLOSED period (the panel's subject) and the ACCRUING one, so a mid-period save
+cannot silently drop events — the exact failure the no-case predicted, now asserted
+impossible by the RT diagnostic's explicit ledger checks. Old saves: null → "no period
+recorded yet".
+
+**THE OBSERVATION GATE DID ITS JOB — three catches, each a story the bar was built to tell:**
+1. **The first build recorded the formula's own locals in place, and the gate caught a
+   ONE-ULP codegen shift** (all 6 dumps differed; measured: 38/39 fields byte-identical,
+   ApprovalRating alone moved ≤5.6e-6 starting at a value-dependent point, USA t79 s777 —
+   extending the locals' lifetimes changed the method's float emit). Resolution:
+   `ApplyApprovalRating` keeps its EXACT pre-ledger body, and the recorder is an AUDITED
+   RECOMPUTATION — the twin warning sits on the method, and the boundary audit is the
+   enforcement. The gate then passed: **6/6 SHA256-identical, twice** (re-verified after
+   every later fix).
+2. **The self-audit caught the first-boundary open** (observed Δ 0.0000 vs terms −1.29: a
+   ledger lazily created AFTER the formula opens at the post-formula value — 241 ATTRIB
+   errors). Fix: `EnsureAccruing` runs before the formula at the boundary site.
+3. **The twin-drift detector debugged ITSELF** (61 remaining ATTRIB: a legitimate clamp at
+   100 followed by a boundary event pulling approval back inside — the detector tested the
+   close-time value). Fix: `ApprovalAfterFormula` recorded, clamp legitimacy tested against
+   the value the formula actually left. **Final: RT 0 ATTRIB, matrix 0 ATTRIB.**
+
+**The trace panel** (`StatTracePanel`): click a stat chip (invisible overlay on every chip,
+every frame — stable control layout; selection flips ONLY on the Layout event so Layout and
+Repaint always agree). LedgerRow grammar, negative fill throughout (§A.9b — signed unbounded
+terms have no denominator). Approval: period header (open → close, Δ), signed term rows with
+misery sub-gaps indented and zero-rows skipped, sustained gap terms carrying EQUILIBRIUM
+framing (term ÷ `ApprovalReversionSpeed` — R-Q1c's drug-policy composition made visible),
+dated event rows capped at 4 with a STATED "+N more" omission row, the audit footer.
+Confidence: the single book — policy base × wage-sentiment factor (the PERIOD STANCE via
+`GetWageGrowthGapAtPeriodOpen`, the number the identity consumed) = effective. **Bounded at
+12 visible rows with an internal scroll** — the first capture set measured a busy period
+reaching the screen edge; the second measured the event-date column clipping; both fixed and
+re-captured. Integrated at both chip sites, height budgeted like the stat row's own.
+
+**The preview-parity diagnostic** — standing equipment, menu + batch, run in this bar.
+Enumeration (rule 14): SEVEN terms asserted exact (Reversion, TaxHike@0, Spending@0, Welfare,
+PaidLeave, DrugPolicy, Gini — inputs the preview does not advance); FIVE expected-different
+BY DESIGN (Growth + the four misery gaps — the preview models the COMING period; printed,
+never asserted, and an escape in THEIR constants is outside this check's evidence, stated so
+it is never cited for it). **Result: 7 of 7 × 6 countries.** `PolicyPreview.ApprovalTerms`
+carries the clone's ledger; the clone hand-list gains a FRESH ledger (a shared reference
+would corrupt the real period's attribution).
+
+### The bar, final state
+
+6/6 dumps SHA256-identical to `pre_s2_5084236` · RT 12/12 with the explicit save-time-vs-
+restored ledger assertions (closed AND accruing) and EconomyState's reflected count unchanged
+at 36 · equivalence 117/117 (approval is not among its rows; recording is boundary-resident)
+· matrix: all 30 (scenario, horizon) anomaly counts IDENTICAL to the post-Q2 run, zero
+ATTRIB · parity 7/7×6 · captures `93_trace_approval`/`93b_trace_confidence` at 1600 and 2560
+(83 shots per size — the 81 standing screens unchanged in count plus the two new), the panel
+iterated twice on the eye-check before passing. ⚠ **Visual work is built-not-confirmed until
+Elias sees the `s2usa*_93*` captures.**
+
+### Deferred, with triggers
+
+Tooltips-as-pointers (trigger: discoverability feedback from FA-cadence/Step 3 playtesting) ·
+the causal-graph screen (trigger: the ledger carries a second stat's terms — the term IDs ARE
+the stat→stat edge list; derived, never authored) · narrative layer (only-if-ever, generated
+from the ledger) · the fiscal chain's panel section (data exists in FiscalTurnReport;
+trigger: the first playtest asking "why did the deficit move") · BusinessConfidence's
+effective form inherits the single-book rider by default (Q2's standing equipment).
+
+**Step 3 (challenge-mode scoping) UNBLOCKS** — R-S2d's first slice has shipped; scenario
+authoring reads this feature's output, per the spine.

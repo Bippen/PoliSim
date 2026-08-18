@@ -1790,8 +1790,11 @@ namespace PoliSim.Simulation
         /// <summary>Approval mean-reverts toward this absent any other effect - a "neutral" governing position, not an extreme.</summary>
         private const float NeutralApprovalRating = 50f;
 
-        /// <summary>Fraction of the gap versus NeutralApprovalRating that closes each turn on its own.</summary>
-        private const float ApprovalReversionSpeed = 0.05f;
+        /// <summary>Fraction of the gap versus NeutralApprovalRating that closes each turn on its
+        /// own. Internal since Step 2: the trace panel derives EQUILIBRIUM framing from it
+        /// (sustained term ÷ this = equilibrium shift - the honest unit Q1's magnitude was ruled
+        /// in), reading the same constant the formula uses rather than a second copy.</summary>
+        internal const float ApprovalReversionSpeed = 0.05f;
 
         /// <summary>Approval points per percentage-point of growth gap (actual vs. potential) - strong growth is rewarded, weak growth punished.</summary>
         private const float GrowthApprovalSensitivity = 0.3f;
@@ -2004,6 +2007,76 @@ namespace PoliSim.Simulation
             float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - state.ApprovalRating);
             float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect + drugPolicyApprovalEffect + giniApprovalEffect;
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + delta, 0f, 100f);
+        }
+
+        /// <summary>
+        /// Step 2 (R-S2d): the approval ledger's Class-A terms.
+        ///
+        /// ⚠ **A RECOMPUTATION, DELIBERATELY - the observation gate forced it and the audit makes
+        /// it honest.** The first build recorded ApplyApprovalRating's own locals in place, and
+        /// the added code shifted that method's float codegen by one ulp at value-dependent
+        /// points (measured: USA t79, seed 777 - 38 of 39 dump fields byte-identical, approval
+        /// alone moved 5.6e-6). Recording must be OBSERVATION, so the formula above keeps its
+        /// exact pre-ledger body and THIS method recomputes the same expressions from the same
+        /// inputs (state is untouched by the formula except ApprovalRating itself, which arrives
+        /// here as <paramref name="approvalBeforeFormula"/>). The twin cannot drift silently:
+        /// CloseAtBoundary's self-audit asserts Σ(terms)+Σ(events)+clamp against the OBSERVED
+        /// movement every boundary, so a divergence between this method and the formula fires
+        /// ATTRIB immediately. Any edit to the formula's terms MUST be mirrored here - the audit
+        /// is the enforcement, this comment is the courtesy.
+        /// </summary>
+        public static void RecordApprovalAttribution(Country country, PolicyDecision decision, float actualGrowthRatePercent, float totalTaxHike, float totalMandatorySpendingChange, System.DateTime boundaryDate, float approvalBeforeFormula)
+        {
+            EconomyState state = country.State;
+
+            float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
+            float growthEffect = GrowthApprovalSensitivity * growthGap;
+
+            float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
+            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget);
+            float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
+            float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
+
+            float taxHikePenalty = TaxHikeApprovalSensitivity * totalTaxHike;
+
+            float weightedSpendingPercent =
+                HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.GDP) +
+                DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.GDP) +
+                InfrastructureApprovalMultiplier * PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP) +
+                EducationApprovalMultiplier * PercentOfGdp(decision.EducationSpendingChange, state.GDP) +
+                JusticeApprovalMultiplier * PercentOfGdp(decision.JusticeSpendingChange, state.GDP) +
+                HomelandSecurityApprovalMultiplier * PercentOfGdp(decision.HomelandSecuritySpendingChange, state.GDP) +
+                EnergyApprovalMultiplier * PercentOfGdp(decision.EnergySpendingChange, state.GDP) +
+                HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.GDP) +
+                MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.GDP);
+
+            float spendingEffect;
+            if (weightedSpendingPercent >= 0f)
+            {
+                float excessDebtToGdp = Mathf.Max(0f, state.DebtToGdpRatio - DeficitAwarenessDebtToGdpThreshold);
+                float deficitAwarenessFactor = Mathf.Clamp(1f - DeficitAwarenessDampeningPerPoint * excessDebtToGdp, 0f, 1f);
+                spendingEffect = SpendingApprovalSensitivity * weightedSpendingPercent * deficitAwarenessFactor;
+            }
+            else
+            {
+                spendingEffect = SpendingApprovalSensitivity * weightedSpendingPercent;
+            }
+
+            ApprovalAttribution ledger = ApprovalLedgerRecorder.EnsureAccruing(country, boundaryDate);
+            ledger.Reversion = ApprovalReversionSpeed * (NeutralApprovalRating - approvalBeforeFormula);
+            ledger.GrowthEffect = growthEffect;
+            ledger.MiseryUnemployment = -(UnemploymentApprovalSensitivity * unemploymentPenaltyGap);
+            ledger.MiseryInflation = -(InflationApprovalSensitivity * inflationPenaltyGap);
+            ledger.MiseryCrime = -(CrimeApprovalSensitivity * crimePenaltyGap);
+            ledger.MiseryCorruption = -(CorruptionApprovalSensitivity * corruptionPenaltyGap);
+            ledger.TaxHikePenalty = -taxHikePenalty;
+            ledger.SpendingEffect = spendingEffect;
+            ledger.WelfareEffect = GetWelfareApprovalEffect(country);
+            ledger.PaidLeaveEffect = PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
+            ledger.DrugPolicyEffect = DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
+            ledger.GiniEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
+            ledger.ClampLoss = (state.ApprovalRating - approvalBeforeFormula) - ledger.TermSum;
+            ledger.ApprovalAfterFormula = state.ApprovalRating;
         }
 
         // --- Category spending side-effects: small, separable per-category profiles (v1, not a full policy tree) ---

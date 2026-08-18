@@ -1075,6 +1075,45 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("87b_divisions_parliament_rows");
 
+            // --- E1b (Step 2): THE TRACE PANEL, on a rich ledger — the resolved bills above
+            // recorded real dated events; two more are PINNED here as real writes with real
+            // records (the election idiom: pin by doing, so the panel's audit footer still
+            // reconciles), then the period is closed so the capture shows a full term list
+            // WITH events. A boring ledger validates nothing.
+            {
+                float pinBefore = player.State.ApprovalRating;
+                player.State.ApprovalRating = Mathf.Clamp(player.State.ApprovalRating - 2f, 0f, 100f);
+                ApprovalLedgerRecorder.RecordEvent(player, sim.CurrentDate, "Budget bill failed", player.State.ApprovalRating - pinBefore);
+                pinBefore = player.State.ApprovalRating;
+                player.State.ApprovalRating = Mathf.Clamp(player.State.ApprovalRating - 3f, 0f, 100f);
+                ApprovalLedgerRecorder.RecordEvent(player, sim.CurrentDate, "Scandal: ferry contract", player.State.ApprovalRating - pinBefore);
+            }
+
+            for (int i = 0; i < SimulationManager.DaysPerTurn + 1; i++)
+            {
+                bool boundaryReached = sim.AdvanceDay();
+                sim.AdvanceCountryDayTick(_countryId);
+                if (boundaryReached) { sim.AdvanceTurn(noDecisions); break; }
+            }
+
+            SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+            SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
+            ResetScrolls(controller);
+            StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+            yield return Settle();
+            yield return Capture("93_trace_approval");
+
+            StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+            StatTracePanel.NotifyChipClicked(StatNodeId.ConsumerConfidence);
+            SetEnumField(controller, "_consolidatedTab", "Budget");
+            SetEnumField(controller, "_budgetProcessCategory", "Tax");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("93b_trace_confidence");
+
+            StatTracePanel.NotifyChipClicked(StatNodeId.ConsumerConfidence);
+            yield return Settle();
+
             // --- E2. THE SIGNING CEREMONY (Canvas screen 2) — pinned via the controller's own queue
             // method (ceremonies fire only from play's day tick, never from harness sim-advances, so
             // this pass stays clean; TriggerSigningForNewestDivision fills the same queue the day

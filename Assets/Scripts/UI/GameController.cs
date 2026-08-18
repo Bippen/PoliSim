@@ -4963,7 +4963,13 @@ namespace PoliSim.UI
             float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
             PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - statRowHeight;
+            // Step 2: the trace panel, directly under the chips it explains - measured and
+            // subtracted from the content budget exactly like the stat row itself.
+            float policyTraceGapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
+            float policyTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, policyTraceGapStance, _labelStyle, statRowWidth);
+            StatTracePanel.Draw(_playerCountry, policyTraceGapStance, _labelStyle, _labelStyle, statRowWidth);
+
+            float contentHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - statRowHeight - policyTraceHeight);
             switch (_policyLawsCategory)
             {
                 case PolicyLawsCategory.LaborMarket:
@@ -5802,7 +5808,9 @@ namespace PoliSim.UI
                 if (GUILayout.Button("Reshuffle", _neutralActionButtonStyle))
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
+                    float approvalBeforeReshuffle = _playerCountry.State.ApprovalRating;
                     _playerCountry.State.ApprovalRating = Mathf.Clamp(_playerCountry.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost, 0f, 100f);
+                    ApprovalLedgerRecorder.RecordEvent(_playerCountry, _simulationManager.CurrentDate, $"Cabinet reshuffle ({DisplayName.Of(portfolio.ToString())})", _playerCountry.State.ApprovalRating - approvalBeforeReshuffle);
                     _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
                 }
                 GUILayout.EndVertical();
@@ -6409,7 +6417,13 @@ namespace PoliSim.UI
             float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
             PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
 
-            _budgetProcessCenterScrollPosition = GUILayout.BeginScrollView(_budgetProcessCenterScrollPosition, GUILayout.Height(columnsHeight - _labelStyle.fontSize - statRowHeight));
+            // Step 2: the trace panel under the chips, pinned with them above the scroll view -
+            // its height leaves the scroll budget the same way the stat row's does.
+            float budgetTraceGapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
+            float budgetTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, budgetTraceGapStance, _labelStyle, statRowWidth);
+            StatTracePanel.Draw(_playerCountry, budgetTraceGapStance, _labelStyle, _labelStyle, statRowWidth);
+
+            _budgetProcessCenterScrollPosition = GUILayout.BeginScrollView(_budgetProcessCenterScrollPosition, GUILayout.Height(Mathf.Max(0f, columnsHeight - _labelStyle.fontSize - statRowHeight - budgetTraceHeight)));
             switch (_budgetProcessCategory)
             {
                 case BudgetProcessCategory.Tax:

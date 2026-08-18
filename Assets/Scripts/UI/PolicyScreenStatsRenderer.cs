@@ -202,6 +202,14 @@ namespace PoliSim.UI
 
         private static void DrawChip(Rect rect, StatNodeId stat, Country country, GUIStyle labelStyle)
         {
+            // Step 2: an invisible click target over the whole chip, drawn FIRST so the labels
+            // paint over it, and drawn EVERY frame for EVERY chip (stable control layout - the
+            // control set never varies with state). Chips without a trace route to a no-op.
+            if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
+            {
+                StatTracePanel.NotifyChipClicked(stat);
+            }
+
             float value = PolicyScreenStats.ReadLiveValue(stat, country);
             bool? higherIsBetter = PolicyScreenStats.GetHigherIsBetter(stat);
 

@@ -144,6 +144,15 @@ namespace PoliSim.EditorTools
                 SaveGame save = SaveGameService.CreateSaveGame(simA, world, player, null, stamp);
                 string json = SaveGameService.Serialize(save);
                 Dictionary<string, double> snapAtSave = SnapshotAll(simA, world);
+                // Step 2 (R-S2e): the ledger's save-time values, held aside so the post-restore
+                // compare below is EXPLICIT rather than implied by the whole-save string equality
+                // - the claim under test is the exact failure the no-case predicted: a load that
+                // silently blanks the explanation.
+                ApprovalAttribution ledgerAtSave = world.GetCountry(player).ApprovalLedgerLastPeriod;
+                float ledgerTermSumAtSave = ledgerAtSave?.TermSum ?? float.NaN;
+                float ledgerEventSumAtSave = ledgerAtSave?.EventSum ?? float.NaN;
+                int ledgerEventCountAtSave = ledgerAtSave?.Events.Count ?? -1;
+                int accruingEventCountAtSave = world.GetCountry(player).ApprovalLedgerAccruing?.Events.Count ?? -1;
                 Dictionary<SimulationRandom.Stream, int> drawCountsAtSave = SimulationRandom.CaptureDrawCounts();
 
                 bool ok = true;
@@ -173,6 +182,25 @@ namespace PoliSim.EditorTools
 
                 ok &= CompareSnapshots($"{player}/{seed} restore-point", snapAtSave, SnapshotAll(simB, worldB));
                 ok &= CompareDrawCounts($"{player}/{seed}", drawCountsAtSave, SimulationRandom.CaptureDrawCounts());
+
+                // Step 2 (R-S2e): the restored ledger must BE the saved period - the trace panel
+                // reads exactly these fields after a load.
+                ApprovalAttribution ledgerRestored = worldB.GetCountry(player).ApprovalLedgerLastPeriod;
+                float restoredTermSum = ledgerRestored?.TermSum ?? float.NaN;
+                float restoredEventSum = ledgerRestored?.EventSum ?? float.NaN;
+                int restoredEventCount = ledgerRestored?.Events.Count ?? -1;
+                int restoredAccruingCount = worldB.GetCountry(player).ApprovalLedgerAccruing?.Events.Count ?? -1;
+                bool ledgerOk = restoredEventCount == ledgerEventCountAtSave
+                    && restoredAccruingCount == accruingEventCountAtSave
+                    && (float.IsNaN(ledgerTermSumAtSave) ? float.IsNaN(restoredTermSum) : Mathf.Abs(restoredTermSum - ledgerTermSumAtSave) < 1e-4f)
+                    && (float.IsNaN(ledgerEventSumAtSave) ? float.IsNaN(restoredEventSum) : Mathf.Abs(restoredEventSum - ledgerEventSumAtSave) < 1e-4f);
+                if (!ledgerOk)
+                {
+                    Debug.LogError($"RT: {player}/{seed} APPROVAL LEDGER did not cross the save - " +
+                                   $"terms {ledgerTermSumAtSave:F4}->{restoredTermSum:F4}, events {ledgerEventCountAtSave}->{restoredEventCount}, " +
+                                   $"accruing {accruingEventCountAtSave}->{restoredAccruingCount}. The post-load panel would show a blank or wrong period.");
+                    ok = false;
+                }
 
                 Dictionary<CountryId, PolicyDecision> decisionsB = BuildNoOpDecisions(worldB);
                 var trajectoryB = new List<Dictionary<string, double>>();

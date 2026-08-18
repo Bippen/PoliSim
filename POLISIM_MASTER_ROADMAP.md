@@ -281,20 +281,16 @@ name: the approval no-ceiling absence (R-Q1c), the FRF/erosion/maturity decompos
 the coupling graph. The scoping pass produces a RULING PACKAGE — surface (trace panel? tooltip
 chains? ledger annotations?), depth, and cost — before any build. Design work; Elias's ruling.
 
-**SCOPED, RULINGS PENDING (2026-08-18)** — the package is
-`POLISIM_STEP2_LEGIBILITY_SCOPING.md`. Load-bearing scoping facts, verified at HEAD: approval
-has FIVE writer classes across FOURTEEN sites and its nine formula terms already exist as
-named locals; the built graph is policy→stat ONLY (55/18/50 — the stat→stat web exists
-nowhere as data); `FiscalTurnReport` is the in-production recorded-not-recomputed precedent.
-The derivation splits attribution into four honesty classes (boundary formulas / event shocks
-/ period stances / compounding feedback) — stances are exact BY CONSTRUCTION thanks to the
-fifth fixed reference, and Class-D surfaces must carry a named residual line. The ledger buys
-two checks: a Σterms==Δ self-audit each boundary, and the preview-parity diagnostic that
-kills the hand-list escape class by naming the mismatched term. Awaiting **R-S2a** (surface:
-report annotations then trace panel), **R-S2b** (depth: term-level only, honesty rules),
-**R-S2c** (truth: explain the LIVE model), **R-S2d** (MVS: approval end-to-end first —
-blocks Step 3's scenario authoring, nothing else), **R-S2e** (persist one period's ledger:
-yes).
+**✅ v1 SHIPPED (2026-08-18)** — R-S2a–e ruled and built: the approval ledger (terms recorded
+at the boundary under the Σ==Δ self-audit; events by observation at eleven sites), the trace
+panel on the LedgerRow grammar (click a chip; equilibrium framing; dated events; the
+confidence single book as the second section), the preview-parity diagnostic as standing
+equipment (7 exact-asserted terms × 6 countries), and the ledger in the save shape with
+explicit RT assertions. The full bar — including the observation gate's three catches (the
+one-ulp codegen story, the first-boundary open, the detector's own false positive) — is
+CLAUDE.md's "Step 2 v1 ships" record. Deferred items carry named triggers there. ⚠ The
+`s2usa*_93*` captures await Elias's eyes (built-not-confirmed).
+**Step 3 (challenge-mode scoping) is UNBLOCKED and NEXT.**
 
 ## Step 3 — Challenge-mode scoping (gate: NONE — scoped-when-scoped)
 
