@@ -10006,3 +10006,82 @@ effective form inherits the single-book rider by default (Q2's standing equipmen
 
 **Step 3 (challenge-mode scoping) UNBLOCKS** — R-S2d's first slice has shipped; scenario
 authoring reads this feature's output, per the spine.
+
+## Step 3's slice ships — "Inherit the Fund", the format, and R3's creditor branch CLOSED BY EXERCISE (2026-08-18)
+
+Rulings R-S3a–f built. The deliverable is the FORMAT (`ScenarioDefinition` + the four objective
+forms + `ScenarioLibrary`); the slice is one scenario proving it end-to-end through the four
+scoped seams — entry at `SelectPlayerCountry`, evaluation at the `CheckElection` post-turn hook,
+ending on the existing `_isGameOver`/`_gameOverReason` path, persistence as one id plus counters
+in `UiDraftState`. The definition is never serialized: the save carries the id and progress, and
+the definition is looked up from the library at load (the `FiscalTurnReport` record-values-not-
+formulas principle), with a save naming a removed scenario REFUSED loudly rather than silently
+resumed as free play.
+
+**THE CREDITOR BRANCH, CLOSED BY EXERCISE — and both arms were observed in one run.** R3's
+symmetric erosion arm had been code-verified since 2026-08-17 and never executed: no scenario at
+HEAD created a net creditor. This one starts Sweden at −50% of GDP, and the headless run
+(seed 777, no policy) decomposed every period's debt move into its two arms:
+
+| turn | stock | erosion arm | budget balance |
+|---|---|---|---|
+| t1 | −267 | **+6.2** (shrinking a NEGATIVE stock toward zero) | +36.4 |
+| t8 | +21 | **+0.4** (near zero, because the stock is) | +40.0 |
+| t12 | +75 | **−1.4** (shrinking a POSITIVE stock — the debtor arm) | +3.5 |
+
+**Ruling R3's claim was "the term shrinks whichever position exists toward zero", and that is now
+MEASURED rather than reasoned** — the sign of the erosion contribution follows the sign of the
+stock, through the crossover, in a single trajectory. The scenario doubles as the coverage gap's
+closure exactly as scoped.
+
+**⚠ THE MEASUREMENT ALSO CORRECTED THE SCENARIO'S OWN PREMISE, and the correction is kept in the
+authored text rather than quietly fixed.** The scenario was drafted with erosion as the
+antagonist. The decomposition says the STRUCTURAL DEFICIT is: ~+42/turn against Sweden's ~620
+GDP versus erosion's ~+6, so a no-policy run exhausts a −310 inheritance by turn 8 and erosion is
+about a seventh of the move. The premise and the `ScenarioLibrary` doc comment were rewritten to
+match the measurement — the real dilemma is fiscal, and the no-policy run LOSES (1 of 3
+objectives at seed 777), which is the shape a challenge should have. **Whether a skilled line
+wins is a playtest question and is NOT claimed here.**
+
+### The bar
+
+- **The default-path gate: 6/6 dumps SHA256-identical to `pre_s3_deff6dd`** — the seed-delta seam
+  is exactly where scenario machinery could leak into a sandbox game, and it does not.
+- **The scenario run reported as its own trajectory**, never diffed against a baseline (a
+  different world by design), with the creditor decomposition above and an assert that the branch
+  actually ran — `ScenarioSliceDiagnostic` fails if the stock is never negative at a boundary,
+  because a start that does not exercise it is a defect in the deltas.
+- **A run in progress crosses a save**: id, counters, per-objective state compared field by
+  field, and — the claim that matters — **evaluation fires again on the restored progress**
+  (post-load boundary measured at turn 3). "The counters persisted" and "it still works after a
+  load" are different claims; only the second is the feature.
+- **Equivalence 117/117, RT 12/12, parity 7/7 × 6** — all untouched-confirmed.
+- **Captures both sizes**: `94_scenario_entry` (deltas visible in the real UI: −$330B, −50.0%
+  debt-to-GDP, AAA outlook+), `94b_scenario_in_progress`, `94c_scenario_verdict`.
+
+### Three capture-pass defects, each caught by looking rather than by a guard
+
+1. **A capture named for a state it did not show.** `94c` was pinned with the shared
+   `MaxStateSearchDays` bound (4 years), but the scenario starts mid-run in the driver, so the
+   bound expired at turn 11 of 12 and the image was the DASHBOARD under a verdict's name. Fixed by
+   bounding the loop by the turns actually needed, and the driver now **logs an error if the
+   verdict is not on screen** — the capture asserts its own name.
+2. **Desk ink, second occurrence in this screen family.** The verdict draws on the one ground with
+   no paper under it, and the paper palette's change colours read as near-black there.
+3. **COPIED GUIStyles SHARE THEIR GUIStyleState.** Building `metStyle`/`missedStyle`/`figureStyle`
+   as copies and assigning each a colour left exactly one line — the MISSED row's figure — in
+   another row's ink, across two capture passes. **This is why `DrawColoredLabel` exists in this
+   file** (set, draw, restore, one object); using it fixed all three lines. The lesson generalises:
+   in this codebase, tint a style at the call site, never fork it.
+
+⚠ **Visual work is built-not-confirmed until Elias sees the `s3usa*_94*` captures.**
+
+### What the slice leaves for the remaining five
+
+The format's claim is that Italy, Poland, The Disinflation and The Unequal Recovery are SUBSETS of
+this shape (Wage Boom stays sequenced behind Step 5 by its own dependency). Two named gaps: the
+`Sustained` objective form is BUILT BUT UNEXERCISED — the slice needs only `Terminal` and
+`NeverBreach`, so the first scenario using it is also its first test; and the epilogue's v1
+limitation stands as ruled (final ledger + `StatHistory`, with per-scenario term accumulation the
+named upgrade). **If a scenario needs a new `ObjectiveKind`, that is a finding about the grammar
+to be recorded, not a special case to be written.**

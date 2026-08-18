@@ -133,6 +133,21 @@ namespace PoliSim.Persistence
         public ElectionResult PendingElectionResult;
         public int PendingElectionTurn;
 
+        /// <summary>
+        /// STEP 3 (R-S3e's "one id plus counters"): the active scenario's id and objective progress,
+        /// or null in free play - which is also what an old save deserializes to, so a pre-scenario
+        /// save loads as the free-play game it was (the append-only rule this shape already relies on
+        /// for RNG streams). The DEFINITION is never persisted: it is looked up by id from
+        /// `ScenarioLibrary` at load, the same "record values, not formulas" principle
+        /// `FiscalTurnReport` states - so authored content can be corrected without invalidating a
+        /// save, while a REMOVED scenario id is refused rather than silently dropped.
+        /// </summary>
+        public ScenarioProgress Scenario;
+
+        /// <summary>Set while the verdict screen is the live takeover, so a save taken on it reopens
+        /// on it rather than dropping the player back into a finished world with no explanation.</summary>
+        public bool ScenarioVerdictPending;
+
         /// <summary>GameController.GameSpeed as an int - the enum is private to the controller and
         /// stays that way; the value is recorded for completeness while a load resumes Paused.</summary>
         public int GameSpeedValue;

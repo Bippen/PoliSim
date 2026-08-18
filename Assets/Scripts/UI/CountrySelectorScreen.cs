@@ -30,7 +30,8 @@ namespace PoliSim.UI
         public GameObject Root { get; private set; }
 
         /// <summary>Build the screen under the shared host. Returns null when the folder sprite is missing — the caller keeps the IMGUI selector as the degradation path, so a broken import costs the new look, never the ability to start a game.</summary>
-        public static CountrySelectorScreen Build(World world, Action<CountryId> onSelect)
+        public static CountrySelectorScreen Build(World world, Action<CountryId> onSelect,
+            IReadOnlyList<ScenarioDefinition> scenarios = null, Action<ScenarioDefinition> onScenario = null)
         {
             Sprite folder = CanvasChrome.Sliced("ui_folder_country", 48f, 48f, 72f, 40f);
             if (folder == null || world == null)
@@ -90,6 +91,19 @@ namespace PoliSim.UI
             CanvasChrome.MakeText(title.transform, "Subtitle", "Choose your country", PoliSimTheme.Body, 14,
                 PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
 
+            // STEP 3: the scenario strip — one text line per authored scenario, under the subtitle.
+            // Deliberately NOT a seventh folder: the grid is a 3×2 that exactly fits six countries,
+            // and a scenario is a different KIND of start (it brings its own country), so it reads as
+            // its own line rather than as a seventh peer. The strip is built from the library, so the
+            // slate growing from one to six adds lines here with no layout edit.
+            if (scenarios != null && onScenario != null)
+            {
+                foreach (ScenarioDefinition definition in scenarios)
+                {
+                    BuildScenarioLine(title.transform, definition, onScenario);
+                }
+            }
+
             // The 3×2 folder grid, §A.14's own measures at the 1920 reference the scaler establishes.
             var grid = new GameObject("Folders");
             grid.transform.SetParent(root.transform, false);
@@ -129,6 +143,22 @@ namespace PoliSim.UI
                 UnityEngine.Object.Destroy(Root);
                 Root = null;
             }
+        }
+
+        /// <summary>One scenario line: a text button in the brass ink the screen already uses for
+        /// interactive type, with no new art. `Text` carries its own raycast target, so the Button
+        /// needs no separate face image — the lightest control this screen can host.</summary>
+        private static void BuildScenarioLine(Transform parent, ScenarioDefinition definition, Action<ScenarioDefinition> onScenario)
+        {
+            Text label = CanvasChrome.MakeText(parent, $"Scenario_{definition.Id}",
+                $"Scenario:  {definition.Name}", PoliSimTheme.Display, 18,
+                PoliSimTheme.Hex(0xC8A24A), TextAnchor.MiddleCenter);
+            label.raycastTarget = true;
+
+            Button button = label.gameObject.AddComponent<Button>();
+            button.targetGraphic = label;
+            ScenarioDefinition captured = definition;
+            button.onClick.AddListener(() => onScenario(captured));
         }
 
         private static void BuildFolderCard(Transform parent, Country country, Sprite folder, Action<CountryId> onSelect)

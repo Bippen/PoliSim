@@ -300,6 +300,20 @@ first slate — **creditor start "inherit the fund" (closes R3's creditor-branch
 CONTENT), Italy debt start, Poland convergence run**; scoring posture; the minimum playable
 slate. **FA-cadence playtesting graduates from a riding gate to real work here.**
 
+**✅ THE SLICE SHIPPED (2026-08-18)** — R-S3a–f ruled and built: the `ScenarioDefinition` format
+(the deliverable), the four objective forms, `ScenarioEvaluator` on the `CheckElection` hook, the
+IMGUI verdict with margins and a legibility-powered epilogue, the ledger-style persistence (id +
+counters, definition looked up by id), and the per-scenario FA cadence multiplier defaulting to
+1.0. **"Inherit the Fund" closes R3's creditor-branch coverage gap BY EXERCISE — both arms of the
+symmetric erosion term observed in one run** (+6.2 on a negative stock at t1, −1.4 on a positive
+one at t12), and the measurement corrected the scenario's own premise (the structural deficit
+dominates erosion ~7:1; the no-policy run loses 1-of-3). Full record, the bar, and the three
+capture-pass defects (a capture named for a state it did not show; desk ink; copied GUIStyles
+sharing GUIStyleState) are in CLAUDE.md's "Step 3's slice ships" entry. ⚠ The `s3usa*_94*`
+captures await Elias's eyes. **The remaining five scenarios are content work behind the format**;
+the `Sustained` objective form is built but unexercised, and the first scenario to use it is also
+its first test.
+
 **SCOPED, RULINGS PENDING (2026-08-18)** — the package is
 `POLISIM_STEP3_CHALLENGE_SCOPING.md`. The central derivation: **today's scenarios are the
 MIRROR IMAGE of a playable one** — a validation scenario supplies the DECISIONS (a `switch`

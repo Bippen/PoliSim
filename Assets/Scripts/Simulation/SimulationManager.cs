@@ -757,6 +757,13 @@ namespace PoliSim.Simulation
         private readonly Dictionary<CountryId, SwfDrawdownBill> _pendingSwfDrawdownBillByCountry =
             new Dictionary<CountryId, SwfDrawdownBill>();
 
+        /// <summary>
+        /// R-S3e: the active scenario's foreign-policy pacing multiplier, or 1 in free play - set by
+        /// GameController when a scenario starts and re-derived from the scenario id on load, so it
+        /// needs no save field of its own. **1 leaves the standing cadence exactly as it was.**
+        /// </summary>
+        public float ForeignPolicyCadenceMultiplier { get; set; } = 1f;
+
         /// <summary>The most recent turn's fiscal breakdown for a country, or null if no turn has been advanced yet.</summary>
         public FiscalTurnReport GetLastFiscalReport(CountryId countryId)
         {
@@ -821,7 +828,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
-            ForeignPolicyMeeting meeting = ForeignPolicySystem.TryRollMeeting();
+            ForeignPolicyMeeting meeting = ForeignPolicySystem.TryRollMeeting(ForeignPolicyCadenceMultiplier);
             if (meeting != null)
             {
                 _pendingForeignPolicyMeetingByCountry[countryId] = meeting;

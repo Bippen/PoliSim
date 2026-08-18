@@ -58,10 +58,22 @@ namespace PoliSim.Simulation
                 new ForeignPolicyMeetingOption("Stand firm on the original position", approvalEffect: 0.5f, tradeBalanceShock: 0.2f)),
         };
 
-        /// <summary>Rolls whether a meeting fires today - see MeetingChancePerDay. Caller (SimulationManager) is responsible for only calling this when no meeting is already pending.</summary>
-        public static ForeignPolicyMeeting TryRollMeeting()
+        /// <summary>
+        /// Rolls whether a meeting fires today - see MeetingChancePerDay. Caller (SimulationManager)
+        /// is responsible for only calling this when no meeting is already pending.
+        ///
+        /// <paramref name="cadenceMultiplier"/> is R-S3e's per-scenario pacing lever: the authored
+        /// scenario scales this roll rather than anyone retuning the global constant, so pacing is a
+        /// design value per scenario (a diplomatic start legitimately wants more interrupts; a
+        /// disinflation run wants the player watching the Phillips curve). **1 by default, and the
+        /// draw is taken either way** - the RandomSource call happens before the comparison, so a
+        /// multiplier can never shift the ForeignPolicy stream's position and desync a seeded run
+        /// against its baseline.
+        /// </summary>
+        public static ForeignPolicyMeeting TryRollMeeting(float cadenceMultiplier = 1f)
         {
-            if (RandomSource.NextDouble() > MeetingChancePerDay)
+            double roll = RandomSource.NextDouble();
+            if (roll > MeetingChancePerDay * Mathf.Max(0f, cadenceMultiplier))
             {
                 return null;
             }

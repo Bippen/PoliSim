@@ -1114,6 +1114,85 @@ namespace PoliSim.Testing
             StatTracePanel.NotifyChipClicked(StatNodeId.ConsumerConfidence);
             yield return Settle();
 
+            // --- E1c (Step 3): THE SCENARIO SLICE — entry, an objective in progress, and the
+            // verdict. All three through the controller's OWN methods (StartScenario /
+            // CheckScenarioObjectives / the verdict screen's own gate), so the driver exercises the
+            // real path minus only the click — the election-reveal idiom exactly. The verdict needs a
+            // REACHED end state, which is why it is pinned by DOING: the scenario's own end turn is
+            // forced, then the real evaluator decides the outcome.
+            {
+                ScenarioDefinition slice = ScenarioLibrary.All.Count > 0 ? ScenarioLibrary.All[0] : null;
+                if (slice == null)
+                {
+                    Debug.LogWarning("SHOT: no scenario in the library - the Step 3 captures stay unpinned.");
+                }
+                else
+                {
+                    // Entry: the scenario's own start, applied to THIS run's world. The player country
+                    // is already selected, so this is the deltas-plus-progress half of StartScenario,
+                    // reached through the controller rather than reimplemented.
+                    InvokeOneArg(controller, "StartScenario", slice);
+                    SetEnumField(controller, "_consolidatedTab", "Statistics");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    yield return Capture("94_scenario_entry");
+
+                    // An objective in progress: advance a few real turns so the evaluator has run at
+                    // real boundaries and the ledger/history behind the epilogue is populated.
+                    for (int t = 0; t < 3; t++)
+                    {
+                        for (int d = 0; d < SimulationManager.DaysPerTurn; d++)
+                        {
+                            if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                            sim.AdvanceCountryDayTick(_countryId);
+                        }
+                        InvokeNoArg(controller, "CheckScenarioObjectives");
+                    }
+
+                    SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+                    SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
+                    ResetScrolls(controller);
+                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+                    yield return Settle();
+                    yield return Capture("94b_scenario_in_progress");
+                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+
+                    // The verdict: run to the scenario's own end turn so the REAL evaluator resolves
+                    // it. ⚠ BOUNDED BY THE TURNS ACTUALLY NEEDED, not by MaxStateSearchDays - the
+                    // shared 4-year bound is sized for a state SEARCH, and this loop is a known
+                    // distance: the scenario starts mid-run here, so the flat bound expired at turn 11
+                    // of 12 and the first capture pass pinned the DASHBOARD under a name that promised
+                    // a verdict. A capture whose name asserts a state it does not show is the failure
+                    // this project's capture discipline exists to catch; the bound is still finite.
+                    int turnsNeeded = Mathf.Max(0, slice.EndTurn - sim.CurrentTurn) + 2;
+                    int guard = 0;
+                    int dayBound = turnsNeeded * SimulationManager.DaysPerTurn;
+                    while (sim.CurrentTurn < slice.EndTurn && guard < dayBound)
+                    {
+                        if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                        sim.AdvanceCountryDayTick(_countryId);
+                        guard++;
+                    }
+
+                    InvokeNoArg(controller, "CheckScenarioObjectives");
+                    yield return Settle();
+                    yield return Capture("94c_scenario_verdict");
+
+                    bool verdictOnScreen = (bool)controller.GetType()
+                        .GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .GetValue(controller);
+                    if (verdictOnScreen)
+                    {
+                        Debug.Log($"SHOT: scenario verdict pinned at turn {sim.CurrentTurn} (end turn {slice.EndTurn}).");
+                    }
+                    else
+                    {
+                        Debug.LogError($"SHOT: 94c shows NO verdict - reached turn {sim.CurrentTurn} of {slice.EndTurn}. " +
+                                       "The capture is named for a state it does not show; fix the bound, do not accept the image.");
+                    }
+                }
+            }
+
             // --- E2. THE SIGNING CEREMONY (Canvas screen 2) — pinned via the controller's own queue
             // method (ceremonies fire only from play's day tick, never from harness sim-advances, so
             // this pass stays clean; TriggerSigningForNewestDivision fills the same queue the day
@@ -1208,6 +1287,20 @@ namespace PoliSim.Testing
             }
 
             m.Invoke(target, null);
+        }
+
+        /// <summary>The one-argument twin, same contract: a missing method is an ERROR, because the
+        /// state its caller meant to pin would otherwise be silently wrong rather than absent.</summary>
+        private static void InvokeOneArg(object target, string method, object argument)
+        {
+            MethodInfo m = target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (m == null)
+            {
+                Debug.LogError($"SHOT: method {method} not found - the state its caller pins will be WRONG, not missing.");
+                return;
+            }
+
+            m.Invoke(target, new[] { argument });
         }
 
         private static TaxLine FindTaxLine(Country country, TaxType type)
