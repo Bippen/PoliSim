@@ -404,6 +404,26 @@ Full record including a root-caused, understood, driver-only capture-vs-diagnost
 verdict: **subset, confirmed** — no new `ObjectiveKind` needed. Two of five scenarios remain:
 Poland convergence, The Unequal Recovery.
 
+**Two carry-overs from the first real playtest session (2026-08-18), recorded here as LIVE,
+QUEUED, UNBUILT work — not built this pass:**
+
+- ⚠ **The fiscal legibility panel's trigger has FIRED.** Step 2 named it as deferred, with the
+  trigger "the first playtest asking why did the deficit move" (`CLAUDE.md`'s Step 2 entry). Italy
+  Debt Crisis's own playtest session is that playtest: no panel section exists for erosion, the
+  maturity rate-lag, or the debt path itself. Moved from CLAUDE.md's deferred list to here —
+  startable today, since the data already lives in `FiscalTurnReport` per Step 2's own note; only
+  the trace-panel section itself (`StatTracePanel`'s Approval/ConsumerConfidence grammar, extended
+  to a third stat) remains to be built.
+- ⚠ **The `EndTurn`-as-absolute-turn-number capture artifact is not new to Italy.** Confirmed by
+  looking: `94c_scenario_verdict` ("Inherit the Fund") has shown the SAME shape since Step 3
+  shipped it — "SCENARIO FAILED" reached exactly at its own mid-run start, not a fresh-game one.
+  There it was by design (that capture block applies zero player policy on purpose); Italy's own
+  instance of the same mechanism was investigated fresh and found to be the identical root cause
+  (`ScenarioEvaluator` compares `EndTurn` absolutely; the capture driver runs several blocks on one
+  continuous clock before either scenario starts). **Both known, both driver-only, neither a
+  scenario-balance or evaluator defect** — not queued as work, recorded so a future reader does not
+  re-discover the same thing as if it were new.
+
 **STEP 5 CLOSES.** Master Sequence II's explicitly-named items (Q1–Q5, Step 1–3) are all
 shipped or scoped; the spine's remainder is Step 4 (13 Sept) and Step 6 behind it, plus scenario
 content behind Step 3's format, plus the queue's own remainder (Q6–Q10) at its own triggers.

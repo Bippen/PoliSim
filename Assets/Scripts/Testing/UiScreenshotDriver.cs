@@ -1266,9 +1266,9 @@ namespace PoliSim.Testing
                     yield return Settle();
                     yield return Capture("95c_italydebt_verdict");
 
-                    bool italyVerdictOnScreen = (bool)controller.GetType()
-                        .GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic)
-                        .GetValue(controller);
+                    FieldInfo verdictPendingField = controller.GetType()
+                        .GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic);
+                    bool italyVerdictOnScreen = (bool)verdictPendingField.GetValue(controller);
                     if (italyVerdictOnScreen)
                     {
                         Debug.Log($"SHOT: Italy Debt Crisis verdict pinned at turn {sim.CurrentTurn} (end turn {italySlice.EndTurn}).");
@@ -1278,6 +1278,21 @@ namespace PoliSim.Testing
                         Debug.LogError($"SHOT: 95c shows NO verdict - reached turn {sim.CurrentTurn} of {italySlice.EndTurn}. " +
                                        "The capture is named for a state it does not show; fix the bound, do not accept the image.");
                     }
+
+                    // ⚠ PLAYTEST FIX (2026-08-18): Italy is the LAST scenario in ScenarioLibrary.All, so
+                    // unlike "Inherit the Fund" - whose own dangling verdict gets silently cleared by
+                    // StartScenario's `_scenarioVerdictPending = false` the moment Italy's block starts -
+                    // nothing clears Italy's. Left set, it pinned every later section under the WRONG
+                    // name: found by actually looking at 89_signing_document post-fix and seeing the
+                    // Italy verdict screen again, not a signing ceremony. Not GameController.
+                    // DismissScenarioVerdict() - that method sets _isGameOver = true permanently (the
+                    // real player's only dismissal path, correctly, since a real ceremony ending a
+                    // scenario ends the run) - which would corrupt every capture after it (bills would
+                    // stop resolving, the election/game-over sections would run against an
+                    // already-game-over state). Cleared directly instead, the same "reach into private
+                    // state by reflection rather than widen production's public surface" idiom this
+                    // whole file already uses - this is driver cleanup, not a dismissal a player took.
+                    verdictPendingField.SetValue(controller, false);
                 }
             }
 
@@ -1300,6 +1315,25 @@ namespace PoliSim.Testing
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
             yield return Capture("89b_signing_restored");
+
+            // --- E2b. THE SIGNING CEREMONY, REJECTED FORM (playtest fix, 2026-08-18) — the seal
+            // used to drop and the button read "SIGN" for a rejected division too, a false
+            // player-facing claim (nothing was enacted; there is nothing to sign). TriggerSigningFor-
+            // NewestDivision only ever grabs WHATEVER bill happened to resolve last, with no
+            // guarantee either way, so this injects one guaranteed-rejected DivisionRecord directly
+            // (the same DivisionLog.Append every real resolution goes through) to pin the branch the
+            // fix actually changed — the election win/loss pair's own precedent for a binary outcome
+            // that must not go unpinned by chance.
+            player.Divisions.Append("Harness Test Bill (injected for rejected-signing coverage)", sim.CurrentDate, -0.35f, passed: false);
+            InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: true);
+            yield return Settle();
+            yield return Capture("89c_signing_rejected");
+            RecordCanvasTextAssert("89c_signing_rejected", controller);
+
+            InvokeNoArg(controller, "SignPendingDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
 
             // --- F. THE ELECTION REVEAL, BOTH FORMS, AND GAME OVER — through the controller's own
             // path. The sim never shows a reveal because CheckElection is the CONTROLLER's post-turn

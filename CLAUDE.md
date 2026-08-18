@@ -5941,6 +5941,32 @@ principle that an unexamined instrument is an assumption. Note the related prece
 above: the anomaly detector's percentage metric is mathematically meaningless near zero, which was found
 by inspection rather than by the detector ever complaining.
 
+**Occurrence, different tool, same procedure (2026-08-18).** `UiScreenshotCapture`/`UiScreenshotDriver` -
+not `BatchSimulationRunner` - wedged on a playtest-fix validation run: `Get-Process` showed the main
+Unity process's CPU time still climbing (~162s of CPU over a 30s sample) while the log had not gained a
+byte in 51 minutes, stalled one line after `AttachDriver`'s own "driver attached" line and a single
+"canvas seam never settled... capturing whatever is up" warning - zero captures written, and the
+discriminating negative held again: no completion/exit line ever appeared. Applied the standing
+procedure exactly (two-sample CPU-growth check, log-silence check, capture-count-on-disk check, the
+absent-exit-line check) rather than re-diagnosing from scratch - cost minutes, not a pass. Killed both
+`Unity` processes, confirmed clear via `Get-Process`, reran fresh at both widths; the second run
+completed normally. ⚠ **Root cause FOUND minutes later, corrected here rather than left as written above.** Not the same
+bug as `BatchSimulationRunner` at all, and self-inflicted: `UiScreenshotDriver`'s own class doc comment
+already says it plainly - "Captures happen after `WaitForEndOfFrame`, which is the only point IMGUI has
+actually composited - **and is why the runner cannot use `-batchmode`**." I ran it with
+`-batchmode -nographics` anyway, copying the invocation pattern from this session's pure-simulation
+diagnostics (`ItalyDebtMeasurementDiagnostic` etc.), where nographics is correct because nothing renders.
+For a tool that captures actual composited frames, `-nographics` disables the graphics device entirely,
+so `WaitForEndOfFrame` never fires and the very first `WaitForCanvasSettle` call blocks forever with
+growing CPU and total log silence - reproduced identically three times running. **Dropping both
+`-batchmode` and `-nographics` (a normal windowed Editor invocation) fixed it immediately**: the same
+capture pass that hung for 51 minutes completed cleanly in 67 seconds. The diagnostic procedure above
+(CPU growth + log silence + absent exit line) correctly identified WEDGED vs SLOW; what it could not do
+alone was locate the cause, because this occurrence's mechanism-level detail (which flag, which method)
+still had to come from reading the tool's own code once the procedure confirmed a genuine hang existed
+worth reading code over. **Lesson for next time**: `-nographics` is a per-tool decision, not a
+project-wide default - check whether the target method renders anything before adding it.
+
 ## Narrow harness audit before Step A (2026-08-01)
 
 Scoped deliberately to what Step A's acceptance depends on, not an open-ended review. Three items.
@@ -10000,9 +10026,16 @@ Elias sees the `s2usa*_93*` captures.**
 Tooltips-as-pointers (trigger: discoverability feedback from FA-cadence/Step 3 playtesting) ·
 the causal-graph screen (trigger: the ledger carries a second stat's terms — the term IDs ARE
 the stat→stat edge list; derived, never authored) · narrative layer (only-if-ever, generated
-from the ledger) · the fiscal chain's panel section (data exists in FiscalTurnReport;
-trigger: the first playtest asking "why did the deficit move") · BusinessConfidence's
-effective form inherits the single-book rider by default (Q2's standing equipment).
+from the ledger) · ~~the fiscal chain's panel section (data exists in FiscalTurnReport;
+trigger: the first playtest asking "why did the deficit move")~~ **TRIGGERED (2026-08-18) —
+see below, moved to queued** · BusinessConfidence's effective form inherits the single-book
+rider by default (Q2's standing equipment).
+
+⚠ **FIRED, not deferred any longer.** Italy Debt Crisis's own playtest session is the first
+playtest asking exactly that question, per its own ship record. Moved from this deferred list
+to `POLISIM_MASTER_ROADMAP.md`'s live section as queued, unbuilt work — the data still exists
+in `FiscalTurnReport` per the note above, so the build itself remains cheap; only its status
+changed, from hypothetical to live.
 
 **Step 3 (challenge-mode scoping) UNBLOCKS** — R-S2d's first slice has shipped; scenario
 authoring reads this feature's output, per the spine.
@@ -10457,4 +10490,121 @@ its shape. The one defect the exercise found (`Met` non-stickiness) was in the e
 **Two of five remain untested by any prior finding**: Poland convergence (growth vs. overheating
 from productivity convergence, not an engineered gap) and The Unequal Recovery (Gini-gap via
 Parliament). Content work continues behind Step 3's format until 13 Sept opens Step 4.
-opens Step 4.
+
+## First real playtest session — two defects fixed, seven findings sorted (2026-08-18)
+
+Seven playtest findings, sorted per instruction: two fixes this pass, five scoped only (their own
+package follows this entry). Two carry-overs from Italy Debt Crisis recorded live above (the
+fiscal panel's trigger fired; the `EndTurn` capture artifact is shared with "Inherit the Fund").
+**UI-only bar per working-discipline rule 0**: compile check plus a smoke run — no simulation math
+changed, so the full matrix/equivalence/RT bar does not apply. The smoke run here is unusually
+thorough (a full 90-capture pass, both sizes, twice) because getting it green surfaced two
+unrelated pre-existing defects along the way, both named and disposed of below.
+
+### Fix 1 — the signing ceremony dropped an official seal on REJECTED bills too
+
+**Derived which bug it was before touching anything, per instruction.** Read both stamp-draw
+sites (`GameController.DrawRecentDivisions`, `SigningScreen.BuildDivisionPlate`) and the full
+`WouldBillPass`/`RecordDivision`/`DivisionLog.Append` chain first — all of it branches correctly
+on `record.Passed`, and the `ui_stamp_carried`/`ui_stamp_rejected` PNGs themselves are correctly
+labeled (composited onto a dark ground and read directly - "CARRIED"/"REJECTED", no swap). **The
+CARRIED/REJECTED stamp was never the bug.** The real one: `SigningScreen.Build` built the
+`SealLanding` (the official wax seal, `ui_seal_official`) and the "SIGN" button **unconditionally**
+for every division, passed or failed — a false player-facing claim (the seal is the head-of-
+state's act of enactment; a rejected bill was never enacted, there is nothing to sign), not a
+cosmetic slip, exactly the distinction the instruction asked to establish before fixing.
+
+**Fix**: the seal/button now branch on `record.Passed`. Passed keeps the wax seal + "SIGN"
+unchanged. Failed builds an invisible `SealTimer` object instead — `SealDrop` only ever animates
+its own `RectTransform` (confirmed by reading the class: no `Image` dependency), so the identical
+settle-timer contract (`Sign()`/`Sealed`) drives the seam forward either way, just with nothing
+visible dropping — and the button reads "FILE" instead of "SIGN". The landing zone's 104×104 slot
+stays reserved in both branches, so the button sits in the identical position regardless of
+verdict.
+
+**Verified structurally, a more precise bar than a screenshot for this fix**: `SigningStampFixDiagnostic`
+(new) calls the real `SigningScreen.Build` directly for a synthetic passed and a synthetic failed
+`DivisionRecord`, then asserts the resulting GameObject hierarchy rather than eyeballing pixels —
+does a `Seal` Image exist (only for passed), does a `SealTimer` exist with no Image (only for
+failed), does `SealDrop` start inactive either way, does the button's Label text read exactly
+"SIGN" or "FILE". **All assertions pass, both branches.** This is resolution-independent (the fix
+is conditional object creation, not layout), so one structural run stands in for "both sizes"
+here — there is no per-width variant of this defect to re-check.
+
+### Fix 2 — the Budget Process tab nested two scrolls, one of them dead
+
+**Enumerated project-wide rather than fixing what was noticed, per instruction.** Search: every
+`BeginScrollView` call site under `Assets/Scripts` — **18 total, 2 files** (17 in
+`GameController.cs`, 1 in `StatTracePanel.cs`). Checked each for literal nesting (a second
+`BeginScrollView` before the first's matching `EndScrollView`): **exactly one nested pair found.**
+Every other tab/sub-tab scroll is a single, switch-dispatched leaf — Statistics/Decisions/
+Demographics/PolicyLaws-per-sub-tab/Politics-per-sub-tab/Budget-per-category each open one scroll
+apiece, mutually exclusive with their siblings, never nested. `StatTracePanel`'s own bounded
+12-row internal scroll (Step 2's already-documented, deliberate exception) is never reached while
+any `GameController` scroll is open at either of its two call sites (PolicyLaws, Budget) - both
+pin the stat row and trace panel ABOVE the tab's own scroll, by existing design.
+
+**The one real pair**: `DrawBudgetProcessTab`'s outer `_budgetProcessRowScrollPosition`
+(horizontal, wrapping the whole three-column row) around the inner `_budgetProcessCenterScrollPosition`
+(vertical, the center column's own). The outer one is DEAD: the code's own 2026-08-01 comment
+already states the three columns are guaranteed to sum to less than `contentWidth`, so "the row
+cannot scroll horizontally at any window size" - true then, still true now, just never acted on.
+**Fixed**: outer `BeginScrollView`/`EndScrollView` removed (kept the `BeginHorizontal` it wrapped,
+sized identically), the now-dead `_budgetProcessRowScrollPosition` field deleted. The inner scroll
+is kept, named, and deliberate — the center column's content genuinely varies by category and
+does overflow `columnsHeight`.
+
+**Captures both sizes, rule 15**: `05_budget`/`05a_budget_tax` at 1600 and 2560 — one scroll
+(visible on the center column only), the three-column layout fits naturally, no horizontal
+scrollbar, nothing clipped.
+
+### A driver-tooling detour, disposed of rather than left blocking
+
+Getting a clean capture pass hit two SEPARATE pre-existing problems, neither in the two fixes
+above, both named and closed:
+
+1. **The capture batch wedged, three times running, always at the exact same point** (the first
+   `WaitForCanvasSettle`, zero captures, total log silence). Root-caused rather than assumed the
+   same as the standing `BatchSimulationRunner` hang (it isn't — see the correction on that
+   record): `UiScreenshotDriver`'s own class doc says plainly it cannot run under `-batchmode`
+   because captures need real `WaitForEndOfFrame` compositing, and `-nographics` (copied from this
+   session's pure-simulation diagnostics, where it's correct) disables the graphics device
+   entirely. Dropping both flags fixed it immediately — the same pass that hung 51 minutes
+   completed in 67 seconds.
+2. **Italy Debt Crisis is the LAST scenario in `ScenarioLibrary.All`, and nothing ever clears its
+   verdict overlay.** Every earlier scenario's dangling `_scenarioVerdictPending` gets silently
+   cleared by the NEXT scenario's own `StartScenario` call ("Inherit the Fund"'s clears when
+   Italy's starts) - Italy has no successor, so its verdict stayed pinned over every capture after
+   it, under the WRONG names (`89_signing_document` showed the Italy verdict screen, not a signing
+   ceremony - confirmed this was ALREADY true of the very first `italydebt`-labeled run, so it
+   predates this pass entirely and was simply never looked at that far down the sequence before).
+   **Fixed at the driver level only**: `_scenarioVerdictPending` cleared directly via reflection
+   after the verdict capture, NOT through `GameController.DismissScenarioVerdict()` - that method
+   sets `_isGameOver = true` permanently (the real player's only path, correctly, since dismissing
+   a scenario's verdict really does end the run) - which would have corrupted every capture after
+   it. This is driver cleanup, the same "reach into private state rather than widen production's
+   surface" idiom the whole file already uses, not a dismissal a player took.
+
+**⚠ NAMED, NOT FIXED — a third, DEEPER thing the above surfaced, out of scope for this pass.**
+`StartScenario` also calls `SelectPlayerCountry(Italy)`, and nothing ever switches back to the
+driver's default country (USA) afterward. Once Italy's own dangling verdict was cleared, the
+driver's REMAINING sections (signing ceremony, election reveal) kept running - but against Italy
+as the live-selected country, while the driver's OWN local `player`/`_countryId` variables (set
+once, early, before any scenario ever ran) still reference USA. The captures after the fix are no
+longer BLOCKED, but several are now semantically confusing (e.g. Italy's own annual budget-process
+pause fires instead of the intended USA signing-ceremony state) because of this desync. Both fixes
+in this pass were verified through paths that do not depend on this section (the structural
+diagnostic for Fix 1; the EARLY, pre-Italy-block Budget captures for Fix 2), so it did not block
+either. Left named rather than chased, per the same "stop at the boundary" this pass was scoped
+to: fixing it properly means deciding what the driver's post-scenario country state SHOULD be,
+which is a driver-design question, not a one-line reflection call.
+
+### A fourth, pre-existing, unrelated finding surfaced by the log, also named and not chased
+
+`ATTRIB: USA approval ledger FAILS its audit at 2050-12-26` appeared in both clean 1600 runs,
+identically. Traced to the driver's own election-forcing code (`player.State.ApprovalRating =
+60f;`, a raw un-ledgered write used to guarantee an election WIN gets captured) - the self-audit
+is correctly flagging that write as an unexplained approval mover, exactly the failure mode its
+own message names ("An approval writer is not recording - find it"). The writer in question is
+the TEST HARNESS, not production code. Not fixed here - out of scope for this pass, and the audit
+doing its job correctly on a driver artifact is a different situation from the audit being wrong.

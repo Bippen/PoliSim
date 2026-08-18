@@ -187,21 +187,47 @@ namespace PoliSim.UI
             rowLayout.childControlWidth = false;
             rowLayout.childControlHeight = false;
 
+            // ⚠ PLAYTEST FIX (2026-08-18): the seal used to drop, and the button read "SIGN", for
+            // EVERY division regardless of record.Passed - a false player-facing claim, not a
+            // cosmetic slip (a rejected bill was never enacted; there is nothing to sign). The
+            // landing zone's 104x104 slot stays reserved either way, so the button sits in the
+            // identical position for both verdicts; only what fills it, and what the button says,
+            // now depends on the record.
             var landing = new GameObject("SealLanding");
             landing.transform.SetParent(signRow.transform, false);
             landing.AddComponent<RectTransform>().sizeDelta = new Vector2(104f, 104f);
-            Texture2D sealTexture = IconLibrary.GetChrome("ui_seal_official");
-            // The wax seal is real-colour: as-authored, locked white.
-            Image sealImage = CanvasChrome.AsAuthoredImage(landing.transform, "Seal",
-                CanvasChrome.Whole(sealTexture, "ui_seal_official#whole"));
-            RectTransform sealRect = sealImage.rectTransform;
-            sealRect.anchorMin = sealRect.anchorMax = new Vector2(0.5f, 0.5f);
-            sealRect.sizeDelta = new Vector2(104f, 104f);
-            sealImage.preserveAspect = true;
-            screen._seal = sealImage.gameObject.AddComponent<SealDrop>();
-            sealImage.gameObject.SetActive(false);
 
-            BuildSignButton(signRow.transform, onSign);
+            GameObject sealBeat;
+            if (record.Passed)
+            {
+                Texture2D sealTexture = IconLibrary.GetChrome("ui_seal_official");
+                // The wax seal is real-colour: as-authored, locked white.
+                Image sealImage = CanvasChrome.AsAuthoredImage(landing.transform, "Seal",
+                    CanvasChrome.Whole(sealTexture, "ui_seal_official#whole"));
+                RectTransform sealRect = sealImage.rectTransform;
+                sealRect.anchorMin = sealRect.anchorMax = new Vector2(0.5f, 0.5f);
+                sealRect.sizeDelta = new Vector2(104f, 104f);
+                sealImage.preserveAspect = true;
+                sealBeat = sealImage.gameObject;
+            }
+            else
+            {
+                // No enactment, no seal to drop. SealDrop only ever animates its own RectTransform
+                // (see its own class below) - it needs no Image - so an empty timer object carries
+                // the identical settle beat with nothing visible to show, and Sign()/Sealed keep
+                // driving the seam exactly as they do for a passed division.
+                var timer = new GameObject("SealTimer");
+                timer.transform.SetParent(landing.transform, false);
+                RectTransform timerRect = timer.AddComponent<RectTransform>();
+                timerRect.anchorMin = timerRect.anchorMax = new Vector2(0.5f, 0.5f);
+                timerRect.sizeDelta = new Vector2(104f, 104f);
+                sealBeat = timer;
+            }
+
+            screen._seal = sealBeat.AddComponent<SealDrop>();
+            sealBeat.SetActive(false);
+
+            BuildSignButton(signRow.transform, onSign, record.Passed);
 
             return screen;
         }
@@ -279,8 +305,8 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips.</summary>
-        private static void BuildSignButton(Transform parent, Action onSign)
+        /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips. The label reads "SIGN" only for a passed division - "FILE" for a rejected one, matching the plate's own REJECTED stamp rather than claiming an enactment that did not happen.</summary>
+        private static void BuildSignButton(Transform parent, Action onSign, bool passed)
         {
             Sprite normal = CanvasChrome.Sliced("ui_btn_brass_canvas", 24f, 24f, 24f, 24f);
             Sprite hover = CanvasChrome.Sliced("ui_btn_brass_canvas_hover", 24f, 24f, 24f, 24f);
@@ -312,7 +338,7 @@ namespace PoliSim.UI
 
             control.onClick.AddListener(() => onSign());
 
-            Text label = CanvasChrome.MakeText(button.transform, "Label", "SIGN", PoliSimTheme.Display, 18,
+            Text label = CanvasChrome.MakeText(button.transform, "Label", passed ? "SIGN" : "FILE", PoliSimTheme.Display, 18,
                 PoliSimTheme.Hex(0xF0E7D8), TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch((RectTransform)label.transform);
         }

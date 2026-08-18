@@ -531,7 +531,6 @@ namespace PoliSim.UI
         private enum BudgetProcessCategory { Tax, Spending, Welfare, Infrastructure, Swf }
         private BudgetProcessCategory _budgetProcessCategory = BudgetProcessCategory.Tax;
         private Vector2 _budgetProcessCenterScrollPosition;
-        private Vector2 _budgetProcessRowScrollPosition;
 
         private bool _stylesInitialized;
         private GUIStyle _headerStyle;
@@ -6737,7 +6736,15 @@ namespace PoliSim.UI
             float centerColumnWidth = usableWidth - categoryColumnWidth - summaryColumnWidth;
             float totalRowWidth = categoryColumnWidth + columnSpacing + centerColumnWidth + columnSpacing + summaryColumnWidth;
 
-            _budgetProcessRowScrollPosition = GUILayout.BeginScrollView(_budgetProcessRowScrollPosition, GUILayout.Width(contentWidth), GUILayout.Height(columnsHeight));
+            // ⚠ PLAYTEST FIX (2026-08-18): this used to be a SECOND, OUTER scroll wrapping the one
+            // below it - a nested pair, found by a project-wide enumeration of every BeginScrollView
+            // call site (18 across 2 files; this was the only literal nesting among them). It dates
+            // from before the 2026-08-01 fix above: back when the three columns could overflow
+            // contentWidth and needed a horizontal safety net. That fix guarantees they now sum to
+            // LESS than it - "the row cannot scroll horizontally at any window size" per its own
+            // comment above - so the wrapper had nothing left to do. One scroll now: the center
+            // column's own, kept deliberately, because its content genuinely does vary by category
+            // and does overflow columnsHeight.
             GUILayout.BeginHorizontal(GUILayout.Width(totalRowWidth), GUILayout.Height(columnsHeight));
 
             GUILayout.BeginVertical(GUILayout.Width(categoryColumnWidth));
@@ -6798,7 +6805,6 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
-            GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
 
