@@ -9827,3 +9827,103 @@ ABSENCE of the old pattern, not the presence of the new one. The grep is now on 
 `Suite` members must contain no direct `EditorApplication.Exit`; batch-only tools
 (`BatchSimulationRunner`, the diagnostics, `UiScreenshotCapture` — whose
 `[InitializeOnLoadMethod]` is correctly `SessionState`-gated to capture runs) keep theirs.
+
+## Q2 ships — real wages → consumer sentiment, the single book, and the fifth fixed reference (2026-08-18)
+
+Rulings R-Q2a/b/c recorded and built: **form A** (stateless effective-confidence factor) with
+the SINGLE-BOOK RIDER, **0.5% consumption per pp of sustained wage-growth gap** (band
+0.25–0.75 ruled), and the **shared realized-growth helper**
+(`MacroSystem.RealWageGrowthPerTurnPercent`, extracted VERBATIM from `ApplyRealWageIndex` so
+the refactor is bit-identical — Q5's seam, where trend-vs-realized will split). Built against
+`pre_q2_a8fd830`; derivation in `POLISIM_Q2_COUPLING_REPORT.md`.
+
+**The single book, audited at HEAD** (the rider: effective confidence is the ONLY confidence
+anything economic or visible reads; the stored field is the policy-drift base, named as such):
+routed — the turn identity (`ApplyNationalAccounts`), the daily identity's level AND
+contraction share (`ApplyNationalAccountsDaily`, one local for both lines), and
+`PolicyScreenStats.ReadLiveValue`, the sole numeric display path (the renderer draws through
+it; `PublicationSystem` deliberately excludes confidence from published stats per its own
+fabrication note). Justified exceptions — `SimulationTestRunner.CheckFinite` stays on the BASE
+(the persisted quantity that can go non-finite; effective is a pure function of it and three
+finite-checked inputs), and the two policy writers (healthcare, UBI) write the BASE, because
+they ARE the policy drift. `EconomyState.ConsumerConfidence`'s doc comment now states the base
+semantics; the field name is kept for the save shape. **Hand-list: NO addition needed and
+VERIFIED, not assumed** — the helper's seven inputs are all carried (ctor: NAIRU +
+PotentialGrowthRate; Q3's line: ProductivityTrendGrowthRate; `State.Clone()`: the four state
+fields). No new state is form A's whole point.
+
+**THE FIFTH FIXED REFERENCE — found by the bar, fixed by the established pattern.** The first
+build read the gap LIVE in the daily identity, and the equivalence check caught it:
+`USA@8%shock.Unemployment` failed at **11.78%** drift. The causal probe (s=0 re-run: the row
+back to 0.0057%) proved the factor was the cause — by experiment, per the correlation-vs-cause
+rule. The mechanism is exactly the class the potential anchor solved: a live within-period
+input diverges from the turn form's boundary read under large intra-period movement. Fix:
+`FiscalPeriod.WageGrowthGapAtPeriodOpen` (captured at both boundary sites), read by the daily
+identity via the anchored `EffectiveConsumerConfidence` overload — a stance, adopted where
+every other planning quantity is (the `PlannedFiscalReactionMultiplier` idiom). The turn form
+and the display read live (a boundary call and a live surface respectively). ⚠ Flagged: if the
+displayed chip should show the PERIOD stance instead of the live value, that is a one-line
+change. Old-save posture BETTER than its three siblings: a zero anchor means factor 1 —
+pre-Q2 behaviour for the loaded period's remainder, self-correcting at the next boundary; no
+guard needed.
+
+### The bar — erosion posture, run in the ruled order
+
+- **The s=0 negative control FIRST, run TWICE** (once per plumbing shape): pre-anchor plumbing
+  — all 6 dumps SHA256-identical to `pre_q2_a8fd830`; anchored plumbing — all 6 identical
+  again. The plumbing proven inert before the force arrived, both times.
+- **Matrix 6/6 vs `pre_q2_a8fd830`: 15 of 39 fields byte-identical at every horizon, both
+  seeds** — the moved 24 all downstream of Consumption, judged on the absolute column: top
+  movers ApprovalRating maxABS 0.064 pts, TradeBalance 0.028, Zone.InterestRate 0.0084 pp,
+  Inflation 0.0128 pp (t2 Poland, the transient), Budget endRel 0.016%. **PotentialGDP
+  EXACTLY unmoved everywhere** — the attractor pins the recalibration by construction.
+- **The decomposition, erosion standard**: chain identity `relC_t ≈ relGDP_{t−1} + s·gap_t`
+  holds with mean residual ~1.1e-4, max 3.5e-3 (the within-turn feedback, stated); maxRelC
+  0.37% and maxRelGDP 0.098% (both at Poland's t2 seed-convergence transient — deterministic,
+  bit-identical across seeds, decaying by t5, named in the report so it is never read as a
+  defect). Okun tail ≤0.038 pp U; Phillips ≤0.013 pp π; monetary ≤0.0094 pp policy rate.
+  **The fiscal tail MEASURED, not assumed**: |ΔDebt-to-GDP| ≤ 0.040 ratio-pts at any horizon
+  (typical ≤0.01), end-debt ≤8.6e-5 relative — (r−g−π)·b moved by exactly this much.
+- **Equivalence 117/117 with the anchor** (116/117 live — the caught row above). Enumeration:
+  Sectors ×3/sector, Infrastructure decay, Phase 3 fiscal, Phase 4 demographics, Phase 5 macro
+  (GDP/PotentialGDP/U/π/πe at 2%/8% shock states × USA/Italy, C/I as INFO rows), plus the
+  bucket asserts.
+- **Save/load 12/12 clean.** `EconomyState` untouched; `FiscalPeriod` gains ONE float with the
+  stated zero-degradation — the Phase 5 anchor class exactly.
+- **Cadence: table identical across builds, zero FAIL rows** — publication scheduling is
+  calendar-driven and the change touches no publication code.
+- **The scenario matrix, like-for-like at seed 777** (pre side = the s=0 build, byte-identity
+  proven, run through the same instrument): **24 of 30 (scenario, horizon) anomaly counts
+  EXACT; six flips of ±1–2** (cabinetstress/100 +1, welfarestress/100 +2, swfstress/100 +1,
+  sustainedexploit/100 −1, stress/500 −1, demographicpolicystress/500 +1) — borderline
+  >20%-swing entries flipping under a ≤0.1% GDP recalibration. **Zero new anomaly TYPES**:
+  both runs contain exactly four kinds (DebtToGdpRatio/Inflation/InterestRate/Unemployment
+  swings; 1759 → 1762 entries), zero finite or range violations. **Cabinetstress bounded and
+  explained**: counts 36→37 (t100), 74→74 (t500); per-turn log lines differ (28/30, 115/126)
+  by the recalibration's first decimal on GDP (~0.02%) with U/π mostly rounding away — the
+  DIFFERING lines prove the factor executes in the scenario path, so the exact count matches
+  are the instrument's coarseness, not non-execution (the distrust rule answered
+  structurally). The t500 cabinetstress-74 vs baseline-90 split exists at s=0 too —
+  pre-existing, not Q2's.
+- **No captures, derived and stated** (the Q1 class): the chip renders F2; the factor's
+  display delta at any warm-up-reachable state is ≤0.005, so the rendered text cannot change.
+  ⚠ Elias may override; a capture pass would then run rule-15 against the `f1usa` sets.
+
+### The standing equipment (the F1 lesson generalized, per the ruling)
+
+**NO STORED QUANTITY MAY DIVERGE FROM ITS PRESENTED VALUE.** Where a derived "effective" form
+of a stored quantity exists, the effective form is the single book: everything economic and
+every display reads it; the stored field is a named base; any surface that must show the base
+labels it as the base. First instance: ConsumerConfidence (this pass). Any quantity acquiring
+an effective form later (BusinessConfidence is the obvious candidate) inherits this rider by
+default rather than by a fresh ruling.
+
+**Step 1 of Master Sequence II closes** — three graduations, the templates demonstrated in
+all three variants: Q3 (re-rooting: byte-identical, movement would be failure), Q1 (force,
+containment-clean: one moved field, decomposed without remainder), **Q2 (force,
+baseline-active: recalibration by construction — smallness is the claim, the off-switch
+byte-identity control is the proof of plumbing, and the decomposition-plus-measured-tails is
+the proof of the force)**. The queue's remainder (Q5–Q10) waits at its named triggers. Step 2
+(causality legibility) is NEXT, inheriting by name: R-Q1c's approval no-ceiling, the
+confidence single-book founding and its base/effective distinction (this pass), the coupling
+graph as built, and the preview hand-list assertion question.

@@ -464,10 +464,14 @@ namespace PoliSim.EditorTools
                 float unemploymentAtOpen = cn.State.Unemployment;
                 float gdpAtOpen = cn.State.GDP;
                 float potentialAtOpen = cn.State.PotentialGDP;
+                // Q2: the wage-growth gap anchored at period open (the fifth fixed reference) -
+                // the LIVE form failed this very bar at 11.8% on the @8%shock unemployment row
+                // (2026-08-18), the same divergence class the potential anchor fixed.
+                float wageGapAtOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(cn);
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
                 {
                     float dayBefore = cn.State.GDP;
-                    MacroSystem.ApplyNationalAccountsDaily(cn, plannedG, rate, potentialAtOpen);
+                    MacroSystem.ApplyNationalAccountsDaily(cn, plannedG, rate, potentialAtOpen, wageGapAtOpen);
                     MacroSystem.ApplyPotentialGdpGrowthDaily(cn);
                     float annualized = (cn.State.GDP - dayBefore) / Mathf.Max(gdpAtOpen, 1f) * 100f * SimulationManager.DaysPerTurn;
                     MacroSystem.ApplyOkunsLawDaily(cn, annualized, unemploymentAtOpen);

@@ -58,7 +58,10 @@ namespace PoliSim.Simulation
             float consumptionInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * ConsumptionInterestSensitivity);
             float investmentInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * InvestmentInterestSensitivity);
 
-            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * state.ConsumerConfidence;
+            // Q2: the single book - the identity reads EFFECTIVE consumer confidence (base × the
+            // wage-sentiment factor), never the stored policy-drift base directly.
+            float effectiveConsumerConfidence = EffectiveConsumerConfidence(country);
+            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence;
             state.Investment = priorGdp * BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
 
             float gdpFromIdentity = state.Consumption + state.Investment + governmentSpending + state.TradeBalance;
@@ -313,7 +316,7 @@ namespace PoliSim.Simulation
         /// near zero; with shares ≤0.8 and confidences ~1, A sits near 0.4.
         /// </summary>
         public static void ApplyNationalAccountsDaily(Country country, float governmentSpending, float interestRate,
-            float potentialGdpAtPeriodOpen)
+            float potentialGdpAtPeriodOpen, float wageGrowthGapAtPeriodOpen)
         {
             // <paramref name="potentialGdpAtPeriodOpen"/> is the FOURTH fixed reference of this
             // phase, and the one the equivalence bar demanded last: the turn form's identity read
@@ -331,10 +334,15 @@ namespace PoliSim.Simulation
             float consumptionInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * ConsumptionInterestSensitivity);
             float investmentInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * InvestmentInterestSensitivity);
 
-            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * state.ConsumerConfidence;
+            // Q2: the single book - both the level and the contraction share read the same
+            // EFFECTIVE consumer confidence, never the stored policy-drift base directly. The gap
+            // is the PERIOD-OPEN anchor (the fifth fixed reference), not the live gap - see the
+            // anchored overload's comment for the measured @8%shock divergence of the live form.
+            float effectiveConsumerConfidence = EffectiveConsumerConfidence(country, wageGrowthGapAtPeriodOpen);
+            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence;
             state.Investment = priorGdp * BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
 
-            float share = BaseConsumptionRate * consumptionInterestFactor * state.ConsumerConfidence
+            float share = BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence
                 + BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
             float contraction = Mathf.Clamp((1f - OutputGapReversionSpeed) * share, 0f, 0.99f);
             float attractorTerm = (1f - OutputGapReversionSpeed) * (governmentSpending + state.TradeBalance)
@@ -837,16 +845,31 @@ namespace PoliSim.Simulation
         public static void ApplyRealWageIndex(Country country, float sliceExponent = 1f)
         {
             EconomyState state = country.State;
-            // Q3 (Design B): wages read PRODUCTIVITY'S OWN growth - the pass-through constant's
-            // name is finally literally true. Same value as the old potential read (the 1:1
-            // pipe), different and correct causation; cyclical terms untouched per the ruling.
-            float growthPerTurnPercent = Mathf.Clamp(
+            float growthPerTurnPercent = RealWageGrowthPerTurnPercent(country);
+            state.RealWageIndex = Mathf.Max(MinRealWageIndex,
+                state.RealWageIndex * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
+        }
+
+        /// <summary>
+        /// The realized per-turn real wage growth (%), extracted verbatim from ApplyRealWageIndex
+        /// per R-Q2c so the wage equation and the consumer-sentiment factor
+        /// (<see cref="EffectiveConsumerConfidence"/>) can never disagree - including under the
+        /// ±MaxRealWageGrowthPerTurnPercent clamp, which is applied HERE so both consumers see the
+        /// same realized growth. This is also Q5's seam: when trend and realized productivity
+        /// split, this one site decides what wages read.
+        ///
+        /// Q3 (Design B): wages read PRODUCTIVITY'S OWN growth - the pass-through constant's
+        /// name is literally true. Same value as the old potential read (the 1:1 pipe),
+        /// different and correct causation; cyclical terms untouched per the ruling.
+        /// </summary>
+        public static float RealWageGrowthPerTurnPercent(Country country)
+        {
+            EconomyState state = country.State;
+            return Mathf.Clamp(
                 RealWageProductivityPassThrough * country.ProductivityTrendGrowth
                 + RealWageTightnessSensitivity * (country.NaturalUnemploymentRate - state.Unemployment)
                 - RealWageInflationErosionSensitivity * (state.Inflation - state.InflationExpectations),
                 -MaxRealWageGrowthPerTurnPercent, MaxRealWageGrowthPerTurnPercent);
-            state.RealWageIndex = Mathf.Max(MinRealWageIndex,
-                state.RealWageIndex * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
         }
 
         private static readonly float GiniReversionSpeedPerDay = PerDayReversion(GiniReversionSpeed);
@@ -2017,6 +2040,56 @@ namespace PoliSim.Simulation
         /// <summary>Confidence bounds around the neutral 1.0 - repeated healthcare/education spending shouldn't be able to push Consumer/BusinessConfidence (which multiply Consumption/Investment) arbitrarily far, since that would eventually destabilize GDP.</summary>
         private const float MinConfidence = 0.7f;
         private const float MaxConfidence = 1.3f;
+
+        /// <summary>Q2 (R-Q2b): percent of Consumption per percentage-point the realized real wage
+        /// growth runs from its trend term - the consumer-sentiment force. 0.5 per the ruling
+        /// (band 0.25-0.75). 0 is the wired-but-inert negative control the build bar ran first
+        /// (2026-08-18: all 6 dumps byte-identical at 0 - the plumbing proven before the force).</summary>
+        private const float WageSentimentSensitivity = 0.5f;
+
+        /// <summary>
+        /// THE SINGLE BOOK (R-Q2a's rider): the one consumer confidence anything economic or
+        /// visible reads - the national-accounts identity (both forms) and every display surface.
+        /// <see cref="EconomyState.ConsumerConfidence"/> is the policy-drift BASE (the
+        /// healthcare/UBI accumulator, and only that); this is base × the wage-sentiment factor,
+        /// folded into the SAME [MinConfidence, MaxConfidence] ceiling the base's own writers
+        /// use - rule 11 by folding, no uncounted new source.
+        ///
+        /// The gap is realized-minus-trend wage growth through
+        /// <see cref="RealWageGrowthPerTurnPercent"/> (R-Q2c), so it is exactly the wage
+        /// equation's two cyclical terms - tightness and inflation surprise - clamp included.
+        /// Stateless by R-Q2a: no accumulation, no reversion, no drift - the measured
+        /// persistently-positive mean gap rules an accumulator out (it ratchets into the 1.3
+        /// clamp; POLISIM_Q2_COUPLING_REPORT.md §1). Persistence comes from the driver itself:
+        /// tightness episodes last years.
+        /// </summary>
+        public static float EffectiveConsumerConfidence(Country country)
+            => EffectiveConsumerConfidence(country, RealWageGrowthGapPerTurnPercent(country));
+
+        /// <summary>The anchored form: the daily identity passes the PERIOD-OPEN gap (the fifth
+        /// fixed reference - FiscalPeriod.WageGrowthGapAtPeriodOpen) rather than re-deriving the
+        /// gap every morning, for the same measured reason PotentialGDP is anchored: a live gap
+        /// diverges from the turn form under large intra-period movement (the @8%shock equivalence
+        /// row failed at 11.8% on the live form, 2026-08-18). The stance idiom: sentiment about
+        /// the year's real-income prospects is assessed where every other planning quantity is.
+        /// Live-gap callers (the turn form at its boundary, display surfaces) use the
+        /// single-argument overload above.</summary>
+        public static float EffectiveConsumerConfidence(Country country, float wageGrowthGapPp)
+        {
+            return Mathf.Clamp(
+                country.State.ConsumerConfidence * (1f + WageSentimentSensitivity / 100f * wageGrowthGapPp),
+                MinConfidence, MaxConfidence);
+        }
+
+        /// <summary>Realized-minus-trend real wage growth in pp/turn - exactly the wage equation's
+        /// two cyclical terms (tightness + inflation surprise), clamp included, via the shared
+        /// helper (R-Q2c). Zero when the labour market sits at NAIRU and inflation matches
+        /// expectations.</summary>
+        public static float RealWageGrowthGapPerTurnPercent(Country country)
+        {
+            return RealWageGrowthPerTurnPercent(country)
+                - RealWageProductivityPassThrough * country.ProductivityTrendGrowth;
+        }
 
         /// <summary>
         /// Defense and HomelandSecurity spending have no growth/confidence/CrimeIndex/PovertyRate

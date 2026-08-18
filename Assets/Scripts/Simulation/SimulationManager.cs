@@ -277,7 +277,7 @@ namespace PoliSim.Simulation
                     float anchoredPotential = macroPeriod.PotentialGdpAtPeriodOpen > 0f
                         ? macroPeriod.PotentialGdpAtPeriodOpen
                         : country.State.PotentialGDP;
-                    MacroSystem.ApplyNationalAccountsDaily(country, macroPeriod.PlannedGovernmentSpending, country.CurrencyZone.InterestRate, anchoredPotential);
+                    MacroSystem.ApplyNationalAccountsDaily(country, macroPeriod.PlannedGovernmentSpending, country.CurrencyZone.InterestRate, anchoredPotential, macroPeriod.WageGrowthGapAtPeriodOpen);
                     MacroSystem.ApplyPotentialGdpGrowthDaily(country);
                     // The day's growth increment is measured against the PERIOD-OPEN GDP, not the
                     // day's own base - the third fixed reference of this phase: daily linear
@@ -629,6 +629,14 @@ namespace PoliSim.Simulation
             /// amplification that a live attractor causes). Old-save zero degrades through the same
             /// guard the identity call site applies to GdpAtPeriodOpen.</summary>
             public float PotentialGdpAtPeriodOpen;
+
+            /// <summary>Q2: the wage-growth gap (pp/turn) as the period opened - the sentiment
+            /// factor's anchor (the FIFTH fixed reference; see the anchored
+            /// EffectiveConsumerConfidence overload for the measured @8%shock divergence a live
+            /// gap causes). An old-save zero needs NO guard: gap 0 means factor 1 - the identity
+            /// simply reads the base for the loaded period's remainder and self-corrects at the
+            /// next boundary, the same degradation posture as UnemploymentAtPeriodOpen.</summary>
+            public float WageGrowthGapAtPeriodOpen;
 
             // THE ACCRUAL - summed day by day, closed out into a FiscalTurnReport at the next boundary.
             public float AccruedRevenue;
@@ -1709,6 +1717,7 @@ namespace PoliSim.Simulation
             period.GdpAtPeriodOpen = state.GDP;
             period.UnemploymentAtPeriodOpen = state.Unemployment;
             period.PotentialGdpAtPeriodOpen = state.PotentialGDP;
+            period.WageGrowthGapAtPeriodOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(country);
 
             // CONTINUOUS TIME PHASE 5: the identity, trend growth, Okun, Phillips and expectations
             // have already been charged day by day in AdvanceDay - applying any of them again here
@@ -2936,7 +2945,8 @@ namespace PoliSim.Simulation
                 PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
                 GdpAtPeriodOpen = country.State.GDP,
                 UnemploymentAtPeriodOpen = country.State.Unemployment,
-                PotentialGdpAtPeriodOpen = country.State.PotentialGDP
+                PotentialGdpAtPeriodOpen = country.State.PotentialGDP,
+                WageGrowthGapAtPeriodOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(country)
             };
 
             _fiscalPeriods[country.Id] = seeded;

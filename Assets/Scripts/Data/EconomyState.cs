@@ -50,7 +50,15 @@ namespace PoliSim.Data
         /// <summary>Adaptively-formed expectation of inflation, used by the Phillips Curve. See MacroSystem.ApplyInflationExpectations.</summary>
         public float InflationExpectations;
 
-        /// <summary>Consumer confidence index, 1.0 = neutral. Scales Consumption; nothing currently feeds this back.</summary>
+        /// <summary>
+        /// ⚠ THE POLICY-DRIFT BASE, not the confidence anything reads (Q2's single-book rider,
+        /// R-Q2a). This field is only the accumulator of permanent policy shifts (healthcare
+        /// spending, UBI - its two writers), seeded 1.0 = neutral. Everything economic or visible
+        /// - the national-accounts identity in both forms, and every display surface - reads
+        /// MacroSystem.EffectiveConsumerConfidence (base × the wage-sentiment factor) instead.
+        /// No surface may show THIS value as "confidence"; a surface showing it must label it as
+        /// the base. Field name kept for the save shape (Newtonsoft serializes field names).
+        /// </summary>
         public float ConsumerConfidence;
 
         /// <summary>Business confidence index, 1.0 = neutral. Scales Investment; nothing currently feeds this back.</summary>

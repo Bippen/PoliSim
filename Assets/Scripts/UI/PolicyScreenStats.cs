@@ -119,7 +119,10 @@ namespace PoliSim.UI
                 case StatNodeId.PotentialGrowth: return country.PotentialGrowthRate;
                 case StatNodeId.PopulationGrowthRate: return state.PopulationGrowthRate;
                 case StatNodeId.DependencyRatio: return state.DependencyRatio;
-                case StatNodeId.ConsumerConfidence: return state.ConsumerConfidence;
+                // Q2's single book: the displayed confidence IS the effective one - the same
+                // number the GDP identity consumes. The stored field is the policy-drift base
+                // and no surface shows it as "confidence" (R-Q2a's rider).
+                case StatNodeId.ConsumerConfidence: return MacroSystem.EffectiveConsumerConfidence(country);
                 case StatNodeId.BusinessConfidence: return state.BusinessConfidence;
                 default: return 0f;
             }
