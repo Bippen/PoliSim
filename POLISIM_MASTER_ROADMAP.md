@@ -300,6 +300,26 @@ first slate — **creditor start "inherit the fund" (closes R3's creditor-branch
 CONTENT), Italy debt start, Poland convergence run**; scoring posture; the minimum playable
 slate. **FA-cadence playtesting graduates from a riding gate to real work here.**
 
+**SCOPED, RULINGS PENDING (2026-08-18)** — the package is
+`POLISIM_STEP3_CHALLENGE_SCOPING.md`. The central derivation: **today's scenarios are the
+MIRROR IMAGE of a playable one** — a validation scenario supplies the DECISIONS (a `switch`
+returning one `PolicyDecision` per turn) and holds the world constant, while a playable
+scenario must supply the WORLD and let the player decide; production code has never heard of
+a scenario (one grep hit, the test runner). Four gaps, each with its seam located: entry
+(`SelectPlayerCountry`), evaluation (the `CheckElection` post-turn hook), ending
+(`_isGameOver`/`_gameOverReason`, already persisted), persistence (one id + counters).
+**The published-vs-live question is settled by the data, not by preference**: `PublishedStat`
+holds only the 12 stats with real sourced release rules and **deliberately never publishes
+DebtToGdpRatio** — so the slate's two strongest scenarios cannot be published-judged at all;
+GDP's three-stage revision would additionally let an objective flip after the fact. Slate of
+six proposed (the three named above plus **The Disinflation**, **Wage Boom Management** ⚠
+*flagged for after Step 5*, and **The Unequal Recovery** — the one that proves Step 2's output
+is load-bearing). Awaiting **R-S3a** (format + live evaluation), **R-S3b** (the slate),
+**R-S3c** (boundary-resident evaluator; IMGUI verdict, Canvas deferred to Step 4's election
+night), **R-S3d** (pass/fail + margins + epilogue; no score, on the five-discontinuities
+argument), **R-S3e** (the three-rate FA playtest, cadence as a per-scenario multiplier),
+**R-S3f** (the slice: "Inherit the Fund" end-to-end).
+
 ## Step 4 — Item 10: the political game (gate: 13 Sept 2026, Sweden votes)
 
 Opens as ONE package: the seed-data refresh from the real result; the Italy allocator pricing
