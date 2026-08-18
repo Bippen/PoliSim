@@ -281,6 +281,21 @@ name: the approval no-ceiling absence (R-Q1c), the FRF/erosion/maturity decompos
 the coupling graph. The scoping pass produces a RULING PACKAGE — surface (trace panel? tooltip
 chains? ledger annotations?), depth, and cost — before any build. Design work; Elias's ruling.
 
+**SCOPED, RULINGS PENDING (2026-08-18)** — the package is
+`POLISIM_STEP2_LEGIBILITY_SCOPING.md`. Load-bearing scoping facts, verified at HEAD: approval
+has FIVE writer classes across FOURTEEN sites and its nine formula terms already exist as
+named locals; the built graph is policy→stat ONLY (55/18/50 — the stat→stat web exists
+nowhere as data); `FiscalTurnReport` is the in-production recorded-not-recomputed precedent.
+The derivation splits attribution into four honesty classes (boundary formulas / event shocks
+/ period stances / compounding feedback) — stances are exact BY CONSTRUCTION thanks to the
+fifth fixed reference, and Class-D surfaces must carry a named residual line. The ledger buys
+two checks: a Σterms==Δ self-audit each boundary, and the preview-parity diagnostic that
+kills the hand-list escape class by naming the mismatched term. Awaiting **R-S2a** (surface:
+report annotations then trace panel), **R-S2b** (depth: term-level only, honesty rules),
+**R-S2c** (truth: explain the LIVE model), **R-S2d** (MVS: approval end-to-end first —
+blocks Step 3's scenario authoring, nothing else), **R-S2e** (persist one period's ledger:
+yes).
+
 ## Step 3 — Challenge-mode scoping (gate: NONE — scoped-when-scoped)
 
 Authored scenario starts with win/lose conditions, NOT an election clock (ruled). Scoping
