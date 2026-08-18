@@ -258,11 +258,17 @@ HEAD during transcription; the contradictions found are flagged inline rather th
   R-Q1c with the absence handed to step 2). ⚠ *Transcription flag: the brief's "new Country
   field snapshotted" was already false at ruling time — `BaselineGini` has existed since R4-2;
   Q1 adds NO field, and save/load is untouched-confirmed instead.*
-- **Q2 real-wage → ConsumerConfidence: NEXT** — force kind; inherits gap-versus-own-norm as its
-  NATURAL CANDIDATE, derived not assumed (⚠ real wages are an unbounded index with no
-  per-country baseline level — "own norm" needs deriving: growth-versus-trend is the likelier
-  gap, which is a DIFFERENT shape than Q1's level-gap; the derivation reports before wiring).
-  Own baseline; own audit (ConsumerConfidence's writers enumerated at HEAD first).
+- **Q2 real-wage → ConsumerConfidence: DERIVED, RULINGS PENDING (2026-08-18)** — the
+  derivation reported before wiring as ruled: see `POLISIM_Q2_COUPLING_REPORT.md`. The
+  growth-versus-trend gap CONFIRMED by measurement (the index is unbounded — Poland ~3.5×10¹⁵
+  by t1000 — so a level gap is structurally impossible; the accumulator form is ruled out by
+  the measured persistent positive mean, which ratchets any legible sensitivity into the 1.3
+  clamp). ConsumerConfidence's writers enumerated and MEASURED baseline-inert (flat 1.0000,
+  t1–t1000, both seeds). Awaiting **R-Q2a** (form: stateless effective-confidence factor at
+  the read sites, recommended — with the honest flag that the stored field itself does not
+  move; the delta-model-with-base-field is the named alternative), **R-Q2b** (magnitude: 0.5%
+  consumption per pp of gap, band 0.25–0.75), **R-Q2c** (shared wage-growth helper,
+  recommended — also Q5's seam). Blocks the Q2 build pass; nothing else.
 
 ## Step 2 — Causality legibility (the sandbox's explanatory layer)
 
