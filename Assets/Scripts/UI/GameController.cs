@@ -4094,6 +4094,50 @@ namespace PoliSim.UI
         /// upgrade, and its trigger is an epilogue that needs to explain the whole run rather than
         /// its last year.
         /// </summary>
+        /// <summary>
+        /// The verdict screen's per-objective figure line - Italy Debt Crisis's own contribution
+        /// (the `Sustained` form's first REAL content), fixing the gap
+        /// `SustainedObjectiveDiagnostic` found and recorded rather than fixed: a MARGIN
+        /// (measured value vs. target) is the obvious, sufficient story for
+        /// <see cref="ObjectiveKind.Terminal"/>/<see cref="ObjectiveKind.ThresholdAtDate"/>/
+        /// <see cref="ObjectiveKind.NeverBreach"/> - it is exactly what decided the outcome. For
+        /// <see cref="ObjectiveKind.Sustained"/> it is NOT: what decided the outcome is the STREAK
+        /// (<see cref="ObjectiveProgress.ConsecutiveTurns"/> against
+        /// <see cref="ScenarioObjective.RequiredTurns"/>), and the diagnostic's own finding was
+        /// that showing only the final turn's margin (e.g. "+1.14") says nothing about the 20-turn
+        /// streak that actually decided `Met`. So Sustained gets its own line: the streak first,
+        /// the latest measured value second, as context rather than as the headline.
+        /// </summary>
+        private static string BuildObjectiveFigure(ScenarioObjective objective, ObjectiveProgress state)
+        {
+            if (state == null || !state.HasValue)
+            {
+                return "not measured";
+            }
+
+            string comparisonGlyph = objective.Comparison == ObjectiveComparison.AtMost ? "≤" : "≥";
+            string margin = $"{state.LastValue:F1}{objective.Unit} vs {comparisonGlyph} {objective.Target:F1}{objective.Unit} " +
+                             $"({ScenarioEvaluator.MarginOf(objective, state.LastValue):+0.0;-0.0})";
+
+            if (objective.Kind != ObjectiveKind.Sustained)
+            {
+                return margin;
+            }
+
+            // Met is STICKY (ScenarioEvaluator's own fix, same pass): once the streak first
+            // reaches RequiredTurns it stays achieved even if a later turn breaks it, so
+            // ConsecutiveTurns (the CURRENT streak) and Met (the achievement) can legitimately
+            // disagree at verdict time - a player who held it and then had one bad turn near the
+            // end sees Met=true with a lower final ConsecutiveTurns, and the line has to stay
+            // honest about which of the two it is reporting.
+            string streak = state.Met
+                ? (state.ConsecutiveTurns >= objective.RequiredTurns
+                    ? $"held for {state.ConsecutiveTurns} of {objective.RequiredTurns} required turns"
+                    : $"reached the {objective.RequiredTurns}-turn streak earlier (currently at {state.ConsecutiveTurns})")
+                : $"never reached the {objective.RequiredTurns}-turn streak (currently at {state.ConsecutiveTurns})";
+            return $"{streak} - latest: {margin}";
+        }
+
         private void DrawScenarioVerdictScreen()
         {
             bool won = _scenarioProgress.Verdict == ScenarioVerdict.Won;
@@ -4137,10 +4181,7 @@ namespace PoliSim.UI
                 ObjectiveProgress state = ScenarioEvaluator.FindProgress(_scenarioProgress, objective.Id);
                 bool met = state != null && state.Met && !state.Failed;
                 string mark = met ? "MET" : "MISSED";
-                string figure = state != null && state.HasValue
-                    ? $"{state.LastValue:F1}{objective.Unit} vs {(objective.Comparison == ObjectiveComparison.AtMost ? "≤" : "≥")} {objective.Target:F1}{objective.Unit} " +
-                      $"({ScenarioEvaluator.MarginOf(objective, state.LastValue):+0.0;-0.0})"
-                    : "not measured";
+                string figure = BuildObjectiveFigure(objective, state);
 
                 DrawColoredLabel($"{mark}  -  {objective.Description}", deskWrap, met ? metInk : missedInk);
                 DrawColoredLabel($"        {figure}", deskWrap, PoliSimTheme.TextOnDesk);

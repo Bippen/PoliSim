@@ -1193,6 +1193,94 @@ namespace PoliSim.Testing
                 }
             }
 
+            // --- E1d (Italy Debt Crisis): the SECOND shipped scenario's own captures -
+            // ScenarioLibrary.All[1], since [0] is "Inherit the Fund" above and StartScenario
+            // takes an explicit definition rather than an index, so both get their own real
+            // entry through the controller. The in-progress capture is deliberately NOT pinned
+            // near turn 1: a Sustained objective (keep_the_room, RequiredTurns=10) shows nothing
+            // meaningful that early - the streak needs real turns to build, so this advances into
+            // it before capturing, the same "a boring ledger validates nothing" reasoning the
+            // trace-panel captures already established.
+            {
+                ScenarioDefinition italySlice = ScenarioLibrary.All.Count > 1 ? ScenarioLibrary.All[1] : null;
+                if (italySlice == null)
+                {
+                    Debug.LogWarning("SHOT: no second scenario in the library - the Italy Debt Crisis captures stay unpinned.");
+                }
+                else
+                {
+                    InvokeOneArg(controller, "StartScenario", italySlice);
+                    SetEnumField(controller, "_consolidatedTab", "Statistics");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    yield return Capture("95_italydebt_entry");
+
+                    // A REAL consolidation line (the measured -20% package, per the pre-authoring
+                    // report) so the in-progress and verdict captures show the scenario actually
+                    // being played, not a no-policy line drifting - the "post-decision,
+                    // post-parliament-cost" pinned-capture pattern applied to fiscal policy.
+                    // Applied on the FIRST turn boundary only (matching ItalyDebtCrisisSliceDiagnostic's
+                    // own line), then every later boundary reverts to noDecisions - the SpendingLine
+                    // change is persistent once applied (ApplySpendingLineChanges mutates the line's
+                    // Amount directly), so it needs no re-application.
+                    var italyConsolidation = new PolicyDecision();
+                    italyConsolidation.SpendingLineChanges[SpendingCategory.InfrastructureAndDevelopment] = -20f;
+                    italyConsolidation.SpendingLineChanges[SpendingCategory.PublicServices] = -20f;
+                    italyConsolidation.SpendingLineChanges[SpendingCategory.Administration] = -20f;
+                    var italyDecisions = new Dictionary<CountryId, PolicyDecision> { [_countryId] = italyConsolidation };
+                    bool italyConsolidationApplied = false;
+
+                    for (int t = 0; t < 11; t++)
+                    {
+                        for (int d = 0; d < SimulationManager.DaysPerTurn; d++)
+                        {
+                            if (sim.AdvanceDay())
+                            {
+                                sim.AdvanceTurn(italyConsolidationApplied ? noDecisions : italyDecisions);
+                                italyConsolidationApplied = true;
+                            }
+                            sim.AdvanceCountryDayTick(_countryId);
+                        }
+                        InvokeNoArg(controller, "CheckScenarioObjectives");
+                    }
+
+                    SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+                    SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
+                    ResetScrolls(controller);
+                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+                    yield return Settle();
+                    yield return Capture("95b_italydebt_in_progress");
+                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+
+                    int turnsNeeded = Mathf.Max(0, italySlice.EndTurn - sim.CurrentTurn) + 2;
+                    int guard = 0;
+                    int dayBound = turnsNeeded * SimulationManager.DaysPerTurn;
+                    while (sim.CurrentTurn < italySlice.EndTurn && guard < dayBound)
+                    {
+                        if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                        sim.AdvanceCountryDayTick(_countryId);
+                        guard++;
+                    }
+
+                    InvokeNoArg(controller, "CheckScenarioObjectives");
+                    yield return Settle();
+                    yield return Capture("95c_italydebt_verdict");
+
+                    bool italyVerdictOnScreen = (bool)controller.GetType()
+                        .GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .GetValue(controller);
+                    if (italyVerdictOnScreen)
+                    {
+                        Debug.Log($"SHOT: Italy Debt Crisis verdict pinned at turn {sim.CurrentTurn} (end turn {italySlice.EndTurn}).");
+                    }
+                    else
+                    {
+                        Debug.LogError($"SHOT: 95c shows NO verdict - reached turn {sim.CurrentTurn} of {italySlice.EndTurn}. " +
+                                       "The capture is named for a state it does not show; fix the bound, do not accept the image.");
+                    }
+                }
+            }
+
             // --- E2. THE SIGNING CEREMONY (Canvas screen 2) — pinned via the controller's own queue
             // method (ceremonies fire only from play's day tick, never from harness sim-advances, so
             // this pass stays clean; TriggerSigningForNewestDivision fills the same queue the day

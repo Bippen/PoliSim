@@ -7,18 +7,22 @@ namespace PoliSim.Data
     /// precedent, and hardcoded for the same reason: authored content as code costs nothing to add,
     /// gets compile-time checking, and needs no asset pipeline or serializer.
     ///
-    /// <para><b>v1 carries ONE scenario</b> (R-S3f, the minimum playable slice). The ruled slate's
-    /// other five - Italy debt, Poland convergence, The Disinflation, The Unequal Recovery, and Wage
-    /// Boom Management (sequenced behind Step 5 by its own dependency) - are content work behind this
-    /// format, and the format's claim is that each is a SUBSET of the shape below. If one needs a new
-    /// <see cref="ObjectiveKind"/>, that is a finding about the grammar, to be recorded rather than
-    /// special-cased.</para>
+    /// <para><b>v1 shipped ONE scenario</b> (R-S3f, "Inherit the Fund" - the minimum playable
+    /// slice). **Two of the ruled slate's other four then DROPPED on measurement** - Wage Boom
+    /// Management and The Disinflation both foreclosed by `UnemploymentReversionSpeed`, one finding
+    /// from two directions (see their own reports). **"Italy Debt Crisis" is the second scenario to
+    /// ship**, the first content pass to survive measurement on the first try - its difficulty
+    /// source (the debt identity) is untouched by either drop. Poland convergence and The Unequal
+    /// Recovery remain untested. The format's claim continues to hold: each shipped scenario has
+    /// been a SUBSET of the shape below, no new <see cref="ObjectiveKind"/> needed yet. If one ever
+    /// does, that is a finding about the grammar, to be recorded rather than special-cased.</para>
     /// </summary>
     public static class ScenarioLibrary
     {
         public static readonly IReadOnlyList<ScenarioDefinition> All = new List<ScenarioDefinition>
         {
-            InheritTheFund()
+            InheritTheFund(),
+            ItalyDebtCrisis()
         };
 
         public static ScenarioDefinition ById(string id)
@@ -132,6 +136,130 @@ namespace PoliSim.Data
                     new ScenarioObjective
                     {
                         Id = "hold_the_room",
+                        Description = "Never let approval fall below 30",
+                        Kind = ObjectiveKind.NeverBreach,
+                        Comparison = ObjectiveComparison.AtLeast,
+                        Target = 30f,
+                        Unit = "",
+                        Read = c => c.State.ApprovalRating
+                    }
+                }
+            };
+        }
+
+        /// <summary>
+        /// "ITALY DEBT CRISIS" - the third content pass, and the first to survive measurement on
+        /// the first try (Wage Boom Management and The Disinflation both DROPPED, for the identical
+        /// reason from opposite directions - see their own reports - the finding named there being
+        /// that `UnemploymentReversionSpeed` forecloses any premise built on moving the unemployment
+        /// gap away from NAIRU and holding it there). This scenario's difficulty source is a
+        /// different mechanism entirely: the debt identity, post-erosion/maturity - the
+        /// best-validated part of the model, not touched by either drop.
+        ///
+        /// <para><b>Measured, not assumed</b> (`POLISIM_ITALYDEBT_MEASUREMENT_REPORT.md`). Starting
+        /// 27 points above `ComfortableDebtToGdpPercent` (138), the Fiscal Reaction Function's own
+        /// aggressive first-turn response (a real, calibrated stabilizer - "confirmed flat from turn
+        /// 500 through turn 2000" per its own doc comment) pulls the ratio down sharply in turn 1
+        /// REGARDLESS of policy, then the no-policy path settles into the 105-110% band and drifts
+        /// slowly back up (109.6% at turn 30). **The lever bites, dramatically and monotonically**:
+        /// at turn 30, a −10% discretionary cut barely beats doing nothing (108.0%), a −20% cut
+        /// reaches 89.8%, a −30% cut reaches 52.6% - three clearly separated outcomes from one
+        /// lever at three magnitudes, the opposite of both drops' "every lever gives the identical
+        /// result". A VAT hike bites too, more modestly and asymmetrically (+3pp → 108.3%,
+        /// +6pp → 104.2%) - taxation buys less relief per point than spending, and costs more
+        /// approval per point doing it (the standing `TaxHikeApprovalSensitivity` term, undampened
+        /// by debt level, unlike a spending INCREASE's approval bonus, which the deficit-awareness
+        /// factor floors to zero above ~160% debt - a spending CUT's penalty is equally undampened,
+        /// so consolidation costs what it costs on the approval side either way it is done).</para>
+        ///
+        /// <para><b>The approval-survival question, killed independently for Disinflation, answered
+        /// here by the same direct measurement</b>: debt is NOT in `ApplyApprovalRating`'s misery
+        /// term (confirmed by reading the formula before running anything - only
+        /// unemployment/inflation/crime/corruption gaps are). Across every tested configuration,
+        /// including the harshest (a 6-point VAT hike), turn-30 approval never dropped below 39.9 -
+        /// comfortably clear of `ElectionSystem.LosingThreshold` (35). **A player has real time to
+        /// govern here**, unlike the inflation-driven collapse that killed Disinflation on its own
+        /// terms before any lever could even be judged.</para>
+        ///
+        /// <para><b>Fiscal-only by construction, and that is a stated FEATURE, not a limitation -
+        /// the Eurozone question, ruled by measurement in the prior pass.</b> Italy shares a
+        /// currency zone; `EurozoneRateSystem`'s auto-following blend already made a large,
+        /// automatic monetary move for Germany in the Disinflation measurement (2.25%→8.6% with
+        /// ZERO player input) and it still could not do the job needed there. A finance minister
+        /// with no central bank of their own is a real constraint several actual Eurozone
+        /// treasuries govern under - this scenario names it in the premise rather than working
+        /// around it: every lever here is fiscal, and none of them needs to be, because the fiscal
+        /// levers alone already measure as decisive.</para>
+        /// </summary>
+        private static ScenarioDefinition ItalyDebtCrisis()
+        {
+            return new ScenarioDefinition
+            {
+                Id = "italy_debt_crisis",
+                Name = "Italy Debt Crisis",
+                Premise =
+                    "The debt-to-GDP ratio has climbed to 165% - deep past what markets consider comfortable, " +
+                    "and every euro of new borrowing prices in the strain. Italy has no central bank of its own " +
+                    "to lean on: the Eurozone sets one rate for three economies, and Rome's voice in that room " +
+                    "is a modest, capped push, not a lever. Every tool you actually have is fiscal - spending " +
+                    "and taxation - and every one of them costs something with voters. Bring the ratio down " +
+                    "without losing the room.",
+                Country = CountryId.Italy,
+                EndTurn = 20,
+
+                ForeignPolicyCadenceMultiplier = 1f,
+
+                ApplyDeltas = (world, country) =>
+                {
+                    // The crisis: 165% of GDP, 27 points past ComfortableDebtToGdpPercent (138) -
+                    // written directly on the stock, the same idiom Inherit the Fund uses for its
+                    // own starting position. Nothing else is touched: NAIRU, inflation, the tax
+                    // portfolio and the spending lines all stay at Italy's real seeded values, so
+                    // the crisis is the debt level alone, not a bundle of unrelated bad luck.
+                    country.State.GovernmentDebt = 1.65f * country.State.GDP;
+                },
+
+                Objectives = new List<ScenarioObjective>
+                {
+                    // MEASURED threshold: the no-policy path settles at 105-110% and a token −10%
+                    // cut barely beats it (108.0% at turn 20's neighbourhood) - 95% requires
+                    // real, sustained commitment (the measured −20% cut reaches 92.6% by turn 20)
+                    // without demanding the most extreme tested package (−30% alone reaches 52.6%,
+                    // which would make this trivially over-achievable rather than a real target).
+                    new ScenarioObjective
+                    {
+                        Id = "debt_down",
+                        Description = "Bring debt-to-GDP to 95% or below",
+                        Kind = ObjectiveKind.Terminal,
+                        Comparison = ObjectiveComparison.AtMost,
+                        Target = 95f,
+                        Unit = "%",
+                        Read = c => c.State.DebtToGdpRatio
+                    },
+                    // The Sustained form's first REAL exercise (Step 2/3's `SustainedObjectiveDiagnostic`
+                    // proved the FORM works on a synthetic condition; this is content actually using
+                    // it). MEASURED: every tested configuration held at least the mid-40s for most of
+                    // the run, but the harshest tax-led package dipped to the low 40s early - a real,
+                    // measured tension between hitting the debt target fast and keeping the streak
+                    // alive, not a number chosen to feel hard.
+                    new ScenarioObjective
+                    {
+                        Id = "keep_the_room",
+                        Description = "Hold approval at 40 or above for 10 consecutive turns",
+                        Kind = ObjectiveKind.Sustained,
+                        Comparison = ObjectiveComparison.AtLeast,
+                        Target = 40f,
+                        RequiredTurns = 10,
+                        Unit = "",
+                        Read = c => c.State.ApprovalRating
+                    },
+                    // The hard floor - MEASURED to never bind in any tested configuration (worst
+                    // observed: 39.9 at turn 30 of a harsher, longer run than this scenario's own
+                    // 20-turn window), so it is genuinely a SAFETY NET against a bad line, not a
+                    // second copy of keep_the_room's own threshold.
+                    new ScenarioObjective
+                    {
+                        Id = "no_collapse",
                         Description = "Never let approval fall below 30",
                         Kind = ObjectiveKind.NeverBreach,
                         Comparison = ObjectiveComparison.AtLeast,

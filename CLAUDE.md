@@ -10328,4 +10328,133 @@ pass, per the same standing discipline both reports hold to.
 whole model, the opposite risk profile from the two drops above, and structurally untouched by
 either finding. The Unequal Recovery (Gini-gap via Parliament) is the second candidate,
 similarly untested by either drop. Content work continues behind Step 3's format until 13 Sept
+
+## Italy Debt Crisis ships — the third scenario content pass, and the first of three to SURVIVE (2026-08-18)
+
+Full measurement: `POLISIM_ITALYDEBT_MEASUREMENT_REPORT.md`. Where Wage Boom Management and The
+Disinflation both dropped on `UnemploymentReversionSpeed` foreclosing every tested lever from
+either direction, Italy's difficulty source is the debt identity, a different mechanism entirely
+— and it bites. Seven same-seed configurations (165% debt-to-GDP start, seed 777) spread from
+52.63% to 109.60% debt-to-GDP by t30 on the player's own choice of instrument alone, identical
+through t1 (FRF's own first-turn reaction dominates regardless of policy) and diverging smoothly
+from t2 — the same clean attribution signature as every prior pass. **Spending cuts compound**
+(−0.16 pp/pp at 10% accelerating to −1.90 pp/pp at 30%, the debt-stock/interest feedback working
+*for* the player once the stock falls) while **VAT hikes plateau** (−0.43 to −0.90 pp/pp,
+non-accelerating). The −20%-spending-only package alone clears a 95% terminal target by t20
+(92.60%, cross-validated identically by both the pre-authoring diagnostic and
+`ItalyDebtCrisisSliceDiagnostic`'s isolated run).
+
+**The approval-survival question — the one that killed Disinflation independently — was measured
+early, per the standing practice, and Italy clears it.** `ApprovalAttribution`'s misery index
+carries exactly four terms (`MiseryUnemployment`, `MiseryInflation`, `MiseryCrime`,
+`MiseryCorruption`) — confirmed by reading the struct directly: **no debt term of any kind**, so
+165% debt-to-GDP does not independently crash approval the way elevated inflation did. Spending
+cuts cost **≈−0.017 approval points per point of cut** (linear, tiny); VAT hikes cost **≈−1.50
+points per point of VAT** — a real, ~90× steeper parliamentary tax than the spending-cut channel,
+the same order-of-magnitude shape as Disinflation's rate-hike tension, except here the player has
+a strictly better instrument available. The one genuinely risky line tested (+6pp VAT, no cuts)
+dips to 39.48–39.66 across t2–t5 before recovering — close enough to threaten a `Sustained`
+attempt, nowhere near the 30-point `no_collapse` floor. **A real, quantified, playstyle-dependent
+tension, not a flaw to smooth away**: cuts-heavy lines are the safe, efficient path; VAT-heavy
+lines are harder on the room and less effective on the ratio besides.
+
+**Country/mechanism ruling, applying both standing constraints**: USA stays disqualified (the Fed
+Chair's structural output-gap distortion pins the suggested rate near 0% regardless of the debt
+path); the Eurozone's monetary agency is effectively nil for the player (Disinflation's own
+finding — the automatic Taylor-blend move dwarfs the capped player push). For Italy this is not a
+gap, **it is the scenario's actual premise**, and the measurement confirms the remaining fiscal
+tools are more than sufficient alone — so the fiscal-only framing ships as the authored premise's
+own text, not an apology.
+
+### Authored: `ItalyDebtCrisis()` in `ScenarioLibrary.cs`
+
+Terminal `debt_down` (≤95% by turn 20), Sustained `keep_the_room` (≥40 approval for 10
+consecutive turns — **the format's `Sustained` form's first real exercise**, per Step 3's own
+standing note that the first scenario to use it is also its first test), NeverBreach
+`no_collapse` (≥30 approval).
+
+**Exercising `Sustained` for real found and fixed a genuine pre-existing defect in
+`ScenarioEvaluator`**, not a new one: `Met` was recomputed from the CURRENT streak every
+boundary, so a later broken streak silently un-set an already-earned achievement. Fixed to be
+STICKY — `state.Met = state.Met || state.ConsecutiveTurns >= objective.RequiredTurns` — matching
+this class's own already-ruled design intent (satisfying the streak early does not end the
+scenario early, which only makes sense if the achievement persists to be judged at `EndTurn`
+rather than re-litigated every turn after). `ConsecutiveTurns` itself is unchanged — still the
+honest streak length the panel and epilogue read; only `Met`'s stickiness changed. This shipped
+on the synthetic diagnostic that exercised `Sustained` in Step 3's own pass, undetected until a
+scenario actually authored a real streak requirement — exactly the gap Step 3's note flagged.
+
+**`GameController.cs:4141` fixed as instructed** — the generic inline margin-figure construction
+is replaced by `BuildObjectiveFigure`, which branches on `ObjectiveKind`: non-`Sustained`
+objectives keep the plain margin line; `Sustained` objectives now report the streak itself
+("held for N of M required turns" once earned, "reached the M-turn streak earlier (currently at
+N)" if since broken post-stickiness, "never reached the M-turn streak (currently at N)" if never
+earned) alongside the latest margin. A Sustained objective's own verdict-screen line now
+describes the streak, not a bare threshold comparison it was never measuring in the first place.
+
+**The legibility trace panel — which chain steps it shows, and which it leaves dark, stated
+explicitly per this pass's own instruction.** `StatTracePanel.SupportsTrace` covers exactly two
+stats: Approval and ConsumerConfidence. For a debt-focused scenario, that means Approval's own
+ledger IS traceable (a player can click through and see the misery terms, confirming directly
+that debt is not among them), but **the fiscal chain itself — the erosion term, the maturity
+rate-lag, the FRF's own reaction decomposition, `DebtToGdpRatio`'s path — has no panel section at
+all.** This is Step 2's own named deferred item ("the fiscal chain's panel section... trigger: the
+first playtest asking 'why did the deficit move'") **firing here**: a scenario whose entire
+premise is the debt identity is exactly the situation that trigger was written for. Not built in
+this pass — the data already exists in `FiscalTurnReport` per Step 2's note, so the deferral
+remains cheap, but it is now a live, named gap rather than a hypothetical one.
+
+### The bar
+
+Compile clean throughout. **Default-path: 39/39 fields byte-identical** to
+`traj_post_q5_s777_t1000.csv` (neither dropped pass touched production code, so this is the last
+validated production baseline). **RT 12/12** (6 countries × 2 seeds). **Equivalence 117/117.**
+`ItalyDebtCrisisSliceDiagnostic` against the REAL evaluator: a no-policy line LOSES (107.99%
+debt, margin −12.99; `keep_the_room` and `no_collapse` both met on a 20-turn streak); a real
+−20%-consolidation line (via `SpendingLineChanges`, matching §1's measured package) WINS (92.60%,
+margin +2.40; full streak); a save/load crossing mid-`Sustained`-streak (turn 8, streak=8,
+`Met=False` at save) restores intact and continues evaluating correctly. Captures at both 1600
+and 2560 for `95_italydebt_entry` / `95b_italydebt_in_progress` / `95c_italydebt_verdict`, the
+assert-own-name guard passing at the log level (`"SHOT: Italy Debt Crisis verdict pinned at turn
+23 (end turn 20)."`) both sizes. In both tested lines `keep_the_room` never came close to
+breaking (streak=20 both) — the report's own finding that spending-cut-only lines are the
+approval-safe path, not a diagnostic gap.
+
+### The capture-vs-diagnostic discrepancy, investigated rather than shipped unexplained
+
+**`95c_italydebt_verdict` shows a LOST verdict** (107.2% debt, margin −12.2; `keep_the_room`
+never reaches its streak) for the same −20% consolidation package the isolated diagnostic shows
+WINNING cleanly. Root-caused, not assumed: `ScenarioEvaluator.EvaluateAtBoundary` compares
+`EndTurn` as an ABSOLUTE turn number (`currentTurn < definition.EndTurn`, `ScenarioEvaluator.cs:138`)
+— correct and harmless in real play, where `StartScenario` is only ever reachable from a fresh
+game's country selector at turn 0, so `EndTurn` is effectively relative to a start that is always
+zero. The capture driver is not a fresh game: it runs "Inherit the Fund" and a long stretch of
+other captures first, on one continuous `SimulationManager` clock, so `StartScenario(italySlice)`
+fires at the shared session's turn 12 — leaving Italy 8 of its intended 20 turns, nowhere near
+enough even for a package calibrated to just clear 95% over the full 20. **This is not new**:
+`94c_scenario_verdict` ("Inherit the Fund") in this SAME driver run also shows "SCENARIO FAILED"
+— by design there (that capture block applies zero player policy on purpose, and correctly
+misses its poverty objective by exactly 1.0 point with a full streak on the other two) — but
+Italy's block explicitly intends to "show the scenario actually being played" per its own code
+comment, and the mid-run start defeats that intent for this one image. **Not a scenario-balance
+defect** (the isolated, fresh-start diagnostic is the authoritative source, and it is clean) and
+**not an assert-own-name violation** (the capture is honestly named "verdict" and honestly shows
+one — a lost one — and the guard's own job is catching a capture that doesn't show what it
+claims, which this does). **Not fixed here**: making Italy's own driver block show a win would
+need either reordering the driver's block sequence (touches "Inherit the Fund"'s own already-
+shipped capture budget, out of scope) or an implausibly extreme package (contradicts the
+approval-survival finding this report is built on). Named and left as a driver-only,
+capture-quality limitation, not a blocking one.
+
+### Format verdict
+
+**Subset, confirmed rather than assumed.** No new `ObjectiveKind` was needed — Italy is the first
+REAL exercise of the already-built `Sustained` form (previously only synthetic-diagnostic-tested)
+and needed nothing else, matching Step 3's own prediction that the remaining slate are subsets of
+its shape. The one defect the exercise found (`Met` non-stickiness) was in the existing
+`Sustained` implementation, not evidence the grammar itself needed to grow.
+
+**Two of five remain untested by any prior finding**: Poland convergence (growth vs. overheating
+from productivity convergence, not an engineered gap) and The Unequal Recovery (Gini-gap via
+Parliament). Content work continues behind Step 3's format until 13 Sept opens Step 4.
 opens Step 4.

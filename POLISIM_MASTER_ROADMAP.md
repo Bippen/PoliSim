@@ -386,8 +386,23 @@ sustaining tightness below NAIRU (Wage Boom) exactly as it prevents holding slac
 one-time hike and an auto-driven Eurozone climb to 8.6%, moved 30-turn terminal inflation by
 under a point in every case. **Two drops on one root cause is now a named model-balance
 finding**, not two isolated results — see `POLISIM_DISINFLATION_MEASUREMENT_REPORT.md` and
-CLAUDE.md's matching entry. **Italy debt start is next**, on the opposite risk profile: its
-mechanism is the model's best-validated, and untouched by either drop.
+CLAUDE.md's matching entry.
+
+**✅ Italy Debt Crisis SHIPPED (2026-08-18)** — measured next, on the opposite risk profile
+(the debt identity, not the unemployment gap), and it SURVIVES: seven same-seed configurations
+spread 52.63%–109.60% debt-to-GDP by t30 on the player's own instrument choice, spending cuts
+compounding (−0.16 → −1.90 pp/pp as the cut deepens) while VAT hikes plateau (−0.43 → −0.90
+pp/pp); no debt term in the misery index, so the approval-survival question that killed
+Disinflation independently is cleared with margin. Authored as `ItalyDebtCrisis()`: Terminal +
+**the `Sustained` form's first real exercise** (which found and fixed a genuine non-stickiness
+defect in `ScenarioEvaluator`, shipped since Step 3) + NeverBreach. `GameController.cs`'s generic
+verdict-margin line now reports a Sustained objective's streak. The fiscal chain's panel-section
+deferral (Step 2) fires here, named rather than built — the data exists, the trigger is now live.
+Full record including a root-caused, understood, driver-only capture-vs-diagnostic discrepancy
+(the capture driver's shared turn clock, not a scenario or evaluator defect) is
+`POLISIM_ITALYDEBT_MEASUREMENT_REPORT.md` and CLAUDE.md's "Italy Debt Crisis ships" entry. Format
+verdict: **subset, confirmed** — no new `ObjectiveKind` needed. Two of five scenarios remain:
+Poland convergence, The Unequal Recovery.
 
 **STEP 5 CLOSES.** Master Sequence II's explicitly-named items (Q1–Q5, Step 1–3) are all
 shipped or scoped; the spine's remainder is Step 4 (13 Sept) and Step 6 behind it, plus scenario

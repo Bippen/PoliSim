@@ -91,8 +91,22 @@ namespace PoliSim.Simulation
                         break;
 
                     case ObjectiveKind.Sustained:
+                        // STICKY, found and fixed authoring Italy Debt Crisis's real content: once
+                        // the streak first reaches RequiredTurns, Met stays true even if a LATER
+                        // turn breaks the streak - an achievement, not a live status check. The
+                        // non-sticky form (recomputing Met from the CURRENT streak every boundary)
+                        // is what shipped originally and is a real fairness defect, not a
+                        // preference: it would fail a player who genuinely held the condition for
+                        // the required stretch and then had one unrelated bad turn near EndTurn.
+                        // It also contradicted this class's own already-confirmed design intent
+                        // (satisfying the streak early does NOT end the scenario early) - that only
+                        // makes sense if the achievement is meant to persist to be judged at
+                        // EndTurn, not to be re-litigated every turn afterward. ConsecutiveTurns
+                        // itself keeps counting/resetting normally - it is still the honest streak
+                        // length the verdict screen and epilogue read - only Met's STICKINESS
+                        // changed.
                         state.ConsecutiveTurns = holds ? state.ConsecutiveTurns + 1 : 0;
-                        state.Met = state.ConsecutiveTurns >= objective.RequiredTurns;
+                        state.Met = state.Met || state.ConsecutiveTurns >= objective.RequiredTurns;
                         break;
 
                     case ObjectiveKind.ThresholdAtDate:

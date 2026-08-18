@@ -79,11 +79,26 @@ of consecutive turns with the gap ≥ 1 pp:
 | infrastructure spending | +15% every turn, sustained | **1** |
 
 **Every lever tested — including the interest rate cut all the way to `CurrencySystem`'s
-absolute floor — produces the identical result: one turn.** The spending lever shows a literally
-identical unemployment trajectory to doing nothing at every checkpoint, which is structurally
-correct rather than a bug: infrastructure spending feeds `PotentialGrowthRate` (the ceiling
-Okun's growth-gap term is measured against), not a growth-above-potential gap, so it cannot
-open the gap Okun would then have to close. **A fourth lever was checked and found immaterial
+absolute floor — produces the identical result: one turn.**
+
+⚠ **CORRECTED (2026-08-18, found while building the Italy debt-start diagnostic) — the spending
+row's EXPLANATION was wrong, though its OBSERVATION and the pass's overall conclusion were not.**
+`decision.InfrastructureSpendingChange` (the field this test set) is dead as an INPUT for every
+seeded country: `ResolveSpendingForTurn` branches on `country.SpendingLines.Count > 0` (true for
+all six) and in that branch derives spending entirely from `ApplySpendingLineChanges`, which
+reads only `decision.SpendingLineChanges` (a `Dictionary<SpendingCategory, float>`) — the legacy
+float field is rebuilt as an OUTPUT for `ApplyApprovalRating` to read, never consulted as an
+input. **The "identical trajectory" was a genuine no-op, not evidence that spending cannot open
+Okun's growth gap** — no spending change occurred at all, so nothing was actually tested. The
+"feeds `PotentialGrowthRate`, not a growth-above-potential gap" claim, while true of
+`ApplyInfrastructureGrowthEffect` as a mechanism, was not what this particular test showed.
+**The pass's ruling is unaffected**: the interest-rate-to-the-floor result alone already proved
+`UnemploymentReversionSpeed`'s dominance conclusively, independent of this row. Recorded here
+rather than silently fixed, per this project's own discipline — a wrong claim gets a visible
+correction, not a quiet edit. The correct field (`SpendingLineChanges`) is used, and DOES bite
+hard, in `POLISIM_ITALYDEBT_MEASUREMENT_REPORT.md`.
+
+**A fourth lever was checked and found immaterial
 without being run to trajectory**: `GetWelfareAdjustedReversionSpeed`'s own doc comment states
 the mechanism directly — full UBI generosity buys only `UbiUnemploymentReversionPenalty = 0.05`
 off the 0.7 base (reversion floor `MinUnemploymentReversionSpeed = 0.3` exists in code but no
