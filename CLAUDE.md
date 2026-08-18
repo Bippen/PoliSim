@@ -10205,3 +10205,70 @@ The spine's remainder: Step 4 (13 Sept, Sweden votes) and Step 6 behind it; scen
 (Italy, Poland, The Disinflation, The Unequal Recovery, and now Wage Boom Management) behind
 Step 3's shipped format. Q5 was the last item Master Sequence II named explicitly — the queue's
 remainder (Q6–Q10) sits at its own triggers, unchanged by this pass.
+
+## Wage Boom Management — MEASURED AND DROPPED, not shipped (2026-08-18)
+
+**⚠ Corrects the framing above, not silently — Q5's own record was accurate as written (the loop
+exists and is real); this pass found a SEPARATE, pre-existing constant forecloses the specific
+scenario regardless.** Full record: `POLISIM_WAGEBOOM_MEASUREMENT_REPORT.md`. **Zero production
+code changed** — every file this pass touched is under `Assets/Editor/`, confirmed via
+`git status`, so the pass's own "default-path byte-identity" bar is trivially satisfied rather
+than needing a redundant trajectory dump; `ScenarioLibrary` still carries only "Inherit the
+Fund".
+
+**The finding, measured twice on two different premises, both falsified by the same constant.**
+Premise 1 ("manage an inherited boom"): Okun's `UnemploymentReversionSpeed` (0.7/turn) closes any
+tested unemployment impulse (1.5–4.5 pp below NAIRU) to within noise of NAIRU by turn 2–3,
+regardless of size — a one-turn inflation blip (peak 2.55–2.71% vs. a 2% target), gone by turn
+4–5. **On the ~12–30 turn horizon a playable scenario needs, there is nothing left to manage by
+turn 3.** Premise 2, reframed after premise 1 failed ("sustain a boom against the model's own
+reversion"): measured **impossible with every available lever, including the interest rate cut
+to its absolute 0% floor** — a −1.75 pp cut, +15%/turn sustained spending, and doing nothing all
+produced the identical result, one consecutive turn with the gap ≥1 pp. Unwinnable, which is
+worse than "too easy": a player who cannot move the needle with the strongest tools available
+correctly reads the scenario as broken.
+
+**The 150–200 turn "drift" that looked like a slow boom is mostly something else entirely,
+traced rather than assumed.** The SAME climb (2%→3%+ inflation) appears starting from Sweden's
+own unmodified seed with zero deliberate impulse, and the jumps land at the identical turn
+number (t80, then t110) across four independently-configured same-seed runs — the signature of
+`EventSystem`'s random `InflationShockPoints` rolls, not the wage-boom mechanism. The one
+component genuinely traceable to Q5's loop is real but small: a +0.29 pp persistent inflation
+premium at turn 150, comparing a 3 pp-impulse run against the zero-impulse baseline once both
+have reverted on unemployment — an order of magnitude too small and too slow to anchor a
+session-length scenario, though a single realistic rate hike (applied once, left alone — NOT
+re-applied every turn, which was round 1's own measurement error and hit the 15% ceiling by
+turn 4–7, producing an artifact recession) does reduce it monotonically and safely.
+
+**A separate, independently-reached finding**: USA is disqualified for this scenario family
+regardless of Q5 — its Fed-Chair-driven rate mechanism is dominated by the ALREADY-MEASURED
+(Q5 report) structural −14.5% output-gap distortion, driving the suggested rate to the 0% floor
+within ~30 turns regardless of realized inflation running at 3–3.5%. Recorded for whoever next
+touches USA's monetary mechanism; not fixed here.
+
+**The Sustained objective form's first exercise — on a synthetic diagnostic, since nothing real
+shipped to carry it.** `SustainedObjectiveDiagnostic` drives a throwaway, never-shipped
+`ScenarioDefinition` through the real `ScenarioEvaluator`/save code. All three asked questions
+answered: (1) **evaluates exactly as designed** — `ConsecutiveTurns` tracked a real streak,
+`Met` flipped at precisely the turn `RequiredTurns` was reached, and satisfying it early
+confirmed does NOT end the scenario early, the verdict still waits for `EndTurn`; (2) **the
+margin reporting has a confirmed, specific gap** — the shipped verdict screen's figure line
+(`GameController.cs:4141`) is generic across every `ObjectiveKind` and for a satisfied 20-turn
+streak rendered only `"+1.14"` against the final turn's raw value, saying nothing about the
+streak that actually decided `Met`; `ObjectiveProgress.ConsecutiveTurns` already carries the
+right number, the verdict screen simply never reads it — not fixed this pass, deferred to
+whichever scenario exercises the form for real; (3) **survives a save crossing mid-sustain,
+exactly** — captured at `ConsecutiveTurns=1` (not yet `Met`), round-tripped intact through a
+real save/load, and continued counting correctly on the restored world (1→2) with zero new
+persistence work beyond what Step 3 already shipped.
+
+**Format verdict: moot, not "subset."** The mechanism disqualified the scenario before the
+format's own grammar was ever in question — nothing here suggests the four `ObjectiveKind`s are
+insufficient; `Sustained` worked exactly as designed the moment it had a condition worth
+measuring.
+
+**What's next**: **The Disinflation** — the deepest coupled chain the model owns, the legibility
+panel now exists to trace exactly what this report had to reconstruct from raw dumps, and its
+premise works WITH Okun's reversion rather than fighting it, unlike this one. The Unequal
+Recovery (reads Q1's Gini-gap output) is the credible second choice. Content work continues
+behind Step 3's format until 13 Sept opens Step 4.

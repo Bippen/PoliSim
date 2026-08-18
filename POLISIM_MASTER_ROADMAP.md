@@ -327,8 +327,9 @@ holds only the 12 stats with real sourced release rules and **deliberately never
 DebtToGdpRatio** — so the slate's two strongest scenarios cannot be published-judged at all;
 GDP's three-stage revision would additionally let an objective flip after the fact. Slate of
 six proposed (the three named above plus **The Disinflation**, **Wage Boom Management** ⚠
-*flagged for after Step 5*, and **The Unequal Recovery** — the one that proves Step 2's output
-is load-bearing). Awaiting **R-S3a** (format + live evaluation), **R-S3b** (the slate),
+*flagged for after Step 5, and — measured post-Step-5 — DROPPED; see below*, and **The Unequal
+Recovery** — the one that proves Step 2's output is load-bearing). Awaiting **R-S3a** (format +
+live evaluation), **R-S3b** (the slate),
 **R-S3c** (boundary-resident evaluator; IMGUI verdict, Canvas deferred to Step 4's election
 night), **R-S3d** (pass/fail + margins + epilogue; no score, on the five-discontinuities
 argument), **R-S3e** (the three-rate FA playtest, cadence as a per-scenario multiplier),
@@ -368,6 +369,14 @@ byte-identical matrix with its decomposable cascade, the 500-vs-100 anomaly sign
 CLAUDE.md's "Q5 ships" entry. **Wage Boom Management is now authorable** and is the natural next
 content pass: the first exercise of Step 3's still-unexercised `Sustained` objective form, with
 its difficulty a measured claim rather than a hoped-for one.
+
+⚠ **CORRECTED, not silently — this claim was accurate as written (the loop is real) and wrong
+about a SEPARATE constant nobody had measured against it yet.** The very next content pass
+measured the scenario against `UnemploymentReversionSpeed` (0.7/turn, pre-existing, unrelated to
+Q5) and found it forecloses the premise regardless of the loop — dominates every tested lever
+including the interest rate's absolute floor. DROPPED; see `POLISIM_WAGEBOOM_MEASUREMENT_REPORT.md`
+and CLAUDE.md's "Wage Boom Management — measured and dropped" entry. The `Sustained` form WAS
+exercised, on a synthetic diagnostic, and passed cleanly. **The Disinflation is next.**
 
 **STEP 5 CLOSES.** Master Sequence II's explicitly-named items (Q1–Q5, Step 1–3) are all
 shipped or scoped; the spine's remainder is Step 4 (13 Sept) and Step 6 behind it, plus scenario
