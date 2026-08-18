@@ -352,6 +352,27 @@ potential AND wages coherently. Force kind; own baselines, one per term if separ
 also revives the residual of Q4: once realized productivity growth ≠ trend, "do wages read
 trend or realized?" becomes a live ruling — decided inside Q5's derivation.*
 
+**DERIVED, FORKED, RULINGS PENDING (2026-08-18)** — the report is
+`POLISIM_Q5_COUPLING_REPORT.md`; **nothing built**, per the directive's own stop condition.
+Four for four on premises being wrong: **entering the ledger is structurally disqualified**,
+not merely unwise — the finalizer literally assigns `PotentialGrowthRate =
+ProductivityTrendGrowthRate`, so a cyclical contributor there IS a cyclical potential feeding
+Okun's gap and the identity's attractor. **The driver was decided by measurement**: the output
+gap is a persistent per-country LEVEL (USA −14.5% for the whole run, sd 0.64 — a constant, the
+Q1 disqualification again), while the unemployment gap is centred on zero (mean −0.04, sd 0.19)
+with decaying transients — live, so a coupling. **Investment deepening is deferred on a double
+finding**: no capital stock exists anywhere in the model, and measured I/GDP is flat at
+19.5–20.9%, so there is neither the mechanism nor a driver. The remaining fork is what Q5 IS —
+**A** stat-only, **B1** additive force through wages, **B2** carve-out re-rooting — and only B1
+creates the model's **first closed feedback loop** (U gap → productivity → wages → Q2's factor
+→ consumption → GDP → Okun → U), whose **derived gain is 0.075×h ≈ 0.03, stable by ~20×**
+against Okun's 0.7/turn reversion. Awaiting **R-Q5a** (the fork; B1 recommended, B2 the honest
+fallback), **R-Q5b** (the tightness double-count: two channels or one), **R-Q5c** (h = 0.4
+pp/pp, band 0.2–0.6), **R-Q5d** (the R-Q3b amendment: potential reads trend, the stat and wages
+read trend + cycle), **R-Q5e** (defer investment deepening with its trigger). ⚠ **Wage Boom
+Management is authorable only under B1** — and would be the first exercise of Step 3's
+still-unexercised `Sustained` objective form.
+
 ## Step 6 — Story mode (gate: item 10 shipped)
 
 Scoped fresh on the political layer: authored multi-beat arcs with memory on the
