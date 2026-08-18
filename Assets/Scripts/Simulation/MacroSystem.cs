@@ -818,8 +818,29 @@ namespace PoliSim.Simulation
         /// PotentialGrowthRate already differentiates the six countries.</summary>
         private const float RealWageProductivityPassThrough = 1f;
 
-        /// <summary>Per-turn growth points per point Unemployment sits BELOW NAIRU - the wage
-        /// Phillips channel: tight labour markets bid wages up, slack suppresses them.</summary>
+        /// <summary>
+        /// Per-turn growth points per point Unemployment sits BELOW NAIRU - the wage Phillips
+        /// channel: tight labour markets bid wages up, slack suppresses them.
+        ///
+        /// ⚠ **Q5 ruling R-Q5b - THIS IS THE BARGAINING-POWER CHANNEL, and it is NOT the same
+        /// claim as the hoarding term that now sits beside it.** This one says: when workers are
+        /// scarce, they can demand more of the existing pie. The Q5 channel
+        /// (<see cref="ProductivityHoardingSensitivity"/>, reaching wages via
+        /// <see cref="ProductivityCycleGrowthPerTurnPercent"/> and the 1:1 pass-through) says
+        /// something different: when firms have hoarded labour, measured output per hour rises and
+        /// productivity-linked pay rises with it. Two mechanisms, one shared driver, deliberately
+        /// kept separate - and the combined exposure to tightness is therefore
+        /// (0.3 + 0.4) = 0.7 pp of wage growth per pp of gap, folded into the SAME
+        /// ±MaxRealWageGrowthPerTurnPercent clamp below (rule 11).
+        ///
+        /// **The reported finding this ruling asked for**: at h = 0.4 the two channels are NOT
+        /// numerically distinguishable from one 0.7 term by any measurement inside the wage
+        /// equation - they share a driver, a sign and a functional form, so only their SEPARATE
+        /// consequences distinguish them. The hoarding channel also moves the Productivity stat;
+        /// the bargaining channel does not. That is the whole of the observable difference, and it
+        /// is why the ruling to keep them separate is a claim about causation rather than about
+        /// arithmetic.
+        /// </summary>
         private const float RealWageTightnessSensitivity = 0.3f;
 
         /// <summary>Per-turn growth points lost per point actual Inflation runs above
@@ -842,10 +863,10 @@ namespace PoliSim.Simulation
         /// <paramref name="sliceExponent"/> is 1 for the turn form (equivalence's caller) and
         /// MacroSliceFractionPerDay for the daily wrapper - the annual-rate POWER SLICE, exact by
         /// telescoping at constant inputs.</summary>
-        public static void ApplyRealWageIndex(Country country, float sliceExponent = 1f)
+        public static void ApplyRealWageIndex(Country country, float cyclePerTurnPercent, float sliceExponent = 1f)
         {
             EconomyState state = country.State;
-            float growthPerTurnPercent = RealWageGrowthPerTurnPercent(country);
+            float growthPerTurnPercent = RealWageGrowthPerTurnPercent(country, cyclePerTurnPercent);
             state.RealWageIndex = Mathf.Max(MinRealWageIndex,
                 state.RealWageIndex * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
         }
@@ -860,13 +881,19 @@ namespace PoliSim.Simulation
         ///
         /// Q3 (Design B): wages read PRODUCTIVITY'S OWN growth - the pass-through constant's
         /// name is literally true. Same value as the old potential read (the 1:1 pipe),
-        /// different and correct causation; cyclical terms untouched per the ruling.
+        /// different and correct causation.
+        ///
+        /// Q5 (R-Q5a = B1): and the seam this comment predicted is now carrying load -
+        /// <paramref name="cyclePerTurnPercent"/> is productivity's CYCLICAL component, passed in
+        /// so wages read trend + cycle at the same 1:1 pass-through while potential reads trend
+        /// alone. Passing 0 is the honest open-loop counterfactual and is what the loop-gain
+        /// diagnostic uses to measure this pass's feedback without duplicating any arithmetic.
         /// </summary>
-        public static float RealWageGrowthPerTurnPercent(Country country)
+        public static float RealWageGrowthPerTurnPercent(Country country, float cyclePerTurnPercent)
         {
             EconomyState state = country.State;
             return Mathf.Clamp(
-                RealWageProductivityPassThrough * country.ProductivityTrendGrowth
+                RealWageProductivityPassThrough * (country.ProductivityTrendGrowth + cyclePerTurnPercent)
                 + RealWageTightnessSensitivity * (country.NaturalUnemploymentRate - state.Unemployment)
                 - RealWageInflationErosionSensitivity * (state.Inflation - state.InflationExpectations),
                 -MaxRealWageGrowthPerTurnPercent, MaxRealWageGrowthPerTurnPercent);
@@ -875,7 +902,8 @@ namespace PoliSim.Simulation
         private static readonly float GiniReversionSpeedPerDay = PerDayReversion(GiniReversionSpeed);
 
         public static void ApplyGiniDaily(Country country) => ApplyGini(country, GiniReversionSpeedPerDay);
-        public static void ApplyRealWageIndexDaily(Country country) => ApplyRealWageIndex(country, MacroSliceFractionPerDay);
+        public static void ApplyRealWageIndexDaily(Country country, float unemploymentAtPeriodOpen)
+            => ApplyRealWageIndex(country, ProductivityCycleGrowthPerTurnPercent(country, unemploymentAtPeriodOpen), MacroSliceFractionPerDay);
 
         // --- ROUND 4 BATCH 3 (C1): housing - overburden, homeownership, house prices ---
         // Inputs-only per the standing rule, and THE ARC'S FIRST MONETARY COUPLING, stated
@@ -1038,24 +1066,66 @@ namespace PoliSim.Simulation
         private const float MaxProductivityGrowthPerTurnPercent = 10f;
         private const float MinProductivityLevel = 1f;
 
+        /// <summary>
+        /// Q5 (R-Q5c): LABOUR HOARDING - percentage points of measured productivity growth per
+        /// percentage point the unemployment rate sits BELOW its NAIRU. Firms retain workers
+        /// through downturns and work them harder in recoveries, so measured output per hour is
+        /// PROCYCLICAL: tight market ⇒ productivity above trend, slack ⇒ below.
+        ///
+        /// <para><b>The driver is the UNEMPLOYMENT gap, and that was decided by measurement, not
+        /// taste</b> (POLISIM_Q5_COUPLING_REPORT.md §3). The output gap - the obvious candidate -
+        /// is a persistent per-country LEVEL in this model: the USA sits at −14.5% for a whole
+        /// 1000-turn run with sd 0.64, because PotentialGDP was seeded 12.8% above GDP and the two
+        /// never converge. A term on it would be a per-country constant, which is exactly the
+        /// raw-level form Q1 disqualified. The unemployment gap measures mean −0.04 pp with sd
+        /// 0.19 and transients that decay within ~5 turns: centred on zero, live, self-limiting.</para>
+        /// </summary>
+        private const float ProductivityHoardingSensitivity = 0.4f;
+
+        /// <summary>
+        /// The cyclical component of productivity growth this period, in pp/turn.
+        ///
+        /// <paramref name="unemploymentAtPeriodOpen"/> is the PERIOD-OPEN ANCHOR, and it was
+        /// applied **preemptively rather than after a failure**: the shape here - a daily-moving
+        /// driver inside a compounding POWER SLICE - is the exact class that failed Q2's
+        /// equivalence bar at the `@8%shock` row (11.78% drift) and needed the fifth fixed
+        /// reference. This is the sixth, and it costs nothing new: `FiscalPeriod` already records
+        /// `UnemploymentAtPeriodOpen` as Okun's own fixed reversion reference, so the anchor is a
+        /// value that already exists and already persists.
+        ///
+        /// NOT clamped here: the term folds into the ±10 pp/turn growth clamps its two consumers
+        /// already apply (rule 11 - fold into the existing ceiling, never add an uncounted source).
+        /// </summary>
+        public static float ProductivityCycleGrowthPerTurnPercent(Country country, float unemploymentAtPeriodOpen)
+        {
+            return ProductivityHoardingSensitivity * (country.NaturalUnemploymentRate - unemploymentAtPeriodOpen);
+        }
+
         /// <summary>Compounds EconomyState.Productivity - the compounding-class kit (power slice
         /// via <paramref name="sliceExponent"/>, growth clamp, level floor). Unlike its two class
         /// siblings the LEVEL is real (USD PPP per hour, one basis for all six) - but it is
         /// OWN-PAST-ONLY per the OECD caution recorded in the seed doc: no cross-country level
-        /// comparison is claimed or displayed anywhere.</summary>
-        public static void ApplyProductivity(Country country, float sliceExponent = 1f)
+        /// comparison is claimed or displayed anywhere.
+        ///
+        /// <para>Q5 (R-Q5a = B1, R-Q5d): the stat now compounds at TREND + CYCLE. Potential still
+        /// reads trend alone - see ApplySectorGrowthEffect - so a recession never permanently
+        /// lowers a country's potential, which is the structural reason the ledger was NOT where
+        /// this term went.</para></summary>
+        public static void ApplyProductivity(Country country, float cyclePerTurnPercent, float sliceExponent = 1f)
         {
             EconomyState state = country.State;
             // Q3 (Design B): the stat compounds at its OWN trend - the ledger's sum, read at
-            // source rather than through potential. Same value (the 1:1 pipe), true causation.
+            // source rather than through potential. Q5 adds the hoarding cycle beside it; the
+            // existing clamp is the shared ceiling for both.
             float growthPerTurnPercent = Mathf.Clamp(
-                ProductivityTrendPassThrough * country.ProductivityTrendGrowth,
+                ProductivityTrendPassThrough * country.ProductivityTrendGrowth + cyclePerTurnPercent,
                 -MaxProductivityGrowthPerTurnPercent, MaxProductivityGrowthPerTurnPercent);
             state.Productivity = Mathf.Max(MinProductivityLevel,
                 state.Productivity * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
         }
 
-        public static void ApplyProductivityDaily(Country country) => ApplyProductivity(country, MacroSliceFractionPerDay);
+        public static void ApplyProductivityDaily(Country country, float unemploymentAtPeriodOpen)
+            => ApplyProductivity(country, ProductivityCycleGrowthPerTurnPercent(country, unemploymentAtPeriodOpen), MacroSliceFractionPerDay);
 
         // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
 
@@ -1764,6 +1834,16 @@ namespace PoliSim.Simulation
             // instead of through potential, and any future productivity-mover (the Q5 cyclical
             // pair) enters potential AND wages coherently through here, folding into the
             // existing ceiling at its own ruling.
+            //
+            // ⚠ Q5 (R-Q5d) AMENDS R-Q3b's 1:1 PIPE, and the amendment is recorded as an amendment
+            // rather than a correction: the 1:1 was RIGHT for a trend-only productivity, and the
+            // pipe refines under its first cyclical load. **What this ledger produces is TREND, and
+            // potential reads trend ALONE.** Productivity's cyclical component (labour hoarding,
+            // ProductivityCycleGrowthPerTurnPercent) is added at the two CONSUMER sites - the
+            // Productivity stat and the wage index - never here. The structural reason is visible
+            // in the next line: potential is ASSIGNED from this value, so a cyclical term in this
+            // ledger would be a cyclical potential feeding Okun's own growth gap and the identity's
+            // attractor, which would make a recession permanently lower a country's potential.
             country.ProductivityTrendGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + totalAdjustment, 0f, MaxPotentialGrowthRate);
             country.PotentialGrowthRate = country.ProductivityTrendGrowthRate;
         }
@@ -2136,8 +2216,12 @@ namespace PoliSim.Simulation
         /// clamp; POLISIM_Q2_COUPLING_REPORT.md §1). Persistence comes from the driver itself:
         /// tightness episodes last years.
         /// </summary>
+        /// <summary>The LIVE-gap form, for display surfaces and the turn-form boundary. Q5: reads
+        /// the cycle from the country's CURRENT unemployment, since a live surface has no period
+        /// anchor to consult - the daily identity uses the anchored overload below.</summary>
         public static float EffectiveConsumerConfidence(Country country)
-            => EffectiveConsumerConfidence(country, RealWageGrowthGapPerTurnPercent(country));
+            => EffectiveConsumerConfidence(country, RealWageGrowthGapPerTurnPercent(country,
+                ProductivityCycleGrowthPerTurnPercent(country, country.State.Unemployment)));
 
         /// <summary>The anchored form: the daily identity passes the PERIOD-OPEN gap (the fifth
         /// fixed reference - FiscalPeriod.WageGrowthGapAtPeriodOpen) rather than re-deriving the
@@ -2154,13 +2238,18 @@ namespace PoliSim.Simulation
                 MinConfidence, MaxConfidence);
         }
 
-        /// <summary>Realized-minus-trend real wage growth in pp/turn - exactly the wage equation's
-        /// two cyclical terms (tightness + inflation surprise), clamp included, via the shared
-        /// helper (R-Q2c). Zero when the labour market sits at NAIRU and inflation matches
-        /// expectations.</summary>
-        public static float RealWageGrowthGapPerTurnPercent(Country country)
+        /// <summary>Realized-minus-trend real wage growth in pp/turn - the wage equation's cyclical
+        /// terms, clamp included, via the shared helper (R-Q2c). Zero when the labour market sits
+        /// at NAIRU and inflation matches expectations.
+        ///
+        /// <para>Q5: with <paramref name="cyclePerTurnPercent"/> non-zero this gap now carries
+        /// THREE cyclical terms - bargaining tightness, inflation surprise, and productivity's
+        /// hoarding cycle - because the subtraction removes only the TREND. **That is precisely
+        /// how the loop closes**: the hoarding cycle reaches Q2's sentiment factor, consumption,
+        /// GDP, and Okun, which moves the unemployment gap the cycle was computed from.</para></summary>
+        public static float RealWageGrowthGapPerTurnPercent(Country country, float cyclePerTurnPercent)
         {
-            return RealWageGrowthPerTurnPercent(country)
+            return RealWageGrowthPerTurnPercent(country, cyclePerTurnPercent)
                 - RealWageProductivityPassThrough * country.ProductivityTrendGrowth;
         }
 

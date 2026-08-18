@@ -467,7 +467,8 @@ namespace PoliSim.EditorTools
                 // Q2: the wage-growth gap anchored at period open (the fifth fixed reference) -
                 // the LIVE form failed this very bar at 11.8% on the @8%shock unemployment row
                 // (2026-08-18), the same divergence class the potential anchor fixed.
-                float wageGapAtOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(cn);
+                float wageGapAtOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(cn,
+                    MacroSystem.ProductivityCycleGrowthPerTurnPercent(cn, cn.State.Unemployment));
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
                 {
                     float dayBefore = cn.State.GDP;
@@ -614,12 +615,20 @@ namespace PoliSim.EditorTools
                     }
                 }
 
+                // Q5: BOTH regimes take the cycle from the PERIOD-OPEN unemployment - the turn form
+                // computes it once from the state it opens at, and the daily form is handed the same
+                // anchor every day. That is the equivalence claim under test for the new term: an
+                // anchored driver telescopes exactly through the power slice, where a live one would
+                // not (Q2's measured failure, avoided by construction here).
+                float wageCycleAtOpen = MacroSystem.ProductivityCycleGrowthPerTurnPercent(ct, ct.State.Unemployment);
+                float wageAnchorU = cu.State.Unemployment;
+
                 MacroSystem.ApplyGini(ct);                                              // one turn step
-                MacroSystem.ApplyRealWageIndex(ct);
+                MacroSystem.ApplyRealWageIndex(ct, wageCycleAtOpen);
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
                 {
                     MacroSystem.ApplyGiniDaily(cu);
-                    MacroSystem.ApplyRealWageIndexDaily(cu);
+                    MacroSystem.ApplyRealWageIndexDaily(cu, wageAnchorU);
                 }
 
                 total += 2;
@@ -702,10 +711,15 @@ namespace PoliSim.EditorTools
                 Country cp = p1.GetCountry(id);
                 Country cq = p2.GetCountry(id);
 
-                MacroSystem.ApplyProductivity(cp);                                      // one turn step
+                // Q5: same anchored-cycle treatment as the wage rows above - the hoarding term is
+                // the second consumer of the same anchor, so it gets the same equivalence claim.
+                float prodCycleAtOpen = MacroSystem.ProductivityCycleGrowthPerTurnPercent(cp, cp.State.Unemployment);
+                float prodAnchorU = cq.State.Unemployment;
+
+                MacroSystem.ApplyProductivity(cp, prodCycleAtOpen);                     // one turn step
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
                 {
-                    MacroSystem.ApplyProductivityDaily(cq);
+                    MacroSystem.ApplyProductivityDaily(cq, prodAnchorU);
                 }
 
                 total++;

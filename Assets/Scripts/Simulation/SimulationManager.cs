@@ -243,7 +243,11 @@ namespace PoliSim.Simulation
                     // settled Inflation/Expectations and the structural trend rate. Neither writes
                     // anything any later system reads (inputs-only, the ruled posture).
                     MacroSystem.ApplyGiniDaily(country);
-                    MacroSystem.ApplyRealWageIndexDaily(country);
+                    // Q5: wages read trend + productivity's hoarding cycle, and the cycle takes the
+                    // PERIOD-OPEN unemployment as its anchor - the same fixed reference Okun already
+                    // uses, applied here preemptively because a daily-moving driver inside a power
+                    // slice is Q2's measured failure shape.
+                    MacroSystem.ApplyRealWageIndexDaily(country, GetOrSeedFiscalPeriod(country).UnemploymentAtPeriodOpen);
 
                     // ROUND 4 BATCH 3 (C1): same slot; all three read the policy rate against the
                     // zone's epoch anchor (the arc's first monetary coupling - one-way, stated at
@@ -256,7 +260,7 @@ namespace PoliSim.Simulation
                     // ROUND 4 BATCH R4-5 (C5): same slot, the arc's last stat - pure trend
                     // compounding, reads PotentialGrowthRate only, nothing consumes it (the
                     // coupling is ruled out of Round 4; see MacroSystem's C5 header).
-                    MacroSystem.ApplyProductivityDaily(country);
+                    MacroSystem.ApplyProductivityDaily(country, GetOrSeedFiscalPeriod(country).UnemploymentAtPeriodOpen);
 
                     // CONTINUOUS TIME PHASE 3, part 2: the money resolution. Revenue, benefits, welfare,
                     // interest, the SWF's contribution/return/draw and the debt stock itself all move
@@ -1761,7 +1765,11 @@ namespace PoliSim.Simulation
             period.GdpAtPeriodOpen = state.GDP;
             period.UnemploymentAtPeriodOpen = state.Unemployment;
             period.PotentialGdpAtPeriodOpen = state.PotentialGDP;
-            period.WageGrowthGapAtPeriodOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(country);
+            // Q5: the gap the daily identity consumes now includes productivity's hoarding cycle,
+            // computed from the unemployment this period is opening at - the same value recorded on
+            // the line above, so the two anchors describe one instant.
+            period.WageGrowthGapAtPeriodOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(country,
+                MacroSystem.ProductivityCycleGrowthPerTurnPercent(country, state.Unemployment));
 
             // CONTINUOUS TIME PHASE 5: the identity, trend growth, Okun, Phillips and expectations
             // have already been charged day by day in AdvanceDay - applying any of them again here
@@ -3029,7 +3037,8 @@ namespace PoliSim.Simulation
                 GdpAtPeriodOpen = country.State.GDP,
                 UnemploymentAtPeriodOpen = country.State.Unemployment,
                 PotentialGdpAtPeriodOpen = country.State.PotentialGDP,
-                WageGrowthGapAtPeriodOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(country)
+                WageGrowthGapAtPeriodOpen = MacroSystem.RealWageGrowthGapPerTurnPercent(country,
+                    MacroSystem.ProductivityCycleGrowthPerTurnPercent(country, country.State.Unemployment))
             };
 
             _fiscalPeriods[country.Id] = seeded;

@@ -10085,3 +10085,123 @@ this shape (Wage Boom stays sequenced behind Step 5 by its own dependency). Two 
 limitation stands as ruled (final ledger + `StatHistory`, with per-scenario term accumulation the
 named upgrade). **If a scenario needs a new `ObjectiveKind`, that is a finding about the grammar
 to be recorded, not a special case to be written.**
+
+## Q5 ships — labour hoarding, the model's first CLOSED FEEDBACK LOOP, and its gain MEASURED not trusted (2026-08-18)
+
+Rulings R-Q5a–e built: **R-Q5a = B1** (additive cyclical force through wages — A was a display,
+B2 a re-rooting that deferred the question); **R-Q5b = two channels**, both claims stated in code
+at both sites (bargaining power vs. hoarding-linked output per hour); **R-Q5c** = h = 0.4 pp of
+productivity growth per pp of unemployment gap; **R-Q5d** = R-Q3b **amended** (potential reads
+trend alone; the Productivity stat and real wages read trend + cycle) — recorded as an amendment
+with its reason, not a correction: the 1:1 pipe was right for trend-only productivity, and it
+refines under its first cyclical load; **R-Q5e** = investment deepening deferred as its own pass,
+on the finding that no capital stock exists anywhere in the model AND — the stronger reason —
+measured I/GDP is flat (19.5–20.9% across a 1000-turn run), so there is nothing cyclical to
+deepen from even if a stock existed.
+
+**The build**: `MacroSystem.ProductivityCycleGrowthPerTurnPercent` is the one new function — h ×
+(NAIRU − U), computed once and threaded as a parameter into `ApplyProductivity` (beside the
+trend, inside the shared ±10 pp clamp) and into `RealWageGrowthPerTurnPercent` (added to the
+trend at the same 1:1 pass-through, inside the wage equation's own ±10 pp clamp). **The
+period-open anchor was applied PREEMPTIVELY** — before any equivalence run, not after a
+failure — because the shape (a daily-moving driver inside a compounding power slice) is exactly
+Q2's measured failure class; `FiscalPeriod.UnemploymentAtPeriodOpen` already existed as Okun's own
+fixed reference, so the anchor cost nothing new. **R-Q5b's two channels are stated as two doc
+comments sharing one driver** (`RealWageTightnessSensitivity`'s comment now names the bargaining
+claim explicitly and points at the hoarding term as the deliberately-separate second claim) —
+and the reported finding the ruling asked for: at h = 0.4 the two channels are NOT numerically
+distinguishable from one 0.7 term anywhere inside the wage equation itself; the only observable
+difference is that hoarding also moves the Productivity stat. The separation is a claim about
+causation, not an arithmetic one.
+
+**R-Q3b's finalizer comment now states the amendment inline**, at the exact two lines that
+assign potential from the ledger: a cyclical term there would be a cyclical potential feeding
+Okun's own growth gap, which is the structural reason (not a preference) that potential reads
+trend alone while the two cyclical consumers read trend + cycle.
+
+### THE LOOP, MEASURED — the pass's headline, exactly as demanded
+
+**The circuit**: U gap → productivity cycle (h) → wage growth (1:1) → Q2's sentiment gap →
+effective consumer confidence → Consumption → GDP → Okun → U gap. This is the model's **first
+genuine closed feedback loop** built entirely from couplings this sequence added — every prior
+Q1–Q3 pass was a chain or a re-rooting.
+
+**Link-by-link (single period, +1 pp tightness impulse, three countries, real functions with the
+cycle in vs. forced to zero)**: cycle +0.400 pp → wage growth +0.400 pp (identical across USA/
+Sweden/Poland, since the term is additive and driver-only) → Q2's gap 0.300 → 0.700 → effective
+confidence 1.00150 → 1.00350 → **consumption +0.1997%**, all three countries agreeing to four
+decimals — the chain is exact and country-independent by construction, exactly as the additive
+form predicts.
+
+**The realized gain, measured end-to-end through the real day loop** (`Q5LoopGainDiagnostic`,
+run under both the h = 0 control build and the h = 0.4 build, same +1 pp impulse): a period's
+end-of-period tightness retained **0.3223 pp per pp of impulse under h = 0** (USA 0.32231,
+Sweden 0.32261, Poland 0.32238 — Okun's own reversion, present in both runs) and **0.3524 pp
+under h = 0.4** (0.35205 / 0.35263 / 0.35213). **The difference — the loop's own contribution —
+is 0.0297 / 0.0300 / 0.0298, essentially uniform across three structurally different economies**
+(the USA's near-frozen output gap, Poland's volatile one, Sweden's persistent surplus all
+produce the same gain, because the loop's linear terms don't depend on the level any of them sit
+at). **Measured mean ≈ 0.0298 against the derivation's 0.075 × 0.4 = 0.0300 — agreement to
+within 1%.** The derivation predicted correctly; nothing else is in the path.
+
+**Stability, stated as observed rather than as arithmetic**: gain 0.03 against Okun's own
+`UnemploymentReversionSpeed` = 0.7/turn is stable by roughly 20×, and — because the measurement
+confirms the gain is linear in h — the margin is structural: h would need to reach the
+neighbourhood of 13 (32× the ruled value, and far outside the ±10 pp clamps both consumers
+share) before the loop could threaten Okun's reversion. **This loop cannot run away at any
+magnitude this model's own clamps allow.**
+
+### The bar
+
+- **s=0 byte-identity control, run twice as the ruling anticipated** (a compile-only fix landed
+  between attempts — widening then correctly re-narrowing `MacroSliceFractionPerDay`'s
+  accessibility — with no behavioural change either side): **6/6 dumps SHA256-identical to
+  `pre_q5_3d4bdf2` on the run that matters**, proving both that the plumbing is inert at h = 0
+  and that the R-Q5d finalizer-comment change disturbed nothing.
+- **h = 0.4 matrix: 14 of 39 fields byte-identical.** Top-10 movers by relative magnitude, judged
+  on the absolute column per the tool's own rule: `Productivity` and `RealWageIndex` are the
+  DIRECT movers (19.66% / 19.76% relative, tracking each other almost exactly — the same 1:1
+  cyclical driver); every other mover (`Inflation` maxABS 0.024 pp, `InflationExpectations`
+  0.018 pp, `GovernmentDebt`/`Budget` sub-0.05% relative, `TradeBalance` maxABS 0.054,
+  `Zone.InterestRate` maxABS 0.016 pp, `ApprovalRating` maxABS 0.124 pts, `HousePriceIndex`
+  1.28% relative) is downstream of the chain above, each smaller than the last — a decomposable
+  cascade, not an unexplained scatter. The 14 byte-identical fields are exactly the ones the
+  chain never reaches (population/demographic/political-event fields).
+- **Equivalence 117/117, both builds.** New rows: the wage and productivity daily forms are now
+  driven from the SAME period-open anchor in both the turn-step and the daily-step comparison
+  arms (`AggregationEquivalenceCheck`'s wage/productivity sections), which is the equivalence
+  claim this term actually makes — an anchored driver telescopes exactly through the power
+  slice, which a live one would not have (Q2's own measured failure, avoided by construction).
+- **Save/load untouched-confirmed**: RT 12/12 clean. No new persisted field — the anchor is
+  `FiscalPeriod.UnemploymentAtPeriodOpen`, which already existed and already persisted for
+  Okun's own use.
+- **Matrix: 7 of 30 (scenario, horizon) anomaly counts moved, by exactly ±1 each, ALL at the
+  500-turn horizon and NONE at 100** (`tariffoverride`, `welfarestress`, `swfstress`,
+  `phase2stress`, `crimejusticestress`, `cabinetstress`, `parliamentstress` — the last at t100
+  instead of t500). **Zero new anomaly types, zero ATTRIB errors.** The 500-only pattern is
+  itself the explanation: a term whose per-turn effect is a fraction of a point needs many turns
+  to compound a borderline anomaly across a swing threshold, exactly the class the sub-0.03-point
+  absolute deviations in the diff table above predict. **Cabinetstress bounded-and-explained**:
+  74→75 at t500, one count, same class as its six siblings, no new type.
+- **Captures: the Statistics/Domestic screen's Productivity and Real-wages rows both change and
+  both render cleanly** (checked at both sizes) — Productivity moved from its pre-Q5 value under
+  the cyclical term, no clipping, no overlap, the existing `DrawDerivedStatRow`/§A.9b negative-fill
+  treatment unchanged and correct for the now-genuinely-cyclical figure.
+
+### Wage Boom Management — authorable
+
+**Yes, under the shipped B1**, and it is now the natural next content pass: a tight-start
+scenario (`U` seeded below NAIRU) puts the player directly inside the measured loop above,
+managing a boom the model's own productivity/wage/sentiment circuit is amplifying by the
+measured ~3%. It would be the first exercise of Step 3's still-unexercised `Sustained` objective
+form (an inflation-band condition held for N consecutive turns is the natural win condition), and
+its difficulty is now a MEASURED claim rather than a hoped-for one: the loop is real, it is
+small, and containing it before it compounds through 500 turns of neglect is exactly what the
+matrix's own 500-vs-100 signature just demonstrated happens if nobody manages it.
+
+### Step 5 closes
+
+The spine's remainder: Step 4 (13 Sept, Sweden votes) and Step 6 behind it; scenario content
+(Italy, Poland, The Disinflation, The Unequal Recovery, and now Wage Boom Management) behind
+Step 3's shipped format. Q5 was the last item Master Sequence II named explicitly — the queue's
+remainder (Q6–Q10) sits at its own triggers, unchanged by this pass.

@@ -352,26 +352,26 @@ potential AND wages coherently. Force kind; own baselines, one per term if separ
 also revives the residual of Q4: once realized productivity growth ≠ trend, "do wages read
 trend or realized?" becomes a live ruling — decided inside Q5's derivation.*
 
-**DERIVED, FORKED, RULINGS PENDING (2026-08-18)** — the report is
-`POLISIM_Q5_COUPLING_REPORT.md`; **nothing built**, per the directive's own stop condition.
-Four for four on premises being wrong: **entering the ledger is structurally disqualified**,
-not merely unwise — the finalizer literally assigns `PotentialGrowthRate =
-ProductivityTrendGrowthRate`, so a cyclical contributor there IS a cyclical potential feeding
-Okun's gap and the identity's attractor. **The driver was decided by measurement**: the output
-gap is a persistent per-country LEVEL (USA −14.5% for the whole run, sd 0.64 — a constant, the
-Q1 disqualification again), while the unemployment gap is centred on zero (mean −0.04, sd 0.19)
-with decaying transients — live, so a coupling. **Investment deepening is deferred on a double
-finding**: no capital stock exists anywhere in the model, and measured I/GDP is flat at
-19.5–20.9%, so there is neither the mechanism nor a driver. The remaining fork is what Q5 IS —
-**A** stat-only, **B1** additive force through wages, **B2** carve-out re-rooting — and only B1
-creates the model's **first closed feedback loop** (U gap → productivity → wages → Q2's factor
-→ consumption → GDP → Okun → U), whose **derived gain is 0.075×h ≈ 0.03, stable by ~20×**
-against Okun's 0.7/turn reversion. Awaiting **R-Q5a** (the fork; B1 recommended, B2 the honest
-fallback), **R-Q5b** (the tightness double-count: two channels or one), **R-Q5c** (h = 0.4
-pp/pp, band 0.2–0.6), **R-Q5d** (the R-Q3b amendment: potential reads trend, the stat and wages
-read trend + cycle), **R-Q5e** (defer investment deepening with its trigger). ⚠ **Wage Boom
-Management is authorable only under B1** — and would be the first exercise of Step 3's
-still-unexercised `Sustained` objective form.
+**✅ DONE (2026-08-18)** — R-Q5a–e ruled and built: **R-Q5a = B1** (additive cyclical force
+through wages), **R-Q5b = two channels** stated separately in code though numerically
+indistinguishable at h = 0.4 (the reported finding the ruling asked for), **R-Q5c** = h = 0.4
+pp/pp on the unemployment gap, **R-Q5d** = R-Q3b amended (potential reads trend alone; the
+Productivity stat and real wages read trend + cycle), **R-Q5e** = investment deepening deferred
+(no capital stock anywhere in the model, and measured I/GDP flat at 19.5–20.9% — nothing
+cyclical to deepen from either way). **The model's first closed feedback loop, and its gain was
+MEASURED rather than trusted**: derivation predicted 0.075×h ≈ 0.03; the measured realized gain
+(h=0 vs h=0.4 builds, real day loop, three structurally different economies) came in at
+0.0297–0.0300 — agreement within 1%, stable by ~20× against Okun's own 0.7/turn reversion, and
+the margin is structural (h would need to reach ~13, 32× the ruled value, before the loop could
+threaten it). Full record — the link-by-link chain, the s=0 control run twice, the 14/39
+byte-identical matrix with its decomposable cascade, the 500-vs-100 anomaly signature — is
+CLAUDE.md's "Q5 ships" entry. **Wage Boom Management is now authorable** and is the natural next
+content pass: the first exercise of Step 3's still-unexercised `Sustained` objective form, with
+its difficulty a measured claim rather than a hoped-for one.
+
+**STEP 5 CLOSES.** Master Sequence II's explicitly-named items (Q1–Q5, Step 1–3) are all
+shipped or scoped; the spine's remainder is Step 4 (13 Sept) and Step 6 behind it, plus scenario
+content behind Step 3's format, plus the queue's own remainder (Q6–Q10) at its own triggers.
 
 ## Step 6 — Story mode (gate: item 10 shipped)
 
