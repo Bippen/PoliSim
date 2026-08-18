@@ -50,7 +50,7 @@ namespace PoliSim.EditorTools
             if (!File.Exists(ManifestPath))
             {
                 Debug.Log($"FAIL manifest not found at {ManifestPath} - cannot answer 'is everything specified present?'");
-                EditorApplication.Exit(1);
+                CheckExit.Finish(1);
                 return;
             }
 
@@ -142,7 +142,7 @@ namespace PoliSim.EditorTools
                 ? "=== CHROME COVERAGE OK - both directions clean ==="
                 : $"=== CHROME COVERAGE FAILED - {unresolvable.Count} unresolvable, {missing.Count} missing, {unexpected.Count} unexpected ===");
 
-            EditorApplication.Exit(ok ? 0 : 1);
+            CheckExit.Finish(ok ? 0 : 1);
         }
     }
 }

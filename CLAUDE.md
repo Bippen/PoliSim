@@ -9766,3 +9766,64 @@ where the pass claims nothing changed, decomposability where it claims one thing
 inherits the force template next — with the transcribed warning that its natural gap is
 growth-versus-trend (real wages have no baseline level), a different shape than Q1's,
 derived not assumed.**
+
+## The "two entry crashes" that were never crashes — ChromeV2CoverageCheck's un-converted Exit (2026-08-18)
+
+**Both reported crashes — "died at native boot" (2026-08-17 ~17:02) and "dies during asset
+import, further in" (2026-08-18 ~12:04) — were the same event, and it was not a crash.** Every
+interactive Editor open since `1f93730` has self-terminated cleanly about a minute in:
+`CheckSuite`'s on-open run reaches check 5, `ChromeV2CoverageCheck` PASSES, and its final line
+was a direct `EditorApplication.Exit(ok ? 0 : 1)` — the one check of six never converted to
+`CheckExit.Finish`. `CheckExit.Collect` can only intercept `Finish`; a direct `Exit` sails
+through `_collecting`, so the check *succeeding* closed the Editor with return code 0.
+**The regression is `1f93730` itself (2026-08-11, "Make the checks actually run") — the commit
+whose entire purpose was removing exactly these calls missed two in this file while wiring the
+file into the on-open suite.** Verified against both candidate commits: the direct `Exit` calls
+are present in `1f93730`'s own version, so Track 3 (`10f713e`) inherited, not introduced, them.
+
+**Why six days of validation never saw it**: `ScheduleOnEditorOpen` guards on
+`Application.isBatchMode`, so every batch run — the project's entire validation path — skips
+the suite. Only interactive entry trips it, and (per the log rotation, which keeps two
+sessions) the Editor was not opened interactively between the regression and 2026-08-17. The
+perceived difference between the two "crashes" was warm-up time, not depth: 17:02's
+warm-Library session died ~19s in (read as boot death), 12:04's Hub cold start ran a upm
+refresh and import settle first and died ~81s in (read as import death). **This is the
+batch-blindness class from the roadmap's failure-pattern list — `BatchSimulationRunner` never
+calls `OnGUI`, and it never runs interactive-only `[InitializeOnLoadMethod]` paths either.**
+
+**The machine evidence that separated "crash" from "scripted exit"**, recorded because the tail
+of a log discriminates where the report cannot: both sessions' `Logs/Editor.log` end in Unity's
+full graceful sequence (layout saves → `Shut down.` → leak check); the import worker's own log
+ends `"Editor requested this worker to shutdown with reason: Editor is closing down"` and
+`return code 0` with **no asset mid-import** (`Prepare: ... reloaded= 0`); `UnityBugReporter.log`
+(with `StartBugReporterOnCrash: 1` set in both sessions) untouched since 2026-08-10; zero
+Unity.exe dumps in WER/CrashDumps and zero Application-log crash events across the window; and
+the two session logs within 10 bytes of each other — a deterministic exit, not a fault. The
+diagnostic that actually identified the site is the standing lesson from the batch-hang record
+pointed the other way: **`UPSTREAM:` (check 6, due immediately after Chrome) was reliably
+ABSENT from every interactive log, while "CHROME COVERAGE OK" was reliably the LAST check line
+before shutdown.** The always-absent line names the exact statement that killed the session.
+Dispositioned honestly: the machine DOES carry real GPU-stack faults (the 2026-08-10 22:07
+multi-process WER cluster that fired the bug reporter, an `IntelGraphicsSoftware.exe` dump
+2026-08-16) — whatever the earlier driver-side thread diagnosed, it was a different, real event;
+`-force-d3d11` was never applied (today's full boot command line captured, no such flag) and no
+driver action is part of this fix. Suspect 3 (Library rename) was not exercised — correctly,
+since two consecutive graceful sessions through boot, import, and all five checks are evidence
+against poisoned Library state, and the fix required no deletion of anything.
+
+**The fix**: the two calls become `CheckExit.Finish(1)` / `CheckExit.Finish(ok ? 0 : 1)` —
+behaviour under `-executeMethod` is identical by `Finish`'s own contract, so the batch entry
+point documented in the check's header is unchanged. **Validated at both required layers**:
+headless compile check (`Assembly-CSharp-Editor.dll` rebuilt, `CompileScripts` 23.5s, zero
+`error CS`, "Exiting batchmode successfully now!") and the one layer batch cannot answer —
+a real interactive entry, which survived 156s (the old death point ×2) with all six checks
+complete and `UPSTREAM: tracking origin/main, 0 commit(s) ahead` finally in an interactive log.
+
+**The rule-14 lesson, applied to the rule's own author**: `1f93730`'s claim was "the checks now
+run from a menu item without quitting the Editor," and that claim was verified for the checks
+that used `Finish` — but "no direct `EditorApplication.Exit` remains in any Suite member" was
+never asserted, and one grep would have been the whole proof. A conversion commit's bar is the
+ABSENCE of the old pattern, not the presence of the new one. The grep is now on record:
+`Suite` members must contain no direct `EditorApplication.Exit`; batch-only tools
+(`BatchSimulationRunner`, the diagnostics, `UiScreenshotCapture` — whose
+`[InitializeOnLoadMethod]` is correctly `SessionState`-gated to capture runs) keep theirs.
