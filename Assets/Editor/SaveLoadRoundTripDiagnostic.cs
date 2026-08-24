@@ -257,6 +257,14 @@ namespace PoliSim.EditorTools
             });
             sim.IntroduceTaxProgramBill(player, TaxType.CarbonTax, isAdd: true);
 
+            // Law system MVP slice: an already-enacted law (exercises Country.EnactedLaws' plain
+            // List<T> round trip - the World layer, not the pending-state layer) plus a pending
+            // LawBill for a DIFFERENT law (exercises the nested CountryId -> LawId dictionary the
+            // exact same "populate-in-place on a readable member" hazard the original save/load
+            // pass found on PublishedData.PeriodClosingValues - see the mechanism report's hazard 5).
+            playerCountry.EnactedLaws.Add(new EnactedLaw { LawId = "truth_in_sentencing_act", EnactedOn = sim.CurrentDate });
+            sim.IntroduceLawBill(player, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
+
             int playerIndex = world.Countries.FindIndex(c => c.Id == player);
             Country neighbour = world.Countries[(playerIndex + 1) % world.Countries.Count];
             sim.IntroduceTaxProgramBill(neighbour.Id, TaxType.StampDuty, isAdd: true);
@@ -304,6 +312,11 @@ namespace PoliSim.EditorTools
                 snap[$"{p}.TaxLines.Count"] = country.TaxLines.Count;
                 snap[$"{p}.WelfarePrograms.Count"] = country.WelfarePrograms.Count;
                 snap[$"{p}.Sectors.Count"] = country.Sectors.Count;
+                // Law system MVP slice: enacted-law count, plus how many law bills are currently
+                // pending (summed across every LawId, since multiple can be pending at once) -
+                // mirrors the existing per-bill-kind pending-days lines below for the countdown side.
+                snap[$"{p}.EnactedLaws.Count"] = country.EnactedLaws.Count;
+                snap[$"{p}.Pending.LawBillCount"] = sim.GetPendingLawBills(country.Id).Count;
                 snap[$"{p}.Infrastructure.Count"] = country.InfrastructureAssets.Count;
                 snap[$"{p}.SpendingLines.Count"] = country.SpendingLines.Count;
                 snap[$"{p}.TradePartners.Count"] = country.TradePartners.Count;

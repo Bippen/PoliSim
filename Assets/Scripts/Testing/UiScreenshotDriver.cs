@@ -83,7 +83,7 @@ namespace PoliSim.Testing
                 { "Budget", new KeyValuePair<string, string[]>("_budgetProcessCategory",
                     new[] { "Tax", "Spending", "Welfare", "Infrastructure", "Swf" }) },
                 { "PolicyLaws", new KeyValuePair<string, string[]>("_policyLawsCategory",
-                    new[] { "LaborMarket", "CrimeJustice", "Sectors", "PolicyWeb", "Trade" }) },
+                    new[] { "LaborMarket", "CrimeJustice", "Sectors", "PolicyWeb", "Trade", "Laws" }) },
                 { "Statistics", new KeyValuePair<string, string[]>("_statisticsCategory",
                     new[] { "Domestic", "International" }) },
                 { "Politics", new KeyValuePair<string, string[]>("_politicsCategory",
@@ -1084,6 +1084,16 @@ namespace PoliSim.Testing
             bool laborOk = sim.IntroduceLaborBill(_countryId, new LaborPolicyBill { MinimumWage = 12f });
             bool crimeOk = sim.IntroduceCrimeJusticeBill(_countryId, new CrimeJusticePolicyBill { PoliceFunding = 55f });
 
+            // Law system MVP slice: one law ALREADY enacted, direct real-API assignment (the same
+            // idiom section A's CabinetMinisters pin uses) rather than a real vote - guarantees the
+            // "enacted" state deterministically instead of depending on an uncertain seat-composition
+            // outcome, per the bar's own "pinned on a state with laws both available and enacted"
+            // requirement. A second, DIFFERENT law's bill is introduced here in the same "pending
+            // bills, LAST" batch, so the Laws browser shows available/enacted/pending together in one
+            // capture. The other two catalog laws stay untouched (still just "available").
+            player.EnactedLaws.Add(new EnactedLaw { LawId = "truth_in_sentencing_act", EnactedOn = sim.CurrentDate });
+            bool lawOk = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
+
             var sectorBill = new SectorPolicyBill();
             foreach (Sector sector in player.Sectors)
             {
@@ -1099,7 +1109,7 @@ namespace PoliSim.Testing
             bool swfOk = sim.IntroduceSwfDrawdownBill(_countryId, new SwfDrawdownBill { WithdrawalPercentOfGdp = 1f });
 
             Debug.Log($"SHOT: bills introduced - tax:{taxOk} welfare:{welfareOk} labor:{laborOk} crime:{crimeOk} " +
-                      $"sector:{sectorOk} trade:{tradeOk} swfDrawdown:{swfOk} (a false is a finding to read, not an error).");
+                      $"sector:{sectorOk} trade:{tradeOk} swfDrawdown:{swfOk} law:{lawOk} (a false is a finding to read, not an error).");
 
             SetEnumField(controller, "_consolidatedTab", "Politics");
             SetEnumField(controller, "_politicsCategory", "Parliament");
@@ -1111,7 +1121,11 @@ namespace PoliSim.Testing
             foreach ((string sub, string stem) in new[]
             {
                 ("LaborMarket", "85b_bill_labormarket"), ("CrimeJustice", "85c_bill_crimejustice"),
-                ("Sectors", "85d_bill_sectors"), ("Trade", "85e_bill_trade")
+                ("Sectors", "85d_bill_sectors"), ("Trade", "85e_bill_trade"),
+                // Law system MVP slice: pinned specifically on "laws both available and enacted" -
+                // truth_in_sentencing_act shows ENACTED, cash_bail_reform_act shows its pending bill
+                // and live PASS/FAIL estimate, and the other two catalog laws show plain "available".
+                ("Laws", "85g_bill_laws")
             })
             {
                 SetEnumField(controller, "_policyLawsCategory", sub);

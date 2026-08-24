@@ -55,6 +55,22 @@ namespace PoliSim.Data
         public List<Sector> Sectors = new List<Sector>();
 
         /// <summary>
+        /// Law system MVP slice: laws this country currently has in force, each a named preset over
+        /// the existing dial space rather than a bespoke effect - see LawDefinition/LawCatalog for
+        /// what a law IS and ParliamentSystem.GetLawBillDirection/ApplyLawBillResult for how one
+        /// reaches this list. A List&lt;EnactedLaw&gt;, not a Dictionary&lt;LawId,bool&gt; - matching this
+        /// codebase's dominant "collection of things a country has" shape (TaxLines/Sectors), not
+        /// the Dictionary shape reserved for closed structural enums (CabinetMinisters/
+        /// ParliamentSeats). A bare bool would discard the provenance (which law, when) this project
+        /// has otherwise consistently kept - see DivisionLog, built for exactly this reason. Empty
+        /// for every country by default - no law starts enacted. Deliberately NOT in
+        /// SimulationManager.ClonePreviewCountry's hand-list, matching CabinetMinisters/Divisions'
+        /// own omission - nothing in the PreviewTurn pipeline ever reads or mutates it, since bill
+        /// resolution (the only writer) runs from the day-tick loop, never from a preview.
+        /// </summary>
+        public List<EnactedLaw> EnactedLaws = new List<EnactedLaw>();
+
+        /// <summary>
         /// This country's four tracked infrastructure types (Roads/Rail/PowerGrid/Broadband) -
         /// present for all six countries always (the same "no implement/remove" idiom Sectors
         /// already established). See InfrastructureAsset.cs and MacroSystem.ApplyInfrastructureCondition.

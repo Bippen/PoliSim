@@ -155,6 +155,7 @@ namespace PoliSim.Simulation
             AdvanceSectorBillDay(countryId);
             AdvanceTradeBillDay(countryId);
             AdvanceSwfDrawdownBillDay(countryId);
+            AdvanceLawBillsDay(countryId);
             TryOpenBudgetProcess(countryId, CurrentDate);
         }
 
@@ -720,6 +721,18 @@ namespace PoliSim.Simulation
             new Dictionary<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>>();
 
         /// <summary>
+        /// Law system MVP slice: standalone law bills, keyed by CountryId then by LawId - the SAME
+        /// nested-dictionary shape _pendingTaxProgramBillsByCountry/_pendingWelfareProgramBillsByCountry
+        /// already use, for the identical reason: multiple different laws (each independently
+        /// enacted or repealed) can have their own bill pending for the same country at once, just
+        /// never two for the SAME law simultaneously. Introducible anytime, no mandatory pause - the
+        /// same non-blocking daily countdown idiom every standalone bill tier already uses. See
+        /// LawBill/LawDefinition/LawCatalog.
+        /// </summary>
+        private readonly Dictionary<CountryId, Dictionary<string, LawBill>> _pendingLawBillsByCountry =
+            new Dictionary<CountryId, Dictionary<string, LawBill>>();
+
+        /// <summary>
         /// Master Sequence step 5d, tier 3: at most one pending standalone bill per country per
         /// non-budget policy tab (Labor Market/Crime &amp; Justice/Economic Sectors/Trade), mirroring
         /// _pendingBudgetBillByCountry's own single-slot-per-country pattern - one bill per TAB, not
@@ -1113,6 +1126,140 @@ namespace PoliSim.Simulation
             _pendingCrimeJusticeBillByCountry.Remove(countryId);
         }
 
+        /// <summary>Every LawBill currently pending for this country, keyed by LawId, or an empty collection if none - see _pendingLawBillsByCountry's own doc comment.</summary>
+        public IReadOnlyDictionary<string, LawBill> GetPendingLawBills(CountryId countryId)
+        {
+            return _pendingLawBillsByCountry.TryGetValue(countryId, out var pending) ? pending : EmptyLawBills;
+        }
+
+        private static readonly Dictionary<string, LawBill> EmptyLawBills = new Dictionary<string, LawBill>();
+
+        /// <summary>The pending bill for one specific law, or null if none is currently before Parliament for it.</summary>
+        public LawBill GetPendingLawBill(CountryId countryId, string lawId)
+        {
+            return _pendingLawBillsByCountry.TryGetValue(countryId, out var pending) && pending.TryGetValue(lawId, out LawBill bill) ? bill : null;
+        }
+
+        /// <summary>Submits a new law bill (enact or repeal, per bill.IsRepeal) - a no-op (returns false) if one is already pending for this SAME LawId. Mirrors IntroduceTaxProgramBill's own pattern exactly.</summary>
+        public bool IntroduceLawBill(CountryId countryId, LawBill bill)
+        {
+            if (!_pendingLawBillsByCountry.TryGetValue(countryId, out var pending))
+            {
+                pending = new Dictionary<string, LawBill>();
+                _pendingLawBillsByCountry[countryId] = pending;
+            }
+
+            if (pending.ContainsKey(bill.LawId))
+            {
+                return false;
+            }
+
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            pending[bill.LawId] = bill;
+            return true;
+        }
+
+        /// <summary>Counts down every pending law bill for this country by one day, resolving any that reach 0 - mirrors AdvanceTaxProgramBillsDay's own pattern exactly.</summary>
+        public void AdvanceLawBillsDay(CountryId countryId)
+        {
+            if (!_pendingLawBillsByCountry.TryGetValue(countryId, out var pending) || pending.Count == 0)
+            {
+                return;
+            }
+
+            Country country = _world.GetCountry(countryId);
+            var resolved = new List<string>();
+            foreach (LawBill bill in pending.Values)
+            {
+                bill.DaysRemaining--;
+                if (bill.DaysRemaining > 0)
+                {
+                    continue;
+                }
+
+                LawDefinition law = LawCatalog.GetById(bill.LawId);
+                string lawName = law != null ? law.Name : bill.LawId;
+                float direction = ParliamentSystem.GetLawBillDirection(country, bill);
+                bool passed = ParliamentSystem.WouldBillPass(country, direction);
+                ParliamentSystem.RecordDivision(country, $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName}", direction, passed, CurrentDate);
+                ParliamentSystem.ApplyLawBillResult(country, bill, passed, ApplyLawBillEffects);
+                resolved.Add(bill.LawId);
+            }
+
+            foreach (string lawId in resolved)
+            {
+                pending.Remove(lawId);
+            }
+        }
+
+        /// <summary>
+        /// Applies an enacted (or repealed) law's dial deltas by building a throwaway
+        /// PolicyDecision and reusing the EXISTING ApplyCrimePolicyChanges/
+        /// ApplyCrimeJusticeDeeperChanges - the same "reuse the plumbing" pattern
+        /// ApplyCrimeJusticeBillEffects/ApplyLaborBillEffects already establish, applied to a law's
+        /// DELTA instead of a slider's absolute submitted value. Each target is pre-clamped to
+        /// [MinPolicyDialLevel, MaxPolicyDialLevel] HERE, before being written into the
+        /// PolicyDecision - not left to ApplyCrimePolicyChanges' own clamp - because a repeal
+        /// subtracting a delta from a low current value can compute a raw negative number, and
+        /// PolicyDecision's own "-1 sentinel means no change" convention would silently swallow it
+        /// as a no-op if it were ever negative before this clamp ran.
+        ///
+        /// Enact appends an EnactedLaw record (Country.EnactedLaws) and charges the law's own
+        /// EnactmentApprovalCost once, on passage. Repeal removes the record and applies the SAME
+        /// six deltas with the opposite sign - laws apply as NUDGES (deltas), not absolute
+        /// overrides, specifically so this composes: enacting two laws that touch the same dial
+        /// stacks both effects, and repealing either one subtracts back out only its own
+        /// contribution, decomposable to zero net effect when nothing else has touched the dial in
+        /// between (clamp saturation is the one honest exception - the same caveat every clamped
+        /// dial in this codebase already carries).
+        /// </summary>
+        private void ApplyLawBillEffects(Country country, LawBill bill)
+        {
+            LawDefinition law = LawCatalog.GetById(bill.LawId);
+            if (law == null)
+            {
+                return;
+            }
+
+            // Defensive idempotency guard, not reachable through the real UI today (DrawLawCard only
+            // ever offers "Enact" while !enacted and "Repeal" while enacted, and IntroduceLawBill
+            // already refuses a second bill for the same LawId while one is pending) - but cheap, and
+            // it closes a real latent double-application class: without it, enacting an
+            // already-enacted law would apply its delta a SECOND time (moving the dial further, not a
+            // no-op) and add a duplicate EnactedLaws entry; repealing a law that isn't enacted would
+            // apply the inverse delta with nothing to undo, moving the dial the WRONG way. Both are
+            // now unconditional no-ops instead - the same "idempotent, not merely rejected" spirit
+            // IntroduceLawBill already applies one layer up.
+            bool alreadyEnacted = country.EnactedLaws.Exists(e => e.LawId == bill.LawId);
+            if (bill.IsRepeal == !alreadyEnacted)
+            {
+                return;
+            }
+
+            float sign = bill.IsRepeal ? -1f : 1f;
+            var lawDecision = new PolicyDecision
+            {
+                PoliceFundingOverride = Mathf.Clamp(country.PoliceFundingLevel + sign * law.PoliceFundingDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
+                SentencingSeverityOverride = Mathf.Clamp(country.SentencingSeverity + sign * law.SentencingSeverityDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
+                BailReformOverride = Mathf.Clamp(country.BailReformLevel + sign * law.BailReformDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
+                DrugPolicyOverride = Mathf.Clamp(country.DrugPolicyLevel + sign * law.DrugPolicyDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
+                JudicialFundingOverride = Mathf.Clamp(country.JudicialFundingLevel + sign * law.JudicialFundingDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
+                BorderEnforcementOverride = Mathf.Clamp(country.BorderEnforcementLevel + sign * law.BorderEnforcementDelta, MinPolicyDialLevel, MaxPolicyDialLevel)
+            };
+            ApplyCrimePolicyChanges(country, lawDecision);
+            ApplyCrimeJusticeDeeperChanges(country, lawDecision);
+
+            if (bill.IsRepeal)
+            {
+                country.EnactedLaws.RemoveAll(e => e.LawId == bill.LawId);
+            }
+            else
+            {
+                country.EnactedLaws.Add(new EnactedLaw { LawId = bill.LawId, EnactedOn = CurrentDate });
+                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f);
+            }
+        }
+
         /// <summary>See ApplyLaborBillEffects' own doc comment - identical pattern, reuses ApplyCrimePolicyChanges/ApplyCrimeJusticeDeeperChanges.</summary>
         private void ApplyCrimeJusticeBillEffects(Country country, CrimeJusticePolicyBill bill)
         {
@@ -1410,6 +1557,11 @@ namespace PoliSim.Simulation
                 state.PendingWelfareProgramBills[pair.Key] = new Dictionary<WelfareProgramType, WelfareProgramBill>(pair.Value);
             }
 
+            foreach (KeyValuePair<CountryId, Dictionary<string, LawBill>> pair in _pendingLawBillsByCountry)
+            {
+                state.PendingLawBills[pair.Key] = new Dictionary<string, LawBill>(pair.Value);
+            }
+
             foreach (KeyValuePair<CountryId, List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>> pair in _pendingCabinetDecisionsByCountry)
             {
                 var records = new List<Persistence.PendingCabinetDecisionRecord>(pair.Value.Count);
@@ -1449,6 +1601,7 @@ namespace PoliSim.Simulation
             _pendingSectorBillByCountry.Clear();
             _pendingTradeBillByCountry.Clear();
             _pendingSwfDrawdownBillByCountry.Clear();
+            _pendingLawBillsByCountry.Clear();
             _pendingForeignPolicyMeetingByCountry.Clear();
             _pendingCabinetDecisionsByCountry.Clear();
             _lastFiscalReports.Clear();
@@ -1491,6 +1644,14 @@ namespace PoliSim.Simulation
                 foreach (KeyValuePair<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>> pair in state.PendingWelfareProgramBills)
                 {
                     _pendingWelfareProgramBillsByCountry[pair.Key] = new Dictionary<WelfareProgramType, WelfareProgramBill>(pair.Value);
+                }
+            }
+
+            if (state.PendingLawBills != null)
+            {
+                foreach (KeyValuePair<CountryId, Dictionary<string, LawBill>> pair in state.PendingLawBills)
+                {
+                    _pendingLawBillsByCountry[pair.Key] = new Dictionary<string, LawBill>(pair.Value);
                 }
             }
 

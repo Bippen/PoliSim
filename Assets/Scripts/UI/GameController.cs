@@ -58,8 +58,11 @@ namespace PoliSim.UI
         /// </summary>
         private enum StatisticsCategory { Domestic, International }
 
-        /// <summary>Policy/Laws tab's 5 sub-categories - each already has (or, for Trade/Policy Web, now gains) its own standalone-bill or reference-tool identity.</summary>
-        private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade }
+        /// <summary>Policy/Laws tab's 6 sub-categories - each already has (or, for Trade/Policy Web, now gains) its own standalone-bill or reference-tool identity. Laws (law system MVP slice, 2026-08-24): the named-preset browser over the existing dial space - see DrawLawsTab.</summary>
+        private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade, Laws }
+
+        /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum.</summary>
+        private enum LawBrowserFilter { All, CrimeJustice }
 
         /// <summary>Politics tab's 4 sub-categories - the political institutions, whether or not their own lever is Parliament-gated (Federal Reserve isn't, by design - see the Fed/Eurozone exemption).</summary>
         private enum PoliticsCategory { Parliament, Compass, Cabinet, FederalReserve }
@@ -511,6 +514,10 @@ namespace PoliSim.UI
         private Vector2 _decisionsScrollPosition;
         private Vector2 _demographicsScrollPosition;
         private Vector2 _policyLawsContentScrollPosition;
+
+        /// <summary>Law system MVP slice: the Laws browser's own scroll position and active category filter - navigation state, the same "not captured by UiDraftState" idiom every other scroll position/selected-tab field in this class already follows.</summary>
+        private Vector2 _lawsScrollPosition;
+        private LawBrowserFilter _lawBrowserFilter = LawBrowserFilter.All;
         private Vector2 _politicsContentScrollPosition;
         private Vector2 _worldMapScrollPosition;
         private Vector2 _policyWebScrollPosition;
@@ -2266,6 +2273,9 @@ namespace PoliSim.UI
                 case PolicyLawsCategory.CrimeJustice: return UiPalette.SystemArea.CrimeJustice;
                 case PolicyLawsCategory.Sectors: return UiPalette.SystemArea.Sectors;
                 case PolicyLawsCategory.Trade: return UiPalette.SystemArea.Trade;
+                // Law system MVP slice: the browser is CrimeJustice-only today (one category
+                // authored) - revisit once a second LawCategory ships and the filter can span both.
+                case PolicyLawsCategory.Laws: return UiPalette.SystemArea.CrimeJustice;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -3082,12 +3092,29 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Crime &amp; Justice tab (Phase 4 - moved off the dashboard into its own home): Police
-        /// Funding / Sentencing Severity / Bail Reform / Drug Policy / Judicial Funding / Border
-        /// Enforcement sliders (the last two added in Round 3 item 3), plus CrimeIndex/
-        /// OrganizedCrimeIndex/CorruptionIndex (a clear direction - lower is better for all three) and
-        /// PrisonPopulationRate (deliberately neutral - see PrisonPopulationRate's own doc comment on
-        /// BailReformLevel/DrugPolicyLevel's honestly-contested effects) history graphs.
+        /// Crime &amp; Justice tab (Phase 4 - moved off the dashboard into its own home; converted to a
+        /// READ-ONLY summary 2026-08-24, law system MVP slice). The six dials below - Police Funding/
+        /// Sentencing Severity/Bail Reform/Drug Policy/Judicial Funding/Border Enforcement - are no
+        /// longer player-editable HERE: the standalone CrimeJusticePolicyBill submission this tab used
+        /// to offer is retired as a player-facing action (Elias's ruling on "the sliders' fate" - see
+        /// CLAUDE.md's law-system section). Going forward these six dials are set exclusively by
+        /// enacted law, via the Laws tab (DrawLawsTab) - a slider the player could still move here
+        /// WHILE laws also moved the same dial would be the two-books problem again.
+        ///
+        /// Deliberately NOT a rip-out: CrimeJusticePolicyBill/IntroduceCrimeJusticeBill/
+        /// AdvanceCrimeJusticeBillDay/GetPendingCrimeJusticeBill and its save-state field
+        /// (SimulationPendingState.PendingCrimeJusticeBills) all stay fully intact in code - only the
+        /// player-facing submission UI (the six draft sliders and the "Introduce Crime & Justice
+        /// Bill" button) is removed here, per the ruling's own "small, scoped, contained UI change"
+        /// framing, not a backend/save-shape change. The six _xInput draft fields, their GetXInput
+        /// accessors, and UiDraftState's capture/restore of them are also left untouched - nothing
+        /// sets them anymore in real play, so they stay permanently null (harmless dead state, never
+        /// read by anything player-visible once this tab stopped writing to them).
+        ///
+        /// Also still here: CrimeIndex/OrganizedCrimeIndex/CorruptionIndex (a clear direction - lower
+        /// is better for all three) and PrisonPopulationRate (deliberately neutral - see
+        /// PrisonPopulationRate's own doc comment on BailReformLevel/DrugPolicyLevel's honestly-
+        /// contested effects) history graphs, unaffected by this conversion.
         /// </summary>
         private void DrawCrimeJusticeTab(float availableHeight)
         {
@@ -3097,7 +3124,7 @@ namespace PoliSim.UI
             _crimeJusticeScrollPosition = GUILayout.BeginScrollView(_crimeJusticeScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Crime & Justice", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
-            GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
+            GUILayout.Label("These six dials are now set exclusively by enacted law - see the Laws tab to enact or repeal one. The standalone Crime & Justice bill is retired as a player-facing action.", _labelStyle);
             GUILayout.Space(8f);
 
             // Annual cadence, so a bulletin rather than a chart - see PublishedFigure.
@@ -3106,34 +3133,19 @@ namespace PoliSim.UI
                 _labelStyle, moneyUnit: null);
             GUILayout.Space(8f);
 
-            BeginAreaCard("CRIME & JUSTICE BILL", UiPalette.SystemArea.CrimeJustice);
-            DrawCrimeJusticeBillStatusAndIntroduce();
-            DrawCrimeJusticeLiveEstimate();
-            EndAreaCard(UiPalette.SystemArea.CrimeJustice);
-
-            _policeFundingInput = DrawDialRow("Police Funding",
-                _playerCountry.PoliceFundingLevel, GetPoliceFundingInput(_playerCountry.PoliceFundingLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
-
-            _sentencingSeverityInput = DrawDialRow("Sentencing Severity",
-                _playerCountry.SentencingSeverity, GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 lenient - 100 harsh");
-
-            _bailReformInput = DrawDialRow("Bail Reform",
-                _playerCountry.BailReformLevel, GetBailReformInput(_playerCountry.BailReformLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 cash bail - 100 reformed");
-
-            _drugPolicyInput = DrawDialRow("Drug Policy",
-                _playerCountry.DrugPolicyLevel, GetDrugPolicyInput(_playerCountry.DrugPolicyLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 decriminalized - 100 strict");
-
-            _judicialFundingInput = DrawDialRow("Judicial Funding",
-                _playerCountry.JudicialFundingLevel, GetJudicialFundingInput(_playerCountry.JudicialFundingLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
-
-            _borderEnforcementInput = DrawDialRow("Border Enforcement",
-                _playerCountry.BorderEnforcementLevel, GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 open - 100 strict");
+            Color crimeInk = UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice);
+            DrawDerivedStatRow("Police Funding", (_playerCountry.PoliceFundingLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.PoliceFundingLevel.ToString("F0", CultureInfo.InvariantCulture), null, crimeInk);
+            DrawDerivedStatRow("Sentencing Severity", (_playerCountry.SentencingSeverity - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.SentencingSeverity.ToString("F0", CultureInfo.InvariantCulture), "0 lenient - 100 harsh", crimeInk);
+            DrawDerivedStatRow("Bail Reform", (_playerCountry.BailReformLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.BailReformLevel.ToString("F0", CultureInfo.InvariantCulture), "0 cash bail - 100 reformed", crimeInk);
+            DrawDerivedStatRow("Drug Policy", (_playerCountry.DrugPolicyLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.DrugPolicyLevel.ToString("F0", CultureInfo.InvariantCulture), "0 decriminalized - 100 strict", crimeInk);
+            DrawDerivedStatRow("Judicial Funding", (_playerCountry.JudicialFundingLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.JudicialFundingLevel.ToString("F0", CultureInfo.InvariantCulture), null, crimeInk);
+            DrawDerivedStatRow("Border Enforcement", (_playerCountry.BorderEnforcementLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.BorderEnforcementLevel.ToString("F0", CultureInfo.InvariantCulture), "0 open - 100 strict", crimeInk);
 
             GUILayout.Space(10f);
             _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
@@ -3143,52 +3155,6 @@ namespace PoliSim.UI
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// Master Sequence step 5d: pending-bill status plus the "Introduce Crime &amp; Justice Bill"
-        /// action - introducible ANYTIME (unlike the annual BudgetBill, no mandatory-pause phase gates
-        /// this), enabled only while no CrimeJusticePolicyBill is already pending (one bill per tab at
-        /// a time - see SimulationManager.IntroduceCrimeJusticeBill). Follows DrawTaxPolicy's
-        /// stable-control-layout pattern: the status Label and the Button are BOTH emitted every frame
-        /// regardless of state - only the label's text and the button's GUI.enabled state vary.
-        /// </summary>
-        private void DrawCrimeJusticeBillStatusAndIntroduce()
-        {
-            CrimeJusticePolicyBill pendingBill = _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId);
-
-            string statusText = pendingBill != null
-                ? $"A Crime & Justice bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Crime & Justice bill currently before Parliament. Introduce your current draft as a bill below.";
-            GUILayout.Label(statusText, _labelStyle);
-
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && pendingBill == null;
-            if (GUILayout.Button("Introduce Crime & Justice Bill", _neutralActionButtonStyle))
-            {
-                _simulationManager.IntroduceCrimeJusticeBill(PlayerCountryId, BuildCrimeJusticeBillFromDrafts());
-            }
-            GUI.enabled = ambientEnabled;
-        }
-
-        /// <summary>Master Sequence step 5d: recomputes every OnGUI call (cheap, same reasoning as DrawLegislativeSupportEstimate) so it updates live as the player edits any Crime &amp; Justice draft.</summary>
-        private void DrawCrimeJusticeLiveEstimate()
-        {
-            DrawBillLiveEstimate(ParliamentSystem.GetCrimeJusticeBillDirection(_playerCountry, BuildCrimeJusticeBillFromDrafts()));
-        }
-
-        /// <summary>Bundles every current Crime &amp; Justice draft into one bill, exactly as it stands at the moment of the call - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>
-        private CrimeJusticePolicyBill BuildCrimeJusticeBillFromDrafts()
-        {
-            return new CrimeJusticePolicyBill
-            {
-                PoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel),
-                SentencingSeverity = GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
-                BailReform = GetBailReformInput(_playerCountry.BailReformLevel),
-                DrugPolicy = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel),
-                JudicialFunding = GetJudicialFundingInput(_playerCountry.JudicialFundingLevel),
-                BorderEnforcement = GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel)
-            };
         }
 
         /// <summary>
@@ -5308,14 +5274,15 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
             GUILayout.BeginHorizontal();
-            float subTabShare = SubTabShare(availableWidth, 5);
+            float subTabShare = SubTabShare(availableWidth, 6);
             // Instance #13: one measured row height, shared with the content reserve below.
-            float subTabRowHeight = SubTabRowHeight(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade");
+            float subTabRowHeight = SubTabRowHeight(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
             DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Laws", PolicyLawsCategory.Laws, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
@@ -5355,8 +5322,121 @@ namespace PoliSim.UI
                     DrawTradePolicyContent();
                     GUILayout.EndScrollView();
                     break;
+                case PolicyLawsCategory.Laws:
+                    GUI.enabled = !_isGameOver;
+                    DrawLawsTab(contentHeight);
+                    GUI.enabled = true;
+                    break;
             }
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Law system MVP slice: the Laws browser (the scoping package's "D4 implement-policy menu"
+        /// idiom - list, category filter, a law's own detail, the enact action). Every law reaches
+        /// Parliament through the SAME gated-legislation model every other bill uses - see LawBill/
+        /// ParliamentSystem.GetLawBillDirection/ApplyLawBillResult. This is deliberately a proof-of-
+        /// architecture slice, not the start of a content marathon: one category (Crime & Justice),
+        /// four laws (LawCatalog.All) - enough to prove browser -&gt; bill -&gt; vote -&gt; enacted -&gt; dial
+        /// effect -&gt; ledger term -&gt; repeal end to end.
+        /// </summary>
+        private void DrawLawsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel("Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
+            GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice tab tracks. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle);
+            GUILayout.Space(6f);
+
+            GUILayout.BeginHorizontal();
+            DrawSubCategoryButton("All", LawBrowserFilter.All, ref _lawBrowserFilter);
+            DrawSubCategoryButton("Crime & Justice", LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(6f);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 8f;
+            _lawsScrollPosition = GUILayout.BeginScrollView(_lawsScrollPosition, GUILayout.Height(scrollHeight));
+
+            foreach (LawDefinition law in LawCatalog.All)
+            {
+                if (_lawBrowserFilter == LawBrowserFilter.CrimeJustice && law.Category != LawCategory.CrimeJustice)
+                {
+                    continue;
+                }
+
+                DrawLawCard(law);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// One law's detail card - name, enacted badge, description, every nonzero dial delta as a
+        /// ledger row, cost, and the enact/repeal action (or the pending-bill status and its live
+        /// PASS/FAIL estimate if one is already before Parliament) - the Cabinet candidate card's
+        /// browse-detail-action shape, applied to a catalog entry instead of a person.
+        /// </summary>
+        private void DrawLawCard(LawDefinition law)
+        {
+            bool enacted = _playerCountry.EnactedLaws.Exists(e => e.LawId == law.Id);
+            LawBill pendingBill = _simulationManager.GetPendingLawBill(PlayerCountryId, law.Id);
+
+            BeginAreaCard(null, UiPalette.SystemArea.CrimeJustice);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(law.Name, _headerStyle);
+            GUILayout.FlexibleSpace();
+            DrawColoredLabel(enacted ? "ENACTED" : "not enacted", _labelStyle,
+                enacted ? UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice) : PoliSimTheme.TextMuted);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Label(law.Description, _labelStyle);
+
+            DrawLawDeltaRow("Police Funding", law.PoliceFundingDelta);
+            DrawLawDeltaRow("Sentencing Severity", law.SentencingSeverityDelta);
+            DrawLawDeltaRow("Bail Reform", law.BailReformDelta);
+            DrawLawDeltaRow("Drug Policy", law.DrugPolicyDelta);
+            DrawLawDeltaRow("Judicial Funding", law.JudicialFundingDelta);
+            DrawLawDeltaRow("Border Enforcement", law.BorderEnforcementDelta);
+
+            GUILayout.Label($"Enactment cost: {law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture)} approval (paid once, on passage)", _labelStyle);
+
+            if (pendingBill != null)
+            {
+                GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle);
+                DrawBillLiveEstimate(ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill));
+            }
+            else if (enacted)
+            {
+                if (GUILayout.Button($"Repeal {law.Name}", _neutralActionButtonStyle))
+                {
+                    _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = true });
+                }
+            }
+            else
+            {
+                if (GUILayout.Button($"Enact {law.Name}", _neutralActionButtonStyle))
+                {
+                    _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = false });
+                }
+            }
+
+            EndAreaCard(UiPalette.SystemArea.CrimeJustice);
+        }
+
+        /// <summary>One dial's delta as a ledger row (LedgerRow.Cell - measured, never-clipping) - omitted entirely for a dial this law doesn't touch, rather than printing a zero. No good/bad ink on the value: a dial's sign has no inherent value judgment the model makes (the same reasoning C4's rating tile leaves "Stable" uncoloured rather than asserting a direction it doesn't claim).</summary>
+        private void DrawLawDeltaRow(string dialName, float delta)
+        {
+            if (Mathf.Approximately(delta, 0f))
+            {
+                return;
+            }
+
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            float nameWidth = rowRect.width * 0.6f;
+            LedgerRow.Cell(new Rect(rowRect.x, rowRect.y, nameWidth, rowRect.height), dialName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            LedgerRow.Cell(new Rect(rowRect.x + nameWidth, rowRect.y, rowRect.width - nameWidth, rowRect.height),
+                delta.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
         }
 
         /// <summary>
@@ -6070,6 +6150,19 @@ namespace PoliSim.UI
                 // drawdown bill" tells a player nothing about what they are about to be committed to.
                 pending.Add(($"SWF emergency drawdown - {drawdownBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {drawdownBill.DaysRemaining} day(s).",
                     ParliamentSystem.GetSwfDrawdownBillDirection(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth));
+            }
+
+            // Law system MVP slice: every pending law bill, named by its LawDefinition (falling back
+            // to the raw LawId if the catalog entry is somehow gone, the same "missing entry, not a
+            // crash" idiom LawCatalog.GetById's own doc comment establishes) - multiple can be
+            // pending at once, unlike the single-slot tier-3 bills above.
+            foreach (KeyValuePair<string, LawBill> lawBillPair in _simulationManager.GetPendingLawBills(PlayerCountryId))
+            {
+                LawBill lawBill = lawBillPair.Value;
+                LawDefinition law = LawCatalog.GetById(lawBill.LawId);
+                string lawName = law != null ? law.Name : lawBill.LawId;
+                pending.Add(($"{(lawBill.IsRepeal ? "Repeal" : "Enact")} \"{lawName}\" - resolves in {lawBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetLawBillDirection(_playerCountry, lawBill), UiPalette.SystemArea.CrimeJustice));
             }
 
             if (pending.Count == 0)
