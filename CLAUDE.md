@@ -9766,3 +9766,193 @@ where the pass claims nothing changed, decomposability where it claims one thing
 inherits the force template next — with the transcribed warning that its natural gap is
 growth-versus-trend (real wages have no baseline level), a different shape than Q1's,
 derived not assumed.**
+
+## The country-selection capture-driver leak - fixed, driver-only (2026-08-24)
+
+Reported as "Italy's scenario switches the live player-country and nothing switches it back."
+Investigated to a real mechanism rather than patched by guess: `SelectPlayerCountry` is, by design,
+a one-time, permanent commitment - a real player picks their country exactly once per session, and
+there is still no in-game "change country" feature to undo, which is correct and untouched.
+`UiScreenshotDriver` (`-shotcountry=`) reuses that same permanent, no-undo call reflectively as a
+disposable per-run label. Every *normal* exit already self-terminates the whole Editor process via
+`Finish()` -> `EditorApplication.Exit()`, which is what actually clears the state - nothing survives
+process death to leak into a later session. **The one real gap: `Start()` had no guarantee covering
+an UNCAUGHT exception after the country switch**, and because `UiScreenshotCapture.Run()`
+deliberately runs WITHOUT `-batchmode` (a real, interactive Editor window - `WaitForEndOfFrame`
+needs one), that gap could strand Play Mode on the requested country with no in-game way back
+(`SelectPlayerCountry`'s own selector gate is permanently one-directional once set).
+
+**Verdict: driver-only, not a correctness bug reaching a real player** - confirmed by tracing every
+code path that could touch `_selectedPlayerCountryId`; none exists outside `SelectPlayerCountry`
+itself, and `SaveLoadRoundTripDiagnostic`/`SimulationTestRunner`/`BatchSimulationRunner` never
+instantiate `GameController` at all, so none of them can reach this state by construction.
+
+**Fix, symmetric with the entry it mirrors**: `GameController.ResetPlayerCountrySelection()`, the
+documented counterpart to `SelectPlayerCountry` (clears the selection back to null - real play never
+calls it). `UiScreenshotDriver.Start()`'s whole body is now wrapped in `try`/`finally`: the `finally`
+unconditionally calls `ResetPlayerCountrySelection` via reflection (the same `Invoke` helper the
+entry call already used, widened to `params object[]`) and guarantees the run's own `Finish()` fires
+exactly once via a `_finishCalled` guard - the driver's own "verdict dismissal," guaranteed once
+entered, the same discipline the election reveal/Cabinet decision/Foreign Policy meeting dismissals
+already follow.
+
+## Turn -> Year (2026-08-24)
+
+Per CLAUDE.md's own "A turn is now a year" entry (2026-08-10, `d8f55ce`): a turn IS a year, not an
+approximation, so every player-facing surface reading "Turn N" should read "Year N." Internal
+surfaces (dumps, checks, logs, trajectory labels, this file's own vocabulary, `EndTurn`/`AdvanceTurn`
+internals, `SaveGame.CurrentTurn`'s serialized field name) stay unchanged - display-only, on purpose.
+
+**39 surfaces found by an exhaustive sweep of `Assets/Scripts/UI/`, cross-checked two independent
+ways** (a targeted agent survey, then a raw `grep` for every `"...[Tt]urn..."` string literal across
+the whole folder, hand-filtered for `return`/`returns` false positives) - **37 direct swaps, 2
+non-trivial, both ruled rather than forced:**
+
+- **The horizon selector's "Full Turn" -> "1 Year."** The one label of the four (`1 Day`/`1
+  Week`/`1 Month`/`Full Turn`) that broke its own siblings' "1 [Unit]" pattern, because a turn wasn't
+  previously a round real-world unit worth counting "1" of. "1 Year" both fits the pattern and is
+  shorter than "Full Turn" was, so the original width concern (`GameController.cs`'s own comment on
+  the label) is eased, not reintroduced.
+- **The calendar pad's `"{year} · T{turn}"` -> just `"{year}"`.** Now that a turn IS a year,
+  `CurrentTurn` and the pad's own `date.Year` are the same count wearing two labels. **Ruling: show
+  the REAL calendar year everywhere; drop the redundant elapsed-turn suffix here specifically**
+  rather than relabel it `" · Y{turn}"` - two numbers that agree is pure redundancy, and two that
+  read as disagreeing (elapsed count vs. absolute year, offset by the seed epoch) would be worse.
+  Absolute years were already what the pad had on hand, are the more evocative choice for a
+  document-styled desk UI, and are the same choice the Calendar Panel below inherits rather than
+  invents a second epoch decision.
+
+**Validation**: real Unity 6000.5.6f1. Trajectory (seed 777, 100 turns, before vs. after) **600/600
+full-state lines byte-identical**, 38/38 anomalies match exactly. Save/load: `RT: PASS - 12 scenarios
+(6 countries x 2 seeds) round-trip clean` - unchanged. Captures at 1600x929 (before/after pair,
+direct rule-15 image diff) and at 1600x929 + 2560x1419 with full state-pinning (`-shotstates`):
+59/59 and 78/78 captured, **0 overflow / 0 escape / 0 canvas-text-violation at every size** -
+including the two non-trivial surfaces and the state-gated screens (election reveal, game-over
+banner) the width risk ("Year 2031" is wider than "Turn 5") was named against.
+
+## Calendar Panel (2026-08-24)
+
+Replaces the old dashboard (country header + headline stat-tile grid) in the persistent left
+column's scrollable slot with a real month page: a weekday-aligned day grid (days already past
+marked "X," today highlighted), a "This Month" ledger of every dated item landing in the displayed
+month, and the country-name-plus-year header the old dashboard carried, preserved verbatim.
+`DrawPolicyControls`'s "This Year's Policy" live-preview panel is UNTOUCHED and still draws directly
+below it in the same scroll view - deliberately not tab-owned (its own doc comment), so it stays
+reachable without tab-hopping. The small pinned calendar pad (`DrawCalendarPad`, month/day/year,
+outside the scroll view beside the speed controls) is also UNTOUCHED - kept on purpose, since the
+panel below it is scrollable-away-from and the pad's whole point is a glance at today regardless of
+scroll position, the same reasoning that already keeps the speed controls pinned beside it.
+
+### What the left overview showed, and what happens to it - named, not silently dropped
+
+Investigated before removing anything (`DrawHeadlineStatTiles`'s and `DrawPolicyPreview`'s own
+call-site history, read in full):
+
+- **The stat-tile grid is fully duplicated, byte-for-byte, on Statistics -> Domestic** -
+  `DrawHeadlineStatTiles` is the SAME method, same call, both places. Nothing is lost in raw-number
+  terms; several stats (GDP, Unemployment, Inflation, Approval, Poverty, Debt-to-GDP) sit beside a
+  history graph there the old dashboard never had. Four (Currency Strength, Government Debt, Credit
+  Rating, Budget Balance) get no richer treatment at either location - for those four specifically
+  the Statistics tab shows the literal identical plain tile, so there is truly nothing to lose beyond
+  the tab click itself. **What genuinely is lost: the "glance from any tab" convenience** - a real,
+  bounded trade, made deliberately for a genuinely new capability rather than a redundant one.
+- **`DrawPolicyPreview` ("This Year's Policy") is confirmed duplicated identically at the Budget
+  Process tab** (`DrawLegislativeSupportEstimate`'s own column calls the same parameterless method).
+  Kept anyway, exactly where it was, because its OWN doc comment states its placement is deliberate
+  precisely so a player never has to tab-hop to see it - removing it from the always-visible column
+  would contradict the reason it was put there, so it stays.
+- **The country-name-plus-year header had NO other home anywhere in the UI** (full-file search for
+  `_playerCountry.Name` as a persistent header - every other occurrence is a one-off screen title or
+  embedded mid-sentence). Preserved as this panel's own first line, unchanged.
+- **`DrawTopBanner` (game-over / BREAKING event banner) and `DrawPolicyControls`'s wrapper are
+  untouched.** `DrawPolicyControls` turned out to have NO gameplay sliders left in it at all by this
+  point (every lever had already migrated to its own tab or the Budget Process tab in an earlier
+  pass) - it is now just the header/toggle wrapper around `DrawPolicyPreview`, confirmed by reading
+  it in full before assuming otherwise.
+
+No delivered or requested chrome asset exists for a bigger calendar (`ChromeManifest.txt`,
+`CLAUDE_DESIGN_ASSET_REQUEST.md`, `POLISIM_V2_SCREEN_SPEC.md` all searched - `ui_calendar_pad` is the
+only calendar sprite anywhere). The panel is entirely procedural chrome (`PoliSimTheme.RoundedCard`/
+`Rule`/`Pill`, the same fallback family `DrawCalendarPad` already uses when its own sprite is
+missing) - no asset request blocks this.
+
+### The data contract - the extension point for the law system and the fiscal legibility panel
+
+**Read existing data, built no store.** Every marker is computed fresh each `OnGUI` call from
+already-existing, already-computed state (`SimulationManager`'s public `Get*` API, `ReleaseCalendar`,
+`Country`'s own lists, `GameController`'s own `_mapEventMarkers`) - nothing here is new persisted
+state, and nothing here can move a trajectory (confirmed: 600/600 state lines byte-identical, before
+vs. after, at the seed this section's own validation used).
+
+**The governing question for every source, catalogued from the real code rather than assumed**: does
+a PENDING (future) instance carry a computable date, and does a RESOLVED (past) instance retain one?
+A day that happened is a fact even when the day it will happen was never knowable in advance - the
+two directions are independently answerable and answered separately below.
+
+| Source | Future | Past | In the panel? |
+|---|---|---|---|
+| `FiscalYearData.GetFiscalYearStart` | Exact, fixed `(month, day)`, every year | Exact (same rule) | ✅ one marker, carries BOTH the budget-process-open fact and the credit-rating-review fact - confirmed coincident by reading `CreditRatingSystem.ReviewIfDue`, which reuses the identical date |
+| `ReleaseCalendar.IsReleaseDay` (6 `PublishedStat`s) | Exact date arithmetic, no RNG in the date itself | Exact (same rule) | ✅ every day of the displayed month checked against every tracked stat |
+| Pending bill `DaysRemaining` (all 8 types - `BudgetBill` + 6 standalone + `SwfDrawdownBill`) | Exact: `today + DaysRemaining` | n/a (resolves into a division) | ✅ one marker per currently-pending bill |
+| `ElectionSystem.IsElectionTurn` | Exact date (turn N -> `EpochDate.AddDays(N*365)`), but **not** always the same day-of-year (see the leap-day finding below) | Only the single most-recently-resolved election is held, transiently, discarded on dismissal - **no persisted log exists** (the still-open `ElectionRecord` gap this file already names elsewhere) | ✅ future only |
+| `Country.Divisions.Entries` (`DivisionRecord.Date`, all 8 resolution sites, up to 24 retained) | n/a (already resolved by definition) | Exact, real, stored `DateTime` | ✅ past, bounded to the retained 24 |
+| `EventSystem` roll + `MapEventMarker.TurnFired` | **Unknowable** - a 12%/turn roll with no schedule | A fired marker's `TurnFired` converts to an exact date via the same epoch formula - "a day that happened is a fact" - but only within the 6-turn fade window `GameController` already tracks, and that window is UI-only, not save-persisted | ✅ past only, bounded to the 6-turn window |
+| `CabinetSystem` decisions | **PROBABILITY-ONLY, NO TRACE** - 12%/minister/turn roll | **NO TRACE** - `ResolveCabinetDecision` applies the effect and removes the pending entry; no date stamp is ever written anywhere | ❌ excluded, both directions |
+| `ForeignPolicySystem` meetings | **PROBABILITY-ONLY, NO TRACE** - 1%/day roll | **NO TRACE** - same shape, `ResolveForeignPolicyMeeting` | ❌ excluded, both directions |
+
+**A structural finding worth carrying forward, found while building the epoch conversion rather than
+assumed**: `DaysPerTurn = 365` is a fixed day COUNT, not "the next January 1st" - so turn N's date
+(`EpochDate.AddDays(N * 365)`) is always exact but is **not** guaranteed to land on the same
+day-of-year across different turn numbers. Concretely: turn 1 = 2027-01-01, turn 2 = 2028-01-01, but
+turn 3 = **2028-12-31**, one day short of the next January 1st, because 2028 absorbed a leap day the
+365-day span didn't account for. Every date conversion in `BuildCalendarMonthMarkers` uses the exact
+`EpochDate.AddDays(...)` formula for this reason - never a fixed month/day assumption from a turn
+number.
+
+**Confirmed by the captures, not just reasoned about**: the "busy fiscal month" pinned state (USA,
+October) shows the fiscal-year/credit-rating marker landing on the SAME day as three of the six
+publication markers (`PovertyRate`/`Population`/`CrimeIndex` all publish annually on the fiscal-year
+date too) - four coincident markers on one day, exactly the clustering this data contract's own
+table predicts and exactly why "an empty calendar validates nothing" mattered enough to pin
+deliberately rather than trust the ordinary warm-up to produce it by luck.
+
+### Validation
+
+Real Unity 6000.5.6f1. **Trajectory (seed 555, 100 turns, before vs. after all of the panel's own
+work including two follow-up geometry fixes) 600/600 full-state lines byte-identical, 30/30
+anomalies match exactly** - GameController.cs is structurally unreachable from
+`SimulationTestRunner`/`BatchSimulationRunner` (confirmed during the country-leak investigation
+above), so this is a proof by construction as much as by diff. Save/load: `RT: PASS - 12 scenarios (6
+countries x 2 seeds) round-trip clean` - unchanged.
+
+Captures at 1600x929 and 2560x1419, `-shotstates` (full state coverage), pinned specifically on the
+three states an empty calendar could never validate: a month with marked events (the ordinary
+warm-up already produces this - publication markers accumulate over the 3+ year warm-up regardless),
+a month-boundary flip (a NEW driver step, `CaptureCalendarMonthBoundary`-shape: advances to the last
+day of the current month, captures, advances one more real day into the next month, captures again -
+confirmed the grid, weekday alignment and ledger all regenerate correctly for the new month with zero
+staleness), and the busy fiscal month (the existing budget-process-pause search already lands
+`CurrentDate` exactly on the country's fiscal-year date, which is where this state was pinned for
+free).
+
+**Two real defects found and fixed by the guards/eye, both already-catalogued classes in this
+project rather than novel ones - recorded because the class recurring is the point:**
+
+1. **Day-cell height, `UiOverflowGuard`, 2,004 violations.** The first version sized cells from a
+   flat `30f * scale` guess unrelated to `_calendarDayNumberStyle`'s real size (which scales off
+   `labelFontSize`, a different base). Fixed via `Mathf.Max(lineHeight, fontSize + 4f)` -
+   `LedgerRow.Height`'s own formula - which closed most but not all of the gap (over-by dropped from
+   10.7 to 1.6). **The residual was CLAUDE.md's own already-documented "tall class" defect** -
+   `lineHeight` excludes a style's vertical padding, which only `CalcHeight` (what `GUI.Label`
+   actually obeys) accounts for. Final fix: measure via `CalcHeight` against real sample content, one
+   accessor read by both the grid's row reserve and the cell's own text rect.
+2. **Ledger date-column width, caught by eye at 2560px, not by any guard.** A hardcoded
+   `GUILayout.Width(40f)` wrapped ("10" over "/1") at larger window sizes - it never CLIPPED (so
+   `UiOverflowGuard` stayed clean throughout), just wrapped, which is why only a capture at the wider
+   size caught it. Fixed by measuring the widest possible date string (`"12/31"`) against the real
+   style instead of a flat constant - the same "a number that came out of a mockup is a measurement
+   at one resolution, never a constant" lesson this file has already recorded from several other
+   sites, recurring at a new one.
+
+Both fixes re-verified clean (0 overflow / 0 escape / 0 canvas-text-violation, 80/80 captured) at
+both sizes before being accepted.

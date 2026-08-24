@@ -90,8 +90,21 @@ namespace PoliSim.Testing
                     new[] { "Parliament", "Compass", "Cabinet", "FederalReserve" }) }
             };
 
+        /// <summary>
+        /// Guards against a double exit: set the instant <see cref="Finish"/> actually runs, checked by
+        /// Start's own <c>finally</c> so a normal completion (which already calls Finish itself) is
+        /// never followed by a second, redundant one.
+        /// </summary>
+        private bool _finishCalled;
+
         private IEnumerator Start()
         {
+            // COUNTRY-LEAK FIX: `controller` is declared here, outside the try, so the `finally` below
+            // can reach it. Everything from here through the method's normal end is now wrapped in
+            // try/finally - see the finally block's own comment for why.
+            GameController controller = null;
+            try
+            {
             if (!string.IsNullOrEmpty(Locale))
             {
                 var culture = new System.Globalization.CultureInfo(Locale);
@@ -102,7 +115,7 @@ namespace PoliSim.Testing
 
             Directory.CreateDirectory(OutputDirectory);
 
-            GameController controller = FindAnyObjectByType<GameController>();
+            controller = FindAnyObjectByType<GameController>();
             if (controller == null)
             {
                 Debug.LogError("SHOT: no GameController in scene - nothing to capture.");
@@ -235,6 +248,46 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
 
             Finish(_failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0 ? 0 : 1);
+            }
+            finally
+            {
+                // COUNTRY-LEAK FIX (see ResetPlayerCountrySelection's doc comment on GameController).
+                // SelectPlayerCountry is a real player's one-time, permanent commitment and correctly
+                // has no restore of its own - this driver instead reuses it as a disposable per-run
+                // label (-shotcountry=). Every KNOWN exit path above already tears the whole Editor
+                // process down via Finish()/EditorApplication.Exit() before or after this point, which
+                // is what actually undoes the leak (nothing survives process exit to reach a later
+                // session) - but Start() had no guarantee covering an UNCAUGHT exception after the
+                // country switch. Because UiScreenshotCapture deliberately runs WITHOUT -batchmode (a
+                // real, interactive Editor window - see its own doc comment), that gap could leave Play
+                // Mode stuck on the requested country with no in-game way back, since
+                // SelectPlayerCountry's own selector gate is permanently one-directional once set.
+                //
+                // A `finally` around the whole run closes it two ways, both unconditional regardless of
+                // how Start() ends: the selection is put back exactly the way it started (mirroring
+                // SelectPlayerCountry's own reflective call on entry), and the run's own exit -
+                // whatever it decided, or a forced failure if it never got that far - is guaranteed to
+                // fire exactly once. Wrapped in its own try/catch so a reflection failure during cleanup
+                // can never mask - or replace - whatever exception got the driver here in the first
+                // place.
+                try
+                {
+                    if (controller != null)
+                    {
+                        Invoke(controller, "ResetPlayerCountrySelection");
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"SHOT: could not reset the player-country selection during cleanup ({e.GetType().Name}) - forcing exit rather than risking a stuck session.");
+                }
+
+                if (!_finishCalled)
+                {
+                    Debug.LogError("SHOT: run ended without reaching its own exit (an uncaught exception, most likely) - forcing one now.");
+                    Finish(1);
+                }
+            }
         }
 
         /// <summary>
@@ -428,14 +481,17 @@ namespace PoliSim.Testing
 #endif
         }
 
-        private static void Finish(int exitCode)
+        /// <summary>Instance rather than static (was static until the country-leak fix) so it can set <see cref="_finishCalled"/> - Start's own <c>finally</c> reads that guard to tell a normal exit from one it had to force itself.</summary>
+        private void Finish(int exitCode)
         {
+            _finishCalled = true;
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.Exit(exitCode);
 #endif
         }
 
-        private static void Invoke(object target, string method, object arg)
+        /// <summary>Params rather than a single `object arg` (widened for the country-leak fix) so this can also invoke a zero-argument method like ResetPlayerCountrySelection, not only SelectPlayerCountry's one-argument shape.</summary>
+        private static void Invoke(object target, string method, params object[] args)
         {
             MethodInfo m = target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic);
             if (m == null)
@@ -444,7 +500,7 @@ namespace PoliSim.Testing
                 return;
             }
 
-            m.Invoke(target, new[] { arg });
+            m.Invoke(target, args);
         }
 
         /// <summary>
@@ -790,6 +846,31 @@ namespace PoliSim.Testing
                 Debug.LogError("SHOT: could not reach the player country - state pins skipped.");
                 yield break;
             }
+
+            // --- A0. CALENDAR PANEL: the "month-boundary flip" pin (Calendar Panel, see CLAUDE.md).
+            // An empty/static calendar validates nothing - this drives to the LAST day of whichever
+            // month CurrentDate currently sits in, captures, advances exactly one more real day
+            // (crossing into the next month), and captures again, so the two frames differ by one day
+            // and should show the panel's displayed month genuinely changing, not a stale carryover.
+            var noDecisionsForCalendar = new Dictionary<CountryId, PolicyDecision>();
+            int daysInCurrentMonth = System.DateTime.DaysInMonth(sim.CurrentDate.Year, sim.CurrentDate.Month);
+            int calendarDays = 0;
+            while (sim.CurrentDate.Day != daysInCurrentMonth && calendarDays < MaxStateSearchDays)
+            {
+                if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisionsForCalendar); }
+                sim.AdvanceCountryDayTick(_countryId);
+                calendarDays++;
+            }
+
+            SetEnumField(controller, "_consolidatedTab", "Decisions");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("80a_calendar_month_end");
+
+            if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisionsForCalendar); }
+            sim.AdvanceCountryDayTick(_countryId);
+            yield return Settle();
+            yield return Capture("80b_calendar_month_flip");
 
             // --- A. CABINET: the search state, then the appointed roster. ---
             FieldInfo candField = controller.GetType().GetField("_cabinetCandidatesByPortfolio", BindingFlags.Instance | BindingFlags.NonPublic);
