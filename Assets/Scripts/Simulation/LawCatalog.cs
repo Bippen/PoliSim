@@ -315,6 +315,197 @@ namespace PoliSim.Simulation
                 BorderEnforcementDelta = 16f,
                 PoliceFundingDelta = 4f,
                 EnactmentApprovalCost = 1.0f
+            },
+
+            // ================================================================================
+            // BATCH 2 of the content marathon (2026-08-25) - 11 laws, deliberately weighted
+            // toward the three dials batch 1 left thin (PoliceFunding, JudicialFunding,
+            // BorderEnforcement), while still drawing real content for Sentencing/Drug where it
+            // was strong. BorderEnforcement specifically gets a genuine BOTH-directions pair
+            // (Frontex/Sanctuary) matching the Bail/Drug pairs batch 1 already established.
+            // ================================================================================
+
+            new LawDefinition
+            {
+                Id = "body_worn_camera_program",
+                Name = "Body-Worn Camera Program",
+                Description = "Equips police officers with body-worn cameras and funds the storage and review infrastructure the footage requires.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - rapid US adoption after Ferguson (2014), driven by DOJ grant funding.
+                // A DC Metro randomized trial (2017) found modest-to-no effect on use of force but
+                // materially better evidence and complaint resolution - the real headline effect
+                // (officer accountability/transparency) isn't literally any of the six dials, so
+                // funding is the honest, if imperfect, proxy used here (see the wanted-effects log's
+                // accountability/transparency axis). MODERATE: real equipment and storage cost, not
+                // a sweeping department overhaul.
+                PoliceFundingDelta = 8f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "militarized_police_equipment_program",
+                Name = "Militarized Police Equipment Program",
+                Description = "Transfers surplus military-grade equipment and vehicles to local police departments at little or no cost, expanding their tactical capability.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - the US DoD 1033 Program (created by the 1997 NDAA), which came under
+                // national scrutiny after Ferguson 2014 (armored vehicles facing protesters);
+                // restricted by the Obama administration in 2015, reversed by the Trump
+                // administration in 2017. MAJOR on police funding (an in-kind capability transfer,
+                // not just a cash line); MINOR secondary severity uptick (heavier tactical equipment
+                // is a real, if modest, enforcement-posture signal).
+                PoliceFundingDelta = 18f,
+                SentencingSeverityDelta = 4f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "cybercrime_investigation_unit",
+                Name = "Cybercrime Investigation Unit",
+                Description = "Establishes a dedicated police unit and funding stream for investigating online fraud, hacking, and digital exploitation offenses.",
+                Category = LawCategory.CrimeJustice,
+                // GENRE-IDIOM/DIRECTIONAL - every modern police force has built out some form of
+                // cybercrime capability over the past two decades, but this project isn't citing one
+                // single confirmed founding law across all six countries the way, say, Germany's
+                // cannabis law can be. MODERATE: a real, standalone funding commitment, clean single-
+                // dial fit.
+                PoliceFundingDelta = 10f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "gang_crime_sentencing_escalation",
+                Name = "Gang Crime Sentencing Escalation",
+                Description = "Sharply raises maximum sentences for crimes committed within organized criminal networks and removes reduced sentencing discounts for young offenders in gang cases.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - Sweden's Tidö Agreement (Oct 2022), in force from April 2024:
+                // gang-related sentences up to double the previous maximum (capped at 18 years), and
+                // abolished the sentencing discount for 18-21-year-olds in gang crime cases. Real
+                // 2023 result: prison sentences up 25% year-on-year, prisons at capacity, and gangs
+                // reportedly responded by recruiting MORE minors (who face the separate juvenile
+                // system) - a genuine, documented backlash effect, not asserted here as this law's
+                // OWN dial effect (that would need a "gang recruitment of minors" mechanic this
+                // catalog doesn't model), only named honestly as real-world context. MAJOR on
+                // severity; MODERATE secondary on police funding (the same package included expanded
+                // search powers, whose own core effect belongs in the wanted-effects log's
+                // police-tactics axis - only the funding-shaped remainder is represented here).
+                SentencingSeverityDelta = 20f,
+                PoliceFundingDelta = 6f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "court_backlog_reduction_program",
+                Name = "Court Backlog Reduction Program",
+                Description = "Invests in additional judges, court staff, and procedural reform aimed at cutting multi-year case backlogs and excessive trial delays.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - Italy is the standard European reference case: its 2001 "Pinto Law"
+                // compensates citizens for excessive trial delays (a tacit admission of the
+                // problem), and its post-COVID EU Recovery Plan (PNRR, 2021+) made judicial-backlog
+                // reduction a large, EU-monitored funding condition. Honestly noted: backlog
+                // reduction is really a court-process-efficiency question (see the wanted-effects
+                // log), and money alone doesn't guarantee faster throughput without procedural/
+                // technology reform alongside it - JudicialFunding is the closest real lever this
+                // catalog has, not a perfect one. MAJOR: PNRR-scale investment, not a marginal line
+                // item.
+                JudicialFundingDelta = 20f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "court_interpreter_funding",
+                Name = "Court Interpreter & Translation Funding",
+                Description = "Funds qualified interpreters and translated materials for non-native speakers in criminal proceedings.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - the US Court Interpreters Act (1978, federal courts) and the EU's
+                // Directive 2010/64/EU on the right to interpretation and translation in criminal
+                // proceedings (binding on Germany, France, Italy, Sweden, and Poland alike - a
+                // genuinely significant EU-wide harmonization). MINOR: the cleanest, least
+                // controversial funding-direction fit in this catalog, but narrow in scope - rarely
+                // a major line item on its own.
+                JudicialFundingDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "victim_witness_support_funding",
+                Name = "Victim & Witness Support Services Funding",
+                Description = "Funds victim counseling, court accompaniment, case-status notification services, and protection against witness intimidation.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - the US Victims of Crime Act (VOCA, 1984, funded via criminal fines
+                // rather than general taxation - a distinctive mechanism that faced a well-publicized
+                // real funding shortfall in the 2020s as fine revenue declined) and the EU's Victims'
+                // Rights Directive (2012, binding across Germany, France, Italy, Sweden, and Poland).
+                // MODERATE: a real, standalone service-funding commitment.
+                JudicialFundingDelta = 7f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "frontex_border_cooperation_agreement",
+                Name = "Frontex Border Cooperation Agreement",
+                Description = "Deepens funding and operational cooperation with the EU's joint border and coast guard agency for surveillance, patrol, and deportation-flight support.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - Frontex, founded 2004, with its budget expanded roughly 40x after the
+                // 2015 migrant crisis and a standing corps of 10,000 officers targeted by 2027; the
+                // agency has also been repeatedly investigated for complicity in Mediterranean/Aegean
+                // pushbacks (an OLAF probe led to its director's resignation in 2022, noted honestly
+                // rather than omitted). Only meaningfully applicable to the four EU member states
+                // among the six (Germany, France, Italy, Poland) in the real world, though the model
+                // doesn't currently gate laws by country - a scope note, not a blocker. MODERATE:
+                // deeper cooperation versus the baseline, not the sweeping end of this dial (a full
+                // physical barrier, this catalog's own Border Security Act, sits higher).
+                BorderEnforcementDelta = 12f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "refugee_asylum_fast_track_processing",
+                Name = "Refugee & Asylum Fast-Track Processing",
+                Description = "Expands staffing and streamlines procedure for asylum claims, reducing detention time and processing backlogs for people awaiting a decision.",
+                Category = LawCategory.CrimeJustice,
+                // GENRE-IDIOM/DIRECTIONAL - a real, recurring policy debate across all six countries
+                // (asylum-system capacity and processing-time reform is a standing item in EU
+                // migration policy generally), not tied here to one single confirmed law the way the
+                // Belarus border wall or Frontex's own founding are. Included deliberately as the
+                // genuine LENIENT-direction counterweight to this catalog's existing Border Security
+                // Act/Immigration Detention Expansion Act, the same both-directions balance the
+                // Bail/Drug dials already have. MODERATE on border enforcement (toward lenient);
+                // MINOR secondary on judicial funding (the staffing needed to actually process claims
+                // faster).
+                BorderEnforcementDelta = -14f,
+                JudicialFundingDelta = 5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "sanctuary_city_policy",
+                Name = "Sanctuary City Policy",
+                Description = "Bars local police from asking about immigration status or assisting federal immigration enforcement in routine policing.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - a real US policy adopted by hundreds of jurisdictions since the
+                // 1980s-2000s, repeatedly contested in court over federal funding cutoffs threatened
+                // in retaliation. The real mechanism is INTERIOR enforcement cooperation (or its
+                // absence) rather than the physical border itself, which BorderEnforcement as this
+                // catalog defines it centers on - a related but distinct axis, noted honestly as an
+                // imperfect fit rather than a clean one. MODERATE.
+                BorderEnforcementDelta = -10f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "prosecutorial_discretion_guidelines",
+                Name = "Prosecutorial Discretion Guidelines",
+                Description = "Directs prosecutors to deprioritize charging low-level, non-violent offenses - including simple drug possession - freeing capacity for serious crime.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - the real US "progressive prosecutor" trend (Philadelphia DA Larry
+                // Krasner, elected 2017; Los Angeles DA George Gascon, elected 2020, among others),
+                // each adopting office-wide charging-deprioritization policies for low-level offenses
+                // - a genuinely documented, politically contested real trend, not a single national
+                // law. MODERATE on severity; MINOR secondary on drug policy (possession specifically
+                // named in real guidelines of this kind).
+                SentencingSeverityDelta = -10f,
+                DrugPolicyDelta = -6f,
+                EnactmentApprovalCost = 1.0f
             }
         };
 
