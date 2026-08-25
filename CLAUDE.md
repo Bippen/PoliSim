@@ -8386,8 +8386,12 @@ happened, in the order it happened:
 ⚠ **THE STANDING FACT this entry exists to carry: any commit hash recorded before 2026-08-16 in
 chat logs, external notes, or anything else outside this repository NO LONGER RESOLVES** unless it
 predates the capture era. The lookup path for archaeology is the backup above (pre-rewrite history
-intact, reflogs included) — or the commit-map preserved beside it as
-`PoliSim-backup-2026-08-16\commit-map`. In-repo documents were swept and are correct.
+intact, reflogs included) — or the commit-map. ⚠ **CORRECTED 2026-08-25: the commit-map is not
+"beside" the backup — that line was never checked and was wrong.** It lives where `git filter-repo`
+actually wrote it: `G:\UNITY\Projects\PoliSim\.git\filter-repo\commit-map`, 335 entries, in the
+repo the rewrite ran against. The backup was deliberately never itself rewritten (that is its whole
+purpose as the pre-rewrite pin), so it never had a `filter-repo` directory to carry one. In-repo
+documents were swept and are correct.
 
 ### Post-push close-out (2026-08-16, same day)
 
@@ -11351,3 +11355,23 @@ evidence did). **The general method, for any future divergence question**: pull
 `git reflog show --date=iso main` on every candidate copy, find the date range in question, and
 read which copy shows ordinary `commit:` actions there versus which shows a gap - a shared
 `origin` proves nothing about which copy did the work; only each copy's own reflog does.
+
+### Closed — the archive's two non-main branches, verified rewrite residue, not unique work (2026-08-25)
+
+`frf/trend-term` and `stranded/politics-elections` on the retired archive show `ahead N, behind N`
+against origin with matching counts (61/61, 35/35) - the archive's own tips
+(`47e249c...`/`228a111...`) are **pre-rewrite hashes, and both are keys in the real commit-map**
+(`.git/filter-repo/commit-map` in this repo, 335 entries - not "beside" the archive, a stale claim
+corrected above). Both map exactly to origin's actual current tips (`561bfa7...`/`ca6c510...`),
+confirmed against a fresh fetch, not a cached ref. Fully explained, nothing at risk, nothing
+unique - recorded in the archive's own `ARCHIVE-NOTE.md` with the full table, specifically so this
+does not get re-investigated the next time someone notices the same `ahead/behind` line.
+
+**Second instance of the class named in `POLISIM_MASTER_ROADMAP.md` item 13** ("a stale lock read
+as litter" - the 2.2-hour-old `.git/index.lock` with no live process, where "no process is running
+now" and "no session owns this" were shown to be different propositions). This time it wasn't a
+lock file: renaming the retired archive failed on the first attempt with "Cannot rename the item...
+because it is in use," because both tool shells still had their working directory rooted inside
+it - a filesystem operation blocked by a process nobody was tracking, the same shape, different
+mechanism. Fixed by moving both shells out first; the general lesson item 13 already states covers
+this too.
