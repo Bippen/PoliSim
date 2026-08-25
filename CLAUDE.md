@@ -11324,3 +11324,30 @@ and to make the other one either read-only or genuinely non-launchable (unregist
 `ProjectSettings` removed or renamed, or simply never opened) before the next session starts. A
 backup that stays fully launchable is not a backup with a hazard attached to it later; it is a
 second working copy that has not diverged yet.
+
+### Addendum — the naming lesson, and the recovery method generalized (2026-08-25)
+
+**A directory whose name asserts a role it no longer has is the two-books class at the filesystem
+level.** `PoliSim-backup-2026-08-16` was named for the one day it was created; the name never
+updated when its role did, and for eight days it silently WAS the working copy while still being
+called "backup" - a name is a claim about state, and this one went stale exactly the way a status
+line in a document goes stale (this file's own "a count in prose is a cached value with no
+expiry," and `CLAUDE_DESIGN_ASSET_REQUEST.md`'s own repeatedly-stale header, applied to a folder
+instead of a document). **Nobody audits a backup** - the whole point of the label is "safe to
+ignore," which is exactly backwards the one time the label stops being true. Retired to
+`PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16` for this reason specifically: the rename IS the fix, not
+a side effect of one - a name that states the current prohibition rather than the past reason the
+folder exists.
+
+**The recovery method, generalized because it worked and will be needed again.** A `commit:`
+reflog entry is the strongest available evidence for where a commit was authored - it can only
+exist on the repo a local `git commit` actually targeted, unlike a commit's own author/committer
+timestamp fields, which travel with the commit wherever it is copied and prove nothing about which
+copy created it. Conversely, **a gap in one copy's reflog across a date range is direct evidence
+that copy was idle for that range** - not proof by itself (a reflog can in principle be pruned or
+expire), but corroborating evidence that held up here against two independent checks agreeing with
+it (Hub's registry and the Editor.log startup path both pointed at the same copy the reflog
+evidence did). **The general method, for any future divergence question**: pull
+`git reflog show --date=iso main` on every candidate copy, find the date range in question, and
+read which copy shows ordinary `commit:` actions there versus which shows a gap - a shared
+`origin` proves nothing about which copy did the work; only each copy's own reflog does.
