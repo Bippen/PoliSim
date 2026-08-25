@@ -463,6 +463,46 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// LawBill's direction - unlike every other bill's Get*Direction (which computes bill-value
+        /// MINUS country's-current-value, since those bills carry an absolute target the player
+        /// just submitted), a law's own deltas ARE already the requested change, so no country-state
+        /// subtraction is needed. Reuses GetCrimeJusticeBillDirection's own sign convention exactly,
+        /// since a law's deltas apply to the identical six dials: funding/reform-coded deltas are
+        /// positive, harsher/stricter-coded deltas are negative. A repeal negates every term -
+        /// undoing the law reads as the opposite lean of enacting it.
+        /// </summary>
+        public static float GetLawBillDirection(Country country, LawBill bill)
+        {
+            LawDefinition law = LawCatalog.GetById(bill.LawId);
+            if (law == null)
+            {
+                return 0f;
+            }
+
+            float sign = bill.IsRepeal ? -1f : 1f;
+            float direction = 0f;
+            direction += sign * law.PoliceFundingDelta;
+            direction -= sign * law.SentencingSeverityDelta;
+            direction += sign * law.BailReformDelta;
+            direction -= sign * law.DrugPolicyDelta;
+            direction += sign * law.JudicialFundingDelta;
+            direction -= sign * law.BorderEnforcementDelta;
+            return direction;
+        }
+
+        /// <summary>See ApplyCrimeJusticeBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplyLawBillEffects).</summary>
+        public static void ApplyLawBillResult(Country country, LawBill bill, bool passed, System.Action<Country, LawBill> applyEffects)
+        {
+            if (!passed)
+            {
+                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                return;
+            }
+
+            applyEffects(country, bill);
+        }
+
+        /// <summary>
         /// SectorPolicyBill's direction - summed unnormalized across every Sector and every dial, the
         /// same "no principled per-category weighting" precedent BudgetBill's own formula already
         /// established. Subsidy/Regulation/Tax Credits/Research Grants all read as "more government

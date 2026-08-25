@@ -180,7 +180,7 @@ namespace PoliSim.UI
             { PolicyNodeId.SectorTaxCredit, new PolicyNodeInfo { Name = "Sector Tax Credits", Area = UiPalette.SystemArea.Sectors, Description = "Applies uniformly across all eight Sectors." } },
             { PolicyNodeId.SectorResearchGrants, new PolicyNodeInfo { Name = "Sector Research Grants", Area = UiPalette.SystemArea.Sectors, Description = "Applies uniformly across all eight Sectors." } },
             { PolicyNodeId.SectorDeregulationNationalization, new PolicyNodeInfo { Name = "Deregulation / Nationalization", Area = UiPalette.SystemArea.Sectors, Description = "0 (nationalized) to 100 (deregulated) - the one dial where Output and Employment move in OPPOSITE directions (privatization gains efficiency by shedding labor)." } },
-            { PolicyNodeId.SwfContributionRate, new PolicyNodeInfo { Name = "SWF Contribution Rate", Area = UiPalette.SystemArea.SovereignWealth, Description = "% of GDP contributed to (or, if negative, withdrawn from) the Sovereign Wealth Fund each turn." } },
+            { PolicyNodeId.SwfContributionRate, new PolicyNodeInfo { Name = "SWF Contribution Rate", Area = UiPalette.SystemArea.SovereignWealth, Description = "% of GDP contributed to (or, if negative, withdrawn from) the Sovereign Wealth Fund each year." } },
             { PolicyNodeId.SwfAssetAllocation, new PolicyNodeInfo { Name = "SWF Asset Allocation", Area = UiPalette.SystemArea.SovereignWealth, Description = "Equities/Bonds/Infrastructure/Real Estate weighting - higher equities weight raises expected AND variance of returns." } },
             { PolicyNodeId.TariffPolicy, new PolicyNodeInfo { Name = "Tariff Policy", Area = UiPalette.SystemArea.Trade, Description = "This country's own base tariff rate plus any per-partner override." } },
             { PolicyNodeId.InterestRateDecision, new PolicyNodeInfo { Name = "Interest Rate", Area = UiPalette.SystemArea.Political, Description = "Central bank rate - Taylor-Rule-determined for a country with an independent Fed chair, player-set via PolicyDecision.InterestRateChange otherwise." } },
@@ -816,7 +816,7 @@ namespace PoliSim.UI
                         break;
                     }
                     lines.Add($"Current level: {country.MinimumWagePercentOfMedian:F0}% of median wage");
-                    lines.Add($"Unemployment this turn: {MacroSystem.GetMinimumWageUnemploymentAdjustment(country):+0.000;-0.000} pts");
+                    lines.Add($"Unemployment this year: {MacroSystem.GetMinimumWageUnemploymentAdjustment(country):+0.000;-0.000} pts");
                     lines.Add($"Poverty Rate pull: {-MacroSystem.MinimumWagePovertyReductionSensitivity * (country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian) / 100f:+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.PaidFamilyLeave:
@@ -826,11 +826,11 @@ namespace PoliSim.UI
                     break;
                 case PolicyNodeId.OvertimeRegulation:
                     lines.Add($"Current level: {country.OvertimeRegulationLevel:F0}/100");
-                    lines.Add($"Unemployment this turn: {MacroSystem.GetOvertimeUnemploymentAdjustment(country):+0.000;-0.000} pts (contested)");
+                    lines.Add($"Unemployment this year: {MacroSystem.GetOvertimeUnemploymentAdjustment(country):+0.000;-0.000} pts (contested)");
                     break;
                 case PolicyNodeId.RetrainingProgram:
                     lines.Add($"Current level: {country.RetrainingProgramLevel:F0}/100");
-                    lines.Add($"Unemployment this turn: {MacroSystem.GetRetrainingUnemploymentAdjustment(country):+0.000;-0.000} pts");
+                    lines.Add($"Unemployment this year: {MacroSystem.GetRetrainingUnemploymentAdjustment(country):+0.000;-0.000} pts");
                     lines.Add($"LFPR pull (before combined ceiling): {MacroSystem.RetrainingParticipationSensitivity * (country.RetrainingProgramLevel - neutral):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.FamilyPolicy:
@@ -873,15 +873,15 @@ namespace PoliSim.UI
                     break;
                 case PolicyNodeId.SwfContributionRate:
                     lines.Add(country.SovereignWealthFund != null
-                        ? $"Current contribution: {country.SovereignWealthFund.ContributionRatePercent:F1}% of GDP/turn (fund: {UiFormat.Money(country.SovereignWealthFund.TotalAssets, MoneyUnit.Billions)})"
+                        ? $"Current contribution: {country.SovereignWealthFund.ContributionRatePercent:F1}% of GDP/year (fund: {UiFormat.Money(country.SovereignWealthFund.TotalAssets, MoneyUnit.Billions)})"
                         : "No Sovereign Wealth Fund currently exists for this country.");
-                    lines.Add("DebtToGdp effect is multi-turn (contribution reduces this turn's Budget, then compounds via investment returns) - no single-turn number to show.");
+                    lines.Add("DebtToGdp effect is multi-year (contribution reduces this year's Budget, then compounds via investment returns) - no single-year number to show.");
                     break;
                 case PolicyNodeId.SwfAssetAllocation:
                     lines.Add(country.SovereignWealthFund != null
                         ? $"Equities {country.SovereignWealthFund.EquitiesWeight:F0}% / Bonds {country.SovereignWealthFund.BondsWeight:F0}% / Infrastructure {country.SovereignWealthFund.InfrastructureWeight:F0}% / Real Estate {country.SovereignWealthFund.RealEstateWeight:F0}%"
                         : "No Sovereign Wealth Fund currently exists for this country.");
-                    lines.Add("Higher equities weight raises expected AND variance of returns - no single-turn number to show.");
+                    lines.Add("Higher equities weight raises expected AND variance of returns - no single-year number to show.");
                     break;
                 case PolicyNodeId.TariffPolicy:
                     lines.Add($"Base tariff rate: {country.BaseTariffRate:F1}%");
@@ -890,7 +890,7 @@ namespace PoliSim.UI
                 case PolicyNodeId.InterestRateDecision:
                     lines.Add($"Current rate: {country.CurrencyZone.InterestRate:F2}%");
                     lines.Add($"Points above Taylor Rule neutral real rate: {country.CurrencyZone.InterestRate - TaylorRule.NeutralRealRate:+0.00;-0.00}");
-                    lines.Add("Higher-than-neutral rate directly dampens this turn's Consumption/Investment (see ApplyNationalAccounts) - Unemployment/Inflation react only indirectly, afterward.");
+                    lines.Add("Higher-than-neutral rate directly dampens this year's Consumption/Investment (see ApplyNationalAccounts) - Unemployment/Inflation react only indirectly, afterward.");
                     break;
                 case PolicyNodeId.OtherDiscretionarySpending:
                     lines.Add("Consolidated group (15 categories) - each contributes its own dollar amount to Budget/DebtToGdp, no differentiated secondary effect.");
@@ -924,7 +924,7 @@ namespace PoliSim.UI
             {
                 if (line.Type != type) continue;
                 lines.Add(line.IsImplemented ? $"Current rate: {line.Rate:F1}%" : "Not currently implemented.");
-                lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised this turn");
+                lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised this year");
                 lines.Add($"Revenue base: ~{line.BaseShareOfGdp * 100f:F0}% of GDP x rate (feeds Budget/DebtToGdp)");
                 return true;
             }

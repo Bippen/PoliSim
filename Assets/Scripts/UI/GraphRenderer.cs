@@ -123,7 +123,7 @@ namespace PoliSim.UI
             if (history == null || history.Count == 0)
             {
                 DrawTitleRow(title, null, higherIsBetter, labelStyle);
-                GUILayout.Label("No data yet - advance a turn.", labelStyle);
+                GUILayout.Label("No data yet - advance a year.", labelStyle);
 
                 // ⚠ THE PAGE ROW IS STILL DRAWN, and this is the same behaviour-5 defect as DrawPageRow's
                 // own, one call level up. Returning here emitted ZERO controls on an empty history and
@@ -642,13 +642,13 @@ namespace PoliSim.UI
             }
             GUI.enabled = true;
 
-            // Blank rather than "Last 50 turns" on a single-page graph: the row is present for control
+            // Blank rather than "Last 50 years" on a single-page graph: the row is present for control
             // stability, not to announce a pagination the player has no use for yet.
             string rangeLabel = !paged
                 ? string.Empty
                 : _pageFromEnd == 0
-                    ? $"Last {WindowSize} turns"
-                    : $"{_pageFromEnd * WindowSize + 1}-{(_pageFromEnd + 1) * WindowSize} turns ago";
+                    ? $"Last {WindowSize} years"
+                    : $"{_pageFromEnd * WindowSize + 1}-{(_pageFromEnd + 1) * WindowSize} years ago";
             GUILayout.Label(rangeLabel, _pageLabelStyle, GUILayout.ExpandWidth(true));
 
             GUI.enabled = paged && _pageFromEnd > 0;

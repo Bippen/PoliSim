@@ -58,8 +58,11 @@ namespace PoliSim.UI
         /// </summary>
         private enum StatisticsCategory { Domestic, International }
 
-        /// <summary>Policy/Laws tab's 5 sub-categories - each already has (or, for Trade/Policy Web, now gains) its own standalone-bill or reference-tool identity.</summary>
-        private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade }
+        /// <summary>Policy/Laws tab's 6 sub-categories - each already has (or, for Trade/Policy Web, now gains) its own standalone-bill or reference-tool identity. Laws (law system MVP slice, 2026-08-24): the named-preset browser over the existing dial space - see DrawLawsTab.</summary>
+        private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade, Laws }
+
+        /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum.</summary>
+        private enum LawBrowserFilter { All, CrimeJustice }
 
         /// <summary>Politics tab's 4 sub-categories - the political institutions, whether or not their own lever is Parliament-gated (Federal Reserve isn't, by design - see the Fed/Eurozone exemption).</summary>
         private enum PoliticsCategory { Parliament, Compass, Cabinet, FederalReserve }
@@ -370,13 +373,15 @@ namespace PoliSim.UI
             {
                 case PreviewHorizon.OneWeek: return "1 Week";
                 case PreviewHorizon.OneMonth: return "1 Month";
-                // Deliberately NOT "Full Turn (121 days)". That label alone was ~180px wide, and with the
-                // other three on the same row it set a ~400px hard minimum for a column that can be as
-                // narrow as 199px - the buttons then drew straight past the column edge (IMGUI does not
-                // clip children to a fixed-width group) and off the viewport, which is what clipped the
-                // preview panel's own headings. No information is lost: the day count is stated in full in
-                // the sentence directly beneath these buttons.
-                case PreviewHorizon.FullTurn: return "Full Turn";
+                // TURN->YEAR (non-trivial #2 of 2): was "Full Turn" - the one label of the four that
+                // didn't follow the "1 [Unit]" pattern its siblings do, because a turn wasn't a round
+                // real-world unit worth counting "1" of. Now that a turn IS a year, "1 Year" both fits
+                // that pattern and is shorter than "Full Turn" was - so the original width concern
+                // (a wide fourth label forcing a ~400px minimum onto a column as narrow as 199px, which
+                // clipped straight past the column edge) is if anything eased, not reintroduced. No
+                // information is lost either way: the day count is stated in full in the sentence
+                // directly beneath these buttons.
+                case PreviewHorizon.FullTurn: return "1 Year";
                 default: return "1 Day";
             }
         }
@@ -509,6 +514,10 @@ namespace PoliSim.UI
         private Vector2 _decisionsScrollPosition;
         private Vector2 _demographicsScrollPosition;
         private Vector2 _policyLawsContentScrollPosition;
+
+        /// <summary>Law system MVP slice: the Laws browser's own scroll position and active category filter - navigation state, the same "not captured by UiDraftState" idiom every other scroll position/selected-tab field in this class already follows.</summary>
+        private Vector2 _lawsScrollPosition;
+        private LawBrowserFilter _lawBrowserFilter = LawBrowserFilter.All;
         private Vector2 _politicsContentScrollPosition;
         private Vector2 _worldMapScrollPosition;
         private Vector2 _policyWebScrollPosition;
@@ -551,6 +560,9 @@ namespace PoliSim.UI
         private GUIStyle _calendarMonthStyle;
         private GUIStyle _calendarDayStyle;
         private GUIStyle _calendarMetaStyle;
+        /// <summary>Calendar Panel (the month page - see CLAUDE.md's "Calendar Panel" section for the data contract). Weekday header row and in-grid day numbers - both bold Display type, matching the pad's own month/day styling rather than inventing a third convention for one screen.</summary>
+        private GUIStyle _calendarWeekdayStyle;
+        private GUIStyle _calendarDayNumberStyle;
         /// <summary>Item 1a: the Division Records panel's mono date column — Courier per §A.4 (dates and timestamps are document artifacts). Built in InitializeStylesIfNeeded, sized in RescaleStylesToScreen.</summary>
         private GUIStyle _divisionMetaStyle;
         /// <summary>v2.0 chrome: `ui_tab_spine` (B7) — the white-on-alpha area-hue strip drawn across each consolidated tab's top edge, tinted per area at the draw site through GUI.color. Background + border only; empty background when the sprite is missing, and the spine simply doesn't draw.</summary>
@@ -1480,7 +1492,7 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Commits the player's country choice from DrawCountrySelector - the one place _selectedPlayerCountryId is ever set.</summary>
+        /// <summary>Commits the player's country choice from DrawCountrySelector - together with <see cref="ResetPlayerCountrySelection"/>, the only two places _selectedPlayerCountryId is ever set.</summary>
         private void SelectPlayerCountry(CountryId countryId)
         {
             _selectedPlayerCountryId = countryId;
@@ -1494,6 +1506,25 @@ namespace PoliSim.UI
 
             // A brand-new game starts clean: "unsaved progress" means days advanced past this stamp.
             _lastPersistenceDate = _simulationManager.CurrentDate;
+        }
+
+        /// <summary>
+        /// The symmetric counterpart to <see cref="SelectPlayerCountry"/> - clears the selection back
+        /// to "no country chosen yet", reopening the country selector on the next frame. Real play never
+        /// calls this: for an ordinary session, a country choice is a one-time, permanent commitment -
+        /// there is still no in-game "change country" feature, and that is unchanged and deliberate.
+        ///
+        /// This exists for <c>UiScreenshotDriver</c>, which reuses <see cref="SelectPlayerCountry"/> as
+        /// a disposable per-run label (<c>-shotcountry=</c>) rather than a real player's permanent
+        /// choice - see the country-leak fix: the driver's own exit path now guarantees this runs
+        /// before it tears the process down, the same way every other pending-state screen in this game
+        /// (the election reveal, a Cabinet decision, a Foreign Policy meeting) clears its own state on
+        /// dismissal rather than leaving it stuck.
+        /// </summary>
+        private void ResetPlayerCountrySelection()
+        {
+            _selectedPlayerCountryId = null;
+            _playerCountry = null;
         }
 
         /// <summary>
@@ -1850,7 +1881,7 @@ namespace PoliSim.UI
             _leftColumnScrollPosition = GUILayout.BeginScrollView(_leftColumnScrollPosition, GUILayout.Height(leftScrollHeight));
             DrawTopBanner();
             GUILayout.Space(sectionSpacing);
-            DrawDashboard();
+            DrawCalendarPanel();
             GUILayout.Space(sectionSpacing);
 
             GUI.enabled = !_isGameOver;
@@ -2043,6 +2074,15 @@ namespace PoliSim.UI
             _calendarMetaStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
             if (PoliSimTheme.Document != null) { _calendarMetaStyle.font = PoliSimTheme.Document; }
             _calendarMetaStyle.normal.textColor = PoliSimTheme.TextSecondary;
+
+            // Calendar Panel (month page): the weekday header row is small-caps-style bold Display
+            // type, the same face the pad's own month band uses - one calendar, one type convention.
+            _calendarWeekdayStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = false };
+            PoliSimTheme.WithDisplay(_calendarWeekdayStyle);
+            _calendarWeekdayStyle.normal.textColor = PoliSimTheme.TextSecondary;
+            _calendarDayNumberStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter, wordWrap = false };
+            PoliSimTheme.WithDisplay(_calendarDayNumberStyle);
+            _calendarDayNumberStyle.normal.textColor = PoliSimTheme.TextPrimary;
 
             _divisionMetaStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight, wordWrap = false };
             if (PoliSimTheme.Document != null) { _divisionMetaStyle.font = PoliSimTheme.Document; }
@@ -2282,6 +2322,10 @@ namespace PoliSim.UI
             _calendarMonthStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (8.5f / 12.5f)));
             _calendarDayStyle.fontSize = Mathf.RoundToInt(labelFontSize * (26f / 12.5f));
             _calendarMetaStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (9f / 12.5f)));
+            // Calendar Panel: weekday header a touch smaller than body type (a caption, not content);
+            // in-grid day numbers a touch larger, so "has this day passed" reads at a glance.
+            _calendarWeekdayStyle.fontSize = Mathf.Max(8, Mathf.RoundToInt(labelFontSize * 0.8f));
+            _calendarDayNumberStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * 0.95f));
             _divisionMetaStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * 0.85f));
             // Deliberately the smallest text on screen - a card's kind caption is a wayfinding label,
             // not content, and must not compete with the decision's own headline underneath it.
@@ -2354,6 +2398,9 @@ namespace PoliSim.UI
                 case PolicyLawsCategory.CrimeJustice: return UiPalette.SystemArea.CrimeJustice;
                 case PolicyLawsCategory.Sectors: return UiPalette.SystemArea.Sectors;
                 case PolicyLawsCategory.Trade: return UiPalette.SystemArea.Trade;
+                // Law system MVP slice: the browser is CrimeJustice-only today (one category
+                // authored) - revisit once a second LawCategory ships and the filter can span both.
+                case PolicyLawsCategory.Laws: return UiPalette.SystemArea.CrimeJustice;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -2460,36 +2507,349 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        private void DrawDashboard()
+        /// <summary>
+        /// Calendar Panel — replaces the old dashboard (country header + headline stat-tile grid) in
+        /// this slot. See CLAUDE.md's "Calendar Panel" section for the full data contract; in brief:
+        ///
+        /// The tile grid this displaces is not lost — `DrawHeadlineStatTiles` is the SAME method
+        /// Statistics -> Domestic already calls (see that method's own doc comment), so every figure
+        /// is still one tab click away, several with a history graph the dashboard never had. What
+        /// this slot loses is the "glance from any tab" convenience, for real — that trade is
+        /// deliberate, made for a genuinely new capability (a real calendar), not a redundant one.
+        /// The one piece of `DrawDashboard`'s content with NO other home anywhere in the UI — the
+        /// country-name-plus-year header — is preserved verbatim as this panel's own first line.
+        /// `DrawPolicyControls`'s "This Year's Policy" preview is UNTOUCHED and still draws directly
+        /// below this panel in the same scroll view — it is deliberately NOT tab-owned (see its own
+        /// doc comment), so it stays exactly where a player can see it without tab-hopping.
+        /// </summary>
+        private void DrawCalendarPanel()
         {
-            EconomyState state = _playerCountry.State;
-            bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
-
-            // Phase 4 trims this down to true headline indicators only - Labor Force Participation,
-            // Crime Index, Paid Family Leave, Incarceration Rate, Infrastructure Condition, Interest
-            // Rate, Tariff Rate, and Sovereign Wealth Fund detail all moved to their own dedicated
-            // tabs (see DrawRightColumnTabs) and would just be redundant duplication here now - the
-            // "compact home view" the task asked for, not everything at once.
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label($"{_playerCountry.Name} - Turn {_simulationManager.CurrentTurn}", _headerStyle);
+            GUILayout.Label($"{_playerCountry.Name} - Year {_simulationManager.CurrentTurn}", _headerStyle);
 
-            DrawHeadlineStatTiles(state, hasIndependentCurrency);
+            System.DateTime today = _simulationManager.CurrentDate;
+            var monthStart = new System.DateTime(today.Year, today.Month, 1);
+            Dictionary<int, List<CalendarMarker>> markers = BuildCalendarMonthMarkers(monthStart, today);
 
-            // Graphs deliberately absent (2026-08-01). The left column is numbers only now - headline
-            // tiles, the policy preview, and the calendar/speed controls. Every graph lives in the
-            // Statistics tab, where a stat and its history can sit side by side at a readable size
-            // instead of being split across two parts of the screen at strip height.
+            DrawCalendarMonthGrid(monthStart, today, markers);
+            DrawCalendarMonthLedger(monthStart, markers);
 
             GUILayout.EndVertical();
+        }
+
+        /// <summary>One dated item landing on a real calendar day. See CLAUDE.md's "Calendar Panel" data contract for which systems feed this and — just as deliberately — which are excluded.</summary>
+        private readonly struct CalendarMarker
+        {
+            public readonly string Label;
+            public readonly UiPalette.SystemArea Area;
+            public CalendarMarker(string label, UiPalette.SystemArea area) { Label = label; Area = area; }
+        }
+
+        /// <summary>
+        /// Every marker landing in <paramref name="monthStart"/>'s month, keyed by day-of-month. Pure
+        /// reads against already-computed state (SimulationManager's public Get* API, ReleaseCalendar's
+        /// date arithmetic, Country's own lists) — nothing here mutates the sim, so recomputing it
+        /// fresh every OnGUI call (the same discipline DrawCalendarPad's own date read already follows)
+        /// costs nothing and can never itself move a trajectory.
+        ///
+        /// ⚠ ONLY the systems named in CLAUDE.md's data contract as DATED (or HISTORY-ONLY within its
+        /// stated window) appear here. Cabinet decisions and Foreign Policy meetings are deliberately
+        /// absent in BOTH directions — see the contract for why a probability-only roll with no
+        /// retained date, before or after it fires, has nothing this method could ever mark.
+        /// </summary>
+        private Dictionary<int, List<CalendarMarker>> BuildCalendarMonthMarkers(System.DateTime monthStart, System.DateTime today)
+        {
+            var byDay = new Dictionary<int, List<CalendarMarker>>();
+
+            void Add(System.DateTime date, string label, UiPalette.SystemArea area)
+            {
+                if (date.Year != monthStart.Year || date.Month != monthStart.Month)
+                {
+                    return;
+                }
+
+                if (!byDay.TryGetValue(date.Day, out List<CalendarMarker> list))
+                {
+                    list = new List<CalendarMarker>();
+                    byDay[date.Day] = list;
+                }
+                list.Add(new CalendarMarker(label, area));
+            }
+
+            // Fiscal year start, the annual budget-process pause, and the sovereign credit rating's
+            // scheduled review all land on the SAME real date (confirmed from the code, not assumed —
+            // CreditRatingSystem.ReviewIfDue reuses FiscalYearData.GetFiscalYearStart directly). One
+            // marker carries both facts rather than two coincident dots for one day.
+            (int fyMonth, int fyDay) = FiscalYearData.GetFiscalYearStart(PlayerCountryId);
+            if (fyMonth == monthStart.Month)
+            {
+                Add(new System.DateTime(monthStart.Year, fyMonth, fyDay),
+                    "Fiscal year starts - budget process opens; credit rating reviewed",
+                    UiPalette.SystemArea.Fiscal);
+            }
+
+            // Publication release days: deterministic date arithmetic (ReleaseCalendar), never a
+            // probabilistic roll — every day of the displayed month is checked against every tracked
+            // stat, the same "ask the real rule, don't approximate a schedule" standard the data
+            // contract sets.
+            int daysInMonth = System.DateTime.DaysInMonth(monthStart.Year, monthStart.Month);
+            foreach (PublishedStat stat in System.Enum.GetValues(typeof(PublishedStat)))
+            {
+                for (int day = 1; day <= daysInMonth; day++)
+                {
+                    var candidate = new System.DateTime(monthStart.Year, monthStart.Month, day);
+                    if (ReleaseCalendar.IsReleaseDay(_playerCountry, stat, candidate))
+                    {
+                        Add(candidate, $"{DisplayName.Spaced(stat.ToString())} published", UiPalette.SystemArea.Fiscal);
+                    }
+                }
+            }
+
+            // Pending bill resolution dates: every countdown (DaysRemaining) is exact, never
+            // probabilistic — today + DaysRemaining is the real resolution date for as long as the
+            // bill stays pending. Cabinet/Foreign-Policy interrupts have no equivalent countdown at
+            // all, which is exactly why they're absent below rather than merely unhandled.
+            void AddBill(int? daysRemaining, string label)
+            {
+                if (daysRemaining.HasValue)
+                {
+                    Add(today.AddDays(daysRemaining.Value), $"{label} bill resolves", UiPalette.SystemArea.Political);
+                }
+            }
+            AddBill(_simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining, "Annual budget");
+            foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
+            {
+                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} tax");
+            }
+            foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
+            {
+                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} welfare");
+            }
+            AddBill(_simulationManager.GetPendingLaborBill(PlayerCountryId)?.DaysRemaining, "Labor Market");
+            AddBill(_simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId)?.DaysRemaining, "Crime & Justice");
+            AddBill(_simulationManager.GetPendingSectorBill(PlayerCountryId)?.DaysRemaining, "Economic Sectors");
+            AddBill(_simulationManager.GetPendingTradeBill(PlayerCountryId)?.DaysRemaining, "Trade");
+            AddBill(_simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId)?.DaysRemaining, "SWF drawdown");
+
+            // Next election: exactly computable (turn number -> real date via the epoch formula, the
+            // same one every turn-derived date in this method reuses), never a probabilistic roll.
+            // Past elections are deliberately NOT marked - only the most recently resolved one is ever
+            // held (transiently, cleared on dismissal), with no persisted log to draw a history from;
+            // see CLAUDE.md's data contract and its own cross-reference to the still-open ElectionRecord gap.
+            int nextElectionTurn = _simulationManager.CurrentTurn
+                - (_simulationManager.CurrentTurn % ElectionSystem.ElectionCycle) + ElectionSystem.ElectionCycle;
+            System.DateTime electionDate = SimulationManager.EpochDate.AddDays(nextElectionTurn * (double)SimulationManager.DaysPerTurn);
+            Add(electionDate, $"Year {nextElectionTurn} election", UiPalette.SystemArea.Political);
+
+            // Resolved divisions (every bill type, up to the 24 most recent) - real, stored dates,
+            // history rather than schedule.
+            foreach (DivisionRecord record in _playerCountry.Divisions.Entries)
+            {
+                Add(record.Date, $"No. {record.Number} - {record.Title} ({(record.Passed ? "Carried" : "Rejected")})",
+                    UiPalette.SystemArea.Political);
+            }
+
+            // Fired events: EventSystem's own roll is probability-only and never markable in advance
+            // (excluded above by simply never being added), but a marker that HAS fired carries a real
+            // turn number, and a turn number converts to an exact date via the same epoch formula used
+            // throughout this method - "a day that happened is a fact," per the data contract. Bounded
+            // to the 6-turn fade window GameController already tracks for the World Map (not persisted
+            // across a save/load - see the contract).
+            foreach (MapEventMarker marker in _mapEventMarkers)
+            {
+                if (marker.CountryId != PlayerCountryId)
+                {
+                    continue;
+                }
+                System.DateTime eventDate = SimulationManager.EpochDate.AddDays(marker.TurnFired * (double)SimulationManager.DaysPerTurn);
+                Add(eventDate, marker.Event.Name, UiPalette.SystemArea.Global);
+            }
+
+            return byDay;
+        }
+
+        /// <summary>
+        /// The month grid itself: a weekday header row (locale-aware — respects the current culture's
+        /// FirstDayOfWeek, the same locale-honesty standard this project already applies to date
+        /// formatting elsewhere), then one cell per day of the month, blank-padded to align day 1 under
+        /// its real weekday. Grid height is DERIVED from the actual day/lead-blank count, never a fixed
+        /// guess - the same "measured, not assumed" discipline CalendarAndSpeedControlsHeight documents
+        /// for the pad beside it.
+        /// </summary>
+        private void DrawCalendarMonthGrid(System.DateTime monthStart, System.DateTime today, Dictionary<int, List<CalendarMarker>> markers)
+        {
+            GUILayout.Space(6f);
+            GUILayout.Label(monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture), _headerStyle);
+
+            DateTimeFormatInfo dtfi = DateTimeFormatInfo.CurrentInfo;
+            System.DayOfWeek firstDow = dtfi.FirstDayOfWeek;
+
+            GUILayout.BeginHorizontal();
+            for (int i = 0; i < 7; i++)
+            {
+                var dow = (System.DayOfWeek)(((int)firstDow + i) % 7);
+                GUILayout.Label(dtfi.GetAbbreviatedDayName(dow).ToUpper(CultureInfo.CurrentCulture), _calendarWeekdayStyle, GUILayout.ExpandWidth(true));
+            }
+            GUILayout.EndHorizontal();
+
+            int daysInMonth = System.DateTime.DaysInMonth(monthStart.Year, monthStart.Month);
+            int leadBlanks = ((int)monthStart.DayOfWeek - (int)firstDow + 7) % 7;
+            int totalCells = leadBlanks + daysInMonth;
+            int rows = Mathf.CeilToInt(totalCells / 7f);
+
+            float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.5f);
+            float cellHeight = CalendarDayCellHeight();
+            float gap = 3f * scale;
+            Rect gridRect = GUILayoutUtility.GetRect(0f, rows * cellHeight + (rows - 1) * gap, GUILayout.ExpandWidth(true));
+            float cellWidth = (gridRect.width - gap * 6f) / 7f;
+
+            for (int cellIndex = 0; cellIndex < totalCells; cellIndex++)
+            {
+                int day = cellIndex - leadBlanks + 1;
+                if (day < 1 || day > daysInMonth)
+                {
+                    continue; // lead/trail padding - no cell drawn, matching a real wall calendar's blank corners
+                }
+
+                int row = cellIndex / 7;
+                int col = cellIndex % 7;
+                var cellRect = new Rect(gridRect.x + col * (cellWidth + gap), gridRect.y + row * (cellHeight + gap), cellWidth, cellHeight);
+                markers.TryGetValue(day, out List<CalendarMarker> dayMarkers);
+                DrawCalendarDayCell(cellRect, day, monthStart, today, dayMarkers);
+            }
+        }
+
+        /// <summary>
+        /// The day number's own real rendered height — via <c>CalcHeight</c>, not
+        /// <c>lineHeight</c>/<c>fontSize + 4f</c>. ONE ACCESSOR, read by both
+        /// <see cref="CalendarDayCellHeight"/> (the grid's own row reserve) and
+        /// <see cref="DrawCalendarDayCell"/> (the text rect it actually draws into) — the exact
+        /// "reserve and drawing from the same accessor" discipline CalendarPadSize/DrawCalendarPad
+        /// already establish for the pad beside this panel.
+        ///
+        /// ⚠ TWO real measurement bugs found in this one method, both already-catalogued classes in
+        /// this project rather than novel ones. (1) The first version used a flat `30f * scale` guess,
+        /// unrelated to the style's real size (which scales off `labelFontSize`, a DIFFERENT base) -
+        /// caught at 2,004 UiOverflowGuard violations. (2) Switching to
+        /// `Mathf.Max(lineHeight, fontSize + 4f)` - LedgerRow.Height's own formula - closed MOST of the
+        /// gap (over-by dropped from 10.7 to 1.6) but not all of it: this is CLAUDE.md's own
+        /// already-documented "tall class" defect ("a height derived from a font metric that is not
+        /// the metric governing rendering") - `lineHeight` excludes the style's vertical PADDING, which
+        /// only `CalcHeight` (what `GUI.Label` actually obeys) accounts for. The project's own fix for
+        /// that defect was exactly this: measure via `CalcHeight`, not a font-metric formula.
+        /// </summary>
+        private static readonly GUIContent CalendarDayNumberSample = new GUIContent("99 X");
+
+        private float CalendarDayNumberLineHeight()
+        {
+            return _calendarDayNumberStyle.CalcHeight(CalendarDayNumberSample, 100f);
+        }
+
+        /// <summary>Fixed, not font-derived — the marker dots below the day number are a small graphic indicator, not text, so no style governs their size the way LedgerRow.Height's own font-metric derivation applies to a text row.</summary>
+        private const float CalendarDayDotRowHeight = 10f;
+
+        private float CalendarDayCellHeight()
+        {
+            return CalendarDayNumberLineHeight() + CalendarDayDotRowHeight;
+        }
+
+        /// <summary>
+        /// One day cell: the number (shrink-never-clip via LedgerRow.Cell, the same never-clipping
+        /// primitive every other measured cell in this UI already routes through), an "X" once the day
+        /// has passed (per the task's own wording — days marked X, not a glyph this project's fonts
+        /// were never asked to carry), a highlighted plate for TODAY, and up to four small dots — one
+        /// per marker landing on this day, tinted by that marker's own SystemArea so a fiscal date
+        /// reads in fiscal's hue and a division in Political's, the same area-colour convention every
+        /// other screen already uses.
+        /// </summary>
+        private void DrawCalendarDayCell(Rect rect, int day, System.DateTime monthStart, System.DateTime today, List<CalendarMarker> dayMarkers)
+        {
+            bool isToday = monthStart.Year == today.Year && monthStart.Month == today.Month && day == today.Day;
+            bool hasPassed = new System.DateTime(monthStart.Year, monthStart.Month, day) < today.Date;
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (isToday)
+                {
+                    PoliSimTheme.RoundedCard(rect, PoliSimTheme.AccentWash(UiPalette.SystemArea.Political, 0.35f), PoliSimTheme.HairlineStrong, 3f);
+                }
+                else
+                {
+                    PoliSimTheme.Rule(new Rect(rect.x, rect.y + rect.height - 1f, rect.width, 1f), PoliSimTheme.Hairline);
+                }
+            }
+
+            string dayText = hasPassed && !isToday ? $"{day} X" : day.ToString(CultureInfo.InvariantCulture);
+            Color dayInk = isToday ? PoliSimTheme.TextPrimary : (hasPassed ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary);
+            float dayNumberLine = CalendarDayNumberLineHeight();
+            LedgerRow.Cell(new Rect(rect.x, rect.y, rect.width, dayNumberLine), dayText, _calendarDayNumberStyle, dayInk, TextAnchor.UpperCenter);
+
+            if (dayMarkers == null || dayMarkers.Count == 0 || Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            int dotCount = Mathf.Min(dayMarkers.Count, 4);
+            const float dotSize = 5f;
+            float totalDotsWidth = dotCount * (dotSize + 2f) - 2f;
+            float dotX = rect.x + (rect.width - totalDotsWidth) * 0.5f;
+            float dotY = rect.y + dayNumberLine + (CalendarDayDotRowHeight - dotSize) * 0.5f;
+            for (int i = 0; i < dotCount; i++)
+            {
+                PoliSimTheme.Pill(new Rect(dotX + i * (dotSize + 2f), dotY, dotSize, dotSize), UiPalette.GetAreaColor(dayMarkers[i].Area));
+            }
+        }
+
+        /// <summary>
+        /// "This Month," in ledger grammar: one row per marker, date column then label — the same
+        /// measured-cell idiom LedgerRow's own Cell helper is built for, so a long bill title shrinks
+        /// rather than clips exactly the way every other ledger row in this UI already behaves.
+        ///
+        /// ⚠ The date column's width is MEASURED against the widest date this month can produce
+        /// ("12/31"), not a flat constant — a hardcoded `40f` shipped first here too and, unlike the
+        /// day-cell height above, it didn't clip (UiOverflowGuard stayed clean) but it DID wrap at
+        /// larger window sizes ("10" over "/1"), caught by eye at 2560px rather than by any guard.
+        /// Same lesson, quieter failure: a measurement is only valid at the resolution it was taken.
+        /// </summary>
+        private void DrawCalendarMonthLedger(System.DateTime monthStart, Dictionary<int, List<CalendarMarker>> markers)
+        {
+            GUILayout.Space(6f);
+            GUILayout.Label("This Month", _headerStyle);
+
+            if (markers.Count == 0)
+            {
+                GUILayout.Label("Nothing scheduled this month.", _labelStyle);
+                return;
+            }
+
+            float dateColumnWidth = _labelStyle.CalcSize(new GUIContent("12/31")).x;
+
+            var days = new List<int>(markers.Keys);
+            days.Sort();
+            foreach (int day in days)
+            {
+                foreach (CalendarMarker marker in markers[day])
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label($"{monthStart.Month}/{day}", _labelStyle, GUILayout.Width(dateColumnWidth));
+                    DrawColoredLabel(marker.Label, _labelStyle, UiPalette.GetAreaColor(marker.Area));
+                    GUILayout.EndHorizontal();
+                }
+            }
         }
 
         /// <summary>
         /// Master Sequence step 5e, Phase B pilot: the dashboard's headline stats restyled onto
         /// <see cref="PoliSimWidgets.StatTile"/> in a 3-column grid, replacing the old raw
-        /// GUILayout.Label two-column list - this is Phase B's actual sprite-pilot target (see
-        /// POLISIM_MASTER_ROADMAP.md), not the Statistics tab's own content, since this is the one
-        /// surface visible on every tab. Ten tiles now (nine without an independent currency): Step
+        /// GUILayout.Label two-column list - this was Phase B's actual sprite-pilot target (see
+        /// POLISIM_MASTER_ROADMAP.md). Ten tiles now (nine without an independent currency): Step
         /// C4's Credit Rating joined the grid 2026-08-02, beside Debt-to-GDP.
+        ///
+        /// ⚠ CALENDAR PANEL (see CLAUDE.md): this method's own call from the always-visible left
+        /// column was retired when the Calendar Panel replaced that slot - see DrawCalendarPanel's
+        /// doc comment for the full reasoning. The ONLY remaining caller is Statistics -> Domestic
+        /// (DrawDomesticStatisticsContent), so every tile is still one tab click away and several now
+        /// sit beside a history graph the old dashboard never had.
         ///
         /// **Only two tiles can show a delta pill, and for different reasons.** GDP has a real
         /// turn-over-turn delta (_lastGrowthPercent, tracked via _prevGdp). Credit Rating shows its
@@ -2849,7 +3209,7 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(8f);
-            GUILayout.Label("A new presidential term begins next turn - choose the next Fed chair:", _labelStyle);
+            GUILayout.Label("A new presidential term begins next year - choose the next Fed chair:", _labelStyle);
             foreach (FedChair candidate in _fedChairCandidates)
             {
                 DrawFedChairCandidateButton(candidate);
@@ -2857,12 +3217,29 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Crime &amp; Justice tab (Phase 4 - moved off the dashboard into its own home): Police
-        /// Funding / Sentencing Severity / Bail Reform / Drug Policy / Judicial Funding / Border
-        /// Enforcement sliders (the last two added in Round 3 item 3), plus CrimeIndex/
-        /// OrganizedCrimeIndex/CorruptionIndex (a clear direction - lower is better for all three) and
-        /// PrisonPopulationRate (deliberately neutral - see PrisonPopulationRate's own doc comment on
-        /// BailReformLevel/DrugPolicyLevel's honestly-contested effects) history graphs.
+        /// Crime &amp; Justice tab (Phase 4 - moved off the dashboard into its own home; converted to a
+        /// READ-ONLY summary 2026-08-24, law system MVP slice). The six dials below - Police Funding/
+        /// Sentencing Severity/Bail Reform/Drug Policy/Judicial Funding/Border Enforcement - are no
+        /// longer player-editable HERE: the standalone CrimeJusticePolicyBill submission this tab used
+        /// to offer is retired as a player-facing action (Elias's ruling on "the sliders' fate" - see
+        /// CLAUDE.md's law-system section). Going forward these six dials are set exclusively by
+        /// enacted law, via the Laws tab (DrawLawsTab) - a slider the player could still move here
+        /// WHILE laws also moved the same dial would be the two-books problem again.
+        ///
+        /// Deliberately NOT a rip-out: CrimeJusticePolicyBill/IntroduceCrimeJusticeBill/
+        /// AdvanceCrimeJusticeBillDay/GetPendingCrimeJusticeBill and its save-state field
+        /// (SimulationPendingState.PendingCrimeJusticeBills) all stay fully intact in code - only the
+        /// player-facing submission UI (the six draft sliders and the "Introduce Crime & Justice
+        /// Bill" button) is removed here, per the ruling's own "small, scoped, contained UI change"
+        /// framing, not a backend/save-shape change. The six _xInput draft fields, their GetXInput
+        /// accessors, and UiDraftState's capture/restore of them are also left untouched - nothing
+        /// sets them anymore in real play, so they stay permanently null (harmless dead state, never
+        /// read by anything player-visible once this tab stopped writing to them).
+        ///
+        /// Also still here: CrimeIndex/OrganizedCrimeIndex/CorruptionIndex (a clear direction - lower
+        /// is better for all three) and PrisonPopulationRate (deliberately neutral - see
+        /// PrisonPopulationRate's own doc comment on BailReformLevel/DrugPolicyLevel's honestly-
+        /// contested effects) history graphs, unaffected by this conversion.
         /// </summary>
         private void DrawCrimeJusticeTab(float availableHeight)
         {
@@ -2872,7 +3249,7 @@ namespace PoliSim.UI
             _crimeJusticeScrollPosition = GUILayout.BeginScrollView(_crimeJusticeScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Crime & Justice", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
-            GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
+            GUILayout.Label("These six dials are now set exclusively by enacted law - see the Laws tab to enact or repeal one. The standalone Crime & Justice bill is retired as a player-facing action.", _labelStyle);
             GUILayout.Space(8f);
 
             // Annual cadence, so a bulletin rather than a chart - see PublishedFigure.
@@ -2881,34 +3258,19 @@ namespace PoliSim.UI
                 _labelStyle, moneyUnit: null);
             GUILayout.Space(8f);
 
-            BeginAreaCard("CRIME & JUSTICE BILL", UiPalette.SystemArea.CrimeJustice);
-            DrawCrimeJusticeBillStatusAndIntroduce();
-            DrawCrimeJusticeLiveEstimate();
-            EndAreaCard(UiPalette.SystemArea.CrimeJustice);
-
-            _policeFundingInput = DrawDialRow("Police Funding",
-                _playerCountry.PoliceFundingLevel, GetPoliceFundingInput(_playerCountry.PoliceFundingLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
-
-            _sentencingSeverityInput = DrawDialRow("Sentencing Severity",
-                _playerCountry.SentencingSeverity, GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 lenient - 100 harsh");
-
-            _bailReformInput = DrawDialRow("Bail Reform",
-                _playerCountry.BailReformLevel, GetBailReformInput(_playerCountry.BailReformLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 cash bail - 100 reformed");
-
-            _drugPolicyInput = DrawDialRow("Drug Policy",
-                _playerCountry.DrugPolicyLevel, GetDrugPolicyInput(_playerCountry.DrugPolicyLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 decriminalized - 100 strict");
-
-            _judicialFundingInput = DrawDialRow("Judicial Funding",
-                _playerCountry.JudicialFundingLevel, GetJudicialFundingInput(_playerCountry.JudicialFundingLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
-
-            _borderEnforcementInput = DrawDialRow("Border Enforcement",
-                _playerCountry.BorderEnforcementLevel, GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 open - 100 strict");
+            Color crimeInk = UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice);
+            DrawDerivedStatRow("Police Funding", (_playerCountry.PoliceFundingLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.PoliceFundingLevel.ToString("F0", CultureInfo.InvariantCulture), null, crimeInk);
+            DrawDerivedStatRow("Sentencing Severity", (_playerCountry.SentencingSeverity - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.SentencingSeverity.ToString("F0", CultureInfo.InvariantCulture), "0 lenient - 100 harsh", crimeInk);
+            DrawDerivedStatRow("Bail Reform", (_playerCountry.BailReformLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.BailReformLevel.ToString("F0", CultureInfo.InvariantCulture), "0 cash bail - 100 reformed", crimeInk);
+            DrawDerivedStatRow("Drug Policy", (_playerCountry.DrugPolicyLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.DrugPolicyLevel.ToString("F0", CultureInfo.InvariantCulture), "0 decriminalized - 100 strict", crimeInk);
+            DrawDerivedStatRow("Judicial Funding", (_playerCountry.JudicialFundingLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.JudicialFundingLevel.ToString("F0", CultureInfo.InvariantCulture), null, crimeInk);
+            DrawDerivedStatRow("Border Enforcement", (_playerCountry.BorderEnforcementLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
+                _playerCountry.BorderEnforcementLevel.ToString("F0", CultureInfo.InvariantCulture), "0 open - 100 strict", crimeInk);
 
             GUILayout.Space(10f);
             _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
@@ -2918,52 +3280,6 @@ namespace PoliSim.UI
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// Master Sequence step 5d: pending-bill status plus the "Introduce Crime &amp; Justice Bill"
-        /// action - introducible ANYTIME (unlike the annual BudgetBill, no mandatory-pause phase gates
-        /// this), enabled only while no CrimeJusticePolicyBill is already pending (one bill per tab at
-        /// a time - see SimulationManager.IntroduceCrimeJusticeBill). Follows DrawTaxPolicy's
-        /// stable-control-layout pattern: the status Label and the Button are BOTH emitted every frame
-        /// regardless of state - only the label's text and the button's GUI.enabled state vary.
-        /// </summary>
-        private void DrawCrimeJusticeBillStatusAndIntroduce()
-        {
-            CrimeJusticePolicyBill pendingBill = _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId);
-
-            string statusText = pendingBill != null
-                ? $"A Crime & Justice bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Crime & Justice bill currently before Parliament. Introduce your current draft as a bill below.";
-            GUILayout.Label(statusText, _labelStyle);
-
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && pendingBill == null;
-            if (GUILayout.Button("Introduce Crime & Justice Bill", _neutralActionButtonStyle))
-            {
-                _simulationManager.IntroduceCrimeJusticeBill(PlayerCountryId, BuildCrimeJusticeBillFromDrafts());
-            }
-            GUI.enabled = ambientEnabled;
-        }
-
-        /// <summary>Master Sequence step 5d: recomputes every OnGUI call (cheap, same reasoning as DrawLegislativeSupportEstimate) so it updates live as the player edits any Crime &amp; Justice draft.</summary>
-        private void DrawCrimeJusticeLiveEstimate()
-        {
-            DrawBillLiveEstimate(ParliamentSystem.GetCrimeJusticeBillDirection(_playerCountry, BuildCrimeJusticeBillFromDrafts()));
-        }
-
-        /// <summary>Bundles every current Crime &amp; Justice draft into one bill, exactly as it stands at the moment of the call - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>
-        private CrimeJusticePolicyBill BuildCrimeJusticeBillFromDrafts()
-        {
-            return new CrimeJusticePolicyBill
-            {
-                PoliceFunding = GetPoliceFundingInput(_playerCountry.PoliceFundingLevel),
-                SentencingSeverity = GetSentencingSeverityInput(_playerCountry.SentencingSeverity),
-                BailReform = GetBailReformInput(_playerCountry.BailReformLevel),
-                DrugPolicy = GetDrugPolicyInput(_playerCountry.DrugPolicyLevel),
-                JudicialFunding = GetJudicialFundingInput(_playerCountry.JudicialFundingLevel),
-                BorderEnforcement = GetBorderEnforcementInput(_playerCountry.BorderEnforcementLevel)
-            };
         }
 
         /// <summary>
@@ -3209,7 +3525,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("This Turn's Policy", _headerStyle);
+            GUILayout.Label("This Year's Policy", _headerStyle);
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(_showTabGuide ? "Hide tab guide" : "Show tab guide", GUILayout.ExpandWidth(false)))
             {
@@ -3271,7 +3587,7 @@ namespace PoliSim.UI
             DrawHorizonButton(PreviewHorizon.OneMonth);
             DrawHorizonButton(PreviewHorizon.FullTurn);
             GUILayout.EndHorizontal();
-            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-turn value. Projection only, not a guarantee.", _labelStyle);
+            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-year value. Projection only, not a guarantee.", _labelStyle);
 
             // Each line's color follows UiPalette's single green-good/red-bad convention, honoring
             // which direction is actually good for that specific stat (e.g. Unemployment/Inflation/
@@ -3619,9 +3935,24 @@ namespace PoliSim.UI
         /// <summary>
         /// v2.0 chrome: the desk calendar — `ui_calendar_pad` with the date drawn on it, which is now
         /// the date's home (BuildTimeStatusText no longer carries it as a prefix). Month in the band
-        /// above the sprite's baked rule, day numeral in the body, year · turn in Courier beneath it.
+        /// above the sprite's baked rule, day numeral in the body, year in Courier beneath it.
         /// The text rects are laid out from the sprite's own proportions (rule closing the top 22/80
         /// of the height, baked shadow below 69/80) so the type tracks the furniture at any scale.
+        ///
+        /// TURN->YEAR RULING (non-trivial #1 of 2): this used to append " · T{turn}" after the year -
+        /// harmless while a turn was ~121 days and the two numbers meant different things, but now that
+        /// a turn IS a year, `CurrentTurn` and `date.Year - SeedEpochYear` are the same count wearing
+        /// two labels. The ruling, since the package this pass swept from didn't settle it: show the
+        /// REAL calendar year everywhere and drop the elapsed-turn suffix here specifically, rather than
+        /// relabel it " · Y{turn}" - two numbers that agree would be redundant, and two that read as
+        /// disagreeing (elapsed count vs. absolute year, offset by the seed epoch) would be worse.
+        /// Absolute years are what this pad already had on hand, they're the more evocative choice for
+        /// a document-styled desk UI, and the Calendar Panel (month pages, not just this pad -
+        /// DrawCalendarPanel, in the scroll view above this pinned strip) inherits the same epoch
+        /// rather than a second one - see CLAUDE.md. This pad and that panel are deliberately BOTH
+        /// kept: the panel is the detailed view, scrollable and therefore scrollable-away-from; this
+        /// pad stays pinned specifically so today's date is never more than a glance away regardless
+        /// of scroll position, the same reasoning that already keeps the speed controls pinned beside it.
         /// Degrades to a procedural plate when the sprite is missing — the date must never vanish
         /// with the art. The plate draw is Repaint-gated because a GUIStyle.Draw is a paint call, not
         /// a control: layout still reserves the rect every frame, so the control count never changes.
@@ -3650,7 +3981,7 @@ namespace PoliSim.UI
 
             GUI.Label(monthRect, date.ToString("MMM").ToUpperInvariant(), _calendarMonthStyle);
             GUI.Label(dayRect, date.Day.ToString(), _calendarDayStyle);
-            GUI.Label(metaRect, $"{date.Year} · T{_simulationManager.CurrentTurn}", _calendarMetaStyle);
+            GUI.Label(metaRect, date.Year.ToString(), _calendarMetaStyle);
         }
 
         /// <summary>
@@ -4069,7 +4400,7 @@ namespace PoliSim.UI
             if (_pendingElectionResult != null && !_pendingElectionResult.Won)
             {
                 _isGameOver = true;
-                _gameOverReason = $"Lost re-election at turn {_pendingElectionTurn} with {_pendingElectionResult.ApprovalAtElection:F1} approval " +
+                _gameOverReason = $"Lost re-election at year {_pendingElectionTurn} with {_pendingElectionResult.ApprovalAtElection:F1} approval " +
                     $"(needed at least {ElectionSystem.LosingThreshold:F0}).";
             }
             _pendingElectionResult = null;
@@ -4321,7 +4652,7 @@ namespace PoliSim.UI
             // Desk ground takes the desk ink, same reasoning as the hold banner.
             var deskLabelStyle = new GUIStyle(_labelStyle);
             deskLabelStyle.normal.textColor = PoliSimTheme.TextOnDesk;
-            GUILayout.Label($"Turn {_pendingElectionTurn} Election - {_playerCountry.Name}", deskLabelStyle);
+            GUILayout.Label($"Year {_pendingElectionTurn} Election - {_playerCountry.Name}", deskLabelStyle);
             GUILayout.Space(16f);
 
             GUILayout.Label($"Approval Rating: {result.ApprovalAtElection:F1} (needed {ElectionSystem.LosingThreshold:F0} to win)", deskLabelStyle);
@@ -4344,7 +4675,7 @@ namespace PoliSim.UI
 
         private void AppendLogEntry(EconomyState state)
         {
-            _turnLog.Add($"Turn {_simulationManager.CurrentTurn}: GDP={UiFormat.Money(state.GDP, MoneyUnit.Billions)} ({_lastGrowthPercent:+0.00;-0.00;0}%), " +
+            _turnLog.Add($"Year {_simulationManager.CurrentTurn}: GDP={UiFormat.Money(state.GDP, MoneyUnit.Billions)} ({_lastGrowthPercent:+0.00;-0.00;0}%), " +
                 $"Unemp={state.Unemployment:F2}%, Infl={state.Inflation:F2}%, Approval={state.ApprovalRating:F1}, Debt/GDP={state.DebtToGdpRatio:F1}%");
 
             while (_turnLog.Count > MaxLogEntries)
@@ -4946,12 +5277,12 @@ namespace PoliSim.UI
             // The unit comes from the stat's own metadata rather than a MoneyUnit literal here. A literal
             // would be a second place that knows GDP is in billions, which is how the P2 unit bug spread
             // across 21 sites in the first place.
-            _gdpGraph.Draw("GDP (dashed = next-turn estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true,
+            _gdpGraph.Draw("GDP (dashed = next-year estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true,
                 moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
-            _unemploymentGraph.Draw("Unemployment (dashed = next-turn estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false, moneyUnit: null,
+            _unemploymentGraph.Draw("Unemployment (dashed = next-year estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false, moneyUnit: null,
                 thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
             _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
-            _approvalGraph.Draw("Approval Rating (dashed = next-turn estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true, moneyUnit: null);
+            _approvalGraph.Draw("Approval Rating (dashed = next-year estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true, moneyUnit: null);
             _povertyGraph.Draw("Poverty Rate", history.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
             _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
                 thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable");
@@ -5286,14 +5617,15 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
             GUILayout.BeginHorizontal();
-            float subTabShare = SubTabShare(availableWidth, 5);
+            float subTabShare = SubTabShare(availableWidth, 6);
             // Instance #13: one measured row height, shared with the content reserve below.
-            float subTabRowHeight = SubTabRowHeight(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade");
+            float subTabRowHeight = SubTabRowHeight(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
             DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Laws", PolicyLawsCategory.Laws, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
@@ -5339,8 +5671,121 @@ namespace PoliSim.UI
                     DrawTradePolicyContent();
                     GUILayout.EndScrollView();
                     break;
+                case PolicyLawsCategory.Laws:
+                    GUI.enabled = !_isGameOver;
+                    DrawLawsTab(contentHeight);
+                    GUI.enabled = true;
+                    break;
             }
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Law system MVP slice: the Laws browser (the scoping package's "D4 implement-policy menu"
+        /// idiom - list, category filter, a law's own detail, the enact action). Every law reaches
+        /// Parliament through the SAME gated-legislation model every other bill uses - see LawBill/
+        /// ParliamentSystem.GetLawBillDirection/ApplyLawBillResult. This is deliberately a proof-of-
+        /// architecture slice, not the start of a content marathon: one category (Crime & Justice),
+        /// four laws (LawCatalog.All) - enough to prove browser -&gt; bill -&gt; vote -&gt; enacted -&gt; dial
+        /// effect -&gt; ledger term -&gt; repeal end to end.
+        /// </summary>
+        private void DrawLawsTab(float availableHeight)
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            DrawColoredLabel("Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
+            GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice tab tracks. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle);
+            GUILayout.Space(6f);
+
+            GUILayout.BeginHorizontal();
+            DrawSubCategoryButton("All", LawBrowserFilter.All, ref _lawBrowserFilter);
+            DrawSubCategoryButton("Crime & Justice", LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(6f);
+
+            float scrollHeight = availableHeight - _labelStyle.fontSize * 8f;
+            _lawsScrollPosition = GUILayout.BeginScrollView(_lawsScrollPosition, GUILayout.Height(scrollHeight));
+
+            foreach (LawDefinition law in LawCatalog.All)
+            {
+                if (_lawBrowserFilter == LawBrowserFilter.CrimeJustice && law.Category != LawCategory.CrimeJustice)
+                {
+                    continue;
+                }
+
+                DrawLawCard(law);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// One law's detail card - name, enacted badge, description, every nonzero dial delta as a
+        /// ledger row, cost, and the enact/repeal action (or the pending-bill status and its live
+        /// PASS/FAIL estimate if one is already before Parliament) - the Cabinet candidate card's
+        /// browse-detail-action shape, applied to a catalog entry instead of a person.
+        /// </summary>
+        private void DrawLawCard(LawDefinition law)
+        {
+            bool enacted = _playerCountry.EnactedLaws.Exists(e => e.LawId == law.Id);
+            LawBill pendingBill = _simulationManager.GetPendingLawBill(PlayerCountryId, law.Id);
+
+            BeginAreaCard(null, UiPalette.SystemArea.CrimeJustice);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(law.Name, _headerStyle);
+            GUILayout.FlexibleSpace();
+            DrawColoredLabel(enacted ? "ENACTED" : "not enacted", _labelStyle,
+                enacted ? UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice) : PoliSimTheme.TextMuted);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Label(law.Description, _labelStyle);
+
+            DrawLawDeltaRow("Police Funding", law.PoliceFundingDelta);
+            DrawLawDeltaRow("Sentencing Severity", law.SentencingSeverityDelta);
+            DrawLawDeltaRow("Bail Reform", law.BailReformDelta);
+            DrawLawDeltaRow("Drug Policy", law.DrugPolicyDelta);
+            DrawLawDeltaRow("Judicial Funding", law.JudicialFundingDelta);
+            DrawLawDeltaRow("Border Enforcement", law.BorderEnforcementDelta);
+
+            GUILayout.Label($"Enactment cost: {law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture)} approval (paid once, on passage)", _labelStyle);
+
+            if (pendingBill != null)
+            {
+                GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle);
+                DrawBillLiveEstimate(ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill));
+            }
+            else if (enacted)
+            {
+                if (GUILayout.Button($"Repeal {law.Name}", _neutralActionButtonStyle))
+                {
+                    _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = true });
+                }
+            }
+            else
+            {
+                if (GUILayout.Button($"Enact {law.Name}", _neutralActionButtonStyle))
+                {
+                    _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = false });
+                }
+            }
+
+            EndAreaCard(UiPalette.SystemArea.CrimeJustice);
+        }
+
+        /// <summary>One dial's delta as a ledger row (LedgerRow.Cell - measured, never-clipping) - omitted entirely for a dial this law doesn't touch, rather than printing a zero. No good/bad ink on the value: a dial's sign has no inherent value judgment the model makes (the same reasoning C4's rating tile leaves "Stable" uncoloured rather than asserting a direction it doesn't claim).</summary>
+        private void DrawLawDeltaRow(string dialName, float delta)
+        {
+            if (Mathf.Approximately(delta, 0f))
+            {
+                return;
+            }
+
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            float nameWidth = rowRect.width * 0.6f;
+            LedgerRow.Cell(new Rect(rowRect.x, rowRect.y, nameWidth, rowRect.height), dialName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            LedgerRow.Cell(new Rect(rowRect.x + nameWidth, rowRect.y, rowRect.width - nameWidth, rowRect.height),
+                delta.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
         }
 
         /// <summary>
@@ -5427,7 +5872,7 @@ namespace PoliSim.UI
         private void DrawWorldMapContent()
         {
             DrawColoredLabel("World Map", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("Hover a marker for a quick readout, click to pin it below. Colored dots are recent events - green helped, red hurt; size reflects how big a shock it was, and dots fade out over a few turns.", _labelStyle);
+            GUILayout.Label("Hover a marker for a quick readout, click to pin it below. Colored dots are recent events - green helped, red hurt; size reflects how big a shock it was, and dots fade out over a few years.", _labelStyle);
             GUILayout.Space(6f);
 
             Rect mapRect = GUILayoutUtility.GetRect(10f, WorldMapHeight, GUILayout.ExpandWidth(true));
@@ -5518,18 +5963,18 @@ namespace PoliSim.UI
                 perCapita.HasValue ? null : "no population",
                 UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
 
-            // "advance a turn" rather than a zero: no turn has produced a FiscalTurnReport yet, and a
+            // "advance a year" rather than a zero: no turn has produced a FiscalTurnReport yet, and a
             // 0.0% tax burden is a confident wrong number of exactly the kind this project keeps finding.
             // The gauge is suppressed in that state too - an empty track would BE that wrong number.
             float? taxBurden = DerivedStats.TaxBurdenPercentOfGdp(_playerCountry, report);
             DrawDerivedStatRow("Tax burden", taxBurden.HasValue ? taxBurden.Value / 100f : -1f,
                 taxBurden.HasValue ? UiFormat.Number(taxBurden.Value, 1) + "%" : "not yet computed",
-                taxBurden.HasValue ? "of GDP" : "advance a turn", fiscalInk);
+                taxBurden.HasValue ? "of GDP" : "advance a year", fiscalInk);
 
             float? spending = DerivedStats.SpendingPercentOfGdp(_playerCountry, report);
             DrawDerivedStatRow("Government spending", spending.HasValue ? spending.Value / 100f : -1f,
                 spending.HasValue ? UiFormat.Number(spending.Value, 1) + "%" : "not yet computed",
-                spending.HasValue ? "of GDP" : "advance a turn", fiscalInk);
+                spending.HasValue ? "of GDP" : "advance a year", fiscalInk);
 
             // Positive is a deficit, so "higher is better" is FALSE here - the opposite of the
             // BudgetBalance colouring elsewhere, because the sign convention is the opposite too. The
@@ -5540,7 +5985,7 @@ namespace PoliSim.UI
                 deficit.HasValue && deficit.Value < 0f ? "Surplus" : "Deficit",
                 deficit.HasValue ? Mathf.Abs(deficit.Value) / 100f : -1f,
                 deficit.HasValue ? UiFormat.Number(Mathf.Abs(deficit.Value), 1) + "%" : "not yet computed",
-                deficit.HasValue ? "of GDP" : "advance a turn",
+                deficit.HasValue ? "of GDP" : "advance a year",
                 deficit.HasValue ? UiPalette.GetDeltaColor(deficit.Value, higherIsBetter: false) : fiscalInk);
 
             // ⚠ EIGHT SECTORS WERE ONE CONCATENATED STRING - "Agriculture 2.1% | Commerce 18.3% | ..."
@@ -5624,7 +6069,7 @@ namespace PoliSim.UI
             GUILayout.Label(
                 $"Effects: GDP {marker.Event.GdpShockPercent:+0.0;-0.0}%, Inflation {marker.Event.InflationShockPoints:+0.0;-0.0} pts, Approval {marker.Event.ApprovalEffect:+0.0;-0.0}",
                 _labelStyle);
-            GUILayout.Label($"Turn {marker.TurnFired} (this turn: {_simulationManager.CurrentTurn})", _labelStyle);
+            GUILayout.Label($"Year {marker.TurnFired} (this year: {_simulationManager.CurrentTurn})", _labelStyle);
             GUILayout.EndVertical();
         }
 
@@ -5723,7 +6168,7 @@ namespace PoliSim.UI
                 GUILayout.Space(6f);
                 // The one graph that draws an arbitrary stat, and therefore the one that would have needed
                 // a hand-maintained "which of these are money" list. It asks the stat instead.
-                graph.DrawNeutral($"{PolicyWebRenderer.GetStatName(node)} (last 50 turns)", history, null, _labelStyle,
+                graph.DrawNeutral($"{PolicyWebRenderer.GetStatName(node)} (last 50 years)", history, null, _labelStyle,
                     moneyUnit: PolicyWebRenderer.GetStatUnit(node));
             }
             else
@@ -5798,7 +6243,8 @@ namespace PoliSim.UI
             // R4-4: "most" is deliberate - Defense and Foreign Affairs ministers are decisions-only
             // this pass (ruling R3), so the old "each appointed minister quietly nudges" wording
             // would claim a passive effect four of six portfolios have and two do not.
-            GUILayout.Label("Most appointed ministers quietly nudge their own portfolio's existing channels every turn just by serving, and any minister occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime. Pending decisions themselves now show under the Decisions tab.", _labelStyle);
+            // TURN->YEAR: "every turn" -> "every year", same sweep as everywhere else in this file.
+            GUILayout.Label("Most appointed ministers quietly nudge their own portfolio's existing channels every year just by serving, and any minister occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime. Pending decisions themselves now show under the Decisions tab.", _labelStyle);
             GUILayout.Space(6f);
 
             foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
@@ -6053,6 +6499,19 @@ namespace PoliSim.UI
                 // drawdown bill" tells a player nothing about what they are about to be committed to.
                 pending.Add(($"SWF emergency drawdown - {drawdownBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {drawdownBill.DaysRemaining} day(s).",
                     ParliamentSystem.GetSwfDrawdownBillDirection(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth));
+            }
+
+            // Law system MVP slice: every pending law bill, named by its LawDefinition (falling back
+            // to the raw LawId if the catalog entry is somehow gone, the same "missing entry, not a
+            // crash" idiom LawCatalog.GetById's own doc comment establishes) - multiple can be
+            // pending at once, unlike the single-slot tier-3 bills above.
+            foreach (KeyValuePair<string, LawBill> lawBillPair in _simulationManager.GetPendingLawBills(PlayerCountryId))
+            {
+                LawBill lawBill = lawBillPair.Value;
+                LawDefinition law = LawCatalog.GetById(lawBill.LawId);
+                string lawName = law != null ? law.Name : lawBill.LawId;
+                pending.Add(($"{(lawBill.IsRepeal ? "Repeal" : "Enact")} \"{lawName}\" - resolves in {lawBill.DaysRemaining} day(s).",
+                    ParliamentSystem.GetLawBillDirection(_playerCountry, lawBill), UiPalette.SystemArea.CrimeJustice));
             }
 
             if (pending.Count == 0)
@@ -6517,12 +6976,12 @@ namespace PoliSim.UI
 
         private void DrawSpendingSection()
         {
-            GUILayout.Label("Spending (Last Turn)", _headerStyle);
+            GUILayout.Label("Spending (Last Year)", _headerStyle);
 
             FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
             if (report == null)
             {
-                GUILayout.Label("No turn advanced yet.", _labelStyle);
+                GUILayout.Label("No year advanced yet.", _labelStyle);
                 return;
             }
 
@@ -6532,14 +6991,14 @@ namespace PoliSim.UI
 
             GUILayout.Label($"Revenue (Tax): {UiFormat.Money(report.Revenue, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Baseline Government Spending: {UiFormat.Money(report.BaselineGovernmentSpending, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Discretionary Spending Change (this turn): {UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Discretionary Spending Change (this year): {UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Mandatory Spending: {UiFormat.Money(report.MandatorySpending, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Unemployment Benefit Cost: {UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Interest On Debt: {UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Welfare Program Cost: {UiFormat.Money(report.WelfareCost, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Tariff Revenue Collected: {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Space(6f);
-            DrawColoredLabel($"Net (matches this turn's Budget change): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
+            DrawColoredLabel($"Net (matches this year's Budget change): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
         }
 
         /// <summary>
@@ -6555,7 +7014,7 @@ namespace PoliSim.UI
         private const string BudgetProcessDescription =
             "Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. " +
             "Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits " +
-            "apply either place). Right: this turn's live estimate across your whole current draft.";
+            "apply either place). Right: this year's live estimate across your whole current draft.";
 
         /// <summary>
         /// Everything <see cref="DrawBudgetProcessTab"/> draws ABOVE its three-column row, measured from
@@ -7462,8 +7921,8 @@ namespace PoliSim.UI
             GUILayout.Label(standingText, _labelStyle);
 
             string estimateText = fund != null
-                ? $"Estimated this turn - Contribution/Withdrawal: {_cachedSwfContributionText}, Returns: {_cachedSwfReturnsText}"
-                : "Estimated this turn - not applicable (no fund).";
+                ? $"Estimated this year - Contribution/Withdrawal: {_cachedSwfContributionText}, Returns: {_cachedSwfReturnsText}"
+                : "Estimated this year - not applicable (no fund).";
             DrawColoredLabel(estimateText, _labelStyle, fund != null
                 ? UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true)
                 : UiPalette.GetDeltaColor(0f, higherIsBetter: true));
@@ -7701,8 +8160,8 @@ namespace PoliSim.UI
         private void DrawInterestOnDebtRow()
         {
             FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            string valueText = report != null ? UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions) : "not yet computed (advance a turn)";
-            GUILayout.Label($"Interest on Debt (automatic, last turn): {valueText}", _labelStyle);
+            string valueText = report != null ? UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions) : "not yet computed (advance a year)";
+            GUILayout.Label($"Interest on Debt (automatic, last year): {valueText}", _labelStyle);
         }
 
         /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size, plus a bar sized relative to <paramref name="maxAmountInGroup"/> (its own Mandatory/Discretionary group's largest line) for an at-a-glance size comparison.</summary>

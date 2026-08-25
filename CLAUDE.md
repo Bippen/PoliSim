@@ -10608,3 +10608,649 @@ is correctly flagging that write as an unexplained approval mover, exactly the f
 own message names ("An approval writer is not recording - find it"). The writer in question is
 the TEST HARNESS, not production code. Not fixed here - out of scope for this pass, and the audit
 doing its job correctly on a driver artifact is a different situation from the audit being wrong.
+## The country-selection capture-driver leak - fixed, driver-only (2026-08-24)
+
+Reported as "Italy's scenario switches the live player-country and nothing switches it back."
+Investigated to a real mechanism rather than patched by guess: `SelectPlayerCountry` is, by design,
+a one-time, permanent commitment - a real player picks their country exactly once per session, and
+there is still no in-game "change country" feature to undo, which is correct and untouched.
+`UiScreenshotDriver` (`-shotcountry=`) reuses that same permanent, no-undo call reflectively as a
+disposable per-run label. Every *normal* exit already self-terminates the whole Editor process via
+`Finish()` -> `EditorApplication.Exit()`, which is what actually clears the state - nothing survives
+process death to leak into a later session. **The one real gap: `Start()` had no guarantee covering
+an UNCAUGHT exception after the country switch**, and because `UiScreenshotCapture.Run()`
+deliberately runs WITHOUT `-batchmode` (a real, interactive Editor window - `WaitForEndOfFrame`
+needs one), that gap could strand Play Mode on the requested country with no in-game way back
+(`SelectPlayerCountry`'s own selector gate is permanently one-directional once set).
+
+**Verdict: driver-only, not a correctness bug reaching a real player** - confirmed by tracing every
+code path that could touch `_selectedPlayerCountryId`; none exists outside `SelectPlayerCountry`
+itself, and `SaveLoadRoundTripDiagnostic`/`SimulationTestRunner`/`BatchSimulationRunner` never
+instantiate `GameController` at all, so none of them can reach this state by construction.
+
+**Fix, symmetric with the entry it mirrors**: `GameController.ResetPlayerCountrySelection()`, the
+documented counterpart to `SelectPlayerCountry` (clears the selection back to null - real play never
+calls it). `UiScreenshotDriver.Start()`'s whole body is now wrapped in `try`/`finally`: the `finally`
+unconditionally calls `ResetPlayerCountrySelection` via reflection (the same `Invoke` helper the
+entry call already used, widened to `params object[]`) and guarantees the run's own `Finish()` fires
+exactly once via a `_finishCalled` guard - the driver's own "verdict dismissal," guaranteed once
+entered, the same discipline the election reveal/Cabinet decision/Foreign Policy meeting dismissals
+already follow.
+
+## Turn -> Year (2026-08-24)
+
+Per CLAUDE.md's own "A turn is now a year" entry (2026-08-10, `d8f55ce`): a turn IS a year, not an
+approximation, so every player-facing surface reading "Turn N" should read "Year N." Internal
+surfaces (dumps, checks, logs, trajectory labels, this file's own vocabulary, `EndTurn`/`AdvanceTurn`
+internals, `SaveGame.CurrentTurn`'s serialized field name) stay unchanged - display-only, on purpose.
+
+**39 surfaces found by an exhaustive sweep of `Assets/Scripts/UI/`, cross-checked two independent
+ways** (a targeted agent survey, then a raw `grep` for every `"...[Tt]urn..."` string literal across
+the whole folder, hand-filtered for `return`/`returns` false positives) - **37 direct swaps, 2
+non-trivial, both ruled rather than forced:**
+
+- **The horizon selector's "Full Turn" -> "1 Year."** The one label of the four (`1 Day`/`1
+  Week`/`1 Month`/`Full Turn`) that broke its own siblings' "1 [Unit]" pattern, because a turn wasn't
+  previously a round real-world unit worth counting "1" of. "1 Year" both fits the pattern and is
+  shorter than "Full Turn" was, so the original width concern (`GameController.cs`'s own comment on
+  the label) is eased, not reintroduced.
+- **The calendar pad's `"{year} · T{turn}"` -> just `"{year}"`.** Now that a turn IS a year,
+  `CurrentTurn` and the pad's own `date.Year` are the same count wearing two labels. **Ruling: show
+  the REAL calendar year everywhere; drop the redundant elapsed-turn suffix here specifically**
+  rather than relabel it `" · Y{turn}"` - two numbers that agree is pure redundancy, and two that
+  read as disagreeing (elapsed count vs. absolute year, offset by the seed epoch) would be worse.
+  Absolute years were already what the pad had on hand, are the more evocative choice for a
+  document-styled desk UI, and are the same choice the Calendar Panel below inherits rather than
+  invents a second epoch decision.
+
+**Validation**: real Unity 6000.5.6f1. Trajectory (seed 777, 100 turns, before vs. after) **600/600
+full-state lines byte-identical**, 38/38 anomalies match exactly. Save/load: `RT: PASS - 12 scenarios
+(6 countries x 2 seeds) round-trip clean` - unchanged. Captures at 1600x929 (before/after pair,
+direct rule-15 image diff) and at 1600x929 + 2560x1419 with full state-pinning (`-shotstates`):
+59/59 and 78/78 captured, **0 overflow / 0 escape / 0 canvas-text-violation at every size** -
+including the two non-trivial surfaces and the state-gated screens (election reveal, game-over
+banner) the width risk ("Year 2031" is wider than "Turn 5") was named against.
+
+## Calendar Panel (2026-08-24)
+
+Replaces the old dashboard (country header + headline stat-tile grid) in the persistent left
+column's scrollable slot with a real month page: a weekday-aligned day grid (days already past
+marked "X," today highlighted), a "This Month" ledger of every dated item landing in the displayed
+month, and the country-name-plus-year header the old dashboard carried, preserved verbatim.
+`DrawPolicyControls`'s "This Year's Policy" live-preview panel is UNTOUCHED and still draws directly
+below it in the same scroll view - deliberately not tab-owned (its own doc comment), so it stays
+reachable without tab-hopping. The small pinned calendar pad (`DrawCalendarPad`, month/day/year,
+outside the scroll view beside the speed controls) is also UNTOUCHED - kept on purpose, since the
+panel below it is scrollable-away-from and the pad's whole point is a glance at today regardless of
+scroll position, the same reasoning that already keeps the speed controls pinned beside it.
+
+### What the left overview showed, and what happens to it - named, not silently dropped
+
+Investigated before removing anything (`DrawHeadlineStatTiles`'s and `DrawPolicyPreview`'s own
+call-site history, read in full):
+
+- **The stat-tile grid is fully duplicated, byte-for-byte, on Statistics -> Domestic** -
+  `DrawHeadlineStatTiles` is the SAME method, same call, both places. Nothing is lost in raw-number
+  terms; several stats (GDP, Unemployment, Inflation, Approval, Poverty, Debt-to-GDP) sit beside a
+  history graph there the old dashboard never had. Four (Currency Strength, Government Debt, Credit
+  Rating, Budget Balance) get no richer treatment at either location - for those four specifically
+  the Statistics tab shows the literal identical plain tile, so there is truly nothing to lose beyond
+  the tab click itself. **What genuinely is lost: the "glance from any tab" convenience** - a real,
+  bounded trade, made deliberately for a genuinely new capability rather than a redundant one.
+- **`DrawPolicyPreview` ("This Year's Policy") is confirmed duplicated identically at the Budget
+  Process tab** (`DrawLegislativeSupportEstimate`'s own column calls the same parameterless method).
+  Kept anyway, exactly where it was, because its OWN doc comment states its placement is deliberate
+  precisely so a player never has to tab-hop to see it - removing it from the always-visible column
+  would contradict the reason it was put there, so it stays.
+- **The country-name-plus-year header had NO other home anywhere in the UI** (full-file search for
+  `_playerCountry.Name` as a persistent header - every other occurrence is a one-off screen title or
+  embedded mid-sentence). Preserved as this panel's own first line, unchanged.
+- **`DrawTopBanner` (game-over / BREAKING event banner) and `DrawPolicyControls`'s wrapper are
+  untouched.** `DrawPolicyControls` turned out to have NO gameplay sliders left in it at all by this
+  point (every lever had already migrated to its own tab or the Budget Process tab in an earlier
+  pass) - it is now just the header/toggle wrapper around `DrawPolicyPreview`, confirmed by reading
+  it in full before assuming otherwise.
+
+No delivered or requested chrome asset exists for a bigger calendar (`ChromeManifest.txt`,
+`CLAUDE_DESIGN_ASSET_REQUEST.md`, `POLISIM_V2_SCREEN_SPEC.md` all searched - `ui_calendar_pad` is the
+only calendar sprite anywhere). The panel is entirely procedural chrome (`PoliSimTheme.RoundedCard`/
+`Rule`/`Pill`, the same fallback family `DrawCalendarPad` already uses when its own sprite is
+missing) - no asset request blocks this.
+
+### The data contract - the extension point for the law system and the fiscal legibility panel
+
+**Read existing data, built no store.** Every marker is computed fresh each `OnGUI` call from
+already-existing, already-computed state (`SimulationManager`'s public `Get*` API, `ReleaseCalendar`,
+`Country`'s own lists, `GameController`'s own `_mapEventMarkers`) - nothing here is new persisted
+state, and nothing here can move a trajectory (confirmed: 600/600 state lines byte-identical, before
+vs. after, at the seed this section's own validation used).
+
+**The governing question for every source, catalogued from the real code rather than assumed**: does
+a PENDING (future) instance carry a computable date, and does a RESOLVED (past) instance retain one?
+A day that happened is a fact even when the day it will happen was never knowable in advance - the
+two directions are independently answerable and answered separately below.
+
+| Source | Future | Past | In the panel? |
+|---|---|---|---|
+| `FiscalYearData.GetFiscalYearStart` | Exact, fixed `(month, day)`, every year | Exact (same rule) | ✅ one marker, carries BOTH the budget-process-open fact and the credit-rating-review fact - confirmed coincident by reading `CreditRatingSystem.ReviewIfDue`, which reuses the identical date |
+| `ReleaseCalendar.IsReleaseDay` (6 `PublishedStat`s) | Exact date arithmetic, no RNG in the date itself | Exact (same rule) | ✅ every day of the displayed month checked against every tracked stat |
+| Pending bill `DaysRemaining` (all 8 types - `BudgetBill` + 6 standalone + `SwfDrawdownBill`) | Exact: `today + DaysRemaining` | n/a (resolves into a division) | ✅ one marker per currently-pending bill |
+| `ElectionSystem.IsElectionTurn` | Exact date (turn N -> `EpochDate.AddDays(N*365)`), but **not** always the same day-of-year (see the leap-day finding below) | Only the single most-recently-resolved election is held, transiently, discarded on dismissal - **no persisted log exists** (the still-open `ElectionRecord` gap this file already names elsewhere) | ✅ future only |
+| `Country.Divisions.Entries` (`DivisionRecord.Date`, all 8 resolution sites, up to 24 retained) | n/a (already resolved by definition) | Exact, real, stored `DateTime` | ✅ past, bounded to the retained 24 |
+| `EventSystem` roll + `MapEventMarker.TurnFired` | **Unknowable** - a 12%/turn roll with no schedule | A fired marker's `TurnFired` converts to an exact date via the same epoch formula - "a day that happened is a fact" - but only within the 6-turn fade window `GameController` already tracks, and that window is UI-only, not save-persisted | ✅ past only, bounded to the 6-turn window |
+| `CabinetSystem` decisions | **PROBABILITY-ONLY, NO TRACE** - 12%/minister/turn roll | **NO TRACE** - `ResolveCabinetDecision` applies the effect and removes the pending entry; no date stamp is ever written anywhere | ❌ excluded, both directions |
+| `ForeignPolicySystem` meetings | **PROBABILITY-ONLY, NO TRACE** - 1%/day roll | **NO TRACE** - same shape, `ResolveForeignPolicyMeeting` | ❌ excluded, both directions |
+
+**A structural finding worth carrying forward, found while building the epoch conversion rather than
+assumed**: `DaysPerTurn = 365` is a fixed day COUNT, not "the next January 1st" - so turn N's date
+(`EpochDate.AddDays(N * 365)`) is always exact but is **not** guaranteed to land on the same
+day-of-year across different turn numbers. Concretely: turn 1 = 2027-01-01, turn 2 = 2028-01-01, but
+turn 3 = **2028-12-31**, one day short of the next January 1st, because 2028 absorbed a leap day the
+365-day span didn't account for. Every date conversion in `BuildCalendarMonthMarkers` uses the exact
+`EpochDate.AddDays(...)` formula for this reason - never a fixed month/day assumption from a turn
+number.
+
+**Confirmed by the captures, not just reasoned about**: the "busy fiscal month" pinned state (USA,
+October) shows the fiscal-year/credit-rating marker landing on the SAME day as three of the six
+publication markers (`PovertyRate`/`Population`/`CrimeIndex` all publish annually on the fiscal-year
+date too) - four coincident markers on one day, exactly the clustering this data contract's own
+table predicts and exactly why "an empty calendar validates nothing" mattered enough to pin
+deliberately rather than trust the ordinary warm-up to produce it by luck.
+
+### Validation
+
+Real Unity 6000.5.6f1. **Trajectory (seed 555, 100 turns, before vs. after all of the panel's own
+work including two follow-up geometry fixes) 600/600 full-state lines byte-identical, 30/30
+anomalies match exactly** - GameController.cs is structurally unreachable from
+`SimulationTestRunner`/`BatchSimulationRunner` (confirmed during the country-leak investigation
+above), so this is a proof by construction as much as by diff. Save/load: `RT: PASS - 12 scenarios (6
+countries x 2 seeds) round-trip clean` - unchanged.
+
+Captures at 1600x929 and 2560x1419, `-shotstates` (full state coverage), pinned specifically on the
+three states an empty calendar could never validate: a month with marked events (the ordinary
+warm-up already produces this - publication markers accumulate over the 3+ year warm-up regardless),
+a month-boundary flip (a NEW driver step, `CaptureCalendarMonthBoundary`-shape: advances to the last
+day of the current month, captures, advances one more real day into the next month, captures again -
+confirmed the grid, weekday alignment and ledger all regenerate correctly for the new month with zero
+staleness), and the busy fiscal month (the existing budget-process-pause search already lands
+`CurrentDate` exactly on the country's fiscal-year date, which is where this state was pinned for
+free).
+
+**Two real defects found and fixed by the guards/eye, both already-catalogued classes in this
+project rather than novel ones - recorded because the class recurring is the point:**
+
+1. **Day-cell height, `UiOverflowGuard`, 2,004 violations.** The first version sized cells from a
+   flat `30f * scale` guess unrelated to `_calendarDayNumberStyle`'s real size (which scales off
+   `labelFontSize`, a different base). Fixed via `Mathf.Max(lineHeight, fontSize + 4f)` -
+   `LedgerRow.Height`'s own formula - which closed most but not all of the gap (over-by dropped from
+   10.7 to 1.6). **The residual was CLAUDE.md's own already-documented "tall class" defect** -
+   `lineHeight` excludes a style's vertical padding, which only `CalcHeight` (what `GUI.Label`
+   actually obeys) accounts for. Final fix: measure via `CalcHeight` against real sample content, one
+   accessor read by both the grid's row reserve and the cell's own text rect.
+2. **Ledger date-column width, caught by eye at 2560px, not by any guard.** A hardcoded
+   `GUILayout.Width(40f)` wrapped ("10" over "/1") at larger window sizes - it never CLIPPED (so
+   `UiOverflowGuard` stayed clean throughout), just wrapped, which is why only a capture at the wider
+   size caught it. Fixed by measuring the widest possible date string (`"12/31"`) against the real
+   style instead of a flat constant - the same "a number that came out of a mockup is a measurement
+   at one resolution, never a constant" lesson this file has already recorded from several other
+   sites, recurring at a new one.
+
+Both fixes re-verified clean (0 overflow / 0 escape / 0 canvas-text-violation, 80/80 captured) at
+both sizes before being accepted.
+
+## Law System MVP Slice (2026-08-24)
+
+Proves the architecture end to end on ONE category (Crime & Justice) before any authoring
+marathon, per the scoping package: browser -> bill -> vote -> enacted -> dial effect -> ledger
+term -> repeal. Four laws (`LawCatalog.All`). Deliberately not started: a second category, a
+generic dial-dictionary shape for categories that aren't flat-float (Sectors), prerequisites,
+conflicts.
+
+### The data shape - laws are DELTAS, not absolute overrides
+
+`LawDefinition` (`Assets/Scripts/Data/LawDefinition.cs`) mirrors `CrimeJusticePolicyBill`'s own
+six-float shape 1:1, reinterpreted as NUDGES rather than the slider bills' absolute-set
+convention. This is the load-bearing ruling, and it resolves three forks at once:
+
+- **Composability.** Two enacted laws that touch the same dial stack additively instead of one
+  clobbering the other - the same "ministers quietly nudge their portfolio's existing channels"
+  idiom Cabinet's own passive competence effect already established, applied to legislation.
+- **Repeal.** Subtracting the same delta back out is the natural inverse, and it's what makes the
+  bar's "decomposable, without remainder" requirement checkable to begin with - enact then repeal
+  nets to EXACTLY the pre-enactment value (verified below, both through the real vote path and
+  directly). This is a deliberate divergence from the `TaxProgramBill`/`WelfareProgramBill`
+  toggle-only repeal precedent (`IsAdd`, leaves the underlying `Rate`/`GenerosityLevel` untouched) -
+  that precedent works because those dials are each owned by exactly one mechanism; a law's dial
+  can be touched by several laws at once, so a toggle would leave the wrong cumulative value behind.
+- **Cost.** One `EnactmentApprovalCost` float per law, charged once on passage - a real field, not
+  a placeholder, but its four seeded values (0.5-1.5) are illustrative gameplay-tuning numbers, the
+  same "not researched, stated plainly" convention every other approval-cost constant in this file
+  already carries.
+
+**Prerequisites and conflicts: deferred to v2, not built - ruled per the package's own suggestion**
+("a law that can't conflict is simpler and may be enough to prove the shape"). Since deltas stack
+additively, two laws pulling the same dial in opposite directions simply partially cancel - a
+legitimate outcome, not a broken one - so no conflict system is needed for CORRECTNESS at this
+scale, only as a future authoring nicety. No fields are reserved for it; adding them later is a
+pure additive save-shape change (Newtonsoft's `MissingMemberHandling.Ignore` already covers it).
+
+`EnactedLaw` (`Assets/Scripts/Data/EnactedLaw.cs`) is the per-country persisted record - `LawId` +
+`EnactedOn`, `[Serializable]` to match `DivisionRecord`'s own precedent. `Country.EnactedLaws` is a
+`List<EnactedLaw>`, not a `Dictionary<LawId,bool>` - matching this codebase's dominant "collection
+of things a country has" shape (`TaxLines`/`Sectors`), not the `Dictionary` shape reserved for
+closed structural enums with a hard one-per-key constraint (`CabinetMinisters`/`ParliamentSeats`).
+A bare bool would discard exactly the provenance this project has otherwise consistently kept -
+`DivisionLog` exists for precisely this reason. Deliberately NOT in `ClonePreviewCountry`'s
+hand-list, matching `CabinetMinisters`/`Divisions`' own omission - nothing in the `PreviewTurn`
+pipeline ever reads or mutates it, since bill resolution (the only writer) runs from the day-tick
+loop, never from a preview.
+
+### The bill path - a new bill kind, generalized rather than reusing an existing one
+
+`LawBill` (`Assets/Scripts/Data/LawBill.cs`) mirrors `TaxProgramBill`/`WelfareProgramBill`'s own
+`{Type/IsAdd, DaysRemaining}` shape almost exactly (`LawId`/`IsRepeal`, `DaysRemaining`) - a new
+bill kind, not a `PolicyDecision` field and not a reuse of `CrimeJusticePolicyBill`, because a
+law's payload (a fixed named preset) is structurally different from either: `PolicyDecision`'s
+override fields carry an absolute value the player just set, and `CrimeJusticePolicyBill` IS that
+absolute-value carrier for this category; a law bill carries only an identity (which cataloged law)
+plus a direction (enact or repeal), letting the SAME bill type serve any future category without a
+per-category subclass.
+
+`SimulationManager._pendingLawBillsByCountry` is `Dictionary<CountryId, Dictionary<string,
+LawBill>>` - the nested shape `_pendingTaxProgramBillsByCountry`/`_pendingWelfareProgramBillsByCountry`
+already use, for the identical reason: multiple different laws (each independently enacted or
+repealed) can have their own bill pending for the same country at once, just never two for the SAME
+law simultaneously (`IntroduceLawBill` refuses a second bill for a LawId already pending, the same
+guard `IntroduceTaxProgramBill` uses). `AdvanceLawBillsDay` mirrors `AdvanceTaxProgramBillsDay`'s
+own per-day countdown/resolve loop, wired into `AdvanceCountryDayTick` alongside the other eight
+day-tick calls.
+
+`ParliamentSystem.GetLawBillDirection(Country, LawBill)` reuses `GetCrimeJusticeBillDirection`'s
+own sign convention verbatim, applied to a law's deltas instead of a slider's absolute submitted
+value - funding/reform-coded deltas positive, harsher/stricter-coded deltas negative, a repeal
+negating every term. `WouldBillPass`/`GetSeatWeightedAlignment`/`RecordDivision` are untouched,
+fully generic reuse - the scoring core was already bill-agnostic (`WouldBillPass(Country, float)`),
+confirmed by the research pass before any code was written. `ApplyLawBillResult` mirrors
+`ApplyCrimeJusticeBillResult`'s own shape (FAIL charges `BillFailedApprovalCost`, PASS delegates to
+the apply callback) - no new pattern invented at the scoring/recording layer at all.
+
+`SimulationManager.ApplyLawBillEffects` builds a throwaway `PolicyDecision` from the current dial
+values plus the law's signed deltas (pre-clamped to `[MinPolicyDialLevel, MaxPolicyDialLevel]`
+BEFORE being written into the decision - not left to the Apply-methods' own clamp, because a
+repeal subtracting from a low value can compute a raw negative number, and `PolicyDecision`'s "-1
+sentinel means no change" convention would silently swallow a negative as a no-op if it slipped
+through unclamped) and feeds it into the EXISTING `ApplyCrimePolicyChanges`/
+`ApplyCrimeJusticeDeeperChanges` - the same "reuse the plumbing" pattern
+`ApplyCrimeJusticeBillEffects`/`ApplyLaborBillEffects` already establish. **This is the whole
+mechanism's key property**: a law's effect and `CrimeJusticePolicyBill`'s own effect terminate in
+the identical two methods, so the actual dial-mutation code path - and everything downstream of it
+(CrimeIndex, BusinessConfidence, Investment) - is 100% shared between the old slider mechanism and
+the new law mechanism. Only "what values get plugged in" differs.
+
+**A real, defensive idempotency guard, found while validating (not reachable through the real UI
+today, but a genuine latent bug)**: without it, enacting an already-enacted law would apply its
+delta a SECOND time (moving the dial further, not a no-op) and add a duplicate `EnactedLaws` entry;
+repealing a law that isn't enacted would apply the inverse delta with nothing to undo, moving the
+dial the WRONG way. `DrawLawCard` only ever offers "Enact" while `!enacted` and "Repeal" while
+`enacted`, and `IntroduceLawBill` already refuses a second pending bill for the same LawId - so
+neither path is reachable through play as it stands - but the guard (`bill.IsRepeal ==
+!alreadyEnacted` short-circuits to a no-op) closes the class outright rather than relying on two
+UI-layer checks staying in sync forever. Confirmed by a direct test (below): re-enacting an
+already-enacted law leaves every value bit-identical; re-repealing an unenacted one does too.
+
+### Enacted state - save shape
+
+`SaveGame.SimulationPendingState.PendingLawBills` (`Dictionary<CountryId, Dictionary<string,
+LawBill>>`) joins the other 14 pending structures - 15 in all as of this slice.
+`CaptureSaveState`/`RestoreSaveState` copy it the same one-level-deep way the two other nested-dict
+fields (`PendingTaxProgramBills`/`PendingWelfareProgramBills`) already do. `Country.EnactedLaws`
+rides the World layer's own serialization, no separate capture needed - the same "a plain List<T>
+field on `[Serializable] Country` needs no extra plumbing" property `TaxLines`/`Sectors` already
+have. `SaveLoadRoundTripDiagnostic` was extended to actually EXERCISE both: one law directly
+enacted before the save (the `CabinetMinisters` direct-assignment idiom), a second law's bill
+introduced and left pending - not left to round-trip empty, since an empty collection proves
+nothing about the nested-dictionary copy path specifically (the exact class of bug the original
+save/load pass found on `PublishedData.PeriodClosingValues` - a populate-in-place hazard on a
+readable member that needs `ObjectCreationHandling.Replace`, silently dropped without it).
+
+### The sliders' fate - RULED: read-only summary, for this one category, in this slice
+
+The Crime & Justice tab's six sliders (`DrawCrimeJusticeTab`) are converted to a READ-ONLY
+summary. The standalone `CrimeJusticePolicyBill` submission ("Introduce Crime & Justice Bill") is
+retired as a player-facing action - going forward, these six dials are set exclusively by enacted
+law. **Reasoning**: a slider the player could still move while laws also moved the same dial is
+the two-books problem again, named explicitly in the scoping package as the thing to avoid - and
+this is the one ruling of the five that actually resolves it for the MVP's category, rather than
+just naming the problem and leaving it live. The other two candidate outcomes were considered and
+rejected: full coexistence is the two-books problem BY DEFINITION; retiring the underlying
+mechanism entirely (deleting `CrimeJusticePolicyBill`/its save fields/its Apply pipeline) is a
+backend/save-shape change the scoping package's own "small, scoped, contained UI change" framing
+doesn't ask for, and it isn't necessary for the read-only conversion to be honest - the class stays
+in code, fully intact, simply unreachable from the UI.
+
+**Deliberately NOT a rip-out**: `CrimeJusticePolicyBill`/`IntroduceCrimeJusticeBill`/
+`AdvanceCrimeJusticeBillDay`/`GetPendingCrimeJusticeBill` and `SimulationPendingState.
+PendingCrimeJusticeBills` all stay fully intact in code. Only the player-facing submission UI (the
+six draft sliders, the "Introduce Crime & Justice Bill" button, `DrawCrimeJusticeBillStatusAndIntroduce`/
+`DrawCrimeJusticeLiveEstimate`/`BuildCrimeJusticeBillFromDrafts`, now deleted as genuinely dead code)
+is removed. The six `_xInput` draft fields, their `GetXInput` accessors, and `UiDraftState`'s
+capture/restore of them are untouched - nothing sets them anymore in real play, so they stay
+permanently null. Harmless: nothing reads them for anything player-visible once this tab stopped
+writing to them, and touching that plumbing (a save-shape/UI-state change with no behavioral
+payoff) is exactly the kind of extra surgery the scoping package's "not a marathon" framing rules
+out.
+
+**Scope boundary, named rather than silently generalized**: this ruling and its implementation
+cover Crime & Justice ONLY. The other seven bill-gated tabs (Labor, Sectors, Trade, the Budget
+Process categories) are completely untouched by this slice - their own sliders coexist with
+whatever laws might target their dials in a future category, and each future category's own
+slider-conversion is its own small follow-up, not automatic. The two-books problem remains latent
+there until a category actually gets laws.
+
+### The browser UI - a sixth `PolicyLawsCategory`, on ledger grammar
+
+`PolicyLawsCategory` gains a sixth member, `Laws`, alongside the existing five - not a new
+top-level `ConsolidatedTab` (which would need a new tab-bar icon asset and reflow the six-tab-row
+math for no reason; `DrawPolicyLawsTab`'s own sub-tab dispatch is exactly the right level for a
+sixth kind of policy content). `DrawLawsTab`: header, a category filter row (`LawBrowserFilter`
+{All, CrimeJustice} via the same generic `DrawSubCategoryButton<T>` every other sub-tab filter
+already uses - a real filter mechanism even though only one category exists to filter to, per the
+browser requirement's own "category filter" line item), then one `DrawLawCard` per catalog entry.
+
+Each card - name, an ENACTED/not-enacted status (area-accent ink for enacted, muted for not, no
+good/bad color judgment on the STATUS itself - the same restraint C4's rating tile applies to a
+"Stable" outlook it doesn't want to assert a direction for), description, every nonzero dial delta
+as a `LedgerRow.Cell` pair (measured, never-clipping - the ledger grammar the browser requirement
+names explicitly), the enactment cost, then either the enact/repeal action button or - if a bill is
+already pending for this law - its countdown plus a live PASS/FAIL estimate via
+`DrawBillLiveEstimate`, the SAME shared widget `DrawCrimeJusticeLiveEstimate` used before its own
+removal and every other bill tab still uses. `DrawPendingLegislation` (the consolidated Parliament-
+tab pending-bill list) gained a law-bill loop alongside its existing eight, so a pending law bill is
+visible from the general Parliament view too, not only from inside the Laws browser - and resolved
+law bills show up in `DrawRecentDivisions`' existing Division Records panel automatically, since
+`RecordDivision` is called generically for every bill kind including this one.
+
+The Cabinet candidate card's browse -> detail -> action shape was the closer precedent in the end,
+not `DrawPendingLegislation`/`DrawPendingBillCard` - a law is a persistent catalog entry with a
+long-lived status (enacted or not), not a transient pending item, so "list of named things, each
+with its own detail and action" fit better than "list of bill-shaped things with a verdict."
+
+### The legibility bar - the trace panel doesn't exist, so this follows the Q1/Q3 precedent instead
+
+Confirmed by dedicated research before any ruling: "the trace panel" the bar names is not built
+code anywhere in this project. It is exactly and only MASTER SEQUENCE II Step 2 ("Causality
+legibility") in the roadmap - explicitly unscoped, gated on unrelated work, with three bracketed,
+unchosen candidate surfaces (trace panel? tooltip chains? ledger annotations?). The real Q1/Q3
+"byte-identical"/"decomposition without remainder" bar this session's own spec borrowed its
+language from is a DEVELOPER-SIDE, commit-time hand-verification discipline, never a runtime
+player-facing panel - confirmed by reading Q1's own validation section, which produces exactly this
+shape: a targeted before/after diff proving isolation, plus a hand-decomposed check at one
+transition, not a new permanent UI surface.
+
+**Ruling: this slice satisfies the bar the same way Q1/Q3 already do**, and explicitly hands the
+UI-surface question to Step 2 rather than inventing a panel: a named, bounded decomposition-
+without-remainder proof, run and reported below (both through the real vote path and via a direct
+reflection-based check isolated from vote-outcome uncertainty), documented here exactly as this
+file already documents every other coupling's decomposition. Player-facing legibility, to the
+extent this slice provides any, comes from the browser's own detail cards - every enacted or
+pending law's dial deltas are permanently visible on the Laws tab, which is itself a form of
+legibility (an enacted law's effect is enumerable/inspectable on demand), just not the causal
+"why did this stat move" trace the roadmap's Step 2 is scoped to eventually answer.
+
+### The bar - both trajectory claims, verified, not assumed
+
+**Byte-identical for the default (no-law) path**: real Unity 6000.5.6f1, seed 777, 100-turn
+baseline, run TWICE - once on a pristine `git stash -u`'d tree at the pre-slice commit, once on
+this slice's full tree (`git stash pop`, all 9 files restored, confirmed no compile errors from
+Unity's own compiler, the standing "the local `dotnet build` cannot see an unregistered new file"
+gap sidestepped by using the real compiler for genuinely new files). **All 600 per-turn state lines
+byte-for-byte identical** (`diff` exit 0), and anomaly counts matched exactly (37/37) - this is a
+proof by construction as much as by diff: `_pendingLawBillsByCountry` is empty unless
+`IntroduceLawBill` is called, which nothing but the new UI ever does, so every new method this
+slice added is a genuine no-op on the default path.
+
+**Force-kind, decomposable without remainder**: a throwaway Edit-mode diagnostic (never committed,
+matching this project's established convention for this class of check), two parts:
+
+1. **Through the real public path** (`IntroduceLawBill` -> 21 real day-ticks via
+   `AdvanceCountryDayTick` -> resolution, no reflection): enacting "Truth in Sentencing Act"
+   (SentencingSeverityDelta +15, BailReformDelta -8, cost 1.0) against the seeded seat composition
+   PASSED, and every value landed EXACTLY on the predicted target - SentencingSeverity 50 -> 65.0000,
+   BailReform 50 -> 42.0000, ApprovalRating 50 -> 49.0000, all checked to 4 decimals. `EnactedLaws`
+   gained exactly one entry. The REPEAL vote, under the same (unchanged) seat composition,
+   deterministically FAILED - a structural property of the linear-sign scoring model, not bad luck:
+   repeal's direction is the exact negation of enact's, `GetSeatWeightedAlignment` is linear in the
+   bill's sign, and `ParliamentSystem.UpdateSeats` only runs from `AdvanceTurn`, which a 42-day,
+   zero-turn-boundary diagnostic never calls - so if enact's alignment is positive, repeal's is its
+   exact negation, always. Worth recording as a general property of this codebase's repeal-by-
+   symmetric-bill pattern, not specific to laws: a repeal immediately following its own enactment
+   under an unmoved Parliament will always fail, and a real player would only see a repeal
+   opportunity after political drift across real turns shifts seat composition.
+2. **Direct, reflection-based, decoupled from vote-outcome luck** (a fresh, isolated world/manager -
+   reusing state from step 1 was tried first and produced a genuinely confusing double-enactment,
+   corrected below): `ApplyLawBillEffects` invoked directly for enact, then again for enact on an
+   already-enacted law (idempotency), then repeal, then again for repeal on an already-repealed law
+   (idempotency, the other direction). Enact: SentencingSeverity 50 -> 65.0000, BailReform 50 ->
+   42.0000, ApprovalRating 50 -> 49.0000 (all exact). Re-enact: every value BIT-IDENTICAL to the
+   post-enact state - the guard holds. Repeal: SentencingSeverity/BailReform net to EXACTLY
+   50.0000/50.0000 - decomposable without remainder. Re-repeal: bit-identical to the post-repeal
+   state - the guard holds both directions.
+
+**A diagnostic self-correction, worth keeping** (this file's own "when a diagnostic produces a
+surprising result, check it against something already known to be true" rule, applied to a check I
+wrote myself): a first version of the direct-apply check also asserted "no other `EconomyState`
+field moves" - and it failed, on GDP/Inflation/Unemployment. This was the DIAGNOSTIC being wrong,
+not the code: those fields genuinely drift over the 21 real days the cycle advances (Continuous
+Time Phases 1-5 run regardless of any law bill), and - when the vote passes -
+SentencingSeverity/BailReform changing is EXPECTED to ripple further, through the SAME pre-existing,
+already-validated `MacroSystem.ApplyCrimeIndex -> CrimeIndex -> ApplyCrimeEffects ->
+BusinessConfidence -> Investment -> GDP` channel `CrimeJusticePolicyBill`'s own dials have always
+driven. A law bill writes the identical `Country` fields via the identical
+`ApplyCrimePolicyChanges`/`ApplyCrimeJusticeDeeperChanges` methods, so it ripples exactly the same
+way - "no other field moves" was never the right claim; "the DIAL values move by exactly the
+declared delta" is, and that's what actually got checked once the wrong assertion was removed.
+
+**Save/load**: `SaveLoadRoundTripDiagnostic`, 12/12 scenarios (6 countries x 2 seeds) clean - `RT:
+PASS`, reflecting 36 public `EconomyState` fields (unchanged by this slice - laws touch only
+`Country`-level state) plus the string-equal serialize/restore/re-serialize chain, with one law
+directly enacted and a second law's bill left genuinely pending across the save, both round-tripping
+correctly through the nested-dictionary copy path.
+
+**Captures**: both sizes (1600x929, 2560x1419), `-shotstates` (full state coverage). Two driver
+gaps found and fixed before the run was trustworthy - both would have silently under-covered the
+new screen despite a clean guard summary: `Laws` was missing from `UiScreenshotDriver.SubScreens`'s
+generic per-tab table (so the main sweep never visited it at all - fixed, now captured as
+`06f_policylaws_laws`/`_rows`/`_deep`), and the per-sub-tab pending-bill capture loop had no `Laws`
+entry either (fixed, `85g_bill_laws`). The pinned state - "laws both available and enacted" - is
+built the same deterministic way section A's `CabinetMinisters` pin is: one law (`truth_in_sentencing_act`)
+enacted via DIRECT real-API assignment rather than a real vote (guaranteeing the state regardless
+of seat-composition luck), a second, DIFFERENT law's bill (`cash_bail_reform_act`) introduced in the
+same "pending bills, LAST" batch every other bill type already uses, the other two catalog laws
+left untouched as plain "available." **87 captured, 0 failed, 0 text overflow, 0 containment
+escape, 0 canvas-text violation, at both sizes.** Visually confirmed by eye, not just by guard
+(rule 15's own standard - guards answer containment, not composition): the Laws browser renders
+correctly at both the pinned and default states (ENACTED badge + Repeal button, not-enacted cards
+with their Enact buttons, every delta right-aligned and legible, category filter functional,
+description text wrapping cleanly), and the converted Crime & Justice tab renders its six dials as
+static filled gauge bars at their neutral 50 value with the trailing hint text preserved and no
+dangling interactive control.
+
+A one-line Unity analyzer warning (UAC1001, `EnactedLaws`'s element type missing `[Serializable]`)
+surfaced on the first capture run and was closed by adding it to `EnactedLaw` (cosmetic only -
+Newtonsoft, not Unity's own serializer, is what save/load actually uses - but cheap, and it matches
+`DivisionRecord`'s own precedent for the identical shape: a record type sitting in a `List<T>`
+field directly on `[Serializable] Country`). Confirmed gone on the very next run, and confirmed no
+NEW warnings were introduced anywhere else - every warning present in the final capture log
+(`Published`, `Rating`, `PolicyDecision`'s override dictionaries, `CabinetMinisters`,
+`ParliamentSeats`) predates this slice.
+
+### RULINGS NEEDED - recap, for the record
+
+- **The sliders' fate: RULED - read-only summary**, Crime & Justice only, this slice. Reasoning and
+  scope boundary above.
+- **Prerequisites/conflicts: RULED - deferred to v2**, fields not reserved. Reasoning above.
+- **The fork the derivation surfaced: the legibility bar's "trace panel" doesn't exist as built
+  infrastructure.** Handled by following the Q1/Q3 developer-side decomposition precedent instead of
+  inventing a player-facing panel, and naming the absence explicitly rather than silently
+  substituting something else in its place - the same pattern Q1's own validation section already
+  established for exactly this situation.
+
+## Law content marathon - STOPPED at 38/50, a real fix found, a real UI finding surfaced (2026-08-25)
+
+Target was 50 laws, batches of ~10, an architecture check riding inside the content pass. Stopped
+after batch 3 (38 laws) on the marathon's own explicit stop condition - "the browser stops being
+navigable" - confirmed by capture inspection, not assumed. The bigger result of the three batches
+that did run: a genuine composition bug in the enact/repeal mechanism, found only because this pass
+finally exercised a realistic multi-law scale, fixed, and re-verified.
+
+### What shipped - 34 new laws (4 -> 38), real-world-grounded, three research passes
+
+Three parallel research agents covered policing/border, sentencing/corrections/bail, and drugs/
+courts across all six seeded countries plus the genre's own vocabulary, each confirmed/directional/
+genre-idiom labeled per candidate. Curated into three batches, each deliberately rebalancing the
+dial coverage the prior batch left thin (batch 1 leaned hard on SentencingSeverity - the richest
+real-world-documented axis by a wide margin - batch 2 pushed PoliceFunding/JudicialFunding/
+BorderEnforcement, batch 3 filled remaining corrections/courts content and gave BorderEnforcement a
+genuine strict/lenient spread). Final composition: SentencingSeverity 19 of 38 laws (exactly half -
+reported honestly, not force-balanced away - real criminal-justice policy genuinely is
+sentencing-dominated as a topic), JudicialFunding 11, DrugPolicy 9, BorderEnforcement 9,
+PoliceFunding 7, BailReform 6.
+
+A magnitude taxonomy (MINOR +-3..6 / MODERATE +-7..14 / MAJOR +-15..22 / SWEEPING +-23..30) was
+stated once in `LawCatalog`'s own class doc comment and applied consistently by every law's own
+rationale comment, per rule 5 - no delta is "a number chosen to feel balanced." Every law's comment
+states CONFIRMED/DIRECTIONAL/GENRE-IDIOM and, where real, names the actual policy and country (Three
+Strikes Law, California 1994; Sweden's 2023 Tidö gang-crime sentencing escalation, verified via
+search; Germany's 2024 Cannabisgesetz; Illinois' 2023 full cash-bail abolition; Poland's Belarus
+border wall, 187km/~$407M, 2022; Italy's Fini-Giovanardi drug law, struck down by its own
+Constitutional Court in 2014; and more - full citations live in each law's own comment in
+`LawCatalog.cs`, not restated here).
+
+### The wanted-effects log - eight axis-level gaps, none forced into the six dials
+
+Recorded in `LawCatalog`'s own class doc comment (the permanent home for this list, not this file):
+a police-tactics/search-authority axis (stop-and-frisk, no-knock, qualified immunity, civil asset
+forfeiture - including the anti-mafia confiscation variant); a surveillance/data-collection axis
+(predictive policing, DNA/forensic databases, facial recognition); a custody-capacity/conditions
+axis (prison ownership, overcrowding standards - the ECHR's Torreggiani v. Italy ruling); a
+court-process-efficiency axis (plea bargaining, speedy trial, digitization - money alone doesn't buy
+throughput); a judicial-independence-structure axis (Poland's 2015-2023 disputes - a governance
+question, not a budget line); a public-health axis (harm reduction, needle exchange, supervised
+consumption); a federalism axis (US state-level cannabis legalization under a stricter federal
+regime); an accountability/transparency axis (officer civil liability, oversight boards, body-camera
+footage release mandates). None forced in - a few laws (stop-and-frisk-adjacent Gang Crime Sentencing
+Escalation's search-power piece, Italy's anti-mafia confiscation) use a WEAK, explicitly-labeled
+funding/severity proxy where the real law bundles an unrepresentable core alongside a representable
+remainder; the rest simply don't have a law authored for them.
+
+### The real finding: composition breaks at the clamp boundary, and it was fixable
+
+**Not a contrived case.** The end-of-marathon bar's own "composition test with a realistic set
+enacted" - ten laws a real government might plausibly pass together, several pushing
+SentencingSeverity - drove that dial to its 100 ceiling with room to spare (raw sum 121). Repealing
+the full set, in reverse order, landed SentencingSeverity at **29.0000, not 50.0000** - a 21-point
+deficit exactly matching the headroom the clamp had absorbed during enactment. With 19 of 38 laws
+touching this one dial and several at MAJOR/SWEEPING magnitude, three or four ordinarily-plausible
+enactments reach this ceiling on their own - this was always going to surface with real play, not
+just a ten-law stress test.
+
+**Root cause.** `ApplyLawBillEffects`'s first version mutated the dial incrementally -
+`Clamp(currentValue + thisLaw'sSignedDelta, 0, 100)` - reading whatever the CLAMPED prior value
+happened to be as the base for the next law. Clamping is not linear or invertible: once a value has
+been silently capped, an increment computed against that capped value no longer corresponds to the
+uncapped total, and repealing the same set in any order subtracts each law's full nominal delta from
+a chain of values that already "spent" some of that delta's effect on the ceiling - a structural
+overshoot below the true baseline, not a rounding artifact. Every SINGLE-law and small-stack test run
+in batches 1-3 passed cleanly because none of them individually reached a clamp boundary - the bug
+was real from the first commit and invisible until a genuinely realistic-scale composition test ran.
+
+**The fix - recompute from source of truth, not incremental mutation.** `Country.EnactedLaws` is
+already the authoritative record of which laws are active; the fix (`RecomputeCrimeJusticeDialsFromEnactedLaws`)
+treats each of the six dials as a PURE function of that list - sum every currently-enacted law's
+delta on a dial from the seeded 50 baseline, clamp exactly once, set the dial - recomputed in full on
+every enact and every repeal rather than nudged incrementally. This is correct for ANY history of
+enactments and repeals in ANY order, because there is no accumulated clamped state left to disagree
+with a fresh recomputation - not merely "fixed for the one sequence that was tested." An `EnactedLaws`
+entry citing a law no longer in `LawCatalog` (a hypothetical stale save after a future content
+removal) is skipped rather than crashing, the same "missing entry, not a crash" idiom `LawCatalog.GetById`
+already documents.
+
+**Re-verified, not assumed fixed.** The same realistic ten-law set: enact-side unchanged (100.0000 on
+the clamped dial, matching the pre-fix run exactly - the fix doesn't change what a single pass of
+enactments produces, only what repeal recovers), full repeal now nets **every one of the six dials
+back to EXACTLY 50.0000**, including the one that saturated. Every batch's own decomposition
+spot-checks and stacking tests (which never touched the clamp) re-run byte-identical after the fix,
+confirming it changes behavior only where the old mechanism was actually wrong. Default-path
+byte-identity re-confirmed a third time (600/600 lines, seed 777) with the fix in place - the
+recompute path is only ever reached from a bill that actually resolves, so a no-law playthrough is
+untouched by construction, verified rather than assumed.
+
+### Composition testing, generalized beyond single-law decomposition
+
+Three new check shapes ran across the batches, on top of the MVP slice's own single-law
+enact/repeal proof:
+- **Same-dial stacking** (batch 1, SentencingSeverity; batch 2, PoliceFunding): independent laws
+  enacted together land EXACTLY on baseline + sum of their deltas; full repeal nets back to EXACTLY
+  the pre-stack value.
+- **Mixed-sign stacking** (batch 3, BorderEnforcement, deltas +26/+14/-20): proves composition holds
+  when laws pull a dial in opposite directions within the same stack, not just when they agree.
+- **The realistic multi-dial set** (end of marathon, ten laws across five dials): the one that found
+  the clamp-boundary bug above - every dial checked simultaneously, deliberately including a
+  clamp-saturating case rather than avoiding one.
+
+### The stop: both symptoms the marathon's own condition named were confirmed present, not assumed
+
+At 38 laws (batch 3's capture), inspected directly rather than inferred: the category filter has
+been non-functional since batch 1 - every authored law shares the single Crime & Justice category,
+so "All" and "Crime & Justice" render an identical list, and the filter has never once narrowed
+anything. Card volume: roughly 1.3 cards fit in one screen-height at either capture size, so the full
+38-card list is roughly 27 screen-heights of scrolling with no way to jump or search. The
+populated-enacted-list capture (below) sharpened this further: even with 8 of the visible laws
+genuinely enacted, the two cards at the TOP of the list are both "not enacted" - there is no sort or
+filter by enacted status either, so confirming "what's currently in force" requires scanning the
+whole list regardless of how it's filtered. Both symptoms the stop condition named by name -
+"category filter insufficient" and "cards too many to scan" - are independently, visibly true at 38
+laws, not a marginal call.
+
+**Recommendation, not a ruling**: a second, smaller axis (Sub-tags within Crime & Justice - e.g.
+Sentencing/Policing/Drugs/Courts/Border - that `LawBrowserFilter` could actually filter against) or a
+compact list-plus-detail-panel pattern (rows collapse to name + status + one-line summary; a click
+expands the full card) would both directly address the two named symptoms without a category-system
+redesign. Twelve more laws (to reach 50) were not authored - continuing onto an already-strained
+browser would only make the finding this pass exists to report worse, per the marathon's own
+instruction not to entrench a bad abstraction by filling it with content.
+
+### The bar, run in full against the 38 laws actually authored
+
+**Default-path byte-identity**: confirmed three times independently (catalog growth alone, seed 777
+100-turn baseline, 600/600 lines byte-identical, 37/37 anomalies exact both before/after each check;
+the mechanism fix, same result a third time) - re-derived per check via a temporary revert of
+`LawCatalog.cs` to its pre-marathon (4-law) content and a fresh baseline run, not assumed inert by
+argument alone.
+
+**Composition with a realistic set**: the ten-law multi-dial test above - all six dials land exactly
+on their expected composed value (including the clamped one), full repeal nets every dial back to
+EXACTLY 50.0000.
+
+**Save/load with a dozen laws in force**: `SaveLoadRoundTripDiagnostic` extended from the MVP slice's
+one enacted + one pending to twelve enacted (drawn across all three batches and every dial, not a
+repeated pair) plus two pending bills - `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip
+clean`, reflecting 36 `EconomyState` fields (unchanged - laws touch only `Country`-level state).
+
+**Full captures, pinned on a populated browser and a populated enacted list**: `UiScreenshotDriver`'s
+law pin extended from one law to eight enacted (spanning every dial) plus two pending, at both sizes
+- 87/87 captured, 0 failed, 0 text overflow, 0 containment escape, 0 canvas-text violation. Visually
+confirmed - the populated-enacted-list capture is what surfaced the sharper version of the
+navigability finding above (enacted laws scattered through an unsortable list, not grouped or
+flagged in the summary view).
+
+### Verdict on "is fifty the right number"
+
+**No - not at this browser, not without the UI fix above landing first.** This isn't a content
+saturation finding (34 more real, groundable candidates existed in the research pool when the
+marathon stopped, and probably several times that many exist for a category this well-documented
+globally) - it's the marathon's own explicit "the browser stops being navigable" condition, actually
+firing, with both named symptoms independently confirmed. Report to Elias for a ruling on the browser
+fix; 12 more laws (Crime & Justice's own real-world content is nowhere near exhausted) are ready to
+resume the moment a fix lands, using the same batch/composition-check/capture discipline this pass
+established.

@@ -64,7 +64,8 @@ namespace PoliSim.Persistence
     /// SimulationManager's private pending state, captured explicitly (the 2026-08-01 implementation
     /// note: an explicit reviewable surface, so a new pending-bill type nobody wired into the save
     /// reads as an obvious omission here rather than silently half-persisting). One member per
-    /// private structure, same names minus the underscore - 14 in all as of 2026-08-16.
+    /// private structure, same names minus the underscore - 15 in all as of 2026-08-24 (law system
+    /// MVP slice added PendingLawBills).
     /// </summary>
     public class SimulationPendingState
     {
@@ -78,6 +79,8 @@ namespace PoliSim.Persistence
         public Dictionary<CountryId, SectorPolicyBill> PendingSectorBills = new Dictionary<CountryId, SectorPolicyBill>();
         public Dictionary<CountryId, TradePolicyBill> PendingTradeBills = new Dictionary<CountryId, TradePolicyBill>();
         public Dictionary<CountryId, SwfDrawdownBill> PendingSwfDrawdownBills = new Dictionary<CountryId, SwfDrawdownBill>();
+        /// <summary>Law system MVP slice: nested CountryId -&gt; LawId, mirroring PendingTaxProgramBills' own shape - see SimulationManager._pendingLawBillsByCountry's doc comment.</summary>
+        public Dictionary<CountryId, Dictionary<string, LawBill>> PendingLawBills = new Dictionary<CountryId, Dictionary<string, LawBill>>();
         public Dictionary<CountryId, ForeignPolicyMeeting> PendingForeignPolicyMeetings = new Dictionary<CountryId, ForeignPolicyMeeting>();
         public Dictionary<CountryId, List<PendingCabinetDecisionRecord>> PendingCabinetDecisions = new Dictionary<CountryId, List<PendingCabinetDecisionRecord>>();
         public Dictionary<CountryId, FiscalTurnReport> LastFiscalReports = new Dictionary<CountryId, FiscalTurnReport>();

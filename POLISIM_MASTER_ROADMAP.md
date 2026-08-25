@@ -101,6 +101,26 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
     in every simulated figure (AA+ vs AAA between consecutive runs) — the comparison is structural and
     by eye, never pixel-wise, until someone decides seeding the warm-up is worth it.
 
+    ⚠ **PAIRED-DETECTOR CORRECTION (2026-08-24, the Calendar Panel pass).** The table above reads
+    naturally as three passes over overlapping ground, which invites an assumption neither the table
+    nor this rule ever actually claimed: that one layer's blind spot is the other layer's job. **It is
+    not, and two findings from the same session sit cleanly on either side of the line.** A day-cell
+    height defect (a real overflow, `_calendarDayNumberStyle` sized against a flat guess instead of its
+    own metric) was caught by `UiOverflowGuard` **alone** — 2,004 violations, found straight from the
+    guard's own count before any image was opened, no eye involved at all. A ledger date-column that
+    **wrapped** rather than clipped at 2560px (`"10"` over `"/1"`) was caught by eye **alone** — none of
+    the three guards reports it, because a string that wraps instead of overflowing satisfies
+    containment, fit, and edge-flushness simultaneously; wrapping-instead-of-clipping is not a
+    question any of them asks. **Neither layer backstops the other's blind spot.** A guard's blind
+    spot is not safety-netted by looking (the guard-only case above needed no eye at all to be found,
+    but nothing guarantees a DIFFERENT guard-blind defect would be visually obvious the way this one's
+    count was); an eye's blind spot is not safety-netted by a guard built to answer a narrower question
+    than "does this read well" (wrapping is exactly the shape rule 15's original `d44ab2d` finding also
+    was — a composition question, not a containment one). Read the table's three rows as three
+    INDEPENDENT questions with three independent gaps, not three redundant passes that jointly cover
+    the ground — the reference-class trap's own lesson (2026-08-11: "adjacency is not sameness")
+    applied to verification layers instead of to a lookup.
+
     **RETENTION (added 2026-08-16, the repository-weight pass).** "Keep old sets to compare against"
     is why captures reached 5,316 PNGs / 5.1 GiB in five days, 2,003 of them committed (~874 MiB of
     git blobs — see CLAUDE.md "The repository weight finding"). The comparison this rule actually
