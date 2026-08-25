@@ -11343,6 +11343,27 @@ ignore," which is exactly backwards the one time the label stops being true. Ret
 a side effect of one - a name that states the current prohibition rather than the past reason the
 folder exists.
 
+**Rule 13's rename-only step, actually finished (2026-08-25).** The rename to `DO-NOT-OPEN` above
+was never the whole remediation - rule 13's own text says a live copy must be made "either read-only
+or genuinely non-launchable... before the next session starts," and a renamed folder with an intact
+`.git` is still exactly that: launchable, just under a name that asks nicely not to be. Found still
+live nine days later, by a `/code-review` cwd investigation that happened to fall back to
+`C:\Users\elias` (the harness's own default when no explicit path is given) and land one directory
+short of it. Defanged by renaming `ProjectSettings` to `ProjectSettings.RETIRED` **inside** the
+archive - Unity Hub and the Editor both key off `ProjectSettings/ProjectVersion.txt` to recognize a
+launchable project, so this removes the ONE property that was actually the hazard (launchability)
+while leaving `.git` completely untouched. That distinction matters here specifically: the archive's
+own git state - the pre-rewrite commit hashes, the `filter-repo` commit-map correspondence recorded
+in "Closed — the archive's two non-main branches" above - is the archive's entire remaining value.
+Stripping `.git` would have destroyed the one thing worth keeping while fixing a hazard a rename
+alone can fix. Reversible: restoring the original folder name restores a fully working project,
+which is the point - this is a lock, not a demolition.
+
+**Standing habit, stated because the incident above is the instance of it**: every harness/tool
+invocation in this project passes an explicit project path (`G:\UNITY\Projects\PoliSim`) rather than
+relying on whatever directory a session happened to default to - `/code-review`'s own fall-back to
+`C:\Users\elias` is what surfaced the archive still being live. A habit stated is a habit auditable.
+
 **The recovery method, generalized because it worked and will be needed again.** A `commit:`
 reflog entry is the strongest available evidence for where a commit was authored - it can only
 exist on the repo a local `git commit` actually targeted, unlike a commit's own author/committer
@@ -11548,3 +11569,52 @@ than the repeated empirical re-checks the original marathon relied on for the sa
 
 **Fifty of fifty, Crime & Justice.** The marathon's original target, reached after the one real
 blocker (browser navigability) that stopped it at 38 was fixed rather than worked around.
+
+## The detail-pane width, ruled and built (2026-08-25)
+
+**The ruling first, since the build changed shape twice from what it predicted.** Derived from the
+actual layout constants, not guessed: at 1600px the detail pane's nominal share (`rightColumnWidth *
+0.44 - 10`) measures 348px, comfortably more than the ~290px the MAGNITUDE row's two fixed-width
+children need - the pane was never genuinely too narrow, it was simply never held to its own share
+(`GUILayout.BeginVertical()` with no `GUILayout.Width`, unlike the list column three lines above).
+Severity: information loss, not cosmetic - the clip was horizontal, and the pane's own new vertical
+scroll (this session's earlier fix) cannot reach across an axis it doesn't scroll.
+
+**The build took three real fixes to close one symptom, each only visible after an actual capture -
+exactly the discipline this file keeps re-learning applies to floors and literals alike, now shown to
+apply to a missing width option too.**
+
+1. **The container's own width.** Constraining `BeginVertical` alone changed nothing the capture
+   could see - a plain Vertical/Horizontal group sets LAYOUT allocation only; it creates no GUIClip
+   region, so content past its bounds still rendered, unclipped. Only a ScrollView's own `GUI.BeginGroup`
+   genuinely clips, and it clips to whatever width IT is told - which nothing set explicitly. Confirmed
+   by direct instrumentation (`Debug.Log` of `GUILayoutUtility.GetLastRect()`, cross-checked against a
+   pixel crop of the boundary) rather than re-theorizing after the first capture looked unchanged: the
+   pane's own background genuinely stopped at the right x once the ScrollView itself got the width
+   option too. Clipping was fixed at that point, not before.
+2. **Word-wrap that never wrapped.** Inside that now-correctly-clipping region, `DrawLawDetailPane`'s
+   plain `GUILayout.Label(text, _labelStyle)` calls kept requesting their NATURAL, single-line width -
+   `GUIStyle.CalcSize` reports the unwrapped size regardless of `wordWrap`, which only engages once a
+   width is actually given (`CalcHeight(content, width)`). Text kept extending past the clip and simply
+   disappearing there - identical, on screen, to "nothing was fixed," which is exactly why step 1's fix
+   read as a no-op until the rect log proved the container was correct and the label input wasn't.
+   Fixed by threading the pane's real content width into `DrawLawDetailPane` and giving every wrapping
+   label an explicit `GUILayout.Width`.
+3. **The name/status split, calibrated three times.** The header row's name label and status badge
+   share one line via `FlexibleSpace()`; reserving the status's own `CalcSize` width (+12, then +24)
+   clipped its last character both times - a small, consistent, systematic underestimate, not a
+   one-off rounding error. Reserving from the WIDEST possible status string instead ("ENACTMENT
+   PENDING") stopped the clipping, but on its own starved the name column so badly on a short title
+   that it word-wrapped into an unreadable one-word-per-line tower. Fixed by keeping the worst-case
+   reserve (proven clip-free) and adding a floor - name never drops under half the pane's content
+   width - which trades a rare law's status wrapping to two lines for a title that never does.
+
+**Verified at both reference widths, not just the one that clipped**: 1600 and 2560, `0 text
+overflow(s)`/`0 containment escape(s)`/`0 canvas text violation(s)` at each, `not enacted` and the
+full MAGNITUDE step run confirmed fully visible by direct pixel crop at the pane's own measured right
+edge - not inferred from the guard's silence, which does not instrument plain `GUILayout.Label` calls
+and would have said nothing was wrong at every intermediate, still-broken step above. One remaining,
+explicitly accepted, non-information-loss cosmetic effect: at 2560 the name wraps to three lines where
+it fit on two before any of this landed, because the header font itself scales with `Screen.height` -
+the floor's absolute room is proportionally less extra at a taller window than the raw pixel increase
+suggests. Not fixed further; nothing here is invisible or unreachable, which is the bar that mattered.

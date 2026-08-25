@@ -1593,7 +1593,12 @@ reporting 1 after this lands.
 
 ## 7. REQUEST — the law browser board (2026-08-25)
 
-**Status: OPEN — written, not sent (the E2 convention: sending is Elias's).**
+**Status: ~~OPEN — written, not sent (the E2 convention: sending is Elias's).~~ — OVERTAKEN BY EVENTS
+(2026-08-25): Design delivered the board (Screen 1i) and `LAW_BROWSER_BOARD_RULINGS.md` before this
+request was ever sent, and the browser was rebuilt against that delivery the same day (see CLAUDE.md,
+"Progress4 delivered"). This request is superseded, not answered — it was never sent, and now never
+needs to be. Left below as the record of the reasoning that shaped what actually got built, not as
+something still pending.**
 
 **Why this, why now.** The law browser (`DrawLawsTab`, the sixth `PolicyLawsCategory`) is the
 densest screen the game has ever shipped, and the only major surface the v2.0 brief in §1 never
@@ -1688,14 +1693,25 @@ scroll nested inside a scroll.
 
 ### Attached — the current 38-law grid, so the board is drawn against what exists
 
-Four captures, current as of this pass (2026-08-25), from `../PoliSim-captures/`:
+~~Four captures, current as of this pass (2026-08-25), from `../PoliSim-captures/`:
 
 - `run_06f_policylaws_laws.png` / `_rows` / `_deep` — the default (no laws enacted) 38-card grid at
   three scroll depths, 2560×1398.
 - `run_85g_bill_laws.png` — the populated state (8 enacted, 2 pending) — **the enacted-vs-available
   failure capture cited above.**
 
-Attach these when this is actually sent — they're the evidence, not a description of it.
+Attach these when this is actually sent — they're the evidence, not a description of it.~~ —
+SUPERSEDED (2026-08-25): none of these four exist under these names any more, and the screen they'd
+show doesn't either — the card grid was replaced by the list+detail board this same request
+motivated, the same day. Verified before this note was written, not assumed: an exhaustive search of
+`PoliSim-captures\` found zero files matching `run_*`, and every same-subject capture that does exist
+(from today's rebuild, `seamhang0825_`/`lawfixes0825_`/`lawfixes0825b_`/`finalbar50_` prefixes) shows
+the new UI instead. This request's evidence is gone because the request succeeded, not because it
+was lost — there is no send package to assemble here.
+
+**Note, not a request (2026-08-25).** A courtesy update to Design — the built board's own captures,
+so they can see what shipped against their rulings doc — closes the loop whenever convenient.
+Nothing here is time-sensitive or blocking; send it or don't.
 
 ### Status recap, riding in the same message — so nothing here reads as pending on Design
 

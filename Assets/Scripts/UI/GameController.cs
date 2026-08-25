@@ -2522,11 +2522,11 @@ namespace PoliSim.UI
         /// header work — while making the colour absolute, which is what a paper ground requires. Restored
         /// immediately, because these styles are shared across the whole frame.
         /// </summary>
-        private static void DrawColoredLabel(string text, GUIStyle style, Color color)
+        private static void DrawColoredLabel(string text, GUIStyle style, Color color, params GUILayoutOption[] options)
         {
             Color previous = style.normal.textColor;
             style.normal.textColor = color;
-            GUILayout.Label(text, style);
+            GUILayout.Label(text, style, options);
             style.normal.textColor = previous;
         }
 
@@ -5889,9 +5889,33 @@ namespace PoliSim.UI
 
             GUILayout.Space(10f);
 
-            GUILayout.BeginVertical();
-            _lawDetailScrollPosition = GUILayout.BeginScrollView(_lawDetailScrollPosition, GUILayout.Height(scrollHeight));
-            DrawLawDetailPane(selectedIndex >= 0 ? _lawVisibleRows[selectedIndex] : (LawRowEntry?)null);
+            // Elias's ruling (2026-08-25): the detail pane's own width was never actually
+            // constrained - unlike the list column three lines above (GUILayout.Width(listWidth)),
+            // this BeginVertical had no width option at all, so GUILayout sized it by CONTENT
+            // instead of by its nominal 44% share.
+            //
+            // Two real bugs were behind the one symptom, found in sequence by instrumenting rather
+            // than re-theorizing after the first fix didn't change the capture: (1) the outer
+            // BeginVertical alone doesn't clip - only the ScrollView's own GUIClip group does, and it
+            // clips to whatever width IT was told, which nothing set explicitly before. Confirmed
+            // fixed structurally by direct Debug.Log of GUILayoutUtility.GetLastRect(): the pane's own
+            // background genuinely stops at its correct x, verified pixel-for-pixel against a crop of
+            // the boundary - clipping was never the remaining problem. (2) Inside that now-correctly-
+            // clipped region, DrawLawDetailPane's plain `GUILayout.Label(text, _labelStyle)` calls
+            // still requested their NATURAL, UNWRAPPED single-line width (GUIStyle.CalcSize ignores
+            // wordWrap when no width is given) - so text kept extending past the clip and simply
+            // disappearing there, which read identically to "nothing was fixed" until the two
+            // failures were told apart by inspecting the actual rendered rect, not by looking at the
+            // screenshot alone. Fixed by threading this pane's real content width into
+            // DrawLawDetailPane and giving every wrapping label an explicit GUILayout.Width - the
+            // width CalcHeight/wordWrap actually need to do their job, not merely a container that
+            // happens to clip whatever they overflow into.
+            float detailPaneWidth = Mathf.Max(0f, availableWidth - listWidth - 10f);
+            GUILayout.BeginVertical(GUILayout.Width(detailPaneWidth));
+            _lawDetailScrollPosition = GUILayout.BeginScrollView(_lawDetailScrollPosition,
+                GUILayout.Width(detailPaneWidth), GUILayout.Height(scrollHeight));
+            DrawLawDetailPane(selectedIndex >= 0 ? _lawVisibleRows[selectedIndex] : (LawRowEntry?)null,
+                Mathf.Max(0f, detailPaneWidth - GUI.skin.verticalScrollbar.fixedWidth - 12f));
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
 
@@ -6149,11 +6173,11 @@ namespace PoliSim.UI
         /// click, so omitting the button is exactly the "control count moves because of background
         /// state" hazard DrawTaxProgramBillEstimate's own row already avoids; fixed here to match.
         /// </summary>
-        private void DrawLawDetailPane(LawRowEntry? row)
+        private void DrawLawDetailPane(LawRowEntry? row, float contentWidth)
         {
             if (row == null)
             {
-                GUILayout.Label("Select a law from the list to see its detail.", _labelStyle);
+                GUILayout.Label("Select a law from the list to see its detail.", _labelStyle, GUILayout.Width(contentWidth));
                 return;
             }
 
@@ -6161,14 +6185,36 @@ namespace PoliSim.UI
             bool enacted = row.Value.Enacted;
             LawBill pendingBill = row.Value.PendingBill;
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(law.Name, _headerStyle);
-            GUILayout.FlexibleSpace();
+            // Code-review pass (2026-08-25): the name label is now given an EXPLICIT width - the
+            // remainder after the status label's own measured width - rather than none at all.
+            // GUIStyle.CalcSize (what a width-less GUILayout.Label uses to size itself) reports the
+            // NATURAL, UNWRAPPED single-line size regardless of wordWrap; wordWrap only engages once
+            // a width is actually given, via CalcHeight(content, width). Without it, a long law name
+            // requested its full one-line width, invisibly extending past the now-correctly-clipping
+            // ScrollView rather than wrapping inside it - clipped, not visible, which is exactly why
+            // the FIRST width fix (constraining the ScrollView itself) changed nothing the capture
+            // could see: the clip was already correct, the label's own layout input never was.
+            // Reserved from the WIDEST possible status string ("ENACTMENT PENDING"), with a generous
+            // buffer - CalcSize measured against the CURRENT (often much shorter) string was tried
+            // twice and clipped its own last character both times, by a few px each time, a small
+            // systematic underestimate rather than a one-off rounding error. Sizing from the worst
+            // case instead is what actually stopped the clipping empirically. That alone previously
+            // caused its OWN regression - starving the name column so badly that a short title
+            // word-wrapped into an unreadable one-word-per-line tower - which the 50%-of-pane floor
+            // below fixes: name never drops under half the content width, at the cost of the status
+            // itself wrapping to a second line on the rare law where both a long name and "ENACTMENT
+            // PENDING" are showing at once, which reads fine where a broken-up name does not.
             GetLawStatusDisplay(row.Value, out string statusLabel, out Color statusColor);
-            DrawColoredLabel(statusLabel, _labelStyle, statusColor);
+            float wantedStatusWidth = _labelStyle.CalcSize(new GUIContent("ENACTMENT PENDING")).x + 24f;
+            float nameWidth = Mathf.Max(contentWidth * 0.5f, contentWidth - wantedStatusWidth);
+            float statusWidth = Mathf.Max(0f, contentWidth - nameWidth);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(law.Name, _headerStyle, GUILayout.Width(nameWidth));
+            GUILayout.FlexibleSpace();
+            DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(statusWidth));
             GUILayout.EndHorizontal();
 
-            GUILayout.Label(law.Description, _labelStyle);
+            GUILayout.Label(law.Description, _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(4f);
 
             // Code-review pass (2026-08-25): the step run's size is now derived from the live font
@@ -6195,13 +6241,13 @@ namespace PoliSim.UI
             DrawLawDeltaRow("Border Enforcement", law.BorderEnforcementDelta);
             GUILayout.Space(4f);
 
-            GUILayout.Label(law.Citation, _labelStyle);
-            GUILayout.Label($"Enactment cost: {law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture)} approval (paid once, on passage)", _labelStyle);
+            GUILayout.Label(law.Citation, _labelStyle, GUILayout.Width(contentWidth));
+            GUILayout.Label($"Enactment cost: {law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture)} approval (paid once, on passage)", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);
 
             if (pendingBill != null)
             {
-                GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle);
+                GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth));
                 DrawBillLiveEstimate(ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill));
             }
             else
