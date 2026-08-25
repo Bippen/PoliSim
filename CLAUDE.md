@@ -11375,3 +11375,54 @@ because it is in use," because both tool shells still had their working director
 it - a filesystem operation blocked by a process nobody was tracking, the same shape, different
 mechanism. Fixed by moving both shells out first; the general lesson item 13 already states covers
 this too.
+
+## Progress4 delivered - the law browser board (§7), and three relay classes ported (2026-08-25)
+
+**Origin verification, before anything else touched it.** `AssetPackArchive/PoliSim v2 Design
+Progress (1).zip` (the " (1)" a browser dedup suffix from Design's own side, not a version number)
+inventoried clean: 6 files, no executables, no path escapes, every SHA-256 in its own manifest
+verified against the real bytes. `PoliSim v2 Screens.dc.html` carries all nine screens 1a-1i
+(1a-1h matching this file's own established board history exactly), confirming
+`data-screen-label="1i Law browser board"` is genuinely present, not asserted. Renamed on import to
+`PoliSim v2 Design Progress4.zip` - the archive already held Progress2/Progress3, and the delivered
+filename was never a real sequence number - with the original name recorded here rather than
+silently lost. Manifest's own claim ("zero new sprites... a report of 'nothing found' is a PASS")
+verified against the inventory directly: no PNG/SVG among the six files besides the one 1920x1080
+reference render, which is reference material, not a delivered asset, and lives out-of-tree beside
+the other captures (`../PoliSim-captures/design-boards/`) rather than in git history - the
+repository-weight lesson applied before a second 1MB PNG could repeat it.
+
+**`LAW_BROWSER_BOARD_RULINGS.md`** copied to the repo root as delivered - the board's rulings in
+written form, the build target for the browser rebuild's next pass, not re-derived from a chat
+paraphrase of it.
+
+**Three relay classes, read in full and independently verified before porting - not copied on the
+strength of the delivery alone:**
+
+- **The pronoun class.** Name the human's obligations by role, never by a pronoun that can flip
+  ownership on relay. Confirmed against this file's own record: a message earlier the same session
+  read "sending is yours" while §7's status line and §5's addendum both said, in this document,
+  "sending is Elias's" - two independently-written places agreeing, one relayed paraphrase
+  disagreeing with both. **Write "sending is Elias's," never "sending is yours."**
+- **The name-trap class.** Verify a document by its content, never by its filename. On Design's own
+  side, `CLAUDE_DESIGN_ASSET_REQUEST.md` named a stale 1034-line copy with no §5 and no §7, while
+  the current 1709-line content sat in a hash-suffixed working copy from a repeated upload -
+  delivered-vs-reachable inverted, correct name wrong bytes. This project's own rule 12 already
+  says "re-derive from the filesystem, not a cached claim"; this is the same discipline pointed at
+  a filename instead of a status line. Pin line count and section presence in a manifest, not the
+  name - exactly what this entry's own origin verification did above.
+- **The flipped-addressee class.** A prompt written for one agent, relayed to another - the tell is
+  an acceptance bar the recipient structurally cannot run. A validation bar ("trajectory
+  byte-identical, save/load untouched-confirmed, captures pinned") reaching an agent with no repo,
+  no build and no capture ability is the signature, not the content of the bar itself. Before
+  relaying an instruction between two collaborating sessions, check whether the recipient can
+  actually execute what it asks for; if it cannot, the work was never theirs to receive.
+
+**Two items carried forward, not resolved by the delivery itself:** the citation slot
+(`LAW_BROWSER_BOARD_RULINGS.md`'s Portugal/Law 30/2000 example is Design's placeholder for the
+shape, not a record - `LawCatalog`'s own comment for `drug_decriminalization_act` is the real
+source, and is being reconciled against it in the same pass); and the category filter's underlying
+inertness, which the board's counted/hatched chips make visually undeniable (`All - 38`,
+`Crime & Justice - 38`, five chips at `- 0`) without themselves fixing it - a legibility fix and a
+bug report about the same fact, kept as two named items per the delivery's own explicit warning not
+to let one read as having resolved the other.
