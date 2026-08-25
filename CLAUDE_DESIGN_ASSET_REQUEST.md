@@ -1,17 +1,33 @@
 # Claude Design asset request — PoliSim
 
-**Status: §1E CLOSED (all five) — verified 2026-08-11 by per-item enumeration against disk, see §1F.2.
-The earlier "independently verified by zero diffs" claim was withdrawn: identity is not compliance.
-§1F ANSWERED, DELIVERED AND IMPORTED (2026-08-11); batch correctly not started.
-⚠ OPEN: eight SVG sources unfiled — `DeliveredAssetCheck` is RED on them by design.**
-**Date:** 2026-08-10.
+**Status — updated 2026-08-25 (previous line was stale: the "eight SVG sources unfiled" item closed
+2026-08-11, see §1F.2, and stood uncorrected here for two weeks — this document's own recurring
+failure, caught pointed at itself again).
+§1E/§1F CLOSED, delivered, imported (2026-08-11). §1G CLOSED — `mark_party_us_lib` delivered and
+imported (2026-08-17); its R5 hex-exchange rider and the branch-side accounting are both GATED BY
+NAME on item 10 (13 Sept), not pending on Design. §5's cabinet-portrait PoC is IMPORTED
+(2026-08-17); the batch of nine stays GATED — on OUR side, an Editor register side-by-side, not on
+anything Design owes us. §1F.1's rasterization diff is CARRIED, its blocker sharpened to a named
+one (a rasterizer whose OUTPUT is comparable, not merely a rasterizer existing) — still ours to
+close.
+⚠ OPEN — NEW: §7, a request for a board — the law browser (list+detail), the densest screen in the
+game and the only major surface v2.0 never specced.**
+**Date:** 2026-08-25.
 
-➡ **START AT [§1E](#1e-pass-3-follow-ups--five-import-blockers-2026-08-10).** Pass 3 answered all nine
-items of the §1D revision request — seven accepted as raised, two amended with reasoning better than the
-request had. What remains is **five delivery-side items that stop delivered assets from importing**:
-a prefix that contradicts §3.1's tint rule, a second namespace inside `Chrome/`, two sprite sheets that
-need an import recipe §3 does not carry, SVG-only delivery where every previous pass shipped PNGs, and
-D1's own agreed draft carrier which has no PNG at all. None disputes a design decision.
+➡ **START AT [§7](#7-request--the-law-browser-board-2026-08-25).** Everything above it is answered,
+delivered, imported, or waiting on a date rather than a reply. §7 is the one live ask.
+
+<details>
+<summary>Earlier START-AT pointer, retained for the record (2026-08-10)</summary>
+
+Pass 3 answered all nine items of the §1D revision request — seven accepted as raised, two amended
+with reasoning better than the request had. What remained then was five delivery-side items that
+stop delivered assets from importing: a prefix that contradicts §3.1's tint rule, a second namespace
+inside `Chrome/`, two sprite sheets that need an import recipe §3 does not carry, SVG-only delivery
+where every previous pass shipped PNGs, and D1's own agreed draft carrier which has no PNG at all.
+None disputed a design decision. All five are closed — see §1F.2.
+
+</details>
 
 **§1D is retained below as the record** of what was raised and how it was answered — read it for the
 reasoning behind D4's hue cap and D7's resort ladder, both of which are now implemented.
@@ -1382,6 +1398,14 @@ status has two parts, **delivered** and **reachable**, and only the first is vis
 > third entry (CLAUDE.md) with the two comparison shots specified (PoC beside an existing
 > portrait at roster size inside the brass frame, both display scales). The batch of nine
 > unblocks on its verdict.
+>
+> ⚠ **Addendum, 2026-08-25 — restated so nothing here reads as idling on Design.** All three gates
+> above are ours to close, not Design's to answer: the proof is delivered, and what stands between
+> it and the other eight is a same-side Editor comparison. **Also flagged, not requested:** the
+> roster this batch of nine covers (3 portfolios × 3 philosophies) may grow as decision-density work
+> proceeds — more portfolios means more candidates, and therefore a batch larger than nine. Nothing
+> to act on yet; named now so a future ask for "twelve" or "fifteen" doesn't read as scope creep
+> against this one.
 
 ### The original request follows (2026-08-17)
 
@@ -1413,7 +1437,10 @@ placeholder until each file lands, so partial delivery is safe).
 Coverage after delivery: 18 ministers + 7 Fed chairs = 25 portraits. Import per §3's treatment rules
 (`ImporterSettingsCheck` will enforce); `DeliveredAssetCheck` gains 18 entries (9 × 2 files).
 
-Tracked in `MISSING_PREREQUISITES.md` §D1 — status there is now WRITTEN, NOT SENT (the E2 convention).
+Tracked in `MISSING_PREREQUISITES.md` §D1. ~~Status there is now WRITTEN, NOT SENT~~ — **SENT
+2026-08-17 (Elias)**, per CLAUDE.md's own sequencing board; this line was accurate the day it was
+written and went stale the same day the request was actually sent. The E2 convention held
+throughout — this document only ever wrote it.
 
 ---
 
@@ -1561,3 +1588,122 @@ residual should look like beside three parties that have marks.
 
 **So `PartyMarkCoverageCheck` reporting "2 without one" is 1 request and 1 by design**, and it will keep
 reporting 1 after this lands.
+
+---
+
+## 7. REQUEST — the law browser board (2026-08-25)
+
+**Status: OPEN — written, not sent (the E2 convention: sending is Elias's).**
+
+**Why this, why now.** The law browser (`DrawLawsTab`, the sixth `PolicyLawsCategory`) is the
+densest screen the game has ever shipped, and the only major surface the v2.0 brief in §1 never
+specced — it postdates that brief by weeks, built as part of the Law System MVP slice and the
+content marathon that followed it (CLAUDE.md: "Law System MVP Slice"; "Law content marathon —
+STOPPED at 38/50"). It runs today on plain procedural desk-and-document chrome with no board behind
+it at all. The marathon that just ran was explicitly **stopped** on this screen's own
+navigability failing its own stop condition — this request is that finding, turned into an ask,
+with the real constraints stated rather than left for Design to guess.
+
+### Scale — the real number today, and the number the board has to survive
+
+**Today: 38 laws, in the one category that has any content (Crime & Justice).** The design target
+this board has to hold up under is larger: **~50 laws per category**, and the game's own
+`PolicyLawsCategory` enum has room for six — only one is populated today, but a corpus approaching
+**~300 rows across six categories** is the honest scale to design against, not the 38 currently on
+screen. Which six categories isn't decided and isn't part of this ask — the request is a board that
+stays scannable at that eventual density, not one that merely fits today's single category
+comfortably.
+
+**The failure already fired at 38 — confirmed by capture, not projected forward.** At 38 cards in
+one category, the category filter (`LawBrowserFilter`) has never once narrowed anything — there is
+exactly one populated category, so "All" and "Crime & Justice" render an identical list — and
+roughly 1.3 cards fit in one screen-height at either capture size, so the full list is on the order
+of 27 screen-heights of scroll with no jump, search, or sort. **This is precisely the failure a
+list+detail board exists to solve, and it is already failing under a tenth of the eventual corpus.**
+
+### The row — what it carries today, and the rule we're asking Design to make
+
+A card today (`DrawLawCard`) shows, per law: name, an enacted/not-enacted status line, category,
+every nonzero dial delta as ledger cells, the enactment approval cost, and either an enact/repeal
+action or a pending-bill countdown. That's everything a CARD carries — a ROW in a list+detail board
+cannot carry all of it and stay scannable. What we've derived a row needs to carry, at minimum, to
+be decidable at a glance:
+
+- **Name**
+- **Status — enacted / available / bill pending** (not optional; see below)
+- **Category** (once more than one is populated)
+- **A magnitude signal** (see the taxonomy question below)
+- **Cost** (the enactment approval hit)
+
+Everything else we can name — the full six-dial delta breakdown, the real-world citation, a live
+pass/fail estimate — reads naturally as detail-pane-only, but **we don't have the design judgment to
+draw that line and are asking Design to rule on it** rather than guessing: which of the above, if
+any beyond name and status, earns real visual weight on the row, and which lives in the detail pane
+only.
+
+### Enacted-vs-available — a live, evidenced failure, not a hypothetical
+
+**This is the one row requirement we're not asking Design to rule on — it's the specific failure the
+board has to solve.** Our own capture with 8 laws enacted and 2 bills pending (`run_85g_bill_laws.png`,
+attached below) shows the **top two rows in the list both un-enacted**, with the 8 enacted laws
+scattered somewhere below the fold, and **no sort or filter by status exists at all** — confirming
+that seeing what's currently in force requires scanning the full list regardless of which category
+filter is active. State it as the specific problem the board must solve: a player has to be able to
+see what's in force without scrolling past what isn't.
+
+### The magnitude taxonomy — a question, not an assumption
+
+Every law is tagged MINOR / MODERATE / MAJOR / SWEEPING internally (`LawCatalog`'s own class doc
+comment: MINOR ±3–6, MODERATE ±7–14, MAJOR ±15–22, SWEEPING ±23–30, applied per-law in each law's own
+rationale comment) — but it has **no visual expression anywhere in the UI today**; the only way a
+player currently reads magnitude is by eyeballing the ledger deltas themselves. **We're asking
+whether it should get one** — a tag, a bar length, a weight class, something else, or nothing at all
+because the deltas already carry it — rather than assuming a treatment and handing Design a skin to
+apply.
+
+### Detail pane content
+
+- **Description** (`LawDefinition.Description` — exists, already shown on the card).
+- **Deltas** (the six-dial ledger breakdown — exists, already shown on the card).
+- **Real-world citation — does not exist in the UI today.** Every law carries a CONFIRMED /
+  DIRECTIONAL / GENRE-IDIOM label and a real-world source (named policy, country, year) in its own
+  code comment, per rule 5's "no invented numbers dressed as researched" discipline — none of it
+  reaches the player. This is new content the board has to carry, not a restyle of something that
+  already renders.
+- **A live PASS/FAIL estimate** — exists today only for a law with a bill already pending
+  (`DrawBillLiveEstimate`, shared with every other bill-gated tab). The closer precedent is the
+  Tax/Welfare Policy tabs' per-row estimate (`DrawTaxProgramBillEstimate`/
+  `DrawWelfareProgramBillEstimate`) — a live score of the exact hypothetical the enact/repeal action
+  would submit, shown BEFORE a bill exists, not only after. The detail pane should carry that same
+  shape: a live estimate whether or not a bill is currently pending.
+- **The enact/repeal action** (exists).
+
+### Idiom
+
+The established desk-and-document grammar, ledger rows (`LedgerRow`'s measured-not-clipping
+discipline), IMGUI — nothing about the density argues for a Canvas screen here. **One scroll**, per
+the standing rule every converted policy sub-screen already follows (the UI Revamp's own
+scrollview-height-constrained pattern, one per sub-screen) — a list+detail split should not mean a
+scroll nested inside a scroll.
+
+### Attached — the current 38-law grid, so the board is drawn against what exists
+
+Four captures, current as of this pass (2026-08-25), from `../PoliSim-captures/`:
+
+- `run_06f_policylaws_laws.png` / `_rows` / `_deep` — the default (no laws enacted) 38-card grid at
+  three scroll depths, 2560×1398.
+- `run_85g_bill_laws.png` — the populated state (8 enacted, 2 pending) — **the enacted-vs-available
+  failure capture cited above.**
+
+Attach these when this is actually sent — they're the evidence, not a description of it.
+
+### Status recap, riding in the same message — so nothing here reads as pending on Design
+
+- **Portraits (§5).** The batch of nine is gated on OUR side — an Editor register side-by-side
+  between the delivered PoC and the existing 16, not on anything Design owes us. Said plainly here
+  so they aren't idling on a phantom reply. Also flagged, not requested: the minister roster this
+  batch covers may grow as decision-density work proceeds (more portfolios → more candidates → a
+  batch larger than nine) — nothing to act on now, named so a future, bigger ask doesn't read as
+  scope creep against this one. Full addendum at §5.
+- **R5 hexes (§1G).** Still item-10-gated (13 Sept) — restated, not reopened, so it doesn't read as
+  pending on Design. No action on their side until the gate opens and the party seeds land.
