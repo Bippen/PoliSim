@@ -11254,3 +11254,73 @@ firing, with both named symptoms independently confirmed. Report to Elias for a 
 fix; 12 more laws (Crime & Justice's own real-world content is nowhere near exhausted) are ready to
 resume the moment a fix lands, using the same batch/composition-check/capture discipline this pass
 established.
+
+## Rule 13 — concurrent working copies, named at the filesystem level (2026-08-25)
+
+**No rule 13 existed before this entry.** Searched first, not assumed: every `.md` file on both
+copies of this repository, grepped for "rule 13" - zero hits. The number sat unclaimed between
+rule 12 and rule 14. This fills it, rather than folding the finding into rule 14 by proximity,
+because the shape is a level down from what rule 14 covers - see below.
+
+**The hazard.** `C:\Users\elias\PoliSim-backup-2026-08-16` was built 2026-08-16 as a frozen
+pre-rewrite backup during the history-rewrite pass (see "The history rewrite — executed
+2026-08-16" above) - explicitly not meant to be worked in. It is a complete Unity project with its
+own `.git`, independently committable, independently launchable, on a different physical drive
+from `G:\UNITY\Projects\PoliSim`. Nothing in the rewrite pass's own writeup, in Unity Hub's
+project list, or anywhere in this project's working discipline named "a second, independently
+git-committable copy of the repo now exists on disk" as a live risk.
+
+**What actually happened, derived from reflog and commit metadata across both copies, not
+assumed:**
+- G:'s reflog records twenty ordinary `commit:` actions running 2026-08-17 14:59:17 through
+  2026-08-18 23:34:15 - Master Sequence II Steps 2-3, Q2 and Q5 shipping, three scenario-content
+  passes (Wage Boom Management and The Disinflation measured and dropped, Italy Debt Crisis
+  shipped), a first playtest session. A `commit:` reflog entry only exists on a repo that a local
+  `git commit` actually targeted - this is direct evidence G: was the working copy for that
+  stretch, not an inference from timestamps alone.
+- C:'s reflog shows a gap over the EXACT same window: last activity 2026-08-16 17:16:55, next
+  activity 2026-08-24 21:26:43. Zero local commits on C: for eight days. C: was demonstrably not
+  in use while G: was.
+- Six of G:'s twenty commits (through `ed07333`) reached `origin` by push during that window and
+  were later pulled into C: when it resumed on 08-24 - confirmed because C:'s own reflog never
+  records those six hashes as local `commit:` actions; C: only has them as received history.
+  **The other fourteen stayed local to G:, unpushed, for eight days** - real, shipped, reviewed
+  work (Italy Debt Crisis specifically survived where two other scenario passes were measured and
+  dropped) sitting on one disk with no remote copy. Recoverable only because this was found before
+  anything overwrote it, not because anything protected it.
+- Found by accident: a routine "which project path does the Editor actually use" check, prompted
+  by an unrelated question, surfaced Unity Hub's registry pointing at G: while the active session
+  work for the past week had in fact been happening in C:.
+
+**This is the 2026-08-11 "188 commits existed on exactly one disk" incident again (rule 14), one
+level down.** That incident was two writers on the SAME repository with a missing local tracking
+ref standing in for a missing remote. This is two entirely separate repositories, at two different
+filesystem paths, each with its own remote, its own reflog, its own committable history - and rule
+14's own checks (`git status -sb`, `DeliveredAssetCheck`, `UpstreamCheck`, everything in
+`CheckSuite`) all run inside ONE repo and are structurally blind to whether a second one exists.
+Rule 14 asks "is my local history pushed." Nothing asked "is there a second copy of this
+repository, anywhere, that a session might be writing to instead."
+
+**STANDING RULE 13: a second physical copy of this repository - on another drive, in a backup
+folder, anywhere outside the one path Unity Hub and the active session both point at - is a
+concurrent-writer hazard exactly like rule 14's, and it is invisible to every check rule 14
+already built.** The only way to know is to ask, at the filesystem level, before trusting either
+copy:
+1. **Unity Hub's registered project list** (`%APPDATA%\UnityHub\projects-v1.json`) and the
+   `Editor.log`/`Editor-prev.log` startup path (`%LOCALAPPDATA%\Unity\Editor\`) - for which copy
+   interactive sessions actually use.
+2. **Each candidate copy's own reflog, for the same date range** - `git reflog show --date=iso`,
+   read for which one (if either) was actually written to, not assumed from where a session
+   happens to be rooted.
+3. **`git fetch` plus `git cat-file -e <hash>` across copies** - to confirm whether one copy's
+   unique commits are reachable from another's object store at all, rather than assuming a shared
+   `origin` means shared history. It does not: divergent local commits are invisible to every
+   other copy until pushed.
+
+**Practical corollary, stated because it is what just cost eight days of unpushed work sitting on
+one disk:** creating a second complete copy of a live repository - for any reason, including "just
+a backup" - is the moment to also decide, explicitly, which one is the working copy going forward,
+and to make the other one either read-only or genuinely non-launchable (unregistered from Hub,
+`ProjectSettings` removed or renamed, or simply never opened) before the next session starts. A
+backup that stays fully launchable is not a backup with a hazard attached to it later; it is a
+second working copy that has not diverged yet.
