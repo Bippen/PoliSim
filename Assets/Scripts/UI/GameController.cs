@@ -6254,6 +6254,29 @@ namespace PoliSim.UI
             DrawLawDeltaRow("Border Enforcement", law.BorderEnforcementDelta);
             GUILayout.Space(4f);
 
+            // Item 6 (ruled 2026-08-25): the NEUTRAL DERIVED effects list - per downstream stat,
+            // the long-run target shift computed from this law's dial deltas and the declared
+            // coupling table the simulation itself reads (CrimeJusticeCouplings), so this text
+            // cannot drift from what enacting the law actually does. No authored valence - pro/con
+            // is politics, direction and size are the model's. The model's coupling gaps are
+            // deliberately visible here (a law moving only SentencingSeverity shows no prison
+            // line, because the model has no such edge) - ruled acceptable, logged as the
+            // couplings-pass input.
+            var expectedEffects = CrimeJusticeCouplings.AggregateLawEffects(law);
+            if (expectedEffects.Count > 0)
+            {
+                GUILayout.Label("EXPECTED EFFECTS", _labelStyle, GUILayout.Width(contentWidth));
+                foreach (CrimeJusticeCouplings.LawEffectLine effect in expectedEffects)
+                {
+                    GUILayout.Label(
+                        $"{CrimeJusticeCouplings.DisplayName(effect.Stat)}: {effect.Amount:+0.00;-0.00} {CrimeJusticeCouplings.Unit(effect.Stat)}{(effect.Contested ? " (contested)" : "")}",
+                        _labelStyle, GUILayout.Width(contentWidth));
+                }
+                GUILayout.Label("Long-run target shifts, from this law's dial deltas and the model's own couplings - as the dials settle, before dial clamps.",
+                    _labelStyle, GUILayout.Width(contentWidth));
+                GUILayout.Space(4f);
+            }
+
             GUILayout.Label(law.Citation, _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Label($"Enactment cost: {law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture)} approval (paid once, on passage)", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);

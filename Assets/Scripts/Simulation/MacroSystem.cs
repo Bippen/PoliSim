@@ -554,11 +554,9 @@ namespace PoliSim.Simulation
         /// <summary>CrimeIndex points added per point Unemployment sits above NaturalUnemploymentRate - reuses an already-proven driver (the same gap PovertyRate/ApplyApprovalRating already use) rather than inventing a new one; property crime's real-world link to joblessness is well documented, though modest relative to policy's own effect below.</summary>
         private const float CrimeUnemploymentSensitivity = 0.3f;
 
-        /// <summary>CrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - a real, well-documented deterrence/response-capacity effect. The larger of the two policy sensitivities - see SentencingSensitivity.</summary>
-        internal const float PoliceFundingSensitivity = 0.16f;
-
-        /// <summary>CrimeIndex points reduced per point Country.SentencingSeverity sits above its neutral 50 - deliberately HALF of PoliceFundingSensitivity, reflecting the well-established criminology finding (Nagin and others) that the CERTAINTY of enforcement deters crime more reliably than the SEVERITY of punishment, which has a smaller, more debated effect.</summary>
-        internal const float SentencingSensitivity = 0.08f;
+        // PoliceFundingSensitivity / SentencingSensitivity moved to CrimeJusticeCouplings (item 6,
+        // 2026-08-25) - the declared coupling table this formula now reads, values and doc
+        // comments carried verbatim.
 
         /// <summary>Neutral reference point for both policy dials - both start here for every country (a uniform placeholder, unlike CrimeIndex's own per-country baseline), so a gap versus this constant (not a country-specific anchor) is the correct comparison.</summary>
         private const float NeutralPolicyDialLevel = 50f;
@@ -574,14 +572,8 @@ namespace PoliSim.Simulation
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
         private const float OrganizedCrimeReversionSpeed = 0.15f;
 
-        /// <summary>OrganizedCrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - policing already fights organized crime in reality, reusing this existing lever rather than requiring a brand-new one for this specific link. Smaller than its own primary levers below - a secondary contributor.</summary>
-        internal const float PoliceFundingOrganizedCrimeSensitivity = 0.06f;
-
-        /// <summary>OrganizedCrimeIndex points reduced per point Country.BorderEnforcementLevel sits above its neutral 50 (and increased per point below) - stricter border enforcement disrupts cross-border smuggling/trafficking, organized crime's real, well-documented core activity. The primary lever for this stat.</summary>
-        internal const float BorderEnforcementOrganizedCrimeSensitivity = 0.12f;
-
-        /// <summary>OrganizedCrimeIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - better-funded prosecution capacity disrupts organized-crime networks, a real secondary contributor alongside BorderEnforcementLevel's more direct effect.</summary>
-        internal const float JudicialFundingOrganizedCrimeSensitivity = 0.06f;
+        // The three organized-crime dial sensitivities moved to CrimeJusticeCouplings (item 6,
+        // 2026-08-25) - values and doc comments carried verbatim.
 
         /// <summary>
         /// OrganizedCrimeIndex mean-reverts toward a target of Country.BaselineOrganizedCrimeIndex,
@@ -593,9 +585,9 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float target = country.BaselineOrganizedCrimeIndex
-                - PoliceFundingOrganizedCrimeSensitivity * (country.PoliceFundingLevel - NeutralPolicyDialLevel)
-                - BorderEnforcementOrganizedCrimeSensitivity * (country.BorderEnforcementLevel - NeutralPolicyDialLevel)
-                - JudicialFundingOrganizedCrimeSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
+                - CrimeJusticeCouplings.PoliceFundingOrganizedCrimeSensitivity * (country.PoliceFundingLevel - NeutralPolicyDialLevel)
+                - CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity * (country.BorderEnforcementLevel - NeutralPolicyDialLevel)
+                - CrimeJusticeCouplings.JudicialFundingOrganizedCrimeSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
 
             state.OrganizedCrimeIndex = Mathf.Clamp(state.OrganizedCrimeIndex + reversionSpeed * (target - state.OrganizedCrimeIndex), 0f, MaxCrimeIndexPercent);
         }
@@ -603,8 +595,7 @@ namespace PoliSim.Simulation
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
         private const float CorruptionReversionSpeed = 0.15f;
 
-        /// <summary>CorruptionIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - an independent, well-funded judiciary is a canonical real-world anti-corruption mechanism. The sole lever for this stat in this pass.</summary>
-        internal const float JudicialFundingCorruptionSensitivity = 0.14f;
+        // JudicialFundingCorruptionSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25).
 
         /// <summary>
         /// CorruptionIndex mean-reverts toward a target of Country.BaselineCorruptionIndex, adjusted
@@ -615,7 +606,7 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float target = country.BaselineCorruptionIndex
-                - JudicialFundingCorruptionSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
+                - CrimeJusticeCouplings.JudicialFundingCorruptionSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
 
             state.CorruptionIndex = Mathf.Clamp(state.CorruptionIndex + reversionSpeed * (target - state.CorruptionIndex), 0f, MaxCrimeIndexPercent);
         }
@@ -1393,14 +1384,8 @@ namespace PoliSim.Simulation
             state.Population = Mathf.Clamp(state.Population * factor, MinPopulation, MaxPopulation);
         }
 
-        /// <summary>
-        /// CrimeIndex points added per point Country.BailReformLevel sits above its neutral 50 (Round
-        /// 2's "Deeper Crime &amp; Justice") - small and HONESTLY CONTESTED, the same "flag the real
-        /// debate, don't pretend it's settled" treatment OvertimeRegulationLevel's own Unemployment
-        /// effect already got in "Deeper Labor Market Policies": bail reform's real effect on crime is
-        /// genuinely disputed in criminology research, not a settled empirical fact.
-        /// </summary>
-        internal const float BailReformCrimeIndexSensitivity = 0.02f;
+        // BailReformCrimeIndexSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25) -
+        // its "honestly contested" doc and flag carried with it.
 
         /// <summary>Round 3 item 3: CrimeIndex points added per point OrganizedCrimeIndex sits above Country.BaselineOrganizedCrimeIndex (and reduced per point below) - organized crime activity is a real, direct contributor to overall crime levels in most criminological frameworks. Deliberately modest so overall CrimeIndex isn't dominated by this one secondary contributor.</summary>
         private const float OrganizedCrimeIndexSensitivity = 0.1f;
@@ -1426,9 +1411,9 @@ namespace PoliSim.Simulation
             float interiorJusticeCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.InteriorJustice);
             float target = country.BaselineCrimeIndex
                 + CrimeUnemploymentSensitivity * unemploymentGap
-                - PoliceFundingSensitivity * (country.PoliceFundingLevel - NeutralPolicyDialLevel)
-                - SentencingSensitivity * (country.SentencingSeverity - NeutralPolicyDialLevel)
-                + BailReformCrimeIndexSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel)
+                - CrimeJusticeCouplings.PoliceFundingSensitivity * (country.PoliceFundingLevel - NeutralPolicyDialLevel)
+                - CrimeJusticeCouplings.SentencingSensitivity * (country.SentencingSeverity - NeutralPolicyDialLevel)
+                + CrimeJusticeCouplings.BailReformCrimeIndexSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel)
                 + OrganizedCrimeIndexSensitivity * organizedCrimeGap
                 - interiorJusticeCompetenceBias;
 
@@ -1470,14 +1455,8 @@ namespace PoliSim.Simulation
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
         private const float PrisonPopulationReversionSpeed = 0.15f;
 
-        /// <summary>PrisonPopulationRate points reduced per point Country.BailReformLevel sits above its neutral 50 (and added per point below) - bail reform's primary real-world goal is reducing pretrial detention, a direct and substantial real effect (pretrial detainees are a significant share of incarcerated populations, especially in the US).</summary>
-        internal const float BailReformPrisonPopulationSensitivity = 2.0f;
-
-        /// <summary>PrisonPopulationRate points added per point Country.DrugPolicyLevel sits above its neutral 50 (and reduced per point below) - the well-documented real link between strict drug enforcement and mass incarceration (the US "war on drugs" being the clearest real-world example).</summary>
-        internal const float DrugPolicyPrisonPopulationSensitivity = 1.6f;
-
-        /// <summary>Round 3 item 3: PrisonPopulationRate points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and added per point below) - a real, well-documented indirect effect: well-funded courts process cases faster, reducing the pretrial-detention backlog that swells incarceration in underfunded systems. Deliberately smaller than BailReformPrisonPopulationSensitivity's direct mechanical effect, since this is a secondary, capacity-driven channel, not bail policy's own primary lever.</summary>
-        internal const float JudicialFundingPrisonPopulationSensitivity = 0.8f;
+        // The three prison-population dial sensitivities moved to CrimeJusticeCouplings (item 6,
+        // 2026-08-25) - values and doc comments carried verbatim.
 
         /// <summary>Gameplay safety bound, comfortably above any real-world incarceration rate (the USA's real ~531 per 100k is already the highest among developed nations).</summary>
         private const float MaxPrisonPopulationRate = 1000f;
@@ -1492,9 +1471,9 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float target = country.BaselinePrisonPopulationRate
-                - BailReformPrisonPopulationSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel)
-                + DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel)
-                - JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
+                - CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel)
+                + CrimeJusticeCouplings.DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel)
+                - CrimeJusticeCouplings.JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
 
             state.PrisonPopulationRate = Mathf.Clamp(state.PrisonPopulationRate + reversionSpeed * (target - state.PrisonPopulationRate), 0f, MaxPrisonPopulationRate);
         }
@@ -1909,8 +1888,7 @@ namespace PoliSim.Simulation
         /// standing property, handed to the legibility feature (MS II step 2).</summary>
         internal const float GiniApprovalSensitivity = 0.05f;
 
-        /// <summary>Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
-        internal const float DrugPolicyApprovalSensitivity = 0.02f;
+        // DrugPolicyApprovalSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25).
 
         /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
         internal const float TaxHikeApprovalSensitivity = 1.5f;
@@ -2077,7 +2055,7 @@ namespace PoliSim.Simulation
             // small "tough on crime" approval boost, the same modest political framing
             // PoliceFundingLevel's own crime-reduction effect implicitly carries, gap versus the
             // shared neutral 50.
-            float drugPolicyApprovalEffect = DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
+            float drugPolicyApprovalEffect = CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
 
             // Q1 (gap form, R-Q1a): the paidLeave/welfare idiom exactly - a sustained term on the
             // gap versus the country's OWN baseline, zero at seed, no daily shape needed because
@@ -2157,7 +2135,7 @@ namespace PoliSim.Simulation
             ledger.SpendingEffect = spendingEffect;
             ledger.WelfareEffect = GetWelfareApprovalEffect(country);
             ledger.PaidLeaveEffect = PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
-            ledger.DrugPolicyEffect = DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
+            ledger.DrugPolicyEffect = CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
             ledger.GiniEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
             ledger.ClampLoss = (state.ApprovalRating - approvalBeforeFormula) - ledger.TermSum;
             ledger.ApprovalAfterFormula = state.ApprovalRating;

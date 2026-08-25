@@ -842,34 +842,40 @@ namespace PoliSim.UI
                     lines.Add($"NetMigrationRate offset: {MacroSystem.ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - neutral):+0.00;-0.00} per 1,000/yr");
                     lines.Add($"LFPR pull (before combined ceiling): {MacroSystem.NetMigrationParticipationSensitivity * (country.State.NetMigrationRate - country.BaselineNetMigrationRate):+0.00;-0.00} pts");
                     break;
+                // Item 6 (2026-08-25): the eleven crime-and-justice sensitivities below now read
+                // from CrimeJusticeCouplings - the declared table the Apply* formulas themselves
+                // read - a pure qualifier change, identical strings and arithmetic. Collapsing
+                // these hand-listed cases into a loop over the table's edges is possible and
+                // deliberately NOT done here (this pass is the extraction, not a rewrite of this
+                // renderer's line grammar).
                 case PolicyNodeId.PoliceFunding:
                     lines.Add($"Current level: {country.PoliceFundingLevel:F0}/100");
-                    lines.Add($"Crime Index target pull: {-MacroSystem.PoliceFundingSensitivity * (country.PoliceFundingLevel - neutral):+0.00;-0.00} pts");
-                    lines.Add($"Organized Crime target pull: {-MacroSystem.PoliceFundingOrganizedCrimeSensitivity * (country.PoliceFundingLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Crime Index target pull: {-CrimeJusticeCouplings.PoliceFundingSensitivity * (country.PoliceFundingLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Organized Crime target pull: {-CrimeJusticeCouplings.PoliceFundingOrganizedCrimeSensitivity * (country.PoliceFundingLevel - neutral):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.SentencingSeverity:
                     lines.Add($"Current level: {country.SentencingSeverity:F0}/100");
-                    lines.Add($"Crime Index target pull: {-MacroSystem.SentencingSensitivity * (country.SentencingSeverity - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Crime Index target pull: {-CrimeJusticeCouplings.SentencingSensitivity * (country.SentencingSeverity - neutral):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.BailReform:
                     lines.Add($"Current level: {country.BailReformLevel:F0}/100");
-                    lines.Add($"Crime Index target pull: {MacroSystem.BailReformCrimeIndexSensitivity * (country.BailReformLevel - neutral):+0.00;-0.00} pts (contested)");
-                    lines.Add($"Incarceration Rate target pull: {-MacroSystem.BailReformPrisonPopulationSensitivity * (country.BailReformLevel - neutral):+0.00;-0.00} per 100k");
+                    lines.Add($"Crime Index target pull: {CrimeJusticeCouplings.BailReformCrimeIndexSensitivity * (country.BailReformLevel - neutral):+0.00;-0.00} pts (contested)");
+                    lines.Add($"Incarceration Rate target pull: {-CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity * (country.BailReformLevel - neutral):+0.00;-0.00} per 100k");
                     break;
                 case PolicyNodeId.DrugPolicy:
                     lines.Add($"Current level: {country.DrugPolicyLevel:F0}/100");
-                    lines.Add($"Incarceration Rate target pull: {MacroSystem.DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - neutral):+0.00;-0.00} per 100k");
-                    lines.Add($"Approval pull: {MacroSystem.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Incarceration Rate target pull: {CrimeJusticeCouplings.DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - neutral):+0.00;-0.00} per 100k");
+                    lines.Add($"Approval pull: {CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - neutral):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.JudicialFunding:
                     lines.Add($"Current level: {country.JudicialFundingLevel:F0}/100");
-                    lines.Add($"Incarceration Rate target pull: {-MacroSystem.JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} per 100k");
-                    lines.Add($"Organized Crime target pull: {-MacroSystem.JudicialFundingOrganizedCrimeSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} pts");
-                    lines.Add($"Corruption target pull: {-MacroSystem.JudicialFundingCorruptionSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Incarceration Rate target pull: {-CrimeJusticeCouplings.JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} per 100k");
+                    lines.Add($"Organized Crime target pull: {-CrimeJusticeCouplings.JudicialFundingOrganizedCrimeSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Corruption target pull: {-CrimeJusticeCouplings.JudicialFundingCorruptionSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.BorderEnforcement:
                     lines.Add($"Current level: {country.BorderEnforcementLevel:F0}/100");
-                    lines.Add($"Organized Crime target pull: {-MacroSystem.BorderEnforcementOrganizedCrimeSensitivity * (country.BorderEnforcementLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Organized Crime target pull: {-CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity * (country.BorderEnforcementLevel - neutral):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.SwfContributionRate:
                     lines.Add(country.SovereignWealthFund != null

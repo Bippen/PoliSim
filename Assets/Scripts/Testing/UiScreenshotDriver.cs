@@ -251,6 +251,31 @@ namespace PoliSim.Testing
                     ScrollBy(controller, 2200f);
                     yield return Settle();
                     yield return Capture(stem + "_deep");
+
+                    // Item 6 (2026-08-25): the law detail pane's EXPECTED EFFECTS band sits between
+                    // the generic stops - the pane's own scroll CLAMPS to its max under both 900px
+                    // and 2200px (its content is short), and max scroll shows only the tail
+                    // (citation/cost/direction/button), cutting the effects lines just above the
+                    // fold at 2560 and entirely at 1600. One bespoke stop (the 85f_bill_tax_rows
+                    // idiom) scrolls ONLY the detail pane to a mid position - 0.3 x screen height,
+                    // calibrated by eyes at both capture sizes against the default-selected law -
+                    // so the derived-effects deliverable exists in a capture.
+                    if (stem.EndsWith("_policylaws_laws"))
+                    {
+                        ResetScrolls(controller);
+                        FieldInfo detailScroll = controller.GetType().GetField("_lawDetailScrollPosition", BindingFlags.Instance | BindingFlags.NonPublic);
+                        if (detailScroll == null)
+                        {
+                            Debug.LogError("SHOT: _lawDetailScrollPosition not found - the 06g expected-effects capture is MISSING, not clean.");
+                        }
+                        else
+                        {
+                            detailScroll.SetValue(controller, new Vector2(0f, Screen.height * 0.3f));
+                            yield return Settle();
+                            yield return Capture("06g_laws_expected_effects");
+                            ResetScrolls(controller);
+                        }
+                    }
                 }
 
                 SetEnumField(controller, sub.Key, sub.Value[0]);

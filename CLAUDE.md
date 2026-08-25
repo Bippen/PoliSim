@@ -11485,6 +11485,18 @@ proven** - one clean run against four failures, with the Editor version, a machi
 backup-scene deletion all changing at once - stated honestly per this file's own "only the
 experiment settled it" standard, not claimed as a root cause found.
 
+**The interactive-session-health gate's SECOND instance (2026-08-25, evening):** a batch launch
+failed with HRESULT 0x8007007E (module not found), then a partial run lost `dotnet.exe` mid-compile
+("is not recognized"), then a third launch failed cold - and the cause was **Unity Hub's own
+installer (`UnityHubSetup-3.21.0-x64` + an `old-uninstaller`) rewriting the 6000.5.6f1 editor tree
+mid-run**, caught by CreationTime fingerprints (whole-tree file re-creation minutes old, content
+timestamps intact) and files still appearing 17 seconds before the check. Diagnosed read-only,
+waited out with a process watcher, everything green after - nothing killed, nothing retried blind.
+The gate, stated once for both instances: **before launching Unity from a harness, the machine's
+interactive surface must be quiescent** - an Editor session, a force-kill's backup scene, or an
+installer rewriting the install can each present as an inexplicable hang or module-not-found, and
+the first checks are process list + freshly-created files, not a re-run.
+
 **The historical-present-tense trap, hit exactly as a reading hazard, not a policy violation.**
 Reaching for "the correct Unity path," a plain search of this file surfaces `6000.5.4f1` first, in
 sentences that read as current fact in isolation - "a real, working Unity 6000.5.4f1 install exists
@@ -11982,6 +11994,41 @@ pros/cons derivation vs authored-with-derived-check). **Item 7** (law-page clutt
 recorded as §7.1 of `CLAUDE_DESIGN_ASSET_REQUEST.md` with the `capfold` captures — Design's board,
 Design's iteration; nothing improvised here. **Parliament with real parties/mandates** is item 10
 (13 Sept), where the finding already lands.
+
+## Item 6 BUILT — the declared coupling table and the derived "Expected effects" (2026-08-25, ruled)
+
+**The extraction.** The Crime & Justice system's eleven dial→stat edges moved from MacroSystem's
+scattered `internal const`s into `CrimeJusticeCouplings` — one declared home the Apply* formulas
+THEMSELVES read (`ApplyCrimeIndex`/`ApplyOrganizedCrimeIndex`/`ApplyCorruptionIndex`/
+`ApplyPrisonPopulationRate`/the approval formula and its ledger twin all reference the qualified
+names; values and doc comments carried verbatim). The table's `All` rows cite the same consts with
+the sign AS APPLIED, so any text derived from it is the model's own book, quoted — the twin-drift
+lesson applied to prose. A SECOND existing consumer surfaced during the sweep:
+**PolicyWebRenderer's dial lines already hand-rendered the same eleven sensitivities** — re-pointed
+mechanically (identical strings and arithmetic; collapsing its switch into a table loop is possible
+and deliberately not done in the extraction pass).
+
+**The bar, met exactly:** trajectory dumps before and after
+(`traj_precouple_*`/`traj_postcouple_*`, 2 seeds × {100, 500, 1000} turns), diffed —
+**byte-identical, 39 of 39 fields, all six pairs.** A moved edge could not have changed value in
+transit and provably did not.
+
+**The renderer** (`DrawLawDetailPane`, after the delta rows): per-stat long-run target shifts
+summed as Σ(dial delta × signed sensitivity) over the table — neutral derived direction and size,
+no authored valence, "(contested)" carried per-edge (bail→crime), zero-stat rows omitted, and the
+honest caption ("as the dials settle, before dial clamps" — face deltas, the delta rows' own
+basis). **The model's coupling gaps ship visible, per the ruling** — a sentencing law's
+incarceration line comes only through its bail delta, because SentencingSeverity has no prison
+edge; the gap list (no sentencing→prison, no border beyond organized crime, no dial→budget) is
+logged in the table's own doc as the couplings-pass input.
+
+**Verified with eyes at both sizes** — which took its own iteration: the effects band sits between
+the driver's generic scroll stops (the detail pane's short scroll CLAMPS under both 900px and
+2200px, showing only the tail), so a bespoke stop was added (`06g_laws_expected_effects`, the
+`85f_bill_tax_rows` idiom — only the detail pane scrolled, 0.3 × screen height). The capture shows
+Truth in Sentencing deriving **Crime Index −1.36 pts (contested)** (15×−0.08 + −8×+0.02, exact)
+and **Incarceration Rate +16.00 per 100k** (−8×−2.0 — the gap on screen). Sweeps clean at 64/64,
+0 ATTRIB, both sizes (`couple2s1600/2560`).
 
 **The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
 anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
