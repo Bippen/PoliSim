@@ -777,6 +777,273 @@ namespace PoliSim.Simulation
                 PoliceFundingDelta = 10f,
                 BorderEnforcementDelta = 6f,
                 EnactmentApprovalCost = 0.5f
+            },
+
+            // ================================================================================
+            // BATCH 4 OF 5 (2026-08-25, resuming post-browser-fix): six laws, 38 -> 44.
+            // Deliberately diversified AWAY from SentencingSeverity - the marathon's own close-out
+            // composition test found 19 of 38 laws already touch it, the dial most at saturation
+            // risk. Of these six, only three touch it at all (two lenient, one severe - still net-
+            // balanced), while PoliceFunding gets three genuine primaries and BorderEnforcement,
+            // JudicialFunding each get one - the thinnest dials in the pre-batch-4 catalog. One law
+            // (the anti-mafia confiscation law) deliberately exercises the wanted-effects log's own
+            // pre-authorized "weak proxy, stated explicitly" pattern for a real mechanism (non-
+            // conviction asset forfeiture) this six-dial space cannot represent directly.
+            // ================================================================================
+
+            new LawDefinition
+            {
+                Id = "ice_287g_agreements_law",
+                Name = "287(g) Immigration Enforcement Agreements",
+                Description = "Authorizes state and local police to enter formal agreements with federal immigration authorities, deputizing officers to identify, detain, and process individuals for immigration violations during routine policing.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US 287(g) program (Immigration and Nationality Act Sec. 287(g), added by IIRIRA 1996), formalizing ICE-local police enforcement agreements; participation expanded sharply from the mid-2000s onward.",
+                // CONFIRMED - US 287(g) program, added to the Immigration and Nationality Act by the
+                // 1996 IIRIRA; dormant for its first several years, then adopted by a growing number
+                // of state and local agencies from the mid-2000s on, and expanded further in several
+                // later administrations. This is the direct real-world OPPOSITE of this catalog's own
+                // Sanctuary City Policy, which bars exactly this cooperation - the same "opposed pair
+                // proves the dial swings both ways" shape batch 1's own header established for
+                // BailReform/DrugPolicy, applied here to BorderEnforcement's interior-enforcement
+                // side. MODERATE primary on border enforcement (a real delegation of federal
+                // enforcement authority to local police, not full-scale detention/barrier
+                // construction); MINOR secondary on police funding (the federal training and
+                // reimbursement support that comes bundled with program participation).
+                BorderEnforcementDelta = 12f,
+                PoliceFundingDelta = 4f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "hot_spot_policing_program",
+                Name = "Hot Spot Policing Program",
+                Description = "Concentrates additional patrol presence and targeted enforcement on the small number of locations and individuals responsible for a disproportionate share of violent crime, rather than spreading resources evenly.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the Kansas City Gun Experiment (1992-93) and Boston's Operation Ceasefire (1996), among the most consistently evidence-backed policing strategies in criminology (Braga et al. meta-analyses).",
+                // CONFIRMED - place-based and focused-deterrence policing, proven out by the Kansas
+                // City Gun Experiment (1992-93, a randomized hot-spot patrol trial) and Boston's
+                // Operation Ceasefire (1996, a focused-deterrence intervention credited with a sharp
+                // youth-homicide drop) - since replicated widely, with Braga et al.'s repeated
+                // meta-analyses finding it among the most consistently evidence-backed strategies in
+                // policing research (unlike several more contested entries already in this catalog).
+                // MODERATE, single-dial: a real, well-evidenced patrol-ALLOCATION strategy, not an
+                // across-the-board funding increase, but genuinely felt in the areas it targets.
+                PoliceFundingDelta = 10f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "veterans_treatment_courts",
+                Name = "Veterans Treatment Courts",
+                Description = "Establishes specialized court dockets for justice-involved military veterans, linking eligible defendants to VA benefits, mentorship, and treatment in lieu of standard prosecution.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the first veterans treatment court, Buffalo, New York (2008, Judge Robert Russell); several hundred now operate across the US.",
+                // CONFIRMED - the first veterans treatment court opened in Buffalo, New York in
+                // January 2008 under Judge Robert Russell, explicitly modeled on the existing drug-
+                // and mental-health-court diversion shape already in this catalog; several hundred
+                // now operate nationally. Same dual-primary shape as Mental Health Diversion Courts
+                // for the same real reason (a genuinely specialized docket, not a funding line with
+                // an incidental severity side effect): MODERATE reduction in effective severity for
+                // the diverted population, MODERATE-low increase in judicial funding for the
+                // specialized staffing a dedicated docket requires.
+                SentencingSeverityDelta = -5f,
+                JudicialFundingDelta = 7f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "financial_crimes_aml_unit",
+                Name = "Financial Crimes & Anti-Money-Laundering Unit",
+                Description = "Establishes a dedicated police and prosecutorial unit investigating money laundering, large-scale fraud, and illicit financial flows, distinct from digital/cybercrime investigation.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US FinCEN (Financial Crimes Enforcement Network, established 1990) and the EU's Anti-Money Laundering Directives (in force since 1991, tightened repeatedly), both funding dedicated financial-crime investigative capacity.",
+                // CONFIRMED - the US Treasury's FinCEN (established 1990) and the EU's own Anti-Money
+                // Laundering Directive framework (first adopted 1991, through several later
+                // tightenings) both stand up real, dedicated financial-crime investigative capacity.
+                // Deliberately kept distinct from this catalog's own Cybercrime Investigation Unit:
+                // that law is digital fraud/hacking/exploitation; this one is money laundering and
+                // illicit financial flows - a genuinely different investigative discipline, funded
+                // and staffed separately in every real jurisdiction cited above. MODERATE primary on
+                // police funding (the investigative unit itself); MINOR secondary on judicial funding
+                // (the specialized prosecutorial capacity complex financial cases require).
+                PoliceFundingDelta = 8f,
+                JudicialFundingDelta = 4f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "stand_your_ground_law",
+                Name = "Stand Your Ground Law",
+                Description = "Removes the legal duty to retreat before using deadly force in self-defense in any place a person is lawfully present, and grants broad immunity from prosecution when the claim is upheld.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Florida's 2005 Stand Your Ground law, copied in some form by over 30 US states; associated in multiple peer-reviewed studies with more justifiable-homicide rulings and, in several states, higher homicide rates overall.",
+                // CONFIRMED - Florida enacted the first modern "Stand Your Ground" law in 2005,
+                // removing the common-law duty to retreat and adding a pretrial immunity hearing;
+                // more than 30 US states have adopted some form since. Multiple peer-reviewed studies
+                // (e.g. RAND's research synthesis, state-level difference-in-differences work) find
+                // more justifiable-homicide rulings and, in several states, a measurable rise in
+                // homicide rates following adoption - a real, contested, and measured effect, not a
+                // GENRE-IDIOM guess. MODERATE toward lenient: a real, documented reduction in
+                // prosecutorial reach for a specific class of violent-crime claims, kept below MAJOR
+                // since it applies only where a self-defense claim is actually raised, not a
+                // sentencing-code-wide rewrite.
+                SentencingSeverityDelta = -10f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "antimafia_asset_confiscation_law",
+                Name = "Anti-Mafia Asset Confiscation Law",
+                Description = "Empowers courts to seize assets from individuals with proven organized-crime associations even without a criminal conviction, based on a documented mismatch between lawful income and accumulated wealth.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Italy's Rognoni-La Torre law (1982), creating the mafia-association offense and non-conviction-based asset confiscation, strengthened repeatedly since (most recently the 2011 Anti-Mafia Code).",
+                // CONFIRMED - Italy's Rognoni-La Torre law (1982, passed after the Mafia assassination
+                // of its co-author, General Carlo Alberto Dalla Chiesa) created the "mafia
+                // association" criminal offense (Art. 416-bis) and non-conviction-based asset
+                // confiscation for proven organized-crime wealth; strengthened repeatedly since,
+                // consolidated into the 2011 Anti-Mafia Code. This is exactly the case this file's
+                // own wanted-effects log names in advance: the real, distinctive mechanism here -
+                // seizing assets WITHOUT a conviction, based on an income/wealth mismatch - has no
+                // representation in this six-dial space and is not claimed to. PoliceFundingDelta
+                // below is a WEAK, honestly-labeled proxy for the law's genuine investigative/asset-
+                // tracing capacity increase, not an assertion that funding is the real mechanism.
+                // SentencingSeverityDelta is the real, direct, MODERATE effect of the mafia-
+                // association offense itself, which the same law actually created and which does
+                // carry real prison terms independent of the confiscation power.
+                PoliceFundingDelta = 6f,
+                SentencingSeverityDelta = 8f,
+                EnactmentApprovalCost = 1.0f
+            },
+
+            // ================================================================================
+            // BATCH 5 OF 5 (2026-08-25): six laws, 44 -> 50, closing the marathon at its original
+            // target. Continues batch 4's deliberate move away from SentencingSeverity - only one
+            // of these six touches it, as a MINOR secondary. BailReform (the thinnest real dial
+            // pre-batch-5, at four laws) gets three here, genuinely opposed (one restrictive, two
+            // toward access), the same "opposed pair proves the dial swings both ways" shape as
+            // batch 1's own BailReform/DrugPolicy pair and batch 4's own 287(g)/Sanctuary City pair.
+            // DrugPolicy and BorderEnforcement each get two; JudicialFunding one. The catalog now
+            // sits at the population the marathon's own "saturating composition re-run" (recorded in
+            // CLAUDE.md) checks against - see that entry for the validation run itself, not claimed
+            // here.
+            // ================================================================================
+
+            new LawDefinition
+            {
+                Id = "federal_bail_reform_preventive_detention_act",
+                Name = "Pretrial Preventive Detention Act",
+                Description = "Authorizes courts to detain a defendant before trial based on a finding of danger to the community, not flight risk alone - the first legal basis for denying bail on dangerousness grounds rather than only to secure appearance.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US federal Bail Reform Act of 1984, upheld by the Supreme Court in United States v. Salerno (1987), establishing pretrial detention for dangerousness as constitutional.",
+                // CONFIRMED - the US federal Bail Reform Act of 1984 was the first federal law to
+                // authorize pretrial detention based on a finding of DANGER to the community, not
+                // flight risk alone - a structural break from the prior presumption (bail exists only
+                // to secure appearance at trial). Upheld against a due-process challenge by the
+                // Supreme Court in United States v. Salerno, 481 U.S. 739 (1987). MAJOR toward
+                // restrictive: this is the foundational modern basis for the dangerousness-based
+                // detention standard this catalog's own Bail Reform Rollback later cites as already
+                // being restored in New York - included here as the earlier, structural law that
+                // rollback returns TO, not the incremental swing back itself.
+                BailReformDelta = -16f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "percentage_bail_deposit_program",
+                Name = "Percentage Bail Deposit Program",
+                Description = "Lets a defendant pay a fraction (typically 10%) of the court-set bail amount directly to the court to secure release, refunded on appearance, rather than paying a commercial bail bondsman's non-refundable premium.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Illinois pioneered the '10 percent bail' cash-deposit program in 1964, since adopted in some form by roughly half of US states.",
+                // CONFIRMED - Illinois introduced the "10 percent bail" deposit program in 1964,
+                // letting defendants pay a refundable 10% deposit to the court instead of a
+                // commercial bondsman's non-refundable premium (typically also ~10%, but never
+                // returned); adopted in some form by roughly half the US states since. Genuinely
+                // distinct MECHANISM from this catalog's other three bail laws: not a risk-based
+                // release standard (Cash Bail Reform Act), not full abolition (Cash Bail Abolition
+                // Act), not an algorithmic score (Risk-Based Pretrial Assessment) - this leaves cash
+                // bail itself intact and only removes the bondsman's cut. MODERATE toward access.
+                BailReformDelta = 9f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "drug_free_zone_sentencing_enhancement",
+                Name = "Drug-Free Zone Sentencing Enhancement",
+                Description = "Imposes an additional mandatory sentence enhancement for drug offenses committed within a defined distance of a school, park, or other designated protected zone.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - widespread US state and federal 'drug-free zone' enhancement laws adopted from the 1970s through the 1990s (New Jersey's 1987 law a frequently cited model; codified federally at 21 U.S.C. Sec. 860).",
+                // CONFIRMED - drug-free zone enhancement laws spread across nearly every US state
+                // from the 1970s through the 1990s (New Jersey's 1987 law a frequently cited model),
+                // with a federal equivalent codified at 21 U.S.C. Sec. 860; real, widely documented
+                // criticism (including from the US Sentencing Commission) found the zones so broad in
+                // dense urban areas that they cover nearly an entire city, applying the enhancement
+                // almost regardless of any actual proximity to children - noted honestly rather than
+                // asserting the law worked as designed. MODERATE primary toward punitive on drug
+                // policy; MINOR secondary on severity (a real but narrowly-scoped mandatory add-on,
+                // not a sentencing-code-wide change).
+                DrugPolicyDelta = 10f,
+                SentencingSeverityDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "counter_narcotics_interdiction_funding_act",
+                Name = "Counter-Narcotics Interdiction Funding Act",
+                Description = "Funds joint military and law-enforcement interdiction operations against drug trafficking and production, including cross-border coordination with source and transit countries.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Plan Colombia (launched 2000), a joint US-Colombia counter-narcotics and interdiction program totaling roughly $10 billion in US aid over two decades.",
+                // CONFIRMED - Plan Colombia, launched in 2000 under the Clinton and Pastrana
+                // administrations, funded aerial coca eradication, interdiction operations, and
+                // military/police training against drug production and trafficking; roughly $10
+                // billion in cumulative US aid over the following two decades. A genuinely dual-dial
+                // real law: MODERATE toward punitive on drug policy (interdiction and eradication, the
+                // enforcement end of the drug-policy spectrum) and MODERATE on border enforcement (the
+                // cross-border interdiction coordination is itself a real border-enforcement
+                // mechanism, distinct from Frontex's EU-specific migration focus).
+                DrugPolicyDelta = 9f,
+                BorderEnforcementDelta = 8f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "national_guard_border_deployment",
+                Name = "National Guard Border Deployment",
+                Description = "Deploys National Guard troops to support border-patrol operations with surveillance, logistics, and infrastructure work, distinct from a standing physical barrier or federal agency staffing increase.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - repeated US National Guard deployments to the southern border (Operation Jump Start 2006, a 2010 deployment, Operation Guardian Support 2018-19), plus state-level deployments such as Texas's Operation Lone Star since 2021.",
+                // CONFIRMED - the US has repeatedly deployed National Guard troops to the US-Mexico
+                // border in a support (not law-enforcement-authority) role: Operation Jump Start
+                // (2006, Bush), a 2010 deployment (Obama), and Operation Guardian Support (2018-19,
+                // Trump), plus state-funded deployments such as Texas's Operation Lone Star since
+                // 2021. Genuinely distinct from this catalog's Physical Border Barrier Construction
+                // (infrastructure, not personnel) and its Frontex Border Cooperation Agreement
+                // (EU-specific standing agency, not a domestic troop deployment). MODERATE: real and
+                // recurring, but each deployment is a temporary support surge, not a standing
+                // structural change to border-enforcement capacity the way a permanent barrier or
+                // agency expansion is.
+                BorderEnforcementDelta = 10f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "pretrial_services_agency_establishment",
+                Name = "Pretrial Services Agency Establishment",
+                Description = "Establishes a dedicated agency to supervise and support defendants released before trial - court-date reminders, check-ins, and referrals - giving judges a real supervised-release option instead of a binary cash-or-jail choice.",
+                Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US federal Pretrial Services Act of 1982, establishing a pretrial services agency in every federal district, building on the pioneering DC Pretrial Services Agency (established 1968).",
+                // CONFIRMED - the DC Pretrial Services Agency (established 1968, the first of its
+                // kind) demonstrated supervised pretrial release as a real alternative to cash bail or
+                // detention; the federal Pretrial Services Act of 1982 then established an equivalent
+                // agency in every US federal judicial district. Genuinely distinct from this
+                // catalog's Risk-Based Pretrial Assessment (that law is the ALGORITHMIC SCORE used to
+                // decide release; this one is the SUPERVISION INFRASTRUCTURE that makes a release
+                // decision practically workable once made) - a real law can and did precede the
+                // scoring tools by decades. MODERATE primary on judicial funding (the agency itself);
+                // MINOR secondary toward bail access (judges have a real supervised-release option to
+                // point to instead of defaulting to cash bail).
+                JudicialFundingDelta = 8f,
+                BailReformDelta = 5f,
+                EnactmentApprovalCost = 0.5f
             }
         };
 

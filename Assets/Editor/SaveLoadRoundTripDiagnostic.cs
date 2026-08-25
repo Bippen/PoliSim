@@ -292,13 +292,19 @@ namespace PoliSim.EditorTools
             // pass found on PublishedData.PeriodClosingValues - see the mechanism report's hazard 5).
             // Content-marathon end-of-run bar: "a dozen laws in force crossing the save" - a dozen
             // enacted, drawn across every batch and every dial (not just batch 1's original two), so
-            // the round trip is proving diverse real content, not one repeated pair.
+            // the round trip is proving diverse real content, not one repeated pair. Extended
+            // 2026-08-25 (batches 4-5, 38 -> 50) with three laws from the two new batches - the weak-
+            // proxy anti-mafia law (exercises a law whose comment explicitly documents an
+            // unrepresented mechanism, not just a clean single-effect one), and one each from the
+            // newly-touched BorderEnforcement (National Guard deployment) and BailReform (the
+            // Pretrial Services Agency's dual-dial shape) growth.
             string[] lawsToEnact =
             {
                 "truth_in_sentencing_act", "border_security_act", "community_policing_initiative",
                 "cash_bail_abolition_act", "drug_decriminalization_act", "public_defender_funding_act",
                 "body_worn_camera_program", "court_backlog_reduction_program", "frontex_border_cooperation_agreement",
-                "restorative_justice_program", "mental_health_diversion_courts", "human_trafficking_task_force"
+                "restorative_justice_program", "mental_health_diversion_courts", "human_trafficking_task_force",
+                "antimafia_asset_confiscation_law", "national_guard_border_deployment", "pretrial_services_agency_establishment"
             };
             foreach (string lawId in lawsToEnact)
             {

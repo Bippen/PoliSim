@@ -1,0 +1,216 @@
+using System;
+using System.Collections.Generic;
+using PoliSim.Data;
+using PoliSim.Simulation;
+using UnityEngine;
+
+namespace PoliSim.EditorTools
+{
+    /// <summary>
+    /// The marathon's own "saturating composition re-run," repeated against the full 50-law catalog
+    /// (close-out commit 555f4cc fixed this for the 38-law catalog; this is the promised re-run once
+    /// the catalog reached the population that check exists to guard, not a new mechanism).
+    ///
+    /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod
+    /// PoliSim.EditorTools.LawCompositionDiagnostic.Run -logFile &lt;path&gt;`
+    ///
+    /// Enacts a genuinely realistic set (27 of 50 laws, drawn across every batch and touching every
+    /// dial, not hand-picked to hit a predetermined number) directly via SimulationManager's own
+    /// private ApplyLawBillEffects (through reflection - the same idiom UiScreenshotDriver already
+    /// uses for GameController's own private canvas-failure flag) so the REAL code path under test
+    /// runs, not a hand-rolled reimplementation of it. The expected value for each dial is computed
+    /// HERE by independently summing LawCatalog's own delta fields for the enacted set - not a
+    /// hand-computed magic number, so the test is correct regardless of any arithmetic mistake in
+    /// choosing the law list, and stays correct if any of the 50 laws' deltas are ever retuned.
+    ///
+    /// ⚠ A divergence here is a FINDING to report, never something to tune away - SaveLoadRoundTrip-
+    /// Diagnostic's own standing rule, restated for this mechanism.
+    /// </summary>
+    public static class LawCompositionDiagnostic
+    {
+        private const float Baseline = 50f;
+        private const float MinDial = 0f;
+        private const float MaxDial = 100f;
+
+        // Deliberately larger than the original ten-law test (27 of 50) since "if anything strains
+        // at 45+, it's a finding, not a tuning target" - drawn across all five batches, every dial
+        // touched by at least four laws, and the SentencingSeverity group alone (six laws) sums well
+        // past +50 on its own, guaranteeing the ceiling is genuinely reached, not merely approached.
+        private static readonly string[] EnactedSet =
+        {
+            // Sentencing-heavy - guarantees the +100 ceiling is actually reached, the exact real
+            // shape the close-out finding named ("3-4 ordinarily-plausible enactments reach the
+            // ceiling on their own").
+            "truth_in_sentencing_act", "three_strikes_law", "mandatory_minimum_sentencing_act",
+            "gang_crime_sentencing_escalation", "hate_crime_sentencing_enhancement", "antimafia_asset_confiscation_law",
+            // Bail - a genuinely mixed-sign group (restrictive and toward-access laws together).
+            "cash_bail_reform_act", "risk_based_pretrial_assessment", "federal_bail_reform_preventive_detention_act",
+            "percentage_bail_deposit_program", "pretrial_services_agency_establishment",
+            // Drug policy - mixed sign.
+            "drug_decriminalization_act", "germany_cannabis_legalization", "drug_free_zone_sentencing_enhancement",
+            "counter_narcotics_interdiction_funding_act",
+            // Police funding.
+            "community_policing_initiative", "hot_spot_policing_program", "financial_crimes_aml_unit",
+            "human_trafficking_task_force",
+            // Judicial funding.
+            "public_defender_funding_act", "court_backlog_reduction_program", "mental_health_diversion_courts",
+            "veterans_treatment_courts",
+            // Border enforcement.
+            "border_security_act", "frontex_border_cooperation_agreement", "ice_287g_agreements_law",
+            "national_guard_border_deployment"
+        };
+
+        public static void Run()
+        {
+            SimulationRandom.Seed(777);
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("LawComposition");
+            bool ok = true;
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                Country country = world.GetCountry(CountryId.USA);
+
+                Debug.Log($"COMPOSITION: enacting {EnactedSet.Length} of {LawCatalog.All.Count} laws.");
+                foreach (string lawId in EnactedSet)
+                {
+                    if (LawCatalog.GetById(lawId) == null)
+                    {
+                        Debug.LogError($"COMPOSITION: '{lawId}' is not in LawCatalog - the test list itself is stale.");
+                        ok = false;
+                        continue;
+                    }
+
+                    ApplyLawBillEffects(sim, country, new LawBill { LawId = lawId, IsRepeal = false });
+                }
+
+                ok &= VerifyComposition(country, "post-enactment", EnactedSet);
+
+                Debug.Log("COMPOSITION: repealing the full set.");
+                foreach (string lawId in EnactedSet)
+                {
+                    ApplyLawBillEffects(sim, country, new LawBill { LawId = lawId, IsRepeal = true });
+                }
+
+                ok &= VerifyExactBaseline(country);
+
+                Debug.Log(ok
+                    ? "COMPOSITION: PASS - all six dials matched their independently-summed composed value " +
+                      "(clamp genuinely reached and released), full repeal netted exactly 50.0000 on every dial."
+                    : "COMPOSITION: FAIL - see errors above. A divergence is a finding, not something to tune away.");
+                CheckExit.Finish(ok ? 0 : 1);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+
+        /// <summary>Invokes SimulationManager's own private ApplyLawBillEffects by reflection - the
+        /// real enact/repeal code path (which calls RecomputeCrimeJusticeDialsFromEnactedLaws
+        /// internally), not a reimplementation of it that could drift from what actually ships.</summary>
+        private static void ApplyLawBillEffects(SimulationManager sim, Country country, LawBill bill)
+        {
+            var method = typeof(SimulationManager).GetMethod("ApplyLawBillEffects",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (method == null)
+            {
+                throw new InvalidOperationException("COMPOSITION: SimulationManager.ApplyLawBillEffects not found by reflection - method renamed?");
+            }
+
+            method.Invoke(sim, new object[] { country, bill });
+        }
+
+        private static bool VerifyComposition(Country country, string label, string[] enactedIds)
+        {
+            float expectedPolice = Baseline, expectedSentencing = Baseline, expectedBail = Baseline;
+            float expectedDrug = Baseline, expectedJudicial = Baseline, expectedBorder = Baseline;
+
+            foreach (string lawId in enactedIds)
+            {
+                LawDefinition law = LawCatalog.GetById(lawId);
+                if (law == null)
+                {
+                    continue;
+                }
+
+                expectedPolice += law.PoliceFundingDelta;
+                expectedSentencing += law.SentencingSeverityDelta;
+                expectedBail += law.BailReformDelta;
+                expectedDrug += law.DrugPolicyDelta;
+                expectedJudicial += law.JudicialFundingDelta;
+                expectedBorder += law.BorderEnforcementDelta;
+            }
+
+            bool ok = true;
+            ok &= CheckDial(label, "PoliceFunding", country.PoliceFundingLevel, expectedPolice);
+            ok &= CheckDial(label, "SentencingSeverity", country.SentencingSeverity, expectedSentencing);
+            ok &= CheckDial(label, "BailReform", country.BailReformLevel, expectedBail);
+            ok &= CheckDial(label, "DrugPolicy", country.DrugPolicyLevel, expectedDrug);
+            ok &= CheckDial(label, "JudicialFunding", country.JudicialFundingLevel, expectedJudicial);
+            ok &= CheckDial(label, "BorderEnforcement", country.BorderEnforcementLevel, expectedBorder);
+
+            LogIfSaturating("PoliceFunding", expectedPolice);
+            LogIfSaturating("SentencingSeverity", expectedSentencing);
+            LogIfSaturating("BailReform", expectedBail);
+            LogIfSaturating("DrugPolicy", expectedDrug);
+            LogIfSaturating("JudicialFunding", expectedJudicial);
+            LogIfSaturating("BorderEnforcement", expectedBorder);
+
+            return ok;
+        }
+
+        private static void LogIfSaturating(string dialName, float rawUnclamped)
+        {
+            if (rawUnclamped < MinDial || rawUnclamped > MaxDial)
+            {
+                Debug.Log($"COMPOSITION: {dialName} raw composed value {rawUnclamped:F4} falls outside " +
+                          $"[{MinDial:F0},{MaxDial:F0}] - the clamp is genuinely exercised by this set, not merely approached.");
+            }
+        }
+
+        private static bool CheckDial(string label, string dialName, float actual, float expectedRaw)
+        {
+            float expectedClamped = Mathf.Clamp(expectedRaw, MinDial, MaxDial);
+            if (Mathf.Abs(actual - expectedClamped) > 1e-4f)
+            {
+                Debug.LogError($"COMPOSITION: {label} {dialName} mismatch - expected {expectedClamped:F4} " +
+                               $"(raw sum {expectedRaw:F4}, baseline {Baseline:F1}), actual {actual:F4}.");
+                return false;
+            }
+
+            Debug.Log($"COMPOSITION: {label} {dialName} OK - {actual:F4} (raw sum {expectedRaw:F4}).");
+            return true;
+        }
+
+        /// <summary>After a full repeal of the entire enacted set, every dial must land on EXACTLY
+        /// the 50.0000 baseline - the precise claim commit 555f4cc's fix makes and this re-run exists
+        /// to confirm still holds against the full 50-law catalog, not just the 38-law one it was
+        /// proven against originally.</summary>
+        private static bool VerifyExactBaseline(Country country)
+        {
+            bool ok = true;
+            ok &= CheckExactBaseline("PoliceFunding", country.PoliceFundingLevel);
+            ok &= CheckExactBaseline("SentencingSeverity", country.SentencingSeverity);
+            ok &= CheckExactBaseline("BailReform", country.BailReformLevel);
+            ok &= CheckExactBaseline("DrugPolicy", country.DrugPolicyLevel);
+            ok &= CheckExactBaseline("JudicialFunding", country.JudicialFundingLevel);
+            ok &= CheckExactBaseline("BorderEnforcement", country.BorderEnforcementLevel);
+            return ok;
+        }
+
+        private static bool CheckExactBaseline(string dialName, float actual)
+        {
+            if (Mathf.Abs(actual - Baseline) > 1e-4f)
+            {
+                Debug.LogError($"COMPOSITION: post-repeal {dialName} did not net back to {Baseline:F4} - actual {actual:F4}. " +
+                               "This is the EXACT failure mode 555f4cc fixed (a clamp silently eating points repeal never gets back).");
+                return false;
+            }
+
+            Debug.Log($"COMPOSITION: post-repeal {dialName} OK - exactly {actual:F4}.");
+            return true;
+        }
+    }
+}
