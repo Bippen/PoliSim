@@ -385,6 +385,19 @@ namespace PoliSim.Testing
             }
 
             Debug.LogWarning($"SHOT: canvas seam never settled to active={wantActive} within {MaxCanvasSettleFrames} frames - capturing whatever is up.");
+
+            // ⚠ THE FALLBACK'S OWN TRACE (2026-08-25 hang investigation). The warning above is the
+            // TRIGGER for "capture whatever is up," not proof the coroutine actually got there - a
+            // hang between this line and the next Capture() call would look, in the log, identical to
+            // one that never entered this method at all. Both read as "warning, then silence." This
+            // line is the one fact that tells them apart: present, and the fallthrough genuinely
+            // completed (the hang, if any, is downstream - see Capture's own entry trace); absent
+            // despite the warning appearing, and this method itself is where execution stopped, which
+            // given the loop above already exited would be a stranger finding than anything named so
+            // far. Per the standing rule this investigation itself restates: a fallback that leaves no
+            // trace is unfalsifiable, and that is its own defect independent of whatever the seam's
+            // actual root cause turns out to be.
+            Debug.Log("SHOT: seam-settle fallback complete, handing control back to the caller.");
         }
 
         private int _captured;
@@ -412,7 +425,20 @@ namespace PoliSim.Testing
             // overflows under the next one.
             UiGuardContext.CurrentScreen = name;
 
+            // ⚠ ENTRY TRACE (2026-08-25 hang investigation), paired with WaitForCanvasSettle's own
+            // fallback trace. This project's own history names TWO independent, already-diagnosed
+            // causes for a hang that stalls exactly here with no further log output ever: (1) the
+            // driver run with -batchmode/-nographics, which stops WaitForEndOfFrame from ever
+            // resuming (root-caused 2026-08-18, this class's own doc comment above), and (2) an
+            // unresolved, intermittent Unity Editor "Start Indexing on Editor startup" hang recorded
+            // recurring on this environment across five consecutive automated windowed capture
+            // attempts previously, independent of workload. Both produce identical log silence, so
+            // this line is what tells "never reached WaitForEndOfFrame" apart from "reached it and
+            // Unity itself stopped rendering" - if this line prints but SHOT: wrote/SHOT: capture
+            // returned null never follows, the cause is (1) or (2) above, not this driver's own code.
+            Debug.Log($"SHOT: entering WaitForEndOfFrame for {name}.");
             yield return new WaitForEndOfFrame();
+            Debug.Log($"SHOT: WaitForEndOfFrame resumed for {name}.");
 
             Texture2D shot = ScreenCapture.CaptureScreenshotAsTexture();
             if (shot == null)

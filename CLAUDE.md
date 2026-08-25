@@ -11426,3 +11426,76 @@ inertness, which the board's counted/hatched chips make visually undeniable (`Al
 `Crime & Justice - 38`, five chips at `- 0`) without themselves fixing it - a legibility fix and a
 bug report about the same fact, kept as two named items per the delivery's own explicit warning not
 to let one read as having resolved the other.
+
+**The citation slot, closed.** Every one of the 38 `LawCatalog` entries now carries a
+`LawDefinition.Citation` - a one-sentence, UI-facing distillation of the same CONFIRMED/DIRECTIONAL/
+GENRE-IDIOM grounding each law's own code comment already stated, surfaced in the browser's detail
+pane for the first time. `drug_decriminalization_act`'s reconciled against its own comment exactly:
+Portugal's Law 30/2000, not the board's placeholder wording. The four original MVP-slice laws
+predate the marathon's per-law research discipline and never had a comment to distill from; their
+Citations are grounded independently rather than backfilled with false precision.
+
+## Post-Progress4: a Unity hang investigated, and a mockup number caught inside its own fix (2026-08-25)
+
+**The hang, diagnosed rather than re-run blind.** After Progress4 landed, four consecutive
+attempts at an automated windowed screenshot capture hung, each reportedly stalling right after the
+`WaitForCanvasSettle` seam-settle warning ("canvas seam never settled... capturing whatever is up")
+with no further log output - the exact shape of the 2026-08-18 `UiScreenshotDriver` incident above,
+and of the "Start Indexing on Editor startup" environment hang this file already records recurring
+across five consecutive windowed-capture attempts once before (see "Real-Unity Validation is the
+Standard Path," the backup-scene note). Before a fifth blind attempt: read `WaitForCanvasSettle`'s
+own code rather than guessed - it is a bounded 600-frame loop with no stray `yield break` blocking
+the fall-through, so it cannot itself hang; the real risk sits one line later, at `Capture`'s own
+`WaitForEndOfFrame`, the same call this file's own class doc already names as the one place a real
+hang lives. **Found the fallback path was unfalsifiable** - the seam warning proves the trigger
+fired, not that execution survived past it - so two trace lines were added (`WaitForCanvasSettle`'s
+own completion, `Capture`'s entry into `WaitForEndOfFrame`) before touching anything else, per the
+standing rule that a fallback with no trace is its own defect independent of the root cause.
+
+No log from the four hung attempts survived - neither this project's own `Logs/` nor Unity's
+global `Editor.log` had anything from today, and no `Unity.exe` process was left running after the
+reboot Elias had already done - so the four failures themselves could not be autopsied directly.
+One checkable, previously-named-but-never-isolated lever remained: `Temp/__Backupscenes/0.backup`,
+left behind by a prior force-kill and flagged once before (Phase 2 screenshot attempts, above) as an
+unconfirmed contributing factor to the "Start Indexing" hang. It was present, freshly timestamped.
+Deleted, then one instrumented run: clean end to end, 63/63 captured, 0 overflows, 0 escapes, the
+seam warning never firing once - including through every new Laws-tab screen. **Correlated, not
+proven** - one clean run against four failures, with the Editor version, a machine reboot, and the
+backup-scene deletion all changing at once - stated honestly per this file's own "only the
+experiment settled it" standard, not claimed as a root cause found.
+
+**The historical-present-tense trap, hit exactly as a reading hazard, not a policy violation.**
+Reaching for "the correct Unity path," a plain search of this file surfaces `6000.5.4f1` first, in
+sentences that read as current fact in isolation - "a real, working Unity 6000.5.4f1 install exists
+at `G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe`" - because that IS what "Real-Unity Validation
+is the Standard Path" said, truthfully, on the day it was written. Launching that exact path today
+failed with "the file could not be found": the directory is gone from disk, and only `6000.5.6f1`
+remains - consistent with, not contradicting, this file's own already-recorded 2026-08-01 update
+entry a few sections above, which explicitly rules that older paths are left as historical record
+and "read version numbers in historical narrative entries as of that entry's own date, not as
+current state." Nothing here needed correcting - that policy is sound and stays. The finding is
+narrower: a plain grep for a path string cannot itself tell present-tense historical narration from
+current fact, and will surface the nearer or more numerous hits first regardless of date. **Read the
+"Editor version update" entry itself before trusting any other line in this file that names a Unity
+path** - it is the one place current truth lives, and it says so explicitly.
+
+**A mockup number, this time found inside a fix for the mockup-number rule.** A code review of the
+Laws-tab rebuild (15 findings, all fixed - correctness bugs: a stale selection surviving a filter
+change, an unbounded detail pane able to overflow its tab, a sticky header misaligned whenever a
+filtered list was short enough to skip its own scrollbar, an unfloored `scrollHeight` reaching
+negative, a mid-frame selection-commit hazard this file already named and fixed once in
+`StatTracePanel`, a game-over lock that disabled browsing along with the action it was meant to
+gate, a dormant hardcoded category string; plus reuse/efficiency cleanup - closed one of them,
+"`LawRowColumns` floors nothing but `nameWidth`," by adding font-derived floors and a squeeze,
+explicitly modeled on `LedgerRow.Columns`' own precedent. **The floor multipliers (6x/6.5x/3x
+font size) were themselves picked without checking against a real capture - the identical mistake
+the fix was written to prevent, aimed at a floor instead of a literal number.** At this tab's actual
+operating width (1600x929, `_labelStyle.fontSize` 20 via `RescaleStylesToScreen`'s own clamp), the
+three floors together exceeded every one of their proportional counterparts and bound
+unconditionally, starving the name column to ~113px - the verification capture (not inspection)
+caught 68 text-overflow violations across 17 law names on the very next run. Recalibrated
+(2.5x/3x/2x) to sit below the proportional values at the one width this codebase has actually
+measured, same as `LedgerRow.Columns` is itself only verified at its own captured widths; re-run
+clean, 0 overflows. **The lesson restated once more because it recurred inside its own fix**: a
+number - or a floor built from one - is unfalsifiable until it has been checked against a real
+capture, and reviewing a diff by reading it is not the same discipline as running it.

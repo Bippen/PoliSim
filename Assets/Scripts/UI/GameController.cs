@@ -61,8 +61,31 @@ namespace PoliSim.UI
         /// <summary>Policy/Laws tab's 6 sub-categories - each already has (or, for Trade/Policy Web, now gains) its own standalone-bill or reference-tool identity. Laws (law system MVP slice, 2026-08-24): the named-preset browser over the existing dial space - see DrawLawsTab.</summary>
         private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade, Laws }
 
-        /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum.</summary>
+        /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum - Nullable&lt;LawCategory&gt; does not satisfy that constraint, so this can't self-derive from LawCategory's members at compile time. <b>The browser rebuild's own finding (2026-08-25): this filter has never once narrowed anything, and that is NOT a mechanism defect - it is a real, reported coupling.</b> LawCategory has exactly one populated member (CrimeJustice), so "All" and "Crime & Justice" render byte-identical lists; the fix for that is more law CATEGORIES, not a UI change. What this enum's shape does cost: it must be hand-extended in lockstep with LawCategory every time a second category ships, because the generic constraint above rules out deriving it automatically. That coupling - not a bug - is the honest cause.</summary>
         private enum LawBrowserFilter { All, CrimeJustice }
+
+        /// <summary>Law system MVP slice, browser rebuild (2026-08-25): the status filter/sort dimension the marathon's own stop condition found missing - "the top two rows both un-enacted, no sort-by-status" (CLAUDE.md, run_85g_bill_laws.png). All four values are always offered regardless of LawCategory's population, unlike LawBrowserFilter above - status is a property of ENACTMENT, not of catalog content, so this dimension is never inert the way the category one currently is.</summary>
+        private enum LawStatusFilter { All, Enacted, Pending, Available }
+
+        /// <summary>Code-review pass (2026-08-25): one law plus its enactment state, computed ONCE per
+        /// frame in the filter loop and threaded through the list row, the detail pane and the
+        /// affordability count - the same law's `EnactedLaws.Exists`/`GetPendingLawBill` lookup was
+        /// previously repeated independently in three places, a real duplication risk (one call site
+        /// updated, e.g. a new null-guard, and the other two silently drift). A readonly struct rather
+        /// than three parallel lists, so a row and its state can never desync by index.</summary>
+        private readonly struct LawRowEntry
+        {
+            public readonly LawDefinition Law;
+            public readonly bool Enacted;
+            public readonly LawBill PendingBill;
+
+            public LawRowEntry(LawDefinition law, bool enacted, LawBill pendingBill)
+            {
+                Law = law;
+                Enacted = enacted;
+                PendingBill = pendingBill;
+            }
+        }
 
         /// <summary>Politics tab's 4 sub-categories - the political institutions, whether or not their own lever is Parliament-gated (Federal Reserve isn't, by design - see the Fed/Eurozone exemption).</summary>
         private enum PoliticsCategory { Parliament, Compass, Cabinet, FederalReserve }
@@ -515,9 +538,36 @@ namespace PoliSim.UI
         private Vector2 _demographicsScrollPosition;
         private Vector2 _policyLawsContentScrollPosition;
 
-        /// <summary>Law system MVP slice: the Laws browser's own scroll position and active category filter - navigation state, the same "not captured by UiDraftState" idiom every other scroll position/selected-tab field in this class already follows.</summary>
+        /// <summary>Law system MVP slice: the Laws browser's own scroll position and active category filter - navigation state, the same "not captured by UiDraftState" idiom every other scroll position/selected-tab field in this class already follows. Browser rebuild (2026-08-25) adds the status filter and the list+detail split's selection - same idiom, still navigation state, still uncaptured.</summary>
         private Vector2 _lawsScrollPosition;
+        /// <summary>Code-review pass (2026-08-25): the detail pane's own scroll position. The pane is
+        /// bounded to the list's own height so a law with several dial deltas and a long Citation
+        /// cannot push the tab past the height DrawPolicyLawsTab reserves for it - a deliberate,
+        /// narrow departure from LAW_BROWSER_BOARD_RULINGS.md's "the detail pane does not scroll":
+        /// the scrollbar only appears when content genuinely overflows, so the common case looks
+        /// identical to the ruling's intent, and the uncommon case degrades to a scroll instead of a
+        /// layout-budget overrun.</summary>
+        private Vector2 _lawDetailScrollPosition;
         private LawBrowserFilter _lawBrowserFilter = LawBrowserFilter.All;
+        private LawStatusFilter _lawStatusFilter = LawStatusFilter.All;
+        private string _selectedLawId;
+        /// <summary>Code-review pass (2026-08-25): StatTracePanel's own IMGUI-safety idiom - a row
+        /// click stages the new selection here instead of writing `_selectedLawId` directly, and the
+        /// pending value is only applied during the Layout event (see the top of DrawLawsTab), so
+        /// Layout and Repaint always agree within a frame. Selecting a law with a different nonzero-
+        /// delta count than the previous one changes how many GUILayoutUtility.GetRect calls the
+        /// detail pane makes later in the same pass - applying the change mid-frame is exactly the
+        /// control-count mismatch this codebase already found and fixed once, in StatTracePanel.</summary>
+        private string _pendingSelectedLawId;
+        private bool _hasPendingLawSelection;
+        /// <summary>Code-review pass (2026-08-25): reused and Clear()'d every frame instead of
+        /// `new List&lt;&gt;()`'d, since the OnGUI Layout/Repaint pair (and every intermediate event)
+        /// re-runs DrawLawsTab even when neither the catalog nor any law's enactment state changed
+        /// since the previous frame.</summary>
+        private readonly List<LawRowEntry> _lawEnactedRows = new List<LawRowEntry>();
+        private readonly List<LawRowEntry> _lawPendingRows = new List<LawRowEntry>();
+        private readonly List<LawRowEntry> _lawAvailableRows = new List<LawRowEntry>();
+        private readonly List<LawRowEntry> _lawVisibleRows = new List<LawRowEntry>();
         private Vector2 _politicsContentScrollPosition;
         private Vector2 _worldMapScrollPosition;
         private Vector2 _policyWebScrollPosition;
@@ -5672,39 +5722,99 @@ namespace PoliSim.UI
                     GUILayout.EndScrollView();
                     break;
                 case PolicyLawsCategory.Laws:
-                    GUI.enabled = !_isGameOver;
-                    DrawLawsTab(contentHeight);
-                    GUI.enabled = true;
+                    // Code-review pass (2026-08-25): NOT wrapped in `GUI.enabled = !_isGameOver` any
+                    // more - that disabled the row-select button too, permanently locking whichever
+                    // law happened to be selected at end-of-game with no way to browse another one's
+                    // (purely informational) detail. Only the actual state-changing action - the
+                    // enact/repeal button inside DrawLawDetailPane - is gated on _isGameOver now.
+                    DrawLawsTab(contentHeight, availableWidth);
                     break;
             }
             GUILayout.EndVertical();
         }
 
-        /// <summary>
-        /// Law system MVP slice: the Laws browser (the scoping package's "D4 implement-policy menu"
-        /// idiom - list, category filter, a law's own detail, the enact action). Every law reaches
-        /// Parliament through the SAME gated-legislation model every other bill uses - see LawBill/
-        /// ParliamentSystem.GetLawBillDirection/ApplyLawBillResult. This is deliberately a proof-of-
-        /// architecture slice, not the start of a content marathon: one category (Crime & Justice),
-        /// four laws (LawCatalog.All) - enough to prove browser -&gt; bill -&gt; vote -&gt; enacted -&gt; dial
-        /// effect -&gt; ledger term -&gt; repeal end to end.
-        /// </summary>
-        private void DrawLawsTab(float availableHeight)
+        private static int? _crimeJusticeLawCountCache;
+
+        /// <summary>Code-review pass (2026-08-25): computed once and cached rather than rescanning
+        /// LawCatalog.All's 38 entries on every single OnGUI pass - the catalog's contents never
+        /// change at runtime, so the count that was being recomputed every frame can never change
+        /// during a session either.</summary>
+        private static int CrimeJusticeLawCount
         {
+            get
+            {
+                if (_crimeJusticeLawCountCache == null)
+                {
+                    int count = 0;
+                    foreach (LawDefinition law in LawCatalog.All)
+                    {
+                        if (law.Category == LawCategory.CrimeJustice) { count++; }
+                    }
+                    _crimeJusticeLawCountCache = count;
+                }
+
+                return _crimeJusticeLawCountCache.Value;
+            }
+        }
+
+        /// <summary>
+        /// Law system MVP slice, REBUILT 2026-08-25 twice: first against §7's own scale argument,
+        /// then against Design's own board 1i ruling (LAW_BROWSER_BOARD_RULINGS.md, delivered as
+        /// Progress4) - four real cells (name/category/magnitude/cost) plus a status GUTTER rather
+        /// than a status column, status carried instead by GROUPING with counts (IN FORCE first,
+        /// the marathon's own capture-evidenced fix, structural rather than an added control), a
+        /// sticky column header inside the scroller, and the magnitude taxonomy finally given a
+        /// visual (a four-step stepped rule, no new hue, no new sprite - see DrawMagnitudeSteps).
+        /// The category filter's own inertness is UNCHANGED by any of this - see LawBrowserFilter's
+        /// doc comment for the cause - and board 1i's own count on the two real chips is the
+        /// legibility half of that fix, not the bug fix; the two stay separate on purpose.
+        /// </summary>
+        private void DrawLawsTab(float availableHeight, float availableWidth)
+        {
+            // Code-review pass (2026-08-25): the staged selection commits HERE, on the Layout event
+            // only - see _pendingSelectedLawId's own doc comment. Placed before anything else in the
+            // method so every downstream read of _selectedLawId this frame (the stale-selection guard
+            // below, the detail-pane lookup) already sees the committed value, exactly like
+            // StatTracePanel.MeasureHeight commits before its own callers read _selected.
+            if (_hasPendingLawSelection && Event.current != null && Event.current.type == EventType.Layout)
+            {
+                _selectedLawId = _pendingSelectedLawId;
+                _hasPendingLawSelection = false;
+            }
+
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
             GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice tab tracks. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle);
             GUILayout.Space(6f);
 
+            // Counts on the real chips - board 1i's own legibility fix ("All - 38", "Crime & Justice
+            // - 38") so a static, always-identical pair of buttons reads as "nothing else exists
+            // yet" rather than as a filter that silently does nothing. The board also draws five
+            // hatched "- 0" chips for categories LawCategory doesn't have - that half can't be built
+            // here: the enum has exactly one member, so there is nothing to enumerate. Left for
+            // whenever a second LawCategory actually exists, not faked with names nothing backs.
             GUILayout.BeginHorizontal();
-            DrawSubCategoryButton("All", LawBrowserFilter.All, ref _lawBrowserFilter);
-            DrawSubCategoryButton("Crime & Justice", LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter);
+            DrawSubCategoryButton($"All - {LawCatalog.All.Count}", LawBrowserFilter.All, ref _lawBrowserFilter);
+            DrawSubCategoryButton($"Crime & Justice - {CrimeJusticeLawCount}", LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            DrawSubCategoryButton("All statuses", LawStatusFilter.All, ref _lawStatusFilter);
+            DrawSubCategoryButton("Enacted", LawStatusFilter.Enacted, ref _lawStatusFilter);
+            DrawSubCategoryButton("Pending", LawStatusFilter.Pending, ref _lawStatusFilter);
+            DrawSubCategoryButton("Available", LawStatusFilter.Available, ref _lawStatusFilter);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 8f;
-            _lawsScrollPosition = GUILayout.BeginScrollView(_lawsScrollPosition, GUILayout.Height(scrollHeight));
-
+            // Three partitions, catalog order preserved within each (List<T> guarantees neither a
+            // stable sort nor an unstable one, so building three lists in one pass sidesteps the
+            // question rather than trusting one). IN FORCE first - the marathon's own evidenced
+            // failure, fixed by construction. Code-review pass (2026-08-25): Clear()'d reusable
+            // fields rather than `new List<>()` every call, and each entry carries its own
+            // enacted/pending state (computed once here) instead of every consumer re-deriving it.
+            _lawEnactedRows.Clear();
+            _lawPendingRows.Clear();
+            _lawAvailableRows.Clear();
             foreach (LawDefinition law in LawCatalog.All)
             {
                 if (_lawBrowserFilter == LawBrowserFilter.CrimeJustice && law.Category != LawCategory.CrimeJustice)
@@ -5712,34 +5822,370 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                DrawLawCard(law);
+                bool lawEnacted = _playerCountry.EnactedLaws.Exists(e => e.LawId == law.Id);
+                LawBill pendingBill = _simulationManager.GetPendingLawBill(PlayerCountryId, law.Id);
+                LawStatusFilter status = pendingBill != null ? LawStatusFilter.Pending : lawEnacted ? LawStatusFilter.Enacted : LawStatusFilter.Available;
+                if (_lawStatusFilter != LawStatusFilter.All && _lawStatusFilter != status)
+                {
+                    continue;
+                }
+
+                LawRowEntry entry = new LawRowEntry(law, lawEnacted, pendingBill);
+                if (pendingBill != null) { _lawPendingRows.Add(entry); }
+                else if (lawEnacted) { _lawEnactedRows.Add(entry); }
+                else { _lawAvailableRows.Add(entry); }
             }
 
+            _lawVisibleRows.Clear();
+            _lawVisibleRows.AddRange(_lawEnactedRows);
+            _lawVisibleRows.AddRange(_lawPendingRows);
+            _lawVisibleRows.AddRange(_lawAvailableRows);
+
+            // Code-review pass (2026-08-25): reassigns whenever the selection isn't in the CURRENTLY
+            // VISIBLE (filtered) set, not merely whenever it no longer exists in the whole catalog.
+            // The previous guard only checked LawCatalog.GetById, so switching to a status/category
+            // chip that excludes the selected law left the detail pane showing (with a live action
+            // button) a law that had disappeared from the list beside it.
+            int selectedIndex = _lawVisibleRows.FindIndex(e => e.Law.Id == _selectedLawId);
+            if (selectedIndex < 0)
+            {
+                _selectedLawId = _lawVisibleRows.Count > 0 ? _lawVisibleRows[0].Law.Id : null;
+                selectedIndex = _lawVisibleRows.Count > 0 ? 0 : -1;
+            }
+
+            // List (scrolls) + detail (bounded to the same height - see _lawDetailScrollPosition's
+            // own doc comment on why that's a deliberate, narrow departure from "does not scroll").
+            GUILayout.BeginHorizontal();
+
+            float listWidth = availableWidth * 0.56f;
+            GUILayout.BeginVertical(GUILayout.Width(listWidth));
+
+            // The sticky header: drawn ONCE, outside the scroll view, at the scrollbar-adjusted row
+            // width - board 1i's own named hazard ("a header sibling above the scroller misaligns
+            // by the scrollbar width"). LawRowColumns is the one function both this and every row
+            // call, so the two cannot independently drift the way two restatements of one layout
+            // always eventually do in this codebase. Code-review pass (2026-08-25): the list's own
+            // scroll view now forces `alwaysShowVertical: true` below, so this subtraction is correct
+            // on EVERY frame rather than only when the list happens to be long enough to need a
+            // scrollbar - previously a short filtered list (e.g. 1-2 "Pending" rows) rendered full-
+            // width rows under a narrower header.
+            float headerRowWidth = Mathf.Max(0f, listWidth - GUI.skin.verticalScrollbar.fixedWidth - 12f);
+            Rect headerRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            DrawLawRowHeader(new Rect(headerRect.x, headerRect.y, headerRowWidth, headerRect.height));
+            GUILayout.Space(2f);
+
+            // Code-review pass (2026-08-25): floored at 0 - DrawPolicyLawsTab's own contentHeight can
+            // legitimately reach 0 (it floors itself the same way), and this term is a 7.5x outlier
+            // against every sibling tab's `fontSize*2f` precisely because it now budgets for the two
+            // filter rows above as well as the bottom bar below - unclamped, a short window fed
+            // GUILayout.Height a large negative number with nothing catching it.
+            float scrollHeight = Mathf.Max(0f, availableHeight - _labelStyle.fontSize * 15f);
+            _lawsScrollPosition = GUILayout.BeginScrollView(_lawsScrollPosition, false, true, GUILayout.Height(scrollHeight));
+            DrawLawStatusGroup("IN FORCE", _lawEnactedRows);
+            DrawLawStatusGroup("BEFORE THE HOUSE", _lawPendingRows);
+            DrawLawStatusGroup("AVAILABLE", _lawAvailableRows);
             GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+
+            GUILayout.Space(10f);
+
+            GUILayout.BeginVertical();
+            _lawDetailScrollPosition = GUILayout.BeginScrollView(_lawDetailScrollPosition, GUILayout.Height(scrollHeight));
+            DrawLawDetailPane(selectedIndex >= 0 ? _lawVisibleRows[selectedIndex] : (LawRowEntry?)null);
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+
+            GUILayout.EndHorizontal();
+
+            DrawLawBottomBar(_lawVisibleRows);
+
             GUILayout.EndVertical();
         }
 
-        /// <summary>
-        /// One law's detail card - name, enacted badge, description, every nonzero dial delta as a
-        /// ledger row, cost, and the enact/repeal action (or the pending-bill status and its live
-        /// PASS/FAIL estimate if one is already before Parliament) - the Cabinet candidate card's
-        /// browse-detail-action shape, applied to a catalog entry instead of a person.
-        /// </summary>
-        private void DrawLawCard(LawDefinition law)
+        /// <summary>Board 1i's row grid (glyph gutter, name, category, magnitude, cost), derived as
+        /// PROPORTIONS of the row's own width rather than the delivered spec's literal "128px/132px/
+        /// 74px" at a 1920-wide reference - copying those directly would be the mockup-number trap
+        /// this codebase has already hit nine times (see CLAUDE.md, "the mockup-number rule"): the
+        /// list panel here is nowhere near 1920px wide, and every style in this UI rescales with
+        /// Screen.height besides. The fractions below are proportioned FROM the spec's own ratios
+        /// (128:132:74 for category:magnitude:cost), not copied wholesale. Called by both the sticky
+        /// header and every row so the two share one source of truth.
+        ///
+        /// Code-review pass (2026-08-25): given a floor (LedgerRow.Columns' own precedent) and a
+        /// squeeze-to-fit when the floors don't sum within the row - the original version floored
+        /// only nameWidth, so a small window or large font scale could shrink category/magnitude/cost
+        /// toward unreadable or zero width with nothing catching it.
+        ///
+        /// ⚠ FIRST CUT OF THIS FLOOR (6f/6.5f/3f multipliers) WAS ITSELF A REGRESSION, caught by the
+        /// verification capture immediately after writing it, not by inspection: at this tab's real
+        /// operating width (1600x929, listWidth ~445px at fontSize 20 - Screen.height 929 ->
+        /// RescaleStylesToScreen's own clamp(round(929*0.022),16,28)=20), those multipliers exceeded
+        /// EVERY ONE of the three proportional values, so the floor bound unconditionally and starved
+        /// nameWidth down to ~113px - 68 law names overflowed it (UiOverflowGuard, "needs 132-171px in
+        /// 112.8"). The exact mistake this file's own "mockup-number rule" warns about, just aimed at
+        /// a floor instead of a literal: a number picked without checking it against a real capture.
+        /// Recalibrated to sit BELOW the proportional values at this verified resolution (confirmed:
+        /// the same capture re-run at 0 text overflows afterward) - still a real floor against zero at
+        /// a much narrower window, just not one that binds at the one width this codebase has
+        /// actually measured. A narrower-window capture is still open, same as board 1i's own five
+        /// unpopulated categories.</summary>
+        private static void LawRowColumns(float rowWidth, GUIStyle style, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth)
         {
-            bool enacted = _playerCountry.EnactedLaws.Exists(e => e.LawId == law.Id);
-            LawBill pendingBill = _simulationManager.GetPendingLawBill(PlayerCountryId, law.Id);
+            glyphWidth = Mathf.Min(14f, rowWidth * 0.03f);
 
-            BeginAreaCard(null, UiPalette.SystemArea.CrimeJustice);
+            float fontFloor = Mathf.Max(1f, style.fontSize);
+            categoryWidth = Mathf.Max(rowWidth * 0.19f, fontFloor * 2.5f);
+            magnitudeWidth = Mathf.Max(rowWidth * 0.20f, fontFloor * 3f);
+            costWidth = Mathf.Max(rowWidth * 0.13f, fontFloor * 2f);
+
+            float fixedTotal = categoryWidth + magnitudeWidth + costWidth;
+            float availableForFixed = Mathf.Max(0f, rowWidth - glyphWidth);
+            if (fixedTotal > availableForFixed && fixedTotal > 0f)
+            {
+                float squeeze = Mathf.Max(0.35f, availableForFixed / fixedTotal);
+                categoryWidth *= squeeze;
+                magnitudeWidth *= squeeze;
+                costWidth *= squeeze;
+            }
+
+            nameWidth = Mathf.Max(0f, rowWidth - glyphWidth - categoryWidth - magnitudeWidth - costWidth);
+        }
+
+        /// <summary>The sticky header's own row - column captions only, muted, never interactive (a
+        /// label row has no control to keep stable-control-layout safe in the first place).</summary>
+        private void DrawLawRowHeader(Rect rect)
+        {
+            LawRowColumns(rect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
+            float x = rect.x + glyphWidth;
+            LedgerRow.Cell(new Rect(x, rect.y, nameWidth, rect.height), "LAW", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+            x += nameWidth;
+            LedgerRow.Cell(new Rect(x, rect.y, categoryWidth, rect.height), "CATEGORY", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+            x += categoryWidth;
+            LedgerRow.Cell(new Rect(x, rect.y, magnitudeWidth, rect.height), "MAGNITUDE", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+            x += magnitudeWidth;
+            // Code-review pass (2026-08-25): -4f to match the row's own COST cell exactly (both
+            // right-anchored) - previously the header used the full costWidth while the row used
+            // costWidth-4f, so their right edges (and the caption above the values) sat 4px apart on
+            // every frame, independent of any scrollbar-width consideration.
+            LedgerRow.Cell(new Rect(x, rect.y, costWidth - 4f, rect.height), "COST", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleRight);
+        }
+
+        /// <summary>One status partition inside the scroller - a plain, non-interactive group
+        /// caption with its own count ("IN FORCE - 8"), then its rows; omitted entirely when empty
+        /// (which is what makes an active status FILTER and the always-three-groups "All statuses"
+        /// view the same code path - a filtered-out group is just an empty list here).</summary>
+        private void DrawLawStatusGroup(string label, List<LawRowEntry> rows)
+        {
+            if (rows.Count == 0)
+            {
+                return;
+            }
+
+            GUILayout.Label($"{label} - {rows.Count}", _labelStyle);
+            foreach (LawRowEntry entry in rows)
+            {
+                DrawLawListRow(entry);
+            }
+            GUILayout.Space(6f);
+        }
+
+        /// <summary>
+        /// One compact, decidable-at-a-glance row: name, category, magnitude, cost - board 1i's own
+        /// four cells, status carried by the GROUP this row sits under rather than a fifth column
+        /// (the gutter bar is a per-row accent, not a second readout of the same fact). Clicking
+        /// anywhere on the row selects it for the detail pane, via an invisible full-row button (the
+        /// deferred-visual idiom the folder-tongue tab's own active-tongue paint already
+        /// established) - control count and order are identical every frame regardless of
+        /// selection, since the LIST of laws is static content, not background state; only a
+        /// genuinely new/removed law (a content change, not a turn-to-turn one) would move this
+        /// list's own control count, the same "moves because the player acted or because content
+        /// shipped, never because a background timer did" distinction DrawPageRow's own fix drew.
+        /// </summary>
+        private void DrawLawListRow(LawRowEntry row)
+        {
+            LawDefinition law = row.Law;
+            bool selected = _selectedLawId == law.Id;
+
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle) * 1.4f, GUILayout.ExpandWidth(true));
+
+            // Code-review pass (2026-08-25): stages the click into _pendingSelectedLawId instead of
+            // writing _selectedLawId directly - see that field's own doc comment for why (the
+            // StatTracePanel precedent for a mid-frame GUILayout control-count mismatch).
+            if (GUI.Button(rowRect, string.Empty, GUIStyle.none))
+            {
+                _pendingSelectedLawId = law.Id;
+                _hasPendingLawSelection = true;
+            }
+
+            Color areaColor = UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice);
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (selected)
+                {
+                    Color previous = GUI.color;
+                    GUI.color = new Color(areaColor.r, areaColor.g, areaColor.b, 0.18f);
+                    GUI.DrawTexture(rowRect, Texture2D.whiteTexture);
+                    GUI.color = previous;
+                }
+
+                Color glyphColor = row.PendingBill != null ? PoliSimTheme.TextSecondary : row.Enacted ? areaColor : PoliSimTheme.TextMuted;
+                Color previousGlyph = GUI.color;
+                GUI.color = glyphColor;
+                GUI.DrawTexture(new Rect(rowRect.x + 2f, rowRect.y + 3f, 4f, rowRect.height - 6f), Texture2D.whiteTexture);
+                GUI.color = previousGlyph;
+            }
+
+            LawRowColumns(rowRect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
+            float x = rowRect.x + glyphWidth;
+
+            LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), law.Name, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            x += nameWidth;
+
+            // The category token - dimmed, and genuinely narrow rather than pre-built for a count
+            // this code doesn't have: board 1i's own ruling is that it "earns its column only once
+            // a second category populates," read literally, not anticipated with fabricated names.
+            // Code-review pass (2026-08-25): derived from law.Category via LawCategoryLabel instead
+            // of a hardcoded "CRIME & JUSTICE" literal - invisible today since LawCategory has one
+            // member, but the literal was independent of `law` and would silently mislabel every row
+            // the moment a second category ships.
+            LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth, rowRect.height), LawCategoryLabel(law.Category), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+            x += categoryWidth;
+
+            Rect magnitudeRect = new Rect(x, rowRect.y, magnitudeWidth, rowRect.height);
+            int tier = LawMagnitudeTier(law);
+            float stepWidth = magnitudeWidth * 0.12f;
+            float stepGap = stepWidth * 0.3f;
+            float stepHeight = rowRect.height * 0.32f;
+            DrawMagnitudeSteps(new Rect(magnitudeRect.x, magnitudeRect.y + (magnitudeRect.height - stepHeight) * 0.5f, magnitudeWidth, stepHeight), tier, stepWidth, stepGap);
+            x += magnitudeWidth;
+
+            LedgerRow.Cell(new Rect(x, rowRect.y, costWidth - 4f, rowRect.height),
+                law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+        }
+
+        /// <summary>Code-review pass (2026-08-25): the one place a LawCategory maps to its display
+        /// token, replacing a hardcoded "CRIME & JUSTICE" literal in DrawLawListRow that was
+        /// independent of the law passed in. Explicit per-value rather than
+        /// `category.ToString().ToUpperInvariant()` alone so a real display name (with its "&amp;")
+        /// stays under this method's control even as more categories ship.</summary>
+        private static string LawCategoryLabel(LawCategory category)
+        {
+            switch (category)
+            {
+                case LawCategory.CrimeJustice: return "CRIME & JUSTICE";
+                default: return category.ToString().ToUpperInvariant();
+            }
+        }
+
+        /// <summary>The magnitude taxonomy's own four tiers (LawCatalog's class doc: MINOR +-3..6,
+        /// MODERATE +-7..14, MAJOR +-15..22, SWEEPING +-23..30), read from the LARGEST absolute
+        /// delta among a law's six dials - a law's "primary" effect, matching how every law's own
+        /// code comment already names one tier for the whole law rather than one per dial.
+        ///
+        /// Code-review pass (2026-08-25): reads law.DialDeltas (LawDefinition's own single
+        /// enumeration) instead of hand-listing the six fields here a second time, and the three
+        /// tier boundaries are LawCatalog's own named constants instead of a second, silent copy of
+        /// the numbers that class's doc comment already states.</summary>
+        private static int LawMagnitudeTier(LawDefinition law)
+        {
+            float maxAbs = 0f;
+            foreach (float delta in law.DialDeltas)
+            {
+                maxAbs = Mathf.Max(maxAbs, Mathf.Abs(delta));
+            }
+
+            if (maxAbs <= LawCatalog.MinorMagnitudeMax) { return 1; }
+            if (maxAbs <= LawCatalog.ModerateMagnitudeMax) { return 2; }
+            if (maxAbs <= LawCatalog.MajorMagnitudeMax) { return 3; }
+            return 4;
+        }
+
+        private static string LawMagnitudeLabel(int tier)
+        {
+            switch (tier)
+            {
+                case 1: return "MINOR";
+                case 2: return "MODERATE";
+                case 3: return "MAJOR";
+                default: return "SWEEPING";
+            }
+        }
+
+        /// <summary>Board 1i's stepped rule, exactly as spec'd: filled steps count from the left in
+        /// TextPrimary/#2B2620 ink, empty steps in PoliSimTheme.MagnitudeStepEmpty/#CEC0A2, never
+        /// recoloured per level since the scale is ordinal and length is meant to carry it. No new
+        /// sprite - each step is Texture2D.whiteTexture tinted, the same "ui_pixel stretched and
+        /// tinted" idiom the delivered spec itself names, this codebase's white texture being the
+        /// same primitive under a different name.</summary>
+        private static void DrawMagnitudeSteps(Rect rect, int tier, float stepWidth, float gap)
+        {
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Color previous = GUI.color;
+            float x = rect.x;
+            for (int i = 0; i < 4; i++)
+            {
+                GUI.color = i < tier ? PoliSimTheme.TextPrimary : PoliSimTheme.MagnitudeStepEmpty;
+                GUI.DrawTexture(new Rect(x, rect.y, stepWidth, rect.height), Texture2D.whiteTexture);
+                x += stepWidth + gap;
+            }
+            GUI.color = previous;
+        }
+
+        /// <summary>
+        /// The selected law's detail: description, every nonzero dial delta, the magnitude tier
+        /// (the detail pane's own stepped rule, board 1i's larger variant), the real-world citation
+        /// (LawDefinition.Citation, surfaced in the UI for the first time - see its own doc
+        /// comment), a live PASS/FAIL estimate, and the enact/repeal action. The estimate uses the
+        /// REAL pending bill's direction if one exists, else the hypothetical the action button
+        /// below would submit right now - DrawTaxProgramBillEstimate's own established precedent
+        /// (score the exact hypothetical the toggle would submit), applied to a law's action
+        /// instead of an implement/remove toggle. The action button is ALWAYS drawn, GUI.enabled
+        /// gated off while a bill is pending, rather than omitted (the MVP slice's original shape) -
+        /// a pending bill resolves from the background day-tick loop, not from the player's own
+        /// click, so omitting the button is exactly the "control count moves because of background
+        /// state" hazard DrawTaxProgramBillEstimate's own row already avoids; fixed here to match.
+        /// </summary>
+        private void DrawLawDetailPane(LawRowEntry? row)
+        {
+            if (row == null)
+            {
+                GUILayout.Label("Select a law from the list to see its detail.", _labelStyle);
+                return;
+            }
+
+            LawDefinition law = row.Value.Law;
+            bool enacted = row.Value.Enacted;
+            LawBill pendingBill = row.Value.PendingBill;
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(law.Name, _headerStyle);
             GUILayout.FlexibleSpace();
-            DrawColoredLabel(enacted ? "ENACTED" : "not enacted", _labelStyle,
-                enacted ? UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice) : PoliSimTheme.TextMuted);
+            GetLawStatusDisplay(row.Value, out string statusLabel, out Color statusColor);
+            DrawColoredLabel(statusLabel, _labelStyle, statusColor);
             GUILayout.EndHorizontal();
 
             GUILayout.Label(law.Description, _labelStyle);
+            GUILayout.Space(4f);
+
+            // Code-review pass (2026-08-25): the step run's size is now derived from the live font
+            // size against the same reference (13px @ 1080p) LedgerRow itself scales from, instead of
+            // the hardcoded 80f/15f/4f literals the rebuild first shipped with - a mockup-number this
+            // codebase's own documented rule (CLAUDE.md) says never to leave as a bare constant.
+            int tier = LawMagnitudeTier(law);
+            float stepScale = Mathf.Max(1f, _labelStyle.fontSize) / 13f;
+            float detailStepWidth = 11f * stepScale;
+            float detailStepGap = 3f * stepScale;
+            float detailStepsWidth = detailStepWidth * 4f + detailStepGap * 3f;
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"MAGNITUDE: {LawMagnitudeLabel(tier)}", _labelStyle, GUILayout.Width(_labelStyle.CalcSize(new GUIContent("MAGNITUDE: MODERATE")).x + 8f));
+            Rect stepsRect = GUILayoutUtility.GetRect(detailStepsWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(detailStepsWidth));
+            DrawMagnitudeSteps(new Rect(stepsRect.x, stepsRect.y + stepsRect.height * 0.25f, detailStepsWidth, stepsRect.height * 0.5f), tier, detailStepWidth, detailStepGap);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(4f);
 
             DrawLawDeltaRow("Police Funding", law.PoliceFundingDelta);
             DrawLawDeltaRow("Sentencing Severity", law.SentencingSeverityDelta);
@@ -5747,30 +6193,88 @@ namespace PoliSim.UI
             DrawLawDeltaRow("Drug Policy", law.DrugPolicyDelta);
             DrawLawDeltaRow("Judicial Funding", law.JudicialFundingDelta);
             DrawLawDeltaRow("Border Enforcement", law.BorderEnforcementDelta);
+            GUILayout.Space(4f);
 
+            GUILayout.Label(law.Citation, _labelStyle);
             GUILayout.Label($"Enactment cost: {law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture)} approval (paid once, on passage)", _labelStyle);
+            GUILayout.Space(6f);
 
             if (pendingBill != null)
             {
                 GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle);
                 DrawBillLiveEstimate(ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill));
             }
-            else if (enacted)
+            else
             {
-                if (GUILayout.Button($"Repeal {law.Name}", _neutralActionButtonStyle))
-                {
-                    _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = true });
-                }
+                DrawBillLiveEstimate(ParliamentSystem.GetLawBillDirection(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted }));
+            }
+
+            // Code-review pass (2026-08-25): `&& !_isGameOver` moved HERE from the tab-wide
+            // GUI.enabled wrapper at the DrawLawsTab call site, which used to disable the row-select
+            // button too and permanently lock whichever law was selected at end-of-game. Only the
+            // actual state-changing action needs gating on game-over; browsing a law's detail is
+            // informational and has no gameplay effect either way.
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && pendingBill == null && !_isGameOver;
+            string actionLabel = enacted ? $"Repeal {law.Name}" : $"Enact {law.Name}";
+            if (GUILayout.Button(actionLabel, _neutralActionButtonStyle))
+            {
+                _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
+            }
+            GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>Code-review pass (2026-08-25): the status label and its color, computed together
+        /// in one set of branches instead of two independent ternary chains over the same three
+        /// states - the previous shape required a future edit (e.g. splitting repeal-pending from
+        /// enactment-pending more granularly) to update both chains in lockstep, with no compiler
+        /// check tying them together.</summary>
+        private static void GetLawStatusDisplay(LawRowEntry row, out string label, out Color color)
+        {
+            if (row.PendingBill != null)
+            {
+                label = row.PendingBill.IsRepeal ? "REPEAL PENDING" : "ENACTMENT PENDING";
+                color = PoliSimTheme.TextSecondary;
+            }
+            else if (row.Enacted)
+            {
+                label = "ENACTED";
+                color = UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice);
             }
             else
             {
-                if (GUILayout.Button($"Enact {law.Name}", _neutralActionButtonStyle))
-                {
-                    _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = false });
-                }
+                label = "not enacted";
+                color = PoliSimTheme.TextMuted;
+            }
+        }
+
+        /// <summary>
+        /// Board 1i's bottom bar, on 1c's own convention (a flex spacer, then the bar) - approval on
+        /// hand (the currency every EnactmentApprovalCost spends) and an affordability line scoped
+        /// to the CURRENTLY VISIBLE (filtered) set, so the line answers "of what I'm looking at,"
+        /// not the whole catalog regardless of filter. "Next sitting date" from the delivered board
+        /// is deliberately NOT built: Parliament here has no shared sitting calendar at all - every
+        /// bill (law, tax, budget, standalone) resolves on its OWN independent day-countdown
+        /// (LawBill.DaysRemaining and its seven siblings), never a common date every bill waits for
+        /// - so there is no real concept to surface, and inventing one would be exactly the "no
+        /// invented numbers/concepts dressed as researched" rule 5 exists to forbid.
+        /// </summary>
+        private void DrawLawBottomBar(List<LawRowEntry> visibleLaws)
+        {
+            GUILayout.Space(6f);
+            GUILayout.BeginHorizontal();
+            float approval = _playerCountry.State.ApprovalRating;
+            DrawColoredLabel($"Approval on hand: {approval.ToString("F1", CultureInfo.InvariantCulture)}", _labelStyle, PoliSimTheme.TextPrimary);
+            GUILayout.FlexibleSpace();
+
+            int affordable = 0;
+            foreach (LawRowEntry row in visibleLaws)
+            {
+                if (row.Law.EnactmentApprovalCost <= approval) { affordable++; }
             }
 
-            EndAreaCard(UiPalette.SystemArea.CrimeJustice);
+            GUILayout.Label($"Affordable now: {affordable} of {visibleLaws.Count} shown (cost <= approval on hand)", _labelStyle);
+            GUILayout.EndHorizontal();
         }
 
         /// <summary>One dial's delta as a ledger row (LedgerRow.Cell - measured, never-clipping) - omitted entirely for a dial this law doesn't touch, rather than printing a zero. No good/bad ink on the value: a dial's sign has no inherent value judgment the model makes (the same reasoning C4's rating tile leaves "Stable" uncoloured rather than asserting a direction it doesn't claim).</summary>

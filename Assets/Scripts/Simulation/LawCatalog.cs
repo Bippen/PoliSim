@@ -27,7 +27,13 @@ namespace PoliSim.Simulation
     /// idiom, not tied to one real policy) - stated in each law's own doc comment, never left
     /// implicit. Where a real policy's documented effect has a stated direction, the magnitude
     /// tracks it; where the delta is this project's own judgment call, the comment says so instead
-    /// of dressing a guess as research (rule 5).</para>
+    /// of dressing a guess as research (rule 5). <b>Also carried as LawDefinition.Citation</b>
+    /// (2026-08-25, the browser rebuild) - a one-sentence, UI-facing distillation of the same
+    /// grounding, surfaced in the law browser's detail pane for the first time. The four original
+    /// MVP-slice laws predate the marathon's per-law research comment discipline and never had one
+    /// to distill from; their Citation values below are grounded independently, in genuinely
+    /// well-known real policy, and labeled with the same honesty rather than backfilled with false
+    /// precision the original entries never claimed.</para>
     ///
     /// <para><b>The wanted-effects log</b> - real policy ideas researched for this marathon whose
     /// actual effect does NOT fit these six dials, kept here rather than silently discarded or
@@ -72,6 +78,15 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class LawCatalog
     {
+        /// <summary>Code-review pass (2026-08-25): the magnitude taxonomy's own boundaries, stated as
+        /// prose in this class's doc comment above ("MINOR +-3 to 6... MODERATE +-7 to 14... MAJOR
+        /// +-15 to 22..."), now also as the actual constants GameController.LawMagnitudeTier reads -
+        /// previously that method hardcoded 6f/14f/22f independently, a second, silent copy of the
+        /// same three numbers this doc comment already commits to.</summary>
+        public const float MinorMagnitudeMax = 6f;
+        public const float ModerateMagnitudeMax = 14f;
+        public const float MajorMagnitudeMax = 22f;
+
         public static readonly List<LawDefinition> All = new List<LawDefinition>
         {
             new LawDefinition
@@ -80,6 +95,7 @@ namespace PoliSim.Simulation
                 Name = "Truth in Sentencing Act",
                 Description = "Requires offenders to serve a much larger share of their imposed sentence before parole eligibility, and narrows the discretion judges have to depart from guideline sentences.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US Truth in Sentencing Incentive Grants program (1994 Crime Act), tying federal funding to states requiring violent offenders serve at least 85% of their sentence.",
                 SentencingSeverityDelta = 15f,
                 BailReformDelta = -8f,
                 EnactmentApprovalCost = 1.0f
@@ -90,6 +106,7 @@ namespace PoliSim.Simulation
                 Name = "Cash Bail Reform Act",
                 Description = "Replaces cash bail with risk-based pretrial release for most non-violent charges, and directs new funding toward the court staff needed to run individualized release hearings.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "DIRECTIONAL - the broader US pretrial-reform trend toward risk-based release, distinct from and less extreme than this catalog's own full Cash Bail Abolition Act.",
                 BailReformDelta = 18f,
                 JudicialFundingDelta = 6f,
                 EnactmentApprovalCost = 1.0f
@@ -100,6 +117,7 @@ namespace PoliSim.Simulation
                 Name = "Border Security Act",
                 Description = "Expands border enforcement staffing and surveillance infrastructure, and redirects a portion of drug-interdiction resources toward enforcement rather than treatment diversion.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the shape of the US Secure Fence Act (2006) and subsequent staffing/surveillance appropriations, generalized rather than tied to one bill's exact figures.",
                 BorderEnforcementDelta = 20f,
                 DrugPolicyDelta = -5f,
                 EnactmentApprovalCost = 1.5f
@@ -110,6 +128,7 @@ namespace PoliSim.Simulation
                 Name = "Community Policing Initiative",
                 Description = "Funds neighborhood policing programs and community liaison officers, paired with stricter enforcement of drug offenses in the areas they cover.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US COPS Office (Community Oriented Policing Services), created by the 1994 Violent Crime Control Act, funding local community-policing programs nationally.",
                 PoliceFundingDelta = 15f,
                 DrugPolicyDelta = 10f,
                 EnactmentApprovalCost = 0.5f
@@ -132,6 +151,7 @@ namespace PoliSim.Simulation
                 Name = "Three Strikes Law",
                 Description = "Mandates a lengthy or life sentence for a third serious or violent felony conviction, regardless of the individual circumstances.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - California's 1994 law (25-to-life for any third felony), copied by 20+ US states; narrowed by a 2012 ballot measure (Prop 36) to require the third strike itself be serious/violent.",
                 // CONFIRMED - California's 1994 law (25-to-life for any third felony), copied by
                 // 20+ US states; later narrowed by a 2012 ballot measure (Prop 36, ~70% approval)
                 // to require the third strike itself be serious/violent. MAJOR: one of the most
@@ -147,6 +167,7 @@ namespace PoliSim.Simulation
                 Name = "Mandatory Minimum Sentencing Act",
                 Description = "Sets fixed minimum prison terms for a range of offenses that judges cannot depart below regardless of circumstances, with the heaviest minimums attached to drug offenses.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US federal 1986 Anti-Drug Abuse Act (the 100:1 crack/powder cocaine disparity) and France's 'peines plancher' (2007-2014, repealed after evidence found no deterrent effect).",
                 // CONFIRMED - US federal 1986 Anti-Drug Abuse Act (the 100:1 crack/powder cocaine
                 // disparity); France's "peines plancher" (2007-2014, repealed after evidence found
                 // no deterrent effect, only longer sentences for the same recidivism rate - a real
@@ -164,6 +185,7 @@ namespace PoliSim.Simulation
                 Name = "First Step Act",
                 Description = "Retroactively reduces some mandatory minimums, expands judges' discretion to depart from sentencing guidelines in qualifying cases, and expands access to rehabilitation programming.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US First Step Act (2018); ~30,000 released early by 2023, with recidivism ~37% lower among those released under it (Council on Criminal Justice).",
                 // CONFIRMED - US federal law, 2018. ~30,000 released early by 2023 and recidivism
                 // ~37% lower among those released under it (Council on Criminal Justice), though
                 // implementation was widely reported as uneven. MODERATE, not MAJOR: a real,
@@ -178,6 +200,7 @@ namespace PoliSim.Simulation
                 Name = "Rehabilitation-Centered Corrections Model",
                 Description = "Reorients the corrections system around reintegration rather than punishment - short sentences, open-prison placements, and heavy use of fines and community sanctions over incarceration.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED as a standing model - Germany's constitutional Resozialisierungsgebot (rehabilitation mandate) and Sweden's own tradition before its 2023 reversal.",
                 // CONFIRMED as a real, standing model, not a single bill - Germany's constitutional
                 // "Resozialisierungsgebot" (rehabilitation mandate, rooted in 1970s Federal
                 // Constitutional Court rulings; German incarceration runs about 76/100k against the
@@ -198,6 +221,7 @@ namespace PoliSim.Simulation
                 Name = "Cash Bail Abolition Act",
                 Description = "Eliminates monetary bail entirely - pretrial release or detention is decided solely on a judge's assessment of flight and public-safety risk.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Illinois' Pretrial Fairness Act, upheld by the state supreme court in July 2023 and effective that September - the first full statewide bail abolition in the US.",
                 // CONFIRMED - Illinois' Pretrial Fairness Act, upheld by the state supreme court in
                 // July 2023 and effective that September - the first full statewide abolition in the
                 // US (distinct from and going further than this catalog's own "Cash Bail Reform
@@ -212,6 +236,7 @@ namespace PoliSim.Simulation
                 Name = "Bail Reform Rollback",
                 Description = "Restores judges' authority to detain a defendant pretrial based on perceived danger to the public, partially reversing an earlier bail-reform law under political pressure.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - New York's 2019 reform was partially rolled back in 2020/2022/2023 after a 2020 NYC murder spike, despite researchers (including the NYCLU) finding no clear causal link to the original reform.",
                 // CONFIRMED - New York's 2019 reform narrowed bail-eligible offenses; after a 2020
                 // NYC murder spike (+40% in a year) and sustained political pressure, the
                 // legislature enacted partial rollbacks in 2020, 2022, and 2023, despite researchers
@@ -231,6 +256,7 @@ namespace PoliSim.Simulation
                 Name = "Drug Decriminalization Act",
                 Description = "Shifts personal possession of small amounts of all drugs from a criminal matter to a civil one - a fine and a referral to a treatment-and-assessment panel rather than prosecution. Trafficking remains a criminal offense.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Portugal's Law 30/2000 (Lei n. 30/2000), decriminalizing personal drug possession from July 2001 - this dial's standard real-world calibration touchstone (associated with lower HIV transmission and, for many years, below-EU-average drug deaths).",
                 // CONFIRMED, cited here as the standard real-world touchstone for this dial's low
                 // end (Portugal's 2001 decriminalization, per this project's own instruction to use
                 // it for calibration even though Portugal isn't one of the six seeded countries) -
@@ -250,6 +276,7 @@ namespace PoliSim.Simulation
                 Name = "Cannabis Legalization Act",
                 Description = "Legalizes adult possession and home cultivation of cannabis in limited amounts, plus non-commercial cultivation clubs; commercial retail is deferred to separate pilot programs.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Germany's Cannabisgesetz, effective April 1, 2024, passed by the Scholz coalition; courts had to retroactively review and expunge prior convictions.",
                 // CONFIRMED, real and recent - Germany's Cannabisgesetz, effective April 1, 2024,
                 // passed by the Scholz coalition over opposition. Courts had to retroactively review
                 // and expunge prior convictions - a genuine administrative burden, which is where
@@ -267,6 +294,7 @@ namespace PoliSim.Simulation
                 Name = "Zero-Tolerance Drug Policy",
                 Description = "Criminalizes drug use itself, not just possession or sale, and empowers police to compel testing on suspicion of use alone, in pursuit of an explicit national goal of a drug-free society.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Sweden's own regime since 1988, one of the strictest in the EU by the EU drug agency's (EMCDDA) comparative reporting.",
                 // CONFIRMED - Sweden's own regime since 1988, one of the strictest in the EU by the
                 // EU drug agency's (EMCDDA) comparative reporting. Comparative drug-death-rate claims
                 // for this policy are genuinely contested methodologically, so none is asserted here
@@ -284,6 +312,7 @@ namespace PoliSim.Simulation
                 Name = "Public Defender & Legal Aid Funding Act",
                 Description = "Substantially increases funding for public defenders and legal aid, reducing attorney caseloads and expanding access to counsel for defendants who cannot afford one.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED as a standing question - the US constitutional right to counsel (Gideon v. Wainwright, 1963) is chronically underfunded; all six seeded countries run their own legal-aid systems facing the same funding-adequacy debate.",
                 // CONFIRMED as a real, persistent policy question, not one single bill - the US
                 // constitutional right to counsel (Gideon v. Wainwright, 1963) is chronically
                 // underfunded in practice, a widely-documented crisis; all six seeded countries have
@@ -304,6 +333,7 @@ namespace PoliSim.Simulation
                 Name = "Immigration Detention Expansion Act",
                 Description = "Expands detention capacity and staffing for individuals awaiting immigration proceedings or removal, distinct from physical border-barrier construction.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - US ICE immigration-detention capacity, a routine, contested appropriations line that has expanded and contracted repeatedly across administrations.",
                 // CONFIRMED as a real, recurring policy lever - US immigration-detention capacity
                 // has expanded and contracted repeatedly across administrations (ICE detention
                 // funding is a routine, contested appropriations line), kept deliberately distinct
@@ -331,6 +361,7 @@ namespace PoliSim.Simulation
                 Name = "Body-Worn Camera Program",
                 Description = "Equips police officers with body-worn cameras and funds the storage and review infrastructure the footage requires.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - rapid US adoption after Ferguson (2014). A DC Metro randomized trial (2017) found modest-to-no effect on use of force but materially better evidence and complaint resolution.",
                 // CONFIRMED - rapid US adoption after Ferguson (2014), driven by DOJ grant funding.
                 // A DC Metro randomized trial (2017) found modest-to-no effect on use of force but
                 // materially better evidence and complaint resolution - the real headline effect
@@ -347,6 +378,7 @@ namespace PoliSim.Simulation
                 Name = "Militarized Police Equipment Program",
                 Description = "Transfers surplus military-grade equipment and vehicles to local police departments at little or no cost, expanding their tactical capability.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US DoD 1033 Program (1997 NDAA), restricted by the Obama administration in 2015 after Ferguson, reversed by the Trump administration in 2017.",
                 // CONFIRMED - the US DoD 1033 Program (created by the 1997 NDAA), which came under
                 // national scrutiny after Ferguson 2014 (armored vehicles facing protesters);
                 // restricted by the Obama administration in 2015, reversed by the Trump
@@ -363,6 +395,7 @@ namespace PoliSim.Simulation
                 Name = "Cybercrime Investigation Unit",
                 Description = "Establishes a dedicated police unit and funding stream for investigating online fraud, hacking, and digital exploitation offenses.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "GENRE-IDIOM/DIRECTIONAL - every modern police force has built out some form of cybercrime capability over the past two decades, not tied to one single confirmed founding law across all six countries.",
                 // GENRE-IDIOM/DIRECTIONAL - every modern police force has built out some form of
                 // cybercrime capability over the past two decades, but this project isn't citing one
                 // single confirmed founding law across all six countries the way, say, Germany's
@@ -377,6 +410,7 @@ namespace PoliSim.Simulation
                 Name = "Gang Crime Sentencing Escalation",
                 Description = "Sharply raises maximum sentences for crimes committed within organized criminal networks and removes reduced sentencing discounts for young offenders in gang cases.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Sweden's Tido Agreement (Oct 2022, in force April 2024): gang-related sentences up to double the previous maximum; 2023 prison sentences up 25% year-on-year.",
                 // CONFIRMED - Sweden's Tidö Agreement (Oct 2022), in force from April 2024:
                 // gang-related sentences up to double the previous maximum (capped at 18 years), and
                 // abolished the sentencing discount for 18-21-year-olds in gang crime cases. Real
@@ -398,6 +432,7 @@ namespace PoliSim.Simulation
                 Name = "Court Backlog Reduction Program",
                 Description = "Invests in additional judges, court staff, and procedural reform aimed at cutting multi-year case backlogs and excessive trial delays.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Italy's 2001 Pinto Law and its post-COVID EU Recovery Plan (PNRR, 2021+), which made judicial-backlog reduction a large, EU-monitored funding condition.",
                 // CONFIRMED - Italy is the standard European reference case: its 2001 "Pinto Law"
                 // compensates citizens for excessive trial delays (a tacit admission of the
                 // problem), and its post-COVID EU Recovery Plan (PNRR, 2021+) made judicial-backlog
@@ -416,6 +451,7 @@ namespace PoliSim.Simulation
                 Name = "Court Interpreter & Translation Funding",
                 Description = "Funds qualified interpreters and translated materials for non-native speakers in criminal proceedings.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US Court Interpreters Act (1978) and the EU's Directive 2010/64/EU on the right to interpretation and translation, binding on Germany, France, Italy, Sweden, and Poland.",
                 // CONFIRMED - the US Court Interpreters Act (1978, federal courts) and the EU's
                 // Directive 2010/64/EU on the right to interpretation and translation in criminal
                 // proceedings (binding on Germany, France, Italy, Sweden, and Poland alike - a
@@ -431,6 +467,7 @@ namespace PoliSim.Simulation
                 Name = "Victim & Witness Support Services Funding",
                 Description = "Funds victim counseling, court accompaniment, case-status notification services, and protection against witness intimidation.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US Victims of Crime Act (VOCA, 1984) and the EU's Victims' Rights Directive (2012), binding across Germany, France, Italy, Sweden, and Poland.",
                 // CONFIRMED - the US Victims of Crime Act (VOCA, 1984, funded via criminal fines
                 // rather than general taxation - a distinctive mechanism that faced a well-publicized
                 // real funding shortfall in the 2020s as fine revenue declined) and the EU's Victims'
@@ -445,6 +482,7 @@ namespace PoliSim.Simulation
                 Name = "Frontex Border Cooperation Agreement",
                 Description = "Deepens funding and operational cooperation with the EU's joint border and coast guard agency for surveillance, patrol, and deportation-flight support.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Frontex (founded 2004), its budget expanded roughly 40x after the 2015 migrant crisis, targeting a 10,000-officer standing corps by 2027.",
                 // CONFIRMED - Frontex, founded 2004, with its budget expanded roughly 40x after the
                 // 2015 migrant crisis and a standing corps of 10,000 officers targeted by 2027; the
                 // agency has also been repeatedly investigated for complicity in Mediterranean/Aegean
@@ -463,6 +501,7 @@ namespace PoliSim.Simulation
                 Name = "Refugee & Asylum Fast-Track Processing",
                 Description = "Expands staffing and streamlines procedure for asylum claims, reducing detention time and processing backlogs for people awaiting a decision.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "GENRE-IDIOM/DIRECTIONAL - a real, recurring EU migration-policy debate over asylum-system capacity and processing time, not tied to one single confirmed law.",
                 // GENRE-IDIOM/DIRECTIONAL - a real, recurring policy debate across all six countries
                 // (asylum-system capacity and processing-time reform is a standing item in EU
                 // migration policy generally), not tied here to one single confirmed law the way the
@@ -482,6 +521,7 @@ namespace PoliSim.Simulation
                 Name = "Sanctuary City Policy",
                 Description = "Bars local police from asking about immigration status or assisting federal immigration enforcement in routine policing.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - a real US policy adopted by hundreds of jurisdictions since the 1980s-2000s, repeatedly contested in court over threatened federal funding cutoffs.",
                 // CONFIRMED - a real US policy adopted by hundreds of jurisdictions since the
                 // 1980s-2000s, repeatedly contested in court over federal funding cutoffs threatened
                 // in retaliation. The real mechanism is INTERIOR enforcement cooperation (or its
@@ -497,6 +537,7 @@ namespace PoliSim.Simulation
                 Name = "Prosecutorial Discretion Guidelines",
                 Description = "Directs prosecutors to deprioritize charging low-level, non-violent offenses - including simple drug possession - freeing capacity for serious crime.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the US 'progressive prosecutor' trend (Philadelphia's Larry Krasner, elected 2017; Los Angeles' George Gascon, elected 2020), a documented, politically contested real trend.",
                 // CONFIRMED - the real US "progressive prosecutor" trend (Philadelphia DA Larry
                 // Krasner, elected 2017; Los Angeles DA George Gascon, elected 2020, among others),
                 // each adopting office-wide charging-deprioritization policies for low-level offenses
@@ -525,6 +566,7 @@ namespace PoliSim.Simulation
                 Name = "Electronic Monitoring Program",
                 Description = "Substitutes GPS ankle monitoring for a portion of short prison terms or as a release condition, rather than incarceration.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED, scope varies by country - France's electronic-monitoring custody alternative (in genuine use since ~2000) versus Germany's narrower post-sentence supervision use (since 2011).",
                 // CONFIRMED, though real scope varies by country - France's "placement sous
                 // surveillance electronique" (1997 law, in genuine use as a custody alternative
                 // since ~2000) versus Germany's narrower post-sentence supervision use (since 2011,
@@ -543,6 +585,7 @@ namespace PoliSim.Simulation
                 Name = "Restorative Justice & Victim-Offender Mediation",
                 Description = "Establishes a formal mediation process between victim and offender that can reduce or substitute for a criminal sentence.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED for Germany - Tater-Opfer-Ausgleich, codified into the Criminal Code (Sec. 46a StGB) in 1994. DIRECTIONAL/GENRE-IDIOM elsewhere.",
                 // CONFIRMED for Germany - "Tater-Opfer-Ausgleich," codified into the Criminal Code
                 // (Sec. 46a StGB) in 1994, can reduce or substitute punishment.
                 // DIRECTIONAL/GENRE-IDIOM elsewhere - pilot programs exist in France and Poland but
@@ -556,6 +599,7 @@ namespace PoliSim.Simulation
                 Name = "Juvenile Justice Reform",
                 Description = "Raises the age of adult-court jurisdiction and channels youth offenders into a separate, rehabilitation-focused juvenile justice track.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Germany's Jugendgerichtsgesetz (a separate juvenile code since 1953) and the US 'raise the age' state trend (roughly ten states, 2007-2019).",
                 // CONFIRMED - Germany's Jugendgerichtsgesetz (a separate, strongly rehabilitative
                 // juvenile criminal code since 1953) and the US "raise the age" state trend (e.g.
                 // New York 2017; roughly ten states raised the age to 18 between 2007 and 2019).
@@ -574,6 +618,7 @@ namespace PoliSim.Simulation
                 Name = "Hate Crime Sentencing Enhancement",
                 Description = "Adds an additional penalty on top of the underlying offense when the crime is proven to be motivated by bias against the victim's identity.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED for the US - the federal Hate Crimes Sentencing Enhancement Act (1994). DIRECTIONAL/GENRE-IDIOM for the European five, which typically use a separate hate-speech offense instead.",
                 // CONFIRMED for the US - the federal Hate Crimes Sentencing Enhancement Act (1994)
                 // plus nearly all states' own enhancement statutes. DIRECTIONAL/GENRE-IDIOM for the
                 // European five, which typically criminalize hate speech/incitement as a SEPARATE
@@ -590,6 +635,7 @@ namespace PoliSim.Simulation
                 Name = "Risk-Based Pretrial Assessment",
                 Description = "Replaces cash-bail decisions with an algorithmic risk score for flight and public-safety danger, expanding summons-in-lieu-of-arrest for low-risk defendants.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - New Jersey's 2017 Criminal Justice Reform Act; pretrial jail population fell over 40% in two years, violent crime fell about 44% from 2015 to 2019.",
                 // CONFIRMED - New Jersey's 2017 Criminal Justice Reform Act (Public Safety
                 // Assessment). Pretrial jail population fell over 40% in two years; the
                 // court-appearance rate barely moved (92.7% to 89.4%); violent crime fell about 44%
@@ -608,6 +654,7 @@ namespace PoliSim.Simulation
                 Name = "Mental Health Diversion Courts",
                 Description = "Establishes specialized court dockets that divert defendants with serious mental illness into judicially-supervised treatment instead of standard prosecution.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - the first mental health court, Broward County, Florida, 1997, with federal support following via the America's Law Enforcement and Mental Health Project Act (2000).",
                 // CONFIRMED - the first mental health court, Broward County, Florida, 1997, with
                 // federal support following via the America's Law Enforcement and Mental Health
                 // Project Act (2000). Evidence generally shows lower recidivism for graduates versus
@@ -625,6 +672,7 @@ namespace PoliSim.Simulation
                 Name = "Drug Courts Program",
                 Description = "Establishes specialized court dockets that divert eligible non-violent drug offenders into supervised treatment instead of prosecution or incarceration.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED for the US - the first drug court, Miami-Dade County, 1989; roughly 3,000 now operate nationally. DIRECTIONAL/GENRE-IDIOM elsewhere.",
                 // CONFIRMED for the US - the first drug court, Miami-Dade County, 1989; roughly
                 // 3,000 now operate nationally. DIRECTIONAL/GENRE-IDIOM for the other five countries,
                 // which have structurally different analogues (Germany's "Therapie statt Strafe"
@@ -645,6 +693,7 @@ namespace PoliSim.Simulation
                 Name = "Strict Drug Classification Equalization Act",
                 Description = "Equalizes the legal treatment and penalties for cannabis with those for harder drugs, removing distinctions in sentencing between drug categories.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Italy's 2006 Fini-Giovanardi law equalized cannabis and hard-drug penalties; struck down by Italy's Constitutional Court in 2014 on procedural grounds.",
                 // CONFIRMED - Italy's 2006 Fini-Giovanardi law equalized cannabis and hard-drug
                 // penalties; Italy's Constitutional Court struck it down in 2014 on procedural
                 // grounds, reverting the country to its earlier, more lenient framework. Included
@@ -664,6 +713,7 @@ namespace PoliSim.Simulation
                 Name = "Physical Border Barrier Construction",
                 Description = "Constructs a physical steel-and-sensor barrier along the border, paired with a surge in border-guard personnel to block irregular crossings.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED - Poland's Belarus border wall (built Jan-Jun 2022, 187km, ~$407M), later supplemented by a ~206km electronic sensor layer.",
                 // CONFIRMED - Poland's Belarus border wall, built January-June 2022 (187km,
                 // 5.5-meter steel construction, roughly $407M), later supplemented by a roughly
                 // 206km electronic sensor layer (about EUR72M, completed roughly 2023), in response
@@ -682,6 +732,7 @@ namespace PoliSim.Simulation
                 Name = "Schengen Border Reimposition",
                 Description = "Reinstates border checks at internal frontiers that would normally be open under a shared free-movement area, citing migration and cross-border crime concerns.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "CONFIRMED, real and recent - Germany reinstated checks at all nine of its land borders by September 2024, citing migration and serious-crime concerns.",
                 // CONFIRMED, real and recent - Germany reinstated checks at all nine of its land
                 // borders by September 2024 (Poland, Czechia, Austria, and Switzerland from October
                 // 2023), with the interior minister citing migration and "acute dangers... serious
@@ -698,6 +749,7 @@ namespace PoliSim.Simulation
                 Name = "Amnesty & Regularization Program",
                 Description = "Grants legal status to undocumented residents who meet defined criteria (length of residence, clean record, employment), rather than pursuing removal.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "DIRECTIONAL/GENRE-IDIOM - several real historical amnesty/regularization programs exist across immigration-receiving countries, not tied to one confirmed law common to the six seeded countries.",
                 // DIRECTIONAL/GENRE-IDIOM - several real historical amnesty/regularization programs
                 // exist across immigration-receiving countries, but this project isn't citing one
                 // single confirmed law common to the six seeded countries the way, say, Poland's
@@ -714,6 +766,7 @@ namespace PoliSim.Simulation
                 Name = "Human Trafficking Task Force",
                 Description = "Funds a dedicated, cross-agency police unit investigating human trafficking and forced-labor networks, coordinating with border authorities on victim identification.",
                 Category = LawCategory.CrimeJustice,
+                Citation = "GENRE-IDIOM/DIRECTIONAL - dedicated anti-trafficking task forces are a common institutional response across many countries; the US TVPA framework (2000) is the closest single anchor.",
                 // GENRE-IDIOM/DIRECTIONAL - dedicated anti-trafficking task forces are a real,
                 // common institutional response across many countries (the US TVPA framework since
                 // 2000 is the closest single confirmed anchor, though this law isn't citing that Act

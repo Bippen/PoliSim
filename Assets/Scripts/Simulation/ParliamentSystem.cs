@@ -471,6 +471,12 @@ namespace PoliSim.Simulation
         /// positive, harsher/stricter-coded deltas are negative. A repeal negates every term -
         /// undoing the law reads as the opposite lean of enacting it.
         /// </summary>
+        /// <summary>Code-review pass (2026-08-25): one sign per DialDeltas index (funding/reform-coded
+        /// positive, harsher/stricter-coded negative - the same convention this method's own class
+        /// doc states), read alongside LawDefinition.DialDeltas so the two arrays stay the same
+        /// length by construction rather than by two hand-written lists staying in sync.</summary>
+        private static readonly float[] LawDialSigns = { 1f, -1f, 1f, -1f, 1f, -1f };
+
         public static float GetLawBillDirection(Country country, LawBill bill)
         {
             LawDefinition law = LawCatalog.GetById(bill.LawId);
@@ -480,13 +486,13 @@ namespace PoliSim.Simulation
             }
 
             float sign = bill.IsRepeal ? -1f : 1f;
+            float[] deltas = law.DialDeltas;
             float direction = 0f;
-            direction += sign * law.PoliceFundingDelta;
-            direction -= sign * law.SentencingSeverityDelta;
-            direction += sign * law.BailReformDelta;
-            direction -= sign * law.DrugPolicyDelta;
-            direction += sign * law.JudicialFundingDelta;
-            direction -= sign * law.BorderEnforcementDelta;
+            for (int i = 0; i < deltas.Length; i++)
+            {
+                direction += sign * LawDialSigns[i] * deltas[i];
+            }
+
             return direction;
         }
 

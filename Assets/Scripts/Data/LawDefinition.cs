@@ -59,12 +59,36 @@ namespace PoliSim.Data
 
         public LawCategory Category;
 
+        /// <summary>The real-world grounding, in the CONFIRMED/DIRECTIONAL/GENRE-IDIOM voice
+        /// LawCatalog's own class doc establishes - a short, UI-facing distillation of the fuller
+        /// reasoning that lives in each law's own code comment (magnitude tier, secondary-dial
+        /// reasoning, and any honestly-noted caveat stay comment-only; this field is the one
+        /// sentence worth putting in front of a player). Surfaced in the law browser's detail pane
+        /// for the first time - until now this grounding existed only in source and never reached
+        /// the game (see CLAUDE_DESIGN_ASSET_REQUEST.md §7). Never null for a shipped law - the "no
+        /// citation" case a genre-idiom law reaches for is GENRE-IDIOM itself, stated as such, not
+        /// an empty field.</summary>
+        public string Citation;
+
         public float PoliceFundingDelta;
         public float SentencingSeverityDelta;
         public float BailReformDelta;
         public float DrugPolicyDelta;
         public float JudicialFundingDelta;
         public float BorderEnforcementDelta;
+
+        /// <summary>Code-review pass (2026-08-25): the six dial deltas as ONE ordered array - every
+        /// consumer that needs "all of a law's dials" (GameController.LawMagnitudeTier,
+        /// ParliamentSystem.GetLawBillDirection) should read from this instead of hand-listing the
+        /// six fields itself, so a future seventh dial is added in exactly one place rather than
+        /// drifting across two independent enumerations. Allocates a small array per call rather than
+        /// exposing an iterator, deliberately: this is read at most a few times per OnGUI frame (one
+        /// law's tier, one law's bill direction), not in a hot per-turn simulation loop.</summary>
+        public float[] DialDeltas => new[]
+        {
+            PoliceFundingDelta, SentencingSeverityDelta, BailReformDelta,
+            DrugPolicyDelta, JudicialFundingDelta, BorderEnforcementDelta
+        };
 
         /// <summary>Approval-rating cost paid ONCE, on successful enactment - distinct from ParliamentSystem.BillFailedApprovalCost (which is charged on a FAILED vote, for every bill kind uniformly). Represents a controversial law being costly to enact even when it passes, the same spirit as BudgetBill's own tax-hike approval penalty, sized here per-law rather than derived from the delta magnitude (a simplification, honestly - the MVP's four laws use small, illustrative, gameplay-tuning values, not researched figures, matching every other approval-cost constant in this codebase).</summary>
         public float EnactmentApprovalCost;
