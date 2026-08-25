@@ -206,6 +206,17 @@ namespace PoliSim.Data
         public ApprovalAttribution ApprovalLedgerLastPeriod;
         public ApprovalAttribution ApprovalLedgerAccruing;
 
+        /// <summary>
+        /// Step 2's THIRD section (2026-08-25, on the trigger Italy Debt Crisis fired): the debt
+        /// stock's attribution, the same closed/accruing pair as the approval ledger above and
+        /// under the same rules - both persisted per R-S2e, null on old saves and at seed, every
+        /// reader guards, the recorder opens the accruing one at the PRE-write stock on first
+        /// touch. Terms accrue by observation one daily slice at a time (the stock moves daily),
+        /// close where the FiscalTurnReport closes. ⚠ NEVER EconomyState fields - same reason.
+        /// </summary>
+        public DebtAttribution FiscalLedgerLastPeriod;
+        public DebtAttribution FiscalLedgerAccruing;
+
         /// <summary>THE MATURITY RATE-LAG (2026-08-17, mechanism-report ruling R4, ruled IN with
         /// its target quantified by the erosion pass): this country's average debt maturity in
         /// YEARS - the stock rolls over at ~1/M per year, so the effective rate it pays reverts

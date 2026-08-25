@@ -815,8 +815,13 @@ namespace PoliSim.Simulation
         {
             Country country = _world.GetCountry(countryId);
             float approvalBeforeOption = country.State.ApprovalRating;
+            // Step 2's third section: F1's BudgetImpact reaches the debt stock through this option
+            // (ApplyOneTimeBudgetImpact) - observed here, beside the approval observation, as a
+            // dated Class B event on the debt ledger. Zero impacts are skipped inside RecordEvent.
+            float debtBeforeOption = country.State.GovernmentDebt;
             CabinetSystem.ApplyDecisionOption(country, chosenOption);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", country.State.ApprovalRating - approvalBeforeOption);
+            DebtLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", debtBeforeOption, country.State.GovernmentDebt);
 
             if (_pendingCabinetDecisionsByCountry.TryGetValue(countryId, out var pending))
             {
@@ -857,8 +862,12 @@ namespace PoliSim.Simulation
         {
             Country country = _world.GetCountry(countryId);
             float approvalBeforeOption = country.State.ApprovalRating;
+            // Step 2's third section: the meeting option's BudgetImpact is F1's second writer -
+            // observed on the debt ledger exactly as the cabinet option is.
+            float debtBeforeOption = country.State.GovernmentDebt;
             ForeignPolicySystem.ApplyMeetingOption(country, chosenOption);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Foreign policy: {chosenOption.Label}", country.State.ApprovalRating - approvalBeforeOption);
+            DebtLedgerRecorder.RecordEvent(country, CurrentDate, $"Foreign policy: {chosenOption.Label}", debtBeforeOption, country.State.GovernmentDebt);
             _pendingForeignPolicyMeetingByCountry.Remove(countryId);
         }
 
@@ -1232,7 +1241,19 @@ namespace PoliSim.Simulation
                 float direction = ParliamentSystem.GetLawBillDirection(country, bill);
                 bool passed = ParliamentSystem.WouldBillPass(country, direction);
                 ParliamentSystem.RecordDivision(country, $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName}", direction, passed, CurrentDate);
+                // Found by the fiscal-ledger pass's own bar (2026-08-25), pre-existing since the MVP
+                // slice: this was the ONE bill type resolving OUTSIDE the approval ledger's
+                // observation sites - a failed vote's BillFailedApprovalCost and a passed law's
+                // EnactmentApprovalCost both moved approval with no ledger entry, so the round-trip
+                // harness's two coverage law bills (both failing in a no-op world, 2 x 1.5 = the
+                // exact -3.0 the audit reported) had been failing the approval self-audit in every
+                // scenario since 08-24 - unnoticed, because that harness's own verdict line does not
+                // grep ATTRIB. Observed here exactly as the other eight bill types are.
+                float approvalBeforeLawResult = country.State.ApprovalRating;
                 ParliamentSystem.ApplyLawBillResult(country, bill, passed, ApplyLawBillEffects);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate,
+                    $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName} ({(passed ? "passed" : "failed")})",
+                    country.State.ApprovalRating - approvalBeforeLawResult);
                 resolved.Add(bill.LawId);
             }
 
@@ -1953,6 +1974,15 @@ namespace PoliSim.Simulation
                 BudgetBalance = period.AccruedBudgetBalance
             };
 
+            // Step 2's third section (2026-08-25): the debt ledger closes exactly where the
+            // FiscalTurnReport does - the last daily slice has been observed (AdvanceDay finished
+            // the boundary day before AdvanceTurn ran), the stock is the period's closing stock,
+            // and the rate pair read here is the same pair the boundary day's slice was charged
+            // at. The close runs the Σ(terms)+Σ(events)+clamp == observed-Δ self-audit (ATTRIB:
+            // on red) and opens the next period's ledger at the post-boundary stock.
+            DebtLedgerRecorder.CloseAtBoundary(country, CurrentDate, GetDebtIssuanceRate(country),
+                country.EffectiveDebtInterestRate >= 0f ? country.EffectiveDebtInterestRate : GetDebtIssuanceRate(country));
+
             // CONTINUOUS TIME PHASE 5: "this turn's realized growth" is now the PERIOD's growth,
             // measured from the GDP the closing period opened at - by the time a boundary runs, the
             // days have already moved GDP, so the old top-of-method snapshot would read ~zero. The
@@ -2256,6 +2286,14 @@ namespace PoliSim.Simulation
                 // has no history and nothing reads it. The open date mirrors the real accruing
                 // ledger's (this method is static, so no CurrentDate here); only the TERMS matter
                 // to the parity diagnostic either way.
+                // Step 2's third section: the clone carries NO fiscal ledger at all. The preview
+                // never runs the daily path, so nothing on the clone could record into one - but
+                // a memberwise clone would share the real country's REFERENCE, and the hand-list's
+                // whole lesson (the BaselineGini class) is that a shared reference is a latent
+                // escape. Null on both, and the parity diagnostic asserts the real ledger is
+                // untouched across a preview.
+                FiscalLedgerAccruing = null,
+                FiscalLedgerLastPeriod = null,
                 ApprovalLedgerAccruing = new ApprovalAttribution
                 {
                     PeriodOpenDate = country.ApprovalLedgerAccruing != null ? country.ApprovalLedgerAccruing.PeriodOpenDate : default,
@@ -3318,6 +3356,18 @@ namespace PoliSim.Simulation
                 country.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
+            // Step 2's third section (2026-08-25): the debt ledger observes THIS write. The three
+            // inputs the split needs beyond what the call already returns are read here, before
+            // the write, from exactly the state the charge above read - the stock GetInterestOnDebt
+            // charged, the issuance rate AdvanceEffectiveDebtRate just targeted, and the blended
+            // rate it just advanced - so the recorded interest split is the model's own pair, not a
+            // reconstruction. The ledger opens at the pre-write stock on a period's first day.
+            float debtBeforeWrite = state.GovernmentDebt;
+            float issuanceRateToday = GetDebtIssuanceRate(country);
+            float effectiveRateToday = country.EffectiveDebtInterestRate >= 0f ? country.EffectiveDebtInterestRate : issuanceRateToday;
+            float interestAtIssuanceToday = debtBeforeWrite > 0f ? debtBeforeWrite * (issuanceRateToday / 100f) * FiscalFlowPerDayFraction : 0f;
+            DebtLedgerRecorder.EnsureAccruing(country, CurrentDate, debtBeforeWrite);
+
             float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
 
             period.AccruedRevenue += revenue;
@@ -3329,6 +3379,19 @@ namespace PoliSim.Simulation
             period.AccruedSwfReturns += swfReturns;
             period.AccruedTotalSpending += totalSpending;
             period.AccruedBudgetBalance += budgetBalance;
+
+            // The erosion factor is the ONE recomputation - the same expression as the stock
+            // update's, on the same state - and the ledger's twin-drift detector is what keeps it
+            // so. The clamp is detected by landing ON either bound, tested against the same two
+            // limits the update clamps to.
+            float erosionFactorApplied = Mathf.Pow(Mathf.Max(0.01f, 1f - state.Inflation / 100f), FiscalFlowPerDayFraction);
+            float debtAfterWrite = state.GovernmentDebt;
+            float ceilingToday = MaxDebtToGdpPercent / 100f * state.GDP;
+            float guardToday = NetCreditorRunawayGuardPercent / 100f * state.GDP;
+            bool clampBoundToday = debtAfterWrite >= ceilingToday || debtAfterWrite <= -guardToday;
+            DebtLedgerRecorder.RecordDay(country, CurrentDate, debtBeforeWrite, debtAfterWrite, erosionFactorApplied,
+                revenue, totalSpending, interestOnDebt, interestAtIssuanceToday, budgetBalance,
+                period.PlannedFiscalReactionMultiplier, issuanceRateToday, effectiveRateToday, clampBoundToday);
         }
 
         /// <summary>

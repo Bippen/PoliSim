@@ -153,6 +153,16 @@ namespace PoliSim.EditorTools
                 float ledgerEventSumAtSave = ledgerAtSave?.EventSum ?? float.NaN;
                 int ledgerEventCountAtSave = ledgerAtSave?.Events.Count ?? -1;
                 int accruingEventCountAtSave = world.GetCountry(player).ApprovalLedgerAccruing?.Events.Count ?? -1;
+                // Step 2's third section (2026-08-25): the DEBT ledger's save-time values, held aside
+                // the same way - the save is taken 37 days into a period, so the accruing ledger has
+                // 37 observed slices at this point and the closed one a full 365: a real crossing of
+                // both, per R-S2e, asserted explicitly below rather than implied by string equality.
+                DebtAttribution fiscalAtSave = world.GetCountry(player).FiscalLedgerLastPeriod;
+                float fiscalTermSumAtSave = fiscalAtSave?.TermSum ?? float.NaN;
+                int fiscalDaysAtSave = fiscalAtSave?.DaysRecorded ?? -1;
+                int fiscalEventCountAtSave = fiscalAtSave?.Events.Count ?? -1;
+                int fiscalAccruingDaysAtSave = world.GetCountry(player).FiscalLedgerAccruing?.DaysRecorded ?? -1;
+                float fiscalAccruingTermSumAtSave = world.GetCountry(player).FiscalLedgerAccruing?.TermSum ?? float.NaN;
                 Dictionary<SimulationRandom.Stream, int> drawCountsAtSave = SimulationRandom.CaptureDrawCounts();
 
                 bool ok = true;
@@ -199,6 +209,31 @@ namespace PoliSim.EditorTools
                     Debug.LogError($"RT: {player}/{seed} APPROVAL LEDGER did not cross the save - " +
                                    $"terms {ledgerTermSumAtSave:F4}->{restoredTermSum:F4}, events {ledgerEventCountAtSave}->{restoredEventCount}, " +
                                    $"accruing {accruingEventCountAtSave}->{restoredAccruingCount}. The post-load panel would show a blank or wrong period.");
+                    ok = false;
+                }
+
+                // Step 2's third section: the restored DEBT ledger must BE the saved one - the
+                // closed period (its term sum, day count and events) and the mid-period accruing
+                // ledger's 37 observed slices, so a load lands on a panel that says what the save
+                // said and an audit that continues from where the save's period actually stood.
+                Country restoredPlayer = worldB.GetCountry(player);
+                DebtAttribution fiscalRestored = restoredPlayer.FiscalLedgerLastPeriod;
+                float fiscalRestoredTermSum = fiscalRestored?.TermSum ?? float.NaN;
+                int fiscalRestoredDays = fiscalRestored?.DaysRecorded ?? -1;
+                int fiscalRestoredEvents = fiscalRestored?.Events.Count ?? -1;
+                int fiscalRestoredAccruingDays = restoredPlayer.FiscalLedgerAccruing?.DaysRecorded ?? -1;
+                float fiscalRestoredAccruingTermSum = restoredPlayer.FiscalLedgerAccruing?.TermSum ?? float.NaN;
+                bool fiscalOk = fiscalRestoredDays == fiscalDaysAtSave
+                    && fiscalRestoredEvents == fiscalEventCountAtSave
+                    && fiscalRestoredAccruingDays == fiscalAccruingDaysAtSave
+                    && (float.IsNaN(fiscalTermSumAtSave) ? float.IsNaN(fiscalRestoredTermSum) : Mathf.Abs(fiscalRestoredTermSum - fiscalTermSumAtSave) < 1e-3f)
+                    && (float.IsNaN(fiscalAccruingTermSumAtSave) ? float.IsNaN(fiscalRestoredAccruingTermSum) : Mathf.Abs(fiscalRestoredAccruingTermSum - fiscalAccruingTermSumAtSave) < 1e-3f);
+                if (!fiscalOk)
+                {
+                    Debug.LogError($"RT: {player}/{seed} DEBT LEDGER did not cross the save - " +
+                                   $"closed: terms {fiscalTermSumAtSave:F4}->{fiscalRestoredTermSum:F4}, days {fiscalDaysAtSave}->{fiscalRestoredDays}, events {fiscalEventCountAtSave}->{fiscalRestoredEvents}; " +
+                                   $"accruing: days {fiscalAccruingDaysAtSave}->{fiscalRestoredAccruingDays}, terms {fiscalAccruingTermSumAtSave:F4}->{fiscalRestoredAccruingTermSum:F4}. " +
+                                   "The post-load debt trace would show a blank or wrong period, or the next audit would fail on a period that lost its slices.");
                     ok = false;
                 }
 

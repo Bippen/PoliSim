@@ -48,13 +48,38 @@ namespace PoliSim.UI
         /// scrolling - bounded box, nothing trimmed.</summary>
         private const int MaxVisibleRows = 12;
 
+        /// <summary>The third section's capture (2026-08-25, `93c_trace_debt` at 1600) found the
+        /// gap the row cap alone leaves: on the Budget tab in its budget-pause state the host has
+        /// ~7 rows of height under the chips, so a 10-row section ran past the window edge with
+        /// every guard silent (each cell fit its own rect). The panel now measures against the
+        /// HOST'S remaining height as well and scrolls internally for the rest.
+        ///
+        /// The share is the WHOLE remaining height, deliberately: a first cut at 0.6 bounded the
+        /// window overrun but would also have cut the approval section on the PolicyLaws host from
+        /// its approved twelve rows (Step 2's `93_trace_approval`, a set awaiting Elias's eyes) to
+        /// five - a silent regression of a capture that already fit. The cap's job is "never past
+        /// the window," not "leave the host a body": where twelve rows fit they still show, and
+        /// where they don't the panel takes what the host has and scrolls. The tab's own body
+        /// under an open panel was already the accepted trade on PolicyLaws. Never fewer than
+        /// <see cref="MinVisibleRows"/>: three rows is the floor of usefulness, and no supported
+        /// size leaves a host that short.</summary>
+        private const float MaxShareOfHostHeight = 1f;
+        private const int MinVisibleRows = 3;
+
         private static StatNodeId? _selected;
         private static StatNodeId? _pendingSelected;
         private static bool _hasPending;
         private static Vector2 _scroll;
 
+        /// <summary>Approval and confidence (Step 2 v1) plus Debt-to-GDP (the third section,
+        /// 2026-08-25 - the fiscal chain, on the trigger Italy Debt Crisis fired).</summary>
         public static bool SupportsTrace(StatNodeId stat)
-            => stat == StatNodeId.Approval || stat == StatNodeId.ConsumerConfidence;
+            => stat == StatNodeId.Approval || stat == StatNodeId.ConsumerConfidence || stat == StatNodeId.DebtToGdp;
+
+        /// <summary>The stat the panel is currently open on, or null when closed - read by the
+        /// capture driver's assert-own-name guard so a capture named for a trace can prove the
+        /// trace it claims is the one on screen.</summary>
+        public static StatNodeId? SelectedStat => _selected;
 
         /// <summary>Called by the chip overlay. The toggle is PENDING until the next Layout pass
         /// - flipping selection mid-frame would make Layout and Repaint disagree about control
@@ -70,10 +95,28 @@ namespace PoliSim.UI
             _hasPending = true;
         }
 
+        /// <summary>The capture driver's own entry (2026-08-25): an ABSOLUTE selection, not a
+        /// toggle. A toggle queued while no chip host is drawing (under an exclusive screen - a
+        /// scenario verdict, the selector) stays pending, and the next toggle then composes with
+        /// it instead of applying on its own: the "Inherit the Fund" block's close-toggle and the
+        /// Italy block's open-toggle collapsed into a close, so `95b_italydebt_in_progress` had
+        /// been shot without the approval trace it claimed since Step 3, unasserted. Production
+        /// clicks keep the toggle; the driver states what it wants. Same Layout-only commit.</summary>
+        public static void RequestSelection(StatNodeId? stat)
+        {
+            if (stat.HasValue && !SupportsTrace(stat.Value))
+            {
+                return;
+            }
+
+            _pendingSelected = stat;
+            _hasPending = true;
+        }
+
         /// <summary>Height the panel will occupy this frame - callers subtract it from their
         /// content budget exactly like the stat row's own MeasureHeight. Applies any pending
         /// selection change first, on the Layout event only.</summary>
-        public static float MeasureHeight(Country country, float wageGapStance, GUIStyle labelStyle, float availableWidth)
+        public static float MeasureHeight(Country country, float wageGapStance, GUIStyle labelStyle, float availableWidth, float hostRemainingHeight)
         {
             if (_hasPending && Event.current != null && Event.current.type == EventType.Layout)
             {
@@ -87,13 +130,23 @@ namespace PoliSim.UI
                 return 0f;
             }
 
-            return Mathf.Min(rows.Count, MaxVisibleRows) * LedgerRow.Height(labelStyle) + 6f;
+            return VisibleRows(rows.Count, labelStyle, hostRemainingHeight) * LedgerRow.Height(labelStyle) + 6f;
+        }
+
+        /// <summary>Rows shown before the panel scrolls internally: the row cap, then the host's
+        /// own height (see <see cref="MaxShareOfHostHeight"/>), never below the floor. The single
+        /// place both <see cref="MeasureHeight"/> and <see cref="Draw"/> decide it.</summary>
+        private static int VisibleRows(int rowCount, GUIStyle labelStyle, float hostRemainingHeight)
+        {
+            float rowHeight = LedgerRow.Height(labelStyle);
+            int byHost = rowHeight > 0f ? Mathf.FloorToInt(hostRemainingHeight * MaxShareOfHostHeight / rowHeight) : MaxVisibleRows;
+            return Mathf.Min(rowCount, Mathf.Max(MinVisibleRows, Mathf.Min(MaxVisibleRows, byHost)));
         }
 
         /// <summary>Draws the panel. Must be called with the SAME arguments as MeasureHeight in
         /// the same frame - both route through <see cref="BuildRows"/>, so the measurement and
         /// the drawing cannot disagree (the ComputeLayout lesson).</summary>
-        public static void Draw(Country country, float wageGapStance, GUIStyle labelStyle, GUIStyle figureStyle, float availableWidth)
+        public static void Draw(Country country, float wageGapStance, GUIStyle labelStyle, GUIStyle figureStyle, float availableWidth, float hostRemainingHeight)
         {
             List<TraceRow> rows = BuildRows(country, wageGapStance);
             if (rows == null)
@@ -102,10 +155,11 @@ namespace PoliSim.UI
             }
 
             float rowHeight = LedgerRow.Height(labelStyle);
-            bool scrolls = rows.Count > MaxVisibleRows;
+            int visibleRows = VisibleRows(rows.Count, labelStyle, hostRemainingHeight);
+            bool scrolls = rows.Count > visibleRows;
             if (scrolls)
             {
-                _scroll = GUILayout.BeginScrollView(_scroll, GUILayout.Height(MaxVisibleRows * rowHeight));
+                _scroll = GUILayout.BeginScrollView(_scroll, GUILayout.Height(visibleRows * rowHeight));
             }
 
             foreach (TraceRow row in rows)
@@ -139,9 +193,12 @@ namespace PoliSim.UI
                 return null;
             }
 
-            return _selected == StatNodeId.Approval
-                ? BuildApprovalRows(country)
-                : BuildConfidenceRows(country, wageGapStance);
+            switch (_selected.Value)
+            {
+                case StatNodeId.Approval: return BuildApprovalRows(country);
+                case StatNodeId.DebtToGdp: return BuildDebtRows(country);
+                default: return BuildConfidenceRows(country, wageGapStance);
+            }
         }
 
         private static List<TraceRow> BuildApprovalRows(Country country)
@@ -240,6 +297,119 @@ namespace PoliSim.UI
                 new TraceRow { Name = "Effective — what the economy reads", Figure = $"{effective:F3}" }
             };
             return rows;
+        }
+
+        /// <summary>
+        /// The third section (2026-08-25): the debt stock's period, then the ratio's own identity.
+        /// Every term is Class A BY OBSERVATION - the daily write's own values, summed over the
+        /// period's slices (see DebtAttribution) - so the debt step decomposes exactly: the primary
+        /// balance before the reaction, the fiscal reaction's revenue effect (with the frozen
+        /// Class C stance the period consumed as its trailing figure), interest at the issuance
+        /// rate, the maturity lag's effective-rate term, and the −π·b erosion; the compounding
+        /// class's residual line is the clamp/rounding row, skipped when it rounds to nothing.
+        /// Events are Class B, dated. The ratio's two-term identity is exact from the four
+        /// recorded anchors and carries no residual; GDP's OWN drivers are Class D and are
+        /// deliberately not claimed here - that is the identity's honest boundary, stated on the
+        /// footer. Every figure is the number the simulation used, recorded at the write, never
+        /// recomputed for display (the single-book rider).
+        /// </summary>
+        private static List<TraceRow> BuildDebtRows(Country country)
+        {
+            var rows = new List<TraceRow>();
+            DebtAttribution ledger = country.FiscalLedgerLastPeriod;
+            if (ledger == null || !ledger.Closed)
+            {
+                rows.Add(new TraceRow { Header = true, Name = "Debt — no period recorded yet. Advance a year." });
+                return rows;
+            }
+
+            float delta = ledger.DebtAtClose - ledger.DebtAtPeriodOpen;
+            rows.Add(new TraceRow
+            {
+                Header = true,
+                Name = $"Debt — period ended {ledger.PeriodCloseDate:MMM d, yyyy}: " +
+                       $"{Money(ledger.DebtAtPeriodOpen)} → {Money(ledger.DebtAtClose)} ({SignedMoney(delta)}) · " +
+                       $"ratio {ledger.RatioAtPeriodOpen:F1}% → {ledger.RatioAtClose:F1}%"
+            });
+
+            MoneyTerm(rows, "Primary balance (before the reaction)", ledger.PrimaryBalanceEffect,
+                ledger.PrimaryBalanceEffect > 0f ? "a primary deficit" : "a primary surplus");
+            MoneyTerm(rows, "Fiscal reaction on revenue", ledger.FiscalReactionEffect, $"stance ×{ledger.FiscalReactionMultiplier:F2}");
+            MoneyTerm(rows, "Interest at the issuance rate", ledger.InterestAtIssuance, $"{ledger.IssuanceRateAtOpen:F2}→{ledger.IssuanceRateAtClose:F2}%");
+            // Name kept short and the mechanism in the trailing text: the first capture (1600,
+            // 2026-08-25) showed "Maturity lag (blended − issuance)" SHRUNK to fit the name column
+            // rather than wrapping - a parenthetical is one unbreakable run to the measured label.
+            MoneyTerm(rows, "Maturity lag", ledger.RateLagEffect, $"blended pays {ledger.EffectiveRateAtOpen:F2}→{ledger.EffectiveRateAtClose:F2}% vs issuance");
+            MoneyTerm(rows, "Inflation erosion (−π·b)", ledger.Erosion, $"π {ledger.InflationAtOpen:F1}→{ledger.InflationAtClose:F1}%");
+            MoneyTerm(rows, ledger.ClampBoundDays > 0
+                    ? $"Clamp at guard/ceiling ({ledger.ClampBoundDays} day{(ledger.ClampBoundDays == 1 ? "" : "s")})"
+                    : "Residual (rounding, audited)",
+                ledger.ClampLoss, "");
+
+            if (ledger.Events.Count > 0)
+            {
+                rows.Add(new TraceRow { Header = true, Name = "Events this period" });
+                int shown = Mathf.Min(ledger.Events.Count, MaxEventRows);
+                for (int i = 0; i < shown; i++)
+                {
+                    DebtEventRecord e = ledger.Events[i];
+                    rows.Add(new TraceRow { Name = e.Label, Figure = SignedMoney(e.AppliedDelta), Trailing = $"{e.Date:MMM d}" });
+                }
+
+                if (ledger.Events.Count > shown)
+                {
+                    float omittedSum = 0f;
+                    for (int i = shown; i < ledger.Events.Count; i++) { omittedSum += ledger.Events[i].AppliedDelta; }
+                    rows.Add(new TraceRow { Name = $"+{ledger.Events.Count - shown} more events", Figure = SignedMoney(omittedSum), Trailing = "" });
+                }
+            }
+
+            rows.Add(new TraceRow
+            {
+                Header = true,
+                Name = $"Terms {SignedMoney(ledger.TermSum + ledger.ClampLoss)} + events {SignedMoney(ledger.EventSum)} " +
+                       $"= {SignedMoney(delta)} — audited at the boundary ({ledger.DaysRecorded} days)."
+            });
+
+            // The ratio's identity in three rows, not four - the result rides on the header so the
+            // section stays inside a 1600 Budget-tab host (measured on the first capture).
+            if (ledger.GdpAtClose > 0f && ledger.GdpAtPeriodOpen > 0f)
+            {
+                float stockAtClosingGdp = delta / ledger.GdpAtClose * 100f;
+                float gdpOnOpeningStock = ledger.DebtAtPeriodOpen * (1f / ledger.GdpAtClose - 1f / ledger.GdpAtPeriodOpen) * 100f;
+                rows.Add(new TraceRow
+                {
+                    Header = true,
+                    Name = $"Debt-to-GDP {ledger.RatioAtClose - ledger.RatioAtPeriodOpen:+0.00;-0.00} pp — the ratio's own identity, exact; GDP's drivers are not this section's claim"
+                });
+                rows.Add(new TraceRow { Name = "Stock change, at closing GDP", Figure = $"{stockAtClosingGdp:+0.00;-0.00} pp", Trailing = "" });
+                rows.Add(new TraceRow
+                {
+                    Name = "GDP's movement on the opening stock",
+                    Figure = $"{gdpOnOpeningStock:+0.00;-0.00} pp",
+                    Trailing = $"GDP {Money(ledger.GdpAtPeriodOpen)}→{Money(ledger.GdpAtClose)}"
+                });
+            }
+
+            return rows;
+        }
+
+        private static string Money(float value) => UiFormat.Money(value, MoneyUnit.Billions);
+
+        private static string SignedMoney(float value)
+            => (value < 0f ? "−" : "+") + UiFormat.Money(Mathf.Abs(value), MoneyUnit.Billions);
+
+        /// <summary>A dollar term under $50M on a stock in the thousands of billions rounds to
+        /// nothing at display precision - skipped, never shown as a confident zero. The audit
+        /// footer still sums the exact values.</summary>
+        private static void MoneyTerm(List<TraceRow> rows, string name, float value, string trailing)
+        {
+            if (Mathf.Abs(value) < 0.05f)
+            {
+                return;
+            }
+
+            rows.Add(new TraceRow { Name = name, Figure = SignedMoney(value), Trailing = trailing });
         }
 
         private static void Term(List<TraceRow> rows, string name, float value, bool sustained, bool indented = false)

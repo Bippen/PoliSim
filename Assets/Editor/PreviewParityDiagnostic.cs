@@ -23,6 +23,20 @@ namespace PoliSim.EditorTools
     /// an escape in THEIR constants (e.g. NAIRU) is outside this check's evidence - said here
     /// so the check is never cited for it.</para>
     ///
+    /// <para><b>THE FISCAL LEDGER (Step 2's third section, 2026-08-25) - which side of the
+    /// boundary each term sits on, stated per the build directive.</b> ZERO of its five terms
+    /// (primary balance, fiscal reaction, interest at issuance, rate lag, erosion) are asserted
+    /// here, and none are printed, BY DESIGN and not by omission: every one is accrued across
+    /// 365 daily slices on a MOVING stock (the Phase-3 within-period feedback class), while the
+    /// preview runs the single-step turn form on a clone that never enters the daily path and
+    /// so has no ledger to print. Their turn-vs-daily agreement is the aggregation-equivalence
+    /// bar's question (117/117 within 3%), not parity's; a term that sits on the "unadvanced
+    /// inputs" side of this check's boundary does not exist in the fiscal chain. What this
+    /// check DOES assert for the fiscal ledger is the hand-list property itself: the REAL
+    /// country's accruing debt ledger is byte-untouched across a preview (days recorded and
+    /// term sum identical before and after), so a future clone escape that reached the ledger
+    /// would name itself here.</para>
+    ///
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod
     /// PoliSim.EditorTools.PreviewParityDiagnostic.Run -logFile &lt;path&gt;`, or from the menu.
     /// </summary>
@@ -54,15 +68,42 @@ namespace PoliSim.EditorTools
                 // from the exact state the boundary will resolve.
                 for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
 
+                // Step 2's third section: the real accruing DEBT ledger before any preview runs -
+                // 365 observed days by now. A preview must leave it byte-untouched (the clone
+                // carries null ledgers by the hand-list); this is the assert with teeth for that.
+                var fiscalDaysBefore = new Dictionary<CountryId, int>();
+                var fiscalTermSumBefore = new Dictionary<CountryId, float>();
+                foreach (Country c in world.Countries)
+                {
+                    fiscalDaysBefore[c.Id] = c.FiscalLedgerAccruing?.DaysRecorded ?? -1;
+                    fiscalTermSumBefore[c.Id] = c.FiscalLedgerAccruing?.TermSum ?? float.NaN;
+                }
+
                 var previews = new Dictionary<CountryId, ApprovalAttribution>();
                 foreach (Country c in world.Countries)
                 {
                     previews[c.Id] = sim.PreviewTurn(c.Id, PolicyDecision.None()).ApprovalTerms;
                 }
 
+                int failures = 0;
+                foreach (Country c in world.Countries)
+                {
+                    int daysAfter = c.FiscalLedgerAccruing?.DaysRecorded ?? -1;
+                    float termSumAfter = c.FiscalLedgerAccruing?.TermSum ?? float.NaN;
+                    bool untouched = daysAfter == fiscalDaysBefore[c.Id]
+                        && (float.IsNaN(termSumAfter) ? float.IsNaN(fiscalTermSumBefore[c.Id]) : termSumAfter == fiscalTermSumBefore[c.Id]);
+                    if (!untouched)
+                    {
+                        Debug.LogError($"PARITY: {c.Id} FISCAL LEDGER TOUCHED BY A PREVIEW - days {fiscalDaysBefore[c.Id]}->{daysAfter}, " +
+                                       $"terms {fiscalTermSumBefore[c.Id]:F4}->{termSumAfter:F4}. A preview-clone reference escaped into the real country's ledger.");
+                        failures++;
+                    }
+                }
+                Debug.Log("PARITY: fiscal ledger - 0 of 5 terms asserted or printed BY DESIGN (every term is daily-accrued on a moving stock; " +
+                          "turn-vs-daily agreement is the equivalence bar's question); the real accruing ledger asserted UNTOUCHED across the preview for all 6 countries.");
+
                 sim.AdvanceTurn(decisions);
 
-                int failures = 0;
                 foreach (Country c in world.Countries)
                 {
                     ApprovalAttribution real = c.ApprovalLedgerLastPeriod;

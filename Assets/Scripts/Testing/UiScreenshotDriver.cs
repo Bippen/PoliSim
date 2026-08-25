@@ -1231,19 +1231,48 @@ namespace PoliSim.Testing
             SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
             SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
             ResetScrolls(controller);
-            StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+            // RequestSelection, not the chip toggle (2026-08-25): a toggle queued under an
+            // exclusive screen stays pending and composes with the next one - see the panel's own
+            // note on the 95b collapse. The driver states what it wants, absolutely.
+            StatTracePanel.RequestSelection(StatNodeId.Approval);
             yield return Settle();
+            if (StatTracePanel.SelectedStat != StatNodeId.Approval)
+            {
+                Debug.LogError("SHOT: 93_trace_approval - the trace panel is NOT open on Approval; this capture would be misnamed.");
+            }
             yield return Capture("93_trace_approval");
 
-            StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
-            StatTracePanel.NotifyChipClicked(StatNodeId.ConsumerConfidence);
+            StatTracePanel.RequestSelection(StatNodeId.ConsumerConfidence);
             SetEnumField(controller, "_consolidatedTab", "Budget");
             SetEnumField(controller, "_budgetProcessCategory", "Tax");
             ResetScrolls(controller);
             yield return Settle();
+            if (StatTracePanel.SelectedStat != StatNodeId.ConsumerConfidence)
+            {
+                Debug.LogError("SHOT: 93b_trace_confidence - the trace panel is NOT open on ConsumerConfidence; this capture would be misnamed.");
+            }
             yield return Capture("93b_trace_confidence");
 
-            StatTracePanel.NotifyChipClicked(StatNodeId.ConsumerConfidence);
+            StatTracePanel.RequestSelection(null);
+            yield return Settle();
+
+            // Step 2's third section (2026-08-25): the debt trace, on the Budget tab's own chip row
+            // (Fiscal's ranking puts Debt-to-GDP first - every tax and spending lever targets it).
+            // The warm-up's periods are closed and rich (the FRF's first-turn reaction, interest,
+            // erosion all non-trivial on the USA's stock), so this is a real period, not an empty
+            // one. Assert-own-name: the panel must be OPEN ON DEBT before the shutter, else the
+            // capture would be a lie under its own filename.
+            StatTracePanel.RequestSelection(StatNodeId.DebtToGdp);
+            yield return Settle();
+            if (StatTracePanel.SelectedStat != StatNodeId.DebtToGdp)
+            {
+                Debug.LogError("SHOT: 93c_trace_debt - the trace panel is NOT open on Debt-to-GDP; this capture would be misnamed.");
+            }
+            DebtAttribution debtLedgerPinned = player.FiscalLedgerLastPeriod;
+            Debug.Log($"SHOT: 93c debt trace pinned - closed={(debtLedgerPinned?.Closed ?? false)}, days={debtLedgerPinned?.DaysRecorded ?? -1}, " +
+                      $"events={debtLedgerPinned?.Events.Count ?? -1}, terms={debtLedgerPinned?.TermSum ?? float.NaN:F2}, clamp={debtLedgerPinned?.ClampLoss ?? float.NaN:F4}.");
+            yield return Capture("93c_trace_debt");
+            StatTracePanel.RequestSelection(null);
             yield return Settle();
 
             // --- E1c (Step 3): THE SCENARIO SLICE — entry, an objective in progress, and the
@@ -1284,10 +1313,14 @@ namespace PoliSim.Testing
                     SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
                     SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
                     ResetScrolls(controller);
-                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+                    StatTracePanel.RequestSelection(StatNodeId.Approval);
                     yield return Settle();
+                    if (StatTracePanel.SelectedStat != StatNodeId.Approval)
+                    {
+                        Debug.LogError("SHOT: 94b_scenario_in_progress - the trace panel is NOT open on Approval; this capture would be misnamed.");
+                    }
                     yield return Capture("94b_scenario_in_progress");
-                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+                    StatTracePanel.RequestSelection(null);
 
                     // The verdict: run to the scenario's own end turn so the REAL evaluator resolves
                     // it. ⚠ BOUNDED BY THE TURNS ACTUALLY NEEDED, not by MaxStateSearchDays - the
@@ -1362,7 +1395,21 @@ namespace PoliSim.Testing
                     var italyDecisions = new Dictionary<CountryId, PolicyDecision> { [_countryId] = italyConsolidation };
                     bool italyConsolidationApplied = false;
 
-                    for (int t = 0; t < 11; t++)
+                    // BOUNDED (2026-08-25), not the fixed eleven turns this block shipped with: the
+                    // recorded EndTurn-as-absolute-turn artifact (ScenarioEvaluator compares EndTurn
+                    // to the shared session clock, and this block starts wherever the blocks before
+                    // it left that clock) had drifted far enough that eleven turns ran PAST Italy's
+                    // EndTurn - the verdict screen was up, exclusive, for both "in-progress" captures,
+                    // and the debt trace's own assert-own-name is what caught it (the panel could not
+                    // open under an exclusive screen). Stopping two turns short of EndTurn wherever
+                    // the clock stands keeps the in-progress state genuinely in progress without
+                    // reordering any block. The verdict capture below still runs to EndTurn itself.
+                    int italyInProgressTurns = Mathf.Max(0, italySlice.EndTurn - sim.CurrentTurn - 2);
+                    if (italyInProgressTurns == 0)
+                    {
+                        Debug.LogWarning($"SHOT: the session clock (turn {sim.CurrentTurn}) is already within two turns of Italy's EndTurn ({italySlice.EndTurn}) - the in-progress state is unreachable from here; 95b/95d will not show it.");
+                    }
+                    for (int t = 0; t < italyInProgressTurns; t++)
                     {
                         for (int d = 0; d < SimulationManager.DaysPerTurn; d++)
                         {
@@ -1379,10 +1426,53 @@ namespace PoliSim.Testing
                     SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
                     SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
                     ResetScrolls(controller);
-                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+                    StatTracePanel.RequestSelection(StatNodeId.Approval);
                     yield return Settle();
+                    // Assert-own-name for the in-progress capture, added with the bound above: the
+                    // verdict must NOT be pending, or "in progress" is a lie under its own filename
+                    // - and the approval trace it clicks for must actually be OPEN (the toggle
+                    // collapse this block carried since Step 3; see StatTracePanel.RequestSelection).
+                    FieldInfo verdictPendingProbe = controller.GetType().GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (verdictPendingProbe?.GetValue(controller) is bool verdictUp && verdictUp)
+                    {
+                        Debug.LogError($"SHOT: 95b_italydebt_in_progress - the scenario verdict is already pending at turn {sim.CurrentTurn} (EndTurn {italySlice.EndTurn}); this capture shows the verdict, not the scenario in progress.");
+                    }
+                    if (StatTracePanel.SelectedStat != StatNodeId.Approval)
+                    {
+                        Debug.LogError("SHOT: 95b_italydebt_in_progress - the trace panel is NOT open on Approval; this capture would be misnamed.");
+                    }
                     yield return Capture("95b_italydebt_in_progress");
-                    StatTracePanel.NotifyChipClicked(StatNodeId.Approval);
+                    StatTracePanel.RequestSelection(null);
+
+                    // Step 2's third section (2026-08-25): the debt trace pinned on the state that
+                    // FIRED its trigger - Italy mid-scenario, eleven periods in, the −20% package
+                    // applied, the stock still well past the comfort anchor: erosion, the lag, the
+                    // reaction's give-back and the primary balance all live at once. On the Budget
+                    // tab's chip row, where Debt-to-GDP ranks first. Assert-own-name on the panel
+                    // AND on the ledger: a closed period with 365 observed days, or the capture is
+                    // not showing what its name says.
+                    SetEnumField(controller, "_consolidatedTab", "Budget");
+                    SetEnumField(controller, "_budgetProcessCategory", "Tax");
+                    ResetScrolls(controller);
+                    StatTracePanel.RequestSelection(StatNodeId.DebtToGdp);
+                    yield return Settle();
+                    if (StatTracePanel.SelectedStat != StatNodeId.DebtToGdp)
+                    {
+                        Debug.LogError("SHOT: 95d_italydebt_trace_debt - the trace panel is NOT open on Debt-to-GDP; this capture would be misnamed.");
+                    }
+                    DebtAttribution italyDebtLedger = sim.World?.GetCountry(italySlice.Country)?.FiscalLedgerLastPeriod;
+                    if (italyDebtLedger == null || !italyDebtLedger.Closed || italyDebtLedger.DaysRecorded != SimulationManager.DaysPerTurn)
+                    {
+                        Debug.LogError($"SHOT: 95d_italydebt_trace_debt - Italy's closed debt ledger is not a full period (closed={(italyDebtLedger?.Closed ?? false)}, days={italyDebtLedger?.DaysRecorded ?? -1}); the capture would not show the state it claims.");
+                    }
+                    else
+                    {
+                        Debug.Log($"SHOT: 95d Italy debt trace pinned - {italyDebtLedger.DebtAtPeriodOpen:F1}->{italyDebtLedger.DebtAtClose:F1} (ratio {italyDebtLedger.RatioAtPeriodOpen:F1}->{italyDebtLedger.RatioAtClose:F1}%), " +
+                                  $"primary={italyDebtLedger.PrimaryBalanceEffect:F1} frf={italyDebtLedger.FiscalReactionEffect:F1} intIss={italyDebtLedger.InterestAtIssuance:F1} lag={italyDebtLedger.RateLagEffect:F1} erosion={italyDebtLedger.Erosion:F1} clamp={italyDebtLedger.ClampLoss:F4} events={italyDebtLedger.Events.Count}, stance x{italyDebtLedger.FiscalReactionMultiplier:F3}.");
+                    }
+                    yield return Capture("95d_italydebt_trace_debt");
+                    StatTracePanel.RequestSelection(null);
+                    yield return Settle();
 
                     int turnsNeeded = Mathf.Max(0, italySlice.EndTurn - sim.CurrentTurn) + 2;
                     int guard = 0;

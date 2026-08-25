@@ -1493,7 +1493,16 @@ namespace PoliSim.UI
             }
 
             Country country = _world.GetCountry(definition.Country);
+            // Step 2's third section (2026-08-25): a scenario's seed delta is the one debt writer
+            // outside the daily path and the interrupt layer (Italy writes 165% of GDP straight
+            // onto the stock). Observed here as a dated Class B event on the debt ledger - at a
+            // fresh game's turn 0 this is the ledger's first touch and it opens at the PRE-seed
+            // stock, so the first period's panel shows the seed as the event it is; mid-session
+            // (the capture driver's Italy block) the accruing period's audit stays exact instead
+            // of failing on an unrecorded writer.
+            float debtBeforeDeltas = country.State.GovernmentDebt;
             definition.ApplyDeltas?.Invoke(_world, country);
+            DebtLedgerRecorder.RecordEvent(country, _simulationManager.CurrentDate, $"Scenario start: {definition.Name}", debtBeforeDeltas, country.State.GovernmentDebt);
 
             _scenario = definition;
             _scenarioProgress = ScenarioEvaluator.Begin(definition, _simulationManager.CurrentTurn);
@@ -5691,8 +5700,12 @@ namespace PoliSim.UI
             // Step 2: the trace panel, directly under the chips it explains - measured and
             // subtracted from the content budget exactly like the stat row itself.
             float policyTraceGapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
-            float policyTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, policyTraceGapStance, _labelStyle, statRowWidth);
-            StatTracePanel.Draw(_playerCountry, policyTraceGapStance, _labelStyle, _labelStyle, statRowWidth);
+            // The host's remaining height under the chips (the same budget contentHeight below is
+            // cut from) - the panel takes at most its share of it and scrolls for the rest, so a
+            // long section can never push the tab's own body off the window (2026-08-25).
+            float policyTraceHostHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - statRowHeight);
+            float policyTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, policyTraceGapStance, _labelStyle, statRowWidth, policyTraceHostHeight);
+            StatTracePanel.Draw(_playerCountry, policyTraceGapStance, _labelStyle, _labelStyle, statRowWidth, policyTraceHostHeight);
 
             float contentHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - statRowHeight - policyTraceHeight);
             switch (_policyLawsCategory)
@@ -7780,8 +7793,13 @@ namespace PoliSim.UI
             // Step 2: the trace panel under the chips, pinned with them above the scroll view -
             // its height leaves the scroll budget the same way the stat row's does.
             float budgetTraceGapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
-            float budgetTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, budgetTraceGapStance, _labelStyle, statRowWidth);
-            StatTracePanel.Draw(_playerCountry, budgetTraceGapStance, _labelStyle, _labelStyle, statRowWidth);
+            // The host's remaining height under the chips - the panel takes at most its share and
+            // scrolls for the rest. Found by the debt section's first capture at 1600 (2026-08-25):
+            // this tab's budget-pause state has ~7 rows of room here, and a section measured
+            // against the row cap alone ran past the window with every containment guard silent.
+            float budgetTraceHostHeight = Mathf.Max(0f, columnsHeight - _labelStyle.fontSize - statRowHeight);
+            float budgetTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, budgetTraceGapStance, _labelStyle, statRowWidth, budgetTraceHostHeight);
+            StatTracePanel.Draw(_playerCountry, budgetTraceGapStance, _labelStyle, _labelStyle, statRowWidth, budgetTraceHostHeight);
 
             _budgetProcessCenterScrollPosition = GUILayout.BeginScrollView(_budgetProcessCenterScrollPosition, GUILayout.Height(Mathf.Max(0f, columnsHeight - _labelStyle.fontSize - statRowHeight - budgetTraceHeight)));
             switch (_budgetProcessCategory)

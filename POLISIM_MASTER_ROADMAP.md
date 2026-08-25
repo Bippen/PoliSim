@@ -238,7 +238,7 @@ because they are not done.
     | rejected-bill seal · Budget's dead nested scroll | ✅ fixed 2026-08-18 (CLAUDE.md "First real playtest session") |
     | Turn → Year | ✅ 2026-08-24 (CLAUDE.md "Turn -> Year") |
     | Calendar Panel | ✅ `a13dd7b` 2026-08-24 |
-    | Decision density | ✅ **MEASURED 2026-08-25 at 50 laws, same method** — automatic prompts/yr UNCHANGED by construction (≈5; 5.62 at a full six-minister USA cabinet); named enactable choices **19 → 69** (13 tax + 6 welfare programs, then +50 laws, multiple pending at once, 21-day resolution). The 08-18 ruling's own prediction confirmed: the table did not move, the menu did. CLAUDE.md "Decision density re-measured"; ruling request in that pass's report |
+    | Decision density | ✅ **CLOSED ON THE NUMBERS — ruled 2026-08-25 (Elias).** Measured at 50 laws, same method as the scoping: automatic prompts/yr UNCHANGED by construction (≈5; 5.87 at a full six-minister USA cabinet with the election reveal now ruled into the table); named enactable choices **19 → 69** (13 tax + 6 welfare programs, then +50 laws, multiple pending at once, 21-day resolution). The 08-18 ruling's own prediction confirmed: the table did not move, the menu did. CLAUDE.md "Decision density re-measured". **Whether it READS as closed is the next playtest's own named item — riding gates, Play** |
     | Portraits (D1) | ⏸ UNCHANGED — 8 of 9 gated on the Editor register side-by-side (`MISSING_PREREQUISITES.md` §D1) |
     | Law system | ✅ above |
   - **The two-copy consolidation — rule 13** (`faecdce`, `0c2a747`, `bb6ad14`, finished 2026-08-25):
@@ -477,13 +477,22 @@ Poland convergence, The Unequal Recovery.
 **Two carry-overs from the first real playtest session (2026-08-18), recorded here as LIVE,
 QUEUED, UNBUILT work — not built this pass:**
 
-- ⚠ **The fiscal legibility panel's trigger has FIRED.** Step 2 named it as deferred, with the
-  trigger "the first playtest asking why did the deficit move" (`CLAUDE.md`'s Step 2 entry). Italy
-  Debt Crisis's own playtest session is that playtest: no panel section exists for erosion, the
-  maturity rate-lag, or the debt path itself. Moved from CLAUDE.md's deferred list to here —
-  startable today, since the data already lives in `FiscalTurnReport` per Step 2's own note; only
-  the trace-panel section itself (`StatTracePanel`'s Approval/ConsumerConfidence grammar, extended
-  to a third stat) remains to be built.
+- ✅ **The fiscal legibility panel — SHIPPED 2026-08-25, the trigger closed.** ~~Step 2 named it
+  as deferred, with the trigger "the first playtest asking why did the deficit move"; Italy Debt
+  Crisis's own playtest session is that playtest: no panel section exists for erosion, the
+  maturity rate-lag, or the debt path itself.~~ Built as `StatTracePanel`'s THIRD section on the
+  Debt-to-GDP chip, on a debt ledger (`DebtAttribution`/`DebtLedgerRecorder`, the approval
+  ledger's exact shape) that observes the daily stock write — so the debt step decomposes EXACTLY
+  (primary balance · the FRF's revenue effect at the frozen stance · interest at issuance · the
+  maturity lag · −π·b erosion · clamp/rounding · dated events), the ratio's identity in two exact
+  terms, the self-audit at every boundary. Bar: 600/600 byte-identical, 0 ATTRIB across 600
+  audits; RT 12/12 with the ledger crossing; parity 7/7 + ledger untouched; captures both sizes
+  98/98 0/0/0, pinned on Italy mid-scenario. **Three pre-existing defects the bar surfaced, all
+  fixed**: every law vote wrote approval outside the ledger since 08-24 (24 → 0 ATTRIB on the RT
+  harness); the trace panel never measured against its host's height; the driver's Italy block
+  had drifted past `EndTurn` and its approval trace had been silently absent since Step 3. Record:
+  CLAUDE.md "Step 2's third section ships". ⚠ The `fiscal1600s4_*`/`fiscal2560s_*` `93c`/`95d`
+  captures await Elias's eyes (riding gates, Access).
 - ⚠ **The `EndTurn`-as-absolute-turn-number capture artifact is not new to Italy.** Confirmed by
   looking: `94c_scenario_verdict` ("Inherit the Fund") has shown the SAME shape since Step 3
   shipped it — "SCENARIO FAILED" reached exactly at its own mid-run start, not a fresh-game one.
@@ -520,8 +529,9 @@ minister/interrupt/ceremony skeleton. Nothing pre-scoped now beyond the gate.
 | **~23 Aug** — GitHub GC re-check | ✅ **CLOSED 2026-08-25** — `curl https://api.github.com/repos/Bippen/PoliSim` → `"size": 9221` KB (~9.0 MiB), down from the ~746 MiB read on 08-16. GitHub's own maintenance ran; no support ticket needed |
 | **Delivery** — D1's portraits | ⚠ nuance the brief's wording misses: the PoC (1 of 9) is IMPORTED; **8 remain**, gated on the Editor side-by-side below; import checks standing. *Re-verified UNCHANGED 2026-08-25 against `MISSING_PREREQUISITES.md` §D1* |
 | **Delivery** — E3's rasterizer | the gate is the sharpened form: a raster path whose OUTPUT is comparable (the module tessellates; `RenderSpriteToTexture2D` renders blank — probed); `StripCutDiffCheck`'s compare machinery finished and waiting |
-| **Access** — the Editor checklist | THREE entries verified in the OPEN VERIFICATION GAP block (~20 min): folder-tongue hover/click; save/load layer 3 + F5/F9; the portrait register side-by-side **that gates the batch of nine**. **PLUS the capture-set reviews awaiting Elias's eyes (built-not-confirmed, rule 15's third layer)** — Step 2's `s2usa*_93*`, Step 3's `s3usa*_94*`, and *added 2026-08-25* **the shipped law browser** (`panewidth1600f_06f_*` / `panewidth2560final_06f_*`, the post-fix sets at both sizes; the two-column list+detail board, status groups, the magnitude rule, the citation pane — 0 guard violations, but composition — does it READ — is the eye's question alone) |
+| **Access** — the Editor checklist | THREE entries verified in the OPEN VERIFICATION GAP block (~20 min): folder-tongue hover/click; save/load layer 3 + F5/F9; the portrait register side-by-side **that gates the batch of nine**. **PLUS the capture-set reviews awaiting Elias's eyes (built-not-confirmed, rule 15's third layer)** — Step 2's `s2usa*_93*`, Step 3's `s3usa*_94*`, and *added 2026-08-25* **the shipped law browser** (`panewidth1600f_06f_*` / `panewidth2560final_06f_*`, the post-fix sets at both sizes; the two-column list+detail board, status groups, the magnitude rule, the citation pane — 0 guard violations, but composition — does it READ — is the eye's question alone), and *added 2026-08-25* **the fiscal trace** (`fiscal1600s4_93c_trace_debt` / `_95d_italydebt_trace_debt` and the `fiscal2560s_*` pair — the debt section on the USA's warm-up period and on Italy mid-scenario; note the approval trace's own `93_trace_approval` now ends at the tab rather than the screen edge under the panel's new host-height cap — the diff against `s2usa*_93*`, stated) |
 | **Play** — FA cadence | → step 3 (graduates to scenario work) |
+| **Play** — the next playtest: **does decision density READ as closed?** | Its own item, by name (ruled 2026-08-25, Elias). Fifty enactable laws answered the MEASURABLE half of the 08-18 gap (choices 19 → 69; prompts unchanged by construction); whether a player FEELS the gap closed is a playtester's question, not a constant's, and no measurement this side of a playtest can answer it. Closes when a playtester says so either way |
 | **Play** — the creditor scenario | → step 3's slate ("inherit the fund") |
 | **Rulings (Elias)** — the queue remainder | Q6–Q10 at their named triggers; **⚠ Q4 is SUBSTANTIALLY ABSORBED BY Q3-Design-B** (wages already read the productivity trend; the residual — trend vs realized — is moot until Q5 splits them and is decided there, per step 5's flag). A3 at its trigger; F2 stands recorded |
 

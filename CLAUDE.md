@@ -11638,9 +11638,11 @@ numbers below are the code's, not the memo's.
 | Cabinet decision | 0.12 × N/yr, N ≤ 6 | `DecisionChancePerTurn = 0.12f` (`CabinetSystem.cs:48`), one Bernoulli per appointed minister per turn (`TryRollDecisions`, `:449`); `CabinetPortfolio` has six members (`CabinetPortfolio.cs:28`) → **0.72/yr at a full cabinet** |
 | Annual budget process | 1/yr, certain | `TryOpenBudgetProcess` from the day tick (`SimulationManager.cs:165`, `:1616`) |
 | Fed Chair term | 0.25/yr, USA only | `UpdateFedChairSelectionState` fires on `IsElectionTurn(CurrentTurn+1)`, `ElectionCycle = 4` (`ElectionSystem.cs:33`; `GameController.cs:3031`) |
+| **Election reveal** — *ruled INTO the table 2026-08-25 (Elias): the reference measurement is now complete* | 0.25/yr, EVERY country | `CheckElection` on every `ElectionCycle` boundary (`GameController.cs:4436`) — a blocking reveal the 08-18 table omitted; the Fed-term row rides the same cycle |
 
-**Total: 5.62/yr for a USA game with all six ministers appointed; ≈5 with "a handful," exactly the
-08-18 figure. UNCHANGED — by construction, not by coincidence.** Not one constant in the table
+**Total, with the reveal ruled in: 5.87/yr for a USA game with all six ministers appointed, 5.62 for
+the five others; ≈5 with "a handful" — the 08-18 figure, which counted four sources, was 5.62/5.37
+on the same basis. UNCHANGED by the law system either way — by construction, not by coincidence.** Not one constant in the table
 moved between 08-18 and HEAD, and the law system adds nothing to `AdvanceCountryDayTick`'s automatic
 sources: a law reaches Parliament only when the player introduces it (`IntroduceLawBill`), resolves
 on the same 21-day countdown as every other bill (`BillDurationDays = 21`, `ParliamentSystem.cs:23`),
@@ -11694,6 +11696,152 @@ one command was `curl https://api.github.com/repos/Bippen/PoliSim` → `"size": 
 against the ~746 MiB GitHub reported on 08-16 immediately after the force-push (local pack for
 comparison: 6.93 MiB, `git count-objects -vH`). GitHub's own background maintenance collected the
 unreachable objects, as the 08-16 entry anticipated; no support ticket.
+
+## Step 2's third section ships — the debt ledger and the fiscal trace, and three findings the bar surfaced (2026-08-25)
+
+**The trigger, closed.** Step 2 deferred the fiscal chain's panel section with a named trigger —
+"the first playtest asking why did the deficit move" — and Italy Debt Crisis's playtest session
+fired it on 08-18: a debt scenario whose whole chain (erosion, the maturity lag, the FRF's response,
+interest) had no panel section, and the Italy pass reconstructed it from raw dumps by hand. Ruled
+to build 2026-08-25 (Elias); built as the third `StatTracePanel` section, on the Debt-to-GDP chip,
+answering that question or failing it. **The panel is now three sections** — Approval (Class A
+formula terms + Class B events), Consumer Confidence (the single book), Debt (this) — and the
+click-a-chip grammar, the Layout-only commit, the LedgerRow rows and the negative fill are unchanged.
+
+**What the section shows, and under which honesty class.** One period of the debt STOCK, then the
+ratio's own identity:
+
+| row | class | how it is known |
+|---|---|---|
+| Primary balance (before the reaction) | A, by observation | −Σ over the period's days of (revenue at stance 1 − non-interest spending), the daily write's own values |
+| Fiscal reaction on revenue · `stance ×m` | A, by observation; the stance is C | −Σ of revenue × (1 − 1/m), m the FROZEN period multiplier (`FiscalPeriod.PlannedFiscalReactionMultiplier`) — the number the identity consumed, never the live one |
+| Interest at the issuance rate · `open→close %` | A, by observation | +Σ of debt × the day's issuance rate slice |
+| Maturity lag · `blended pays open→close % vs issuance` | A, by observation | +Σ of (interest charged − interest at issuance) — negative while the blended rate the stock still pays sits below today's price |
+| Inflation erosion (−π·b) · `π open→close %` | A, by observation | Σ of debt × (erosionFactor − 1), on the ACTUAL daily stock |
+| Clamp at guard/ceiling / Residual (rounding, audited) | the compounding class's named residual | observed − recorded, per day, in double: the guard/ceiling truncation when it bound, float rounding otherwise; skipped under $50M |
+| Events this period | B, dated | interrupt BudgetImpacts (cabinet, foreign policy) and a scenario's seed delta, observed at the write, post-clamp |
+| footer: Terms + events = Δ — audited at the boundary (N days) | the self-audit identity | `DebtLedgerRecorder.CloseAtBoundary`, ATTRIB: on red |
+| Debt-to-GDP Δ pp — the ratio's own identity, exact | an identity from four recorded anchors | stock change at closing GDP + GDP's movement on the opening stock; no residual; GDP's OWN drivers are Class D and are stated as not this section's claim |
+
+**Why the debt step decomposes EXACTLY here where the offline erosion-standard decomposition
+carried a remainder.** The stock moves daily (`ApplyRevenueAndSpending`, one slice per day, `debt =
+debt × e − balance`). The offline work reconstructed a period as π·b on an average stock plus an
+interleaving remainder; the ledger instead OBSERVES `debt × (e − 1)` on the actual stock each day
+and sums — so the interleaving is inside the term, not beside it, and the compounding class's
+residual is empty by construction. What remains is float rounding, carried in `ClampLoss` under the
+approval ledger's own observed-minus-terms definition (0.0043 on the USA's ~$37T stock; 0.0003 on
+Italy's — noise, as the audit expects). Built on the machinery that existed rather than inventing
+attribution: `DebtAttribution` is `ApprovalAttribution`'s shape (closed + accruing on `Country`,
+never EconomyState); `DebtLedgerRecorder` is `ApprovalLedgerRecorder`'s lifecycle with `RecordDay`
+at `AccrueDailyFiscalFlows`' own write (the three extra inputs — the stock the charge read, the
+issuance rate just targeted, the blended rate just advanced — read from the same state before the
+write, so the split is the model's own pair), `RecordEvent` at the two F1 sites and the scenario
+seed (opening at the PRE-write stock on first touch — the first-boundary-open class, closed by
+construction), and `CloseAtBoundary` where the `FiscalTurnReport` closes. **The single-book
+rider holds**: every figure is recorded at the write, never recomputed for display; the one
+recomputation (the erosion factor, the same expression on the same state) is what the twin-drift
+detector polices. The preview clone carries null fiscal ledgers by the hand-list.
+
+**The bar, Step 2's own, third application:**
+
+- **Trajectory byte-identical — verified, not assumed** (the ulp lesson): 100-turn baseline, seed
+  777, pre-change vs post-change, **600/600 full-state lines identical, 37/37 anomalies**. The
+  debt ledger's self-audit and twin-drift detector ran at every one of those 600 boundaries:
+  **0 ATTRIB**.
+- **The sum-check self-audit, extended, enumeration stated**: `|observed Δ − (terms + events +
+  clamp)| ≤ max(0.01, 2e-4 × max(|open|,|close|))` at every boundary, plus the twin-drift check
+  (a non-trivial ClampLoss on a period the clamp never bound). It enumerates the DAILY stock update
+  and the two F1 writers and the scenario seed; it does NOT enumerate tariff revenue, which never
+  touches the stock (below).
+- **Save/load with the fiscal ledger crossing per R-S2e**: `SaveLoadRoundTripDiagnostic` asserts
+  the closed period (term sum, 365 days, events) AND the accruing one (37 observed slices at the
+  save point) explicitly — **RT: PASS 12/12**, 0 debt-ledger failures.
+- **Preview parity — extends or not, stated**: it does NOT assert or print any fiscal term, BY
+  DESIGN — every one is accrued across 365 daily slices on a moving stock (the Phase-3 within-period
+  class), while the preview runs the single-step turn form on a clone that never enters the daily
+  path; their agreement is the aggregation-equivalence bar's question (117/117 within 3%), and no
+  fiscal term sits on the "unadvanced inputs" side of parity's boundary. What it DOES assert is the
+  hand-list property: the real accruing debt ledger is byte-untouched across a preview — **7/7 × 6
+  asserted, fiscal ledger untouched × 6**; the enumeration is in the class doc and the run log.
+- **Captures, rule-15, both sizes, pinned on Italy mid-scenario** — the state that fired the
+  trigger — plus the USA on the main state sweep. 1600: the base 63-shot sweep **63/63, 0/0/0**
+  (the standing screens did not move); the state pass **98/98, 0/0/0** with FIVE assert-own-name
+  guards (`93`, `93b`, `93c`, `94b`, `95b`/`95d`) all silent. `93c_trace_debt`: USA, $38.7T →
+  $39.3T (+$610B), primary deficit +$683B, tightening stance ×1.09 pulling −$473B, interest
+  +$1.31T, lag −$1.21B, erosion −$912B at π 2.3%, audited. `95d_italydebt_trace_debt`: Italy at
+  turn 18 with the −20% package in force, $2.77T → $2.77T (+$6.3B), a −$556B primary surplus
+  against a +$472B reaction GIVE-BACK at stance ×0.568 (the FRF loosening hard at 109% against
+  Italy's 138% comfort anchor — the mechanism the Italy report measured, now on a panel), interest
+  +$158B, lag −$5.4B, erosion −$62.7B: the terms close on the observed change. **2560: the state
+  pass 98/98, 0/0/0, all five guards silent**; `95d` at that size shows the whole section above
+  the fold — five terms, the audit footer closing at +$6.19B, the ratio identity's header
+  (−0.61 pp) with its two rows on the scroll — and the 1600 frames show four of the terms with
+  the rest reachable. Sets: `fiscal1600s4_*`, `fiscal2560s_*` (the state passes), `fiscal1600_*`
+  (the base sweep).
+
+**Three findings the bar surfaced, all pre-existing, all fixed in this pass — each one a "checking
+mechanism compromised" case in its own way:**
+
+1. **Every law vote wrote approval outside the ledger.** The round-trip run showed 24 `ATTRIB:`
+   approval-audit failures — the player country of every scenario, at the boundary closing the
+   period in which the harness introduces its coverage bills, off by exactly −3.0000. Pinned:
+   `AdvanceLawBillsDay` called `ApplyLawBillResult` with no observation around it, unlike the
+   other eight bill types — so a failed law vote's `BillFailedApprovalCost` (1.5, and the harness's
+   two coverage law bills both fail in a no-op world: 2 × 1.5) and a passed law's
+   `EnactmentApprovalCost` both moved approval with no ledger entry, since the MVP slice on 08-24.
+   **Unnoticed because the RT harness's own verdict line does not grep ATTRIB** — today's earlier
+   batches 4–5 RT log carries the identical 24 lines under "RT: PASS". Fixed by the established
+   observation idiom; **24 → 0 on the same harness**, the like-for-like proof. On the most-used
+   bill type in the game, a player's approval trace would have failed its audit on every vote.
+2. **The trace panel measured itself against a row cap, never against the host.** The first
+   `93c` at 1600 ran the section's last rows past the window on the Budget tab's budget-pause state
+   (~7 rows of room under the chips) with every containment guard silent — each cell fit its own
+   rect. `MeasureHeight`/`Draw` now take the host's remaining height and scroll internally past it.
+   ⚠ A first cut at 0.6 of the host would have cut the APPROVAL section on PolicyLaws from its
+   approved twelve rows to five — a silent regression of `s2usa*_93*`, a set awaiting Elias's eyes;
+   the share is the WHOLE remaining height, so where twelve rows fit they still show. What did
+   change in that set: the approval box now ends at the tab's bottom instead of the screen edge
+   (ten rows above its scroll at 1600, was twelve flush) — stated here because rule 15 compares
+   sets, and this is the diff.
+3. **Two driver defects in the Italy block, one of them since Step 3.** The block's fixed eleven
+   in-progress turns had drifted past `EndTurn` as earlier blocks lengthened the shared session
+   clock (the recorded `EndTurn`-as-absolute artifact, worse): the verdict screen — exclusive — was
+   up for `95b` and `95d`, which is how the debt trace's assert-own-name caught it (no host draws
+   under an exclusive screen, so the panel's pending toggle never applies). And `95b`'s approval
+   trace had been silently ABSENT since Step 3: the panel's chip TOGGLE applies only when a host
+   draws a Layout, so the "Inherit the Fund" block's close-toggle (queued under its own verdict
+   screen) and Italy's open-toggle collapsed into a close. Fixed: the loop stops two turns short of
+   `EndTurn` wherever the clock stands; the driver states its selection absolutely
+   (`StatTracePanel.RequestSelection`, production clicks keep the toggle); and every trace capture
+   now asserts the panel is open on the stat its name claims (`93`, `93b`, `93c`, `94b`, `95b`,
+   `95d`), `95b` additionally that no verdict is pending.
+
+**The seam fallback question from this morning, closed by these runs.** The armed trace fired
+twice per state pass ("canvas seam never settled" → "seam-settle fallback complete, handing control
+back to the caller") and the run continued to 98/98 both times. The fallback works; the warning is
+the post-Italy signing block's standing driver artifact (a takeover that never goes active on the
+switched player), and the four hangs were never this path.
+
+**What remains dark, named with its class rather than approximated:**
+
+- **GDP's own drivers** — Class D. The ratio identity shows GDP's movement as one exact term; WHY
+  GDP moved is the identity's business (the confidence single book, Okun, the productivity pipe)
+  and is deliberately not claimed on this section.
+- **The daily interleaving** — inside the terms by observation, but not visible per day. The
+  section is period-grain by the scoping's rule 1 (a surface showing daily numbers for period
+  terms lies); the day-by-day path is the equivalence check's territory.
+- **Tariff revenue never touches the stock** — `TradeSystem` adds it to the `Budget` display
+  accumulator only; the debt stock moves by `budgetBalance` and F1 impacts alone. The ledger
+  records what the model does, so the section is consistent with the model; the gap is a model
+  property of the same shape F1 closed for interrupt impacts, stated here, not changed.
+- **No fiscal ledger on the preview side** (above) — the turn form has none, by design.
+- **At 1600 on the Budget host, four of the section's nine rows sit above the fold**; the rest
+  are on the panel's own scroll, and 2560 shows more. A legibility cost at one size, not an
+  information loss.
+
+**Open, for a ruling (not blocking):** the round-trip harness's verdict line should count ATTRIB
+lines and fail on them — it is the one standing harness that runs boundary audits and the one
+whose "PASS" hid finding 1 for a day.
 
 **The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
 anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
