@@ -3100,7 +3100,13 @@ namespace PoliSim.Simulation
                 TariffRateChange = decision.TariffRateChange,
                 InfrastructureSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Transportation)
                     + GetActualDollarChange(changeResult, SpendingCategory.InfrastructureAndDevelopment),
-                HealthcareSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.HHSDiscretionary),
+                // Playtest-2 item 4: Sweden's UO9 line joins the healthcare effect exactly as the
+                // generic InfrastructureAndDevelopment joined Transportation's - one country's
+                // portfolio has HHSDiscretionary, the other HealthcareAndSocialCare, never both, so
+                // the other term resolves to 0 via GetActualDollarChange's own fallback. Zero at
+                // seed (changes only), so the byte-identity bar is untouched.
+                HealthcareSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.HHSDiscretionary)
+                    + GetActualDollarChange(changeResult, SpendingCategory.HealthcareAndSocialCare),
                 EducationSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Education),
                 DefenseSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Defense),
                 JusticeSpendingChange = GetActualDollarChange(changeResult, SpendingCategory.Justice),

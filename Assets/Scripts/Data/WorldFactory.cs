@@ -729,7 +729,10 @@ namespace PoliSim.Data
             // transfer/entitlement spending - Social Programs here represents broader discretionary
             // social-sector spending (health/education/social-services infrastructure), not the same
             // dollars WelfarePrograms tracks.
-            SeedGenericSpendingLines(sweden, socialPercent: 42f, defensePercent: 4f, infrastructurePercent: 14f, publicServicesPercent: 25f);
+            // Playtest-2 item 4 (ruled 2026-08-25): Sweden graduates from the generic 5-line
+            // decomposition to its real utgiftsomrade structure - see SeedSwedenSpendingLines.
+            // The other four stay on the generic seed until their own ruled passes.
+            SeedSwedenSpendingLines(sweden);
             SeedGenericSpendingLines(germany, socialPercent: 40f, defensePercent: 5f, infrastructurePercent: 13f, publicServicesPercent: 24f);
             SeedGenericSpendingLines(france, socialPercent: 38f, defensePercent: 7f, infrastructurePercent: 12f, publicServicesPercent: 25f);
             SeedGenericSpendingLines(italy, socialPercent: 40f, defensePercent: 4f, infrastructurePercent: 11f, publicServicesPercent: 26f);
@@ -938,6 +941,93 @@ namespace PoliSim.Data
                 new SpendingLine(SpendingCategory.EPA, 10f, isMandatory: false),
                 new SpendingLine(SpendingCategory.SBA, 1f, isMandatory: false),
             });
+        }
+
+        /// <summary>
+        /// Playtest-2 item 4 (ruled 2026-08-25): Sweden's REAL budget structure - the 27
+        /// utgiftsomraden of the state budget, consolidated to 24 lines at USA's granularity - as a
+        /// PURE DECOMPOSITION of the country's existing GDP x GovernmentSpendingRate total
+        /// (SeedGenericSpendingLines' exact-sum invariant kept: every line is the game total times
+        /// the area's share of the sourced SEK sum, and the largest line, MunicipalGrants, is the
+        /// REMAINDER, so the set sums to exactly the old total and the trajectory bar holds
+        /// byte-identically).
+        ///
+        /// SOURCE (rules 5/9/12 - sourced, dated, basis stated): regeringen.se "Statens budget i
+        /// siffror", per-utgiftsomrade prognosis from the 2026 ekonomiska varpropositionen, rounded
+        /// billions of SEK, retrieved 2026-08-25. The SEK figures are share weights only - the game
+        /// total stays the country's own (the ruled decomposition-not-recalibration split; the
+        /// level question is the later ruled recalibration pass, which also owns the revenue-side
+        /// seed artifact recorded in "Live playtest 2").
+        ///
+        /// Consolidations and exclusions, stated: UO26 statsskuldsrantor (26 bn) is EXCLUDED -
+        /// interest has no line, it stays SimulationManager's automatic GetInterestOnDebt exactly
+        /// as USA's own seed rules; UO5 Internationell samverkan (3) folds into UO7 bistand as
+        /// InternationalAid (49); UO18 Samhallsplanering (2) + UO19 Regional utveckling (5) fold
+        /// into RegionalPlanningAndDevelopment (7). Alderspensionssystemet sits outside the state
+        /// budget in reality and outside this seed too.
+        ///
+        /// ⚠ ALL LINES ARE DISCRETIONARY - a STATED DEVIATION from the ruling's "real transfer
+        /// systems as mandatory lines", with the reasons measured rather than assumed: for a
+        /// detailed portfolio, G derives from the DISCRETIONARY line total and mandatory totals
+        /// route separately (ResolveSpendingForTurn), mandatory lines grow on their own path
+        /// (ApplyMandatorySpendingGrowth) and take demographic pressure, and mandatory carries its
+        /// own approval weighting - so flipping any line's flag CHANGES FLOWS and breaks the ruled
+        /// byte-identity bar. The flags flip in the recalibration pass, where the bar is the full
+        /// sim-math one. The Mandatory-header-over-zero-rows defect closes via the empty-group
+        /// suppression instead (the bar's own clause). UO11 maps to SpendingCategory.SocialSecurity
+        /// deliberately: ApplyDemographicPensionPressure targets that category first, so Sweden's
+        /// aging channel points at the real pension line - inert today (pressure fires only when
+        /// deaths exceed births; Sweden seeds 10.8 births vs 9.5 deaths, so the gap clamps to zero
+        /// and byte-identity holds), armed for the day the demographics turn.
+        /// </summary>
+        private static void SeedSwedenSpendingLines(Country sweden)
+        {
+            float total = sweden.State.GDP * (sweden.GovernmentSpendingRate / 100f);
+
+            // (category, 2026 prognosis in bn SEK) - every utgiftsomrade except the remainder line.
+            var areas = new (SpendingCategory Category, float SekBillion)[]
+            {
+                (SpendingCategory.CentralGovernment, 22f),              // UO1 Rikets styrelse
+                (SpendingCategory.FinancialAdministration, 22f),        // UO2 Samhallsekonomi och finansforvaltning
+                (SpendingCategory.TaxAdministration, 16f),              // UO3 Skatt, tull och exekution
+                (SpendingCategory.Justice, 94f),                        // UO4 Rattsvasendet
+                (SpendingCategory.Defense, 221f),                       // UO6 Forsvar och samhallets krisberedskap
+                (SpendingCategory.InternationalAid, 49f),               // UO7 Internationellt bistand (46) + UO5 Internationell samverkan (3)
+                (SpendingCategory.Migration, 13f),                      // UO8 Migration
+                (SpendingCategory.HealthcareAndSocialCare, 127f),       // UO9 Halsovard, sjukvard och social omsorg
+                (SpendingCategory.SicknessAndDisability, 122f),         // UO10 Ekonomisk trygghet vid sjukdom och funktionsnedsattning
+                (SpendingCategory.SocialSecurity, 60f),                 // UO11 Ekonomisk trygghet vid alderdom (see doc comment)
+                (SpendingCategory.FamilyAndChildren, 102f),             // UO12 Ekonomisk trygghet for familjer och barn
+                (SpendingCategory.IntegrationAndEquality, 6f),          // UO13 Integration och jamstalldhet
+                (SpendingCategory.LaborMarket, 90f),                    // UO14 Arbetsmarknad och arbetsliv
+                (SpendingCategory.StudentAid, 31f),                     // UO15 Studiestod
+                (SpendingCategory.Education, 105f),                     // UO16 Utbildning och universitetsforskning
+                (SpendingCategory.CultureAndMedia, 17f),                // UO17 Kultur, medier, trossamfund och fritid
+                (SpendingCategory.RegionalPlanningAndDevelopment, 7f),  // UO18 Samhallsplanering (2) + UO19 Regional utveckling (5)
+                (SpendingCategory.ClimateAndEnvironment, 18f),          // UO20 Klimat, miljo och natur
+                (SpendingCategory.Energy, 10f),                         // UO21 Energi
+                (SpendingCategory.Transportation, 104f),                // UO22 Kommunikationer
+                (SpendingCategory.Agriculture, 22f),                    // UO23 Areella naringar, landsbygd och livsmedel
+                (SpendingCategory.BusinessAndIndustry, 9f),             // UO24 Naringsliv
+                (SpendingCategory.EuMembershipFee, 56f),                // UO27 Avgiften till Europeiska unionen
+            };
+            const float MunicipalGrantsSekBillion = 181f;               // UO25 Allmanna bidrag till kommuner - the remainder line
+
+            float sekSum = MunicipalGrantsSekBillion;
+            foreach ((SpendingCategory _, float sek) in areas)
+            {
+                sekSum += sek;
+            }
+
+            float allocated = 0f;
+            foreach ((SpendingCategory category, float sek) in areas)
+            {
+                float amount = total * (sek / sekSum);
+                sweden.SpendingLines.Add(new SpendingLine(category, amount, isMandatory: false));
+                allocated += amount;
+            }
+
+            sweden.SpendingLines.Add(new SpendingLine(SpendingCategory.MunicipalGrants, total - allocated, isMandatory: false));
         }
 
         /// <summary>

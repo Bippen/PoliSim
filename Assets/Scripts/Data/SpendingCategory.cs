@@ -52,6 +52,30 @@ namespace PoliSim.Data
         SocialPrograms,
         InfrastructureAndDevelopment,
         PublicServices,
-        Administration
+        Administration,
+
+        // Playtest-2 item 4 (ruled 2026-08-25): Sweden's real utgiftsomrade structure (see
+        // WorldFactory.SeedSwedenSpendingLines for the sourced mapping, consolidations, and the
+        // deliberate all-discretionary deviation). APPEND-ONLY - the enum serializes into saves,
+        // so existing members' order above must never change. Named generically (LaborMarket, not
+        // ArbetsmarknadOchArbetsliv) so a future country pass reuses them rather than growing a
+        // per-country namespace; the Swedish specifics live in the seed's own comments.
+        CentralGovernment,
+        FinancialAdministration,
+        TaxAdministration,
+        InternationalAid,
+        Migration,
+        HealthcareAndSocialCare,
+        SicknessAndDisability,
+        FamilyAndChildren,
+        IntegrationAndEquality,
+        LaborMarket,
+        StudentAid,
+        CultureAndMedia,
+        RegionalPlanningAndDevelopment,
+        ClimateAndEnvironment,
+        BusinessAndIndustry,
+        MunicipalGrants,
+        EuMembershipFee
     }
 }

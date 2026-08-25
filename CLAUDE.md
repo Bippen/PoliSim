@@ -12030,6 +12030,53 @@ Truth in Sentencing deriving **Crime Index −1.36 pts (contested)** (15×−0.0
 and **Incarceration Rate +16.00 per 100k** (−8×−2.0 — the gap on screen). Sweeps clean at 64/64,
 0 ATTRIB, both sizes (`couple2s1600/2560`).
 
+## Item 4 BUILT — Sweden's real budget structure as decomposition (2026-08-25, ruled)
+
+**The content.** `SeedSwedenSpendingLines` replaces Sweden's generic 5-line seed with the state
+budget's real 27 utgiftsområden consolidated to **24 lines** (USA's granularity): UO26
+statsskuldsräntor EXCLUDED (interest stays the automatic `GetInterestOnDebt`, the USA seed's own
+rule), UO5→UO7 as InternationalAid, UO18+UO19 as RegionalPlanningAndDevelopment. **Sourced,
+dated, basis stated** (rules 5/9/12): regeringen.se "Statens budget i siffror", per-område
+prognosis from the 2026 ekonomiska vårpropositionen, rounded bn SEK, retrieved 2026-08-25 — the
+SEK figures are SHARE WEIGHTS onto the game's own GDP × GovernmentSpendingRate total
+(decomposition, not recalibration, per the ruling; the level question and the recorded
+revenue-side seed artifact both belong to the later ruled recalibration pass). Exact-sum via the
+remainder technique (MunicipalGrants, the largest line). Seventeen new `SpendingCategory` members,
+APPEND-ONLY (the enum serializes into saves), named generically for reuse. UO9 wires into
+`HealthcareSpendingChange` beside HHSDiscretionary (one country has each, never both — the
+Transportation/InfrastructureAndDevelopment idiom; zero at seed). UO11 maps to `SocialSecurity`
+deliberately: the demographic pension-pressure channel now points at Sweden's real pension line —
+inert today (pressure fires only when deaths exceed births; Sweden seeds 10.8 vs 9.5, the gap
+clamps to zero), armed for when the demographics turn.
+
+**Two stated deviations from the ruling, both with measured reasons:**
+1. **All lines are DISCRETIONARY** — for a detailed portfolio G derives from the discretionary
+   line total and mandatory routes separately (`ResolveSpendingForTurn`), mandatory lines grow on
+   their own path and take demographic pressure, and carry their own approval weighting: flipping
+   any flag CHANGES FLOWS. The flags flip in the recalibration pass under the full sim-math bar.
+   The Mandatory-header-over-zero-rows defect closes for Sweden the way the bar's own clause
+   anticipated — the 2026-08-12 empty-group suppression (`hasMandatory` guard) now covers
+   Sweden's zero-mandatory set; the captures show the 24-line discretionary list with no phantom
+   header.
+2. **The trajectory bar is NOT byte-identical, and cannot be for any line-count change** — G
+   re-derives every turn from a FLOAT SUM over the lines (`GetSpendingLineTotal`), and a 24-term
+   sum rounds differently from a 5-term sum of the same total by ~1 ulp per turn. Measured, not
+   argued: at the **century horizon (t100) the divergence is Sweden-only and ulp-class — worst
+   field `Budget` at 0.005% relative (3.2e-4 absolute), debt 2e-4 absolute** — and stays that
+   class for any horizon a game reaches; by t1000 the model's own feedback (approval clamp events
+   near t972, the recorded debt-runaway region) amplifies the ulp seed chaotically to percent
+   scale (`diff_sweden_*` logs, postcouple vs postsweden, both seeds). The mechanism is unchanged
+   — same formulas, same couplings, pressure channels inert — the 7th decimal of G's float
+   representation is the entire cause. ⚠ Lesson for the next bar: `TrajectoryDiffCheck` **exits 0
+   on a completed comparison with differences** — it gates comparability, not identity; a chain
+   that guards on its exit code alone reads "measured divergence" as "clean". Read the
+   byte-identical count line.
+
+**The rest of the bar:** RT 12/12 clean (save/load with the new line set crosses), 0 ATTRIB
+everywhere; captures both sizes as Sweden (`sweden1600/2560`, 62/62, 0 failed) — the 24 lines
+render with live sliders, per-line dollar/draft/%GDP columns, names wrapping without overflow
+(guards 0). Germany/France/Italy/Poland stay on the generic seed until their own ruled passes.
+
 **The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
 anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
 1i" before this pass), and one bullet — "NOT STARTED: item 8 (zero persistence code exists), item
