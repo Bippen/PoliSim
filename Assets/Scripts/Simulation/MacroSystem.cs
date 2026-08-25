@@ -2142,7 +2142,11 @@ namespace PoliSim.Simulation
                 spendingEffect = SpendingApprovalSensitivity * weightedSpendingPercent;
             }
 
-            ApprovalAttribution ledger = ApprovalLedgerRecorder.EnsureAccruing(country, boundaryDate);
+            // Pre-formula approval, so even a lazy-create here (the preview path clones with a null
+            // accruing ledger and has no boundary EnsureAccruing before the formula) opens the
+            // window BEFORE the terms it is about to record - the first-touch class, closed by
+            // construction on every path (2026-08-25).
+            ApprovalAttribution ledger = ApprovalLedgerRecorder.EnsureAccruing(country, boundaryDate, approvalBeforeFormula);
             ledger.Reversion = ApprovalReversionSpeed * (NeutralApprovalRating - approvalBeforeFormula);
             ledger.GrowthEffect = growthEffect;
             ledger.MiseryUnemployment = -(UnemploymentApprovalSensitivity * unemploymentPenaltyGap);

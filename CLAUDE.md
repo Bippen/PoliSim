@@ -11919,6 +11919,70 @@ re-verified clean. The invariant that falls out, stated so the next harness inhe
 advance turns and use `CheckExit.Finish`, arm the fold** — a red line nothing counted is still a
 failure.
 
+## Live playtest 2 (2026-08-25) — three defects fixed, three scoped for rulings, one finding to Design
+
+**Finding 1 — the ATTRIB (Sweden approval ledger, 2027-01-01, explained − observed = exactly
++1.5000). FIXED, negative-controlled. The writer, as the ruling demanded it named:** the
+foreign-policy meeting's **"Send substantial aid" (+1.5)** — the only +1.5-face approval writer
+reachable in the first period (cabinet decisions first roll AT a boundary, economic events fire
+inside boundary processing after the formula's EnsureAccruing, reshuffle is −2, bill costs are
+−1.5). The class is boundary-timing's "write lands before open": `ApprovalLedgerRecorder.RecordEvent`'s
+lazy `EnsureAccruing` created the accruing ledger AFTER the event's own write, so a first-touch
+event opened the period at the POST-write approval — the event in Events, its effect outside
+[open, close], the audit over-explained by exactly that delta. 2027-01-01 is the FIRST boundary
+(epoch 2026-01-01, one-year turns): a fresh Sweden game whose first observed approval event was a
+mid-year meeting. **The debt twin closed this exact class by construction on 2026-08-18**
+(`DebtLedgerRecorder.EnsureAccruing`'s own doc: "every writer passes the stock AS IT WAS BEFORE ITS
+OWN WRITE ... the first-boundary-open class the approval ledger's audit caught, closed here by
+construction") — the approval recorder never received the same closure. The fix mirrors the twin:
+`EnsureAccruing` now REQUIRES `openingApproval`; `RecordEvent` passes current − appliedDelta; the
+boundary caller passes `approvalBeforeFormula`, and `RecordApprovalAttribution`'s call does too —
+which also closes the preview-clone shape (accruing=null clone running the formula) by
+construction. Tolerance untouched, per the ruling.
+
+**Proof:** `LedgerFirstTouchDiagnostic` (new harness, fold-armed per the invariant) reproduces the
+exact shape deterministically — a meeting-shaped +1.5 observed event on day 30 of a fresh Sweden
+world as the approval ledger's first touch, plus the debt sibling (a seed-shaped debt event before
+day 1, pinning the twin's pre-write open against regression). Pre-fix: exit 1, ATTRIB at Sweden
+2027-01-01, gap +1.5000 — the playtest failure to the digit — plus the explicit window assertion
+("opened at 51.5000, pre-event was 50.0000"). Post-fix: exit 0, and the FISCALREAD line is
+byte-identical across the fix (the recorder writes no simulation state — bookkeeping only). RT:
+12/12 clean, 0 ATTRIB, exit 0.
+
+**Finding 2 — "Surplus while borrowing" (the Derived row). Hypothesis REFUTED at the formula; the
+labeled primary line built per the ruling.** `BudgetBalance` is NET of interest —
+`ApplyRevenueAndSpending` puts `interestOnDebt` inside `totalSpending` and takes
+`budgetBalance = actualRevenue − totalSpending` — so the Derived row's `−report.BudgetBalance`
+already was the real balance; the single-book rider was not violated on that screen. The primary
+balance now appears AS the labeled second line the ruling specified: "Primary deficit/surplus … of
+GDP, excl. interest", from the SAME report (`DerivedStats.PrimaryDeficitPercentOfGdp` =
+−(BudgetBalance + InterestOnDebt)), never a separate computation. Verified numerically (FISCALREAD
+Sweden: revenue 396.7, spending 191.5 incl. interest 17.3, balance 205.2 = 31.68% of GDP, primary
+222.5 = 34.36% — sums exact) and by eye at 2560 (`play2fixb2560_02a_statistics_domestic_rows`: USA
+Deficit 5.6% / Primary deficit 1.2% — the 4.4pp interest wedge is precisely what the line exists to
+make visible). Recorded, not fixed: Sweden's measured year-1 structural surplus (~32% of GDP —
+revenue 396.7 vs spending 191.5 on GDP ~648) is a SEED-calibration scale question, not a display
+one; it rides with the Sweden budget-depth scoping (playtest item 4), revenue side included.
+
+**Finding 3 — compass labels off their dots. FIXED, two iterations, both sizes.** Cause: the label
+pass decluttered label-vs-LABEL only (each pushed below the previous), with every label hard-wired
+to the dot's right — so displaced labels floated with nothing tying them home, and the first label
+in the chain kept its natural y ON the dot row, running across its neighbours' dots ("United
+States" over the cluster). Iteration 1: leader lines when displaced beyond ~a label height,
+left-side flip at the plot's right edge, clamp into the plot. Its own capture showed the residual
+(label-vs-DOT collisions unhandled — USA still crossed the row), so iteration 2 pushes any label
+whose rect would cross another country's dot below that dot, leader carrying the pairing. Verified
+`play2fixb1600/2560_07b_politics_compass`: dot row fully clear, six labels legible, every displaced
+label leader-tied. The lesson, again: the first capture after a fix is the fix's own negative
+control — iteration 1 "worked" and its capture said otherwise.
+
+**Playtest items 4/5/6 are SCOPED, not built** (rulings needed — reports delivered in-session:
+Sweden budget depth as a per-country content pass; Riksbank independence options A/B/C; law
+pros/cons derivation vs authored-with-derived-check). **Item 7** (law-page clutter at 50 laws) is
+recorded as §7.1 of `CLAUDE_DESIGN_ASSET_REQUEST.md` with the `capfold` captures — Design's board,
+Design's iteration; nothing improvised here. **Parliament with real parties/mandates** is item 10
+(13 Sept), where the finding already lands.
+
 **The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
 anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
 1i" before this pass), and one bullet — "NOT STARTED: item 8 (zero persistence code exists), item

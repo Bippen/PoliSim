@@ -2043,7 +2043,7 @@ namespace PoliSim.Simulation
             // ledger created after the formula would open at the post-formula value - the audit
             // caught exactly that (observed Δ 0 vs nonzero terms, 2026-08-18).
             float approvalBeforeFormula = country.State.ApprovalRating;
-            ApprovalLedgerRecorder.EnsureAccruing(country, CurrentDate);
+            ApprovalLedgerRecorder.EnsureAccruing(country, CurrentDate, approvalBeforeFormula);
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
             MacroSystem.RecordApprovalAttribution(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, approvalBeforeFormula);
 

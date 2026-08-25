@@ -10,12 +10,17 @@ NAME on item 10 (13 Sept), not pending on Design. §5's cabinet-portrait PoC is 
 anything Design owes us. §1F.1's rasterization diff is CARRIED, its blocker sharpened to a named
 one (a rasterizer whose OUTPUT is comparable, not merely a rasterizer existing) — still ours to
 close.
-⚠ OPEN — NEW: §7, a request for a board — the law browser (list+detail), the densest screen in the
-game and the only major surface v2.0 never specced.**
+~~⚠ OPEN — NEW: §7, a request for a board — the law browser (list+detail), the densest screen in the
+game and the only major surface v2.0 never specced.~~ §7 OVERTAKEN same-day (the board arrived before
+the request was sent — see §7's own status block).
+⚠ OPEN — NEW: §7.1, a playtest finding on the shipped board — at 50 laws the density reads as
+clutter in play; specifics and capture inside. A finding for Design's own iteration, not a rebuild
+request.**
 **Date:** 2026-08-25.
 
-➡ **START AT [§7](#7-request--the-law-browser-board-2026-08-25).** Everything above it is answered,
-delivered, imported, or waiting on a date rather than a reply. §7 is the one live ask.
+➡ **START AT [§7.1](#71-follow-up--the-shipped-board-at-50-laws-reads-as-clutter-in-play-2026-08-25-live-playtest).**
+Everything above it is answered, delivered, imported, or waiting on a date rather than a reply. §7.1
+is the one live item.
 
 <details>
 <summary>Earlier START-AT pointer, retained for the record (2026-08-10)</summary>
@@ -1599,6 +1604,41 @@ request was ever sent, and the browser was rebuilt against that delivery the sam
 "Progress4 delivered"). This request is superseded, not answered — it was never sent, and now never
 needs to be. Left below as the record of the reasoning that shaped what actually got built, not as
 something still pending.**
+
+### §7.1 FOLLOW-UP — the shipped board at 50 laws reads as clutter in play (2026-08-25, live playtest)
+
+**Status: OPEN — a playtest finding for Design's next iteration of their own board. Their board,
+their call; no fixes improvised on our side, per Elias's explicit instruction.**
+
+**What changed since the board was drawn.** Screen 1i was designed against a 38-law state. The
+catalog now holds 50 laws across the three status groups, the detail pane is live at its final
+width, and a second playtest session (the first sustained play since the board shipped) found the
+density reads as clutter — in play, not in captures.
+
+**What is hard, specifically** (so this is actionable rather than a mood):
+
+- **Scanning the AVAILABLE group.** IN FORCE and BEFORE THE HOUSE stay small and legible (8 and 2
+  in the captured state) — the fix §7 asked for works. But AVAILABLE now holds ~40 rows of
+  four-cell entries with nothing grouping them below the status partition: no category clustering
+  (all 50 are CrimeJustice today, so the category cell repeats identically 40 times as dimmed
+  noise), no alphabetical anchors, no visual rhythm besides row alternation. Finding a specific
+  law means reading names linearly.
+- **The magnitude cell carries most of the differentiation load** — at a four-step stepped rule
+  per row, forty steps in a column blur into texture rather than reading as ordinals.
+- **The two real filter chips** (the board's own count) don't subdivide the 40: status is already
+  the grouping, and category is a single value today, so the chips cannot reduce what scanning
+  has to cover. This will partially self-resolve if a second law category ships (roadmap:
+  optional), but the board should not depend on content plans.
+
+**What we are NOT asking for:** no rebuild, no re-litigation of the three drawn answers (row
+weight, status grouping, stepped magnitude) — those shipped intact and work. This is the board
+meeting four-times-the-content it was drawn against, recorded with a capture so the iteration, if
+Design wants one, starts from the played reality.
+
+**Captures:** `capfold_85g_bill_laws.png` (the current populated state: 8 in force / 2 before the
+house / 50 total, detail pane live) and `capfold_06f_policylaws_laws.png` (the browser's resting
+state), both 2026-08-25, in `../PoliSim-captures/` beside the §7-era set
+(`panewidth1600f`/`panewidth2560final` remain the two-size references).
 
 **Why this, why now.** The law browser (`DrawLawsTab`, the sixth `PolicyLawsCategory`) is the
 densest screen the game has ever shipped, and the only major surface the v2.0 brief in §1 never

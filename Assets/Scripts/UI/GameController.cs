@@ -6551,6 +6551,19 @@ namespace PoliSim.UI
                 deficit.HasValue ? "of GDP" : "advance a year",
                 deficit.HasValue ? UiPalette.GetDeltaColor(deficit.Value, higherIsBetter: false) : fiscalInk);
 
+            // Playtest finding 2 (2026-08-25), per the single-book rider: the row above IS the real
+            // balance (BudgetBalance is net of interest - verified at ApplyRevenueAndSpending, where
+            // TotalSpending includes InterestOnDebt). The primary balance is worth showing - the
+            // fiscal trace panel already decomposes it - so it appears AS a labeled second line from
+            // the SAME report, never as an unlabeled "Surplus" that could be mistaken for the book.
+            float? primaryDeficit = DerivedStats.PrimaryDeficitPercentOfGdp(_playerCountry, report);
+            DrawDerivedStatRow(
+                primaryDeficit.HasValue && primaryDeficit.Value < 0f ? "Primary surplus" : "Primary deficit",
+                primaryDeficit.HasValue ? Mathf.Abs(primaryDeficit.Value) / 100f : -1f,
+                primaryDeficit.HasValue ? UiFormat.Number(Mathf.Abs(primaryDeficit.Value), 1) + "%" : "not yet computed",
+                primaryDeficit.HasValue ? "of GDP, excl. interest" : "advance a year",
+                primaryDeficit.HasValue ? UiPalette.GetDeltaColor(primaryDeficit.Value, higherIsBetter: false) : fiscalInk);
+
             // ⚠ EIGHT SECTORS WERE ONE CONCATENATED STRING - "Agriculture 2.1% | Commerce 18.3% | ..."
             // joined with pipes into a single label. That is the densest thing on this screen and the
             // least readable: no two shares can be compared without counting characters, and the line

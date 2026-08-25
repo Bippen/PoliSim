@@ -77,6 +77,21 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// PRIMARY deficit as a percentage of GDP - the balance EXCLUDING interest on debt, signed
+        /// like <see cref="DeficitPercentOfGdp"/> (positive means a primary deficit).
+        ///
+        /// Same book, same path (playtest finding 2, 2026-08-25, per the single-book rider): the
+        /// simulation's BudgetBalance is net of interest (TotalSpending includes InterestOnDebt -
+        /// see SimulationManager.ApplyRevenueAndSpending), so the primary balance is that same
+        /// report's BudgetBalance + InterestOnDebt - a labeled second reading of the one book the
+        /// simulation keeps, never a separate computation that could drift from it.
+        /// </summary>
+        public static float? PrimaryDeficitPercentOfGdp(Country country, FiscalTurnReport report)
+        {
+            return report == null ? (float?)null : PercentOfGdp(country, -(report.BudgetBalance + report.InterestOnDebt));
+        }
+
+        /// <summary>
         /// Real GDP growth between the two most recent quarterly history entries, in percent.
         ///
         /// **Why no inflation adjustment.** GDP here is already real. `MacroSystem.ApplyNationalAccounts`

@@ -159,19 +159,65 @@ namespace PoliSim.UI
                 DrawCircle(dotRect, _circleTexture, UiPalette.GetCountryColor(countries[i].Id));
             }
 
+            // Playtest finding 3 (2026-08-25): the declutter pass pushed labels DOWN with nothing
+            // tying a displaced label back to its dot ("France" far from France), and every label
+            // sat unconditionally to the dot's RIGHT, so a long name near the right edge ran
+            // across the cluster ("United States" over the dots). Three additions, same pass:
+            // a label whose right edge would leave the plot flips to the dot's LEFT; every label
+            // clamps inside the plot rect; and a label displaced vertically by more than its own
+            // height gets a thin leader line back to its dot, so the pairing never has to be
+            // guessed. The top-to-bottom declutter itself is unchanged.
             points.Sort((a, b) => a.Pixel.y.CompareTo(b.Pixel.y));
             float minLabelGap = labelStyle.fontSize + 4f;
             float? previousLabelY = null;
             foreach ((Vector2 point, Country country) in points)
             {
                 Vector2 labelSize = labelStyle.CalcSize(new GUIContent(country.Name));
-                float labelY = point.y - labelSize.y * 0.5f;
+                float naturalY = point.y - labelSize.y * 0.5f;
+                float labelY = naturalY;
                 if (previousLabelY.HasValue && labelY < previousLabelY.Value + minLabelGap)
                 {
                     labelY = previousLabelY.Value + minLabelGap;
                 }
+
+                bool placeLeft = point.x + DotDiameter * 0.5f + 3f + labelSize.x > plotRect.xMax;
+                float labelX = placeLeft
+                    ? point.x - DotDiameter * 0.5f - 3f - labelSize.x
+                    : point.x + DotDiameter * 0.5f + 3f;
+                labelX = Mathf.Clamp(labelX, plotRect.x, plotRect.xMax - labelSize.x);
+
+                // Label-vs-DOT collision (the first capture's residual: label-vs-label decluttering
+                // left "United States" running straight across its neighbours' dots, because the
+                // first label in the chain keeps its natural y ON the dot row). A label whose rect
+                // would cross another country's dot is pushed below that dot; the leader line then
+                // carries the pairing, same as any other displacement.
+                var candidate = new Rect(labelX, labelY, labelSize.x, labelSize.y);
+                foreach ((Vector2 otherPixel, Country otherCountry) in points)
+                {
+                    if (ReferenceEquals(otherCountry, country))
+                    {
+                        continue;
+                    }
+
+                    var dotRect = new Rect(otherPixel.x - DotDiameter * 0.5f, otherPixel.y - DotDiameter * 0.5f, DotDiameter, DotDiameter);
+                    if (candidate.Overlaps(dotRect))
+                    {
+                        labelY = Mathf.Max(labelY, otherPixel.y + DotDiameter * 0.5f + 2f);
+                        candidate.y = labelY;
+                    }
+                }
+
+                labelY = Mathf.Clamp(labelY, plotRect.y, plotRect.yMax - labelSize.y);
                 previousLabelY = labelY;
-                GUI.Label(new Rect(point.x + DotDiameter * 0.5f + 3f, labelY, labelSize.x, labelSize.y), country.Name, labelStyle);
+
+                if (Mathf.Abs(labelY - naturalY) > labelSize.y * 0.6f)
+                {
+                    var leaderStart = new Vector2(point.x, point.y + (labelY > point.y ? DotDiameter * 0.5f : -DotDiameter * 0.5f));
+                    var leaderEnd = new Vector2(placeLeft ? labelX + labelSize.x : labelX, labelY + labelSize.y * 0.5f);
+                    DrawLineSegment(leaderStart, leaderEnd, 1f, AxisLabelColor);
+                }
+
+                GUI.Label(new Rect(labelX, labelY, labelSize.x, labelSize.y), country.Name, labelStyle);
             }
 
             // Plain GUILayout rows below the plot rect (not more absolute-positioned GUI.Label

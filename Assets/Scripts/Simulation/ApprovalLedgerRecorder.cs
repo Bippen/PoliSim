@@ -24,14 +24,21 @@ namespace PoliSim.Simulation
         /// is orders of magnitude above it.</summary>
         private const float AuditTolerance = 0.001f;
 
-        public static ApprovalAttribution EnsureAccruing(Country country, DateTime date)
+        /// <summary>Opens the accruing ledger at <paramref name="openingApproval"/> if none exists.
+        /// Every caller passes the approval AS IT WAS BEFORE ITS OWN WRITE - the same by-construction
+        /// closure DebtLedgerRecorder.EnsureAccruing has carried since 2026-08-18, brought to the
+        /// approval side by the 2026-08-25 playtest finding: Sweden's FIRST boundary failed its audit
+        /// by exactly +1.5000 because a foreign-policy meeting resolved mid-first-year was this
+        /// ledger's first touch, and the old parameterless lazy-create opened the window at the
+        /// POST-write approval - the event in Events, its effect outside [open, close].</summary>
+        public static ApprovalAttribution EnsureAccruing(Country country, DateTime date, float openingApproval)
         {
             if (country.ApprovalLedgerAccruing == null)
             {
                 country.ApprovalLedgerAccruing = new ApprovalAttribution
                 {
                     PeriodOpenDate = date,
-                    ApprovalAtPeriodOpen = country.State.ApprovalRating
+                    ApprovalAtPeriodOpen = openingApproval
                 };
             }
 
@@ -40,7 +47,9 @@ namespace PoliSim.Simulation
 
         /// <summary>Records one observed event write. Zero deltas are skipped - a writer that
         /// moved nothing (e.g. a fully clamped shock at the 0 floor) still moved nothing, and
-        /// zero rows are noise, not honesty.</summary>
+        /// zero rows are noise, not honesty. Opens the ledger at the PRE-write approval (current
+        /// minus the applied delta) if this is the period's first touch - the first-touch window
+        /// class, closed by construction exactly as the debt twin closes it.</summary>
         public static void RecordEvent(Country country, DateTime date, string label, float appliedDelta)
         {
             if (appliedDelta == 0f)
@@ -48,7 +57,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
-            EnsureAccruing(country, date).Events.Add(new ApprovalEventRecord
+            EnsureAccruing(country, date, country.State.ApprovalRating - appliedDelta).Events.Add(new ApprovalEventRecord
             {
                 Date = date,
                 Label = label,
@@ -65,7 +74,10 @@ namespace PoliSim.Simulation
         /// </summary>
         public static void CloseAtBoundary(Country country, DateTime date)
         {
-            ApprovalAttribution ledger = EnsureAccruing(country, date);
+            // A null ledger at close is degenerate (a period opening and closing in the same
+            // instant) - the current approval IS the pre-write value here, since the close writes
+            // nothing before reading it.
+            ApprovalAttribution ledger = EnsureAccruing(country, date, country.State.ApprovalRating);
             ledger.PeriodCloseDate = date;
             ledger.ApprovalAtClose = country.State.ApprovalRating;
             ledger.Closed = true;

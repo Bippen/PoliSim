@@ -251,6 +251,20 @@ because they are not done.
     to Design with the BUILT board's captures is a note, not a request.
   - **The ~23 Aug GitHub GC gate — CLOSED 2026-08-25**: `9221` KB (~9.0 MiB) against the 08-16 reading
     of ~746 MiB. GitHub's own maintenance collected the unreachable objects; no support ticket.
+  - **Playtest 2 (2026-08-25, live, Sweden) — seven items, dispositions:**
+
+    | item | state |
+    |---|---|
+    | 1 · ATTRIB (Sweden 2027-01-01, +1.5000) | ✅ FIXED — the first-touch window class; writer = foreign-policy "Send substantial aid"; approval recorder now opens at the pre-write value on every path, mirroring the debt twin's 08-18 closure. Reproduced red then proven green by `LedgerFirstTouchDiagnostic` (new, stays as coverage); RT 12/12. CLAUDE.md "Live playtest 2" |
+    | 2 · Surplus display | ✅ VERIFIED + BUILT — hypothesis refuted (the row already showed the net-of-interest real balance); "Primary deficit/surplus … excl. interest" added as the labeled second line from the same report. Sweden's outsized measured surplus is a SEED question → rides item 4's scoping |
+    | 3 · Compass labels | ✅ FIXED (two iterations — label-vs-label AND label-vs-dot, leader lines) — verified both sizes, `play2fixb*_07b` |
+    | 4 · Sweden budget depth | 📋 SCOPED, RULING NEEDED — content pass, USA-portfolio scale per country (report in-session) |
+    | 5 · Riksbank independence | 📋 SCOPED, RULING NEEDED — options A/B/C with what each claims (report in-session) |
+    | 6 · Law pros/cons | 📋 SCOPED, RULING NEEDED — derived-from-deltas vs authored-with-derived-check (report in-session) |
+    | 7 · Law-page clutter at 50 | ➡ §7.1 of `CLAUDE_DESIGN_ASSET_REQUEST.md`, with captures — Design's board, their iteration |
+
+    Parliament with real parties/mandates = item 10 (13 Sept), stated in the playtest and already
+    where the work is.
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and
