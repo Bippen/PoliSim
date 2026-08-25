@@ -83,6 +83,16 @@ namespace PoliSim.Data
         /// Change to this country's CurrencyZone interest rate this turn, in percentage points.
         /// If multiple countries share a CurrencyZone (e.g. Germany/France/Italy), their changes
         /// are summed into one shared-zone rate change for the turn.
+        ///
+        /// ⚠ For the two independent-currency countries (Sweden, Poland) this direct player
+        /// control is a DELIBERATE GAMEPLAY CHOICE, ruled and named as such (playtest-2 item 5,
+        /// 2026-08-25): the real Riksbank/NBP set their rates independently of government, and the
+        /// game trades that realism for monetary agency - stated to the player on the Federal
+        /// Reserve tab, the same authored-premise honesty the Eurozone Rate-Voice text carries.
+        /// The recorded DESTINATION is independence with appointment influence (the Fed Chair
+        /// mechanism generalized - Country.CurrentFedChair non-null is already the entire gate),
+        /// behind two named gates: the Taylor-path output-gap distortion fix, and item 10's
+        /// political machinery for appointments. See the roadmap's Step 4 block.
         /// </summary>
         public float InterestRateChange;
 

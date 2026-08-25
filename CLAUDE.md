@@ -12077,6 +12077,26 @@ everywhere; captures both sizes as Sweden (`sweden1600/2560`, 62/62, 0 failed) �
 render with live sliders, per-line dollar/draft/%GDP columns, names wrapping without overflow
 (guards 0). Germany/France/Italy/Poland stay on the generic seed until their own ruled passes.
 
+## Item 5 NAMED — the player-set rate as a deliberate choice (2026-08-25, ruled: C now, B the destination)
+
+The naming pass, exactly as ruled. **Player-facing:** the Federal Reserve tab's
+independent-currency branch (Sweden, Poland) now carries its honesty paragraph above the slider —
+"The real {bank} sets its policy rate independently of the government. This game deliberately
+hands you the central bank, so monetary policy stays a lever you own - a gameplay choice, stated
+plainly, not a claim about how {country}'s institutions work" — the counterpart of the Eurozone
+Rate-Voice paragraph that has carried the same honesty register since that mechanic shipped, and
+the Italy-scenario precedent of a premise as authored text. Verified on the capture
+(`item5sweden_07d_politics_federalreserve`: Sveriges Riksbank, text above the slider, 62/62 sweep
+clean). **Doc-facing:** `PolicyDecision.InterestRateChange` states the choice and the recorded
+destination. **The destination and its two gates live in the roadmap's Step 4 block:** option B —
+independence with appointment influence, the Fed Chair mechanism generalized
+(`Country.CurrentFedChair` non-null is already the entire gate) — behind (1) the Taylor-path
+output-gap distortion fix (the recorded finding that pins the suggested rate to the 0-floor;
+Q5/Step-5-adjacent) and (2) item 10's own machinery, appointments being political-game material.
+Option A (chair-less Taylor-following) is rejected in the record: it spends Sweden/Poland's full
+monetary agency — the only two countries that have it — while inheriting the distortion, with
+nothing gameplay-shaped in return.
+
 **The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
 anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
 1i" before this pass), and one bullet — "NOT STARTED: item 8 (zero persistence code exists), item

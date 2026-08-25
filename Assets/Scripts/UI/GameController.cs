@@ -3134,6 +3134,17 @@ namespace PoliSim.UI
                 bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
                 if (hasIndependentCurrency)
                 {
+                    // Playtest-2 item 5, ruled 2026-08-25 (option C): the player-set rate is a
+                    // DELIBERATE GAMEPLAY CHOICE, named as such to the player - the Italy-scenario
+                    // precedent of shipping a premise as authored text, not an apology. The Eurozone
+                    // branch below has carried its own honesty paragraph since the Rate-Voice
+                    // mechanic; this branch now carries its counterpart. The recorded destination
+                    // (independence with appointment influence - the Fed Chair mechanism
+                    // generalized) and its two gates live in the roadmap's Step 4 block and on
+                    // PolicyDecision.InterestRateChange's doc.
+                    GUILayout.Label(
+                        $"The real {GetCentralBankName(PlayerCountryId)} sets its policy rate independently of the government. This game deliberately hands you the central bank, so monetary policy stays a lever you own - a gameplay choice, stated plainly, not a claim about how {_playerCountry.Name}'s institutions work.",
+                        _labelStyle);
                     GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                     _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
                 }
