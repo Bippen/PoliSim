@@ -139,7 +139,9 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
       the same day and ✅ **EXECUTED later that day as its own gated pass** — pack 742.03 → 4.92
       MiB, 76 citations swept, fresh clone at 4.89 MiB with all six checks green. Full record in
       CLAUDE.md "The history rewrite — executed 2026-08-16"; backup + commit-map at
-      `C:\Users\elias\PoliSim-backup-2026-08-16`.
+      ~~`C:\Users\elias\PoliSim-backup-2026-08-16`~~ **`C:\Users\elias\PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16`
+      (renamed 2026-08-25 under rule 13, `ProjectSettings` → `ProjectSettings.RETIRED` so it cannot be
+      launched; `.git` untouched — the pin and the commit-map are why it is kept).**
 
 ---
 
@@ -197,10 +199,58 @@ because they are not done.
   **The Canvas track CLOSED 2026-08-12** (`e0a510f`; §A.14 set 2 of 3, ELECTION NIGHT item-10-gated
   per R2) and **the folder-tongue pass closed 2026-08-16** (`9497673`, startable row 3) — **item
   9-v2.0 now has NO ungated work left.** What remains of it waits on item 10.
-- **NOT STARTED, UNBLOCKED OR GATED** — item 8 (save/load: scoped, zero persistence code exists —
+- **NOT STARTED, UNBLOCKED OR GATED** — ~~item 8 (save/load: scoped, zero persistence code exists —
   re-verified 2026-08-12, search `persistentDataPath|JsonConvert|CaptureSaveState` over
   `Assets/Scripts`, no hits); item 7 Phases 4–5 (deferred behind v2.0, now against 365-day turns);
-  item 6 (Round 4, after 7/8); **item 10 (elections — gated: priced after Sweden votes 13 Sept 2026)**.
+  item 6 (Round 4, after 7/8);~~ ✅ **all three CLOSED 2026-08-16/17** (item 8 core + saves menu, item 7
+  Phases 4–5, Round 4's five batches — this bullet outlived its own facts by nine days while the
+  Master Sequence record below and `COMPLETED.md` §19 said so; corrected in the 2026-08-25
+  re-derivation, not silently). **Item 10 (elections — gated: priced after Sweden votes 13 Sept
+  2026) is the one that remains.**
+
+- **Board state, RE-DERIVED 2026-08-25** — from `git log --since=2026-08-24 --format='%h %ad %s'`
+  (18 commits, `a13dd7b` → `6804c6d`, all dated 08-24/08-25) read against CLAUDE.md's entries from
+  "The country-selection capture-driver leak" through "The detail-pane width, ruled and built"; the GC
+  gate re-checked with `curl https://api.github.com/repos/Bippen/PoliSim` (`"size": 9221`); the
+  prompt-rate constants re-read at HEAD by grep (`MeetingChancePerDay`, `DecisionChancePerTurn`,
+  `ElectionCycle`, `DaysPerTurn`, `BillDurationDays`, `CabinetPortfolio`'s six members). Nothing in
+  this block is from summary memory; the roadmap had NO entry for any of it before this pass.
+  - **The law system — SHIPPED, 50 of 50, one category (Crime & Justice).** MVP slice `ca11f9a`
+    (08-24: a law is a NAMED PRESET over the existing dial space, reaching Parliament through the same
+    gated-bill path every other bill uses) → marathon batches 1–3 (`de34b4b`/`c9e9e16`/`785da64`) →
+    close-out `555f4cc`, which found and fixed **the composition architecture's one real bug**: dials
+    are now a PURE FUNCTION of `Country.EnactedLaws` — every enacted law's delta summed from the 50
+    baseline, clamped exactly ONCE (`RecomputeCrimeJusticeDialsFromEnactedLaws`), never nudged
+    incrementally — so any enact/repeal history in any order lands exactly → STOPPED at 38 on the
+    browser's own navigability condition → §7 written → Design delivered board 1i +
+    `LAW_BROWSER_BOARD_RULINGS.md` (`315cca0`) → browser rebuilt against it, 15 review findings fixed
+    (`dddec9f`) → batches 4–5 to 50 with the saturating composition re-run (`eb11b78`: 27 of 50
+    enacted, FOUR dials clamp at once, full repeal nets exactly 50.0000 on all six) → detail pane's
+    width built (`6804c6d`). Byte-identity for the no-law path holds by construction (`LawCatalog.All`
+    is read only from the UI layer — grep, not argument). **Live residue, none blocking**: the
+    category filter is inert until a second `LawCategory` exists (a content gap, reported as such —
+    not a UI bug); five categories sit at 0; the wanted-effects log names eight axis-level gaps the
+    six dials cannot represent.
+  - **Playtest 1 package (`POLISIM_PLAYTEST1_SCOPING.md` — five scoped, two fixed) — dispositions:**
+
+    | item | state |
+    |---|---|
+    | rejected-bill seal · Budget's dead nested scroll | ✅ fixed 2026-08-18 (CLAUDE.md "First real playtest session") |
+    | Turn → Year | ✅ 2026-08-24 (CLAUDE.md "Turn -> Year") |
+    | Calendar Panel | ✅ `a13dd7b` 2026-08-24 |
+    | Decision density | ✅ **MEASURED 2026-08-25 at 50 laws, same method** — automatic prompts/yr UNCHANGED by construction (≈5; 5.62 at a full six-minister USA cabinet); named enactable choices **19 → 69** (13 tax + 6 welfare programs, then +50 laws, multiple pending at once, 21-day resolution). The 08-18 ruling's own prediction confirmed: the table did not move, the menu did. CLAUDE.md "Decision density re-measured"; ruling request in that pass's report |
+    | Portraits (D1) | ⏸ UNCHANGED — 8 of 9 gated on the Editor register side-by-side (`MISSING_PREREQUISITES.md` §D1) |
+    | Law system | ✅ above |
+  - **The two-copy consolidation — rule 13** (`faecdce`, `0c2a747`, `bb6ad14`, finished 2026-08-25):
+    G: is the working copy; the C: copy is `PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16` with
+    `ProjectSettings.RETIRED` (un-launchable, `.git` intact). Standing habit, stated in CLAUDE.md
+    against rule 13's entry: every harness/tool invocation passes the explicit project path — the
+    `/code-review` fall-back to `C:\Users\elias` is the instance.
+  - **§7 (the law browser request) — OVERTAKEN, struck through in the request doc (`6804c6d`).**
+    Never sent; the board arrived first, the rebuild consumed the captures it cited. A courtesy update
+    to Design with the BUILT board's captures is a note, not a request.
+  - **The ~23 Aug GitHub GC gate — CLOSED 2026-08-25**: `9221` KB (~9.0 MiB) against the 08-16 reading
+    of ~746 MiB. GitHub's own maintenance collected the unreachable objects; no support ticket.
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and
@@ -448,6 +498,16 @@ QUEUED, UNBUILT work — not built this pass:**
 shipped or scoped; the spine's remainder is Step 4 (13 Sept) and Step 6 behind it, plus scenario
 content behind Step 3's format, plus the queue's own remainder (Q6–Q10) at its own triggers.
 
+**SPINE RE-CHECKED 2026-08-25 — UNCHANGED.** Steps 1, 2, 3 and 5 done; Step 4 gated on 13 Sept
+2026 (~2.5 weeks out at the check); Step 6 behind it. The fortnight since 08-17 — the first
+playtest, Turn → Year, the Calendar Panel, the entire law system to 50/50, the two-copy
+consolidation — touched none of the four things Step 4's package names (seed refresh, the Italy
+allocator, the collision map, election night) and nothing Step 6 waits on. The one addition that
+COULD have collided — laws entering Parliament — reuses the existing gated-bill path verbatim and
+adds no political-system code, exactly as `POLISIM_PLAYTEST1_SCOPING.md` §5 predicted. Step 4's
+date rides regardless. *(Sources: `git log --since=2026-08-24`; CLAUDE.md 10615–11620; this file's
+own Step 4 text, re-read.)*
+
 ## Step 6 — Story mode (gate: item 10 shipped)
 
 Scoped fresh on the political layer: authored multi-beat arcs with memory on the
@@ -457,10 +517,10 @@ minister/interrupt/ceremony skeleton. Nothing pre-scoped now beyond the gate.
 
 | gate | status at transcription |
 |---|---|
-| **~23 Aug** — GitHub GC re-check | one command; not yet due |
-| **Delivery** — D1's portraits | ⚠ nuance the brief's wording misses: the PoC (1 of 9) is IMPORTED; **8 remain**, gated on the Editor side-by-side below; import checks standing |
+| **~23 Aug** — GitHub GC re-check | ✅ **CLOSED 2026-08-25** — `curl https://api.github.com/repos/Bippen/PoliSim` → `"size": 9221` KB (~9.0 MiB), down from the ~746 MiB read on 08-16. GitHub's own maintenance ran; no support ticket needed |
+| **Delivery** — D1's portraits | ⚠ nuance the brief's wording misses: the PoC (1 of 9) is IMPORTED; **8 remain**, gated on the Editor side-by-side below; import checks standing. *Re-verified UNCHANGED 2026-08-25 against `MISSING_PREREQUISITES.md` §D1* |
 | **Delivery** — E3's rasterizer | the gate is the sharpened form: a raster path whose OUTPUT is comparable (the module tessellates; `RenderSpriteToTexture2D` renders blank — probed); `StripCutDiffCheck`'s compare machinery finished and waiting |
-| **Access** — the Editor checklist | THREE entries verified in the OPEN VERIFICATION GAP block (~20 min): folder-tongue hover/click; save/load layer 3 + F5/F9; the portrait register side-by-side **that gates the batch of nine** |
+| **Access** — the Editor checklist | THREE entries verified in the OPEN VERIFICATION GAP block (~20 min): folder-tongue hover/click; save/load layer 3 + F5/F9; the portrait register side-by-side **that gates the batch of nine**. **PLUS the capture-set reviews awaiting Elias's eyes (built-not-confirmed, rule 15's third layer)** — Step 2's `s2usa*_93*`, Step 3's `s3usa*_94*`, and *added 2026-08-25* **the shipped law browser** (`panewidth1600f_06f_*` / `panewidth2560final_06f_*`, the post-fix sets at both sizes; the two-column list+detail board, status groups, the magnitude rule, the citation pane — 0 guard violations, but composition — does it READ — is the eye's question alone) |
 | **Play** — FA cadence | → step 3 (graduates to scenario work) |
 | **Play** — the creditor scenario | → step 3's slate ("inherit the fund") |
 | **Rulings (Elias)** — the queue remainder | Q6–Q10 at their named triggers; **⚠ Q4 is SUBSTANTIALLY ABSORBED BY Q3-Design-B** (wages already read the productivity trend; the residual — trend vs realized — is moot until Q5 splits them and is decided there, per step 5's flag). A3 at its trigger; F2 stands recorded |

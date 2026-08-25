@@ -979,3 +979,48 @@ plus R4-4's pinned-capture pattern for probabilistic content.
 13 Sept); a bond-market mechanic (namespace deliberately left to the mechanism report to claim).
 
 ---
+
+## 20. Playtest 1's package and the law system — shipped 2026-08-18 → 2026-08-25
+
+*A pointer entry, per the three-way test: finished work leaves the live file. The detailed
+authority is CLAUDE.md, entry by entry — this section names them so the roadmap can stop.*
+
+**The first real playtest (2026-08-18) produced seven findings: two fixed that day, five scoped
+in `POLISIM_PLAYTEST1_SCOPING.md`, and all but one are now closed.**
+
+| item | shipped | CLAUDE.md entry |
+|---|---|---|
+| The signing ceremony's seal on rejected bills; the Budget tab's dead nested scroll | 2026-08-18 | "First real playtest session" |
+| Turn → Year (display boundary, ~39 formatter sites, nothing renamed) | 2026-08-24 | "Turn -> Year" |
+| Calendar Panel (replaces the dashboard tile grid; reads existing data, builds no store) | 2026-08-24, `a13dd7b` | "Calendar Panel" |
+| Decision density — MEASURED at 50 laws, same method as the scoping: prompts/yr unchanged by construction (≈5), named enactable choices 19 → 69 | 2026-08-25 | "Decision density re-measured" |
+| **The law system** — see below | 2026-08-24 → 2026-08-25 | six entries, listed below |
+| Portraits (D1) | **NOT closed** — 8 of 9 still gated on the Editor register side-by-side; stays in `MISSING_PREREQUISITES.md` §D1 | — |
+
+**The law system, 50 of 50, one category.** A law is a NAMED PRESET over the existing dial space —
+name, description, one-sentence real-world citation labeled CONFIRMED/DIRECTIONAL/GENRE-IDIOM,
+deltas on up to six Crime & Justice dials within a four-tier magnitude scale, an approval cost paid
+once on passage — reaching Parliament through the same gated-bill path every other bill uses,
+several pending at once, 21-day resolution. **The composition architecture** (the marathon's one
+real bug, found at close-out and fixed): the six dials are a PURE FUNCTION of `Country.EnactedLaws`
+— every enacted law's delta summed from the 50 baseline and clamped exactly once — never nudged
+incrementally, so any history of enactments and repeals in any order lands exactly; proven at 38
+(one dial at the ceiling) and re-proven at 50 (four dials clamping at once, full repeal netting
+exactly 50.0000 on all six). The browser is Design's board 1i built to its rulings doc: a
+list+detail split, status GROUPING (in force first) instead of a status column, a sticky header
+sharing one column function with every row, the stepped magnitude rule, the citation surfaced in
+the UI for the first time. Byte-identity for the no-law path holds by construction — `LawCatalog.All`
+is read only from the UI layer.
+
+Entries, in order: "Law System MVP Slice" (08-24, `ca11f9a`) · "Law content marathon — STOPPED at
+38/50" (batches 1–3 + close-out, `555f4cc`) · "Progress4 delivered — the law browser board (§7)"
+(`315cca0`) · "Post-Progress4: a Unity hang investigated, and a mockup number caught inside its own
+fix" (the rebuild's review, `dddec9f`) · "Law content marathon, resumed and closed: batches 4–5"
+(`eb11b78`) · "The detail-pane width, ruled and built" (`6804c6d`).
+
+**What stays live, and where**: the category filter's inertness (a content gap — five of six
+`LawCategory` slots at zero, reported in the roadmap's board-state block, not a UI item); the
+fiscal legibility panel (roadmap Step 5's carry-over, trigger fired, unbuilt); the courtesy update
+to Design with the built board's captures (a note, in the request doc's §7).
+
+---

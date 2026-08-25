@@ -11618,3 +11618,91 @@ explicitly accepted, non-information-loss cosmetic effect: at 2560 the name wrap
 it fit on two before any of this landed, because the header font itself scales with `Screen.height` -
 the floor's absolute room is proportionally less extra at a taller window than the raw pixel increase
 suggests. Not fixed further; nothing here is invisible or unreachable, which is the bar that mattered.
+
+## Decision density re-measured at 50 laws, and the GC gate closes (2026-08-25)
+
+**The question the marathon was built to answer, asked the same way it was asked before.**
+`POLISIM_PLAYTEST1_SCOPING.md` §3 (2026-08-18) measured the automatic (non-bill) prompt rate
+analytically, from the model's own constants, at ≈5/year for a USA game, and RULED that the gap
+"reads as content, not pacing — the law system is positioned to answer it without touching this
+table at all... it increases how much is worth doing at each of the interrupts already there." Fifty
+laws exist now. This is the re-measurement — **same method, same table, constants re-read at HEAD by
+grep rather than quoted from the 08-18 document**, so the comparison is like-for-like and the
+numbers below are the code's, not the memo's.
+
+**Prompts per year, at HEAD:**
+
+| source | rate | constant at HEAD (verified) |
+|---|---|---|
+| Foreign Policy meeting | ≈3.65/yr | `MeetingChancePerDay = 0.01f` (`ForeignPolicySystem.cs:32`), rolled daily × 365, × `ForeignPolicyCadenceMultiplier` (1 in free play AND in both shipped scenarios — `ScenarioLibrary.cs:90`, `:210`) |
+| Cabinet decision | 0.12 × N/yr, N ≤ 6 | `DecisionChancePerTurn = 0.12f` (`CabinetSystem.cs:48`), one Bernoulli per appointed minister per turn (`TryRollDecisions`, `:449`); `CabinetPortfolio` has six members (`CabinetPortfolio.cs:28`) → **0.72/yr at a full cabinet** |
+| Annual budget process | 1/yr, certain | `TryOpenBudgetProcess` from the day tick (`SimulationManager.cs:165`, `:1616`) |
+| Fed Chair term | 0.25/yr, USA only | `UpdateFedChairSelectionState` fires on `IsElectionTurn(CurrentTurn+1)`, `ElectionCycle = 4` (`ElectionSystem.cs:33`; `GameController.cs:3031`) |
+
+**Total: 5.62/yr for a USA game with all six ministers appointed; ≈5 with "a handful," exactly the
+08-18 figure. UNCHANGED — by construction, not by coincidence.** Not one constant in the table
+moved between 08-18 and HEAD, and the law system adds nothing to `AdvanceCountryDayTick`'s automatic
+sources: a law reaches Parliament only when the player introduces it (`IntroduceLawBill`), resolves
+on the same 21-day countdown as every other bill (`BillDurationDays = 21`, `ParliamentSystem.cs:23`),
+and fires no roll of its own. The prompt rate is the number the marathon was never going to move,
+and it didn't.
+
+**Two honest notes on the table itself, neither changing the comparison.** (1) The 08-18 table
+OMITS the election reveal — `CheckElection` fires on every `ElectionCycle` boundary for every
+country (`GameController.cs:4436`), a real blocking interrupt at 0.25/yr that the Fed-term row
+happens to ride the same cycle as; counting it puts USA at 5.87/yr and the non-USA five at 5.62. Left
+out of the headline so the number stays like-for-like; flagged for the ruling below. (2) The signing
+ceremony (`_signingQueue.Enqueue`, `GameController.cs:1593`) is a blocking interrupt on every
+resolved division — but it fires only downstream of a bill the PLAYER introduced, so it is excluded
+by the 08-18 memo's own rule ("bills are pure player agency"), and correctly so.
+
+**The second number — the one the ruling said would move — meaningful choices available per year:**
+
+| enactable, named, player-initiated | 2026-08-18 | HEAD |
+|---|---|---|
+| Tax programs (`TaxType`, add/remove, multiple pending) | 13 | 13 |
+| Welfare programs (`WelfareProgramType`, add/remove, multiple pending) | 6 | 6 |
+| Laws (`LawCatalog.All`, enact/repeal, **multiple pending at once** — `_pendingLawBillsByCountry` is the same nested-dict shape as the program bills, `SimulationManager.cs:750`) | 0 | **50** |
+| **named enactables** | **19** | **69 (×3.6)** |
+| dial-bundle bills (Labor · Crime & Justice · Sectors · Trade · SWF drawdown), one slot each, plus the omnibus Budget | 6 | 6 — but the six Crime & Justice dials are now DRIVEN BY LAWS (the MVP slice's read-only conversion), so the one continuous bundle that overlapped the new menu no longer competes with it |
+
+**Per year, the calendar imposes no cap on laws at all**: 21-day resolution with no concurrency
+limit across distinct laws means all fifty could in principle be before the House inside one year.
+The binding constraint moved from the calendar to APPROVAL — `EnactmentApprovalCost` of 0.5–1.5 per
+passage (the 27-law composition set costs ≈25 approval against a start near 45–48), plus
+`BillFailedApprovalCost` on every failed vote. How many of the fifty a given Parliament would PASS is
+a `WouldBillPass` direction question this pass did not measure; the composition diagnostic enacts
+directly, by design, to test the mechanism rather than the politics.
+
+**Which reading the measurement supports: the second, unambiguously.** If the 08-18 gap was "the
+game interrupts too rarely," fifty laws did not answer it and could not have — the prompt rate is
+identical to the constant. If the gap was "nothing to DO between interrupts" — which is what the
+08-18 ruling itself said it was, before any law existed — then it is answered on the numbers: in
+the one category that offered six continuous dials behind one bundled vote, the player now has
+fifty named, individually-costed, real-world-grounded choices, browsable by status and enactable
+several at a time, with every composition of them landing exactly. **The 08-18 ruling's own
+prediction is confirmed to the letter: the table did not move, the menu did.** What this pass cannot
+say — and the 08-18 memo could not either — is whether that reads as a closed gap to a PLAYER; that
+is a playtest question, not a constant, and the only measurement that answers it is the next
+playtest. The 08-18 memo's one deferred item — a LIVE simulated count of the Foreign Policy rate
+(the daily roll skips while a meeting sits unresolved, `SimulationManager.cs:843`, so the realized
+rate depends on how fast the player answers) — remains unrun and unneeded unless a playtest
+disputes the analytic figure.
+
+**The ~23 Aug GitHub GC gate, closed while the sources were open.** Two days past its date; the
+one command was `curl https://api.github.com/repos/Bippen/PoliSim` → `"size": 9221` KB (~9.0 MiB),
+against the ~746 MiB GitHub reported on 08-16 immediately after the force-push (local pack for
+comparison: 6.93 MiB, `git count-objects -vH`). GitHub's own background maintenance collected the
+unreachable objects, as the 08-16 entry anticipated; no support ticket.
+
+**The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
+anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
+1i" before this pass), and one bullet — "NOT STARTED: item 8 (zero persistence code exists), item
+7 Phases 4–5, item 6" — that had been false for nine days while the same file's own Master Sequence
+record and `COMPLETED.md` §19 said otherwise. Both fixed by strike-through with the date, per the
+document's own convention; the "Board state, RE-DERIVED 2026-08-25" block names its sources (the
+commit log, this file's entries by title, the curl, the grep); the Master Sequence II spine
+re-checked and found unchanged (Steps 1–3, 5 done; 4 gated 13 Sept; 6 behind it); the riding-gates
+table's GC row closed, D1 re-verified, and the Editor checklist row now carries the capture-set
+reviews including the shipped browser. `COMPLETED.md` gains §20 as the pointer the three-way test
+requires.
