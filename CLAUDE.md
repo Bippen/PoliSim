@@ -11499,3 +11499,52 @@ measured, same as `LedgerRow.Columns` is itself only verified at its own capture
 clean, 0 overflows. **The lesson restated once more because it recurred inside its own fix**: a
 number - or a floor built from one - is unfalsifiable until it has been checked against a real
 capture, and reviewing a diff by reading it is not the same discipline as running it.
+
+## Law content marathon, resumed and closed: batches 4-5, 38 -> 50 (2026-08-25)
+
+**Resumed at the marathon's own stopping point**, now that the browser fix above has landed - the
+close-out's own verdict ("not a content saturation finding... 12 more laws... ready to resume the
+moment a fix lands") was the standing authorization, not a fresh decision. Batch 4 (38 -> 44): 287(g)
+immigration enforcement agreements (the real opposite of this catalog's own Sanctuary City Policy),
+hot spot policing, veterans treatment courts, a financial crimes/AML unit, Stand Your Ground, and
+Italy's Rognoni-La Torre anti-mafia asset confiscation law - the last one deliberately exercising the
+wanted-effects log's own pre-authorized "weak funding/severity proxy, stated explicitly" allowance
+for a real mechanism (non-conviction asset forfeiture) this six-dial space cannot represent. Batch 5
+(44 -> 50): the federal Bail Reform Act's pretrial preventive-detention standard, Illinois' 1964
+percentage-bail deposit program, drug-free zone sentencing enhancement, Plan-Colombia-style
+interdiction funding, National Guard border deployment, pretrial services agency establishment.
+
+**Deliberately diversified away from SentencingSeverity.** The original close-out found 19 of 38
+laws already touch it - the dial nearest saturation. Of these 12, only four touch it at all (two
+lenient, two severe); BailReform, PoliceFunding, BorderEnforcement, and JudicialFunding each pick up
+several genuine primaries instead, specifically to make the re-run below a harder test than the
+original, not an easier one.
+
+**The saturating composition re-run, promised at close-out for whenever the catalog reached this
+population - run, not assumed.** `LawCompositionDiagnostic` (new) enacts 27 of the 50 laws through
+`SimulationManager`'s own real `ApplyLawBillEffects` (by reflection, the same idiom `UiScreenshotDriver`
+already uses on `GameController`'s private state - the real code path under test, not a
+reimplementation of it that could quietly drift from what ships), with each dial's expected value
+computed independently by summing `LawCatalog`'s own delta fields for the enacted set - not a
+hand-computed number, so the check is correct regardless of arithmetic mistakes in choosing the law
+list and stays correct if any delta is ever retuned. Result: **four of six dials (PoliceFunding,
+SentencingSeverity, JudicialFunding, BorderEnforcement) hit and clamp at the 100 ceiling
+simultaneously** - a harder exercise of 555f4cc's fix than the original close-out's one-dial test -
+and full repeal nets **exactly** 50.0000 on every dial, all six. The mechanism generalizes correctly
+past the population it was proven against; nothing strained at 45+, which is itself the result, per
+the standing instruction that a strain there would be a finding, not a tuning target.
+
+**The rest of the close-out bar, re-run at 50 rather than assumed to still hold**:
+`SaveLoadRoundTripDiagnostic`'s enacted-law list extended with three laws from the two new batches
+(including the weak-proxy anti-mafia law, proving a law whose own comment documents an unrepresented
+mechanism round-trips no differently than a clean single-effect one) - 12/12 scenarios (6 countries x
+2 seeds) round-trip clean. Full capture bar re-run at the new count: 63/63 captured, 0 failed, 0 text
+overflow, 0 containment escape, 0 canvas-text violation - "All - 50" / "Crime & Justice - 50"
+confirmed on the chip counts by direct capture, not by arithmetic. Default-path byte-identity holds
+by construction this time, not merely by re-derivation: a full-tree grep confirms `LawCatalog.All` is
+read only from `GameController`'s own UI layer, never from `SimulationManager`'s tick path, so
+catalog growth alone cannot move an unmodified game's trajectory - a structural guarantee stronger
+than the repeated empirical re-checks the original marathon relied on for the same claim.
+
+**Fifty of fifty, Crime & Justice.** The marathon's original target, reached after the one real
+blocker (browser navigability) that stopped it at 38 was fixed rather than worked around.
