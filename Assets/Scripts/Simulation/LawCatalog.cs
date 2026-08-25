@@ -506,6 +506,224 @@ namespace PoliSim.Simulation
                 SentencingSeverityDelta = -10f,
                 DrugPolicyDelta = -6f,
                 EnactmentApprovalCost = 1.0f
+            },
+
+            // ================================================================================
+            // BATCH 3 of the content marathon (2026-08-25) - 12 laws. Fills the remaining
+            // sentencing/corrections real-world content (restorative justice, juvenile justice,
+            // hate crime, electronic monitoring), adds genuinely triple-dial laws (drug courts,
+            // mental health courts) to exercise composition beyond simple pairs, and rounds out
+            // BorderEnforcement with a real strict/lenient spread (physical barrier, Schengen
+            // reimposition, amnesty). One law (Strict Drug Classification Equalization Act) is
+            // included specifically because its REAL history includes a court striking it down -
+            // good material for the marathon's own repeal-path exercise, not just its enact path.
+            // ================================================================================
+
+            new LawDefinition
+            {
+                Id = "electronic_monitoring_program",
+                Name = "Electronic Monitoring Program",
+                Description = "Substitutes GPS ankle monitoring for a portion of short prison terms or as a release condition, rather than incarceration.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED, though real scope varies by country - France's "placement sous
+                // surveillance electronique" (1997 law, in genuine use as a custody alternative
+                // since ~2000) versus Germany's narrower post-sentence supervision use (since 2011,
+                // mainly for high-risk offenders rather than a general alternative). Honestly flagged
+                // as an imperfect fit even where used: its real function is adding a THIRD custody
+                // modality (a capacity/cost lever), which SentencingSeverity only approximates - see
+                // the wanted-effects log's custody-capacity axis. MODERATE on severity; MINOR
+                // secondary on judicial funding (monitoring infrastructure/compliance staff).
+                SentencingSeverityDelta = -8f,
+                JudicialFundingDelta = 3f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "restorative_justice_program",
+                Name = "Restorative Justice & Victim-Offender Mediation",
+                Description = "Establishes a formal mediation process between victim and offender that can reduce or substitute for a criminal sentence.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED for Germany - "Tater-Opfer-Ausgleich," codified into the Criminal Code
+                // (Sec. 46a StGB) in 1994, can reduce or substitute punishment.
+                // DIRECTIONAL/GENRE-IDIOM elsewhere - pilot programs exist in France and Poland but
+                // aren't comparably institutionalized. MODERATE.
+                SentencingSeverityDelta = -10f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "juvenile_justice_reform",
+                Name = "Juvenile Justice Reform",
+                Description = "Raises the age of adult-court jurisdiction and channels youth offenders into a separate, rehabilitation-focused juvenile justice track.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - Germany's Jugendgerichtsgesetz (a separate, strongly rehabilitative
+                // juvenile criminal code since 1953) and the US "raise the age" state trend (e.g.
+                // New York 2017; roughly ten states raised the age to 18 between 2007 and 2019).
+                // MODERATE, deliberately not higher: honestly scoped to juveniles only, an
+                // age-carve-out rather than a general-population policy - it moves the same
+                // SentencingSeverity dial every other law here does, but its real effect is narrower
+                // than that single number can show (a scenario/eligibility dimension would represent
+                // it more precisely - noted, not solved, in the wanted-effects log's spirit even
+                // though this one law is still usable as a real, if imperfect, MODERATE nudge).
+                SentencingSeverityDelta = -8f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "hate_crime_sentencing_enhancement",
+                Name = "Hate Crime Sentencing Enhancement",
+                Description = "Adds an additional penalty on top of the underlying offense when the crime is proven to be motivated by bias against the victim's identity.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED for the US - the federal Hate Crimes Sentencing Enhancement Act (1994)
+                // plus nearly all states' own enhancement statutes. DIRECTIONAL/GENRE-IDIOM for the
+                // European five, which typically criminalize hate speech/incitement as a SEPARATE
+                // offense (e.g. Germany's Volksverhetzung, Sec. 130 StGB) rather than bolting an
+                // enhancement onto an existing charge - a meaningfully different legal mechanism,
+                // noted honestly rather than glossed over. MINOR: narrow, category-specific, doesn't
+                // move overall severity much on its own.
+                SentencingSeverityDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "risk_based_pretrial_assessment",
+                Name = "Risk-Based Pretrial Assessment",
+                Description = "Replaces cash-bail decisions with an algorithmic risk score for flight and public-safety danger, expanding summons-in-lieu-of-arrest for low-risk defendants.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - New Jersey's 2017 Criminal Justice Reform Act (Public Safety
+                // Assessment). Pretrial jail population fell over 40% in two years; the
+                // court-appearance rate barely moved (92.7% to 89.4%); violent crime fell about 44%
+                // from 2015 to 2019; summons use rose from 54% to 71% of cases - a real, substantial,
+                // well-measured reform, deliberately kept distinct from and less extreme than this
+                // catalog's own Cash Bail Abolition Act (which eliminates bail outright; this keeps a
+                // structured assessment process instead). MAJOR on bail reform; MINOR secondary on
+                // judicial funding (the assessment infrastructure itself).
+                BailReformDelta = 14f,
+                JudicialFundingDelta = 4f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "mental_health_diversion_courts",
+                Name = "Mental Health Diversion Courts",
+                Description = "Establishes specialized court dockets that divert defendants with serious mental illness into judicially-supervised treatment instead of standard prosecution.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - the first mental health court, Broward County, Florida, 1997, with
+                // federal support following via the America's Law Enforcement and Mental Health
+                // Project Act (2000). Evidence generally shows lower recidivism for graduates versus
+                // traditional incarceration, with capacity/access limits as a common real criticism.
+                // Genuinely dual-primary: MODERATE reduction in severity for the diverted population,
+                // MODERATE increase in judicial funding (the specialized staffing/infrastructure a
+                // dedicated docket requires) - a real law where neither dial is clearly "secondary."
+                SentencingSeverityDelta = -9f,
+                JudicialFundingDelta = 8f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "drug_courts_program",
+                Name = "Drug Courts Program",
+                Description = "Establishes specialized court dockets that divert eligible non-violent drug offenders into supervised treatment instead of prosecution or incarceration.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED for the US - the first drug court, Miami-Dade County, 1989; roughly
+                // 3,000 now operate nationally. DIRECTIONAL/GENRE-IDIOM for the other five countries,
+                // which have structurally different analogues (Germany's "Therapie statt Strafe"
+                // under BtMG Sec. 35; Italy's "messa alla prova" probation-diversion) rather than the
+                // specific US drug-court institutional model. A genuinely triple-dial law: MODERATE
+                // toward decriminalized on drug policy (the primary target), with MODERATE secondary
+                // reductions on both severity and a judicial-funding increase (specialized docket
+                // staffing) - composition across three dials at once, deliberately included to
+                // exercise that shape before fifty laws makes it common.
+                DrugPolicyDelta = -10f,
+                SentencingSeverityDelta = -6f,
+                JudicialFundingDelta = 6f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "strict_drug_classification_equalization_act",
+                Name = "Strict Drug Classification Equalization Act",
+                Description = "Equalizes the legal treatment and penalties for cannabis with those for harder drugs, removing distinctions in sentencing between drug categories.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - Italy's 2006 Fini-Giovanardi law equalized cannabis and hard-drug
+                // penalties; Italy's Constitutional Court struck it down in 2014 on procedural
+                // grounds, reverting the country to its earlier, more lenient framework. Included
+                // deliberately as REAL history where the law was later reversed by a court, not by a
+                // repeal bill - this project's own repeal MECHANISM still models it as a standard
+                // Crime & Justice repeal bill (the constitutional-strike-down route itself is a
+                // structural/judicial-review mechanism this catalog doesn't represent, noted honestly
+                // rather than silently assumed away). MAJOR on drug policy; MODERATE secondary on
+                // severity (equalizing penalties upward is itself a real harshness increase).
+                DrugPolicyDelta = 16f,
+                SentencingSeverityDelta = 8f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "physical_border_barrier_construction",
+                Name = "Physical Border Barrier Construction",
+                Description = "Constructs a physical steel-and-sensor barrier along the border, paired with a surge in border-guard personnel to block irregular crossings.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED - Poland's Belarus border wall, built January-June 2022 (187km,
+                // 5.5-meter steel construction, roughly $407M), later supplemented by a roughly
+                // 206km electronic sensor layer (about EUR72M, completed roughly 2023), in response
+                // to the 2021 Belarus-engineered migrant crisis; a border-zone state of emergency
+                // was declared in 2021, and pushback practices drew real rights-group criticism
+                // (noted honestly, not omitted). Deliberately distinguished from this catalog's own
+                // Border Security Act (staffing/surveillance infrastructure, MAJOR) as the more
+                // extreme, capital-intensive, physical-construction end of this dial. SWEEPING - as
+                // strict as this dial realistically gets.
+                BorderEnforcementDelta = 26f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "schengen_border_reimposition",
+                Name = "Schengen Border Reimposition",
+                Description = "Reinstates border checks at internal frontiers that would normally be open under a shared free-movement area, citing migration and cross-border crime concerns.",
+                Category = LawCategory.CrimeJustice,
+                // CONFIRMED, real and recent - Germany reinstated checks at all nine of its land
+                // borders by September 2024 (Poland, Czechia, Austria, and Switzerland from October
+                // 2023), with the interior minister citing migration and "acute dangers... serious
+                // crime"; a much-criticized break from open Schengen movement. MODERATE-MAJOR: a
+                // real, substantial enforcement escalation, though procedural (checkpoints, not new
+                // infrastructure) rather than the sweeping, capital-intensive end this catalog's own
+                // Physical Border Barrier Construction occupies.
+                BorderEnforcementDelta = 14f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "amnesty_regularization_program",
+                Name = "Amnesty & Regularization Program",
+                Description = "Grants legal status to undocumented residents who meet defined criteria (length of residence, clean record, employment), rather than pursuing removal.",
+                Category = LawCategory.CrimeJustice,
+                // DIRECTIONAL/GENRE-IDIOM - several real historical amnesty/regularization programs
+                // exist across immigration-receiving countries, but this project isn't citing one
+                // single confirmed law common to the six seeded countries the way, say, Poland's
+                // border wall is confirmed. Included deliberately as the genuine SWEEPING-lenient
+                // counterweight on this dial, opposite the Physical Border Barrier Construction law
+                // above - the same both-directions balance every other dial in this catalog already
+                // has. MAJOR toward lenient.
+                BorderEnforcementDelta = -20f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "human_trafficking_task_force",
+                Name = "Human Trafficking Task Force",
+                Description = "Funds a dedicated, cross-agency police unit investigating human trafficking and forced-labor networks, coordinating with border authorities on victim identification.",
+                Category = LawCategory.CrimeJustice,
+                // GENRE-IDIOM/DIRECTIONAL - dedicated anti-trafficking task forces are a real,
+                // common institutional response across many countries (the US TVPA framework since
+                // 2000 is the closest single confirmed anchor, though this law isn't citing that Act
+                // specifically), not tied to one single law across all six seeded countries.
+                // MODERATE on police funding (the primary lever - a real, standalone unit); MINOR
+                // secondary on border enforcement (the victim-identification/interdiction
+                // coordination with border authorities).
+                PoliceFundingDelta = 10f,
+                BorderEnforcementDelta = 6f,
+                EnactmentApprovalCost = 0.5f
             }
         };
 
