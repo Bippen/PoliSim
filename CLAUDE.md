@@ -11843,6 +11843,82 @@ switched player), and the four hangs were never this path.
 lines and fail on them — it is the one standing harness that runs boundary audits and the one
 whose "PASS" hid finding 1 for a day.
 
+## The log-error fold, and the harness sweep it prompted (ruling 1, 2026-08-25)
+
+**Ruled YES (Elias): a harness's summary line and exit code must be the CONJUNCTION of everything
+the run asserted — not only what its own code counted.** "RT: PASS" and exit 0 standing over 24 red
+`ATTRIB:` audits for a day is the instance. And: sweep every other harness for the same shape; any
+diagnostic that prints a failure it does not fold into its exit code gets folded in, or gets a
+stated reason. This is the record of both.
+
+**The mechanism.** `CheckExit.ArmLogFold()` subscribes to `Application.logMessageReceived` for the
+rest of a run; every Error/Exception/Assert logged after it — the harness's own, or one raised deep
+in the simulation it drives — is folded into `CheckExit.Finish`, which then exits nonzero even if
+the harness computed 0, and says so (the count and the first line, so the flip is never silent). Off
+until armed, so a harness with a legitimate expected-error path is unaffected until it opts in
+(none has one today). The capture driver, which lives in the runtime assembly and cannot reference
+the Editor-only `CheckExit`, carries its own copy of the same subscription.
+
+**The sweep — 39 harnesses (every `Assets\Editor\*.cs` that exits, plus `SimulationTestRunner` and
+`UiScreenshotDriver`), enumerated.** The one global finding first: **NO harness anywhere subscribed
+to the log stream or grepped a log — every one could see only the red lines it printed itself.**
+`ATTRIB:` fires at exactly four sites (`ApprovalLedgerRecorder`/`DebtLedgerRecorder.CloseAtBoundary`,
+×2 each), all reached only from `AdvanceTurn` — so "can host an ATTRIB" is exactly "calls
+`AdvanceTurn`." The four buckets:
+
+- **EXPOSED-EXTERNAL — runs `AdvanceTurn`, its own reds folded, but would swallow an ATTRIB (the
+  ruling's shape). Now armed:** `SaveLoadRoundTripDiagnostic` (the instance), `PreviewParityDiagnostic`,
+  `ItalyDebtCrisisSliceDiagnostic`, `Phase5NoFeedbackDiagnostic`, `ScenarioSliceDiagnostic`,
+  `SustainedObjectiveDiagnostic` — the six validation gates — plus `AggregationEquivalenceCheck`
+  (armed defensively; it uses `AdvanceDay` only, so it cannot host an ATTRIB today, but the arm is
+  free). **`BatchSimulationRunner`** (the 100/500-turn matrix runner, and the worst case: it exited
+  `EditorApplication.Exit(0)` UNCONDITIONALLY — CLAUDE.md's own "the matrix bar greps ATTRIB
+  externally" was not a supplement to an exit code, it was the ONLY signal) is now routed through
+  `CheckExit.Finish` with the fold armed in its post-domain-reload callback (where the Play-mode
+  ATTRIB actually fires); its anomaly detector stays `LogWarning`-only and deliberately un-folded —
+  anomalies are MEASURED and judged (stress scenarios flag legitimately), not asserted, so only an
+  Error-level audit failure gates. **`UiScreenshotDriver`** (the second instance — the record already
+  showed it exiting 0 with the 2050-12-26 ATTRIB in "both clean 1600 runs") now folds via its own
+  subscription, and its two election-forcing raw approval writes (`= 60f` WIN, `= 5f` LOSS) — the
+  source of that exact ATTRIB — are now recorded as labeled harness events, so a clean capture has
+  nothing to fold.
+- **EXPOSED-OWN — has red lines in its own code that miss its exit (5).** The driver (above, ~18
+  uncounted `LogError` sites plus its "verified nothing" warnings — all now folded). `SimulationTestRunner`
+  (its entire anomaly detector is `LogWarning`-only with no exit code in the file at all — now
+  gated through `BatchSimulationRunner`'s fold for ATTRIB; anomalies stay measured, above).
+  `PartyMarkCoverageCheck` ("PARTY SYSTEM NOT PRESENT → Finish(0)" is the honest-nothing state,
+  item-10-gated, and its tolerated-gaps line — both STATED-REASON in the code, left as-is).
+  `ScreenEdgeCheck` and `UiScreenshotCapture` (each has a `ScreenMarginFraction`/Game-View reflection
+  warning documented as best-effort — STATED-REASON, left as-is; the capture's real exit is the
+  driver's, now folded).
+- **ALWAYS-ZERO by design (measurement/dump tools), STATED-REASON — and, where they run
+  `AdvanceTurn`, ALSO now armed** so a measurement taken while the model's self-audit is failing
+  surfaces rather than being trusted: `DisinflationMeasurementDiagnostic`, `ItalyDebtMeasurementDiagnostic`,
+  `FrfSweepDiagnostic`, `Q5LoopGainDiagnostic`, `WageBoomMeasurementDiagnostic` (1/2/3),
+  `TrajectoryBaselineDump` — all armed (they still exit 0 normally; the fold only bites on a red
+  audit). `PublicationCadenceCheck` (measurement, no `AdvanceTurn` — reason stated, not armed).
+  `DebtClampDiagnostic` and `SwfReturnsDiagnostic` use a RAW `Exit(0)` and are explicitly TEMPORARY
+  mechanism-investigation tools in no gate — left with their stated reason rather than rewired.
+  `CheckSuite` is the Editor-open menu runner (`Exit` would close Unity) — reason stated.
+- **FOLDED already — own reds feed the exit AND cannot host an ATTRIB (no `AdvanceTurn`), no change
+  (14):** `ChromeV2CoverageCheck`, `CreditRatingAnchorCheck` (with its documented Poland exclusion),
+  `DeliveredAssetCheck`, `GraphRendererDiagnostic`, `ImporterSettingsCheck`, `LawCompositionDiagnostic`,
+  `MoneyFormatDiagnostic`, `Phase4YearsPerTurnDiagnostic`, `SigningStampFixDiagnostic`,
+  `SimulationRandomRestoreDiagnostic`, `StatIconCoverageCheck`, `StripCutDiffCheck`, `TrajectoryDiffCheck`,
+  `UpstreamCheck`.
+
+**Proof — validated by NEGATIVE CONTROL, not only by a clean pass** (a guard never shown to fire on
+a real difference is unvalidated — this file's own standing rule). Clean state: `SaveLoadRoundTrip`
+re-run exits 0, 0 ATTRIB, RT: PASS — green stays green through the armed guard. Then the exact
+incident reproduced: the law-vote `RecordEvent` delta temporarily forced to 0f (the pre-fix
+behaviour), re-run — **`RT: PASS` still printed on its own line (the harness's `failures` counter saw
+nothing, exactly the incident), but the process exited 1**, with `CHECKEXIT: the run reported code 0
+but logged 24 error(s) during it - exiting 1. First: "ATTRIB: USA approval ledger FAILS its audit…"`.
+The guard catches precisely what the harness's own counter cannot; the control edit was reverted and
+re-verified clean. The invariant that falls out, stated so the next harness inherits it: **if you
+advance turns and use `CheckExit.Finish`, arm the fold** — a red line nothing counted is still a
+failure.
+
 **The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
 anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
 1i" before this pass), and one bullet — "NOT STARTED: item 8 (zero persistence code exists), item

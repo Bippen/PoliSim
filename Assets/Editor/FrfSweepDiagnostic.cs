@@ -124,6 +124,7 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            CheckExit.ArmLogFold(); // ruling 1 (2026-08-25): this advances turns; a measurement taken while the model's self-audit fails is meaningless, so an ATTRIB during it exits nonzero even though this tool exits 0 by design otherwise.
             try
             {
                 var reference = new Dictionary<(int Seed, CountryId Country), float>();

@@ -29,6 +29,7 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            CheckExit.ArmLogFold(); // ruling 1: the equivalence gate - fold any audit error into the exit (defensive; this path uses AdvanceDay, not AdvanceTurn, so it cannot host an ATTRIB today, but arming is free).
             int passed = 0, total = 0;
 
             // SELF-TEST FIRST: two independently-built worlds must start identical, or every comparison

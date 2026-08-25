@@ -22,6 +22,7 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            CheckExit.ArmLogFold(); // ruling 1 (2026-08-25): this advances turns; a measurement taken while the model's self-audit fails is meaningless, so an ATTRIB during it exits nonzero even though this tool exits 0 by design otherwise.
             Debug.Log("WAGEBOOM2: --- §4 is the drift present with ZERO impulse? Sweden/Poland, 150 turns, no policy ---");
             RunTrajectory(CountryId.Sweden, 0f, turns: 150, hikeAtT1: 0f, label: "sweden_0pp_150t_baseline");
             RunTrajectory(CountryId.Poland, 0f, turns: 150, hikeAtT1: 0f, label: "poland_0pp_150t_baseline");

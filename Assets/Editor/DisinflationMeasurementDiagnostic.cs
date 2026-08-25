@@ -31,6 +31,7 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            CheckExit.ArmLogFold(); // ruling 1 (2026-08-25): this advances turns; a measurement taken while the model's self-audit fails is meaningless, so an ATTRIB during it exits nonzero even though this tool exits 0 by design otherwise.
             Debug.Log("DISINFLATION: --- §1 the fixed-point hypothesis: elevated pi=pie, U=NAIRU, no policy ---");
             RunTrajectory(CountryId.Poland, startInflation: 10f, rateChangeAtT1: 0f, turns: 30, label: "poland_10pct_nopolicy");
             RunTrajectory(CountryId.Sweden, startInflation: 10f, rateChangeAtT1: 0f, turns: 30, label: "sweden_10pct_nopolicy");

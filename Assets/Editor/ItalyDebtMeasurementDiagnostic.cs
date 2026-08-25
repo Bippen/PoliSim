@@ -29,6 +29,7 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            CheckExit.ArmLogFold(); // ruling 1 (2026-08-25): this advances turns; a measurement taken while the model's self-audit fails is meaningless, so an ATTRIB during it exits nonzero even though this tool exits 0 by design otherwise.
             Debug.Log("ITALYDEBT: --- §1 no-policy baseline: Italy at 165% debt-to-GDP (up from seed 138%) ---");
             RunTrajectory(startDebtToGdpPercent: 165f, spendingCutPercent: 0f, vatHikePoints: 0f, turns: 30, label: "italy_165pct_nopolicy");
 

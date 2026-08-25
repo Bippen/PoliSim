@@ -21,9 +21,75 @@ namespace PoliSim.EditorTools
         private static bool _collecting;
         private static int _worst;
 
-        /// <summary>Call instead of <c>EditorApplication.Exit</c>. Identical behaviour in batch mode.</summary>
+        // The log-error fold (ruling 1, 2026-08-25). A harness's summary line and exit code must be
+        // the CONJUNCTION of everything the run asserted - not only what its own code counted. The
+        // instance: SaveLoadRoundTripDiagnostic printed "RT: PASS" and exited 0 while 24 ATTRIB:
+        // approval-audit LogErrors, raised INSIDE the simulation (ApprovalLedgerRecorder/
+        // DebtLedgerRecorder.CloseAtBoundary during AdvanceTurn), went unnoticed for a day - the
+        // harness's own `failures` counter could not see a red line raised by code it merely drove.
+        // ArmLogFold() subscribes to the whole log stream for the run's duration; any Error or
+        // Exception - the harness's own, or one from deep in the simulation it advanced - is folded
+        // into Finish's code and named on the way out. Off until armed, so a harness that has a
+        // legitimate expected-error path (none does today) is unaffected until it opts in.
+        private static bool _foldArmed;
+        private static int _observedErrors;
+        private static string _firstError;
+
+        /// <summary>Arm the log-error fold for the rest of this run (call once at the top of a
+        /// harness's Run). Every subsequent Error/Exception log - from this harness OR from the
+        /// simulation it drives - raises the code Finish will exit with, so a red line nothing
+        /// counted can no longer hide under a green summary. Idempotent; the process exit clears it.</summary>
+        public static void ArmLogFold()
+        {
+            if (_foldArmed)
+            {
+                _observedErrors = 0;
+                _firstError = null;
+                return;
+            }
+
+            _foldArmed = true;
+            _observedErrors = 0;
+            _firstError = null;
+            Application.logMessageReceived += OnLog;
+        }
+
+        private static void OnLog(string condition, string stackTrace, LogType type)
+        {
+            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+            {
+                return;
+            }
+
+            _observedErrors++;
+            if (_firstError == null)
+            {
+                _firstError = condition;
+            }
+        }
+
+        /// <summary>Call instead of <c>EditorApplication.Exit</c>. Identical behaviour in batch mode.
+        /// When the log fold is armed, a run that logged ANY error exits nonzero even if
+        /// <paramref name="code"/> was 0 - and says so, naming the count and the first line, so the
+        /// flip is never silent.</summary>
         public static void Finish(int code)
         {
+            if (_foldArmed && _observedErrors > 0)
+            {
+                int folded = Mathf.Max(code, 1);
+                if (folded != code)
+                {
+                    Debug.LogError($"CHECKEXIT: the run reported code {code} but logged {_observedErrors} error(s) during it - " +
+                                   $"exiting {folded}. First: \"{Truncate(_firstError, 200)}\". A red line nothing counted is still a failure (ruling 1, 2026-08-25).");
+                }
+                else
+                {
+                    Debug.Log($"CHECKEXIT: {_observedErrors} error(s) logged during the run; the reported code {code} already reflects failure.");
+                }
+
+                code = folded;
+            }
+
             if (_collecting)
             {
                 _worst = Mathf.Max(_worst, code);
@@ -33,11 +99,19 @@ namespace PoliSim.EditorTools
             EditorApplication.Exit(code);
         }
 
+        private static string Truncate(string s, int max)
+            => string.IsNullOrEmpty(s) || s.Length <= max ? s : s.Substring(0, max) + "…";
+
         /// <summary>Runs one check without letting it end the process, returning the code it wanted.</summary>
         public static int Collect(Action check)
         {
             _collecting = true;
             _worst = 0;
+            // Reset the fold counter so a check that DOESN'T arm cannot inherit an error count from
+            // a prior armed check in the same session (CheckSuite runs checks in sequence via
+            // Collect). A check that arms resets it again itself; this covers the ones that don't.
+            _observedErrors = 0;
+            _firstError = null;
             try
             {
                 check();

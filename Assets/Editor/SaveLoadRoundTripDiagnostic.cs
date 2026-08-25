@@ -66,6 +66,11 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            // Ruling 1 (2026-08-25): this diagnostic advances turns, so the ledger self-audits fire
+            // during it - and this is the exact harness whose "RT: PASS" hid 24 ATTRIB lines for a
+            // day. Arm the fold: any error logged during the run, its own or the simulation's, now
+            // exits nonzero regardless of `failures`.
+            CheckExit.ArmLogFold();
             _stateFields = typeof(EconomyState).GetFields(BindingFlags.Public | BindingFlags.Instance);
             Debug.Log($"RT: reflecting {_stateFields.Length} public EconomyState fields into every snapshot.");
 

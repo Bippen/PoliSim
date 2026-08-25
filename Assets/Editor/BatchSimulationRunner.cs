@@ -53,6 +53,16 @@ namespace PoliSim.EditorTools
         {
             if (SessionState.GetBool(ActiveKey, false))
             {
+                // Ruling 1 (2026-08-25): the matrix runner exited 0 unconditionally, and CLAUDE.md's
+                // own note said "the matrix bar greps for ATTRIB" EXTERNALLY - the exit code reflected
+                // nothing the run asserted, the exact hole this ruling closes. Arm the fold HERE, in
+                // the post-Play-mode-reload domain (entering Play triggers a domain reload that wipes
+                // CheckExit's static state, so arming in Run below would be erased): this callback
+                // runs after that reload and before SimulationTestRunner.Start()'s first frame, so the
+                // subscription is live when the ledger audits raise ATTRIB during the matrix. Anomalies
+                // stay LogWarning and are deliberately NOT folded - they are MEASURED and judged (stress
+                // scenarios flag legitimately), not asserted; only an Error-level audit failure gates.
+                CheckExit.ArmLogFold();
                 EditorApplication.update -= WaitThenExit;
                 EditorApplication.update += WaitThenExit;
             }
@@ -86,10 +96,12 @@ namespace PoliSim.EditorTools
             SessionState.SetBool(ActiveKey, false);
             Debug.Log("BatchSimulationRunner: exiting after wait.");
 
-            // Exit directly rather than setting isPlaying = false first and exiting in the same frame:
-            // leaving Play mode is itself asynchronous, so the old sequence asked Unity to tear down Play
-            // mode and terminate simultaneously.
-            EditorApplication.Exit(0);
+            // Through CheckExit.Finish, not a raw Exit(0), so the log fold armed above can turn a
+            // run that logged any ATTRIB into a nonzero exit (ruling 1). A clean matrix run still
+            // exits 0. Exit directly rather than setting isPlaying = false first and exiting in the
+            // same frame: leaving Play mode is itself asynchronous, so the old sequence asked Unity to
+            // tear down Play mode and terminate simultaneously.
+            CheckExit.Finish(0);
         }
     }
 }

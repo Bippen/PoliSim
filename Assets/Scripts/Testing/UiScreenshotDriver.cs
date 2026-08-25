@@ -97,8 +97,35 @@ namespace PoliSim.Testing
         /// </summary>
         private bool _finishCalled;
 
+        // The log-error fold (ruling 1, 2026-08-25), the driver's own copy of CheckExit's - the
+        // driver lives in the runtime assembly and cannot reference the Editor-only CheckExit, so it
+        // subscribes itself. The sweep this ruling prompted found the driver exits 0 with any of ~18
+        // uncounted LogError lines in the log (assert-own-name misses, reflection failures) AND with
+        // an ATTRIB raised by the simulation it advances - "clean 1600 runs" carried the 2050-12-26
+        // approval audit for exactly this reason (CLAUDE.md). Now every Error/Exception/Assert during
+        // the run, its own or the simulation's, folds into the exit code. The two election-forcing
+        // raw approval writes that caused that specific ATTRIB are recorded below, so a clean run has
+        // nothing to fold.
+        private int _loggedErrors;
+        private string _firstLoggedError;
+
+        private void OnRunLog(string condition, string stackTrace, LogType type)
+        {
+            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+            {
+                return;
+            }
+
+            _loggedErrors++;
+            if (_firstLoggedError == null)
+            {
+                _firstLoggedError = condition;
+            }
+        }
+
         private IEnumerator Start()
         {
+            Application.logMessageReceived += OnRunLog;
             // COUNTRY-LEAK FIX: `controller` is declared here, outside the try, so the `finally` below
             // can reach it. Everything from here through the method's normal end is now wrapped in
             // try/finally - see the finally block's own comment for why.
@@ -247,7 +274,18 @@ namespace PoliSim.Testing
 
             Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
 
-            Finish(_failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0 ? 0 : 1);
+            // Ruling 1's fold: a red line nothing counted is still a failure. The four counters
+            // above are the driver's own asserts; _loggedErrors catches everything else - the ~18
+            // uncounted LogError sites and any ATTRIB the simulation raised while this drove it.
+            bool clean = _failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0;
+            if (_loggedErrors > 0)
+            {
+                Debug.Log(clean
+                    ? $"SHOT: FOLD - the run's own counters were clean but {_loggedErrors} error(s) were logged during it; exiting nonzero. First: \"{(_firstLoggedError != null && _firstLoggedError.Length > 200 ? _firstLoggedError.Substring(0, 200) + "…" : _firstLoggedError)}\"."
+                    : $"SHOT: {_loggedErrors} error(s) logged during the run; the failure is already reflected.");
+            }
+
+            Finish(clean && _loggedErrors == 0 ? 0 : 1);
             }
             finally
             {
@@ -287,6 +325,8 @@ namespace PoliSim.Testing
                     Debug.LogError("SHOT: run ended without reaching its own exit (an uncaught exception, most likely) - forcing one now.");
                     Finish(1);
                 }
+
+                Application.logMessageReceived -= OnRunLog;
             }
         }
 
@@ -1567,7 +1607,13 @@ namespace PoliSim.Testing
             // on dismissal. This closes "the WIN form stays unpinned, stated rather than implied".
             if (AdvanceToElectionTurn(sim, noDecisions))
             {
+                // Observed, not raw (2026-08-25): forcing approval to guarantee a WIN capture is a
+                // harness write like the ledger-pin ones above, and leaving it un-recorded is what
+                // tripped the approval self-audit at the next boundary - the 2050-12-26 ATTRIB that
+                // rode every "clean" run before ruling 1's fold would have failed the capture on it.
+                float winForceBefore = player.State.ApprovalRating;
                 player.State.ApprovalRating = 60f;
+                ApprovalLedgerRecorder.RecordEvent(player, sim.CurrentDate, "Harness: forced approval for WIN reveal capture", player.State.ApprovalRating - winForceBefore);
                 InvokeNoArg(controller, "CheckElection");
                 yield return Settle();
                 yield return Capture("88w_election_reveal_win");
@@ -1582,7 +1628,10 @@ namespace PoliSim.Testing
 
             if (AdvanceToElectionTurn(sim, noDecisions))
             {
+                // Observed, same as the WIN force above - the LOSS reveal's own approval override.
+                float lossForceBefore = player.State.ApprovalRating;
                 player.State.ApprovalRating = 5f;
+                ApprovalLedgerRecorder.RecordEvent(player, sim.CurrentDate, "Harness: forced approval for LOSS reveal capture", player.State.ApprovalRating - lossForceBefore);
                 InvokeNoArg(controller, "CheckElection");
                 yield return Settle();
                 yield return Capture("88a_election_reveal_loss");

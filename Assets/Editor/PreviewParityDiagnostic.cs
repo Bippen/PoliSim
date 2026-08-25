@@ -53,6 +53,7 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            CheckExit.ArmLogFold(); // ruling 1: this advances turns; an ATTRIB during it now fails the run.
             SimulationRandom.Seed(777);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject("PARITY");
