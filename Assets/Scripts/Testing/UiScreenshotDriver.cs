@@ -1084,15 +1084,26 @@ namespace PoliSim.Testing
             bool laborOk = sim.IntroduceLaborBill(_countryId, new LaborPolicyBill { MinimumWage = 12f });
             bool crimeOk = sim.IntroduceCrimeJusticeBill(_countryId, new CrimeJusticePolicyBill { PoliceFunding = 55f });
 
-            // Law system MVP slice: one law ALREADY enacted, direct real-API assignment (the same
-            // idiom section A's CabinetMinisters pin uses) rather than a real vote - guarantees the
-            // "enacted" state deterministically instead of depending on an uncertain seat-composition
-            // outcome, per the bar's own "pinned on a state with laws both available and enacted"
-            // requirement. A second, DIFFERENT law's bill is introduced here in the same "pending
-            // bills, LAST" batch, so the Laws browser shows available/enacted/pending together in one
-            // capture. The other two catalog laws stay untouched (still just "available").
-            player.EnactedLaws.Add(new EnactedLaw { LawId = "truth_in_sentencing_act", EnactedOn = sim.CurrentDate });
+            // Content marathon end-of-run bar: "full captures pinned on a populated browser AND a
+            // populated enacted list" - direct real-API assignment (the same idiom section A's
+            // CabinetMinisters pin uses) rather than a real vote, guaranteeing the enacted state
+            // deterministically. A representative set spanning every dial, not a repeat of the
+            // original MVP pin's single law - the Laws browser now needs to show a genuinely
+            // populated enacted list, not just prove the mechanism works once. Two further laws get
+            // a real pending bill in the same "pending bills, LAST" batch, so the browser shows
+            // available/enacted/pending together in one capture.
+            string[] lawsToEnactForCapture =
+            {
+                "three_strikes_law", "cash_bail_abolition_act", "drug_decriminalization_act",
+                "public_defender_funding_act", "body_worn_camera_program", "court_backlog_reduction_program",
+                "frontex_border_cooperation_agreement", "restorative_justice_program"
+            };
+            foreach (string enactId in lawsToEnactForCapture)
+            {
+                player.EnactedLaws.Add(new EnactedLaw { LawId = enactId, EnactedOn = sim.CurrentDate });
+            }
             bool lawOk = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
+            bool lawOk2 = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "sanctuary_city_policy", IsRepeal = false });
 
             var sectorBill = new SectorPolicyBill();
             foreach (Sector sector in player.Sectors)
@@ -1109,7 +1120,7 @@ namespace PoliSim.Testing
             bool swfOk = sim.IntroduceSwfDrawdownBill(_countryId, new SwfDrawdownBill { WithdrawalPercentOfGdp = 1f });
 
             Debug.Log($"SHOT: bills introduced - tax:{taxOk} welfare:{welfareOk} labor:{laborOk} crime:{crimeOk} " +
-                      $"sector:{sectorOk} trade:{tradeOk} swfDrawdown:{swfOk} law:{lawOk} (a false is a finding to read, not an error).");
+                      $"sector:{sectorOk} trade:{tradeOk} swfDrawdown:{swfOk} law:{lawOk} law2:{lawOk2} (a false is a finding to read, not an error).");
 
             SetEnumField(controller, "_consolidatedTab", "Politics");
             SetEnumField(controller, "_politicsCategory", "Parliament");

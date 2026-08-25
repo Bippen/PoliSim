@@ -1225,29 +1225,15 @@ namespace PoliSim.Simulation
             // ever offers "Enact" while !enacted and "Repeal" while enacted, and IntroduceLawBill
             // already refuses a second bill for the same LawId while one is pending) - but cheap, and
             // it closes a real latent double-application class: without it, enacting an
-            // already-enacted law would apply its delta a SECOND time (moving the dial further, not a
-            // no-op) and add a duplicate EnactedLaws entry; repealing a law that isn't enacted would
-            // apply the inverse delta with nothing to undo, moving the dial the WRONG way. Both are
-            // now unconditional no-ops instead - the same "idempotent, not merely rejected" spirit
-            // IntroduceLawBill already applies one layer up.
+            // already-enacted law would add a duplicate EnactedLaws entry; repealing a law that isn't
+            // enacted would have nothing to remove. Both are now unconditional no-ops instead - the
+            // same "idempotent, not merely rejected" spirit IntroduceLawBill already applies one
+            // layer up.
             bool alreadyEnacted = country.EnactedLaws.Exists(e => e.LawId == bill.LawId);
             if (bill.IsRepeal == !alreadyEnacted)
             {
                 return;
             }
-
-            float sign = bill.IsRepeal ? -1f : 1f;
-            var lawDecision = new PolicyDecision
-            {
-                PoliceFundingOverride = Mathf.Clamp(country.PoliceFundingLevel + sign * law.PoliceFundingDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
-                SentencingSeverityOverride = Mathf.Clamp(country.SentencingSeverity + sign * law.SentencingSeverityDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
-                BailReformOverride = Mathf.Clamp(country.BailReformLevel + sign * law.BailReformDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
-                DrugPolicyOverride = Mathf.Clamp(country.DrugPolicyLevel + sign * law.DrugPolicyDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
-                JudicialFundingOverride = Mathf.Clamp(country.JudicialFundingLevel + sign * law.JudicialFundingDelta, MinPolicyDialLevel, MaxPolicyDialLevel),
-                BorderEnforcementOverride = Mathf.Clamp(country.BorderEnforcementLevel + sign * law.BorderEnforcementDelta, MinPolicyDialLevel, MaxPolicyDialLevel)
-            };
-            ApplyCrimePolicyChanges(country, lawDecision);
-            ApplyCrimeJusticeDeeperChanges(country, lawDecision);
 
             if (bill.IsRepeal)
             {
@@ -1258,6 +1244,75 @@ namespace PoliSim.Simulation
                 country.EnactedLaws.Add(new EnactedLaw { LawId = bill.LawId, EnactedOn = CurrentDate });
                 country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f);
             }
+
+            RecomputeCrimeJusticeDialsFromEnactedLaws(country);
+        }
+
+        /// <summary>
+        /// Content-marathon finding (2026-08-25): the dial each of the six Crime &amp; Justice fields
+        /// shows is recomputed FRESH from the current Country.EnactedLaws set every time it changes -
+        /// never mutated incrementally by adding one law's signed delta to whatever the dial
+        /// currently reads. The difference matters specifically at the clamp boundary.
+        ///
+        /// The FIRST version of this method did the incremental thing (this file's own earlier
+        /// doc comments called clamp saturation "the one honest exception" to decomposability, which
+        /// was the right instinct but understated the actual failure): with enough laws pushing
+        /// SentencingSeverity past 100, the clamp silently absorbs the overshoot, and each individual
+        /// law's OWN delta gets baked against whatever the CLAMPED prior value happened to be rather
+        /// than the true unclamped total - repealing the same laws in ANY order then subtracts each
+        /// nominal delta from a value that already "spent" some of that delta's effect on the clamp,
+        /// landing measurably below the pre-enactment baseline rather than back on it. A real,
+        /// realistic-scale composition test (ten laws, several of them touching SentencingSeverity at
+        /// MAJOR/SWEEPING magnitude - not a contrived case; five or six of this category's now-twenty
+        /// Sentencing-touching laws reach the ceiling on their own) measured this directly: full
+        /// repeal of a set that had driven SentencingSeverity to its 100 ceiling landed at 29.0000, not
+        /// 50.0000 - the ceiling had silently eaten 21 points nothing gave back.
+        ///
+        /// The fix treats Country.EnactedLaws as the sole source of truth and every dial as a PURE,
+        /// STATELESS function of it: sum every enacted law's delta on a dial (from the seeded 50
+        /// baseline - the same "laws are now the sole driver of these six dials" ruling the sliders'
+        /// read-only conversion already established, restated as a computation rather than a policy),
+        /// clamp exactly ONCE at the end, and set that as the dial. Enact and repeal both just change
+        /// which laws are in the set, then call this - correct for ANY history of enactments and
+        /// repeals in ANY order, not merely the one sequence a hand-written test happened to check,
+        /// because there is no accumulated clamped state left to disagree with a fresh recomputation.
+        /// An EnactedLaws entry citing a law no longer in LawCatalog (a hypothetical stale save) is
+        /// skipped rather than crashing - the same "missing entry, not a crash" idiom LawCatalog.GetById
+        /// itself already documents.
+        /// </summary>
+        private void RecomputeCrimeJusticeDialsFromEnactedLaws(Country country)
+        {
+            const float baseline = 50f;
+            float police = baseline, sentencing = baseline, bail = baseline;
+            float drug = baseline, judicial = baseline, border = baseline;
+
+            foreach (EnactedLaw enacted in country.EnactedLaws)
+            {
+                LawDefinition law = LawCatalog.GetById(enacted.LawId);
+                if (law == null)
+                {
+                    continue;
+                }
+
+                police += law.PoliceFundingDelta;
+                sentencing += law.SentencingSeverityDelta;
+                bail += law.BailReformDelta;
+                drug += law.DrugPolicyDelta;
+                judicial += law.JudicialFundingDelta;
+                border += law.BorderEnforcementDelta;
+            }
+
+            var recomputed = new PolicyDecision
+            {
+                PoliceFundingOverride = Mathf.Clamp(police, MinPolicyDialLevel, MaxPolicyDialLevel),
+                SentencingSeverityOverride = Mathf.Clamp(sentencing, MinPolicyDialLevel, MaxPolicyDialLevel),
+                BailReformOverride = Mathf.Clamp(bail, MinPolicyDialLevel, MaxPolicyDialLevel),
+                DrugPolicyOverride = Mathf.Clamp(drug, MinPolicyDialLevel, MaxPolicyDialLevel),
+                JudicialFundingOverride = Mathf.Clamp(judicial, MinPolicyDialLevel, MaxPolicyDialLevel),
+                BorderEnforcementOverride = Mathf.Clamp(border, MinPolicyDialLevel, MaxPolicyDialLevel)
+            };
+            ApplyCrimePolicyChanges(country, recomputed);
+            ApplyCrimeJusticeDeeperChanges(country, recomputed);
         }
 
         /// <summary>See ApplyLaborBillEffects' own doc comment - identical pattern, reuses ApplyCrimePolicyChanges/ApplyCrimeJusticeDeeperChanges.</summary>

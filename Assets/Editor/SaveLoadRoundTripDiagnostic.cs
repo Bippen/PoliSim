@@ -262,8 +262,22 @@ namespace PoliSim.EditorTools
             // LawBill for a DIFFERENT law (exercises the nested CountryId -> LawId dictionary the
             // exact same "populate-in-place on a readable member" hazard the original save/load
             // pass found on PublishedData.PeriodClosingValues - see the mechanism report's hazard 5).
-            playerCountry.EnactedLaws.Add(new EnactedLaw { LawId = "truth_in_sentencing_act", EnactedOn = sim.CurrentDate });
+            // Content-marathon end-of-run bar: "a dozen laws in force crossing the save" - a dozen
+            // enacted, drawn across every batch and every dial (not just batch 1's original two), so
+            // the round trip is proving diverse real content, not one repeated pair.
+            string[] lawsToEnact =
+            {
+                "truth_in_sentencing_act", "border_security_act", "community_policing_initiative",
+                "cash_bail_abolition_act", "drug_decriminalization_act", "public_defender_funding_act",
+                "body_worn_camera_program", "court_backlog_reduction_program", "frontex_border_cooperation_agreement",
+                "restorative_justice_program", "mental_health_diversion_courts", "human_trafficking_task_force"
+            };
+            foreach (string lawId in lawsToEnact)
+            {
+                playerCountry.EnactedLaws.Add(new EnactedLaw { LawId = lawId, EnactedOn = sim.CurrentDate });
+            }
             sim.IntroduceLawBill(player, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
+            sim.IntroduceLawBill(player, new LawBill { LawId = "sanctuary_city_policy", IsRepeal = false });
 
             int playerIndex = world.Countries.FindIndex(c => c.Id == player);
             Country neighbour = world.Countries[(playerIndex + 1) % world.Countries.Count];

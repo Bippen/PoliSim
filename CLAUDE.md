@@ -10253,3 +10253,163 @@ NEW warnings were introduced anywhere else - every warning present in the final 
   inventing a player-facing panel, and naming the absence explicitly rather than silently
   substituting something else in its place - the same pattern Q1's own validation section already
   established for exactly this situation.
+
+## Law content marathon - STOPPED at 38/50, a real fix found, a real UI finding surfaced (2026-08-25)
+
+Target was 50 laws, batches of ~10, an architecture check riding inside the content pass. Stopped
+after batch 3 (38 laws) on the marathon's own explicit stop condition - "the browser stops being
+navigable" - confirmed by capture inspection, not assumed. The bigger result of the three batches
+that did run: a genuine composition bug in the enact/repeal mechanism, found only because this pass
+finally exercised a realistic multi-law scale, fixed, and re-verified.
+
+### What shipped - 34 new laws (4 -> 38), real-world-grounded, three research passes
+
+Three parallel research agents covered policing/border, sentencing/corrections/bail, and drugs/
+courts across all six seeded countries plus the genre's own vocabulary, each confirmed/directional/
+genre-idiom labeled per candidate. Curated into three batches, each deliberately rebalancing the
+dial coverage the prior batch left thin (batch 1 leaned hard on SentencingSeverity - the richest
+real-world-documented axis by a wide margin - batch 2 pushed PoliceFunding/JudicialFunding/
+BorderEnforcement, batch 3 filled remaining corrections/courts content and gave BorderEnforcement a
+genuine strict/lenient spread). Final composition: SentencingSeverity 19 of 38 laws (exactly half -
+reported honestly, not force-balanced away - real criminal-justice policy genuinely is
+sentencing-dominated as a topic), JudicialFunding 11, DrugPolicy 9, BorderEnforcement 9,
+PoliceFunding 7, BailReform 6.
+
+A magnitude taxonomy (MINOR +-3..6 / MODERATE +-7..14 / MAJOR +-15..22 / SWEEPING +-23..30) was
+stated once in `LawCatalog`'s own class doc comment and applied consistently by every law's own
+rationale comment, per rule 5 - no delta is "a number chosen to feel balanced." Every law's comment
+states CONFIRMED/DIRECTIONAL/GENRE-IDIOM and, where real, names the actual policy and country (Three
+Strikes Law, California 1994; Sweden's 2023 Tidö gang-crime sentencing escalation, verified via
+search; Germany's 2024 Cannabisgesetz; Illinois' 2023 full cash-bail abolition; Poland's Belarus
+border wall, 187km/~$407M, 2022; Italy's Fini-Giovanardi drug law, struck down by its own
+Constitutional Court in 2014; and more - full citations live in each law's own comment in
+`LawCatalog.cs`, not restated here).
+
+### The wanted-effects log - eight axis-level gaps, none forced into the six dials
+
+Recorded in `LawCatalog`'s own class doc comment (the permanent home for this list, not this file):
+a police-tactics/search-authority axis (stop-and-frisk, no-knock, qualified immunity, civil asset
+forfeiture - including the anti-mafia confiscation variant); a surveillance/data-collection axis
+(predictive policing, DNA/forensic databases, facial recognition); a custody-capacity/conditions
+axis (prison ownership, overcrowding standards - the ECHR's Torreggiani v. Italy ruling); a
+court-process-efficiency axis (plea bargaining, speedy trial, digitization - money alone doesn't buy
+throughput); a judicial-independence-structure axis (Poland's 2015-2023 disputes - a governance
+question, not a budget line); a public-health axis (harm reduction, needle exchange, supervised
+consumption); a federalism axis (US state-level cannabis legalization under a stricter federal
+regime); an accountability/transparency axis (officer civil liability, oversight boards, body-camera
+footage release mandates). None forced in - a few laws (stop-and-frisk-adjacent Gang Crime Sentencing
+Escalation's search-power piece, Italy's anti-mafia confiscation) use a WEAK, explicitly-labeled
+funding/severity proxy where the real law bundles an unrepresentable core alongside a representable
+remainder; the rest simply don't have a law authored for them.
+
+### The real finding: composition breaks at the clamp boundary, and it was fixable
+
+**Not a contrived case.** The end-of-marathon bar's own "composition test with a realistic set
+enacted" - ten laws a real government might plausibly pass together, several pushing
+SentencingSeverity - drove that dial to its 100 ceiling with room to spare (raw sum 121). Repealing
+the full set, in reverse order, landed SentencingSeverity at **29.0000, not 50.0000** - a 21-point
+deficit exactly matching the headroom the clamp had absorbed during enactment. With 19 of 38 laws
+touching this one dial and several at MAJOR/SWEEPING magnitude, three or four ordinarily-plausible
+enactments reach this ceiling on their own - this was always going to surface with real play, not
+just a ten-law stress test.
+
+**Root cause.** `ApplyLawBillEffects`'s first version mutated the dial incrementally -
+`Clamp(currentValue + thisLaw'sSignedDelta, 0, 100)` - reading whatever the CLAMPED prior value
+happened to be as the base for the next law. Clamping is not linear or invertible: once a value has
+been silently capped, an increment computed against that capped value no longer corresponds to the
+uncapped total, and repealing the same set in any order subtracts each law's full nominal delta from
+a chain of values that already "spent" some of that delta's effect on the ceiling - a structural
+overshoot below the true baseline, not a rounding artifact. Every SINGLE-law and small-stack test run
+in batches 1-3 passed cleanly because none of them individually reached a clamp boundary - the bug
+was real from the first commit and invisible until a genuinely realistic-scale composition test ran.
+
+**The fix - recompute from source of truth, not incremental mutation.** `Country.EnactedLaws` is
+already the authoritative record of which laws are active; the fix (`RecomputeCrimeJusticeDialsFromEnactedLaws`)
+treats each of the six dials as a PURE function of that list - sum every currently-enacted law's
+delta on a dial from the seeded 50 baseline, clamp exactly once, set the dial - recomputed in full on
+every enact and every repeal rather than nudged incrementally. This is correct for ANY history of
+enactments and repeals in ANY order, because there is no accumulated clamped state left to disagree
+with a fresh recomputation - not merely "fixed for the one sequence that was tested." An `EnactedLaws`
+entry citing a law no longer in `LawCatalog` (a hypothetical stale save after a future content
+removal) is skipped rather than crashing, the same "missing entry, not a crash" idiom `LawCatalog.GetById`
+already documents.
+
+**Re-verified, not assumed fixed.** The same realistic ten-law set: enact-side unchanged (100.0000 on
+the clamped dial, matching the pre-fix run exactly - the fix doesn't change what a single pass of
+enactments produces, only what repeal recovers), full repeal now nets **every one of the six dials
+back to EXACTLY 50.0000**, including the one that saturated. Every batch's own decomposition
+spot-checks and stacking tests (which never touched the clamp) re-run byte-identical after the fix,
+confirming it changes behavior only where the old mechanism was actually wrong. Default-path
+byte-identity re-confirmed a third time (600/600 lines, seed 777) with the fix in place - the
+recompute path is only ever reached from a bill that actually resolves, so a no-law playthrough is
+untouched by construction, verified rather than assumed.
+
+### Composition testing, generalized beyond single-law decomposition
+
+Three new check shapes ran across the batches, on top of the MVP slice's own single-law
+enact/repeal proof:
+- **Same-dial stacking** (batch 1, SentencingSeverity; batch 2, PoliceFunding): independent laws
+  enacted together land EXACTLY on baseline + sum of their deltas; full repeal nets back to EXACTLY
+  the pre-stack value.
+- **Mixed-sign stacking** (batch 3, BorderEnforcement, deltas +26/+14/-20): proves composition holds
+  when laws pull a dial in opposite directions within the same stack, not just when they agree.
+- **The realistic multi-dial set** (end of marathon, ten laws across five dials): the one that found
+  the clamp-boundary bug above - every dial checked simultaneously, deliberately including a
+  clamp-saturating case rather than avoiding one.
+
+### The stop: both symptoms the marathon's own condition named were confirmed present, not assumed
+
+At 38 laws (batch 3's capture), inspected directly rather than inferred: the category filter has
+been non-functional since batch 1 - every authored law shares the single Crime & Justice category,
+so "All" and "Crime & Justice" render an identical list, and the filter has never once narrowed
+anything. Card volume: roughly 1.3 cards fit in one screen-height at either capture size, so the full
+38-card list is roughly 27 screen-heights of scrolling with no way to jump or search. The
+populated-enacted-list capture (below) sharpened this further: even with 8 of the visible laws
+genuinely enacted, the two cards at the TOP of the list are both "not enacted" - there is no sort or
+filter by enacted status either, so confirming "what's currently in force" requires scanning the
+whole list regardless of how it's filtered. Both symptoms the stop condition named by name -
+"category filter insufficient" and "cards too many to scan" - are independently, visibly true at 38
+laws, not a marginal call.
+
+**Recommendation, not a ruling**: a second, smaller axis (Sub-tags within Crime & Justice - e.g.
+Sentencing/Policing/Drugs/Courts/Border - that `LawBrowserFilter` could actually filter against) or a
+compact list-plus-detail-panel pattern (rows collapse to name + status + one-line summary; a click
+expands the full card) would both directly address the two named symptoms without a category-system
+redesign. Twelve more laws (to reach 50) were not authored - continuing onto an already-strained
+browser would only make the finding this pass exists to report worse, per the marathon's own
+instruction not to entrench a bad abstraction by filling it with content.
+
+### The bar, run in full against the 38 laws actually authored
+
+**Default-path byte-identity**: confirmed three times independently (catalog growth alone, seed 777
+100-turn baseline, 600/600 lines byte-identical, 37/37 anomalies exact both before/after each check;
+the mechanism fix, same result a third time) - re-derived per check via a temporary revert of
+`LawCatalog.cs` to its pre-marathon (4-law) content and a fresh baseline run, not assumed inert by
+argument alone.
+
+**Composition with a realistic set**: the ten-law multi-dial test above - all six dials land exactly
+on their expected composed value (including the clamped one), full repeal nets every dial back to
+EXACTLY 50.0000.
+
+**Save/load with a dozen laws in force**: `SaveLoadRoundTripDiagnostic` extended from the MVP slice's
+one enacted + one pending to twelve enacted (drawn across all three batches and every dial, not a
+repeated pair) plus two pending bills - `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip
+clean`, reflecting 36 `EconomyState` fields (unchanged - laws touch only `Country`-level state).
+
+**Full captures, pinned on a populated browser and a populated enacted list**: `UiScreenshotDriver`'s
+law pin extended from one law to eight enacted (spanning every dial) plus two pending, at both sizes
+- 87/87 captured, 0 failed, 0 text overflow, 0 containment escape, 0 canvas-text violation. Visually
+confirmed - the populated-enacted-list capture is what surfaced the sharper version of the
+navigability finding above (enacted laws scattered through an unsortable list, not grouped or
+flagged in the summary view).
+
+### Verdict on "is fifty the right number"
+
+**No - not at this browser, not without the UI fix above landing first.** This isn't a content
+saturation finding (34 more real, groundable candidates existed in the research pool when the
+marathon stopped, and probably several times that many exist for a category this well-documented
+globally) - it's the marathon's own explicit "the browser stops being navigable" condition, actually
+firing, with both named symptoms independently confirmed. Report to Elias for a ruling on the browser
+fix; 12 more laws (Crime & Justice's own real-world content is nowhere near exhausted) are ready to
+resume the moment a fix lands, using the same batch/composition-check/capture discipline this pass
+established.
