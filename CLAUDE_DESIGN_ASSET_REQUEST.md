@@ -6,10 +6,13 @@ failure, caught pointed at itself again).
 §1E/§1F CLOSED, delivered, imported (2026-08-11). §1G CLOSED — `mark_party_us_lib` delivered and
 imported (2026-08-17); its R5 hex-exchange rider and the branch-side accounting are both GATED BY
 NAME on item 10 (13 Sept), not pending on Design. §5's cabinet-portrait PoC is IMPORTED
-(2026-08-17); the batch of nine stays GATED — on OUR side, an Editor register side-by-side, not on
-anything Design owes us. §1F.1's rasterization diff is CARRIED, its blocker sharpened to a named
-one (a rasterizer whose OUTPUT is comparable, not merely a rasterizer existing) — still ours to
-close.
+(2026-08-17); ~~the batch of nine stays GATED — on OUR side, an Editor register side-by-side, not
+on anything Design owes us.~~ **§5 GATE CLEARED (2026-08-26): the Editor register side-by-side
+ran and PASSED — the painted plate belongs beside the existing register. Design may proceed with
+the batch of nine per the §5 PoC as approved (envelope and frame-owned vignette as already
+answered in §5). This verdict travels in the next send package alongside §8/§9.** §1F.1's
+rasterization diff is CARRIED, its blocker sharpened to a named one (a rasterizer whose OUTPUT is
+comparable, not merely a rasterizer existing) — still ours to close.
 ~~⚠ OPEN — NEW: §7, a request for a board — the law browser (list+detail), the densest screen in the
 game and the only major surface v2.0 never specced.~~ §7 OVERTAKEN same-day (the board arrived before
 the request was sent — see §7's own status block).

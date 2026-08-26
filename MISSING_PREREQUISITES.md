@@ -357,14 +357,19 @@ Poland; the defect is logged and should not be re-reported as a review finding.
 
 # D. Waiting on another task
 
-## 🟡 D1. Cabinet portraits — PoC DELIVERED + IMPORTED 2026-08-17; **the batch of nine GATED on the Editor register side-by-side**
+## 🟡 D1. Cabinet portraits — register side-by-side **PASSED 2026-08-26**; the batch of nine now waits on DESIGN's delivery
 
-⚠ **Progress, same day:** Design answered with a PROOF, not the batch —
+✅ **The gate cleared (2026-08-26, Elias's live Editor session):** the register side-by-side ran
+and the painted plate belongs beside the existing register — Design's own named gate for the
+batch. All three gates are now answered (envelope ACCEPTED, vignette FRAME-OWNED, register
+PASSED — recorded in the request doc's header and §5). **The verdict travels in the next send
+package alongside §8/§9; Design may proceed with the batch of nine per the approved §5 PoC.**
+This entry stays in section D as genuinely waiting-on-another-party: the nine land per the E2
+convention when they land.
+
+⚠ **Progress history (2026-08-17):** Design answered with a PROOF, not the batch —
 `portrait_cabinet_defense_katarzyna_ekelund` (512×640 @2×, opaque painted plate: a REGISTER none
-of the 16 transparent-bust portraits has ever shipped in). Imported to `Portraits/`; the two
-code-side gates are answered in the request doc §5 (envelope ACCEPTED, vignette FRAME-OWNED);
-the third — the Editor side-by-side — is the OPEN VERIFICATION GAP block's third entry, two
-shots specified, zero prep. **8 of 9 portraits wait on that verdict.**
+of the 16 transparent-bust portraits had ever shipped in). Imported to `Portraits/`.
 
 **Task:** portrait art for Defense, Foreign Affairs and Education ministers — 9 portraits, request in
 `CLAUDE_DESIGN_ASSET_REQUEST.md` §5, filenames derived from the signed names.

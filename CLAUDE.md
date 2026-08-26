@@ -8142,7 +8142,26 @@ figure differs; the comparison is structural per rule 15's measured limit). The 
 wider bar is that screen's own pre-existing layout, confirmed present in the baseline crop before
 being dismissed.
 
-### ⚠ OPEN VERIFICATION GAP (2026-08-16) — three folder-tongue behaviours have NEVER been seen
+### ✅ VERIFICATION GAP CLOSED (2026-08-26) — all three entries verified live in Elias's Editor session
+
+All three entries below ran their checklists in a live Editor session, 2026-08-26, and passed:
+
+1. **Folder tongues — VERIFIED.** The hover face lifts, the spine strip rides the edge up with
+   it, and a real mouse click lands on the deferred-painted active tab — all three
+   never-on-film behaviours seen working live.
+2. **Save/load layer 3 + F5/F9 + the saves menu — VERIFIED.** The full checklist ran: drafts
+   captured and restored across F5/F9, the game back at the saved date paused on the saved
+   country, dashboard sane, and the saves menu exercised live.
+3. **The §5 portrait register side-by-side — PASSED.** The painted plate belongs beside the
+   existing register — Design's own named gate for the batch of nine. **D1's batch of nine is
+   UNBLOCKED**: the verdict goes to Design in the next send package (recorded in the request
+   doc's header and §5), and `MISSING_PREREQUISITES.md` §D1 flips from our-side-gated to
+   waiting-on-Design's-delivery.
+
+*The original entries are kept below as the record of what was open and why — historical from
+here down.*
+
+### ~~⚠ OPEN VERIFICATION GAP (2026-08-16)~~ — three folder-tongue behaviours have NEVER been seen
 
 Recorded as OPEN, not assumed good, per rule 14: the driver has no mouse, and Editor access is
 currently unavailable, so there is **no path to close this until access returns**. What has never
