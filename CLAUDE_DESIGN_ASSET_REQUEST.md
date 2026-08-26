@@ -15,12 +15,17 @@ game and the only major surface v2.0 never specced.~~ §7 OVERTAKEN same-day (th
 the request was sent — see §7's own status block).
 ⚠ OPEN — NEW: §7.1, a playtest finding on the shipped board — at 50 laws the density reads as
 clutter in play; specifics and capture inside. A finding for Design's own iteration, not a rebuild
-request.**
-**Date:** 2026-08-25.
+request.
+⚠ OPEN — NEW (2026-08-26): §8, a board request for the calendar panel (the other surface that
+shipped without one — its FIXED data contract travels with the request), and §9, a
+specification-only ruling on the statistics graphs' line weight and treatment (no sprite
+deliverables — stated in its own header the way NO NEW SPRITES was).**
+**Date:** 2026-08-26.
 
-➡ **START AT [§7.1](#71-follow-up--the-shipped-board-at-50-laws-reads-as-clutter-in-play-2026-08-25-live-playtest).**
-Everything above it is answered, delivered, imported, or waiting on a date rather than a reply. §7.1
-is the one live item.
+➡ **START AT [§8](#8-request--the-calendar-panel-board-2026-08-26)**, then
+[§9](#9-request--statistics-graph-weight-and-treatment-2026-08-26); [§7.1](#71-follow-up--the-shipped-board-at-50-laws-reads-as-clutter-in-play-2026-08-25-live-playtest)
+remains open as a finding for Design's own iteration. Everything above these is answered,
+delivered, imported, or waiting on a date rather than a reply.
 
 <details>
 <summary>Earlier START-AT pointer, retained for the record (2026-08-10)</summary>
@@ -1763,3 +1768,145 @@ Nothing here is time-sensitive or blocking; send it or don't.
   scope creep against this one. Full addendum at §5.
 - **R5 hexes (§1G).** Still item-10-gated (13 Sept) — restated, not reopened, so it doesn't read as
   pending on Design. No action on their side until the gate opens and the party seeds land.
+
+---
+
+## 8. REQUEST — the calendar panel board (2026-08-26)
+
+**Status: OPEN — written, not sent (the E2 convention: sending is Elias's).**
+
+**Why this, why now.** The left-column calendar panel shipped 2026-08-24 code-derived, without a
+board — the only v2.0-era surface besides the law browser that skipped Design, and playtest 2's
+verdict is that it shows. The law browser's §7 taught the shape: state what exists precisely enough
+that Design iterates rather than reinvents, and carry the data contract so the board is drawn
+against what the model can actually mark.
+
+### What exists (iterate, don't reinvent)
+
+A weekday-aligned month grid — past days suffixed **" X"** in muted ink (a literal text suffix, the
+utilitarian treatment §8.3 below asks about), today carried on a rounded card with the Political
+accent wash, day numbers centered per cell; up to **four 5px dots** per day under the number, each
+tinted by its marker's own SystemArea (fiscal hue for a release day, political for a division) —
+the cap is a hard `min(count, 4)`. Below the grid, **"This Month"**: one ledger row per marker,
+measured date column ("12/31"-worst-case, the 2560 wrap lesson) then label. Above, the
+country-name-plus-year header preserved from the old dashboard. The month page flips **instantly**
+on the boundary — grid, weekday alignment and ledger regenerate with zero staleness (captured:
+`capfold_80a`/`80b`). Locale-honest throughout: the week starts on the player culture's own
+`FirstDayOfWeek` and the month name is the culture's (the captures show MÅN…SÖN and JANUARI).
+Chrome is entirely procedural (`RoundedCard`/`Rule`/`Pill`) — `ui_calendar_pad` is the only
+calendar sprite that exists anywhere, so the board MAY spec sprites; nothing constrains it to the
+procedural look.
+
+### The data contract — FIXED, travels with this request
+
+The board must not invent markers for events that aren't scheduled. The governing question, per
+source: does a PENDING instance carry a computable date, and does a RESOLVED one retain one?
+
+| Source | Future | Past | In the panel? |
+|---|---|---|---|
+| Fiscal year start | exact fixed (month, day), annually | exact | ✅ ONE merged marker — the same real date also opens the budget process and triggers the credit-rating review |
+| Publication release days (6 published stats) | exact date arithmetic, no RNG | exact | ✅ every day of the shown month checked against every stat |
+| Pending bill countdowns (all 8 types) | exact: today + DaysRemaining | n/a (resolves into a division) | ✅ one marker per pending bill |
+| Elections | exact (turn → epoch date) | no persisted log exists (the open ElectionRecord gap) | ✅ future only |
+| Resolved divisions (24 retained) | n/a | exact stored dates | ✅ past only |
+| Fired economic events | **unknowable** (probability roll) | exact date within the 6-turn fade window | ✅ past only, bounded |
+| Cabinet decisions | **probability-only, no trace** | **no date stamp ever written** | ❌ excluded, both directions |
+| Foreign-policy meetings | **probability-only, no trace** | same | ❌ excluded, both directions |
+
+### Open design questions — the board's actual subject
+
+1. **The X-mark.** The literal " X" suffix is utilitarian. Is there a period-true desk idiom — a
+   crossed-off almanac feel — that says "spent day" without a text suffix?
+2. **A marked day at grid size vs its detail in the ledger.** Dots say *that* and *whose area*;
+   the ledger says *what*. Is that split right, and does four-dots-max read as "busy" or as noise?
+3. **The month flip.** Currently instant. Worth a page-turn moment, or is instant the honest desk?
+4. **Density.** The real worst case is captured, not hypothesized: USA October 1 lands the merged
+   fiscal marker plus three annual publications on ONE day — four dots at the hard cap, one long
+   merged ledger row (`capfold_83a`). What should a saturated day look like?
+5. **One instrument or three stacked parts?** Header, grid, ledger — do they read as a single
+   almanac page or as three components sharing a column?
+
+### Constraints (real, from the shipped code)
+
+- IMGUI; ledger grammar (`LedgerRow.Cell` measured columns); the **one-scroll rule** — the panel
+  lives inside the left column's single scroll view.
+- The left column is **43.2% of the window** (0.45 of the 0.96-margin area): **≈ 691 px at
+  1600×900, ≈ 1106 px at 2560×1440**. The pinned calendar pad and speed strip beneath are separate
+  surfaces, out of this board's scope.
+- Day-cell height is measured via `CalcHeight` against real content (a 2,004-violation guard
+  lesson); the ledger date column is measured against the widest date, not a constant (the 2560
+  wrap lesson). Whatever the board draws, these stay measurements.
+- **No new probability data** — the contract table above is the complete marker universe.
+
+### ATTACHMENTS (§8) — verified on disk this pass, `..\PoliSim-captures\`
+
+- `couple2s1600_02_statistics.png` (1600×900) / `couple2s2560_02_statistics.png` (2560×1440) — the
+  panel today at both sizes: JANUARI 2029, X-marked past, today highlighted, dots on 5/12/30, the
+  five-row ledger.
+- `capfold_80a_calendar_month_end.png` / `capfold_80b_calendar_month_flip.png` (~1600×929) — the
+  month-boundary pair: January 31, then February 1 regenerated.
+- `capfold_83a_budget_pause_decisions.png` (~1600×929) — **the density case**: OKTOBER, four dots
+  under day 1 at the cap, the merged "10/1 Fiscal year starts - budget process opens; credit
+  rating reviewed" ledger row.
+
+Attach these when this is actually sent — they're the evidence, not a description of it.
+
+---
+
+## 9. REQUEST — statistics graph weight and treatment (2026-08-26)
+
+**Status: OPEN — written, not sent (E2). ⚠ SPECIFICATION ONLY — NO SPRITE DELIVERABLES EXPECTED.
+This is a visual-treatment ruling the way NO NEW SPRITES was a manifest rule: whatever is
+specified, we implement as pixel rules in our own rasterizer; no art files are being requested.**
+
+**The finding.** Playtest 2: the statistics graphs' series lines read as hairlines, at 2560
+especially. The current weight is deliberately left untouched as the evidence
+(`couple2s2560_02a_statistics_domestic_deep` — four stacked graphs, the thinness plainly visible).
+
+### The real raster machinery the ruling lands in (this shapes the answer)
+
+- **Full graphs draw into a FIXED 300×90 texture** and display via `StretchToFill` into the layout
+  rect: **≈ 810 px wide at 1600 (≈ 2.7× horizontal stretch), ≈ 1250 px at 2560 (≈ 4.2×)**; display
+  height is `clamp(7.5% of screen height, 50..90)` → **67 px at 1600, 90 px at 2560 — vertically
+  1:1 at 2560**, which is why a 2-buffer-px line is 2 device px tall there: the hairline.
+- **Sparklines build native-resolution buffers** (width/height from the rect) through the same
+  Bresenham. A thickness rule must speak to both contexts — buffer px per context, or one
+  resolution-relative rule we translate.
+- The 300×90 buffer size is our constant, not a law — the ruling MAY say "raise the buffer to
+  display resolution" and we implement that too.
+- The maths is extracted and regression-tested (`BuildSparklinePixels`, pure, hammered at **336
+  width × height × series-shape combinations**) — pixel-rule changes land under existing tests.
+
+### The ask — three roles, one ruling
+
+Line weight for the **primary history series** (currently 2 buffer px, solid), stated so all three
+roles stay differentiated, not one number:
+
+1. **History** — solid, the recorded data.
+2. **Projection** — the one-turn estimate: currently lighter alpha AND dashed (every 3rd Bresenham
+   step skipped), drawn on the most-recent page only. Must keep reading as "estimate, not
+   committed" at whatever new weight.
+3. **Threshold/reference** — NAIRU, the "comfortable" debt line: warm amber (`Caution`) with a
+   right-aligned label riding the line. Must keep reading as "reference marker, not data."
+
+### While ruling — do the existing behaviors' expressions hold at the new weight?
+
+These exist and work; the question is whether their current visual expression should move with the
+weight or stay:
+- the **direction-aware green/red** delta convention (header % per graph);
+- **release-point markers** and the **PRELIMINARY badge + lag dating** on published series;
+- **preliminary-vs-revised as frame style** — dashed 1px frame while provisional, solid once
+  revised (a second, separate channel from the projection dashing — both visible in
+  `couple2s1600_02a_statistics_domestic_deep`).
+
+### ATTACHMENTS (§9) — verified on disk this pass, `..\PoliSim-captures\`
+
+- `couple2s2560_02a_statistics_domestic_deep.png` (2560×1440) — four stacked graphs: the hairline
+  verdict's own evidence, plus the dashed next-year estimate, the amber "comfortable" threshold
+  with its riding label, and the green/red deltas.
+- `couple2s1600_02a_statistics_domestic_deep.png` (1600×900) — the As-published GDP graph:
+  PRELIMINARY badge, release-point markers, dashed revision frame, the 1yr/5yr/All pager.
+- `item5sweden_07d_politics_federalreserve.png` (1600×900) — the full-width neutral interest-rate
+  graph, a third weight context (no green/red judgment by design).
+
+Attach these when this is actually sent — they're the evidence, not a description of it.
