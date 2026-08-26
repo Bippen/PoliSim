@@ -282,10 +282,16 @@ its turn comes; nothing is dated.*
    recorded. CLAUDE.md "The fiscal seed recalibration ships" is the record; the year-1 primary
    balances now land on the real 2025 structural positions. **The other four countries'
    decomposition passes now decompose CORRECT totals** and stay unscheduled behind item 2.
-2. **The Crime & Justice couplings pass** — consumes the logged gap list (no sentencing→prison
-   edge; BorderEnforcement single-edge; no dial→budget), recorded as the couplings-pass input in
-   `CrimeJusticeCouplings.cs`'s own doc; the wanted-effects log (`LawCatalog.cs`, eight
-   axis-level gaps) stays a research archive drawn on as needed.
+2. ✅ **The Crime & Justice couplings pass — SHIPPED 2026-08-26.** The gap list consumed by four
+   terminal rulings: SentencingSeverity→PrisonPopulationRate at S=1.6 (NRC-2014-anchored parity
+   with the admissions channel — Truth in Sentencing's pane line +16 → +40/100k); the budget
+   edges LINE-RESIDENT AND FEEDING G per the ruling (real Justice/HomelandSecurity/Migration/
+   PublicServices lines, neutral-anchored, the incarceration variable cost at 1.0 GDPpc/inmate
+   completing sentencing→prison→budget); BorderEnforcement's second sim edge DECLINED with
+   reasons recorded (single-edge ruled honest). Wired-inert control 6/6 byte-identical; no-law
+   path byte-identical 6/6; decomposition measured exact; full bar green at all four sizes.
+   CLAUDE.md "The Crime & Justice couplings pass ships" is the record; the wanted-effects log
+   (`LawCatalog.cs`, eight axes) stays a research archive drawn on as needed.
 3. **The second LawCategory content pass** — un-inerts the category filter (five categories at
    0); Board 1j's category-cell retirement reverses when it ships.
 4. **The Riksbank-B gate-1 fix** — the Taylor-path output-gap distortion (the −14.5% structural

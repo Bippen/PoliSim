@@ -1467,8 +1467,11 @@ namespace PoliSim.Simulation
         /// <summary>
         /// PrisonPopulationRate mean-reverts toward a target of Country.BaselinePrisonPopulationRate,
         /// adjusted by BailReformLevel (reform reduces it), DrugPolicyLevel (stricter enforcement
-        /// raises it), and JudicialFundingLevel (more funding reduces it via faster case processing -
-        /// Round 3 item 3) - all gaps versus their shared neutral 50. Hard-clamped to [0, 1000].
+        /// raises it), JudicialFundingLevel (more funding reduces it via faster case processing -
+        /// Round 3 item 3), and SentencingSeverity (harsher sentencing raises it - THE COUPLINGS
+        /// PASS, ruled 2026-08-26: the time-served channel, NRC-2014-anchored at parity with the
+        /// drug-policy admissions channel; see the constant's own doc) - all gaps versus their
+        /// shared neutral 50. Hard-clamped to [0, 1000].
         /// </summary>
         public static void ApplyPrisonPopulationRate(Country country, float reversionSpeed = PrisonPopulationReversionSpeed)
         {
@@ -1476,7 +1479,8 @@ namespace PoliSim.Simulation
             float target = country.BaselinePrisonPopulationRate
                 - CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity * (country.BailReformLevel - NeutralPolicyDialLevel)
                 + CrimeJusticeCouplings.DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel)
-                - CrimeJusticeCouplings.JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel);
+                - CrimeJusticeCouplings.JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - NeutralPolicyDialLevel)
+                + CrimeJusticeCouplings.SentencingPrisonPopulationSensitivity * (country.SentencingSeverity - NeutralPolicyDialLevel);
 
             state.PrisonPopulationRate = Mathf.Clamp(state.PrisonPopulationRate + reversionSpeed * (target - state.PrisonPopulationRate), 0f, MaxPrisonPopulationRate);
         }

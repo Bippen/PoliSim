@@ -2818,6 +2818,7 @@ namespace PoliSim.Simulation
                 ApplyMandatorySpendingGrowth(country);
                 ApplyDemographicPensionPressure(country);
                 ApplyDemographicHealthcarePressure(country);
+                ApplyEnforcementCostPressure(country);
                 float discretionaryTotalBefore = GetSpendingLineTotal(country, mandatory: false);
                 SpendingLineChangeResult changeResult = ApplySpendingLineChanges(country, decision);
                 float discretionaryTotalAfter = GetSpendingLineTotal(country, mandatory: false);
@@ -2967,6 +2968,65 @@ namespace PoliSim.Simulation
             float dependencyGap = Mathf.Max(0f, country.State.DependencyRatio - country.BaselineDependencyRatio);
             float pressureFraction = Mathf.Clamp(PensionPressureSensitivity * dependencyGap, 0f, MaxPensionPressureFraction);
             pensionLine.Amount = ClampToSeedRange(pensionLine, pensionLine.Amount * (1f + pressureFraction));
+        }
+
+        /// <summary>
+        /// THE COUPLINGS PASS (build-order item 2, terminal rulings 2026-08-26, "line-resident,
+        /// feeds G"): enforcement costs money, and the money lands on REAL spending lines - never
+        /// an abstract Budget delta, which would invent money outside the line structure the
+        /// recalibration just made honest. Two cost targets, both NEUTRAL-ANCHORED (zero at dial
+        /// 50 / prison rate at baseline, because the status-quo enforcement apparatus is already
+        /// inside the recalibrated seed totals): the JUSTICE target = the police + judicial dial
+        /// gaps at their ruled shares of GDP, PLUS the incarceration variable cost - the prison
+        /// stock's gap above its own baseline at the ruled cost-per-inmate (the honest chain:
+        /// sentencing -&gt; prison stock, on its ~4-year half-life -&gt; budget); the BORDER target =
+        /// the border dial gap at its share. Line routing, perimeter-consistent per country:
+        /// USA Justice + HomelandSecurity (CBP/ICE's real federal line); Sweden Justice (UO4
+        /// rattsvasendet) + Migration (UO8); the four generics PublicServices for both (no finer
+        /// line exists until their decomposition passes). All lines are Discretionary, so the
+        /// cost flows into the national-accounts G term through the existing line sum - police
+        /// and prisons are government PURCHASES, and this is the ruling's point.
+        ///
+        /// STATELESS TARGET ON A STATEFUL LINE: the two Applied* trackers on Country record the
+        /// last applied dollar target, and each boundary applies only the DIFFERENCE - so the
+        /// dial cost composes with the five existing line writers (growth, pressure, player
+        /// changes) instead of overwriting them. ClampToSeedRange applies like every other line
+        /// mutation; if it binds (the USA's small federal Justice line saturates at 3x seed under
+        /// extreme SWEEPING-law stacks), the tracker still records the REQUESTED target, so the
+        /// un-achieved remainder is honestly lost to the line's own bound - bounded and explained,
+        /// never silently re-applied. Amount only, never SeedAmount, per the pressure methods'
+        /// own reconciliation rule. Runs inside ResolveSpendingForTurn (boundary-resident: dials
+        /// change only at boundaries via law composition, and the period plan idiom carries the
+        /// cost through the daily accrual automatically). Old saves carry Applied* = 0 and
+        /// self-correct at their first boundary (at neutral dials the target IS zero).
+        /// </summary>
+        private void ApplyEnforcementCostPressure(Country country)
+        {
+            float gdp = country.State.GDP;
+            float justiceTarget = gdp / 100f * (
+                    CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint * (country.PoliceFundingLevel - CrimeJusticeCouplings.NeutralDialLevel)
+                  + CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint * (country.JudicialFundingLevel - CrimeJusticeCouplings.NeutralDialLevel))
+                + gdp * CrimeJusticeCouplings.IncarcerationCostGdpPerCapitaPerInmate
+                      * (country.State.PrisonPopulationRate - country.BaselinePrisonPopulationRate) / 100000f;
+            float borderTarget = gdp / 100f * CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint
+                * (country.BorderEnforcementLevel - CrimeJusticeCouplings.NeutralDialLevel);
+
+            SpendingLine justiceLine = FindSpendingLine(country, SpendingCategory.Justice)
+                ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+            if (justiceLine != null)
+            {
+                justiceLine.Amount = ClampToSeedRange(justiceLine, justiceLine.Amount + (justiceTarget - country.AppliedJusticeEnforcementCost));
+                country.AppliedJusticeEnforcementCost = justiceTarget;
+            }
+
+            SpendingLine borderLine = FindSpendingLine(country, SpendingCategory.HomelandSecurity)
+                ?? FindSpendingLine(country, SpendingCategory.Migration)
+                ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+            if (borderLine != null)
+            {
+                borderLine.Amount = ClampToSeedRange(borderLine, borderLine.Amount + (borderTarget - country.AppliedBorderEnforcementCost));
+                country.AppliedBorderEnforcementCost = borderTarget;
+            }
         }
 
         /// <summary>Fraction of Medicare's own current Amount added per point DependencyRatio sits above its own Country.BaselineDependencyRatio, before MaxHealthcarePressureFraction caps the result.</summary>

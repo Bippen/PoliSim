@@ -12333,3 +12333,72 @@ Recorded; the window verdict stands; "equilibrium" remains unearned.
 **The ruled order's dependency note, honored:** the other four countries' decomposition passes
 now decompose CORRECT totals. Pass 2 (the couplings pass) follows on the `traj_postrecal_*`
 baselines.
+
+## The Crime & Justice couplings pass ships — build-order item 2, the gap list consumed (2026-08-26)
+
+**The input was the table's own logged gap list** (no sentencing→prison, no dial→budget,
+BorderEnforcement single-edge); terminal-interactive, force-kind per edge, four terminal rulings.
+
+**E1 — SentencingSeverity → PrisonPopulationRate, S = 1.6 (ruled at parity, band 1.0–2.0).** The
+NRC's 2014 assessment anchors it: the US 1980–2010 prison tripling was entirely policy, through
+admissions AND time served "in almost equal measure" — so the time-served channel sits at parity
+with the drug-policy admissions channel (1.6). One term in the existing lagged-stock target
+(0.15/turn reversion, ~4.3-year half-life — the honest dynamics were already built), one table
+row; the pane picked it up with zero renderer changes. **The pane's headline before/after: Truth
+in Sentencing's Incarceration line +16 → +40.0 per 100k** (its sentencing effect had reached the
+pane only through its bail delta — the gap a player saw first, closed).
+
+**E2 — dials → budget, LINE-RESIDENT AND FEEDING G (ruled — the physically honest option over
+the clean 7th-term).** Enforcement costs land on REAL spending lines (USA Justice +
+HomelandSecurity — CBP/ICE's actual federal line; Sweden UO4 rättsväsendet + UO8 Migration; the
+four generics PublicServices until their decomposition passes), flowing into the
+national-accounts G term through the existing discretionary sum — no money invented outside the
+line structure the recalibration just made honest. NEUTRAL-ANCHORED: zero at dial 50 / prison at
+baseline (the status-quo apparatus is already inside the recalibrated seed totals), which is what
+makes the no-law path byte-identical by construction. Magnitudes ruled as judgment-with-anchors,
+banded: full-swing shares Police 0.30% / Judicial 0.15% / Border 0.15% of GDP (between the USA's
+federal justice perimeter ~0.3% and Sweden's general-government ~1.6%), and the incarceration
+variable cost at **1.0 GDP-per-capita per inmate-year** (anchors: BOP FY2024 COIF $47,162 ≈ 0.5
+GDPpc; Kriminalvården ~€117k ≈ 2.2 — the real cross-country spread, midpoint stated as judgment).
+The stateless-target-on-stateful-line problem solved by two additive Country trackers
+(`AppliedJusticeEnforcementCost`/`AppliedBorderEnforcementCost` — each boundary applies the
+DIFFERENCE; old saves load 0 and self-correct). The pane gains the **Budget cost (% of GDP/yr)**
+line carrying the direct shares plus the incarceration tail — the full honest chain on the row a
+player reads: *sentencing → prison stock (lagged) → budget*.
+
+**E3 — BorderEnforcement's second edge DECLINED by ruling, reasons recorded** in the dial's own
+doc and the table header: the migration channel belongs to ImmigrationPolicyLevel (0.1/pt, the
+recorded anti-double-counting design), the single-channel scoping was itself a ruling, Angelucci
+2012's −0.4..−0.8 says the marginal effect is modest — and the dial gained a budget edge anyway.
+**Single direct edge ruled honest, not incomplete.** Also consumed: PolicyWebRenderer's
+restated-literal edge weights folded to table const refs (the drift class the extraction flagged),
+plus its new sentencing-prison and three dial→DebtToGdp edges and tooltip lines.
+
+**The bar, force-kind, post-recal era — all green:** the wired-inert control FIRST (all five new
+constants at 0 with the full plumbing live: **6 of 6 dumps byte-identical** to `pre_couplings` ≡
+`traj_postrecal_*`); then the ruled values, and **the no-law path stayed byte-identical, 6 of 6**
+— the neutral-anchor claim proven, not assumed. The measured decomposition
+(`CouplingsPassDiagnostic`, new, retained; Truth in Sentencing + Three Strikes on USA, 30 turns
+vs a same-seed control): prison target **603.0 exact** (531 + 1.6×35 + 2.0×8), the stock filling
+541.8 → 602.4 on the reversion lag; `appliedCost` decomposing exactly against live GDP (37.55 at
+t30 = 71.4/100k × ~52.5k). Composition PASS (27-law enact/repeal, ceilings reached and released,
+repeal nets 50.0000); equivalence 117/117 (the Phase-2 row drives SentencingSeverity and now
+exercises the new term); RT 12/12 with the two new fields crossing saves (additive, no
+`SaveVersion` bump); captures at ALL FOUR sizes (`coup1280/1640/1600/2560`, 64/64, all guards 0,
+0 ATTRIB via the armed folds) — the 06g pane with the prison and budget lines is on film.
+
+**Two measured properties, recorded not retuned:** (1) the applied-delta idiom composes with
+discretionary line growth — past cost applications ride the same PotentialGrowthRate path as
+every appropriated dollar, so the line's cost portion runs above the instantaneous target
+(+46% at t30: line-delta 54.7 vs applied 37.6) — bounded by ClampToSeedRange, deterministic,
+and defensible (the target floors new appropriations; it does not cap the stock); (2) **the
+sentencing package LOWERS debt-to-GDP (−1.93 pts at t30) despite its cost** — the pre-existing
+crime→BusinessConfidence→investment channel outweighs the new ~0.1%-of-GDP/yr budget edge, so
+tough-on-crime currently pays for itself in this model. A model-balance observation for a future
+pass, stated here rather than tuned away inside a coupling pass.
+
+**For pass 3 (the second law category), as the brief asks:** the line-resident enforcementCost
+template is the piece that generalizes — any future category's dials can price their regime
+through real spending lines the same way — and the prison edge deepens sentencing-adjacent
+content specifically. The catalog's own wanted-effects log (the eight axes) and its out-of-scope
+note remain the candidate map; the budget mechanism no longer constrains the choice.

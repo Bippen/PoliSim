@@ -239,17 +239,29 @@ namespace PoliSim.UI
 
             // Crime & Justice (MacroSystem.ApplyCrimeIndex/ApplyPrisonPopulationRate/
             // ApplyOrganizedCrimeIndex/ApplyCorruptionIndex/ApplyApprovalRating's DrugPolicyApprovalSensitivity).
-            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.Crime, false, 0.16f / 0.16f));
-            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.OrganizedCrime, false, 0.06f / 0.12f));
-            e.Add(new PolicyWebEdge(PolicyNodeId.SentencingSeverity, StatNodeId.Crime, false, 0.08f / 0.16f));
+            // Weights fold to CrimeJusticeCouplings const refs (the couplings pass, 2026-08-26) -
+            // the extraction left these as restated literal ratios, the one place a re-tuned
+            // sensitivity could silently drift from the declared table.
+            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.Crime, false, CrimeJusticeCouplings.PoliceFundingSensitivity / CrimeJusticeCouplings.PoliceFundingSensitivity));
+            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.OrganizedCrime, false, CrimeJusticeCouplings.PoliceFundingOrganizedCrimeSensitivity / CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity));
+            e.Add(new PolicyWebEdge(PolicyNodeId.SentencingSeverity, StatNodeId.Crime, false, CrimeJusticeCouplings.SentencingSensitivity / CrimeJusticeCouplings.PoliceFundingSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.BailReform, StatNodeId.Crime, true));
             e.Add(new PolicyWebEdge(PolicyNodeId.BailReform, StatNodeId.PrisonPopulation, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.DrugPolicy, StatNodeId.PrisonPopulation, true));
             e.Add(new PolicyWebEdge(PolicyNodeId.DrugPolicy, StatNodeId.Approval, true));
             e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.PrisonPopulation, false));
-            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.OrganizedCrime, false, 0.06f / 0.12f));
+            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.OrganizedCrime, false, CrimeJusticeCouplings.JudicialFundingOrganizedCrimeSensitivity / CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.Corruption, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.BorderEnforcement, StatNodeId.OrganizedCrime, false, 1f));
+            // The couplings pass's new edges (terminal rulings 2026-08-26): the sentencing-prison
+            // edge (weight relative to bail's own primary prison lever, table refs), and the three
+            // line-resident budget edges - enforcement cost lands on real spending lines and
+            // reaches the debt path through the fiscal engine, so DebtToGdp is the honest target
+            // node (the same node every tax edge feeds).
+            e.Add(new PolicyWebEdge(PolicyNodeId.SentencingSeverity, StatNodeId.PrisonPopulation, false, CrimeJusticeCouplings.SentencingPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
+            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.DebtToGdp, false));
+            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.DebtToGdp, false));
+            e.Add(new PolicyWebEdge(PolicyNodeId.BorderEnforcement, StatNodeId.DebtToGdp, false));
 
             // Taxes: every TaxType shares the SAME two real channels (MacroSystem.ApplyApprovalRating's
             // TaxHikeApprovalSensitivity on a this-turn hike; SimulationManager.GetTotalTaxRevenue feeding
@@ -852,10 +864,12 @@ namespace PoliSim.UI
                     lines.Add($"Current level: {country.PoliceFundingLevel:F0}/100");
                     lines.Add($"Crime Index target pull: {-CrimeJusticeCouplings.PoliceFundingSensitivity * (country.PoliceFundingLevel - neutral):+0.00;-0.00} pts");
                     lines.Add($"Organized Crime target pull: {-CrimeJusticeCouplings.PoliceFundingOrganizedCrimeSensitivity * (country.PoliceFundingLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Budget cost: {CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint * (country.PoliceFundingLevel - neutral):+0.000;-0.000} % of GDP/yr (line-resident)");
                     break;
                 case PolicyNodeId.SentencingSeverity:
                     lines.Add($"Current level: {country.SentencingSeverity:F0}/100");
                     lines.Add($"Crime Index target pull: {-CrimeJusticeCouplings.SentencingSensitivity * (country.SentencingSeverity - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Incarceration Rate target pull: {CrimeJusticeCouplings.SentencingPrisonPopulationSensitivity * (country.SentencingSeverity - neutral):+0.00;-0.00} per 100k");
                     break;
                 case PolicyNodeId.BailReform:
                     lines.Add($"Current level: {country.BailReformLevel:F0}/100");
@@ -872,10 +886,12 @@ namespace PoliSim.UI
                     lines.Add($"Incarceration Rate target pull: {-CrimeJusticeCouplings.JudicialFundingPrisonPopulationSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} per 100k");
                     lines.Add($"Organized Crime target pull: {-CrimeJusticeCouplings.JudicialFundingOrganizedCrimeSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} pts");
                     lines.Add($"Corruption target pull: {-CrimeJusticeCouplings.JudicialFundingCorruptionSensitivity * (country.JudicialFundingLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Budget cost: {CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint * (country.JudicialFundingLevel - neutral):+0.000;-0.000} % of GDP/yr (line-resident)");
                     break;
                 case PolicyNodeId.BorderEnforcement:
                     lines.Add($"Current level: {country.BorderEnforcementLevel:F0}/100");
                     lines.Add($"Organized Crime target pull: {-CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity * (country.BorderEnforcementLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Budget cost: {CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint * (country.BorderEnforcementLevel - neutral):+0.000;-0.000} % of GDP/yr (line-resident)");
                     break;
                 case PolicyNodeId.SwfContributionRate:
                     lines.Add(country.SovereignWealthFund != null

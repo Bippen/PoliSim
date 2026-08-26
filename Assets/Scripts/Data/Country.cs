@@ -506,8 +506,32 @@ namespace PoliSim.Data
         /// activity - see MacroSystem.ApplyOrganizedCrimeIndex. Deliberately scoped to this ONE channel
         /// for this pass, not a new labor-supply/immigration effect (keeping effects routed through
         /// already-proven channels, per this item's own explicit instruction).
+        ///
+        /// THE COUPLINGS PASS (terminal ruling 2026-08-26) RE-EXAMINED the single-edge status and
+        /// DECLINED a second sim edge, reasons recorded: the migration channel belongs to
+        /// ImmigrationPolicyLevel (0.1/pt, the anti-double-counting design), and the documented
+        /// deterrence elasticity is modest (Angelucci 2012: -0.4..-0.8). The dial DID gain a
+        /// budget edge (its enforcement cost lands on a real spending line - see
+        /// SimulationManager.ApplyEnforcementCostPressure) and keeps its transitive crime chain.
+        /// Single direct edge, ruled honest rather than incomplete.
         /// </summary>
         public float BorderEnforcementLevel = 50f;
+
+        /// <summary>
+        /// THE COUPLINGS PASS (2026-08-26): the last dollar amount of dial-driven enforcement cost
+        /// applied to this country's justice-routed spending line (Justice, else PublicServices) -
+        /// police + judicial dial gaps at their ruled shares plus the incarceration variable cost.
+        /// The tracker that lets a STATELESS cost target compose with the STATEFUL line writers:
+        /// each boundary applies only the difference from this. Additive save field; old saves
+        /// load 0 and self-correct at their first boundary. See
+        /// SimulationManager.ApplyEnforcementCostPressure.
+        /// </summary>
+        public float AppliedJusticeEnforcementCost = 0f;
+
+        /// <summary>The border twin of <see cref="AppliedJusticeEnforcementCost"/> - the last
+        /// applied border-enforcement cost on the border-routed line (HomelandSecurity, else
+        /// Migration, else PublicServices).</summary>
+        public float AppliedBorderEnforcementCost = 0f;
 
         /// <summary>
         /// Round 3 item 5, Part A: this country's structural "steady-state" old-age dependency ratio
