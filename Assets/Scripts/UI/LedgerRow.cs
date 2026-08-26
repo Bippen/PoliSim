@@ -418,6 +418,17 @@ namespace PoliSim.UI
             DrawCell(rect, text, source, ink, alignment);
         }
 
+        /// <summary>The NAME-cell resort ladder (wrap to two lines at full size before shrinking -
+        /// §A.9a step 2 ahead of step 4), public for the same composing-caller reason as
+        /// <see cref="Cell"/> - pass 3's floor sweep found the law browser's name cells shrinking
+        /// long statute names past MeasuredLabel's 8px floor ("Restorative Justice &amp;
+        /// Victim-Offender Mediation needs 170.8 wide in 141.8 at 8px", 1280x720), exactly the
+        /// class this ladder was built for. Always MiddleLeft, like every name cell.</summary>
+        public static void NameCell(Rect rect, string text, GUIStyle source, Color ink)
+        {
+            DrawNameCell(rect, text, source, ink);
+        }
+
         private static void DrawCell(Rect rect, string text, GUIStyle source, Color ink, TextAnchor alignment)
         {
             if (string.IsNullOrEmpty(text))

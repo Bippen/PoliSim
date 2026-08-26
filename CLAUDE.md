@@ -12402,3 +12402,128 @@ template is the piece that generalizes — any future category's dials can price
 through real spending lines the same way — and the prison edge deepens sentencing-adjacent
 content specifically. The catalog's own wanted-effects log (the eight axes) and its out-of-scope
 note remain the candidate map; the budget mechanism no longer constrains the choice.
+
+## The second law category ships — Labor Market, coexistence by ruling (2026-08-26)
+
+Pass 3 of the ruled order (build-order item 3). Derivation first, per the charter: a six-reader
+sweep at HEAD scored Labor vs Housing vs Sectors on the §1 criteria — Labor has SIX existing
+dials and the game's richest visible-stat surface; Sectors is dict-shaped (needs a LawDefinition
+VARIANT) and consequence-thin (descriptive stats, hard-isolated from the core loop — the natural
+THIRD, after a sector→core coupling pass); Housing FAILS the dial-space test (~1.5 axes, HPI has
+no policy input at all — a 4-6-new-dials pass, said not smuggled, declined). **Terminal rulings:
+Labor Market; ALL SIX LaborPolicyBill dials join the category (family and immigration laws are
+genuinely labor-market statutes); per-dial magnitude scales on the shared grid; and the
+deliberate override — the Labor tab KEEPS ITS SLIDERS ("coexistence"), the opposite of C&J's
+read-only conversion.**
+
+**The coexistence design (the override's engineering):** each labor dial splits into a
+bill-owned STATUTORY BASE (`Country.*Base`, six additive fields, −1 old-save sentinel adopted at
+`RestoreSaveState`) plus a law-owned OFFSET (pure sum of enacted labor deltas), composed by
+`RecomputeLaborDialsFromEnactedLaws` as effective = clamp(base + Σ), clamped ONCE at composition
+and never persisted into either component. Bills write base (`ApplyLaborBillEffects` rewritten;
+`GetLaborBillDirection` measures bill-vs-base), laws stack on top, and the recompute is the sole
+writer of the effective dials — the 555f4cc pure-function lesson, now with TWO writers and one
+composition. `LaborLawCompositionDiagnostic` (new, retained) proves it: stacking exact at every
+batch boundary, full repeal exact to base, **bill/law ORDER INVARIANCE** (bill-then-laws ≡
+laws-then-bill on all six dials and both bases), **repeal-to-BILL-base** exact, cross-category
+isolation (a C&J law's recompute is an exact labor no-op and vice versa), and the **Sweden
+gate** (a minimum-wage law leaves `MinimumWagePercentOfMedian` untouched where
+`!MinimumWageImplemented`, and `GetLawBillDirection` skips the term — the `country` parameter's
+first real use, via `MinimumWageDeltaIndex`). The Labor tab's sliders now show and edit the
+BASE, with the two-books note per row ("laws +N → M in effect" in the trailing column) — the
+coexistence made legible, not hidden.
+
+**The catalog: 50 Labor Market laws in five batches of ten (100 total, 50/50 by category).**
+Charters per batch, C&J discipline verbatim (CONFIRMED/DIRECTIONAL/GENRE-IDIOM citation voice,
+tier-stated deltas, approval-cost conventions): B1 the flagship dials at documented depth
+(Raise the Wage at +16 Kaitz = SWEEPING via the ×2 scale; the UK Wages Councils abolition as
+MinWage's real down direction; the Working Time Directive vs El Khomri opposed pair; the honest
+note that statutory-leave ROLLBACKS found no clean citation, twice); B2 the demographic
+rebalance (Rodzina 500+, the UK two-child limit as Family's down direction, the EU
+temporary-protection opening vs Denmark's paradigm shift); B3 multi-dial composition (the
+flexicurity package = labor's first WEAK-PROXY use — EPL has no dial, only the representable
+remainder authored; the demographic-response triple-dial); B4 the MINOR-heavy administrative
+tier, deliberately diversified AWAY from the two dials nearing ceiling (Family 92, Retraining
+94 on the running sum); B5 the close, designed to SATURATE — the all-50 composition genuinely
+reaches Retraining raw 104.0 and Family raw 101.0 (both logged by the harness's own
+saturation-evidence lines) and releases them exactly on full repeal. **The labor wanted-effects
+log** (LawCatalog class doc): unionization/collective-bargaining structure (zero code presence,
+grep-confirmed), gig/platform classification, EPL strictness, unemployment-insurance rules,
+statutory-minimum-wage INTRODUCTION (the `MinimumWageImplemented` flip is a new mechanism —
+said, not smuggled), licensing/safety/retirement-age — logged, not force-fit.
+
+**The generality finding, reported not absorbed (the §3 bar's own sentence):**
+`CrimeJusticeCouplings.AggregateLawEffects` could NOT render the new category's edges — its stat
+enum, dial switch and table are C&J-typed, and a labor law fed to it yields a silently EMPTY
+list. The declared-table architecture is PER-CATEGORY, not category-generic: `LaborCouplings`
+(new) is the second declared table — ten constants moved VERBATIM from MacroSystem (the C&J
+extraction pattern; MacroSystem and PolicyWebRenderer read the table's qualified names), ten
+edges with per-unit sensitivities (the two /100f divisors are the formulas' own per-100-Kaitz
+application, quoted), minimum-wage edges GATED on the statutory-wage fact exactly as the sim
+gates them, contested flags on the minimum-wage employment edge (CBO/Card-Krueger) and the
+overtime work-sharing edge. The pane dispatches on `law.Category` for the dial grid (real-unit
+labels: "Kaitz pts", "weeks") and the expected-effects block; the rendering loop is
+shape-identical — one new table per category, zero renderer work.
+
+**The browser returns, verified against the 1j/1i boards:** the chip row is back exactly as the
+step-down note promised (counted 1i form "All - 100 / Crime & Justice - 50 / Labor Market - 50";
+no hatched "- 0" chips render because every enum member is populated — 1i's five hatched chips
+were drawn categories that never entered the enum), and **the category filter genuinely narrows
+for the first time** — the inertness bug closed by content, exactly as LawBrowserFilter's doc
+predicted. The category cell returned at the 1i ratio share (0.19, re-derived not copied), the
+summary line dropped its "all CRIME & JUSTICE" literal, LawCategoryLabel gained "LABOR MARKET",
+per-law surfaces (row accent, ENACTED color) carry the law's own category area, and the
+tab-level area went Neutral (no single system owns a two-category screen). Stated adaptations:
+the header captions STATUTE/CATEGORY/APPROVAL (magnitude stays uncaptioned — the stepped rule is
+self-carrying); the compact row's category token right-slides beside cost (variants never
+interleave within a group). `DialMagnitudeScales` (LawCatalog) normalizes real-unit dials onto
+the shared 3/6/14/22/30 grid (MinWage ×2 — Fight-for-$15 ≈ SWEEPING, a Mindestlohn-scale +6 ≈
+MODERATE; weeks ride the grid at ×1); `LawDialSigns` grew to twelve in lockstep.
+
+**The bar — all green:** default-path BYTE-IDENTITY 6/6 (`traj_post_labor_*` ≡
+`traj_post_couplings_*`, both seeds, all three horizons — the couplings-era baselines STAND; no
+new discontinuity, by construction and now by hash). RT **12/12** with laws from BOTH categories
+crossing the save (15 C&J + 4 labor enacted through the real recomputes, 3 pending law bills,
+and the six base fields snapshotted by name). Equivalence 117/117. Composition: C&J 27-law
+re-run exact at the 100-law catalog; labor saturating run as above. Captures at ALL FOUR sizes
+(`labor1280/1640/1600/2560`, 99/99 each, 0 overflows / 0 escapes / 0 violations, ATTRIB clean
+via the armed folds). **The floor sweep earned its keep:** the first 1280×720 run recorded 22
+overflows — the returned category cell's full tokens bottoming the shrink ladder ("CRIME &
+JUSTICE needs 67.5 in 57.6 at 8px"), long statute names shrunk past the floor after the cell
+took its share back from the name, and one pre-existing trace-panel row surfaced by the richer
+pin state. Fixed on the codebase's own ladders, not absorbed: a measured 70px short-token
+threshold (`LawCategoryCellLabel` — the "APPR." idiom; above it the full token shrinks to the 1i
+spec's own dimmed-token size), `LedgerRow.NameCell` made public (wrap-to-two-lines before
+shrink, §A.9a) for both law-row name variants, and a curated trace-row name. One 1280 run then
+logged 3 "Event in buffer is already marked as handled" errors with an abnormal editor exit —
+re-run clean end-to-end; recorded as this environment's known windowed-capture flake class, not
+a regression. The 85g pin is now two-category WITH both recomputes invoked (the pinned dials
+match what real enactment produces — the C&J read-only tab photographs law-driven values for the
+first time, a stated baseline change).
+
+**Decision density re-run (same method, constants re-read at HEAD by grep):** named enactables
+**119** (13 TaxType + 6 WelfareProgramType + 100 LawCatalog) vs the 69 the first category
+produced (×1.72) and the 08-18 memo's 19 (×6.3). The automatic prompt table is UNCHANGED
+(MeetingChancePerDay 0.01, DecisionChancePerTurn 0.12, ElectionCycle 4, BillDurationDays 21 —
+all re-verified): ≈5.87/yr USA, 5.62 elsewhere. The dial-bundle row still tabulates 6 slots,
+never summed — with the annotation now reading differently per category: C&J's slot retired
+player-facing (the read-only ruling), Labor's slot COEXISTS with the law menu by design (the
+base is itself a player instrument, not a competing book).
+
+**The generalization verdict — what the third category inherits:** HELD from C&J: extend the
+enum not the dial shape; the same-class float-field path (the doc's own reservation for non-dict
+categories); the pure-function recompute idiom; the whole generic bill pipeline (introduce/
+advance/apply, saves, division records — zero touches); the magnitude grid, citation voice,
+batch charters, per-batch boundary checks, saturating close, weak-proxy rule and wanted-effects
+log; the 1j return paths, exactly as documented in place. GENERALIZED WITH CHANGES: the
+recompute anchors at PER-COUNTRY baselines (seeds/bases), not the uniform 50; the magnitude grid
+needs per-dial scales for real-unit dials; the coupling surface is one declared table PER
+category plus a pane dispatch; `LawDialSigns`/`DialMagnitudeScales` are hand-lockstep arrays
+(documented on all three declarations). DID NOT GENERALIZE: the read-only sliders ruling — it
+was a per-category ruling, and its alternative (coexistence) costs real machinery (six base
+fields, a bill rewrite, save adoption, an order-invariance proof) that the read-only path never
+needed; a third category should expect that same fork as a terminal question, with both designs
+now proven. Sectors, the standing third candidate, additionally needs its LawDefinition variant
+(dict-shaped) and a consequence surface before its laws are worth authoring.
+
+Stopped at the boundary. Pass 4 (the Riksbank-B gate-1 fix) follows and is not this pass.

@@ -98,20 +98,10 @@ namespace PoliSim.Simulation
         /// <summary>Floor on the welfare-adjusted reversion speed - UBI's penalty (see above) should never be able to stall or reverse Okun's Law's own mean-reversion, only slow it somewhat.</summary>
         private const float MinUnemploymentReversionSpeed = 0.3f;
 
-        /// <summary>
-        /// Unemployment points added per point MinimumWagePercentOfMedian sits above the country's own
-        /// BaselineMinimumWagePercentOfMedian (its real seeded starting level, not a universal
-        /// constant - the same "gap versus a country-specific anchor" idiom ComfortableDebtToGdpPercent/
-        /// BaselinePovertyRate already use, chosen so a fresh game opens at zero gap rather than an
-        /// artificial turn-1 shock, and so this doesn't double-count against NAIRU, which already
-        /// reflects each country's real structural conditions including its actual minimum wage).
-        /// Small and directionally grounded (not precisely fitted) by the CBO's 2019 estimate that a
-        /// federal $15/hr minimum wage (raising the effective Kaitz index roughly 20-30 points) would
-        /// cost a median-estimate ~1.3 million jobs against a ~160 million labor force (~0.8%) - a
-        /// modest, debated, real-world-scale effect, not the dominant driver of Unemployment the
-        /// growth gap is.
-        /// </summary>
-        internal const float MinimumWageEmploymentSensitivity = 1.5f;
+        // MinimumWageEmploymentSensitivity moved VERBATIM to LaborCouplings (pass 3's declared
+        // labor coupling table, 2026-08-26 - the same extraction CrimeJusticeCouplings already did
+        // for the C&J constants): value and doc comment carried unchanged; the formula below reads
+        // the table's qualified name so table and simulation stay one source by construction.
 
         /// <summary>
         /// This turn's Unemployment nudge from how far Country.MinimumWagePercentOfMedian has moved
@@ -128,30 +118,21 @@ namespace PoliSim.Simulation
             }
 
             float gap = country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian;
-            return MinimumWageEmploymentSensitivity * gap / 100f;
+            return LaborCouplings.MinimumWageEmploymentSensitivity * gap / 100f;
         }
 
-        /// <summary>
-        /// Unemployment points removed per point Country.OvertimeRegulationLevel sits above its
-        /// neutral 50 (added per point below) - the "work-sharing" argument behind France's 35-hour
-        /// week (stricter hour caps spread the same total work across more workers). A GENUINELY
-        /// CONTESTED real economic claim, not a settled fact - some empirical studies find the
-        /// 35-hour week didn't meaningfully reduce French unemployment as intended - so this is
-        /// deliberately small, representing one side of that debate, not a confident modeling choice.
-        /// </summary>
-        internal const float OvertimeUnemploymentSensitivity = 0.008f;
-
+        // OvertimeUnemploymentSensitivity and RetrainingUnemploymentSensitivity moved VERBATIM to
+        // LaborCouplings (pass 3's declared labor coupling table, 2026-08-26): values and doc
+        // comments carried unchanged - the contested work-sharing caveat included; the formulas
+        // below read the table's qualified names.
         internal static float GetOvertimeUnemploymentAdjustment(Country country)
         {
-            return -OvertimeUnemploymentSensitivity * (country.OvertimeRegulationLevel - NeutralPolicyDialLevel);
+            return -LaborCouplings.OvertimeUnemploymentSensitivity * (country.OvertimeRegulationLevel - NeutralPolicyDialLevel);
         }
-
-        /// <summary>Unemployment points removed per point Country.RetrainingProgramLevel sits above its neutral 50 (added per point below) - the well-established real economic rationale that retraining eases job transitions, smaller than the overtime effect since it's a more indirect mechanism.</summary>
-        internal const float RetrainingUnemploymentSensitivity = 0.006f;
 
         internal static float GetRetrainingUnemploymentAdjustment(Country country)
         {
-            return -RetrainingUnemploymentSensitivity * (country.RetrainingProgramLevel - NeutralPolicyDialLevel);
+            return -LaborCouplings.RetrainingUnemploymentSensitivity * (country.RetrainingProgramLevel - NeutralPolicyDialLevel);
         }
 
         /// <summary>
@@ -374,16 +355,9 @@ namespace PoliSim.Simulation
         private const float HousingAssistancePovertyReductionSensitivity = 3f;
         private const float ChildcareSubsidiesPovertyReductionSensitivity = 3f;
 
-        /// <summary>
-        /// Poverty-baseline points reduced per point MinimumWagePercentOfMedian sits above the
-        /// country's own BaselineMinimumWagePercentOfMedian (see GetMinimumWageUnemploymentAdjustment
-        /// for why the gap is versus a country-specific anchor, not a universal constant). Smaller
-        /// than the welfare programs' own sensitivities above - directionally grounded by the CBO's
-        /// 2019 finding that a federal $15/hr minimum wage would lift roughly as many people out of
-        /// poverty as it cost in jobs (~1.3 million each), a modest effect since a minimum wage only
-        /// reaches low-wage workers, not the whole poor population the way a direct transfer does.
-        /// </summary>
-        internal const float MinimumWagePovertyReductionSensitivity = 5f;
+        // MinimumWagePovertyReductionSensitivity moved VERBATIM to LaborCouplings (pass 3's
+        // declared labor coupling table, 2026-08-26): value and doc comment carried unchanged;
+        // the formula below reads the table's qualified name.
 
         /// <summary>
         /// PovertyRate-points-per-100%-GenerosityLevel each WelfareProgramType reduces the poverty
@@ -448,7 +422,7 @@ namespace PoliSim.Simulation
             if (country.MinimumWageImplemented)
             {
                 float minimumWageGap = country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian;
-                minimumWageReduction = MinimumWagePovertyReductionSensitivity * minimumWageGap / 100f;
+                minimumWageReduction = LaborCouplings.MinimumWagePovertyReductionSensitivity * minimumWageGap / 100f;
             }
 
             float healthSocialAffairsCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.HealthSocialAffairs);
@@ -486,8 +460,10 @@ namespace PoliSim.Simulation
         /// workforce retraining (a gap versus the shared neutral 50, the same idiom Police Funding/
         /// Sentencing Severity use). Hard-clamped to [0, 100].
         /// </summary>
-        internal const float PaidFamilyLeaveParticipationSensitivity = 0.02f;
-        internal const float RetrainingParticipationSensitivity = 0.01f;
+        // PaidFamilyLeaveParticipationSensitivity and RetrainingParticipationSensitivity moved
+        // VERBATIM to LaborCouplings (pass 3's declared labor coupling table, 2026-08-26): values
+        // carried unchanged; the doc comment above still governs the combined-ceiling audit, and
+        // the formula below reads the table's qualified names.
 
         /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points reduced per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented effect: an aging population structurally shrinks the working-age share, lowering participation even with no change in any individual's own behavior.</summary>
         internal const float DependencyRatioParticipationSensitivity = 0.02f;
@@ -532,8 +508,8 @@ namespace PoliSim.Simulation
             float dependencyGap = state.DependencyRatio - country.BaselineDependencyRatio;
             float netMigrationGap = state.NetMigrationRate - country.BaselineNetMigrationRate;
 
-            float combinedAdjustment = PaidFamilyLeaveParticipationSensitivity * paidLeaveGap
-                + RetrainingParticipationSensitivity * retrainingGap
+            float combinedAdjustment = LaborCouplings.PaidFamilyLeaveParticipationSensitivity * paidLeaveGap
+                + LaborCouplings.RetrainingParticipationSensitivity * retrainingGap
                 - DependencyRatioParticipationSensitivity * dependencyGap
                 + NetMigrationParticipationSensitivity * netMigrationGap;
             combinedAdjustment = Mathf.Clamp(combinedAdjustment, -MaxLaborForceParticipationAdjustment, MaxLaborForceParticipationAdjustment);
@@ -724,11 +700,9 @@ namespace PoliSim.Simulation
         /// decomposition where transfers do most of the work.</summary>
         private const float GiniIncomeTaxSensitivity = 0.08f;
 
-        /// <summary>Gini points removed per 100 points of MinimumWagePercentOfMedian above the
-        /// country's own anchor - a wage floor compresses the bottom of the distribution; smaller
-        /// than the transfer programs for the same only-reaches-low-wage-workers reason
-        /// MinimumWagePovertyReductionSensitivity documents.</summary>
-        private const float GiniMinimumWageSensitivity = 2f;
+        // GiniMinimumWageSensitivity moved VERBATIM to LaborCouplings (pass 3's declared labor
+        // coupling table, 2026-08-26; was private here, public there like every table constant):
+        // value and doc comment carried unchanged; the formula below reads the qualified name.
 
         /// <summary>Slower than PovertyRate's 0.15 - inequality is a structural distribution, and
         /// real national Ginis move by tenths of a point per year outside genuine upheavals.</summary>
@@ -794,7 +768,7 @@ namespace PoliSim.Simulation
             float minimumWageReduction = 0f;
             if (country.MinimumWageImplemented)
             {
-                minimumWageReduction = GiniMinimumWageSensitivity
+                minimumWageReduction = LaborCouplings.GiniMinimumWageSensitivity
                     * (country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian) / 100f;
             }
 
@@ -1138,17 +1112,9 @@ namespace PoliSim.Simulation
         /// </summary>
         private const float MaxBirthRate = 20f;
 
-        /// <summary>
-        /// Round 3 item 5, Part B: points BirthRate moves per point Country.FamilyPolicyLevel sits
-        /// away from its neutral 50 - at the slider's full extremes (0 or 100) this is +/-1.5 points,
-        /// deliberately SMALL: real-world evidence on pro-natalist policy's effect on fertility is
-        /// itself small and contested (already flagged honestly in EconomyState.BirthRate's own doc
-        /// comment when Part A was written). Feeds directly into the same BirthRate the secular-decline
-        /// drift below already updates - no separate channel, so this lever automatically flows
-        /// through the same (YearsPerTurn-scaled, capped/reverting) ApplyPopulationGrowth pipeline
-        /// every other BirthRate driver already uses.
-        /// </summary>
-        internal const float FamilyPolicyBirthRateSensitivity = 0.03f;
+        // FamilyPolicyBirthRateSensitivity moved VERBATIM to LaborCouplings (pass 3's declared
+        // labor coupling table, 2026-08-26): value and doc comment carried unchanged; the formula
+        // below reads the table's qualified name.
 
         /// <summary>Points DeathRate rises per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented mechanical effect: an aging population structurally raises the crude death rate even with no change in age-specific mortality, since a larger share of the population is simply older.</summary>
         private const float DeathRateAgingDriftSensitivity = 0.003f;
@@ -1163,21 +1129,10 @@ namespace PoliSim.Simulation
         private const float MinNetMigrationRate = -15f;
         private const float MaxNetMigrationRate = 15f;
 
-        /// <summary>
-        /// Round 3 item 5, Part B: points NetMigrationRate moves per point Country.ImmigrationPolicyLevel
-        /// sits away from its neutral 50 - at the slider's full extremes (0 or 100) this is +/-5 points,
-        /// deliberately WIDER than FamilyPolicyBirthRateSensitivity's swing: immigration policy is a
-        /// genuinely more responsive real-world lever than fertility (visa/asylum/quota changes can move
-        /// actual migration flows within a single term, unlike birth rates) - see EconomyState.
-        /// NetMigrationRate's own doc comment from Part A, which anticipated exactly this. Feeds
-        /// directly into the same NetMigrationRate the aging-drift term below already updates - no
-        /// separate channel, so this lever automatically flows through the same (YearsPerTurn-scaled)
-        /// ApplyPopulationGrowth pipeline AND the existing NetMigrationRate-gap term in
-        /// ApplyLaborForceParticipationRate's combined ceiling, rather than adding a second, parallel
-        /// immigration-to-labor-force channel - avoiding the double-counting risk this item's own
-        /// roadmap brief flagged structurally, not just by convention.
-        /// </summary>
-        internal const float ImmigrationPolicyNetMigrationSensitivity = 0.1f;
+        // ImmigrationPolicyNetMigrationSensitivity moved VERBATIM to LaborCouplings (pass 3's
+        // declared labor coupling table, 2026-08-26): value and doc comment carried unchanged -
+        // the one-variable-one-channel anti-double-counting design included; the formula below
+        // reads the table's qualified name.
 
         /// <summary>Points DependencyRatio rises per point the DeathRate-versus-BirthRate gap sits above zero (natural decrease - more deaths than births) - the single derived aging/dependency proxy's own drift mechanism, deliberately simple, not a full age-cohort/population-pyramid model. Never decreases in this pass - real developed-world aging trends are one-directional over any timescale this game's turns plausibly represent.</summary>
         private const float DependencyRatioDriftSensitivity = 0.0015f;
@@ -1229,7 +1184,7 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
 
             state.NaturalBirthRate = Mathf.Clamp(state.NaturalBirthRate - BirthRateSecularDeclineRate * sliceFraction, MinBirthRate, MaxBirthRate);
-            float familyPolicyEffect = FamilyPolicyBirthRateSensitivity * (country.FamilyPolicyLevel - 50f);
+            float familyPolicyEffect = LaborCouplings.FamilyPolicyBirthRateSensitivity * (country.FamilyPolicyLevel - 50f);
             state.BirthRate = Mathf.Clamp(state.NaturalBirthRate + familyPolicyEffect, MinBirthRate, MaxBirthRate);
 
             float birthDeathGap = state.DeathRate - state.BirthRate;
@@ -1243,7 +1198,7 @@ namespace PoliSim.Simulation
             state.NaturalNetMigrationRate = Mathf.Clamp(
                 state.NaturalNetMigrationRate + MigrationAgingDriftSensitivity * sliceFraction * dependencyGap,
                 MinNetMigrationRate, MaxNetMigrationRate);
-            float immigrationPolicyEffect = ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - 50f);
+            float immigrationPolicyEffect = LaborCouplings.ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - 50f);
             state.NetMigrationRate = Mathf.Clamp(state.NaturalNetMigrationRate + immigrationPolicyEffect, MinNetMigrationRate, MaxNetMigrationRate);
         }
 
@@ -1877,8 +1832,10 @@ namespace PoliSim.Simulation
         /// <summary>Round 3 item 3: Approval points lost per point CorruptionIndex sits above Country.BaselineCorruptionIndex (and gained per point below) - corruption scandals hurt approval, a real and well-documented political effect. Slightly smaller than CrimeApprovalSensitivity, since corruption's political salience varies more by country/culture than crime's does - a stylized judgment call, not a precisely-fitted figure.</summary>
         private const float CorruptionApprovalSensitivity = 0.15f;
 
-        /// <summary>Approval points gained per week Country.PaidFamilyLeaveWeeks sits above its own seeded BaselinePaidFamilyLeaveWeeks (and lost per week below) - a small, real political effect (paid-leave policy tends to be popular).</summary>
-        internal const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
+        // PaidFamilyLeaveApprovalSensitivity moved VERBATIM to LaborCouplings (pass 3's declared
+        // labor coupling table, 2026-08-26): value and doc comment carried unchanged; both
+        // reference sites below (the approval delta and its attribution ledger twin) read the
+        // table's qualified name.
 
         /// <summary>Q1 (Master Sequence II step 1, rulings R-Q1a/b/c, 2026-08-17): approval-delta
         /// points per turn per Gini point ABOVE the country's own BaselineGini - the GAP form,
@@ -2056,7 +2013,7 @@ namespace PoliSim.Simulation
             // effect of the gap versus the country's own seeded baseline (the same idiom
             // welfareApprovalEffect/GetMinimumWageUnemploymentAdjustment already use), not a one-time
             // shock - paid-leave policy tends to be popular, a small, real political effect.
-            float paidLeaveApprovalEffect = PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
+            float paidLeaveApprovalEffect = LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
 
             // Drug policy (see "Deeper Crime & Justice" in CLAUDE.md) - stricter enforcement gives a
             // small "tough on crime" approval boost, the same modest political framing
@@ -2141,7 +2098,7 @@ namespace PoliSim.Simulation
             ledger.TaxHikePenalty = -taxHikePenalty;
             ledger.SpendingEffect = spendingEffect;
             ledger.WelfareEffect = GetWelfareApprovalEffect(country);
-            ledger.PaidLeaveEffect = PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
+            ledger.PaidLeaveEffect = LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
             ledger.DrugPolicyEffect = CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
             ledger.GiniEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
             ledger.ClampLoss = (state.ApprovalRating - approvalBeforeFormula) - ledger.TermSum;

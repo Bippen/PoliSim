@@ -403,16 +403,20 @@ namespace PoliSim.Simulation
         /// </summary>
         public static float GetLaborBillDirection(Country country, LaborPolicyBill bill)
         {
+            // Pass 3 (coexistence ruling 2026-08-26): a labor bill's targets are STATUTORY BASE
+            // targets now, so the direction measures the statutory change requested - bill minus
+            // the country's *Base fields, not minus the law-composed effective dials (a bill that
+            // merely restates the current base while laws offset the dial is correctly Neutral).
             float direction = 0f;
             if (country.MinimumWageImplemented)
             {
-                direction += bill.MinimumWage - country.MinimumWagePercentOfMedian;
+                direction += bill.MinimumWage - country.MinimumWagePercentOfMedianBase;
             }
-            direction += bill.PaidFamilyLeaveWeeks - country.PaidFamilyLeaveWeeks;
-            direction += bill.OvertimeRegulation - country.OvertimeRegulationLevel;
-            direction += bill.RetrainingProgram - country.RetrainingProgramLevel;
-            direction += bill.FamilyPolicy - country.FamilyPolicyLevel;
-            direction += bill.ImmigrationPolicy - country.ImmigrationPolicyLevel;
+            direction += bill.PaidFamilyLeaveWeeks - country.PaidFamilyLeaveWeeksBase;
+            direction += bill.OvertimeRegulation - country.OvertimeRegulationBase;
+            direction += bill.RetrainingProgram - country.RetrainingProgramBase;
+            direction += bill.FamilyPolicy - country.FamilyPolicyBase;
+            direction += bill.ImmigrationPolicy - country.ImmigrationPolicyBase;
             return direction;
         }
 
@@ -475,7 +479,22 @@ namespace PoliSim.Simulation
         /// positive, harsher/stricter-coded negative - the same convention this method's own class
         /// doc states), read alongside LawDefinition.DialDeltas so the two arrays stay the same
         /// length by construction rather than by two hand-written lists staying in sync.</summary>
-        private static readonly float[] LawDialSigns = { 1f, -1f, 1f, -1f, 1f, -1f };
+        private static readonly float[] LawDialSigns =
+        {
+            // The Crime & Justice six (GetCrimeJusticeBillDirection's own convention).
+            1f, -1f, 1f, -1f, 1f, -1f,
+            // The labor six (pass 3, 2026-08-26): ALL positive - GetLaborBillDirection's own
+            // all-positive coding ("more support/intervention = positive"), applied per delta:
+            // minimum wage, paid leave, overtime regulation, retraining, family policy,
+            // immigration openness.
+            1f, 1f, 1f, 1f, 1f, 1f
+        };
+
+        /// <summary>DialDeltas index of MinimumWageDelta (the first labor field) - the one delta
+        /// whose direction term must be SKIPPED for a country with no statutory minimum wage,
+        /// exactly as GetLaborBillDirection skips the bill's own MinimumWage term. Index-locked to
+        /// LawDefinition.DialDeltas' documented order.</summary>
+        private const int MinimumWageDeltaIndex = 6;
 
         public static float GetLawBillDirection(Country country, LawBill bill)
         {
@@ -490,6 +509,15 @@ namespace PoliSim.Simulation
             float direction = 0f;
             for (int i = 0; i < deltas.Length; i++)
             {
+                // Pass 3 (2026-08-26): a minimum-wage delta is inert for a country with no
+                // statutory minimum (Sweden/Italy - the recompute's own ApplyMinimumWageChange
+                // no-op), so Parliament must not lean on it either - the `country` parameter,
+                // unused since this method shipped, earns its keep.
+                if (i == MinimumWageDeltaIndex && !country.MinimumWageImplemented)
+                {
+                    continue;
+                }
+
                 direction += sign * LawDialSigns[i] * deltas[i];
             }
 

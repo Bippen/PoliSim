@@ -338,20 +338,48 @@ namespace PoliSim.EditorTools
             // unrepresented mechanism, not just a clean single-effect one), and one each from the
             // newly-touched BorderEnforcement (National Guard deployment) and BailReform (the
             // Pretrial Services Agency's dual-dial shape) growth.
+            // Pass 3 (2026-08-26): laws from BOTH categories cross the save - the pass's own bar
+            // names this explicitly. Four labor laws drawn across batches 1/2/3/5, including the
+            // multi-dial flexicurity package (weak-proxy shape) and the dual-dial skills levy, so
+            // the round trip proves the twelve-field DialDeltas shape and the two-book labor
+            // state, not just C&J content a second time.
             string[] lawsToEnact =
             {
                 "truth_in_sentencing_act", "border_security_act", "community_policing_initiative",
                 "cash_bail_abolition_act", "drug_decriminalization_act", "public_defender_funding_act",
                 "body_worn_camera_program", "court_backlog_reduction_program", "frontex_border_cooperation_agreement",
                 "restorative_justice_program", "mental_health_diversion_courts", "human_trafficking_task_force",
-                "antimafia_asset_confiscation_law", "national_guard_border_deployment", "pretrial_services_agency_establishment"
+                "antimafia_asset_confiscation_law", "national_guard_border_deployment", "pretrial_services_agency_establishment",
+                "raise_the_wage_act", "immigration_restriction_act", "flexicurity_package_act",
+                "immigration_skills_levy_act"
             };
             foreach (string lawId in lawsToEnact)
             {
                 playerCountry.EnactedLaws.Add(new EnactedLaw { LawId = lawId, EnactedOn = sim.CurrentDate });
             }
+
+            // Pass 3: run both category recomputes after the direct adds (reflection, the
+            // LaborLawCompositionDiagnostic/UiScreenshotDriver idiom) so the SAVED state is the
+            // internally consistent one real enactment produces - labor dials genuinely offset
+            // from their bases across the save, C&J dials law-driven, instead of an enacted list
+            // whose dials never moved.
+            foreach (string recompute in new[] { "RecomputeCrimeJusticeDialsFromEnactedLaws", "RecomputeLaborDialsFromEnactedLaws" })
+            {
+                MethodInfo recomputeMethod = typeof(SimulationManager).GetMethod(recompute, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (recomputeMethod == null)
+                {
+                    Debug.LogError($"RT: SimulationManager.{recompute} not found by reflection - the enacted-law coverage state is INCONSISTENT, not clean.");
+                }
+                else
+                {
+                    recomputeMethod.Invoke(sim, new object[] { playerCountry });
+                }
+            }
+
             sim.IntroduceLawBill(player, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
             sim.IntroduceLawBill(player, new LawBill { LawId = "sanctuary_city_policy", IsRepeal = false });
+            // Pass 3: a labor-category law bill pending alongside the two C&J ones.
+            sim.IntroduceLawBill(player, new LawBill { LawId = "parental_quota_act", IsRepeal = false });
 
             int playerIndex = world.Countries.FindIndex(c => c.Id == player);
             Country neighbour = world.Countries[(playerIndex + 1) % world.Countries.Count];
@@ -405,6 +433,15 @@ namespace PoliSim.EditorTools
                 // mirrors the existing per-bill-kind pending-days lines below for the countdown side.
                 snap[$"{p}.EnactedLaws.Count"] = country.EnactedLaws.Count;
                 snap[$"{p}.Pending.LawBillCount"] = sim.GetPendingLawBills(country.Id).Count;
+                // Pass 3 (coexistence): the six statutory-base fields cross the save alongside the
+                // effective dials - a dropped base would silently re-anchor every labor law's
+                // offset after a load, so it fails HERE by name instead of surfacing as drift.
+                snap[$"{p}.Labor.MinimumWageBase"] = country.MinimumWagePercentOfMedianBase;
+                snap[$"{p}.Labor.PaidLeaveBase"] = country.PaidFamilyLeaveWeeksBase;
+                snap[$"{p}.Labor.OvertimeBase"] = country.OvertimeRegulationBase;
+                snap[$"{p}.Labor.RetrainingBase"] = country.RetrainingProgramBase;
+                snap[$"{p}.Labor.FamilyBase"] = country.FamilyPolicyBase;
+                snap[$"{p}.Labor.ImmigrationBase"] = country.ImmigrationPolicyBase;
                 snap[$"{p}.Infrastructure.Count"] = country.InfrastructureAssets.Count;
                 snap[$"{p}.SpendingLines.Count"] = country.SpendingLines.Count;
                 snap[$"{p}.TradePartners.Count"] = country.TradePartners.Count;

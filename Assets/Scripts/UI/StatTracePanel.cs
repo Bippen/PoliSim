@@ -287,7 +287,13 @@ namespace PoliSim.UI
             var rows = new List<TraceRow>
             {
                 new TraceRow { Header = true, Name = "Consumer confidence — this period's single book" },
-                new TraceRow { Name = "Policy base (healthcare/UBI accumulation)", Figure = $"{baseValue:F3}" },
+                // Pass-3 floor sweep (2026-08-26): curated shorter name - the old
+                // "(healthcare/UBI accumulation)" parenthetical bottomed out the name ladder at
+                // the 1280x720 floor ("needs 152.8 wide in 145.1 at 8px" - the single-line trace
+                // row height leaves the wrap step no room, so the shrink floor was the only
+                // resort). The accumulation mechanism stays documented at the term's source; the
+                // row names the term, the figure carries the datum.
+                new TraceRow { Name = "Policy base (healthcare/UBI)", Figure = $"{baseValue:F3}" },
                 new TraceRow
                 {
                     Name = "Wage-sentiment factor (period stance)",

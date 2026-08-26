@@ -222,10 +222,10 @@ namespace PoliSim.UI
         {
             var e = new List<PolicyWebEdge>();
 
-            // Labor (MacroSystem.GetMinimumWageUnemploymentAdjustment/GetOvertimeUnemploymentAdjustment/
-            // GetRetrainingUnemploymentAdjustment, ApplyPovertyRate's MinimumWagePovertyReductionSensitivity,
-            // ApplyLaborForceParticipationRate's combined-ceiling terms, ApplyApprovalRating's
-            // PaidFamilyLeaveApprovalSensitivity).
+            // Labor - the sensitivities live in LaborCouplings (pass 3's declared labor coupling
+            // table, 2026-08-26; formerly MacroSystem's scattered constants, moved verbatim the
+            // same way the C&J constants moved to CrimeJusticeCouplings): the Get*Adjustment
+            // helpers stay on MacroSystem, the constants are the table's.
             e.Add(new PolicyWebEdge(PolicyNodeId.MinimumWage, StatNodeId.Unemployment, true));
             e.Add(new PolicyWebEdge(PolicyNodeId.MinimumWage, StatNodeId.Poverty, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.PaidFamilyLeave, StatNodeId.Lfpr, true));
@@ -829,12 +829,12 @@ namespace PoliSim.UI
                     }
                     lines.Add($"Current level: {country.MinimumWagePercentOfMedian:F0}% of median wage");
                     lines.Add($"Unemployment this year: {MacroSystem.GetMinimumWageUnemploymentAdjustment(country):+0.000;-0.000} pts");
-                    lines.Add($"Poverty Rate pull: {-MacroSystem.MinimumWagePovertyReductionSensitivity * (country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian) / 100f:+0.00;-0.00} pts");
+                    lines.Add($"Poverty Rate pull: {-LaborCouplings.MinimumWagePovertyReductionSensitivity * (country.MinimumWagePercentOfMedian - country.BaselineMinimumWagePercentOfMedian) / 100f:+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.PaidFamilyLeave:
                     lines.Add($"Current level: {country.PaidFamilyLeaveWeeks:F0} weeks (baseline {country.BaselinePaidFamilyLeaveWeeks:F0})");
-                    lines.Add($"LFPR pull (before combined ceiling): {MacroSystem.PaidFamilyLeaveParticipationSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks):+0.00;-0.00} pts");
-                    lines.Add($"Approval pull: {MacroSystem.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks):+0.00;-0.00} pts");
+                    lines.Add($"LFPR pull (before combined ceiling): {LaborCouplings.PaidFamilyLeaveParticipationSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks):+0.00;-0.00} pts");
+                    lines.Add($"Approval pull: {LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.OvertimeRegulation:
                     lines.Add($"Current level: {country.OvertimeRegulationLevel:F0}/100");
@@ -843,15 +843,15 @@ namespace PoliSim.UI
                 case PolicyNodeId.RetrainingProgram:
                     lines.Add($"Current level: {country.RetrainingProgramLevel:F0}/100");
                     lines.Add($"Unemployment this year: {MacroSystem.GetRetrainingUnemploymentAdjustment(country):+0.000;-0.000} pts");
-                    lines.Add($"LFPR pull (before combined ceiling): {MacroSystem.RetrainingParticipationSensitivity * (country.RetrainingProgramLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"LFPR pull (before combined ceiling): {LaborCouplings.RetrainingParticipationSensitivity * (country.RetrainingProgramLevel - neutral):+0.00;-0.00} pts");
                     break;
                 case PolicyNodeId.FamilyPolicy:
                     lines.Add($"Current level: {country.FamilyPolicyLevel:F0}/100");
-                    lines.Add($"BirthRate offset: {MacroSystem.FamilyPolicyBirthRateSensitivity * (country.FamilyPolicyLevel - neutral):+0.00;-0.00} per 1,000/yr");
+                    lines.Add($"BirthRate offset: {LaborCouplings.FamilyPolicyBirthRateSensitivity * (country.FamilyPolicyLevel - neutral):+0.00;-0.00} per 1,000/yr");
                     break;
                 case PolicyNodeId.ImmigrationPolicy:
                     lines.Add($"Current level: {country.ImmigrationPolicyLevel:F0}/100");
-                    lines.Add($"NetMigrationRate offset: {MacroSystem.ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - neutral):+0.00;-0.00} per 1,000/yr");
+                    lines.Add($"NetMigrationRate offset: {LaborCouplings.ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - neutral):+0.00;-0.00} per 1,000/yr");
                     lines.Add($"LFPR pull (before combined ceiling): {MacroSystem.NetMigrationParticipationSensitivity * (country.State.NetMigrationRate - country.BaselineNetMigrationRate):+0.00;-0.00} pts");
                     break;
                 // Item 6 (2026-08-25): the eleven crime-and-justice sensitivities below now read

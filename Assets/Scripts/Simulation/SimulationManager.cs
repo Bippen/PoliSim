@@ -1125,21 +1125,48 @@ namespace PoliSim.Simulation
             _pendingLaborBillByCountry.Remove(countryId);
         }
 
-        /// <summary>The Labor Market bill's apply delegate - reuses the existing ApplyMinimumWageChange/ApplyLaborPolicyChanges/ApplyDemographicPolicyChanges (private, clamp-owning) via a throwaway PolicyDecision, the same reuse pattern ApplyBudgetBillSpendingAndSwf already established.</summary>
+        /// <summary>The Labor Market bill's apply delegate - REWRITTEN for the coexistence ruling
+        /// (pass 3, 2026-08-26, "keeps sliders"): a passed bill now sets the six STATUTORY BASE
+        /// fields (absolute targets, the same clamp bounds the old direct path applied - the
+        /// bill's own book), then recomposes the effective dials through
+        /// RecomputeLaborDialsFromEnactedLaws so enacted labor laws' delta offsets (the other
+        /// book) stack on top instead of being stomped by the bill - and vice versa. With no labor
+        /// laws enacted the recompute writes exactly the clamped bill values, identical to the old
+        /// direct path. The -1 "no change" sentinel discipline and the no-statutory-minimum-wage
+        /// no-op (Sweden/Italy) both carry over from the appliers this used to call directly.</summary>
         private void ApplyLaborBillEffects(Country country, LaborPolicyBill bill)
         {
-            var decision = new PolicyDecision
+            if (country.MinimumWageImplemented && bill.MinimumWage >= 0f)
             {
-                MinimumWageOverride = bill.MinimumWage,
-                PaidFamilyLeaveWeeksOverride = bill.PaidFamilyLeaveWeeks,
-                OvertimeRegulationOverride = bill.OvertimeRegulation,
-                RetrainingProgramOverride = bill.RetrainingProgram,
-                FamilyPolicyOverride = bill.FamilyPolicy,
-                ImmigrationPolicyOverride = bill.ImmigrationPolicy
-            };
-            ApplyMinimumWageChange(country, decision);
-            ApplyLaborPolicyChanges(country, decision);
-            ApplyDemographicPolicyChanges(country, decision);
+                country.MinimumWagePercentOfMedianBase = Mathf.Clamp(bill.MinimumWage, MinMinimumWagePercent, MaxMinimumWagePercent);
+            }
+
+            if (bill.PaidFamilyLeaveWeeks >= 0f)
+            {
+                country.PaidFamilyLeaveWeeksBase = Mathf.Clamp(bill.PaidFamilyLeaveWeeks, MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks);
+            }
+
+            if (bill.OvertimeRegulation >= 0f)
+            {
+                country.OvertimeRegulationBase = Mathf.Clamp(bill.OvertimeRegulation, MinLaborDialLevel, MaxLaborDialLevel);
+            }
+
+            if (bill.RetrainingProgram >= 0f)
+            {
+                country.RetrainingProgramBase = Mathf.Clamp(bill.RetrainingProgram, MinLaborDialLevel, MaxLaborDialLevel);
+            }
+
+            if (bill.FamilyPolicy >= 0f)
+            {
+                country.FamilyPolicyBase = Mathf.Clamp(bill.FamilyPolicy, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+
+            if (bill.ImmigrationPolicy >= 0f)
+            {
+                country.ImmigrationPolicyBase = Mathf.Clamp(bill.ImmigrationPolicy, MinPolicyDialLevel, MaxPolicyDialLevel);
+            }
+
+            RecomputeLaborDialsFromEnactedLaws(country);
         }
 
         /// <summary>The pending standalone Crime &amp; Justice bill for this country, or null if none is currently before Parliament.</summary>
@@ -1316,7 +1343,12 @@ namespace PoliSim.Simulation
                 country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f);
             }
 
+            // Both categories' recomputes run unconditionally (pass 3): each is idempotent and a
+            // law's foreign-category deltas are 0f defaults, so the wrong-category recompute is an
+            // exact no-op - cheaper to prove than a category dispatch that could silently skip a
+            // mixed future law.
             RecomputeCrimeJusticeDialsFromEnactedLaws(country);
+            RecomputeLaborDialsFromEnactedLaws(country);
         }
 
         /// <summary>
@@ -1384,6 +1416,63 @@ namespace PoliSim.Simulation
             };
             ApplyCrimePolicyChanges(country, recomputed);
             ApplyCrimeJusticeDeeperChanges(country, recomputed);
+        }
+
+        /// <summary>
+        /// THE LABOR RECOMPUTE (pass 3, coexistence ruling 2026-08-26): the labor sibling of
+        /// RecomputeCrimeJusticeDialsFromEnactedLaws, generalized in exactly two ways (the
+        /// pass-3 generalization verdict records both): (1) PER-COUNTRY BASELINES - each
+        /// accumulator starts at the country's own bill-owned STATUTORY BASE field
+        /// (Country.*Base: Kaitz points, weeks, or dial points), not the uniform 50, because two
+        /// labor dials are real-unit dials with per-country seeds and, under coexistence, the
+        /// base itself is player-legislated; (2) TWO WRITERS, ONE COMPOSITION - LaborPolicyBill
+        /// sets base (ApplyLaborBillEffects), enacted laws contribute a pure delta sum on top,
+        /// and this method is the ONLY writer of the effective dials, clamping ONCE at
+        /// composition (the 555f4cc lesson restated: no clamped state ever persists into either
+        /// component, so any history of bills, enactments and repeals in any order lands exactly
+        /// where a fresh recomputation says - and full repeal lands exactly on base). Funnels
+        /// through the existing clamp-owning appliers via a throwaway PolicyDecision;
+        /// ApplyMinimumWageChange's own !MinimumWageImplemented no-op keeps Sweden/Italy's
+        /// minimum-wage law deltas honestly inert. A stale EnactedLaws entry is skipped (the
+        /// GetById null contract).
+        /// </summary>
+        private void RecomputeLaborDialsFromEnactedLaws(Country country)
+        {
+            float minimumWage = country.MinimumWagePercentOfMedianBase;
+            float paidLeave = country.PaidFamilyLeaveWeeksBase;
+            float overtime = country.OvertimeRegulationBase;
+            float retraining = country.RetrainingProgramBase;
+            float family = country.FamilyPolicyBase;
+            float immigration = country.ImmigrationPolicyBase;
+
+            foreach (EnactedLaw enacted in country.EnactedLaws)
+            {
+                LawDefinition law = LawCatalog.GetById(enacted.LawId);
+                if (law == null)
+                {
+                    continue;
+                }
+
+                minimumWage += law.MinimumWageDelta;
+                paidLeave += law.PaidFamilyLeaveWeeksDelta;
+                overtime += law.OvertimeRegulationDelta;
+                retraining += law.RetrainingProgramDelta;
+                family += law.FamilyPolicyDelta;
+                immigration += law.ImmigrationPolicyDelta;
+            }
+
+            var recomputed = new PolicyDecision
+            {
+                MinimumWageOverride = Mathf.Clamp(minimumWage, MinMinimumWagePercent, MaxMinimumWagePercent),
+                PaidFamilyLeaveWeeksOverride = Mathf.Clamp(paidLeave, MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks),
+                OvertimeRegulationOverride = Mathf.Clamp(overtime, MinLaborDialLevel, MaxLaborDialLevel),
+                RetrainingProgramOverride = Mathf.Clamp(retraining, MinLaborDialLevel, MaxLaborDialLevel),
+                FamilyPolicyOverride = Mathf.Clamp(family, MinPolicyDialLevel, MaxPolicyDialLevel),
+                ImmigrationPolicyOverride = Mathf.Clamp(immigration, MinPolicyDialLevel, MaxPolicyDialLevel)
+            };
+            ApplyMinimumWageChange(country, recomputed);
+            ApplyLaborPolicyChanges(country, recomputed);
+            ApplyDemographicPolicyChanges(country, recomputed);
         }
 
         /// <summary>See ApplyLaborBillEffects' own doc comment - identical pattern, reuses ApplyCrimePolicyChanges/ApplyCrimeJusticeDeeperChanges.</summary>
@@ -1722,6 +1811,21 @@ namespace PoliSim.Simulation
             SetWorld(world);
             CurrentTurn = currentTurn;
             CurrentDate = currentDate;
+
+            // OLD-SAVE BASE ADOPTION (pass 3, coexistence ruling 2026-08-26): a save written
+            // before the statutory-base fields existed restores them at their -1 sentinel; adopt
+            // the saved dial value as the base, which is exactly right because no pre-pass-3 save
+            // can hold an enacted labor law (effective == base there by construction). A -1 never
+            // survives into a post-pass-3 save.
+            foreach (Country restored in world.Countries)
+            {
+                if (restored.MinimumWagePercentOfMedianBase < 0f) { restored.MinimumWagePercentOfMedianBase = restored.MinimumWagePercentOfMedian; }
+                if (restored.PaidFamilyLeaveWeeksBase < 0f) { restored.PaidFamilyLeaveWeeksBase = restored.PaidFamilyLeaveWeeks; }
+                if (restored.OvertimeRegulationBase < 0f) { restored.OvertimeRegulationBase = restored.OvertimeRegulationLevel; }
+                if (restored.RetrainingProgramBase < 0f) { restored.RetrainingProgramBase = restored.RetrainingProgramLevel; }
+                if (restored.FamilyPolicyBase < 0f) { restored.FamilyPolicyBase = restored.FamilyPolicyLevel; }
+                if (restored.ImmigrationPolicyBase < 0f) { restored.ImmigrationPolicyBase = restored.ImmigrationPolicyLevel; }
+            }
 
             _fiscalPeriods.Clear();
             _pendingBudgetProcessByCountry.Clear();

@@ -415,6 +415,22 @@ namespace PoliSim.Data
             italy.PaidFamilyLeaveWeeks = 22f; italy.BaselinePaidFamilyLeaveWeeks = 22f;
             poland.PaidFamilyLeaveWeeks = 20f; poland.BaselinePaidFamilyLeaveWeeks = 20f;
 
+            // THE STATUTORY BASE SYNC (pass 3, coexistence ruling 2026-08-26): every labor dial's
+            // bill-owned base opens EQUAL to the dial itself - zero law offset at seed, so a fresh
+            // world composes effective = clamp(base + 0) = exactly the values seeded above, and
+            // the no-law trajectory is byte-identical by construction. One loop rather than
+            // six-by-six assignments so a future seed change up there cannot silently diverge
+            // from its base.
+            foreach (Country laborBaseCountry in new[] { usa, sweden, germany, france, italy, poland })
+            {
+                laborBaseCountry.MinimumWagePercentOfMedianBase = laborBaseCountry.MinimumWagePercentOfMedian;
+                laborBaseCountry.PaidFamilyLeaveWeeksBase = laborBaseCountry.PaidFamilyLeaveWeeks;
+                laborBaseCountry.OvertimeRegulationBase = laborBaseCountry.OvertimeRegulationLevel;
+                laborBaseCountry.RetrainingProgramBase = laborBaseCountry.RetrainingProgramLevel;
+                laborBaseCountry.FamilyPolicyBase = laborBaseCountry.FamilyPolicyLevel;
+                laborBaseCountry.ImmigrationPolicyBase = laborBaseCountry.ImmigrationPolicyLevel;
+            }
+
             // Deeper Crime & Justice (Round 2 item 4) - BaselinePrisonPopulationRate is real,
             // per-100,000 incarceration-rate data from the World Prison Brief (confirmed via web
             // search): USA 531 (highest among developed nations), Germany 72, France 111. Sweden (60)

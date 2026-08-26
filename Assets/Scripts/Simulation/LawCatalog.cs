@@ -5,8 +5,9 @@ namespace PoliSim.Simulation
 {
     /// <summary>
     /// The static catalog of every authored law. Started as the MVP slice's proof-of-architecture
-    /// four (2026-08-24); now a content marathon target of 50 in one category (Crime &amp; Justice),
-    /// authored in batches of ~10, real-world-grounded where a real policy exists, honestly labeled
+    /// four (2026-08-24); 50 Crime &amp; Justice laws by the first content marathon (2026-08-25), and
+    /// a second marathon category - Labor Market - opened by pass 3 (2026-08-26). Authored in
+    /// batches of ~10, real-world-grounded where a real policy exists, honestly labeled
     /// where it doesn't. Plain hardcoded data with no logic tying it to how it's consumed - the same
     /// "swappable later, e.g. for AI-generated content" idiom EventSystem.EventPool/
     /// FederalReserveSystem.CandidatePool/CabinetSystem's DecisionPool already establish for this
@@ -20,6 +21,15 @@ namespace PoliSim.Simulation
     /// codebase's own ~30 magnitude convention already sets - full decriminalization, full bail
     /// abolition, and similarly total reorientations only). A law's own doc comment states which
     /// tier each of its deltas sits in and why, not just the number.</para>
+    ///
+    /// <para><b>Per-dial magnitude scales (pass 3, the Labor Market category, ruled 2026-08-26)</b>:
+    /// the same four-tier grid applies to every category, but two labor dials speak real units -
+    /// MinimumWageDelta in Kaitz points, PaidFamilyLeaveWeeksDelta in weeks - so the tier
+    /// comparison normalizes each delta by <see cref="DialMagnitudeScales"/> first (MinimumWage x2:
+    /// a ~+6-Kaitz uprating like Germany's EUR 12 Mindestlohn step reads MODERATE, the ~+16-Kaitz
+    /// Fight-for-$15 doubling reads SWEEPING; PaidFamilyLeave x1: weeks sit the grid naturally - a
+    /// 12-week FMLA-scale mandate is MODERATE, a +26-week Nordic-scale build-out is SWEEPING; all
+    /// 0-100 dial-point deltas x1). Band labels state units per dial where they differ.</para>
     ///
     /// <para><b>Real-world grounding, labeled per law</b>: CONFIRMED (a specific, well-documented
     /// real policy/law/program), DIRECTIONAL (a real trend or debate, not tied to one documented
@@ -75,6 +85,34 @@ namespace PoliSim.Simulation
     /// control, victim compensation funds as their own regime, wrongful-conviction compensation,
     /// welfare-adjacent reentry/housing-first programs (a genuine cross-category tension - reentry
     /// support is arguably as much WelfareProgramType's territory as Crime &amp; Justice's).</para>
+    ///
+    /// <para><b>The labor wanted-effects log (pass 3, the Labor Market marathon, 2026-08-26)</b> -
+    /// real labor-policy ideas researched for this category whose actual effect does NOT fit the
+    /// six labor dials, kept per the same instruction as the log above:
+    /// <list type="bullet">
+    /// <item>Union/collective-bargaining structure (the Wagner Act, Taft-Hartley/right-to-work,
+    /// sectoral bargaining extension, works councils/codetermination - Germany's Mitbestimmung) -
+    /// no unionization/coverage axis exists anywhere in the model (grep-confirmed zero fields);
+    /// a wage or overtime proxy would be dishonest for laws whose core is WHO bargains, so none
+    /// is authored on a proxy alone.</item>
+    /// <item>Gig/platform worker classification (California AB5, the EU Platform Work Directive) -
+    /// a worker-classification axis; classification changes WHOSE work the standards cover, not
+    /// any standard's level.</item>
+    /// <item>Employment-protection legislation strictness (dismissal rules - Italy's Article 18
+    /// and its Jobs Act rewrite, Spain's temporary-contract dualism) - an EPL axis distinct from
+    /// hours regulation; OvertimeRegulationLevel covers working-TIME rules only.</item>
+    /// <item>Unemployment-insurance generosity/duration (Hartz IV/Buergergeld, US pandemic UI
+    /// extensions) - benefits are the non-player automatic stabilizer
+    /// (Country.BenefitRatePerUnemployed), not a dial; a real UI-reform law has no lever to
+    /// preset.</item>
+    /// <item>Statutory minimum-wage INTRODUCTION where none exists (the EU Adequate Minimum Wages
+    /// Directive pressing Sweden/Italy's bargaining models) - MinimumWageImplemented is a
+    /// structural bool outside the delta space; flipping it by law is a new mechanism, said here
+    /// rather than smuggled (the pass-3 charter's own words).</item>
+    /// <item>Occupational-licensing scope, workplace-safety regimes (OSHA and kin), and
+    /// retirement-age/pension-eligibility rules - each its own axis (safety is neither hours nor
+    /// training; retirement age belongs to the pension system's own machinery).</item>
+    /// </list></para>
     /// </summary>
     public static class LawCatalog
     {
@@ -86,6 +124,19 @@ namespace PoliSim.Simulation
         public const float MinorMagnitudeMax = 6f;
         public const float ModerateMagnitudeMax = 14f;
         public const float MajorMagnitudeMax = 22f;
+
+        /// <summary>Per-dial normalization scales for the magnitude grid (pass 3 ruling,
+        /// 2026-08-26) - index-locked to LawDefinition.DialDeltas' documented order (the C&amp;J six,
+        /// then the labor six), read by GameController.LawMagnitudeTier as
+        /// tier = max(|delta_i| x scale_i) against the three boundary consts above. 1f everywhere
+        /// except MinimumWageDelta (x2 - Kaitz points run roughly half the numeric range of a
+        /// 0-100 dial swing; the class doc's calibration cases anchor the choice). MUST grow in
+        /// lockstep with DialDeltas, exactly like ParliamentSystem.LawDialSigns.</summary>
+        public static readonly float[] DialMagnitudeScales =
+        {
+            1f, 1f, 1f, 1f, 1f, 1f,
+            2f, 1f, 1f, 1f, 1f, 1f
+        };
 
         public static readonly List<LawDefinition> All = new List<LawDefinition>
         {
@@ -1043,6 +1094,796 @@ namespace PoliSim.Simulation
                 // point to instead of defaulting to cash bail).
                 JudicialFundingDelta = 8f,
                 BailReformDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+
+            // ── LABOR MARKET BATCH 1 (pass 3, 2026-08-26): 10 laws, 50 -> 60 ──
+            // Charter: open the second category with its two flagship dials at full documented
+            // depth. MinimumWage gets FOUR laws with both directions proven (the UK Wages
+            // Councils abolition is the real down direction) and Overtime a genuinely opposed
+            // pair (EU Working Time Directive vs the El Khomri loosening). PaidFamilyLeave gets
+            // its two landmark real shapes (a first payroll-insurance mandate; a Nordic-scale
+            // build-out) - both positive, stated honestly: real statutory-leave ROLLBACKS proved
+            // rare enough that no clean citation was found, so none is invented (rule 5).
+            // Retraining and Immigration get one clean primary each; FamilyPolicy enters only as
+            // an honest secondary (Elterngeld's own explicitly pro-natalist framing). Batch 2
+            // rebalances toward the demographic dials this batch leaves thin. Magnitudes cite the
+            // per-dial scale ruling: MinimumWage deltas are KAITZ POINTS tiered at x2, PaidLeave
+            // deltas are WEEKS at x1 (see DialMagnitudeScales).
+            new LawDefinition
+            {
+                Id = "raise_the_wage_act",
+                Name = "Federal Minimum Wage Increase Act",
+                Description = "Roughly doubles the statutory minimum wage in annual steps, lifting the wage floor from the bottom quarter of the wage distribution toward 60% of the median wage.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the US Raise the Wage Act (House-passed 2019, reintroduced 2021/2023), phasing the federal minimum to $15/hr - roughly doubling the federal Kaitz index - with the CBO's 2019 median estimates of ~1.3M jobs cost and ~1.3M people lifted from poverty.",
+                // CONFIRMED - the flagship contested labor bill of the era. SWEEPING primary
+                // (+16 Kaitz points; x2 scale -> 32): the USA's seeded Kaitz is 29, and the CBO's
+                // modeled $15 federal floor lands the effective index near ~45 - this delta IS
+                // that documented jump, not a chosen number. The employment effect the pane
+                // derives is honestly (contested) - Card/Krueger vs the neoclassical consensus is
+                // THE canonical labor-economics dispute, and the CBO's own range spans "about
+                // zero" to 2.7M jobs. Inert for Sweden/Italy (no statutory minimum wage -
+                // MinimumWageImplemented false; the recompute, direction and pane all gate on it).
+                MinimumWageDelta = 16f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "minimum_wage_indexation_act",
+                Name = "Minimum Wage Indexation Act",
+                Description = "Ties annual minimum-wage upratings to median-wage growth by statutory formula, ending ad-hoc political uprating rounds.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - France's SMIC statutory indexation formula (price- and wage-linked, with discretionary coups de pouce on top) and US state indexation amendments (Florida 2004, Colorado 2006).",
+                // CONFIRMED - indexation is a real, widespread mechanism. MINOR (+3 Kaitz; x2 ->
+                // 6): a formula locks in modest upward real drift versus a nominally frozen floor
+                // that erodes - the delta prices the drift a formula protects, not a headline
+                // raise. The +3 is this project's own judgment of that protected drift's scale
+                // (stated as judgment, not dressed as research).
+                MinimumWageDelta = 3f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "subminimum_wage_abolition_act",
+                Name = "Subminimum Wage Abolition Act",
+                Description = "Phases out tipped, youth and disability subminimum wages so the full statutory floor applies to every covered worker.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Washington DC's Initiative 82 (2022), phasing out the tipped minimum wage by 2027; seven US states already apply the full minimum to tipped workers.",
+                // CONFIRMED - a real, recurring reform with a named enacted instance. MODERATE
+                // (+4 Kaitz; x2 -> 8): abolishing subminimums raises the EFFECTIVE economy-wide
+                // wage floor for the covered groups - real and felt, but smaller than a headline
+                // rate change since it reaches subsets of low-wage workers.
+                MinimumWageDelta = 4f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "wage_floor_restraint_act",
+                Name = "Wage Floor Restraint Act",
+                Description = "Freezes the nominal minimum wage and narrows its sectoral coverage, letting the floor erode against the median wage over time.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the UK's abolition of the Wages Councils (Trade Union Reform and Employment Rights Act 1993), removing sectoral minimum-wage floors entirely until the 1998 National Minimum Wage Act restored a statutory floor.",
+                // CONFIRMED - the dial's real down direction, proven by an enacted national
+                // rollback. MODERATE (-6 Kaitz; x2 -> 12): the 1993-1998 UK window is the
+                // documented case of a wage floor eroding by policy choice; the magnitude is a
+                // judgment sized to a multi-year freeze-plus-narrowing, well short of full
+                // abolition (which would be the dial's floor, not a delta).
+                MinimumWageDelta = -6f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "paid_family_leave_insurance_act",
+                Name = "Paid Family Leave Insurance Act",
+                Description = "Creates a payroll-funded insurance program paying about twelve weeks of wage replacement for new parents and family caregivers.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the US FAMILY Act model and the enacted state programs it generalizes (California 2002, first in the nation; New Jersey, New York, Washington) - all roughly 8-12 weeks, payroll-insurance funded.",
+                // CONFIRMED - the standard first-mandate shape. MODERATE (+12 weeks; x1 - the
+                // class doc's own FMLA-scale calibration case): for the USA (baseline 0 weeks)
+                // this is the from-zero mandate the FAMILY Act proposes; for a high-baseline
+                // country the same +12 reads as an incremental build-out - a delta is honest in
+                // both readings. The LFPR and approval effects the pane derives ride the model's
+                // own paid-leave couplings.
+                PaidFamilyLeaveWeeksDelta = 12f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "parental_leave_expansion_act",
+                Name = "Parental Leave Expansion Act",
+                Description = "Extends paid parental leave toward a Nordic-scale entitlement, with months reserved for each parent to equalize uptake.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Sweden's 480-day parental insurance with three reserved months per parent (2016) and Germany's Elterngeld reform (2007), the explicit redesign of parental benefits as pro-natalist family policy.",
+                // CONFIRMED - two landmark systems, one shape. SWEEPING primary (+26 weeks; x1 -
+                // half a year of additional entitlement, the Nordic-scale build-out the class
+                // doc's calibration names). MINOR secondary FamilyPolicyDelta +5: Elterngeld's
+                // own framing was explicitly natalist family policy, so a small family-policy
+                // component is the honest reading of the real law, not a bundled guess.
+                PaidFamilyLeaveWeeksDelta = 26f,
+                FamilyPolicyDelta = 5f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "working_time_regulation_act",
+                Name = "Working Time Regulation Act",
+                Description = "Caps average weekly working hours, mandates daily and weekly rest periods, and sets a paid annual leave minimum.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the EU Working Time Directive (2003/88/EC): a 48-hour average weekly cap, daily/weekly rest requirements, and four weeks' paid annual leave.",
+                // CONFIRMED - the canonical working-time statute. MODERATE (+10): a real, felt
+                // strictness shift with defined scope - short of the French 35-hour framework's
+                // reach (which would grade MAJOR on this dial). The unemployment effect the pane
+                // derives is honestly (contested) via the table's work-sharing caveat.
+                OvertimeRegulationDelta = 10f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "working_hours_deregulation_act",
+                Name = "Working Hours Deregulation Act",
+                Description = "Loosens statutory hour caps and lets firm-level agreements override sectoral working-time rules on overtime terms.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - France's El Khomri labor law (2016), letting company-level accords set overtime terms below branch agreements - the loosening of the 35-hour framework that drove the Nuit debout protests.",
+                // CONFIRMED - the opposed pair's other half, an enacted national loosening.
+                // MODERATE (-9): the El Khomri reform inverted the norm hierarchy for working
+                // time without abolishing the caps themselves - a real, felt deregulation short
+                // of removing the framework (which would grade MAJOR/SWEEPING downward).
+                OvertimeRegulationDelta = -9f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "active_labor_market_programs_act",
+                Name = "Active Labour Market Programs Act",
+                Description = "Funds job-search assistance, retraining guarantees and activation requirements at the scale of the strongest real systems.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Denmark's flexicurity active-labor-market system (~2% of GDP on active measures, the OECD's highest) and Germany's Hartz III/IV job-center activation reforms (2003-05).",
+                // CONFIRMED - two named systems define the shape. MODERATE (+12): a
+                // flexicurity-scale ALMP build-out is a substantial, defined program expansion -
+                // real spending and real activation rules - but the dial is a 0-100 abstraction
+                // with no per-country seed, so the tier, not the number, is the claim. Funding-
+                // and-program approval tier (0.5) per the catalog's own cost conventions.
+                RetrainingProgramDelta = 12f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "skilled_worker_immigration_act",
+                Name = "Skilled Worker Immigration Act",
+                Description = "Opens points-tested work visas, eases credential recognition and lowers salary thresholds for skilled migrants.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Germany's Fachkraefteeinwanderungsgesetz (2020, expanded 2023 with the Chancenkarte points card) and the EU Blue Card framework it builds on.",
+                // CONFIRMED - a named, twice-legislated national opening. MODERATE (+9): a real
+                // widening of labor migration channels for a defined population (skilled
+                // workers), well short of open-borders scale on a 0-100 openness dial. The
+                // migration and (via the existing migration-gap term) LFPR effects the pane
+                // derives ride the model's own single-channel design.
+                ImmigrationPolicyDelta = 9f,
+                EnactmentApprovalCost = 1.0f
+            },
+
+            // ── LABOR MARKET BATCH 2 (pass 3, 2026-08-26): 10 laws, 60 -> 70 ──
+            // Charter: rebalance toward the demographic dials batch 1 left thin - FamilyPolicy
+            // goes 0 -> 4 primaries (with a real DOWN direction: the UK two-child limit) and
+            // ImmigrationPolicy 1 -> 4 with a genuinely opposed pair (the EU temporary-protection
+            // opening vs the Danish paradigm shift). Retraining gains its apprenticeship and
+            // individual-account shapes; Overtime gains the shorter-week MINOR. The PaidLeave
+            // DOWN-direction search stayed dry a second time (real statutory-leave rollbacks:
+            // still no clean citation) - recorded again, not invented.
+            new LawDefinition
+            {
+                Id = "universal_child_benefit_act",
+                Name = "Universal Child Benefit Act",
+                Description = "Pays a flat monthly benefit per child to every family, unconditionally, as an explicit pro-natalist and child-poverty measure.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Poland's Rodzina 500+ program (2016, raised to 800+ in 2024): a flat monthly per-child payment, explicitly pro-natalist in its framing, one of Europe's largest family-benefit expansions.",
+                // CONFIRMED - a named, enacted flagship. MODERATE (+12): 500+ was a genuinely
+                // large reorientation of family policy (~1.5% of GDP at launch), short of the
+                // total-reorientation SWEEPING tier. Its documented fertility effect was small -
+                // which is exactly what the model's own deliberately-small BirthRate coupling
+                // (+/-1.5 at dial extremes) already encodes; the delta grades the POLICY size,
+                // the coupling grades the outcome.
+                FamilyPolicyDelta = 12f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "universal_childcare_act",
+                Name = "Universal Childcare Act",
+                Description = "Guarantees subsidized childcare places at a low flat parent fee, universally rather than means-tested.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Quebec's $5-a-day universal childcare (1997, the canonical natural experiment for maternal labor-supply effects) and Sweden's maxtaxa fee cap (2002).",
+                // CONFIRMED - two named systems. MODERATE (+10) on FamilyPolicy. Cross-category
+                // tension stated honestly: childcare's best-documented effect is maternal LABOR
+                // SUPPLY, and in this model that channel belongs to WelfareProgramType.
+                // ChildcareSubsidies (the unemployment-reversion bonus) - this law presets the
+                // family-policy STANCE (its BirthRate channel), it does not duplicate the welfare
+                // program's labor channel. The same one-variable-one-channel discipline the
+                // immigration lever records.
+                FamilyPolicyDelta = 10f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "child_tax_credit_expansion_act",
+                Name = "Child Tax Credit Expansion Act",
+                Description = "Expands the per-child tax credit, makes it fully refundable and pays it monthly, reaching the lowest-income families for the first time.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the US American Rescue Plan's 2021 Child Tax Credit expansion ($3,000-3,600, fully refundable, paid monthly July-December 2021), which roughly halved measured child poverty while in force.",
+                // CONFIRMED - enacted, measured, and lapsed (the lapse is the political story, not
+                // this law's). MODERATE (+7): a large one-parameter expansion of an existing
+                // instrument - real and felt, below the create-a-new-program tier of the two laws
+                // above. Funding-tier cost (0.5) - it passed inside a broader package.
+                FamilyPolicyDelta = 7f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "family_benefit_retrenchment_act",
+                Name = "Family Benefit Retrenchment Act",
+                Description = "Caps means-tested family support at two children and freezes child-benefit rates, retrenching family policy for fiscal savings.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the UK's two-child limit on Child Tax Credit/Universal Credit (announced 2015, in force 2017) plus the 2010s child-benefit freezes - the clearest recent retrenchment of a rich-country family-benefit system.",
+                // CONFIRMED - the dial's real DOWN direction, enacted and still in force. MODERATE
+                // (-8): a coverage cap plus rate freeze retrenches genuinely but leaves the
+                // benefit architecture standing (abolition would grade deeper). The batch
+                // charter's point: this dial swings both ways under real policy.
+                FamilyPolicyDelta = -8f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "humanitarian_admissions_expansion_act",
+                Name = "Humanitarian Admissions Expansion Act",
+                Description = "Opens group-based humanitarian admission with immediate work rights, bypassing case-by-case asylum queues for a designated displaced population.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the EU's first-ever activation of the Temporary Protection Directive (March 2022) for people fleeing Ukraine: immediate residence and LABOR MARKET ACCESS across the bloc, ~4 million registrations within a year.",
+                // CONFIRMED - the largest opening of European labor-market access to a displaced
+                // population in the modern era (Germany's 2015 opening is the directional
+                // precedent, but 2022's is the statutory instrument). MODERATE (+11) on the
+                // openness dial: group-based admission with work rights is a real, large widening
+                // - short of open-borders scale. Hottest political tier (1.5).
+                ImmigrationPolicyDelta = 11f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "immigration_restriction_act",
+                Name = "Immigration Restriction Act",
+                Description = "Tightens asylum criteria, raises income and language thresholds for residence, and ends preferential regional free-movement admission.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Denmark's 2015-2019 restrictive 'paradigm shift' (temporary-protection-first asylum, the 2016 L87 tightening package) and the UK's post-Brexit points system ending EU free movement (2021) - two enacted national restrictions.",
+                // CONFIRMED - the opposed pair's other half, twice over. MODERATE (-12): ending a
+                // free-movement channel plus systematic asylum tightening is a real, large
+                // narrowing of the openness dial, short of a closed-borders reorientation.
+                // Hottest political tier (1.5), same as its opposite - restriction and opening
+                // are both flashpoint politics.
+                ImmigrationPolicyDelta = -12f,
+                EnactmentApprovalCost = 1.5f
+            },
+            new LawDefinition
+            {
+                Id = "seasonal_guest_worker_program_act",
+                Name = "Seasonal Guest Worker Program Act",
+                Description = "Creates capped, employer-sponsored seasonal work visas for agriculture and tourism, with mandatory return and no settlement track.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the US H-2A/H-2B seasonal visa programs and Germany's bilateral seasonal-worker agreements (the 1990s Polish agreements; the 2020 harvest-worker exceptions) - the standard bounded-opening shape.",
+                // CONFIRMED - a recurring, deliberately bounded instrument. MINOR (+5): capped,
+                // sector-specific, non-settlement admission is the openness dial's smallest real
+                // positive step - the point of the design is smallness. Uncontroversial
+                // funding-and-program tier (0.5).
+                ImmigrationPolicyDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "apprenticeship_system_act",
+                Name = "Apprenticeship System Act",
+                Description = "Establishes a statutory dual apprenticeship system - firm-based training with wage subsidies paired with vocational schooling and recognized credentials.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Germany's Berufsbildungsgesetz (1969, modernized 2005/2020), the statute behind the dual vocational system routinely credited for Germany's low youth unemployment; Switzerland's VET law is the sibling case.",
+                // CONFIRMED - a named statute behind the world's benchmark system. MODERATE (+9):
+                // building a statutory dual system is a substantial, defined training-capacity
+                // reform on the 0-100 retraining dial - the flexicurity-scale ALMP act (batch 1)
+                // sits just above it because it bundles activation with training. Funding tier
+                // (0.5).
+                RetrainingProgramDelta = 9f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "lifelong_learning_accounts_act",
+                Name = "Lifelong Learning Accounts Act",
+                Description = "Gives every worker an individual, portable training account credited annually, spendable on accredited courses at their own initiative.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - France's Compte Personnel de Formation (2014, monetized in euros 2018) and Singapore's SkillsFuture credits (2015) - the two flagship individual-training-account systems.",
+                // CONFIRMED - two named systems, one instrument shape. MINOR (+6): individual
+                // accounts widen ACCESS to training without building delivery capacity the way
+                // the apprenticeship statute or an ALMP build-out does - the smallest real
+                // positive step on this dial, and honestly so (French take-up skews toward
+                // short/driving-license courses, a documented caveat). Funding tier (0.5).
+                RetrainingProgramDelta = 6f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "shorter_workweek_pilot_act",
+                Name = "Shorter Workweek Pilot Act",
+                Description = "Grants public-sector workers a right to reduced weekly hours at full pay and funds matched private-sector trials of a shorter week.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED for Iceland's 2015-2019 public-sector trials (which led ~86% of the workforce to gain reduced-hours rights by 2021); DIRECTIONAL as a general statutory instrument - the UK's 2022 four-day-week pilot was large but private and voluntary.",
+                // Hybrid label, honestly split: Iceland's outcome is documented; a general
+                // statutory shorter week is still a live debate, not an enacted national norm.
+                // MINOR (+6) on working-time strictness: rights-to-reduce plus pilots move the
+                // dial genuinely but stop well short of the Working Time Regulation Act's
+                // economy-wide caps. Funding tier (0.5).
+                OvertimeRegulationDelta = 6f,
+                EnactmentApprovalCost = 0.5f
+            },
+
+            // ── LABOR MARKET BATCH 3 (pass 3, 2026-08-26): 10 laws, 70 -> 80 ──
+            // Charter: deepen the leave and working-time dials with their real second shapes
+            // (paternity equalization, quotas, disconnection rights, the UK opt-out as a real
+            // DOWN direction), land the EU minimum-wage directive, and - the C&J batch-3
+            // precedent - add genuinely MULTI-DIAL laws to exercise composition beyond simple
+            // pairs, including the labor category's first use of the wanted-effects log's
+            // pre-authorized "weak proxy, stated explicitly" pattern (flexicurity's EPL core is
+            // unrepresentable; only the representable remainder is authored).
+            new LawDefinition
+            {
+                Id = "paternity_leave_equalization_act",
+                Name = "Paternity Leave Equalization Act",
+                Description = "Raises paid paternity leave to full parity with maternity leave, non-transferable between parents and paid at full replacement rate.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Spain's 2021 equalization of paternity and maternity leave at 16 weeks each, non-transferable, 100% pay - the first large economy to reach full parity.",
+                // CONFIRMED - a named, enacted parity reform. MODERATE (+8 weeks): Spain's path
+                // added ~11 paternity weeks over 2017-2021; +8 grades the parity step itself, a
+                // real expansion of the household's total paid entitlement smaller than the
+                // Nordic build-out (SWEEPING +26).
+                PaidFamilyLeaveWeeksDelta = 8f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "parental_quota_act",
+                Name = "Parental Leave Quota Act",
+                Description = "Reserves a use-it-or-lose-it share of the parental leave entitlement for each parent, modestly extending the total to fund the reserved weeks.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Norway's 1993 'daddy quota' (the first reserved-weeks scheme, now 15 weeks per parent), the model Sweden's and Iceland's reserved months follow.",
+                // CONFIRMED - the instrument that invented reserved leave. MINOR (+4 weeks): a
+                // quota mostly REALLOCATES existing entitlement; the delta prices only the modest
+                // extension that funds the reserved share - grading the reallocation as a large
+                // week-count would double-count entitlement the household already had.
+                PaidFamilyLeaveWeeksDelta = 4f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "right_to_disconnect_act",
+                Name = "Right to Disconnect Act",
+                Description = "Obliges employers above a size threshold to negotiate binding rules on out-of-hours contact and email, with working-time enforcement behind them.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - France's right-to-disconnect provision (Article 55 of the 2016 El Khomri law, in force 2017), the first national disconnection statute, since echoed in Belgium and Portugal.",
+                // CONFIRMED - a named first-in-kind statute. MINOR (+5): disconnection rules
+                // extend working-time protection into a new margin (availability) without
+                // touching the headline hour caps - a narrow, real strictness step. Note the
+                // honest irony the citation carries: it rode the same El Khomri law whose
+                // overtime provisions this catalog codes as deregulation - one real statute,
+                // two directions, two laws here.
+                OvertimeRegulationDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "working_time_opt_out_act",
+                Name = "Working Time Opt-Out Act",
+                Description = "Lets individual workers sign away the statutory weekly hours cap, making the ceiling advisory wherever employer and worker agree.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the UK's blanket use of the Working Time Directive's Article 22 individual opt-out from the 48-hour cap, the standing exception the European Parliament repeatedly (and unsuccessfully) voted to phase out.",
+                // CONFIRMED - a real, standing, contested carve-out. MINOR (-6): an individual
+                // opt-out hollows the cap's bindingness without repealing the framework - the
+                // El Khomri-style norm-hierarchy inversion (-9 MODERATE) cuts deeper because it
+                // moves the default, not just the exception. Standard contested tier (1.0) -
+                // this fight ran for two decades in Brussels.
+                OvertimeRegulationDelta = -6f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "adequate_minimum_wage_directive_act",
+                Name = "Adequate Minimum Wage Directive Act",
+                Description = "Commits statutory minimum-wage setting to an adequacy framework benchmarked at 60% of the median wage, with regular reference-tested upratings.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the EU Adequate Minimum Wages Directive (2022/2041): a 60%-of-median indicative adequacy reference for members with statutory floors, plus a collective-bargaining-coverage pillar for those without.",
+                // CONFIRMED - the directive is real and in force (transposition due 2024).
+                // MODERATE (+5 Kaitz; x2 -> 10): an adequacy framework pulls a below-reference
+                // floor toward 60% of median over successive upratings - real convergence
+                // pressure, not a single headline jump. Honestly inert for Sweden/Italy here
+                // TWICE over: they have no statutory floor for the framework to bind (the
+                // model's gate), and the directive's OTHER pillar - bargaining-coverage action
+                // plans - is exactly the unionization axis the labor wanted-effects log records
+                // as having no dial. Stated, not proxied.
+                MinimumWageDelta = 5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "trade_adjustment_assistance_act",
+                Name = "Trade Adjustment Assistance Act",
+                Description = "Funds extended retraining, income support during training, and relocation allowances for workers displaced by trade competition.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the US Trade Adjustment Assistance program (Trade Expansion Act 1962, expanded 1974/2002/2015, lapsed 2022) - the canonical trade-displacement retraining instrument.",
+                // CONFIRMED - six decades of enacted history. MINOR (+5): TAA is real but
+                // narrow - it reaches certified trade-displaced workers only, a targeted slice
+                // of the retraining dial next to the economy-wide ALMP and apprenticeship
+                // statutes above it. Funding tier (0.5).
+                RetrainingProgramDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "citizenship_modernization_act",
+                Name = "Citizenship Modernization Act",
+                Description = "Permits dual citizenship, shortens naturalization residence requirements, and eases the path for the second generation born in-country.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Germany's citizenship modernization law (in force June 2024): general dual citizenship and naturalization after five years (three with exceptional integration), replacing the renunciation requirement.",
+                // CONFIRMED - a named, just-enacted reform. MINOR (+6) on the openness dial:
+                // citizenship terms shape long-run settlement attractiveness and integration
+                // rather than admission volume itself - a real but indirect widening, graded at
+                // the dial's small tier. Standard contested tier (1.0).
+                ImmigrationPolicyDelta = 6f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "family_housing_support_act",
+                Name = "Family Housing Support Act",
+                Description = "Grants escalating housing subsidies and loan forgiveness per child, tying family-formation support to explicit natalist targets.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Hungary's CSOK housing-subsidy scheme (2015) and the 2019 Family Protection Action Plan (loan forgiveness per child, lifetime income-tax exemption for mothers of four) - the era's most aggressive natalist package.",
+                // CONFIRMED - named, enacted, explicitly natalist. MODERATE (+9): a large,
+                // multi-instrument commitment - short of SWEEPING because it reshapes incentives
+                // within the existing family-policy architecture rather than reorienting it.
+                // The housing INSTRUMENT is cross-category (the declined housing pass owns
+                // zoning/stock dials); the family-policy STANCE is the honest in-category
+                // component this delta grades - stated, per the reentry-programs precedent in
+                // the C&J log.
+                FamilyPolicyDelta = 9f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "flexicurity_package_act",
+                Name = "Flexicurity Package Act",
+                Description = "Adopts the flexicurity triangle: easier hiring and dismissal, generous transitional support, and guaranteed retraining for every displaced worker.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Denmark's flexicurity model (the 1990s Rasmussen-era labor reforms), the OECD's standing reference case for combining flexible dismissal rules with strong active support.",
+                // CONFIRMED as a model; THE WEAK-PROXY PATTERN, exercised in labor for the first
+                // time (the wanted-effects log's own pre-authorized rule): flexicurity's CORE is
+                // employment-protection loosening, and EPL has NO dial in this model (logged
+                // axis) - so the deltas below are the representable REMAINDER only, stated
+                // explicitly, never a claim that retraining is the mechanism dismissal reform
+                // works through. MODERATE primary RetrainingProgramDelta +8 (the guaranteed-
+                // retraining leg is real and directly on-dial); MINOR secondary
+                // OvertimeRegulationDelta -4 (the flexibility leg's working-time component).
+                RetrainingProgramDelta = 8f,
+                OvertimeRegulationDelta = -4f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "demographic_response_package_act",
+                Name = "Demographic Response Package Act",
+                Description = "Bundles family benefits, leave expansion and managed labor migration into one statutory response to workforce aging.",
+                Category = LawCategory.LaborMarket,
+                Citation = "DIRECTIONAL - the aging-response packages every fast-aging economy now legislates in some form: Japan's Children's Future Strategy (2023, 3.6T yen), Germany's Demografiestrategie framework - a real policy genre, not one single statute.",
+                // DIRECTIONAL - the genre is real, the bundle is this catalog's own composition.
+                // A genuinely TRIPLE-DIAL law (the batch charter's composition exercise):
+                // MODERATE primary FamilyPolicyDelta +7 (the benefit leg), MINOR secondaries
+                // ImmigrationPolicyDelta +5 (the managed-migration leg) and
+                // PaidFamilyLeaveWeeksDelta +4 (the leave leg). Tiers stated per delta; the
+                // package's breadth, not any single leg's size, is its point.
+                FamilyPolicyDelta = 7f,
+                ImmigrationPolicyDelta = 5f,
+                PaidFamilyLeaveWeeksDelta = 4f,
+                EnactmentApprovalCost = 1.0f
+            },
+
+            // ── LABOR MARKET BATCH 4 (pass 3, 2026-08-26): 10 laws, 80 -> 90 ──
+            // Charter: diversify AWAY from the dials the running composition puts nearest their
+            // ceilings (FamilyPolicy and Retraining both sit above +90 on the USA all-enacted
+            // sum after batch 3 - the C&J batch-4 lesson applied before, not after, saturation).
+            // This batch is deliberately MINOR-heavy: the taxonomy's administrative tier is
+            // where most real labor law actually lives (conventions, carve-outs, enforcement
+            // funding, visa classes), and the catalog should read that way. Down-directions on
+            // three dials keep the sums honest; FamilyPolicy gets zero laws.
+            new LawDefinition
+            {
+                Id = "youth_minimum_wage_act",
+                Name = "Youth Minimum Wage Act",
+                Description = "Introduces reduced statutory minimum-wage rates for workers under 21, stepped by age, to price young entrants into their first jobs.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the Netherlands' statutory youth minimum wage (age-stepped rates from 15 to the adult floor at 21, softened in 2017/2019 but standing), the canonical differentiated-floor design.",
+                // CONFIRMED - a standing national design. MINOR (-3 Kaitz; x2 -> 6): an age
+                // carve-out lowers the EFFECTIVE economy-wide floor modestly - the mirror of the
+                // subminimum-abolition act above, and the honest small shape of the dial's down
+                // direction (the Wages Councils rollback stays the bigger one). Contested tier
+                // (1.0) - youth subminimums are a live fairness fight.
+                MinimumWageDelta = -3f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "living_wage_procurement_act",
+                Name = "Living Wage Procurement Act",
+                Description = "Requires government contractors and subsidy recipients to pay a living-wage rate above the statutory floor.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Baltimore's 1994 living-wage ordinance (the first) and the ~140 US city/county ordinances that followed; the UK's public-sector London Living Wage adoption is the sibling case.",
+                // CONFIRMED - a thirty-year enacted family. MINOR (+3 Kaitz; x2 -> 6): procurement
+                // coverage raises the effective floor for the contractor workforce only - real,
+                // narrow, exactly the administrative tier. Funding tier (0.5).
+                MinimumWageDelta = 3f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "wage_theft_enforcement_act",
+                Name = "Wage Theft Enforcement Act",
+                Description = "Funds wage-and-hour inspection capacity, adds treble damages for unpaid wages, and lets regulators pursue violations without a worker complaint.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - California's wage-theft statutes (criminalization 2021, the Private Attorneys General Act) and repeated US DOL Wage and Hour Division enforcement expansions.",
+                // CONFIRMED - named instruments. MINOR (+2 Kaitz; x2 -> 4): enforcement raises
+                // the floor workers actually RECEIVE toward the floor the statute already
+                // promises - a real effective-wage effect, the smallest on this dial. Funding
+                // tier (0.5).
+                MinimumWageDelta = 2f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "maternity_protection_act",
+                Name = "Maternity Protection Act",
+                Description = "Guarantees a minimum of fourteen weeks' paid maternity leave with dismissal protection and health safeguards, per the international standard.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - ILO Maternity Protection Convention C183 (2000): a 14-week paid-leave minimum with cash benefits and dismissal protection, ratified by 43 states.",
+                // CONFIRMED - the international floor itself. MINOR (+6 weeks): ratifying the
+                // C183 floor is a real but bounded step - most of this model's countries already
+                // exceed it (the delta reads as topping-up and hardening protection), and for a
+                // zero-baseline country it is the minimal international-standard entry, well
+                // below the FAMILY-Act-scale mandate (+12 MODERATE). Funding tier (0.5).
+                PaidFamilyLeaveWeeksDelta = 6f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "carers_leave_act",
+                Name = "Carers' Leave Act",
+                Description = "Adds short statutory paid leave for workers caring for sick relatives, plus protected paternity days at birth.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the EU Work-Life Balance Directive (2019/1158): five days' carers' leave a year and ten working days' paternity leave, transposition due 2022.",
+                // CONFIRMED - a named directive in force. MINOR (+3 weeks): days-scale
+                // entitlements summed across the new categories - the smallest real expansion
+                // shape on this dial. Funding tier (0.5).
+                PaidFamilyLeaveWeeksDelta = 3f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "night_work_restriction_act",
+                Name = "Night Work Restriction Act",
+                Description = "Caps average night-shift hours, mandates health assessments for night workers, and grants transfer rights to day work on medical grounds.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the EU Working Time Directive's night-work provisions (8-hour average cap, health assessments) and ILO Night Work Convention C171 (1990).",
+                // CONFIRMED - standing international and EU law. MINOR (+4): a real strictness
+                // step on one margin of working time, inside the WTD framework the MODERATE act
+                // above establishes wholesale. Funding tier (0.5).
+                OvertimeRegulationDelta = 4f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "annualized_hours_act",
+                Name = "Annualized Hours Act",
+                Description = "Lets working-time limits average over a full year by agreement, trading weekly caps for seasonal flexibility.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the Working Time Directive's own 12-month averaging reference period via collective agreement, and the French/German annualization accords (modulation du temps de travail) built on it.",
+                // CONFIRMED - a standard enacted flexibility instrument. MINOR (-5): annualization
+                // keeps the caps but hollows their week-by-week bite - a smaller loosening than
+                // the opt-out (-6) since the annual ceiling still binds. Funding tier (0.5) -
+                // routinely agreed, rarely a flashpoint.
+                OvertimeRegulationDelta = -5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "workfare_activation_act",
+                Name = "Workfare Activation Act",
+                Description = "Conditions out-of-work benefits on mandatory job search, training participation and work placements, with sanctions for refusal.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Wisconsin Works (1996, the US workfare template) and the UK's Universal Credit conditionality regime - benefit conditionality with mandatory activation.",
+                // CONFIRMED - enacted twice over. THE WEAK-PROXY RULE, second labor use, stated:
+                // workfare's CORE is benefit conditionality, and benefit rules have no dial
+                // (unemployment insurance is the non-player automatic stabilizer - the
+                // wanted-effects log's own entry). Only the mandatory-TRAINING leg is
+                // representable: MINOR (+4) on Retraining, explicitly not a claim that
+                // conditionality works through training capacity. Contested tier (1.0).
+                RetrainingProgramDelta = 4f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "remote_work_visa_act",
+                Name = "Remote Work Visa Act",
+                Description = "Creates a residence visa for foreign employees of foreign firms working remotely, with income thresholds and no local labor-market test.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Estonia's digital-nomad visa (2020, the first), followed by Portugal (2022) and Spain (2023, in the startup law).",
+                // CONFIRMED - a new but thrice-enacted class. MINOR (+4): a genuinely novel
+                // admission channel with deliberately small volumes - openness moves, a little.
+                // Funding tier (0.5).
+                ImmigrationPolicyDelta = 4f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "labor_migration_quota_act",
+                Name = "Labor Migration Quota Act",
+                Description = "Imposes annual numerical caps on work-based residence permits, allocated by lottery or priority ranking once the cap binds.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Switzerland's 2014 'against mass immigration' initiative (a constitutional quota mandate) and the US H-1B annual cap with its lottery - two standing quota designs.",
+                // CONFIRMED - the openness dial's structural down-shape. MODERATE (-7): a binding
+                // numerical cap narrows admission mechanically - deeper than any single-channel
+                // tweak, short of the paradigm-shift restriction act (-12). Hottest tier (1.5) -
+                // the Swiss initiative rewrote a treaty relationship.
+                ImmigrationPolicyDelta = -7f,
+                EnactmentApprovalCost = 1.5f
+            },
+
+            // ── LABOR MARKET BATCH 5 (pass 3, 2026-08-26): 10 laws, 90 -> 100 - the category
+            // closes at 50. ──
+            // Closing charter: each dial gets its remaining real shape (sectoral wage boards for
+            // MinWage; public-sector-first and adoption parity for PaidLeave; telework rights and
+            // the overtime salary threshold for Overtime; the Swedish transition guarantee for
+            // Retraining; Elterngeld Plus for Family; reunification, day-one work rights and the
+            // skills-levy dual-dial for Immigration). The all-enacted composition now genuinely
+            // SATURATES two ceilings (Retraining raw 104, Family raw 101 on USA bases) - by
+            // design, so the end-of-category saturating re-run exercises the clamp reached AND
+            // released, the exact claim the C&J close-out proved at 27-of-50. The saturating
+            // re-run itself is LaborLawCompositionDiagnostic's record, not claimed here.
+            new LawDefinition
+            {
+                Id = "sectoral_wage_boards_act",
+                Name = "Sectoral Wage Boards Act",
+                Description = "Empowers tripartite boards to set binding minimum pay above the statutory floor for named low-wage sectors.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - New York's 2015 fast-food wage board (a $15 sectoral floor by administrative order under a 1930s wage-board statute) and Australia's modern-award system of binding sectoral minimums.",
+                // CONFIRMED - two living designs. MODERATE (+4 Kaitz; x2 -> 8): sectoral boards
+                // lift effective floors for whole low-wage industries - broader than procurement
+                // coverage, narrower than a headline-rate change. Contested tier (1.0).
+                MinimumWageDelta = 4f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "public_sector_family_leave_act",
+                Name = "Public Sector Family Leave Act",
+                Description = "Grants the government's own workforce paid parental leave first, setting the employer-of-reference standard private mandates later follow.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the US Federal Employee Paid Leave Act (2019): 12 weeks' paid parental leave for ~2 million federal workers, in a country with no general mandate.",
+                // CONFIRMED - a named, enacted first-mover shape. MINOR (+5 weeks): covering the
+                // public workforce moves the economy-wide entitlement average genuinely but
+                // partially - the general mandate (MODERATE +12) is the next law over. Funding
+                // tier (0.5).
+                PaidFamilyLeaveWeeksDelta = 5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "adoption_leave_parity_act",
+                Name = "Adoption Leave Parity Act",
+                Description = "Extends the full paid parental leave entitlement to adoptive and surrogate parents at parity with birth parents.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the UK's statutory adoption leave (Employment Act 2002, aligned to maternity-leave parity in 2015) - the standard parity design.",
+                // CONFIRMED - enacted parity. MINOR (+3 weeks): parity extends coverage to a
+                // small population rather than lengthening the entitlement - the smallest honest
+                // shape on this dial. Funding tier (0.5).
+                PaidFamilyLeaveWeeksDelta = 3f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "telework_rights_act",
+                Name = "Telework Rights Act",
+                Description = "Makes flexible and remote working a day-one statutory right to request, refusable only on enumerated business grounds.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the Netherlands' Flexible Working Act (2016, extended toward telework in 2022) and the UK's day-one right to request flexible working (2024).",
+                // CONFIRMED - two enacted rights. MINOR (+3): a right to REQUEST with enumerated
+                // refusal grounds regulates the working-arrangement margin lightly - real, small,
+                // administrative. Funding tier (0.5).
+                OvertimeRegulationDelta = 3f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "overtime_pay_threshold_act",
+                Name = "Overtime Pay Threshold Act",
+                Description = "Raises the salary ceiling under which workers must receive overtime premiums, restoring coverage eroded by inflation.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the US Department of Labor's FLSA overtime-threshold rules (2019's $35,568; 2024's two-step raise toward $58,656, partially enjoined) - the recurring coverage-restoration fight.",
+                // CONFIRMED - a named, twice-fought rule. MINOR (+5): threshold restoration
+                // re-extends premium-pay protection to salaried workers priced out of it - a
+                // real strictness step below the framework-scale acts. Contested tier (1.0) -
+                // both rules drew immediate litigation.
+                OvertimeRegulationDelta = 5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "national_retraining_guarantee_act",
+                Name = "National Retraining Guarantee Act",
+                Description = "Guarantees mid-career workers a year of funded study at high wage replacement to retrain for shortage occupations.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Sweden's omstallningsstudiestod (2022): up to a year of transition study support at ~80% wage replacement for established workers, the era's largest retraining entitlement.",
+                // CONFIRMED - a named, just-built entitlement. MODERATE (+7): an individual
+                // GUARANTEE at high replacement is a genuine capacity-and-entitlement step
+                // beyond accounts (+6 MINOR) and below the flexicurity/ALMP system builds
+                // (+8/+12). Funding tier (0.5).
+                RetrainingProgramDelta = 7f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "parental_benefit_modernization_act",
+                Name = "Parental Benefit Modernization Act",
+                Description = "Restructures the parental benefit to be part-time compatible, with bonus months when both parents share work and care.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Germany's ElterngeldPlus (2015): benefit months usable alongside part-time work, plus partnership bonus months - the modernization layer on the 2007 Elterngeld.",
+                // CONFIRMED - a named second-generation reform. MODERATE (+9) on FamilyPolicy:
+                // restructuring the flagship benefit's architecture is a real, felt shift inside
+                // the existing system - the create-a-program tier sits above it. Funding tier
+                // (0.5) - it passed with broad consensus.
+                FamilyPolicyDelta = 9f,
+                EnactmentApprovalCost = 0.5f
+            },
+            new LawDefinition
+            {
+                Id = "family_reunification_act",
+                Name = "Family Reunification Act",
+                Description = "Grants settled residents a statutory right to bring spouses and minor children, with income and housing conditions harmonized down.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the EU Family Reunification Directive (2003/86/EC), the standing statutory right for third-country nationals across the bloc.",
+                // CONFIRMED - standing directive. MINOR (+6): reunification is a large real
+                // admission channel, but the directive CODIFIES rights more than it widens
+                // volumes - graded at the dial's small tier, honestly. Contested tier (1.0).
+                ImmigrationPolicyDelta = 6f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "refugee_work_authorization_act",
+                Name = "Refugee Work Authorization Act",
+                Description = "Grants asylum seekers labor-market access from day one of their claim instead of after a waiting period.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - Sweden's day-one work exemption (AT-UND) for asylum seekers, against Germany's 3-month and the USA's 180-day waiting rules - the openness margin is the WAIT, and it is legislated.",
+                // CONFIRMED - a real cross-country design margin. MINOR (+5): work authorization
+                // changes what admitted people may DO, not how many are admitted - a genuine
+                // but bounded openness step. Contested tier (1.0).
+                ImmigrationPolicyDelta = 5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            new LawDefinition
+            {
+                Id = "immigration_skills_levy_act",
+                Name = "Immigration Skills Levy Act",
+                Description = "Charges employers a levy per sponsored foreign worker and earmarks the proceeds for domestic workforce training.",
+                Category = LawCategory.LaborMarket,
+                Citation = "CONFIRMED - the UK's Immigration Skills Charge (2017): GBP 1,000 per sponsored worker per year, framed and hypothecated as domestic-skills funding.",
+                // CONFIRMED - a named levy. The category's closing DUAL-DIAL law, both legs
+                // real: MINOR ImmigrationPolicyDelta -3 (a per-head sponsorship cost narrows
+                // employer demand at the margin) and MINOR RetrainingProgramDelta +3 (the
+                // hypothecated training fund). Funding tier (0.5).
+                ImmigrationPolicyDelta = -3f,
+                RetrainingProgramDelta = 3f,
                 EnactmentApprovalCost = 0.5f
             }
         };

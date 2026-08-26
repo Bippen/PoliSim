@@ -292,8 +292,21 @@ its turn comes; nothing is dated.*
    path byte-identical 6/6; decomposition measured exact; full bar green at all four sizes.
    CLAUDE.md "The Crime & Justice couplings pass ships" is the record; the wanted-effects log
    (`LawCatalog.cs`, eight axes) stays a research archive drawn on as needed.
-3. **The second LawCategory content pass** — un-inerts the category filter (five categories at
-   0); Board 1j's category-cell retirement reverses when it ships.
+3. ✅ **The second LawCategory content pass — SHIPPED 2026-08-26 (pass 3).** LaborMarket, 50
+   laws in five charter batches (catalog 100, 50/50). Ruled COEXISTENCE ("keeps sliders" — the
+   deliberate anti-precedent to C&J's read-only conversion) shipped as the base+offset two-book
+   split: bills own `Country.*Base`, laws sum deltas on top, one clamp at composition — order
+   invariance, exact repeal-to-bill-base, cross-category isolation and the Sweden minimum-wage
+   gate all proven (`LaborLawCompositionDiagnostic`, new). `LaborCouplings` is the second
+   declared table (ten constants moved verbatim; the per-category-table generality finding
+   reported, not absorbed); per-dial magnitude scales put Kaitz-point and week dials on the
+   shared grid. Board 1j's chip row and category cell returned exactly as promised — the
+   category filter genuinely narrows for the first time (1i's five drawn categories never
+   entered the enum; no hatched chips render). Density 119 named enactables vs 69. Full bar
+   green: byte-identity 6/6 (couplings-era baselines stand), RT 12/12 with both-category laws
+   crossing saves, equivalence 117/117, captures 4 sizes 99/99 with 0 guards (the 1280 floor
+   sweep's 22 overflows fixed on the codebase's own ladders). CLAUDE.md "The second law category
+   ships" is the record.
 4. **The Riksbank-B gate-1 fix** — the Taylor-path output-gap distortion (the −14.5% structural
    gap pins the suggested rate to the 0-floor regardless of realized inflation; evidence:
    `COMPLETED.md` §22, the Q5 §3 table). Its stated vehicle (Q5) shipped without it; scheduled

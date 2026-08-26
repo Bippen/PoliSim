@@ -1187,14 +1187,47 @@ namespace PoliSim.Testing
             {
                 "three_strikes_law", "cash_bail_abolition_act", "drug_decriminalization_act",
                 "public_defender_funding_act", "body_worn_camera_program", "court_backlog_reduction_program",
-                "frontex_border_cooperation_agreement", "restorative_justice_program"
+                "frontex_border_cooperation_agreement", "restorative_justice_program",
+                // Pass 3 (2026-08-26): four LABOR laws join the pin so the two-category browser
+                // state is actually photographable - the returned category chips carry two real
+                // counts, both category tokens appear in the rows, and the ENACTED status colors
+                // split by area. Without these, every stop pins a one-category state by
+                // construction and the returned chrome is unreachable (the driver's own recorded
+                // silent-gap lesson).
+                "parental_leave_expansion_act", "raise_the_wage_act",
+                "working_time_regulation_act", "active_labor_market_programs_act"
             };
             foreach (string enactId in lawsToEnactForCapture)
             {
                 player.EnactedLaws.Add(new EnactedLaw { LawId = enactId, EnactedOn = sim.CurrentDate });
             }
+
+            // Pass 3: run BOTH category recomputes after the direct adds, by reflection (the
+            // driver's established private-member idiom) - direct EnactedLaws.Add bypasses
+            // ApplyLawBillEffects, so without this the pinned state would hold enacted laws whose
+            // dials never moved: internally inconsistent, and the Labor tab's two-books
+            // annotation ("laws +N -> M in effect") would exist in no capture. With it, the
+            // pinned dials match what genuine enactment produces - which also means the
+            // Crime & Justice read-only tab now photographs law-driven values rather than the
+            // untouched 50s earlier capture sets showed (a deliberate, stated baseline change).
+            foreach (string recompute in new[] { "RecomputeCrimeJusticeDialsFromEnactedLaws", "RecomputeLaborDialsFromEnactedLaws" })
+            {
+                MethodInfo recomputeMethod = sim.GetType().GetMethod(recompute, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (recomputeMethod == null)
+                {
+                    Debug.LogError($"SHOT: SimulationManager.{recompute} not found by reflection - the pinned law state is INCONSISTENT, not clean.");
+                }
+                else
+                {
+                    recomputeMethod.Invoke(sim, new object[] { player });
+                }
+            }
+
             bool lawOk = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
             bool lawOk2 = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "sanctuary_city_policy", IsRepeal = false });
+            // Pass 3: a labor law's pending bill alongside the two C&J ones - available/enacted/
+            // pending now all exist in BOTH categories in one capture.
+            bool lawOk3 = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "skilled_worker_immigration_act", IsRepeal = false });
 
             var sectorBill = new SectorPolicyBill();
             foreach (Sector sector in player.Sectors)

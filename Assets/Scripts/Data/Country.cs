@@ -390,6 +390,32 @@ namespace PoliSim.Data
         public float RetrainingProgramLevel = 50f;
 
         /// <summary>
+        /// THE STATUTORY BASE fields (pass 3, the Labor Market law category, coexistence ruling
+        /// 2026-08-26): the BILL-OWNED half of each labor dial. Elias ruled the Labor tab KEEPS its
+        /// sliders when labor laws ship (the deliberate opposite of the Crime &amp; Justice tab's
+        /// read-only conversion), so the two-books problem is solved by splitting each dial in two
+        /// books EXPLICITLY: LaborPolicyBill sets these base fields absolutely (same clamps as
+        /// before), enacted laws contribute a pure delta sum on top, and
+        /// SimulationManager.RecomputeLaborDialsFromEnactedLaws composes
+        /// effective = clamp(base + law deltas) into the effective field above/below it - clamped
+        /// ONCE at composition, never persisted into either component, so full repeal returns the
+        /// effective dial exactly to base and a passed bill never stomps law effects.
+        ///
+        /// Seeded equal to each dial's own starting value in WorldFactory (zero law offset at seed).
+        /// -1 is the "unset" sentinel for OLD SAVES only (a save written before these fields
+        /// existed deserializes them at this default): RestoreSaveState adopts the saved dial value
+        /// as the base, which is exactly right because no pre-pass-3 save can hold a labor law.
+        /// MinimumWagePercentOfMedianBase stays meaningful only where MinimumWageImplemented (0 for
+        /// Sweden/Italy, matching the dial itself).
+        /// </summary>
+        public float MinimumWagePercentOfMedianBase = -1f;
+        public float PaidFamilyLeaveWeeksBase = -1f;
+        public float OvertimeRegulationBase = -1f;
+        public float RetrainingProgramBase = -1f;
+        public float FamilyPolicyBase = -1f;
+        public float ImmigrationPolicyBase = -1f;
+
+        /// <summary>
         /// This country's structural "steady-state" CrimeIndex - the target MacroSystem.
         /// ApplyCrimeIndex's mean-reversion moves EconomyState.CrimeIndex toward absent any policy
         /// input (the same "avoid a turn-1 shock" anchor idiom BaselinePovertyRate/

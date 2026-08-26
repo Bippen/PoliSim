@@ -62,7 +62,7 @@ namespace PoliSim.UI
         private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade, Laws }
 
         /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum - Nullable&lt;LawCategory&gt; does not satisfy that constraint, so this can't self-derive from LawCategory's members at compile time. <b>The browser rebuild's own finding (2026-08-25): this filter has never once narrowed anything, and that is NOT a mechanism defect - it is a real, reported coupling.</b> LawCategory has exactly one populated member (CrimeJustice), so "All" and "Crime & Justice" render byte-identical lists; the fix for that is more law CATEGORIES, not a UI change. What this enum's shape does cost: it must be hand-extended in lockstep with LawCategory every time a second category ships, because the generic constraint above rules out deriving it automatically. That coupling - not a bug - is the honest cause.</summary>
-        private enum LawBrowserFilter { All, CrimeJustice }
+        private enum LawBrowserFilter { All, CrimeJustice, LaborMarket }
 
         /// <summary>Law system MVP slice, browser rebuild (2026-08-25): the status filter/sort dimension the marathon's own stop condition found missing - "the top two rows both un-enacted, no sort-by-status" (CLAUDE.md, run_85g_bill_laws.png). All four values are always offered regardless of LawCategory's population, unlike LawBrowserFilter above - status is a property of ENACTMENT, not of catalog content, so this dimension is never inert the way the category one currently is.</summary>
         private enum LawStatusFilter { All, Enacted, Pending, Available }
@@ -2468,9 +2468,12 @@ namespace PoliSim.UI
                 case PolicyLawsCategory.CrimeJustice: return UiPalette.SystemArea.CrimeJustice;
                 case PolicyLawsCategory.Sectors: return UiPalette.SystemArea.Sectors;
                 case PolicyLawsCategory.Trade: return UiPalette.SystemArea.Trade;
-                // Law system MVP slice: the browser is CrimeJustice-only today (one category
-                // authored) - revisit once a second LawCategory ships and the filter can span both.
-                case PolicyLawsCategory.Laws: return UiPalette.SystemArea.CrimeJustice;
+                // Pass 3 (2026-08-26): the second LawCategory shipped and the browser spans both -
+                // the tab-level area goes Neutral (no single system owns the screen; a
+                // CrimeJustice-tinted header over a labor law would be the confidently-wrong
+                // number this method's own doc warns about). Each row accent, status color and
+                // detail kicker carries its own law's category area instead (LawCategoryArea).
+                case PolicyLawsCategory.Laws: return UiPalette.SystemArea.Neutral;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -3408,7 +3411,7 @@ namespace PoliSim.UI
             _laborMarketScrollPosition = GUILayout.BeginScrollView(_laborMarketScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Labor Market", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
-            GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
+            GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Labor LAWS (the Laws tab) stack their own offsets on top of the statutory base these sliders set - a row's note names the law effect when one is moving its dial.", _labelStyle);
             GUILayout.Space(8f);
 
             BeginAreaCard("LABOR MARKET BILL", UiPalette.SystemArea.Labor);
@@ -3418,26 +3421,36 @@ namespace PoliSim.UI
 
             DrawMinimumWageControl();
 
+            // Pass 3 (coexistence ruling): the sliders show and edit the STATUTORY BASE - the
+            // book bills own - while the trailing column names the law offset and the composed
+            // effective value whenever enacted labor laws are moving a dial (LaborDialTrailing).
+            // Drafts fall back to the base too, so introducing an untouched bill is Neutral even
+            // with laws in force.
             _paidFamilyLeaveWeeksInput = DrawDialRow("Paid Family Leave",
-                _playerCountry.PaidFamilyLeaveWeeks, GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks),
-                MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, "F0", string.Empty, "weeks");
+                _playerCountry.PaidFamilyLeaveWeeksBase, GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeksBase),
+                MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, "F0", string.Empty,
+                LaborDialTrailing("weeks", _playerCountry.PaidFamilyLeaveWeeksBase, _playerCountry.PaidFamilyLeaveWeeks));
 
             _overtimeRegulationInput = DrawDialRow("Overtime / Working-Hour Regulation",
-                _playerCountry.OvertimeRegulationLevel, GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel),
-                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty, "0 unregulated - 100 strict");
+                _playerCountry.OvertimeRegulationBase, GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationBase),
+                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty,
+                LaborDialTrailing("0 unregulated - 100 strict", _playerCountry.OvertimeRegulationBase, _playerCountry.OvertimeRegulationLevel));
 
             _retrainingProgramInput = DrawDialRow("Workforce Retraining Programs",
-                _playerCountry.RetrainingProgramLevel, GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel),
-                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty, null);
+                _playerCountry.RetrainingProgramBase, GetRetrainingProgramInput(_playerCountry.RetrainingProgramBase),
+                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty,
+                LaborDialTrailing(null, _playerCountry.RetrainingProgramBase, _playerCountry.RetrainingProgramLevel));
 
             GUILayout.Space(8f);
             _familyPolicyInput = DrawDialRow("Family Policy",
-                _playerCountry.FamilyPolicyLevel, GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 minimal - 100 pro-natalist");
+                _playerCountry.FamilyPolicyBase, GetFamilyPolicyInput(_playerCountry.FamilyPolicyBase),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty,
+                LaborDialTrailing("0 minimal - 100 pro-natalist", _playerCountry.FamilyPolicyBase, _playerCountry.FamilyPolicyLevel));
 
             _immigrationPolicyInput = DrawDialRow("Immigration Policy",
-                _playerCountry.ImmigrationPolicyLevel, GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 restrictive - 100 open");
+                _playerCountry.ImmigrationPolicyBase, GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyBase),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty,
+                LaborDialTrailing("0 restrictive - 100 open", _playerCountry.ImmigrationPolicyBase, _playerCountry.ImmigrationPolicyLevel));
 
             GUILayout.Space(10f);
             _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true, moneyUnit: null);
@@ -3528,18 +3541,37 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>See BuildCrimeJusticeBillFromDrafts's own doc comment - identical pattern.</summary>
+        /// <summary>See BuildCrimeJusticeBillFromDrafts's own doc comment - identical pattern.
+        /// Pass 3: fallbacks are the STATUTORY BASE fields (the book this bill writes), not the
+        /// law-composed effective dials - an untouched draft restates the base and scores Neutral,
+        /// exactly matching GetLaborBillDirection's own base-vs-bill arithmetic.</summary>
         private LaborPolicyBill BuildLaborBillFromDrafts()
         {
             return new LaborPolicyBill
             {
-                MinimumWage = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian),
-                PaidFamilyLeaveWeeks = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeks),
-                OvertimeRegulation = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationLevel),
-                RetrainingProgram = GetRetrainingProgramInput(_playerCountry.RetrainingProgramLevel),
-                FamilyPolicy = GetFamilyPolicyInput(_playerCountry.FamilyPolicyLevel),
-                ImmigrationPolicy = GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyLevel)
+                MinimumWage = GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedianBase),
+                PaidFamilyLeaveWeeks = GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeksBase),
+                OvertimeRegulation = GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationBase),
+                RetrainingProgram = GetRetrainingProgramInput(_playerCountry.RetrainingProgramBase),
+                FamilyPolicy = GetFamilyPolicyInput(_playerCountry.FamilyPolicyBase),
+                ImmigrationPolicy = GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyBase)
             };
+        }
+
+        /// <summary>The Labor tab's two-books note (pass 3, coexistence ruling 2026-08-26): a
+        /// dial row's trailing column gains "laws +N -> M in effect" whenever enacted labor laws
+        /// offset that dial away from its statutory base - the coexistence made LEGIBLE per row
+        /// rather than hidden. Pure string content on an always-drawn label; control count never
+        /// moves (behaviour 5).</summary>
+        private static string LaborDialTrailing(string baseTrailing, float baseValue, float effectiveValue)
+        {
+            if (Mathf.Abs(effectiveValue - baseValue) < 0.05f)
+            {
+                return baseTrailing;
+            }
+
+            string annotation = $"laws {effectiveValue - baseValue:+0.0;-0.0} -> {effectiveValue:F0} in effect";
+            return string.IsNullOrEmpty(baseTrailing) ? annotation : baseTrailing + " - " + annotation;
         }
 
         /// <summary>
@@ -3560,10 +3592,12 @@ namespace PoliSim.UI
             // statutory wage, with the reason in the column that explains a dial's meaning.
             bool hasStatutoryWage = _playerCountry.MinimumWageImplemented;
             float newMinimumWage = DrawDialRow("Minimum Wage",
-                _playerCountry.MinimumWagePercentOfMedian,
-                GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedian),
+                _playerCountry.MinimumWagePercentOfMedianBase,
+                GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedianBase),
                 MinMinimumWagePercent, MaxMinimumWagePercent, "F0", "%",
-                hasStatutoryWage ? "% of median wage" : "none - collective bargaining",
+                hasStatutoryWage
+                    ? LaborDialTrailing("% of median wage", _playerCountry.MinimumWagePercentOfMedianBase, _playerCountry.MinimumWagePercentOfMedian)
+                    : "none - collective bargaining",
                 hasStatutoryWage);
 
             if (hasStatutoryWage)
@@ -5806,6 +5840,29 @@ namespace PoliSim.UI
             }
         }
 
+        private static int? _laborMarketLawCountCache;
+
+        /// <summary>The labor sibling of CrimeJusticeLawCount - same once-per-session cache
+        /// reasoning; both feed the returned category chip row's counts (pass 3, 2026-08-26 -
+        /// which also gave CrimeJusticeLawCount its first call site).</summary>
+        private static int LaborMarketLawCount
+        {
+            get
+            {
+                if (_laborMarketLawCountCache == null)
+                {
+                    int count = 0;
+                    foreach (LawDefinition law in LawCatalog.All)
+                    {
+                        if (law.Category == LawCategory.LaborMarket) { count++; }
+                    }
+                    _laborMarketLawCountCache = count;
+                }
+
+                return _laborMarketLawCountCache.Value;
+            }
+        }
+
         /// <summary>
         /// Law system MVP slice, REBUILT 2026-08-25 twice: first against §7's own scale argument,
         /// then against Design's own board 1i ruling (LAW_BROWSER_BOARD_RULINGS.md, delivered as
@@ -5832,7 +5889,9 @@ namespace PoliSim.UI
             }
 
             GUILayout.BeginVertical(_boxStyle);
-            DrawColoredLabel("Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
+            // Pass 3: Neutral, not CrimeJustice - the browser spans two categories now; see
+            // GetPolicyScreenArea's Laws case for the reasoning. Per-row accents carry category.
+            DrawColoredLabel("Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral));
             // Free-aspect pass (2026-08-26): EXPLICIT width. This width-less label was the root of
             // the playtest's overflow class: CalcSize ignores wordWrap with no width given, so the
             // label requested its NATURAL ~full-sentence width and silently stretched the whole
@@ -5843,17 +5902,31 @@ namespace PoliSim.UI
             // size, so UiOverflowGuard cannot see it). The same fix this codebase has recorded
             // twice before, at a new site.
             float lawsInnerWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
-            GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice tab tracks. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle, GUILayout.Width(lawsInnerWidth));
+            GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice and Labor Market tabs track. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle, GUILayout.Width(lawsInnerWidth));
             GUILayout.Space(6f);
 
-            // Board 1j (2026-08-26, §7.1's answer): THE CATEGORY CHIPS STEP DOWN. With one
-            // populated category the two real chips could not narrow anything, so they are no
-            // longer the first thing on the panel - the count moves into the summary line below,
-            // and the ORDER control (the instrument that actually reduces 40 rows) takes the space
-            // the chips held. The chip row returns, hatched counts and all, the day a second
-            // LawCategory ships - at which point _lawBrowserFilter (kept, still honest state)
-            // gets its buttons back. The category filter's underlying inertness bug is untouched
-            // by this, exactly as board 1i's own note kept the two items separate.
+            // Board 1j (2026-08-26, §7.1's answer) said THE CATEGORY CHIPS STEP DOWN while one
+            // category held everything, and promised: "The chip row returns, hatched counts and
+            // all, the day a second LawCategory ships - at which point _lawBrowserFilter (kept,
+            // still honest state) gets its buttons back." PASS 3 (same day) IS THAT DAY: the
+            // LaborMarket category shipped, the chips are back in 1i's own counted form
+            // ("All - N, Crime & Justice - N, Labor Market - N"), and the filter genuinely
+            // narrows for the first time - the inertness bug the 1i/1j notes kept separate is
+            // closed by content, exactly as LawBrowserFilter's doc predicted ("the fix for that
+            // is more law CATEGORIES, not a UI change"). No hatched "- 0" chips render because
+            // every LawCategory member is populated (1i's five hatched chips were drawn
+            // categories that never entered the enum). The summary line below drops its
+            // "all CRIME & JUSTICE" clause - the chips carry the per-category counts now.
+            GUILayout.BeginHorizontal();
+            float categoryShare = SubTabShare(availableWidth, 3);
+            string allChipLabel = $"All - {LawCatalog.All.Count}";
+            string crimeChipLabel = $"Crime & Justice - {CrimeJusticeLawCount}";
+            string laborChipLabel = $"Labor Market - {LaborMarketLawCount}";
+            float categoryRowHeight = SubTabRowHeight(categoryShare, allChipLabel, crimeChipLabel, laborChipLabel);
+            DrawSubCategoryButton(allChipLabel, LawBrowserFilter.All, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
+            DrawSubCategoryButton(crimeChipLabel, LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
+            DrawSubCategoryButton(laborChipLabel, LawBrowserFilter.LaborMarket, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
+            GUILayout.EndHorizontal();
             // Free-aspect pass (2026-08-26): the ORDER row's minimum (caption + three measured
             // button floors + the search slot) is MEASURED against the box's inner width, and the
             // search slot reflows onto the summary line when the one-row form doesn't fit - at the
@@ -5874,7 +5947,7 @@ namespace PoliSim.UI
             float summaryWidth = searchInline
                 ? lawsInnerWidth
                 : Mathf.Max(_labelStyle.fontSize * 6f, lawsInnerWidth - searchLabelWidth - searchFieldWidth - 16f);
-            GUILayout.Label($"{LawCatalog.All.Count} laws - all {LawCategoryLabel(LawCategory.CrimeJustice)} - {_playerCountry.EnactedLaws.Count} in force - {CountPendingLawBills()} before the house", _labelStyle, GUILayout.Width(summaryWidth));
+            GUILayout.Label($"{LawCatalog.All.Count} laws - {_playerCountry.EnactedLaws.Count} in force - {CountPendingLawBills()} before the house", _labelStyle, GUILayout.Width(summaryWidth));
             if (!searchInline)
             {
                 GUILayout.FlexibleSpace();
@@ -5924,6 +5997,11 @@ namespace PoliSim.UI
             foreach (LawDefinition law in LawCatalog.All)
             {
                 if (_lawBrowserFilter == LawBrowserFilter.CrimeJustice && law.Category != LawCategory.CrimeJustice)
+                {
+                    continue;
+                }
+
+                if (_lawBrowserFilter == LawBrowserFilter.LaborMarket && law.Category != LawCategory.LaborMarket)
                 {
                     continue;
                 }
@@ -6093,45 +6171,53 @@ namespace PoliSim.UI
         /// a much narrower window, just not one that binds at the one width this codebase has
         /// actually measured. A narrower-window capture is still open, same as board 1i's own five
         /// unpopulated categories.</summary>
-        private static void LawRowColumns(float rowWidth, GUIStyle style, out float glyphWidth, out float nameWidth, out float magnitudeWidth, out float costWidth)
+        private static void LawRowColumns(float rowWidth, GUIStyle style, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth)
         {
-            // Board 1j (2026-08-26): THE CATEGORY CELL RETIRES while one category holds everything
-            // - stated once in the summary line rather than repeated as dimmed noise on every row.
-            // It returns as a cell the day a second LawCategory ships, which is also the day the
-            // chip row returns. Its width share goes to the name, which is where §7.1's scanning
-            // problem lived. Floors and squeeze keep the 1i code-review discipline; the same
+            // Board 1j (2026-08-26) retired THE CATEGORY CELL while one category held everything,
+            // and recorded: "It returns as a cell the day a second LawCategory ships, which is
+            // also the day the chip row returns." Pass 3 (same day) is that day - the cell is
+            // back at the 1i spec's own ratio share (128:132:74 for category:magnitude:cost,
+            // re-derived as proportions per the mockup-number rule: category = magnitude's 0.20
+            // x 128/132 ≈ 0.19), its width coming back out of the name that had absorbed it.
+            // Floors and squeeze keep the 1i code-review discipline - the category floor sits
+            // BELOW its proportional value at the verified 1600x929 operating width (~85px vs a
+            // 50px floor at fontSize 20), per the recorded floor-regression lesson; the same
             // narrower-window caveat stands.
             glyphWidth = Mathf.Min(14f, rowWidth * 0.03f);
 
             float fontFloor = Mathf.Max(1f, style.fontSize);
+            categoryWidth = Mathf.Max(rowWidth * 0.19f, fontFloor * 2.5f);
             magnitudeWidth = Mathf.Max(rowWidth * 0.20f, fontFloor * 3f);
             costWidth = Mathf.Max(rowWidth * 0.13f, fontFloor * 2f);
 
-            float fixedTotal = magnitudeWidth + costWidth;
+            float fixedTotal = categoryWidth + magnitudeWidth + costWidth;
             float availableForFixed = Mathf.Max(0f, rowWidth - glyphWidth);
             if (fixedTotal > availableForFixed && fixedTotal > 0f)
             {
                 float squeeze = Mathf.Max(0.35f, availableForFixed / fixedTotal);
+                categoryWidth *= squeeze;
                 magnitudeWidth *= squeeze;
                 costWidth *= squeeze;
             }
 
-            nameWidth = Mathf.Max(0f, rowWidth - glyphWidth - magnitudeWidth - costWidth);
+            nameWidth = Mathf.Max(0f, rowWidth - glyphWidth - categoryWidth - magnitudeWidth - costWidth);
         }
 
         /// <summary>The sticky header's own row - column captions only, muted, never interactive (a
         /// label row has no control to keep stable-control-layout safe in the first place).</summary>
         private void DrawLawRowHeader(Rect rect)
         {
-            // Board 1j: the header simplifies to STATUTE / APPROVAL - the magnitude caption is
-            // gone because the list's bulk (AVAILABLE, band-grouped) no longer carries a magnitude
-            // cell; the bands name the class instead. STATUTE spans name+magnitude so the caption
-            // sits over the whole left field regardless of which row variant renders beneath it.
-            // "APPROVAL," not "COST" - the bottom bar's own framing (a budget, not a label).
-            LawRowColumns(rect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float magnitudeWidth, out float costWidth);
+            // Board 1j simplified the header to STATUTE / APPROVAL while the category cell was
+            // retired. Pass 3 (the cell's return): STATUTE spans the name field, CATEGORY
+            // captions the returned cell, APPROVAL keeps the cost cell ("a budget, not a label").
+            // The magnitude column stays uncaptioned - the stepped rule is self-carrying and the
+            // AVAILABLE bands name the class; re-captioning it would re-add the noise 1j cut.
+            LawRowColumns(rect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
             float x = rect.x + glyphWidth;
-            LedgerRow.Cell(new Rect(x, rect.y, nameWidth + magnitudeWidth, rect.height), "STATUTE", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
-            x += nameWidth + magnitudeWidth;
+            LedgerRow.Cell(new Rect(x, rect.y, nameWidth, rect.height), "STATUTE", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+            x += nameWidth;
+            LedgerRow.Cell(new Rect(x, rect.y, categoryWidth, rect.height), "CATEGORY", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+            x += categoryWidth + magnitudeWidth;
             // Code-review pass (2026-08-25): -4f to match the row's own cost cell exactly (both
             // right-anchored) - previously the header used the full costWidth while the row used
             // costWidth-4f, so their right edges (and the caption above the values) sat 4px apart on
@@ -6289,7 +6375,9 @@ namespace PoliSim.UI
                 _hasPendingLawSelection = true;
             }
 
-            Color areaColor = UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice);
+            // Pass 3: the row accent carries the LAW'S OWN category area now that two categories
+            // share the list (see LawCategoryArea).
+            Color areaColor = UiPalette.GetAreaColor(LawCategoryArea(law.Category));
             if (Event.current.type == EventType.Repaint)
             {
                 if (selected)
@@ -6307,7 +6395,7 @@ namespace PoliSim.UI
                 GUI.color = previousGlyph;
             }
 
-            LawRowColumns(rowRect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float magnitudeWidth, out float costWidth);
+            LawRowColumns(rowRect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
             float x = rowRect.x + glyphWidth;
 
             // Board 1j: BEFORE THE HOUSE rows name their real countdown in the row itself - the
@@ -6320,17 +6408,32 @@ namespace PoliSim.UI
 
             if (compact)
             {
-                // Board 1j: the AVAILABLE row drops to three cells - its magnitude lives in the
-                // band header above it, so the name takes the field. Differing cell counts per
-                // group is the board's own point: status grouping already changes what a row
-                // needs to say.
-                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth + magnitudeWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                // Board 1j: the AVAILABLE row's magnitude lives in the band header above it, so
+                // the name takes that field. Pass 3 (the category cell's return): the compact row
+                // gains the category token too - drawn where the full row's category+magnitude
+                // budget ends, right beside cost, so the name keeps 1j's widened field and the
+                // token right-aligns consistently WITHIN the group. A stated IMGUI adaptation
+                // (compact and full rows place the token at different x), acceptable because the
+                // two variants never interleave inside one status group and the bands re-anchor
+                // the eye between groups.
+                // Pass 3 floor fix: the wrap-first NAME ladder, not the shrink-only cell - long
+                // statute names wrap to a second line at the 1280 floor instead of shrinking
+                // past the 8px guard floor (the row's 1.4x height already holds two lines).
+                LedgerRow.NameCell(new Rect(x, rowRect.y, nameWidth + magnitudeWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary);
                 x += nameWidth + magnitudeWidth;
+                LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), LawCategoryCellLabel(law.Category, categoryWidth - 4f), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+                x += categoryWidth;
             }
             else
             {
-                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                // Pass 3 floor fix: wrap-first name ladder - see the compact branch's comment.
+                LedgerRow.NameCell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary);
                 x += nameWidth;
+
+                // Pass 3: the returned category cell - 1i's "dimmed token" ink (TextMuted), never
+                // a second accent (the glyph bar already carries the category's area color).
+                LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), LawCategoryCellLabel(law.Category, categoryWidth - 4f), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+                x += categoryWidth;
 
                 Rect magnitudeRect = new Rect(x, rowRect.y, magnitudeWidth, rowRect.height);
                 int tier = LawMagnitudeTier(law);
@@ -6355,25 +6458,57 @@ namespace PoliSim.UI
             switch (category)
             {
                 case LawCategory.CrimeJustice: return "CRIME & JUSTICE";
+                case LawCategory.LaborMarket: return "LABOR MARKET";
                 default: return category.ToString().ToUpperInvariant();
             }
         }
 
+        /// <summary>The category CELL's token at the width it actually has (pass 3's floor sweep,
+        /// 2026-08-26): below a measured ~70px the full token cannot fit even at MeasuredLabel's
+        /// 8px shrink floor - the 1280x720 run recorded "CRIME &amp; JUSTICE needs 67.5 wide in 57.6
+        /// at 8px" - so a curated short form steps in below that threshold (DrawLawRowHeader's own
+        /// "APPR." idiom: never clip, never shrink a token past legibility). Above it the full
+        /// token stands and MeasuredLabel's shrink lands it near the 1i spec's own "dimmed 9.5px
+        /// mono token" size.</summary>
+        private static string LawCategoryCellLabel(LawCategory category, float cellWidth)
+        {
+            if (cellWidth >= 70f)
+            {
+                return LawCategoryLabel(category);
+            }
+
+            return category == LawCategory.LaborMarket ? "LABOR" : "C&J";
+        }
+
+        /// <summary>The one place a LawCategory maps to its area color (pass 3, 2026-08-26): with
+        /// two categories sharing the browser, per-law surfaces (row accent, ENACTED status color,
+        /// detail kicker context) carry the LAW'S OWN category area rather than a tab-wide
+        /// CrimeJustice constant - the same truth each category's own bill card already declares
+        /// (LABOR MARKET BILL draws SystemArea.Labor).</summary>
+        private static UiPalette.SystemArea LawCategoryArea(LawCategory category)
+        {
+            return category == LawCategory.LaborMarket ? UiPalette.SystemArea.Labor : UiPalette.SystemArea.CrimeJustice;
+        }
+
         /// <summary>The magnitude taxonomy's own four tiers (LawCatalog's class doc: MINOR +-3..6,
-        /// MODERATE +-7..14, MAJOR +-15..22, SWEEPING +-23..30), read from the LARGEST absolute
-        /// delta among a law's six dials - a law's "primary" effect, matching how every law's own
-        /// code comment already names one tier for the whole law rather than one per dial.
+        /// MODERATE +-7..14, MAJOR +-15..22, SWEEPING +-23..30), read from the LARGEST
+        /// SCALE-NORMALIZED absolute delta among a law's twelve dials - a law's "primary" effect,
+        /// matching how every law's own code comment already names one tier for the whole law
+        /// rather than one per dial. Pass 3 (per-dial scale ruling, 2026-08-26): real-unit dials
+        /// (Kaitz points, weeks) normalize onto the shared grid via LawCatalog.DialMagnitudeScales
+        /// before the comparison - index-locked to DialDeltas' documented order.
         ///
         /// Code-review pass (2026-08-25): reads law.DialDeltas (LawDefinition's own single
-        /// enumeration) instead of hand-listing the six fields here a second time, and the three
+        /// enumeration) instead of hand-listing the fields here a second time, and the three
         /// tier boundaries are LawCatalog's own named constants instead of a second, silent copy of
         /// the numbers that class's doc comment already states.</summary>
         private static int LawMagnitudeTier(LawDefinition law)
         {
             float maxAbs = 0f;
-            foreach (float delta in law.DialDeltas)
+            float[] deltas = law.DialDeltas;
+            for (int i = 0; i < deltas.Length; i++)
             {
-                maxAbs = Mathf.Max(maxAbs, Mathf.Abs(delta));
+                maxAbs = Mathf.Max(maxAbs, Mathf.Abs(deltas[i]) * LawCatalog.DialMagnitudeScales[i]);
             }
 
             if (maxAbs <= LawCatalog.MinorMagnitudeMax) { return 1; }
@@ -6526,19 +6661,44 @@ namespace PoliSim.UI
             // deliberately visible here (a law moving only SentencingSeverity shows no prison
             // line, because the model has no such edge) - ruled acceptable, logged as the
             // couplings-pass input.
-            var expectedEffects = CrimeJusticeCouplings.AggregateLawEffects(law);
-            if (expectedEffects.Count > 0)
+            // Pass 3 dispatch: each category reads ITS OWN declared table - CrimeJusticeCouplings'
+            // aggregate is C&J-typed and returns an EMPTY list for a labor law (the generality
+            // finding LaborCouplings' class doc records), so the labor branch quotes the labor
+            // table instead, its minimum-wage edges gated on the player country's statutory-wage
+            // fact exactly as the simulation gates them.
+            if (law.Category == LawCategory.LaborMarket)
             {
-                GUILayout.Label("EXPECTED EFFECTS", _labelStyle, GUILayout.Width(contentWidth));
-                foreach (CrimeJusticeCouplings.LawEffectLine effect in expectedEffects)
+                var laborEffects = LaborCouplings.AggregateLawEffects(law, _playerCountry.MinimumWageImplemented);
+                if (laborEffects.Count > 0)
                 {
-                    GUILayout.Label(
-                        $"{CrimeJusticeCouplings.DisplayName(effect.Stat)}: {effect.Amount:+0.00;-0.00} {CrimeJusticeCouplings.Unit(effect.Stat)}{(effect.Contested ? " (contested)" : "")}",
+                    GUILayout.Label("EXPECTED EFFECTS", _labelStyle, GUILayout.Width(contentWidth));
+                    foreach (LaborCouplings.LawEffectLine effect in laborEffects)
+                    {
+                        GUILayout.Label(
+                            $"{LaborCouplings.DisplayName(effect.Stat)}: {effect.Amount:+0.00;-0.00} {LaborCouplings.Unit(effect.Stat)}{(effect.Contested ? " (contested)" : "")}",
+                            _labelStyle, GUILayout.Width(contentWidth));
+                    }
+                    GUILayout.Label("Long-run target shifts, from this law's dial deltas and the model's own couplings - as the dials settle, before dial clamps and the LFPR combined ceiling.",
                         _labelStyle, GUILayout.Width(contentWidth));
+                    GUILayout.Space(4f);
                 }
-                GUILayout.Label("Long-run target shifts, from this law's dial deltas and the model's own couplings - as the dials settle, before dial clamps.",
-                    _labelStyle, GUILayout.Width(contentWidth));
-                GUILayout.Space(4f);
+            }
+            else
+            {
+                var expectedEffects = CrimeJusticeCouplings.AggregateLawEffects(law);
+                if (expectedEffects.Count > 0)
+                {
+                    GUILayout.Label("EXPECTED EFFECTS", _labelStyle, GUILayout.Width(contentWidth));
+                    foreach (CrimeJusticeCouplings.LawEffectLine effect in expectedEffects)
+                    {
+                        GUILayout.Label(
+                            $"{CrimeJusticeCouplings.DisplayName(effect.Stat)}: {effect.Amount:+0.00;-0.00} {CrimeJusticeCouplings.Unit(effect.Stat)}{(effect.Contested ? " (contested)" : "")}",
+                            _labelStyle, GUILayout.Width(contentWidth));
+                    }
+                    GUILayout.Label("Long-run target shifts, from this law's dial deltas and the model's own couplings - as the dials settle, before dial clamps.",
+                        _labelStyle, GUILayout.Width(contentWidth));
+                    GUILayout.Space(4f);
+                }
             }
 
             GUILayout.Label(law.Citation, _labelStyle, GUILayout.Width(contentWidth));
@@ -6592,7 +6752,7 @@ namespace PoliSim.UI
             else if (row.Enacted)
             {
                 label = "ENACTED";
-                color = UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice);
+                color = UiPalette.GetAreaColor(LawCategoryArea(row.Law.Category));
             }
             else
             {
@@ -6645,15 +6805,29 @@ namespace PoliSim.UI
         /// comment for why the board's green/red valence is deliberately not taken.</summary>
         private void DrawLawDialMovementGrid(LawDefinition law, float contentWidth)
         {
-            (string Name, float Delta)[] dials =
-            {
-                ("Police Funding", law.PoliceFundingDelta),
-                ("Sentencing Severity", law.SentencingSeverityDelta),
-                ("Bail Reform", law.BailReformDelta),
-                ("Drug Policy", law.DrugPolicyDelta),
-                ("Judicial Funding", law.JudicialFundingDelta),
-                ("Border Enforcement", law.BorderEnforcementDelta),
-            };
+            // Pass 3: the grid hand-lists the SELECTED LAW'S OWN CATEGORY's dials - the nonzero
+            // filter below would hide the foreign six anyway, but dispatching keeps the
+            // real-unit labels honest (Kaitz points and weeks are not 0-100 dial points and must
+            // not read as such).
+            (string Name, float Delta)[] dials = law.Category == LawCategory.LaborMarket
+                ? new (string, float)[]
+                {
+                    ("Minimum Wage (Kaitz pts)", law.MinimumWageDelta),
+                    ("Paid Family Leave (weeks)", law.PaidFamilyLeaveWeeksDelta),
+                    ("Overtime Regulation", law.OvertimeRegulationDelta),
+                    ("Retraining Programs", law.RetrainingProgramDelta),
+                    ("Family Policy", law.FamilyPolicyDelta),
+                    ("Immigration Policy", law.ImmigrationPolicyDelta),
+                }
+                : new (string, float)[]
+                {
+                    ("Police Funding", law.PoliceFundingDelta),
+                    ("Sentencing Severity", law.SentencingSeverityDelta),
+                    ("Bail Reform", law.BailReformDelta),
+                    ("Drug Policy", law.DrugPolicyDelta),
+                    ("Judicial Funding", law.JudicialFundingDelta),
+                    ("Border Enforcement", law.BorderEnforcementDelta),
+                };
 
             var nonzero = new List<(string Name, float Delta)>(6);
             foreach ((string name, float delta) in dials)
