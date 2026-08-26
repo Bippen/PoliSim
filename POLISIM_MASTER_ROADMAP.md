@@ -176,11 +176,12 @@ because they are not done.
   the headline tiles): GDP per capita, tax burden, government spending, deficit/surplus and sector
   shares. It had been built and trajectory-validated but displayed nothing, which is the "built but
   uncalled" state this project repeatedly mistook for done. **Needs a visual look**, like anything new.
-- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md` is down to **one upstream defect and one blocked
-  task**: Step C4's closure (section F), and cabinet portraits (section D1, waiting on three portfolios
-  being authored). ~~16 figures needing database access~~ — **all sourced 2026-08-02; section B is empty
-  and C1/C2/C3/C5 are buildable.** *Decisions, database access, Claude Design and the visual reviews all
-  emptied on 2026-08-02.* Three quality debts survive in section B — none blocks a batch.
+- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md` slimmed to the live register (2026-08-26):
+  **§S** the send package (§8 + §9 + the D1 verdict + the 1j-aware note — waiting on Elias's send),
+  **D1** the batch of nine (waiting on Design's delivery, gate cleared 2026-08-26), **E2** (item 10,
+  13 Sept), **E3** (a raster path whose output is comparable), and **§B's three seed quality debts**
+  (a database re-sourcing session; none blocks a batch). All closed prose migrated to
+  `COMPLETED.md` §23.
 - 🔴→📋 **FISCAL-ENGINE: the unbounded debt divergence — SWEPT AND EMPTY (2026-08-16, `afe0f24`).**
   The ruled FRF sweep ran in real Unity in the daily regime and **no pair converges within the
   revenue-capacity wall** — steeper in-wall slopes strictly mildew the divergence (S=4 roughly
@@ -239,7 +240,7 @@ because they are not done.
     | Turn → Year | ✅ 2026-08-24 (CLAUDE.md "Turn -> Year") |
     | Calendar Panel | ✅ `a13dd7b` 2026-08-24 |
     | Decision density | ✅ **CLOSED ON THE NUMBERS — ruled 2026-08-25 (Elias).** Measured at 50 laws, same method as the scoping: automatic prompts/yr UNCHANGED by construction (≈5; 5.87 at a full six-minister USA cabinet with the election reveal now ruled into the table); named enactable choices **19 → 69** (13 tax + 6 welfare programs, then +50 laws, multiple pending at once, 21-day resolution). The 08-18 ruling's own prediction confirmed: the table did not move, the menu did. CLAUDE.md "Decision density re-measured". **Whether it READS as closed is the next playtest's own named item — riding gates, Play** |
-    | Portraits (D1) | ⏸ UNCHANGED — 8 of 9 gated on the Editor register side-by-side (`MISSING_PREREQUISITES.md` §D1) |
+    | Portraits (D1) | 🟡 GATE CLEARED 2026-08-26 — the register side-by-side PASSED; the batch of nine now waits on Design's delivery, the verdict travels in the send package (`MISSING_PREREQUISITES.md` §D1/§S) |
     | Law system | ✅ above |
   - **The two-copy consolidation — rule 13** (`faecdce`, `0c2a747`, `bb6ad14`, finished 2026-08-25):
     G: is the working copy; the C: copy is `PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16` with
@@ -1671,7 +1672,7 @@ list stays short enough to actually read.
 
 ### RESOLVED 2026-08-02 — all three section A decisions
 
-Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately so none is reopened later.
+Full reasoning migrated whole to `COMPLETED.md` §23 (2026-08-26), kept in full deliberately so none is reopened later.
 
 - **C4's rating thrash — fixed by REVIEW CADENCE, not damping.** The cap-and-average recommendation was
   **rejected**: it shrinks the thrash without removing its cause, and lands on the exact term the 5-anchor
@@ -1684,7 +1685,7 @@ Full reasoning in `MISSING_PREREQUISITES.md` section A, kept there deliberately 
   rating: the settled annual deficit ranges −135.5% to +170.8% of GDP because the debt stock itself
   oscillates 0% to 45% and back within a year, in exactly the documented Sweden/France/Germany set.
   **Step C4's implementation is complete; its closure now waits on that upstream defect** — see
-  `MISSING_PREREQUISITES.md` section F.
+  `COMPLETED.md` §23 (the F register: closed 2026-08-17, migrated 2026-08-26).
 - **SWF emergency drawdown — standalone tier-3 bill**, reusing 5d's mechanism. Not bundled into the
   annual budget, not fully exempt like the Fed/Eurozone carve-out. **Still to build — see below.**
 - **Cabinet appointments stay unilateral.** Parliament gates *policy*; appointments are *executive*, and

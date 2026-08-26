@@ -995,7 +995,7 @@ in the Playtest-1 scoping package (consumed to §21, 2026-08-26), and all but on
 | Calendar Panel (replaces the dashboard tile grid; reads existing data, builds no store) | 2026-08-24, `a13dd7b` | "Calendar Panel" |
 | Decision density — MEASURED at 50 laws, same method as the scoping: prompts/yr unchanged by construction (≈5), named enactable choices 19 → 69 | 2026-08-25 | "Decision density re-measured" |
 | **The law system** — see below | 2026-08-24 → 2026-08-25 | six entries, listed below |
-| Portraits (D1) | **NOT closed** — 8 of 9 still gated on the Editor register side-by-side; stays in `MISSING_PREREQUISITES.md` §D1 | — |
+| Portraits (D1) | **NOT closed** — ~~8 of 9 still gated on the Editor register side-by-side~~ **gate CLEARED 2026-08-26** (register side-by-side PASSED); the batch of nine now waits on Design's delivery — `MISSING_PREREQUISITES.md` §D1 | — |
 
 **The law system, 50 of 50, one category.** A law is a NAMED PRESET over the existing dial space —
 name, description, one-sentence real-world citation labeled CONFIRMED/DIRECTIONAL/GENRE-IDIOM,
@@ -1186,5 +1186,100 @@ Approval: cuts nearly free (≈−0.017 pts/pt), **VAT ≈90× costlier** (≈�
 +6pp-VAT line dips to 39.48 against the 40-streak objective and recovers, 9.5 points clear of
 the 30 floor. Eurozone monetary impotence is the scenario's PREMISE, not a gap. Authored as
 `ItalyDebtCrisis()`: Terminal + the `Sustained` form's first real exercise + NeverBreach.
+
+---
+
+## 23. The blocked-work register, slimmed — closed sections migrated in full (2026-08-26)
+
+*`MISSING_PREREQUISITES.md` kept only its live entries in the 2026-08-26 consolidation (the send
+package §S, D1, E2, E3, and §B's three quality debts). Everything below is the closed half,
+migrated whole where a ruling said "kept so none is reopened".*
+
+### A1 — the rating thrash: REVIEW CADENCE, not damping (ruled 2026-08-02; closed 2026-08-17)
+
+**The primary recommendation (cap + multi-turn average) was rejected.** Elias took the
+alternative raised almost in passing: the rating updates on a scheduled review cycle. **Why the
+review cycle is stronger — four reasons, all recorded:** (1) it is what actually happens —
+agencies review sovereigns on a cycle rather than re-rating continuously, so the scheduled review
+IS the real-world mechanism that prevents real-world thrash; (2) the machinery already exists —
+Step A built the release-calendar system for exactly this shape, a value evolving continuously
+underneath and surfacing on a schedule; (3) precedent already in the game — central-bank rate
+decisions run on ~8 scheduled meetings a year; (4) it dissolves the problem by construction
+rather than tuning it — rating off a settled annual fiscal position keeps the 5-anchor
+calibration valid instead of needing re-derivation against a smoothed term. **Why damping was
+weaker:** it makes the thrash smaller without removing why it exists, every constant chosen to
+suppress it is a number nobody can justify from anything real, and it lands directly on the term
+the calibration runs through. Implemented `a4155ca`; **closed 2026-08-17** — the 5-anchor check
+at HEAD (erosion + maturity + F1 shipped) held 5 of 6 with Poland the recorded expected-fail;
+nothing left to damp. The cap+average recommendation stays recorded as the answer IF the term
+ever drifts; the expected-fail row and the anchor check are the standing tripwires.
+
+### A2 — SWF emergency drawdown: a standalone tier-3 bill (ruled AND built 2026-08-02, `b1c077f`)
+
+Recommendation accepted as written: 5d's existing tier-2/3 mechanism, a fifth tier-3 type
+alongside Labor / CrimeJustice / Sector / Trade. Not bundled into the annual budget; not fully
+exempt like the Fed/Eurozone carve-out. Real governments handle fiscal emergencies through
+expedited votes rather than unilateral action; Norway's own GPFG withdrawal is an ordinary
+budget-process matter; zero new mechanism. The gap was live when ruled — since 5c, SWF changes
+rode the annual omnibus bill, so an emergency could sit behind a fiscal-year vote up to a year
+away. Elias's framing: *"a gameplay bug wearing the costume of a design question."*
+
+### A3 — cabinet appointments stay UNILATERAL (ruled 2026-08-02)
+
+**No parliamentary vote to appoint a minister.** The reasoning, recorded because none existed
+before: (1) it preserves a distinction the game already makes well — Parliament gates *policy*,
+appointments are *executive*, and one gate for both flattens a separation the gated-legislation
+model deliberately created; (2) there is already a cost — reshuffling carries an
+`ApprovalRating` hit; (3) a vote would make Cabinet worse to play — a multi-week legislative
+process in front of every appointment turns a responsive system slow for no gameplay gain;
+(4) it is defensible in the real world — confirmation practice varies enormously across the six
+modelled countries. **Nothing to build; the ruling confirms the code.** ⚠ The 08-17 gate list's
+"A3 at its trigger" re-listing was a two-authors artifact — it re-derived from the pre-resolution
+`<details>` block without seeing the resolution above it; struck from the riding-gates row
+2026-08-26 (confirmation C1).
+
+### B — database access: emptied 2026-08-02; three quality debts stayed in the register
+
+Every figure that blocked a batch was sourced across three sessions (Eurostat REST, OECD SDMX,
+BLS/FRED, and — three items — stated banded estimates under the fallback ladder); values and
+bases in the seed doc. Dispositions: **B1** housing closed (Italy 74.4 / Sweden 62.1 / Poland
+86.8 `[ESTIMATED]` from a four-country bridge, ±7pp band); **B2** inequality + real wages closed
+(USA Gini 39.5 `[ESTIMATED]`; the real-wage row's three-bases debt born here); **B3** youth
+unemployment + life expectancy fully sourced (rate-not-ratio guarded); **B4/C5** productivity —
+all six sourced exactly from the OECD SDMX API, one basis one vintage, later `[VERIFIED]` via the
+DBnomics anchor (Poland's Statista figure had been off by more than 2×); **the C5-keep decision
+(Elias, delegated): keep productivity, lowest priority of the four** — a cut that unblocks
+nothing is not a simplification, and the OECD's own-past-only caution suits the game; **B5**
+Poland's rating A− (a validation anchor, never a seed — and the monotonicity finding: lower debt
+than Germany, four notches worse, no penalising term exists → the expected-fail anchor row);
+**B6** overburden closed 2026-08-17 by R4-3's re-adoption (whole-population `ilc_lvho07a`
+`[VERIFIED]` values 5.1/7.0/5.2; USA homeownership-primary by ruling, the asymmetry deliberate
+everywhere). The C1 metric escalation (B1/B6's three options and per-option gap lists, was
+`STEP_C1_HOUSING_GAP_REPORT.md`) resolved by C1a/C1b/C1c in §11 and the R4-3 reversal above.
+
+### C · D2 · E1 — one-liners
+
+**C** (visual review): emptied 2026-08-02, all eleven confirmed — §16. **D2** (Round 4 scoping):
+released 2026-08-02 when step 5 closed; the arc itself closed 2026-08-17 — §19. **E1**
+(`icon_stat_interestrate`): delivered the same day it was recorded as awaiting — §15 carries the
+story and the lesson (a delivery is not self-announcing; enumerate the display enum).
+
+### F1 — Step C4's closure (CLOSED 2026-08-17; the F register ends at zero)
+
+The chain, kept whole: the parked fiscal-divergence pass ran and closed (the mechanism report
+`bcbba47` → the erosion term `685ebd5` → the maturity rate-lag `b05150f` — two identity terms the
+ledger was missing, found by measurement, shipped one per baseline). Elias ruled proceed on A1's
+re-run; `CreditRatingAnchorCheck` at HEAD: **5 of 6 PASS, every calibration anchor HELD with no
+drift** (USA's AA+ deficit window [4.6%, 7.5%], anchor at 6.4%), Poland the recorded
+expected-fail. The anchors were calibrated against a divergence that no longer exists and
+survived its removal. **C4 closed; A1 closed with it.** The measurement record that preceded it:
+**rating anomalies 1,416 → 19 (98.7%)** across the stages *floor removed 1,394 · SWF returns
+inside the multiplier 1,020 · structural draw (smoothing) 19*, with debt swings 6,225 → 140 —
+**the decisive change was the double-count fix** (the realised SWF return was added to the fund's
+assets AND booked as government revenue; the budget now takes a 3%/year structural draw WITHDRAWN
+from the fund, Norway's own fiscal rule). One flag raised then and still worth an eye: Sweden's
+debt ratio came out very flat (13.3% → 10.7% across 120 turns) — possibly too quiet, a different
+question from the one the fix addressed. The superseded framings (the 2026-08-11 "waits on the
+parked pass" reading; the 2026-08-02 original) are in git history with this file's §13/§18.
 
 ---
