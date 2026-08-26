@@ -3493,7 +3493,7 @@ namespace PoliSim.UI
         /// currently sits. Deliberately not PoliSimWidgets.SupportBar - this model has no seats-based
         /// majority for it to draw (see DrawPendingBillCard's own comment for the full reasoning).
         /// </summary>
-        private void DrawBillLiveEstimate(float direction)
+        private void DrawBillLiveEstimate(float direction, float wrapWidth = 0f)
         {
             // Unity's Mathf.Sign(0f) returns 1, not 0, so an unchanged draft would otherwise be scored as
             // parliament's raw net stance - negative in the documented tied-parties case - and contradict
@@ -3502,10 +3502,24 @@ namespace PoliSim.UI
             bool contested = !Mathf.Approximately(direction, 0f);
             bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
 
+            // Free-aspect pass (2026-08-26): callers inside a width-bounded pane pass wrapWidth so
+            // these labels WRAP there instead of requesting natural width and stretching the pane's
+            // scroll content past its viewport (the intro-label class; the laws detail pane at the
+            // 1280x720 floor is the measured case). Zero keeps the four policy-screen callers'
+            // existing natural-width behavior byte-for-byte.
             string directionLabel = !contested ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
-            GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
-            DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
-                _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+            if (wrapWidth > 0f)
+            {
+                GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle, GUILayout.Width(wrapWidth));
+                DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
+                    _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true), GUILayout.Width(wrapWidth));
+            }
+            else
+            {
+                GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
+                DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
+                    _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+            }
 
             Rect barRect = GUILayoutUtility.GetRect(10f, _labelStyle.fontSize * 0.7f, GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint)
@@ -5819,7 +5833,17 @@ namespace PoliSim.UI
 
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel("Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
-            GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice tab tracks. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle);
+            // Free-aspect pass (2026-08-26): EXPLICIT width. This width-less label was the root of
+            // the playtest's overflow class: CalcSize ignores wordWrap with no width given, so the
+            // label requested its NATURAL ~full-sentence width and silently stretched the whole
+            // box past the window at free-aspect sizes (1640x707 observed) - pushing the sub-tab
+            // row's last child ("Law...") off-screen and dragging every ExpandWidth sibling wide
+            // with it. At the capture sizes the stretch hid off-screen (the text clipped at the box
+            // edge in every 2560 capture, guard-silent - a width-less label's rect IS its natural
+            // size, so UiOverflowGuard cannot see it). The same fix this codebase has recorded
+            // twice before, at a new site.
+            float lawsInnerWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
+            GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice tab tracks. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle, GUILayout.Width(lawsInnerWidth));
             GUILayout.Space(6f);
 
             // Board 1j (2026-08-26, §7.1's answer): THE CATEGORY CHIPS STEP DOWN. With one
@@ -5830,37 +5854,61 @@ namespace PoliSim.UI
             // LawCategory ships - at which point _lawBrowserFilter (kept, still honest state)
             // gets its buttons back. The category filter's underlying inertness bug is untouched
             // by this, exactly as board 1i's own note kept the two items separate.
-            GUILayout.Label($"{LawCatalog.All.Count} laws - all {LawCategoryLabel(LawCategory.CrimeJustice)} - {_playerCountry.EnactedLaws.Count} in force - {CountPendingLawBills()} before the house", _labelStyle);
+            // Free-aspect pass (2026-08-26): the ORDER row's minimum (caption + three measured
+            // button floors + the search slot) is MEASURED against the box's inner width, and the
+            // search slot reflows onto the summary line when the one-row form doesn't fit - at the
+            // 1280x720 floor the one-row minimum (~640px) exceeded the inner width (~585px), and
+            // an overflowing row stretches every ExpandWidth sibling in the box (the "L|"/
+            // "Availabl|" cuts in the floor sweep). The bucket is a pure function of window size,
+            // so Layout and Repaint always agree within a frame.
+            float orderCaptionWidth = _labelStyle.CalcSize(new GUIContent("ORDER - STATUS, THEN")).x + 6f;
+            GUIStyle orderButtonProbe = BuildSubTabStyle(true);
+            float orderButtonsWidth = PoliSimWidgets.MeasuredWidth("Magnitude", orderButtonProbe, orderButtonProbe.padding.horizontal + 6f)
+                + PoliSimWidgets.MeasuredWidth("A-Z", orderButtonProbe, orderButtonProbe.padding.horizontal + 6f)
+                + PoliSimWidgets.MeasuredWidth("Cost", orderButtonProbe, orderButtonProbe.padding.horizontal + 6f);
+            float searchLabelWidth = _labelStyle.CalcSize(new GUIContent("SEARCH")).x + 6f;
+            float searchFieldWidth = _labelStyle.fontSize * 7f;
+            bool searchInline = orderCaptionWidth + orderButtonsWidth + searchLabelWidth + searchFieldWidth + 40f <= lawsInnerWidth;
+
+            GUILayout.BeginHorizontal();
+            float summaryWidth = searchInline
+                ? lawsInnerWidth
+                : Mathf.Max(_labelStyle.fontSize * 6f, lawsInnerWidth - searchLabelWidth - searchFieldWidth - 16f);
+            GUILayout.Label($"{LawCatalog.All.Count} laws - all {LawCategoryLabel(LawCategory.CrimeJustice)} - {_playerCountry.EnactedLaws.Count} in force - {CountPendingLawBills()} before the house", _labelStyle, GUILayout.Width(summaryWidth));
+            if (!searchInline)
+            {
+                GUILayout.FlexibleSpace();
+                DrawLawSearchSlot(searchLabelWidth, searchFieldWidth);
+            }
+            GUILayout.EndHorizontal();
 
             // The caption carries "STATUS, THEN" once and the buttons carry only the variant word
             // - the second capture caught the board's full three-phrase labels summing past the
             // panel's width budget at BOTH sizes (min-widths widen the whole box silently; the
             // sub-tab strip above clipped at the window edge, which no guard measures).
             GUILayout.BeginHorizontal();
-            GUILayout.Label("ORDER - STATUS, THEN", _labelStyle, GUILayout.Width(_labelStyle.CalcSize(new GUIContent("ORDER - STATUS, THEN")).x + 6f));
+            GUILayout.Label("ORDER - STATUS, THEN", _labelStyle, GUILayout.Width(orderCaptionWidth));
             DrawSubCategoryButton("Magnitude", LawOrder.Magnitude, ref _lawOrder);
             DrawSubCategoryButton("A-Z", LawOrder.Alphabetical, ref _lawOrder);
             DrawSubCategoryButton("Cost", LawOrder.Cost, ref _lawOrder);
             GUILayout.FlexibleSpace();
-            // The search slot, as drawn. A TextField is a real control: always present, so the
-            // control set is identical every frame; the rows it hides are hidden by typing.
-            // Fixed width, ExpandWidth(false) - the first capture caught MinWidth+ExpandWidth
-            // grabbing the row's whole remainder and running past the panel edge (the guards are
-            // label-measured and cannot see a control rect, so only the eye caught it).
-            GUILayout.Label("SEARCH", _labelStyle, GUILayout.Width(_labelStyle.CalcSize(new GUIContent("SEARCH")).x + 6f));
-            // Paper-idiom field via the saves menu's own precedent (UiPalette.BuildTextFieldStyle,
-            // whose comment names this exact dark-chrome-on-paper class) - the first capture
-            // rendered Unity's grey default here.
-            _lawSearchText = GUILayout.TextField(_lawSearchText ?? string.Empty, 48,
-                UiPalette.BuildTextFieldStyle(_labelStyle.fontSize),
-                GUILayout.Width(_labelStyle.fontSize * 7f), GUILayout.ExpandWidth(false));
+            if (searchInline)
+            {
+                DrawLawSearchSlot(searchLabelWidth, searchFieldWidth);
+            }
             GUILayout.EndHorizontal();
 
+            // Free-aspect pass (2026-08-26): share-capped like every other chip row - without
+            // maxWidth these four floors are each label's own measured width, and at the 1280x720
+            // floor their sum overran the row ("Availab|" cut at the box edge in the enumeration
+            // capture). SubTabShare/SubTabRowHeight is the sub-tab rows' own established pair.
             GUILayout.BeginHorizontal();
-            DrawSubCategoryButton("All statuses", LawStatusFilter.All, ref _lawStatusFilter);
-            DrawSubCategoryButton("Enacted", LawStatusFilter.Enacted, ref _lawStatusFilter);
-            DrawSubCategoryButton("Pending", LawStatusFilter.Pending, ref _lawStatusFilter);
-            DrawSubCategoryButton("Available", LawStatusFilter.Available, ref _lawStatusFilter);
+            float statusShare = SubTabShare(availableWidth, 4);
+            float statusRowHeight = SubTabRowHeight(statusShare, "All statuses", "Enacted", "Pending", "Available");
+            DrawSubCategoryButton("All statuses", LawStatusFilter.All, ref _lawStatusFilter, statusShare, statusRowHeight);
+            DrawSubCategoryButton("Enacted", LawStatusFilter.Enacted, ref _lawStatusFilter, statusShare, statusRowHeight);
+            DrawSubCategoryButton("Pending", LawStatusFilter.Pending, ref _lawStatusFilter, statusShare, statusRowHeight);
+            DrawSubCategoryButton("Available", LawStatusFilter.Available, ref _lawStatusFilter, statusShare, statusRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
 
@@ -5943,7 +5991,13 @@ namespace PoliSim.UI
             // own doc comment on why that's a deliberate, narrow departure from "does not scroll").
             GUILayout.BeginHorizontal();
 
-            float listWidth = availableWidth * 0.56f;
+            // Free-aspect pass (2026-08-26): the split derives from the BOX'S INNER width, not the
+            // outer availableWidth - the outer figure spent the box's own ~28px horizontal padding
+            // a second time, so list+space+pane overflowed the box by that constant at EVERY size:
+            // invisible inside the window margin at 1600/2560 (the "Laws" sub-tab's long-standing
+            // edge-kiss was this), visible as "Availabl|"/"L|" cuts at the 1280 floor, where
+            // ExpandWidth siblings stretched to the widened parent and the last child paid.
+            float listWidth = lawsInnerWidth * 0.56f;
             GUILayout.BeginVertical(GUILayout.Width(listWidth));
 
             // The sticky header: drawn ONCE, outside the scroll view, at the scrollbar-adjusted row
@@ -5996,7 +6050,7 @@ namespace PoliSim.UI
             // DrawLawDetailPane and giving every wrapping label an explicit GUILayout.Width - the
             // width CalcHeight/wordWrap actually need to do their job, not merely a container that
             // happens to clip whatever they overflow into.
-            float detailPaneWidth = Mathf.Max(0f, availableWidth - listWidth - 10f);
+            float detailPaneWidth = Mathf.Max(0f, lawsInnerWidth - listWidth - 10f);
             GUILayout.BeginVertical(GUILayout.Width(detailPaneWidth));
             _lawDetailScrollPosition = GUILayout.BeginScrollView(_lawDetailScrollPosition,
                 GUILayout.Width(detailPaneWidth), GUILayout.Height(scrollHeight));
@@ -6007,7 +6061,7 @@ namespace PoliSim.UI
 
             GUILayout.EndHorizontal();
 
-            DrawLawBottomBar(_lawVisibleRows);
+            DrawLawBottomBar(_lawVisibleRows, lawsInnerWidth);
 
             GUILayout.EndVertical();
         }
@@ -6082,7 +6136,14 @@ namespace PoliSim.UI
             // right-anchored) - previously the header used the full costWidth while the row used
             // costWidth-4f, so their right edges (and the caption above the values) sat 4px apart on
             // every frame, independent of any scrollbar-width consideration.
-            LedgerRow.Cell(new Rect(x, rect.y, costWidth - 4f, rect.height), "APPROVAL", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleRight);
+            //
+            // Free-aspect pass (2026-08-26): "APPROVAL" gets a curated abbreviation at narrow
+            // widths (the D7 idiom - never clip, never uniform-shrink a caption to illegibility).
+            // The threshold is MEASURED, not guessed: the 1280x720 floor sweep's own overflow line
+            // ("needs 42.5 wide in 39.9 at 8px") - below that need, the full word cannot fit at
+            // any legible size.
+            string approvalCaption = costWidth - 4f >= 44f ? "APPROVAL" : "APPR.";
+            LedgerRow.Cell(new Rect(x, rect.y, costWidth - 4f, rect.height), approvalCaption, _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleRight);
         }
 
         /// <summary>One status partition inside the scroller - a plain, non-interactive group
@@ -6491,13 +6552,13 @@ namespace PoliSim.UI
             {
                 GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth));
                 float pendingDirection = ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill);
-                DrawBillLiveEstimate(pendingDirection);
+                DrawBillLiveEstimate(pendingDirection, contentWidth);
                 DrawLawPartyStances(pendingDirection, contentWidth);
             }
             else
             {
                 float direction = ParliamentSystem.GetLawBillDirection(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted });
-                DrawBillLiveEstimate(direction);
+                DrawBillLiveEstimate(direction, contentWidth);
                 DrawLawPartyStances(direction, contentWidth);
             }
 
@@ -6551,12 +6612,14 @@ namespace PoliSim.UI
         /// - so there is no real concept to surface, and inventing one would be exactly the "no
         /// invented numbers/concepts dressed as researched" rule 5 exists to forbid.
         /// </summary>
-        private void DrawLawBottomBar(List<LawRowEntry> visibleLaws)
+        private void DrawLawBottomBar(List<LawRowEntry> visibleLaws, float innerWidth)
         {
             GUILayout.Space(6f);
             GUILayout.BeginHorizontal();
             float approval = _playerCountry.State.ApprovalRating;
-            DrawColoredLabel($"Approval on hand: {approval.ToString("F1", CultureInfo.InvariantCulture)}", _labelStyle, PoliSimTheme.TextPrimary);
+            string approvalText = $"Approval on hand: {approval.ToString("F1", CultureInfo.InvariantCulture)}";
+            float approvalWidth = _labelStyle.CalcSize(new GUIContent(approvalText)).x + 4f;
+            DrawColoredLabel(approvalText, _labelStyle, PoliSimTheme.TextPrimary, GUILayout.Width(approvalWidth));
             GUILayout.FlexibleSpace();
 
             int affordable = 0;
@@ -6565,7 +6628,12 @@ namespace PoliSim.UI
                 if (row.Law.EnactmentApprovalCost <= approval) { affordable++; }
             }
 
-            GUILayout.Label($"Affordable now: {affordable} of {visibleLaws.Count} shown (cost <= approval on hand)", _labelStyle);
+            // Free-aspect pass (2026-08-26): the trailing label takes the row's measured remainder
+            // and WRAPS there rather than requesting natural width - at the 1280x720 floor the two
+            // labels' natural widths summed past the row and widened the whole box (the intro
+            // label's class, one row down).
+            float affordableWidth = Mathf.Max(_labelStyle.fontSize * 6f, innerWidth - approvalWidth - 16f);
+            GUILayout.Label($"Affordable now: {affordable} of {visibleLaws.Count} shown (cost <= approval on hand)", _labelStyle, GUILayout.Width(affordableWidth));
             GUILayout.EndHorizontal();
         }
 
@@ -6657,6 +6725,18 @@ namespace PoliSim.UI
                 LedgerRow.Cell(new Rect(rowRect.x + rowRect.width - sideWidth, rowRect.y, sideWidth, rowRect.height),
                     side, _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
             }
+        }
+
+        /// <summary>The statute-book search slot (board 1j): the label plus the paper-idiom field
+        /// (the saves menu's BuildTextFieldStyle precedent - the first capture rendered Unity's
+        /// grey default here). One method, two call sites, because the slot reflows between the
+        /// ORDER row and the summary row by measured fit - the free-aspect pass's floor case.</summary>
+        private void DrawLawSearchSlot(float labelWidth, float fieldWidth)
+        {
+            GUILayout.Label("SEARCH", _labelStyle, GUILayout.Width(labelWidth));
+            _lawSearchText = GUILayout.TextField(_lawSearchText ?? string.Empty, 48,
+                UiPalette.BuildTextFieldStyle(_labelStyle.fontSize),
+                GUILayout.Width(fieldWidth), GUILayout.ExpandWidth(false));
         }
 
         /// <summary>Board 1j's summary line needs the pending count before the partition loop runs -

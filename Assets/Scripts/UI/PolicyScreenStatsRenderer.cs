@@ -191,12 +191,40 @@ namespace PoliSim.UI
         /// <see cref="MeasureHeight"/> and <see cref="Draw"/> are the same calculation rather than two
         /// that agree until one is edited. This is the StatTile-formatter lesson applied to layout.
         /// </summary>
+        /// <summary>MeasuredLabel's own shrink floor - the smallest size a chip label ever renders
+        /// at, and therefore the size the width budget below must be derived from. The value is the
+        /// guard's own report ("needs 89.2 wide ... at 8px"), not a guess.</summary>
+        private const int LabelShrinkFloorPx = 8;
+
         private static void ComputeLayout(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats, out int shown, out int perRow, out int lines, out int omitted)
         {
             IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area);
             perRow = Mathf.Max(1, Mathf.FloorToInt(availableWidth / MinChipWidthFor(labelStyle)));
             shown = Mathf.Min(stats.Count, Mathf.Max(1, maxStats));
             omitted = stats.Count - shown;
+
+            // Free-aspect pass (2026-08-26): the per-font MinChipWidth constant is a measurement at
+            // one aspect, and the 1640x707 sweep caught it: at that density the name column came to
+            // 83.6px against "Labor Force Participation" needing 89.2 AT THE SHRINK FLOOR - a name
+            // no shrink can save. So the chip floor is now ALSO derived from the widest name this
+            // screen actually shows, measured at the floor size, plus the chip's fixed parts (the
+            // same inset/icon/sparkline arithmetic DrawChip spends) - and perRow drops until every
+            // chip can hold its own name. ChipTextStyle resets its fontSize on every call, so
+            // borrowing it for the floor-size probe cannot leak a shrunken style (its own doc).
+            GUIStyle probe = ChipTextStyle(labelStyle);
+            probe.fontSize = LabelShrinkFloorPx;
+            float widestNameAtFloor = 0f;
+            for (int i = 0; i < shown; i++)
+            {
+                widestNameAtFloor = Mathf.Max(widestNameAtFloor, probe.CalcSize(new GUIContent(PolicyScreenStats.GetName(stats[i]))).x);
+            }
+            float chipFixedParts = 4f + (IconSizeFor(labelStyle) + 6f) + 10f + SparklineWidthFor(labelStyle) + 4f;
+            float chipNeeded = widestNameAtFloor + chipFixedParts;
+            if (chipNeeded > 0f)
+            {
+                perRow = Mathf.Clamp(Mathf.FloorToInt(availableWidth / chipNeeded), 1, perRow);
+            }
+
             lines = Mathf.CeilToInt(shown / (float)perRow);
         }
 

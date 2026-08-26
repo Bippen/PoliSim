@@ -12154,6 +12154,62 @@ record: `DesignSync get_file` caps at 256 KiB and returned the 604 KB PNG TRUNCA
 byte-identity is not verifiable through that channel; the import-time hash check remains the
 authority. The §5 batch stays gated on Elias's Editor register side-by-side, unchanged.
 
+## The free-aspect overflow class — enumerated, fixed, and the minimum window ruled (2026-08-26)
+
+**The finding IS the window size.** Elias's playtest screenshot showed four overflow instances on
+the Laws surface with every guard silent. The Editor's own layout file
+(`UserSettings/Layouts/default-6000.dwlt`, modified the session's morning) records the Game view at
+**1640×707 free-aspect** — a third size the capture matrix had never seen, whose ~860px right
+column matches the screenshot's estimated width. Free-aspect play produces geometries the two-size
+matrix never exercises; that, not any single label, was the defect.
+
+**The ruling, stated:** minimum supported window **1280×720**; the capture matrix permanently
+gains **1640×707** (the observed real size) beside 1600×900 and 2560×1440, and this pass ran all
+four. Below 1280×720 nothing is promised.
+
+**Enumerated (the capture at the real size was the enumeration instrument), fixed, dispositioned:**
+1. **The sub-tab "Law..." truncation and its whole family** — root: THREE compounding wideners,
+   found one under the next. (a) *The width-less-label class at a new site*: the Laws intro
+   paragraph requested its natural unwrapped width (CalcSize ignores wordWrap with no width) and
+   silently stretched the whole box at EVERY size — it had been clipping at the box edge in the
+   2560 captures all along, guard-blind (a width-less label's rect IS its natural size). Same fix
+   as its two recorded predecessors: explicit measured width; the summary line, bottom-bar
+   affordability label, and the shared `DrawBillLiveEstimate` labels (via an opt-in wrapWidth,
+   the four other callers byte-identical) took the same treatment. (b) *The inner-width split*:
+   list+detail spent the OUTER availableWidth inside the box's padded interior — a constant
+   ~28px box overflow at every size; the "Laws" tab's long-standing edge-kiss at 1600, taken for
+   baseline twice, was THIS. Split now derives from `InnerWidth`. (c) *The ORDER row at the
+   floor*: its measured one-row minimum (~640px) exceeds 1280's inner (~585px), so the search
+   slot now REFLOWS onto the summary line by measured fit (bucket a pure function of window
+   size — Layout/Repaint agree). Status chips share-capped like every other chip row.
+2. **The kicker's mid-token wrap** — did not reproduce on HEAD (the 1jc explicit-width fixes);
+   wraps at spaces at all four sizes.
+3. **The description clipping at the pane fold** — the horizontal half was (1a/1b)'s
+   ExpandWidth-stretch; resolved with them. The vertical half-line at a scroll edge is standard
+   scrollview behavior, unchanged.
+4. **List rows cut off** — (1b)'s stretch; resolved with it. Plus the one instance the floor
+   sweep MEASURED: the 1j "APPROVAL" header caption needed 42.5px in 39.9 at the 8px shrink
+   floor — curated abbreviation ("APPR.") below the guard's own measured threshold, the D7 idiom.
+5. **New at 1640×707, guard-caught:** the policy-screen stat chips' `MinChipWidth` constant
+   (calibrated per-font at one aspect) left name columns of 83.6px against "Labor Force
+   Participation" needing 89.2 AT THE SHRINK FLOOR — a name no shrink can save.
+   `ComputeLayout` now ALSO floors the chip width by the widest shown name measured at the
+   floor size plus the chip's fixed parts, and drops chips-per-row until every chip holds its
+   own name (measure and draw stay one calculation).
+
+**Verification:** four size-iterations of compile+capture, final `fd1280/fd1640/fd1600/fd2560`
+all 64/64, **0 overflows, 0 escapes, 0 ATTRIB**, and the eye confirms composition: the floor
+reflows the search slot, 1640/1600 keep the inline form, every tab and chip fully inside the
+window, rule-15 against the prior sets showing only the intentional diffs (the intro finally
+wrapping INSIDE the box; the edge-kiss gone).
+
+**The machine gate's THIRD instance, same morning:** Unity Hub's installer
+(`UnityHubSetup-3.21.0` + `old-uninstaller`, started the minute Elias's session ended) rewrote
+the editor tree again mid-pass — 0x8007007E on launch, diagnosed read-only by process list +
+CreationTimes, waited out by watcher, everything green after. A stale `Temp/UnityLockfile` with
+no owning process was left alone and Unity cleared it on the next launch, as it does. The gate's
+first checks remain: process list + freshly-created files, never a blind re-run.
+
 ## Item 5 NAMED — the player-set rate as a deliberate choice (2026-08-25, ruled: C now, B the destination)
 
 The naming pass, exactly as ruled. **Player-facing:** the Federal Reserve tab's
