@@ -135,7 +135,8 @@ This replaces three previously-separate standing documents (`ROADMAP_BRIEF.md`, 
       point and `ScreenEdgeCheck` all read one shared default, `-shotdir=` still overrides;
       `/screenshots/` is gitignored defensively). Nothing under the capture dir is ever committed.
     - Applying this policy today keeps roughly 1,900 files (~1.9 GiB) and marks ~3.2 GiB prunable —
-      ✅ **APPROVED 2026-08-16 (Elias), execute at convenience.** The history rewrite was ruled YES
+      ✅ **APPROVED 2026-08-16 (Elias) — and EXECUTED the same day** (the prune ran alongside the
+      history rewrite; the execution annotated here 2026-08-26, one word late per its own rule). The history rewrite was ruled YES
       the same day and ✅ **EXECUTED later that day as its own gated pass** — pack 742.03 → 4.92
       MiB, 76 citations swept, fresh clone at 4.89 MiB with all six checks green. Full record in
       CLAUDE.md "The history rewrite — executed 2026-08-16"; backup + commit-map at
@@ -175,24 +176,23 @@ because they are not done.
 - ✅ **macro Step A4 — DONE 2026-08-02.** Its derived stats are on screen (Statistics → Domestic, under
   the headline tiles): GDP per capita, tax burden, government spending, deficit/surplus and sector
   shares. It had been built and trajectory-validated but displayed nothing, which is the "built but
-  uncalled" state this project repeatedly mistook for done. **Needs a visual look**, like anything new.
+  uncalled" state this project repeatedly mistook for done. ~~Needs a visual look~~ — ✅ **the look
+  happened**: the Derived panel converted to the row family (`397d829`) and was reviewed by eye at
+  2560 in playtest 2; struck 2026-08-26 (ruling C3).
 - **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md` slimmed to the live register (2026-08-26):
   **§S** the send package (§8 + §9 + the D1 verdict + the 1j-aware note — waiting on Elias's send),
   **D1** the batch of nine (waiting on Design's delivery, gate cleared 2026-08-26), **E2** (item 10,
   13 Sept), **E3** (a raster path whose output is comparable), and **§B's three seed quality debts**
   (a database re-sourcing session; none blocks a batch). All closed prose migrated to
   `COMPLETED.md` §23.
-- 🔴→📋 **FISCAL-ENGINE: the unbounded debt divergence — SWEPT AND EMPTY (2026-08-16, `afe0f24`).**
-  The ruled FRF sweep ran in real Unity in the daily regime and **no pair converges within the
-  revenue-capacity wall** — steeper in-wall slopes strictly mildew the divergence (S=4 roughly
-  halves the terminal slope) but every climber still climbs; S≥6 oscillates; the loosened floor is
-  catastrophic. The diagnosis stands confirmed AS A MECHANISM LIMIT: a flow multiplier cannot
-  outrun stock compounding wherever its cap sits. **Next: the STOCK-VERSUS-FLOW MECHANISM REPORT**
-  — what real sovereigns do outside this loop (maturity structure, inflation erosion of the nominal
-  stock, primary-surplus rules above thresholds) — **its own pass with its own ruling, not started
-  at the sweep's tail.** C4's closure (`MISSING_PREREQUISITES.md` §F1) now waits on that report.
-  *(History: diagnosis 2026-08-11; the debt-to-zero bimodality FIXED 2026-08-02, record in
-  `COMPLETED.md`.)*
+- ✅ **FISCAL-ENGINE — the whole arc CLOSED 2026-08-17** (sweep-empty `afe0f24` 08-16 → the
+  stock-vs-flow mechanism report `bcbba47` → erosion R1–R3 `685ebd5` → maturity R4 `b05150f` →
+  F1/R5 `720ccee`). The divergence graduated from diagnosis to measured mechanism limit, the two
+  missing identity terms shipped one per baseline, and C4/A1/F1 all closed on it. Records:
+  `COMPLETED.md` §§22/23. *(This bullet's "next: the report… C4 waits on it" framing had been
+  stale by nine days at the 08-25 re-derivation and is struck in the 2026-08-26 consolidation,
+  not silently. History: diagnosis 2026-08-11; the debt-to-zero bimodality FIXED 2026-08-02,
+  `COMPLETED.md` §18.)*
 - **IN FLIGHT — v2.0 (item 9-v2.0):** the IMGUI half is COMPLETE through the chrome placement track
   (2026-08-12 — row family, six placements, Division Records, every chrome sprite dispositioned by
   Phase 2's derived statement). Coverage machinery standing: six countries × two sizes captured, the
@@ -231,7 +231,8 @@ because they are not done.
     is read only from the UI layer — grep, not argument). **Live residue, none blocking**: the
     category filter is inert until a second `LawCategory` exists (a content gap, reported as such —
     not a UI bug); five categories sit at 0; the wanted-effects log names eight axis-level gaps the
-    six dials cannot represent.
+    six dials cannot represent. **→ Now scheduled: the ruled build order (below) names the
+    couplings pass and the second-category pass as its items 2 and 3.**
   - **Playtest 1 package (five scoped, two fixed — the scoping file consumed to `COMPLETED.md` §21, 2026-08-26) — dispositions:**
 
     | item | state |
@@ -266,6 +267,42 @@ because they are not done.
 
     Parliament with real parties/mandates = item 10 (13 Sept), stated in the playtest and already
     where the work is.
+
+## The ruled build order (2026-08-26) — five scheduled passes, in sequence
+
+*Terminal rulings, rule 4 (the consolidation pass). Each runs under the full standing bar when
+its turn comes; nothing is dated.*
+
+1. **The Sweden recalibration pass** — the spending LEVEL question, the mandatory/discretionary
+   flag flips (they CHANGE FLOWS — full sim-math bar), the revenue-side seed artifact, and the
+   measured ~32%-of-GDP year-1 structural surplus (playtest-2 finding 2). **Precedes the other
+   four countries' decomposition passes**, which stay unscheduled behind it.
+2. **The Crime & Justice couplings pass** — consumes the logged gap list (no sentencing→prison
+   edge; BorderEnforcement single-edge; no dial→budget), recorded as the couplings-pass input in
+   `CrimeJusticeCouplings.cs`'s own doc; the wanted-effects log (`LawCatalog.cs`, eight
+   axis-level gaps) stays a research archive drawn on as needed.
+3. **The second LawCategory content pass** — un-inerts the category filter (five categories at
+   0); Board 1j's category-cell retirement reverses when it ships.
+4. **The Riksbank-B gate-1 fix** — the Taylor-path output-gap distortion (the −14.5% structural
+   gap pins the suggested rate to the 0-floor regardless of realized inflation; evidence:
+   `COMPLETED.md` §22, the Q5 §3 table). Its stated vehicle (Q5) shipped without it; scheduled
+   here so option B is buildable when item 10 opens (13 Sept). B's second gate — item 10's own
+   appointment machinery — still applies to B itself.
+5. **Tariff-to-stock** — the F1-shaped fix: tariff revenue reaches the Budget display accumulator
+   and never the debt stock (CLAUDE.md "What remains dark"); enters as a fix entry per the F1
+   precedent rather than staying a stated model property.
+
+**Queued at fired or named triggers (ruled 2026-08-26), not scheduled:**
+
+- **The causal-graph screen — trigger FIRED 2026-08-25**: the ledger carries a third stat's terms
+  (Approval, Consumer Confidence, Debt), and the term IDs ARE the derived stat→stat edge list.
+  Queued per the fiscal-chain precedent; derived, never authored.
+- **Per-scenario term accumulation** (the epilogue's named v1 upgrade) — trigger: the first
+  scenario whose epilogue reads wrong without it.
+- **Investment deepening (R-Q5e)** — return trigger: a capital stock ships, or I/GDP measures
+  cyclical (both conditions recorded with the deferral, `COMPLETED.md` §22).
+- **StatNodeId/icon promotion** for R4-1's two Society rows (youth unemployment, life
+  expectancy) — the icon ask joins the next Design asset batch after D1's nine land.
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and
@@ -563,11 +600,11 @@ minister/interrupt/ceremony skeleton. Nothing pre-scoped now beyond the gate.
 | **~23 Aug** — GitHub GC re-check | ✅ **CLOSED 2026-08-25** — `curl https://api.github.com/repos/Bippen/PoliSim` → `"size": 9221` KB (~9.0 MiB), down from the ~746 MiB read on 08-16. GitHub's own maintenance ran; no support ticket needed |
 | **Delivery** — D1's portraits | ✅ **GATE CLEARED 2026-08-26** — the Editor register side-by-side PASSED (the painted plate belongs beside the existing register). Design may proceed with the batch of nine per the approved §5 PoC; the verdict travels in the next send package. Now waiting on Design's delivery, import checks standing |
 | **Delivery** — E3's rasterizer | the gate is the sharpened form: a raster path whose OUTPUT is comparable (the module tessellates; `RenderSpriteToTexture2D` renders blank — probed); `StripCutDiffCheck`'s compare machinery finished and waiting |
-| **Access** — the Editor checklist | ✅ **THE THREE GAP ENTRIES CLOSED 2026-08-26** (Elias's live session): folder tongues VERIFIED (hover face, spine shift, real click on the deferred-painted tab); save/load layer 3 + F5/F9 + saves menu VERIFIED; portrait register side-by-side PASSED — **D1's batch of nine unblocked**. Remaining in this row: the capture-set reviews only. **PLUS the capture-set reviews awaiting Elias's eyes (built-not-confirmed, rule 15's third layer)** — Step 2's `s2usa*_93*`, Step 3's `s3usa*_94*`, and *added 2026-08-25* **the shipped law browser** (`panewidth1600f_06f_*` / `panewidth2560final_06f_*`, the post-fix sets at both sizes; the two-column list+detail board, status groups, the magnitude rule, the citation pane — 0 guard violations, but composition — does it READ — is the eye's question alone), and *added 2026-08-25* **the fiscal trace** (`fiscal1600s4_93c_trace_debt` / `_95d_italydebt_trace_debt` and the `fiscal2560s_*` pair — the debt section on the USA's warm-up period and on Italy mid-scenario; note the approval trace's own `93_trace_approval` now ends at the tab rather than the screen edge under the panel's new host-height cap — the diff against `s2usa*_93*`, stated) |
-| **Play** — FA cadence | → step 3 (graduates to scenario work) |
+| **Access** — the Editor checklist | ✅ **THE THREE GAP ENTRIES CLOSED 2026-08-26** (Elias's live session): folder tongues VERIFIED (hover face, spine shift, real click on the deferred-painted tab); save/load layer 3 + F5/F9 + saves menu VERIFIED; portrait register side-by-side PASSED — **D1's batch of nine unblocked**. Remaining in this row: the capture-set reviews only. **PLUS the capture-set reviews awaiting Elias's eyes (built-not-confirmed, rule 15's third layer)** — Step 2's `s2usa*_93*`, Step 3's `s3usa*_94*`, and *added 2026-08-25* **the shipped law browser — review target UPDATED 2026-08-26 to the `board1jc1600/2560_06f*` sets + `06g`** (Board 1j + the Expected-effects band; the earlier `panewidth*` sets are superseded by the 1j rebuild — 0 guard violations, but composition — does it READ — is the eye's question alone), and *added 2026-08-25* **the fiscal trace** (`fiscal1600s4_93c_trace_debt` / `_95d_italydebt_trace_debt` and the `fiscal2560s_*` pair — the debt section on the USA's warm-up period and on Italy mid-scenario; note the approval trace's own `93_trace_approval` now ends at the tab rather than the screen edge under the panel's new host-height cap — the diff against `s2usa*_93*`, stated) |
+| **Play** — FA cadence (~3.65/turn, intended-or-inherited) | graduated: the per-scenario multiplier shipped with Step 3 (R-S3e); the three-rate sweep SUPERSEDED by ruling 2026-08-26 (C5) — the felt-pacing question now rides the decision-density gate below |
 | **Play** — the next playtest: **does decision density READ as closed?** | Its own item, by name (ruled 2026-08-25, Elias). Fifty enactable laws answered the MEASURABLE half of the 08-18 gap (choices 19 → 69; prompts unchanged by construction); whether a player FEELS the gap closed is a playtester's question, not a constant's, and no measurement this side of a playtest can answer it. Closes when a playtester says so either way |
-| **Play** — the creditor scenario | → step 3's slate ("inherit the fund") |
-| **Rulings (Elias)** — the queue remainder | Q6–Q10 at their named triggers; **⚠ Q4 is SUBSTANTIALLY ABSORBED BY Q3-Design-B** (wages already read the productivity trend; the residual — trend vs realized — is moot until Q5 splits them and is decided there, per step 5's flag). A3 at its trigger; F2 stands recorded |
+| **Play** — the creditor scenario | ✅ CLOSED 2026-08-18 — "Inherit the Fund" shipped as Step 3's slice; both arms of the symmetric erosion term observed in one run. Row closed 2026-08-26 |
+| **Rulings (Elias)** — the queue remainder | Q6–Q10 at their named triggers; **✅ Q4 RESOLVED-BY-R-Q5d (confirmed 2026-08-26, C6)** — Q5 split trend from cycle and decided the residual there, closing the "moot until" condition; ~~A3 at its trigger~~ struck 2026-08-26 (C1 — A3 was RESOLVED 2026-08-02, the re-listing a two-authors artifact; `COMPLETED.md` §23); F2 stands recorded |
 
 *The closed first sequence follows, kept as the record it is.*
 
@@ -593,150 +630,18 @@ This is the one authoritative order, replacing whatever each original document s
    `COMPLETED.md` §19 on close-out, 2026-08-17. The five CLAUDE.md batch records remain the
    detailed authority.)*
 7. **Continuous Time Migration — Phases 1 through 5** (the actual daily-granularity conversion of each system's math, safest-first, core macro engine last). This is deliberately positioned after the political-systems work — it's a separate concern (simulation granularity, not who can change policy) and touching the same files for two unrelated reasons in the same window is worth avoiding.
-8. **NEW (2026-07-31) — Build a save/load system.** Not yet scoped, not yet sequenced into the numbered order above (appended here rather than renumbering 1-7, which are referenced extensively throughout this document and `CLAUDE.md`). **Recommendation, pending Elias's confirmation**: scope and build this before or alongside Round 4 (item 6) — Round 4 is already unscoped and is the natural next planning point, and building more features on top of an unpersisted game only compounds the amount of state a save system will eventually need to cover. Reasoning this is a real severity issue, not a nice-to-have: confirmed via direct investigation (zero `PlayerPrefs`/`JsonUtility`/`BinaryFormatter`/any persistence mechanism anywhere in the codebase) that every Unity Editor/Play-mode restart discards ALL game state silently, with no error or warning - and the amount of state that now matters has grown substantially since this was last a non-issue: Cabinet ministers and their competence/philosophy, Parliament seat composition, any pending TaxBill/BudgetBill and its DaysRemaining countdown, every draft dictionary across every gated tab, the calendar date itself, Fed Chair terms, SWF holdings - losing any of this on an ordinary restart is a real loss of play, not a cosmetic gap. This was the leading suspect for a live-play anomaly where an SWF draft never became standing across two observed fiscal-year cycles - **now confirmed as the actual cause**: Elias confirmed Unity was closed/reopened multiple times between setting the draft and the next fiscal date, and the underlying bill mechanism itself was independently proven correct across two full fiscal years via a targeted diagnostic (see CLAUDE.md's "Master Sequence step 5a/5b/5c" writeup). Needs its own design pass before implementation starts, not a guess: what serializes cleanly under Unity's own `JsonUtility` (which - like Unity's Inspector serialization generally - doesn't support `Dictionary<>` natively either, the same limitation already visible as `UAC1009` warnings on several existing fields, e.g. `PolicyDecision.TaxRateOverrides`/`SpendingLineChanges`/every Sector-override dictionary; `BudgetBill`'s own dictionaries would hit the same wall), whether a mid-cycle pending bill's DaysRemaining and a real save timestamp interact cleanly, and how much of `World`/`Country`'s current in-memory object graph can serialize as-is versus needs a dedicated save-data shape. Escalate format/scope decisions rather than guessing, per this document's own working discipline item 4.
-
-   **SCOPED (2026-08-01), both escalated decisions now answered by Elias.** The design pass this item
-   asked for has been done, and the answer to "what serializes cleanly under `JsonUtility`" turned out to
-   be: **essentially none of it.** `JsonUtility` fails this state model on four independent counts, each
-   verified against the real code rather than assumed:
-   - **`Dictionary` is unsupported** — `SimulationManager` alone holds 10+, several NESTED
-     (`Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>>`), on top of `Country`'s own. This is
-     what the 11 standing `UAC1009` build warnings have been reporting all along.
-   - **`DateTime` is unsupported** — and `SimulationManager.CurrentDate` is a `DateTime` auto-property
-     with a *private setter*, so it fails twice over. The in-game calendar is not optional state.
-   - **`readonly` collection fields are not serialized** — 4 of them, including `StatHistory`'s series.
-   - **Nullables are unsupported** — `DateTime?` throughout `StatHistory`.
-
-   **Decision 1 — serializer: Newtonsoft JSON** (`com.unity.nuget.newtonsoft-json`, a Unity-published
-   package), chosen by Elias over hand-writing a DTO layer. It handles dictionaries, nested dictionaries,
-   `DateTime`, nullables and private setters natively, so game classes can be persisted close to as-is.
-   The rejected alternative meant mirroring a large share of the 33 types in `Assets/Scripts/Data` into
-   save-only DTOs, flattening every dictionary into paired lists, hand-encoding `DateTime` — and
-   re-mirroring every one of them on each future model change. Added to `Packages/manifest.json`.
-
-   **Decision 2 — first-pass scope: all three layers**, per Elias:
-   1. **Core sim state** — `World` (countries, economies, parliaments, cabinets) + current turn/date.
-   2. **Pending bills and interrupts** — in-flight bills WITH their day counters, plus pending
-      cabinet/foreign-policy/Fed-chair decisions. Omitting these would make a reload silently cancel
-      anything mid-vote, which is its own version of the bug this item exists to fix.
-   3. **UI draft values** — the unintroduced slider drafts. This is precisely what was lost in the
-      original 5c incident (the SWF draft), so a "save system" that dropped them would not have
-      prevented the very bug that motivated it.
-
-   **Implementation note for whoever builds it**: `SimulationManager`'s pending state lives in `private
-   readonly` dictionaries, so it needs an explicit `CaptureSaveState()`/`RestoreSaveState()` pair
-   returning a plain state object, rather than reflection over private fields. Explicit is better here
-   for a reason beyond taste: it makes the persisted surface reviewable, so a newly added pending-bill
-   type that nobody wired into the save shows up as an obvious omission instead of silently
-   half-persisting. Same for `GameController`'s drafts.
-
-   ✅ **MECHANISM REPORT WRITTEN 2026-08-16** — see CLAUDE.md "Save/load mechanism report". The state
-   surface re-inventoried from the code (14 pending structures in the manager, ~30 controller drafts,
-   the five serialization hazards named from real call sites — shared `CurrencyZone` identity first
-   among them), the save location (`persistentDataPath`, outside the repo, atomic write), the version
-   policy (additive changes free; item-10-class model swaps SAVE-BREAKING by declared `SaveVersion`
-   bump, not migrated — item 10's collision map gains that line), and the batch-mode round-trip
-   diagnostic that validates all of it without a live Editor. **The RNG layer was found already
-   built and diagnostic-proven** (`SimulationRandom.CaptureDrawCounts`/`RestoreState`).
-   Implementation is unblocked on this report's shape. ✅ **Version policy RULED A 2026-08-16
-   (Elias): refuse-load with a plain message, `SaveVersion` bump on model swaps, no migration
-   machinery pre-release** — built as ruled.
-
-   ✅ **CORE BUILT AND GATE-GREEN, same day** — see CLAUDE.md "Save/load BUILT and gate-green" for
-   the implementation record, including the one finding the gate caught (Json.NET's
-   populate-in-place discard of the tuple-dict surrogate, isolated against the project's own DLL,
-   fixed with a load-bearing `ObjectCreationHandling.Replace`). F5 saves / F9 loads as the
-   temporary debug entry point; loads resume PAUSED; saves live in `persistentDataPath/saves/`.
-
-   ✅ **THE SAVES MENU BUILT, same day, on clean history** — see CLAUDE.md "The saves menu". The
-   spec was checked and is silent on save/load, so IMGUI dashboard furniture contradicts nothing;
-   Saves button on the speed row (alive through game over), exclusive screen, deferred load at
-   Update's safe point, incompatible saves listed-not-hidden, the .bak story in the footer.
-   Verified 79 captures × both sizes, two first-capture composition defects fixed before the final
-   sets. **Item 8's one remaining opening: the layer-3 live checklist** (OPEN VERIFICATION GAP
-   block in CLAUDE.md — batch cannot reach OnGUI or the keyboard; closes in minutes with Editor
-   access).
-
-   **Dependency is in place and proven (commit `ebcc2d2`)**: the package resolved, and a throwaway probe
-   serializing a NESTED dictionary — the precise case `JsonUtility` cannot express — compiled clean
-   against it before being deleted. One local-only gotcha for whoever picks this up: Unity had not
-   regenerated `Assembly-CSharp.csproj` with the Newtonsoft reference, so it was added by hand (that file
-   is gitignored, so this does not travel with the repo — if a fresh clone can't see `Newtonsoft.Json`,
-   let the Editor regenerate the csproj or re-add the reference the same way).
-
-   **Independent confirmation from Unity's own analyzer (2026-08-01)**: adding `Country.Published` produced
-   `warning UAC1001: Field 'Published' type 'PoliSim.Data.PublishedData' is skipped by serialization`.
-   Unity's serializer silently DROPS the entire published series — the exact failure this item's
-   serializer decision was made to avoid, now demonstrated by the compiler rather than argued from
-   documentation. Note the word *skipped*: no error, no data, no indication at runtime that anything was
-   lost. Had save/load been built on `JsonUtility`, every published figure would have vanished on reload
-   while the save file looked perfectly valid.
-
-   The warning is deliberately NOT silenced. Adding `[System.Serializable]` to `PublishedData` would
-   remove it without making the type serializable — its `Dictionary` fields remain unsupported — so the
-   warning would be traded for a false reassurance. It stands as an accurate signal, and it is why the
-   project's warning baseline moved from 11 to 12.
-
-   **Implementation has NOT started.** Everything above is design and dependency work. The build order
-   that follows from the two decisions: (1) a `SaveGame` payload type holding format version, player
-   country, turn/date, `World`, the simulation snapshot and the draft snapshot; (2) explicit
-   `CaptureSaveState`/`RestoreSaveState` on `SimulationManager` and on `GameController`'s drafts;
-   (3) read/write through `Application.persistentDataPath`; (4) UI to trigger it. **Include the format
-   version from the very first write** — this game's data model is still changing weekly, and a save file
-   with no version field is unreadable the moment a field moves, with no way to detect that it happened.
-
-   ### Scoping extension (2026-08-01) — two save-blocking types that did not exist when the above was written
-
-   The design above was written on 2026-07-31. Step A landed on 2026-08-01 and introduced two pieces of
-   state the serializer decision does **not** already cover. Both were found by inspection, not
-   speculation, and both would produce a save file that loads without error while being wrong.
-
-   **Gap 1 — `SimulationRandom` cannot be saved as designed, and is the more serious of the two.**
-   It holds `Dictionary<Stream, System.Random>` plus the master seed, and `System.Random` exposes no way
-   to read or restore its internal position. Saving only the master seed and re-seeding on load therefore
-   rewinds **every stream to its turn-zero position**: a game saved at turn 50 and reloaded would replay
-   the same event draws, Fed-chair candidates and cabinet decisions the player already saw, in the same
-   order. The save would look valid and the simulation would still look deterministic — it would just be
-   running the wrong part of the sequence. This is a *replay*, not a reroll, so it is not a save-scum
-   exploit; it is a correctness failure that is easy to mistake for one.
-
-   Two viable fixes, and this is a genuine fork rather than a clear call:
-
-   - **Wrap `System.Random` in a counting shim** that records how many draws each stream has taken, then
-     on load re-seed and fast-forward each stream by its recorded count. Minimal change to the existing
-     seeding contract, and the `Stream` enum's append-only rule keeps working untouched. Cost: the
-     fast-forward is O(draws), a real if brief load-time loop after a long game.
-   - **Replace `System.Random` with a small explicit PRNG** (e.g. 64-bit xorshift) whose entire state is
-     two integers that serialize directly. Constant-time load, and the state becomes inspectable in a
-     diff. Cost: it changes every existing stream's number sequence — a deliberate, one-time break of
-     every recorded baseline in `CLAUDE.md`, and this project has already accumulated several such
-     discontinuities in a single day.
-
-   **RESOLVED (2026-08-01) — the counting shim.** Elias's ruling: reversible beats permanent under
-   uncertainty, and the xorshift option stays revisitable once save/load exists and real load times are
-   known. It preserves every recorded baseline, and its cost is bounded by draws-per-game rather than
-   by anything unbounded. **This is the version to build.**
-
-   **Gap 2 — `PublishedData.PeriodClosingValues` is keyed by a `ValueTuple`.** *(Key type widened to
-   `ClosingStat` on 2026-08-02; still a `ValueTuple`, so this gap stands unchanged.)* Its declared type is
-   `Dictionary<(PublishedStat Stat, DateTime PeriodStart), float>`. Newtonsoft serializes dictionaries as
-   JSON objects with string keys and needs a `TypeConverter` to render a key as a string; `ValueTuple`
-   has none, so this will fail or emit unusable keys. Same class of problem as the `UAC1001` finding
-   above, caught before a silent data loss rather than after.
-
-   It cannot simply be dropped from the save. `PeriodClosingValues` is what a later revision converges
-   toward, and publishing has already had exactly one bug from resolving that value wrongly — revisions
-   converging on the publication date's live figure instead of the reference period's closing figure. A
-   save that omitted it would reintroduce that bug on every load. It also grows without bound, one entry
-   per stat per period forever, so it wants a retention rule at the same time.
-
-   Straightforward fix, no fork: flatten it into a list of `{stat, periodStart, value}` records on
-   capture and rebuild the dictionary on restore — the same flattening the design above already commits
-   to for every other dictionary. The retention rule (how many closed periods stay worth keeping once
-   every publication referencing them is `Final`) is a separate question worth answering deliberately
-   rather than defaulting to "keep everything".
-
-   **Still not started, and correctly so.** This extension adds scope; it does not begin implementation.
+8. **Save/load — ✅ SCOPED, RULED, BUILT, GATE-GREEN AND LIVE-VERIFIED.** The full design record —
+   the four `JsonUtility` failure classes verified against real code, the two Elias rulings
+   (serializer: Newtonsoft `com.unity.nuget.newtonsoft-json`; scope: ALL THREE LAYERS — core sim
+   state, pending bills/interrupts with their counters, UI draft values), the two save-blocking
+   gaps (`SimulationRandom`'s counting-shim ruling; `PeriodClosingValues`' ValueTuple key) and the
+   `UAC1001` demonstration — migrated to `COMPLETED.md` §26 (2026-08-26). Build chain: mechanism
+   report 2026-08-16 (CLAUDE.md "Save/load mechanism report"; version policy RULED A — refuse-load
+   with a plain message, `SaveVersion` bump on model swaps, no migration machinery pre-release) →
+   core built gate-green the same day (F5/F9, `SaveLoadRoundTripDiagnostic` 12/12; CLAUDE.md
+   "Save/load BUILT and gate-green") → the saves menu the same day (79 captures × both sizes;
+   CLAUDE.md "The saves menu") → **the layer-3 live checklist VERIFIED 2026-08-26** (F5/F9 + the
+   saves menu in Elias's Editor session). Nothing of item 8 remains open.
 
 9. **NEW (2026-08-01) — Macro Data & Release Calendar Overhaul (Steps A–D).** Full spec was
    `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md` — **every step done; the directive consumed to
@@ -744,67 +649,23 @@ This is the one authoritative order, replacing whatever each original document s
    real-world figure it depended on is in `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. Appended rather
    than renumbering 1-8, which are referenced throughout this document and `CLAUDE.md`.
 
-   **Why it is four steps and not one** — the directive's own reasoning, recorded here because it governs
-   how the work may be sequenced: seven new tracked stats + a revision mechanic + per-period lag tracking
-   + six countries publishing independently is the largest single change attempted on this project,
-   larger than Demographics (5 fields, which still needed two structural bug fixes and three correction
-   rounds). The split exists to make failure ATTRIBUTABLE. Step A introduces the publication machinery
-   with **zero new tracked variables**, so any trajectory drift can only be the machinery; Step C then
-   adds stats onto a foundation already proven inert. Landing both together would make a drift
-   impossible to attribute — and per the directive, such a drift "may not surface for hundreds of turns".
+   **The four-step split's own reasoning** (make failure ATTRIBUTABLE — Step A proved the
+   machinery inert with zero new variables before Step C added stats on top) is recorded with the
+   consumed directive in `COMPLETED.md` §25; the step records are §§6/9 (A, B, D) and §19 (Step C
+   as Round 4's five batches). Elias's D-first sequencing change and the A4 caller-check lesson
+   ("check callers before believing a feature exists") live in §6 and this file's own
+   consolidation rules.
 
-   - **Step A1–A3 — release calendar, published series, revisions. DONE (2026-08-01).** See `COMPLETED.md`.
+   **THE CRITICAL CORRECTNESS RISK — still binding on everything downstream**: the player-facing
+   UI reads the PUBLISHED (lagged, possibly-revised) series; every internal system — Okun's Law,
+   the Phillips Curve, the Fiscal Reaction Function, sector integration — must keep reading LIVE
+   values. A leak makes the model consume its own stale output, and the effect may not appear for
+   hundreds of turns. The one-directional rule (`PublicationSystem` writes `Country.Published`,
+   reads `Country.State`, never the reverse) is the enforcement, checked across 55 call sites.
 
-     ⚠ **CORRECTED 2026-08-02, and it is the kind of error this consolidation exists to catch.** This line
-     previously read *"Step A — release calendar, published series, revisions, Tier 0 derived stats. DONE
-     (2026-08-01), commit `e3a0feb`"* — wrong on two counts. `e3a0feb` contains exactly two files,
-     `PublicationSystem.cs` and `SimulationManager.cs`. `DerivedStats.cs` was not added until `70798e9`,
-     whose own message says "NOT trajectory-validated". **A4 was folded into a DONE marker for a commit
-     that did not contain it**, and stayed there for a day.
-   - **Step A4 — Tier 0 derived stats. DONE 2026-08-02.** Built (`70798e9`), trajectory-validated
-     (`3d77b11` — zero finiteness failures across the full matrix), and now **displayed**: a "Derived"
-     panel on Statistics → Domestic carries GDP per capita, tax burden % GDP, spending % GDP, the signed
-     deficit/surplus and sector shares. The directive defines A4 as *"pure display arithmetic"*, so it was
-     not done while it displayed nothing — for a full day, with four of its six methods reachable only
-     from the test harness. **The lesson is the roadmap's own: check callers before believing a feature
-     exists.**
-   - **Step B — graph overhaul + contextual policy-screen stats. ✅ DONE 2026-08-02** *(reconciled
-     2026-08-12 — "both await visual confirmation" outlived the review's closure: items 3 and 10 were
-     among the eleven Elias confirmed, `COMPLETED.md` §16)*. B1 `dd7e323`, B2 `5701a04`/`4869476`.
-   - **Step C — the seven new tracked stats, in four batches** (C1 housing, C2 inequality + real wages,
-     C3 youth unemployment + life expectancy, C4 credit rating as a DERIVED value). Never all at once.
-     Rule 11 applies to every batch: any effect on an existing tracked variable folds into that
-     variable's existing combined ceiling, audited first — `PotentialGrowthRate` and
-     `LaborForceParticipationRate` are already heavily stacked.
-   - **Step D — sprite asset request.** A document, not code.
-
-   **SEQUENCING CHANGED BY ELIAS (2026-08-01), superseding the directive's own "Sequencing summary"**:
-   start with **STEP D**, not Step A. Sprite work has a long external turnaround (Claude Design round
-   trip, security review, import), while A–C are pure code that does not depend on it. D goes out first
-   and runs in parallel; **A starts immediately after D's request document is written**, not after the
-   assets arrive. The directive's ordering is otherwise unchanged.
-
-   **Consequential adjustment this forces**: Step D's spec says to derive the stat-icon list "from the
-   real stat enum once Step C's stats exist" — circular if D runs first. Resolved by compiling the list
-   from (a) the stats NAMED IN THE DIRECTIVE and (b) the 29 fields already on `EconomyState`, which are
-   readable today. Any icon whose exact name depends on a not-yet-written enum ships with a provisional
-   filename to be reconciled at implementation time, rather than blocking the request.
-
-   **THE CRITICAL CORRECTNESS RISK, and Step A's actual bar**: the player-facing UI reads the PUBLISHED
-   (lagged, possibly-revised) series; every internal system — Okun's Law, the Phillips Curve, the Fiscal
-   Reaction Function, sector integration — must keep reading LIVE values. A leak makes the model consume
-   its own stale output, and the effect may not appear for hundreds of turns. **Step A must change ZERO
-   simulation numbers, proven by identical trajectories before and after** — not by inspection. That
-   requires capturing a baseline run on the pre-change HEAD BEFORE any Step A code is written, since an
-   untainted reference cannot be reconstructed afterwards.
-
-   **`[GAP]` figures are Elias's to source, never to invent.** This session has no web search. Each Step
-   C batch must report its needed gaps before starting. Three further traps the seed file flags
-   explicitly and that must be carried forward: `[PARTIAL]`/source-conflicted figures must not be
-   silently merged (Sweden ~70 and Poland ~24.5 productivity are Statista, not OECD PPP — Poland is
-   implausible against an OECD PPP average of $67.5); Gini needs one normalized scale (Eurostat 0–100 vs
-   US 0–1, different methodology); and youth unemployment must use *rate* consistently, never *ratio*
-   (the Germany 3.6 / Poland 3.5 figures are ratios and would badly distort the model).
+   **`[GAP]` figures are Elias's to source, never to invent** — still binding for all future seed
+   work; the seed doc's variant-axis warnings govern any re-sourcing (`MISSING_PREREQUISITES.md`
+   §B carries the three surviving quality debts).
 
 If a step's own validation fails, fix it before moving to the next — never proceed past a failing step to "make progress" on the next one.
 
@@ -1199,8 +1060,12 @@ If a step's own validation fails, fix it before moving to the next — never pro
    2. ✅ **The font test — ANSWERED**, and it also surfaced that draft amber and the Political hue were
       the same hex. They are now separate. See `CLAUDE.md`.
 
-   Not blocking, but must be settled before art is commissioned: the three modals that render in TWO
-   places via `drawOwnFrame` each need both a framed standalone and an unframed embedded treatment.
+   ~~Not blocking, but must be settled before art is commissioned: the three modals that render in
+   TWO places via `drawOwnFrame` each need both a framed standalone and an unframed embedded
+   treatment.~~ ✅ **ABSORBED (confirmed 2026-08-26, ruling C2)** — the `ui_frame_ornate`
+   Canvas-path ruling (2026-08-12) means the IMGUI modals' framed treatment dies with the Canvas
+   rebuild, and the dual-siting answer (frame/title/plate as separate sprites the embedded path
+   skips) was delivered in pass 2 (`COMPLETED.md` §24).
 
 ---
 
@@ -1511,165 +1376,31 @@ list stays short enough to actually read.
   was raised. Closing it is not a judgement that it is a bad idea; it is a judgement that a question
   nobody is waiting on should not sit in a list people read looking for work.
 
-- ✅ **RULED 2026-08-02 — the net-creditor bound: FIX THE CAUSE, keep a non-binding guard.** Route SWF
-  returns through the fiscal reaction multiplier so the stabiliser can reach them, **and** retain a
-  deliberately wide runaway guard (~−1000% of GDP) that no country approaches. **The −300% symmetric bound
-  is retired.**
+- ✅ **The net-creditor bound ruling (2026-08-02) — FIX THE CAUSE, keep a non-binding guard — is
+  CLOSED, VINDICATED AND MIGRATED (2026-08-26).** Both candidate fixes shipped in `0386e83` (SWF
+  returns inside the multiplier; returns treated as a stock with the 3%/yr structural draw — which
+  also closed a double-count); the −300% symmetric bound retired; `DebtClampDiagnostic` measured
+  the guard NEVER ENGAGING (0/120 negative turns, all six countries) while pre-fix Sweden/France
+  sat pinned at −296…−299 — *"a ruling made on reasoning, confirmed by measurement nine days
+  later."* The Italy "+7.0" question closed with the 1000-turn supersession (never attributable to
+  the SWF change). Full progression: `COMPLETED.md` §§13/18/23, CLAUDE.md's fiscal-arc entries,
+  and git history for the struck-through stages this entry used to carry.
 
-  Elias's reasoning, recorded so it is not reopened:
-  1. **France at −298% against a −300% bound is not a risk, it is already pinning.** Everything downstream
-     of C4 reads that number, so it is reading the bound rather than the model.
-  2. **The deficit-term investigation is the very next work and it reads this value.** Investigating a
-     clamped signal wastes the investigation — exactly how the debt floor hid the deficit term until it
-     came off.
-  3. **A guard is not a bound.** Its job is to stop an unbounded runaway during and after the fix, never
-     to shape a live value. **If any country reaches it, that is a bug report, not a clamp.**
-  4. The Norway calibration this touches **has anchors**, so the cause-fix's risk is measurable where the
-     bound's risk is hidden.
+- ✅ **The unbounded-divergence block (C4 superseded 2026-08-11 → diagnosis → sweep-empty) —
+  CLOSED 2026-08-17 AND MIGRATED (2026-08-26).** The chain — the 1000-turn supersession ("every
+  equilibrium quoted since 2026-07-22 was a waypoint"; `0386e83` innocent for all four climbers
+  AND vindicated on the pinning it un-pinned), the saturation diagnosis (two feedbacks
+  asymmetrically bounded; interest compounding the driver; stages, not alternatives), the FRF
+  sweep run empty (`afe0f24`) — graduated to a measured mechanism limit and was ANSWERED by the
+  stock-vs-flow report's shipped terms (erosion, maturity, F1 — `COMPLETED.md` §§22/23). **Two
+  scoping rulings from this block STILL BIND: calibration stays at turns 100–200** (t1000 is a
+  diagnostic, never a target — judge a fix by whether the mechanism is present and correctly
+  signed, never by t1000 convergence), **and the word "equilibrium" stays banned without a run
+  that earns it.** Full progression in CLAUDE.md's fiscal-arc entries and git history.
 
-  ⚠ **Report the mechanism before proposing the implementation** — same shape as the debt-floor
-  investigation, and the same reason: three wrong theories preceded the right one on the batch-run hang.
-
-  ⚠ **A "STATUS AUDIT 2026-08-11" ENTRY HERE CLAIMED THIS RULING SHIPPED HALF. THAT WAS WRONG, and the
-  claim is quoted rather than deleted** — it read *"The cause-fix does not exist: routing SWF returns
-  through the fiscal reaction multiplier appears nowhere in `MacroSystem`."* It was produced by grepping
-  **one file**. The fix is in `SimulationManager.cs`, and a tree-wide search finds it immediately. See
-  `CLAUDE.md`, *"An absence claim greped from ONE FILE is rule 14 inverted"*, for what that cost.
-
-  ✅ **FULLY IMPLEMENTED — `0386e83`, "Fix the cause: SWF returns now run through the fiscal reaction
-  multiplier". BOTH candidate fixes shipped, not one**, and both are recorded here because a reader who
-  finds one may otherwise assume the other was declined:
-  1. **Inside the multiplier.** `SimulationManager.cs:2682` —
-     `(theoreticalRevenue * effectiveCollectionEfficiency + swfReturns) * fiscalReactionMultiplier`,
-     replacing `... * fiscalReactionMultiplier + swfReturns`, which had put the fastest-growing component
-     of a net creditor's revenue permanently beyond the one mechanism that pushes back.
-  2. **Returns treated as a stock, not budget revenue.** `SwfStructuralDrawPercentPerYear = 3f` — Norway's
-     *handlingsregel*. The budget takes a smooth draw proportional to fund SIZE; the realised market
-     return never reaches it. This also closed a **double-count**, where the fund kept the return and the
-     government spent the same figure.
-
-  🔴🔴 **SUPERSEDED BY THE 1000-TURN RUN — SEE `CLAUDE.md`, "A measurement is only comparable to another
-  taken at the same horizon". NOTHING BELOW IS AN EQUILIBRIUM.** At turn 1000 all six countries are still
-  climbing (USA 154.7, Sweden 11.2, Germany 80.4, France 108.8, Italy 165.6, Poland 45.6), so the
-  "moved / did not move" reading below is an artifact of stopping at 500. **The drift is UNATTRIBUTED** —
-  the same matrix has not been run on the commit before `0386e83`, and blaming the SWF fix without that
-  run would repeat the error. Measurements retained below with their horizons; the word *equilibrium*
-  stays out until a longer run earns it.
-
-  ✅ **MEASURED 2026-08-11 — `DebtClampDiagnostic`, real Unity, seed 777, 120 turns, post-`0386e83`.**
-
-  **THE GUARD NEVER ENGAGES.** `negativeTurns = 0/120` and `ceilingHits = 0` for **all six countries** —
-  gross debt never goes negative at all, so `NetCreditorRunawayGuardPercent = 1000f` is **a backstop that
-  has never been reached**, not something holding a runaway back. Per the original ruling's own words,
-  *"if any country reaches it, that is a bug report, not a clamp"* — nothing does. Sweden shows
-  `netCreditorTurns = 120`, i.e. net position (debt minus fund) is negative every turn while gross debt
-  stays positive, which is exactly the state the −300% bound used to forbid.
-
-  **THE SIX EQUILIBRIA, against their recorded baselines:**
-
-  | | baseline | measured | move |
-  |---|---|---|---|
-  | USA | ~142% | 137.7% | −4.3 |
-  | Italy | ~107% | 114.0% | **+7.0** |
-  | France | ~90% | 92.9% | +2.9 |
-  | Germany | ~35% | 37.9% | +2.9 |
-  | Sweden | ~13% | 6.9% | **−6.1** |
-  | Poland | ~26% | 27.7% | +1.7 |
-
-  ⚠ **SWEDEN AND ITALY MOVED ENOUGH TO NAME THIS A RECALIBRATION, not a bug fix.** Sweden roughly halved,
-  which is the expected direction and the expected country — it has the largest fund, so it is where
-  putting SWF income inside the stabiliser bites hardest. Italy moved +7.0 with no fund to speak of,
-  which is **not** explained by the SWF change and is the one number here that wants its own look.
-
-  **FRANCE — the case that distinguishes a cause-fix from a symptom pushed further out.** It reached the
-  old bound and sat near it. Now: `1 of 117` years with a rating notch move, largest move **1 notch**,
-  largest year-over-year swing 7.6 points of GDP — and it is **no longer the outlier**, since Italy shows
-  the same 1 of 117 and every other country shows 0. The thrash is gone, not relocated.
-
-  🔴 **STILL NOT RUN: `BatchSimulationRunner` at 100 and 500 turns.** The above is a 120-turn diagnostic,
-  which answers the guard and the equilibria but is not the full matrix the standing discipline requires
-  for anything touching the fiscal engine. **Italy's +7.0 should be read against that matrix before it is
-  explained.**
-  - **The guard.** `DebtClampDiagnostic` reports runaway-guard hits, and the roadmap's "zero hits before
-    and after" predates this commit. Until it is re-run, whether
-    `NetCreditorRunawayGuardPercent = 1000f` is **a backstop that never engages** or **still holding a
-    runaway back** is unknown — different artifacts, distinguished only by measurement.
-  - **The six debt equilibria**, against their recorded baselines (USA ~142%, Italy ~107%, France ~90%,
-    Germany ~35%, Sweden ~13%, Poland ~26%). ⚠ **If they moved, that is a RECALIBRATION and must be named
-    as one**, not absorbed as a bug fix.
-  - **France**, specifically: it reached the old bound, sat near it, and was the only country still
-    showing year-over-year rating movement. It is the case that distinguishes a cause-fix from a symptom
-    pushed further out.
-
-  ⚠ **AND SAY WHAT HAPPENS TO THE GUARD.** Once the cause is fixed, `NetCreditorRunawayGuardPercent`
-  becomes one of two very different artifacts, and the record must state which: **a guard that never
-  engages** (the intended outcome — dead code kept as a runaway backstop, and per the original ruling *"if
-  any country reaches it, that is a bug report, not a clamp"*), or **a guard still holding a runaway
-  back**, which would mean the cause-fix did not work. Measuring that distinction is part of the job, not
-  a follow-up to it.
-
-  **Sequenced ahead of the C4 deficit-term work**, which reads the value this unclamps.
-
-- 🔴🔴 **C4 SUPERSEDED 2026-08-11 — UNBOUNDED DEBT DIVERGENCE IS NOW THE FISCAL-ENGINE PRIORITY.** Ruled
-  by Elias after the 1000-turn matrix. **The reason, recorded so the sequencing change is visible rather
-  than implicit: C4's deficit-term investigation READS a series that never settles**, so it would be
-  investigating the divergence by proxy and calibrating against a moving target. Measured at turn 1000:
-  USA 157.3, Germany 81.3, Italy 166.3, Poland 48.9 — all still climbing.
-  *(Superseded ruling, kept: "the C4 deficit term is the next fiscal-engine work after the SWF
-  cause-fix" — correct when made, on a premise the matrix then replaced.)*
-
-  ✅ **`0386e83` IS INNOCENT FOR ALL FOUR.** Pre-fix and post-fix trajectories match to within ~3 points
-  at turn 1000. **The Fiscal Reaction Function has never equilibrated**, and every "equilibrium" quoted
-  since 2026-07-22 was a waypoint. **Italy's "+7.0" closes** — never attributable to the SWF change, one
-  of the four on the same path before and after.
-
-  ✅ **AND `0386e83` IS VINDICATED, which the record should say as plainly as it has said everything
-  else.** Pre-fix, **Sweden sits at −296/−288/−297 and France reaches −299 at every horizon** — flush
-  against the −300% bound, exactly the pinning Elias's 2026-08-02 ruling gave as its first reason
-  (*"France at −298% against a −300% bound is not a risk, it is already pinning"*). Post-fix they are at
-  **+11.2 and +108.8**: real, unpinned values. **A ruling made on reasoning, confirmed by measurement
-  nine days later.** Sweden's ~13% does not reproduce pre-fix either — **the fix exposed a broken
-  calibration rather than breaking a good one.** The record has been wrong in the pessimistic direction
-  all session; this one deserves stating.
-
-  ✅ **DIAGNOSED — SATURATION, NOT A MISSING MECHANISM.** The FRF already contains a debt-**stock** term
-  measured against each country's own `ComfortableDebtToGdpPercent`, correctly signed. It hard-clamps at
-  **1.5**, reached 33.3 points above comfortable, and 1.5× effective revenue cannot cover interest at
-  45.7% of spending. **Two feedbacks, asymmetrically bounded:** `GetDebtRiskPremium` already responds to
-  the debt stock and already reaches the live interest path, so a *positive* feedback bounded only by
-  `MaxDebtRiskPremium` runs against a *negative* one capped at 1.5. **That asymmetry is the mechanism.**
-  No primary balance exists in the model, and Italy already runs an implied ~+75 primary surplus, so a
-  primary-balance term was examined and **rejected on evidence**. Full reading in `CLAUDE.md`.
-
-  ⚠ **SCOPING, RULED BY ELIAS 2026-08-11 — TURN 1000 IS A DIAGNOSTIC, NOT A TARGET.** A turn is 121 days,
-  so turn 1000 is ~330 years and nobody's playthrough *(⚠ corrected 2026-08-12: a turn has been 365 days
-  since `d8f55ce` — turn 1000 is ~1000 years, so the ruling holds a fortiori)*. **Calibration stays at
-  turns 100–200.** The reason
-  the long horizon matters is that it reveals whether a restoring force exists **at all** — a model
-  without one is wrong at turn 150 too, just not yet visibly. **Judge any fix by whether the mechanism is
-  present, correctly signed, and whether the asymmetry is defensible — never by whether turn 1000
-  converges.**
-
-  ✅ **DRIVER IDENTIFIED — INTEREST COMPOUNDING, not a pinned stabiliser.** Instrumented on Germany and
-  Italy: the multiplier moves freely (0.62 early, ~1.27 and ~1.19–1.45 late, against a 1.5 cap) while
-  interest grows from **6%→26%** of Germany's spending and **20%→46%** of Italy's. It leans correctly and
-  is outrun. ⚠ Italy's 1.446 approaches the cap, so **the two hypotheses are stages rather than
-  alternatives** — a fix aimed only at the cap arrives after the damage. Series in `CLAUDE.md`.
-
-  ✅ **THE SWEEP RAN AND CAME BACK EMPTY (2026-08-16, `afe0f24`)** — the ruled real-Unity re-derivation
-  of the pair, in the daily regime, seven points enumerated, every point reached. It CONFIRMS this
-  block empirically: no in-wall pair converges; steeper slopes mildew the climb without ending it;
-  the overdriven end oscillates; the loosened floor spirals negative. The stages-not-alternatives
-  reading confirmed too — stances sit at 1.32–1.46 at t1000, approaching the cap while already
-  outrun. **The finding graduates from diagnosis to measured mechanism limit**, and the next step is
-  the stock-versus-flow mechanism report (maturity structure, inflation erosion of the nominal
-  stock, primary-surplus rules above thresholds — the candidates outside the flow loop), its own
-  pass with its own ruling.
-
-- 🔴 **NEW 2026-08-02 — the rating thrash's real cause is the DEFICIT term, and it is a separate defect.**
-  Removing the floor cut debt-swing anomalies 60% (6,225 → 2,507) and moved rating anomalies by 1.6%
-  (1,416 → 1,394). Two independent measurements agree the debt stock is no longer the driver. **Step C4's
-  closure now waits on this instead.** Full evidence in `CLAUDE.md`.
+- ✅ **The deficit-term defect (2026-08-02) — CLOSED with F1 (2026-08-17), struck 2026-08-26.**
+  The residual the floor was hiding traced to the divergence; the erosion/maturity terms and the
+  anchor re-run at HEAD closed it — C4 and A1 closed with it (`COMPLETED.md` §23).
 
 ### RESOLVED 2026-08-02 — all three section A decisions
 
@@ -1696,25 +1427,23 @@ Full reasoning migrated whole to `COMPLETED.md` §23 (2026-08-26), kept in full 
 
 ### Live work from the 2026-08-02 visual review
 
-- **P2 — the currency unit bug (review item 3). ✅ BUILT 2026-08-02 (`628d78e`), NOT YET SEEN.**
-  `UiFormat.Money(value, MoneyUnit)` renders `$29.0T`; the unit is a **required** parameter on every
-  graph and pie-chart entry point, so a currency display that does not state its unit no longer
-  compiles. `MoneyFormatDiagnostic` passes 6 of 6 in real Unity against the seed figures. Full record,
-  including four findings — two of them defects in the fix that only the diagnostic caught — in
-  `CLAUDE.md`. **It stays live here because built-but-unconfirmed is not done:** item 3 asks whether a
-  one-point published graph reads as working or broken, and that is a judgment about the screen, not
-  about the arithmetic. 🟢 **Items 7 and 8 are unblocked** — they are now reviewable, not passing.
+- ✅ **P2 — the currency unit bug (review item 3): BUILT 2026-08-02 (`628d78e`) AND SEEN — struck
+  2026-08-26.** Item 3 PASSED on re-review the same day (`COMPLETED.md` §16), which discharged the
+  "NOT YET SEEN" proviso this entry stayed live for; the entry simply never closed with it.
+  `UiFormat.Money`'s required unit parameter and `MoneyFormatDiagnostic` (6/6) stand as the
+  permanent fix.
 
-- **P4 — the label-clipping class (review items 5 and 6).** Investigated rather than patched, because
-  it is a recurrence that survived earlier site-specific fixes. Full findings in `CLAUDE.md`. Seventh recurrence. **Item 6 is literally the
-  "9,3" bug again, one field away in the same method**: `StatTile`'s label style is
-  `new GUIStyle(GUI.skin.label)`, inheriting `wordWrap = true`, drawn into a fixed `12f * scale` rect —
-  so a long label wraps to two lines and both get clipped. The **value** field in that same widget has
-  carried the fix (wordWrap off, shrink-to-fit) since the "9,3" incident and its comment names the exact
-  cause; the label never got it. Item 5 ("trade is cut off") is the width variant — five `ExpandWidth`
-  buttons in a row with no width budget. **Recommended: one `PoliSimWidgets.MeasuredLabel` helper** that
-  measures in the style text actually renders in, shrinks rather than truncates, recomputes per frame,
-  and leaves margin — then sweep the seven known sites. Six site-specific fixes have not ended this class.
+- 🔴 **P4 — the label-clipping CLASS: OPEN as a watch item (no single gate; entry compressed
+  2026-08-26).** The 2026-08-02 entry's recommendation — one `PoliSimWidgets.MeasuredLabel` helper
+  (measure in the rendering style, shrink never truncate, leave margin) — was IMPLEMENTED and the
+  known sites swept; the class has kept producing instances on NEW AXES since: #12 the frame
+  itself; #13 the ECB sub-tab, the first reached through the COUNTRY axis; and the 2026-08-26
+  **width-less-label class** (`CalcSize` ignores wordWrap without an explicit width — six
+  instances, fixed under the minimum-window ruling, CLAUDE.md). The sibling survey
+  (constant-sized chrome under wrappable labels) is named-not-fixed in CLAUDE.md. The class
+  closes only by a capture-matrix pass at all supported sizes showing no new instance; rule 15's
+  paired-detector correction is its standing discipline. The entries below record the instance
+  history.
 
 - ✅ **INSTANCE #12 — CLOSED ON `main` 2026-08-11. `ScreenEdgeCheck`: 55 captures, 0 clipped, exit 0**,
   all four edges zero on every screen. ⚠ **SCOPE (corrected 2026-08-12, Elias): "every screen" means
@@ -1771,12 +1500,13 @@ Full reasoning migrated whole to `COMPLETED.md` §23 (2026-08-26), kept in full 
   and `ledger_geometry_check` by the 1440p capture ruling. `seat_allocation_check` is the surviving
   evidence behind Part D's Sweden rows; `usa_election_check` is scoped to item 10.
 
-- ⚠ **CAPTURE RESOLUTIONS NOT COVERED — 1920×1080 and a deliberately narrow window (2026-08-11).**
-  Two sizes are captured, 1600×929 and 2560×1419, and both are clean. **That brackets every window size
-  that has ever produced a REPORT — which is a claim about report history, not about what players run.**
-  1920×1080 is the single most common desktop resolution and has never been captured here; a narrow
-  window is where the `LedgerRow` squeeze floor would engage if it ever does. Neither is blocking, and
-  adding either is now a command-line argument rather than a code change (`-shotwidth=` / `-shotheight=`).
+- ⚠ **CAPTURE RESOLUTION NOT COVERED — 1920×1080 (entry rewritten 2026-08-26).** The
+  deliberately-narrow-window half of this entry DISCHARGED into the 2026-08-26 minimum-window
+  ruling: **1280×720 is the ruled minimum supported size** and the capture matrix now runs FOUR
+  sizes (1280×720 / 1640×707 / 1600×900 / 2560×1440 — the free-aspect overflow class that
+  motivated it is fixed and on film). **1920×1080 — the single most common desktop resolution —
+  remains the one uncovered size**: startable today, minor, a command-line argument rather than a
+  code change (`-shotwidth=` / `-shotheight=`).
 
   *(⚠ RECONCILED 2026-08-12: everything below this line described the PRE-extraction state and was
   superseded within hours of being written — the instance-#12 closure entry above records the outcome:
@@ -1883,7 +1613,9 @@ Full reasoning migrated whole to `COMPLETED.md` §23 (2026-08-26), kept in full 
   fifth tier-3 bill alongside Labor/CrimeJustice/Sector/Trade, reusing 5d's mechanism wholesale. Wired
   into the day advance, the Sovereign Wealth Fund tab and the pending-bills list. Full matrix anomaly
   counts identical to the run before it, which is the expected result: no batch scenario introduces this
-  bill, so identical counts prove it inert until used. **Needs a visual look**, like anything new.
+  bill, so identical counts prove it inert until used. ~~Needs a visual look~~ — ✅ satisfied:
+  pinned on film in the state-axes pass (a pending bill of every introducible type, 7/7 on Sweden
+  — its seeded standing fund is this bill's real precondition); struck 2026-08-26 (ruling C3).
 
 - ~~**`menu_pattern_tile.png` — delivered, never imported.**~~ **DONE 2026-08-02.** Imported, wired into
   `DrawCountrySelector`, zip archived. **The project root now holds no zips at all**, which is the first

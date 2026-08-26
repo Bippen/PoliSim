@@ -8216,7 +8216,7 @@ via the Cabinet tab. Verdict → Design; the batch of nine unblocks or the regis
 | Tracked capture paths | **2,003** (→ the 1,073 unique blobs: ~930 tracked PNGs are byte-identical duplicates across sets) |
 | Working tree captures | 5,316 PNGs, **5.1 GiB**, all dated 2026-08-11..16 — **~1 GiB/day** |
 | First capture commit | `30a6287`, 2026-08-10 17:24 ("Stand up the capture harness in the repo"); 24 commits touched `screenshots/` in the six days since |
-| Confirmed NOT tracked | `AssetPackArchive/` (1.9 MiB, disk only), `baselines/` (11 MiB), `Library/`/`Temp/`/`obj/`/`Logs/` (gitignored) — **no other weight class exists** |
+| Confirmed NOT tracked | `AssetPackArchive/` (1.9 MiB at this 08-16 measurement; ~4.3 MB at the 2026-08-26 re-check, classification unchanged — disk only), `baselines/` (11 MiB), `Library/`/`Temp/`/`obj/`/`Logs/` (gitignored) — **no other weight class exists** |
 | Remote | `github.com/Bippen/PoliSim` — the history weight is on the remote too |
 
 So the shape is: **the captures are in history**, they went in with the harness itself on
@@ -9600,7 +9600,7 @@ treated as a contradiction to resolve, and none survived.
 |---|---|
 | Item 10 (elections/parties territory) | **the date: 13 Sept 2026**; collision map stands |
 | A1 — C4's deficit-term damping (now the only thing before C4 closes) | **a ruling of Elias's**, then one calibration pass |
-| A3 — cabinet appointment confirmation vote | **a ruling of Elias's** (pure preference; blocks nothing) |
+| A3 — cabinet appointment confirmation vote | ~~a ruling of Elias's~~ — ⚠ two-authors artifact: A3 was already RESOLVED 2026-08-02 (unilateral; `COMPLETED.md` §23); this row re-derived from the pre-resolution details block. Struck 2026-08-26 |
 | D1 — the nine cabinet portraits | **delivery** (request sent 2026-08-17; import checks standing) |
 | E2 — `mark_party_us_lib` | **Elias sending the written request**, then delivery |
 | E3 — Design's rasterization diff | **a rasterizer existing on this machine** |
@@ -11878,7 +11878,8 @@ switched player), and the four hangs were never this path.
 
 **Open, for a ruling (not blocking):** the round-trip harness's verdict line should count ATTRIB
 lines and fail on them — it is the one standing harness that runs boundary audits and the one
-whose "PASS" hid finding 1 for a day.
+whose "PASS" hid finding 1 for a day. *(✅ RULED YES and BUILT 2026-08-25 — ruling 1, the
+log-error fold, next section; the open flag annotated closed 2026-08-26.)*
 
 ## The log-error fold, and the harness sweep it prompted (ruling 1, 2026-08-25)
 

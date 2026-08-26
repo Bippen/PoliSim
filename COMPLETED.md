@@ -1397,3 +1397,54 @@ B2-reads-LIVE correction are recorded in §§6/11 and CLAUDE.md. Git history hol
 full.*
 
 ---
+
+## 26. Save/load (Master Sequence item 8) — the design record, migrated from the roadmap (2026-08-26)
+
+*Item 8 ran scoped → ruled → built → gate-green → live-verified (2026-08-01 → 2026-08-26). The
+roadmap keeps a pointer; CLAUDE.md's three entries ("Save/load mechanism report", "Save/load
+BUILT and gate-green", "The saves menu") are the build authority. This section preserves the
+design record that lived in the roadmap's ~140-line item-8 block.*
+
+**The scoping finding (2026-08-01): `JsonUtility` fails this state model on four independent
+counts, each verified against real code** — `Dictionary` unsupported (`SimulationManager` alone
+holds 10+, several NESTED — the 11 standing `UAC1009` warnings); `DateTime` unsupported (and
+`CurrentDate` has a private setter, failing twice over); `readonly` collection fields not
+serialized (4, including `StatHistory`'s series); nullables unsupported (`DateTime?` throughout
+`StatHistory`).
+
+**Decision 1 — serializer: Newtonsoft JSON** (`com.unity.nuget.newtonsoft-json`), Elias's ruling
+over a hand-written DTO layer (which meant mirroring a large share of the 33 data types and
+re-mirroring each on every future model change). **Decision 2 — first-pass scope: ALL THREE
+LAYERS** (Elias): core sim state; pending bills and interrupts WITH their day counters (omitting
+these would make a reload silently cancel anything mid-vote); UI draft values (the original 5c
+incident's own loss). **Implementation shape:** explicit `CaptureSaveState`/`RestoreSaveState`
+pairs rather than reflection — the persisted surface stays reviewable, so an unwired
+pending-bill type is an obvious omission rather than a silent half-persist. **Format version
+from the very first write.**
+
+**The two save-blocking gaps found by inspection:** (1) `SimulationRandom` — `System.Random`
+exposes no position; re-seeding on load REPLAYS the sequence from turn zero (a correctness
+failure easy to mistake for save-scumming). **RULED: the counting shim** — record draws per
+stream, fast-forward on load; reversible beats permanent, xorshift revisitable once real load
+times are known, every recorded baseline preserved. (2) `PeriodClosingValues` keyed by a
+`ValueTuple` — Newtonsoft needs string keys; flattened to `{stat, periodStart, value}` records
+on capture, rebuilt on restore. It cannot be dropped from the save: revisions converge on it,
+and a save omitting it would reintroduce a bug already fixed once (`ea0a6a4`).
+
+**The independent confirmation:** adding `Country.Published` produced `UAC1001: … skipped by
+serialization` — Unity's serializer silently DROPS the published series, the exact failure the
+serializer decision avoided, demonstrated by the compiler. The warning deliberately stands
+unsilenced (baseline 11 → 12): `[System.Serializable]` would remove the warning without making
+the type serializable — a false reassurance.
+
+**The chain to done:** mechanism report 2026-08-16 (state surface re-inventoried — 14 pending
+structures, ~30 drafts, five serialization hazards named from real call sites;
+`persistentDataPath`, atomic write; version policy RULED A — refuse-load with a plain message,
+`SaveVersion` bump on model swaps, no migration machinery pre-release) → core + F5/F9 gate-green
+the same day (`SaveLoadRoundTripDiagnostic` 12/12; Json.NET's populate-in-place discard of the
+tuple-dict surrogate found and fixed with a load-bearing `ObjectCreationHandling.Replace`) → the
+saves menu the same day (79 captures × both sizes; loads resume PAUSED; incompatible saves
+listed-not-hidden) → **layer 3 live-verified 2026-08-26** (F5/F9 + the saves menu in Elias's
+Editor session). Nothing of item 8 remains open.
+
+---
