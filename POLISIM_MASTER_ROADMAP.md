@@ -738,10 +738,11 @@ This is the one authoritative order, replacing whatever each original document s
 
    **Still not started, and correctly so.** This extension adds scope; it does not begin implementation.
 
-9. **NEW (2026-08-01) — Macro Data & Release Calendar Overhaul (Steps A–D).** Full spec in
-   `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`; every real-world figure it depends on is in
-   `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. Appended rather than renumbering 1-8, which are referenced
-   throughout this document and `CLAUDE.md`.
+9. **NEW (2026-08-01) — Macro Data & Release Calendar Overhaul (Steps A–D).** Full spec was
+   `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md` — **every step done; the directive consumed to
+   `COMPLETED.md` §25 and deleted 2026-08-26** (A/B/D in §§6/9, Step C as Round 4 in §19); every
+   real-world figure it depended on is in `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. Appended rather
+   than renumbering 1-8, which are referenced throughout this document and `CLAUDE.md`.
 
    **Why it is four steps and not one** — the directive's own reasoning, recorded here because it governs
    how the work may be sequenced: seven new tracked stats + a revision mechanic + per-period lag tracking
@@ -1913,7 +1914,7 @@ Eight documents, each with one job. If a fact belongs in two of them, it belongs
 | ~~`VISUAL_REVIEW_BACKLOG.md`~~ | Built but never seen. **DELETED 2026-08-02** — all eleven items confirmed, so it shrank to nothing and went, exactly as the rule below prescribes | — |
 | `MISSING_PREREQUISITES.md` | Blocked work, by supplier. Not startable, so not live | Shrinks as blockers clear |
 | `CLAUDE_DESIGN_ASSET_REQUEST.md` | The single standing asset request | Appended to, then emptied on delivery |
-| `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md` | Step 9's spec. Done steps become pointers; live specs stay | Shrinks |
+| ~~`POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`~~ | Step 9's spec. **DELETED 2026-08-26** — every step (A–D) done, so it shrank to nothing and went, exactly as the rule prescribes; pointers in `COMPLETED.md` §§6/19/25 | — |
 | `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | Real-world figures with `[VERIFIED]`/`[PARTIAL]`/`[GAP]` markers | Reference; stable |
 | `COMPLETED.md` | Finished work + lasting decisions and lessons | Grows |
 | `CLAUDE.md` | The detailed technical record. **Never superseded** | Grows |

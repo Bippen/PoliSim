@@ -153,7 +153,8 @@ Scope was revised to absorb 5f (tab/IA reorg + full sprite-based overhaul). Batc
 
 ## 6. Macro Data & Release Calendar Overhaul — Steps A1–A3, D
 
-*Master Sequence step 9. Partially complete — see the roadmap for what remains.*
+*Master Sequence step 9 (macro). COMPLETE — A/B/D here and in §9; Step C shipped as Round 4's
+five batches (§19). The directive itself was consumed and deleted 2026-08-26 (§25).*
 
 ⚠ **Scope correction (2026-08-02).** This section previously read "Steps A, B1, D". Both halves of that
 were wrong, found by verifying against the commits rather than the summary:
@@ -1377,5 +1378,22 @@ ruled honesty), no seat headcounts (the model has none — Design's own D2), no 
 (the recorded 1i reason; the VOTE-IN countdowns are the real datum). The rulings doc stays at the
 repo root as the standing 1i spec with a dated 1j header pointer; CLAUDE.md "Board 1j
 implemented" is the build record; §20 carries the law-system story.
+
+---
+
+## 25. The macro-overhaul directive — consumed and deleted (2026-08-26)
+
+*`POLISIM_MACRO_OVERHAUL_DIRECTIVE.md` emptied of live content and went, per the register's own
+emptied-document rule (the `VISUAL_REVIEW_BACKLOG` precedent): Step A done (A1–A3 2026-08-01, A4
+2026-08-02 — §§6/9); Step B done (B1/B2 built and review-confirmed 2026-08-02 — §§6/9/16); Step C
+**shipped in full as Round 4's five batches, 2026-08-16→17** (§19 — the directive's sequencing
+summary still called C1/C2/C3/C5 merely "buildable… the only outstanding step", stale twice over
+at deletion); Step D delivered, imported and wired (§6). The two standing rules it carried live
+on where they are enforced: the published/live leak risk — the one-directional rule
+(`PublicationSystem` writes `Country.Published`, reads `Country.State`, never the reverse — §6,
+restated in the roadmap's Step-A record) — and the split-to-attribute batching principle (rule
+0's scale-validation discipline; §19's five-batch bar). The StatTile "9,3" precedent and the
+B2-reads-LIVE correction are recorded in §§6/11 and CLAUDE.md. Git history holds the directive in
+full.*
 
 ---
