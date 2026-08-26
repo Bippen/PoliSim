@@ -20,25 +20,44 @@ namespace PoliSim.Data
     /// all six countries for simplicity - not researched figures either.
     ///
     /// Each country's CollectionEfficiency is solved for so that its DEFAULT tax portfolio's actual
-    /// revenue-to-GDP (theoretical revenue-to-GDP * CollectionEfficiency) lands close to that
-    /// country's real-world tax-to-GDP target:
+    /// revenue-to-GDP (theoretical revenue-to-GDP * CollectionEfficiency) lands on that country's
+    /// real-world tax-to-GDP target. RECALIBRATED (build-order item 1, terminal rulings 2026-08-26):
+    /// the five EU targets re-anchored to ONE basis and vintage - Eurostat `gov_10a_taxag`, total
+    /// receipts from taxes and net social contributions, % of GDP, 2024 (API vintage 2026-07-21;
+    /// Germany carries Eurostat flag `p`, provisional):
     /// <code>
-    /// Country   Implied (Rate*BaseShareOfGdp summed)   Target   CollectionEfficiency = Target/Implied
-    /// USA       29.37%                                 18.0%    18.0 / 29.37 = 0.6129
-    /// Germany   48.73%                                 38%      38 / 48.73   = 0.7799
-    /// France    60.45%                                 45%      45 / 60.45   = 0.7444
-    /// Italy     45.10%                                 43%      43 / 45.10   = 0.9534
-    /// Poland    42.10%                                 37%      37 / 42.10   = 0.8789
-    /// Sweden    53.45%                                 41%      41 / 53.45   = 0.7671
+    /// Country   Implied (Rate*BaseShareOfGdp summed)   Target       CollectionEfficiency = Target/Implied
+    /// USA       29.37%                                 18.0%        18.0 / 29.37 = 0.6129  (UNCHANGED)
+    /// Germany   48.73%                                 40.9% [p]    40.9 / 48.73 = 0.8393
+    /// France    60.45%                                 45.3%        45.3 / 60.45 = 0.7494
+    /// Italy     45.10%                                 42.5%        42.5 / 45.10 = 0.9424
+    /// Poland    42.10%                                 37.6%        37.6 / 42.10 = 0.8931
+    /// Sweden    53.45%                                 42.2%        42.2 / 53.45 = 0.7895
     /// </code>
-    /// USA's target is FEDERAL-government-only revenue-to-GDP (~18%, real FY2025 federal revenue
-    /// $5.235T against this game's ~$29,000B starting GDP) rather than the general-government
-    /// (federal+state+local) figure used for the other five - the US has a genuinely decentralized
-    /// state/local fiscal layer this game doesn't model at all, so a general-government target would
-    /// overstate what this sim's single national CollectionEfficiency dial should represent for the
-    /// USA specifically. Germany/France/Italy/Poland/Sweden keep their general-government targets
-    /// since their fiscal policy is comparatively centralized at the national level and this game has
-    /// no separate state/local layer to misattribute revenue to either way.
+    /// (The pre-recalibration targets 38/45/43/37/41 were mixed-basis, mixed-vintage figures; the
+    /// old table is in git history. USA is deliberately untouched - see the perimeter rule below.)
+    ///
+    /// THE PERIMETER RULE (stated 2026-08-26; the recalibration's organizing principle): a country's
+    /// revenue target and its spending seed must sit on the SAME fiscal perimeter - taxing one
+    /// perimeter and spending another is a seed bug, not a calibration choice. USA's target is
+    /// FEDERAL-only revenue-to-GDP (~18%, real FY2025 federal revenue $5.235T against this game's
+    /// ~$29,000B starting GDP; CBO FY2025: outlays 23.3% GDP, deficit 5.9%, net interest 3.2%,
+    /// primary deficit ~2.7%) because the US state/local layer is not modeled - and its SPENDING
+    /// seed (SeedUsaSpendingLines, real federal $B) is federal too, so the USA pair was already
+    /// perimeter-consistent: measured year-1 primary balance -2.38% vs the real federal -2.7%
+    /// (FiscalRecalDiagnostic, seed 777). The five EU countries sit on the GENERAL-GOVERNMENT
+    /// perimeter on BOTH sides since this pass: general-government tax targets above, and the
+    /// mandatory transfer block (SeedMandatoryTransferLines / Sweden's flipped UO lines) carrying
+    /// the ~20%-of-GDP cash-transfer layer their spending seeds previously omitted entirely - the
+    /// omission that produced measured year-1 primary surpluses of +14 to +22% of GDP (the item-4
+    /// finding, re-measured at the harness before this pass changed anything) while the fiscal
+    /// reaction multiplier was crushed to 0.58-0.76 papering over it. Year-1 primary balances now
+    /// land on the real 2025 structural positions (Eurostat April-2026 EDP notification deficits;
+    /// ECB GFS D.41 interest 2025-Q4: DE 1.10 / FR 2.20 / PL 2.51 / SE 0.61; IT ~3.9 derived from
+    /// Eurostat 2025 expenditure shares): DE -1.6, FR -2.9, IT +0.8, PL -4.8, SE -0.7.
+    /// The model books TAX revenue only (no non-tax revenue exists), so both sides sit ~5-7pp
+    /// below the real general-government totals; THE PRIMARY BALANCE is the anchored quantity.
+    ///
     /// "Implied" is the same figure flagged in this class's earlier revision as running higher than
     /// real-world tax burdens for some countries (Sweden, France) once BaseShareOfGdp weights were
     /// combined with real headline rates; CollectionEfficiency (modeling enforcement quality/the
@@ -91,10 +110,20 @@ namespace PoliSim.Data
                 usDollarZone, baseTariffRate: 3f,
                 naturalUnemploymentRate: 4.0f, potentialGrowthRate: 2.0f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);
 
+            // Sweden's PotentialGDP is seeded to 614.25 (not left to default to GDP) - the
+            // RECALIBRATION's ruled follow-up (terminal ruling 2026-08-26, "re-solve potential
+            // now"): the ruled UO10/11/12 mandatory flip removed 5.6pp of GDP from the
+            // national-accounts G term, and with potential left at 620 the identity opened a
+            // persistent ~2-3% output gap at seed (measured: t1 growth +0.5% against 1.5%
+            // potential growth). 614.25 is the empirically-solved seed (SwedenPotentialSolveDiagnostic,
+            // two-stage sweep, seed 777 - the USA's own --usapotgdp idiom) at which GDP=620 is
+            // ALREADY at its turn-1-consistent fixed point: t1 lands 619.99 (+0.005 error) and
+            // t2/t3 grow ~1%/turn. Like the USA's 33260, this does NOT change Sweden's headline
+            // GDP or any calibration built against it - only the trend-output reference moves.
             var sweden = new Country(
                 CountryId.Sweden, "Sweden",
                 new EconomyState(gdp: 620f, inflation: 2.0f, unemployment: 8.0f, approvalRating: 50f, budget: 0f,
-                    governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f, prisonPopulationRate: 60f, organizedCrimeIndex: 32f, corruptionIndex: 18f,
+                    potentialGdp: 614.25f, governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f, prisonPopulationRate: 60f, organizedCrimeIndex: 32f, corruptionIndex: 18f,
                     population: 10.6f, birthRate: 10.8f, deathRate: 9.5f, netMigrationRate: 1.1f, dependencyRatio: 33f),
                 swedishKronaZone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 6.5f, potentialGrowthRate: 1.5f, governmentSpendingRate: 26f, benefitRatePerUnemployed: 0.25f);
@@ -166,13 +195,16 @@ namespace PoliSim.Data
 
             // CollectionEfficiency = target real-world tax-to-GDP / implied revenue-to-GDP from the
             // default portfolio above (sum of Rate * BaseShareOfGdp over implemented lines) - see
-            // this class's doc comment for the full per-country derivation table.
-            usa.CollectionEfficiency = 0.6129f; // 18.0 / 29.37 (federal-only target, not general-government)
-            germany.CollectionEfficiency = 0.7799f;
-            france.CollectionEfficiency = 0.7444f;
-            italy.CollectionEfficiency = 0.9534f;
-            poland.CollectionEfficiency = 0.8789f;
-            sweden.CollectionEfficiency = 0.7671f;
+            // this class's doc comment for the full per-country derivation table. RECALIBRATED
+            // 2026-08-26 (build-order item 1): the five EU targets re-anchored to Eurostat
+            // gov_10a_taxag 2024 (one basis, one vintage - API 2026-07-21); USA unchanged
+            // (federal perimeter, already consistent - the doc comment's perimeter rule).
+            usa.CollectionEfficiency = 0.6129f;    // 18.0 / 29.37 (federal-only target, not general-government)
+            germany.CollectionEfficiency = 0.8393f; // 40.9 [Eurostat flag p] / 48.73
+            france.CollectionEfficiency = 0.7494f;  // 45.3 / 60.45
+            italy.CollectionEfficiency = 0.9424f;   // 42.5 / 45.10
+            poland.CollectionEfficiency = 0.8931f;  // 37.6 / 42.10
+            sweden.CollectionEfficiency = 0.7895f;  // 42.2 / 53.45
 
             // Fiscal reaction function's per-country comfort anchor (see "Fiscal Reaction Function" in
             // CLAUDE.md) - reuses each country's own seeded starting debt-to-GDP ratio from the
@@ -738,6 +770,24 @@ namespace PoliSim.Data
             SeedGenericSpendingLines(italy, socialPercent: 40f, defensePercent: 4f, infrastructurePercent: 11f, publicServicesPercent: 26f);
             SeedGenericSpendingLines(poland, socialPercent: 34f, defensePercent: 10f, infrastructurePercent: 16f, publicServicesPercent: 22f);
 
+            // RECALIBRATION (build-order item 1, terminal rulings 2026-08-26): the mandatory
+            // transfer block - the general-government cash-transfer layer (~20% of GDP in every
+            // real European state) these four seeds previously omitted entirely, which produced
+            // measured year-1 primary surpluses of +14..+22% of GDP (the item-4 finding,
+            // re-measured by FiscalRecalDiagnostic before anything here changed) while the fiscal
+            // reaction multiplier was crushed to 0.58-0.76 papering over it. G is deliberately
+            // untouched: at 18-24% it already matches these countries' real government-consumption
+            // shares, and raising it would break every C+I+G+NX seed identity (the USA PotentialGDP
+            // lesson). SocialSecurity = real old-age cash benefits; IncomeSecurity = the residual
+            // that lands each year-1 primary balance on its real 2025 structural position
+            // (DE -1.6, FR -2.9, IT +0.8, PL -4.8) - sources and the solve in the class doc
+            // comment and the method's own. Sweden's block is inside SeedSwedenSpendingLines
+            // (the flipped UO lines + the out-of-budget pension system + its own residual).
+            SeedMandatoryTransferLines(germany, socialSecurityPercent: 9.0f, incomeSecurityPercent: 11.80f);
+            SeedMandatoryTransferLines(france, socialSecurityPercent: 12.4f, incomeSecurityPercent: 10.12f);
+            SeedMandatoryTransferLines(italy, socialSecurityPercent: 13.6f, incomeSecurityPercent: 7.70f);
+            SeedMandatoryTransferLines(poland, socialSecurityPercent: 10.4f, incomeSecurityPercent: 13.35f);
+
             // Reserve-currency treatment (see "Reserve-Currency Debt Interest Treatment" in
             // CLAUDE.md): the USA doesn't face the same market risk premium as other sovereigns at an
             // equivalent debt-to-GDP ratio, and its effective interest rate on EXISTING debt reflects
@@ -966,19 +1016,26 @@ namespace PoliSim.Data
         /// into RegionalPlanningAndDevelopment (7). Alderspensionssystemet sits outside the state
         /// budget in reality and outside this seed too.
         ///
-        /// ⚠ ALL LINES ARE DISCRETIONARY - a STATED DEVIATION from the ruling's "real transfer
-        /// systems as mandatory lines", with the reasons measured rather than assumed: for a
-        /// detailed portfolio, G derives from the DISCRETIONARY line total and mandatory totals
-        /// route separately (ResolveSpendingForTurn), mandatory lines grow on their own path
-        /// (ApplyMandatorySpendingGrowth) and take demographic pressure, and mandatory carries its
-        /// own approval weighting - so flipping any line's flag CHANGES FLOWS and breaks the ruled
-        /// byte-identity bar. The flags flip in the recalibration pass, where the bar is the full
-        /// sim-math one. The Mandatory-header-over-zero-rows defect closes via the empty-group
-        /// suppression instead (the bar's own clause). UO11 maps to SpendingCategory.SocialSecurity
-        /// deliberately: ApplyDemographicPensionPressure targets that category first, so Sweden's
-        /// aging channel points at the real pension line - inert today (pressure fires only when
-        /// deaths exceed births; Sweden seeds 10.8 births vs 9.5 deaths, so the gap clamps to zero
-        /// and byte-identity holds), armed for the day the demographics turn.
+        /// ✅ THE FLAGS FLIPPED IN THE RECALIBRATION PASS, as the item-4 ruling recorded they
+        /// would ("the flags flip in the recalibration pass under the full sim-math bar" -
+        /// terminal ruling confirmed 2026-08-26): UO10 (sickness/disability), UO11 (old-age) and
+        /// UO12 (family/children) - the state budget's three cash-transfer systems, 284 of 1,314
+        /// bn SEK - are now MANDATORY lines: they leave the national-accounts G term (transfers,
+        /// not purchases), grow on the mandatory path, take demographic pressure, and carry the
+        /// mandatory approval weighting. G consequently falls 26% -> ~20.38% of GDP, a real
+        /// identity change this pass's fresh baselines measure rather than hide.
+        ///
+        /// Two RECALIBRATION additions beyond the state budget (both mandatory, sources dated):
+        /// the SocialSecurity line is TOPPED UP at construction to Sweden's real total old-age
+        /// cash benefits - 7.0% of GDP (Eurostat gov_10a_exp GF10.02/D62, 2024, API vintage
+        /// 2026-07-21) - because UO11 (garantipension etc., ~1.19% of GDP) is only the state
+        /// budget's slice of a pension system that mostly sits OUTSIDE it (the inkomstpension/AP
+        /// system this class's own SWF comment describes); and an IncomeSecurity residual line
+        /// lands the year-1 primary balance on Sweden's real 2025 structural position (-0.7% of
+        /// GDP: Eurostat April-2026 notification deficit -1.3, ECB GFS D.41 interest 0.61).
+        /// ApplyDemographicPensionPressure targets SocialSecurity first, so Sweden's aging
+        /// channel points at the real, full-sized pension line - still inert while births
+        /// (10.8) exceed deaths (9.5), armed for the day the demographics turn.
         /// </summary>
         private static void SeedSwedenSpendingLines(Country sweden)
         {
@@ -1019,15 +1076,48 @@ namespace PoliSim.Data
                 sekSum += sek;
             }
 
+            // RECALIBRATION constants (terminal rulings 2026-08-26; derivations in the class doc
+            // comment). The pension top-up raises SocialSecurity from UO11's state-budget slice
+            // (~1.19% of GDP) to Sweden's REAL total old-age cash benefits, 7.0% of GDP
+            // (Eurostat gov_10a_exp GF10.02/D62 2024): top-up = 7.0 - 26*(60/1314) = 5.8128.
+            // The residual transfer line solves the year-1 primary balance to Sweden's real 2025
+            // structural -0.7% of GDP given the recalibrated revenue target (42.2%), the fund's
+            // structural draw (~0.94%), benefits (2.0%) and the contribution (0.3%).
+            const float OutOfBudgetPensionPercentOfGdp = 5.8128f;
+            const float ResidualTransfersPercentOfGdp = 9.73f;
+
             float allocated = 0f;
             foreach ((SpendingCategory category, float sek) in areas)
             {
                 float amount = total * (sek / sekSum);
-                sweden.SpendingLines.Add(new SpendingLine(category, amount, isMandatory: false));
                 allocated += amount;
+
+                // The flipped transfer systems (the item-4 ruling, executed this pass): UO10
+                // sickness/disability, UO11 old-age, UO12 family/children are MANDATORY - they
+                // leave G. Every other utgiftsomrade stays discretionary (state consumption).
+                bool mandatory = category == SpendingCategory.SicknessAndDisability
+                    || category == SpendingCategory.SocialSecurity
+                    || category == SpendingCategory.FamilyAndChildren;
+
+                if (category == SpendingCategory.SocialSecurity)
+                {
+                    // Constructed at the full real size rather than mutated afterwards, so
+                    // SeedAmount (the player-change clamp anchor) is the honest figure too.
+                    amount += sweden.State.GDP * OutOfBudgetPensionPercentOfGdp / 100f;
+                }
+
+                sweden.SpendingLines.Add(new SpendingLine(category, amount, mandatory));
             }
 
+            // The remainder line keeps the STATE-BUDGET exact-sum invariant: MunicipalGrants is
+            // total-minus-allocated where 'allocated' counts only the SEK-derived amounts (the
+            // pension top-up sits deliberately outside the state-budget decomposition).
             sweden.SpendingLines.Add(new SpendingLine(SpendingCategory.MunicipalGrants, total - allocated, isMandatory: false));
+
+            // The recalibration residual: general-government cash transfers outside the state
+            // budget and the pension system (municipal-sector-funded transfers and the rest),
+            // sized so the year-1 primary balance lands on the real -0.7% of GDP.
+            sweden.SpendingLines.Add(new SpendingLine(SpendingCategory.IncomeSecurity, sweden.State.GDP * ResidualTransfersPercentOfGdp / 100f, isMandatory: true));
         }
 
         /// <summary>
@@ -1066,6 +1156,33 @@ namespace PoliSim.Data
                 new SpendingLine(SpendingCategory.PublicServices, publicServices, isMandatory: false),
                 new SpendingLine(SpendingCategory.Administration, administration, isMandatory: false),
             });
+        }
+
+        /// <summary>
+        /// RECALIBRATION (build-order item 1, terminal rulings 2026-08-26): the two-line mandatory
+        /// transfer block for a generic-decomposition country - the general-government
+        /// cash-transfer layer its seed previously omitted (measured cost: year-1 primary
+        /// surpluses of +14..+22% of GDP, the fiscal reaction multiplier crushed to 0.58-0.76
+        /// permanently compensating - FiscalRecalDiagnostic, seed 777, pre-recalibration run).
+        ///
+        /// SocialSecurity carries REAL old-age cash benefits - Eurostat `gov_10a_exp`, COFOG
+        /// GF10.02 "Old age", na_item D62 (social benefits in cash - deliberately NOT the
+        /// function's total expenditure, which bundles in-kind elderly care that belongs to
+        /// government consumption), % of GDP, 2024, API vintage 2026-07-21; Germany and France
+        /// carry Eurostat flag `p`. This is also ApplyDemographicPensionPressure's target
+        /// category, so each country's aging channel now points at its real pension bill.
+        /// IncomeSecurity is the RESIDUAL, solved (class doc comment) so the year-1 primary
+        /// balance lands on the country's real 2025 structural position. Mandatory lines are
+        /// transfers: excluded from the national-accounts G term, narrower player adjustment
+        /// range, higher approval weight per relative change - the USA seed's own shape, now on
+        /// all six countries. The later ruled decomposition passes split these blocks into real
+        /// per-country structure; until then, two honestly-sourced lines beat twenty invented ones.
+        /// </summary>
+        private static void SeedMandatoryTransferLines(Country country, float socialSecurityPercent, float incomeSecurityPercent)
+        {
+            float gdp = country.State.GDP;
+            country.SpendingLines.Add(new SpendingLine(SpendingCategory.SocialSecurity, gdp * socialSecurityPercent / 100f, isMandatory: true));
+            country.SpendingLines.Add(new SpendingLine(SpendingCategory.IncomeSecurity, gdp * incomeSecurityPercent / 100f, isMandatory: true));
         }
     }
 }

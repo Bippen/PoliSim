@@ -76,13 +76,18 @@ namespace PoliSim.EditorTools
         private static int RunConsolidationMustWin()
         {
             ScenarioDefinition def = ScenarioLibrary.ById("italy_debt_crisis");
-            (ScenarioProgress progress, Country c) = RunLine(def, seed: 777, spendingCutPercent: -20f, label: "consolidation-20pct");
-            LogVerdict("consolidation-20pct", def, progress, c);
+            // RE-PREMISED 2026-08-26 (the seed recalibration): the winning line is the measured
+            // MIXED package - a -20% discretionary cut plus VAT to 25% - which lands 143.1% at
+            // t30 against the ≤145 target (margin 1.9) while holding the approval streak. The old
+            // cuts-only -20% line was the suppressed-revenue era's winner and now buys only 2.5
+            // points; VAT28 alone also wins the debt objective but breaks keep_the_room at 39.9.
+            (ScenarioProgress progress, Country c) = RunLine(def, seed: 777, spendingCutPercent: -20f, label: "consolidation-cut20-vat25", vatOverride: 25f);
+            LogVerdict("consolidation-cut20-vat25", def, progress, c);
 
             int failures = 0;
             if (progress.Verdict != ScenarioVerdict.Won)
             {
-                Debug.LogError($"ITALYSLICE: the measured -20% consolidation line should WIN but resolved {progress.Verdict} - " +
+                Debug.LogError($"ITALYSLICE: the measured cut20+VAT25 consolidation line should WIN but resolved {progress.Verdict} - " +
                                "a winnable line does not exist at the calibration as authored, which is the finding, not something to force.");
                 failures++;
             }
@@ -101,7 +106,7 @@ namespace PoliSim.EditorTools
             return failures;
         }
 
-        private static (ScenarioProgress, Country) RunLine(ScenarioDefinition def, int seed, float spendingCutPercent, string label)
+        private static (ScenarioProgress, Country) RunLine(ScenarioDefinition def, int seed, float spendingCutPercent, string label, float vatOverride = -1f)
         {
             SimulationRandom.Seed(seed);
             World world = WorldFactory.CreateDefault();
@@ -125,6 +130,10 @@ namespace PoliSim.EditorTools
                         d.SpendingLineChanges[SpendingCategory.InfrastructureAndDevelopment] = spendingCutPercent;
                         d.SpendingLineChanges[SpendingCategory.PublicServices] = spendingCutPercent;
                         d.SpendingLineChanges[SpendingCategory.Administration] = spendingCutPercent;
+                    }
+                    if (turn == 1 && vatOverride >= 0f)
+                    {
+                        d.TaxRateOverrides[TaxType.VAT] = vatOverride;
                     }
                     decisions[def.Country] = d;
 

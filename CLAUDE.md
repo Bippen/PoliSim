@@ -32,9 +32,9 @@
 > fix), and before `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating
 > that commit came from an unseeded run.
 
-> ## ⚠ FIVE BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
+> ## ⚠ SIX BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
 >
-> **Five, all within about a fortnight.** A figure recorded on one side of any of these cannot be
+> **Six, within about a month.** A figure recorded on one side of any of these cannot be
 > compared with a figure recorded on the other. When quoting a number from this file, check which era it
 > came from first.
 >
@@ -45,6 +45,7 @@
 > | 3 | **2026-08-10** | **`DaysPerTurn` 121 → 365**, the 3.017x fiscal defect | **every trajectory, debt path, deficit, population figure and anomaly count ever recorded before it** |
 > | 4 | **2026-08-17** | **the EROSION TERM** — the debt identity's missing −π·b arrives (rulings R1–R3; a RECALIBRATION BY CONSTRUCTION) | every debt path, debt-to-GDP figure, rating trajectory and divergence-signature number recorded before it — deliberately: the pre-erosion signature was the defect being closed. Non-debt figures are largely comparable (the term touches only the stock's drift) |
 > | 5 | **2026-08-17** | **the MATURITY RATE-LAG** (ruling R4; recalibration by construction, MEASURED NARROW) | debt paths in RATE-MOVING regimes only — exactly {GovernmentDebt, Budget} moved of 38 dumped fields, ≤0.2 ratio-points at every baseline horizon except France's s777 overshoot window. Stable-rate figures are effectively comparable across it |
+> | 6 | **2026-08-26** | **the FISCAL SEED RECALIBRATION** (build-order item 1; trajectory-moving by construction, named a recalibration throughout) — the five EU pairs re-anchored to one-basis real figures, the mandatory transfer block seeded, Sweden's UO10/11/12 flipped mandatory with its PotentialGDP re-solved (614.25) | **every EU-five trajectory, debt path, deficit, primary balance, FRF-multiplier reading and anomaly count recorded before it** — deliberately: the pre-recal era's +14..+22% year-1 primary surpluses (and the FRF crushed to 0.58–0.76 hiding them) were the defect being closed. USA figures are comparable across it — seeds untouched, T1 control-verified byte-identical. The post-recal era's baselines are `traj_postrecal_*` |
 >
 > ⚠ **Discontinuity 3 is the widest of the three.** The first two changed what was *measured*; this one
 > changed what the simulation *was*. Every baseline captured before 2026-08-10 measured a fiscal engine
@@ -12249,3 +12250,86 @@ re-checked and found unchanged (Steps 1–3, 5 done; 4 gated 13 Sept; 6 behind i
 table's GC row closed, D1 re-verified, and the Editor checklist row now carries the capture-set
 reviews including the shipped browser. `COMPLETED.md` gains §20 as the pointer the three-way test
 requires.
+
+## The fiscal seed recalibration ships — build-order item 1, the SIXTH baseline discontinuity (2026-08-26)
+
+**Trajectory-moving by construction, named a recalibration throughout, terminal-interactive as
+ruled** — six rulings taken in two terminal batches, every one recorded where it lands. The pass
+resolves the item-4/playtest-2 artifact class at its root: the five EU countries taxed the
+general-government base and spent barely half its perimeter.
+
+**§1 — the state, measured before proposing (`FiscalRecalDiagnostic`, new, retained; seed 777).**
+The perimeter bug confirmed exactly as briefed: year-1 primary balances SE +14.15 / DE +16.32 /
+FR +19.49 / IT +22.51 / PL +18.17 % of GDP — G at real government-consumption levels (18–26%,
+actually correct), transfers almost entirely absent (mandatory 0, welfare 0, benefits 0.7–2.0) —
+with the FRF then crushed to 0.58–0.76 by t2–t3, suppressing revenue ~10pp below target forever
+to paper over the seed. The USA was the control: federal/federal perimeter, mandatory 13.8%
+seeded, primary −2.38 vs the real −2.7 (CBO FY2025). **The item-4 "32%" reconciled, not
+absorbed**: that was a live-session Budget-display reading; the harness measures the same defect
+at +14.15 at T1 — one defect, two surfaces, both recorded. *(Tool correction, visible not
+silent: the diagnostic's first run labeled `FiscalTurnReport.SwfReturns` "swfDraw%" — that field
+is the accrued REALISED fund return (fund-side only, can be negative); the 3%/yr structural draw
+rides inside Revenue and is not separately reported. Relabeled `swfRealisedRet%`.)*
+
+**§2 — the ruled pairs (terminal batch 1+2, all sourced, dated, one basis per side).** Revenue
+targets → Eurostat `gov_10a_taxag` 2024 (API vintage 2026-07-21): DE 40.9ᵖ · FR 45.3 · IT 42.5 ·
+PL 37.6 · SE 42.2; CE re-solved 0.8393/0.7494/0.9424/0.8931/0.7895. Primary targets → 2025
+actuals (Eurostat April-2026 EDP deficits; ECB GFS D.41 interest 2025-Q4 DE 1.10/FR 2.20/PL
+2.51/SE 0.61, IT ≈3.9 derived): **DE −1.6 · FR −2.9 · IT +0.8 · PL −4.8 · SE −0.7.** Mechanism
+(ruled): G untouched (it matches real consumption; raising it breaks the C+I+G+NX identity — the
+USA PotentialGDP lesson); the missing ~20%-of-GDP enters as MANDATORY transfer lines —
+**SocialSecurity = real old-age cash benefits** (Eurostat `gov_10a_exp` GF10.02/**D62** 2024 —
+deliberately the cash item, not the function total that bundles in-kind elderly care: DE 9.0ᵖ /
+FR 12.4ᵖ / IT 13.6 / PL 10.4 / SE 7.0 — arming `ApplyDemographicPensionPressure` at each real
+pension line) plus **IncomeSecurity as the solved residual**. Sweden per its own ruling: UO10/11/12
+flip mandatory (the item-4 flag ruling, executed), the SocialSecurity line constructed at the
+full 7.0% (UO11's 1.19 + the out-of-budget pension system 5.81), IncomeSecurity 9.73, G falling
+26 → 20.38. **USA: NO CHANGE, ruled** (the control was already honest; its interest runs 4.24%
+vs the real 3.2% — a premium-formula property, recorded, not a seed pair). The model books tax
+revenue only, so both sides sit ~5–7pp under real general-government totals; **the primary
+balance is the anchored quantity.**
+
+**Sweden's ruled follow-up — PotentialGDP re-solved in-pass**: the G-flip opened a ~2–3% gap
+(t1 growth +0.5% vs 1.5% potential); `SwedenPotentialSolveDiagnostic` (new, retained; the USA
+`--usapotgdp` idiom as a two-stage sweep) solved **614.25**, at which GDP=620 is its own
+turn-1-consistent fixed point (t1 619.99, err 0.005). Baked with the USA-style comment.
+
+**Italy Debt Crisis re-premised (terminal ruling: stabilize ≤145 by t30).** The re-measurement
+(`recal_italymeasure.log`): under honest calibration the FRF + erosion bring 165% → 148.3
+no-policy by t30 themselves, and the lever spread narrowed 57 points → ~5 (a −20% discretionary
+cut buys 2.5 where it bought 17). The ≤95-by-t20 consolidation triumph was the suppressed-revenue
+era's artifact; the honest scenario is stabilization — which is real Italy. EndTurn 20→30, target
+95→145; winners: cut20+VAT25 143.1 (margin 1.9, holds the room), VAT28 143.2 (breaks the
+40-streak at 39.9 — the instrument tension, sharpened), cut30 144.4 thin; the slice diagnostic's
+win-line re-authored to the mixed package and **all three claims green** (no-policy fails by 3.3;
+the winnable line wins; the Sustained streak crosses a save 8→9). **Inherit the Fund's premise
+HOLDS unchanged** (same lose-1-of-3 shape, creditor branch exercised both arms).
+
+**The bar, largest form, all green:** T1 primaries land on target (SE −0.64 / DE −1.50 / FR
+−2.30 / IT +0.59 / PL −5.36 — within the sources' own precision; FRF now 0.97–1.18);
+equivalence 117/117 within 3% + bucket asserts (the @shock INFO probe rows byte-identical
+pre/post — the standing Q2-era residual class); anchors 5/6 with Poland's expected fail (seed
+positions untouched by design); RT 12/12 both seeds with the version gate exercised — **no
+`SaveVersion` bump: WorldFactory-only, no shape change, a loaded save carries its own seeds by
+construction and the RT continuation proves it**; fresh `traj_postrecal_*` baselines (2 seeds ×
+100/500/1000, dumped AFTER the potential bake); captures at ALL FOUR sizes
+(`recal1280/1640/1600/2560`, 64/64 each, 0 overflows, 0 escapes, 0 canvas violations, 0 ATTRIB)
+— the Budget mandatory groups now populated for all six are on film.
+
+**The signature — the fiscal engine's first measurement under honest calibration** (judged at
+the ruled 100–200 window; t1000 diagnostic only; both seeds agree): **USA** 127.8 → ~125 (t100)
+→ 122.5 (t200), drifting mildly DOWN (erosion on a 128% stock outweighs the −2.4 primary);
+**Sweden** 35 → ~25–28, stable (the collapse-to-creditor era gone); **Germany** 63 → ~67–68,
+the mild honest climber; **France** 116 → 123 (t100) → 113 (t200), oscillating under the FRF;
+**Italy** 138–142 → ~150 (t200), the true slow climber — surplus loses to 5.4% interest, the
+scenario premise now true at seed; **Poland** 59 → ~70 then STABILIZED 69–73 through t500 by a
+1.18 multiplier — the stabilizer genuinely stabilizing the slate's honest expander. **The
+restoring force binds in the window.** At t1000 (diagnostic): Germany/Italy/Poland reach the
+300% `MaxDebtToGdpPercent` ceiling (seeds 777/424242 vary) — the recorded mechanism limit ("a
+flow cannot outrun stock compounding") now expressed at real calibration levels; the ceiling, a
+"calibrated gameplay bound no country has ever reached", is reached at the millennium horizon.
+Recorded; the window verdict stands; "equilibrium" remains unearned.
+
+**The ruled order's dependency note, honored:** the other four countries' decomposition passes
+now decompose CORRECT totals. Pass 2 (the couplings pass) follows on the `traj_postrecal_*`
+baselines.

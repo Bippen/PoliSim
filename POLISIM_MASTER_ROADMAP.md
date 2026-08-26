@@ -258,9 +258,9 @@ because they are not done.
     | item | state |
     |---|---|
     | 1 · ATTRIB (Sweden 2027-01-01, +1.5000) | ✅ FIXED — the first-touch window class; writer = foreign-policy "Send substantial aid"; approval recorder now opens at the pre-write value on every path, mirroring the debt twin's 08-18 closure. Reproduced red then proven green by `LedgerFirstTouchDiagnostic` (new, stays as coverage); RT 12/12. CLAUDE.md "Live playtest 2" |
-    | 2 · Surplus display | ✅ VERIFIED + BUILT — hypothesis refuted (the row already showed the net-of-interest real balance); "Primary deficit/surplus … excl. interest" added as the labeled second line from the same report. Sweden's outsized measured surplus is a SEED question → rides item 4's scoping |
+    | 2 · Surplus display | ✅ VERIFIED + BUILT — hypothesis refuted (the row already showed the net-of-interest real balance); "Primary deficit/surplus … excl. interest" added as the labeled second line from the same report. Sweden's outsized measured surplus was a SEED question → ✅ **RESOLVED by the recalibration pass (2026-08-26)**: re-measured +14.15% year-1 primary at the harness (the live-session 32% was the same defect read off the Budget display), recalibrated to −0.64% against the real −0.7 |
     | 3 · Compass labels | ✅ FIXED (two iterations — label-vs-label AND label-vs-dot, leader lines) — verified both sizes, `play2fixb*_07b` |
-    | 4 · Sweden budget depth | ✅ BUILT (ruled: decomposition now, Sweden first) — 24 sourced utgiftsområde lines (regeringen.se, vårprop 2026, retrieved 08-25); all-discretionary + not-byte-identical deviations stated with measured reasons (CLAUDE.md "Item 4 BUILT"); recalibration is its own later ruled pass absorbing the seed's revenue artifact — **now SCHEDULED as build-order item 1 (2026-08-26)**; the other four countries await their own passes behind it |
+    | 4 · Sweden budget depth | ✅ BUILT (ruled: decomposition now, Sweden first) — 24 sourced utgiftsområde lines (regeringen.se, vårprop 2026, retrieved 08-25); all-discretionary + not-byte-identical deviations stated with measured reasons (CLAUDE.md "Item 4 BUILT"); recalibration ✅ **SHIPPED as build-order item 1 (2026-08-26)** — the revenue artifact absorbed (targets re-anchored, CE re-solved), the flags flipped, the level question answered with the mandatory block; the other four countries' decomposition passes now decompose CORRECT totals, unscheduled behind item 2 |
     | 5 · Riksbank independence | ✅ C NAMED (ruled: C now, B the destination) — the deliberate-choice paragraph on the Federal Reserve tab + `PolicyDecision` doc; B recorded beside item 10 with its two named gates (output-gap fix; item 10's machinery) — see Step 4's block |
     | 6 · Law pros/cons | ✅ BUILT (ruled: neutral derived via the declared table) — `CrimeJusticeCouplings` read by the Apply* formulas themselves; byte-identical 6/6 diffs; "Expected effects" in the detail pane with the coupling gaps visible, logged as the couplings-pass input (CLAUDE.md "Item 6 BUILT") |
     | 7 · Law-page clutter at 50 | ✅ BUILT — Design answered with Screen 1j ("Law browser at 50"), implemented same-day 2026-08-26 (CLAUDE.md "Board 1j implemented"; §7.1 migrated to `COMPLETED.md` §24). Residue: the eye review of the `board1jc*` sets rides the Access row |
@@ -273,10 +273,15 @@ because they are not done.
 *Terminal rulings, rule 4 (the consolidation pass). Each runs under the full standing bar when
 its turn comes; nothing is dated.*
 
-1. **The Sweden recalibration pass** — the spending LEVEL question, the mandatory/discretionary
-   flag flips (they CHANGE FLOWS — full sim-math bar), the revenue-side seed artifact, and the
-   measured ~32%-of-GDP year-1 structural surplus (playtest-2 finding 2). **Precedes the other
-   four countries' decomposition passes**, which stay unscheduled behind it.
+1. ✅ **The recalibration pass — SHIPPED 2026-08-26** (it grew from "Sweden's level question" to
+   the full fiscal seed recalibration all six countries needed): the five EU pairs re-anchored to
+   one-basis real figures (Eurostat/ECB/CBO, sourced and dated), the ~20%-of-GDP mandatory
+   transfer block seeded (pension + residual per the terminal ruling), Sweden's UO10/11/12
+   flipped mandatory with its PotentialGDP re-solved (614.25), Italy Debt Crisis re-premised to
+   stabilization (≤145 by t30), the full bar green, and the SIXTH baseline discontinuity
+   recorded. CLAUDE.md "The fiscal seed recalibration ships" is the record; the year-1 primary
+   balances now land on the real 2025 structural positions. **The other four countries'
+   decomposition passes now decompose CORRECT totals** and stay unscheduled behind item 2.
 2. **The Crime & Justice couplings pass** — consumes the logged gap list (no sentencing→prison
    edge; BorderEnforcement single-edge; no dial→budget), recorded as the couplings-pass input in
    `CrimeJusticeCouplings.cs`'s own doc; the wanted-effects log (`LawCatalog.cs`, eight

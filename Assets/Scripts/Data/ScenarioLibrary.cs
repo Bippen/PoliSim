@@ -191,6 +191,17 @@ namespace PoliSim.Data
         /// treasuries govern under - this scenario names it in the premise rather than working
         /// around it: every lever here is fiscal, and none of them needs to be, because the fiscal
         /// levers alone already measure as decisive.</para>
+        ///
+        /// <para><b>RE-PREMISED 2026-08-26 (the seed recalibration, build-order item 1 - terminal
+        /// ruling: "stabilize ≤145 by t30").</b> The honest calibration dissolved the old
+        /// consolidation-triumph premise: with real revenue targets and the mandatory transfer
+        /// block seeded, the FRF and erosion bring 165% down to ~146-148 ON THEIR OWN, and the
+        /// measured lever spread narrowed from 57 points to ~5 (a -20% discretionary cut buys
+        /// 2.5 points where it bought 17, because discretionary G is now a small slice of an
+        /// honest spending base). EndTurn 20→30, target 95→145, and the scenario's claim is now
+        /// stabilization against a 5.4%-interest stock - the thing Italy actually does. The
+        /// per-objective comments carry the re-measurement; the pre-recalibration figures in the
+        /// paragraphs above are the ORIGINAL era's record, kept as history.</para>
         /// </summary>
         private static ScenarioDefinition ItalyDebtCrisis()
         {
@@ -206,7 +217,7 @@ namespace PoliSim.Data
                     "and taxation - and every one of them costs something with voters. Bring the ratio down " +
                     "without losing the room.",
                 Country = CountryId.Italy,
-                EndTurn = 20,
+                EndTurn = 30,
 
                 ForeignPolicyCadenceMultiplier = 1f,
 
@@ -222,18 +233,24 @@ namespace PoliSim.Data
 
                 Objectives = new List<ScenarioObjective>
                 {
-                    // MEASURED threshold: the no-policy path settles at 105-110% and a token −10%
-                    // cut barely beats it (108.0% at turn 20's neighbourhood) - 95% requires
-                    // real, sustained commitment (the measured −20% cut reaches 92.6% by turn 20)
-                    // without demanding the most extreme tested package (−30% alone reaches 52.6%,
-                    // which would make this trivially over-achievable rather than a real target).
+                    // RE-MEASURED AND RE-PREMISED under the honest calibration (build-order item 1,
+                    // terminal ruling 2026-08-26). The original ≤95-by-t20 target was authored
+                    // against the suppressed-revenue era, where a -20% discretionary cut bought 17
+                    // points; under the recalibrated seeds the FRF and the erosion term do the
+                    // heavy lifting themselves (no-policy: 165% -> 148.3% by t30) and the player's
+                    // levers buy the LAST points, not fifty - so the scenario becomes what real
+                    // Italy is: STABILIZATION, not a consolidation triumph. The 2026-08-26
+                    // re-measurement (recal_italymeasure.log, seed 777, t30): no-policy 148.3
+                    // FAILS by 3.3; cut20+VAT25 143.1 WINS with margin 1.9; VAT28 143.2 wins the
+                    // debt objective but dips approval to 39.9 and breaks keep_the_room's streak
+                    // (the instrument tension, sharpened); cut30 alone 144.4 wins thin (0.6).
                     new ScenarioObjective
                     {
                         Id = "debt_down",
-                        Description = "Bring debt-to-GDP to 95% or below",
+                        Description = "Stabilize debt-to-GDP at 145% or below",
                         Kind = ObjectiveKind.Terminal,
                         Comparison = ObjectiveComparison.AtMost,
-                        Target = 95f,
+                        Target = 145f,
                         Unit = "%",
                         Read = c => c.State.DebtToGdpRatio
                     },
@@ -255,9 +272,10 @@ namespace PoliSim.Data
                         Read = c => c.State.ApprovalRating
                     },
                     // The hard floor - MEASURED to never bind in any tested configuration (worst
-                    // observed: 39.9 at turn 30 of a harsher, longer run than this scenario's own
-                    // 20-turn window), so it is genuinely a SAFETY NET against a bad line, not a
-                    // second copy of keep_the_room's own threshold.
+                    // observed at the 2026-08-26 re-measurement: 39.9 at t30, the VAT28 package -
+                    // which breaks keep_the_room's streak yet stays 9.9 points clear of this
+                    // floor), so it is genuinely a SAFETY NET against a bad line, not a second
+                    // copy of keep_the_room's own threshold.
                     new ScenarioObjective
                     {
                         Id = "no_collapse",
