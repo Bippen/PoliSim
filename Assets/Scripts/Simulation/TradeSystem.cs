@@ -21,15 +21,6 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class TradeSystem
     {
-        /// <summary>
-        /// THE WIRED-INERT CONTROL (the couplings precedent). False = the pre-pass-5 books: the
-        /// figure is added to the Budget accumulator only and the fiscal path sees nothing - the
-        /// plumbing is live at zero, and a no-policy dump must be byte-identical to pre_pass5. True =
-        /// the routed books. Held false for the control dump, then flipped and removed in the shipping
-        /// commit; the constant exists only so the control is the same code with one bit changed.
-        /// </summary>
-        public const bool RoutesToTheBooks = false;
-
         /// <summary>Fraction of a currency-strength deviation from neutral that passes through to export competitiveness.</summary>
         private const float CurrencyStrengthExportSensitivity = 0.5f;
 
@@ -132,9 +123,10 @@ namespace PoliSim.Simulation
         /// government revenue. Sets TradeBalance (the NX term MacroSystem's national accounts
         /// identity reads as this turn's net exports). Does not touch GDP directly -
         /// MacroSystem.ApplyNationalAccounts owns that. Returns the period's tariff revenue
-        /// (ComputeTariffRevenue) so SimulationManager can plan the coming period's flow from it and
-        /// record it; under the pre-pass-5 books (RoutesToTheBooks false) it is instead added to the
-        /// Budget accumulator here, the old two-books behaviour the control dump reproduces.
+        /// (ComputeTariffRevenue) so SimulationManager can plan the coming period's flow from it;
+        /// nothing is booked here - the Budget accumulator reads the take through the fiscal path's
+        /// budgetBalance (the wired-inert control that held the old accumulator write, ad82104, was
+        /// byte-identical to pre_pass5 6/6 before the switch was flipped and removed).
         /// </summary>
         public static float ApplyTradeEffects(Country country, World world)
         {
@@ -157,14 +149,8 @@ namespace PoliSim.Simulation
                 netTradeBalance += effectiveExports - effectiveImports;
             }
 
-            float tariffRevenue = ComputeTariffRevenue(country, world);
             country.State.TradeBalance = netTradeBalance;
-            if (!RoutesToTheBooks)
-            {
-                country.State.Budget += tariffRevenue;
-            }
-
-            return tariffRevenue;
+            return ComputeTariffRevenue(country, world);
         }
     }
 }

@@ -44,7 +44,9 @@ namespace PoliSim.Simulation
         ///
         /// Reads the revenue the simulation ACTUALLY collected - after collection efficiency, the
         /// Finance/Treasury competence bias and the fiscal reaction multiplier - not the theoretical
-        /// yield of the tax lines. Those differ, and the second is not what funded anything.
+        /// yield of the tax lines. Those differ, and the second is not what funded anything. Since
+        /// pass 5 (2026-08-26) that revenue includes the tariff flow, as a tax burden should - customs
+        /// are taxes on imports.
         /// </summary>
         public static float? TaxBurdenPercentOfGdp(Country country, FiscalTurnReport report)
         {

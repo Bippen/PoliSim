@@ -157,20 +157,28 @@ namespace PoliSim.EditorTools
         private static void MeasureExploit()
         {
             const int ExploitTurns = 30;
-            float[] controlRatio = RunSweden(ExploitTurns, exploit: false, out float controlTake);
-            float[] exploitRatio = RunSweden(ExploitTurns, exploit: true, out float exploitTake);
+            float[] controlRatio = RunSweden(ExploitTurns, exploit: false, out float controlTake, out Dictionary<CountryId, (float Gdp, float Ratio)> controlPartners);
+            float[] exploitRatio = RunSweden(ExploitTurns, exploit: true, out float exploitTake, out Dictionary<CountryId, (float Gdp, float Ratio)> exploitPartners);
             Debug.Log($"TARIFF EXPLOIT: Sweden, every partner override at {MaxTariffRatePercent:F0}% from t1 (seed {Seed}, {ExploitTurns} turns): take/turn {exploitTake:F2} vs {controlTake:F2} no-policy; " +
                       $"debt-to-GDP t10 {controlRatio[10]:F1} -> {exploitRatio[10]:F1}, t20 {controlRatio[20]:F1} -> {exploitRatio[20]:F1}, t30 {controlRatio[30]:F1} -> {exploitRatio[30]:F1} " +
                       $"(delta t30 {exploitRatio[30] - controlRatio[30]:+0.0;-0.0} ratio-points).");
+            // The partners' side - the lever's real reach: Sweden's tariff halves the effective exports
+            // of everyone selling to it (NX enters the identity one-for-one), and nobody retaliates.
+            foreach (KeyValuePair<CountryId, (float Gdp, float Ratio)> p in controlPartners)
+            {
+                (float Gdp, float Ratio) after = exploitPartners[p.Key];
+                Debug.Log($"TARIFF EXPLOIT PARTNER[{p.Key}] t{ExploitTurns}: GDP {p.Value.Gdp:F1} -> {after.Gdp:F1} ({(after.Gdp / p.Value.Gdp - 1f) * 100f:+0.00;-0.00}%), debt-to-GDP {p.Value.Ratio:F1} -> {after.Ratio:F1} ({after.Ratio - p.Value.Ratio:+0.0;-0.0} ratio-points).");
+            }
         }
 
-        private static float[] RunSweden(int turns, bool exploit, out float takePerTurn)
+        private static float[] RunSweden(int turns, bool exploit, out float takePerTurn, out Dictionary<CountryId, (float Gdp, float Ratio)> partnersAtEnd)
         {
             SimulationRandom.Seed(Seed);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject($"TariffExploit_{(exploit ? "on" : "off")}");
             var ratio = new float[turns + 1];
             takePerTurn = 0f;
+            partnersAtEnd = new Dictionary<CountryId, (float Gdp, float Ratio)>();
             try
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
@@ -196,6 +204,12 @@ namespace PoliSim.EditorTools
                     sim.AdvanceTurn(decisions);
                     ratio[turn] = sweden.State.DebtToGdpRatio;
                     if (turn == turns) { takePerTurn = sim.GetLastFiscalReport(CountryId.Sweden).TariffRevenue; }
+                }
+
+                foreach (TradePartner link in sweden.TradePartners)
+                {
+                    Country partner = world.GetCountry(link.PartnerId);
+                    partnersAtEnd[link.PartnerId] = (partner.State.GDP, partner.State.DebtToGdpRatio);
                 }
             }
             finally

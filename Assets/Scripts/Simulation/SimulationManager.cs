@@ -27,14 +27,17 @@ namespace PoliSim.Simulation
         /// This turn's total spending and budget balance EXACTLY as ApplyRevenueAndSpending computed
         /// them, recorded rather than recomputed.
         ///
-        /// They cannot be reconstructed from the fields above: that method sums
-        /// DetailedSpendingResult.GovernmentSpending, while this report carries
-        /// BaselineGovernmentSpending - a different field - and DiscretionarySpending here is a
-        /// per-turn CHANGE, not a level. Any caller adding the components up would produce a
-        /// plausible number that is not the one the simulation used, which is the StatTile
-        /// formatting bug's failure shape applied to arithmetic instead of display.
+        /// ⚠ Corrected, pass 5 (2026-08-26): this doc used to claim the components could not be added
+        /// back up because BaselineGovernmentSpending + DiscretionarySpending was "a different field"
+        /// from the summed G. That was wrong - the two DO reconstruct the summed G exactly (the plan's
+        /// baseline plus this period's change is what was spent). What a hand sum actually misses is
+        /// SwfContribution (part of TotalSpending) and, since tariffs ride inside Revenue, any line that
+        /// adds TariffRevenue on top counts it twice. Read BudgetBalance; never re-add.
         ///
         /// BudgetBalance is signed the same way the simulation signs it: positive is a SURPLUS.
+        /// TariffRevenue is the accrued tariff flow at STANCE 1 - what TradeSystem computed and the
+        /// period planned - while Revenue carries it times the period's fiscal-reaction multiplier;
+        /// a surface showing it as "of which" says so.
         /// </summary>
         public float TotalSpending;
         public float BudgetBalance;
@@ -1609,8 +1612,13 @@ namespace PoliSim.Simulation
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", direction, passed, CurrentDate);
             float approvalBeforeSwfBill = country.State.ApprovalRating;
+            // Pass 5 (2026-08-26): the drawdown is F1's THIRD writer, found by the retirement sweep -
+            // it now reaches the stock through ApplyOneTimeBudgetImpact, so the debt ledger observes
+            // it here exactly as the cabinet and foreign-policy sites observe theirs.
+            float debtBeforeSwfBill = country.State.GovernmentDebt;
             ParliamentSystem.ApplySwfDrawdownBillResult(country, bill, passed, ApplySwfDrawdownBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "SWF drawdown bill passed" : "SWF drawdown bill failed", country.State.ApprovalRating - approvalBeforeSwfBill);
+            DebtLedgerRecorder.RecordEvent(country, CurrentDate, "SWF emergency drawdown", debtBeforeSwfBill, country.State.GovernmentDebt);
             _pendingSwfDrawdownBillByCountry.Remove(countryId);
         }
 
@@ -1624,10 +1632,13 @@ namespace PoliSim.Simulation
         /// caught when the debt floor came off. The bill is not rejected for asking too much; it delivers
         /// what is there, which is what an emergency drawdown of a depleted fund really produces.
         ///
-        /// Proceeds land on `Budget` rather than paying down debt directly, deliberately: the budget is
-        /// the channel every other fiscal flow runs through, so the drawdown reaches debt the same way a
-        /// surplus does and every downstream reader - the fiscal reaction function, the rating's deficit
-        /// term, the reports - sees it without a special case.
+        /// ⚠ CORRECTED, pass 5 (2026-08-26). This doc used to say the proceeds "land on Budget ... so
+        /// the drawdown reaches debt the same way a surplus does" - and that was FALSE from the day it
+        /// was written: nothing fiscal reads State.Budget (it is the cumulative display accumulator), so
+        /// a passed drawdown destroyed fund assets and lowered no debt. The two-books defect F1 closed
+        /// for interrupt impacts had a third writer, found by pass 5's retirement sweep. It is a one-time
+        /// settlement, so it takes F1's own path: ApplyOneTimeBudgetImpact moves the stock and records
+        /// the same entry in the accumulator, and the resolution site observes it on the debt ledger.
         /// </summary>
         private void ApplySwfDrawdownBillEffects(Country country, SwfDrawdownBill bill)
         {
@@ -1641,7 +1652,7 @@ namespace PoliSim.Simulation
             float withdrawn = Mathf.Clamp(requested, 0f, fund.TotalAssets);
 
             fund.TotalAssets -= withdrawn;
-            country.State.Budget += withdrawn;
+            ApplyOneTimeBudgetImpact(country, withdrawn);
         }
 
         /// <summary>The pending standalone Trade bill for this country, or null if none is currently before Parliament.</summary>
@@ -2076,8 +2087,7 @@ namespace PoliSim.Simulation
             // the figure once per boundary, but it is the coming period's PLAN, accrued daily inside
             // Revenue like every other flow - so the report shows the tariff portion that actually
             // accrued over the period that just closed, a true reading of the one real path. (Under the
-            // pre-pass-5 books it was a turn figure booked to the accumulator alone - the control's
-            // branch below reproduces that for the wired-inert dump.)
+            // pre-pass-5 books it was a turn figure booked to the accumulator alone.)
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
                 Revenue = period.AccruedRevenue,
@@ -2086,7 +2096,7 @@ namespace PoliSim.Simulation
                 MandatorySpending = period.AccruedMandatorySpending,
                 UnemploymentBenefitCost = period.AccruedUnemploymentBenefitCost,
                 InterestOnDebt = period.AccruedInterestOnDebt,
-                TariffRevenue = TradeSystem.RoutesToTheBooks ? period.AccruedTariffRevenue : tariffRevenue,
+                TariffRevenue = period.AccruedTariffRevenue,
                 WelfareCost = period.AccruedWelfareCost,
                 SwfContribution = period.AccruedSwfContribution,
                 SwfReturns = period.AccruedSwfReturns,
@@ -2125,7 +2135,7 @@ namespace PoliSim.Simulation
                 : 0f;
             // Pass 5: this boundary's tariff figure (rates and volumes as they stand after this
             // turn's tariff decisions resolved) is the coming period's tariff flow.
-            period.PlannedTariffRevenue = TradeSystem.RoutesToTheBooks ? tariffRevenue : 0f;
+            period.PlannedTariffRevenue = tariffRevenue;
 
             // Read AFTER 121 days of accrual have finished moving the debt stock, so the stance the next
             // period adopts responds to the debt the country actually ended this one with - the same
@@ -2287,7 +2297,7 @@ namespace PoliSim.Simulation
                 previewCountry.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, TradeSystem.RoutesToTheBooks ? previewTariffRevenue : 0f, out _, out _);
+            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, previewTariffRevenue, out _, out _);
 
             float previewedInterestRate;
             if (previewCountry.CurrentFedChair != null)
@@ -3330,7 +3340,10 @@ namespace PoliSim.Simulation
         /// moves solely by budgetBalance in ApplyRevenueAndSpending, never saw them: "Bank it
         /// against the debt: +200" had never touched the debt path. (EventSystem was named in
         /// F1's first statement and is corrected here: EconomicEvent carries no budget field -
-        /// the writers were exactly two.)
+        /// the writers were exactly two.) ⚠ Corrected again, pass 5 (2026-08-26): there was a
+        /// THIRD - ApplySwfDrawdownBillEffects wrote the accumulator alone - closed onto this same
+        /// path by pass 5's retirement sweep. State.Budget's writers are now budgetBalance, this
+        /// helper's callers (cabinet, foreign policy, the drawdown), and nothing else.
         ///
         /// THE ROUTING CLAIM, derived before wiring: every authored interrupt impact is a
         /// ONE-TIME SETTLEMENT (a windfall banked, a package funded, an evacuation chartered) -
@@ -3482,7 +3495,7 @@ namespace PoliSim.Simulation
                     : 0f,
                 // Pass 5: the opening period's tariff flow, from the same pure function the boundary
                 // reports - so turn 1 accrues the seed rates' take rather than a period of nothing.
-                PlannedTariffRevenue = TradeSystem.RoutesToTheBooks ? TradeSystem.ComputeTariffRevenue(country, _world) : 0f,
+                PlannedTariffRevenue = TradeSystem.ComputeTariffRevenue(country, _world),
                 PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
                 GdpAtPeriodOpen = country.State.GDP,
                 UnemploymentAtPeriodOpen = country.State.Unemployment,
@@ -3670,14 +3683,17 @@ namespace PoliSim.Simulation
         /// PASS 5 (2026-08-26): <paramref name="tariffRevenue"/> is the tariff flow for the same slice
         /// the spending figures cover (the caller applies the period fraction, as for spending) - a
         /// RECURRING revenue that joins actual revenue here beside taxes and the fund draw, INSIDE the
-        /// fiscal-reaction multiplier (the 2026-08-02 "all revenue inside the multiplier" ruling; also
-        /// what keeps the debt ledger's revenue/m split exact with no new term) and OUTSIDE
-        /// CollectionEfficiency (customs are not the tax administration's collection). Derived, not
-        /// inherited from F1: F1's interrupt impacts are one-time settlements and go stock-side; a
-        /// flow that recurs every period is the budget process's channel, which F1's own boundary rule
-        /// names. Revenue-neutral at seed by construction: each country's CollectionEfficiency gives
-        /// back exactly its seed take (WorldFactory), because the real tax targets those were solved
-        /// against already contain customs duties.
+        /// fiscal-reaction multiplier (the 2026-08-02 SWF ruling - "returns run INSIDE the fiscal
+        /// reaction multiplier" - extended by analogy: a stance that loosens on a windfall should see
+        /// every windfall; it is also what keeps the debt ledger's revenue/m split exact with no new
+        /// term, and it is what bounds the tariff lever - a 50%-override windfall is partly given back
+        /// as the stance loosens) and OUTSIDE CollectionEfficiency (customs are not the tax
+        /// administration's collection). Derived, not inherited from F1: F1's interrupt impacts are
+        /// one-time settlements and go stock-side; a flow that recurs every period is the budget
+        /// process's channel, which F1's own boundary rule names. Revenue-neutral at seed by
+        /// construction: each country's CollectionEfficiency gives back exactly its seed take
+        /// (WorldFactory) so the recalibration's landed T1 primaries - the anchored quantity - are
+        /// unchanged; whether the real tax targets already contained customs is recorded as unverified.
         ///
         /// CONTINUOUS TIME PHASE 3: every spending figure is passed IN, so the caller decides whether it
         /// is handing over a whole period's or one day's. Revenue is the exception - it is computed here,

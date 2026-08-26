@@ -199,12 +199,24 @@ namespace PoliSim.Data
             // 2026-08-26 (build-order item 1): the five EU targets re-anchored to Eurostat
             // gov_10a_taxag 2024 (one basis, one vintage - API 2026-07-21); USA unchanged
             // (federal perimeter, already consistent - the doc comment's perimeter rule).
-            usa.CollectionEfficiency = 0.6129f;    // 18.0 / 29.37 (federal-only target, not general-government)
-            germany.CollectionEfficiency = 0.8393f; // 40.9 [Eurostat flag p] / 48.73
-            france.CollectionEfficiency = 0.7494f;  // 45.3 / 60.45
-            italy.CollectionEfficiency = 0.9424f;   // 42.5 / 45.10
-            poland.CollectionEfficiency = 0.8931f;  // 37.6 / 42.10
-            sweden.CollectionEfficiency = 0.7895f;  // 42.2 / 53.45
+            //
+            // PASS 5 (2026-08-26, tariff-to-stock): each value is the recalibrated CE LESS the
+            // country's seed tariff take over its theoretical revenue (TariffTakeDiagnostic, seed
+            // rates: USA 8.49/8517.3, DE 4.075/2290.3, FR 2.685/1934.4, IT 0.24/1037.3, PL
+            // 0.735/353.6, SE 1.01/331.4). Tariff revenue now reaches the fiscal path as its own
+            // flow; the tax lines give back exactly what it brings so that year-1 actual revenue and
+            // the landed T1 primaries - the recalibration's ANCHORED quantity - are unchanged by
+            // construction. A pass-1-shaped adjustment, not a retune; the un-decremented values are
+            // the comments' first figure. (Whether the real targets above already contain customs
+            // duties is NOT the justification and is recorded as unverified: customs are ESA D.2121,
+            // EU customs are S.212 own resources, and gov_10a_taxag has S13 and S13_S212 variants -
+            // which one was pulled is not recorded.)
+            usa.CollectionEfficiency = 0.6119f;    // 0.6129 (18.0 / 29.37, federal-only) - 0.0010
+            germany.CollectionEfficiency = 0.8375f; // 0.8393 (40.9 [Eurostat flag p] / 48.73) - 0.0018
+            france.CollectionEfficiency = 0.7480f;  // 0.7494 (45.3 / 60.45) - 0.0014
+            italy.CollectionEfficiency = 0.9422f;   // 0.9424 (42.5 / 45.10) - 0.0002
+            poland.CollectionEfficiency = 0.8910f;  // 0.8931 (37.6 / 42.10) - 0.0021
+            sweden.CollectionEfficiency = 0.7865f;  // 0.7895 (42.2 / 53.45) - 0.0030
 
             // Fiscal reaction function's per-country comfort anchor (see "Fiscal Reaction Function" in
             // CLAUDE.md) - reuses each country's own seeded starting debt-to-GDP ratio from the

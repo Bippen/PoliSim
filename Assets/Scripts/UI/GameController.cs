@@ -8157,10 +8157,10 @@ namespace PoliSim.UI
                 return;
             }
 
-            // Pass 5 (2026-08-26): the net is the RECORDED balance, never a hand sum - FiscalTurnReport's
-            // own doc says the components cannot be added back up (DiscretionarySpending is a change,
-            // BaselineGovernmentSpending is not the summed field), and the old hand sum here also added
-            // TariffRevenue on top of a Revenue that now already contains it. Same control count.
+            // Pass 5 (2026-08-26): the net is the RECORDED balance, never a hand sum - the old sum here
+            // omitted SwfContribution (part of TotalSpending) and would now count the tariff twice,
+            // since Revenue already carries it. (Its Baseline + Discretionary terms did reconstruct G
+            // exactly; that was never the problem.) Same control count.
             float net = report.BudgetBalance;
 
             GUILayout.Label($"Revenue (tax, tariffs, fund draw): {UiFormat.Money(report.Revenue, MoneyUnit.Billions)}", _labelStyle);
@@ -8170,7 +8170,7 @@ namespace PoliSim.UI
             GUILayout.Label($"Unemployment Benefit Cost: {UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Interest On Debt: {UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Welfare Program Cost: {UiFormat.Money(report.WelfareCost, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Of which tariff revenue (accrued, inside Revenue): {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Of which tariff revenue at the stated rates, before the fiscal stance: {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Space(6f);
             DrawColoredLabel($"Net (this year's recorded balance): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
         }

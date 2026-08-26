@@ -112,7 +112,9 @@ namespace PoliSim.EditorTools
                     float gdp = c.State.GDP;
                     float primary = r.BudgetBalance + r.InterestOnDebt;
                     float theo = TheoreticalRevenue(c);
-                    float denom = theo * c.CollectionEfficiency + r.SwfReturns;
+                    // Pass 5: the tariff flow sits inside the multiplier's bracket too - without it the
+                    // reconstructed FRF overstated by take/(theo x CE) (Sweden +0.39%).
+                    float denom = theo * c.CollectionEfficiency + r.SwfReturns + r.TariffRevenue;
                     float impliedMult = denom > 0.0001f ? r.Revenue / denom : -1f;
                     Debug.Log(string.Join(" ", new[]
                     {
