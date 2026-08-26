@@ -32,9 +32,9 @@
 > fix), and before `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating
 > that commit came from an unseeded run.
 
-> ## ⚠ SIX BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
+> ## ⚠ SEVEN BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
 >
-> **Six, within about a month.** A figure recorded on one side of any of these cannot be
+> **Seven, within about a month.** A figure recorded on one side of any of these cannot be
 > compared with a figure recorded on the other. When quoting a number from this file, check which era it
 > came from first.
 >
@@ -46,6 +46,7 @@
 > | 4 | **2026-08-17** | **the EROSION TERM** — the debt identity's missing −π·b arrives (rulings R1–R3; a RECALIBRATION BY CONSTRUCTION) | every debt path, debt-to-GDP figure, rating trajectory and divergence-signature number recorded before it — deliberately: the pre-erosion signature was the defect being closed. Non-debt figures are largely comparable (the term touches only the stock's drift) |
 > | 5 | **2026-08-17** | **the MATURITY RATE-LAG** (ruling R4; recalibration by construction, MEASURED NARROW) | debt paths in RATE-MOVING regimes only — exactly {GovernmentDebt, Budget} moved of 38 dumped fields, ≤0.2 ratio-points at every baseline horizon except France's s777 overshoot window. Stable-rate figures are effectively comparable across it |
 > | 6 | **2026-08-26** | **the FISCAL SEED RECALIBRATION** (build-order item 1; trajectory-moving by construction, named a recalibration throughout) — the five EU pairs re-anchored to one-basis real figures, the mandatory transfer block seeded, Sweden's UO10/11/12 flipped mandatory with its PotentialGDP re-solved (614.25) | **every EU-five trajectory, debt path, deficit, primary balance, FRF-multiplier reading and anomaly count recorded before it** — deliberately: the pre-recal era's +14..+22% year-1 primary surpluses (and the FRF crushed to 0.58–0.76 hiding them) were the defect being closed. USA figures are comparable across it — seeds untouched, T1 control-verified byte-identical. The post-recal era's baselines are `traj_postrecal_*` |
+> | 7 | **2026-08-26** | **the TAYLOR GAP TERM** (build-order item 4, pass 4; a recalibration by construction — the rule reads the unemployment gap against NAIRU instead of the raw level output gap, which was a per-country constant of −14.5% for the USA and pinned its suggestion at the 0-floor) | **every USA and Eurozone trajectory recorded before it**: rate paths (USA ~0 → ~5–6%, the zone blend +0.8–1.0 pp), chair behaviour, inflation, GDP (USA −2.3% at t100, the level gap −14.3 → −16.6 by construction), debt-to-GDP (the denominator; USA debt interest is anchored and does not read the rate), approval, the house-price index (the pinned rate's +3.9%/yr runaway ends) — deliberately: the floor was the defect. Sweden/Poland RATES are byte-identical across it; their trajectories move ≤0.1% of GDP through the partner-rate channel. `PotentialGDP`, the demographics block and the crime/corruption stocks are byte-identical everywhere (14 of 42 dumped fields). The post-pass-4 era's baselines are `traj_post_pass4_*`; the pre side is `traj_pre_pass4_*` |
 >
 > ⚠ **Discontinuity 3 is the widest of the three.** The first two changed what was *measured*; this one
 > changed what the simulation *was*. Every baseline captured before 2026-08-10 measured a fiscal engine
@@ -123,7 +124,7 @@ the simulation can be tested independently of the engine.
 - **PolicyDecision**: per-country turn inputs — `TaxRateOverrides` (a `Dictionary<TaxType, float>` of this turn's requested **absolute** rate per `TaxType` — e.g. `45f` means "set this tax's rate to 45%", not "raise it by 45 points" — only meaningful for `TaxType`s the country currently has implemented; implementing/removing a tax is a separate, immediate action on `TaxLine.IsImplemented`, not part of this dictionary), `InterestRateChange` (summed across countries sharing a `CurrencyZone` into one shared-zone change), `TariffRateChange` (a direct delta to the country's own `BaseTariffRate`, separate from trade-bloc tariffs), `PartnerTariffOverrides` (a `Dictionary<CountryId, float>` of this turn's requested **absolute** tariff-override rate per trade partner — only meaningful for a partner with an *active* override, the same "only currently-implemented/active gets an entry" pattern `TaxRateOverrides` uses; see "Per-Partner Tariff Overrides" below), `WelfareGenerosityOverrides` (a `Dictionary<WelfareProgramType, float>` of this turn's requested **absolute** `GenerosityLevel` per welfare program, the exact same "SET, not delta" semantics as `TaxRateOverrides` — only meaningful for a program the country currently has implemented; see "Welfare Policy" below), `SpendingLineChanges` (a `Dictionary<SpendingCategory, float>` of this turn's requested dollar **change** per `SpendingCategory` — a delta, unlike `TaxRateOverrides` — only meaningful for Discretionary categories on a country with a `SpendingLines` portfolio; see "Detailed Spending Portfolio" below), and four legacy category-specific discretionary spending deltas — `HealthcareSpendingChange`, `DefenseSpendingChange`, `InfrastructureSpendingChange`, `EducationSpendingChange` — each layered on top of the country's baseline `GovernmentSpendingRate`, not the total spending figure, for a country **without** a `SpendingLines` portfolio (five of the six). `TotalDiscretionarySpending` (their sum) is what such a country's G term uses; see "Political Layer" below for why each category is tracked separately rather than combined into one generic spending number.
 - **SimulationManager**: orchestrates turn order only — the macro theory and approval formula live in `MacroSystem`, elections in `ElectionSystem`, random events in `EventSystem`. Per turn: `CurrencySystem` applies interest rate changes and drifts currency strength, each country's own `TariffRateChange` is applied, `TradeSystem` resolves trade/tariffs (setting `TradeBalance`), then each country's domestic policy runs — `ApplyTaxRateChanges` (portfolio rate adjustments), `ApplyWelfareGenerosityChanges` (welfare portfolio rate adjustments, mirroring `ApplyTaxRateChanges`), `ResolveSpendingForTurn` (spending resolution — detailed `SpendingLines` or the legacy baseline+category-delta mechanic, see "Detailed Spending Portfolio" below), category spending effects, `MacroSystem.ApplyWelfareProgramEffects` (welfare confidence effects), fiscal spending/budget/debt (see "Fiscal Accounting" below, including `GetTotalTaxRevenue` and `GetTotalWelfareCost` — see "Welfare Policy" below), `MacroSystem`'s national accounts identity (GDP), Okun's Law (unemployment, itself welfare-adjusted — see "Welfare Policy"), the Phillips Curve (inflation), `MacroSystem.ApplyPovertyRate`, `MacroSystem.ApplyApprovalRating`, and a random event roll (`EventSystem`). `PreviewTurn` reruns that same per-country pipeline against a throwaway `Country`/`EconomyState` clone (`ClonePreviewCountry`, including deep-cloned `TaxLines`, `SpendingLines`, `WelfarePrograms`, and `TradePartners`) to produce a `PolicyPreview` — an estimate for a not-yet-committed `PolicyDecision` (see "Live Policy Preview" below) — without mutating the real `World`, recording a `FiscalTurnReport`, or rolling an event.
 - **MacroSystem**: the macroeconomic theory and the approval-rating formula — see "Economic Theory" and "Political Layer" below. Also owns `PovertyRate`'s own mean-reversion and every `WelfareProgram`'s small per-type effect — see "Welfare Policy" below.
-- **TaylorRule**: reference-only suggested interest rate (see "Economic Theory" below) — never applied automatically; intended for a future UI hint or an AI-controlled country's decision logic.
+- **TaylorRule**: the suggested policy rate (see "Economic Theory" below). ⚠ *Corrected 2026-08-26 (pass 4): this was recorded as "reference-only, never applied automatically" long after it stopped being true* — it is consumed LIVE by `FederalReserveSystem.ApplyFedChairInterestRate` (the USA's damped chair path), `EurozoneRateSystem.GetBlendedSuggestedRate` (the ECB blend) and `SimulationManager.PreviewTurn`; only Sweden and Poland treat it as advisory (shown on their central-bank tab) until Riksbank-B.
 - **CurrencySystem**: applies summed interest rate changes per `CurrencyZone`; for countries that don't share their `CurrencyZone` with anyone else, drifts `EconomyState.CurrencyStrength` (index, 100 = neutral) toward a target based on how their interest rate compares to the average rate among their trade partners — relatively higher rate pulls strength up, relatively lower pulls it down. Shared-currency countries (Eurozone) skip this, since there's no single national currency to strengthen or weaken. This heuristic (and the export-competitiveness effect it feeds into `TradeSystem`) is still a simplified placeholder, not modeled on a specific theory.
 - **TradeSystem**: looks up the applicable tariff rate for an importer/exporter pair, most-specific-wins — the importer's own `TradePartner.PlayerTariffOverride` for that exporter, if set, beats even trade-bloc membership; otherwise shared-bloc internal rate → importer's bloc external rate → importer's own `BaseTariffRate`, in that precedence order (see "Per-Partner Tariff Overrides" below); for non-shared-currency exporters, also scales effective exports by a currency-strength factor (stronger than neutral dampens exports, weaker boosts them; shared-currency exporters always get a neutral factor). Sets `TradeBalance` (the NX term `MacroSystem` reads for GDP) and tariff revenue (added to the budget, and returned so `SimulationManager` can record it on `FiscalTurnReport`) — it does **not** touch GDP directly anymore.
 - **ElectionSystem** and **EventSystem**: the rest of the political layer — see "Political Layer" below.
@@ -164,12 +165,18 @@ named constants:
   interest rate's effect flows through the real chain: rate → Consumption/Investment → GDP growth →
   Okun's Law → unemployment → Phillips Curve → inflation. That indirection is intentional, not a gap.
 - **Taylor Rule** (`TaylorRule.GetSuggestedInterestRate`): `suggested rate = NeutralRealRate +
-  Inflation + InflationGapWeight*(Inflation - InflationTarget) + OutputGapWeight*outputGap`, where
-  `outputGap = (GDP - PotentialGDP) / PotentialGDP * 100` (`TaylorRule.GetOutputGapPercent`).
-  `PotentialGDP` (on `EconomyState`) grows independently each turn at `PotentialGrowthRate`
-  (`MacroSystem.ApplyPotentialGdpGrowth`), decoupled from actual GDP shocks, so this is a real
-  output gap rather than a growth-rate proxy. Pure reference data — nothing in `SimulationManager`
-  calls it; it exists for a future UI hint or an AI-controlled country's policy logic.
+  Inflation + InflationGapWeight*(Inflation - InflationTarget) + UnemploymentGapWeight*(NAIRU -
+  Unemployment)`, floored at 0 before any Fed chair's bias. ⚠ *Rewritten 2026-08-26 (pass 4 of the
+  ruled build order — "Pass 4 ships" below).* The gap term used to be `OutputGapWeight * (GDP -
+  PotentialGDP)/PotentialGDP`, and that level gap is a persistent per-country LEVEL in this model,
+  not a cycle — the fixed point of the identity's own dynamics (G is discretionary-only; see
+  "Discretionary Spending Growth"), USA −14.5% for a thousand turns — so the term pinned the USA's
+  suggestion at the 0-floor regardless of inflation. The rule now reads the unemployment gap
+  against the seeded NAIRU, the same "gaps, not absolute levels" form the approval, Phillips and
+  poverty paths already use; `UnemploymentGapWeight` (1.0) is a stated textbook convention (Taylor's
+  0.5 × Okun's ~2), not derived from `MacroSystem.OkunCoefficient`. `GetOutputGapPercent` survives
+  as a reference reading. **Consumed live** by the Fed chair path, the Eurozone blend and the
+  preview — the old "nothing in `SimulationManager` calls it" sentence was stale.
 
 When extending the economic core, keep new relationships anchored to a named theory the same way —
 add a comment naming the concept, and keep every coefficient a named constant next to the method
@@ -497,7 +504,15 @@ not-an-exhaustive-list scoping this section originally called for.
   Unemployment at turn 1 (Okun's Law reacting to the growth-gap shock) before both mean-revert over
   subsequent turns. **This turn-1 shock was subsequently addressed** by "Turn-1 GDP Consistency"
   below (USA's seeded `PotentialGDP` was recalibrated so the identity is already self-consistent at
-  turn 1) — GDP now moves by well under 0.1% on turn 1 instead of dropping ~9%. **Also**: USA's
+  turn 1) — GDP now moves by well under 0.1% on turn 1 instead of dropping ~9%. ⚠ *Amended
+  2026-08-26 (pass 4's derivation): the GDP LEVEL shock was addressed, and "well under 0.1%" was
+  true when solved — at HEAD the landing has drifted to −0.21% (28,938 against 29,000; the
+  recalibration era's C/I factors), still two orders below the ~9% it replaced. The unemployment
+  spike survives regardless, because Okun reads GROWTH against `PotentialGrowthRate` and a
+  level-pinned turn 1 grows ~0% (measured at HEAD: U 4.5 → 5.26, +0.76 of which +1.1 is the Okun
+  term; Poland's seed slack reads +2.65 at t1). Deterministic, bit-identical across seeds, back
+  within 0.3 pp of NAIRU by t4–t5 — any consumer of the unemployment gap must be judged from t5.*
+  **Also**: USA's
   Mandatory total ($4,010B) is brand-new spending with no prior
   analogue (previously the model had no transfer categories besides `UnemploymentBenefitCost`), added
   directly to total budget outflow — combined with the prior task's lower `CollectionEfficiency`, this
@@ -646,7 +661,8 @@ gap flagged in "Federal Reserve" below is improved but not resolved** - Hawkish 
 still deep enough that Moderate and Dovish both land on `CurrencySystem.MinInterestRate` (0%)
 identically, same as before this fix. Fully resolving that would mean revisiting `TaylorRule.
 OutputGapWeight` itself (a shared, cross-country constant, not a USA-specific calibration) - a
-separate decision, not made here.
+separate decision, not made here. *(→ Made 2026-08-26, pass 4 of the ruled build order: the rule
+reads the unemployment gap; see "Pass 4 ships".)*
 
 ## Political Layer
 Elections, richer policy levers, and random events - all game-rule heuristics layered on top of the
@@ -783,7 +799,8 @@ ApplyInterestRateChanges` below). A `FedChair` (`FedChair.cs`) picked by the pla
   the old general-government-scale figure (undoing accurate FY2025 federal-only sourcing) or revising
   `TaylorRule.OutputGapWeight` itself (a shared, cross-country constant). Neither was done here; the
   mechanism is correct and Hawkish differentiation is real, but full three-way differentiation remains
-  a known, not-yet-resolved limitation.
+  a known, not-yet-resolved limitation. *(→ Resolved 2026-08-26 by pass 4 — the rule reads the
+  unemployment gap; the differentiation was re-measured before and after; see "Pass 4 ships".)*
 
 ## Federal Reserve Rate Damping
 A real bug, distinct from the output-gap/Fed-chair-floor limitation above: `SimulationTestRunner` (run
@@ -888,7 +905,11 @@ chain (TaylorRule's suggested rate depends on the output gap, which depends on `
 Fed-chair-driven interest rate then partially damps toward that suggested rate; the interest rate
 feeds back into Consumption/Investment's rate sensitivity) has no simple closed form, so the value
 was located by testing candidates until turn-1 GDP landed within a fraction of a percent of the
-29000 seed. At 33260, GDP moves from 29000 to **~28999-29019 (well under +/-0.1%)** on turn 1
+29000 seed. *(Chain description as of 2026-07: since pass 4, 2026-08-26, the rule reads the
+unemployment gap, not the output gap — and pass 4 leaves turn 1 itself untouched, because the
+rule's first application follows period 1: t1 GDP is byte-identical pre/post in the dumps. The
+33260 seed was not re-solved; its t1 landing at HEAD reads −0.21%, see the amended note above.)*
+At 33260, GDP moves from 29000 to **~28999-29019 (well under +/-0.1%)** on turn 1
 instead of dropping ~9%, and the output gap is already sitting at its long-run **~-14.2% to -14.5%**
 equilibrium from turn 1 onward, rather than opening at ~0% and sliding into that equilibrium over the
 first ~25 turns. This changes **only** `PotentialGDP` (the internal "trend output" reference value) -
@@ -5411,7 +5432,9 @@ Multi-country scaffold: six countries (USA, Sweden, Germany, France, Italy, Pola
 real mid-2026 policy rates/inflation/growth, shared/independent `CurrencyZone`s with settable
 interest rates, an EU `TradeBloc` with internal/external tariffs, a lightweight bilateral trade
 model with currency-strength-driven export competitiveness, and a theory-grounded core (national
-accounts identity, Okun's Law, Phillips Curve, plus a reference-only Taylor Rule) for GDP,
+accounts identity, Okun's Law, Phillips Curve, plus a Taylor Rule — *"reference-only" when this was
+written; live on the Fed-chair, Eurozone-blend and preview paths since, and reading the unemployment
+gap since pass 4, 2026-08-26*) for GDP,
 unemployment, and inflation. GDP reverts partway toward `PotentialGDP` each turn and is floored above
 0, and Okun's Law/the Phillips Curve mean-revert toward NAIRU and hard-clamp their outputs, so the
 no-policy-change baseline stays near equilibrium instead of drifting to an extreme over many turns
@@ -8641,7 +8664,8 @@ turn-stepped stats, stated at the site.
 2. **Two shapes joined the table** (recorded there): the annual-rate POWER SLICE — and Phase 5
    should note `ApplyPotentialGdpGrowth` (`PotentialGDP × (1 + rate/100)` per turn) is exactly
    this shape; and TARGET-SHAPERS take no transform — the Taylor rule's
-   `InflationGapWeight`/`OutputGapWeight` are the same class.
+   `InflationGapWeight`/`OutputGapWeight` are the same class *(since pass 4, 2026-08-26, the
+   second is `UnemploymentGapWeight` — same class)*.
 3. **The throwaway-diagnostic gate re-earned its place** and Phase 5 should open with one: pin
    the no-feedback paths (PotentialGDP growth at fixed rate; expectations adaptation at pinned
    inflation) before the web is touched.
@@ -12234,7 +12258,8 @@ destination. **The destination and its two gates live in the roadmap's Step 4 bl
 independence with appointment influence, the Fed Chair mechanism generalized
 (`Country.CurrentFedChair` non-null is already the entire gate) — behind (1) the Taylor-path
 output-gap distortion fix (the recorded finding that pins the suggested rate to the 0-floor;
-Q5/Step-5-adjacent) and (2) item 10's own machinery, appointments being political-game material.
+Q5/Step-5-adjacent) *— ✅ CLEARED 2026-08-26 by pass 4 ("Pass 4 ships" below)* — and (2) item
+10's own machinery, appointments being political-game material — *now B's only remaining gate*.
 Option A (chair-less Taylor-following) is rejected in the record: it spends Sweden/Poland's full
 monetary agency — the only two countries that have it — while inheriting the distortion, with
 nothing gameplay-shaped in return.
@@ -12527,3 +12552,198 @@ now proven. Sectors, the standing third candidate, additionally needs its LawDef
 (dict-shaped) and a consequence surface before its laws are worth authoring.
 
 Stopped at the boundary. Pass 4 (the Riksbank-B gate-1 fix) follows and is not this pass.
+
+## Pass 4 ships — the Taylor path reads the unemployment gap; Riksbank-B gate 1 CLEARED (2026-08-26)
+
+Pass 4 of the ruled build order (build-order item 4, the Riksbank-B gate-1 fix). **The rulings were
+taken BY THE PASS, on the recommendations of a terminal batch that was reported twice without a
+ruling arriving (rule 4's own fallback for a reversible call, recorded here so it never reads as
+drift): (1) fix the RULE, not the seeds; (2) the rule reads the unemployment gap (B2) with an
+explicit `TaylorRule.UnemploymentGapWeight = 1.0f` stated as a textbook convention; (3) the
+SEVENTH baseline discontinuity accepted as the price, by construction; (4) one always-drawn reading
+line on each branch of the central-bank tab; (5) the identity's government-consumption block queued
+as a named-trigger roadmap item. Overrule = revert `513b348` (the build) and the closing commit;
+every baseline is labelled (`traj_pre_pass4_*` / `traj_post_pass4_*`).**
+
+**The defect, measured at HEAD before anything (fresh `pre_pass4` dumps, both seeds, the ruled
+100–200 window).** `GetSuggestedInterestRate` read `0.5 × (GDP − PotentialGDP)/PotentialGDP` — the
+raw LEVEL gap — and that gap is a persistent per-country level, the fixed point of the identity's
+own dynamics: the growth-inclusive ratio map `r* = [s + (1−s)·(G+NX)/Pot] / [(1+g) − (1−s)·a]`
+reproduces the dumps to ~0.02 pp (G is discretionary-only, C+I ≈ 0.79 of GDP, the attractor
+anchors period-open potential while the ratio divides by period-close potential, and that (1+g)
+alone is ~2.5–3 pp of the USA's −14.5%). No `PotentialGDP` value closes it — `r* = 1` needs Pot ≈
+6,960, a 76% GDP collapse — which "Discretionary Spending Growth" had already proved in July before
+naming `OutputGapWeight` "a separate decision, not made here". Re-measured (the script reproduces
+the Q5 §3 table digit for digit on the Q5-era dump): level gap USA −14.5 (sd 0.6, unchanged),
+Poland **−6.9** (the Q5 table said −4.5 — the recalibration turned the EU-five gaps from drifting
+series, sd 2–3, into stable negative levels, sd < 0.9; at session length Poland/Germany/Italy/
+France are unchanged to two decimals and only Sweden moved, +1.7 → −2.2), Italy −4.5, Germany
+−2.7, Sweden −0.8, France −0.5; every country's unemployment gap −0.03 ± 0.19 on both seeds.
+
+| | gap t1 | gap band t100–200 min/mean/max | suggestion t100–200 mean (s777 / s424242) | at the floor | realized t100→t200 |
+|---|---|---|---|---|---|
+| USA | −14.70 | −15.9 / −14.3 / −12.4 | **0.01 / 0.02** | **98 and 95 of 101 turns** | 0.00 → 0.00 |
+| Poland | −4.90 | −10.0 / −7.7 / −6.6 | 1.43 / 1.13 | 63 of the first 100 | 3.75 (player-set) |
+| Italy | −1.34 | −5.3 / −3.9 / −2.4 | 2.13 / 4.23 | 0 | zone |
+| Germany | −0.39 | −3.9 / −1.8 / −0.2 | 6.51 / 7.01 | 0 | zone |
+| France | +1.14 | −2.0 / +0.1 / +1.6 | 6.77 / 6.55 | 0 | zone |
+| Sweden | −0.56 | −3.2 / −1.4 / +0.1 | 3.77 / 3.47 | 0 | 1.75 (player-set) |
+| ZONE blend | | | 5.65 / 6.26 | | 5.59 → 5.96 / 5.42 → 6.51 |
+
+USA inflation averaged 3.5–3.7% through that window with the suggestion at zero. **The chair
+differentiation had collapsed to the bias** (`FedChairDifferentiationDiagnostic`, new, seed 777,
+all eight chairs forced): five of eight — every Moderate at or below 0 and both Doves — ran the
+IDENTICAL trajectory at 0.00%; the hawk-vs-dove spread was 1.500 pp at t50 and t100 against a bias
+difference of 3.00; inflation between the extremes differed by 0.08 pp. And a runaway nothing
+watched: with the rate at 0 the housing rate gap sat at −3.75 forever and `ApplyHousePriceIndex`
+compounded the USA index at +3.9%/turn — 102 → 3,970 at t100 → **177,959 at t200** — invisible to
+the five-field swing check.
+
+**The fork, derived and ruled.** (A) fix the seeds — rejected on the record above and the map: the
+honest A is a government-consumption term in the identity and six re-solved potentials, a
+seventh-scale discontinuity across all six countries and Okun's anchor, and the gap DRIFTS 1–3 pp
+over the first ~50 turns for four countries regardless (only the two solved seeds, USA 33260 and
+Sweden 614.25, start at their fixed point), so the rule would need B afterward anyway. (B) fix the
+rule — the codebase's own "gaps, not absolute levels" principle applied to the one path it had
+missed — and the shape of "the structural baseline" decided it: a seed-anchored constant fails
+Poland/Germany/Italy by 1.5–2 pp (the drift); a measured per-country constant is a cached value in
+rule 12's shape whose 100-turn and 1000-turn means disagree by 1–2 pp; a slow running estimate
+(EWMA) needs a new `EconomyState` float, per-country seeding, a NaN sentinel (−1 is a valid gap)
+and a time constant — and it would read a DIFFERENT cycle: the model's own cyclical output gap
+leads the unemployment gap by one turn with the OPPOSITE sign to Okun (cross-correlation +0.87 at
+lag +1; GDP blips revert within a turn and the difference-form Okun reads the reversion as a
+downturn), the coded Okun's effective turn-level slope is −0.08 not −0.5, and NO level Okun exists
+to map one gap into the other. **B2 — `UnemploymentGapWeight × (NAIRU − U)` — with NAIRU as the
+structural baseline: the seeded per-country constant TEN other consumers already read (Phillips,
+Okun's reversion, poverty, LFPR, youth-U, Gini, real wages, hoarding, crime, approval), centred for
+every country, and the variable the Phillips curve drives inflation with.** The weight 1.0 is
+Taylor's 0.5 × Okun's textbook 2 — the Fed's own published substitution — stated as a convention
+because the model cannot derive it; its stakes were measured first (1.0 vs the model-native 0.71:
+0.06 pp). The inflation-only alternative (weight 0) was measured too and is honest to record: at
+no-policy B2 ≈ inflation-only within 0.05 pp everywhere (the term is +0.05 ± 0.2 pp), and
+`WageBoomMeasurementDiagnostic`'s `usa_3pp_60t_fedchair` shows why nothing can separate them there
+— a 3-pp tightness impulse is gone before the first turn boundary (U 1.00 → 4.02 at t1; Okun's
+0.7/turn reversion), so no boundary reading ever sees it. B2 was kept on the dual-mandate grounds:
+the chairs' own descriptions are employment-mandate text, Riksbank-B needs the mandate, and the
+B2+Phillips loop is negative feedback at ≈ −0.03/turn after damping (the persistent level-gap
+channel it replaces was the original crash-loop's source). Eight adversarial verifiers and a
+completeness critic ran over the derivation before the terminal batch; two refutations were adopted
+(Sweden/Poland are NOT byte-identical under any B — the partner-rate channel; "no new constant"
+was wrong — `OkunCoefficient` is private and the weight is a convention) and one review claim was
+itself wrong (it reported no `pre_pass4` label; the six files exist).
+
+**The build (`513b348`).** `TaylorRule`: `UnemploymentGapWeight`, `GetUnemploymentGapPercent`,
+`GetGapTermPercentagePoints`; `OutputGapWeight` removed; `GetOutputGapPercent` kept as a reference
+reading nothing consumes; the class doc rewritten (it was still "pure reference data — never called
+from AdvanceTurn"; it is consumed live by the chair path, the zone blend and the preview).
+`TrajectoryBaselineDump` reads `Taylor.GapTermPp` through the rule's accessor, so the column
+follows whatever the rule reads. `DrawFederalReserveTab`: one always-drawn Label per branch — the
+USA's reading + lean = target (held within 0–15%) with the 15%/turn damping named
+(`FederalReserveSystem.RateAdjustmentSpeed` made public for it), the Eurozone blend with the
+member's own reading, Sweden/Poland's advisory reading ("an independent Sveriges Riksbank on the
+same rule would read …", Riksbank-B's first visible artefact); the Eurozone paragraph's
+"inflation/output-gap situation" became "inflation and labour-market situation". Doc corrections
+in place (the closing commit): the components list and the Economic Theory bullet (both said
+reference-only), the Status paragraph, the turn-1 note (the GDP level shock was addressed and its
+landing has drifted to −0.21% at HEAD; the unemployment spike survives — U 4.5 → 5.26 — judge any
+gap consumer from t5), the Turn-1 GDP Consistency chain (predates pass 4; pass 4 leaves turn 1
+byte-identical because the rule's first application follows period 1; 33260 not re-solved), the
+target-shaper note, the two July entries that deferred `OutputGapWeight` and the playtest-2
+gates paragraph (dated pointers, not rewrites), `PolicyDecision.InterestRateChange`'s gate text,
+the `EconomyState.PotentialGDP`, `EurozoneRateSystem` and `Phase5NoFeedbackDiagnostic` comments
+that still said the rule read the output gap, and `COMPLETED.md` §22's Q5-table framing and
+"USA disqualified" line.
+
+**The bar — trajectory-moving, judged at the ruled window, ATTRIB clean on every run** (the bar
+script's own `ATTRIB` counts were a case-insensitive false positive on `…OnLoadAttributes`;
+case-sensitive grep reads zero in every log).
+- **The centerpiece, all six + the zone, before → after (s777 / s424242, t100–200 means):** USA
+  suggestion 0.01 → **5.82** / 0.02 → **6.12**, floor turns 98 → **0** / 95 → **0**, realized rate
+  0.00 → 4.8–5.8 / 5.5–6.5; Poland's hidden reading 1.43 → 5.27 / 1.13 → 5.06 (floor 63 → 0);
+  Italy 2.13 → 3.98 / 4.23 → 6.17; Germany 6.51 → 7.35 / 7.01 → 8.14; France 6.77 → 6.73 / 6.55
+  → 6.58; Sweden 3.77 → 4.51 / 3.47 → 4.17; **zone blend 5.65 → 6.42 (+0.77) / 6.26 → 7.22
+  (+0.96)**, realized zone rate at t200 5.96 → 6.82 / 6.51 → 7.37. The gap term itself averages
+  +0.04 pp (USA) — the rule now reads inflation with a live cyclical nudge, which is the design.
+  **The signature is dead: no country's suggestion touches the floor anywhere in the window.**
+- **Differentiation restored, damping stable** (the diagnostic re-run at 200 turns): hawk-vs-dove
+  spread **2.78 pp at t50, t100 and t200** (bias difference 3.00; the 0.22 is the damped path
+  trailing a moving target), **0 of 8 chairs at the floor** at every waypoint, all eight on
+  distinct trajectories, inflation dove-minus-hawk +0.147 pp at t100 and t200; max single-turn
+  rate move 0.30 pp (was 0.56), 13–16 direction reversals in 200 turns — the target's own turns,
+  not the every-turn overshoot cycle the undamped mechanic produced.
+- **Force-kind decomposition of the rate chain, erosion standard:** the chain identities
+  `relC_t ≈ relGDP_{t−1} + ln(cIF_B/cIF_A)` and the I twin close with mean |residual| 2.0e-4 (C)
+  and 7.3e-4 (I), max 2.6e-3 (t5, the confidence factor) for the USA on s777, 2.1e-4 / 6.5e-4 on
+  s424242; Germany and Italy ~1e-4; Sweden 2e-5 with a zero rate term. Window ΔGDP/GDP: **USA
+  −2.73% = ΔC −3.32% + ΔI −2.26% + ΔNX −0.01% + Δ(G + reversion) +2.85%** (the 0.5 attractor
+  gives back half, as the identity implies; s424242 −2.87%); Germany and Italy −0.37% (the zone
+  rate +0.76 pp over the window); **Sweden +0.10% and Poland +0.01%, entirely ΔNX — the
+  partner-rate channel (`CurrencySystem.ApplyCurrencyStrength`), the critic's prediction at its
+  measured size.**
+- **The controls:** Sweden's and Poland's `Zone.InterestRate` max |Δ| = **0** over 500 turns on
+  both seeds (player-set; their trajectories move only through the partner channel). `PotentialGDP`
+  EXACTLY unmoved everywhere (the attractor pins it), the demographics block, `ConsumerConfidence`
+  base and the crime/corruption stocks byte-identical: **`TrajectoryDiffCheck` 6/6 pairs, 14 of 42
+  fields byte-identical on every pair.** Movers, all downstream of the rate: the three Taylor
+  columns and `Zone.InterestRate` (USA), `HousePriceIndex`, `CurrencyStrength` (USA +25–33, the
+  dollar on a 5-point differential), `ApprovalRating` (USA +2–3 points), `Country.EffectiveDebtRate`
+  (Germany/Italy +0.8–1.1 pp as the higher zone rate reaches issuance through the maturity lag),
+  `Inflation` (USA −0.3 pp max), `Unemployment` (largest move 0.15 pp, at t5–t7), `GDP` (USA
+  −2.3% at t100, −3.2% at t500).
+- **The seventh discontinuity, by construction (table row 7 at the top of this file):** the USA's
+  level gap the rule stops reading WORSENS −14.3 → −16.6% (GDP −2.3% at t100, −2.9% at t200
+  against the pre path), inflation 2.81 → 2.55 at t100, debt-to-GDP 125.9 → 128.7% (the
+  denominator; USA debt interest is anchored by `BaseDebtInterestRateOverride` and does NOT read
+  the policy rate), the house-price index 3,970 → 418 at t100 and 177,959 → 1,156 at t200 (the
+  runaway ends; homeownership 67.2 → 64.7). **t1000, a diagnostic never a target:** the higher zone
+  rate moves WHEN the pre-existing Eurozone debt divergence reaches its ceiling, not whether
+  (Germany 98 → 143% at t900, both runs at the 300% ceiling by t1000; Italy at the ceiling from
+  t800 in both), the erosion pass's own lesson; USA approval sits ~3 points higher throughout on
+  the lower inflation.
+- **Equivalence 117 of 117 within 3%** (the six C/I INFO rows unchanged in kind). **Save/load
+  round-trip PASS, 12 scenarios (6 countries × 2 seeds)** — the rule adds no state.
+- **The scenario matrix like-for-like at seed 777** (15 scenarios × 100/500, pre side run at HEAD
+  before the build): **8 of 30 anomaly counts EXACT, the other 22 within ±4** (max +4 at
+  baseline/500 and sustainedexploit/500; −3 at stress/100, welfarestress/100,
+  parliamentstress/100); **zero new anomaly kinds** — the same five in both logs (Inflation/
+  Unemployment/InterestRate/DebtToGdpRatio swings, CreditRating moves; 1,589 → 1,616 entries,
+  interest-rate swings 96 → 91 as the rate no longer decays toward a percent-swing-screaming
+  zero); every scenario's per-turn lines differ from turn 2 on (28/30, 124/126 — the rate
+  executes in every path). **Cabinetstress bounded and explained:** counts 32 → 34 (t100), 69 →
+  72 (t500); the USA line at t25 reads rate 0.06 → 5.26%, GDP −2.6%, inflation 3.18 → 2.89,
+  debt-to-GDP +3.1 pp — Fed chair decisions read a suggestion that now moves, by design.
+- **Captures at the four ruled sizes: USA at the four ruled sizes — 1280×720 (rendered 1280×699), 1640×707 (1640×686), 1600×950 (1600×929), 2560×1440 (2560×1419) — 64/64 each, 0 failed, 0 overflows, 0 containment escapes; Sweden and Germany at 1600×929 for the other two branches, 62/62 each, clean; the three new lines confirmed BY EYE on the `p4*_07d_politics_federalreserve` sets (the USA target line wraps inside the panel at 1280 with the zero-lean chair reading 0,00 and the 0–15% hold stated; the Riksbank advisory line above the slider reading 2,40%; the ECB blend 5,35% beside Germany's own 5,54%).**
+
+**The Eurozone amendment (dated 2026-08-26, correcting the Disinflation post-mortem's monetary
+half and the Italy entry's country/mechanism ruling).** Under the fixed rule the zone blend sits
++0.8 to +1.0 pp higher in the window because Germany's and Italy's level gaps no longer drag it.
+Re-measured with `DisinflationMeasurementDiagnostic` §4 (the 10% start, 30 turns): Germany's
+shared rate auto-climbs to **10.03% by t30 (was 8.63)** and inflation ends **10.05 (was 10.12)**;
+Italy's zone rate 7.67 (was 6.69), inflation 9.73 (was 9.78); the maximum ±0.75 push still leaves
+t30 inflation **identical to three decimals** (10.050 with or without it). The finding's STRUCTURE
+stands with refreshed numbers — the automatic blend moves further than the player ever could and
+the result is still nothing, because the reversion, not the rate, is what forecloses disinflation;
+the approval kill stands untouched. Poland's and Sweden's own lines move only through the partner
+channel (Poland no-policy 9.34 → 9.37).
+
+**USA's monetary-scenario disqualification: AMENDED, not lifted whole.** The rule-based half is
+gone — in `usa_3pp_60t_fedchair` the Fed's rate now reads 3.94% at t1, 4.73 at t10, 4.99 at t30,
+5.79 at t60 (before: 3.19 decaying to 0.00 by t30) — and the chairs differentiate. The
+reversion-based half stands exactly as the named pattern says: the 3-pp impulse is closed before
+the first boundary in both runs, so "hold the gap off NAIRU" scenarios remain foreclosed for every
+country, the USA included. What the USA regains is the inflation-management family where the lever
+is the inflation gap — the Fed chair's response is real, differentiated by chair, and bounded.
+
+**Riksbank-B: gate 1 CLEARED.** Gate 2 (item 10's appointment machinery) is its only remaining
+gate. Recorded for that build: Poland's hidden reading (1.4 → 5.3 at the window), the advisory line
+already on the Sweden/Poland tab, and the seed transient — a rule reading (NAIRU − U) at t1–t3
+sees Sweden −1.2 and Poland −2.65 (deterministic, gone by t5), so an independent Riksbank would
+open with three artefact-driven turns unless the build anchors or skips them.
+
+**What remains dark, stated:** the level output gap is still the identity's accounting hole
+(roadmap trigger item); B2 vs inflation-only is a design choice the no-policy runs cannot
+adjudicate; `TaylorRule.GetOutputGapPercent` is a reference reading nothing consumes; the
+capture guard does not measure flow-layout labels, so the three new lines are confirmed by eye on
+the `07d_politics_federalreserve` sets, not by the overflow count.
+
+Stopped at the boundary. Pass 5 (tariff-to-stock) follows and is not this pass.

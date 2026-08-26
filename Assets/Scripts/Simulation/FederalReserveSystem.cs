@@ -29,7 +29,10 @@ namespace PoliSim.Simulation
         /// 5.05% -> 0.00%), which overshoots, corrects, and overshoots again - an undamped
         /// interest-rate/output-gap feedback loop that was the real root cause of persistent
         /// turn-to-turn volatility (see "Federal Reserve Rate Damping" in CLAUDE.md), not a bug in
-        /// TaylorRule or the output-gap calculation themselves.
+        /// TaylorRule or the output-gap calculation themselves. (Historical framing: that loop ran
+        /// through the level output gap the rule read until pass 4, 2026-08-26; the damping stays and
+        /// was re-measured after the fix - max single-turn move 0.30 pp, no reversal cycle. Public
+        /// since pass 4 so the Federal Reserve tab can name the speed it shows.)
         /// </summary>
         public const float RateAdjustmentSpeed = 0.15f;
 

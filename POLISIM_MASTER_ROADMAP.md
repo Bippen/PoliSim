@@ -261,7 +261,7 @@ because they are not done.
     | 2 · Surplus display | ✅ VERIFIED + BUILT — hypothesis refuted (the row already showed the net-of-interest real balance); "Primary deficit/surplus … excl. interest" added as the labeled second line from the same report. Sweden's outsized measured surplus was a SEED question → ✅ **RESOLVED by the recalibration pass (2026-08-26)**: re-measured +14.15% year-1 primary at the harness (the live-session 32% was the same defect read off the Budget display), recalibrated to −0.64% against the real −0.7 |
     | 3 · Compass labels | ✅ FIXED (two iterations — label-vs-label AND label-vs-dot, leader lines) — verified both sizes, `play2fixb*_07b` |
     | 4 · Sweden budget depth | ✅ BUILT (ruled: decomposition now, Sweden first) — 24 sourced utgiftsområde lines (regeringen.se, vårprop 2026, retrieved 08-25); all-discretionary + not-byte-identical deviations stated with measured reasons (CLAUDE.md "Item 4 BUILT"); recalibration ✅ **SHIPPED as build-order item 1 (2026-08-26)** — the revenue artifact absorbed (targets re-anchored, CE re-solved), the flags flipped, the level question answered with the mandatory block; the other four countries' decomposition passes now decompose CORRECT totals, unscheduled behind item 2 |
-    | 5 · Riksbank independence | ✅ C NAMED (ruled: C now, B the destination) — the deliberate-choice paragraph on the Federal Reserve tab + `PolicyDecision` doc; B recorded beside item 10 with its two named gates (output-gap fix; item 10's machinery) — see Step 4's block |
+    | 5 · Riksbank independence | ✅ C NAMED (ruled: C now, B the destination) — the deliberate-choice paragraph on the Federal Reserve tab + `PolicyDecision` doc; B recorded beside item 10 with its two named gates (output-gap fix — **✅ CLEARED 2026-08-26, pass 4**; item 10's machinery — now the only gate) — see Step 4's block |
     | 6 · Law pros/cons | ✅ BUILT (ruled: neutral derived via the declared table) — `CrimeJusticeCouplings` read by the Apply* formulas themselves; byte-identical 6/6 diffs; "Expected effects" in the detail pane with the coupling gaps visible, logged as the couplings-pass input (CLAUDE.md "Item 6 BUILT") |
     | 7 · Law-page clutter at 50 | ✅ BUILT — Design answered with Screen 1j ("Law browser at 50"), implemented same-day 2026-08-26 (CLAUDE.md "Board 1j implemented"; §7.1 migrated to `COMPLETED.md` §24). Residue: the eye review of the `board1jc*` sets rides the Access row |
 
@@ -307,11 +307,26 @@ its turn comes; nothing is dated.*
    crossing saves, equivalence 117/117, captures 4 sizes 99/99 with 0 guards (the 1280 floor
    sweep's 22 overflows fixed on the codebase's own ladders). CLAUDE.md "The second law category
    ships" is the record.
-4. **The Riksbank-B gate-1 fix** — the Taylor-path output-gap distortion (the −14.5% structural
-   gap pins the suggested rate to the 0-floor regardless of realized inflation; evidence:
-   `COMPLETED.md` §22, the Q5 §3 table). Its stated vehicle (Q5) shipped without it; scheduled
-   here so option B is buildable when item 10 opens (13 Sept). B's second gate — item 10's own
-   appointment machinery — still applies to B itself.
+4. ✅ **The Riksbank-B gate-1 fix — SHIPPED 2026-08-26 (pass 4).** The Taylor path reads the
+   unemployment gap against NAIRU (`TaylorRule.UnemploymentGapWeight` 1.0, a stated textbook
+   convention) instead of the raw level output gap — a per-country CONSTANT (USA −14.5% for a
+   thousand turns, the identity's own fixed point that no seed can close) that pinned the USA's
+   suggestion at the 0-floor for 95–98 of the ruled window's 101 turns and collapsed five of eight
+   Fed chairs onto one identical trajectory. The rulings were taken by the pass on the reported
+   terminal batch (rule 4's reversible-call form, two reports having drawn no ruling; revert =
+   `513b348` plus the closing commit). After: USA suggestion 0.01 → 5.8 with floor turns 98 → 0,
+   chair spread 1.50 → 2.78 pp with 0/8 at the floor, Poland's hidden reading 1.4 → 5.3, the zone
+   blend +0.8/+1.0 pp, the house-price runaway the pinned rate drove (+3.9%/yr) ended. A
+   recalibration by construction — the SEVENTH discontinuity (USA and Eurozone trajectories;
+   Sweden/Poland rates byte-identical, their paths ≤0.1% of GDP via the partner-rate channel;
+   `PotentialGDP` and the demographics exact). Bar green: equivalence 117/117, RT 12/12, diffs 6/6
+   with 14/42 fields byte-identical, matrix 8/30 exact and 22 within ±4 with zero new kinds,
+   cabinetstress bounded and explained, captures at the four ruled sizes clean, ATTRIB 0. The
+   Eurozone "monetary agency nil" finding re-measured and amended with refreshed numbers (its
+   structure stands); the USA's monetary-scenario disqualification amended (the rule half lifted,
+   the reversion half stands). **Gate 2 — item 10's appointment machinery — is now Riksbank-B's
+   only gate.** CLAUDE.md "Pass 4 ships" is the record; the honest form of the rejected branch A is
+   queued below as the identity's government-consumption block.
 5. **Tariff-to-stock** — the F1-shaped fix: tariff revenue reaches the Budget display accumulator
    and never the debt stock (CLAUDE.md "What remains dark"); enters as a fix entry per the F1
    precedent rather than staying a stated model property.
@@ -327,6 +342,18 @@ its turn comes; nothing is dated.*
   cyclical (both conditions recorded with the deferral, `COMPLETED.md` §22).
 - **StatNodeId/icon promotion** for R4-1's two Society rows (youth unemployment, life
   expectancy) — the icon ask joins the next Design asset batch after D1's nine land.
+- **The identity's government-consumption block** (queued 2026-08-26 by pass 4's derivation —
+  the honest form of its rejected branch A): the national-accounts identity's G is discretionary
+  lines only (mandatory transfers excluded, correctly, but general-government consumption is
+  nowhere), so every country's level output gap is a share-determined fixed point no seed can
+  close (re-measured at HEAD after the recalibration, which turned the EU-five gaps from drifting
+  series into stable levels — USA −14.5%, Poland −7, Italy −4.5, Germany −2.7, Sweden −0.8,
+  France −0.5; `COMPLETED.md` §22's Q5 table carries the pre-recalibration figures; the map r* =
+  [s + (1−s)·(G+NX)/Pot] / [(1+g) − (1−s)·a] reproduces the dumps to ~0.02 pp). Closing it means a government-
+  consumption term in the identity and six re-solved potentials — a seventh-scale discontinuity
+  across all six countries and Okun's anchor — which is why pass 4 fixed the RULE instead. Trigger:
+  the first mechanic that needs the level output gap to mean something (a capital stock, an
+  investment-deepening return, or a displayed "output gap" stat).
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and
@@ -498,8 +525,10 @@ seeding Sweden a governor enables it mechanically today). **Two gates, both name
 **output-gap distortion fix** — the recorded finding that the Taylor path's −14.5% structural
 gap pins the suggested rate to the 0-floor regardless of realized inflation; an "independent"
 Riksbank following that path would be model-artifact-driven, so the fix precedes the build
-(~~Q5/Step-5-adjacent~~ — Q5 shipped without it; **now SCHEDULED as build-order item 4,
-2026-08-26**, so B is buildable when the second gate opens); (2) **this item's own gate** —
+(~~Q5/Step-5-adjacent~~ — Q5 shipped without it; ~~**now SCHEDULED as build-order item 4,
+2026-08-26**, so B is buildable when the second gate opens~~ — **✅ CLEARED 2026-08-26, pass 4
+shipped: the rule reads the unemployment gap, the USA's suggestion left the floor, the chairs
+differentiate; CLAUDE.md "Pass 4 ships"**); (2) **this item's own gate** —
 appointment is political-game material (candidates, an appointment cadence, the reveal), so it
 ships with item 10's machinery, not before. Until both open, **option C stands as the ruled
 present state: the player-set rate is a deliberate gameplay choice, named as such in the

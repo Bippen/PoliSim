@@ -18,8 +18,9 @@ namespace PoliSim.EditorTools
     /// the two figures the pass is judged on:
     ///
     ///   DIFFERENTIATION - the spread between the most hawkish and most dovish chairs' realized
-    ///   rates at t50 and t100 (collapsed = both sit at the floor or the spread is just the bias
-    ///   difference clamped at 0), and the inflation difference the same pair produces by t100.
+    ///   rates at t50, t100 and t200 (collapsed = both sit at the floor or the spread is just the
+    ///   bias difference clamped at 0), and the inflation difference the same pair produces by t100
+    ///   and t200.
     ///
     ///   STABILITY - the crash-loop check. The documented undamped signature was a 5.05 -> 0.00
     ///   single-turn jump and a self-sustaining overshoot cycle (CLAUDE.md "Federal Reserve Rate
@@ -41,7 +42,7 @@ namespace PoliSim.EditorTools
         private static void RunFromMenu() => Run();
 
         /// <summary>200 turns so the spread is judged inside the ruled 100-200 calibration window
-        /// (POLISIM_MASTER_ROADMAP "calibration stays at turns 100-200"), with t50 as the early read.
+        /// (POLISIM_MASTER_ROADMAP "calibration stays at turns 100–200"), with t50 as the early read.
         /// Turns 1-4 carry the deterministic seed-convergence transient in unemployment (CLAUDE.md,
         /// the amended turn-1 note) - judge from t5.</summary>
         private const int Turns = 200;
@@ -113,7 +114,7 @@ namespace PoliSim.EditorTools
                 maxReversals = Mathf.Max(maxReversals, run.Reversals);
             }
 
-            Debug.Log($"FEDCHAIR DIFFERENTIATION: most hawkish {hawk.Chair.Name} ({hawk.Chair.RateBias:+0.00}) vs most dovish {dove.Chair.Name} ({dove.Chair.RateBias:+0.00}): " +
+            Debug.Log($"FEDCHAIR DIFFERENTIATION: most hawkish {hawk.Chair.Name} ({hawk.Chair.RateBias:+0.00;-0.00}) vs most dovish {dove.Chair.Name} ({dove.Chair.RateBias:+0.00;-0.00}): " +
                       $"rate spread t50 {hawk.Rate[50] - dove.Rate[50]:F3} pp, t100 {hawk.Rate[100] - dove.Rate[100]:F3} pp, t200 {hawk.Rate[200] - dove.Rate[200]:F3} pp (bias difference {hawk.Chair.RateBias - dove.Chair.RateBias:F2}); " +
                       $"inflation dove-minus-hawk t100 {dove.Inflation[100] - hawk.Inflation[100]:+0.000;-0.000} pp, t200 {dove.Inflation[200] - hawk.Inflation[200]:+0.000;-0.000} pp; unemployment hawk-minus-dove t100 {hawk.Unemployment[100] - dove.Unemployment[100]:+0.000;-0.000} pp, t200 {hawk.Unemployment[200] - dove.Unemployment[200]:+0.000;-0.000} pp; " +
                       $"chairs at the floor: t50 {atFloor50}/{runs.Count}, t100 {atFloor100}/{runs.Count}, t200 {atFloor200}/{runs.Count}.");

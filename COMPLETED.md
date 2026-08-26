@@ -1142,7 +1142,9 @@ amendment, not a correction) · R-MS2 the canonical six steps. Bar: 39/39 byte-i
 ### Q5 — the cyclical pair (2026-08-18; shipped `7321807`)
 
 The §3 measurement table, preserved as the standing evidence (it is also Riksbank option B's
-gate-1 evidence — the Taylor-path output-gap distortion): **the output gap is a persistent
+gate-1 evidence — the Taylor-path output-gap distortion; *gate 1 CLEARED 2026-08-26 by pass 4,
+which re-measured this table at HEAD: the EU-five figures below predate the recalibration — Poland
+reads −6.9, Italy −4.5, Germany −2.7, Sweden −0.8 after it; USA unchanged*): **the output gap is a persistent
 per-country LEVEL, not a cycle** — no-policy t1–t1000 means: USA **−14.54%** (sd 0.64 — seeded
 PotentialGDP 12.8% above GDP, never converging), Poland −4.52, Sweden +3.86, Germany +0.32,
 Italy −2.36, France −0.06. A term on it is a per-country constant — Q1's disqualified raw-level
@@ -1163,7 +1165,9 @@ max streak of ONE turn** at gap ≥ 1 pp. The §2a methodology correction stands
 eight legacy `PolicyDecision` float fields are DEAD as inputs for every seeded country
 (`SpendingLineChanges` is the real input). §4's independent finding: **the USA is disqualified
 for any inflation-management scenario** — TaylorRule's 0.5 × (−14.5%) structural gap term pins
-the suggested rate to the 0-floor regardless of realized inflation. The `Sustained` form was
+the suggested rate to the 0-floor regardless of realized inflation *(→ AMENDED 2026-08-26 by pass
+4: the term is gone and the Fed responds — the rule-based half of the disqualification is lifted;
+the reversion-based half, the named pattern above, stands. CLAUDE.md "Pass 4 ships")*. The `Sustained` form was
 exercised synthetically (evaluates exactly; survives a save mid-streak; the verdict screen's
 generic margin line never read `ConsecutiveTurns` — fixed 2026-08-18 per the sustained
 verdict-margin closure).

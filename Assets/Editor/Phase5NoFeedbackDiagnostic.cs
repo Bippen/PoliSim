@@ -16,7 +16,9 @@ namespace PoliSim.EditorTools
     ///
     /// Three pinned properties:
     /// 1. POTENTIAL-GDP INDEPENDENCE: PotentialGDP's path is identical whether or not actual GDP is
-    ///    shocked - the real-output-gap property the Taylor rule depends on.
+    ///    shocked - the real-output-gap property Okun's growth gap and the identity's reversion
+    ///    depend on (the Taylor rule read it too until pass 4, 2026-08-26; it reads the unemployment
+    ///    gap now - the pin stays).
     /// 2. PUBLISHED-VS-LIVE SEPARATION (Step A's invariant, asserted dynamically): corrupting every
     ///    published figure wildly, every day, changes NOTHING in any country's simulated state over
     ///    two full turns. Stronger than the standing static check (no Simulation file mentions

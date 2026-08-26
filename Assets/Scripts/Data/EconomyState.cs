@@ -43,7 +43,9 @@ namespace PoliSim.Data
 
         /// <summary>
         /// Trend/potential output level - grows independently of actual GDP at the country's
-        /// PotentialGrowthRate. Used for Okun's Law's growth gap and the Taylor Rule's output gap.
+        /// PotentialGrowthRate. Used for Okun's Law's growth gap and the identity's reversion;
+        /// TaylorRule.GetOutputGapPercent reads it as a reference LEVEL gap only - the rule itself
+        /// reads the unemployment gap since pass 4 (2026-08-26).
         /// </summary>
         public float PotentialGDP;
 

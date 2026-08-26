@@ -91,8 +91,10 @@ namespace PoliSim.Data
         /// Reserve tab, the same authored-premise honesty the Eurozone Rate-Voice text carries.
         /// The recorded DESTINATION is independence with appointment influence (the Fed Chair
         /// mechanism generalized - Country.CurrentFedChair non-null is already the entire gate),
-        /// behind two named gates: the Taylor-path output-gap distortion fix, and item 10's
-        /// political machinery for appointments. See the roadmap's Step 4 block.
+        /// behind ONE remaining gate: item 10's political machinery for appointments. The other -
+        /// the Taylor-path output-gap distortion fix - was CLEARED by pass 4 (2026-08-26): the rule
+        /// reads the unemployment gap, and the advisory reading on the central-bank tab is
+        /// Riksbank-B's first visible artefact. See the roadmap's Step 4 block.
         /// </summary>
         public float InterestRateChange;
 

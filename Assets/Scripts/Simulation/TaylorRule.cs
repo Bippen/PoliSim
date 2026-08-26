@@ -58,9 +58,10 @@ namespace PoliSim.Simulation
         public const float UnemploymentGapWeight = 1.0f;
 
         /// <summary>
-        /// Output gap as a percentage of potential GDP - the LEVEL gap, positive above trend. A
-        /// reference reading for dumps and diagnostics; the rule no longer reads it (see the class
-        /// doc for why a term on it was a per-country constant, not a cycle).
+        /// Output gap as a percentage of potential GDP - the LEVEL gap, positive above trend. Kept
+        /// available as a reference reading (nothing consumes it at HEAD - the trajectory dump records
+        /// the rule's own term instead); the rule no longer reads it (see the class doc for why a term
+        /// on it was a per-country constant, not a cycle).
         /// </summary>
         public static float GetOutputGapPercent(Country country)
         {

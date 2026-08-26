@@ -3146,7 +3146,7 @@ namespace PoliSim.UI
                 float suggested = TaylorRule.GetSuggestedInterestRate(_playerCountry);
                 float chairTarget = Mathf.Clamp(suggested + chair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
                 GUILayout.Label(
-                    $"Rule reading {suggested:F2}% (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate) plus the chair's lean of {chair.RateBias:+0.00;-0.00} points = target {chairTarget:F2}%. The rate moves {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the way toward the target each turn.",
+                    $"Rule reading {suggested:F2}% (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate, the NAIRU) plus the chair's lean of {chair.RateBias:+0.00;-0.00;0.00} points = target {chairTarget:F2}% (held within {CurrencySystem.MinInterestRate:F0}-{CurrencySystem.MaxInterestRate:F0}%). The rate moves {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the way toward the target each turn.",
                     _labelStyle);
 
                 DrawFedChairSelectionModal();
@@ -3174,7 +3174,7 @@ namespace PoliSim.UI
                     // on the same rule would set - Riksbank-B's first visible artefact. One
                     // always-drawn Label ahead of the slider, content-only variation.
                     GUILayout.Label(
-                        $"For reference, an independent {GetCentralBankName(PlayerCountryId)} following the same rule the Federal Reserve and the ECB use would read {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}% right now (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate).",
+                        $"For reference, an independent {GetCentralBankName(PlayerCountryId)} following the same rule the Federal Reserve and the ECB use would read {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}% right now (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate, the NAIRU).",
                         _labelStyle);
                     GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                     _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
@@ -3196,7 +3196,7 @@ namespace PoliSim.UI
                     // Pass 4 (2026-08-26): the blend and this member's own reading, so the push has a
                     // visible reference. One always-drawn Label ahead of the slider.
                     GUILayout.Label(
-                        $"Blended rule reading this turn: {EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}% ({_playerCountry.Name}'s own reading {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%, from inflation {_playerCountry.State.Inflation:F1}% and unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate).",
+                        $"Blended rule reading this turn: {EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}% ({_playerCountry.Name}'s own reading {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%, from inflation {_playerCountry.State.Inflation:F1}% and unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate, the NAIRU).",
                         _labelStyle);
                     GUILayout.Label($"National Rate Push: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                     _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, _sliderStyle, _sliderThumbStyle);

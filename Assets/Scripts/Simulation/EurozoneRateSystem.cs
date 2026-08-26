@@ -10,7 +10,8 @@ namespace PoliSim.Simulation
     /// SharesCurrencyZoneWithOthers) gets a "voice" on the shared rate proportional to its own share
     /// of the three countries' combined GDP (a simplified version of the real ECB's "capital key" -
     /// not a precise replica), applied to its own TaylorRule.GetSuggestedInterestRate reading - a
-    /// member with severe inflation or a large output gap pulls the shared rate more than a smaller,
+    /// member with severe inflation or a tight labour market (its unemployment against its NAIRU;
+    /// the rule reads that gap since pass 4, 2026-08-26) pulls the shared rate more than a smaller,
     /// calmer one, the same directional logic as the real ECB Governing Council. Whichever member the
     /// player currently controls gets a modest, bounded push on top of that blend (mirroring a Fed
     /// Chair's RateBias in scale, not USA's unilateral authority) via the same PolicyDecision.
