@@ -40,9 +40,13 @@ namespace PoliSim.EditorTools
         [MenuItem("PoliSim/Run Fed Chair Differentiation (pass 4)")]
         private static void RunFromMenu() => Run();
 
-        private const int Turns = 100;
+        /// <summary>200 turns so the spread is judged inside the ruled 100-200 calibration window
+        /// (POLISIM_MASTER_ROADMAP "calibration stays at turns 100-200"), with t50 as the early read.
+        /// Turns 1-4 carry the deterministic seed-convergence transient in unemployment (CLAUDE.md,
+        /// the amended turn-1 note) - judge from t5.</summary>
+        private const int Turns = 200;
         private const int Seed = 777;
-        private static readonly int[] Waypoints = { 1, 2, 3, 5, 10, 20, 30, 50, 75, 100 };
+        private static readonly int[] Waypoints = { 1, 2, 3, 5, 10, 20, 30, 50, 75, 100, 150, 200 };
 
         private sealed class ChairRun
         {
@@ -61,6 +65,8 @@ namespace PoliSim.EditorTools
         public static void Run()
         {
             CheckExit.ArmLogFold(); // ruling 1 (2026-08-25): this advances turns; an ATTRIB during it is a failure even though the tool exits 0 by design otherwise.
+            // Invariant formatting for a log that gets diffed and quoted (the OS locale writes 3,25).
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
             List<FedChair> chairs = ChairsToMeasure();
             if (chairs == null)
@@ -95,21 +101,22 @@ namespace PoliSim.EditorTools
                 if (run.Chair.RateBias < dove.Chair.RateBias) { dove = run; }
             }
 
-            int atFloor50 = 0, atFloor100 = 0;
+            int atFloor50 = 0, atFloor100 = 0, atFloor200 = 0;
             float maxStepAll = 0f;
             int maxReversals = 0;
             foreach (ChairRun run in runs)
             {
                 if (run.Rate[50] < 0.05f) { atFloor50++; }
                 if (run.Rate[100] < 0.05f) { atFloor100++; }
+                if (run.Rate[200] < 0.05f) { atFloor200++; }
                 maxStepAll = Mathf.Max(maxStepAll, run.MaxStep);
                 maxReversals = Mathf.Max(maxReversals, run.Reversals);
             }
 
             Debug.Log($"FEDCHAIR DIFFERENTIATION: most hawkish {hawk.Chair.Name} ({hawk.Chair.RateBias:+0.00}) vs most dovish {dove.Chair.Name} ({dove.Chair.RateBias:+0.00}): " +
-                      $"rate spread t50 {hawk.Rate[50] - dove.Rate[50]:F3} pp, t100 {hawk.Rate[100] - dove.Rate[100]:F3} pp (bias difference {hawk.Chair.RateBias - dove.Chair.RateBias:F2}); " +
-                      $"inflation dove-minus-hawk t100 {dove.Inflation[100] - hawk.Inflation[100]:+0.000;-0.000} pp; unemployment hawk-minus-dove t100 {hawk.Unemployment[100] - dove.Unemployment[100]:+0.000;-0.000} pp; " +
-                      $"chairs at the floor: t50 {atFloor50}/{runs.Count}, t100 {atFloor100}/{runs.Count}.");
+                      $"rate spread t50 {hawk.Rate[50] - dove.Rate[50]:F3} pp, t100 {hawk.Rate[100] - dove.Rate[100]:F3} pp, t200 {hawk.Rate[200] - dove.Rate[200]:F3} pp (bias difference {hawk.Chair.RateBias - dove.Chair.RateBias:F2}); " +
+                      $"inflation dove-minus-hawk t100 {dove.Inflation[100] - hawk.Inflation[100]:+0.000;-0.000} pp, t200 {dove.Inflation[200] - hawk.Inflation[200]:+0.000;-0.000} pp; unemployment hawk-minus-dove t100 {hawk.Unemployment[100] - dove.Unemployment[100]:+0.000;-0.000} pp, t200 {hawk.Unemployment[200] - dove.Unemployment[200]:+0.000;-0.000} pp; " +
+                      $"chairs at the floor: t50 {atFloor50}/{runs.Count}, t100 {atFloor100}/{runs.Count}, t200 {atFloor200}/{runs.Count}.");
             Debug.Log($"FEDCHAIR STABILITY: max single-turn rate change over all chairs {maxStepAll:F3} pp; most reversals {maxReversals}. " +
                       "(The undamped crash-loop signature was a multi-point single-turn jump with reversals every turn.)");
             Debug.Log("FEDCHAIR: done.");

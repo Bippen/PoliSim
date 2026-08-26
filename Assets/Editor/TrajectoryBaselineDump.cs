@@ -105,10 +105,11 @@ namespace PoliSim.EditorTools
                           .Append(country.EffectiveDebtInterestRate.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
                         // Pass 4 (the Taylor-path gap fix): the rule's own reading, so a before/after
                         // diff carries the suggested-rate trajectory directly - B-only NEW fields to
-                        // any pre-pass-4 dump, per the allowance. GapTermPp is the weighted gap
-                        // contribution in percentage points (whatever gap the rule reads), so the
-                        // column name survives the fix; ChairTarget is -999 where no chair sits.
-                        float gapTermPp = TaylorRule.OutputGapWeight * TaylorRule.GetOutputGapPercent(country);
+                        // any pre-pass-4 dump, per the allowance. GapTermPp is the rule's cyclical
+                        // term in percentage points, read through the rule's own accessor so the
+                        // column follows whatever gap the rule reads (the pre_pass4 dumps carry the
+                        // level-gap term it read then); ChairTarget is -999 where no chair sits.
+                        float gapTermPp = TaylorRule.GetGapTermPercentagePoints(country);
                         float suggested = TaylorRule.GetSuggestedInterestRate(country);
                         float chairTarget = country.CurrentFedChair == null
                             ? -999f

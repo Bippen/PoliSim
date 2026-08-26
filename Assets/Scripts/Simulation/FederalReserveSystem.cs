@@ -31,7 +31,7 @@ namespace PoliSim.Simulation
         /// turn-to-turn volatility (see "Federal Reserve Rate Damping" in CLAUDE.md), not a bug in
         /// TaylorRule or the output-gap calculation themselves.
         /// </summary>
-        private const float RateAdjustmentSpeed = 0.15f;
+        public const float RateAdjustmentSpeed = 0.15f;
 
         // Isolated from EventSystem's own System.Random, UnityEngine.Random, and GameController's
         // _previewRandom - drawing candidates at an election boundary must never perturb any other

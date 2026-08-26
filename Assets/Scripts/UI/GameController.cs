@@ -3116,7 +3116,10 @@ namespace PoliSim.UI
         /// Push slider instead - see CLAUDE.md's "Eurozone Rate Voice" - this tab is that control's
         /// home regardless of which mechanic the player's country actually uses. The tab's own
         /// displayed name (both here and the tab bar button) now reflects the real institution per
-        /// country too - see GetCentralBankName.
+        /// country too - see GetCentralBankName. Since pass 4 (2026-08-26) every branch also draws
+        /// the rule's reading - the chair's target for the USA, the blended reading for a Eurozone
+        /// member, an advisory reading for Sweden/Poland - one always-drawn Label per branch at a
+        /// fixed ordinal (the stable-control-layout pattern; the branches are immutable per country).
         /// </summary>
         private void DrawFederalReserveTab(float availableHeight)
         {
@@ -3137,6 +3140,14 @@ namespace PoliSim.UI
                 FedChair chair = _playerCountry.CurrentFedChair;
                 GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
                 GUILayout.Label(chair.Description, _labelStyle);
+                // Pass 4 (2026-08-26): the rule's reading and the chair's target, so the mechanism
+                // the USA player lives with is visible - one always-drawn Label at a fixed ordinal
+                // (the branch is immutable per country), content-only variation.
+                float suggested = TaylorRule.GetSuggestedInterestRate(_playerCountry);
+                float chairTarget = Mathf.Clamp(suggested + chair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                GUILayout.Label(
+                    $"Rule reading {suggested:F2}% (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate) plus the chair's lean of {chair.RateBias:+0.00;-0.00} points = target {chairTarget:F2}%. The rate moves {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the way toward the target each turn.",
+                    _labelStyle);
 
                 DrawFedChairSelectionModal();
             }
@@ -3159,6 +3170,12 @@ namespace PoliSim.UI
                     GUILayout.Label(
                         $"The real {GetCentralBankName(PlayerCountryId)} sets its policy rate independently of the government. This game deliberately hands you the central bank, so monetary policy stays a lever you own - a gameplay choice, stated plainly, not a claim about how {_playerCountry.Name}'s institutions work.",
                         _labelStyle);
+                    // Pass 4 (2026-08-26): the advisory reading - what an independent central bank
+                    // on the same rule would set - Riksbank-B's first visible artefact. One
+                    // always-drawn Label ahead of the slider, content-only variation.
+                    GUILayout.Label(
+                        $"For reference, an independent {GetCentralBankName(PlayerCountryId)} following the same rule the Federal Reserve and the ECB use would read {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}% right now (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate).",
+                        _labelStyle);
                     GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                     _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
                 }
@@ -3174,7 +3191,12 @@ namespace PoliSim.UI
                     // control). Superseded the original country-selection Part 1 framing, which
                     // described this as fully read-only before this mechanic existed.
                     GUILayout.Label(
-                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation/output-gap situation, weighted by its share of the three countries' combined GDP - a simplified version of the real ECB's \"capital key.\" As {_playerCountry.Name}'s governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
+                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' combined GDP - a simplified version of the real ECB's \"capital key.\" As {_playerCountry.Name}'s governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
+                        _labelStyle);
+                    // Pass 4 (2026-08-26): the blend and this member's own reading, so the push has a
+                    // visible reference. One always-drawn Label ahead of the slider.
+                    GUILayout.Label(
+                        $"Blended rule reading this turn: {EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}% ({_playerCountry.Name}'s own reading {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%, from inflation {_playerCountry.State.Inflation:F1}% and unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate).",
                         _labelStyle);
                     GUILayout.Label($"National Rate Push: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                     _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, _sliderStyle, _sliderThumbStyle);

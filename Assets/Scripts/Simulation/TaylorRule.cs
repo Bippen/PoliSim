@@ -4,10 +4,30 @@ using UnityEngine;
 namespace PoliSim.Simulation
 {
     /// <summary>
-    /// Textbook Taylor Rule: computes a "suggested" interest rate from a country's inflation gap
-    /// and output gap. Pure reference data - never called from SimulationManager.AdvanceTurn, and
-    /// never mutates state. Intended for a future UI hint or an AI-controlled country's decision
-    /// logic; the player (or AI) is always free to set a different rate via PolicyDecision.
+    /// Taylor rule: the "suggested" policy rate from a country's inflation gap and its CYCLICAL
+    /// gap - read as the unemployment gap against the country's own NAIRU, NOT the raw level gap
+    /// between GDP and PotentialGDP (pass 4 of the ruled build order, 2026-08-26; the record is
+    /// CLAUDE.md "Pass 4 ships - the Taylor path reads the unemployment gap").
+    ///
+    /// Why the unemployment gap. The level gap (GDP - PotentialGDP)/PotentialGDP is a persistent
+    /// per-country LEVEL in this model, not a cycle: it is the fixed point of the identity's own
+    /// dynamics (G is discretionary-only, C+I ~0.79 of GDP, the attractor anchors period-open
+    /// potential), so no seed value can close it - CLAUDE.md "Discretionary Spending Growth"
+    /// proved that in 2026-07 and the pass 4 derivation measured it again at HEAD: USA -14.5% for a
+    /// thousand turns (sd 0.6), Poland -7, Italy -4.5, Germany -2.7. Weighted at 0.5, that term
+    /// pinned the USA's suggestion at the 0-floor for 95-98 of the 101 turns of the ruled window
+    /// while inflation ran 3.5%, collapsed five of eight Fed chairs onto one identical trajectory,
+    /// dragged the Eurozone blend by ~1 pp, and (through the housing rate gap) compounded the USA
+    /// house-price index at +3.9% a year. The unemployment gap is centred (-0.03 +/- 0.19 pp, every
+    /// country, both seeds), it is the variable the Phillips curve drives inflation with, and NAIRU
+    /// is the seeded structural baseline ten other consumers already read - the codebase's own
+    /// "gaps, not absolute levels" principle, applied to this path.
+    ///
+    /// Live consumers - this is NOT reference-only, whatever older notes say:
+    /// FederalReserveSystem.ApplyFedChairInterestRate (the USA's damped chair path),
+    /// EurozoneRateSystem.GetBlendedSuggestedRate (the ECB blend), SimulationManager.PreviewTurn
+    /// (the preview), and the Federal Reserve tab's reading lines. Sweden and Poland set their own
+    /// rate; for them the reading is advisory until Riksbank-B (the roadmap's Step 4 block).
     /// </summary>
     public static class TaylorRule
     {
@@ -20,10 +40,28 @@ namespace PoliSim.Simulation
         /// <summary>Weight on the inflation gap (actual inflation minus target).</summary>
         public const float InflationGapWeight = 0.5f;
 
-        /// <summary>Weight on the output gap (actual GDP minus potential GDP, as a percent of potential GDP).</summary>
-        public const float OutputGapWeight = 0.5f;
+        /// <summary>
+        /// Percentage points of suggested rate per percentage point the unemployment rate sits BELOW
+        /// its NAIRU (a tight labour market raises the reading; slack lowers it).
+        ///
+        /// A TEXTBOOK CONVENTION, stated as such: Taylor's 0.5 on the output gap times Okun's ~2 pp
+        /// of output per pp of unemployment - the substitution the Fed's own published rule variants
+        /// make (2 x (u* - u) for the output gap). It is deliberately NOT derived from
+        /// MacroSystem.OkunCoefficient: that codes the DIFFERENCE form (unemployment moves with the
+        /// growth gap) under a 0.7/turn reversion and implies no level relation at all - measured, the
+        /// model's own cyclical output gap leads the unemployment gap by one turn with the OPPOSITE
+        /// sign, because GDP blips revert within a turn and the difference form reads the reversion
+        /// as a downturn. The stakes of this constant are small and were measured before it was
+        /// chosen: at no-policy the term is +0.05 pp on average with sd 0.2, and 1.0 against the
+        /// model-native 0.5/0.7 = 0.71 moves the reading by ~0.06 pp.
+        /// </summary>
+        public const float UnemploymentGapWeight = 1.0f;
 
-        /// <summary>Output gap as a percentage of potential GDP: positive means the economy is running above trend.</summary>
+        /// <summary>
+        /// Output gap as a percentage of potential GDP - the LEVEL gap, positive above trend. A
+        /// reference reading for dumps and diagnostics; the rule no longer reads it (see the class
+        /// doc for why a term on it was a per-country constant, not a cycle).
+        /// </summary>
         public static float GetOutputGapPercent(Country country)
         {
             EconomyState state = country.State;
@@ -35,17 +73,29 @@ namespace PoliSim.Simulation
             return (state.GDP - state.PotentialGDP) / state.PotentialGDP * 100f;
         }
 
+        /// <summary>The gap the rule reads, in percentage points, signed so that POSITIVE means a tight labour market: NAIRU minus the unemployment rate.</summary>
+        public static float GetUnemploymentGapPercent(Country country)
+        {
+            return country.NaturalUnemploymentRate - country.State.Unemployment;
+        }
+
+        /// <summary>The rule's cyclical term in percentage points of rate: UnemploymentGapWeight times the gap. What TrajectoryBaselineDump records as Taylor.GapTermPp.</summary>
+        public static float GetGapTermPercentagePoints(Country country)
+        {
+            return UnemploymentGapWeight * GetUnemploymentGapPercent(country);
+        }
+
         /// <summary>
-        /// Suggested interest rate = neutral real rate + inflation + weighted inflation gap +
-        /// weighted output gap. This is advisory only - nothing applies it automatically.
+        /// Suggested interest rate = neutral real rate + inflation + weighted inflation gap + the
+        /// cyclical term, floored at 0 BEFORE any Fed chair's RateBias is added (the chair path
+        /// clamps the biased target separately - see FederalReserveSystem.ApplyFedChairInterestRate).
         /// </summary>
         public static float GetSuggestedInterestRate(Country country)
         {
             EconomyState state = country.State;
             float inflationGap = state.Inflation - InflationTarget;
-            float outputGap = GetOutputGapPercent(country);
 
-            float suggested = NeutralRealRate + state.Inflation + InflationGapWeight * inflationGap + OutputGapWeight * outputGap;
+            float suggested = NeutralRealRate + state.Inflation + InflationGapWeight * inflationGap + GetGapTermPercentagePoints(country);
             return Mathf.Max(0f, suggested);
         }
     }
