@@ -12077,6 +12077,64 @@ everywhere; captures both sizes as Sweden (`sweden1600/2560`, 62/62, 0 failed) �
 render with live sliders, per-line dollar/draft/%GDP columns, names wrapping without overflow
 (guards 0). Germany/France/Italy/Poland stay on the generic seed until their own ruled passes.
 
+## Board 1j implemented — Design's own answer to §7.1, read from their project and built (2026-08-26)
+
+**The source.** Elias pointed the claude_design MCP (the `DesignSync` surface) at Design's project
+("PoliSim v2 Design Progress", `b3dec27b-…`). The root `PoliSim v2 Screens.dc.html` is Design's
+LIVE board and carries one screen the imported Progress4 pack does not: **`1j Law browser at 50`**
+— their §7.1 answer, drawn the day after the finding was sent. The board is the spec (the root
+rulings doc is unchanged 1i); its own caption states the frame: "§7.1 answered without
+re-litigating anything. The three drawn answers stand; only AVAILABLE changes."
+
+**Built, as drawn:** the category chips step down (the count moves into the summary line — "50
+laws - all CRIME & JUSTICE - N in force - M before the house"); the ORDER control takes their
+space (STATUS-THEN Magnitude/A-Z/Cost, magnitude default) with a real search slot (paper-idiom
+TextField, name-contains); **AVAILABLE renders as four magnitude BANDS** under the default order —
+the stepped rule promotes from forty repeating cells to four band captions ("SWEEPING - 4
+available - dial movement ±23-30"), and available rows drop to three cells; the category cell
+retires from every row (name takes its share); the header simplifies to STATUTE/APPROVAL; pending
+rows carry their real countdown ("- VOTE IN {d}d", `LawBill.DaysRemaining` — an IMGUI text
+adaptation of the drawn chip); the detail pane gains the kicker ("CRIME & JUSTICE - MAJOR - N OF
+M IN CLASS", position by A-Z within tier), the band range restated beside the magnitude steps,
+the two-column IF ENACTED dial grid with direction arrows, and IF PUT TO THE HOUSE TODAY with
+**per-party stance rows from real data** (each archetype's actual seats; FOR/AGAINST by fiscal
+stance against the bill's direction). The board's sticky band headers become plain caption rows
+(IMGUI has no sticky inside a scroller — the same stated adaptation 1i's column header took).
+
+**Three collisions with standing records, resolved explicitly, none silently:**
+1. **Valence-coloured dial arrows** (the board draws green/red) — NOT taken: collides with the
+   delta-row rule ("a dial's sign has no inherent value judgment the model makes") and item 6's
+   ruled neutral-derived honesty. Layout is the board's; the ink discipline is Elias's ruling.
+2. **Seat headcounts** ("168 of 435 - needs 218", per-party FOR·118) — NOT built:
+   `GetSeatWeightedAlignment`'s own doc forbids exactly this ("NOT a headcount… no seats-based
+   majority threshold anywhere in this model"), and Design's own Pass-3 **D2** ruling struck
+   headcounts. Stance sign + real seats are shown; the lean bar stays the decided quantity.
+3. **"Next sitting May 12"** — stays unbuilt; the recorded no-sitting-calendar reason carries
+   from 1i verbatim. The pending rows' VOTE-IN countdowns are the real datum in that slot.
+   Also resolved by construction: the board's DRAWN-SLOT citation (Portugal placeholder) — the
+   shipped pane already prints `LawCatalog`'s own recorded source.
+
+**Verification — UI-only bar, and the captures were the negative control three times over:**
+compile clean ×3; sweeps 64/64, 0 ATTRIB, guards 0 at every pass — and the EYE caught what guards
+cannot, three times: (1) the search field's MinWidth+ExpandWidth grabbed the row remainder and ran
+past the panel (control rects are unguarded); (2) the pane's new rows used ExpandWidth inside the
+detail scroll view and tracked CONTENT width, clipping at the viewport — fixed to explicit
+`contentWidth` rects; (3) the ORDER row's full three-phrase labels summed past the panel budget at
+BOTH sizes and silently widened the whole box (the sub-tab strip clipped at the window edge) —
+compressed to caption-carries-"STATUS, THEN" + variant-word buttons. Final captures
+`board1jc1600/2560_06f*` + `06g` clean at both sizes; the 1600 sub-tab strip's slight edge-kiss
+is the pre-1j baseline, observed unchanged. The saves-menu `BuildTextFieldStyle` precedent
+supplied the paper field (its own comment names the dark-chrome-on-paper class the first capture
+hit).
+
+**Also read from the project, per the ask:** `support.js` (the dc-runtime the board loads —
+render-side only, nothing to implement) and the §5 portrait PoC
+(`portrait_cabinet_defense_katarzyna_ekelund`) — viewed against the board's register description;
+it is the repo's already-imported 08-17 PoC (hash-verified at import). ⚠ One tool note for the
+record: `DesignSync get_file` caps at 256 KiB and returned the 604 KB PNG TRUNCATED — project↔repo
+byte-identity is not verifiable through that channel; the import-time hash check remains the
+authority. The §5 batch stays gated on Elias's Editor register side-by-side, unchanged.
+
 ## Item 5 NAMED — the player-set rate as a deliberate choice (2026-08-25, ruled: C now, B the destination)
 
 The naming pass, exactly as ruled. **Player-facing:** the Federal Reserve tab's

@@ -13,9 +13,8 @@ close.
 ~~⚠ OPEN — NEW: §7, a request for a board — the law browser (list+detail), the densest screen in the
 game and the only major surface v2.0 never specced.~~ §7 OVERTAKEN same-day (the board arrived before
 the request was sent — see §7's own status block).
-⚠ OPEN — NEW: §7.1, a playtest finding on the shipped board — at 50 laws the density reads as
-clutter in play; specifics and capture inside. A finding for Design's own iteration, not a rebuild
-request.
+~~⚠ OPEN — NEW: §7.1, a playtest finding on the shipped board.~~ §7.1 ANSWERED AND BUILT
+(2026-08-26) — Design's Screen 1j, implemented same-day; see its status block.
 ⚠ OPEN — NEW (2026-08-26): §8, a board request for the calendar panel (the other surface that
 shipped without one — its FIXED data contract travels with the request), and §9, a
 specification-only ruling on the statistics graphs' line weight and treatment (no sprite
@@ -23,9 +22,8 @@ deliverables — stated in its own header the way NO NEW SPRITES was).**
 **Date:** 2026-08-26.
 
 ➡ **START AT [§8](#8-request--the-calendar-panel-board-2026-08-26)**, then
-[§9](#9-request--statistics-graph-weight-and-treatment-2026-08-26); [§7.1](#71-follow-up--the-shipped-board-at-50-laws-reads-as-clutter-in-play-2026-08-25-live-playtest)
-remains open as a finding for Design's own iteration. Everything above these is answered,
-delivered, imported, or waiting on a date rather than a reply.
+[§9](#9-request--statistics-graph-weight-and-treatment-2026-08-26). Everything above these is
+answered, delivered, imported, built, or waiting on a date rather than a reply.
 
 <details>
 <summary>Earlier START-AT pointer, retained for the record (2026-08-10)</summary>
@@ -1612,8 +1610,15 @@ something still pending.**
 
 ### §7.1 FOLLOW-UP — the shipped board at 50 laws reads as clutter in play (2026-08-25, live playtest)
 
-**Status: OPEN — a playtest finding for Design's next iteration of their own board. Their board,
-their call; no fixes improvised on our side, per Elias's explicit instruction.**
+**Status: ~~OPEN — a playtest finding for Design's next iteration of their own board.~~ —
+ANSWERED AND BUILT (2026-08-26): Design answered with Screen 1j ("Law browser at 50") in their
+project's live `PoliSim v2 Screens.dc.html` — chips step down, ORDER control + search take their
+place, AVAILABLE becomes four magnitude bands with three-cell rows, the category cell retires
+until a second category ships. Implemented the same day against the board as the spec, with three
+deviations stated in CLAUDE.md ("Board 1j implemented"): neutral ink on the dial arrows (item 6's
+ruling), no seat headcounts (the model has none — and Design's own D2 struck them), no "next
+sitting" (the recorded no-sitting-calendar reason carries from 1i). Verified both sizes,
+`board1jc*` captures.**
 
 **What changed since the board was drawn.** Screen 1i was designed against a 38-law state. The
 catalog now holds 50 laws across the three status groups, the detail pane is live at its final

@@ -550,6 +550,17 @@ namespace PoliSim.UI
         private Vector2 _lawDetailScrollPosition;
         private LawBrowserFilter _lawBrowserFilter = LawBrowserFilter.All;
         private LawStatusFilter _lawStatusFilter = LawStatusFilter.All;
+
+        /// <summary>Board 1j (2026-08-26): the within-group ORDER control - "the instrument that
+        /// actually reduces 40 rows," taking the space the category chips held. Magnitude is the
+        /// default and the one that renders AVAILABLE as four weight-class bands.</summary>
+        private enum LawOrder { Magnitude, Alphabetical, Cost }
+        private LawOrder _lawOrder = LawOrder.Magnitude;
+        /// <summary>Board 1j: the statute-book search slot. A plain name-contains filter; always
+        /// present (one TextField every frame - stable control layout), and row-count changes it
+        /// causes are player-typed, never background state.</summary>
+        private string _lawSearchText = string.Empty;
+
         private string _selectedLawId;
         /// <summary>Code-review pass (2026-08-25): StatTracePanel's own IMGUI-safety idiom - a row
         /// click stages the new selection here instead of writing `_selectedLawId` directly, and the
@@ -5811,15 +5822,38 @@ namespace PoliSim.UI
             GUILayout.Label("Named presets over the existing dial space, not bespoke effects - a law's dial deltas are the same terms the Crime & Justice tab tracks. Enacting or repealing submits a bill exactly like any other; nothing happens until Parliament resolves it.", _labelStyle);
             GUILayout.Space(6f);
 
-            // Counts on the real chips - board 1i's own legibility fix ("All - 38", "Crime & Justice
-            // - 38") so a static, always-identical pair of buttons reads as "nothing else exists
-            // yet" rather than as a filter that silently does nothing. The board also draws five
-            // hatched "- 0" chips for categories LawCategory doesn't have - that half can't be built
-            // here: the enum has exactly one member, so there is nothing to enumerate. Left for
-            // whenever a second LawCategory actually exists, not faked with names nothing backs.
+            // Board 1j (2026-08-26, §7.1's answer): THE CATEGORY CHIPS STEP DOWN. With one
+            // populated category the two real chips could not narrow anything, so they are no
+            // longer the first thing on the panel - the count moves into the summary line below,
+            // and the ORDER control (the instrument that actually reduces 40 rows) takes the space
+            // the chips held. The chip row returns, hatched counts and all, the day a second
+            // LawCategory ships - at which point _lawBrowserFilter (kept, still honest state)
+            // gets its buttons back. The category filter's underlying inertness bug is untouched
+            // by this, exactly as board 1i's own note kept the two items separate.
+            GUILayout.Label($"{LawCatalog.All.Count} laws - all {LawCategoryLabel(LawCategory.CrimeJustice)} - {_playerCountry.EnactedLaws.Count} in force - {CountPendingLawBills()} before the house", _labelStyle);
+
+            // The caption carries "STATUS, THEN" once and the buttons carry only the variant word
+            // - the second capture caught the board's full three-phrase labels summing past the
+            // panel's width budget at BOTH sizes (min-widths widen the whole box silently; the
+            // sub-tab strip above clipped at the window edge, which no guard measures).
             GUILayout.BeginHorizontal();
-            DrawSubCategoryButton($"All - {LawCatalog.All.Count}", LawBrowserFilter.All, ref _lawBrowserFilter);
-            DrawSubCategoryButton($"Crime & Justice - {CrimeJusticeLawCount}", LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter);
+            GUILayout.Label("ORDER - STATUS, THEN", _labelStyle, GUILayout.Width(_labelStyle.CalcSize(new GUIContent("ORDER - STATUS, THEN")).x + 6f));
+            DrawSubCategoryButton("Magnitude", LawOrder.Magnitude, ref _lawOrder);
+            DrawSubCategoryButton("A-Z", LawOrder.Alphabetical, ref _lawOrder);
+            DrawSubCategoryButton("Cost", LawOrder.Cost, ref _lawOrder);
+            GUILayout.FlexibleSpace();
+            // The search slot, as drawn. A TextField is a real control: always present, so the
+            // control set is identical every frame; the rows it hides are hidden by typing.
+            // Fixed width, ExpandWidth(false) - the first capture caught MinWidth+ExpandWidth
+            // grabbing the row's whole remainder and running past the panel edge (the guards are
+            // label-measured and cannot see a control rect, so only the eye caught it).
+            GUILayout.Label("SEARCH", _labelStyle, GUILayout.Width(_labelStyle.CalcSize(new GUIContent("SEARCH")).x + 6f));
+            // Paper-idiom field via the saves menu's own precedent (UiPalette.BuildTextFieldStyle,
+            // whose comment names this exact dark-chrome-on-paper class) - the first capture
+            // rendered Unity's grey default here.
+            _lawSearchText = GUILayout.TextField(_lawSearchText ?? string.Empty, 48,
+                UiPalette.BuildTextFieldStyle(_labelStyle.fontSize),
+                GUILayout.Width(_labelStyle.fontSize * 7f), GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -5846,6 +5880,13 @@ namespace PoliSim.UI
                     continue;
                 }
 
+                // Board 1j: the search slot - a plain case-insensitive name-contains filter.
+                if (!string.IsNullOrEmpty(_lawSearchText)
+                    && law.Name.IndexOf(_lawSearchText, System.StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    continue;
+                }
+
                 bool lawEnacted = _playerCountry.EnactedLaws.Exists(e => e.LawId == law.Id);
                 LawBill pendingBill = _simulationManager.GetPendingLawBill(PlayerCountryId, law.Id);
                 LawStatusFilter status = pendingBill != null ? LawStatusFilter.Pending : lawEnacted ? LawStatusFilter.Enacted : LawStatusFilter.Available;
@@ -5859,6 +5900,27 @@ namespace PoliSim.UI
                 else if (lawEnacted) { _lawEnactedRows.Add(entry); }
                 else { _lawAvailableRows.Add(entry); }
             }
+
+            // Board 1j: STATUS, THEN {order} - the within-group sort. Magnitude descends (SWEEPING
+            // first inside enacted/pending; AVAILABLE's bands themselves descend), A-Z and cost
+            // ascend. List<T>.Sort is unstable, so every comparison ties back to Name - the
+            // catalog-order question the three-partition build sidestepped is settled by making
+            // the order fully specified instead.
+            System.Comparison<LawRowEntry> byOrder =
+                _lawOrder == LawOrder.Alphabetical ? (a, b) => string.CompareOrdinal(a.Law.Name, b.Law.Name)
+                : _lawOrder == LawOrder.Cost ? (a, b) =>
+                    {
+                        int c = a.Law.EnactmentApprovalCost.CompareTo(b.Law.EnactmentApprovalCost);
+                        return c != 0 ? c : string.CompareOrdinal(a.Law.Name, b.Law.Name);
+                    }
+                : (a, b) =>
+                    {
+                        int c = LawMagnitudeTier(b.Law).CompareTo(LawMagnitudeTier(a.Law));
+                        return c != 0 ? c : string.CompareOrdinal(a.Law.Name, b.Law.Name);
+                    };
+            _lawEnactedRows.Sort(byOrder);
+            _lawPendingRows.Sort(byOrder);
+            _lawAvailableRows.Sort(byOrder);
 
             _lawVisibleRows.Clear();
             _lawVisibleRows.AddRange(_lawEnactedRows);
@@ -5907,7 +5969,7 @@ namespace PoliSim.UI
             _lawsScrollPosition = GUILayout.BeginScrollView(_lawsScrollPosition, false, true, GUILayout.Height(scrollHeight));
             DrawLawStatusGroup("IN FORCE", _lawEnactedRows);
             DrawLawStatusGroup("BEFORE THE HOUSE", _lawPendingRows);
-            DrawLawStatusGroup("AVAILABLE", _lawAvailableRows);
+            DrawLawAvailableGroup(_lawAvailableRows);
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
 
@@ -5977,45 +6039,50 @@ namespace PoliSim.UI
         /// a much narrower window, just not one that binds at the one width this codebase has
         /// actually measured. A narrower-window capture is still open, same as board 1i's own five
         /// unpopulated categories.</summary>
-        private static void LawRowColumns(float rowWidth, GUIStyle style, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth)
+        private static void LawRowColumns(float rowWidth, GUIStyle style, out float glyphWidth, out float nameWidth, out float magnitudeWidth, out float costWidth)
         {
+            // Board 1j (2026-08-26): THE CATEGORY CELL RETIRES while one category holds everything
+            // - stated once in the summary line rather than repeated as dimmed noise on every row.
+            // It returns as a cell the day a second LawCategory ships, which is also the day the
+            // chip row returns. Its width share goes to the name, which is where §7.1's scanning
+            // problem lived. Floors and squeeze keep the 1i code-review discipline; the same
+            // narrower-window caveat stands.
             glyphWidth = Mathf.Min(14f, rowWidth * 0.03f);
 
             float fontFloor = Mathf.Max(1f, style.fontSize);
-            categoryWidth = Mathf.Max(rowWidth * 0.19f, fontFloor * 2.5f);
             magnitudeWidth = Mathf.Max(rowWidth * 0.20f, fontFloor * 3f);
             costWidth = Mathf.Max(rowWidth * 0.13f, fontFloor * 2f);
 
-            float fixedTotal = categoryWidth + magnitudeWidth + costWidth;
+            float fixedTotal = magnitudeWidth + costWidth;
             float availableForFixed = Mathf.Max(0f, rowWidth - glyphWidth);
             if (fixedTotal > availableForFixed && fixedTotal > 0f)
             {
                 float squeeze = Mathf.Max(0.35f, availableForFixed / fixedTotal);
-                categoryWidth *= squeeze;
                 magnitudeWidth *= squeeze;
                 costWidth *= squeeze;
             }
 
-            nameWidth = Mathf.Max(0f, rowWidth - glyphWidth - categoryWidth - magnitudeWidth - costWidth);
+            nameWidth = Mathf.Max(0f, rowWidth - glyphWidth - magnitudeWidth - costWidth);
         }
 
         /// <summary>The sticky header's own row - column captions only, muted, never interactive (a
         /// label row has no control to keep stable-control-layout safe in the first place).</summary>
         private void DrawLawRowHeader(Rect rect)
         {
-            LawRowColumns(rect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
+            // Board 1j: the header simplifies to STATUTE / APPROVAL - the magnitude caption is
+            // gone because the list's bulk (AVAILABLE, band-grouped) no longer carries a magnitude
+            // cell; the bands name the class instead. STATUTE spans name+magnitude so the caption
+            // sits over the whole left field regardless of which row variant renders beneath it.
+            // "APPROVAL," not "COST" - the bottom bar's own framing (a budget, not a label).
+            LawRowColumns(rect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float magnitudeWidth, out float costWidth);
             float x = rect.x + glyphWidth;
-            LedgerRow.Cell(new Rect(x, rect.y, nameWidth, rect.height), "LAW", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
-            x += nameWidth;
-            LedgerRow.Cell(new Rect(x, rect.y, categoryWidth, rect.height), "CATEGORY", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
-            x += categoryWidth;
-            LedgerRow.Cell(new Rect(x, rect.y, magnitudeWidth, rect.height), "MAGNITUDE", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
-            x += magnitudeWidth;
-            // Code-review pass (2026-08-25): -4f to match the row's own COST cell exactly (both
+            LedgerRow.Cell(new Rect(x, rect.y, nameWidth + magnitudeWidth, rect.height), "STATUTE", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+            x += nameWidth + magnitudeWidth;
+            // Code-review pass (2026-08-25): -4f to match the row's own cost cell exactly (both
             // right-anchored) - previously the header used the full costWidth while the row used
             // costWidth-4f, so their right edges (and the caption above the values) sat 4px apart on
             // every frame, independent of any scrollbar-width consideration.
-            LedgerRow.Cell(new Rect(x, rect.y, costWidth - 4f, rect.height), "COST", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleRight);
+            LedgerRow.Cell(new Rect(x, rect.y, costWidth - 4f, rect.height), "APPROVAL", _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleRight);
         }
 
         /// <summary>One status partition inside the scroller - a plain, non-interactive group
@@ -6038,6 +6105,102 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// Board 1j (2026-08-26): AVAILABLE is no longer one undifferentiated block. Under the
+        /// default STATUS-THEN-MAGNITUDE order it renders as four weight-class BANDS - the stepped
+        /// rule promotes from forty repeating row cells to four band headers, where it reads as an
+        /// ordinal again instead of blurring into column texture, and each band names its class and
+        /// dial-movement range. Under A-Z/cost order the group is flat (the band structure IS the
+        /// magnitude ordering, so it only exists in that mode). Rows inside bands are the compact
+        /// three-cell variant. The board draws the band headers position:sticky at a second level;
+        /// IMGUI's scroll view has no sticky, so they are plain caption rows - the same adaptation
+        /// the 1i sticky column header took (moved outside the scroller), stated not silent; the
+        /// column header keeps that treatment, the bands ride the scroll.
+        /// </summary>
+        private void DrawLawAvailableGroup(List<LawRowEntry> rows)
+        {
+            if (rows.Count == 0)
+            {
+                return;
+            }
+
+            GUILayout.Label($"AVAILABLE - {rows.Count}", _labelStyle);
+
+            if (_lawOrder != LawOrder.Magnitude)
+            {
+                foreach (LawRowEntry entry in rows)
+                {
+                    DrawLawListRow(entry, compact: true);
+                }
+                GUILayout.Space(6f);
+                return;
+            }
+
+            // Rows arrive sorted tier-descending (the order comparator), so one pass per tier is a
+            // contiguous slice; empty bands are omitted (the empty-group rule).
+            for (int tier = 4; tier >= 1; tier--)
+            {
+                int inBand = 0;
+                foreach (LawRowEntry entry in rows)
+                {
+                    if (LawMagnitudeTier(entry.Law) == tier) { inBand++; }
+                }
+                if (inBand == 0)
+                {
+                    continue;
+                }
+
+                DrawLawMagnitudeBandCaption(tier, inBand);
+                foreach (LawRowEntry entry in rows)
+                {
+                    if (LawMagnitudeTier(entry.Law) == tier)
+                    {
+                        DrawLawListRow(entry, compact: true);
+                    }
+                }
+            }
+            GUILayout.Space(6f);
+        }
+
+        /// <summary>One band header: the stepped rule at the band's own tier, the class name, and
+        /// its dial-movement range - "the class you are reading is always named on screen."</summary>
+        private void DrawLawMagnitudeBandCaption(int tier, int count)
+        {
+            Rect rect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle) * 1.2f, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                Color previous = GUI.color;
+                GUI.color = new Color(0f, 0f, 0f, 0.06f);
+                GUI.DrawTexture(rect, Texture2D.whiteTexture);
+                GUI.color = previous;
+            }
+
+            float stepWidth = Mathf.Max(4f, _labelStyle.fontSize * 0.35f);
+            float stepGap = stepWidth * 0.3f;
+            float stepsRun = stepWidth * 4f + stepGap * 3f;
+            float stepHeight = rect.height * 0.5f;
+            DrawMagnitudeSteps(new Rect(rect.x + 4f, rect.y + (rect.height - stepHeight) * 0.5f, stepsRun, stepHeight), tier, stepWidth, stepGap);
+
+            LedgerRow.Cell(new Rect(rect.x + stepsRun + 12f, rect.y, rect.width - stepsRun - 16f, rect.height),
+                $"{LawMagnitudeLabel(tier)} - {count} available - dial movement {LawMagnitudeRangeLabel(tier)}",
+                _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+        }
+
+        /// <summary>The taxonomy's own per-tier dial-movement range (LawCatalog's class doc:
+        /// MINOR ±3-6, MODERATE ±7-14, MAJOR ±15-22, SWEEPING ±23-30). Bounds derive from
+        /// LawCatalog's three named constants; the taxonomy's outer 3 and 30 are its documented
+        /// floor and ceiling (the catalog's own doc comment commits to both), not layout numbers.</summary>
+        private static string LawMagnitudeRangeLabel(int tier)
+        {
+            switch (tier)
+            {
+                case 1: return $"±3-{LawCatalog.MinorMagnitudeMax:0}";
+                case 2: return $"±{LawCatalog.MinorMagnitudeMax + 1f:0}-{LawCatalog.ModerateMagnitudeMax:0}";
+                case 3: return $"±{LawCatalog.ModerateMagnitudeMax + 1f:0}-{LawCatalog.MajorMagnitudeMax:0}";
+                default: return $"±{LawCatalog.MajorMagnitudeMax + 1f:0}-30";
+            }
+        }
+
+        /// <summary>
         /// One compact, decidable-at-a-glance row: name, category, magnitude, cost - board 1i's own
         /// four cells, status carried by the GROUP this row sits under rather than a fifth column
         /// (the gutter bar is a per-row accent, not a second readout of the same fact). Clicking
@@ -6049,7 +6212,7 @@ namespace PoliSim.UI
         /// list's own control count, the same "moves because the player acted or because content
         /// shipped, never because a background timer did" distinction DrawPageRow's own fix drew.
         /// </summary>
-        private void DrawLawListRow(LawRowEntry row)
+        private void DrawLawListRow(LawRowEntry row, bool compact = false)
         {
             LawDefinition law = row.Law;
             bool selected = _selectedLawId == law.Id;
@@ -6083,29 +6246,39 @@ namespace PoliSim.UI
                 GUI.color = previousGlyph;
             }
 
-            LawRowColumns(rowRect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
+            LawRowColumns(rowRect.width, _labelStyle, out float glyphWidth, out float nameWidth, out float magnitudeWidth, out float costWidth);
             float x = rowRect.x + glyphWidth;
 
-            LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), law.Name, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
-            x += nameWidth;
+            // Board 1j: BEFORE THE HOUSE rows name their real countdown in the row itself - the
+            // board's VOTE IN chip, carried as a suffix in the name cell (an IMGUI adaptation of
+            // the drawn bordered tag; the datum - LawBill.DaysRemaining - is the real countdown,
+            // not the board's "next sitting," which stays unbuilt for the recorded reason).
+            string rowName = row.PendingBill != null
+                ? $"{law.Name} - VOTE IN {row.PendingBill.DaysRemaining}d"
+                : law.Name;
 
-            // The category token - dimmed, and genuinely narrow rather than pre-built for a count
-            // this code doesn't have: board 1i's own ruling is that it "earns its column only once
-            // a second category populates," read literally, not anticipated with fabricated names.
-            // Code-review pass (2026-08-25): derived from law.Category via LawCategoryLabel instead
-            // of a hardcoded "CRIME & JUSTICE" literal - invisible today since LawCategory has one
-            // member, but the literal was independent of `law` and would silently mislabel every row
-            // the moment a second category ships.
-            LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth, rowRect.height), LawCategoryLabel(law.Category), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
-            x += categoryWidth;
+            if (compact)
+            {
+                // Board 1j: the AVAILABLE row drops to three cells - its magnitude lives in the
+                // band header above it, so the name takes the field. Differing cell counts per
+                // group is the board's own point: status grouping already changes what a row
+                // needs to say.
+                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth + magnitudeWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                x += nameWidth + magnitudeWidth;
+            }
+            else
+            {
+                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                x += nameWidth;
 
-            Rect magnitudeRect = new Rect(x, rowRect.y, magnitudeWidth, rowRect.height);
-            int tier = LawMagnitudeTier(law);
-            float stepWidth = magnitudeWidth * 0.12f;
-            float stepGap = stepWidth * 0.3f;
-            float stepHeight = rowRect.height * 0.32f;
-            DrawMagnitudeSteps(new Rect(magnitudeRect.x, magnitudeRect.y + (magnitudeRect.height - stepHeight) * 0.5f, magnitudeWidth, stepHeight), tier, stepWidth, stepGap);
-            x += magnitudeWidth;
+                Rect magnitudeRect = new Rect(x, rowRect.y, magnitudeWidth, rowRect.height);
+                int tier = LawMagnitudeTier(law);
+                float stepWidth = magnitudeWidth * 0.12f;
+                float stepGap = stepWidth * 0.3f;
+                float stepHeight = rowRect.height * 0.32f;
+                DrawMagnitudeSteps(new Rect(magnitudeRect.x, magnitudeRect.y + (magnitudeRect.height - stepHeight) * 0.5f, magnitudeWidth, stepHeight), tier, stepWidth, stepGap);
+                x += magnitudeWidth;
+            }
 
             LedgerRow.Cell(new Rect(x, rowRect.y, costWidth - 4f, rowRect.height),
                 law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
@@ -6228,6 +6401,20 @@ namespace PoliSim.UI
             // below fixes: name never drops under half the content width, at the cost of the status
             // itself wrapping to a second line on the rare law where both a long name and "ENACTMENT
             // PENDING" are showing at once, which reads fine where a broken-up name does not.
+            // Board 1j: the kicker line - category, weight class, and the law's position within
+            // that class ("MAJOR - 3 OF 10 IN CLASS"), position by A-Z within the tier across the
+            // whole catalog so it is stable under any list order or filter.
+            int kickerTier = LawMagnitudeTier(law);
+            int classCount = 0, classIndex = 0;
+            foreach (LawDefinition other in LawCatalog.All)
+            {
+                if (LawMagnitudeTier(other) != kickerTier) { continue; }
+                classCount++;
+                if (string.CompareOrdinal(other.Name, law.Name) < 0) { classIndex++; }
+            }
+            DrawColoredLabel($"{LawCategoryLabel(law.Category)} - {LawMagnitudeLabel(kickerTier)} - {classIndex + 1} OF {classCount} IN CLASS",
+                _labelStyle, PoliSimTheme.TextMuted, GUILayout.Width(contentWidth));
+
             GetLawStatusDisplay(row.Value, out string statusLabel, out Color statusColor);
             float wantedStatusWidth = _labelStyle.CalcSize(new GUIContent("ENACTMENT PENDING")).x + 24f;
             float nameWidth = Mathf.Max(contentWidth * 0.5f, contentWidth - wantedStatusWidth);
@@ -6254,15 +6441,20 @@ namespace PoliSim.UI
             GUILayout.Label($"MAGNITUDE: {LawMagnitudeLabel(tier)}", _labelStyle, GUILayout.Width(_labelStyle.CalcSize(new GUIContent("MAGNITUDE: MODERATE")).x + 8f));
             Rect stepsRect = GUILayoutUtility.GetRect(detailStepsWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(detailStepsWidth));
             DrawMagnitudeSteps(new Rect(stepsRect.x, stepsRect.y + stepsRect.height * 0.25f, detailStepsWidth, stepsRect.height * 0.5f), tier, detailStepWidth, detailStepGap);
+            // Board 1j: the band's range, "restated where it is read."
+            GUILayout.Space(8f);
+            DrawColoredLabel(LawMagnitudeRangeLabel(tier), _labelStyle, PoliSimTheme.TextMuted);
             GUILayout.EndHorizontal();
             GUILayout.Space(4f);
 
-            DrawLawDeltaRow("Police Funding", law.PoliceFundingDelta);
-            DrawLawDeltaRow("Sentencing Severity", law.SentencingSeverityDelta);
-            DrawLawDeltaRow("Bail Reform", law.BailReformDelta);
-            DrawLawDeltaRow("Drug Policy", law.DrugPolicyDelta);
-            DrawLawDeltaRow("Judicial Funding", law.JudicialFundingDelta);
-            DrawLawDeltaRow("Border Enforcement", law.BorderEnforcementDelta);
+            // Board 1j: IF ENACTED - DIAL MOVEMENT, the six dial deltas as a two-column grid with
+            // direction arrows. The arrows carry DIRECTION ONLY, in neutral ink - the board draws
+            // them green/red, which collides with two standing records (the DrawLawDeltaRow rule
+            // this grid replaces: a dial's sign has no inherent value judgment the model makes;
+            // and item 6's ruled neutral-derived honesty). Elias's own ruling outranks the drawn
+            // valence where they collide - the layout is the board's, the ink discipline stays.
+            GUILayout.Label("IF ENACTED - DIAL MOVEMENT", _labelStyle, GUILayout.Width(contentWidth));
+            DrawLawDialMovementGrid(law, contentWidth);
             GUILayout.Space(4f);
 
             // Item 6 (ruled 2026-08-25): the NEUTRAL DERIVED effects list - per downstream stat,
@@ -6292,14 +6484,21 @@ namespace PoliSim.UI
             GUILayout.Label($"Enactment cost: {law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture)} approval (paid once, on passage)", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);
 
+            // Board 1j: IF PUT TO THE HOUSE TODAY - the live estimate under its own title, with
+            // the per-party stance rows beneath it.
+            GUILayout.Label("IF PUT TO THE HOUSE TODAY", _labelStyle, GUILayout.Width(contentWidth));
             if (pendingBill != null)
             {
                 GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth));
-                DrawBillLiveEstimate(ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill));
+                float pendingDirection = ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill);
+                DrawBillLiveEstimate(pendingDirection);
+                DrawLawPartyStances(pendingDirection, contentWidth);
             }
             else
             {
-                DrawBillLiveEstimate(ParliamentSystem.GetLawBillDirection(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted }));
+                float direction = ParliamentSystem.GetLawBillDirection(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted });
+                DrawBillLiveEstimate(direction);
+                DrawLawPartyStances(direction, contentWidth);
             }
 
             // Code-review pass (2026-08-25): `&& !_isGameOver` moved HERE from the tab-wide
@@ -6370,19 +6569,106 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>One dial's delta as a ledger row (LedgerRow.Cell - measured, never-clipping) - omitted entirely for a dial this law doesn't touch, rather than printing a zero. No good/bad ink on the value: a dial's sign has no inherent value judgment the model makes (the same reasoning C4's rating tile leaves "Stable" uncoloured rather than asserting a direction it doesn't claim).</summary>
-        private void DrawLawDeltaRow(string dialName, float delta)
+        /// <summary>Board 1j's two-column dial grid, replacing the single-column DrawLawDeltaRow
+        /// list (whose no-good/bad-ink rule this grid keeps: a dial's sign has no inherent value
+        /// judgment the model makes - the same reasoning C4's rating tile leaves "Stable"
+        /// uncoloured). Zero dials are omitted (never a zero row); nonzero dials pair up left/right
+        /// in the board's grid. Arrows carry DIRECTION ONLY in neutral ink - see the call site's
+        /// comment for why the board's green/red valence is deliberately not taken.</summary>
+        private void DrawLawDialMovementGrid(LawDefinition law, float contentWidth)
         {
-            if (Mathf.Approximately(delta, 0f))
+            (string Name, float Delta)[] dials =
+            {
+                ("Police Funding", law.PoliceFundingDelta),
+                ("Sentencing Severity", law.SentencingSeverityDelta),
+                ("Bail Reform", law.BailReformDelta),
+                ("Drug Policy", law.DrugPolicyDelta),
+                ("Judicial Funding", law.JudicialFundingDelta),
+                ("Border Enforcement", law.BorderEnforcementDelta),
+            };
+
+            var nonzero = new List<(string Name, float Delta)>(6);
+            foreach ((string name, float delta) in dials)
+            {
+                if (!Mathf.Approximately(delta, 0f)) { nonzero.Add((name, delta)); }
+            }
+
+            // Explicit width, never ExpandWidth: inside the detail scroll view an expanding rect
+            // follows the CONTENT width (set by the widest natural-size label anywhere in the
+            // pane), not the viewport - the first capture showed these rows running past the
+            // visible pane and clipping at its edge. contentWidth is the pane's real measured
+            // budget, the same one every wrapping label here already takes.
+            float cellWidth = Mathf.Max(0f, (contentWidth - 16f) * 0.5f);
+            for (int i = 0; i < nonzero.Count; i += 2)
+            {
+                Rect rowRect = GUILayoutUtility.GetRect(contentWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(contentWidth));
+                DrawLawDialCell(new Rect(rowRect.x, rowRect.y, cellWidth, rowRect.height), nonzero[i]);
+                if (i + 1 < nonzero.Count)
+                {
+                    DrawLawDialCell(new Rect(rowRect.x + cellWidth + 16f, rowRect.y, cellWidth, rowRect.height), nonzero[i + 1]);
+                }
+            }
+        }
+
+        private void DrawLawDialCell(Rect rect, (string Name, float Delta) dial)
+        {
+            float valueWidth = Mathf.Max(0f, rect.width * 0.34f);
+            LedgerRow.Cell(new Rect(rect.x, rect.y, rect.width - valueWidth, rect.height), dial.Name, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            string arrow = dial.Delta > 0f ? "▲ " : "▼ ";
+            LedgerRow.Cell(new Rect(rect.x + rect.width - valueWidth, rect.y, valueWidth, rect.height),
+                arrow + dial.Delta.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+        }
+
+        /// <summary>
+        /// Board 1j's per-party stance rows for the house estimate - REAL data only: each
+        /// archetype's actual seats and which side of this bill's direction its fiscal stance
+        /// puts it on. ⚠ The board also draws per-party FOR headcounts and an "N of 435, needs
+        /// 218" majority line - both are deliberately NOT built: GetSeatWeightedAlignment's own
+        /// doc states "this is NOT a headcount, and there is no seats-based majority threshold
+        /// anywhere in this model," and Design's own Pass-3 D2 ruling struck headcounts from every
+        /// estimate ("no per-instrument support exists"). Stance sign and seat counts are the two
+        /// facts the model does keep; the lean bar above remains the quantity the vote is really
+        /// decided on.</summary>
+        private void DrawLawPartyStances(float direction, float contentWidth)
+        {
+            if (Mathf.Approximately(direction, 0f))
             {
                 return;
             }
 
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-            float nameWidth = rowRect.width * 0.6f;
-            LedgerRow.Cell(new Rect(rowRect.x, rowRect.y, nameWidth, rowRect.height), dialName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
-            LedgerRow.Cell(new Rect(rowRect.x + nameWidth, rowRect.y, rowRect.width - nameWidth, rowRect.height),
-                delta.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+            float billSign = Mathf.Sign(direction);
+            foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
+            {
+                int seats = _playerCountry.ParliamentSeats.TryGetValue(archetype, out int s) ? s : 0;
+                if (seats <= 0)
+                {
+                    continue;
+                }
+
+                float stance = PartyArchetypeData.GetFiscalStance(archetype) * billSign;
+                string side = stance > 0f ? "FOR" : stance < 0f ? "AGAINST" : "UNALIGNED";
+                // Explicit width - see DrawLawDialMovementGrid's comment: an expanding rect inside
+                // the pane's scroll view tracks content width, not the viewport, and the first
+                // capture clipped these rows' right cells at the pane edge.
+                Rect rowRect = GUILayoutUtility.GetRect(contentWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(contentWidth));
+                float sideWidth = Mathf.Max(0f, rowRect.width * 0.28f);
+                LedgerRow.Cell(new Rect(rowRect.x, rowRect.y, rowRect.width - sideWidth, rowRect.height),
+                    $"{DisplayName.Spaced(archetype.ToString())} - {seats} seats", _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                LedgerRow.Cell(new Rect(rowRect.x + rowRect.width - sideWidth, rowRect.y, sideWidth, rowRect.height),
+                    side, _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+            }
+        }
+
+        /// <summary>Board 1j's summary line needs the pending count before the partition loop runs -
+        /// one pass over the catalog against the pending-bill store, nothing cached.</summary>
+        private int CountPendingLawBills()
+        {
+            int count = 0;
+            foreach (LawDefinition law in LawCatalog.All)
+            {
+                if (_simulationManager.GetPendingLawBill(PlayerCountryId, law.Id) != null) { count++; }
+            }
+            return count;
         }
 
         /// <summary>
