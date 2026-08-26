@@ -986,7 +986,7 @@ plus R4-4's pinned-capture pattern for probabilistic content.
 authority is CLAUDE.md, entry by entry — this section names them so the roadmap can stop.*
 
 **The first real playtest (2026-08-18) produced seven findings: two fixed that day, five scoped
-in `POLISIM_PLAYTEST1_SCOPING.md`, and all but one are now closed.**
+in the Playtest-1 scoping package (consumed to §21, 2026-08-26), and all but one are now closed.**
 
 | item | shipped | CLAUDE.md entry |
 |---|---|---|
@@ -1018,9 +1018,59 @@ Entries, in order: "Law System MVP Slice" (08-24, `ca11f9a`) · "Law content mar
 fix" (the rebuild's review, `dddec9f`) · "Law content marathon, resumed and closed: batches 4–5"
 (`eb11b78`) · "The detail-pane width, ruled and built" (`6804c6d`).
 
+*Its scoping package, `POLISIM_PLAYTEST1_SCOPING.md`, was consumed to §21 and deleted in the
+2026-08-26 consolidation — every scoped item above was dispositioned before the file went.*
+
 **What stays live, and where**: the category filter's inertness (a content gap — five of six
 `LawCategory` slots at zero, reported in the roadmap's board-state block, not a UI item); the
 fiscal legibility panel (roadmap Step 5's carry-over, trigger fired, unbuilt); the courtesy update
 to Design with the built board's captures (a note, in the request doc's §7).
+
+---
+
+## 21. The three 2026-08-18 scoping packages — consumed and deleted (2026-08-26)
+
+*Consolidation-pass migration, per the three-way test: every ruling each package asked for landed
+and shipped, so the files went the way `VISUAL_REVIEW_BACKLOG.md` did. The build records remain in
+`CLAUDE.md`; this section is the packages' own record, with what each left behind.*
+
+### Step 2 — Causality Legibility (`POLISIM_STEP2_LEGIBILITY_SCOPING.md`)
+
+R-S2a–e ruled and built the same day — v1 shipped 2026-08-18: the approval ledger, the trace panel,
+the preview-parity diagnostic, the one-period save shape (CLAUDE.md "Step 2 v1 ships"). **The
+lasting design law — the four attribution classes** (A boundary formulas / B dated events / C
+period stances / D compounding feedback, which renders drivers plus a NAMED RESIDUAL and is
+thresholdable but never attributable) **and the honesty rules built on them** (period-true
+rendering, event dates, equilibrium framing, the single book) — carried directly into Step 3's
+objective grammar and the debt ledger's third section. Deferral dispositions at consolidation:
+tooltips-as-pointers (trigger: discoverability feedback from playtesting — unfired, stays);
+the **causal-graph screen — trigger DECLARED FIRED 2026-08-26** (the ledger carries a third
+stat's terms since 08-25; queued in the roadmap per the fiscal-chain precedent); the narrative
+layer (only-if-ever by design, stays as recorded).
+
+### Step 3 — Challenge Mode (`POLISIM_STEP3_CHALLENGE_SCOPING.md`)
+
+R-S3a–f ruled and built (the slice shipped 2026-08-18). The package's central derivation, kept:
+**a validation scenario supplies the DECISIONS and holds the world constant; a playable one
+supplies the WORLD and lets the player decide** — with the four seams located (entry
+`SelectPlayerCountry`, evaluation on the `CheckElection` hook, ending `_isGameOver`/`_gameOverReason`,
+persistence as one id + counters) and the published-vs-live finding (`DebtToGdpRatio` is
+deliberately never published, so the slate's strongest scenarios structurally cannot be
+published-judged). Slate dispositions at consolidation: Inherit the Fund SHIPPED · Italy Debt
+Crisis SHIPPED · The Disinflation DROPPED (measured) · Wage Boom Management DROPPED (measured) ·
+**Poland convergence and The Unequal Recovery LIVE** — their §2 specs migrated to the roadmap's
+Step 3 block before deletion (ruled 2026-08-26: keep as live content backlog, build when elected).
+**R-S3e's residue closed by ruling (2026-08-26):** the three-rate FA-cadence playtest is
+SUPERSEDED by the 08-25 decision-density ruling and the "does decision density READ as closed"
+riding gate; what it was ruled to produce — the per-scenario cadence multiplier — is built
+(`ForeignPolicyCadenceMultiplier`, default 1, both shipped scenarios at 1).
+
+### Playtest 1 (`POLISIM_PLAYTEST1_SCOPING.md`)
+
+All five scoped items dispositioned — §20's table is the record. The one non-closed row
+(Portraits/D1) is gated in `MISSING_PREREQUISITES.md` §D1: the register gate CLEARED 2026-08-26,
+now genuinely waiting on Design's delivery of the nine. §3's decision-density measurement was
+re-run at 50 laws with the same method (2026-08-25, CLAUDE.md "Decision density re-measured") —
+the method survived the file.
 
 ---

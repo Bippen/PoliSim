@@ -11653,7 +11653,8 @@ suggests. Not fixed further; nothing here is invisible or unreachable, which is 
 ## Decision density re-measured at 50 laws, and the GC gate closes (2026-08-25)
 
 **The question the marathon was built to answer, asked the same way it was asked before.**
-`POLISIM_PLAYTEST1_SCOPING.md` §3 (2026-08-18) measured the automatic (non-bill) prompt rate
+The Playtest-1 scoping package §3 (2026-08-18; consumed to `COMPLETED.md` §21, 2026-08-26)
+measured the automatic (non-bill) prompt rate
 analytically, from the model's own constants, at ≈5/year for a USA game, and RULED that the gap
 "reads as content, not pacing — the law system is positioned to answer it without touching this
 table at all... it increases how much is worth doing at each of the interrupts already there." Fifty

@@ -231,7 +231,7 @@ because they are not done.
     category filter is inert until a second `LawCategory` exists (a content gap, reported as such —
     not a UI bug); five categories sit at 0; the wanted-effects log names eight axis-level gaps the
     six dials cannot represent.
-  - **Playtest 1 package (`POLISIM_PLAYTEST1_SCOPING.md` — five scoped, two fixed) — dispositions:**
+  - **Playtest 1 package (five scoped, two fixed — the scoping file consumed to `COMPLETED.md` §21, 2026-08-26) — dispositions:**
 
     | item | state |
     |---|---|
@@ -398,27 +398,25 @@ captures await Elias's eyes. **The remaining five scenarios are content work beh
 the `Sustained` objective form is built but unexercised, and the first scenario to use it is also
 its first test.
 
-**SCOPED, RULINGS PENDING (2026-08-18)** — the package is
-`POLISIM_STEP3_CHALLENGE_SCOPING.md`. The central derivation: **today's scenarios are the
-MIRROR IMAGE of a playable one** — a validation scenario supplies the DECISIONS (a `switch`
-returning one `PolicyDecision` per turn) and holds the world constant, while a playable
-scenario must supply the WORLD and let the player decide; production code has never heard of
-a scenario (one grep hit, the test runner). Four gaps, each with its seam located: entry
-(`SelectPlayerCountry`), evaluation (the `CheckElection` post-turn hook), ending
-(`_isGameOver`/`_gameOverReason`, already persisted), persistence (one id + counters).
-**The published-vs-live question is settled by the data, not by preference**: `PublishedStat`
-holds only the 12 stats with real sourced release rules and **deliberately never publishes
-DebtToGdpRatio** — so the slate's two strongest scenarios cannot be published-judged at all;
-GDP's three-stage revision would additionally let an objective flip after the fact. Slate of
-six proposed (the three named above plus **The Disinflation** ⚠ *measured — DROPPED, see below,
-same root cause as Wage Boom*, **Wage Boom Management** ⚠ *flagged for after Step 5, and —
-measured post-Step-5 — DROPPED; see below*, and **The Unequal
-Recovery** — the one that proves Step 2's output is load-bearing). Awaiting **R-S3a** (format +
-live evaluation), **R-S3b** (the slate),
-**R-S3c** (boundary-resident evaluator; IMGUI verdict, Canvas deferred to Step 4's election
-night), **R-S3d** (pass/fail + margins + epilogue; no score, on the five-discontinuities
-argument), **R-S3e** (the three-rate FA playtest, cadence as a per-scenario multiplier),
-**R-S3f** (the slice: "Inherit the Fund" end-to-end).
+**The ruling package (2026-08-18) is CONSUMED — R-S3a–f all ruled and built** (the slice above;
+the package's derivation and dispositions migrated to `COMPLETED.md` §21, file deleted 2026-08-26).
+**R-S3e's residue is SUPERSEDED by ruling (2026-08-26):** the three-rate FA-cadence playtest gave
+way to the 08-25 decision-density ruling — the built per-scenario multiplier is the lever, and the
+question that remains is the riding gate "does decision density READ as closed", not a rate sweep.
+
+**THE TWO REMAINING SCENARIOS — live content backlog (ruled 2026-08-26: keep, build when
+elected). Specs migrated from the package's §2 before deletion:**
+
+- **Poland convergence.** *Deltas:* the seeded 3.0%/turn potential, 59% debt. *Objectives:*
+  sustained real-wage growth with inflation in band N consecutive turns. *Fail:* inflation > 6%
+  three turns running. **Why hard:** growth is the easy half — the tightness → wage → (Q2)
+  sentiment → consumption loop plus the Phillips curve means a convergence boom overheats itself,
+  and the Taylor rule answers with rates.
+- **The Unequal Recovery.** *Deltas:* elevated Gini, a hostile seat composition. *Objectives:*
+  Gini back to baseline without losing a confidence vote. *Fail:* approval < 30. **Why hard:**
+  every lever that closes the Gini gap (welfare, minimum wage, tax) runs through Parliament, and
+  each failed bill charges approval — while the Q1 Gini term is itself pushing approval down
+  until it closes. This is the scenario that proves Step 2's output is load-bearing.
 
 ## Step 4 — Item 10: the political game (gate: 13 Sept 2026, Sweden votes)
 
@@ -545,7 +543,8 @@ playtest, Turn → Year, the Calendar Panel, the entire law system to 50/50, the
 consolidation — touched none of the four things Step 4's package names (seed refresh, the Italy
 allocator, the collision map, election night) and nothing Step 6 waits on. The one addition that
 COULD have collided — laws entering Parliament — reuses the existing gated-bill path verbatim and
-adds no political-system code, exactly as `POLISIM_PLAYTEST1_SCOPING.md` §5 predicted. Step 4's
+adds no political-system code, exactly as Playtest 1's law-system scoping predicted (§5 of the
+package, consumed to `COMPLETED.md` §21). Step 4's
 date rides regardless. *(Sources: `git log --since=2026-08-24`; CLAUDE.md 10615–11620; this file's
 own Step 4 text, re-read.)*
 
