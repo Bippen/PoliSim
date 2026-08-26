@@ -162,13 +162,19 @@ namespace PoliSim.EditorTools
                     ? turnCountry.SovereignWealthFund.TotalAssets * 0.02f
                     : 0f;
 
+                // Pass 5 (the tariff flow): the period's take at the seed rates, planned into both
+                // paths as one more flow - a fixed period figure distributed linearly, so it is exact
+                // by construction like mandatory spending, and it rides these rows at each country's
+                // own seed take (Sweden 1.01, Germany 4.08) rather than a synthetic value.
+                float tariffRevenue = TradeSystem.ComputeTariffRevenue(turnCountry, turnWorld);
+
                 float turnBudgetBefore = turnCountry.State.Budget;
                 float dailyBudgetBefore = dailyCountry.State.Budget;
 
-                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, mandatorySpending, swfPeriodReturn);
+                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, mandatorySpending, swfPeriodReturn, tariffRevenue);
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
                 {
-                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, mandatorySpending, swfPeriodReturn);
+                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, mandatorySpending, swfPeriodReturn, tariffRevenue);
                 }
 
                 // The DEBT STOCK and the BUDGET BALANCE, not the Budget level: Budget is a running total
@@ -224,10 +230,10 @@ namespace PoliSim.EditorTools
                     ? turnCountry.SovereignWealthFund.TotalAssets * 0.02f
                     : 0f;
 
-                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, 0f, swfPeriodReturn);
+                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, 0f, swfPeriodReturn, TradeSystem.ComputeTariffRevenue(turnCountry, turnWorld));
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
                 {
-                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, 0f, swfPeriodReturn);
+                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, 0f, swfPeriodReturn, TradeSystem.ComputeTariffRevenue(dailyCountry, dailyWorld));
                 }
 
                 total++;
@@ -272,10 +278,10 @@ namespace PoliSim.EditorTools
                     ? turnCountry.SovereignWealthFund.TotalAssets * 0.02f
                     : 0f;
 
-                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, 0f, swfPeriodReturn);
+                turnSim.ApplyPeriodFiscalStepForValidation(turnCountry, governmentSpending, 0f, swfPeriodReturn, TradeSystem.ComputeTariffRevenue(turnCountry, turnWorld));
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)
                 {
-                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, 0f, swfPeriodReturn);
+                    dailySim.AccrueDayForValidation(dailyCountry, governmentSpending, 0f, swfPeriodReturn, TradeSystem.ComputeTariffRevenue(dailyCountry, dailyWorld));
                 }
 
                 total += 2;

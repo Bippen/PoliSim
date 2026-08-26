@@ -599,6 +599,14 @@ namespace PoliSim.Simulation
             public float PlannedDiscretionarySpending;
             public float PlannedSwfReturn;
 
+            /// <summary>Pass 5 (2026-08-26): the period's tariff revenue - TradeSystem's figure at the
+            /// boundary that opened this period (the seed period reads the same pure function before
+            /// any turn), accrued daily inside ApplyRevenueAndSpending as one more revenue term. A
+            /// zero from a pre-pass-5 save degrades to "no tariff flow for the loaded period's
+            /// remainder", self-correcting at the next boundary - the WageGrowthGapAtPeriodOpen
+            /// posture, no guard needed.</summary>
+            public float PlannedTariffRevenue;
+
             /// <summary>
             /// GetFiscalReactionMultiplier as it stood when this period opened, held FIXED for its whole
             /// 121 days - and this is the one Phase 3 constant that is a modelling call rather than a
@@ -659,6 +667,9 @@ namespace PoliSim.Simulation
             public float AccruedSwfReturns;
             public float AccruedTotalSpending;
             public float AccruedBudgetBalance;
+            /// <summary>Pass 5: the tariff portion of AccruedRevenue, kept separately so the
+            /// FiscalTurnReport can show "of which tariffs" as a true reading of what accrued.</summary>
+            public float AccruedTariffRevenue;
 
             public void ResetAccrual()
             {
@@ -671,6 +682,7 @@ namespace PoliSim.Simulation
                 AccruedSwfReturns = 0f;
                 AccruedTotalSpending = 0f;
                 AccruedBudgetBalance = 0f;
+                AccruedTariffRevenue = 0f;
             }
         }
 
@@ -2060,8 +2072,12 @@ namespace PoliSim.Simulation
             // equals the government spending actually accrued, which is the property every existing
             // caller of this report relies on.
             //
-            // TariffRevenue is the exception and stays a turn figure: TradeSystem is not part of Phase 3
-            // and still collects once per boundary. Recording it as anything else would be a fiction.
+            // Pass 5 (2026-08-26): TariffRevenue is no longer the exception. TradeSystem still computes
+            // the figure once per boundary, but it is the coming period's PLAN, accrued daily inside
+            // Revenue like every other flow - so the report shows the tariff portion that actually
+            // accrued over the period that just closed, a true reading of the one real path. (Under the
+            // pre-pass-5 books it was a turn figure booked to the accumulator alone - the control's
+            // branch below reproduces that for the wired-inert dump.)
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
                 Revenue = period.AccruedRevenue,
@@ -2070,7 +2086,7 @@ namespace PoliSim.Simulation
                 MandatorySpending = period.AccruedMandatorySpending,
                 UnemploymentBenefitCost = period.AccruedUnemploymentBenefitCost,
                 InterestOnDebt = period.AccruedInterestOnDebt,
-                TariffRevenue = tariffRevenue,
+                TariffRevenue = TradeSystem.RoutesToTheBooks ? period.AccruedTariffRevenue : tariffRevenue,
                 WelfareCost = period.AccruedWelfareCost,
                 SwfContribution = period.AccruedSwfContribution,
                 SwfReturns = period.AccruedSwfReturns,
@@ -2107,6 +2123,9 @@ namespace PoliSim.Simulation
             period.PlannedSwfReturn = country.SovereignWealthFund != null
                 ? SovereignWealthFundSystem.DrawPeriodReturn(country.SovereignWealthFund)
                 : 0f;
+            // Pass 5: this boundary's tariff figure (rates and volumes as they stand after this
+            // turn's tariff decisions resolved) is the coming period's tariff flow.
+            period.PlannedTariffRevenue = TradeSystem.RoutesToTheBooks ? tariffRevenue : 0f;
 
             // Read AFTER 121 days of accrual have finished moving the debt stock, so the stance the next
             // period adopts responds to the debt the country actually ended this one with - the same
@@ -2216,7 +2235,9 @@ namespace PoliSim.Simulation
 
             ApplyTariffRateChange(previewCountry, decision);
             ApplyPartnerTariffOverrides(previewCountry, decision);
-            TradeSystem.ApplyTradeEffects(previewCountry, _world);
+            // Pass 5: the clone's tariff figure is threaded into its fiscal step below, exactly as the
+            // real boundary plans it - the preview's NetBudgetImpact stays a true reading.
+            float previewTariffRevenue = TradeSystem.ApplyTradeEffects(previewCountry, _world);
 
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
@@ -2266,7 +2287,7 @@ namespace PoliSim.Simulation
                 previewCountry.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out _, out _);
+            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, TradeSystem.RoutesToTheBooks ? previewTariffRevenue : 0f, out _, out _);
 
             float previewedInterestRate;
             if (previewCountry.CurrentFedChair != null)
@@ -2844,9 +2865,11 @@ namespace PoliSim.Simulation
         /// This turn's total THEORETICAL tax revenue (before CollectionEfficiency): the sum, over
         /// every implemented TaxLine, of GDP * (Rate / 100) * BaseShareOfGdp. Tariffs is explicitly
         /// skipped even though it's never constructed as a TaxLine (see TaxType's doc comment) -
-        /// defensive, so a future TaxLine accidentally created for it could never double-count revenue
-        /// TradeSystem already collects. See ApplyRevenueAndSpending for where CollectionEfficiency is
-        /// applied to get the actual collected revenue.
+        /// defensive, so a future TaxLine accidentally created for it could never double-count the
+        /// tariff flow, which enters ApplyRevenueAndSpending as its own term (pass 5: TradeSystem's
+        /// figure, planned per period and accrued daily, outside CollectionEfficiency). See
+        /// ApplyRevenueAndSpending for where CollectionEfficiency is applied to get the actual
+        /// collected revenue.
         /// </summary>
         private float GetTotalTaxRevenue(Country country)
         {
@@ -3457,6 +3480,9 @@ namespace PoliSim.Simulation
                 PlannedSwfReturn = country.SovereignWealthFund != null
                     ? SovereignWealthFundSystem.GetAverageReturnEstimate(country.SovereignWealthFund)
                     : 0f,
+                // Pass 5: the opening period's tariff flow, from the same pure function the boundary
+                // reports - so turn 1 accrues the seed rates' take rather than a period of nothing.
+                PlannedTariffRevenue = TradeSystem.RoutesToTheBooks ? TradeSystem.ComputeTariffRevenue(country, _world) : 0f,
                 PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
                 GdpAtPeriodOpen = country.State.GDP,
                 UnemploymentAtPeriodOpen = country.State.Unemployment,
@@ -3508,6 +3534,9 @@ namespace PoliSim.Simulation
             float interestOnDebt = GetInterestOnDebt(country) * FiscalFlowPerDayFraction;
             float welfareCost = GetTotalWelfareCost(country) * FiscalFlowPerDayFraction;
             float swfContribution = GetSwfContribution(country) * FiscalFlowPerDayFraction;
+            // Pass 5: the planned tariff flow, sliced exactly like mandatory spending - a fixed period
+            // figure distributed linearly, so the daily form sums to the turn form by construction.
+            float tariffRevenue = period.PlannedTariffRevenue * FiscalFlowPerDayFraction;
 
             float swfReturns = 0f;
             float swfDraw = 0f;
@@ -3538,9 +3567,10 @@ namespace PoliSim.Simulation
             float interestAtIssuanceToday = debtBeforeWrite > 0f ? debtBeforeWrite * (issuanceRateToday / 100f) * FiscalFlowPerDayFraction : 0f;
             DebtLedgerRecorder.EnsureAccruing(country, CurrentDate, debtBeforeWrite);
 
-            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
+            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
 
             period.AccruedRevenue += revenue;
+            period.AccruedTariffRevenue += tariffRevenue;
             period.AccruedMandatorySpending += mandatorySpending;
             period.AccruedUnemploymentBenefitCost += unemploymentBenefitCost;
             period.AccruedInterestOnDebt += interestOnDebt;
@@ -3572,7 +3602,7 @@ namespace PoliSim.Simulation
         /// turn-level answer that 121 daily accruals have to land within tolerance of. Nothing in the
         /// simulation loop calls it; its only caller is AggregationEquivalenceCheck.
         /// </summary>
-        public void ApplyPeriodFiscalStepForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn)
+        public void ApplyPeriodFiscalStepForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn, float tariffRevenue)
         {
             EconomyState state = country.State;
             // R4: the turn form advances the rate lag one whole period, mirroring the daily path's
@@ -3597,7 +3627,7 @@ namespace PoliSim.Simulation
                 country.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, out _, out _);
+            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, out _, out _);
         }
 
         /// <summary>
@@ -3608,12 +3638,13 @@ namespace PoliSim.Simulation
         /// It delegates rather than reproducing the daily maths on purpose: a validation path that
         /// re-implements what it validates can pass while the shipped code is wrong.
         /// </summary>
-        public void AccrueDayForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn)
+        public void AccrueDayForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn, float tariffRevenue)
         {
             FiscalPeriod period = GetOrSeedFiscalPeriod(country);
             period.PlannedGovernmentSpending = governmentSpending;
             period.PlannedMandatorySpending = mandatorySpending;
             period.PlannedSwfReturn = swfPeriodReturn;
+            period.PlannedTariffRevenue = tariffRevenue;
             AccrueDailyFiscalFlows(country);
         }
 
@@ -3636,6 +3667,18 @@ namespace PoliSim.Simulation
         /// reduces it, hard-clamped to a sane debt-to-GDP range. Returns the actual (post-efficiency,
         /// post-reaction) revenue so the caller can record it on this turn's FiscalTurnReport.
         ///
+        /// PASS 5 (2026-08-26): <paramref name="tariffRevenue"/> is the tariff flow for the same slice
+        /// the spending figures cover (the caller applies the period fraction, as for spending) - a
+        /// RECURRING revenue that joins actual revenue here beside taxes and the fund draw, INSIDE the
+        /// fiscal-reaction multiplier (the 2026-08-02 "all revenue inside the multiplier" ruling; also
+        /// what keeps the debt ledger's revenue/m split exact with no new term) and OUTSIDE
+        /// CollectionEfficiency (customs are not the tax administration's collection). Derived, not
+        /// inherited from F1: F1's interrupt impacts are one-time settlements and go stock-side; a
+        /// flow that recurs every period is the budget process's channel, which F1's own boundary rule
+        /// names. Revenue-neutral at seed by construction: each country's CollectionEfficiency gives
+        /// back exactly its seed take (WorldFactory), because the real tax targets those were solved
+        /// against already contain customs duties.
+        ///
         /// CONTINUOUS TIME PHASE 3: every spending figure is passed IN, so the caller decides whether it
         /// is handing over a whole period's or one day's. Revenue is the exception - it is computed here,
         /// from the country's own portfolio - so <paramref name="revenuePeriodFraction"/> is what tells
@@ -3648,7 +3691,7 @@ namespace PoliSim.Simulation
         /// path passes the value its period opened with instead; see FiscalPeriod for why that one is
         /// held fixed while every other component is recomputed daily.
         /// </summary>
-        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns, out float totalSpending, out float budgetBalance, float revenuePeriodFraction = 1f, float fiscalReactionMultiplierOverride = -1f)
+        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns, float tariffRevenue, out float totalSpending, out float budgetBalance, float revenuePeriodFraction = 1f, float fiscalReactionMultiplierOverride = -1f)
         {
             EconomyState state = country.State;
             float theoreticalRevenue = GetTotalTaxRevenue(country) * revenuePeriodFraction;
@@ -3677,7 +3720,8 @@ namespace PoliSim.Simulation
             // banking it - which is exactly what the fiscal reaction function already claims to model for
             // tax revenue. The symmetry holds at the other end too: a heavily indebted government leans
             // harder on its fund.
-            float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + swfReturns) * fiscalReactionMultiplier;
+            // Pass 5: the tariff flow sits with the fund draw - inside the multiplier, outside CE.
+            float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + swfReturns + tariffRevenue) * fiscalReactionMultiplier;
             totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
             budgetBalance = actualRevenue - totalSpending;
 

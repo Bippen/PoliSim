@@ -8157,20 +8157,22 @@ namespace PoliSim.UI
                 return;
             }
 
-            float net = report.Revenue + report.TariffRevenue
-                - report.BaselineGovernmentSpending - report.DiscretionarySpending - report.MandatorySpending
-                - report.UnemploymentBenefitCost - report.InterestOnDebt - report.WelfareCost;
+            // Pass 5 (2026-08-26): the net is the RECORDED balance, never a hand sum - FiscalTurnReport's
+            // own doc says the components cannot be added back up (DiscretionarySpending is a change,
+            // BaselineGovernmentSpending is not the summed field), and the old hand sum here also added
+            // TariffRevenue on top of a Revenue that now already contains it. Same control count.
+            float net = report.BudgetBalance;
 
-            GUILayout.Label($"Revenue (Tax): {UiFormat.Money(report.Revenue, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Revenue (tax, tariffs, fund draw): {UiFormat.Money(report.Revenue, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Baseline Government Spending: {UiFormat.Money(report.BaselineGovernmentSpending, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Discretionary Spending Change (this year): {UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Mandatory Spending: {UiFormat.Money(report.MandatorySpending, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Unemployment Benefit Cost: {UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Interest On Debt: {UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Welfare Program Cost: {UiFormat.Money(report.WelfareCost, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Tariff Revenue Collected: {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Of which tariff revenue (accrued, inside Revenue): {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Space(6f);
-            DrawColoredLabel($"Net (matches this year's Budget change): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
+            DrawColoredLabel($"Net (this year's recorded balance): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
         }
 
         /// <summary>
