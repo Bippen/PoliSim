@@ -12015,9 +12015,10 @@ control — iteration 1 "worked" and its capture said otherwise.
 
 **Playtest items 4/5/6 are SCOPED, not built** (rulings needed — reports delivered in-session:
 Sweden budget depth as a per-country content pass; Riksbank independence options A/B/C; law
-pros/cons derivation vs authored-with-derived-check). **Item 7** (law-page clutter at 50 laws) is
-recorded as §7.1 of `CLAUDE_DESIGN_ASSET_REQUEST.md` with the `capfold` captures — Design's board,
-Design's iteration; nothing improvised here. **Parliament with real parties/mandates** is item 10
+pros/cons derivation vs authored-with-derived-check). **Item 7** (law-page clutter at 50 laws) was
+recorded as §7.1 of the request doc with the `capfold` captures — Design's board, Design's
+iteration; ANSWERED AND BUILT 2026-08-26 as Board 1j (entry below), §7.1 since migrated to
+`COMPLETED.md` §24 in the consolidation. **Parliament with real parties/mandates** is item 10
 (13 Sept), where the finding already lands.
 
 ## Item 6 BUILT — the declared coupling table and the derived "Expected effects" (2026-08-25, ruled)

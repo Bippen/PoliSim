@@ -7,6 +7,13 @@ is its written form so the build has a target that is not a chat message.
 Drawn against the populated state of `run_85g_bill_laws.png` — 8 in force,
 2 pending, 38 total, one populated category.
 
+> **2026-08-26 — one dated pointer; everything below is unchanged as delivered.** Design's
+> Screen 1j ("Law browser at 50", their §7.1 answer) OVERLAYS the AVAILABLE-row spec below:
+> AVAILABLE renders as four magnitude bands, available rows drop to three cells, and the
+> category cell retires until a second category ships. **The three rulings stand; 1j changes
+> AVAILABLE only.** For AVAILABLE rows the build target is the 1j board — see CLAUDE.md
+> "Board 1j implemented" (2026-08-26).
+
 ## The three open questions, answered
 
 **Row weight.** Four cells, not five: status glyph · name · category ·

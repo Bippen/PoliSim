@@ -262,7 +262,7 @@ because they are not done.
     | 4 · Sweden budget depth | ✅ BUILT (ruled: decomposition now, Sweden first) — 24 sourced utgiftsområde lines (regeringen.se, vårprop 2026, retrieved 08-25); all-discretionary + not-byte-identical deviations stated with measured reasons (CLAUDE.md "Item 4 BUILT"); recalibration is its own later ruled pass absorbing the seed's revenue artifact; the other four countries await their own passes |
     | 5 · Riksbank independence | ✅ C NAMED (ruled: C now, B the destination) — the deliberate-choice paragraph on the Federal Reserve tab + `PolicyDecision` doc; B recorded beside item 10 with its two named gates (output-gap fix; item 10's machinery) — see Step 4's block |
     | 6 · Law pros/cons | ✅ BUILT (ruled: neutral derived via the declared table) — `CrimeJusticeCouplings` read by the Apply* formulas themselves; byte-identical 6/6 diffs; "Expected effects" in the detail pane with the coupling gaps visible, logged as the couplings-pass input (CLAUDE.md "Item 6 BUILT") |
-    | 7 · Law-page clutter at 50 | ➡ §7.1 of `CLAUDE_DESIGN_ASSET_REQUEST.md`, with captures — Design's board, their iteration |
+    | 7 · Law-page clutter at 50 | ✅ BUILT — Design answered with Screen 1j ("Law browser at 50"), implemented same-day 2026-08-26 (CLAUDE.md "Board 1j implemented"; §7.1 migrated to `COMPLETED.md` §24). Residue: the eye review of the `board1jc*` sets rides the Access row |
 
     Parliament with real parties/mandates = item 10 (13 Sept), stated in the playtest and already
     where the work is.

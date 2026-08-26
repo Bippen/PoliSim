@@ -1021,10 +1021,12 @@ fix" (the rebuild's review, `dddec9f`) · "Law content marathon, resumed and clo
 *Its scoping package, `POLISIM_PLAYTEST1_SCOPING.md`, was consumed to §21 and deleted in the
 2026-08-26 consolidation — every scoped item above was dispositioned before the file went.*
 
-**What stays live, and where**: the category filter's inertness (a content gap — five of six
-`LawCategory` slots at zero, reported in the roadmap's board-state block, not a UI item); the
-fiscal legibility panel (roadmap Step 5's carry-over, trigger fired, unbuilt); the courtesy update
-to Design with the built board's captures (a note, in the request doc's §7).
+**What stays live, and where** *(updated 2026-08-26)*: the category filter's inertness (a content
+gap — five of six `LawCategory` slots at zero; the second-category pass is now scheduled in the
+roadmap's ruled build order); ~~the fiscal legibility panel (trigger fired, unbuilt)~~ — **SHIPPED
+2026-08-25** as `StatTracePanel`'s third section (CLAUDE.md "Step 2's third section ships"); the
+courtesy update to Design — rewritten 1j-aware and riding the send package
+(`MISSING_PREREQUISITES.md` §S).
 
 ---
 
@@ -1281,5 +1283,99 @@ from the fund, Norway's own fiscal rule). One flag raised then and still worth a
 debt ratio came out very flat (13.3% → 10.7% across 120 turns) — possibly too quiet, a different
 question from the one the fix addressed. The superseded framings (the 2026-08-11 "waits on the
 parked pass" reading; the 2026-08-02 original) are in git history with this file's §13/§18.
+
+---
+
+## 24. The v2.0 design collaboration — §1–§1G, §6, §7/§7.1 consumed from the request doc (2026-08-26)
+
+*`CLAUDE_DESIGN_ASSET_REQUEST.md` returned to its charter ("appended to, then emptied on
+delivery"): the answered arc migrated here, git history holding every original section in full.
+What survives there: the conventions (§3/§4), the scope rules (§2), and the live asks (§5, §8, §9).*
+
+### The brief and the two chrome passes (§1, §1B, §1C — 2026-08-03)
+
+The v2.0 brief asked Design to research Suzerain directly and say where the idiom would NOT work.
+Pass 1: 41 sprites + palette + `DIRECTION.md` + `CANVAS_SPEC.md`. Pass 2 answered every §1B item —
+scrollbars with the arrow-button call made explicitly (**styled to NOTHING**, sprite plus zeroed
+fixed sizes, both required); the chip judgment came back **"not a pill"** (a delta on paper is
+inked text — retire `Pill` at stat-tile delta sites, keep the chip for printed badges); the
+Pagella stamp re-cut; the missing companion documents restored. **The delivered thesis: "a
+ledger, not a decree" — the idiom adopted at the PERIMETER and refused at the ROW**, with six
+recorded refusals (W1 ornament per row · W2 texture under live digits · W3 transitions everywhere
+· W4 a mood palette — the eleven hues are DATA INFRASTRUCTURE, aged not reduced · W5 the prose
+register · W6 period as age), the eleven load-bearing behaviours each landed (B1–B11), the
+hand-off envelope (scrim 0–180ms → swap at 180–240 → document entrance → stamp thunk at 580–700;
+round trip ≤1.2s), and the dual-siting answer (frame, title band and plate ship as separate
+sprites so the embedded path skips them).
+
+### The eight screen boards and the revision request (§1D — 2026-08-10)
+
+Nine items, Design's calls — the header said D4/D7's reasoning is still consulted, so it lives
+here: **D1** the ✎ glyph exists in no shipped font (behaviour 11's failure landing on behaviour
+1) — the carrier became the `icon_pencil_draft` sprite, never a text glyph; **D2** the division
+bar drew a seat headcount the model does not compute — the diverging lean bar stands (a bug this
+codebase had already fixed once), and D2's striking of headcounts was load-bearing again in Board
+1j; **D3** the density board tested half the density (19 rows drawn, ~40 real); **D4 — still
+consulted:** four data visualisations were never aged, and Design REFUSED to invent 29
+distinguishable aged hues — **change the chart form rather than ship a worse palette** (the
+eleven-hue floor's own logic one level down); **D5** party inks collided with area inks; **D6**
+the third hue tint got its rule; **D7 — still consulted:** uniform auto-shrink REJECTED — a
+column printing at four sizes reads as an error; the answer is the resort ladder (screen spec
+§A.9a); **D8** behaviour 6 stated backwards between two documents — the board's version won
+(dashed = provisional); **D9** eight sprite names without files — four substituted, four became
+§1E. The locale finding (1D.3): the boards' `$29,3T` was the sv-SE dev machine leaking in, not a
+decision — the separator belongs to `UiFormat` and behaviour 3.
+
+### Pass-3 follow-ups (§1E — closed 2026-08-10; verified by per-item enumeration 2026-08-11)
+
+Five import blockers, all delivery-not-design, all closed: E1 `emblem_state_seal` →
+`ui_seal_state` (the prefix is load-bearing); E2 `canvas_*` → `ui_*` (one namespace inside
+`Chrome/`); E3 the two 3-cell strips split into single per-state sprites (the pack's own
+established pattern); E4 PNG delivery restored (the pixels' ownership stays on Design's side);
+E5 `icon_pencil_draft.png` shipped — D1's agreed carrier made importable. DEVIATIONS declared,
+not requested: **V1** the "(current seat composition)" qualifier moved from row to screen header
+(the board drew 8 rows; `TaxType` has 13 — the per-row verdict is NOT D2's deleted per-instrument
+column: it scores the real standalone bill); **V2** Mandatory/Discretionary kept the build's own
+group headers (the boards never addressed the split; a group property wants a heading). Both OPEN
+QUESTIONS answered by later work: SHARE stays global (group-scaled bars carry within-group
+discrimination); the row pitch re-derived as a DECIDED 36px at board scale.
+
+### The party marks (§1F, §1F.1, §1F.2, §1G — 2026-08-11 → 2026-08-17)
+
+The question — how a real party's identity is drawn without its trademark — came back better than
+asked: **BALLOT STAMPS**, diegetic marks one election authority issues, which explains the family
+resemblance rather than excusing it. The rules that came with it: silhouette classes unique per
+chamber; solid ink, one counter ≥2px at 16px; **never the subject of the party's registered mark**
+(no rose for S, no donkey, no elephant — rule 9a); national iconography stays in state chrome;
+ink-safe colours constrain the `DisplayColor` seeds. Convention: `mark_party_*` ships
+white-on-alpha and tints from seed data at draw time — a rebrand is a data edit, never a
+redelivery. Four marks delivered (rep crest · dem torch · se_s banner · se_v star — the fourth
+argued-for by Design over our three, and rightly: the S/V red-red collision is untestable with
+three). **The DXT5 lesson**: metas copied from the filename-adjacent, treatment-opposite
+`emblem_*` family imported all four block-compressed — §3.0a's copy-within-the-rendering-class
+rule was born there, and `PartyMarkCoverageCheck` gained its format assertion (a handle coming
+back proves the GUID, not the pixels). `mark_party_us_lib` followed 2026-08-17 (§1G); "Other and
+independent" is a deliberate non-gap (a residual bucket, not a party). The R5 hex exchange rides
+item 10 (`MISSING_PREREQUISITES.md` §E2). §1F.2's outstanding Zone.Identifier check closed
+2026-08-26: no MOTW stream on any of the five marks.
+
+### The verification notes (§6 — 2026-08-02/03)
+
+Migrated with the rule kept standing in the surviving header: **a count in prose is a cached
+value with no expiry** (rule 12) — re-derive sprite counts from the filesystem and screen
+inventories from the enums. Three figures went stale inside two days while believed accurate when
+written; the status header itself misled a reader twice.
+
+### The law browser (§7 — OVERTAKEN; §7.1 — ANSWERED AND BUILT)
+
+§7 was written and never sent: Design delivered board 1i + `LAW_BROWSER_BOARD_RULINGS.md` before
+the send (`315cca0`), and the browser was rebuilt against them the same day (2026-08-25,
+`dddec9f`). §7.1 — the playtest finding that 50 laws read as clutter — was answered by Design's
+**Screen 1j ("Law browser at 50")**, drawn the day after the finding was sent, and implemented
+same-day 2026-08-26 (`0bb7ebc`) with three explicit deviations: neutral dial-arrow ink (item 6's
+ruled honesty), no seat headcounts (the model has none — Design's own D2), no sitting calendar
+(the recorded 1i reason; the VOTE-IN countdowns are the real datum). The rulings doc stays at the
+repo root as the standing 1i spec with a dated 1j header pointer; CLAUDE.md "Board 1j
+implemented" is the build record; §20 carries the law-system story.
 
 ---

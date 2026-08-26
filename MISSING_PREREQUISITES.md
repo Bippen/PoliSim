@@ -108,12 +108,12 @@ entry's close condition was "PartyMarkCoverageCheck reports it resolving at RGBA
 that check honestly reports **"PARTY SYSTEM NOT PRESENT on this branch... VERIFIED NOTHING"**: the
 party seeds live on `stranded/politics-elections`, item-10-gated. The accounting half runs when
 the branch does — orphan-by-sequencing, the same recorded status as the other four marks.
+Delivery story: `COMPLETED.md` §24 (the §1G record) and CLAUDE.md's 2026-08-17 import entry.
 
 **Riding the same gate: the R5 hex exchange.** Design's flag ("LP gold needs an ink-safe darkened
 `DisplayColor` — pass it with Sweden's set") is GATED BY NAME on item 10 — no party seeds exist on
 main, so no hexes exist to send. The exchange fires when the gate opens; Design is waiting on a
-calendar, not on us. Delivery story: the request doc's §1G record and CLAUDE.md's 2026-08-17
-import entry.
+calendar, not on us.
 
 ⚠ **Zone.Identifier check CLOSED (2026-08-26, Windows-side):** all five `mark_party_*.png` carry
 only the `:$DATA` stream — no mark-of-the-web ADS exists on any of them (the files were extracted
