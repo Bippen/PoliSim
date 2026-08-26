@@ -346,7 +346,7 @@ HEAD during transcription; the contradictions found are flagged inline rather th
   single-book rider (effective confidence the only confidence read or displayed; the stored
   field the policy-drift base, named as such), R-Q2b = 0.5%C/pp (band 0.25–0.75), R-Q2c =
   the shared realized-growth helper (Q5's seam). Derivation in
-  `POLISIM_Q2_COUPLING_REPORT.md`; the ship record with the full bar is CLAUDE.md's "Q2
+  `COMPLETED.md` §22 (the Q2 report, consumed 2026-08-26); the ship record with the full bar is CLAUDE.md's "Q2
   ships" entry — including **the FIFTH fixed reference** (`WageGrowthGapAtPeriodOpen`),
   found by the equivalence bar (live-gap form failed the @8%shock row at 11.8%, causally
   proven by the s=0 probe) and fixed by the established anchor pattern; and **the standing
@@ -475,7 +475,8 @@ its difficulty a measured claim rather than a hoped-for one.
 about a SEPARATE constant nobody had measured against it yet.** The very next content pass
 measured the scenario against `UnemploymentReversionSpeed` (0.7/turn, pre-existing, unrelated to
 Q5) and found it forecloses the premise regardless of the loop — dominates every tested lever
-including the interest rate's absolute floor. DROPPED; see `POLISIM_WAGEBOOM_MEASUREMENT_REPORT.md`
+including the interest rate's absolute floor. DROPPED; see `COMPLETED.md` §22 (the report,
+consumed 2026-08-26)
 and CLAUDE.md's "Wage Boom Management — measured and dropped" entry. The `Sustained` form WAS
 exercised, on a synthetic diagnostic, and passed cleanly.
 
@@ -485,7 +486,7 @@ sustaining tightness below NAIRU (Wage Boom) exactly as it prevents holding slac
 (Disinflation): ten configurations across four countries and every tested lever, up to a 5-point
 one-time hike and an auto-driven Eurozone climb to 8.6%, moved 30-turn terminal inflation by
 under a point in every case. **Two drops on one root cause is now a named model-balance
-finding**, not two isolated results — see `POLISIM_DISINFLATION_MEASUREMENT_REPORT.md` and
+finding**, not two isolated results — see `COMPLETED.md` §22 and
 CLAUDE.md's matching entry.
 
 **✅ Italy Debt Crisis SHIPPED (2026-08-18)** — measured next, on the opposite risk profile
@@ -500,7 +501,8 @@ verdict-margin line now reports a Sustained objective's streak. The fiscal chain
 deferral (Step 2) fires here, named rather than built — the data exists, the trigger is now live.
 Full record including a root-caused, understood, driver-only capture-vs-diagnostic discrepancy
 (the capture driver's shared turn clock, not a scenario or evaluator defect) is
-`POLISIM_ITALYDEBT_MEASUREMENT_REPORT.md` and CLAUDE.md's "Italy Debt Crisis ships" entry. Format
+`COMPLETED.md` §22 (the report, consumed 2026-08-26) and CLAUDE.md's "Italy Debt Crisis ships"
+entry. Format
 verdict: **subset, confirmed** — no new `ObjectiveKind` needed. Two of five scenarios remain:
 Poland convergence, The Unequal Recovery.
 

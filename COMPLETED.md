@@ -1074,3 +1074,117 @@ re-run at 50 laws with the same method (2026-08-25, CLAUDE.md "Decision density 
 the method survived the file.
 
 ---
+
+## 22. The derivation and measurement reports — consumed and deleted (2026-08-26)
+
+*Ruled 2026-08-26 (the consolidation pass): discharged derivation and measurement reports
+migrate here and delete, with every citation repointed — code doc comments included. Git history
+preserves each report in full, the §12 precedent; this section carries the rulings, the
+consumption record, and the data that existed nowhere else. One deliberate exception:
+`POLISIM_R4_4_PREREPORT.md` stays on disk until D1's nine portraits land — its §4 collision
+search is actively cited by the in-flight art request — then follows this same rule.*
+
+### The stock-versus-flow mechanism report (2026-08-17, `bcbba47`)
+
+The fiscal arc's central derivation. Its findings, all dispositioned: **1a** — the whole stock
+repriced DAILY at spot + premium (the strongest form of the assumption maturity structure
+attacks; the USA's 3.3 override was already a frozen maturity model accepted once). **1b** — the
+model's dollars are constant-price units and the stock update never saw inflation, so the
+standard identity's **−π·b erosion term was missing** — sized at one to two orders of magnitude
+larger than the measured divergence slopes (+0.014…+0.037 pts/turn) it would oppose. **1c** —
+primary-surplus rules die on Italy's own evidence (+75 implied primary surplus, diverging
+anyway). **F1** — every interrupt-layer `BudgetImpact` reached only the display accumulator,
+never the debt stock. Rulings and ships: **R1–R3 the erosion term** (`685ebd5`) — with **R3
+ruled SYMMETRIC against the report's positive-debt-only recommendation** (no free money in
+either direction; a ruling made ON the report, not a gap in it); **R2** the accounting
+convention, restated as the standing property at the top of CLAUDE.md; **R4 maturity** — the
+`EffectiveDebtInterestRate` rate-lag (`b05150f`), the USA carve-out generalized; **R5/F1** —
+`ApplyOneTimeBudgetImpact` (`720ccee`), interrupt impacts reach the books. §F1 of
+`MISSING_PREREQUISITES.md` closed on it 2026-08-17: C4 done, A1 with it, F register zero.
+
+### Q1 — Gini → ApprovalRating (2026-08-17; shipped same pass)
+
+Measurement decided the form: **Gini is FLAT at baseline** (±0.15 pts of seed, t1–t1000, all
+six), so a change term is inert and a raw level term is a recalibration — the **GAP form**
+`−s × (Gini − BaselineGini)` won by elimination and by the formula's own two precedents
+(paid leave, welfare). R-Q1a gap form · R-Q1b 1.0 equilibrium pt/Gini pt (s = 0.05, band
+0.5–1.5) · R-Q1c no new ceiling, the absence NAMED and handed to the legibility feature.
+Matrix bar held: ApprovalRating the only moved field. No file or code cited this report.
+
+### Q2 — real wages → ConsumerConfidence (2026-08-18; shipped `ef7cbf2`)
+
+The §1 measurement, preserved because it exists nowhere else: **RealWageIndex is an unbounded
+compounding index** (t1000: Poland ~3.5×10¹⁵, USA ~2.3×10⁹, France ~1.8×10⁴), so a level gap is
+structurally impossible; the measured wage-growth gap runs a **persistently positive mean
+(+0.011…+0.035 pp/turn, sd 0.035–0.040)**, which **disqualifies any accumulator form** — at any
+legible sensitivity it ratchets monotonically into the 1.3 confidence clamp (s = 0.05 exhausts
+the 0.3 headroom in ~300 turns). One deterministic transient, named so it is never misread:
+Poland's t2 gap of **−0.4841 pp, bit-identical across seeds** — the seed-convergence squeeze,
+gone by ~t5. **Form B — the stored-field delta model — was the named alternative, with its three
+costs recorded here**: a new `EconomyState` field (save-shape change), rewriting both policy
+writers' permanence semantics to target the base, and the stored value turning dynamic under
+every reader. R-Q2a form A (stateless effective factor, single-book rider) · R-Q2b 0.5%C/pp
+(band 0.25–0.75) · R-Q2c the shared helper (Q5's seam). The bar's own catch became the fifth
+fixed reference (`WageGrowthGapAtPeriodOpen`).
+
+### Q3 — productivity ↔ PotentialGrowthRate (2026-08-17; shipped `d1cb1de`)
+
+The derivation surfaced the premise contradiction: **Design B (adjustments flow through
+productivity) is the economically true claim AND value-identical at HEAD** — a pure causal
+re-rooting whose bar is byte-identical, directly contradicting the brief's "trajectory-moving by
+construction" (struck with this report cited). Design A moved trajectories only by asserting
+something false about the world. R-Q3a Design B · R-Q3b 1:1 (later amended by R-Q5d — an
+amendment, not a correction) · R-MS2 the canonical six steps. Bar: 39/39 byte-identical.
+
+### Q5 — the cyclical pair (2026-08-18; shipped `7321807`)
+
+The §3 measurement table, preserved as the standing evidence (it is also Riksbank option B's
+gate-1 evidence — the Taylor-path output-gap distortion): **the output gap is a persistent
+per-country LEVEL, not a cycle** — no-policy t1–t1000 means: USA **−14.54%** (sd 0.64 — seeded
+PotentialGDP 12.8% above GDP, never converging), Poland −4.52, Sweden +3.86, Germany +0.32,
+Italy −2.36, France −0.06. A term on it is a per-country constant — Q1's disqualified raw-level
+form on a different variable. **The unemployment gap is the driver**: mean −0.04 pp, sd 0.19,
+transients decaying by ~t5. Investment has no stock anywhere and measured I/GDP is flat
+19.5–20.9% — nothing cyclical to deepen from. Loop gain derived 0.075×h ≈ 0.03 at h = 0.4,
+then MEASURED at 0.0297–0.0300. R-Q5a = B1 (additive force, the model's first closed loop) ·
+R-Q5b two channels · R-Q5c h = 0.4 on the U gap · R-Q5d R-Q3b amended (potential reads trend
+alone; the stat and wages read trend + cycle) · R-Q5e investment deepening DEFERRED (now
+carrying its ruled return trigger in the roadmap: a capital stock ships, or I/GDP measures
+cyclical).
+
+### Wage Boom Management — measured and DROPPED (2026-08-18)
+
+`UnemploymentReversionSpeed = 0.7/turn` closes any impulse by t2–t3 and forecloses sustaining
+tightness: **every lever tested — including the rate cut to the absolute 0% floor — produced a
+max streak of ONE turn** at gap ≥ 1 pp. The §2a methodology correction stands recorded: the
+eight legacy `PolicyDecision` float fields are DEAD as inputs for every seeded country
+(`SpendingLineChanges` is the real input). §4's independent finding: **the USA is disqualified
+for any inflation-management scenario** — TaylorRule's 0.5 × (−14.5%) structural gap term pins
+the suggested rate to the 0-floor regardless of realized inflation. The `Sustained` form was
+exercised synthetically (evaluates exactly; survives a save mid-streak; the verdict screen's
+generic margin line never read `ConsecutiveTurns` — fixed 2026-08-18 per the sustained
+verdict-margin closure).
+
+### The Disinflation — measured and DROPPED (2026-08-18)
+
+The mirror image: the same constant prevents CREATING slack above NAIRU. Ten configurations,
+four countries, every lever up to a 5-point hike and the Eurozone's own auto-climb to 8.6% —
+**every run ends within a point of where it started**; measured slopes −0.065 (Poland) and
+−0.08 (Sweden) pp of terminal inflation per pp of hike (reaching 2% from 10% would need a
+~120-point hike against a 15% cap). The player's ±0.75 Eurozone push is invisible to three
+decimals. Elevated inflation alone crashes approval below the 35-point losing threshold in
+3–7 turns — an independent kill. **Two drops on one root cause became the named model-balance
+finding**: as tuned, the constant forecloses the whole "move the unemployment gap off NAIRU and
+hold it" scenario class, from either direction.
+
+### Italy Debt Crisis — measured, SURVIVES, shipped (2026-08-18)
+
+Seven same-seed configurations spread **52.63%–109.60%** debt-to-GDP by t30 on instrument choice
+alone. **Spending cuts compound** (−0.16 pp/pp at 10% → −0.99 at 20% → −1.90 at 30% — the
+stock/interest feedback working for the player); **VAT hikes plateau** (−0.43 → −0.90 pp/pp).
+Approval: cuts nearly free (≈−0.017 pts/pt), **VAT ≈90× costlier** (≈−1.50 pts/pt) — the
++6pp-VAT line dips to 39.48 against the 40-streak objective and recovers, 9.5 points clear of
+the 30 floor. Eurozone monetary impotence is the scenario's PREMISE, not a gap. Authored as
+`ItalyDebtCrisis()`: Terminal + the `Sustained` form's first real exercise + NeverBreach.
+
+---

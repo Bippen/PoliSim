@@ -1042,10 +1042,12 @@ namespace PoliSim.Simulation
         // Productivity consistent-by-construction with the real wage index's own
         // RealWageProductivityPassThrough constant, and preserves the seed doc's recorded
         // euro-area/US divergence through the PotentialGrowthRate seeds without any new per-country
-        // figure. Cyclical channels (labour hoarding, investment deepening) are NOTED-NOT-BUILT
-        // follow-ons, as is the big one the scoping ruled out of Round 4 entirely (ruling #4):
-        // productivity REPLACING the wage index's direct PotentialGrowthRate read. Until that
-        // separately-ruled coupling lands, nothing consumes this stat - it reads and displays.
+        // figure. [Period text, corrected 2026-08-26 rather than left stale:] labour hoarding
+        // SHIPPED with Q5 (R-Q5a = B1 - ProductivityCycleGrowthPerTurnPercent below); investment
+        // deepening stays deferred (R-Q5e, return trigger in the roadmap); and the coupling the
+        // scoping ruled out of Round 4 landed as Q3 Design B - the wage equation now reads
+        // ProductivityTrendGrowth through the shared helper. state.Productivity itself is still
+        // consumed by nothing economic (display + StatHistory only), as the Q5 audit verified.
 
         /// <summary>Productivity growth tracks trend growth one-for-one - see the section header;
         /// the same argument RealWageIndex/HousePriceIndex document, applied to the quantity the
@@ -1064,7 +1066,8 @@ namespace PoliSim.Simulation
         /// PROCYCLICAL: tight market ⇒ productivity above trend, slack ⇒ below.
         ///
         /// <para><b>The driver is the UNEMPLOYMENT gap, and that was decided by measurement, not
-        /// taste</b> (POLISIM_Q5_COUPLING_REPORT.md §3). The output gap - the obvious candidate -
+        /// taste</b> (the Q5 report §3, consumed to COMPLETED.md §22, 2026-08-26). The output
+        /// gap - the obvious candidate -
         /// is a persistent per-country LEVEL in this model: the USA sits at −14.5% for a whole
         /// 1000-turn run with sd 0.64, because PotentialGDP was seeded 12.8% above GDP and the two
         /// never converge. A term on it would be a per-country constant, which is exactly the
@@ -2195,7 +2198,8 @@ namespace PoliSim.Simulation
         /// equation's two cyclical terms - tightness and inflation surprise - clamp included.
         /// Stateless by R-Q2a: no accumulation, no reversion, no drift - the measured
         /// persistently-positive mean gap rules an accumulator out (it ratchets into the 1.3
-        /// clamp; POLISIM_Q2_COUPLING_REPORT.md §1). Persistence comes from the driver itself:
+        /// clamp; the Q2 report §1, consumed to COMPLETED.md §22, 2026-08-26). Persistence
+        /// comes from the driver itself:
         /// tightness episodes last years.
         /// </summary>
         /// <summary>The LIVE-gap form, for display surfaces and the turn-form boundary. Q5: reads

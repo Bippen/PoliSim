@@ -75,8 +75,8 @@ debt is nominal in reality, bridged to the real ledger by the EROSION TERM at th
 ruling R3 the erosion is SYMMETRIC — a net creditor's real claim erodes the same way (no free
 money in either direction; the term shrinks whichever position exists toward zero). This is the
 standard debt-dynamics identity's −π·b term, previously missing — see
-`POLISIM_STOCKFLOW_MECHANISM_REPORT.md` (the derivation) and "The erosion term" below (the
-build). Flows (interest bills, revenue, balances) remain in the single-unit convention they were
+`COMPLETED.md` §22 and commit `bcbba47` (the derivation — the stock-vs-flow mechanism report,
+consumed there 2026-08-26) and "The erosion term" below (the build). Flows (interest bills, revenue, balances) remain in the single-unit convention they were
 validated in; only the stock's drift carries the bridge. Anyone comparing debt figures across
 the erosion commit is comparing across a RECALIBRATION BY CONSTRUCTION — the fourth baseline
 discontinuity, listed with the other three at the top of this file.
@@ -8751,8 +8751,8 @@ mechanism report** (the candidates live outside the flow loop: maturity structur
 erosion of the nominal stock, primary-surplus rules above thresholds) — **its own pass with its
 own ruling, deliberately not started at this pass's tail.**
 
-> ✅ **QUEUE ENTRY CLOSED 2026-08-17** — the report ran (`POLISIM_STOCKFLOW_MECHANISM_REPORT.md`,
-> `bcbba47`), Elias ruled R1–R5, and the erosion term shipped against this entry: see "The
+> ✅ **QUEUE ENTRY CLOSED 2026-08-17** — the report ran (the stock-vs-flow mechanism report,
+> `bcbba47`; consumed to `COMPLETED.md` §22, 2026-08-26), Elias ruled R1–R5, and the erosion term shipped against this entry: see "The
 > erosion term ships" below. Primary-surplus rules died in the report on the Italy evidence;
 > maturity structure is R4, deferred-pending-measurement — and the erosion pass delivered its
 > measurement (the residual climb is concentrated exactly where instant repricing at
@@ -9726,7 +9726,8 @@ Rulings R-Q3a (Design B: byte-identical is the bar AND the claim — the R4-4 in
 (1:1 per the audit) and R-MS2 (the canonical six steps, now in the roadmap) recorded; built
 against `pre_q3_6d6decb`. **The premise correction, stated as ruled**: the pass brief's
 "trajectory-moving by construction" was WRONG for the correct design — the derivation found it
-(`POLISIM_Q3_COUPLING_REPORT.md`), the stop held, and the ruling picked truth over motion.
+(the Q3 coupling report, consumed to `COMPLETED.md` §22, 2026-08-26), the stop held, and the
+ruling picked truth over motion.
 **Q3's trajectory movement arrives when Q5's cyclical pair lands in the now-correct pipe.**
 
 ### What shipped
@@ -9884,7 +9885,8 @@ the SINGLE-BOOK RIDER, **0.5% consumption per pp of sustained wage-growth gap** 
 0.25–0.75 ruled), and the **shared realized-growth helper**
 (`MacroSystem.RealWageGrowthPerTurnPercent`, extracted VERBATIM from `ApplyRealWageIndex` so
 the refactor is bit-identical — Q5's seam, where trend-vs-realized will split). Built against
-`pre_q2_a8fd830`; derivation in `POLISIM_Q2_COUPLING_REPORT.md`.
+`pre_q2_a8fd830`; derivation in the Q2 coupling report (consumed to `COMPLETED.md` §22,
+2026-08-26).
 
 **The single book, audited at HEAD** (the rider: effective confidence is the ONLY confidence
 anything economic or visible reads; the stored field is the policy-drift base, named as such):
@@ -10266,7 +10268,8 @@ remainder (Q6–Q10) sits at its own triggers, unchanged by this pass.
 
 **⚠ Corrects the framing above, not silently — Q5's own record was accurate as written (the loop
 exists and is real); this pass found a SEPARATE, pre-existing constant forecloses the specific
-scenario regardless.** Full record: `POLISIM_WAGEBOOM_MEASUREMENT_REPORT.md`. **Zero production
+scenario regardless.** Full record: the Wage Boom measurement report (consumed to
+`COMPLETED.md` §22, 2026-08-26). **Zero production
 code changed** — every file this pass touched is under `Assets/Editor/`, confirmed via
 `git status`, so the pass's own "default-path byte-identity" bar is trivially satisfied rather
 than needing a redundant trajectory dump; `ScenarioLibrary` still carries only "Inherit the
@@ -10334,7 +10337,8 @@ behind Step 3's format until 13 Sept opens Step 4.
 **⚠ Corrects the claim directly above, not silently — "works WITH Okun's reversion rather than
 fighting it" was the reasoned expectation before measuring, and it was wrong: the SAME
 reversion constant forecloses this scenario too, from the opposite direction.** Full record:
-`POLISIM_DISINFLATION_MEASUREMENT_REPORT.md`. Zero production code changed (confirmed via
+the Disinflation measurement report (consumed to `COMPLETED.md` §22, 2026-08-26). Zero
+production code changed (confirmed via
 `git status`, every touched file under `Assets/Editor/`); `ScenarioLibrary` still carries only
 "Inherit the Fund".
 
@@ -10387,7 +10391,8 @@ similarly untested by either drop. Content work continues behind Step 3's format
 
 ## Italy Debt Crisis ships — the third scenario content pass, and the first of three to SURVIVE (2026-08-18)
 
-Full measurement: `POLISIM_ITALYDEBT_MEASUREMENT_REPORT.md`. Where Wage Boom Management and The
+Full measurement: the Italy debt measurement report (consumed to `COMPLETED.md` §22,
+2026-08-26). Where Wage Boom Management and The
 Disinflation both dropped on `UnemploymentReversionSpeed` foreclosing every tested lever from
 either direction, Italy's difficulty source is the debt identity, a different mechanism entirely
 — and it bites. Seven same-seed configurations (165% debt-to-GDP start, seed 777) spread from

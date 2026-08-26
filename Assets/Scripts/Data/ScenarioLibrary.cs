@@ -156,7 +156,8 @@ namespace PoliSim.Data
         /// different mechanism entirely: the debt identity, post-erosion/maturity - the
         /// best-validated part of the model, not touched by either drop.
         ///
-        /// <para><b>Measured, not assumed</b> (`POLISIM_ITALYDEBT_MEASUREMENT_REPORT.md`). Starting
+        /// <para><b>Measured, not assumed</b> (the Italy debt measurement report, consumed to
+        /// COMPLETED.md §22, 2026-08-26). Starting
         /// 27 points above `ComfortableDebtToGdpPercent` (138), the Fiscal Reaction Function's own
         /// aggressive first-turn response (a real, calibrated stabilizer - "confirmed flat from turn
         /// 500 through turn 2000" per its own doc comment) pulls the ratio down sharply in turn 1
