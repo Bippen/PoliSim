@@ -733,10 +733,17 @@ Everything the nine blockers held up is now specified. Unblocked, and touching n
 - the dual-siting build rule (`§A.12`)
 - the hand-off envelope timings (`§A.13`), including the corrected banner rule
 
-**Needs a decision before it can be built:** the 1c division-records panel (`§C.1`) — cut, or add a
-record store. **Needs an import pass:** rasterising pass 3's four SVGs, with the sheet-slicing and
-naming questions in `§C.5`–`§C.7` settled first.
+~~**Needs a decision before it can be built:** the 1c division-records panel (`§C.1`) — cut, or add a
+record store.~~ *(✅ Resolved in-file, §C.1: the record existed all along — `DivisionLog`, `a7bd40d` —
+and the panel was built, `ab1b72f`; this closing line outlived that closure and was struck
+2026-08-26.)* ~~**Needs an import pass:** rasterising pass 3's four SVGs, with the sheet-slicing and
+naming questions in `§C.5`–`§C.7` settled first.~~ *(✅ Pass 3 re-delivered as PNGs and imported —
+§1E's E3/E4 closures, 2026-08-10/11.)*
 
-⚠ **Gated on Elias reviewing the current chrome wiring in a live Editor.** That instruction stands and
-this document does not supersede it — every item above changes the same screens the wiring already
-touched.
+~~⚠ **Gated on Elias reviewing the current chrome wiring in a live Editor.**~~ ✅ **GATE DISCHARGED
+(confirmed 2026-08-26, ruling C4):** Elias has since run three live Editor sessions on the shipped
+v2 UI (playtest 1's scoping session, playtest 2 on 2026-08-25, and the 2026-08-26 gates session) —
+the chrome wiring has been reviewed in exactly the setting this line asked for. **What remains
+item-10-gated in this spec is `§A.14`'s ELECTION NIGHT (screen 1h, with its `§D.1` banner instance
+and party-ink swing usage) — the SOLE item-10-gated content; every standing rule above governs any
+new screen regardless.**

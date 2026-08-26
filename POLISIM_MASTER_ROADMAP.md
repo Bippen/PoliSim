@@ -260,7 +260,7 @@ because they are not done.
     | 1 · ATTRIB (Sweden 2027-01-01, +1.5000) | ✅ FIXED — the first-touch window class; writer = foreign-policy "Send substantial aid"; approval recorder now opens at the pre-write value on every path, mirroring the debt twin's 08-18 closure. Reproduced red then proven green by `LedgerFirstTouchDiagnostic` (new, stays as coverage); RT 12/12. CLAUDE.md "Live playtest 2" |
     | 2 · Surplus display | ✅ VERIFIED + BUILT — hypothesis refuted (the row already showed the net-of-interest real balance); "Primary deficit/surplus … excl. interest" added as the labeled second line from the same report. Sweden's outsized measured surplus is a SEED question → rides item 4's scoping |
     | 3 · Compass labels | ✅ FIXED (two iterations — label-vs-label AND label-vs-dot, leader lines) — verified both sizes, `play2fixb*_07b` |
-    | 4 · Sweden budget depth | ✅ BUILT (ruled: decomposition now, Sweden first) — 24 sourced utgiftsområde lines (regeringen.se, vårprop 2026, retrieved 08-25); all-discretionary + not-byte-identical deviations stated with measured reasons (CLAUDE.md "Item 4 BUILT"); recalibration is its own later ruled pass absorbing the seed's revenue artifact; the other four countries await their own passes |
+    | 4 · Sweden budget depth | ✅ BUILT (ruled: decomposition now, Sweden first) — 24 sourced utgiftsområde lines (regeringen.se, vårprop 2026, retrieved 08-25); all-discretionary + not-byte-identical deviations stated with measured reasons (CLAUDE.md "Item 4 BUILT"); recalibration is its own later ruled pass absorbing the seed's revenue artifact — **now SCHEDULED as build-order item 1 (2026-08-26)**; the other four countries await their own passes behind it |
     | 5 · Riksbank independence | ✅ C NAMED (ruled: C now, B the destination) — the deliberate-choice paragraph on the Federal Reserve tab + `PolicyDecision` doc; B recorded beside item 10 with its two named gates (output-gap fix; item 10's machinery) — see Step 4's block |
     | 6 · Law pros/cons | ✅ BUILT (ruled: neutral derived via the declared table) — `CrimeJusticeCouplings` read by the Apply* formulas themselves; byte-identical 6/6 diffs; "Expected effects" in the detail pane with the coupling gaps visible, logged as the couplings-pass input (CLAUDE.md "Item 6 BUILT") |
     | 7 · Law-page clutter at 50 | ✅ BUILT — Design answered with Screen 1j ("Law browser at 50"), implemented same-day 2026-08-26 (CLAUDE.md "Board 1j implemented"; §7.1 migrated to `COMPLETED.md` §24). Residue: the eye review of the `board1jc*` sets rides the Access row |
@@ -474,7 +474,8 @@ seeding Sweden a governor enables it mechanically today). **Two gates, both name
 **output-gap distortion fix** — the recorded finding that the Taylor path's −14.5% structural
 gap pins the suggested rate to the 0-floor regardless of realized inflation; an "independent"
 Riksbank following that path would be model-artifact-driven, so the fix precedes the build
-(Q5/Step-5-adjacent, where potential-GDP calibration moves); (2) **this item's own gate** —
+(~~Q5/Step-5-adjacent~~ — Q5 shipped without it; **now SCHEDULED as build-order item 4,
+2026-08-26**, so B is buildable when the second gate opens); (2) **this item's own gate** —
 appointment is political-game material (candidates, an appointment cadence, the reveal), so it
 ships with item 10's machinery, not before. Until both open, **option C stands as the ruled
 present state: the player-set rate is a deliberate gameplay choice, named as such in the
