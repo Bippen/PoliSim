@@ -327,9 +327,38 @@ its turn comes; nothing is dated.*
    the reversion half stands). **Gate 2 — item 10's appointment machinery — is now Riksbank-B's
    only gate.** CLAUDE.md "Pass 4 ships" is the record; the honest form of the rejected branch A is
    queued below as the identity's government-consumption block.
-5. **Tariff-to-stock** — the F1-shaped fix: tariff revenue reaches the Budget display accumulator
-   and never the debt stock (CLAUDE.md "What remains dark"); enters as a fix entry per the F1
-   precedent rather than staying a stated model property.
+5. ✅ **Tariff-to-stock — SHIPPED 2026-08-26 (pass 5). The ruled build order CLOSES with it.**
+   Tariff revenue (static imports × the rate we charge each partner, 0.01–0.16% of GDP at seed)
+   reached the Budget display accumulator alone and never the fiscal path. Derived, not inherited
+   from F1: it is a RECURRING flow, so by F1's own boundary rule it is the budget process's channel
+   — `FiscalPeriod.PlannedTariffRevenue`, planned at the boundary from `TradeSystem`'s figure (and
+   before turn 1 from the same pure function), accrued daily inside `ApplyRevenueAndSpending`
+   inside the fiscal-reaction multiplier and outside CollectionEfficiency; the accumulator now reads
+   it through `budgetBalance` (the parallel book retired; it had been overstating the cumulative
+   balance by exactly the take). **Revenue-neutral at seed** on pass 1's anchored-primary rule — a
+   closed-form CE decrement per country (USA −0.0010 … Sweden −0.0030), T1 primaries unchanged to
+   the digit (the perimeter argument for it is recorded UNVERIFIED-EXTERNAL: EU customs are S.212
+   own resources; which `gov_10a_taxag` sector variant pass 1 pulled is not recorded). The
+   rulings taken by the pass on the terminal batch (pass 4's precedent). Bar: pre_pass5 ≡
+   post_pass4 6/6; the wired-inert control byte-identical 6/6; diffs 6/6 with the moved set
+   EXACTLY {Budget, GovernmentDebt, EffectiveDebtRate} (39/42 fields byte-identical — the macro
+   engine untouched); the fiscal tail +0.01…+0.18 ratio-points at the ruled window, ≤+0.22 to
+   t500, both seeds (the static-volume placeholder's price, FRF-bounded); equivalence 117/117; RT
+   12/12; parity 7/7; ATTRIB 0. **The trade-war finding, measured:** with tariffs real, per-partner
+   overrides at the 50% cap are a costless 5–11%-of-GDP revenue button for the EU five (imports
+   static, no retaliation, the vote no brake — an overrides-only bill passes unconditionally);
+   Sweden at the cap: debt-to-GDP 33.8 → 24.7 by t30 where under the old books it did not move.
+   Shipped as a recorded exploit class with **tariff costs** queued below as a named trigger.
+   CLAUDE.md "Pass 5 ships" is the record.
+
+**The ruled build order is CLOSED (2026-08-26, five of five).** What remains on the board, stated
+once: **Step 4 — item 10, the political game (13 Sept 2026 is effectively here)**; the
+queued-and-triggered shelf below (the identity's G-block, the causal-graph screen, per-scenario term
+accumulation, investment deepening, the icon promotion, tariff costs; Riksbank-B behind gate 2
+only); the world's items in `MISSING_PREREQUISITES.md` (§S the send package — §8/§9 and the D1
+verdict await Elias's send; D1's nine await Design's delivery; §E2/E3 ride item 10 and a working
+raster path); and the play gates — the next playtest's own named items (decision density READING
+as closed; Riksbank-B's felt verdict; the Trade bill's new fiscal reach).
 
 **Queued at fired or named triggers (ruled 2026-08-26), not scheduled:**
 
@@ -354,6 +383,21 @@ its turn comes; nothing is dated.*
   across all six countries and Okun's anchor — which is why pass 4 fixed the RULE instead. Trigger:
   the first mechanic that needs the level output gap to mean something (a capital stock, an
   investment-deepening return, or a displayed "output gap" stat).
+- **Tariff costs** (queued 2026-08-26 by pass 5's trade-war finding): now that tariff revenue is
+  real money, a per-partner override at the 50% cap is a costless revenue button — imports are
+  static (`effectiveImports = ImportVolume`, no elasticity), nothing retaliates (no event, law,
+  cabinet or foreign-policy mechanic touches a partner's rates or volumes; `TradeBalanceShock`
+  nudges NX only), and the Parliament vote is no brake (overrides are excluded from the direction,
+  so an overrides-only bill has direction 0 and passes unconditionally). Measured: every partner at
+  50% yields Sweden 11.3, Poland 9.2, Germany 6.3, France 5.7, Italy 5.2, USA 0.5% of GDP per
+  year; Sweden's debt-to-GDP falls 33.8 → 24.7 in thirty turns. The honest mechanics, each its own
+  force for its own baseline: price pass-through to inflation (τ × import share × pass-through —
+  the approval and central-bank consequences follow from existing paths), partner retaliation
+  (their tariff on our exports mirrors ours — NX falls), overrides entering the vote's direction,
+  and trade volumes indexed to GDP (which also removes pass 5's static-volume tail). Also recorded
+  there: the "General Base Tariff" dial is inert for the five EU countries (bloc rates always win) —
+  a legibility fix for the Trade tab. **Trigger: the first content or playtest pass that touches a
+  Trade bill, and before item 10 opens the political game to real parties.**
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and

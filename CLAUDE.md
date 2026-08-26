@@ -1193,7 +1193,9 @@ debt).
   from the standalone harness's own same-named scenarios) in a single Play session, and
   `BatchSimulationRunner.Run` was invoked with it directly against the real Unity Editor
   (`6000.5.4f1`). Results, read straight from that run's own log (not the harness): at both 100 and 500
-  turns, baseline and tariffoverride (which barely perturbs USA's own fiscal balance) land USA at ~142%,
+  turns, baseline and tariffoverride (which barely perturbs USA's own fiscal balance *— true then
+  because tariff revenue never reached the fiscal path; since pass 5, 2026-08-26, that scenario's 40%
+  on Germany books ~60/turn, 0.19% of GDP, into the stock*) land USA at ~142%,
   essentially flat between the two horizons (142.4% -> 143.6%/142.6%) confirming genuine stability, not a
   slow drift; Sweden/Germany/France/Italy/Poland land at ~13%/~35%/~90%/~107%/~26% respectively at BOTH
   horizons, matching the harness closely. The stress and sustainedexploit scenarios show USA at the two
@@ -11896,6 +11898,10 @@ switched player), and the four hangs were never this path.
   accumulator only; the debt stock moves by `budgetBalance` and F1 impacts alone. The ledger
   records what the model does, so the section is consistent with the model; the gap is a model
   property of the same shape F1 closed for interrupt impacts, stated here, not changed.
+  *(✅ CLOSED 2026-08-26 — pass 5 of the ruled build order, "Pass 5 ships" below: the take is a
+  planned period flow accrued inside `ApplyRevenueAndSpending`; the accumulator reads it through
+  `budgetBalance`; the section needs no change because the ledger's primary-balance term carries it
+  as revenue.)*
 - **No fiscal ledger on the preview side** (above) — the turn form has none, by design.
 - **At 1600 on the Budget host, four of the section's nine rows sit above the fold**; the rest
   are on the panel's own scroll, and 2560 shows more. A legibility cost at one size, not an
@@ -12747,3 +12753,234 @@ capture guard does not measure flow-layout labels, so the three new lines are co
 the `07d_politics_federalreserve` sets, not by the overflow count.
 
 Stopped at the boundary. Pass 5 (tariff-to-stock) follows and is not this pass.
+
+## Pass 5 ships — tariff revenue reaches the books; the ruled build order CLOSES (2026-08-26)
+
+Pass 5 of the ruled build order (build-order item 5, tariff-to-stock, the F1-shaped fix).
+**Terminal-interactive as ruled; the rulings were taken BY THE PASS on the terminal batch's
+recommendations where the terminal drew no answer (pass 4's precedent, rule 4's reversible-call
+form): (1) the routing is a FLOW, not a stock settlement; (2) revenue-neutral at seed by a
+closed-form CollectionEfficiency decrement per country; (3) the free-lever finding ships as a
+recorded exploit class with the tariff-cost mechanics queued at a named trigger, not smuggled in as
+a second force. Overrule = revert `6b93a1c` (the build), `ad82104` (the plumbing) and the closing
+commit; the baselines are `traj_pre_pass5_*` / `traj_ctrl_pass5_*` / `traj_post_pass5_*` /
+`traj_post_pass5b_*`.**
+
+**The defect, restated from "What remains dark" and verified at HEAD.** `TradeSystem.ApplyTradeEffects`
+computed tariff revenue (Σ ImportVolume × the rate we charge that partner — static volumes, rates
+from override → bloc-internal → bloc-external → base), added it to `EconomyState.Budget` alone (the
+cumulative display accumulator) and handed the figure to `FiscalTurnReport.TariffRevenue`; the debt
+stock moves only by `budgetBalance` inside `ApplyRevenueAndSpending` (accrued daily) and by F1's
+one-time impacts, and `GetTotalTaxRevenue` skips `TaxType.Tariffs` by design. Two books for one
+quantity — the exact shape F1 closed for interrupt impacts — and the Budget screen's "Net (matches
+this year's Budget change)" line was a HAND SUM that added `TariffRevenue` on top of `Revenue` and
+mixed a per-turn change with a level, which `FiscalTurnReport`'s own doc forbids.
+
+**§1 — measured before wiring (`TariffTakeDiagnostic`, new, retained; seed 777; the real path and the
+pure sum asserted equal for all six).** The take at seed rates, its weight, and what routing it
+un-neutralized would do to the primaries pass 1 landed:
+
+| | imports (% GDP) | take / turn | % of GDP | % of year-1 tax revenue | seed-neutral CE (Δ) | primary t1: landed → un-neutralized | every partner at 50%: % of GDP |
+|---|---|---|---|---|---|---|---|
+| USA | 283 (0.98) | 8.49 | 0.029 | 0.16 | 0.6129 → 0.6119 (−0.0010) | −2.38 → −2.35 | 0.49 |
+| Germany | 595 (12.7) | 4.08 | 0.087 | 0.21 | 0.8393 → 0.8375 (−0.0018) | −1.50 → −1.42 | 6.33 |
+| France | 365 (11.4) | 2.69 | 0.084 | 0.19 | 0.7494 → 0.7480 (−0.0014) | −2.30 → −2.22 | 5.70 |
+| Italy | 240 (10.4) | 0.24 | 0.010 | 0.03 | 0.9424 → 0.9422 (−0.0002) | +0.59 → +0.60 | 5.22 |
+| Poland | 155 (18.5) | 0.74 | 0.088 | 0.23 | 0.8931 → 0.8910 (−0.0021) | −5.36 → −5.27 | 9.23 |
+| Sweden | 140 (22.6) | 1.01 | 0.163 | 0.39 | 0.7895 → 0.7865 (−0.0030) | −0.64 → −0.48 | 11.29 |
+
+Volumes are static, so the take's share of GDP decays — by t100 to 0.004% (USA), 0.038% (Sweden),
+0.040% (Germany), 0.038% (France), 0.005% (Italy), 0.003% (Poland).
+
+**The routing claim, derived rather than inherited.** F1's stock-side answer was derived FROM the
+fact that every interrupt impact is a one-time settlement, and F1's own helper doc names the
+boundary: *a recurring cost is the budget process's channel and must never be expressed as a
+repeated interrupt impact.* Tariff revenue recurs every period, so by F1's own rule it is a FLOW:
+`FiscalPeriod.PlannedTariffRevenue`, set at the boundary from the figure `TradeSystem` reports
+(rates and volumes as they stand after that turn's tariff decisions) and seeded before turn 1 from
+the same pure function (`TradeSystem.ComputeTariffRevenue`), accrued daily inside
+`ApplyRevenueAndSpending` as one more revenue term — **inside the fiscal-reaction multiplier** (the
+2026-08-02 "all revenue inside the multiplier" ruling; it is also what keeps the debt ledger's
+`revenue/m` split exact with no new term — a flow added after the multiplier would be misattributed
+to the reaction effect) and **outside CollectionEfficiency** (customs are not the tax
+administration's collection). The stock claim each shape makes: flow → the primary balance, the FRF
+stance, the ledger's primary-balance term and the Budget accumulator all read it through the one real
+path; stock → it would bypass the FRF and the primary balance and be the repeated settlement F1
+forbids. `TradeSystem` no longer writes `State.Budget`; the accumulator reads the take through
+`budgetBalance` — the F1 "true reading" form, the parallel book retired. The daily shape is the
+mandatory-spending shape exactly (a fixed period figure sliced by `FiscalFlowPerDayFraction`): exact
+by construction on the BUDGET DELTA between the turn and daily forms, and on the STOCK it inherits the
+erosion-interleaving drift class every flow has (~0.002% of Germany's stock at 3% inflation — the
+verifier's figure, the mandatory-spending analogy holding to the letter); the debt ledger's split
+cancels algebraically, so no revenue-composition change can trip the ATTRIB audit — only an
+unrecorded writer can, and this pass adds none. Both validation hooks carry the plan; the preview
+threads its clone's figure into its own fiscal step so `NetBudgetImpact` stays true. Timing: the take
+used to be booked at the boundary that computed it; it is now the FOLLOWING period's flow — the
+resolution-then-execution shape every other flow already has — and `FiscalTurnReport.TariffRevenue`
+reports the tariff portion that actually accrued.
+
+**The recalibration interaction — revenue-neutral at seed, on the anchored-primary rule.** Pass 1
+solved CE = (real tax-to-GDP target)/(implied revenue-to-GDP) with no tariff flow in the fiscal
+path, and its bar was "T1 primaries land on target": **the primary balance is the anchored
+quantity.** Routing the take on top would move every landed primary by the take's size (the table:
+Sweden −0.64 → −0.48, against a 0.06 landing residual) — a silent loosening of a calibration that
+shipped two passes ago. Each country's CE therefore falls by exactly seedTake/seedTheoretical (the
+table's deltas; USA 0.6129 → 0.6119 … Sweden 0.7895 → 0.7865), a pass-1-shaped adjustment stated as
+such, which leaves year-1 actual revenue and the landed T1 primaries unchanged by construction. The
+perimeter argument the derivation first reached for — "the real targets already contain customs
+duties, so a separate flow double-counts" — is recorded as **UNVERIFIED-EXTERNAL** after the
+adversarial pass: customs are ESA 2010 **D.2121** (the derivation's D.2122 was wrong), EU customs
+duties are traditional own resources booked to the EU-institutions sector (S.212), and Eurostat's
+`gov_10a_taxag` carries both an S13 and an S13_S212 variant — pass 1's record does not say which it
+pulled, so whether the EU five's targets contain customs is not knowable from the project's files;
+for the USA (Treasury receipts include a customs line) it is plausible and equally unverified here.
+The neutrality rests on the anchored primary, not on the perimeter. The honest residual, stated:
+with static volumes the tariff share decays while the CE decrement is permanent, so long-run revenue
+sits BELOW the pre-pass path by at most the seed share (≤0.16% of GDP, Sweden; decaying toward it)
+— the trade model's static-volume placeholder, not this pass's; indexing volumes to GDP would move
+NX and is queued with the trade-cost item below.
+
+**The trade-war content interaction — what changes meaning when tariffs are real money.** (a) The
+player's tariff levers now reach the debt: `TradePolicyBill.NewBaseTariffRate` and the per-partner
+overrides (0–50%) are fiscal instruments, and the Budget screen's tariff line is a true accrual. (b)
+The "General Base Tariff" dial is INERT for the five EU countries and always was — `GetTariffRate`'s
+precedence never reaches an EU member's `BaseTariffRate` (every partner is a fellow member or the USA
+through the bloc's external rate); only the USA's base rate does anything, and only overrides move an
+EU member's take (recorded on the dial's doc; a legibility fix rides the next Trade-tab pass). (c)
+**The free lever, measured:** imports are static and nothing retaliates (no event, law, cabinet or
+foreign-policy mechanic touches a partner's rates or volumes; `TradeBalanceShock` nudges NX, never
+volumes or revenue), and **the vote is no brake at all**: `GetTradeBillDirection` reads only the base
+rate (overrides excluded by stated simplification), an overrides-only bill therefore has direction 0,
+and `WouldBillPass` returns true unconditionally at direction ~0 — for all six countries. The real
+brakes are the 21-day bill delay, one pending trade bill at a time, the 0–50% clamp, and the
+un-voted "Set Override" click. So a 50% override on every partner is a costless revenue button worth
+5–11% of GDP per year for the EU five (Sweden 11.3, Poland 9.2, Germany 6.3, France 5.7, Italy 5.2;
+USA 0.5). `TariffTakeDiagnostic` measures it — under the old books Sweden's take rose 1.01 → 70.00
+per turn and its debt path did not move (t30 33.8 → 33.8: the money never left the display); under
+the routed books **Sweden's debt-to-GDP falls 33.8 → 24.7 by t30 (−9.2 ratio-points in thirty
+turns, 36.2 → 23.6 already at t10)** — and that is the SMALL half, because the FRF loosens as the
+ratio falls below Sweden's comfort anchor and gives the windfall back as tax relief (a virtue of the
+inside-the-multiplier placement: outside it the 70/turn would land raw). The large half is the
+partners': Sweden's 50% halves Germany's, Poland's and the USA's effective exports on those links
+(`effectiveExports = ExportVolume × (1 − tariff)`), and NX enters the identity one-for-one — the
+lever is beggar-thy-neighbour before it is self-enrichment. Measured at t30 against the same-seed
+control: **Poland GDP −0.77% and debt-to-GDP +0.7 ratio-points, Germany −0.47% and +0.4, the USA
+−0.02% and 0.0** — smaller than the first-order export cut (the identity's reversion toward potential
+and Okun absorb part of an NX shock), real, and answered by nothing. Import-side
+symmetry (imports falling with our tariff) was considered and REJECTED on its own arithmetic: C and I
+are not net of imports in this identity, so `effectiveImports × (1 − τ)` would RAISE NX and GDP by
+imports × τ with no offset — a mercantilist free lunch on top of the revenue (Sweden +11% of GDP
+again). Ruled: ship the
+routing alone (one force per baseline; the fix is correct regardless) and queue **tariff costs** — price
+pass-through to inflation and/or partner retaliation, plus overrides entering the vote — as a named
+trigger: the first content or playtest pass that touches a Trade bill, and before item 10 opens the
+political game to real parties.
+
+**The third writer, found by the adversarial pass and closed in the same pass — the retirement is
+complete, not partial.** With `TradeSystem`'s write gone, one display-only write of `State.Budget`
+remained: `ApplySwfDrawdownBillEffects` debited the fund and wrote the accumulator, and the debt
+stock never saw it — a passed SWF emergency drawdown DESTROYED fund assets without lowering debt,
+while its own doc claimed "the drawdown reaches debt the same way a surplus does" and F1's helper
+doc claimed "the writers were exactly two". It is a one-time settlement, so it takes F1's own path:
+`ApplyOneTimeBudgetImpact` (stock down by the withdrawal, the accumulator recording the same entry)
+with `DebtLedgerRecorder.RecordEvent` at the resolution site, exactly as the cabinet and
+foreign-policy sites observe theirs. Off the no-policy trajectory (no drawdown ever passes there),
+so the baselines hold — and since neither the dumps nor the round-trip harness resolve a drawdown
+(the round-trip only snapshots the pending bill's days; checked, not assumed), a dedicated check
+exists: `SwfDrawdownBooksDiagnostic` (new, retained) pins a house that passes expansionary bills,
+introduces a 2%-of-GDP drawdown for Sweden, lets the real 21-day resolution site resolve it, asserts
+the fund, the stock and the accumulator all moved by the delivered withdrawal, then runs a full
+period so the debt ledger's boundary audit judges the stock that moved off-path — an unrecorded
+writer would ATTRIB there and fold the exit. **PASS on the shipped code: delivered 12.4 (2% of
+Sweden's GDP), fund 195.0 → 182.6, debt 217.0 → 204.6, Budget 0 → 12.4, the boundary audit green.**
+`State.Budget` now has exactly three
+writers and all three are true readings of the one real path: `budgetBalance`, F1 impacts, and the
+drawdown.
+
+**The build.** `TradeSystem.ComputeTariffRevenue` (pure); `ApplyTradeEffects` returns it and no longer
+writes `Budget`; `FiscalPeriod.PlannedTariffRevenue`/`AccruedTariffRevenue` (a pre-pass-5 save's period
+reads 0 for its remainder and self-corrects at the next boundary — the `WageGrowthGapAtPeriodOpen`
+posture; no `SaveVersion` bump, additive; and a pre-pass-5 save keeps its own un-decremented CE on
+`Country`, so it runs permanently +take against a fresh game — 0.03–0.16% of GDP, the recalibration's
+own coexistence posture); `ApplyRevenueAndSpending(…, tariffRevenue, …)`; the daily accrual, the
+boundary re-plan, the seed period, both validation hooks and the preview threaded; the equivalence
+check's three Phase-3 row pairs plan each country's own seed take; `DrawSpendingSection` reads
+`report.BudgetBalance` as the net (the hand sum had omitted the SWF contribution and, after the
+routing, would have counted the tariff twice — its Baseline + Discretionary terms DO reconstruct G
+exactly, and the `FiscalTurnReport` doc that said otherwise is corrected) and labels revenue "tax,
+tariffs, fund draw" with "of which tariff revenue at the stated rates (before the fiscal stance)" —
+the accrual is the stance-1 figure, what `TradeSystem` computed, while `Revenue` carries it times
+the period's multiplier (0.97–1.18), said on the label rather than hidden; `WorldFactory` CE
+decrements with the anchored-primary note; `FiscalRecalDiagnostic`'s implied-multiplier
+reconstruction gains the tariff in its denominator (it had overstated the FRF by take/(theo·CE),
+Sweden +0.39%); `DerivedStats`' tax burden now includes customs, as a tax burden should. The
+wired-inert control was a routing constant held at the old book (`ad82104`).
+
+**The bar — force-kind, on the pass-4 era.**
+- **Fresh `pre_pass5` baselines (2 seeds × 100/500/1000): byte-identical to `post_pass4` 6/6** — the
+  pass-4 closing commit's nits proven inert, the era established.
+- **Wired-inert control: `ctrl_pass5` byte-identical to `pre_pass5` 6/6** (`ad82104`, the whole
+  path built and held at the old book) — the plumbing live at zero.
+- **Equivalence 117 of 117 within 3%** (enumeration stated: the tariff flow rides the Phase-3 rows at
+  Sweden's 1.01 and Germany's 4.08, and the erosion/lag rows at their countries' takes — a linear
+  slice of a fixed period figure, exact on the Budget delta, drift-class on the stock like every
+  flow). **Save/load round-trip PASS 12/12** (the new `FiscalPeriod` fields ride the whole-object
+  save; the re-serialize string equality covers them). **Preview parity 7 of 7 asserted terms for
+  all six** — the clone's tariff figure threaded, the real ledger byte-untouched across a preview.
+- **The diffs 6/6 vs `pre_pass5`: the moved set is EXACTLY {`Budget`, `GovernmentDebt`,
+  `Country.EffectiveDebtRate`} — 39 of 42 fields byte-identical on every pair (236 of 253
+  country-series), the macro engine untouched by construction** (a revenue flow reaches the
+  balance and the stock and nothing else; the only feedback out of the stock is the ratio's risk
+  premium, ≤0.004 pp on the effective rate). The decomposition through the chain (tariff take →
+  revenue → balance → debt): **at t1 the stock differs by the neutrality residual alone** — USA +0.02
+  on 36,977, Sweden −0.016 on 217, Germany +0.06, France +0.05, Italy −0.03, Poland +0.001 (the
+  daily identity's within-period GDP drift against the seed-solved decrement); **the Budget
+  accumulator reads exactly −take per turn against the pre path** (USA −8.51 at t1, −17.06 at t2 …
+  −1,215 at t100) — the size of the false reading the parallel book had been adding all along, now
+  gone; and the stock drifts UP thereafter by the static-volume shortfall, which the FRF and erosion
+  absorb almost entirely: the naive accumulated shortfall Σ take·(g_s − 1) is the upper envelope and
+  the observed stock difference is 58% of it at t10, 11% at t100, 5% at t500 (USA; the stabiliser's
+  own stance responding to the ratio). **The fiscal tail against the honest signature, both seeds:
+  debt-to-GDP higher by +0.10 (USA), +0.16 (Sweden), +0.11 (Germany), +0.08 (France), +0.01
+  (Italy), +0.18 (Poland) ratio-points at the ruled 100–200 window, ≤+0.22 at any horizon to
+  t500** — the price of the static-volume placeholder, stated with the item that would remove it.
+- **The scenario matrix like-for-like at seed 777 (pre side = pass 4's post matrix, the same
+  simulation code as `pre_pass5` by hash): 29 of 30 anomaly counts EXACT** (stress/100 +1 — one
+  borderline debt-ratio swing entry, 23 → 24 of that kind); zero new anomaly kinds (the same five,
+  1,616 → 1,617 entries); and every differing per-turn line differs in `GovernmentDebt`/
+  `DebtToGdpRatio` ONLY — GDP, unemployment, inflation and the rate print identically in all 30
+  runs (the containment class, seen through the matrix's own instrument). The `tariffoverride`
+  scenario (USA: Germany 40%, France 0% from t1) is the matrix's own view of the routed take: the
+  USA books ~60/turn where it booked nothing, and its debt runs 200 lower at t25 (59,284 → 59,084;
+  ratio 129.6 → 129.2) with GDP identical to the digit; the baseline run shows the neutral case's
+  static-volume tail instead (USA debt +191 at t100, ratio 128.7 → 128.8).
+- **Captures at the four ruled sizes (USA — the Budget screen's Spending section is where the
+  display changed): 1280×720, 1640×707, 1600×950 and 2560×1440, 64/64 each, 0 failed, 0 overflows,
+  0 containment escapes; the three changed lines confirmed BY EYE on `p5usa2560_05b_budget_spending`
+  — "Revenue (tax, tariffs, fund draw): $5.76T", "Of which tariff revenue at the stated rates,
+  before the fiscal stance: $8.49B" (the measured USA take to the digit), "Net (this year's recorded
+  balance): −$1.66T".** ATTRIB clean on every run (case-sensitive grep). **Which code each run saw,
+  stated:** the dumps, diffs, equivalence, round-trip, parity and matrix ran at the routing build
+  (before the drawdown closure and the comment corrections landed); the captures and the closing
+  re-verification — `post_pass5b` byte-identical to `post_pass5` 6/6 (the drawdown path is off the
+  no-policy trajectory), round-trip 12/12 (the new `FiscalPeriod` fields cross the save), equivalence
+  117/117, the tariff diagnostic with the partners' damage, the scenario slice ("Inherit the Fund"
+  still loses 1-of-3 at t12 on no policy, its designed shape; the creditor branch exercised; the run
+  crosses a save intact — both halves clean, unchanged by the routing), and the drawdown books check
+  — ran at the shipped code.
+
+**The board, stated once as the order closes.** Five of five shipped on 2026-08-26 (the fiscal seed
+recalibration, the Crime & Justice couplings, the Labor Market category, the Taylor gap term, tariff
+revenue to the books). What remains: **Step 4 — item 10, the political game** (13 Sept 2026 is
+effectively here: the seed-data refresh from the real result, the Italy allocator, the collision-map
+disposition, `ElectionRecord`, election night, the R5 hex exchange and E2's accounting; Riksbank-B
+now behind that single gate); **the queued-and-triggered shelf** (the identity's government-
+consumption block, the causal-graph screen — trigger already fired —, per-scenario term
+accumulation, investment deepening, the icon promotion, and now tariff costs); **the world's items**
+(§S the send package with §8/§9 and the D1 verdict waits on Elias's send; D1's nine wait on Design's
+delivery; E2/E3 ride item 10 and a working raster path); and **the play gates** — the next
+playtest's own named items: decision density READING as closed, Riksbank-B's felt verdict, the Trade
+bill's new fiscal reach. Nothing in the order is left half-built; the shelf holds only named
+triggers.
+
+Stopped at the boundary. **The ruled build order is CLOSED — all five items shipped 2026-08-26.**

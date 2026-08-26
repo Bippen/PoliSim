@@ -103,7 +103,9 @@ namespace PoliSim.EditorTools
                 foreach (Country c in world.Countries) { decisions[c.Id] = PolicyDecision.None(); }
                 for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                 sim.AdvanceTurn(decisions);
-                Debug.Log("DRAWDOWN: the boundary after the drawdown closed - if the ledger's audit had failed, an ATTRIB line would sit above this one and the exit would fold.");
+                // Worded without the audit's own prefix token, so the bar's case-sensitive grep for it
+                // counts only real audit failures.
+                Debug.Log("DRAWDOWN: the boundary after the drawdown closed - had the ledger's audit failed, its red line would sit above this one and the exit would fold.");
                 Debug.Log(ok ? "DRAWDOWN: PASS - the drawdown reaches the fund, the stock and the accumulator through one path, and the ledger observed it." : "DRAWDOWN: FAIL - see the lines above.");
             }
             finally
