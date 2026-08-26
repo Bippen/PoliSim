@@ -64,6 +64,24 @@ namespace PoliSim.EditorTools
         };
 
         /// <summary>
+        /// Entries that are REFERENCE MATERIAL by their pack's own manifest, never deliverables -
+        /// the consolidation pass (2026-08-26) caught the check disagreeing with a manifest here:
+        /// Progress4's MANIFEST.md states, verbatim, "a DeliveredAssetCheck run against this pack
+        /// should expect 0 PNG and 0 SVG deliverables, and a report of 'nothing found' is a PASS,
+        /// not a miss. This is the pack's whole point - the board asks for a build, not for art" -
+        /// yet the zip carries the board's 1920x1080 reference render, which this check counted
+        /// from the zip contents and reported as a REGRESSION. The extension filter cannot tell a
+        /// reference render from game art, so the exemption is per (pack, entry), doc'd against the
+        /// manifest's own words, and each skip is logged (like 'supd') so it never becomes a
+        /// silent hole. If a future pack ships reference imagery, it gets a row here WITH its
+        /// manifest's declaration quoted - no quote, no exemption.
+        /// </summary>
+        private static readonly Dictionary<string, HashSet<string>> ReferenceMaterial = new Dictionary<string, HashSet<string>>
+        {
+            { "PoliSim v2 Design Progress4.zip", new HashSet<string> { "board_1i_law_browser.png" } },
+        };
+
+        /// <summary>
         /// Names ChromeManifest.txt rules superseded (its '!'-prefixed rows): delivered once, later
         /// replaced by the v2.0 chrome set, and REMOVED from Assets/ by the Track 3 ruling. Read from
         /// the manifest itself rather than duplicated here, so this allowance cannot drift from the
@@ -156,6 +174,13 @@ namespace PoliSim.EditorTools
                     entries++;
                     if (Resolve(entry.Name, assetsByName) == null)
                     {
+                        if (ReferenceMaterial.TryGetValue(label, out HashSet<string> refs) && refs.Contains(entry.Name))
+                        {
+                            Debug.Log($"  ref  {label}: {entry.Name} - reference material per the pack's own manifest, not a deliverable");
+                            supd++;
+                            continue;
+                        }
+
                         if (superseded.Contains(Path.GetFileNameWithoutExtension(entry.Name)))
                         {
                             Debug.Log($"  supd {label}: {entry.Name} - removed by ruling (ChromeManifest '!'), not a regression");
