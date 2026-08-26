@@ -103,6 +103,22 @@ namespace PoliSim.EditorTools
                         // a B-only NEW field to any pre-R4 diff, which the allowance names.
                         sb.Append(turn).Append(',').Append(country.Id).Append(",Country.EffectiveDebtRate,")
                           .Append(country.EffectiveDebtInterestRate.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
+                        // Pass 4 (the Taylor-path gap fix): the rule's own reading, so a before/after
+                        // diff carries the suggested-rate trajectory directly - B-only NEW fields to
+                        // any pre-pass-4 dump, per the allowance. GapTermPp is the weighted gap
+                        // contribution in percentage points (whatever gap the rule reads), so the
+                        // column name survives the fix; ChairTarget is -999 where no chair sits.
+                        float gapTermPp = TaylorRule.OutputGapWeight * TaylorRule.GetOutputGapPercent(country);
+                        float suggested = TaylorRule.GetSuggestedInterestRate(country);
+                        float chairTarget = country.CurrentFedChair == null
+                            ? -999f
+                            : Mathf.Clamp(suggested + country.CurrentFedChair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                        sb.Append(turn).Append(',').Append(country.Id).Append(",Taylor.GapTermPp,")
+                          .Append(gapTermPp.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
+                        sb.Append(turn).Append(',').Append(country.Id).Append(",Taylor.SuggestedRate,")
+                          .Append(suggested.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
+                        sb.Append(turn).Append(',').Append(country.Id).Append(",Taylor.ChairTarget,")
+                          .Append(chairTarget.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
                     }
                 }
 
