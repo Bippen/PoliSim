@@ -2312,3 +2312,22 @@ surveyed for cutting. The cut list is Elias's.
 status and the two host corrections); this section; the `CLAUDE.md` entry with the numbers and the
 element-by-element survey. Boards 1k/1l and the nine unbuilt spec clauses stay unstarted behind §V,
 by Elias's ruling.
+
+**The rulings and the build, the same evening (2026-08-27).** Elias ruled on all three findings within
+the session. (1) COMPASS — option (i), a per-country seed spread for sector regulation and implemented
+welfare programs, from real data: the mechanism is built (`6df94de` — `Sector.BaselineRegulationLevel`,
+`Country.BaselineWelfarePrograms`, `MacroSystem.WelfareEffectDelta`, the `WorldFactory` slots), in the
+ANCHORED form (the sourced baselines already contain each country's real regulation and programs, so a
+seeded value is the zero-gap position, never a live deviation — the reasoning and the live-form revert
+are in the `CLAUDE.md` entry); every slot a `[PLACEHOLDER]` because the figures are unsourced, and
+Elias's to source — `MISSING_PREREQUISITES.md` §F. The no-policy trajectories are byte-identical (6 of
+6) and stay so when the figures land; the ruling's expectation of a discontinuity row is corrected in
+the record, with the row drafted for the live form should Elias rule for it. (2) PORTRAITS — 3.2 → 5.5
+(`4e5adbf`): art 78×100 px at 1600, 61×78 at the floor, 114×144 at 2560; the card pitch measured
+unchanged at 1600 and text-governed at 1280 (cost 0 px). (3) THE CUT — executed by the survey's own
+categories on the five surfaces (`4e5adbf`), B1 and B8 untouched, the laws reserve re-derived from the
+chrome drawn; captured at the four sizes with every guard silent. Two residuals named on film, both
+Elias's call: the law row pitch (`LedgerRow.Height × 1.4` — 4.5 laws per screen at 1600) and the
+selected law's name breaking mid-word at 1600 (pre-existing). The three placement findings stand as
+moves, reported, not made. The seven §V rows now wait on Elias's eyes (the cut, the portraits) and on
+§F's figures (the compass).

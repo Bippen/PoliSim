@@ -13639,3 +13639,178 @@ screens.
 draft knob on every Budget line row, `LedgerRow.Draw`) and B8's interrupt line
 (`DrawFullScreenPendingInterruptBanner`, `:8358`, on the Budget Process host of the fiscal trace). The
 cut list is Elias's; nothing here was removed.
+
+## Playtest 3, the rulings — the seed spread's mechanism, the portrait multiplier, the cut (2026-08-27)
+
+**The three rulings, in Elias's order.** (1) COMPASS: option (i), a per-country seed spread for sector
+regulation and implemented welfare programs, from real data per the standing rule — because the
+diagnostic proved something larger than the compass: every sector in every country defaults to
+regulation 50, no country has an implemented welfare program at seed, and neither has an AI writer, so
+five of six countries have no regulatory or welfare identity at all in a game premised on six distinct
+countries; option (ii) would have hidden the finding. "Do NOT invent a spread; if the figures need
+sourcing, say so and Elias will source them." (2) PORTRAITS: raise the multiplier at
+`DrawPersonPortrait`, one number, with the row-height cost at 1280 stated. (3) THE CUT: execute the
+survey's own classification — every (c) and (b) cut, every (a) kept; B1's amber cue and B8's interrupt
+line untouchable; the placement findings are moves, not deletions, reported separately. Commits:
+`6df94de` (the seed mechanism), `4e5adbf` (portraits + the cut), then the records.
+
+### 1. The seed spread — the mechanism built, the figures Elias's to source
+
+**The figures need sourcing, and the mechanism does not wait for them.** The seed file carries no
+regulation figure and no welfare-program figure for any country (its welfare-adjacent figures are the
+spending LINES — the mandatory transfer block, the healthcare line — not programs). So `6df94de`
+builds the whole mechanism and leaves every slot at the pre-ruling value with a `⚠ [PLACEHOLDER]` tag;
+`MISSING_PREREQUISITES.md` §F names the two datasets (OECD PMR for regulation; the statutory-coverage
+facts plus OECD SOCX spending-by-function for welfare), the mapping onto each dial, and the proposed
+implemented-program table for Elias to confirm. A sourced value dropped into a slot is the whole
+remaining work.
+
+**The form — anchored, and why that is the only honest one.** This model is a DEVIATION model
+throughout: every effect measures a gap from a `Baseline*` anchor seeded equal to the sourced figure
+("so a fresh game opens at zero gap rather than a turn-1 shock" — `Sector.cs`, the minimum wage, paid
+leave, the prison rate, Gini, the housing pair, all of them). The sourced figures those anchors hold
+ALREADY CONTAIN each country's real regulation and real welfare state: France's output shares are the
+shares of a regulated France; Sweden's poverty rate, Gini, life expectancy and spending seeds are those
+of a country that runs universal healthcare. Seeding "France regulation 65" or "Sweden healthcare
+implemented at 85" as a LIVE deviation from the uniform 50 / from nothing would therefore subtract the
+welfare state from figures that already include it — the perimeter-rule class of seed bug ("taxing one
+perimeter and spending another"), in a new costume. Measured against the code, the live form would on
+day one: push every EU sector's output target below its sourced share (`ApplySectorEffects`, a
+permanent −k×15 gap); add the programs' full cost ON TOP of the sourced spending lines
+(`GetTotalWelfareCost`: healthcare alone 10% of GDP × generosity — France's primary balance from −2.9
+to about −12% of GDP); pull poverty, Gini and life expectancy away from their sourced anchors
+(`ApplyPovertyRate`/`ApplyGini`/`ApplyLifeExpectancy` — the latter's own doc comment predicted exactly
+this: "if countries ever start with the program implemented, their BaselineLifeExpectancy must absorb
+the starting lift or every seeded value drifts upward from turn one with no player action"); lift the
+EU five's approval equilibrium by ~3 points (`GetWelfareApprovalEffect`, a stock term); and run the
+level-driven confidence flow every turn (`ApplyWelfareProgramEffects`: +0.03 × generosity of business
+confidence per turn toward the 1.3 cap — a permanent GDP tailwind for five countries, invented). So
+the seed is built in the anchored form:
+
+- `Sector.BaselineRegulationLevel` (new, default 50; `Clone()` copies it) — `ApplySectorEffectsInternal`
+  measures `regulationAdjustment` from it instead of `NeutralPolicyDialLevel`. The other four sector
+  dials keep the uniform 50 (not in the ruling; the same finding, flagged in §F).
+- `Country.BaselineWelfarePrograms` (new) — the portfolio AS SEEDED, a snapshot `SeedWelfarePrograms`
+  takes and nothing mutates. `MacroSystem.WelfareEffectDelta(country, f)` = Σf over the live implemented
+  programs − Σf over the seeded ones, in list order; EVERY welfare effect now reads it — the
+  unemployment reversion tilt, the poverty reduction, the healthcare life-expectancy lift, the Gini
+  reduction, the housing pair (`GetImplementedGenerosityFraction`), the approval term and its ledger
+  twin (`GetWelfareApprovalEffect`, so the trace's "Welfare vs baseline" row is now literally that),
+  the two confidence flows (applied only when the deviation is nonzero) — and
+  `SimulationManager.GetTotalWelfareCost` books live cost minus seeded cost (a removal below the seed
+  books NEGATIVE cost: spending below the sourced line, which is right). The preview clone hand-lists
+  the anchor (the R4-1 Clone-escape class).
+- `WorldFactory.SeedSectorRegulation(country, countryWide, (SectorType, level)…)` sets level AND anchor
+  together; `SeedWelfarePrograms(country, (Type, implemented, generosity)…)` builds the six programs in
+  the fixed order and snapshots them. Six placeholder lines each.
+
+**Byte identity, by construction and then measured.** While every anchor is 50 and every seeded
+portfolio is empty, each delta is `live − 0f`, which is `live` exactly; the live sums accumulate in the
+same order with the same expressions as before; the confidence flows apply in the same program order.
+The bar measured it: `traj_post_seedspread` ≡ `traj_pre_seedspread` **6 of 6** (both seeds, 100/500/1000
+turns; SHA-256 `97E52CB1…`, `EF5BB339…`, `2AA232DA…`, `07BA2FE4…`, `F9AE3C41…`, `0A4609A9…` — the same
+six digests as `traj_post_pass6`, so the no-policy trajectory has not moved since pass 6 either).
+Save compatibility: Newtonsoft leaves a missing field at its initializer (`50f`; an empty list), so a
+pre-ruling save loads to the pre-ruling behaviour; the RT diagnostic covers the new fields the day a
+seeded value exists (a field that failed to round-trip would then diverge the post-load path).
+
+**What the ruling expected, corrected.** "This moves every no-policy baseline — take the discontinuity
+row … note that it changes what five countries do rather than only how they are measured." Under the
+anchored form it does NOT move the no-policy baselines — not now, and not when the figures land: it
+changes what the five countries ARE (their dial positions, the programs on their tabs, their place on
+the compass), and what they DO the moment anything moves a dial, because the move is measured from a
+real position rather than from a uniform placeholder. No discontinuity row is written, because none
+occurred; the row is drafted here for the one case that would need it: **if Elias rules for the
+live-deviation form instead**, the revert is one subtraction per site — `BaselineRegulationLevel` →
+`NeutralPolicyDialLevel` in `ApplySectorEffectsInternal`, and the `− WelfareSum(BaselineWelfarePrograms…)`
+term dropped from `WelfareEffectDelta` and `GetTotalWelfareCost` — and THAT commit takes the row
+("row 9, seed identity: every figure ever recorded on the five AI countries' no-policy paths").
+
+### 2. The portraits — 3.2 → 5.5, the cost measured
+
+`DrawPersonPortrait` (`GameController.cs`, `height = fontSize × 5.5`). Art drawn: **61×78 px at
+1280×720 and 1640×707 (font 16), 78×100 px at 1600×900 (font 20), 114×144 px at 2560×1440 (font 28)**;
+the 512×640 batch minified 8.3× / 6.5× / 4.4× (was 16.5× / 12.5× / 8.3×); the 256×256 squares 4.1× /
+3.3× / 2.2× with the 20% width crop; the frame (148×184) drawn at 0.48× / 0.59× / 0.84× of its texels —
+never upscaled. Why 5.5 and not 8: the portrait's WIDTH comes out of the card's text column (the
+roster's three portfolio panels sit side by side), and 5.5 is the largest step that keeps the card's
+height governed by its text at every size — measured, not assumed, on the Fed-chair cards (the same
+`DrawPersonPortrait` and the same name/philosophy/description/button card as the cabinet candidate;
+the capture harness's cabinet state has every portfolio vacant, so the Fed cards are where the
+portraits are on film): **at 1600 the two cards' button rows sit at y = 555 and 718 before
+(`p6usa1600`) and after (`pt3usa1600`) — pitch 163 px, cost 0 px; at 1280 (`pt3usa1280b`) a card is
+141 px tall with a 133 px text column (name, a two-line description, the button) against an 88 px
+portrait rect — the text column governs, cost 0 px.** The portrait first grows a card at a ONE-line
+description (by ≈8 px at 1280), or at a multiplier of about 8.3 (fontSize × 8.3 = the text column) —
+5.5 sits well under both. The aliasing half of the finding is the importer, not the multiplier —
+mipmaps are off on the portraits by the 2026-08-11 ruling (made for chrome drawn 1:1); a portrait
+drawn at 6× minification wants mipmaps or a pre-shrunk 128×160 variant. Not changed here (an importer
+ruling); flagged for Elias.
+
+### 3. The cut — executed by category, nothing by taste
+
+Every (c) and (b) from the survey (the entry above), cut; every (a) kept. In code (`4e5adbf`):
+
+- **Law browser** (`DrawLawsTab`): the "Laws" box header (c); the intro paragraph (b); the summary line
+  (c) — its row survives only as the search slot's reflow home at the narrow floor; "ORDER - STATUS,
+  THEN" (b); STATUTE and CATEGORY column captions (c) — `DrawLawRowHeader` draws APPROVAL alone; the
+  band captions' "dial movement ±3-6" (b) and the detail pane's range beside the steps (b) —
+  `LawMagnitudeRangeLabel` deleted with its last caller; the category token under a single-category
+  chip (c) — `LawRowColumns(…, showCategory, …)` collapses the cell to 0 and the name takes the width,
+  header and rows reading one input (`LawCategoryColumnShown`); "Approval on hand" (c) and "(cost <=
+  approval on hand)" (b) — the bottom bar is one line, "Affordable now: n of N shown";
+  `CountPendingLawBills` deleted with the summary line.
+- **Detail pane**: the kicker line (c)+(c)+(b) whole — the class keeps ONE copy, the MAGNITUDE line's
+  word over the steps (one copy of a (c) pair stays; cutting both would remove the information, which
+  is not what (c) means); the two "Long-run target shifts…" sentences (b); "Enactment cost: … (paid
+  once, on passage)" (c)+(b); `DrawBillLiveEstimate(…, terse: true)` for this pane only — "Bill
+  direction: Expansionary" without the number (b) and the verdict word alone without "Current seat
+  composition:" (b), the Budget row's precedent; the four policy-screen bill cards were not in the
+  survey and keep the full form byte-for-byte.
+- **The reserve, re-derived**: `scrollHeight` was `availableHeight − fontSize × 15` — a constant standing
+  in for measured content (instance #12's class) sized while the header and paragraph were drawn;
+  with both cut it over-reserved ~4 lines, dead space at the bottom of a fifty-row list. Now measured
+  from the chrome actually drawn (the three chip rows' own heights, the reflowed search row when it
+  exists, the column header, the spacings, the bottom bar, the box padding, half a line of margin).
+  Verified at the floor: `pt3usa1280b_06f` shows the bottom bar inside the box with no dead space and
+  the containment guard silent.
+- **Trace panel** (`StatTracePanel`): "≈ x sustained" trailing (b) — `Term` loses its `sustained`
+  flag; both audit footers (c)+(b); the confidence section's four mechanism notes (b) — "Consumer
+  confidence" / "Policy base" / "Wage-sentiment factor" / "Effective", the gap figure kept; the debt
+  section's trailing mechanism texts (b) — "a primary deficit", "stance ×1.00", "blended pays … vs
+  issuance", "(rounding, audited)" — the rate and π FIGURES kept; the ratio header's clause (b).
+  ⚠ No capture state opens the trace panel (the harness never clicks a chip), so this part of the
+  cut is verified by compile and code, not on film — Elias's eyes, or a harness state to add.
+- **Statistics › Domestic**: the "Derived" box header (b). **Statistics › International**: "(last
+  year)" (b); the "Overall Trade Balance: $X" label and the graph's "Trade Balance" title were a (c)
+  pair — the copy that stays carries the figure: the graph title is now "Trade balance −$42.2B".
+- **Untouched, as ruled:** B1's amber draft cue (`LedgerRow.Draw`'s hatched span) and B8's interrupt
+  line (`DrawFullScreenPendingInterruptBanner`). Not touched, as instructed: the three placement
+  findings (the trace panel between the chips and the tab content; the primary-balance line on
+  Statistics rather than beside the Budget balance; the realized pass-through on a different screen
+  from its forecast twin) — moves, reported separately.
+
+**What the film shows at fifty (rule 15, the harness's eyes; Elias's are the verdict).** The browser
+opens on its chips and the first band; the four sizes read as one screen. Two residuals the cut could
+not reach, both with their governing number named so nothing is adjusted blind: (1) **the row pitch** —
+`DrawLawListRow` reserves `LedgerRow.Height(_labelStyle) × 1.4` per law (the "two lines for a wrapped
+name" allowance), ≈ 66 / 78 / 84 px at 1280 / 1600 / 2560, so the list viewport holds 2.5 / 4.5 / 5.5
+laws — a hundred laws are twenty screens of scrolling at 1600; the text cut gave the list back about
+four lines, the pitch is where the rest is. (2) **the selected law's name at 1600** breaks mid-word
+("Cash Bail Abolitio / n Act") — pre-existing (`p6usa1600_06f` shows the same), the header-font name in
+a label capped at half the pane's width (`DrawLawDetailPane`, `nameWidth = max(50%, pane − status)`)
+where a single word is wider than the label; clean at 1280 and 2560. Both are Elias's call; neither
+was a category.
+
+**The bar (`6df94de` + `4e5adbf`, one run, logs `PoliSim-captures\logs\*_seedspread_20260827_*.log`).**
+Dumps: `post_seedspread` ≡ `pre_seedspread` 6 of 6 (above). `AggregationEquivalenceCheck`: 117 of 117
+within 3% plus the bucket asserts. `SaveLoadRoundTripDiagnostic`: PASS, 12 scenarios clean.
+`PreviewParityDiagnostic`: 7 of 7 asserted terms for all 6 countries, no clone escape. Matrix s777: 30
+cells complete, its 1,644 result lines identical to `matrix_post_pass6_s777_20260827_183757.log`.
+Captures: `pt3usa1640` (1640×686), `pt3usa1600` (1600×929), `pt3usa2560` (2560×1419) and `pt3usa1280b`
+(1280×699) — 64 screens each, 0 text overflows, 0 containment escapes, 0 canvas violations. ⚠ The bar's
+first 1280 run (`pt3usa1280`) captured at 1600×929 — the harness logged "driver attached … 1600x929",
+the Editor's remembered Game-view size on the first windowed launch after the batch runs — and was
+re-run as `pt3usa1280b` at a true 1280×699; the four sizes above are the ones judged. ATTRIB: 0 in every
+log. The `CompassAxisDiagnostic` was not re-run — nothing at the seed changed, by construction and by
+the dumps.

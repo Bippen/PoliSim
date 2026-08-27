@@ -165,7 +165,7 @@ built-but-uncalled are neither finished nor live — they wait on Elias's eyes a
 | `MISSING_PREREQUISITES.md` | Work waiting on a named party — Elias's send, decision, eyes or playtest; Design's delivery; item 10; a raster path |
 | `CLAUDE.md` | The detailed technical record for both. **Never superseded** |
 
-**The board, stated once (verified at HEAD `d29406f`, 2026-08-27; re-derive it, do not edit it
+**The board, stated once (verified at HEAD `4e5adbf`, 2026-08-27 evening; re-derive it, do not edit it
 forward):**
 
 - **DONE** — Master Sequence I (items 1–9) and Master Sequence II Steps 1, 2, 3 and 5; Round 4; the
@@ -179,8 +179,11 @@ forward):**
   election night (1h), Step 6, Riksbank-B, the stranded branch and the party marks; **§D1** the eight
   outstanding cabinet portraits — ✅ delivered 2026-08-27, `PortraitCoverageCheck` 25/25 (the roster
   look is §V's); **§E2/§E4** the mark accounting and the icon promotion (the raster diff, E3, is NOT
-  Design's — it is live item 7 below); **§V** the
-  built-but-unconfirmed surfaces (Elias's eyes); **§P** the three felt verdicts (a playtest).
+  Design's — it is live item 7 below); **§F** the sourced figures for the seed spread (Elias — OECD PMR
+  and SOCX; the mechanism is built at `6df94de`, every slot a placeholder, the trajectories byte-identical);
+  **§V** the built-but-unconfirmed surfaces (Elias's eyes — playtest 3 of 2026-08-27 cleared ten of
+  seventeen and ruled the three findings the same evening; the portrait size and the cut are built and
+  captured at `4e5adbf`, the compass waits on §F); **§P** the three felt verdicts (a playtest).
 - **LIVE** — the list below, in order.
 
 ---
