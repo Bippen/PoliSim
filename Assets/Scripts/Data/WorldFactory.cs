@@ -581,6 +581,18 @@ namespace PoliSim.Data
             italy.SteadyStateGrowthRate = -3.0f;
             poland.SteadyStateGrowthRate = -3.5f;
 
+            // THE WELFARE SEED SLOTS (playtest 3's seed-spread ruling, 2026-08-27 - see CLAUDE.md
+            // "Playtest 3, the rulings"): each country's welfare portfolio AS IT REALLY STANDS, per the
+            // standing rule - real data or nothing. Every slot is still the pre-ruling state (nothing
+            // implemented, DefaultWelfareGenerosity) because the figures are UNSOURCED at this commit:
+            // the implemented-program facts and the generosity figures are Elias's to source
+            // (MISSING_PREREQUISITES.md §F names the datasets and the mapping). The mechanism is live
+            // either way - SeedWelfarePrograms snapshots the portfolio into
+            // Country.BaselineWelfarePrograms and every welfare effect measures from it - so a sourced
+            // value dropped into a slot changes the compass and the dials' starting positions without
+            // moving a sourced baseline. A slot reads (Type, implemented, generosity); a program with
+            // no slot is present, not implemented, at DefaultWelfareGenerosity.
+            // ⚠ [PLACEHOLDER] on all thirty-six.
             SeedWelfarePrograms(usa);
             SeedWelfarePrograms(sweden);
             SeedWelfarePrograms(germany);
@@ -681,6 +693,24 @@ namespace PoliSim.Data
                 (SectorType.Construction, 7.0f, 8.0f, 62f),
                 (SectorType.Retail, 5.5f, 10.0f, 11f),
                 (SectorType.Telecommunications, 1.6f, 0.9f, 87f));
+
+            // THE REGULATION SEED SLOTS (playtest 3's seed-spread ruling, 2026-08-27): each country's
+            // sector regulation AS IT REALLY STANDS, 0-100 (0 light-touch, 100 heavily regulated),
+            // seeded together with its anchor (Sector.BaselineRegulationLevel) so the sector model
+            // measures a player's move from the country's own real position and the no-policy path
+            // stays anchored to the sourced output shares - which already embody that regulation.
+            // Every slot is still the pre-ruling uniform 50 because the figures are UNSOURCED at this
+            // commit: the OECD Product Market Regulation indicator (economy-wide per country, with the
+            // sector-level indicators where PMR has one - energy, telecommunications, retail) is
+            // Elias's to source (MISSING_PREREQUISITES.md §F names the vintage and the mapping onto
+            // this dial). A country-wide figure applies to every sector; a (SectorType, level) pair
+            // overrides one sector. ⚠ [PLACEHOLDER] on all six.
+            SeedSectorRegulation(usa, 50f);
+            SeedSectorRegulation(sweden, 50f);
+            SeedSectorRegulation(germany, 50f);
+            SeedSectorRegulation(france, 50f);
+            SeedSectorRegulation(italy, 50f);
+            SeedSectorRegulation(poland, 50f);
 
             // Infrastructure System (Round 2 item 5, see "Infrastructure System" in CLAUDE.md) -
             // ConditionIndex (0-100, higher = better) is seeded from the IMD World Competitiveness
@@ -927,21 +957,40 @@ namespace PoliSim.Data
 
         /// <summary>
         /// Builds one country's starting welfare portfolio: all six WelfareProgramTypes present (so
-        /// the player can implement any of them), but NONE implemented by default for any country -
-        /// per the task's explicit requirement, matching how a country's tax portfolio always
-        /// includes every TaxType but not every one starts implemented.
+        /// the player can implement any of them), each at DefaultWelfareGenerosity and NOT
+        /// implemented unless <paramref name="seeds"/> says otherwise - the seed-spread ruling's
+        /// per-country slots (2026-08-27), one tuple per program the country really runs, at the
+        /// sourced generosity. Then snapshots the portfolio into Country.BaselineWelfarePrograms: the
+        /// anchor every welfare effect and the welfare cost measure from, so a program seeded here
+        /// contributes nothing on the no-policy path (the sourced baselines already contain it) and a
+        /// player's change is booked from the country's real position. List order is fixed (UBI, NIT,
+        /// means-tested, healthcare, housing, childcare) - the effect sums accumulate in it.
         /// </summary>
-        private static void SeedWelfarePrograms(Country country)
+        private static void SeedWelfarePrograms(Country country, params (WelfareProgramType Type, bool Implemented, float Generosity)[] seeds)
         {
-            country.WelfarePrograms.AddRange(new[]
+            foreach (WelfareProgramType type in new[]
+                     {
+                         WelfareProgramType.UBI, WelfareProgramType.NegativeIncomeTax, WelfareProgramType.MeansTestedWelfare,
+                         WelfareProgramType.UniversalHealthcare, WelfareProgramType.HousingAssistance, WelfareProgramType.ChildcareSubsidies,
+                     })
             {
-                new WelfareProgram(WelfareProgramType.UBI, DefaultWelfareGenerosity, isImplemented: false),
-                new WelfareProgram(WelfareProgramType.NegativeIncomeTax, DefaultWelfareGenerosity, isImplemented: false),
-                new WelfareProgram(WelfareProgramType.MeansTestedWelfare, DefaultWelfareGenerosity, isImplemented: false),
-                new WelfareProgram(WelfareProgramType.UniversalHealthcare, DefaultWelfareGenerosity, isImplemented: false),
-                new WelfareProgram(WelfareProgramType.HousingAssistance, DefaultWelfareGenerosity, isImplemented: false),
-                new WelfareProgram(WelfareProgramType.ChildcareSubsidies, DefaultWelfareGenerosity, isImplemented: false),
-            });
+                bool implemented = false;
+                float generosity = DefaultWelfareGenerosity;
+                foreach ((WelfareProgramType seedType, bool seedImplemented, float seedGenerosity) in seeds)
+                {
+                    if (seedType != type) { continue; }
+                    implemented = seedImplemented;
+                    generosity = seedGenerosity;
+                }
+
+                country.WelfarePrograms.Add(new WelfareProgram(type, generosity, implemented));
+            }
+
+            country.BaselineWelfarePrograms.Clear();
+            foreach (WelfareProgram program in country.WelfarePrograms)
+            {
+                country.BaselineWelfarePrograms.Add(program.Clone());
+            }
         }
 
         /// <summary>Seeds all four InfrastructureAssets for a country - see this class's call site for the real-data-vs-stylized breakdown of each argument.</summary>
@@ -954,6 +1003,28 @@ namespace PoliSim.Data
                 new InfrastructureAsset(InfrastructureType.PowerGrid, powerGrid),
                 new InfrastructureAsset(InfrastructureType.Broadband, broadband),
             });
+        }
+
+        /// <summary>
+        /// Seed-spread ruling (2026-08-27): sets every sector's RegulationLevel AND its anchor
+        /// (BaselineRegulationLevel) to <paramref name="countryWide"/>, then applies any per-sector
+        /// override - level and anchor together, always, so a fresh world opens at zero regulation gap
+        /// (no effect) whatever the seeded figure is. Must run AFTER SeedSectors (it walks the sectors
+        /// that exist).
+        /// </summary>
+        private static void SeedSectorRegulation(Country country, float countryWide, params (SectorType Type, float Level)[] overrides)
+        {
+            foreach (Sector sector in country.Sectors)
+            {
+                float level = countryWide;
+                foreach ((SectorType type, float overrideLevel) in overrides)
+                {
+                    if (type == sector.Type) { level = overrideLevel; }
+                }
+
+                sector.RegulationLevel = level;
+                sector.BaselineRegulationLevel = level;
+            }
         }
 
         /// <summary>

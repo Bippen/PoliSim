@@ -198,24 +198,23 @@ namespace PoliSim.Simulation
         /// </summary>
         internal static float GetWelfareAdjustedReversionSpeed(Country country)
         {
-            float adjustment = 0f;
-            foreach (WelfareProgram program in country.WelfarePrograms)
+            // Seed-spread ruling (2026-08-27): the DEVIATION from the seeded portfolio - see
+            // WelfareEffectDelta. Bit-identical to the pre-ruling sum while no country seeds a program.
+            float adjustment = WelfareEffectDelta(country, program =>
             {
-                if (!program.IsImplemented)
-                {
-                    continue;
-                }
-
                 float generosityFraction = program.GenerosityLevel / 100f;
                 if (program.Type == WelfareProgramType.UBI)
                 {
-                    adjustment -= UbiUnemploymentReversionPenalty * generosityFraction;
+                    return -UbiUnemploymentReversionPenalty * generosityFraction;
                 }
-                else if (program.Type == WelfareProgramType.ChildcareSubsidies)
+
+                if (program.Type == WelfareProgramType.ChildcareSubsidies)
                 {
-                    adjustment += ChildcareUnemploymentReversionBonus * generosityFraction;
+                    return ChildcareUnemploymentReversionBonus * generosityFraction;
                 }
-            }
+
+                return 0f;
+            });
 
             return Mathf.Clamp(UnemploymentReversionSpeed + adjustment, MinUnemploymentReversionSpeed, 1f);
         }
@@ -438,16 +437,9 @@ namespace PoliSim.Simulation
                 + PovertyUnemploymentSensitivity * unemploymentGap
                 + PovertyInflationSensitivity * inflationGap;
 
-            float welfareReduction = 0f;
-            foreach (WelfareProgram program in country.WelfarePrograms)
-            {
-                if (!program.IsImplemented)
-                {
-                    continue;
-                }
-
-                welfareReduction += GetPovertyReductionSensitivity(program.Type) * (program.GenerosityLevel / 100f);
-            }
+            // Seed-spread ruling (2026-08-27): the deviation from the seeded portfolio - the sourced
+            // BaselinePovertyRate already contains the country's real programs (WelfareEffectDelta).
+            float welfareReduction = WelfareEffectDelta(country, program => GetPovertyReductionSensitivity(program.Type) * (program.GenerosityLevel / 100f));
 
             float minimumWageReduction = 0f;
             if (country.MinimumWageImplemented)
@@ -690,15 +682,13 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
             float povertyGap = Mathf.Max(0f, state.PovertyRate - country.BaselinePovertyRate);
 
-            float healthcareLift = 0f;
-            foreach (WelfareProgram program in country.WelfarePrograms)
-            {
-                if (program.IsImplemented && program.Type == WelfareProgramType.UniversalHealthcare)
-                {
-                    healthcareLift = LifeExpectancyHealthcareSensitivity * (program.GenerosityLevel / 100f);
-                    break;
-                }
-            }
+            // Seed-spread ruling (2026-08-27): the deviation from the seeded portfolio - exactly the
+            // absorption this method's own doc comment asked for the day a country starts with the
+            // program implemented, done once for every effect by WelfareEffectDelta rather than by
+            // hand-adjusting BaselineLifeExpectancy away from its sourced figure.
+            float healthcareLift = WelfareEffectDelta(country, program => program.Type == WelfareProgramType.UniversalHealthcare
+                ? LifeExpectancyHealthcareSensitivity * (program.GenerosityLevel / 100f)
+                : 0f);
 
             float target = country.BaselineLifeExpectancy - LifeExpectancyPovertySensitivity * povertyGap + healthcareLift;
             state.LifeExpectancy = Mathf.Clamp(
@@ -772,16 +762,9 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
 
-            float welfareReduction = 0f;
-            foreach (WelfareProgram program in country.WelfarePrograms)
-            {
-                if (!program.IsImplemented)
-                {
-                    continue;
-                }
-
-                welfareReduction += GetGiniReductionSensitivity(program.Type) * (program.GenerosityLevel / 100f);
-            }
+            // Seed-spread ruling (2026-08-27): the deviation from the seeded portfolio - the sourced
+            // BaselineGini already contains the country's real programs (WelfareEffectDelta).
+            float welfareReduction = WelfareEffectDelta(country, program => GetGiniReductionSensitivity(program.Type) * (program.GenerosityLevel / 100f));
 
             // Effective rate 0 when the line is removed entirely - abolishing the income tax raises
             // inequality through the same signed coefficient, which is the correct direction.
@@ -1016,20 +999,51 @@ namespace PoliSim.Simulation
                 state.HousePriceIndex * Mathf.Pow(1f + growthPerTurnPercent / 100f, sliceExponent));
         }
 
-        /// <summary>The one implemented program's GenerosityLevel as a 0-1 fraction, or 0 when not
-        /// implemented - the recurring welfare-read shape, extracted because the two housing stats
-        /// above both need it for the same program.</summary>
-        private static float GetImplementedGenerosityFraction(Country country, WelfareProgramType type)
+        /// <summary>
+        /// THE WELFARE ANCHOR (playtest 3's seed-spread ruling, 2026-08-27): every welfare effect in
+        /// this class is booked for the DEVIATION of the live portfolio from the portfolio AS SEEDED
+        /// (Country.BaselineWelfarePrograms) - live sum minus seed sum, each the plain sum of
+        /// <paramref name="perImplementedProgram"/> over the implemented programs in list order. The
+        /// sourced baselines these effects move (poverty, Gini, life expectancy, the housing pair,
+        /// approval, the confidence flows, the spending seeds) already contain each country's real
+        /// programs, so a program implemented AT SEED must contribute nothing on the no-policy path
+        /// - the same "zero gap at seed" idiom every Baseline* anchor in this model already uses -
+        /// and a player's change is measured from the country's own real position. While no country
+        /// seeds a program the seed sum is 0f and the delta is bit-identical to the pre-ruling live
+        /// sum (x - 0f == x). One shape for every site so the sites cannot drift.
+        /// </summary>
+        internal static float WelfareEffectDelta(Country country, System.Func<WelfareProgram, float> perImplementedProgram)
         {
-            foreach (WelfareProgram program in country.WelfarePrograms)
+            return WelfareSum(country.WelfarePrograms, perImplementedProgram) - WelfareSum(country.BaselineWelfarePrograms, perImplementedProgram);
+        }
+
+        private static float WelfareSum(System.Collections.Generic.List<WelfareProgram> programs, System.Func<WelfareProgram, float> perImplementedProgram)
+        {
+            float sum = 0f;
+            if (programs == null)
             {
-                if (program.IsImplemented && program.Type == type)
-                {
-                    return program.GenerosityLevel / 100f;
-                }
+                return sum;
             }
 
-            return 0f;
+            foreach (WelfareProgram program in programs)
+            {
+                if (!program.IsImplemented)
+                {
+                    continue;
+                }
+
+                sum += perImplementedProgram(program);
+            }
+
+            return sum;
+        }
+
+        /// <summary>The one program's GenerosityLevel as a 0-1 fraction, live minus seeded (see
+        /// WelfareEffectDelta) - the recurring welfare-read shape, extracted because the two housing
+        /// stats above both need it for the same program.</summary>
+        private static float GetImplementedGenerosityFraction(Country country, WelfareProgramType type)
+        {
+            return WelfareEffectDelta(country, program => program.Type == type ? program.GenerosityLevel / 100f : 0f);
         }
 
         private static readonly float HousingOverburdenReversionSpeedPerDay = PerDayReversion(HousingOverburdenReversionSpeed);
@@ -1593,7 +1607,12 @@ namespace PoliSim.Simulation
             foreach (Sector sector in country.Sectors)
             {
                 float subsidyAdjustment = SectorSubsidySensitivity * (sector.SubsidyLevel - NeutralPolicyDialLevel);
-                float regulationAdjustment = -SectorRegulationSensitivity * (sector.RegulationLevel - NeutralPolicyDialLevel);
+                // Seed-spread ruling (2026-08-27): the regulation gap is measured from the SECTOR'S OWN
+                // seeded anchor (Sector.BaselineRegulationLevel), not the uniform 50 the other four
+                // dials still use - the sourced output shares already embody the country's real
+                // regulation, so the seeded level is the zero-gap position, exactly as
+                // BaselineOutputShareOfGdp is. Identical to the pre-ruling term while every anchor is 50.
+                float regulationAdjustment = -SectorRegulationSensitivity * (sector.RegulationLevel - sector.BaselineRegulationLevel);
                 float taxCreditAdjustment = SectorTaxCreditSensitivity * (sector.TaxCreditLevel - NeutralPolicyDialLevel);
                 float deregulationAdjustment = SectorDeregulationSensitivity * (sector.DeregulationNationalizationLevel - NeutralPolicyDialLevel);
                 float researchGrantsGap = sector.ResearchGrantsLevel - NeutralPolicyDialLevel;
@@ -1950,18 +1969,9 @@ namespace PoliSim.Simulation
         /// <summary>Sum over every implemented WelfareProgram of GetWelfareApprovalSensitivity(Type) * (GenerosityLevel / 100) - a direct approval delta, not weighted by PercentOfGdp like the spending-category term (welfare's political popularity tracks how generous/visible the program is to the public, not its share of GDP).</summary>
         internal static float GetWelfareApprovalEffect(Country country)
         {
-            float effect = 0f;
-            foreach (WelfareProgram program in country.WelfarePrograms)
-            {
-                if (!program.IsImplemented)
-                {
-                    continue;
-                }
-
-                effect += GetWelfareApprovalSensitivity(program.Type) * (program.GenerosityLevel / 100f);
-            }
-
-            return effect;
+            // Seed-spread ruling (2026-08-27): the deviation from the seeded portfolio - the ledger's
+            // "Welfare vs baseline" row is now literally that (WelfareEffectDelta).
+            return WelfareEffectDelta(country, program => GetWelfareApprovalSensitivity(program.Type) * (program.GenerosityLevel / 100f));
         }
 
         private static float PercentOfGdp(float amount, float gdp)
@@ -2288,22 +2298,24 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
 
-            foreach (WelfareProgram program in country.WelfarePrograms)
+            // Seed-spread ruling (2026-08-27): both flows are booked for the deviation from the
+            // seeded portfolio (WelfareEffectDelta) - a program implemented at seed must not push a
+            // country's confidence toward the ceiling every turn of the no-policy path. Applied only
+            // when the deviation is nonzero, so a portfolio at its seed leaves the state untouched.
+            float consumerNudge = WelfareEffectDelta(country, program => program.Type == WelfareProgramType.UBI
+                ? UbiConsumerConfidenceSensitivity * (program.GenerosityLevel / 100f)
+                : 0f);
+            if (consumerNudge != 0f)
             {
-                if (!program.IsImplemented)
-                {
-                    continue;
-                }
+                state.ConsumerConfidence = Mathf.Clamp(state.ConsumerConfidence + consumerNudge, MinConfidence, MaxConfidence);
+            }
 
-                float generosityFraction = program.GenerosityLevel / 100f;
-                if (program.Type == WelfareProgramType.UBI)
-                {
-                    state.ConsumerConfidence = Mathf.Clamp(state.ConsumerConfidence + UbiConsumerConfidenceSensitivity * generosityFraction, MinConfidence, MaxConfidence);
-                }
-                else if (program.Type == WelfareProgramType.UniversalHealthcare)
-                {
-                    state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + UniversalHealthcareBusinessConfidenceSensitivity * generosityFraction, MinConfidence, MaxConfidence);
-                }
+            float businessNudge = WelfareEffectDelta(country, program => program.Type == WelfareProgramType.UniversalHealthcare
+                ? UniversalHealthcareBusinessConfidenceSensitivity * (program.GenerosityLevel / 100f)
+                : 0f);
+            if (businessNudge != 0f)
+            {
+                state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + businessNudge, MinConfidence, MaxConfidence);
             }
         }
     }

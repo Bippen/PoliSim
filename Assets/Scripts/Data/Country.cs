@@ -40,11 +40,23 @@ namespace PoliSim.Data
 
         /// <summary>
         /// This country's welfare portfolio - which anti-poverty programs are implemented and at what
-        /// GenerosityLevel, mirroring TaxLines' implement/adjust/remove pattern exactly. None
-        /// implemented by default for any country (see WorldFactory) - see WelfareProgram and
+        /// GenerosityLevel, mirroring TaxLines' implement/adjust/remove pattern exactly. Seeded per
+        /// country by WorldFactory.SeedWelfarePrograms (the seed-spread slots of 2026-08-27; every
+        /// slot still empty pending sourced figures) - see WelfareProgram and
         /// SimulationManager.GetTotalWelfareCost/ApplyWelfareGenerosityChanges.
         /// </summary>
         public List<WelfareProgram> WelfarePrograms = new List<WelfareProgram>();
+
+        /// <summary>
+        /// Playtest 3's seed-spread ruling (2026-08-27): the welfare portfolio AS SEEDED - a snapshot
+        /// WorldFactory.SeedWelfarePrograms takes and nothing mutates - the anchor every welfare effect
+        /// measures from (MacroSystem.WelfareEffectDelta, SimulationManager.GetTotalWelfareCost). The
+        /// sourced baselines already contain each country's real programs, so a program implemented
+        /// at seed contributes nothing on the no-policy path and a player's change is booked from the
+        /// country's own real position. Empty (the pre-ruling state: delta == live) for a country
+        /// seeded before the ruling and for any save that lacks the field.
+        /// </summary>
+        public List<WelfareProgram> BaselineWelfarePrograms = new List<WelfareProgram>();
 
         /// <summary>
         /// This country's economic sector breakdown (Manufacturing/Technology/Agriculture/Finance) -

@@ -2509,6 +2509,10 @@ namespace PoliSim.Simulation
                 TaxLines = ClonePreviewTaxLines(country.TaxLines),
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
+                // Seed-spread ruling (2026-08-27): the welfare anchor rides the hand-list too (the
+                // R4-1 Clone-escape class) - without it the clone's WelfareEffectDelta would measure
+                // every seeded program as a fresh implementation.
+                BaselineWelfarePrograms = ClonePreviewWelfarePrograms(country.BaselineWelfarePrograms),
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,
@@ -2965,9 +2969,23 @@ namespace PoliSim.Simulation
         /// </summary>
         private float GetTotalWelfareCost(Country country)
         {
+            // Seed-spread ruling (2026-08-27): live cost minus the cost of the portfolio AS SEEDED -
+            // the sourced spending seeds already carry each country's real programs, so a program
+            // implemented at seed books nothing here and only a player's deviation moves the budget
+            // (a removal below the seed books NEGATIVE cost: spending below the sourced line). Bit-
+            // identical to the pre-ruling sum while no country seeds a program (x - 0f == x).
+            return WelfareCostOf(country.WelfarePrograms, country.State.GDP) - WelfareCostOf(country.BaselineWelfarePrograms, country.State.GDP);
+        }
+
+        private static float WelfareCostOf(List<WelfareProgram> programs, float gdp)
+        {
             float cost = 0f;
-            float gdp = country.State.GDP;
-            foreach (WelfareProgram program in country.WelfarePrograms)
+            if (programs == null)
+            {
+                return cost;
+            }
+
+            foreach (WelfareProgram program in programs)
             {
                 if (!program.IsImplemented)
                 {

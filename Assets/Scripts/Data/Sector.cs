@@ -46,6 +46,17 @@ namespace PoliSim.Data
         /// </summary>
         public float RegulationLevel = 50f;
 
+        /// <summary>
+        /// Playtest 3's seed-spread ruling (2026-08-27): this sector's regulation level AS SEEDED -
+        /// the country's own anchor, the same "zero gap at seed" idiom BaselineOutputShareOfGdp uses.
+        /// MacroSystem.ApplySectorEffects measures the regulation adjustment from THIS value, not
+        /// from the uniform 50, because the sourced output shares already embody the country's real
+        /// regulatory stringency: a heavily regulated seed is not a suppressed sector, it is the
+        /// sector as measured. Seeded equal to RegulationLevel by WorldFactory.SeedSectorRegulation;
+        /// a save that lacks the field loads at 50, the pre-ruling uniform anchor.
+        /// </summary>
+        public float BaselineRegulationLevel = 50f;
+
         /// <summary>Round 3 item 2: this sector's tax credit generosity, 0-100 (50 = neutral). Higher nudges Output/Employment/SectorMetric up, the same broad "boosts everything" shape as SubsidyLevel - a tax credit and a direct subsidy have a similar practical effect in this stylized model, just a different fiscal mechanism (this pass doesn't distinguish their budget treatment - see MacroSystem.ApplySectorEffects). Player-adjustable via PolicyDecision.SectorTaxCreditOverrides.</summary>
         public float TaxCreditLevel = 50f;
 
@@ -90,6 +101,7 @@ namespace PoliSim.Data
                 BaselineSectorMetric = BaselineSectorMetric,
                 SubsidyLevel = SubsidyLevel,
                 RegulationLevel = RegulationLevel,
+                BaselineRegulationLevel = BaselineRegulationLevel,
                 TaxCreditLevel = TaxCreditLevel,
                 ResearchGrantsLevel = ResearchGrantsLevel,
                 DeregulationNationalizationLevel = DeregulationNationalizationLevel
