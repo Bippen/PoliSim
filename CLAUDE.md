@@ -13008,7 +13008,12 @@ which inverts at the zero floor on a cut); (2) the denominator is GDP; (3) partn
 of an override over the standing rate, one for one, instantly and without memory — cuts and base-dial
 hikes unanswered — computed from the overrider's own link, never stored; (4) overrides enter the vote as
 the change in the IMPORT-WEIGHTED AVERAGE tariff the bill would charge, on the fiscal axis, sign-only
-as every vote is — the pass's taste-adjacent call, flagged first below; (5) `ImportPricePassThrough =
+as every vote is — flagged first below and RULED BY ELIAS 2026-08-27, accepted as shipped, with the
+reasoning recorded so it never reads as an approximation: a tariff is a tax on imports, so the fiscal
+axis is not a stand-in pending item 10 but the correct axis for a revenue instrument, the same
+treatment every other revenue instrument already gets; when trade gains its own axis the literal
+reverts, and until then the alternative is leaving the lever free, which is what this pass exists to
+close; (5) `ImportPricePassThrough =
 1.0` is DERIVED from static volumes, its corroboration UNVERIFIED-EXTERNAL, its stakes measured at 0.5;
 (6) no approval charge on a passed hike; (7) one build commit for three channels; (8) the eighth
 baseline discontinuity is counted as a POLICY-PATH row — the no-policy trajectories are byte-identical
@@ -13130,7 +13135,11 @@ protectionism axis exists (`protectionis|Ideology`: NOT FOUND), and item 10 will
 the 13 September result — so scoring trade on it one pass before real parties land extends the base
 term's existing convention rather than inventing the claim, and is one literal to revert
 (`OverrideDirectionWeight = 0f` restores the overrides-only auto-pass). Named alternative: hold channel 3
-until item 10 gives trade its own axis, with a diplomatic/volume penalty as the interim cost. Not closed,
+until item 10 gives trade its own axis, with a diplomatic/volume penalty as the interim cost. *(Ruled by
+Elias 2026-08-27, accepted as shipped: a tariff is a tax on imports, so the fiscal axis is the CORRECT
+axis for a revenue instrument — not an approximation pending item 10 — and the same treatment every
+other revenue instrument already gets; when trade gains its own axis the literal reverts; until then
+the alternative is leaving the lever free, which is what this pass exists to close.)* Not closed,
 recorded: the un-voted "Reset to Default" click is a free instant cut that ends retaliation next
 boundary; the harness `PolicyDecision` path bypasses the vote (its privilege for every lever). No
 approval charge on a passed hike — a fourth force and a new approval writer.
@@ -13257,7 +13266,8 @@ under the old books all six read direction 0 and auto-passed). Not free; a cut s
 it lands the wedge must become `Δτ̄ × m` with an explicit rate anchor or volume growth would print as
 inflation — recorded in the code); retaliation against a base-dial hike (no excess to mirror — needs a
 seed-anchored base reference); retaliation memory or lag (no diplomatic state exists); the un-voted Reset
-click; the harness path around the vote; an approval charge on a passed tariff hike (R6, not built); the
+click (→ a NAMED roadmap gap, Elias 2026-08-27 — the same shape as the lever this pass priced, a live
+path around the pricing); the harness path around the vote; an approval charge on a passed tariff hike (R6, not built); the
 sign-only vote on the fiscal axis pending item 10's trade axis (R4, the flagged call); the recorded model
 property the wedge was shaped around — elevated inflation at NAIRU as a fixed point — stands untouched.
 

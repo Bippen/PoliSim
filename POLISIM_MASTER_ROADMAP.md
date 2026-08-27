@@ -395,7 +395,9 @@ line, the partner row's retaliation, the inflation year, and a hike that now fai
   excess over the standing rate onto the overrider's exports (computed from the overrider's own link,
   never stored; instant, memoryless; cuts and base-dial hikes unanswered); and the Trade bill's
   direction is the change in the import-weighted average tariff, overrides included (sign-only, as
-  every vote is — the pass's flagged call, one literal to revert). Measured, seed 777: Sweden at the
+  every vote is — ruled by Elias 2026-08-27: a tariff is a tax on imports, so the fiscal axis is the
+  correct axis for a revenue instrument, not an approximation; the literal reverts when trade gains
+  its own axis, and until then the alternative is leaving the lever free). Measured, seed 777: Sweden at the
   cap prints +11.13 pp for a year, loses 5.0% of GDP in that year and 5.9% at t30, −6.2 approval, and
   its debt-to-GDP windfall shrinks 33.8 → 27.5 (was 24.7); every partner charges it 50% and Poland
   pays +2.11 pp of its own inflation; all six overrides-only bills WOULD FAIL at the seed parliament.
@@ -405,8 +407,20 @@ line, the partner row's retaliation, the inflation year, and a hike that now fai
   every baseline — its own force; when it lands the wedge must become `Δτ̄ × m` with an explicit rate
   anchor, recorded in code); retaliation against a base-dial hike (no excess to mirror — needs a
   seed-anchored base reference; the dial is voted; reach 0.49% of USA GDP); retaliation memory or lag
-  (no diplomatic state exists); the un-voted "Reset to Default" click (a free instant cut that ends
-  retaliation next boundary); a trade axis for the vote (item 10's, where real parties land).
+  (no diplomatic state exists); a trade axis for the vote (item 10's, where real parties land). The
+  un-voted Reset click is its own named gap, next.
+- **The un-voted "Reset to Default" click — a NAMED GAP (Elias, 2026-08-27), not a note.** It is the
+  same shape as the free lever pass 6 priced: resetting a partner override is an immediate, structural
+  on/off on the Trade tab (`GameController.DrawTradePartnerRow`, the `TaxLine.IsImplemented` idiom), so a
+  player who has taken the take can cut back to the standing rate for free, un-voted, and the partner's
+  mirrored tariff lifts at the next boundary — a live path around the pricing (a cut through the bill
+  would read negative on the fiscal axis and pass at most compositions anyway, but it would be voted,
+  delayed 21 days and visible in the division log). Closing it means either the reset riding the Trade
+  bill like the rate does, or the mirror lingering a boundary after a reset (retaliation memory, which
+  the model has no state for today). The harness's `PolicyDecision.PartnerTariffOverrides` path also
+  bypasses the vote; that is the harness's privilege for every lever, not a player path. **Trigger: the
+  first pass that touches the Trade bill's introduce/reset flow, and before item 10 opens the vote to
+  real parties.**
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and
@@ -1614,6 +1628,12 @@ Full reasoning migrated whole to `COMPLETED.md` §23 (2026-08-26), kept in full 
   motivated it is fixed and on film). **1920×1080 — the single most common desktop resolution —
   remains the one uncovered size**: startable today, minor, a command-line argument rather than a
   code change (`-shotwidth=` / `-shotheight=`).
+  - *Logged here with the other capture-width items (2026-08-27, pass 6, Elias: cosmetic):* at
+    2560×1440 the Trade bill card's new cost line wraps after the "+" of "+$0/yr" — the sign glyph
+    of `UiFormat.MoneyDelta` read as a break opportunity — while the 1280×720 floor and the two
+    middle sizes wrap cleanly at spaces (`p6usa2560_06e_policylaws_trade` beside `p6usa1280_*`).
+    Startable, minor: reorder the sentence so the money delta does not sit at a wrap point, or give
+    the label the explicit measured width the free-aspect pass gave its siblings.
 
   *(⚠ RECONCILED 2026-08-12: everything below this line described the PRE-extraction state and was
   superseded within hours of being written — the instance-#12 closure entry above records the outcome:
