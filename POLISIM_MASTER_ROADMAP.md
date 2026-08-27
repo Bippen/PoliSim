@@ -421,6 +421,20 @@ line, the partner row's retaliation, the inflation year, and a hike that now fai
   bypasses the vote; that is the harness's privilege for every lever, not a player path. **Trigger: the
   first pass that touches the Trade bill's introduce/reset flow, and before item 10 opens the vote to
   real parties.**
+- **Policy Web gaps the edge sweep named (2026-08-27; CLAUDE.md "The Policy Web edge sweep" is the
+  record of what it FIXED).** Three real channels the web cannot yet draw honestly, reported rather
+  than drawn: `InterestRateDecision → DebtToGdp` (the policy rate is the base of the debt issuance
+  rate — a direct interest-cost channel for five countries, but FALSE for the USA whose debt rate is
+  anchored at `BaseDebtInterestRateOverride`; an edge is one truth for all six, so it needs either a
+  per-country edge set or the widget noting the exception); and the two generic-line folds —
+  `SpendingCategory.InfrastructureAndDevelopment` onto the Transportation node and
+  `HealthcareAndSocialCare` onto HHSDiscretionary — so the five non-USA portfolios' lines draw the
+  growth and confidence edges their USA twins draw (today they sit under "Other discretionary" with
+  a DebtToGdp edge only). Indirect effects (the incarceration cost reaching debt through
+  PrisonPopulation, MinimumWage → Approval through Gini, FamilyPolicy → DependencyRatio through
+  BirthRate, TariffPolicy → Gdp through TradeBalance) stay undrawn by the web's own convention.
+  **Trigger: the causal-graph screen (queued above), which derives edges from the ledger's term IDs
+  rather than authoring them — the honest fix for a declared list that drifts.**
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and

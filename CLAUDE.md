@@ -13280,3 +13280,47 @@ Riksbank-B's felt verdict, **the Trade bill's costs felt** (the bill card's cost
 retaliation, the inflation year).
 
 Stopped at the boundary.
+
+## The Policy Web edge sweep — Elias's pass-6 follow-up (2026-08-27)
+
+**The Policy Web edge sweep (2026-08-27, Elias's pass-6 follow-up: "worth a sweep rather than a fix").**
+The `TariffPolicy → DebtToGdp` sign slip was one instance of a class — a sign correct when written that
+went stale when the mechanism beneath it changed — so all 93 declared edges were checked against the
+formulas as they stand after passes 3–6 (six read-only verifiers by area, an adversarial refuter on each
+of the 24 flags; 21 confirmed, 3 refuted). **Twelve distinct defects, all fixed in `PolicyWebRenderer.
+BuildEdges` (UI-only; the edge list feeds only the web's chords and the policy screens' chip rows —
+`GetStatsForArea` counts edges and never reads `Increases`):** (1) four inverted SIGNS, all born in the
+Crime & Justice couplings pass (`a7e00e3`, 2026-08-26) — `SentencingSeverity → PrisonPopulation` drawn
+`false` when harsher sentencing RAISES the incarceration rate (the NRC time-served channel that pass
+added), and the three line-resident budget edges `PoliceFunding/JudicialFunding/BorderEnforcement →
+DebtToGdp` drawn `false` (they had taken the tax group's sign; a dial that spends money raises the ratio,
+exactly as every `AddSpending` DebtToGdp edge already says); (2) `SwfAssetAllocation → DebtToGdp` drawn
+`true` "as neutral" — there is no neutral encoding, `Increases` is rendered as a signed colour, and a
+higher equities weight raises the expected return the structural draw books as revenue, so `false`;
+(3) three WEIGHTS left at the `1f` default inside groups that carry a declared denominator —
+`BailReform → Crime` (0.02 drawn as thick as police funding's 0.16), `DrugPolicy → PrisonPopulation` and
+`JudicialFunding → PrisonPopulation` (the couplings pass declared the group's denominator at the
+sentencing edge and left these two at 1) — now the table's own ratios, and the three budget edges
+weighted by their declared per-point costs; (4) three welfare POVERTY weights that had never matched the
+constants (UniversalHealthcare 2 vs 4, HousingAssistance 2 vs 3, ChildcareSubsidies 1.5 vs 3 — restated
+literals from the renderer's first commit), now read through `MacroSystem.GetPovertyReductionSensitivity`
+/ `GetWelfareApprovalSensitivity` so they cannot drift again; (5) the PHANTOM `PolicyNodeId.Tariffs`
+edges — `TaxType.Tariffs` never gets a `TaxLine`, so neither the hike-approval nor the revenue channel
+exists for it; removed from the tax loop, the node kept as a zero-edge signpost with honest text (the
+real lever is Tariff Policy). **One class of omission fixed by the same convention:** every welfare
+program's cost is a real spending flow (`GetTotalWelfareCost → totalSpending`) and no welfare node drew
+the `DebtToGdp` edge every spending node draws — the couplings pass's own rule that money reaching the
+debt path targets DebtToGdp — so `AddWelfare` now draws it (the Welfare screen's chip row gains
+Debt-to-GDP). **Refuted flags, recorded so they are not re-raised:** `RetrainingProgram → Unemployment`
+(the flag's claim about pass 3 was wrong; the weight is right), `SwfContributionRate → DebtToGdp` (nothing
+beneath it changed) and the pass-6 `TariffPolicy → DebtToGdp` weight (a misreading of the diff).
+**Reported, not drawn — the file's own convention is that indirect effects are not second direct edges
+(the interest-rate comment):** the incarceration variable cost reaching the debt path through
+PrisonPopulation (Sentencing/DrugPolicy/BailReform → DebtToGdp), `MinimumWage → Approval` through Gini,
+`FamilyPolicy → DependencyRatio` through BirthRate, `TariffPolicy → Gdp` through TradeBalance, UBI's and
+childcare's tilt of Okun's reversion speed; and three the sweep names as real gaps for a later pass —
+`InterestRateDecision → DebtToGdp` (a direct interest-cost channel, but false for the USA whose debt rate
+is anchored — the edge would need a per-country truth the widget has no way to draw), and two generic-line
+folds (`InfrastructureAndDevelopment` onto the Transportation node, `HealthcareAndSocialCare` onto
+HHSDiscretionary, so the non-USA portfolios' lines draw the growth and confidence edges their USA twins
+draw). **Verified under rule 0's UI-only bar:** compile clean; a full capture sweep at 1600×950 (USA) 64/64, 0 overflows / 0 containment escapes / 0 canvas violations, ATTRIB 0; the web renders and the Welfare screen's chip row now carries Debt-to-GDP beside Approval, Poverty and Consumer Confidence — the one visible change. The fix is `56c5163`; the three channels the sweep named but could not draw honestly are a roadmap entry beside the Reset-click gap.
