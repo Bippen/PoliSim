@@ -2416,10 +2416,14 @@ namespace PoliSim.UI
                 _holdBannerStyle.padding.left = HoldBannerPadX + HoldBannerLampSize() + HoldBannerLampGap;
             }
 
-            // The RUNNING plate: body type, and the same lamp reserve rule as the hold plate above
-            // (one accessor, RunningLampSize, read here and by DrawRunningStatusPlate).
+            // The RUNNING plate: body type, the spec's 6/10 padding read as a RATIO to its 10.5 type (the
+            // lamp's own rule), and the same lamp reserve as the hold plate above (one accessor,
+            // RunningLampSize, read here and by DrawRunningStatusPlate). Fixed 6/10 on 20px type drew a
+            // strip the height of a slider track (the first omni captures).
             _runningPlateStyle.fontSize = labelFontSize;
-            _runningPlateStyle.padding.left = HoldBannerPadX + RunningLampSize() + HoldBannerLampGap;
+            int runningPadX = Mathf.RoundToInt(labelFontSize * (10f / 10.5f));
+            int runningPadY = Mathf.RoundToInt(labelFontSize * (6f / 10.5f));
+            _runningPlateStyle.padding = new RectOffset(runningPadX + RunningLampSize() + HoldBannerLampGap, runningPadX, runningPadY, runningPadY);
 
             // The calendar pad's type, at the board's own ratios to body type (month 8.5 / day 26 /
             // mono 9 beside 12.5 body — §A.6). The pad itself scales from the same labelFontSize base
@@ -4257,9 +4261,10 @@ namespace PoliSim.UI
             Rect plate = GUILayoutUtility.GetLastRect();
             PoliSimTheme.RoundedCard(plate, new Color(0f, 0f, 0f, 0f), PoliSimTheme.BorderPlate, 3f);
             float lamp = RunningLampSize();
+            float padX = _runningPlateStyle.padding.right;   // the un-widened side is the spec's own X pad
             var dotRect = new Rect(
-                plate.x + HoldBannerPadX,
-                plate.y + HoldBannerPadY + (_runningPlateStyle.lineHeight - lamp) * 0.5f,
+                plate.x + padX,
+                plate.y + _runningPlateStyle.padding.top + (_runningPlateStyle.lineHeight - lamp) * 0.5f,
                 lamp,
                 lamp);
             PoliSimTheme.Pill(dotRect, PoliSimTheme.Good);
@@ -5428,11 +5433,11 @@ namespace PoliSim.UI
         {
             switch (_policyLawsCategory)
             {
-                case PolicyLawsCategory.LaborMarket: return "LABOR MARKET — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
-                case PolicyLawsCategory.CrimeJustice: return "CRIME & JUSTICE — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
-                case PolicyLawsCategory.Sectors: return "ECONOMIC SECTORS — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.LaborMarket: return "LABOR MARKET — DRAFTS UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.CrimeJustice: return "CRIME & JUSTICE — DRAFTS UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.Sectors: return "ECONOMIC SECTORS — DRAFTS UNTIL PARLIAMENT VOTES";
                 case PolicyLawsCategory.PolicyWeb: return "THE POLICY WEB — REFERENCE, LIVE";
-                case PolicyLawsCategory.Trade: return "TRADE — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.Trade: return "TRADE — DRAFTS UNTIL PARLIAMENT VOTES";
                 default: return $"THE STATUTE BOOK — {LawCatalog.All.Count} LAWS, BILLS TO THE HOUSE";
             }
         }
@@ -5493,14 +5498,74 @@ namespace PoliSim.UI
         /// </summary>
         private float SubTabRowHeight(float share, params string[] labels)
         {
+            return SubTabRowHeight(share, false, labels);
+        }
+
+        /// <summary>The row's measured height WITH the leading-icon reserve when the row carries icons
+        /// (R-K6) - the label wraps at the width left beside the icon, so measuring at the bare share
+        /// would under-count the lines, which is exactly instance #13's defect at a new site (the
+        /// first omni_b1600 capture: three-line labels overflowing a two-line row).</summary>
+        private float SubTabRowHeight(float share, bool withIcons, params string[] labels)
+        {
             GUIStyle active = BuildSubTabStyle(true);
+            float labelWidth = withIcons ? share - SubTabIconReserve(active) : share;
             float height = _tabButtonStyle.fixedHeight;
             foreach (string label in labels)
             {
-                height = Mathf.Max(height, active.CalcHeight(new GUIContent(label), share));
+                height = Mathf.Max(height, active.CalcHeight(new GUIContent(label), labelWidth));
             }
 
             return height;
+        }
+
+        /// <summary>The width a leading area icon takes from a sub-tab button: the icon at the board's
+        /// ratio to the type, plus its gap - one accessor for the draw (DrawSubCategoryButton), the
+        /// measure (SubTabRowHeight) and the fit test (SubTabRowFitsIcons).</summary>
+        private float SubTabIconReserve(GUIStyle active)
+        {
+            return Mathf.Round(active.fontSize * SubTabIconFontMultiple) + SubTabIconGap;
+        }
+
+        /// <summary>
+        /// Whether a sub-tab row can carry leading icons at this width without any label breaking past
+        /// two lines or inside a word - decided ONCE per row so the row stays even (icons on every
+        /// button or on none), the same "a row where every button differs reads as an error" reasoning
+        /// D7 gave for ledger names. The first omni_b1600 capture is the measured case: at 1600 the
+        /// Policy/Laws row's six shares hold "Economic Sectors" beside a 24px icon only by breaking
+        /// "Econom-ic", so at that width the row goes without icons and the identity stays on the
+        /// tongue above (a stated deviation from R-K6's "on the sub-tab rows", by width, never silent).
+        /// </summary>
+        private bool SubTabRowFitsIcons(float share, params string[] labels)
+        {
+            GUIStyle active = BuildSubTabStyle(true);
+            float labelWidth = share - SubTabIconReserve(active) - active.padding.horizontal;
+            if (labelWidth <= 0f)
+            {
+                return false;
+            }
+
+            float twoLines = active.lineHeight * 2f + active.padding.vertical + 1f;
+            bool previousWrap = active.wordWrap;
+            foreach (string label in labels)
+            {
+                active.wordWrap = false;
+                foreach (string word in label.Split(' '))
+                {
+                    if (word.Length > 0 && active.CalcSize(new GUIContent(word)).x > labelWidth)
+                    {
+                        active.wordWrap = previousWrap;
+                        return false;
+                    }
+                }
+                active.wordWrap = previousWrap;
+
+                if (active.CalcHeight(new GUIContent(label), labelWidth + active.padding.horizontal) > twoLines)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -5584,9 +5649,10 @@ namespace PoliSim.UI
             float subTabShare = SubTabShare(availableWidth, 2);
             // Instance #13: the row's height is measured once (SubTabRowHeight) and shared between the
             // buttons and the content reserve below - see the accessor's own doc for the ECB case.
-            float subTabRowHeight = SubTabRowHeight(subTabShare, "Domestic", "International");
+            bool statisticsIcons = SubTabRowFitsIcons(subTabShare, "Domestic", "International");
+            float subTabRowHeight = SubTabRowHeight(subTabShare, statisticsIcons, "Domestic", "International");
             DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Global);
+            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight, statisticsIcons ? UiPalette.SystemArea.Global : UiPalette.SystemArea.Neutral);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
             DrawScreenCaption(StatisticsScreenCaption());
@@ -5983,12 +6049,15 @@ namespace PoliSim.UI
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 6);
             // Instance #13: one measured row height, shared with the content reserve below.
-            float subTabRowHeight = SubTabRowHeight(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
-            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Labor);
-            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.CrimeJustice);
-            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Sectors);
+            // R-K6's icons ride this row only where every label still fits beside one in two lines -
+            // decided once per row, measured, so the row stays even (see SubTabRowFitsIcons).
+            bool policyIcons = SubTabRowFitsIcons(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
+            float subTabRowHeight = SubTabRowHeight(subTabShare, policyIcons, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
+            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.Labor : UiPalette.SystemArea.Neutral);
+            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.CrimeJustice : UiPalette.SystemArea.Neutral);
+            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.Sectors : UiPalette.SystemArea.Neutral);
             DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Trade);
+            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.Trade : UiPalette.SystemArea.Neutral);
             DrawSubCategoryButton("Laws", PolicyLawsCategory.Laws, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
