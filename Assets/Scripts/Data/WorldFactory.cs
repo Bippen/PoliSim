@@ -871,13 +871,13 @@ namespace PoliSim.Data
             // dollars WelfarePrograms tracks.
             // Playtest-2 item 4 (ruled 2026-08-25): Sweden graduates from the generic 5-line
             // decomposition to its real utgiftsomrade structure - see SeedSwedenSpendingLines.
-            // Omnibus 2026-08-28 (R-K7): Germany graduates to its real Einzelplan structure, Italy
-            // to its real missioni and Poland to its real dzialy - see SeedGermanySpendingLines /
-            // SeedItalySpendingLines / SeedPolandSpendingLines. France stays on the generic seed
-            // until its own pass.
+            // Omnibus 2026-08-28 (R-K7): the four graduate to their real budget structures - Germany's
+            // Einzelplaene, France's missions, Italy's missioni, Poland's dzialy - see the four
+            // Seed<Country>SpendingLines methods; SeedGenericSpendingLines has no caller left and is
+            // kept as the documented shape the five started from.
             SeedSwedenSpendingLines(sweden);
             SeedGermanySpendingLines(germany);
-            SeedGenericSpendingLines(france, socialPercent: 38f, defensePercent: 7f, infrastructurePercent: 12f, publicServicesPercent: 25f);
+            SeedFranceSpendingLines(france);
             SeedItalySpendingLines(italy);
             SeedPolandSpendingLines(poland);
 
@@ -1570,6 +1570,108 @@ namespace PoliSim.Data
 
             // The remainder line keeps the exact-sum invariant: the local-government settlements are total-minus-allocated.
             poland.SpendingLines.Add(new SpendingLine(SpendingCategory.MunicipalGrants, total - allocated, isMandatory: false));
+        }
+
+        /// <summary>
+        /// Omnibus 2026-08-28 (R-K7, the last of the four decompositions on Sweden's method - Germany,
+        /// Italy and Poland before it): France's REAL budget structure - the missions of the budget
+        /// general in the loi de finances pour 2026 (LOI n. 2026-103 du 19 fevrier 2026) - as a PURE
+        /// DECOMPOSITION of the country's existing GDP x GovernmentSpendingRate total, the exact-sum
+        /// invariant kept (every line the game total times the mission's share of the sourced EUR
+        /// sum; the last line, Education, the REMAINDER - the largest).
+        ///
+        /// SOURCE (rules 5/9/12): the text as adopted by the Assemblee nationale, TA n. 227
+        /// (assemblee-nationale.fr/dyn/17/textes/l17t0227_texte-adopte-provisoire.pdf, 4,395,751 bytes,
+        /// SHA-256 5AD09939..., retrieved 2026-08-28 - Legifrance refuses scripted downloads, so the
+        /// promulgated text was read in the Assemblee's adopted form), Etat B "Repartition des credits
+        /// pour 2026 par mission et programme du budget general", the credits de paiement column, read
+        /// out of the PDF's content streams; the missions sum to the Etat B total of 593,890,071,649,
+        /// the 593.9 bn budget.gouv.fr publishes for the loi. Etat A supplies the two prelevements sur
+        /// recettes. Figures below in bn EUR.
+        ///
+        /// WHAT IS IN AND WHAT IS OUT, stated. Mission Remboursements et degrevements (145.60) is out as a
+        /// REVENUE-SIDE item - tax refunds booked as expenditure, which every seed here nets from revenue
+        /// (Italy's 029-005 rule). Programme 117 Charge de la dette et tresorerie de l'Etat (58.62) and
+        /// the SNCF Reseau debt charge (0.66) are out - interest has no line, the USA/Sweden rule. Four
+        /// cash-transfer areas are left to SeedMandatoryTransferLines' block (SocialSecurity 12.4% of
+        /// GDP, IncomeSecurity 10.12%): Solidarite, insertion et egalite des chances (31.28 - AAH, prime
+        /// d'activite, inclusion), Regimes sociaux et de retraite (6.07), Monde combattant (1.73, the
+        /// veterans' pensions) and programme 109 Aide a l'acces au logement (16.57, the APL) - Germany's
+        /// rule, the same layer counted once. The two prelevements ARE in, because they are what the
+        /// other three documents carry as expenditure lines: au profit des collectivites territoriales
+        /// (44.82 -> MunicipalGrants, with mission Relations avec les collectivites territoriales 3.96)
+        /// and au profit de l'Union europeenne (28.44 -> EuMembershipFee, Sweden's UO27 precedent). The
+        /// base is therefore 406.63 bn.
+        ///
+        /// Mapping by mission, with three programme-level splits: Ecologie, developpement et mobilite
+        /// durables (22.76) - 203 Infrastructures et services de transports + 205 Affaires maritimes ->
+        /// Transportation (4.92); 345 Service public de l'energie + 174 Energie, climat et apres-mines ->
+        /// Energy (10.71); the rest (paysages, expertise, prevention des risques, conduite et pilotage,
+        /// surete nucleaire) -> ClimateAndEnvironment (7.14). Cohesion des territoires minus the APL
+        /// (hebergement, urbanisme, politique de la ville, amenagement, interventions territoriales) ->
+        /// Housing (6.00). Engagements financiers minus the interest (garanties, epargne, fonds de
+        /// soutien) with Credits non repartis -> FinancialAdministration (1.54). Consolidations:
+        /// Administration generale et territoriale + Conseil et controle + Direction de l'action du
+        /// Gouvernement + Pouvoirs publics + Transformation et fonction publiques CentralGovernment;
+        /// Culture + Medias + Sport CultureAndMedia; Economie + Investir pour la France de 2030
+        /// BusinessAndIndustry; Securites HomelandSecurity; Gestion des finances publiques
+        /// TaxAdministration; Travail, emploi LaborMarket; Outre-mer RegionalPlanningAndDevelopment;
+        /// Sante HealthcareAndSocialCare (the Assurance maladie is outside the state budget - this is
+        /// the budget's own health line); Enseignement scolaire + Recherche et enseignement superieur
+        /// Education. No mandatory line.
+        ///
+        /// THE DISTORTION, MEASURED: the state budget's non-transfer base (12.7% of GDP) scaled onto a G
+        /// of 24% - Defense at 3.92% of GDP (Eurostat gov_10a_exp GF02 2024: 1.9), Education 7.16% (GF09
+        /// 5.1 - the one line the scaling OVER-weights against Eurostat), Health 0.11% (GF07 8.9).
+        /// Enumerated by the pass's diff.
+        /// </summary>
+        private static void SeedFranceSpendingLines(Country france)
+        {
+            float total = france.State.GDP * (france.GovernmentSpendingRate / 100f);
+
+            // (category, 2026 credits de paiement in bn EUR) - every mission of the base except the remainder line.
+            var areas = new (SpendingCategory Category, float BnEur)[]
+            {
+                (SpendingCategory.Defense, 66.475f),                   // Defense
+                (SpendingCategory.MunicipalGrants, 48.783f),           // prelevement au profit des collectivites territoriales (44.824) + Relations avec les collectivites territoriales (3.959)
+                (SpendingCategory.EuMembershipFee, 28.440f),           // prelevement au profit de l'Union europeenne
+                (SpendingCategory.HomelandSecurity, 25.845f),          // Securites
+                (SpendingCategory.LaborMarket, 20.821f),               // Travail, emploi et administration des ministeres sociaux
+                (SpendingCategory.Justice, 12.967f),                   // Justice
+                (SpendingCategory.TaxAdministration, 11.018f),         // Gestion des finances publiques
+                (SpendingCategory.Energy, 10.710f),                    // Ecologie: 345 Service public de l'energie (9.584) + 174 Energie, climat et apres-mines (1.126)
+                (SpendingCategory.CentralGovernment, 8.659f),          // Administration generale et territoriale (5.082) + Conseil et controle (0.866) + Direction de l'action du Gouvernement (1.052) + Pouvoirs publics (1.140) + Transformation et fonction publiques (0.518)
+                (SpendingCategory.BusinessAndIndustry, 7.910f),        // Economie (3.513) + Investir pour la France de 2030 (4.398)
+                (SpendingCategory.ClimateAndEnvironment, 7.135f),      // Ecologie minus transport and energy: paysages (0.391), expertise (0.668), prevention des risques (1.459), conduite et pilotage (4.269), surete nucleaire (0.348)
+                (SpendingCategory.Housing, 5.999f),                    // Cohesion des territoires minus the APL: hebergement (3.071), urbanisme (1.945), amenagement (0.265), politique de la ville (0.637), interventions territoriales (0.080)
+                (SpendingCategory.CultureAndMedia, 5.706f),            // Culture (3.745) + Medias, livre et industries culturelles (0.703) + Sport, jeunesse et vie associative (1.259)
+                (SpendingCategory.Transportation, 4.918f),             // Ecologie: 203 Infrastructures et services de transports (4.608) + 205 Affaires maritimes (0.310)
+                (SpendingCategory.Agriculture, 4.126f),                // Agriculture, alimentation, foret et affaires rurales
+                (SpendingCategory.InternationalAid, 3.569f),           // Aide publique au developpement
+                (SpendingCategory.StateForeignAffairs, 3.454f),        // Action exterieure de l'Etat
+                (SpendingCategory.RegionalPlanningAndDevelopment, 3.277f), // Outre-mer
+                (SpendingCategory.Migration, 2.131f),                  // Immigration, asile et integration
+                (SpendingCategory.HealthcareAndSocialCare, 1.888f),    // Sante
+                (SpendingCategory.FinancialAdministration, 1.540f),    // Engagements financiers minus the interest (1.065) + Credits non repartis (0.475)
+            };
+            const float EducationBnEur = 121.255f;                     // Enseignement scolaire (89.621) + Recherche et enseignement superieur (31.634) - the remainder line
+
+            float eurSum = EducationBnEur;
+            foreach ((SpendingCategory _, float eur) in areas)
+            {
+                eurSum += eur;
+            }
+
+            float allocated = 0f;
+            foreach ((SpendingCategory category, float eur) in areas)
+            {
+                float amount = total * (eur / eurSum);
+                allocated += amount;
+                france.SpendingLines.Add(new SpendingLine(category, amount, isMandatory: false));
+            }
+
+            // The remainder line keeps the exact-sum invariant: the two education missions are total-minus-allocated.
+            france.SpendingLines.Add(new SpendingLine(SpendingCategory.Education, total - allocated, isMandatory: false));
         }
 
         /// <summary>
