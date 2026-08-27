@@ -91,8 +91,9 @@ Meetings interrupt slice.
 **Validated by:** tick-equivalence proof, 100-turn smoke check, UI screenshot smoke test.
 
 **Lasting decision — the phase changed no economic math.** Phase 0 is purely the calendar/UI layer.
-`DaysPerTurn = 121` and `EpochDate = 2026-01-01` date from here and are depended on widely. The actual
-daily-granularity conversion (Phases 1–5) remains unstarted.
+`DaysPerTurn` and `EpochDate = 2026-01-01` date from here and are depended on widely. *(Corrected
+2026-08-27: `DaysPerTurn` was 121 here and has been 365 since `d8f55ce`, 2026-08-10; the daily-granularity
+conversion — Phases 1–5 — is CLOSED, 2026-08-16, §28.)*
 
 ---
 
@@ -402,6 +403,14 @@ feature that displays nothing is not complete**, however well it validates.
 "from published inputs throughout". As built they read **live**. Consistent with Elias's later A3 ruling
 (live on policy screens), but it was never explicitly reconciled — worth confirming when A4 is surfaced.
 
+**A4 DONE 2026-08-02 → the look closed 2026-08-26 (migrated from the roadmap 2026-08-27).** The derived
+stats went on screen (Statistics → Domestic, under the headline tiles: GDP per capita, tax burden,
+government spending, deficit/surplus and sector shares); the Derived block converted to read-only ledger
+rows (`397d829`, 2026-08-11 — `DrawDerivedStatRow`, called at HEAD); and the Statistics screen was in
+front of Elias in playtest 2 (2026-08-25), on which the "needs a visual look" proviso was struck
+(2026-08-26, ruling C3). Tier 0 stats are display-time derivations, never state — the seed doc's Part 3
+said so and is retired to this line.
+
 ### Harness coverage extended to the derived layer
 
 **The generalizable lesson: wiring into the UI and wiring into the harness are different things.** A
@@ -503,7 +512,7 @@ clearest single illustration of verification-integrity instance 7:
 | Stage | Claim | Verdict |
 |---|---|---|
 | Directive | Overburden 6 of 6 | Overstated |
-| Seed file, original | Overburden 4 of 6 | Wrong variant — "two adults" subset |
+| Seed file, original | Overburden 4 of 6 | Wrong variant *(the seed doc later retracted the "two adults" attribution from the API's own structure — no household-type dimension exists; the figures were simply another variant. `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §"CORRECTION TO THE CORRECTION" is the authority; corrected here 2026-08-27)* |
 | First gap report | Overburden 4 of 6 | Caught the directive; trusted the numbers |
 | Corrected + gap-closing | Overburden **2 of 6** | Correct |
 | Metric decision | Homeownership 4 of 6 | Overstated — mixed bases |
@@ -756,6 +765,11 @@ use — and this section is its record.
 confirmed as designs, and what is left is the label-clipping class (P4), which is a defect with its own
 entry in the roadmap rather than an unconfirmed screen. Keeping the review open for it would have
 conflated "has not been seen" with "has a known bug".
+
+*(Added 2026-08-27: items 4, 5 and 9 ARE 5e's batches 6, 4 and 5 — the mapping recovered from the
+deleted backlog's history — so those batches were live-confirmed here on 2026-08-02 although the
+roadmap carried "Not yet live-confirmed" on them until the third consolidation (§29). Item 3's P2 fix
+(`628d78e`) was likewise SEEN here; its roadmap entry never closed with it.)*
 
 ### What the four failures cost, and what each taught
 
@@ -1103,7 +1117,10 @@ either direction; a ruling made ON the report, not a gap in it); **R2** the acco
 convention, restated as the standing property at the top of CLAUDE.md; **R4 maturity** — the
 `EffectiveDebtInterestRate` rate-lag (`b05150f`), the USA carve-out generalized; **R5/F1** —
 `ApplyOneTimeBudgetImpact` (`720ccee`), interrupt impacts reach the books. §F1 of
-`MISSING_PREREQUISITES.md` closed on it 2026-08-17: C4 done, A1 with it, F register zero.
+`MISSING_PREREQUISITES.md` closed on it 2026-08-17: C4 done, A1 with it, F register zero. *(The
+roadmap's own bullet for this arc still read "next: the report… C4 waits on it" nine days after the
+report ran — a recorded instance of the cached-status pattern, struck 2026-08-26 and deleted with the
+bullet 2026-08-27.)*
 
 ### Q1 — Gini → ApprovalRating (2026-08-17; shipped same pass)
 
@@ -1331,7 +1348,9 @@ codebase had already fixed once), and D2's striking of headcounts was load-beari
 consulted:** four data visualisations were never aged, and Design REFUSED to invent 29
 distinguishable aged hues — **change the chart form rather than ship a worse palette** (the
 eleven-hue floor's own logic one level down); **D5** party inks collided with area inks; **D6**
-the third hue tint got its rule; **D7 — still consulted:** uniform auto-shrink REJECTED — a
+the third hue tint got its rule *(the snapped `tabTint.*` values were delivered — and are still unwired
+at HEAD 2026-08-27; the tab swatch draws the area ink; the wiring is a roadmap item)*; **D7 — still
+consulted:** uniform auto-shrink REJECTED — a
 column printing at four sizes reads as an error; the answer is the resort ladder (screen spec
 §A.9a); **D8** behaviour 6 stated backwards between two documents — the board's version won
 (dashed = provisional); **D9** eight sprite names without files — four substituted, four became
@@ -1389,6 +1408,60 @@ ruled honesty), no seat headcounts (the model has none — Design's own D2), no 
 (the recorded 1i reason; the VOTE-IN countdowns are the real datum). The rulings doc stays at the
 repo root as the standing 1i spec with a dated 1j header pointer; CLAUDE.md "Board 1j
 implemented" is the build record; §20 carries the law-system story.
+
+---
+
+### The screen spec's finished sections, and what the build did with each (added 2026-08-27)
+
+*`POLISIM_V2_SCREEN_SPEC.md` stays at the repo root as the visual reference the code cites by section
+(`LedgerRow.cs` §A.9, `GameController.cs` §A.9/§A.11/§A.12) and as the spec of the one unbuilt screen
+(1h). Its pass-3 dispositions (§C) and "what is actually buildable" list (§E) were history at HEAD and
+were removed 2026-08-27; this is their record, verified section by section against commits and callers.*
+
+**Built as specified, called at HEAD:** §A.1 the surface ladder and the two baked sprites (`4431216`,
+2026-08-03 — grain drawn first in `OnGUI`, the scrim at the takeover); §A.3a the party inks (all four
+hexes exact, one accessor, both consumers — arc and legend swatch); §A.3b the categorical cap — a THROW
+past index 7, not a wrap (`a7bd80d`'s successor `a7bd40d`, `UiPalette.MaxCategoricalSeries`; tax and
+spending route to the ranked bar ledger; `SpendingCategory` is 46 members at HEAD, not the 29 pass 3
+counted); §A.4 typography (three font constants, every Courier consumer a genuine document artifact);
+§A.7 the tab strip (`9497673`, the one §A section with Elias's own sighting, 2026-08-26); §A.8 the
+content panel and sub-tab inks (the active sub-tab's 3px area strip RULED OUT by Elias 2026-08-12 —
+the main-tab spine carries area identity one level up); **§A.8a published vs live, corrected** —
+published-ness is keyed by `PublishedFigure`'s badge chip + reference period + publication date, revision
+status by the frame style `GraphRenderer` draws (dashed while provisional, solid once revised); two
+orthogonal channels, so a preliminary published figure is badged, dated and dashed; §A.9 the ledger row
+(`9705205`; the measures restated in `LedgerRow.cs` as measurements, the row height DERIVED from the font
+metric — pass 3's 36px was the value at 1080p, the ninth instance of the fixed-height class and the first
+caught in a specification rather than a capture; VOTES deleted, 250px paid for by it); §A.9b the
+read-only row and the negative-fill = no-gauge sign rule (one idiom, two methods); §A.9c Parliament's
+trailing column = the seat PERCENTAGE with the count as the figure, the party hue reaching `barInk`;
+the scroll-view treatment applied globally on `GUI.skin` (the per-view count is beside the point); the
+in-row slider (B1's primary carrier, the pencil as `icon_pencil_draft` geometry, never a glyph); §A.9a
+the resort ladder in both variants (the 11px floor a measured argument); §A.12's EMBEDDED column
+(`drawOwnFrame:false` at both Decisions sites) — the STANDALONE column is superseded by the Canvas-path
+ruling (the framed IMGUI modal dies with the rebuild); §A.13's IMGUI half of the hand-off envelope (the
+scrim, opacity-only, on four paths; the 100%-cover deviation and the eight seam defect classes recorded
+in CLAUDE.md); §A.14's 1f (`14cbad6`) and 1g (`5f64554`) built and seen; §D.2 transitions from the
+IMGUI side — the one §D clause that survived contact with the build unchanged.
+
+**The pass-3 findings (§C), all closed:** C.1 division records — backing data (`a7bd40d`) AND a reader
+(`ab1b72f`), the absence-claim guard's origin story; C.2 the ladder's numeric variant, absorbed into
+§A.9a; C.3 the 36px/type-rescale collision, implemented as the derived row height; C.4
+`GetCategoricalColor` fails past eight, implemented as the throw; C.5 `emblem_state_seal` → `ui_seal_state`
+(the prefix is load-bearing); C.6 the `canvas_*` namespace retired and the strips split per state; C.7
+SVG-only delivery restored to PNGs — **and the coverage check gained a manifest** (`ChromeManifest.txt`),
+because a check that enumerates the disk can never answer "is everything specified present?" — the
+delivered-vs-reachable lesson from the opposite direction.
+
+**Declared deviations found by the 2026-08-27 sweep, recorded rather than silently kept:** `textOnDesk`
+ships `#F0E7D8` (spec `#E8DDC4`); the column layout ships a FRACTION (`LeftColumnWidthFraction = 0.45`),
+not the spec's held-constant 430px; the left column's composition moved by decision (the Calendar Panel
+replaced the country header + tile grid, `a13dd7b`, the tiles relocated); §D.1's "both sides draw the
+hold banner" rule was never implemented — takeovers stop the clock by construction, so no banner is owed
+while a Canvas screen is up. **Still unbuilt and live on the roadmap:** the RUNNING status-line plate,
+the speed buttons' held-state face (`ui_btn_disabled`), the right-aligned screen caption, the tab-swatch
+tints, three ink tokens without a constant, §A.11's urgency-chip border/rotation and generic stamp,
+two envelope timing rows.
 
 ---
 
@@ -1456,6 +1529,611 @@ the same day (`SaveLoadRoundTripDiagnostic` 12/12; Json.NET's populate-in-place 
 tuple-dict surrogate found and fixed with a load-bearing `ObjectCreationHandling.Replace`) → the
 saves menu the same day (79 captures × both sizes; loads resume PAUSED; incompatible saves
 listed-not-hidden) → **layer 3 live-verified 2026-08-26** (F5/F9 + the saves menu in Elias's
-Editor session). Nothing of item 8 remains open.
+Editor session). Nothing of item 8 remains open. *(The roadmap's "startable today" table still listed
+the saves menu and the F5/F9 checklist as remaining until the 2026-08-27 consolidation removed both
+copies of item 8 — CLAUDE.md "Save/load BUILT and gate-green" (core, `c1d2810`), "The saves menu"
+(`963ee1c`) and the 2026-08-26 Editor-session record are the build chain.)*
 
 ---
+
+## 27. The first Master Sequence and the v2.0 overhaul — the roadmap's closed record, migrated (2026-08-27)
+
+*The third consolidation pass (2026-08-27) moved every finished block out of `POLISIM_MASTER_ROADMAP.md`
+under the three-way test; git history holds the original prose in full (the roadmap at `d29406f` is the
+last version carrying it). Each item below was re-verified against its commit and its callers by the
+pass's sweep before it moved; where the roadmap's own wording had gone stale, the corrected fact is what
+migrated, with the correction named.*
+
+### The ruled execution order (2026-08-03) and its discharge
+
+Elias reordered the first sequence on 2026-08-03 — **v2.0 (item 9) first, then item 8, then Continuous
+Time Phases 4–5, then Round 4** — on the don't-build-it-twice argument: a total visual redirection
+rewrites every draw method, so anything built before it is built twice; the same reasoning that had
+put Phases 1–5 ahead of Round 4. **The numbering was deliberately NOT changed** — items 1–8 are cited
+throughout CLAUDE.md and the code, and renumbering would have broken every citation; that sentence is
+the one part of the block still live, kept in the roadmap's standing-constraints block. The consequence
+stated at the time — *the game ships v2.0 on a hybrid simulation, a daily calendar over a turn-shaped
+macro core* — held until 2026-08-16, when the sequence ran to completion in its ruled order (v2.0 →
+item 8 `c1d2810`/`963ee1c` → Phases 4–5 `37c9003`/`22e2b49`, §28) and Round 4 closed the day after
+(`a9fb8b7`, §19). The hybrid description is HISTORY; the honesty it asked for (the published/live
+distinction carrying the seam) outlived it as a standing rule.
+
+### The closed first sequence — items 1–9
+
+1–5: Part A (§2), Part C (§3), CT Phase 0 (§4), Part B pilot and full rollout 5a–5f (§§5/10/16). 6:
+Round 4, five batches, closed 2026-08-17 (§19; the "still OUT" clause about C4/credit-rating follow-ons
+resolved with the fiscal arc, §§22/23). 7: Continuous Time Phases 1–5, closed 2026-08-16 (§28 — the
+roadmap's item-7 line was the only entry in the list with no DONE marker, written in the future tense
+eleven days after it closed). 8: save/load (§26; the second copy of item 8 in the "startable today"
+table still listed the saves menu and the F5/F9 checklist as remaining — both closed, 2026-08-16 and
+2026-08-26). 9: the macro-overhaul directive (§25). The sequence's ordering rationale — Part B waits on
+CT Phase 0 because Parliament's gating and the daily conversion would otherwise touch the same code for
+two reasons at once — is a lasting decision and lives with §11.
+
+### The v2.0 architecture — decided and measured (2026-08-03)
+
+**Hybrid at SCREEN granularity, never element granularity.** Elias chose it after the architectural
+survey on one finding: the desk metaphor is not continuous — a data screen is *"looking at a document"*,
+not a document sliding on a shared desk. Narrative/consequential screens render in Canvas (transitions,
+TextMeshPro, masks); data-dense screens stay IMGUI, restyled (9-slice frames, textures, a real font — no
+rewrite). A screen is either Canvas or IMGUI, never both interleaved; **any request that violates this
+silently is a request to migrate that screen wholesale to Canvas.** The render order was MEASURED, not
+assumed: ScreenSpaceCamera Canvas draws below IMGUI as the survey said, and ScreenSpaceOverlay Canvas
+**also draws below IMGUI** — there is no Canvas render mode above OnGUI. Two load-bearing consequences:
+a Canvas screen is visible only while `GameController.OnGUI` early-returns (the screen-granularity rule
+enforced by the renderer itself), and transitions run from the IMGUI side (an IMGUI scrim can fade over
+everything; a Canvas overlay fading in over IMGUI is impossible). Re-measured in a built Windows player
+the same day, byte-for-byte the Editor's answer (`outer=RED, band=GREEN, centre=GREEN`), so the
+architecture rests on a player measurement, not an Editor one. The eight load-bearing behaviours
+("WHAT MUST NOT REGRESS") stay in the roadmap's standing-constraints block. Typography: TeX Gyre Pagella
++ Courier Prime, open-licence, owned by `PoliSimTheme`.
+
+### The IMGUI half — the row family, the placement track, the Canvas track (2026-08-10 → 08-16)
+
+- **The Budget screen first, one row type per capture, never batched** — Tax (standing tick at the
+  enacted rate; button + slider), Spending (tick at zero, the slider carries a percentage CHANGE),
+  Welfare (tick at generosity), Infrastructure (read-only gauge — condition is an output), SWF (tick at
+  the standing value on a range spanning zero; the trailing column carries the normalised share). One
+  widget, five semantics, and the shape held for all of them. The tax row took three capture rounds and
+  each found a defect code review had passed (a shared-style mutation degrading every screen, columns
+  overflowing their panel, a button measured in the wrong style) — the rule *one type per capture* is
+  not ceremony and stays in the roadmap's constraints.
+- **The row family DONE (derived 2026-08-12 from `LedgerRow` call sites):** Budget all five row types;
+  Policy/Laws via `DrawDialRow` (`d3cd281`, `df03e97`, `d4083fe`); Statistics/Domestic
+  (`DrawDerivedStatRow`, `397d829`); Politics/Parliament (`HemicycleRenderer` legend, `f877915`).
+  Residues named, not converted: International's two and the Fed's concatenated labels — the roadmap
+  keeps them as a small live item, counts to be re-measured after pass 4 changed the central-bank tab.
+- **The placement track CLOSED 2026-08-12:** the "13 unwired sprites" list was WRONG and was corrected
+  by tracing call sites — six of the thirteen were never IMGUI placement work. Wired: `ui_subtab_on/off`
+  + `ui_slider_tick` (`cbdde4e`), `ui_grain_tile` (`b4108a3`), `ui_banner_hold` + `ui_calendar_pad`
+  (`7933696`), `ui_tab_spine` (`a220849`), `ui_folder_dossier` + `ui_portrait_frame` (`fc16304`),
+  `ui_stamp_carried/rejected` (`ab1b72f`, the Division Records panel); `ui_chip_outline` was never
+  unwired. Canvas-path by ruling: the seals, the scrim, `ui_frame_ornate`, `ui_portrait_frame_oval`.
+  **One defect found en route and now rule 15's origin:** `cbdde4e`'s sub-tab face left cream text on
+  pale paper — unreadable in every capture, approved by eye — fixed `4192042` by putting the previous
+  set beside the new one. **Phase 2's derived statement of every chrome sprite's disposition** (61 on
+  disk, 29 wired + 11 Canvas-path + 2 no-state + 8 orphaned + 11 superseded; the 11 removed `10f713e`)
+  was the dated 2026-08-12 derivation and is superseded by §33's 2026-08-27 re-derivation — its own
+  caveat ("a fresh call-site trace, not this note, is what re-derives them") is the rule.
+- **Elias's eight-orphan rulings (2026-08-12):** the folder faces placed as their own pass (B, built
+  `9497673` 2026-08-16 — `BuildFolderTabStyle` and the deferred active-tongue paint, tongue-edge
+  constants measured from the PNGs' alpha, ink-on-paper labels both ways; **VERIFIED in Elias's live
+  Editor session 2026-08-26**: hover face, spine shift, the real click on the deferred-painted tab);
+  `ui_frame_ornate` Canvas-path; `ui_frame_double`, `ui_stamp_draft`, `ui_btn_disabled`, `ui_pixel`
+  served-by-current-treatment, revivable by ruling. The sub-tab keeps its recorded no-area-tint
+  decision (the main-tab spine carries area identity one level up; §A.8's 3px strip would be redundant).
+- **Item 1a and the absence-claim lesson:** the 2026-08-12 stamps ruling declared "no resolved-bill
+  record exists" two days after `a7bd40d` (2026-08-10) had built `DivisionRecord`/`DivisionLog` as the
+  screen spec's §C.1 resolution. The UI half was the missing piece; `ab1b72f` built the Division
+  Records panel (six real divisions per set, both sizes, USA and Germany). **A ruling built on a premise
+  that was already false** is the canonical absence-claim instance, beside the A4 caller-check lesson.
+  What election night still needs is a different record entirely — an `ElectionRecord` — which rides
+  item 10 (`MISSING_PREREQUISITES.md` §D).
+- **The Canvas track CLOSED 2026-08-12:** the pilot `14cbad6`+`257ed39` (the takeover seam with eight
+  named defect classes — one found by the pilot's own first run — `CanvasChrome`, the country selector
+  per §A.14, `ui_scrim_takeover`'s call site at last; recorded decisions: scaler 1920×1080 match 0.5,
+  the border-order convention, the four-phase seam), then **Signing (1g)** `5f64554`+`38363c6` (takeovers
+  stop the clock; CoverIn overlays the live dashboard; ceremonies fire only from play's day tick) and the
+  Canvas text guard `6adb7c6` (`CanvasTextGuard`, self-testing both directions, fails at zero enumerated;
+  `CanvasChrome.TintedImage`/`AsAuthoredImage`, the tint family forced at construction). §A.14 defines
+  THREE Canvas screens, not eight (the eight are the boards): 1f and 1g built; **ELECTION NIGHT (1h) is
+  item-10-gated** (ruling R2). Both built screens have been in front of Elias: 1f is unavoidable in every
+  live session, and 1g's seal/button branch defect was playtest 1's own finding
+  (`SigningStampFixDiagnostic`).
+- **Track 3 `10f713e` (2026-08-12):** the eleven superseded pre-v2.0 chrome PNGs removed with their
+  metas, `DeliveredAssetCheck` taught the manifest's `!` allowance in the same commit (0 missing / the
+  superseded skips logged), ChromeV2 50/50 both directions. ⚠ The eleven SVG sources under
+  `Chrome/Source/` were NOT removed (the commit touched no `.svg`) — the roadmap carries the one-line
+  correction as live work.
+- **The WIN-form election reveal pinned `5eb5dc7`** (`winusa1600_88w`; both reveal forms and game over
+  on film in one chain; the FP-meeting search variant found ALREADY BUILT and stated, not re-built).
+- **The country-coverage pass (2026-08-12):** 12 runs (6 countries × 2 sizes), 676 captures, every
+  automated check clean, then the different-code screens read by eye per country. Its three findings
+  were all FIXED the same day, though the roadmap carried "fix not yet applied" on all three to the end:
+  the ECB sub-tab label garbling when selected (instance #13, `SubTabRowHeight`, `d072286`), the empty
+  Mandatory group leaking `GroupSpendingMax`'s guard as a figure (same commit), and
+  `DrawElectionResultsScreen` printing paper-ink on the bare desk. The pass's stale premise corrected:
+  all six countries HAVE spending portfolios (`SeedGenericSpendingLines`, 5 lines each); the legacy
+  category-delta UI is unreachable for every seeded country. The reachable state axes were pinned the
+  same day (`-shotstates`), and two of three "unpinned" claims fell within hours — the FP dossier pinned
+  itself through real rolls, and `DrawElectionResultsScreen` existed all along (the driver's turn path
+  never ran `CheckElection`): the driver's day tick became `SimulationManager.AdvanceCountryDayTick`,
+  one method both callers share.
+
+### The three reconciliation rulings (Elias, 2026-08-12) — lasting
+
+**R1** Step C folds into Round 4's slot (spent; §19). **R2** the `ElectionRecord` waits for item 10's
+model, and the Canvas ELECTION NIGHT screen is item-10-gated (the other two Canvas screens were not,
+and are built). **R3** the item-10 collision map stands — **no main-side changes until item 10 opens**;
+`PartyMarkCoverageCheck`'s reflection over `BuildParties()` should survive the model swap, **to be
+VERIFIED when item 10 opens, not trusted now** (carried in `MISSING_PREREQUISITES.md` §D).
+
+### Two lessons the roadmap carried that belong here
+
+- **A next-steps marker is a claim like any other and goes stale the same way** — and worse, because it
+  is the first thing read each session. The "NEXT SESSION STARTS HERE" marker of 2026-08-11 had been
+  wrong for a day (it offered Policy/Laws as a conversion candidate after `d3cd281`/`df03e97`/`d4083fe`
+  had converted it) and was 16 days stale at deletion. There is exactly one session-entry point in the
+  roadmap now, and it is the board, re-derived rather than edited forward.
+- **The `EndTurn`-as-absolute-turn-number capture artifact is known and driver-only:** `94c` (Inherit the
+  Fund) and Italy's own instance show "SCENARIO FAILED" reached at their mid-run start because
+  `ScenarioEvaluator` compares `EndTurn` absolutely while the capture driver runs several blocks on one
+  continuous clock. Neither a scenario-balance nor an evaluator defect; recorded so it is not
+  re-discovered as new.
+
+### The resolved v2.0 design questions
+
+The eleven-hue question — all eleven survive, aged and desaturated, no non-colour carrier (emblems drawn
+*instead of* the hemicycle legend's swatch broke the legend's correspondence with its own arcs: **a mark
+cannot substitute where the mark is not what the chart is drawn in**; inks live in `UiPalette`). The
+font test — answered, and it surfaced that draft amber and the Political hue shared a hex; separated. The
+`drawOwnFrame` dual-siting question — absorbed: the IMGUI modals' framed treatment dies with the Canvas
+rebuild (`ui_frame_ornate` Canvas-path, 2026-08-12), and the separate-sprites answer was delivered in
+pass 2 (§24).
+
+---
+
+## 28. Continuous Time Migration — Phases 1–5 (Master Sequence item 7), migrated (2026-08-27)
+
+*Item 7 CLOSED 2026-08-16 (`22e2b49`). CLAUDE.md's five phase entries are the detailed authority; this
+section preserves the plan's lasting decisions — the translation methodology, the validation bar and
+the two lessons — and the per-phase closure line. The roadmap's PART ONE, written when a turn was 121
+days, is deleted.*
+
+**The translation methodology — do not guess new constants (the taxonomy's final state, completed by
+Phase 5).** Identify which mathematical shape a constant is before touching it; denominators are
+`SimulationManager.DaysPerTurn` (365 since `d8f55ce`, 2026-08-10 — discontinuity 3), never a typed
+number, which is the discipline that made 121→365 a one-line edit:
+
+1. **Linear/additive rates** — `rate_per_day = rate_per_turn / DaysPerTurn`; accumulating terms with no
+   target take THIS transform, not the multiplicative one (`ApplyCrimeEffects`).
+2. **Multiplicative/compounding rates** — `(1 + r)^(1/DaysPerTurn) − 1`; `MacroSystem.PerDayReversion`
+   is the standing implementation for anything shaped `X += speed × (target − X)`.
+3. **Probabilities** — `1 − (1 − p)^(1/DaysPerTurn)`.
+4. **Hard clamps and ceilings do NOT shrink** — a ceiling bounds the state, not a per-step increment;
+   only the speed of approach changes.
+5. **Sensitivities and target-shapers take NO transform** — a constant mapping a level to an offset has
+   no time dimension; scaling it changes what a policy position *means*.
+6. **Annual rates applied to stocks take the POWER slice** `(1+x)^(1/DaysPerTurn)` (Phase 4's
+   population factor); **the identity's attractor takes the AFFINE power slice** (Phase 5).
+7. **A constant that is a POLICY STANCE stays frozen for its period** (Phase 3's fiscal reaction
+   multiplier); **expectations that adapt to a closing print stay AT the boundary** — boundary semantics
+   have no faithful daily form (Phase 5). The governing distinction the migration ended on: **linear
+   distribution for fixed references, compounding for self-references, boundary residence for boundary
+   semantics.** The stance-vs-flow question, asked constant by constant, was the method.
+
+**The validation bar:** simulate `DaysPerTurn` consecutive days and confirm the result within **3%** of
+the validated turn-level step for the same inputs — `AggregationEquivalenceCheck` (`TolerancePercent =
+3f`; the roadmap's "±3–5%" was looser than the check) FIRST, the full scenario matrix SECOND, one commit
+per phase, ambiguous shapes escalated rather than guessed.
+
+**The phases:** 1 Sectors + Infrastructure `321a10e` 2026-08-02 (28/28, max drift 0.0004%; the two
+constants took DIFFERENT shapes — a gap-closing fraction multiplicative, a decay rate linear — and the
+sensitivities none, which is the distinction the rest turned on; investment stayed a boundary action).
+2 Labor + Crime & Justice `275e014` 2026-08-02 (34/34, 0.036%; `PerDayReversion` born and shared). 3 the
+fiscal engine — part 1 `42a499f` moved `PovertyRate`, **part 2 `fc657b1` 2026-08-03** moved the money
+(39/39, 1.35%; 25 of 30 matrix cells byte-identical). **The constant that failed its first shape:**
+recomputing `GetFiscalReactionMultiplier` daily failed outright (Sweden 24.8% drift, Germany 22.7%) —
+not a bug: one period moves a debt ratio ten points, so a multiplier re-reading it daily walks down its
+own surplus; frozen per period it passes at 0.45%/1.35% **and is the better model, because a stance is
+adopted when the budget is set.** The player-visible consequence: a policy change's CASH effect lands
+one period after the boundary that made it; the budget RESOLUTION stays on the boundary because a
+budget passing is an event on a date. 4 Demographics `37c9003` 2026-08-16 (the throwaway
+`Phase4YearsPerTurnDiagnostic` ran FIRST and earned its gate 9/9; 61/61 first try; `History.Append`
+had sat on the turn boundary since Phase 0 — moved to `AdvanceDay` with the bucket-divergence assert).
+5 the core macro engine `22e2b49` 2026-08-16 (`Phase5NoFeedbackDiagnostic` 4/4 gated first; four
+first-try shapes failed the bar, every failure measured and kept, all four resolving into Phase 3's
+fixed-period-reference pattern; 81/81 near-exact; the four-country debt signature reproduced within ~1
+point; no constant VALUE changed). **The hybrid simulation is over: every economic quantity moves on the
+day its history point records; the boundary remains what a boundary is for.**
+
+**The release-cadence ruling that superseded the plan's per-stat list:** six stats publish, not
+twenty-nine — only those with a real release rule in the seed data (`POLISIM_SEED_DATA_MACRO_OVERHAUL.md`
+Part 1, cited by `ReleaseCalendar.cs`); inventing a cadence for a stat no institution publishes on a
+schedule was refused (§6). The real-reporting-lag refinement closed as won't-do 2026-08-11 (§32).
+
+---
+
+## 29. Part B 5e — batches 4–6, the retrospective and the superseded plans, migrated (2026-08-27)
+
+*§10 holds Phases A/B and batches 1–3; §16 holds the live confirmation of all eleven review items
+(2026-08-02). The roadmap still carried batches 4–6 as "BUILT — Not yet live-confirmed" 25 days after
+Elias confirmed them (§16 items 4, 5 and 9 map to batches 6, 4 and 5 — verified by recovering the deleted
+`VISUAL_REVIEW_BACKLOG.md` from history), and its Part B header still read "Only 5e is live".*
+
+**Batch 4 — Policy/Laws (`a1bec98`, 2026-08-01):** four byte-identical live-estimate renderers
+collapsed into one `DrawBillLiveEstimate(float direction)` with the diverging lean bar; every bill block
+in an area card; `BeginDecisionCard`/`EndDecisionCard` → `BeginAreaCard`/`EndAreaCard`. **The collapse
+mattered for correctness:** the `Mathf.Sign(0f)` zero-direction trap has to be handled identically in
+every copy, and four copies is four chances — that exact bug had already shipped once. **Batch 5 —
+Budget Process (`cdd5a1c`):** `DrawLegislativeSupportEstimate` was a FIFTH copy on the most important
+screen in the game; now shares the one renderer, equivalent by construction (`WouldBillPass`'s
+`BudgetBill` overload computes the direction and delegates to the float core). **Batch 6 — the amber
+draft cue (`78280c8`):** `DrawDraftLabel` at every draft site in one pass (the "25 call sites" was a
+2026-08-01 snapshot: 28 lines at the commit, and the Budget conversion of 2026-08-10 moved most of them
+into `LedgerRow`'s draft column — one `DrawDraftLabel` site remains, the SWF case).
+
+**The three models of "changed", restated against `LedgerRow` (lasting):** standing/draft pairs compare
+the two values; **spending drafts are a percentage CHANGE**, so non-zero is the condition; **the SWF's
+own existence is a draft**, compared against whether a fund stands. Two cases stay neutral by design: an
+**unimplemented** tax line or welfare program is changed by its own Implement/Remove bill, never by the
+slider beside it, so its draft ink must not light up; and the standing labels are precisely what has not
+changed. Anything added later gets the same case-by-case treatment.
+
+**The retrospective, worth more than the batches (lasting):** the design pack's components fell into two
+groups. `StatTile`, the card/rounded-box primitives and the icon tinting were built against assumptions
+this project holds and are in production. `SupportBar` (a seats-based majority the model does not
+implement) and `StandingDraftPair`/`DraftTrack` (hardcoded offsets ignoring `rect.width` on the most
+fragile screen in the project) encoded mechanics and layout this project does not have and were
+rejected only after being checked against the real model — in both cases the roadmap had already
+recommended them before that check. `Portrait` was superseded by real art. **Treat a plausible-sounding
+component as a proposal to verify against the actual code, never as a fit already established.** ⚠ The
+three rejected widgets still exist as dead code in `PoliSimWidgets.cs` with zero callers — their
+removal is a small live item in the roadmap, not covered by this record.
+
+**5f** (the aesthetic restyling pass) was folded into 5e on 2026-07-31, and the original step-5 plan
+(pilot on Tax Policy, then roll out to the remaining seven with the identical pattern) was superseded
+the same day — both shipped inside 5e (§§5/10/16). **The "PoliSim GUI redesign.zip" pack** (Zone.Identifier
+`HostUrl=https://claude.ai/`, a Claude Design handoff) was security-reviewed in full before use — both
+C# files read line by line and grepped clean for network/IO/reflection/process APIs, all eight SVGs pure
+static geometry, all nine PNGs genuine image data with no embedded scripts or URLs; the theme/widget code
+imported `b69b0d6` (2026-07-31), the icons under reconciled names, `menu_pattern_tile.png` last
+(2026-08-02, §15), the zip archived. The "open tie-in" about SWF in the omnibus bill was unactionable
+when written (SWF changes had ridden `BudgetBill` since 5c) and the question it pointed at was ruled AND
+built the same day (§23 A2, `b1c077f`).
+
+---
+
+## 30. Master Sequence II — Steps 1, 2, 3 and 5, migrated (2026-08-27)
+
+*Canonical per Elias's enumeration 2026-08-17; Steps 4 (item 10) and 6 (story mode) remain and are
+carried in `MISSING_PREREQUISITES.md` §D. Every gate and date below was verified at HEAD during the
+2026-08-17 transcription and again by the 2026-08-27 sweep. Visual deliverables in this section that
+no record shows Elias seeing are listed in `MISSING_PREREQUISITES.md` §V, not recorded as confirmed here.*
+
+**Step 1 — the coupling graduations, CLOSED 2026-08-18: three variants of the template demonstrated.**
+Q3 productivity → potential (`d1cb1de`, the RE-ROOTING kind: byte-identical 39/39, 6/6, zero moved;
+trajectory movement deferred to Q5 by design). Q1 Gini → Approval (`ed07333`, the FORCE/containment-clean
+kind: gap form −0.05 × (Gini − BaselineGini), 1.0 equilibrium pt per Gini pt, no new ceiling; the
+brief's "new Country field snapshotted" was already false at ruling time — `BaselineGini` had existed
+since R4-2, so Q1 added no field: **verify against HEAD, not the brief**). Q2 real-wage →
+ConsumerConfidence (`ef7cbf2`, the FORCE/baseline-active kind: form A with the single-book rider,
+0.5%C/pp on the anchored wage gap, the shared realized-growth helper; **the FIFTH fixed reference
+`WageGrowthGapAtPeriodOpen`**, found by the equivalence bar and fixed by the anchor pattern). **Lasting —
+the single-book rule:** no stored quantity may diverge from its presented value; the effective confidence
+is the only confidence read or displayed, the stored field is the policy-drift base and named as such;
+`BusinessConfidence` inherits by default if it ever gains an effective form.
+
+**Step 2 — causality legibility.** Scoped `5084236` and **v1 shipped `092202c` the same day
+(2026-08-18)**: the approval ledger (terms recorded at the boundary under the Σ==Δ self-audit; events by
+observation at eleven sites), the trace panel on the LedgerRow grammar (click a chip; equilibrium
+framing; dated events; the confidence single book as the second section), the preview-parity diagnostic
+as standing equipment (7 exact-asserted terms × 6 countries), the ledger in the save shape with explicit
+RT assertions; the observation gate's three catches (the one-ulp codegen story, the first-boundary open,
+the detector's own false positive). **The third section shipped `7d2a22c` 2026-08-25** — the fiscal
+legibility panel Italy Debt Crisis's playtest asked for: a debt ledger (`DebtAttribution`/
+`DebtLedgerRecorder`, the approval ledger's shape) observing the daily stock write, so the debt step
+decomposes EXACTLY (primary balance · the FRF's revenue effect at the frozen stance · interest at
+issuance · the maturity lag · −π·b erosion · clamp/rounding · dated events), the ratio's identity in two
+exact terms, the self-audit at every boundary; **600/600 byte-identical, 0 ATTRIB across 600 audits**,
+RT 12/12 with the ledger crossing, parity 7/7. Three pre-existing defects the bar surfaced, all fixed:
+every law vote had written approval outside the ledger since 08-24 (24 → 0 ATTRIB on the RT harness);
+the trace panel never measured against its host's height; the driver's Italy block had drifted past
+`EndTurn`. The scoping package's derivation is §21.
+
+**Step 3 — challenge-mode scoping, the slice shipped `cd52461` 2026-08-18** (scoped `deff6dd`, the slate
+of six): `ScenarioDefinition` (the deliverable), the four objective forms, `ScenarioEvaluator` on the
+`CheckElection` hook, the IMGUI verdict with margins and a legibility-powered epilogue, ledger-style
+persistence (id + counters), the per-scenario FA cadence multiplier defaulting to 1.0. **"Inherit the
+Fund" closed R3's creditor-branch coverage gap BY EXERCISE** — both arms of the symmetric erosion term in
+one run (+6.2 on a negative stock at t1, −1.4 on a positive one at t12), and the measurement corrected
+the scenario's own premise (the structural deficit dominates erosion ~7:1). **The ruled headline:**
+authored scenario starts with win/lose conditions, NOT an election clock. **The slate's dispositions:**
+Inherit the Fund SHIPPED · Italy Debt Crisis SHIPPED (`6d5b000`, below) · The Disinflation DROPPED
+(measured, `8460a59`) · Wage Boom Management DROPPED (measured, `b12ccd0`) · Poland convergence and The
+Unequal Recovery LIVE (the roadmap's content backlog, ruled keep 2026-08-26). The `Sustained` form was
+exercised twice — on a synthetic diagnostic and for real in Italy, where it found and fixed a genuine
+non-stickiness defect in `ScenarioEvaluator`. R-S3e's three-rate FA-cadence sweep was SUPERSEDED by
+ruling 2026-08-26 (C5): the built per-scenario multiplier is the lever; the felt-pacing question rides
+the playtest gate (`MISSING_PREREQUISITES.md` §P).
+
+**Step 5 — Q5, the cyclical pair, DONE `7321807` 2026-08-18:** R-Q5a = B1 (additive cyclical force
+through wages), R-Q5b two channels stated separately in code though numerically indistinguishable at
+h = 0.4, R-Q5c h = 0.4 pp/pp on the unemployment gap, **R-Q5d = the answer to Q4's revived residual:
+potential reads trend alone; the Productivity stat and real wages read trend + cycle**, R-Q5e investment
+deepening DEFERRED (no capital stock exists anywhere in the model; I/GDP measured flat at 19.5–20.9% —
+nothing cyclical to deepen from either way; the return trigger is on the roadmap's shelf). **The model's
+first closed feedback loop, its gain MEASURED rather than trusted:** derivation predicted 0.075×h ≈
+0.03; measured 0.0297–0.0300 across three structurally different economies — within 1%, stable by ~20×
+against Okun's 0.7/turn reversion, h would need ~13 to threaten it. **The correction that followed within
+hours:** the "Wage Boom Management is now authorable" pointer died the same day — `UnemploymentReversionSpeed`
+(0.7/turn, unrelated to Q5) forecloses sustained tightness below NAIRU regardless of the loop, and The
+Disinflation fell to the same constant from the opposite direction: **two drops on one root cause is a
+named model-balance finding** (§22 holds both reports). Corrected, not silently amended.
+
+**Italy Debt Crisis SHIPPED `6d5b000` 2026-08-18 — the third content pass, first of three to survive:**
+seven same-seed configurations spread 52.63%–109.60% debt-to-GDP by t30 on the player's instrument
+choice, spending cuts compounding (−0.16 → −1.90 pp/pp) while VAT hikes plateau; no debt term in the
+misery index, so the approval-survival question that killed Disinflation is cleared with margin.
+Authored as `ItalyDebtCrisis()`: Terminal + the `Sustained` form's first real exercise + NeverBreach;
+the generic verdict-margin line reports a Sustained streak. **Format verdict: subset, confirmed — no new
+`ObjectiveKind` needed.** Two of SIX scenarios remain.
+
+**Option C for Riksbank independence — NAMED (playtest-2 item 5, ruled 2026-08-25):** the player-set
+rate as a deliberate gameplay choice, stated in the Federal Reserve tab's text and `PolicyDecision`'s
+doc (the Italy-scenario precedent: the premise as authored text, not an apology), keeping Sweden/Poland's
+full monetary agency. B — independence with appointment influence — is the destination, behind item 10
+(`MISSING_PREREQUISITES.md` §D), and gate 1 (the output-gap distortion) CLEARED with pass 4 (§31). **The
+felt verdict from Elias's 2026-08-26 Editor session is recorded there:** "still not independent" — C's
+naming does not satisfy in play.
+
+**STEP 5 CLOSES; the spine's remainder is Step 4 (13 Sept 2026) and Step 6 behind it.** The spine was
+re-checked 2026-08-25 (the fortnight's work — playtest 1, Turn → Year, the Calendar Panel, the law
+system to 50/50, the two-copy consolidation — touched none of the four things Step 4's package names,
+and laws entering Parliament reused the gated-bill path verbatim); six passes shipped after that check
+(§31), none touching Step 4's four named items either. The check is re-derived at the gate, not narrated
+forward.
+
+---
+
+## 31. The 2026-08-24 → 08-27 board — the law system, two playtests, the ruled build order, pass 6 (2026-08-27)
+
+*The roadmap's "Board state, RE-DERIVED 2026-08-25" block and "The ruled build order" section, migrated.
+CLAUDE.md holds every ship record; §20 holds playtest 1's package and the law system's first arc.*
+
+### The law system — 100 of 100, two categories (2026-08-24 → 08-26)
+
+MVP slice `ca11f9a` (a law is a NAMED PRESET over the existing dial space, reaching Parliament through
+the same gated-bill path every other bill uses) → batches 1–3 (`de34b4b`/`c9e9e16`/`785da64`) →
+close-out `555f4cc`, which found and fixed **the composition architecture's one real bug: dials are now
+a PURE FUNCTION of `Country.EnactedLaws`** — every enacted law's delta summed from the baseline, clamped
+exactly ONCE (`RecomputeCrimeJusticeDialsFromEnactedLaws`), never nudged incrementally, so any
+enact/repeal history in any order lands exactly → STOPPED at 38 on the browser's own navigability
+condition → Design delivered board 1i + `LAW_BROWSER_BOARD_RULINGS.md` (`315cca0`) → the browser rebuilt
+against it, 15 review findings fixed (`dddec9f`) → batches 4–5 to 50 with the saturating composition
+re-run (`eb11b78`: 27 of 50 enacted, FOUR dials clamp at once, full repeal nets exactly 50.0000 on all
+six) → the detail pane's width (`6804c6d`) → **the second category, Labor Market, 50 laws `e86c79d`
+2026-08-26** (below). Byte-identity for the no-law path holds by construction (`LawCatalog.All` is read
+only from the UI layer). The residues the roadmap still listed — "the category filter is inert until a
+second category exists", "five categories sit at 0" — are false at HEAD: `LawCategory` has exactly two
+members, both populated, and the filter genuinely narrows.
+
+### Playtest 1 (2026-08-18) and playtest 2 (2026-08-25, live, Sweden) — dispositions
+
+Playtest 1: the rejected-bill seal and Budget's dead nested scroll fixed 2026-08-18 (CLAUDE.md "First
+real playtest session"); Turn → Year 2026-08-24; the Calendar Panel `a13dd7b` 2026-08-24 (replacing the
+dashboard tile grid in the left column; **seen — playtest 2's verdict on it is why request §8 exists**);
+decision density **CLOSED ON THE NUMBERS, ruled 2026-08-25 (Elias)** — measured at 50 laws (`df4eee0`):
+automatic prompts/yr unchanged by construction (≈5; 5.87 at a full six-minister USA cabinet), named
+enactable choices 19 → 69, then **119 after the second category**; the 08-18 ruling's own prediction
+confirmed — the table did not move, the menu did; whether it READS as closed rides `MISSING_PREREQUISITES.md`
+§P. The law system above; portraits D1 in `MISSING_PREREQUISITES.md`.
+
+Playtest 2's seven items: **1** ATTRIB (Sweden 2027-01-01, +1.5000) FIXED `e25ae60` — the first-touch
+window class, writer = foreign-policy "Send substantial aid"; the approval recorder now opens at the
+pre-write value on every path; reproduced red then proven green by `LedgerFirstTouchDiagnostic` (stays as
+coverage), RT 12/12. **2** Surplus display — the hypothesis REFUTED at the formula before anything
+changed (the row already showed the net-of-interest real balance); "Primary deficit/surplus … excl.
+interest" added as a labelled second line from the same report (`DerivedStats.PrimaryDeficitPercentOfGdp`);
+Sweden's outsized surplus was a SEED question, resolved by the recalibration (below). **3** Compass
+labels — two iterations (label-vs-label, label-vs-dot, leader lines), captured both sizes. **4** Sweden
+budget depth — BUILT (ruled: decomposition now, Sweden first): 24 sourced utgiftsområde lines
+(regeringen.se, vårprop 2026, retrieved 08-25), all-discretionary and not-byte-identical deviations stated
+with measured reasons; the recalibration shipped as build-order item 1. **5** Riksbank independence — C
+named (§30). **6** Law pros/cons — BUILT (ruled: neutral, derived via the declared table)
+`CrimeJusticeCouplings`, read by the Apply* formulas themselves; byte-identical 6/6; "Expected effects" in
+the detail pane. **7** Law-page clutter at 50 — Design answered with Screen 1j, implemented same day
+2026-08-26 (§24). Items 3, 4, 6, 7 and the surplus line are BUILT-BUT-UNCONFIRMED visual surfaces and
+sit in `MISSING_PREREQUISITES.md` §V. **The two-copy consolidation (rule 13)** finished 2026-08-25
+(`faecdce`, `0c2a747`, `bb6ad14`): G: is the working copy; the C: copy is
+`PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16` with `ProjectSettings.RETIRED`; the standing habit — every
+harness invocation passes the explicit project path — is now in rule 13's text. **The ~23 Aug GitHub GC
+gate CLOSED 2026-08-25:** `9221` KB against the 08-16 reading of ~746 MiB; GitHub's own maintenance
+collected the unreachable objects; no ticket. **§7 (the law browser request) OVERTAKEN** — never sent;
+the board arrived first; consumed to §24.
+
+### The ruled build order — five of five SHIPPED (2026-08-26), and the shelf's first item (2026-08-27)
+
+1. **The fiscal seed recalibration `290d4ee`** — the five EU pairs re-anchored to one-basis real
+   figures (Eurostat `gov_10a_taxag` 2024 / ECB / CBO, sourced and dated in the commit), the ~20%-of-GDP
+   mandatory transfer block seeded, Sweden's UO10/11/12 flipped mandatory with `PotentialGDP` re-solved
+   (614.25), Italy Debt Crisis re-premised to stabilization (≤145 by t30), the SIXTH baseline
+   discontinuity. **Two lasting decisions:** mandatory transfers enter as real lines with the identity's
+   G untouched (the identity lesson), and a scenario premise is re-derived when its seed moves. The other
+   four countries' decomposition passes now decompose CORRECT totals — live, unscheduled.
+2. **The Crime & Justice couplings pass `a7e00e3`** — the gap list consumed by four terminal rulings:
+   SentencingSeverity → PrisonPopulationRate at S = 1.6 (NRC-2014-anchored); the budget edges
+   line-resident AND feeding G (real Justice/HomelandSecurity/Migration/PublicServices lines, the
+   incarceration variable cost at 1.0 GDPpc/inmate completing sentencing → prison → budget);
+   BorderEnforcement's second sim edge DECLINED with reasons. Wired-inert control 6/6; no-law path 6/6;
+   full bar green at four sizes. **The caveat that travels with it:** a pass declared green at four
+   sizes still shipped four inverted Policy Web edge signs no guard and no capture could see, because
+   `Increases` is a semantic property — fixed by the 2026-08-27 edge sweep (CLAUDE.md "The Policy Web
+   edge sweep").
+3. **The second LawCategory — Labor Market `e86c79d`** — 50 laws in five charter batches (catalog 100).
+   **Lasting — COEXISTENCE by ruling ("keeps sliders"), the deliberate anti-precedent to C&J's read-only
+   conversion, shipped as the base+offset two-book split:** bills own `Country.*Base`, laws sum deltas
+   on top, one clamp at composition — order invariance, exact repeal-to-bill-base, cross-category
+   isolation and the Sweden minimum-wage gate proven (`LaborLawCompositionDiagnostic`). `LaborCouplings`
+   the second declared table; per-dial magnitude scales put Kaitz-point and week dials on the shared
+   grid. The next category pass must know which convention it inherits — this one.
+4. **The Riksbank-B gate-1 fix `513b348` (pass 4)** — the Taylor path reads the unemployment gap
+   against NAIRU (`TaylorRule.UnemploymentGapWeight` 1.0, a stated textbook convention) instead of the
+   raw level output gap, a per-country CONSTANT (USA −14.5% for a thousand turns) that pinned the USA's
+   suggestion at the floor for 95–98 of 101 turns and collapsed five of eight Fed chairs onto one
+   trajectory. After: USA suggestion 0.01 → 5.8, floor turns 98 → 0, chair spread 1.50 → 2.78 pp, the
+   house-price runaway ended; the SEVENTH discontinuity. **Lasting precedent:** the rulings were taken by
+   the pass under rule 4's reversible-call form with the revert point named (`513b348` plus the closing
+   commit) — later passes cite it. The honest form of its rejected branch A is the roadmap's G-block
+   shelf item.
+5. **Tariff-to-stock `ad82104`/`6b93a1c`/`bb5e37e` (pass 5)** — tariff revenue had reached the Budget
+   display accumulator alone. **F1's boundary rule as APPLIED: it is a RECURRING flow, so it is the
+   budget process's channel** — `FiscalPeriod.PlannedTariffRevenue`, planned at the boundary, accrued
+   daily inside the fiscal-reaction multiplier and outside CollectionEfficiency; the parallel book
+   retired. Revenue-neutral at seed on pass 1's anchored-primary rule (a closed-form CE decrement per
+   country); the perimeter argument recorded UNVERIFIED-EXTERNAL. The moved set EXACTLY {Budget,
+   GovernmentDebt, EffectiveDebtRate}. **The trade-war finding** — per-partner overrides at the 50% cap a
+   costless 5–11%-of-GDP revenue button — shipped as a recorded exploit class with tariff costs queued.
+6. **Tariff costs `4352665`/`4650a76`/`3796c0e` (pass 6, 2026-08-27)** — three forces in one declared
+   table `TradeCosts`: the tariff-take change passes through to prices for one year (φ = 1.0 derived from
+   static volumes, stakes measured at 0.5, expectations look through the REALIZED clamped part); partners
+   mirror an override's excess over the standing rate (computed, never stored; instant, memoryless); the
+   Trade bill's direction is the change in the import-weighted average tariff, sign-only, **on the fiscal
+   axis by Elias's ruling** (a tariff is a tax on imports; the literal reverts when trade gains its own
+   axis). No-policy baselines byte-identical (42/42, 6/6); the eighth discontinuity is policy-path. The
+   simulation half is DONE; its four UI surfaces (the bill card's cost line, the partner row's
+   retaliation, the stats line, the inert base dial) await eyes (§V). Deferred with reasons on the
+   roadmap's shelf: volumes indexed to GDP, base-dial retaliation, retaliation memory, a trade axis.
+
+### The Editor checklist closures (Elias's live session, 2026-08-26)
+
+Folder tongues VERIFIED (§27); **save/load layer 3 + F5/F9 + the saves menu VERIFIED (§26's closure:
+nothing of item 8 remains open)**; the §5 portrait register side-by-side PASSED — D1's batch of nine
+unblocked (`MISSING_PREREQUISITES.md` §D1). The Access row's remaining half — the capture-set reviews —
+moved to `MISSING_PREREQUISITES.md` §V. The FA-cadence row closed by ruling C5 (§30); the creditor
+scenario row closed by exercise (§30); Q4 resolved by R-Q5d; A3's re-listing struck (a two-authors
+artifact — §23).
+
+---
+
+## 32. Open Questions and the visual-review section — the closed entries, migrated (2026-08-27)
+
+*The roadmap's Open Questions section held no open question at HEAD: every entry was ruled, closed or
+migrated, and the "RESOLVED" sub-block was a verbatim duplicate of §23. What follows is what those
+entries still needed a home for.*
+
+- **Capture at 1440p as well — RULED 2026-08-11, done the same day, clean** (55 captured, 0 failed, 0
+  overflows, 0 escapes, 0 clipped at 2560×1419). Elias's reasoning: a second resolution is a
+  capture-config change, not a code change, and it converts three resolution-scoped claims (the 0.35
+  squeeze floor "never engages", instance #12's closure, `ScreenEdgeCheck` itself) into real ones. It
+  **retired `ledger_geometry_check.py` without porting it** (a render answers what it re-derived
+  arithmetically; Python is not installed here). The matrix has run FOUR sizes since 2026-08-26
+  (1280×720 / 1640×707 / 1600×950 / 2560×1440, the minimum-window ruling, `4e94eb7`); the 1920×1080
+  gap stays live on the roadmap. The squeeze floor is confirmed by render at all four; a geometry
+  conclusion drawn from captures is scoped to the capture resolution — rule 14's shape.
+- **Real reporting lag — CLOSED AS WON'T-DO 2026-08-11, reopenable.** An optional refinement to
+  deferred work that nobody was waiting on: *a question nobody is waiting on should not sit in a list
+  people read looking for work.* (Lasting: the reason Open Questions became a record of decisions.)
+- **The net-creditor bound, the unbounded-divergence block, the deficit-term defect and C4's rating
+  thrash** — all closed and already recorded (§§13/18/22/23). **Two scoping rulings from the divergence
+  block STILL BIND** and now live in the roadmap's standing-constraints block: calibration stays at
+  turns 100–200 (t1000 is a diagnostic, never a target), and the word "equilibrium" stays banned without
+  a run that earns it.
+- **SWF emergency drawdown (A2)** ruled and built the same day, `b1c077f` 2026-08-02 (§23 A2) — the
+  roadmap asserted both "Still to build" and "DONE" for it in one file. Its SWF-tab surface has been
+  pinned on film only (§V).
+- **P2 — the currency unit bug (review item 3):** built `628d78e` and SEEN (§16 item 3); the entry
+  never closed with it. `UiFormat.Money`'s required unit and `MoneyFormatDiagnostic` (6/6) stand.
+- **Instance #12 — the frame — CLOSED on `main` 2026-08-11, the four-commit measurement table** (§17
+  holds the narrative; the table lived only in the roadmap):
+
+  | | commit | L | T | R | B | clipped |
+  |---|---|---|---|---|---|---|
+  | before | — | 0 | 0 | **841** | **663** | 54 |
+  | `InnerWidth` 4th term + tab margins | `f3cbea4` | 0 | 0 | 0 | **663** | 54 |
+  | two accessors | `b16b816` | 0 | 0 | 0 | 0 / **1508** | 16 (all Budget) |
+  | `BudgetProcessHeaderHeight` | `4dbb779` | 0 | 0 | 0 | 0 | **0** |
+
+  **It read as fixed for hours while `main` was broken:** the `clipfix2_*` captures measured a tree
+  holding a closed session's uncommitted `InnerHeight`, which then went to `stranded/politics-elections`
+  — *a capture is evidence about the tree it was taken from, not about the branch of the same name*
+  (rule 15's root). What closed it: three accessors, each replacing a constant that stood in for
+  measured content. **Instance #13** (the ECB sub-tab, the first reached through the COUNTRY axis, both
+  guards structurally blind again) fixed by `SubTabRowHeight` (`d072286`). **The guard scopes, stated:**
+  `UiOverflowGuard` asks whether text fits the rect it was handed; `UiContainmentGuard` whether a child
+  rect sits inside its container (three composite widgets); `ScreenEdgeCheck` reads four lines of pixels
+  per PNG, right and bottom only, flushness not magnitude, at the resolutions actually captured. **DO NOT
+  BUILD A THIRD SITE-SPECIFIC GUARD** (now a standing constraint on the roadmap): a GUILayout-aware check
+  would need every `BeginArea`/`BeginScrollView` rect on the stack and every group's requested min/max
+  from `GUILayoutUtility.current.topLevel` at the moment layout resolves — unreachable without reflection
+  into IMGUI internals; the pixel check is cheaper, exists, works and asks the question the player
+  experiences. The label-clipping CLASS stays open as the roadmap's watch item.
+- **The stranded branch rulings (2026-08-11) — lasting, now in the roadmap's constraints and
+  `MISSING_PREREQUISITES.md` §D:** DO NOT EXTRACT the remaining layout work from
+  `stranded/politics-elections` (nothing is pulling it across — every extraction that landed was
+  justified by a number that moved); the branch STAYS AS-IS until item 10 is scheduled (merging ~3,500
+  unreviewed simulation lines is what it exists to prevent). Its 30-file inventory travels with §D so
+  nobody checks the branch out to learn what is on it.
+- **`menu_pattern_tile.png`** — DONE 2026-08-02 (§15); the project root has held no zips since, and
+  `DeliveredAssetCheck` enforces the signal (§33).
+
+---
+
+## 33. The asset inventory at HEAD — re-derived from the codebase, 2026-08-27
+
+*Rule 12 and rule 14 applied to the whole delivered set: the five Editor checks run on 2026-08-27 (logs
+under `..\PoliSim-captures\logs\check_*_20260827_*.log`), the filesystem enumerated, every display enum
+walked, and every sprite's call site traced. `CLAUDE_DESIGN_ASSET_REQUEST.md` §0 carries the same
+statement as the live request's baseline; this is the record. The 2026-08-12 derivation in §27 is
+superseded by this one.*
+
+**The five checks:** `DeliveredAssetCheck` — 0 missing from 0 root zips, 0 missing from the 13 archived
+packs (20 superseded-by-ruling entries skipped by the manifest's `!` allowance; one `ref` —
+`board_1i_law_browser.png` is reference material). `StatIconCoverageCheck` — 19 of 19 names resolve
+(every `StatNodeId` icon + `menu_pattern_tile`; NOT chrome, emblems, marks or portraits).
+`ChromeV2CoverageCheck` — 50 of 50 resolve, 50 of 50 specified present, 11 superseded removed; both
+directions clean. `ImporterSettingsCheck` — 140 sprites, 0 errors, 0 warnings (112 white-on-alpha
+tinted, 27 full-colour, 1 tiling). `PartyMarkCoverageCheck` — PARTY SYSTEM NOT PRESENT, VERIFIED NOTHING
+(honest; item 10's gate).
+
+**The filesystem (140 PNGs under `Assets/Resources/Art/UI/`):** Chrome 50 · Emblems 9 (4
+`emblem_party_*` + 5 `mark_party_*`) · Flags 6 · Icons 14 (4 `icon_nav_*` + 10 `icon_area_*`) ·
+Portraits 17 · Stats 43 · Textures 1.
+
+**Coverage by DISPLAY enum, and what each enum's art actually reaches:**
+
+| enum / pool | art on disk | reachable | verdict |
+|---|---|---|---|
+| `StatNodeId` (18) × `PolicyScreenStatsRenderer.GetIconName` | 18 of 18 | 18 called on the stat row | closed |
+| `ConsolidatedTab` (6) × `icon_nav_*` | 4 nav icons; Budget and Politics draw `icon_area_fiscal`/`_political` by design | 6 of 6 tab buttons draw an icon | closed |
+| `UiPalette.SystemArea` (11) × `icon_area_*` | 10 (Neutral has none) | **2 called** (fiscal, political — the tab bar); 8 drawn and unplaced | held stock — the roadmap decides place-or-hold |
+| `PartyArchetype` (4) × `emblem_party_*` | 4 of 4 | drawn in the hemicycle legend | closed |
+| party marks (`mark_party_*`, 5) | 5 | **0** — no `PoliticalParty` on main | item 10 (`MISSING_PREREQUISITES.md` §E2) |
+| `CountryId` (6) × `flag_country_*` | 6 of 6 | two surfaces (Canvas selector, IMGUI fallback) | closed |
+| `CabinetSystem.CandidatePool` (18 ministers) | 10 (the nine shipped portfolios' ministers + the Defense PoC) | drawn via `GetCabinetPortrait`; 8 render the procedural placeholder | 8 outstanding = D1 |
+| `FederalReserveSystem` pool (7 chairs) | 7 of 7 | drawn on the selection path | closed |
+| the sitting turn-0 chair (Harriet Ellsworth, `WorldFactory.cs`) | none, and no call site asks | — | a design question on the roadmap, not a gap |
+| `ChromeManifest.txt` (50) | 50 = 50 | 42 loaded; **7 with no load call:** `ui_frame_double`, `ui_btn_disabled`, `ui_stamp_draft`, `ui_portrait_frame_oval`, `ui_btn_paper_canvas` (+`_hover`, `_pressed`); `ui_pixel` named in comments only | held stock (the 2026-08-12 "revivable by ruling" set + the Canvas paper button) |
+| Stats family (43) | 43 | 18 via `IconLibrary.GetStat`; **25 with no call site** — 19 `icon_stat_*` for stats without a `StatNodeId`, plus `icon_trend_up/down/flat`, `badge_preliminary/revised`, `icon_release_marker` (`GraphRenderer` draws markers procedurally) | held stock |
+| `Textures/menu_pattern_tile` | 1 | two call sites | closed |
+| Fonts (9 files) | 9 | 3 loaded (Pagella Bold/Regular, Courier Prime) | a decision: the four rejected candidates (Literata, Gentium Book Plus, …) stay as the comparison record |
+
+**Lasting decisions carried from the inventory:** delivered ≠ reachable — an asset's status has two
+parts and only the first is visible from the inbox (the flags and emblems sat outside `Resources/` for
+weeks); a coverage check is evidence only for the names it ENUMERATES (rule 14) — there is no check that
+enumerates portraits, area icons or emblems, which the roadmap names as a small live item
+(`PortraitCoverageCheck`, `AreaIconCoverageCheck`); the manifest is the SPECIFIED side of a coverage
+check and a folder listing can never answer "is everything specified present?"; the project root holding
+no zips is the standing signal and `DeliveredAssetCheck` + `.gitignore` enforce it. **The archive:** 12
+zips in `AssetPackArchive/` (gitignored), every sprite entry accounted for by the check; the folder's
+README is a 2026-08-02 snapshot of seven packs — the check, not the README, is the record, and a stray
+`trip-2026-08-18.pdf` sits there that is not a delivery. **`POLISIM_R4_4_PREREPORT.md` stays on disk
+until D1's nine land** (§22's ruling; its §4 collision search is cited by the live request); its
+"nothing has been built" header describes 2026-08-17 and now says so.
+
+**Requests fulfilled and retired from the request doc (2026-08-27):** the pre-v2.0 "eleven hues as they
+stand today" table (§3.0 — none of its fifteen values exists at HEAD; the aged v2.0 inks are
+`PoliSimTheme.cs`'s and the screen spec's §A.3) and the two importer rulings of 2026-08-11 (§3.0b —
+mipmaps off on the 44 files that carried them, the check promoted to error; full-colour block compression
+ruled acceptable after a visual check on the flags, the worst case; the enforcing check reads the
+imported texture, not the meta). The rules survive in the request doc's §3 table; the history is here.
