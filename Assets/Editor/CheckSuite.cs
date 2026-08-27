@@ -155,6 +155,7 @@ namespace PoliSim.EditorTools
             ("ImporterSettingsCheck", ImporterSettingsCheck.Run),
             ("StatIconCoverageCheck", StatIconCoverageCheck.Run),
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),
+            ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),
             ("UpstreamCheck", UpstreamCheck.Run),
         };
