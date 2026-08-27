@@ -871,14 +871,15 @@ namespace PoliSim.Data
             // dollars WelfarePrograms tracks.
             // Playtest-2 item 4 (ruled 2026-08-25): Sweden graduates from the generic 5-line
             // decomposition to its real utgiftsomrade structure - see SeedSwedenSpendingLines.
-            // Omnibus 2026-08-28 (R-K7): Germany graduates to its real Einzelplan structure and
-            // Italy to its real missioni - see SeedGermanySpendingLines / SeedItalySpendingLines.
-            // The remaining countries stay on the generic seed until their own passes.
+            // Omnibus 2026-08-28 (R-K7): Germany graduates to its real Einzelplan structure, Italy
+            // to its real missioni and Poland to its real dzialy - see SeedGermanySpendingLines /
+            // SeedItalySpendingLines / SeedPolandSpendingLines. France stays on the generic seed
+            // until its own pass.
             SeedSwedenSpendingLines(sweden);
             SeedGermanySpendingLines(germany);
             SeedGenericSpendingLines(france, socialPercent: 38f, defensePercent: 7f, infrastructurePercent: 12f, publicServicesPercent: 25f);
             SeedItalySpendingLines(italy);
-            SeedGenericSpendingLines(poland, socialPercent: 34f, defensePercent: 10f, infrastructurePercent: 16f, publicServicesPercent: 22f);
+            SeedPolandSpendingLines(poland);
 
             // RECALIBRATION (build-order item 1, terminal rulings 2026-08-26): the mandatory
             // transfer block - the general-government cash-transfer layer (~20% of GDP in every
@@ -1479,6 +1480,96 @@ namespace PoliSim.Data
 
             // The remainder line keeps the exact-sum invariant: the regional transfers are total-minus-allocated.
             italy.SpendingLines.Add(new SpendingLine(SpendingCategory.MunicipalGrants, total - allocated, isMandatory: false));
+        }
+
+        /// <summary>
+        /// Omnibus 2026-08-28 (R-K7, the fourth decomposition on Sweden's method - Germany and Italy
+        /// before it): Poland's REAL budget structure - the 32 dzialy (functional divisions) of the
+        /// state budget 2026 (ustawa budzetowa na rok 2026 z dnia 9 stycznia 2026 r., Dz.U. 2026 poz.
+        /// 62) - as a PURE DECOMPOSITION of the country's existing GDP x GovernmentSpendingRate total,
+        /// the exact-sum invariant kept (every line the game total times the dzial's share of the
+        /// sourced PLN sum; the last line, MunicipalGrants, the REMAINDER).
+        ///
+        /// SOURCE (rules 5/9/12): the Ministry of Finance's publication of the act at
+        /// gov.pl/web/finanse/ustawa-2026 - 20260123_Zalaczniki_do_ustawy_budzetowej_na_rok_2026.zip
+        /// (10,924,857 bytes, SHA-256 84C84E20..., retrieved 2026-08-28), Zalacznik nr 2 "Wydatki
+        /// budzetu panstwa na rok 2026 - zestawienie zbiorcze wedlug dzialow" (file "zal 2/Zal_2
+        /// str_1.pdf"), the "Plan na 2026 r." column in thousand PLN, read out of the PDF's content
+        /// streams through the fonts' ToUnicode maps; the 32 dzialy sum to the act's 918,940,000
+        /// exactly. Figures below in bn PLN.
+        ///
+        /// WHAT IS IN AND WHAT IS OUT, stated. Dzial 757 Obsluga dlugu publicznego (90.39) is out -
+        /// interest has no line, the USA/Sweden rule. Three cash-transfer dzialy are left to
+        /// SeedMandatoryTransferLines' block (SocialSecurity 10.4% of GDP, IncomeSecurity 13.35%):
+        /// 753 Obowiazkowe ubezpieczenia spoleczne (195.97, the ZUS/KRUS subsidies), 855 Rodzina
+        /// (97.92, the 800+ child benefit and the rest of family cash) and 852 Pomoc spoleczna (6.91)
+        /// - Germany's rule, the same layer counted once. Dzial 758 Rozne rozliczenia (162.53) is
+        /// split: its Srodki wlasne Unii Europejskiej column (41.59) is EuMembershipFee (Sweden's UO27
+        /// precedent) and the rest (120.94 - the subwencja ogolna for local government, the reserves,
+        /// the EU co-financing) is MunicipalGrants, the remainder line. The base is therefore 527.75
+        /// bn = 918.94 - 90.39 - 195.97 - 97.92 - 6.91.
+        ///
+        /// Consolidations: 750 Administracja publiczna + 751 Urzedy naczelnych organow wladzy
+        /// panstwowej CentralGovernment; 730 Szkolnictwo wyzsze i nauka + 801 Oswiata i wychowanie +
+        /// 854 Edukacyjna opieka wychowawcza Education (the school subsidy to local government sits
+        /// inside 758, stated); 010 Rolnictwo + 020 Lesnictwo + 050 Rybolowstwo Agriculture; 100
+        /// Gornictwo i kopalnictwo (the coal-mine support) Energy; 150 Przetworstwo przemyslowe + 500
+        /// Handel + 550 Hotele + 630 Turystyka + 710 Dzialalnosc uslugowa + 720 Informatyka
+        /// BusinessAndIndustry; 921 Kultura + 925 Ogrody botaniczne + 926 Kultura fizyczna
+        /// CultureAndMedia; 853 Pozostale zadania w zakresie polityki spolecznej LaborMarket; 754
+        /// Bezpieczenstwo publiczne i ochrona przeciwpozarowa HomelandSecurity; 755 Wymiar
+        /// sprawiedliwosci Justice; 752 Obrona narodowa Defense; 600 Transport i lacznosc
+        /// Transportation; 700 Gospodarka mieszkaniowa Housing; 851 Ochrona zdrowia
+        /// HealthcareAndSocialCare (the NFZ is contribution-financed outside the state budget - this
+        /// is the budget's own health line); 900 Gospodarka komunalna i ochrona srodowiska
+        /// ClimateAndEnvironment. No mandatory line.
+        ///
+        /// THE DISTORTION, MEASURED: the state budget's non-transfer base (13% of GDP) scaled onto a G
+        /// of 18% - Defense at 3.73% of GDP (Eurostat gov_10a_exp GF02 2024: 2.9; the 2026 plan 4.8
+        /// with the off-budget fund), Education 1.58% (GF09 5.6 - the school subsidy sits in 758),
+        /// Health 1.85% (GF07 6.1). Enumerated by the pass's diff.
+        /// </summary>
+        private static void SeedPolandSpendingLines(Country poland)
+        {
+            float total = poland.State.GDP * (poland.GovernmentSpendingRate / 100f);
+
+            // (category, Plan na 2026 r. in bn PLN) - every dzial of the base except the remainder line.
+            var areas = new (SpendingCategory Category, float BnPln)[]
+            {
+                (SpendingCategory.Defense, 109.231f),                   // 752 Obrona narodowa
+                (SpendingCategory.HealthcareAndSocialCare, 54.243f),    // 851 Ochrona zdrowia
+                (SpendingCategory.Education, 46.233f),                  // 730 Szkolnictwo wyzsze i nauka (41.241) + 801 Oswiata i wychowanie (4.700) + 854 Edukacyjna opieka wychowawcza (0.291)
+                (SpendingCategory.EuMembershipFee, 41.585f),            // 758's Srodki wlasne Unii Europejskiej column
+                (SpendingCategory.CentralGovernment, 34.898f),          // 750 Administracja publiczna (30.208) + 751 Urzedy naczelnych organow (4.690)
+                (SpendingCategory.HomelandSecurity, 31.139f),           // 754 Bezpieczenstwo publiczne i ochrona przeciwpozarowa
+                (SpendingCategory.Justice, 28.682f),                    // 755 Wymiar sprawiedliwosci
+                (SpendingCategory.Transportation, 21.821f),             // 600 Transport i lacznosc
+                (SpendingCategory.Agriculture, 9.826f),                 // 010 Rolnictwo i lowiectwo (9.575) + 020 Lesnictwo (0.008) + 050 Rybolowstwo i rybactwo (0.243)
+                (SpendingCategory.Housing, 7.034f),                     // 700 Gospodarka mieszkaniowa
+                (SpendingCategory.CultureAndMedia, 6.494f),             // 921 Kultura (5.488) + 925 Ogrody botaniczne (0.233) + 926 Kultura fizyczna (0.773)
+                (SpendingCategory.Energy, 5.634f),                      // 100 Gornictwo i kopalnictwo
+                (SpendingCategory.BusinessAndIndustry, 5.079f),         // 150 Przetworstwo (2.224) + 500 Handel (1.324) + 550 Hotele (0.071) + 630 Turystyka (0.132) + 710 Dzialalnosc uslugowa (1.030) + 720 Informatyka (0.298)
+                (SpendingCategory.ClimateAndEnvironment, 2.692f),       // 900 Gospodarka komunalna i ochrona srodowiska
+                (SpendingCategory.LaborMarket, 2.214f),                 // 853 Pozostale zadania w zakresie polityki spolecznej
+            };
+            const float MunicipalGrantsBnPln = 120.942f;                // 758 Rozne rozliczenia minus the EU own-resources column - the remainder line
+
+            float plnSum = MunicipalGrantsBnPln;
+            foreach ((SpendingCategory _, float pln) in areas)
+            {
+                plnSum += pln;
+            }
+
+            float allocated = 0f;
+            foreach ((SpendingCategory category, float pln) in areas)
+            {
+                float amount = total * (pln / plnSum);
+                allocated += amount;
+                poland.SpendingLines.Add(new SpendingLine(category, amount, isMandatory: false));
+            }
+
+            // The remainder line keeps the exact-sum invariant: the local-government settlements are total-minus-allocated.
+            poland.SpendingLines.Add(new SpendingLine(SpendingCategory.MunicipalGrants, total - allocated, isMandatory: false));
         }
 
         /// <summary>
