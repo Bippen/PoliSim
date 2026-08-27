@@ -871,9 +871,11 @@ namespace PoliSim.Data
             // dollars WelfarePrograms tracks.
             // Playtest-2 item 4 (ruled 2026-08-25): Sweden graduates from the generic 5-line
             // decomposition to its real utgiftsomrade structure - see SeedSwedenSpendingLines.
-            // The other four stay on the generic seed until their own ruled passes.
+            // Omnibus 2026-08-28 (R-K7): Germany graduates to its real Einzelplan structure - see
+            // SeedGermanySpendingLines. The remaining countries stay on the generic seed until their
+            // own passes.
             SeedSwedenSpendingLines(sweden);
-            SeedGenericSpendingLines(germany, socialPercent: 40f, defensePercent: 5f, infrastructurePercent: 13f, publicServicesPercent: 24f);
+            SeedGermanySpendingLines(germany);
             SeedGenericSpendingLines(france, socialPercent: 38f, defensePercent: 7f, infrastructurePercent: 12f, publicServicesPercent: 25f);
             SeedGenericSpendingLines(italy, socialPercent: 40f, defensePercent: 4f, infrastructurePercent: 11f, publicServicesPercent: 26f);
             SeedGenericSpendingLines(poland, socialPercent: 34f, defensePercent: 10f, infrastructurePercent: 16f, publicServicesPercent: 22f);
@@ -1267,6 +1269,114 @@ namespace PoliSim.Data
             // budget and the pension system (municipal-sector-funded transfers and the rest),
             // sized so the year-1 primary balance lands on the real -0.7% of GDP.
             sweden.SpendingLines.Add(new SpendingLine(SpendingCategory.IncomeSecurity, sweden.State.GDP * ResidualTransfersPercentOfGdp / 100f, isMandatory: true));
+        }
+
+        /// <summary>
+        /// Omnibus 2026-08-28 (R-K7, the first of the four remaining decompositions, on Sweden's
+        /// method): Germany's REAL budget structure - the Einzelplaene of the Bundeshaushalt 2026
+        /// (the Haushaltsgesetz 2026 as passed by the Bundestag on 2025-11-28) - as a PURE
+        /// DECOMPOSITION of the country's existing GDP x GovernmentSpendingRate total, with
+        /// SeedGenericSpendingLines' exact-sum invariant kept: every line is the game total times
+        /// the area's share of the sourced EUR sum, and the last line (FinancialAdministration =
+        /// Einzelplan 60's core) is the REMAINDER, so the set sums to exactly the old total.
+        ///
+        /// SOURCE (rules 5/9/12 - sourced, dated, basis stated): bundeshaushalt.de, the
+        /// Bundesministerium der Finanzen's open-data plan file HH_2026_ALL.csv - every Titel of
+        /// the 2026 Soll in thousand EUR - retrieved 2026-08-28 (1,788,629 bytes, SHA-256
+        /// 3E0CC5A4...), aggregated here by Einzelplan and Kapitel. Its expenditure total is 694.27
+        /// bn: the published Kernhaushalt (524.54 bn) plus the annexed Wirtschaftsplaene of the
+        /// Sondervermoegen (Bundeswehr 25.51, Infrastruktur und Klimaneutralitaet 58.07, Klima- und
+        /// Transformationsfonds 34.80, Aufbauhilfe 2021 2.50) and the EU own resources (43.61).
+        /// Reconciled: 694.27 minus those five = 529.77 against the published 524.54; the 5.2 bn
+        /// residue is intra-budget flows this file does not separate. Figures below in bn EUR.
+        ///
+        /// WHAT IS IN AND WHAT IS OUT, stated. Einzelplan 32 Bundesschuld (33.65) is EXCLUDED -
+        /// interest has no line, it stays SimulationManager's automatic GetInterestOnDebt exactly
+        /// as the USA's and Sweden's seeds rule. The three federal cash-transfer chapters are
+        /// EXCLUDED from THIS decomposition because the recalibration (build-order item 1,
+        /// 2026-08-26) already seeds Germany's transfer layer at general-government size in
+        /// SeedMandatoryTransferLines (SocialSecurity 9.0% of GDP, IncomeSecurity 11.80%): Kapitel
+        /// 1102 Rentenversicherung und Grundsicherung im Alter (140.01 = 3.0% of GDP, inside the
+        /// block's 9.0), Kapitel 1101 Buergergeld and the SGB II/III benefits (55.50, inside
+        /// IncomeSecurity) and Kapitel 1701 Gesetzliche Leistungen fuer die Familien (13.01, ditto).
+        /// So this method carries NO mandatory line where Sweden's flips three utgiftsomraden inside
+        /// its own decomposition: the same layer, seeded by two passes in two places, counted once -
+        /// the deviation from Sweden's shape, with its reason. The Sondervermoegen ARE in (real 2026
+        /// federal outlays, credit-financed outside the core budget): the SV Bundeswehr with Defense,
+        /// the SVIK as InfrastructureAndDevelopment, the KTF with ClimateAndEnvironment; the
+        /// Aufbauhilfe 2021 Wirtschaftsplan (2.50) is dropped because the core budget's Zuweisung to
+        /// it (Kapitel 6002 Titel 63401, 2.50) is already counted - one flow, not two. The EU own
+        /// resources (Kapitel 6090) are in as EuMembershipFee, Sweden's UO27 precedent. The base is
+        /// therefore 449.60 bn = 694.27 - 33.65 - 2.50 - 140.01 - 55.50 - 13.01.
+        ///
+        /// Consolidations: Epl 01-04, 19-22 and 24 (the constitutional organs, the Kanzleramt, the
+        /// Datenschutzbeauftragte, the Kontrollrat, Digitales und Staatsmodernisierung) fold into
+        /// CentralGovernment; Epl 17 minus Kapitel 1701 (Kinder- und Jugendpolitik, Leistungsfaehigkeit
+        /// des Bildungswesens, the ministry) joins Epl 30 Forschung, Technologie und Raumfahrt as
+        /// Education, the 2025 cabinet having moved Bildung into Epl 17; Epl 08 Finanzen
+        /// (Zollverwaltung, Bundeszentralamt fuer Steuern, ITZBund, Wiedergutmachung) reads as
+        /// TaxAdministration and Epl 60's core (Allgemeine Bewilligungen - the electricity-price
+        /// relief 16.16, the Postbeamtenversorgungskasse 10.34, Ertuechtigung 12.02 - and Sonstige
+        /// Versorgung) as FinancialAdministration, Sweden's UO2/UO3 split; Epl 06 Inneres
+        /// (Bundespolizei, BAMF, Zivilschutz) as HomelandSecurity; Epl 09 Wirtschaft und Energie as
+        /// BusinessAndIndustry; Epl 11's residue after the two transfer chapters (the ministry,
+        /// Arbeitsschutz, Zuwanderung) as LaborMarket.
+        ///
+        /// THE DISTORTION, MEASURED - the method's known property, larger for a federal state than
+        /// for Sweden: the federal non-transfer budget (449.6 bn = 9.6% of GDP) is scaled onto a G
+        /// of 21% of GDP that in reality is mostly Laender and municipal consumption, so federal
+        /// functions over-weight and Laender functions under-weight. Defense lands at 5.07% of GDP
+        /// (Eurostat gov_10a_exp GF02, 2024: 1.4; the 2026 target with the Sondervermoegen ~2.8),
+        /// Education at 0.81% (GF09: 4.5), InfrastructureAndDevelopment plus Transportation at
+        /// 2.74%. Sweden's pass carries the same class (Defense 4.4% against 2.0). The Budget screen
+        /// shows the federal structure at the game's G level; the trajectory moves through the
+        /// effect-bearing lines (Defense, InfrastructureAndDevelopment, Education,
+        /// HealthcareAndSocialCare, Housing, Justice, HomelandSecurity) - enumerated by the pass's
+        /// diff, not byte-identical by design.
+        /// </summary>
+        private static void SeedGermanySpendingLines(Country germany)
+        {
+            float total = germany.State.GDP * (germany.GovernmentSpendingRate / 100f);
+
+            // (category, 2026 Soll in bn EUR) - every Einzelplan/Kapitel of the base except the remainder line.
+            var areas = new (SpendingCategory Category, float BnEur)[]
+            {
+                (SpendingCategory.CentralGovernment, 8.058f),            // Epl 01, 02, 03, 04, 19, 20, 21, 22, 24
+                (SpendingCategory.StateForeignAffairs, 6.025f),          // Epl 05 Auswaertiges Amt
+                (SpendingCategory.HomelandSecurity, 15.762f),            // Epl 06 Inneres
+                (SpendingCategory.Justice, 1.213f),                      // Epl 07 Justiz und Verbraucherschutz
+                (SpendingCategory.TaxAdministration, 10.823f),           // Epl 08 Finanzen
+                (SpendingCategory.BusinessAndIndustry, 5.903f),          // Epl 09 Wirtschaft und Energie
+                (SpendingCategory.Agriculture, 11.811f),                 // Epl 10 Landwirtschaft, Ernaehrung und Heimat
+                (SpendingCategory.LaborMarket, 1.832f),                  // Epl 11 minus Kapitel 1101 (55.499) and 1102 (140.010)
+                (SpendingCategory.Transportation, 27.901f),              // Epl 12 Verkehr
+                (SpendingCategory.Defense, 108.613f),                    // Epl 14 Verteidigung (83.103) + Kapitel 1491 SV Bundeswehr (25.510)
+                (SpendingCategory.HealthcareAndSocialCare, 21.774f),     // Epl 15 Gesundheit
+                (SpendingCategory.ClimateAndEnvironment, 37.576f),       // Epl 16 Umwelt (2.772) + Kapitel 6092 KTF (34.804)
+                (SpendingCategory.Education, 25.469f),                   // Epl 30 Forschung, Technologie und Raumfahrt (21.818) + Epl 17 minus Kapitel 1701 (3.650)
+                (SpendingCategory.InternationalAid, 10.056f),            // Epl 23 Wirtschaftliche Zusammenarbeit und Entwicklung
+                (SpendingCategory.Housing, 7.746f),                      // Epl 25 Wohnen, Stadtentwicklung und Bauwesen
+                (SpendingCategory.InfrastructureAndDevelopment, 58.068f), // Kapitel 6093 SV Infrastruktur und Klimaneutralitaet
+                (SpendingCategory.EuMembershipFee, 43.613f),             // Kapitel 6090 Eigenmittel der EU
+            };
+            const float FinancialAdministrationBnEur = 47.354f;         // Epl 60 minus Kapitel 6090/6092/6093/6098 - the remainder line
+
+            float eurSum = FinancialAdministrationBnEur;
+            foreach ((SpendingCategory _, float eur) in areas)
+            {
+                eurSum += eur;
+            }
+
+            float allocated = 0f;
+            foreach ((SpendingCategory category, float eur) in areas)
+            {
+                float amount = total * (eur / eurSum);
+                allocated += amount;
+                germany.SpendingLines.Add(new SpendingLine(category, amount, isMandatory: false));
+            }
+
+            // The remainder line keeps the exact-sum invariant: Epl 60's core is total-minus-allocated.
+            germany.SpendingLines.Add(new SpendingLine(SpendingCategory.FinancialAdministration, total - allocated, isMandatory: false));
         }
 
         /// <summary>
