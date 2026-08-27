@@ -152,7 +152,7 @@ namespace PoliSim.UI
             { PolicyNodeId.EstateTax, new PolicyNodeInfo { Name = "Estate Tax", Area = UiPalette.SystemArea.Fiscal, Description = "Estate tax rate." } },
             { PolicyNodeId.WealthTax, new PolicyNodeInfo { Name = "Wealth Tax", Area = UiPalette.SystemArea.Fiscal, Description = "Wealth tax rate." } },
             { PolicyNodeId.CarbonTax, new PolicyNodeInfo { Name = "Carbon Tax", Area = UiPalette.SystemArea.Fiscal, Description = "Carbon tax rate." } },
-            { PolicyNodeId.Tariffs, new PolicyNodeInfo { Name = "Tariffs (Tax Line)", Area = UiPalette.SystemArea.Fiscal, Description = "The generic Tariffs TaxType line (distinct from the Trade tab's own per-partner tariff mechanism - see the Tariff Policy node)." } },
+            { PolicyNodeId.Tariffs, new PolicyNodeInfo { Name = "Tariffs (Tax Line)", Area = UiPalette.SystemArea.Fiscal, Description = "An enum member only: TaxType.Tariffs never gets a TaxLine (GetTotalTaxRevenue skips it, its base share is 0), so no dial reaches this node and it draws no edge (the edge sweep of 2026-08-27 removed two phantom ones). The real tariff lever is the Tariff Policy node." } },
             { PolicyNodeId.StampDuty, new PolicyNodeInfo { Name = "Stamp Duty", Area = UiPalette.SystemArea.Fiscal, Description = "Stamp duty rate." } },
             { PolicyNodeId.SocialSecurity, new PolicyNodeInfo { Name = "Social Security", Area = UiPalette.SystemArea.Fiscal, Description = "Mandatory spending line." } },
             { PolicyNodeId.Medicare, new PolicyNodeInfo { Name = "Medicare", Area = UiPalette.SystemArea.Fiscal, Description = "Mandatory spending line." } },
@@ -245,11 +245,16 @@ namespace PoliSim.UI
             e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.Crime, false, CrimeJusticeCouplings.PoliceFundingSensitivity / CrimeJusticeCouplings.PoliceFundingSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.OrganizedCrime, false, CrimeJusticeCouplings.PoliceFundingOrganizedCrimeSensitivity / CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.SentencingSeverity, StatNodeId.Crime, false, CrimeJusticeCouplings.SentencingSensitivity / CrimeJusticeCouplings.PoliceFundingSensitivity));
-            e.Add(new PolicyWebEdge(PolicyNodeId.BailReform, StatNodeId.Crime, true));
+            // Edge sweep (2026-08-27, Elias's pass-6 follow-up): the Crime group denominates on
+            // PoliceFundingSensitivity and the PrisonPopulation group on BailReformPrisonPopulationSensitivity
+            // (line 261 declared that denominator in the couplings pass); three edges had been left at
+            // the 1f default inside those groups - a 0.02 bail-crime sensitivity drawing as thick as the
+            // 0.16 police one. Every weight below is the declared table's own ratio.
+            e.Add(new PolicyWebEdge(PolicyNodeId.BailReform, StatNodeId.Crime, true, CrimeJusticeCouplings.BailReformCrimeIndexSensitivity / CrimeJusticeCouplings.PoliceFundingSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.BailReform, StatNodeId.PrisonPopulation, false));
-            e.Add(new PolicyWebEdge(PolicyNodeId.DrugPolicy, StatNodeId.PrisonPopulation, true));
+            e.Add(new PolicyWebEdge(PolicyNodeId.DrugPolicy, StatNodeId.PrisonPopulation, true, CrimeJusticeCouplings.DrugPolicyPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.DrugPolicy, StatNodeId.Approval, true));
-            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.PrisonPopulation, false));
+            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.PrisonPopulation, false, CrimeJusticeCouplings.JudicialFundingPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.OrganizedCrime, false, CrimeJusticeCouplings.JudicialFundingOrganizedCrimeSensitivity / CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.Corruption, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.BorderEnforcement, StatNodeId.OrganizedCrime, false, 1f));
@@ -257,19 +262,27 @@ namespace PoliSim.UI
             // edge (weight relative to bail's own primary prison lever, table refs), and the three
             // line-resident budget edges - enforcement cost lands on real spending lines and
             // reaches the debt path through the fiscal engine, so DebtToGdp is the honest target
-            // node (the same node every tax edge feeds).
-            e.Add(new PolicyWebEdge(PolicyNodeId.SentencingSeverity, StatNodeId.PrisonPopulation, false, CrimeJusticeCouplings.SentencingPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
-            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.DebtToGdp, false));
-            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.DebtToGdp, false));
-            e.Add(new PolicyWebEdge(PolicyNodeId.BorderEnforcement, StatNodeId.DebtToGdp, false));
+            // node. Edge sweep (2026-08-27): all four were born with the WRONG sign under Increases'
+            // own definition - harsher sentencing RAISES the prison population (the NRC time-served
+            // channel, MacroSystem.ApplyPrisonPopulationRate), and a dial that spends money RAISES
+            // the debt ratio (they had taken the tax group's sign; AddSpending's own DebtToGdp edges
+            // are `true`). The three budget edges are one documented group, weighted by their
+            // declared per-point costs.
+            e.Add(new PolicyWebEdge(PolicyNodeId.SentencingSeverity, StatNodeId.PrisonPopulation, true, CrimeJusticeCouplings.SentencingPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
+            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint));
+            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint));
+            e.Add(new PolicyWebEdge(PolicyNodeId.BorderEnforcement, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint));
 
             // Taxes: every TaxType shares the SAME two real channels (MacroSystem.ApplyApprovalRating's
             // TaxHikeApprovalSensitivity on a this-turn hike; SimulationManager.GetTotalTaxRevenue feeding
             // Budget/GovernmentDebt, i.e. DebtToGdp) - not a fabricated per-tax-type distinction.
+            // PolicyNodeId.Tariffs is NOT in this list (edge sweep, 2026-08-27): TaxType.Tariffs never
+            // gets a TaxLine, so neither channel exists for it - its two edges were phantoms. The node
+            // stays as a signpost with zero edges; the real lever is TariffPolicy below.
             foreach (PolicyNodeId tax in new[] {
                 PolicyNodeId.IncomeTax, PolicyNodeId.CorporateTax, PolicyNodeId.VAT, PolicyNodeId.PayrollTax,
                 PolicyNodeId.CapitalGainsTax, PolicyNodeId.SalesTax, PolicyNodeId.ExciseTax, PolicyNodeId.PropertyTax,
-                PolicyNodeId.EstateTax, PolicyNodeId.WealthTax, PolicyNodeId.CarbonTax, PolicyNodeId.Tariffs, PolicyNodeId.StampDuty })
+                PolicyNodeId.EstateTax, PolicyNodeId.WealthTax, PolicyNodeId.CarbonTax, PolicyNodeId.StampDuty })
             {
                 e.Add(new PolicyWebEdge(tax, StatNodeId.Approval, false));
                 e.Add(new PolicyWebEdge(tax, StatNodeId.DebtToGdp, false));
@@ -301,15 +314,21 @@ namespace PoliSim.UI
             e.Add(new PolicyWebEdge(PolicyNodeId.OtherDiscretionarySpending, StatNodeId.DebtToGdp, true));
 
             // Welfare (MacroSystem.GetPovertyReductionSensitivity/GetWelfareApprovalSensitivity per type -
-            // RelativeStrength uses the real per-type constants for both groups).
-            AddWelfare(e, PolicyNodeId.UBI, povertyStrength: 8f, approvalStrength: 3.0f);
+            // RelativeStrength reads the real per-type constants for both groups THROUGH THE ACCESSORS,
+            // since the edge sweep of 2026-08-27 found three poverty weights restated as literals that
+            // had never matched the constants (UniversalHealthcare 2 vs 4, HousingAssistance 2 vs 3,
+            // ChildcareSubsidies 1.5 vs 3). Every program's cost is a real spending flow
+            // (SimulationManager.GetTotalWelfareCost -> totalSpending), so each program also feeds
+            // DebtToGdp, the same edge every spending-category node draws - the couplings pass's rule
+            // that money reaching the debt path targets DebtToGdp, applied to the one area that lacked it.
+            AddWelfare(e, PolicyNodeId.UBI, WelfareProgramType.UBI);
             e.Add(new PolicyWebEdge(PolicyNodeId.UBI, StatNodeId.ConsumerConfidence, true));
-            AddWelfare(e, PolicyNodeId.NegativeIncomeTax, povertyStrength: 7f, approvalStrength: 2.0f);
-            AddWelfare(e, PolicyNodeId.MeansTestedWelfare, povertyStrength: 7.5f, approvalStrength: 1.5f);
-            AddWelfare(e, PolicyNodeId.UniversalHealthcare, povertyStrength: 2f, approvalStrength: 3.0f);
+            AddWelfare(e, PolicyNodeId.NegativeIncomeTax, WelfareProgramType.NegativeIncomeTax);
+            AddWelfare(e, PolicyNodeId.MeansTestedWelfare, WelfareProgramType.MeansTestedWelfare);
+            AddWelfare(e, PolicyNodeId.UniversalHealthcare, WelfareProgramType.UniversalHealthcare);
             e.Add(new PolicyWebEdge(PolicyNodeId.UniversalHealthcare, StatNodeId.BusinessConfidence, true));
-            AddWelfare(e, PolicyNodeId.HousingAssistance, povertyStrength: 2f, approvalStrength: 1.5f);
-            AddWelfare(e, PolicyNodeId.ChildcareSubsidies, povertyStrength: 1.5f, approvalStrength: 1.5f);
+            AddWelfare(e, PolicyNodeId.HousingAssistance, WelfareProgramType.HousingAssistance);
+            AddWelfare(e, PolicyNodeId.ChildcareSubsidies, WelfareProgramType.ChildcareSubsidies);
 
             // Sectors (MacroSystem.ApplySectorEffects/GetSectorGrowthAdjustment/GetSectorUnemploymentAdjustment
             // - each dial applies uniformly across all eight Sectors, feeding PotentialGrowth/Unemployment
@@ -327,9 +346,13 @@ namespace PoliSim.UI
 
             // Sovereign Wealth Fund - genuinely complex, multi-turn, risk/return-mediated (contribution
             // builds an asset base that only pays off in DebtToGdp terms over many turns via investment
-            // returns) - drawn neutral (no single-turn sensitivity constant exists to sign it against).
+            // returns). Edge sweep (2026-08-27): there is no "neutral" encoding - Increases is drawn
+            // as a signed colour - so each edge carries the sign of its own expected effect: the
+            // contribution is spending today (raises the ratio), a higher equities weight raises the
+            // expected return the structural draw books as revenue (lowers it). The pair's 0.5 stays
+            // undeclared-relative (no cross-comparable single-turn constant exists for either).
             e.Add(new PolicyWebEdge(PolicyNodeId.SwfContributionRate, StatNodeId.DebtToGdp, true, 0.5f));
-            e.Add(new PolicyWebEdge(PolicyNodeId.SwfAssetAllocation, StatNodeId.DebtToGdp, true, 0.5f));
+            e.Add(new PolicyWebEdge(PolicyNodeId.SwfAssetAllocation, StatNodeId.DebtToGdp, false, 0.5f));
 
             // Trade (TradeSystem.ApplyTradeEffects; pass 6, 2026-08-27). Our own tariff take is real
             // revenue since pass 5 - it LOWERS the debt ratio (the `true` this edge carried from the
@@ -355,10 +378,14 @@ namespace PoliSim.UI
             e.Add(new PolicyWebEdge(node, StatNodeId.DebtToGdp, true));
         }
 
-        private static void AddWelfare(List<PolicyWebEdge> e, PolicyNodeId node, float povertyStrength, float approvalStrength)
+        /// <summary>The three edges every welfare program draws: poverty reduction and approval, each weighted by the program's own declared constant relative to UBI's (the largest of both groups), and the debt path its cost reaches (uniform, like every spending node's).</summary>
+        private static void AddWelfare(List<PolicyWebEdge> e, PolicyNodeId node, WelfareProgramType type)
         {
-            e.Add(new PolicyWebEdge(node, StatNodeId.Poverty, false, povertyStrength / 8f));
-            e.Add(new PolicyWebEdge(node, StatNodeId.Approval, true, approvalStrength / 3.0f));
+            e.Add(new PolicyWebEdge(node, StatNodeId.Poverty, false,
+                MacroSystem.GetPovertyReductionSensitivity(type) / MacroSystem.GetPovertyReductionSensitivity(WelfareProgramType.UBI)));
+            e.Add(new PolicyWebEdge(node, StatNodeId.Approval, true,
+                MacroSystem.GetWelfareApprovalSensitivity(type) / MacroSystem.GetWelfareApprovalSensitivity(WelfareProgramType.UBI)));
+            e.Add(new PolicyWebEdge(node, StatNodeId.DebtToGdp, true));
         }
 
         private Dictionary<PolicyNodeId, Vector2> _policyPixels;
