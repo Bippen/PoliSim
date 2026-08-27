@@ -32,9 +32,9 @@
 > fix), and before `f178263` a `-runmatrix` run silently ignored `-seed`, so any matrix count predating
 > that commit came from an unseeded run.
 
-> ## ⚠ SEVEN BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
+> ## ⚠ EIGHT BASELINE DISCONTINUITIES — READ BEFORE COMPARING ANY TWO NUMBERS IN THIS FILE
 >
-> **Seven, within about a month.** A figure recorded on one side of any of these cannot be
+> **Eight, within about a month.** A figure recorded on one side of any of these cannot be
 > compared with a figure recorded on the other. When quoting a number from this file, check which era it
 > came from first.
 >
@@ -47,6 +47,7 @@
 > | 5 | **2026-08-17** | **the MATURITY RATE-LAG** (ruling R4; recalibration by construction, MEASURED NARROW) | debt paths in RATE-MOVING regimes only — exactly {GovernmentDebt, Budget} moved of 38 dumped fields, ≤0.2 ratio-points at every baseline horizon except France's s777 overshoot window. Stable-rate figures are effectively comparable across it |
 > | 6 | **2026-08-26** | **the FISCAL SEED RECALIBRATION** (build-order item 1; trajectory-moving by construction, named a recalibration throughout) — the five EU pairs re-anchored to one-basis real figures, the mandatory transfer block seeded, Sweden's UO10/11/12 flipped mandatory with its PotentialGDP re-solved (614.25) | **every EU-five trajectory, debt path, deficit, primary balance, FRF-multiplier reading and anomaly count recorded before it** — deliberately: the pre-recal era's +14..+22% year-1 primary surpluses (and the FRF crushed to 0.58–0.76 hiding them) were the defect being closed. USA figures are comparable across it — seeds untouched, T1 control-verified byte-identical. The post-recal era's baselines are `traj_postrecal_*` |
 > | 7 | **2026-08-26** | **the TAYLOR GAP TERM** (build-order item 4, pass 4; a recalibration by construction — the rule reads the unemployment gap against NAIRU instead of the raw level output gap, which was a per-country constant of −14.5% for the USA and pinned its suggestion at the 0-floor) | **every USA and Eurozone trajectory recorded before it**: rate paths (USA ~0 → ~5–6%, the zone blend +0.8–1.0 pp), chair behaviour, inflation, GDP (USA −2.3% at t100, the level gap −14.3 → −16.6 by construction), debt-to-GDP (the denominator; USA debt interest is anchored and does not read the rate), approval, the house-price index (the pinned rate's +3.9%/yr runaway ends) — deliberately: the floor was the defect. Sweden/Poland RATES are byte-identical across it; their trajectories move ≤0.1% of GDP through the partner-rate channel. `PotentialGDP`, the demographics block and the crime/corruption stocks are byte-identical everywhere (14 of 42 dumped fields). The post-pass-4 era's baselines are `traj_post_pass4_*`; the pre side is `traj_pre_pass4_*` |
+> | 8 | **2026-08-27** | **TARIFF COSTS** (pass 6, the queued shelf item; force-kind ON THE POLICY PATH ONLY — partners mirror an override's excess over the standing rate onto the overrider's exports, the change in the tariff take passes through to prices for one year with expectations looking through the part that printed, and the Trade bill's vote reads the change in the import-weighted average tariff, overrides included) | **every figure ever recorded under a partner override or a Trade bill**: pass 5's free-lever measurements (Sweden 33.8 → 24.7 and the partner damage — now 33.8 → 27.5 with GDP −5.9%, +11.1 pp of inflation for a year, and the bill failing at seed), the `tariffoverride` matrix cell (+2 anomalies at both horizons: Germany's own pass-through year), `TariffTakeDiagnostic`'s exploit section — deliberately: the free lever was the defect. **The no-policy trajectories are byte-identical across it (42 of 42 dumped fields, both seeds, all horizons — `post_pass6` ≡ `pre_pass6` ≡ `post_pass5b` 6/6)**; of the 30 matrix cells only the four carrying a tariff decision move (`stress` ×2 by the USA's +1 base-point years, ≤0.01 pp; `tariffoverride` ×2). The post-pass-6 era's baselines are `traj_post_pass6_*`; the pre side is `traj_pre_pass6_*` |
 >
 > ⚠ **Discontinuity 3 is the widest of the three.** The first two changed what was *measured*; this one
 > changed what the simulation *was*. Every baseline captured before 2026-08-10 measured a fiscal engine
@@ -1195,7 +1196,9 @@ debt).
   (`6000.5.4f1`). Results, read straight from that run's own log (not the harness): at both 100 and 500
   turns, baseline and tariffoverride (which barely perturbs USA's own fiscal balance *— true then
   because tariff revenue never reached the fiscal path; since pass 5, 2026-08-26, that scenario's 40%
-  on Germany books ~60/turn, 0.19% of GDP, into the stock*) land USA at ~142%,
+  on Germany books ~60/turn, 0.19% of GDP, into the stock; since pass 6, 2026-08-27, Germany mirrors the
+  40% onto the USA's exports and both pay a pass-through year — the cell's anomaly counts moved +2 at both
+  horizons, the only matrix cells besides `stress` that did*) land USA at ~142%,
   essentially flat between the two horizons (142.4% -> 143.6%/142.6%) confirming genuine stability, not a
   slow drift; Sweden/Germany/France/Italy/Poland land at ~13%/~35%/~90%/~107%/~26% respectively at BOTH
   horizons, matching the harness closely. The stress and sustainedexploit scenarios show USA at the two
@@ -2450,6 +2453,11 @@ than building a new mechanic alongside the existing `BaseTariffRate`/`TariffRate
   except the player's own `PolicyDecision.PartnerTariffOverrides` ever sets an override (an AI-
   controlled country never receives one, since `PolicyDecision.None()` carries an empty dictionary),
   every non-player country's links stay at the default forever and resolve exactly as before.
+  *(⚠ Amended 2026-08-27, pass 6: the LINKS are still never written — the invariant holds at the state
+  level — but `TradeSystem.GetTariffRate` now adds a derived retaliatory term (`GetRetaliatoryTariffRate`
+  mirrors the excess of the player's override over the standing rate, computed from the player's own
+  link), so a non-player country's RESOLVED rate on the player's exports DOES respond to the player's
+  override. CLAUDE.md "Pass 6 ships".)*
 - **`PolicyDecision.PartnerTariffOverrides`** (`Dictionary<CountryId, float>`, absolute target per
   partner - same "SET, not delta" semantics as `TaxRateOverrides`): `SimulationManager.
   ApplyPartnerTariffOverrides` clamps the requested rate to the same `[MinBaseTariffRate,
@@ -12874,7 +12882,10 @@ again). Ruled: ship the
 routing alone (one force per baseline; the fix is correct regardless) and queue **tariff costs** — price
 pass-through to inflation and/or partner retaliation, plus overrides entering the vote — as a named
 trigger: the first content or playtest pass that touches a Trade bill, and before item 10 opens the
-political game to real parties.
+political game to real parties. *(✅ CLOSED 2026-08-27 — pass 6, "Pass 6 ships" below: all three
+mechanics shipped — the wedge passes to prices for a year, partners mirror an override's excess, overrides
+enter the vote as the average tariff; volumes indexed to GDP stays queued. Sweden's 33.8 → 24.7 is now
+33.8 → 27.5 with GDP −5.9% and the bill failing at seed.)*
 
 **The third writer, found by the adversarial pass and closed in the same pass — the retirement is
 complete, not partial.** With `TradeSystem`'s write gone, one display-only write of `State.Budget`
@@ -12984,3 +12995,278 @@ bill's new fiscal reach. Nothing in the order is left half-built; the shelf hold
 triggers.
 
 Stopped at the boundary. **The ruled build order is CLOSED — all five items shipped 2026-08-26.**
+
+## Pass 6 ships — tariffs cost: the free lever answered; the eighth discontinuity is policy-path (2026-08-27)
+
+Pass 6, the first item consumed from the queued shelf (pass 5's "tariff costs" trigger — *the first
+content or playtest pass that touches a Trade bill, and before item 10 opens the political game to real
+parties* — both halves met). **The rulings were taken BY THE PASS in rule 4's reversible-call form,
+each a one-literal or one-line revert, and are stated here so none reads as drift: (1) the tariff
+wedge is a PRICE-LEVEL term on the Phillips map for the year it lands, and expectations LOOK THROUGH
+the part of it that actually printed (the realized, clamped contribution — never the planned figure,
+which inverts at the zero floor on a cut); (2) the denominator is GDP; (3) partners answer the EXCESS
+of an override over the standing rate, one for one, instantly and without memory — cuts and base-dial
+hikes unanswered — computed from the overrider's own link, never stored; (4) overrides enter the vote as
+the change in the IMPORT-WEIGHTED AVERAGE tariff the bill would charge, on the fiscal axis, sign-only
+as every vote is — the pass's taste-adjacent call, flagged first below; (5) `ImportPricePassThrough =
+1.0` is DERIVED from static volumes, its corroboration UNVERIFIED-EXTERNAL, its stakes measured at 0.5;
+(6) no approval charge on a passed hike; (7) one build commit for three channels; (8) the eighth
+baseline discontinuity is counted as a POLICY-PATH row — the no-policy trajectories are byte-identical
+across it; (9) static volumes stay static, deferred with the `Δtake → Δτ̄ × m` dependency recorded in
+code; (10) the inert base-tariff dial legibility fix folded in. Overrule = revert `4650a76` (the
+build), `4352665` (the plumbing) and the closing commit — or zero the one `TradeCosts` constant; the
+baselines are `traj_pre_pass6_*` / `traj_ctrl_pass6_*` / `traj_post_pass6_*`.**
+
+**The defect, restated from "Pass 5 ships" and verified at HEAD.** With tariff revenue real money, a 50%
+override on every partner was a costless revenue button worth 5–11% of GDP per year for the EU five:
+imports static (`effectiveImports = ImportVolume`), nothing retaliated (no event, law, cabinet or
+foreign-policy mechanic touched a partner's rate), and the vote was no brake — `GetTradeBillDirection`
+read only the base rate, so an overrides-only bill had direction 0 and `WouldBillPass` returned true
+unconditionally. Re-verified at `bb5e37e` by the extended instrument before any wiring (§1 below): the
+overrider's own GDP, unemployment and approval print `+0.00` against the control on every line — the
+money never cost anything.
+
+**§1 — measured before wiring (`TariffCostsDiagnostic`, new, retained; run at the plumbing commit with
+every `TradeCosts` constant at 0 — the old books; seed 777, 30 turns, each country in turn at the cap on
+every partner from t1, against one shared no-policy control).** The six-country lever under the old
+books, the first time the other five were run as trajectories rather than seed arithmetic:
+
+| overrider | take/turn (vs control) | debt-to-GDP t10 / t20 / t30 (control → lever) | Δ t30 | own GDP / U / approval t30 | partners' GDP t30 |
+|---|---|---|---|---|---|
+| USA | 141.50 (8.49) | 130.0→128.5 / 129.2→127.9 / 129.2→128.2 | −1.1 | +0.00% / +0.00 / +0.0 | DE −0.93%, FR −0.80%, SE −1.13%, PL −0.33% |
+| Sweden | 70.00 (1.01) | 36.2→23.6 / 34.9→24.1 / 33.8→24.7 | −9.2 | +0.00% / +0.00 / +0.0 | USA −0.02%, DE −0.47%, PL −0.77% |
+| Germany | 297.50 (4.08) | 65.4→56.7 / 67.3→58.6 / 67.5→59.3 | −8.2 | +0.07% / +0.00 / +0.0 | USA −0.08%, FR −1.74%, IT −1.98%, PL −1.73%, SE −3.10% |
+| France | 182.50 (2.69) | 120.7→113.0 / 124.6→116.8 / 125.0→117.5 | −7.5 | +0.07% / +0.00 / +0.0 | USA −0.06%, DE −1.33%, IT −1.18% |
+| Italy | 120.00 (0.24) | 142.8→134.7 / 146.6→138.3 / 149.9→141.7 | −8.2 | +0.06% / +0.00 / +0.0 | DE −0.99%, FR −0.85% |
+| Poland | 77.50 (0.74) | 71.7→58.7 / 71.2→61.6 / 71.1→64.0 | −7.0 | +0.00% / +0.00 / +0.0 | USA −0.01%, DE −0.67%, SE −1.67% |
+
+Sweden's row reproduces pass 5's record to the digit (33.8 → 24.7; partners −0.02/−0.47/−0.77%). The
+20 directed links of a fresh world carried no retaliatory term, the six first-boundary pass-through
+figures were 0, and every overrides-only bill scored direction 0 and auto-passed — the plumbing live at
+zero, `ctrl_pass6` byte-identical to `pre_pass6` 6/6 (SHA-256; `pre_pass6` itself byte-identical to
+`post_pass5b` 6/6, the era).
+
+**The three forces, derived — one declared table, `TradeCosts` (the third, after `CrimeJusticeCouplings`
+and `LaborCouplings`), every consumer BRANCHING on its constant, never multiplying by it (a `× 0f` can
+still flip a `−0f` and move float codegen — the pass-4 one-ulp lesson), the constants kept after the
+build so each channel is revertible by one literal.**
+
+*Pass-through.* A tariff change is a one-time change in the price LEVEL; `Inflation` is an annual rate
+and a turn is a year, so the level move prints as a one-year rate impulse. With static volumes
+`take/GDP = τ̄ × m` (import-weighted average tariff × import share), so the roadmap's own `τ × import
+share × pass-through` applied to the CHANGE is exactly `PlannedTariffPassThroughPp = φ × 100 ×
+(take_new − take_prev) / GDP` — the take `ApplyTradeEffects` reports at this boundary against the closing
+period's `PlannedTariffRevenue`, read before the re-plan overwrites it. No new anchor state, and exactly
+`0f` on every no-policy boundary (the same pure sum on unchanged state). `φ = 1.0` is DERIVED from the
+static-volume placeholder — with imports static the same quantity sells at the same pre-tariff price and
+the whole take is paid by domestic buyers, border incidence 100% by construction; the border-price
+literature's near-complete pass-through corroborates it but is NOT the source (the repo holds no
+citation), recorded UNVERIFIED-EXTERNAL in pass 5's form, and its stakes measured at 0.5 rather than
+asserted (below). The term rides the daily Phillips level map inside inflation's one ceiling, BOTH
+bounds of `Clamp(0, MaxInflationPercent)` — rule 11 by folding — as a second, guarded statement after
+the untouched base print, and `ApplyPhillipsCurveInflation` RETURNS what actually printed (the clamped
+print with the term minus without it), kept on the period as `AppliedTariffPassThroughPp`. **Expectations
+look through that realized contribution at the boundary** (`ApplyInflationExpectations`' new SECOND
+parameter, named at the call so a positional slip can never bind it to the adaptation speed): a level
+term is not a rate change, adaptive expectations describe the RATE, and fed in, half of a one-off level
+shift would become permanent inflation by this model's own recorded fixed point (elevated inflation at
+NAIRU never decays; the rate lever ≈ −0.065 pp per pp) — Sweden at the cap +5.6 pp forever, an approval
+equilibrium ≈ −45. Rejected on its own arithmetic: looking through the PLANNED figure — a cut of the
+50% override plans −11.1 pp, the Phillips value goes to ≈ −9 and clamps to 0, and `(0 − (−11.1))` would
+ratchet expectations UP by 5.6 on a tariff CUT, the artefact with its sign flipped. With the applied
+value the target is by construction the no-wedge print, in `[0, 30]` at either bound; the removal case
+below is the proof. Everything else reads HEADLINE, no code change: approval's misery term
+(`InflationApprovalSensitivity 0.4 × |π − 2|`), poverty (`0.3 × |π − 2|`), the real-wage surprise
+(`−0.3 × (π − E)`, so the whole bump is a surprise for the year and `WageGrowthGapAtPeriodOpen` carries a
+ONE-period confidence haircut into `EffectiveConsumerConfidence` inside `[0.7, 1.3]` — ≈ 1.7% of consumer
+confidence at Sweden's cap; the `RealWageIndex` level shift itself is recorded and read by nothing in the
+identity, said plainly), the Taylor rule (+1.5 pp suggested per pp) → chair / ECB blend at GDP weight →
+rates → C/I, and debt erosion reads the same `state.Inflation` in the update and the ledger twin. The
+denominator is GDP (the model's dollar unit and the deflator in the erosion term); Consumption would read
+≈ 1.5× larger. Nothing credits reduced import leakage — `effectiveImports` is untouched and the pass-5
+import-side-symmetry ruling stands.
+
+*Retaliation.* No partner behaviour existed to derive from (verified again: `retaliat|reciproc|Relations|
+Goodwill|Diplomatic` over `Assets/Scripts` — only an event's name), so the rule is a first cut, recorded
+as such: *a partner answers the EXCESS of our override over the rate we would otherwise charge it, one
+for one.* `TradeSystem.GetTariffRate` is now `GetOwnTariffRate + GetRetaliatoryTariffRate` over one
+`GetStandingTariffRate` precedence (the pre-pass-6 body, no arithmetic in the split), the retaliatory term
+computed from the OVERRIDER's own link — never stored on the partner's, so the one-directional invariant
+holds at the state level (an AI link is never written) while a non-player's RESOLVED rate now responds to
+the player's override (CLAUDE.md's "one-directional by construction" bullet amended, dated). Everything
+downstream followed with no further code: our `effectiveExports` on the link fall by the mirrored rate,
+the partner's `ComputeTariffRevenue` collects the mirrored take, and the Trade tab's partner row reads it.
+Properties, stated: cuts unanswered (the excess floors at 0 — no reciprocal-liberalization lever
+appears; `tariffoverride`'s France-0% leg: excess 0, France still charges 3); base-dial hikes unanswered
+(a country's base rate IS its standing rate — a stated residual, deferred: needs a seed-anchored base
+reference; the dial is voted; reach 0.49% of USA GDP); instant and memoryless (the 21-day bill delay is
+the lag on the player's side; a lagged/decaying response needs a `TradePartner` field, a `Clone()` line
+and a save-shape change — deferred); cannot recurse (`GetStandingTariffRate` never reads an override).
+Bound, stated correctly: `own ≤ 50` and `excess ≤ 50 − 0`, so the sum is < 100 and `(1 − τ/100)` never
+goes negative; at seed rates the reachable maximum is 50 (Sweden's 50 on Germany: 0.1 + 49.9), and a USA
+player who first zeroes its base rate and then sets a 50% override makes Germany charge 53 — no cap. The
+excess form equals `Max(standing, override)` at the seeded symmetric rates; it is chosen because it
+reads as what it is and floors nothing. Rejected: a pure mirror (reciprocity — a second new lever); writing
+the AI partner's own override (violates the invariant, needs three writers and persistence). Ordering:
+`ApplyTradeEffects` plans `TradeBalance` and the take from ONE rate state at ONE boundary, so an
+override's revenue and its retaliation always land in the same period. **The second-order channel,
+stated:** the retaliator's take rises too, so under the pass-through it pays its OWN price — a trade war
+costs both sides. The preview shows the retaliation the COMMITTED overrides draw (the clone's links carry
+them); drafts never reach the preview (`BuildPlayerDecision` carries no tariff terms), so a draft's cost
+has its own surface on the bill card (below).
+
+*Override cost.* The SWF-analogy exclusion rested on a missing conversion factor onto the fiscal scale;
+a per-partner override is a tariff rate in the very points the base term already scored. But an
+unnormalized per-partner sum is a partner-count artefact (three links vs five scoring the same policy
+differently), so the direction is the CHANGE IN THE IMPORT-WEIGHTED AVERAGE TARIFF the bill would charge —
+the τ̄ the pass-through uses — in points: for a country whose whole import set resolves at its base rate
+(the USA) a base-only bill scores `NewBase − Base` exactly as before; for an EU member, whose base rate is
+never charged, a base-only bill scores 0 — correct, and the old formula's nonzero reading for it was a
+phantom. The vote reads the SIGN (`GetSeatWeightedAlignment`), so the magnitude is a label, not a lever:
+R4 converts "free" into "contested on the fiscal axis" — at the seed composition (net −0.036) every
+tariff hike fails with the standing 1.5-point cost and every cut passes, exactly as every income-tax hike
+already does. **This is the pass's taste-adjacent call**: the fiscal axis is the model's only axis, no
+protectionism axis exists (`protectionis|Ideology`: NOT FOUND), and item 10 will re-seed parties from
+the 13 September result — so scoring trade on it one pass before real parties land extends the base
+term's existing convention rather than inventing the claim, and is one literal to revert
+(`OverrideDirectionWeight = 0f` restores the overrides-only auto-pass). Named alternative: hold channel 3
+until item 10 gives trade its own axis, with a diplomatic/volume penalty as the interim cost. Not closed,
+recorded: the un-voted "Reset to Default" click is a free instant cut that ends retaliation next
+boundary; the harness `PolicyDecision` path bypasses the vote (its privilege for every lever). No
+approval charge on a passed hike — a fourth force and a new approval writer.
+
+**The build (`4650a76`; plumbing `4352665`).** `TradeCosts.cs` (three constants, the harness-only
+measurement scale); `TradeSystem` (the split, `GetRetaliatoryTariffRate`); `FiscalPeriod.PlannedTariffPassThroughPp`
+/ `AppliedTariffPassThroughPp` (planned at the re-plan BEFORE the overwrite, both 0 at seed; the whole-object
+save carries them, no `SaveVersion` bump), `FiscalTurnReport.TariffPassThroughPp`; the daily Phillips
+call storing the return; the boundary look-through from the CLOSING period's applied value captured
+before `ResetAccrual` (the ordering trap, named in the code); `GetTradeBillDirection(country, bill,
+world)`; `SimulationManager.EstimateTradeBill` — a draft's cost from the REAL functions on two throwaway
+clones (never a hand sum, pass 5's own lesson; the currency factor and the partners' mirrored rates inside
+the figure); the preview threading `previewTariffRevenue` into the wedge with `TryGetValue` (a preview
+seeds nothing) and the look-through. Trade tab: the partner row's "(of which X retaliation, in force
+from the next boundary)" — the row reads live while the books charge boundary-planned rates, so the label
+names the timing; the paragraph's "doesn't affect what that partner charges" corrected; the bill card's
+cost line ("At these rates: tariff take … ; partners' mirrored tariffs move our trade balance by … ;
+prices +x.xx pp this year"); the Trade stats line "Tariff pass-through to prices (last year)"; the
+ride-along — the General Base Tariff dial disabled for a bloc member with "inert — bloc rates apply to
+every partner" as its trailing text (one control either way). Policy Web: `TariffPolicy → Inflation`
+(raises) and `→ TradeBalance` (lowers) added, and the existing `→ DebtToGdp` edge's `Increases: true`
+corrected to `false` — a sign slip against the edge's own definition since pass 5 made the take real
+revenue. The round-trip coverage set gained a standing override and a pending Trade bill in the PLUMBING
+commit, so the control proved the coverage change itself inert. `TariffCostsDiagnostic` (new, retained):
+six overriders at both φ, the removal case, the votes, folded asserts.
+
+**The bar — containment on the no-policy path (the diff enumerates the no-policy trajectory only and is
+evidence for containment, not for any channel being live — rule 14), force on the policy path.**
+- **Fresh `pre_pass6` baselines (2 seeds × 100/500/1000): byte-identical to `post_pass5b` 6/6** (SHA-256) — the era.
+- **Wired-inert control: `ctrl_pass6` byte-identical to `pre_pass6` 6/6** (`4352665`, the whole plumbing live at zero — the load-bearing inertness proof).
+- **`post_pass6` byte-identical to `pre_pass6` 6/6** (SHA-256) — the build moves NO no-policy trajectory:
+  every force multiplies an override that does not exist on that path, and `ImportVolume`/`ExportVolume`
+  have no writer outside `TradePartner`'s constructor, so the take is the same pure sum at every
+  no-policy boundary. This is the predicted result, stated in advance; it is containment evidence only.
+- **The six `TrajectoryDiffCheck` pairs vs `pre_pass6`: `42 of 42` byte-identical on every pair**, no NEW
+  field (nothing joined `EconomyState`), exit 0 — the moved set on the no-policy baselines is EMPTY.
+- **Equivalence 117 of 117 within 3%** (enumeration stated: the pass-through is NOT in this bar — its
+  macro rows call the one-argument Phillips form, and no row drives an override; the six standing
+  `(INFO)` shock rows are the same six pass 5's log carried). **Save/load round-trip PASS 12/12** (the two
+  new `FiscalPeriod` floats and `FiscalTurnReport.TariffPassThroughPp` cross by the whole-object save; the
+  new coverage override and pending Trade bill cross with them; `RT: reflecting 36 public EconomyState
+  fields` unchanged). **Preview parity 7 of 7 asserted terms for all six** (the misery gaps stay
+  expected-different by design; the real ledger untouched across a preview).
+- **The scenario matrix like-for-like at seed 777 (pre side = pass 5's post matrix, the same simulation
+  code as `pre_pass6` by hash): 28 of 30 anomaly counts EXACT; the two that move are exactly the
+  predicted `tariffoverride` cells, +2 each (100 and 500)** — Germany's own pass-through year (its
+  mirrored take on the USA's 40% rises +44.4/turn, +0.94 pp for a year, a 31% one-turn swing against the
+  20% bar, then the return swing) — **zero new anomaly kinds** (the same kinds; `Inflation swung` 1,392 →
+  1,396 entries, the other three counts unchanged). Per-turn lines identical in 26 of 30 cells; the four
+  that differ are the four defended in advance and nothing else: `stress`/100 and /500 (the USA's +1
+  base-point years: GDP, GovernmentDebt, one Inflation and one InterestRate print) and `tariffoverride`/100
+  and /500 (GDP, GovernmentDebt, DebtToGdpRatio, Inflation, InterestRate — the USA's wedge, Germany's mirror
+  on the USA's 120 of exports, Germany's own wedge and the ECB blend it moves).
+- **`TariffCostsDiagnostic` at the build — `TARIFFCOSTS: PASS`, every folded assert held:** the 20
+  directed links of a fresh world carry no retaliatory term and the six first-boundary wedges are 0 (the
+  no-override path is inert at the build exactly as at the control); with the forces on, every partner
+  of every overrider charges exactly 50.00% at t1 (the mirror, asserted on all 20 links), the wedge
+  prints at t2 for all six, the overrides-only bill has nonzero direction for all six, and the removal
+  case's look-through identity holds at every event-free boundary. ATTRIB 0 (case-sensitive), 0 compile errors.
+- **Captures at the four ruled sizes (USA — the Trade policy screen and the Policy Web are where the display changed): 1280×720, 1640×707, 1600×950 and 2560×1440, 64/64 each, 0 failed, 0 overflows, 0 containment escapes, 0 canvas violations; plus Sweden at 1280×720 (62/62, the same zeros) for the bloc-member dial.** Read BY EYE beside the `p5usa*` sets: the bill card gained its cost line ("At these rates: tariff take $8.49B/yr (+$0); partners' mirrored tariffs move our trade balance by +$0/yr; prices +0,00 pp this year"), the chip row grew from one chip (Debt-to-GDP) to three (Inflation, Debt-to-GDP, Trade Balance — the two new edges), the override paragraph reads the mirror, and Sweden's General Base Tariff row draws disabled with "inert - bloc rates apply to every partner" and "n/a". One cosmetic nit, recorded: at 2560 the cost line wraps after the "+" of "+$0/yr" (the 1280 floor wraps cleanly). **ATTRIB 0 on every log (case-sensitive grep), 0 compile errors; which code each run saw: every bar run above ran at the build commit `4650a76`.**
+
+**The free lever, re-measured — new books beside old (the plumbing-commit run and the build run of the
+same instrument, seed 777, 30 turns).**
+
+The overrider, new books (φ = 1.0), each country at the cap on every partner from t1 — the take is the
+same 5–11% of GDP it was, and it now costs something:
+
+| overrider | take/turn | inflation t1 → t2 → t3 (control t2) | expectations t3 (ctrl) | trade balance t1 (ctrl) | GDP t2 / t30 | unemployment t2 / t30 | approval t2 / t30 | debt-to-GDP t30, ctrl → lever (Δ new; Δ old books) |
+|---|---|---|---|---|---|---|---|---|
+| USA | 141.50 | 2.32 → 2.68 → 2.21 (2.25) | 2.29 (2.32) | −158.4 (−41.3) | −0.20% / −0.17% | +0.10 / +0.00 | −0.3 / +0.1 | 129.2 → 128.4 (−0.9; −1.1) |
+| Sweden | 70.00 | 1.64 → **11.82** → 0.28 (1.45) | 0.77 (1.47) | −77.1 (−15.1) | **−5.02% / −5.87%** | +2.50 / −0.07 | **−6.2 / −6.2** | 33.8 → 27.5 (−6.3; −9.2) |
+| Germany | 297.50 | 2.92 → 8.70 → 2.28 (3.00) | 2.50 (2.99) | −260.0 (+70.0) | −3.45% / −4.38% | +1.75 / −0.03 | −4.0 / +2.1 | 67.5 → 62.0 (−5.5; −8.2) |
+| France | 182.50 | 3.19 → 8.29 → 2.59 (3.19) | 2.76 (3.15) | −185.0 (−8.0) | −2.69% / −3.44% | +1.36 / −0.02 | −3.3 / +1.6 | 125.0 → 120.1 (−4.9; −7.5) |
+| Italy | 120.00 | 2.81 → 7.56 → 2.13 (2.69) | 2.37 (2.72) | −127.5 (−15.2) | −2.46% / −3.20% | +1.23 / −0.02 | −3.2 / +1.4 | 149.9 → 144.3 (−5.6; −8.2) |
+| Poland | 77.50 | 1.40 → 9.78 → 1.06 (1.15) | 0.70 (1.30) | −81.3 (−8.2) | −4.38% / −2.81% | +2.21 / −0.08 | −5.0 / −3.5 | 71.1 → 66.2 (−4.9; −7.0) |
+
+The wedge prints for exactly one year (t2) and returns (t3), and expectations FALL rather than ratchet —
+the look-through adapts toward the no-wedge print, and that print is lower than the control's because
+the trade war's own slack (unemployment +2.5 at t2 for Sweden) pulls the Phillips value down. The
+retaliation is the real cost: NX −62 for Sweden at t1 (−77.1 vs −15.1), GDP −5% in the year it lands and
+−5.9% at t30; the debt windfall survives but shrinks (the FRF still gives part of it back, and the
+denominator now falls). Approval: Sweden and Poland — the two with player-set rates and the largest import
+shares — stay 3–6 points below the control at t30; the Eurozone three recover past it by t30 as the
+ECB blend, the revenue and the growth-gap term work through (Germany −4.0 at t2, +2.1 at t30). The
+moved set at t30 is 20–22 of 36 `EconomyState` fields per overrider (GDP, Inflation, Unemployment,
+Approval, Budget, TradeBalance, C, I, expectations, confidence, debt, poverty, LFPR, youth unemployment,
+Gini, real wages, housing, productivity, crime; the demographics block and `PotentialGDP` untouched).
+
+The partners — the second-order channel, measured: under Sweden's lever every partner charges Sweden
+50.00% from t1 and collects the mirrored take (USA +11.75/turn, Germany +32.43, Poland +17.47), pays its
+OWN pass-through year (USA +0.04 pp, Germany +0.69 pp — 3.64 vs 3.00 at t2 — **Poland +2.11 pp**, 3.09
+vs 1.15) and keeps the export loss pass 5 measured to the digit (GDP t30 −0.02% / −0.47% / −0.77%), with
+debt-to-GDP now LOWER by 0.1 / 0.6 / 1.1 ratio-points (the mirrored revenue) and approval −0.8 for Poland,
++0.2 for Germany. Under Germany's lever the five partners' own wedges are +0.24 (USA), +3.06 (France),
++3.27 (Italy), **+6.04 (Poland)** and **+5.63 (Sweden)** pp — a German trade war costs Sweden 3.1% of GDP
+and 5.6 pp of inflation for a year while Germany's own bump is 6.2 pp.
+
+**φ's stakes, measured at 0.5 (the same six runs with the pass-through halved):** the printed wedge
+halves (Sweden t2 6.26 instead of 11.82, Germany 5.59 instead of 8.70, Poland 5.13 instead of 9.78; the
+partners' own wedges likewise — Poland +1.06 under Sweden's lever), the year-1 approval hit shrinks by
+≈ 1–2 points (Sweden −4.0 instead of −6.2 at t2, −5.7 instead of −6.2 at t30; Germany −2.7 instead of
+−4.0), the Eurozone rate response softens (Germany's t3 rate 3.44 vs 3.85) — and **GDP, unemployment,
+the trade balance and the debt path are unchanged to the digit** (Sweden −5.02% / −5.87%, −6.3
+ratio-points at either φ). The invented constant prices the POLITICAL cost of the lever; the real cost is
+the retaliation and does not depend on it.
+
+**The removal case — the clamp-safe look-through's proof (Sweden at the cap from t1, the un-voted
+Reset before t3):** t1 take 1.01, applied 0, print 1.64, expectations 2.00 → 1.82 (identity holds); t2
+take 70.00, applied +11.13, print 11.82, expectations 1.82 → 1.26 (the identity check skipped — a
+boundary event shocked inflation after expectations adapted — but the target `11.82 − 11.13 = 0.69` is
+what 1.26 is halfway to); t3 take 70.00, applied 0, print 0.28, expectations 1.26 → 0.77 (holds); **t4 —
+the cut year — take 1.01, planned wedge −11.13, print floored at 0.00, APPLIED −1.14 (the base print was
+1.14), expectations 0.77 → 0.95** (holds: the target is the no-wedge print 1.14, not `0 − (−11.13) =
++11.13`, which the planned form would have produced — an expectations ratchet of +5.2 on a tariff CUT);
+t5 print 1.39, expectations 0.95 → 1.17 (holds); t6 print 1.43, expectations 1.17 → 1.30 (holds), the
+control at 1.35 — the episode leaves no trace in the rate expectations beyond the slack it caused.
+
+**The vote:** the overrides-only bill (every partner at the cap, the base rate restated) now reads
++47.00 (USA), +49.28 (Sweden), +49.32 (Germany), +49.26 (France), +49.90 (Italy), +49.53 (Poland) points
+of average tariff — contested — and **WOULD FAIL at the seed parliament for all six** (net stance −0.036;
+under the old books all six read direction 0 and auto-passed). Not free; a cut still passes.
+
+**What remains dark, stated:** trade volumes indexed to GDP (the static-volume tail pass 5 priced; when
+it lands the wedge must become `Δτ̄ × m` with an explicit rate anchor or volume growth would print as
+inflation — recorded in the code); retaliation against a base-dial hike (no excess to mirror — needs a
+seed-anchored base reference); retaliation memory or lag (no diplomatic state exists); the un-voted Reset
+click; the harness path around the vote; an approval charge on a passed tariff hike (R6, not built); the
+sign-only vote on the fiscal axis pending item 10's trade axis (R4, the flagged call); the recorded model
+property the wedge was shaped around — elevated inflation at NAIRU as a fixed point — stands untouched.
+
+**The board, stated.** The queued shelf loses its first item. What remains: **Step 4 — item 10, the
+political game** (13 Sept 2026); the shelf (the identity's government-consumption block, the
+causal-graph screen — trigger fired —, per-scenario term accumulation, investment deepening, the icon
+promotion; and now, from this pass, volumes indexed to GDP and a trade axis for the vote); the world's
+items (§S the send package; D1's nine; E2/E3); and the play gates — decision density READING as closed,
+Riksbank-B's felt verdict, **the Trade bill's costs felt** (the bill card's cost line, the partner row's
+retaliation, the inflation year).
+
+Stopped at the boundary.

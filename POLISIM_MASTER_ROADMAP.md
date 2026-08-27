@@ -351,14 +351,16 @@ its turn comes; nothing is dated.*
    Shipped as a recorded exploit class with **tariff costs** queued below as a named trigger.
    CLAUDE.md "Pass 5 ships" is the record.
 
-**The ruled build order is CLOSED (2026-08-26, five of five).** What remains on the board, stated
-once: **Step 4 — item 10, the political game (13 Sept 2026 is effectively here)**; the
-queued-and-triggered shelf below (the identity's G-block, the causal-graph screen, per-scenario term
-accumulation, investment deepening, the icon promotion, tariff costs; Riksbank-B behind gate 2
-only); the world's items in `MISSING_PREREQUISITES.md` (§S the send package — §8/§9 and the D1
-verdict await Elias's send; D1's nine await Design's delivery; §E2/E3 ride item 10 and a working
-raster path); and the play gates — the next playtest's own named items (decision density READING
-as closed; Riksbank-B's felt verdict; the Trade bill's new fiscal reach).
+**The ruled build order is CLOSED (2026-08-26, five of five); the queued shelf's first item — tariff
+costs — SHIPPED 2026-08-27 (pass 6, below).** What remains on the board, stated once: **Step 4 — item
+10, the political game (13 Sept 2026 is effectively here)**; the queued-and-triggered shelf below (the
+identity's G-block, the causal-graph screen, per-scenario term accumulation, investment deepening, the
+icon promotion, and — from pass 6 — trade volumes indexed to GDP and a trade axis for the vote;
+Riksbank-B behind gate 2 only); the world's items in `MISSING_PREREQUISITES.md` (§S the send package —
+§8/§9 and the D1 verdict await Elias's send; D1's nine await Design's delivery; §E2/E3 ride item 10 and
+a working raster path); and the play gates — the next playtest's own named items (decision density
+READING as closed; Riksbank-B's felt verdict; **the Trade bill's costs felt** — the bill card's cost
+line, the partner row's retaliation, the inflation year, and a hike that now fails at the seed composition).
 
 **Queued at fired or named triggers (ruled 2026-08-26), not scheduled:**
 
@@ -383,21 +385,28 @@ as closed; Riksbank-B's felt verdict; the Trade bill's new fiscal reach).
   across all six countries and Okun's anchor — which is why pass 4 fixed the RULE instead. Trigger:
   the first mechanic that needs the level output gap to mean something (a capital stock, an
   investment-deepening return, or a displayed "output gap" stat).
-- **Tariff costs** (queued 2026-08-26 by pass 5's trade-war finding): now that tariff revenue is
-  real money, a per-partner override at the 50% cap is a costless revenue button — imports are
-  static (`effectiveImports = ImportVolume`, no elasticity), nothing retaliates (no event, law,
-  cabinet or foreign-policy mechanic touches a partner's rates or volumes; `TradeBalanceShock`
-  nudges NX only), and the Parliament vote is no brake (overrides are excluded from the direction,
-  so an overrides-only bill has direction 0 and passes unconditionally). Measured: every partner at
-  50% yields Sweden 11.3, Poland 9.2, Germany 6.3, France 5.7, Italy 5.2, USA 0.5% of GDP per
-  year; Sweden's debt-to-GDP falls 33.8 → 24.7 in thirty turns. The honest mechanics, each its own
-  force for its own baseline: price pass-through to inflation (τ × import share × pass-through —
-  the approval and central-bank consequences follow from existing paths), partner retaliation
-  (their tariff on our exports mirrors ours — NX falls), overrides entering the vote's direction,
-  and trade volumes indexed to GDP (which also removes pass 5's static-volume tail). Also recorded
-  there: the "General Base Tariff" dial is inert for the five EU countries (bloc rates always win) —
-  a legibility fix for the Trade tab. **Trigger: the first content or playtest pass that touches a
-  Trade bill, and before item 10 opens the political game to real parties.**
+- ✅ **Tariff costs — SHIPPED 2026-08-27 (pass 6; CLAUDE.md "Pass 6 ships" is the record; plumbing
+  `4352665`, build `4650a76`).** The free lever pass 5 measured (a 50% override on every partner as
+  a costless 5–11%-of-GDP revenue button: imports static, nothing retaliating, an overrides-only bill
+  at direction 0) is answered by three forces in one declared table, `TradeCosts`: the change in the
+  tariff take passes through to prices for one year (φ = 1.0 DERIVED from static volumes, its
+  corroboration UNVERIFIED-EXTERNAL, its stakes measured at 0.5; expectations look through the part
+  that actually printed — clamp-safe, so a cut cannot ratchet them); partners mirror an override's
+  excess over the standing rate onto the overrider's exports (computed from the overrider's own link,
+  never stored; instant, memoryless; cuts and base-dial hikes unanswered); and the Trade bill's
+  direction is the change in the import-weighted average tariff, overrides included (sign-only, as
+  every vote is — the pass's flagged call, one literal to revert). Measured, seed 777: Sweden at the
+  cap prints +11.13 pp for a year, loses 5.0% of GDP in that year and 5.9% at t30, −6.2 approval, and
+  its debt-to-GDP windfall shrinks 33.8 → 27.5 (was 24.7); every partner charges it 50% and Poland
+  pays +2.11 pp of its own inflation; all six overrides-only bills WOULD FAIL at the seed parliament.
+  The no-policy baselines are byte-identical across the pass (42/42, 6/6); the eighth discontinuity
+  is policy-path. The "General Base Tariff" legibility fix folded in (the dial disabled for a bloc
+  member, with its reason). **Deferred, with reasons:** trade volumes indexed to GDP (moves NX on
+  every baseline — its own force; when it lands the wedge must become `Δτ̄ × m` with an explicit rate
+  anchor, recorded in code); retaliation against a base-dial hike (no excess to mirror — needs a
+  seed-anchored base reference; the dial is voted; reach 0.49% of USA GDP); retaliation memory or lag
+  (no diplomatic state exists); the un-voted "Reset to Default" click (a free instant cut that ends
+  retaliation next boundary); a trade axis for the vote (item 10's, where real parties land).
 
 *(The 2026-08-02 "Built and now reachable" and trajectory-validation paragraphs that stood here are
 historical validation records; superseded in place by the entries above, detail in `COMPLETED.md` and

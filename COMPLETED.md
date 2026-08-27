@@ -1291,6 +1291,10 @@ parked pass" reading; the 2026-08-02 original) are in git history with this file
 *(→ 2026-08-26, pass 5: F1's "the writers were exactly two" was wrong by one — the SWF emergency
 drawdown bill (A2 above) wrote the display accumulator alone and never lowered debt; found by pass
 5's retirement sweep and closed onto F1's own path. CLAUDE.md "Pass 5 ships".)*
+*(→ 2026-08-27, pass 6: the free-lever exploit class pass 5 recorded is closed — the change in the
+tariff take passes through to prices for a year, partners mirror an override's excess, and overrides
+enter the vote as the average tariff; pass 5's Sweden 33.8 → 24.7 is now 33.8 → 27.5 with GDP −5.9%
+and the bill failing at seed. CLAUDE.md "Pass 6 ships".)*
 
 ---
 
