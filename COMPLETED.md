@@ -2219,3 +2219,96 @@ stand today" table (§3.0 — none of its fifteen values exists at HEAD; the age
 mipmaps off on the 44 files that carried them, the check promoted to error; full-colour block compression
 ruled acceptable after a visual check on the flags, the worst case; the enforcing check reads the
 imported texture, not the meta). The rules survive in the request doc's §3 table; the history is here.
+
+## 34. Playtest 3 — ten surfaces seen, three findings diagnosed and surveyed, nothing fixed (2026-08-27)
+
+**The session.** Elias ran `MISSING_PREREQUISITES.md` §V as the seventeen-item ordered checklist
+(printed 2026-08-27, grouped by game advancement, caveats flagged) in one Editor session. **12 of 17
+pass.** Items 1, 2, 6, 7, 8, 9, 10, 15, 16, 17 confirmed seen and cleared from §V (rule 15's third
+layer — a capture is a harness film, not Elias's eyes; this is the sighting):
+
+- the Canvas country selector's set (the six flags, the scenario entry beside them);
+- Turn → Year on the header strip;
+- Budget's dead nested scroll (gone);
+- Sweden's 24-line budget decomposition;
+- the SWF emergency drawdown bill (standalone, its own countdown);
+- option C's deliberate-choice paragraph on the Fed/ECB surface;
+- pass 6's four Trade surfaces — the inert base-tariff dial (bloc member), the retaliation label on
+  the partner row, the bill card's cost line, and the stats line (the last one placement-flagged
+  under finding 3, but the line itself seen and passed);
+- the rejected-bill seal on the Signing screen;
+- Italy Debt Crisis as a playable scenario, with the fiscal trace opened mid-run;
+- Step 3's verdict screen with the Sustained streak line, and the scenario's entry on the selector.
+
+Three findings came back, in Elias's priority order. **Each was diagnosed or surveyed and REPORTED;
+none was fixed** — the instruction on all three was numbers before a fix, dimensions before a change,
+survey before a cut. The fixes are Elias's rulings and are still open in §V.
+
+**Finding 1 — the Compass Y axis: a MODEL cause, not a plot cause.** `Assets/Editor/CompassAxisDiagnostic.cs`
+(new, retained, run by `-executeMethod PoliSim.EditorTools.CompassAxisDiagnostic.Run`; log
+`PoliSim-captures\logs\compass_axis_20260827_*.log`) builds `WorldFactory.CreateDefault()` and prints,
+for each of the six countries at turn 0, every sector's `RegulationLevel`, the implemented-welfare count
+and generosity mean, the raw X and Y axis values, and the plotted position under the renderer's own
+`PadRange`/`InverseLerp` rule (replicated from its private helpers — the renderer itself untouched).
+The numbers: **every country has all eight sectors at regulation 50.0 and 0 of 6 welfare programs
+implemented (all six off at generosity 50), so Y = (50 + 0) / 2 = 25.000 for all six**; X is a real
+spread (USA 21.6, Sweden 36.5, Germany 36.7, France 42.1, Italy 34.7, Poland 33.7 — range 20.4, padded
+18.6…45.1). Y's raw range is 0.000, so the padding rule's flat ±5 gives 20…30, every `ty` is 0.500 and
+every dot sits on the plot's mid-line — the horizontal line Elias saw, by construction. The plot is not
+at fault: the auto-scale spreads any real range over the full height, as it does for X, and the
+"Y: regulation & welfare generosity, 20…30" range label is an honest label of a constant. Why it stays
+constant in play: `Sector.RegulationLevel` (default 50, `Sector.cs:47`) has ONE writer,
+`ApplySectorPolicyChanges` (`SimulationManager.cs:2796`, the player's own PolicyDecision), and
+`WelfareProgram.IsImplemented` has one, `ApplyWelfareProgramBillResult` (`ParliamentSystem.cs:389`,
+the player's own bill) — no AI system moves either, so the five AI dots hold Y = 25 for the whole
+game and only the player's dot can leave the line, through the sector regulation dials or a welfare
+bill. A fix is therefore a MODEL question (a per-country seed spread for regulation and/or
+implemented welfare — which moves every no-policy baseline, a discontinuity — or a Y axis re-derived
+from data that already varies at seed) and is Elias's ruling.
+
+**Finding 2 — the portrait draw size: one number governs, measured, unchanged.** All three portrait
+surfaces (roster `GameController.cs:7755`, candidate card `:7819`, Fed chair card `:3235`) size through
+ONE method, `DrawPersonPortrait` (`:3263`): `height = _labelStyle.fontSize × 3.2` (`:3272`),
+`width = round(height × 74/92)` (`:3273`, the frame's @1x proportion), art inset 5 px each side inside
+the brass frame (`PortraitFrameArtInset`, `:683`); `fontSize = clamp(round(Screen.height × 0.022), 16, 28)`
+(`RescaleStylesToScreen`, `:2341`). So the ART draws at **31×41 px at 1280×720 and 1640×707 (font 16),
+41×54 px at 1600×900 and at the Editor's recorded 1600×929 operating size (font 20), 62×80 px at
+2560×1440 (font 28, clamped from 32)**. The eight new 512×640 sources are minified 12.5× linearly at
+1600 and 8.3× at 2560, with mipmaps OFF by the importer ruling — a 12× mip-less minification samples
+about one texel in 150, which is the sparkle on top of the smallness; the sixteen 256×256 squares are
+minified 4.7×/3.2× and cropped 20% in width by `ScaleAndCrop` at the 74:92 rect. The frame texture
+`ui_portrait_frame.png` is 148×184 (the @2x of 74×92) and draws at 0.35× (1600) / 0.49× (2560) of its
+texel size — the rect is ≈1× the frame's design size only at 2560. The rows around the portrait are
+GUILayout horizontals whose height follows the tallest child, so no second number clamps a taller
+portrait; the 3.2 multiplier on line 3272 is the one governing number. Nothing changed. What size to
+draw at is Elias's ruling; the same-hand question stays open until the portraits can be judged.
+
+**Finding 3 — the declutter survey, every element classified, nothing cut.** Five surfaces (items 4,
+11, 12, 13, 14), the Budget line-item row as the reference (`DrawTaxLineRow`, `GameController.cs:8709`:
+"ONE ROW, not four stacked lines … the estimate's prose collapses to the verdict word it was carrying"
+— the precedent Elias named). Two host corrections first: the primary-balance line is on
+**Statistics › Domestic** (`DrawDerivedStatsRow`, called only from `DrawDomesticStatisticsContent`,
+`:5412`), not the Budget tab; the pass-through line is on **Statistics › International**
+(`DrawTradeStatsContent`, called only from `DrawInternationalStatisticsContent`, `:5558`), not
+Policy/Laws › Trade — §V corrected. The survey itself (every header, caption, paragraph, label and
+value, marked (a) needed now / (b) learn-once / (c) restates a neighbour) is in `CLAUDE.md` "Playtest 3
+— the Compass Y axis diagnosed, the portrait draw size measured, the declutter survey (2026-08-27)".
+Its shape: the law browser carries three (b) paragraphs/captions and five (c) restatements (the "Laws"
+box header under the "Laws" sub-tab; the summary line's counts beside the group captions; STATUTE and
+CATEGORY as column captions over self-naming cells; the class named twice within three lines of the
+detail pane; the enactment cost printed on the row and again in the pane); the trace panel's rows are
+(a) almost throughout, its clutter being (b) mechanism parentheticals in the trailing column and the
+(c) audit footers that restate the header's delta; the two stats lines are (a) with placement as the
+whole finding. Two placement facts the categories cannot carry: on Policy/Laws the trace panel opens
+BETWEEN the chip row and the tab's content and may take the whole host height (`MaxShareOfHostHeight 1f`),
+so opening a trace shrinks the law browser under it — items 4 and 11/12 interact; and the realized
+pass-through figure and its forecast twin ("prices +0.00 pp this year" on the Trade bill card) are
+two readings of one quantity on two screens. **B1's amber draft cue** (the hatched span on every
+Budget line row, `LedgerRow.Draw`) and **B8's interrupt line** (`DrawFullScreenPendingInterruptBanner`,
+`:8358`, on the Budget Process host of the fiscal trace) are load-bearing and were flagged, not
+surveyed for cutting. The cut list is Elias's.
+
+**Records.** §V rewritten (the ten cleared, the three findings with their diagnosed/measured/surveyed
+status and the two host corrections); this section; the `CLAUDE.md` entry with the numbers and the
+element-by-element survey. Boards 1k/1l and the nine unbuilt spec clauses stay unstarted behind §V,
+by Elias's ruling.

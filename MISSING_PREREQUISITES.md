@@ -218,28 +218,28 @@ is ours). Waiting on Design once the members exist, so not startable as a reques
 
 # V. Waiting on Elias — a visual review (built, not seen; rule 15's third layer)
 
-Every item below is built, called, and captured clean by the guards — and **no record names a session in
-which Elias saw it**. "Pinned on film" is containment evidence, not a sighting. One live Editor session
-with the list in hand closes most of them; each closes to `COMPLETED.md` with the session named.
+**Playtest 3 (2026-08-27, Elias's Editor session against the seventeen-item checklist): 12 of 17 pass;
+ten surfaces cleared below to `COMPLETED.md` §34; three findings, in priority order, attached to the
+seven that remain.** "Pinned on film" is containment evidence, not a sighting; each item here closes to
+`COMPLETED.md` with the session named.
 
-| surface | built | the capture set to look at |
+| surface | built | the finding it carries (playtest 3) |
 |---|---|---|
-| Step 2's trace panel (click a chip) | `092202c` 2026-08-18 | `s2usa*_93*` |
-| Step 3's verdict screen + the scenario entry on the selector | `cd52461` 2026-08-18 | `s3usa*_94*` |
-| Italy Debt Crisis as a playable scenario; the Sustained-streak verdict line | `6d5b000` 2026-08-18 | `s3usa*_94*` / the driver's Italy block |
-| The fiscal trace — the Debt-to-GDP chip's third section, USA warm-up and Italy mid-scenario | `7d2a22c` 2026-08-25 | `fiscal1600s4_93c_trace_debt`, `_95d_italydebt_trace_debt`, the `fiscal2560s_*` pair (the approval trace now ends at the tab under the host-height cap — the diff against `s2usa*_93*`) |
-| The law browser at 50 — Board 1j + the "Expected effects" band (playtest-2 items 6 and 7) | `0bb7ebc` 2026-08-26 | `board1jc1600/2560_06f*` + `06g` (0 guard violations; composition — does it READ — is the eye's question alone) |
-| The compass labels (playtest-2 item 3 — leader lines, label-vs-dot) | `e25ae60` 2026-08-25 | `play2fixb1600/2560_07b_politics_compass` |
-| Sweden's budget decomposition — 24 utgiftsområde lines (playtest-2 item 4) | 2026-08-25 | the Budget tab as Sweden |
-| The primary-balance second line on the Budget display (playtest-2 item 2) | `e25ae60` | Budget → the balance rows |
-| The couplings pass's pane line (Truth in Sentencing +16 → +40/100k) | `a7e00e3` 2026-08-26 | the law detail pane |
-| Pass 6's four Trade surfaces — the bill card's cost line, the partner row's "(of which X retaliation)", the stats line "Tariff pass-through to prices", the inert base dial | `4650a76` 2026-08-27 | `p6usa1280/1640/1600/2560_06e_policylaws_trade`, `p6swe1280_*` |
-| Playtest 1's two fixes — the rejected-bill seal, Budget's dead nested scroll | 2026-08-18 | the Signing screen on a rejected bill; Budget scrolling |
-| Turn → Year — 39 label swaps | 2026-08-24 | any screen |
-| The SWF emergency drawdown bill on the SWF tab (A2) | `b1c077f` 2026-08-02 | the state-axes set (a pending bill of every type, Sweden) |
-| Option C's deliberate-choice paragraph on the Federal Reserve tab | 2026-08-25 | Politics → Federal Reserve |
-| The Canvas country selector's capture set (the screen itself is seen — every live session opens on it) | `14cbad6` | `01`/`01b` |
-| **The eight new cabinet portraits on the roster** — Defense, Foreign Affairs, Education (the batch of nine; the PoC alone passed the register side-by-side) | Progress5, imported 2026-08-27 | Politics → Cabinet, the six portfolio panels; beside the 16 squares and the PoC |
+| **The Compass — the Y axis** (Politics › Compass; the labels themselves passed) | `e25ae60` | **Finding 1, a real defect:** the compass "only appears to operate on the x-axis". Diagnose before touching: instrument `GetRegulationWelfareAxisValue` for all six countries — the raw values, then the plotted y positions — to separate a MODEL cause (the Y term blends sector regulation with implemented welfare generosity; if no seed implements welfare programs, half of it is constant) from a PLOT cause (auto-scale or clamp collapsing a real spread). Numbers before a fix. **DIAGNOSED 2026-08-27 — MODEL cause, reported, no fix taken:** all six seeds put every sector at regulation 50 and implement no welfare program, so Y = 25.000 for all six (`CompassAxisDiagnostic`; `COMPLETED.md` §34). Waiting on Elias's ruling on which fix. |
+| **The eight new cabinet portraits** (Politics › Cabinet) | Progress5 2026-08-27 | **Finding 2:** they render too small to judge the fidelity question (the batch is 512×640 against the older sixteen's 256×256 — more detail than the display shows). Report the dimensions the candidate card and the roster frame actually draw at before changing any number — the row-pitch class cost several rounds by adjusting a number without knowing which one governed. The same-hand question stays open. **MEASURED 2026-08-27, nothing changed:** one sizing site (`DrawPersonPortrait`, `fontSize × 3.2`); the art draws at 41×54 px at 1600×900 and 62×80 px at 2560×1440 (§34). Waiting on Elias's ruling on the size. |
+| **The law browser at 50** (Policy/Laws › Laws + the detail pane) | `0bb7ebc` | **Finding 3, the real work — one finding with the three trace surfaces:** "hard to tell due to clutter and poor placement". Instruction: remove unnecessary text and headers, as the Budget screen already does. Survey by category before cutting — (a) needed now, (b) better learned once, (c) restating an adjacent element — because B1's amber cue and B8's interrupt line live on screens in this group. **SURVEYED 2026-08-27, nothing cut:** every drawn element of the five surfaces classified (§34; `CLAUDE.md` "Playtest 3"). Waiting on Elias's cut list. |
+| **The approval + confidence trace sections** (click a chip) | `092202c` | Finding 3 (above). ⚠ The panel ending at the tab's bottom under the host-height cap is recorded, not a finding. |
+| **The fiscal trace section** (the Debt-to-GDP chip) | `7d2a22c` | Finding 3 (above). |
+| **The primary-balance line** (Statistics › Domestic, the "Derived" box — NOT the Budget tab; host corrected 2026-08-27 from the checklist's wording, `DrawDerivedStatsRow` is called only from `DrawDomesticStatisticsContent`) | `e25ae60` | Finding 3 (above): the line itself passed; its placement is the clutter question — the fifth row of a box under six headline tiles, two screens away from the Budget balance it qualifies. |
+| **Trade's pass-through stats line** (Statistics › International, under the world map — NOT Policy/Laws › Trade; host corrected 2026-08-27, `DrawTradeStatsContent` is called only from `DrawInternationalStatisticsContent`) | `4650a76` | Finding 3 (above): the line itself passed; its placement is the clutter question — the realized figure sits on the International page while its forecast twin ("prices +0.00 pp this year") sits on the Trade bill card. |
+
+**Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's
+dead nested scroll; Sweden's 24-line budget decomposition; the SWF emergency drawdown bill; option C's
+deliberate-choice paragraph; pass 6's four Trade surfaces (the inert dial, the retaliation label, the
+bill card's cost line, the stats line — the last placement-flagged under finding 3); the rejected-bill
+seal on the Signing screen; Italy Debt Crisis as a playable scenario with the fiscal trace mid-run; Step
+3's verdict screen with the Sustained streak line and the scenario entry on the selector. Records:
+`COMPLETED.md` §34.
 
 Not on this list because a session is on record: the Calendar Panel (playtest 2's verdict on it is why
 request §8 exists), the Signing screen (playtest 1's seal/button finding), the folder tongues, save/load

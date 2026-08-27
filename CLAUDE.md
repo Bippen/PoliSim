@@ -13464,3 +13464,178 @@ ruling they wait behind §V**; they are roadmap live items 8 and 9 with the ruli
 One thing worth an eye beyond the roster: the new PNGs are 49–59 KB against the PoC's 604 KB — the same
 planar register at the same size, but flat colour where the PoC carried more tonal texture; the
 side-by-side that judged the PoC should be repeated with one of the eight beside it.
+
+## Playtest 3 — the Compass Y axis diagnosed, the portrait draw size measured, the declutter survey (2026-08-27)
+
+**What happened.** Elias ran §V's seventeen-item checklist in one Editor session: 12 of 17 pass, ten
+surfaces cleared to `COMPLETED.md` §34 (the list is there), three findings in priority order. All three
+carried the same instruction — measure first, change nothing — and that is what this entry records:
+**no code behind any finding was changed.** One file was added: `Assets/Editor/CompassAxisDiagnostic.cs`,
+a read-only diagnostic (not in `CheckSuite.Suite` — it is a measurement, not a coverage check; run by
+`-executeMethod PoliSim.EditorTools.CompassAxisDiagnostic.Run`, log `compass_axis_20260827_*.log`).
+
+**Finding 1 — the Compass "only appears to operate on the x-axis": MODEL cause.** The diagnostic
+prints, per country at turn 0 (`WorldFactory.CreateDefault()`), the per-sector `RegulationLevel`, the
+implemented-welfare count and generosity mean, the raw axis values from the renderer's own
+`GetFiscalSizeAxisValue`/`GetRegulationWelfareAxisValue`, and the plotted position under the renderer's
+`PadRange` (15% of range, or a flat ±5 when the range is under 1) and `InverseLerp` rule, replicated from
+its private helpers so the renderer stayed untouched. Enumeration: six countries, eight sectors each,
+six welfare programs each.
+
+| country | avg regulation (8 sectors) | welfare implemented | Y raw | X raw | ty | pixel y of 600 |
+|---|---|---|---|---|---|---|
+| USA | 50.00 (all 50.0) | 0/6 (all off @50) | 25.000 | 21.624 | 0.500 | 300.0 |
+| Sweden | 50.00 | 0/6 | 25.000 | 36.521 | 0.500 | 300.0 |
+| Germany | 50.00 | 0/6 | 25.000 | 36.670 | 0.500 | 300.0 |
+| France | 50.00 | 0/6 | 25.000 | 42.060 | 0.500 | 300.0 |
+| Italy | 50.00 | 0/6 | 25.000 | 34.650 | 0.500 | 300.0 |
+| Poland | 50.00 | 0/6 | 25.000 | 33.675 | 0.500 | 300.0 |
+
+X raw range 20.436 (padded 18.56…45.13 — the six dots spread from tx 0.115 to 0.885); **Y raw range
+0.000** (padded 20.00…30.00 by the ±5 rule) — every dot at the plot's mid-line, a 0.0 px band. The plot
+is not at fault: the auto-scale spreads any real range over the full height (X proves it), and the
+range label "Y: regulation & welfare generosity, 20…30" is the padded band of a constant, honestly
+printed. The constant has two halves, both by seed: `Sector.RegulationLevel` defaults to 50
+(`Sector.cs:47`) and no seed sets it; `WelfareProgram.IsImplemented` is false for all 36 programs at
+seed. And both stay constant for the AI five: `RegulationLevel`'s only writer is
+`ApplySectorPolicyChanges` (`SimulationManager.cs:2796`, the player's PolicyDecision) and
+`IsImplemented`'s only non-harness writer is `ApplyWelfareProgramBillResult` (`ParliamentSystem.cs:389`,
+the player's bill) — no AI system moves either. So the five AI dots hold Y = 25 for the whole game;
+only the player's dot can leave the line, through the sector regulation dials or a welfare bill, and
+even then it moves alone. **Not fixed.** The fix is a model question and Elias's ruling: a per-country
+seed spread for regulation and/or implemented welfare moves every no-policy baseline (regulation feeds
+the sector model; an implemented program spends — a discontinuity row either way), while a Y axis
+re-derived from data that already varies at seed changes what the compass claims to show. Neither is
+a plot change.
+
+**Finding 2 — the eight portraits "render too small to judge": one number governs.** All three
+portrait surfaces — the roster (`GameController.cs:7755`), the candidate card (`:7819`), the Fed chair
+card (`:3235`) — size through the one method `DrawPersonPortrait` (`:3263`):
+
+```
+height = _labelStyle.fontSize * 3.2f;                       // :3272 — THE governing number
+width  = Mathf.Round(height * (74f / 92f));                 // :3273 — the frame's @1x proportion
+art    = rect inset by PortraitFrameArtInset = 5f per side // :683, :3281-3283
+fontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.022f), 16, 28)   // RescaleStylesToScreen, :2341
+```
+
+| window | label font | portrait rect | ART drawn | 512×640 source minified | 256×256 source minified |
+|---|---|---|---|---|---|
+| 1280×720, 1640×707 | 16 | 41×51 | **31×41 px** | 16.5× | 8.3× (+20% width crop) |
+| 1600×900 / Editor 1600×929 | 20 | 51×64 | **41×54 px** | 12.5× | 6.2× (+20% crop) |
+| 2560×1440 | 28 (32 clamped) | 72×90 | **62×80 px** | 8.3× | 4.1× (+20% crop) |
+
+Mipmaps are OFF on every portrait by the 2026-08-11 importer ruling, so a 12.5× minification samples
+roughly one texel in 150 — the sparkle on top of the smallness; the 74:92 rect crops the squares' width
+by 20% under `ScaleAndCrop`. The frame `ui_portrait_frame.png` is 148×184 (the @2x of 74×92) and draws
+at 0.35× (1600) / 0.49× (2560) of its texel size — the rect matches the frame's design size only at
+2560. No second number clamps a taller portrait: each caller's row is a GUILayout horizontal whose
+height follows its tallest child, so a larger multiplier grows the card. **Nothing changed** — the size
+is Elias's ruling. Two facts for that ruling: the roster's three portfolio panels sit side by side, so
+the portrait competes with the minister's name, philosophy and description for the panel's width; and
+the `UiOverflowGuard` captures at the four sizes are the check a new multiplier must pass.
+
+**Finding 3 — "hard to tell due to clutter and poor placement": the survey, nothing cut.** Items 4,
+11, 12, 13 and 14 as one finding; Elias's instruction: remove unnecessary text and headers as the
+Budget screen already does; survey by category first. The reference: `DrawTaxLineRow` (`:8709-8712`)
+— one ledger row per instrument (name, standing tick, draft knob, figure, unit, revenue), the button and
+the verdict WORD on the row, "the estimate's prose collapses to the verdict word it was carrying" — and
+`DrawDerivedStatsRow`'s own conversion (`:7107-7111`, "a column can be read down instead of a sentence
+read across"). Categories: **(a)** carries information the player needs at that moment; **(b)** explains
+something better learned once and then assumed; **(c)** restates what an adjacent element already says.
+**Two host corrections:** the primary-balance line lives on **Statistics › Domestic** (`:5412`), not the
+Budget tab, and the pass-through line on **Statistics › International** (`:5558`), not Policy/Laws › Trade.
+
+*The law browser at 50* (`DrawLawsTab` `:5901`, the pane `:6592`, the bar `:6798`):
+- "Laws" box header (`:5917`) — **(c)**, the selected "Laws" sub-tab chip sits directly above it.
+- The intro paragraph "Named presets over the existing dial space … nothing happens until Parliament
+  resolves it." (`:5928`) — **(b)**.
+- Category chips "All - N / Crime & Justice - N / Labor Market - N" (`:5945-5951`) — **(a)**, controls.
+- Summary line "N laws - n in force - p before the house" (`:5973`) — **(c)**: the three counts are the
+  "All - N" chip and the "IN FORCE - n" / "BEFORE THE HOUSE - p" group captions.
+- "ORDER - STATUS, THEN" caption (`:5986`) — **(b)** (the fixed primary sort, learned once); the
+  Magnitude / A-Z / Cost buttons — **(a)**.
+- "SEARCH" + the field (`:6933`) — **(a)** (an IMGUI field has no placeholder; the word is the field's name).
+- Status chips All statuses / Enacted / Pending / Available (`:6004-6007`) — **(a)** as controls, with a
+  **(c)** of vocabulary: the same three states are named again by the group captions in other words
+  (Enacted ≠ IN FORCE, Pending ≠ BEFORE THE HOUSE).
+- Column header STATUTE / CATEGORY / APPROVAL (`:6240-6255`) — STATUTE **(c)** (a list of statutes needs
+  no caption saying so), CATEGORY **(c)** (the cell's tokens name themselves), APPROVAL **(a)** (a bare
+  "3.5" needs its unit; it is the one caption carrying a fact).
+- Group captions "IN FORCE - n" / "BEFORE THE HOUSE - n" / "AVAILABLE - n" (`:6269`, `:6296`) — **(a)**:
+  status is carried by the group, not a column.
+- Band captions "MINOR - 12 available - dial movement ±3-6" + the stepped rule (`:6354`) — the class name
+  and the rule **(a)**; "12 available" **(a)** (the band's own count); "dial movement ±3-6" **(b)**.
+- Rows (`:6385`): glyph bar (category colour) **(a)**; name, with "- VOTE IN 12d" on pending rows **(a)**;
+  category token **(a)** under "All", **(c)** whenever one category chip is active (every row repeats
+  it); magnitude steps **(a)**; cost figure **(a)**.
+- Bottom bar: "Approval on hand: 45.0" (`:6803`) — **(c)**, the header strip prints "Approval: …" on
+  every screen (`:3754`); "Affordable now: 12 of 50 shown" **(a)** as a count, "(cost <= approval on
+  hand)" **(b)**.
+- Detail pane kicker "CRIME & JUSTICE - MAJOR - 3 OF 10 IN CLASS" (`:6634`) — category **(c)** (the
+  row's token and glyph colour), class **(c)** (named again by "MAGNITUDE: MAJOR" three lines down),
+  "3 OF 10 IN CLASS" **(b)** at best.
+- Name + status word "ENACTED / not enacted / ENACTMENT PENDING" (`:6642-6644`) — **(a)**.
+- Description (`:6647`) — **(a)**.
+- "MAGNITUDE: MAJOR" + steps + "±15-22" (`:6660-6665`) — the steps **(a)**; the word **(c)** with the
+  kicker; the range **(b)**.
+- "IF ENACTED - DIAL MOVEMENT" caption + the grid (`:6675-6676`) — **(a)**.
+- "EXPECTED EFFECTS" + the effect lines (`:6697-6702`) — **(a)**; the trailing sentence "Long-run target
+  shifts, from this law's dial deltas and the model's own couplings - as the dials settle, before dial
+  clamps." (`:6704`, `:6721`) — **(b)**.
+- Citation (`:6727`) — **(a)** (content, not chrome).
+- "Enactment cost: 3.5 approval (paid once, on passage)" (`:6728`) — the figure **(c)** (the row's
+  APPROVAL cell), "(paid once, on passage)" **(b)**.
+- "IF PUT TO THE HOUSE TODAY" (`:6733`) — **(a)** as the estimate's title; the pending line **(a)**;
+  `DrawBillLiveEstimate` (`:3532`): "Bill direction: Expansionary (+3.0)" — the word **(a)**, the
+  number **(b)**; "Current seat composition: WOULD PASS" — the verdict **(a)**, the framing phrase
+  **(b)** (the Budget row keeps only the verdict word); the diverging bar **(a)**; the party stance
+  rows "Social Democrats - 120 seats … FOR" (`:6897`) — **(a)**, the estimate's evidence.
+- The action button "Enact/Repeal {name}" (`:6756`) — **(a)**.
+
+*The trace panel* (`StatTracePanel.cs`; the same rows on both hosts):
+- Approval header "Approval — period ended Aug 1, 2027: 48.2 → 46.9 (−1.30)" — **(a)**.
+- Term rows (name / signed figure) — **(a)**; the trailing "≈ −4.0 sustained" on sustained terms —
+  **(b)** (an equilibrium projection explained nowhere on screen); the four indented misery sub-rows
+  — **(a)**.
+- "Events this period" + dated rows + "+N more events" — **(a)** (the stated omission).
+- Footer "Terms −1.10 + events −0.20 = −1.30 — audited at the boundary." — **(c)** (the sum is the
+  header's delta) + **(b)** ("audited at the boundary").
+- Confidence header "Consumer confidence — this period's single book" — the name **(a)**, "single
+  book" **(b)** (a design term); rows "Policy base (healthcare/UBI)", "Wage-sentiment factor (period
+  stance) ×1.0000 / gap +0.00 pp", "Effective — what the economy reads" — the figures **(a)**, the
+  three parentheticals/dashes **(b)**.
+- Debt header "Debt — period ended …: $X → $Y (+$Z) · ratio a% → b%" — **(a)**.
+- Money terms "Primary balance (before the reaction)", "Fiscal reaction on revenue", "Interest at the
+  issuance rate", "Maturity lag", "Inflation erosion (−π·b)", "Clamp … / Residual (rounding, audited)"
+  — the names and figures **(a)**; the trailing texts "a primary deficit", "stance ×1.00", "blended pays
+  … vs issuance", "(rounding, audited)" — **(b)**; the rate and π figures in the trailing column
+  ("3.20→3.35%", "π 2.0→2.1%") — **(a)**.
+- Debt footer "Terms … + events … = … — audited at the boundary (365 days)." — **(c)** + **(b)**.
+- Ratio header "Debt-to-GDP +1.20 pp — the ratio's own identity, exact; GDP's drivers are not this
+  section's claim" — the figure **(a)**, the clause **(b)**; its two rows — **(a)**.
+- Host chrome: no caption of its own (the header row names the stat); the chip row's "+N more affected
+  - see Policy Web" — **(a)**.
+- **Placement (not a category):** on Policy/Laws the panel opens between the chip row and the tab's
+  content and takes up to the whole host height (`MaxShareOfHostHeight 1f`, `:5799-5803`), so an open
+  trace shrinks the law browser under it — items 4 and 11/12 interact. On Budget Process it opens in the
+  centre column above the line items (`:8452-8456`) — the same shape.
+
+*The primary-balance line* (Statistics › Domestic, `DrawDerivedStatsRow` `:7100`): "Derived" box header
+— **(b)** (the rows name themselves); GDP per capita, Tax burden, Government spending, Deficit/Surplus,
+Primary deficit/surplus — **(a)**; the trailing "of GDP" / "of GDP, excl. interest" — **(a)** (units);
+"Sector shares of GDP" caption + eight rows — **(a)**. **Placement:** the fifth row of a box under six
+headline tiles, on a page the Budget balance is not on.
+
+*The pass-through line* (Statistics › International, `DrawTradeStatsContent` `:7937`): "Trade" section
+header — **(a)** (a marker on a long page: map, trade, activity); "Overall Trade Balance: $X" — **(a)**;
+"Tariff pass-through to prices (last year): +0.00 pp of inflation" — **(a)**, "(last year)" **(b)**; the
+graph "Trade Balance" — **(a)**, its title **(c)** with the line above. **Placement:** the realized
+figure sits under the world map while its forecast twin — "prices +0.00 pp this year" on the Trade bill
+card (`:8171`) — sits on the policy screen where the tariff is set: two readings of one quantity on two
+screens.
+
+**Load-bearing, flagged, untouched:** B1's amber draft cue (the hatched span between standing tick and
+draft knob on every Budget line row, `LedgerRow.Draw`) and B8's interrupt line
+(`DrawFullScreenPendingInterruptBanner`, `:8358`, on the Budget Process host of the fiscal trace). The
+cut list is Elias's; nothing here was removed.
