@@ -2795,7 +2795,9 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawCalendarMonthGrid(System.DateTime monthStart, System.DateTime today, Dictionary<int, List<CalendarMarker>> markers)
         {
-            GUILayout.Space(6f);
+            // Board 1k, rule 5: the sheet's first section rule sits between the country header and
+            // the month page (see DrawCalendarMonthLedger for the second).
+            DrawCalendarSheetRule();
             GUILayout.Label(monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture), _headerStyle);
 
             DateTimeFormatInfo dtfi = DateTimeFormatInfo.CurrentInfo;
@@ -2855,7 +2857,9 @@ namespace PoliSim.UI
         /// only `CalcHeight` (what `GUI.Label` actually obeys) accounts for. The project's own fix for
         /// that defect was exactly this: measure via `CalcHeight`, not a font-metric formula.
         /// </summary>
-        private static readonly GUIContent CalendarDayNumberSample = new GUIContent("99 X");
+        // Board 1k (2026-08-28): the " X" suffix retired with the strike, so the sample is the widest
+        // numeral alone - the strike draws inside the numeral's own box and takes no cell width.
+        private static readonly GUIContent CalendarDayNumberSample = new GUIContent("99");
 
         private float CalendarDayNumberLineHeight()
         {
@@ -2896,26 +2900,67 @@ namespace PoliSim.UI
                 }
             }
 
-            string dayText = hasPassed && !isToday ? $"{day} X" : day.ToString(CultureInfo.InvariantCulture);
+            // Board 1k, rule 1 (built 2026-08-28, R-K3): the X-mark retires; a spent day is the numeral
+            // crossed with ONE diagonal ink stroke - 1.5px at 1600 / 2px at 2560 (scaled from the
+            // window height, the board's two anchors), ink at 55%, ≈ −24°, inset 2px into the
+            // numeral's own box. The literal " X" went with it: it did an almanac's job with a
+            // typewriter's tool and cost four characters of cell width at every size.
+            string dayText = day.ToString(CultureInfo.InvariantCulture);
             Color dayInk = isToday ? PoliSimTheme.TextPrimary : (hasPassed ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary);
             float dayNumberLine = CalendarDayNumberLineHeight();
-            LedgerRow.Cell(new Rect(rect.x, rect.y, rect.width, dayNumberLine), dayText, _calendarDayNumberStyle, dayInk, TextAnchor.UpperCenter);
+            var numberRect = new Rect(rect.x, rect.y, rect.width, dayNumberLine);
+            LedgerRow.Cell(numberRect, dayText, _calendarDayNumberStyle, dayInk, TextAnchor.UpperCenter);
 
-            if (dayMarkers == null || dayMarkers.Count == 0 || Event.current.type != EventType.Repaint)
+            if (Event.current.type != EventType.Repaint)
             {
                 return;
             }
 
-            int dotCount = Mathf.Min(dayMarkers.Count, 4);
-            const float dotSize = 5f;
-            float totalDotsWidth = dotCount * (dotSize + 2f) - 2f;
+            if (hasPassed && !isToday)
+            {
+                // The numeral box is the WIDEST numeral's box ("99", the same sample the row height is
+                // measured from), centred - so every strike is the same length, and a "1" is crossed
+                // off as visibly as a "28" (the first omni_e2560 zoom showed a single-digit day's
+                // strike at four pixels when the box was the glyph's own width).
+                float numeralWidth = _calendarDayNumberStyle.CalcSize(CalendarDayNumberSample).x;
+                var numeralBox = new Rect(rect.x + (rect.width - numeralWidth) * 0.5f + CalendarStrikeInset, rect.y + CalendarStrikeInset,
+                    Mathf.Max(1f, numeralWidth - CalendarStrikeInset * 2f), Mathf.Max(1f, dayNumberLine - CalendarStrikeInset * 2f));
+                float strike = CalendarStrikeThickness1600 * Mathf.Clamp(Screen.height / 929f, 0.7f, 2f);
+                PoliSimTheme.Stroke(numeralBox, CalendarStrikeAngleDegrees, strike, PoliSimTheme.Tint(dayInk, CalendarStrikeInkAlpha));
+            }
+
+            if (dayMarkers == null || dayMarkers.Count == 0)
+            {
+                return;
+            }
+
+            int dotCount = Mathf.Min(dayMarkers.Count, CalendarDotCap);
+            float totalDotsWidth = dotCount * (CalendarDotSize + 2f) - 2f;
             float dotX = rect.x + (rect.width - totalDotsWidth) * 0.5f;
-            float dotY = rect.y + dayNumberLine + (CalendarDayDotRowHeight - dotSize) * 0.5f;
+            float dotY = rect.y + dayNumberLine + (CalendarDayDotRowHeight - CalendarDotSize) * 0.5f;
             for (int i = 0; i < dotCount; i++)
             {
-                PoliSimTheme.Pill(new Rect(dotX + i * (dotSize + 2f), dotY, dotSize, dotSize), UiPalette.GetAreaColor(dayMarkers[i].Area));
+                PoliSimTheme.Pill(new Rect(dotX + i * (CalendarDotSize + 2f), dotY, CalendarDotSize, CalendarDotSize), UiPalette.GetAreaColor(dayMarkers[i].Area));
+            }
+
+            // Board 1k, rule 4: the saturated day - at the 4-dot cap - earns the heavy-day rule, a 2px
+            // ink underline beneath the dot row (the almanac's red-letter mark in this desk's own
+            // ink). The cap stays hard; the merged sentence lives in the ledger below.
+            if (dayMarkers.Count >= CalendarDotCap)
+            {
+                PoliSimTheme.Rule(new Rect(rect.x + 2f, dotY + CalendarDotSize + 1f, rect.width - 4f, 2f), dayInk);
             }
         }
+
+        /// <summary>Board 1k's pixel rules (§A.16), named once: the strike's weight at the 1600
+        /// anchor (2px at 2560 falls out of the window-height scale), its 55% ink, its ≈ −24° angle
+        /// and 2px inset; the grid dot the ledger row repeats (rule 2); the four-dot cap (rule 4).</summary>
+        private const float CalendarStrikeThickness1600 = 1.5f;
+        private const float CalendarStrikeInkAlpha = 0.55f;
+        private const float CalendarStrikeAngleDegrees = -24f;
+        private const float CalendarStrikeInset = 2f;
+        private const float CalendarDotSize = 5f;
+        private const int CalendarDotCap = 4;
 
         /// <summary>
         /// "This Month," in ledger grammar: one row per marker, date column then label — the same
@@ -2930,7 +2975,10 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawCalendarMonthLedger(System.DateTime monthStart, Dictionary<int, List<CalendarMarker>> markers)
         {
-            GUILayout.Space(6f);
+            // Board 1k, rule 5 (2026-08-28): header, grid and ledger are ONE paper sheet - sections
+            // separated by rules, not three stacked cards. The panel was already one box; the rules
+            // make the sections read as places on a sheet rather than a pile.
+            DrawCalendarSheetRule();
             GUILayout.Label("This Month", _headerStyle);
 
             if (markers.Count == 0)
@@ -2948,11 +2996,33 @@ namespace PoliSim.UI
                 foreach (CalendarMarker marker in markers[day])
                 {
                     GUILayout.BeginHorizontal();
+                    // Board 1k, rule 2: the ledger row carries the grid's own 5px dot - the two
+                    // instruments cross-reference (the dot says THAT and WHOSE AREA, the row says
+                    // WHAT) instead of restating each other. A reserved rect, painted on Repaint.
+                    Rect dotCell = GUILayoutUtility.GetRect(CalendarDotSize + 6f, _labelStyle.lineHeight, GUILayout.Width(CalendarDotSize + 6f));
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        PoliSimTheme.Pill(new Rect(dotCell.x, dotCell.y + (dotCell.height - CalendarDotSize) * 0.5f, CalendarDotSize, CalendarDotSize),
+                            UiPalette.GetAreaColor(marker.Area));
+                    }
                     GUILayout.Label($"{monthStart.Month}/{day}", _labelStyle, GUILayout.Width(dateColumnWidth));
                     DrawColoredLabel(marker.Label, _labelStyle, UiPalette.GetAreaColor(marker.Area));
                     GUILayout.EndHorizontal();
                 }
             }
+        }
+
+        /// <summary>Board 1k's section rule on the calendar sheet: §A.2's panel section rule
+        /// (1.5px `#8A7A5C`) with 6px of clearance either side.</summary>
+        private void DrawCalendarSheetRule()
+        {
+            GUILayout.Space(6f);
+            Rect ruleRect = GUILayoutUtility.GetRect(10f, 1.5f, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.Rule(ruleRect, PoliSimTheme.HairlineStrong);
+            }
+            GUILayout.Space(6f);
         }
 
         /// <summary>
@@ -8483,11 +8553,14 @@ namespace PoliSim.UI
             // width), so the sentence becomes three read-only rows of the row family: each figure sits
             // in a cell that shrinks and never wraps, and no money delta can ever sit at a line end.
             Color tradeInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Trade);
-            DrawDerivedStatRow("Tariff take at these rates", -1f,
+            // Short names, mechanism in the trailing column (the StatTracePanel lesson): the first cut's
+            // "Trade balance, partners' mirrored tariffs" shrank to a different size from its siblings
+            // in the card's narrow name column - D7's own objection.
+            DrawDerivedStatRow("Tariff take", -1f,
                 $"{UiFormat.Money(estimate.Take, MoneyUnit.Billions)}/yr",
-                $"{UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)} vs today", tradeInk);
-            DrawDerivedStatRow("Trade balance, partners' mirrored tariffs", -1f,
-                $"{UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions)}/yr", null, tradeInk);
+                $"at these rates; {UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)} vs today", tradeInk);
+            DrawDerivedStatRow("Trade balance", -1f,
+                $"{UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions)}/yr", "partners' mirrored tariffs", tradeInk);
             DrawDerivedStatRow("Prices this year", -1f,
                 $"{estimate.PassThroughPp:+0.00;-0.00} pp", "tariff pass-through", tradeInk);
         }

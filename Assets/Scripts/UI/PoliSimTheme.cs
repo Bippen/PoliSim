@@ -397,6 +397,24 @@ namespace PoliSim.UI
             GUI.DrawTexture(rect, White, ScaleMode.StretchToFill, true, 0f, color, Vector4.zero, Vector4.zero);
         }
 
+        /// <summary>
+        /// Board 1k's almanac strike (built 2026-08-28, omnibus R-K3): ONE diagonal ink stroke across
+        /// a box - a spent calendar day crossed off the way an almanac does it. The stroke runs from
+        /// the box's lower-left toward its upper-right at <paramref name="angleDegrees"/> (the board's
+        /// ≈ −24°), its length the box width along that angle, centred on the box; drawn through
+        /// GUI.matrix around the box centre and restored before returning. Repaint-gated by the
+        /// caller, like every paint primitive here.
+        /// </summary>
+        public static void Stroke(Rect box, float angleDegrees, float thickness, Color ink)
+        {
+            float length = box.width / Mathf.Max(0.2f, Mathf.Cos(angleDegrees * Mathf.Deg2Rad));
+            length = Mathf.Min(length, Mathf.Sqrt(box.width * box.width + box.height * box.height));
+            Matrix4x4 saved = GUI.matrix;
+            GUIUtility.RotateAroundPivot(angleDegrees, box.center);
+            Rule(new Rect(box.center.x - length * 0.5f, box.center.y - thickness * 0.5f, length, thickness), ink);
+            GUI.matrix = saved;
+        }
+
         /// <summary>The 2px category rule that sits along the top edge of a stat tile.</summary>
         public static void TopAccent(Rect cardRect, UiPalette.SystemArea area, float thickness = 2f)
         {
