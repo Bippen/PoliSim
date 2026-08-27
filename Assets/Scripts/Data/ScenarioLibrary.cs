@@ -12,10 +12,29 @@ namespace PoliSim.Data
     /// Management and The Disinflation both foreclosed by `UnemploymentReversionSpeed`, one finding
     /// from two directions (see their own reports). **"Italy Debt Crisis" is the second scenario to
     /// ship**, the first content pass to survive measurement on the first try - its difficulty
-    /// source (the debt identity) is untouched by either drop. Poland convergence and The Unequal
-    /// Recovery remain untested. The format's claim continues to hold: each shipped scenario has
-    /// been a SUBSET of the shape below, no new <see cref="ObjectiveKind"/> needed yet. If one ever
-    /// does, that is a finding about the grammar, to be recorded rather than special-cased.</para>
+    /// source (the debt identity) is untouched by either drop. **Poland convergence and The Unequal
+    /// Recovery were MEASURED and DROPPED on 2026-08-28 (R-K2 of the omnibus;
+    /// `ScenarioCandidateMeasurementDiagnostic`, seed 777, 30 turns each).** Poland fell to the
+    /// §22 root cause a third time: real wages track PotentialGrowthRate one-for-one, so the only
+    /// thing a player can add is the tightness term, and `UnemploymentReversionSpeed` (0.7/turn)
+    /// closes it - wage growth ≥ trend + 0.5 pp held for 0 turns on the no-policy and stimulus lines
+    /// and 2 turns under an overheat line (+40% discretionary two years running, the policy rate to
+    /// 0), while inflation never left [1, 4] on any line (max 2.77), so the fail condition is
+    /// unreachable and "≥ 2%" is met 28 of 30 turns with no policy at all. The Unequal Recovery
+    /// fell to a DIFFERENT root cause, in the political model: the transfer programs are the only
+    /// levers strong enough (3–4 Gini points each at full generosity, against 0.08/pt for income
+    /// tax and 0.02/pt for the wage floor), every one of them is an expansionary bill, and under
+    /// `PartyArchetypeData` the Progressive and Conservative seat targets are identical at every
+    /// approval level (equal base shares, equal sensitivities), so the expected expansionary
+    /// alignment is −0.0015 × Nationalist seats - negative everywhere (−0.036 at seed, −0.006 at
+    /// approval 100, −0.09 at approval 30) - and an expansionary bill passes only by ±1-seat jitter
+    /// (once, at t14, on a line whose approval had already saturated at 100). Failable (no-policy
+    /// Gini 45.47 against 39.5), mechanically winnable only on the harness's un-voted path (38.65,
+    /// with debt at 233% of GDP), impossible in play. Return trigger: item 10's party re-seeding,
+    /// which is what makes an expansionary bill passable. The format's claim continues to hold:
+    /// each shipped scenario has been a SUBSET of the shape below, no new <see cref="ObjectiveKind"/>
+    /// needed yet. If one ever does, that is a finding about the grammar, to be recorded rather
+    /// than special-cased.</para>
     /// </summary>
     public static class ScenarioLibrary
     {
