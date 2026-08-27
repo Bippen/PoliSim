@@ -2331,3 +2331,154 @@ Elias's call: the law row pitch (`LedgerRow.Height × 1.4` — 4.5 laws per scre
 selected law's name breaking mid-word at 1600 (pre-existing). The three placement findings stand as
 moves, reported, not made. The seven §V rows now wait on Elias's eyes (the cut, the portraits) and on
 §F's figures (the compass).
+
+## 35. The discipline record — rules 0–15 as they stood at `5f56798` (migrated verbatim 2026-08-28)
+
+**Why this section exists.** Elias's omnibus kickoff of 2026-08-28 installed Working Discipline v2 in `POLISIM_MASTER_ROADMAP.md` — ten rules in place of the fifteen-plus that had accreted since 2026-07-31 — and ruled that the displaced prose, every embedded history, caveat and correction, be migrated here VERBATIM so nothing is lost and rule 10's own requirement (reversals recorded, never silent) is satisfied by the migration itself. Numbered references to "rule N" across the record (rule 4's `RULINGS NEEDED`, rule 12's cached status, rule 13's lock, rule 14's enumeration, rule 15's diff) resolve against THIS text. Below is the section exactly as it stood, heading included.
+
+## Non-negotiable working discipline (applies to everything below, no exceptions)
+
+0. **SCALE VALIDATION TO RISK (added 2026-08-02).** Real Unity stays the standard of truth — rule 1 is
+   unchanged — but the *size* of the check matches what the change can actually break:
+   - **Simulation math** → full matrix, 100 and 500 turns, like-for-like before/after.
+   - **UI-only** → compile check plus a smoke run. A change that cannot reach simulation math cannot move
+     a trajectory; `BatchSimulationRunner` never calls `OnGUI`.
+   - **Data-layer additions nothing calls yet** → compile check.
+
+   **Three further standing cuts, same date:** stop creating new standing documents (findings go in
+   `CLAUDE.md`, status in this file); the verification-integrity log **stops at 10** — later instances get
+   one line, not a numbered write-up; and **batch the reporting** — work through several items and report
+   once, unless something fails or needs a decision.
+
+   ⚠ **What does NOT get cut**, because each caught a real defect in the last two days: real-Unity
+   validation before anything is called done; never inventing a `[GAP]` figure; visual work being
+   built-not-confirmed until Elias sees it; verifying against commits and callers rather than summary
+   memory; and the API cross-check gate.
+
+1. **Real Unity is the standard of truth, not the standalone harness.** It has been wrong about project state multiple times this project (a stale swing threshold, an interest-rate crash mischaracterized as noise, a debt trajectory that flatly contradicted real Unity). Use it for fast iteration only. Before considering *anything* done, validate via `BatchSimulationRunner` against real Unity (`G:\UNITY\Unity Hub\6000.5.6f1\` - migrated from `6000.5.4f1` on 2026-08-01 after the older install became corrupted; see CLAUDE.md's "Real-Unity Validation is the Standard Path" for the full story) at both 100 and 500 turn horizons (or their day-equivalent, once the continuous-time migration changes the unit).
+2. **Watch for the six failure patterns already seen repeatedly**: turn-1 discontinuities, oscillation, unbounded/compounding growth, bimodal attractors, and two new ones (both new as of Continuous Time + Parliament + Cabinet/Foreign-Policy coexisting, both surfaced investigating the SAME reported live-play freeze):
+   - **Background/timed state mutation vs. active UI interaction** — a background system (a bill resolving, or any future timed/probabilistic mechanic) mutating live state that a GUILayout control is reading, on a day/frame the player has an active multi-frame drag in progress on that exact control. GUILayout allocates control IDs positionally, not by a stable key, so a control disappearing or a preceding control's count changing mid-drag is a documented Unity IMGUI hang/desync trigger, especially inside a ScrollView — and it's invisible to `BatchSimulationRunner`, which applies policy decisions programmatically and never drives real OnGUI/mouse-drag events, so no batch run can ever catch it. First hypothesized in the Tax Policy tab (Master Sequence step 4 pilot) when a pending TaxBill could resolve while the player was mid-drag on a rate slider; hardened there via the stable-control-layout pattern (see `GameController.DrawTaxPolicy`'s doc comment, commit `adb34ae`) regardless — every control a gated tab can ever draw renders every frame, in the same order, with "not currently applicable" expressed via `GUI.enabled = false` (composed with, not clobbering, any ambient enabled state) rather than by omitting or swapping the control. **Caveat, recorded honestly**: this fix did NOT resolve the reported freeze — Elias reproduced it again under the same conditions after commit `adb34ae`. The pattern and fix are still real and worth keeping (every one of the seven remaining tabs gains this exact same theoretical exposure once Master Sequence step 5 wires them into the draft/bill/vote model), but it was not the actual trigger of the original report. See the next pattern for what the investigation found instead.
+   - **A legitimately time-blocking decision with no globally-visible indicator** — Fed Chair term appointment, a Cabinet decision, and a Foreign Policy meeting all correctly pause `GameController.Update`'s day-loop (every gate is checked correctly - this is NOT a simulation bug), but each one's actual resolution UI (the Fed Chair candidate picker, `DrawCabinetDecisionModal`, `DrawForeignPolicyMeetingModal`) renders ONLY inside its own specific tab's draw call - never globally. A player on any other tab (e.g. Tax Policy) when one of these fires sees simulated days silently stop advancing with no visible cause - indistinguishable from a hang. Before the fix, `DrawCalendarAndSpeedControls`'s always-visible status line (the one piece of UI pinned outside the scroll view on every tab) named the reason for Fed Chair and Cabinet only, in a modest, easy-to-miss label style, and said NOTHING for a pending Foreign Policy meeting - the one of the three statistically most likely to fire early in a fresh session, since it rolls per DAY (~1% chance) rather than per TURN (121-day then, 365-day since `d8f55ce`) like the other two. Fixed by escalating that line to the same bold/orange `_eventBannerStyle` used for the dashboard's own BREAKING banner whenever ANY of the three is pending, always naming which one and which tab resolves it - still exactly one Label control either way, per the stable-control-layout pattern above. This is a genuine UX gap, not a code crash: every future interrupt/decision system (gated legislation on the remaining seven tabs very much included) needs its "something needs your attention" state represented somewhere visible from every tab, not only on the tab where it originated.
+
+   Assume a new mechanic is guilty of all six until the full-horizon batch run (for the first four) and direct live-Editor confirmation (for the last two, which batch runs cannot exercise) prove otherwise.
+3. **Commit per unit of work.** One feature, one commit, descriptive message. Confirm staged contents match the message before committing.
+4. **⚠ REPLACED 2026-08-11 at Elias's direction — ESCALATE TO ELIAS IN THE REPORT, NOT TO A DOCUMENT.**
+   Recorded explicitly per rule 10's own requirement that a reversal never look like drift. **Previous
+   wording (2026-08-02):** *"make the call, state the reasoning in the commit message, and flag it for
+   Elias to overrule; escalate to Open Questions only when undoing it would be expensive or
+   irreversible."*
+
+   **Why it changed: Open Questions became a queue nobody drains.** An escalated question sat there
+   unruled until work reached it months later and halted — so the escalation deferred the interruption
+   instead of preventing it, and did so to the least convenient moment. Deciding-it-yourself still
+   applies to everything reversible; what changed is where the genuine forks go.
+
+   **The new standard:**
+   - Every report ends with a **`RULINGS NEEDED`** block. One entry per question: the question stated so
+     it can be answered **yes/no or A/B** wherever possible; the recommendation with one or two lines of
+     reasoning; and **what it blocks**, or *"nothing, decide when convenient."*
+   - **If a question blocks the pass in progress, STOP THERE and report it** rather than carrying it to
+     the end. *A blocked pass reported at minute 3 is worth more than a finished pass that guessed.*
+   - **"I can't call this one" is a legitimate entry.** A genuine coin-flip presented as a recommendation
+     is worse than an admitted one.
+
+   ⚠ **ONCE RULED, WRITE IT DOWN in whichever document owns the decision** — request doc, roadmap, or
+   `CLAUDE.md`. **A ruling given in chat and not recorded did not happen**: same class as *"a delivery is
+   not self-announcing"*, and the same failure mode, since the next session reads documents rather than
+   transcripts.
+
+   **Open Questions stops being a queue and becomes a record of decisions made.**
+5. **Ground new mechanics in real data.** Label anything stylized honestly — never let a placeholder look like real data.
+6. **Scope every new system small on the first pass.** Plumbing plus a few clearly-justified effects, not full theoretical richness.
+7. **Update CLAUDE.md after every item**, including validation results, so history stays traceable.
+8. **Verify Unity processes actually exited** (`Get-Process Unity*,UnityPackageManager`) before trusting that a closed window means it's safe to run a batch validation — confirmed to cause false failures more than once.
+9. **⚠ SPLIT 2026-08-11 at Elias's direction — INSTITUTIONS MAY BE REAL, PEOPLE NEVER ARE.** Recorded here per rule 10's own requirement that *"any FUTURE reversal of a standing rule must be recorded the same explicit way"*, and recorded late: `main` carried four real party marks (`mark_party_us_gop`, `mark_party_us_dem`, `mark_party_se_s`, `mark_party_se_v` — imported, guarded and documented) for several hours while this rule still forbade them outright. The reversal was written down only on `stranded/politics-elections`, so `main` held the consequence without the rule. **That is the cached-status failure of rule 12 applied to a rule rather than to an asset.**
+
+    - **PARTIES AND INSTITUTIONS — REVERSED, may be real.** Real party names, real vote shares, real seat counts, real thresholds, real chamber sizes and real electoral formulas. The Riksdag holds Socialdemokraterna and Sverigedemokraterna, not Progressive Alliance.
+    - **PEOPLE — UNCHANGED, and this half is not negotiable.** Cabinet ministers, party leaders, legislators, Fed Chairs and heads of state remain **original and fictional**. The Fed Chair rule stands exactly as written.
+    - **The distinction, stated so it survives paraphrase: a real party is an INSTITUTION; a real politician is a PERSON.** Only the first is reversed.
+
+    **The cost this buys, stated so nobody rediscovers it:** real party data goes stale. Sweden votes 13 September 2026 and Italy's replacement electoral law is before the Senato that month. **Seed data is now a cached value with an expiry** — rule 12's shape — so every seeded figure carries its retrieval date.
+
+9a. **NEW 2026-08-11 — TRADEMARK: A PARTY MARK IS ORIGINAL ART, NEVER THE PARTY'S OWN MARK.** Real party *names* are text and are used. Real party *logos* are marks owned by organisations, and reproducing one in a commercial game on Steam is a different proposition entirely. **Every `mark_party_*` sprite is an original abstract drawing** — recognisable by silhouette and by the party's real colour, owned by us, and defensible.
+
+    **This is already load-bearing rather than theoretical.** The delivered pack gave Socialdemokraterna a **banner** rather than a rose *specifically because the rose is the subject of their registered mark*, and the Democrats a **torch** rather than the donkey. That reasoning was recorded once, in a delivery note, and must be stated in **every future party-mark request** rather than re-derived by whoever writes the next one. ⚠ It applies directly to §1G's outstanding `mark_party_us_lib`, whose party's associated imagery carries the same question.
+10. **REVERSED (2026-07-31), was a hard rule through Master Sequence step 5d**: visuals are now a MIXED procedural/sprite model, not "all procedural." Elias has explicitly approved imported sprite art for **icons, portraits, and background/menu textures specifically** — see `CLAUDE_DESIGN_ASSET_REQUEST.md` (the single standing asset request; the original 5E/chrome/macro requests were consolidated into it 2026-08-02, all delivered) for the asset work this decision unblocked. **Stays procedural, unchanged, no exception**: all UI chrome/layout (`PoliSimTheme.cs`'s `RoundedBox`/`RoundedCard`/`Pill`/`Rule`/`TopAccent`/`LeftSpine` — pure `GUI.DrawTexture` rounded-rect/line geometry, no art asset, no reason to change) and every existing DATA visualization (`GraphRenderer`, `MapRenderer`, `PolicyWebRenderer`, `PoliticalCompassRenderer`, `HemicycleRenderer`) — none of these draw a "picture," they render real tracked simulation data, which is exactly what rule 5 ("ground new mechanics in real data") already protects; nothing about the icon/portrait decision touches that. **Becomes sprite-based**: one icon per `UiPalette.SystemArea` (policy area), one portrait per Cabinet minister candidate, one emblem per `PartyArchetype`, and background/menu textures — all sourced from Claude Design with the same origin-verification and security-review discipline already established for the first pack (Zone.Identifier mark-of-the-web check, full code/asset read-through before treating anything as trusted). This is a real, deliberate policy reversal, documented as such per this same working-discipline section's own precedent for recording a caveat/correction honestly rather than letting it look like silent drift - any FUTURE reversal of a standing rule must be recorded the same explicit way.
+11. **Any new mechanic that nudges an existing tracked variable must fold into that variable's existing combined ceiling**, not add an uncounted new source — audit the actual ceiling code before adding a contributor, don't assume there's room.
+12. **NEW (2026-08-02) — "awaiting delivery" is a status that must be RE-DERIVED FROM THE FILESYSTEM, never trusted from a document.** Two separate assets were recorded as outstanding while already sitting in zips at the project root: `icon_stat_interestrate` (registered *"REQUEST SENT, awaiting delivery"* on the day it in fact arrived) and `menu_pattern_tile.png` (delivered, then unimported for weeks while three documents named it as a gap). **Neither register was wrong when written.** Nothing watches the project root, a delivery does not announce itself, and so the status simply outlived the fact — twice, which is what makes it a pattern rather than an oversight. Both gaps were eventually closed only because Elias happened to say the file already existed. **Run `DeliveredAssetCheck` before reporting any asset as outstanding**: it compares every zip's contents against what exists under `Assets/` and fails on any gap, which is the one comparison that cannot go stale. Its companion `StatIconCoverageCheck` asks the runtime half of the same question — that a name the UI hard-codes actually resolves through `Resources.Load`, which a file merely existing on disk does not guarantee when its `.meta` is hand-written. The general form: **a status describing the outside world is a cached value, and needs an expiry.** ⚠ *Amended 2026-08-11: `StatIconCoverageCheck` covers the 19 names it ENUMERATES — every `StatNodeId` icon plus `menu_pattern_tile` — not "a name the UI hard-codes" generally. See rule 14.*
+
+13. **NEW (2026-08-11) — TWO AGENTS IN ONE WORKING TREE NEED A LOCK, not a cleanup afterwards.** On 2026-08-11 two sessions wrote this repo concurrently with no coordination, and it produced three distinct failures, none of which either session could see from inside. **A merged contradiction:** one session recorded "§1E is closed" while the other recorded "I will not file these because §1E's namespace blocker is open" — read together as one agent reasoning badly, when it was two agents' claims merged without attribution. **A silent co-commit:** commit `452bf68` staged three files by explicit path and still carried ~150 lines of the other session's uncommitted §1F prose, because staging by path does not stop a path carrying another author's changes. **A stale lock read as litter:** a 2.2-hour-old `.git/index.lock` with no `git` process alive — correctly diagnosed as stale, but *"no process is running now"* and *"no session owns this"* are different propositions, and only the first is observable.
+
+    **The rules.** Before any commit, run `git status` and confirm every staged path is one this session actually modified — `git show --stat HEAD` afterwards is the backstop, not the check. **Never `git add -A` / `git add .` in a tree that may be shared**; stage by explicit path, and inspect the diff of any path you did not create. **Never clear an `index.lock` without first confirming no live session owns it** — a dead process's litter and a live session mid-operation are indistinguishable from the lock's mtime alone, the same way a closed Unity window is not proof Unity exited. When a document's claims contradict each other, **suspect two authors before suspecting bad reasoning**, and check `git log`/`git blame` for authorship before writing a correction that may be arguing with a version that never existed.
+
+    **Rule 13 at the filesystem level (2026-08-25, the two-copy consolidation — `COMPLETED.md` §31):** G: is
+    the working copy; the C: copy is `PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16` with `ProjectSettings.RETIRED`
+    so it cannot be launched. **Standing habit: every harness or tool invocation passes the explicit project
+    path** — the `/code-review` fall-back to `C:\Users\elias` was the instance that earned the rule.
+
+14. **NEW (2026-08-11) — A CHECK IS EVIDENCE ONLY FOR CLAIMS ITS ENUMERATION CONTAINS.** `StatIconCoverageCheck` was cited in two documents as proof that four newly imported party marks resolved through `Resources.Load`. It enumerates `StatNodeId` plus `menu_pattern_tile` and never touches `Emblems/` — it passed **19 of 19** with the marks present, and would have passed with them absent or corrupt. `CLAUDE.md` had the scope stated correctly the whole time; `COMPLETED.md` said *"every name the UI hard-codes"*, and that looser phrasing is what licensed the misuse. **A passing check that cannot fail for the stated reason is worse than no check, because it retires the question.**
+
+    The same defect recurred twice more in one session, which is what makes it a rule. A **57-file byte-identical diff** was read as proof that five import blockers were closed — but two of those blockers are about NAMING, which is not a byte-level property, so the diff structurally could not see them. And `PartyMarkCoverageCheck`'s own first version reported *"4 of 4 resolve at 128×128, the metas are sound"* when it only checked that a handle came back; extended to assert `texture.format`, it immediately found all four imported as **DXT5** — block compression on white-on-alpha, the exact damage vector the settings exist to prevent. **When citing a check, name what it enumerates.** When a check's bar is another artifact ("matches the reference"), it inherits that artifact's defects — the reference emblem was itself DXT5.
+
+15. **NEW (2026-08-12, Elias) — COMPARE AGAINST THE PREVIOUS CAPTURE SET; DO NOT JUST LOOK AT THE NEW
+    ONE.** `cbdde4e` shipped the selected sub-tab's label as cream on pale paper — unreadable — and its
+    own capture run was **approved by eye with the defect on screen**. It was caught a day later
+    (`4192042`) not by looking harder but by putting the pre-conversion `accessors_*` set beside the new
+    one: readable white-on-brass next to unreadable cream-on-paper is a finding no single image
+    produces. **The three verification layers each answer a different question, and only the third
+    answers regression:**
+
+    | Layer | Answers | Cannot answer |
+    |---|---|---|
+    | Guards (`UiOverflowGuard` / `UiContainmentGuard` / `ScreenEdgeCheck`) | containment — does content fit and stay inside? | composition — does it READ? |
+    | A single capture set, by eye | plausibility — does this look like a working screen? | change — is anything worse than before? |
+    | The set DIFF, old beside new | **did this change break something?** | — |
+
+    ⚠ One practical limit, measured 2026-08-12: the capture warm-up is **unseeded**, so two sets differ
+    in every simulated figure (AA+ vs AAA between consecutive runs) — the comparison is structural and
+    by eye, never pixel-wise, until someone decides seeding the warm-up is worth it.
+
+    ⚠ **PAIRED-DETECTOR CORRECTION (2026-08-24, the Calendar Panel pass).** The table above reads
+    naturally as three passes over overlapping ground, which invites an assumption neither the table
+    nor this rule ever actually claimed: that one layer's blind spot is the other layer's job. **It is
+    not, and two findings from the same session sit cleanly on either side of the line.** A day-cell
+    height defect (a real overflow, `_calendarDayNumberStyle` sized against a flat guess instead of its
+    own metric) was caught by `UiOverflowGuard` **alone** — 2,004 violations, found straight from the
+    guard's own count before any image was opened, no eye involved at all. A ledger date-column that
+    **wrapped** rather than clipped at 2560px (`"10"` over `"/1"`) was caught by eye **alone** — none of
+    the three guards reports it, because a string that wraps instead of overflowing satisfies
+    containment, fit, and edge-flushness simultaneously; wrapping-instead-of-clipping is not a
+    question any of them asks. **Neither layer backstops the other's blind spot.** A guard's blind
+    spot is not safety-netted by looking (the guard-only case above needed no eye at all to be found,
+    but nothing guarantees a DIFFERENT guard-blind defect would be visually obvious the way this one's
+    count was); an eye's blind spot is not safety-netted by a guard built to answer a narrower question
+    than "does this read well" (wrapping is exactly the shape rule 15's original finding — the sub-tab
+    ink of `cbdde4e`, fixed `4192042` — also was: a composition question, not a containment one). Read the table's three rows as three
+    INDEPENDENT questions with three independent gaps, not three redundant passes that jointly cover
+    the ground — the reference-class trap's own lesson (2026-08-11: "adjacency is not sameness")
+    applied to verification layers instead of to a lookup.
+
+    **RETENTION (added 2026-08-16, the repository-weight pass).** "Keep old sets to compare against"
+    is why captures reached 5,316 PNGs / 5.1 GiB in five days, 2,003 of them committed (~874 MiB of
+    git blobs — see CLAUDE.md "The repository weight finding"). The comparison this rule actually
+    needs is **one good baseline per axis, plus the run under judgment**:
+    - **Keep**: the current baseline set per axis — the main sweep per size, the per-country coverage
+      sets, the state-pin sets — and the most recent run per size. A superseded baseline is kept only
+      until its successor is confirmed, then it becomes prunable.
+    - **Prunable**: every older iteration set, the moment its finding is recorded in `CLAUDE.md`. The
+      set is EVIDENCE while the finding is open and a cache once it is written down — rule 12's shape
+      applied to pixels.
+    - **Mechanics**: captures live OUTSIDE the tree at `../PoliSim-captures/` (driver, capture entry
+      point and `ScreenEdgeCheck` all read one shared default, `-shotdir=` still overrides;
+      `/screenshots/` is gitignored defensively). Nothing under the capture dir is ever committed.
+    - Applying this policy today keeps roughly 1,900 files (~1.9 GiB) and marks ~3.2 GiB prunable —
+      ✅ **APPROVED 2026-08-16 (Elias) — and EXECUTED the same day** (the prune ran alongside the
+      history rewrite; the execution annotated here 2026-08-26, one word late per its own rule). The history rewrite was ruled YES
+      the same day and ✅ **EXECUTED later that day as its own gated pass** — pack 742.03 → 4.92
+      MiB, 76 citations swept, fresh clone at 4.89 MiB with all six checks green. Full record in
+      CLAUDE.md "The history rewrite — executed 2026-08-16"; backup + commit-map at
+      ~~`C:\Users\elias\PoliSim-backup-2026-08-16`~~ **`C:\Users\elias\PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16`
+      (renamed 2026-08-25 under rule 13, `ProjectSettings` → `ProjectSettings.RETIRED` so it cannot be
+      launched; `.git` untouched — the pin and the commit-map are why it is kept).**
+
+
