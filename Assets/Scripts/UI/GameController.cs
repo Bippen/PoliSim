@@ -3270,8 +3270,11 @@ namespace PoliSim.UI
                 DrawDerivedStatRow("Rule reading", -1f, $"{suggested:F2}%",
                     $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
                 DrawDerivedStatRow("Chair's lean", -1f, $"{chair.RateBias:+0.00;-0.00;0.00} pts", null, politicalInk);
+                // Trailing text kept short: the omni_h1280 capture measured the first wording ("held
+                // within 0-15%; the rate moves 15% of the way each year") at 210px against a 195px
+                // trailing cell at the 8px floor - the width-less-label class's trailing-cell cousin.
                 DrawDerivedStatRow("Target", -1f, $"{chairTarget:F2}%",
-                    $"held within {CurrencySystem.MinInterestRate:F0}-{CurrencySystem.MaxInterestRate:F0}%; the rate moves {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the way each year", politicalInk);
+                    $"band {CurrencySystem.MinInterestRate:F0}-{CurrencySystem.MaxInterestRate:F0}%; closes {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the gap per year", politicalInk);
 
                 DrawFedChairSelectionModal();
             }
@@ -6775,7 +6778,12 @@ namespace PoliSim.UI
             LawDefinition law = row.Law;
             bool selected = _selectedLawId == law.Id;
 
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle) * 1.4f, GUILayout.ExpandWidth(true));
+            // R-K4 (omnibus 2026-08-28): the standard ledger pitch the Budget screen uses - LedgerRow's
+            // own height (which already reserves two lines for a wrapped name) plus the Budget rows'
+            // 10px gap - in place of the 1.4x reservation that gave 2.5 / 4.5 / 5.5 laws per viewport at
+            // 1280 / 1600 / 2560 (playtest 3's residual on film). Measured after the change in the
+            // omni_h captures; see CLAUDE.md "Phase 1".
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
 
             // Code-review pass (2026-08-25): stages the click into _pendingSelectedLawId instead of
             // writing _selectedLawId directly - see that field's own doc comment for why (the
@@ -6865,6 +6873,67 @@ namespace PoliSim.UI
 
             LedgerRow.Cell(new Rect(x, rowRect.y, costWidth - 4f, rowRect.height),
                 law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+            GUILayout.Space(LawRowGap);
+        }
+
+        /// <summary>R-K4: the Budget screen's own gap between ledger rows (DrawTaxPolicyContent /
+        /// DrawSpendingPolicyContent draw `GUILayout.Space(10f)` after each instrument).</summary>
+        private const float LawRowGap = 10f;
+
+        private GUIStyle _lawNameStyle;
+
+        /// <summary>
+        /// R-K5 (omnibus 2026-08-28): the selected law's name at an explicit MEASURED width, wrapping
+        /// at word boundaries to two lines at full size and shrinking only past that - the resort
+        /// ladder (§A.9a) applied to the header face at the width-less-label class's last known
+        /// instance. The 1600 finding: "Cash Bail Abolitio / n Act" - the header-font name in a label
+        /// capped at half the pane broke inside a word because no rung existed between "wrap" and
+        /// "clip". Now a word wider than the width, or a wrap taller than two lines, steps the size
+        /// down (never below MeasuredLabel's 8px floor) until both hold.
+        /// </summary>
+        private void DrawLawNameLadder(string name, float width)
+        {
+            if (_lawNameStyle == null || _lawNameStyle.font != _headerStyle.font)
+            {
+                _lawNameStyle = new GUIStyle(_headerStyle) { wordWrap = true };
+            }
+
+            var content = new GUIContent(name);
+            int size = _headerStyle.fontSize;
+            while (size > 8)
+            {
+                _lawNameStyle.fontSize = size;
+                float twoLines = _lawNameStyle.lineHeight * 2f + _lawNameStyle.padding.vertical + 0.5f;
+                bool wordsFit = WidestWordWidth(name, _lawNameStyle) <= width;
+                if (wordsFit && _lawNameStyle.CalcHeight(content, width) <= twoLines)
+                {
+                    break;
+                }
+                size--;
+            }
+            _lawNameStyle.fontSize = size;
+
+            Rect rect = GUILayoutUtility.GetRect(content, _lawNameStyle, GUILayout.Width(width));
+            GUI.Label(rect, content, _lawNameStyle);
+        }
+
+        /// <summary>The narrowest line word-wrapping can produce for <paramref name="text"/> in
+        /// <paramref name="style"/>: its widest single word (LedgerRow's own WidestUnbreakableRun,
+        /// restated here for the header face).</summary>
+        private static float WidestWordWidth(string text, GUIStyle style)
+        {
+            bool previousWrap = style.wordWrap;
+            style.wordWrap = false;
+            float widest = 0f;
+            foreach (string word in text.Split(' '))
+            {
+                if (word.Length > 0)
+                {
+                    widest = Mathf.Max(widest, style.CalcSize(new GUIContent(word)).x);
+                }
+            }
+            style.wordWrap = previousWrap;
+            return widest;
         }
 
         /// <summary>Code-review pass (2026-08-25): the one place a LawCategory maps to its display
@@ -7023,11 +7092,14 @@ namespace PoliSim.UI
             // best.
 
             GetLawStatusDisplay(row.Value, out string statusLabel, out Color statusColor);
-            float wantedStatusWidth = _labelStyle.CalcSize(new GUIContent("ENACTMENT PENDING")).x + 24f;
-            float nameWidth = Mathf.Max(contentWidth * 0.5f, contentWidth - wantedStatusWidth);
-            float statusWidth = Mathf.Max(0f, contentWidth - nameWidth);
+            // R-K5 (2026-08-28): the status column is measured from the status ACTUALLY drawn (plus the
+            // buffer that stopped the last-character clip the earlier attempts hit), capped at half the
+            // pane; the name takes the rest and goes through the two-line ladder (DrawLawNameLadder),
+            // so a short status no longer starves the name and a long name no longer breaks mid-word.
+            float statusWidth = Mathf.Min(contentWidth * 0.5f, _labelStyle.CalcSize(new GUIContent(statusLabel)).x + 24f);
+            float nameWidth = Mathf.Max(0f, contentWidth - statusWidth);
             GUILayout.BeginHorizontal();
-            GUILayout.Label(law.Name, _headerStyle, GUILayout.Width(nameWidth));
+            DrawLawNameLadder(law.Name, nameWidth);
             GUILayout.FlexibleSpace();
             DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(statusWidth));
             GUILayout.EndHorizontal();
