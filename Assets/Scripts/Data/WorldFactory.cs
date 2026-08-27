@@ -583,22 +583,61 @@ namespace PoliSim.Data
 
             // THE WELFARE SEED SLOTS (playtest 3's seed-spread ruling, 2026-08-27 - see CLAUDE.md
             // "Playtest 3, the rulings"): each country's welfare portfolio AS IT REALLY STANDS, per the
-            // standing rule - real data or nothing. Every slot is still the pre-ruling state (nothing
-            // implemented, DefaultWelfareGenerosity) because the figures are UNSOURCED at this commit:
-            // the implemented-program facts and the generosity figures are Elias's to source
-            // (MISSING_PREREQUISITES.md §F names the datasets and the mapping). The mechanism is live
-            // either way - SeedWelfarePrograms snapshots the portfolio into
-            // Country.BaselineWelfarePrograms and every welfare effect measures from it - so a sourced
-            // value dropped into a slot changes the compass and the dials' starting positions without
-            // moving a sourced baseline. A slot reads (Type, implemented, generosity); a program with
+            // standing rule - real data or nothing. The mechanism: SeedWelfarePrograms snapshots the
+            // portfolio into Country.BaselineWelfarePrograms and every welfare effect and the welfare
+            // cost measure from it, so a program seeded here contributes nothing on the no-policy path
+            // (the sourced baselines already contain it) and a player's change is booked from the
+            // country's real position. A slot reads (Type, implemented, generosity); a program with
             // no slot is present, not implemented, at DefaultWelfareGenerosity.
-            // ⚠ [PLACEHOLDER] on all thirty-six.
-            SeedWelfarePrograms(usa);
-            SeedWelfarePrograms(sweden);
-            SeedWelfarePrograms(germany);
-            SeedWelfarePrograms(france);
-            SeedWelfarePrograms(italy);
-            SeedWelfarePrograms(poland);
+            //
+            // [PROVISIONAL - session-sourced 2026-08-28, Elias to confirm] (R-K9 of the omnibus; the
+            // MISSING_PREREQUISITES.md §F mapping followed as written). FACT half - which programs a
+            // country really runs: universal statutory health coverage, the five and not the USA
+            // (Medicare/Medicaid are not universal coverage; that public spending stays in the sourced
+            // Healthcare budget line); a national means-tested cash social-assistance scheme, a
+            // national housing allowance and a public childcare/ECEC entitlement, all six; UBI and
+            // NegativeIncomeTax, none. FIGURE half - OECD SOCX public social expenditure, % of GDP,
+            // 2021 = the latest year all six report the programme breakdown (SDMX dataflow
+            // OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0, expenditure source Public, retrieved
+            // 2026-08-28): Health (TP41) -> healthcare; Family, in-kind (TP51/K) -> childcare; Housing
+            // (TP82) -> housing; Other social policy areas (TP91 total - its cash half IS the
+            // income-maintenance component, nothing is added twice) -> means-tested. generosity =
+            // clamp(spend / CostShareOfGdp x 100, 0, 100) with the cost shares the budget already
+            // books (WelfareProgramCostShares: healthcare 10, means-tested 6, housing 1.5,
+            // childcare 1). Caveats carried to the confirmation (COMPLETED.md §36): Germany's minimum
+            // income (Bürgergeld) is booked under Unemployment in SOCX, so its means-tested figure
+            // understates; childcare clamps at 100 for three countries because real family in-kind
+            // spending exceeds the model's 1%-of-GDP full-generosity cost; 2021 is a pandemic year.
+            // Each tuple's trailing comment is the SOCX line and the division it was mapped from.
+            SeedWelfarePrograms(usa,                                                   // TP41 9.496 stays in the budget line
+                (WelfareProgramType.MeansTestedWelfare, true, 15.0f),                 // TP91 0.900 / 6
+                (WelfareProgramType.HousingAssistance, true, 15.7f),                  // TP82 0.236 / 1.5
+                (WelfareProgramType.ChildcareSubsidies, true, 56.8f));                // TP51/K 0.568 / 1
+            SeedWelfarePrograms(sweden,
+                (WelfareProgramType.MeansTestedWelfare, true, 8.8f),                  // TP91 0.529 / 6
+                (WelfareProgramType.UniversalHealthcare, true, 69.5f),                // TP41 6.954 / 10
+                (WelfareProgramType.HousingAssistance, true, 25.2f),                  // TP82 0.378 / 1.5
+                (WelfareProgramType.ChildcareSubsidies, true, 100f));                 // TP51/K 2.049 / 1 -> 204.9, clamped
+            SeedWelfarePrograms(germany,
+                (WelfareProgramType.MeansTestedWelfare, true, 2.6f),                  // TP91 0.156 / 6 (Bürgergeld sits under TP71 - understated)
+                (WelfareProgramType.UniversalHealthcare, true, 99.9f),                // TP41 9.994 / 10
+                (WelfareProgramType.HousingAssistance, true, 35.2f),                  // TP82 0.528 / 1.5
+                (WelfareProgramType.ChildcareSubsidies, true, 100f));                 // TP51/K 1.436 / 1 -> 143.6, clamped
+            SeedWelfarePrograms(france,
+                (WelfareProgramType.MeansTestedWelfare, true, 20.3f),                 // TP91 1.216 / 6
+                (WelfareProgramType.UniversalHealthcare, true, 96.5f),                // TP41 9.654 / 10
+                (WelfareProgramType.HousingAssistance, true, 42.1f),                  // TP82 0.632 / 1.5
+                (WelfareProgramType.ChildcareSubsidies, true, 100f));                 // TP51/K 1.353 / 1 -> 135.3, clamped
+            SeedWelfarePrograms(italy,
+                (WelfareProgramType.MeansTestedWelfare, true, 26.0f),                 // TP91 1.559 / 6
+                (WelfareProgramType.UniversalHealthcare, true, 68.8f),                // TP41 6.880 / 10
+                (WelfareProgramType.HousingAssistance, true, 2.7f),                   // TP82 0.041 / 1.5
+                (WelfareProgramType.ChildcareSubsidies, true, 58.8f));                // TP51/K 0.588 / 1
+            SeedWelfarePrograms(poland,
+                (WelfareProgramType.MeansTestedWelfare, true, 2.1f),                  // TP91 0.127 / 6
+                (WelfareProgramType.UniversalHealthcare, true, 46.1f),                // TP41 4.613 / 10
+                (WelfareProgramType.HousingAssistance, true, 1.6f),                   // TP82 0.024 / 1.5 (the TP822 in-kind line; no TP821 entry)
+                (WelfareProgramType.ChildcareSubsidies, true, 80.8f));                // TP51/K 0.808 / 1
 
             // Economic Sectors (see "Economic Sectors" in CLAUDE.md) - Output % of GDP is real World
             // Bank data for Manufacturing/Agriculture (Manufacturing value added: USA 10%, Sweden
@@ -699,18 +738,29 @@ namespace PoliSim.Data
             // seeded together with its anchor (Sector.BaselineRegulationLevel) so the sector model
             // measures a player's move from the country's own real position and the no-policy path
             // stays anchored to the sourced output shares - which already embody that regulation.
-            // Every slot is still the pre-ruling uniform 50 because the figures are UNSOURCED at this
-            // commit: the OECD Product Market Regulation indicator (economy-wide per country, with the
-            // sector-level indicators where PMR has one - energy, telecommunications, retail) is
-            // Elias's to source (MISSING_PREREQUISITES.md §F names the vintage and the mapping onto
-            // this dial). A country-wide figure applies to every sector; a (SectorType, level) pair
-            // overrides one sector. ⚠ [PLACEHOLDER] on all six.
-            SeedSectorRegulation(usa, 50f);
-            SeedSectorRegulation(sweden, 50f);
-            SeedSectorRegulation(germany, 50f);
-            SeedSectorRegulation(france, 50f);
-            SeedSectorRegulation(italy, 50f);
-            SeedSectorRegulation(poland, 50f);
+            // A country-wide figure applies to every sector; a (SectorType, level) pair overrides one.
+            //
+            // [PROVISIONAL - session-sourced 2026-08-28, Elias to confirm] (R-K9 of the omnibus; the
+            // MISSING_PREREQUISITES.md §F mapping followed as written). OECD Product Market Regulation
+            // indicators, 2023-24 vintage on the 2023 methodology (0-6, lower = less regulated):
+            // economy-wide from the OECD's own workbook PMR-Indicator_Econwide_2023-24-and-2018_
+            // 02.02.2026.xlsx (oecd.org, retrieved 2026-08-28, SHA-256 D0EBCFC7...; its published
+            // "OECD average" row = 1.3464), cross-checked against the SDMX API
+            // (OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3 - identical to seven decimals). Mapping: level =
+            // 50 x PMR / OECD average, clamped 10-90, so 50 keeps its meaning (OECD-average
+            // stringency). Sector overrides where PMR has a sector series, from the same API against
+            // the 38-member simple mean for 2023 (the convention the published average itself uses -
+            // it reproduces to 0.0004; the API carries no aggregate row): ENERGY (the OECD's composite
+            // of electricity and natural gas; mean 1.3134) -> Energy; ECOMM (fixed and mobile; 1.3056)
+            // -> Telecommunications; RETAIL_TRADE (general retail; 1.0409) -> Retail. The other five
+            // sectors take the country-wide figure. Laws in force 2023-01-01 (the USA: 2024-01-01).
+            // Each line's trailing comment carries the raw indicators it was mapped from.
+            SeedSectorRegulation(usa, 58.6f, (SectorType.Energy, 37.5f), (SectorType.Telecommunications, 55.9f), (SectorType.Retail, 75.5f));     // PMR 1.5786; energy 0.9855, e-comms 1.4606, retail 1.5714
+            SeedSectorRegulation(sweden, 29.9f, (SectorType.Energy, 41.7f), (SectorType.Telecommunications, 59.2f), (SectorType.Retail, 27.4f));  // PMR 0.8063; energy 1.0959, e-comms 1.5459, retail 0.5714
+            SeedSectorRegulation(germany, 44.9f, (SectorType.Energy, 17.3f), (SectorType.Telecommunications, 53.3f), (SectorType.Retail, 42.9f)); // PMR 1.2080; energy 0.4543, e-comms 1.3928, retail 0.8929
+            SeedSectorRegulation(france, 45.7f, (SectorType.Energy, 30.6f), (SectorType.Telecommunications, 50.5f), (SectorType.Retail, 90f));    // PMR 1.2297; energy 0.8027, e-comms 1.3188, retail 3.0000 (maps to 144.1, clamped)
+            SeedSectorRegulation(italy, 45.7f, (SectorType.Energy, 27.4f), (SectorType.Telecommunications, 28.4f), (SectorType.Retail, 90f));     // PMR 1.2310; energy 0.7207, e-comms 0.7426, retail 1.9286 (maps to 92.6, clamped)
+            SeedSectorRegulation(poland, 39.6f, (SectorType.Energy, 52.5f), (SectorType.Telecommunications, 37.5f), (SectorType.Retail, 51.0f));  // PMR 1.0664; energy 1.3779, e-comms 0.9784, retail 1.0612
 
             // Infrastructure System (Round 2 item 5, see "Infrastructure System" in CLAUDE.md) -
             // ConditionIndex (0-100, higher = better) is seeded from the IMD World Competitiveness
