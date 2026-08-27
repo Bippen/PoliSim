@@ -1,10 +1,22 @@
 # PoliSim — Real-World Seed Data: Macro Data & Release Calendar Overhaul
 
-**Why this file exists:** Claude Code has no web search. Every real-world figure below was sourced externally and is provided here so the overhaul can be grounded in real data rather than invented numbers. This project's standing discipline is "ground new mechanics in real data, label anything stylized honestly" — this file is what makes that possible for this step.
+**Why this file exists:** every real-world figure the Round-4 macro stats and the release calendar
+were seeded from, with its source, basis, retrieval date and confidence — so a seed can be audited and
+re-sourced rather than trusted. The project's standing discipline is "ground new mechanics in real
+data, label anything stylized honestly" (rule 5); `[GAP]` figures are Elias's to source, never to invent.
+*(The original "Claude Code has no web search" rationale is history — this file's own 2026-08-02 API
+sessions pulled most of the figures live; what it remains is the seed authority `ReleaseCalendar.cs` and
+`PublishedData.cs` cite by name. Corrected 2026-08-27.)*
 
-**How to read the confidence markers:**
+**How to read the confidence markers (seven kinds in use at HEAD, 2026-08-27):**
 - `[VERIFIED]` — sourced directly, use as-is
+- `[ESTIMATED]` — rung 3 of Part 4's fallback ladder: a stated method with a band, replaced the moment a
+  same-basis figure exists (`MISSING_PREREQUISITES.md` §B)
 - `[GAP]` — not yet sourced, must NOT be invented; flag to Elias for sourcing before that stat ships
+- `[PARTIAL]` — a set with some members sourced and some not (no live data entry carries it today; it
+  survives in audit prose)
+- `[PROVISIONAL]` — the source's own provisional flag (Eurostat `p`), carried into the seed comment
+- `[BOUNDED]` — a range rather than a value; a bound is not a value and must not be seeded as one
 - `[DERIVE]` — should be computed from existing tracked state, not seeded as an independent variable
 
 ---
@@ -169,7 +181,11 @@ somewhere real to look.
 
 **Poland caution:** the ~87.9% figure elsewhere in this file is a Eurostat *nationals* line, not the OECD household basis. Directionally right (Poland genuinely is among the highest globally) but not a same-basis value.
 
-**House Price Index:** [GAP] — no per-country figures sourced yet. Recommend seeding all six at an index value of 100 at game start (a standard index convention) and letting divergence emerge from simulation, rather than inventing differing starting levels. This is honest and avoids fake precision.
+**House Price Index:** ✅ CLOSED BY CONVENTION (R4-2/R4-3, 2026-08-16/17 — `WorldFactory.cs`
+`HousePriceIndex = 100f`, "the R4-2 index convention, third member"): all six seed at an index value
+of 100 at game start and divergence emerges from simulation; no per-country level figures were ever
+needed, so this was never a `[GAP]` to source. *(The recommendation that stood here was adopted verbatim;
+the marker was corrected 2026-08-27.)*
 
 ### 2. Inequality — Gini coefficient
 | Country | Value | Confidence |
@@ -327,6 +343,10 @@ rates — holds on this period too.
 EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED] — *not re-checked; a different series to the
 per-country figures above.*
 
+*(⚠ The two paragraphs below are the 2026-08-01 pre-audit reading, kept as history; the 2026-08-02
+Eurostat API audit revised the seeds — Sweden 22.5, Italy 20.0, France 19.0 — and the audit table above
+is what `WorldFactory.cs` carries. Corrected 2026-08-27, not silently.)*
+
 **Sweden: 22.2%** (Feb 2026, Eurostat, 15–24 rate) [VERIFIED] — genuinely high, confirming the "Nordic mixed picture" note; Sweden has averaged 16.95% since 1983, with an all-time high of 29.9% (July 2020). This is a real and counterintuitive feature worth preserving: a strong overall labour market alongside one of Europe's worst youth unemployment rates.
 
 **✅ RE-CHECKED AND CONFIRMED (2026-08-01):** Italy 20.1 and France 18.7 are genuine RATES on the 15–24 basis, not ratios. Independently confirmed for June 2025 against an EU average of 14.8%. Eurostat's own definition, worth quoting: *the youth unemployment rate is the number of people aged 15 to 24 unemployed as a percentage of the labour force of the same age, and should not be interpreted as the share of jobless people in the overall youth population.* These seeds are sound.
@@ -363,7 +383,7 @@ These weren't part of the seven, but came up with real per-country data and are 
 | Italy | 5.1 | [VERIFIED] — Eurostat API, 2026-08-02 |
 | France | 7.0 | [VERIFIED] — Eurostat API, 2026-08-02 |
 | Poland | 5.2 | [VERIFIED] — Eurostat API, 2026-08-02 |
-| USA | [GAP] — see methodology warning below; not a simple lookup | [GAP] |
+| USA | **absent BY RULING** — option 3 below taken 2026-08-17 (`WorldFactory.cs` `usa.TracksHousingOverburden = false`); homeownership 65.3 carries the USA housing slot | ruled, not a gap |
 
 **✅ THE THREE [BOUNDED] GAPS ARE CLOSED (2026-08-02), pulled directly from the Eurostat API.**
 
@@ -444,10 +464,10 @@ Secondary sources compound this. Visual Capitalist, explicitly citing Eurostat 2
 
 **Practical rule: record WHICH variant alongside every value, never just the number.** A bare figure for this indicator carries no meaning.
 
-**USA methodology warning (this is a DECISION, not a lookup):** Eurostat measures >40% of disposable income; US sources conventionally measure >30% ("cost-burdened") or >50% ("severely cost-burdened"). No US figure is directly comparable. Three options, none free:
+**USA methodology warning (this is a DECISION, not a lookup):** Eurostat measures >40% of disposable income; US sources conventionally measure >30% ("cost-burdened") or >50% ("severely cost-burdened"). No US figure is directly comparable. Three options, none free — **✅ DECIDED 2026-08-17 (R4-3, `9f12c96`): option 3; the USA does not track overburden and homeownership carries its housing slot** (`COMPLETED.md` §11 C1a/C1b; corrected here 2026-08-27):
 1. Import a US figure with the bias documented (same approach the file already takes for Gini)
 2. Mark USA `[GAP]` and seed only the five EU countries
-3. Use homeownership rate for USA instead, where a genuinely comparable figure exists (65.3%)
+3. Use homeownership rate for USA instead, where a genuinely comparable figure exists (65.3%) — **taken**
 
 **Related affordability indicator [VERIFIED, Eurostat 2024]:** average share of disposable income spent on housing — EU 19%, Greece 36%, Denmark 26%, Sweden and Germany both 25%, Cyprus 11% (lowest). A softer, more complete measure than the overburden threshold, and available for more countries.
 
@@ -687,6 +707,9 @@ is not an anchor for the aggregate series at all and should be relabelled rather
 at 78.20; ordering Germany > USA > Sweden > France > Italy > Poland is consistent with the qualitative
 claims already recorded here (Italian stagnation 2012–2022, Polish catch-up from a low base).
 
+*(⚠ SUPERSEDED 2026-08-02 — the six were re-sourced from OECD SDMX on one basis, one year, one vintage
+(the table at the head of §6; `WorldFactory.cs` carries them with the full basis in each comment). The
+warning below described the pre-audit mixed set and is kept as history; corrected 2026-08-27.)*
 **SOURCE-CONFLICT WARNING on Sweden/Poland:** those two figures come from a different source (Statista) than the USA/France figures (OECD PPP) and are almost certainly NOT PPP-adjusted on the same basis — Poland at $24.5 is implausibly low against an OECD PPP average of $67.5. Do not mix them into one table as-is. Either source all six from OECD PPP consistently, or treat these two as placeholders needing replacement.
 
 #### ⚠ OECD API ATTEMPTED 2026-08-02 — GATE FAILED, NOTHING RECORDED
@@ -794,7 +817,9 @@ and *job* tenure, but no Affordable Housing Database equivalent. **C1's OECD-bas
 and Poland are therefore NOT closed by API access** and remain Elias's, unless the AHD is published
 somewhere outside SDMX.
 
-OECD average: ~$67.5/hour (2022) [VERIFIED]. Ireland tops the ranking at ~$151 but is heavily distorted by multinational accounting — a good example of why raw cross-country comparison misleads.
+OECD average: ~$67.5/hour (2022) — *not an anchor: the live SDMX series gives 72.59 on the current
+basis (this file's own note above); the marker that stood here was wrong and is withdrawn, 2026-08-27.*
+Ireland tops the ranking at ~$151 but is heavily distorted by multinational accounting — a good example of why raw cross-country comparison misleads.
 
 **METHODOLOGY WARNING:** the OECD explicitly cautions against comparing GDP per hour worked across countries at face value, since there is still no uniform measurement method; it considers longitudinal comparison (a country against its own past) the valid use. For this game that's actually convenient — seed each country's own level, then let the player watch their own trajectory rather than treating cross-country rank as meaningful.
 
@@ -834,9 +859,11 @@ Poland will come out near AAA. The missing factor is some combination of currenc
 outside the euro and borrows partly in it), institutional quality, and an EU-periphery risk premium.
 
 ⚠ **Run the 5-anchor calibration as a SIX-anchor calibration and expect it to fail on Poland first.**
-`CreditRatingAnchorCheck` currently passes 5 of 5 — that is a statement about five countries, and the
-sixth is the one carrying the new information. A check that passes because the hard case was never in it
-is the kind of confirmation this project has learned to distrust.
+✅ **ACTED ON — `733ac8c` 2026-08-02, "Six-anchor calibration: Poland fails by four notches, on
+purpose":** the sixth anchor is in the check, Poland fails as predicted, and that expected failure is
+the standing tripwire (5 of 6). *The sentence that stood here — "currently passes 5 of 5" — was false
+from the day it was written; corrected 2026-08-27.* A check that passes because the hard case was never
+in it is the kind of confirmation this project has learned to distrust.
 
 *(This is a finding about the model, not about the data. Logged here because the anchor is what surfaced
 it; the work belongs to Step C4's closure.)*
@@ -845,16 +872,12 @@ Also worth modeling: France carries a *negative outlook* while southern European
 
 ---
 
-## PART 3 — Tier 0 derived stats (no seeding needed, zero simulation risk)
+## PART 3 — Tier 0 derived stats — RETIRED 2026-08-27
 
-Computed at display time from already-tracked values. No new state, no new ceilings, no validation risk beyond arithmetic correctness:
-
-- GDP per capita = GDP ÷ Population (both already tracked)
-- Tax burden as % of GDP
-- Spending as % of GDP
-- Deficit as % of GDP
-- Real GDP growth
-- Sector shares of GDP
+A design conclusion, not a figure, so it does not belong in a seed reference: Tier 0 stats (GDP per
+capita, tax/spend/deficit as % of GDP, real GDP growth, sector shares) are display-time derivations,
+never state — shipped as `DerivedStats` and on screen since 2026-08-02. Record: `COMPLETED.md` §9.
+The heading stays so Parts 4 and 5 keep their numbers.
 
 ---
 
@@ -1096,6 +1119,10 @@ exactly the query whose results you intend to keep, instead of on a proxy for it
 
 ## PART 5 — ELECTORAL SEED DATA: findings that constrain any future design (2026-08-11)
 
+*(This part is task-shaped, not a figure reference: it waits on the politics/elections stream — item
+10, `MISSING_PREREQUISITES.md` §D0, which points here. Kept in this file because the constraints are
+properties of real electoral systems; nothing in it is independently confirmed.)*
+
 ⚠ **Findings only, extracted onto `main` deliberately.** The electoral code that produced them lives on
 `stranded/politics-elections`, a branch marked *preserved, not endorsed* — uninspected, unvalidated, and
 possibly never merged. **These constraints hold regardless of whether that code ever lands**, because
@@ -1112,7 +1139,7 @@ this section originally read as though they were.** Audited 2026-08-11 by readin
 
 | Claim | Backing artifact | Status |
 |---|---|---|
-| Sweden 2022 exact | `seat_allocation_check.py` — in the repo, readable | **Reported by an unverified script**: read, never run |
+| Sweden 2022 exact | `seat_allocation_check.py` — on `stranded/politics-elections` only (NOT on `main`; `git ls-tree` confirms, 2026-08-27), readable | **Reported by an unverified script**: read, never run |
 | Sweden 2014, 6 seats of error | same script | **Reported by an unverified script**: read, never run |
 | Germany 2025, off by 1 | **none — throwaway script, discarded** | ⚠ **UNVERIFIABLE.** No artifact survives |
 | Poland 2023, off by 70 | **none — throwaway script, discarded** | ⚠ **UNVERIFIABLE.** No artifact survives |
