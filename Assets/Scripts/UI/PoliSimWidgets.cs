@@ -513,107 +513,15 @@ namespace PoliSim.UI
             }
         }
 
-        // --- 3. Legislative support bar ----------------------------------------------------
-
-        /// <summary>
-        /// Seats-for versus the majority line, with the status word derived from the margin — the
-        /// one control used by the budget summary, every standalone bill and any pending vote.
-        /// </summary>
-        public static void SupportBar(Rect rect, int seatsFor, int totalSeats, int majority, float scale, bool showScale = true)
-        {
-            EnsureStyles(scale);
-
-            int margin = seatsFor - majority;
-            Color tone = margin >= 5 ? PoliSimTheme.Good : margin >= -8 ? PoliSimTheme.Caution : PoliSimTheme.Bad;
-            string status = margin >= 5 ? "PASSING" : margin >= 0 ? "RAZOR THIN" : Mathf.Abs(margin) + " SHORT";
-            float percent = totalSeats > 0 ? seatsFor / (float)totalSeats : 0f;
-
-            float y = rect.y;
-            GUI.Label(new Rect(rect.x, y, rect.width, 14f * scale), "LEGISLATIVE SUPPORT",
-                Sized(_label, PoliSimTheme.FontLabel, PoliSimTheme.TextMuted, scale));
-
-            var statusStyle = Sized(_label, PoliSimTheme.FontLabel + 1, tone, scale, TextAnchor.MiddleCenter);
-            float statusWidth = statusStyle.CalcSize(new GUIContent(status)).x + 18f * scale;
-            var statusPill = new Rect(rect.xMax - statusWidth, y - 2f * scale, statusWidth, 18f * scale);
-            PoliSimTheme.RoundedBox(statusPill, PoliSimTheme.Tint(tone, 0.14f), 9f * scale);
-            GUI.Label(statusPill, status, statusStyle);
-
-            y += 22f * scale;
-            GUI.Label(new Rect(rect.x, y, rect.width, 36f * scale), Mathf.RoundToInt(percent * 100f) + "%",
-                Sized(_value, PoliSimTheme.FontStatLarge, tone, scale, TextAnchor.LowerLeft));
-            GUI.Label(new Rect(rect.x, y, rect.width, 36f * scale), seatsFor + " / " + majority + " SEATS",
-                Sized(_mono, PoliSimTheme.FontBodySmall, PoliSimTheme.Neutral, scale, TextAnchor.LowerRight));
-
-            y += 44f * scale;
-            ThresholdBar(new Rect(rect.x, y, rect.width, PoliSimTheme.BarHeightLg * scale), percent,
-                totalSeats > 0 ? majority / (float)totalSeats : 0.5f, tone);
-
-            if (!showScale)
-            {
-                return;
-            }
-
-            y += 18f * scale;
-            var scaleStyle = Sized(_mono, PoliSimTheme.FontMicro, PoliSimTheme.TextMuted, scale);
-            GUI.Label(new Rect(rect.x, y, rect.width, 14f * scale), "0", scaleStyle);
-            GUI.Label(new Rect(rect.x, y, rect.width, 14f * scale), "MAJORITY " + majority,
-                Sized(_mono, PoliSimTheme.FontMicro, PoliSimTheme.TextMuted, scale, TextAnchor.MiddleCenter));
-            GUI.Label(new Rect(rect.x, y, rect.width, 14f * scale), totalSeats.ToString(),
-                Sized(_mono, PoliSimTheme.FontMicro, PoliSimTheme.TextMuted, scale, TextAnchor.MiddleRight));
-        }
-
-        // --- 4. Standing / draft pair -------------------------------------------------------
-
-        /// <summary>
-        /// The budget line-item readout: the enacted value, an arrow, the draft value, and a signed
-        /// delta pill when they differ. Draft text turns amber the moment it diverges from standing,
-        /// which is the only cue that a change is pending a vote — so it is never optional.
-        /// </summary>
-        public static void StandingDraftPair(Rect rect, string standingText, string draftText, float delta, string unitSuffix, float scale)
-        {
-            EnsureStyles(scale);
-
-            bool changed = Mathf.Abs(delta) > 0.0001f;
-            Color draftColor = changed ? PoliSimTheme.Draft : PoliSimTheme.TextPrimary;
-
-            float half = rect.height * 0.5f;
-            GUI.Label(new Rect(rect.x, rect.y, 110f * scale, half), "STANDING",
-                Sized(_label, PoliSimTheme.FontLabel, PoliSimTheme.TextMuted, scale, TextAnchor.LowerRight));
-            GUI.Label(new Rect(rect.x, rect.y + half, 110f * scale, half), standingText,
-                Sized(_mono, PoliSimTheme.FontSubtitle, PoliSimTheme.Neutral, scale, TextAnchor.UpperRight));
-
-            float arrowX = rect.x + 120f * scale;
-            PoliSimTheme.Rule(new Rect(arrowX, rect.y + half - 1f, 12f * scale, 2f), PoliSimTheme.Tint(PoliSimTheme.Neutral, 0.6f));
-
-            float draftX = arrowX + 22f * scale;
-            GUI.Label(new Rect(draftX, rect.y, 120f * scale, half), "DRAFT",
-                Sized(_label, PoliSimTheme.FontLabel, changed ? PoliSimTheme.Draft : PoliSimTheme.TextMuted, scale, TextAnchor.LowerRight));
-            GUI.Label(new Rect(draftX, rect.y + half, 120f * scale, half), draftText,
-                Sized(_mono, PoliSimTheme.FontTitle, draftColor, scale, TextAnchor.UpperRight));
-
-            if (!changed)
-            {
-                return;
-            }
-
-            string deltaText = (delta > 0f ? "+" : "−") + Mathf.Abs(delta).ToString("0.0") + unitSuffix;
-            var deltaStyle = Sized(_mono, PoliSimTheme.FontBodySmall - 2, PoliSimTheme.Draft, scale, TextAnchor.MiddleCenter);
-            float w = deltaStyle.CalcSize(new GUIContent(deltaText)).x + 16f * scale;
-            var pill = new Rect(draftX + 130f * scale, rect.y + half - 9f * scale, w, 18f * scale);
-            PoliSimTheme.RoundedBox(pill, PoliSimTheme.Tint(PoliSimTheme.Draft, 0.14f), 9f * scale);
-            GUI.Label(pill, deltaText, deltaStyle);
-        }
-
-        /// <summary>Draft track: the standing value as a grey underlay behind the coloured draft fill.</summary>
-        public static void DraftTrack(Rect rect, float standingFraction, float draftFraction, UiPalette.SystemArea area)
-        {
-            float radius = rect.height * 0.5f;
-            PoliSimTheme.RoundedBox(rect, PoliSimTheme.BarTrack, radius);
-            PoliSimTheme.RoundedBox(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(standingFraction), rect.height),
-                new Color(1f, 1f, 1f, 0.16f), radius);
-            PoliSimTheme.RoundedBox(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(draftFraction), rect.height),
-                PoliSimTheme.Tint(PoliSimTheme.Accent(area), 0.9f), radius);
-        }
+        // --- 3./4. (deleted 2026-08-27, Elias's ruling) ------------------------------------
+        //
+        // SupportBar, StandingDraftPair and DraftTrack - three design-pack widgets rejected on
+        // 2026-08-01 (COMPLETED.md §29: SupportBar drew a seats-based majority this model does not
+        // implement; StandingDraftPair/DraftTrack laid out from hardcoded offsets that ignored
+        // rect.width on the most fragile screen in the project) - sat here with zero callers for
+        // 26 days and were removed. The one load-bearing idea each carried survives elsewhere:
+        // the amber draft cue in LedgerRow's draft column and DrawDraftLabel, the diverging lean bar
+        // in UiPalette.DrawDivergingBar. Git history holds the code (PoliSimWidgets.cs at 483f03e).
 
         // --- 5. Decision card chrome ---------------------------------------------------------
 

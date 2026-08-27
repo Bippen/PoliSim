@@ -83,6 +83,10 @@ ui_btn_paper_canvas_pressed
 # call-site statement, so the removal pass ran. These rows STAY - DeliveredAssetCheck reads them as
 # its superseded allowance (an archived pack shipping one of these is not a regression), so
 # deleting a row here would resurrect a false REGRESSION for that name.
+# 2026-08-27 (Elias's ruling): the eleven SVG SOURCES under Chrome/Source/ were deleted too -
+# Track 3 had removed only the PNGs and metas. The per-state SVGs Design shipped supersede the
+# strips; keeping both was the two-tables problem in another costume. The archived zips still
+# carry the old .svg entries, which DeliveredAssetCheck matches by stem against these rows.
 !ui_button_normal
 !ui_button_hover
 !ui_button_pressed

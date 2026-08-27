@@ -2505,10 +2505,11 @@ namespace PoliSim.UI
         /// <summary>
         /// Master Sequence step 5e, Phase C batch 6: a policy label that turns amber the moment its draft
         /// diverges from the standing value. This is the one genuinely load-bearing idea taken from
-        /// `PoliSimWidgets.StandingDraftPair`, whose own documentation calls it "the only cue that a
-        /// change is pending a vote - so it is never optional"; the widget itself was rejected (see the
-        /// roadmap) because its hardcoded pixel offsets ignore rect.width and would break the
-        /// variable-width Budget Process columns. The signal survives, the fragile geometry doesn't.
+        /// `PoliSimWidgets.StandingDraftPair`, whose own documentation called it "the only cue that a
+        /// change is pending a vote - so it is never optional"; the widget itself was rejected (COMPLETED.md
+        /// §29) because its hardcoded pixel offsets ignored rect.width and would have broken the
+        /// variable-width Budget Process columns, and was deleted 2026-08-27 (git history holds it).
+        /// The signal survives, the fragile geometry doesn't.
         ///
         /// White is not a hardcoded "normal" colour here - DrawColoredLabel MULTIPLIES GUI.color by the
         /// style's own text colour, so white means "leave the style alone" and this stays correct if the
@@ -3525,8 +3526,8 @@ namespace PoliSim.UI
         ///
         /// The lean bar shows ParliamentSystem.GetSeatWeightedAlignment, the quantity the vote is really
         /// decided on, so a player can see HOW close a bill is rather than only which side of the line it
-        /// currently sits. Deliberately not PoliSimWidgets.SupportBar - this model has no seats-based
-        /// majority for it to draw (see DrawPendingBillCard's own comment for the full reasoning).
+        /// currently sits. Deliberately not the design pack's SupportBar widget (deleted 2026-08-27) - this
+        /// model has no seats-based majority for it to draw (see DrawPendingBillCard's own comment).
         /// </summary>
         private void DrawBillLiveEstimate(float direction, float wrapWidth = 0f)
         {
@@ -7703,8 +7704,9 @@ namespace PoliSim.UI
         /// <see cref="ParliamentSystem.GetSeatWeightedAlignment"/>, the quantity the vote is actually
         /// decided on, drawn diverging from a centre threshold.
         ///
-        /// Deliberately NOT `PoliSimWidgets.SupportBar`, despite that widget existing and looking like
-        /// the obvious fit. SupportBar renders "N of 200 seats, majority 101", and this simulation has
+        /// Deliberately NOT the design pack's `SupportBar` widget (rejected 2026-08-01, deleted from
+        /// PoliSimWidgets 2026-08-27 - COMPLETED.md §29), which looked like the obvious fit. It rendered
+        /// "N of 200 seats, majority 101", and this simulation has
         /// no seats-based majority at all: parties are weighted by the STRENGTH of their fiscal stance,
         /// so a bill can pass with fewer aligned seats than opposed ones and fail with more. Drawing a
         /// majority line here would assert a rule the model does not implement. The magnitude is shown
