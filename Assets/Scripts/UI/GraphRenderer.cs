@@ -366,12 +366,15 @@ namespace PoliSim.UI
             }
 
             float markerHeight = Mathf.Max(3f, rect.height * 0.10f);
+            // Board 1l (2026-08-28): release-point markers scale to weight + 2 so they stay proud of
+            // the heavier history line - a 5px tick at the 3px history weight.
+            float markerWidth = HistoryWeight + 2f;
             for (int i = 0; i < periods.Count; i++)
             {
                 float t = i / (float)(periods.Count - 1);
                 float x = rect.x + t * rect.width;
                 bool preliminary = latestForPeriod[periods[i]].Status == RevisionStatus.Preliminary;
-                var marker = new Rect(x - 1f, rect.yMax - markerHeight, 2f, markerHeight);
+                var marker = new Rect(x - markerWidth * 0.5f, rect.yMax - markerHeight, markerWidth, markerHeight);
                 Color previousMarkerColor = GUI.color;
                 GUI.color = preliminary ? PreliminaryLineColor : ReleaseMarkerColor;
                 GUI.DrawTexture(marker, Texture2D.whiteTexture);
@@ -865,7 +868,9 @@ namespace PoliSim.UI
                 if (prevPixel.HasValue)
                 {
                     bool isProjectedSegment = i > lastRealIndex;
-                    DrawLine(pixels, TextureWidth, TextureHeight, prevPixel.Value, pixel, isProjectedSegment ? ProjectedLineColor : HistoryLineColor, isProjectedSegment);
+                    DrawLine(pixels, TextureWidth, TextureHeight, prevPixel.Value, pixel,
+                        isProjectedSegment ? ProjectedLineColor : HistoryLineColor, isProjectedSegment,
+                        isProjectedSegment ? ProjectionWeight : HistoryWeight);
                 }
                 prevPixel = pixel;
             }
@@ -957,6 +962,11 @@ namespace PoliSim.UI
             float range = max - min;
             bool flat = range < Mathf.Epsilon;
 
+            // Board 1l, R-G4 (2026-08-28): sparkline thickness = max(2, round(rectHeight / 34)) device
+            // px - 2 at the small chip rects, 3 at a 90px 2560 rect. Native-resolution buffers, so
+            // the rule speaks in the buffer's own pixels.
+            int thickness = Mathf.Max(2, Mathf.RoundToInt(height / 34f));
+
             Vector2Int? previous = null;
             for (int i = 0; i < count; i++)
             {
@@ -969,7 +979,7 @@ namespace PoliSim.UI
                 var point = new Vector2Int(Mathf.Clamp(x, 0, width - 1), Mathf.Clamp(y, 0, height - 1));
                 if (previous.HasValue)
                 {
-                    DrawLine(pixels, width, height, previous.Value, point, color, dashed: false);
+                    DrawLine(pixels, width, height, previous.Value, point, color, dashed: false, thickness);
                 }
                 previous = point;
             }
@@ -978,9 +988,29 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Bresenham line, 2px thick for legibility at typical panel widths, optionally dashed (every
-        /// 3rd step skipped) so the projected segment reads as "estimate" even before its lighter alpha
-        /// is accounted for.
+        /// Board 1l's weight order (§A.16, built 2026-08-28, omnibus R-K3), in BUFFER px once with no
+        /// per-resolution branch: the 300×90 buffer's vertical stretch is ×1.0 at 2560 and ≈ ×0.74 at
+        /// 1600 (antialiased by the bilinear stretch), so 3 buffer px reads 3 device px at 2560 and
+        /// ≈ 2.2 at 1600. R-G1 history 3 (from 2), solid, full ink. R-G2 projection 2, lighter alpha,
+        /// dashed 3 on / 2 off (from "skip every 3rd step") so the gaps stay visible beside a heavier
+        /// history - it must read "estimate", never "second series". R-G3 threshold stays 1
+        /// (DrawDashedHorizontalLine), warm amber: a reference IS a hairline; differentiation comes
+        /// from the 3 / 2 / 1 order. R-G5: the 300×90 buffer stands. The finding these answer: all
+        /// three landed within a device pixel of each other at 2560, so the recorded data could not
+        /// outrank its own reference marker.
+        /// </summary>
+        private const int HistoryWeight = 3;
+        private const int ProjectionWeight = 2;
+        private const int ProjectionDashOn = 3;
+        private const int ProjectionDashPeriod = 5;
+
+        /// <summary>
+        /// Bresenham line, <paramref name="thickness"/> px thick (board 1l's weights: history 3,
+        /// projection 2, sparklines by rect height - see HistoryWeight), optionally dashed at 3 on /
+        /// 2 off so the projected segment reads as "estimate" even before its lighter alpha is
+        /// accounted for. Thickness is laid down as extra rows BELOW the plotted pixel, which is what
+        /// the old 2px form did - the series line is mostly horizontal, so its read weight is its
+        /// vertical thickness.
         ///
         /// **The buffer's dimensions are PARAMETERS, not the TextureWidth/TextureHeight constants, and
         /// that is the fix for a real crash.** This helper was written for the full-size graph and
@@ -991,20 +1021,23 @@ namespace PoliSim.UI
         /// mid-OnGUI, blanking the entire screen; below that it silently wrote to the wrong pixels.
         /// **Sharing the algorithm was right; sharing the constants was not.**
         /// </summary>
-        private static void DrawLine(Color[] pixels, int bufferWidth, int bufferHeight, Vector2Int from, Vector2Int to, Color color, bool dashed)
+        private static void DrawLine(Color[] pixels, int bufferWidth, int bufferHeight, Vector2Int from, Vector2Int to, Color color, bool dashed, int thickness = 2)
         {
             int x0 = from.x, y0 = from.y, x1 = to.x, y1 = to.y;
             int dx = Mathf.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
             int dy = -Mathf.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
             int err = dx + dy;
             int step = 0;
+            int rows = Mathf.Max(1, thickness);
 
             while (true)
             {
-                if (!dashed || step % 3 != 0)
+                if (!dashed || step % ProjectionDashPeriod < ProjectionDashOn)
                 {
-                    SetPixelSafe(pixels, bufferWidth, bufferHeight, x0, y0, color);
-                    SetPixelSafe(pixels, bufferWidth, bufferHeight, x0, y0 + 1, color);
+                    for (int row = 0; row < rows; row++)
+                    {
+                        SetPixelSafe(pixels, bufferWidth, bufferHeight, x0, y0 + row, color);
+                    }
                 }
                 step++;
 
