@@ -69,7 +69,10 @@ namespace PoliSim.UI
         /// PolicyScreenStatsRenderer.GetIconName maps are ever requested; the other 25 (19 stat icons
         /// without a node, the trend arrows, the badges and the release marker - GraphRenderer and
         /// PublishedFigure draw those procedurally) are held stock with no call site (2026-08-27,
-        /// COMPLETED.md §33; place-or-hold is a roadmap item).
+        /// COMPLETED.md §33). ⚠ RULED HELD STOCK, 2026-08-28 (omnibus R-K6): those 25 stay in the
+        /// folder with no loader - the display surfaces that would use them (a wider stat set, sprite
+        /// markers and badges) are not being built - and are re-counted by `DeliveredAssetCheck`,
+        /// never re-triaged as a gap. The same ruling holds six chrome names (see GetChrome).
         ///
         /// Same null-on-missing contract as <see cref="Get"/>: a typo draws nothing rather than
         /// something misleading.
@@ -117,6 +120,14 @@ namespace PoliSim.UI
         /// tint them - see `UiPalette.BuildButtonStyle`. Returns null when a sprite is missing, and every
         /// caller is written to fall back to its previous procedural appearance rather than draw nothing,
         /// so a failed import degrades the look instead of producing invisible controls.
+        ///
+        /// ⚠ HELD STOCK, RULED 2026-08-28 (omnibus R-K6, roadmap item 5): `ui_btn_disabled` gained its
+        /// loader that day (the speed buttons' held face, `UiPalette.BuildButtonStyle`); the six
+        /// remaining chrome names with no load call - `ui_frame_double`, `ui_stamp_draft`,
+        /// `ui_portrait_frame_oval`, `ui_btn_paper_canvas` (+`_hover`, `_pressed`) and
+        /// `ui_slider_knob_disabled` - stay held stock, delivered and counted by `DeliveredAssetCheck`,
+        /// with no call site by decision (the 2026-08-12 "revivable by ruling" set plus the Canvas paper
+        /// button the pilot never needed).
         /// </summary>
         public static Texture2D GetChrome(string chromeName)
         {

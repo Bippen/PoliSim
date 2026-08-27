@@ -128,7 +128,8 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the four checks named in <see cref="Suite"/>, each
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (eight since
+    /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
     /// seeded world rather than a project scan, and it does NOT run
@@ -156,6 +157,7 @@ namespace PoliSim.EditorTools
             ("StatIconCoverageCheck", StatIconCoverageCheck.Run),
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
+            ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),
             ("UpstreamCheck", UpstreamCheck.Run),
         };
