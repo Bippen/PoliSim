@@ -1289,8 +1289,8 @@ namespace PoliSim.UI
         private const float CanvasCoverSeconds = 0.18f;
         private const float CanvasRevealSeconds = 0.24f;
 
-        /// <summary>True when no takeover transition is in flight — the harness waits on this instead of guessing frame counts (seam defect class 5).</summary>
-        public bool CanvasTransitionSettled => _canvasPhase == CanvasPhase.None;
+        /// <summary>True when no takeover transition is in flight — the harness waits on this instead of guessing frame counts (seam defect class 5). Since 2026-08-28 it also waits for the signing document's own entrance (§A.13 rows 4 and 6, SigningScreen.DocumentEntrance), so a capture never films the SIGN button mid-fade.</summary>
+        public bool CanvasTransitionSettled => _canvasPhase == CanvasPhase.None && (_signingScreen == null || _signingScreen.EntranceSettled);
 
         /// <summary>True while the Canvas surface is the live screen. With <see cref="CanvasTransitionSettled"/>, the pair distinguishes settled-before-entry from settled-canvas-live from settled-after-exit — three states one boolean cannot carry.</summary>
         public bool CanvasSelectorActive => _canvasLive;

@@ -41,7 +41,13 @@ namespace PoliSim.UI
         /// <summary>True once the seal has landed and settled — the seam watches this to begin CoverOut, the same watch-the-result idiom as the selector's selection.</summary>
         public bool Sealed => _seal != null && _seal.Settled;
 
+        /// <summary>True once §A.13's entrance rows have played out (the document risen and settled,
+        /// the controls faded in) — the harness's settle flag composes this in, so a capture never
+        /// films the SIGN button mid-fade.</summary>
+        public bool EntranceSettled => _entrance == null || _entrance.Settled;
+
         private SealDrop _seal;
+        private DocumentEntrance _entrance;
 
         /// <summary>Null when the document furniture is missing — the caller drops the ceremony and the resolution stays silent, which is exactly today's behaviour (degradation costs the ceremony, never correctness).</summary>
         public static SigningScreen Build(Country country, DivisionRecord record, Action onSign)
@@ -227,7 +233,16 @@ namespace PoliSim.UI
             screen._seal = sealBeat.AddComponent<SealDrop>();
             sealBeat.SetActive(false);
 
-            BuildSignButton(signRow.transform, onSign, record.Passed);
+            CanvasGroup controls = BuildSignButton(signRow.transform, onSign, record.Passed);
+
+            // §A.13's two rows that had no implementation (re-derived against the seam 2026-08-28,
+            // omnibus roadmap item 4): row 4, the document rises 24px and settles −0.6° → 0° over
+            // 240–500ms, ease-out cubic; row 6, the controls fade in LAST (700ms+). The seal thunk
+            // (row 5) is §1g's own beat below, at its own 1.3 → 1.0 / 140ms - a declared deviation
+            // from the envelope's 1.15 / 120ms, kept because §1g is the ceremony's own spec. Rows
+            // 1–3 are the IMGUI seam's (GameController's takeover: lock, cover, hold-and-swap).
+            screen._entrance = document.AddComponent<DocumentEntrance>();
+            screen._entrance.Controls = controls;
 
             return screen;
         }
@@ -305,8 +320,8 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips. The label reads "SIGN" only for a passed division - "FILE" for a rejected one, matching the plate's own REJECTED stamp rather than claiming an enactment that did not happen.</summary>
-        private static void BuildSignButton(Transform parent, Action onSign, bool passed)
+        /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips. The label reads "SIGN" only for a passed division - "FILE" for a rejected one, matching the plate's own REJECTED stamp rather than claiming an enactment that did not happen. Returns the button's CanvasGroup - §A.13 row 6's fade handle (the controls fade in last).</summary>
+        private static CanvasGroup BuildSignButton(Transform parent, Action onSign, bool passed)
         {
             Sprite normal = CanvasChrome.Sliced("ui_btn_brass_canvas", 24f, 24f, 24f, 24f);
             Sprite hover = CanvasChrome.Sliced("ui_btn_brass_canvas_hover", 24f, 24f, 24f, 24f);
@@ -341,6 +356,15 @@ namespace PoliSim.UI
             Text label = CanvasChrome.MakeText(button.transform, "Label", passed ? "SIGN" : "FILE", PoliSimTheme.Display, 18,
                 PoliSimTheme.Hex(0xF0E7D8), TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch((RectTransform)label.transform);
+
+            // Row 6's handle: the group starts invisible and non-interactable; DocumentEntrance brings
+            // it in once the document has settled, so a click cannot land on a button that is not yet
+            // there (input locks are the envelope's first row).
+            CanvasGroup group = button.AddComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            return group;
         }
 
         private static void Stretch(RectTransform rect)
@@ -349,6 +373,79 @@ namespace PoliSim.UI
             rect.anchorMax = Vector2.one;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
+        }
+    }
+
+    /// <summary>
+    /// §A.13 rows 4 and 6 (built 2026-08-28, omnibus roadmap item 4): the document rises 24px and
+    /// settles −0.6° → 0° over 260ms with an ease-out cubic (the envelope's 240–500ms), and the
+    /// controls fade in LAST - 460ms after the document starts (the envelope's 700ms mark, counted
+    /// from the 240ms swap), over 200ms. Unscaled time, like the seal beat, so a held sim clock does
+    /// not freeze the ceremony. The rest position is captured on the FIRST enable only: the seam can
+    /// hide and re-show the screen, and re-capturing mid-rise would drift the document.
+    /// </summary>
+    public class DocumentEntrance : MonoBehaviour
+    {
+        private const float RiseSeconds = 0.26f;
+        private const float RisePixels = 24f;
+        private const float SettleDegrees = -0.6f;
+        private const float ControlsDelaySeconds = 0.46f;
+        private const float ControlsFadeSeconds = 0.2f;
+
+        public CanvasGroup Controls;
+
+        public bool Settled { get; private set; }
+
+        private Vector2 _rest;
+        private bool _restCaptured;
+        private float _startTime;
+
+        private void OnEnable()
+        {
+            var rect = (RectTransform)transform;
+            if (!_restCaptured)
+            {
+                _rest = rect.anchoredPosition;
+                _restCaptured = true;
+            }
+
+            _startTime = Time.unscaledTime;
+            Settled = false;
+            Apply(0f);
+            if (Controls != null)
+            {
+                Controls.alpha = 0f;
+                Controls.interactable = false;
+                Controls.blocksRaycasts = false;
+            }
+        }
+
+        private void Update()
+        {
+            float elapsed = Time.unscaledTime - _startTime;
+            Apply(Mathf.Clamp01(elapsed / RiseSeconds));
+
+            if (Controls != null)
+            {
+                float fade = Mathf.Clamp01((elapsed - ControlsDelaySeconds) / ControlsFadeSeconds);
+                Controls.alpha = fade;
+                bool live = fade >= 1f;
+                Controls.interactable = live;
+                Controls.blocksRaycasts = live;
+            }
+
+            if (elapsed >= ControlsDelaySeconds + ControlsFadeSeconds)
+            {
+                Settled = true;
+            }
+        }
+
+        private void Apply(float t)
+        {
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+            var rect = (RectTransform)transform;
+            rect.anchoredPosition = _rest + new Vector2(0f, -RisePixels * (1f - eased));
+            rect.localRotation = Quaternion.Euler(0f, 0f, SettleDegrees * (1f - eased));
         }
     }
 
