@@ -7661,7 +7661,7 @@ namespace PoliSim.UI
             if (tradeBill != null)
             {
                 pending.Add(($"Trade bill - resolves in {tradeBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetTradeBillDirection(_playerCountry, tradeBill), UiPalette.SystemArea.Trade));
+                    ParliamentSystem.GetTradeBillDirection(_playerCountry, tradeBill, _world), UiPalette.SystemArea.Trade));
             }
 
             SwfDrawdownBill drawdownBill = _simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId);
@@ -8128,7 +8128,7 @@ namespace PoliSim.UI
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern. Only the base rate sways this estimate (see ParliamentSystem.GetTradeBillDirection's own doc comment on why partner overrides are excluded).</summary>
         private void DrawTradeLiveEstimate()
         {
-            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillDirection(_playerCountry, BuildTradeBillFromDrafts()));
+            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillDirection(_playerCountry, BuildTradeBillFromDrafts(), _world));
         }
 
         /// <summary>Bundles the base tariff rate draft and every partner override draft into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts. Only a partner with an ACTIVE override gets an entry, mirroring BuildPlayerDecision's own former "only currently-implemented" reasoning.</summary>

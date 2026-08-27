@@ -591,13 +591,59 @@ namespace PoliSim.Simulation
         /// <summary>
         /// TradePolicyBill's direction - a higher tariff is, structurally, a tax on trade (more
         /// government revenue = expansionary = positive), the same reading BudgetBill's own TaxLines
-        /// term already uses for an ordinary tax rate. PartnerTariffOverrides is deliberately EXCLUDED
-        /// from the vote (see TradePolicyBill's own doc comment) - the same stated simplification
-        /// BudgetBill already applies to SWF's asset-mix terms.
+        /// term already uses for an ordinary tax rate.
+        ///
+        /// Pass 6 (2026-08-27, TradeCosts.OverrideDirectionWeight): per-partner overrides enter the
+        /// vote. They used to be EXCLUDED by analogy to SWF's asset-mix terms, whose reason is a missing
+        /// conversion factor onto the fiscal scale - but an override is a tariff rate in the very points
+        /// the base term scores, and an unnormalized per-partner sum would be a partner-count artefact
+        /// (three links vs five scoring the same policy differently), so the direction is the CHANGE IN
+        /// THE IMPORT-WEIGHTED AVERAGE TARIFF on the country's imports, in points - the tau-bar the
+        /// pass-through formula uses. For a country whose whole import set resolves at its base rate
+        /// (the USA) a base-only bill scores NewBase - Base exactly as before; for an EU member, whose
+        /// base rate is never charged, a base-only bill scores 0 - correct, and the old formula's
+        /// nonzero reading for it was a phantom. The vote reads the SIGN of this
+        /// (GetSeatWeightedAlignment), so the magnitude is a label, not a lever - stated in the pass-6
+        /// record as the pass's taste-adjacent call (the fiscal axis is the model's only axis until
+        /// item 10). With the weight at 0 the pre-pass-6 formula is returned verbatim.
         /// </summary>
-        public static float GetTradeBillDirection(Country country, TradePolicyBill bill)
+        public static float GetTradeBillDirection(Country country, TradePolicyBill bill, World world)
         {
-            return bill.NewBaseTariffRate - country.BaseTariffRate;
+            if (TradeCosts.OverrideDirectionWeight <= 0f)
+            {
+                return bill.NewBaseTariffRate - country.BaseTariffRate;
+            }
+
+            float weightedChange = 0f;
+            float imports = 0f;
+            foreach (TradePartner link in country.TradePartners)
+            {
+                Country partner = world.GetCountry(link.PartnerId);
+                if (partner == null)
+                {
+                    continue;
+                }
+
+                float current = TradeSystem.GetOwnTariffRate(country, partner, world.TradeBlocs);
+                float proposed;
+                if (bill.PartnerTariffOverrides.TryGetValue(link.PartnerId, out float requested))
+                {
+                    proposed = requested;
+                }
+                else if (link.HasPlayerTariffOverride)
+                {
+                    proposed = link.PlayerTariffOverride;
+                }
+                else
+                {
+                    proposed = TradeSystem.GetStandingTariffRate(country, partner, world.TradeBlocs, bill.NewBaseTariffRate);
+                }
+
+                weightedChange += link.ImportVolume * (proposed - current);
+                imports += link.ImportVolume;
+            }
+
+            return imports > 0f ? weightedChange / imports : 0f;
         }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplyTradeBillEffects).</summary>

@@ -234,23 +234,54 @@ namespace PoliSim.Simulation
         /// below NAIRU (overheating) is inflationary. Unemployment's own mean-reversion (see
         /// ApplyOkunsLaw) keeps this gap from growing without bound, so inflation settling back down
         /// is a consequence of that rather than a separate correction here.
+        ///
+        /// Pass 6 (2026-08-27): <paramref name="tariffPassThroughPp"/> is the period's tariff
+        /// pass-through - the change in the tariff take the boundary planned, as inflation points for
+        /// the year it lands (FiscalPeriod.PlannedTariffPassThroughPp; TradeCosts.ImportPricePassThrough).
+        /// A price-LEVEL term added to the level map inside the SAME [0, MaxInflationPercent] clamp -
+        /// rule 11 by folding, audited against BOTH bounds. The base print is computed exactly as
+        /// before and the term is a second, guarded statement, so the no-tariff-change path is
+        /// bit-identical. Returns the contribution that ACTUALLY printed (the clamped print with the
+        /// term minus the clamped print without it - 0 when the term is 0), which
+        /// ApplyInflationExpectations looks through at the boundary: a cut whose negative wedge floors
+        /// the print at 0 must not read as a ratchet in expectations, and the PLANNED figure would.
         /// </summary>
-        public static void ApplyPhillipsCurveInflation(Country country)
+        public static float ApplyPhillipsCurveInflation(Country country, float tariffPassThroughPp = 0f)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
             float inflation = state.InflationExpectations - PhillipsCurveSlope * unemploymentGap;
 
             state.Inflation = Mathf.Clamp(inflation, 0f, MaxInflationPercent);
+
+            if (tariffPassThroughPp != 0f)
+            {
+                float basePrint = state.Inflation;
+                state.Inflation = Mathf.Clamp(inflation + tariffPassThroughPp, 0f, MaxInflationPercent);
+                return state.Inflation - basePrint;
+            }
+
+            return 0f;
         }
 
         /// <summary>How quickly inflation expectations adapt toward realized inflation each turn (0-1).</summary>
         private const float ExpectationsAdaptationSpeed = 0.5f;
 
-        /// <summary>Adaptive expectations: next turn's expected inflation moves partway toward this turn's realized inflation. Phase 5: the speed converts through PerDayReversion in the daily wrapper below - the adaptation is a plain reversion, Phase 2's mechanical shape.</summary>
-        public static void ApplyInflationExpectations(EconomyState state, float adaptationSpeed = ExpectationsAdaptationSpeed)
+        /// <summary>Adaptive expectations: next turn's expected inflation moves partway toward this turn's realized inflation. Phase 5: the speed converts through PerDayReversion in the daily wrapper below - the adaptation is a plain reversion, Phase 2's mechanical shape.
+        ///
+        /// Pass 6 (2026-08-27): <paramref name="lookThroughPp"/> is the tariff pass-through that ACTUALLY
+        /// printed on the boundary day (ApplyPhillipsCurveInflation's return, kept on the closing
+        /// FiscalPeriod). Expectations adapt toward the print NET of it: the wedge is a price-LEVEL term
+        /// and these are expectations of the RATE - fed in, half of a one-off level shift would become
+        /// permanent inflation by this model's own recorded fixed point (elevated inflation at NAIRU never
+        /// decays). Because it is the realized, clamped contribution, the target is by construction the
+        /// no-wedge print, in [0, MaxInflationPercent] at either bound. The parameter sits SECOND so a
+        /// positional call can never bind it to the adaptation speed; every pre-pass-6 caller uses the
+        /// one-argument form and is untouched.</summary>
+        public static void ApplyInflationExpectations(EconomyState state, float lookThroughPp = 0f, float adaptationSpeed = ExpectationsAdaptationSpeed)
         {
-            state.InflationExpectations += (state.Inflation - state.InflationExpectations) * adaptationSpeed;
+            float target = lookThroughPp != 0f ? state.Inflation - lookThroughPp : state.Inflation;
+            state.InflationExpectations += (target - state.InflationExpectations) * adaptationSpeed;
         }
 
         // --- Continuous Time Phase 5: the core macro engine's daily forms ---

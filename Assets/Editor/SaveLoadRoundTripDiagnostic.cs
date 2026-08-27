@@ -325,6 +325,23 @@ namespace PoliSim.EditorTools
             });
             sim.IntroduceTaxProgramBill(player, TaxType.CarbonTax, isAdd: true);
 
+            // Pass 6 (2026-08-27): a standing partner override (the immediate "Set Override" click,
+            // initialised at the effective rate exactly as GameController performs it) plus a pending
+            // Trade bill requesting a different rate on it cross the save - so PendingTradeBills is
+            // non-empty, the direction path (overrides in the vote) resolves on both sides, and the
+            // retaliation term the partner's resolved rate now carries is exercised across the save.
+            // Added in the plumbing commit with every TradeCosts constant at 0, so the wired-inert
+            // control proves the coverage change itself inert.
+            if (playerCountry.TradePartners.Count > 0)
+            {
+                TradePartner firstLink = playerCountry.TradePartners[0];
+                Country firstPartner = world.GetCountry(firstLink.PartnerId);
+                firstLink.PlayerTariffOverride = TradeSystem.GetOwnTariffRate(playerCountry, firstPartner, world.TradeBlocs);
+                var tradeCoverageBill = new TradePolicyBill { NewBaseTariffRate = playerCountry.BaseTariffRate };
+                tradeCoverageBill.PartnerTariffOverrides[firstLink.PartnerId] = 5f;
+                sim.IntroduceTradeBill(player, tradeCoverageBill);
+            }
+
             // Law system MVP slice: an already-enacted law (exercises Country.EnactedLaws' plain
             // List<T> round trip - the World layer, not the pending-state layer) plus a pending
             // LawBill for a DIFFERENT law (exercises the nested CountryId -> LawId dictionary the

@@ -19,6 +19,11 @@ namespace PoliSim.Simulation
         public float UnemploymentBenefitCost;
         public float InterestOnDebt;
         public float TariffRevenue;
+        /// <summary>Pass 6 (2026-08-27): the tariff pass-through that ACTUALLY printed over the period
+        /// that just closed, in inflation points (FiscalPeriod.AppliedTariffPassThroughPp on the boundary
+        /// day) - the change in the tariff take the previous boundary planned, as a price-level term for
+        /// one year, net of the [0, MaxInflationPercent] clamp. The Trade stats line reads it.</summary>
+        public float TariffPassThroughPp;
         public float WelfareCost;
         public float SwfContribution;
         public float SwfReturns;
@@ -41,6 +46,24 @@ namespace PoliSim.Simulation
         /// </summary>
         public float TotalSpending;
         public float BudgetBalance;
+    }
+
+    /// <summary>
+    /// Pass 6 (2026-08-27): what a Trade bill DRAFT would do at the next boundary, from
+    /// SimulationManager.EstimateTradeBill - see it for how each figure is produced (the real
+    /// functions on throwaway clones, never a hand sum). Display-layer only; nothing here is ever
+    /// applied.
+    /// </summary>
+    public class TradeBillEstimate
+    {
+        /// <summary>The take one period would yield at the bill's rates (ComputeTariffRevenue on the clone the bill was applied to).</summary>
+        public float Take;
+        /// <summary>Take at the bill's rates minus take at the standing rates.</summary>
+        public float TakeDelta;
+        /// <summary>TradeBalance at the bill's rates minus at the standing rates - the partners' mirrored tariffs included, the currency factor inside.</summary>
+        public float TradeBalanceDelta;
+        /// <summary>The price pass-through the boundary would plan, in inflation points for the coming year.</summary>
+        public float PassThroughPp;
     }
 
     /// <summary>
@@ -303,7 +326,10 @@ namespace PoliSim.Simulation
                     float openGdp = macroPeriod.GdpAtPeriodOpen > 0f ? macroPeriod.GdpAtPeriodOpen : gdpBeforeMacroStep;
                     float annualizedDailyGrowth = (country.State.GDP - gdpBeforeMacroStep) / Mathf.Max(openGdp, 1f) * 100f * DaysPerTurn;
                     MacroSystem.ApplyOkunsLawDaily(country, annualizedDailyGrowth, macroPeriod.UnemploymentAtPeriodOpen);
-                    MacroSystem.ApplyPhillipsCurveInflation(country);
+                    // Pass 6: the period's tariff pass-through rides the level map for the whole
+                    // period (a price-LEVEL stance planned at the boundary); what actually printed
+                    // is kept on the period so the boundary's expectations step can look through it.
+                    macroPeriod.AppliedTariffPassThroughPp = MacroSystem.ApplyPhillipsCurveInflation(country, macroPeriod.PlannedTariffPassThroughPp);
                     // Expectations deliberately absent here - a boundary stance; see MacroSystem's
                     // Phase 5 block comment for the measured failure of the daily form.
 
@@ -609,6 +635,22 @@ namespace PoliSim.Simulation
             /// remainder", self-correcting at the next boundary - the WageGrowthGapAtPeriodOpen
             /// posture, no guard needed.</summary>
             public float PlannedTariffRevenue;
+
+            /// <summary>Pass 6 (2026-08-27): the tariff pass-through planned for this period -
+            /// TradeCosts.ImportPricePassThrough x 100 x (this boundary's take - the closing period's
+            /// planned take) / GDP, in inflation points, read every day by the Phillips level map. Exactly
+            /// 0 when no rate changed (the same pure sum on unchanged state). An old-save zero degrades to
+            /// "no pass-through for the loaded period's remainder" - the WageGrowthGapAtPeriodOpen posture,
+            /// no guard.</summary>
+            public float PlannedTariffPassThroughPp;
+
+            /// <summary>Pass 6: what of the planned pass-through ACTUALLY printed on the latest day
+            /// (ApplyPhillipsCurveInflation's return - the clamped print with the term minus the clamped
+            /// print without it). The boundary reads the closing day's value into the FiscalTurnReport and
+            /// into ApplyInflationExpectations' look-through, so a cut whose negative wedge floors the
+            /// print at 0 cannot ratchet expectations. Overwritten daily; nothing reads it between the
+            /// boundary and the next day, so ResetAccrual leaves it alone.</summary>
+            public float AppliedTariffPassThroughPp;
 
             /// <summary>
             /// GetFiscalReactionMultiplier as it stood when this period opened, held FIXED for its whole
@@ -1689,7 +1731,7 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            float direction = ParliamentSystem.GetTradeBillDirection(country, bill);
+            float direction = ParliamentSystem.GetTradeBillDirection(country, bill, _world);
             bool passed = ParliamentSystem.WouldBillPass(country, direction);
             ParliamentSystem.RecordDivision(country, "Trade bill", direction, passed, CurrentDate);
             float approvalBeforeTradeBill = country.State.ApprovalRating;
@@ -2097,6 +2139,7 @@ namespace PoliSim.Simulation
                 UnemploymentBenefitCost = period.AccruedUnemploymentBenefitCost,
                 InterestOnDebt = period.AccruedInterestOnDebt,
                 TariffRevenue = period.AccruedTariffRevenue,
+                TariffPassThroughPp = period.AppliedTariffPassThroughPp,
                 WelfareCost = period.AccruedWelfareCost,
                 SwfContribution = period.AccruedSwfContribution,
                 SwfReturns = period.AccruedSwfReturns,
@@ -2121,6 +2164,13 @@ namespace PoliSim.Simulation
                 ? (state.GDP - period.GdpAtPeriodOpen) / Mathf.Max(period.GdpAtPeriodOpen, 1f) * 100f
                 : 0f;
 
+            // Pass 6: the closing period's tariff pass-through as it actually printed on the boundary
+            // day, and the take it planned - both captured before the re-plan below overwrites the
+            // period. The expectations step runs AFTER the re-plan and must look through the CLOSING
+            // period's term, not the coming one's (the ordering trap, named).
+            float closingAppliedTariffPassThroughPp = period.AppliedTariffPassThroughPp;
+            float closingPlannedTariffRevenue = period.PlannedTariffRevenue;
+
             // Open the next period. The SWF return is drawn ONCE here and accrued daily - see
             // FiscalPeriod's doc comment for that decision and why daily draws were rejected. The draw
             // sits at the same point in ApplyDomesticPolicy the old ApplyReturns call did, so the
@@ -2135,6 +2185,15 @@ namespace PoliSim.Simulation
                 : 0f;
             // Pass 5: this boundary's tariff figure (rates and volumes as they stand after this
             // turn's tariff decisions resolved) is the coming period's tariff flow.
+            // Pass 6: the CHANGE in that figure against the closing period's plan is the coming
+            // period's price pass-through (TradeCosts.ImportPricePassThrough) - the tariff-weighted
+            // import-price change, as inflation points for one year, over the GDP this period opens
+            // at. Exactly 0f when no rate changed: the same pure sum on unchanged state. A branch, not
+            // a multiply, so the wired-inert control is the old code to the bit.
+            period.PlannedTariffPassThroughPp = TradeCosts.ImportPricePassThrough > 0f
+                ? TradeCosts.ImportPricePassThrough * TradeCosts.PassThroughMeasurementScale
+                    * 100f * (tariffRevenue - closingPlannedTariffRevenue) / Mathf.Max(state.GDP, 1f)
+                : 0f;
             period.PlannedTariffRevenue = tariffRevenue;
 
             // Read AFTER 121 days of accrual have finished moving the debt stock, so the stance the next
@@ -2167,7 +2226,10 @@ namespace PoliSim.Simulation
             // expectations anchor to the period's closing print, and every daily form measurably
             // fails the equivalence bar (see MacroSystem's Phase 5 block comment). Reads the
             // boundary day's inflation, exactly what the turn regime always read.
-            MacroSystem.ApplyInflationExpectations(state);
+            // Pass 6: NET of the tariff pass-through that actually printed on that day - the closing
+            // period's applied term, captured above before the re-plan - so a price-level wedge never
+            // enters the rate expectations (see ApplyInflationExpectations). Named, never positional.
+            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: closingAppliedTariffPassThroughPp);
 
             // Step 2: the formula keeps its exact pre-ledger body (the observation gate measured
             // a one-ulp codegen shift when recording lived inside it); the recorder recomputes
@@ -2248,6 +2310,13 @@ namespace PoliSim.Simulation
             // Pass 5: the clone's tariff figure is threaded into its fiscal step below, exactly as the
             // real boundary plans it - the preview's NetBudgetImpact stays a true reading.
             float previewTariffRevenue = TradeSystem.ApplyTradeEffects(previewCountry, _world);
+            // Pass 6: the price pass-through this turn's tariff decision would plan, against the take
+            // the current period planned - the boundary's own expression (a preview seeds nothing:
+            // StandingPlannedTariffRevenue reads the period with TryGetValue).
+            float previewTariffPassThroughPp = TradeCosts.ImportPricePassThrough > 0f
+                ? TradeCosts.ImportPricePassThrough * TradeCosts.PassThroughMeasurementScale
+                    * 100f * (previewTariffRevenue - StandingPlannedTariffRevenue(countryId)) / Mathf.Max(gdpBeforeThisTurn, 1f)
+                : 0f;
 
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
@@ -2323,8 +2392,8 @@ namespace PoliSim.Simulation
 
             float actualGrowthRate = (state.GDP - gdpBeforeThisTurn) / Mathf.Max(gdpBeforeThisTurn, 1f) * 100f;
             MacroSystem.ApplyOkunsLaw(previewCountry, actualGrowthRate);
-            MacroSystem.ApplyPhillipsCurveInflation(previewCountry);
-            MacroSystem.ApplyInflationExpectations(state);
+            float previewAppliedTariffPassThroughPp = MacroSystem.ApplyPhillipsCurveInflation(previewCountry, previewTariffPassThroughPp);
+            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: previewAppliedTariffPassThroughPp);
             MacroSystem.ApplyPovertyRate(previewCountry);
             MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
             MacroSystem.ApplyOrganizedCrimeIndex(previewCountry);
@@ -2353,6 +2422,46 @@ namespace PoliSim.Simulation
                 CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
                 SwfContributionEstimate = swfContribution,
                 SwfReturnsEstimate = swfReturns
+            };
+        }
+
+        /// <summary>The tariff take the country's CURRENT fiscal period planned (what the next boundary's pass-through is measured against), read with TryGetValue so a preview or an estimate never seeds a period; before the first period exists, the seed take from the same pure function.</summary>
+        private float StandingPlannedTariffRevenue(CountryId countryId)
+        {
+            return _fiscalPeriods.TryGetValue(countryId, out FiscalPeriod period)
+                ? period.PlannedTariffRevenue
+                : TradeSystem.ComputeTariffRevenue(_world.GetCountry(countryId), _world);
+        }
+
+        /// <summary>
+        /// Pass 6 (2026-08-27): what a Trade bill DRAFT would do at the next boundary, for the Trade
+        /// bill card - computed by the REAL functions on throwaway clones, never a hand sum (pass 5's
+        /// own lesson on the Budget "Net" line): one clone at the standing rates, one with the bill
+        /// applied through the same delegate a passed bill uses, both run through
+        /// TradeSystem.ApplyTradeEffects (so the currency factor and the partners' mirrored rates are
+        /// inside the figure) and ComputeTariffRevenue; the pass-through is the boundary's own
+        /// expression against the take the current period planned. Drafts never reach PreviewTurn
+        /// (BuildPlayerDecision carries no tariff terms), so this is the one surface a draft's cost can
+        /// be read from. Side-effect-free: clones only, the real World untouched.
+        /// </summary>
+        public TradeBillEstimate EstimateTradeBill(CountryId countryId, TradePolicyBill bill)
+        {
+            Country real = _world.GetCountry(countryId);
+            Country standing = ClonePreviewCountry(real);
+            Country proposed = ClonePreviewCountry(real);
+            ApplyTradeBillEffects(proposed, bill);
+
+            float standingTake = TradeSystem.ApplyTradeEffects(standing, _world);
+            float proposedTake = TradeSystem.ApplyTradeEffects(proposed, _world);
+            return new TradeBillEstimate
+            {
+                Take = proposedTake,
+                TakeDelta = proposedTake - standingTake,
+                TradeBalanceDelta = proposed.State.TradeBalance - standing.State.TradeBalance,
+                PassThroughPp = TradeCosts.ImportPricePassThrough > 0f
+                    ? TradeCosts.ImportPricePassThrough * TradeCosts.PassThroughMeasurementScale
+                        * 100f * (proposedTake - StandingPlannedTariffRevenue(countryId)) / Mathf.Max(real.State.GDP, 1f)
+                    : 0f
             };
         }
 
@@ -3496,6 +3605,9 @@ namespace PoliSim.Simulation
                 // Pass 5: the opening period's tariff flow, from the same pure function the boundary
                 // reports - so turn 1 accrues the seed rates' take rather than a period of nothing.
                 PlannedTariffRevenue = TradeSystem.ComputeTariffRevenue(country, _world),
+                // Pass 6: no previous boundary, so no tariff change to pass through.
+                PlannedTariffPassThroughPp = 0f,
+                AppliedTariffPassThroughPp = 0f,
                 PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
                 GdpAtPeriodOpen = country.State.GDP,
                 UnemploymentAtPeriodOpen = country.State.Unemployment,

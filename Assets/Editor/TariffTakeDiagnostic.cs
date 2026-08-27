@@ -153,6 +153,11 @@ namespace PoliSim.EditorTools
         /// override at the cap against a same-seed no-policy control; the debt path difference is the
         /// lever's fiscal reach under whichever books are in force (nothing under the pre-pass-5
         /// accumulator, the whole take under the routed books).
+        ///
+        /// Pass 6 (2026-08-27): partners now mirror an override's excess and the wedge passes to prices
+        /// (TradeCosts), so this section measures a retaliated world at any build with the constants on.
+        /// Its recorded figures (Sweden 33.8 -> 24.7, partners -0.77/-0.47/-0.02%) are the PRE-PASS-6
+        /// books, kept as pass 5's record; TariffCostsDiagnostic owns the pass-6 measurement.
         /// </summary>
         private static void MeasureExploit()
         {
