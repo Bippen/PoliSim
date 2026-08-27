@@ -54,6 +54,25 @@ namespace PoliSim.UI
         /// <summary>Text sitting on the DESK rather than on paper - the interrupt banner, and only that.</summary>
         public static readonly Color TextOnDesk = Hex(0xF0E7D8);
 
+        // --- §A.2 tokens that had no constant at HEAD (re-derived 2026-08-28, omnibus R-K10: the
+        // 2026-08-27 sweep said three; against this file it is FIVE - ruleRow, borderPaper, borderPlate,
+        // mutedInk, deskCaption - plus the RUNNING plate's own type ink from §A.6). Two of them were
+        // already in use as bare literals (#C9BA9B in CountrySelectorScreen and SigningScreen).
+        /// <summary>§A.2 `ruleRow` — the 1px ledger row separator.</summary>
+        public static readonly Color RuleRow = Hex(0xD5C8AB);
+        /// <summary>§A.2 `borderPaper` — the paper panel edge.</summary>
+        public static readonly Color BorderPaper = Hex(0xCBBC9D);
+        /// <summary>§A.2 `borderPlate` — the plate / tile edge (the RUNNING status plate, the disabled button).</summary>
+        public static readonly Color BorderPlate = Hex(0xC9BA9B);
+        /// <summary>§A.2 `mutedInk` — disabled row ink and disabled button text.</summary>
+        public static readonly Color MutedInk = Hex(0x9A917D);
+        /// <summary>§A.2 `deskCaption` — mono annotations on the desk ground.</summary>
+        public static readonly Color DeskCaption = Hex(0x8D7D5F);
+        /// <summary>§A.6's RUNNING status text — type on the `#EDE2CB` plate (`Tile`), a shade lighter than inkText.</summary>
+        public static readonly Color TextOnPlate = Hex(0x3D372E);
+        /// <summary>§A.6's disabled speed-button face fill (`#DDD2B8`) — the procedural fallback when `ui_btn_disabled` is missing.</summary>
+        public static readonly Color DisabledFace = Hex(0xDDD2B8);
+
         // --- Semantic inks. ---
         public static readonly Color Good = Hex(0x3E8A5F);
         public static readonly Color Caution = Hex(0xBE8A00);

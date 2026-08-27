@@ -684,6 +684,12 @@ namespace PoliSim.UI
         private GUIStyle _gameOverStyle;
         private GUIStyle _cardKindStyle;
 
+        /// <summary>§A.6's RUNNING status plate (built 2026-08-28, omnibus roadmap item 4): the
+        /// `#EDE2CB` plate the one always-visible status line sits on while the clock runs - the
+        /// quiet twin of `_holdBannerStyle`'s desk plate. Its left padding is widened each frame for the
+        /// green lamp exactly as the hold plate's is for the amber one (RescaleStylesToScreen).</summary>
+        private GUIStyle _runningPlateStyle;
+
         // Master Sequence step 5e, Phase C batch 2: decision-card chrome. Fill sits slightly lighter
         // than the app background so a card reads as raised without a border, matching PoliSimTheme's
         // own Card token rather than inventing a second card color for this one screen.
@@ -2118,6 +2124,22 @@ namespace PoliSim.UI
                 _holdBannerStyle.normal.textColor = PoliSimTheme.TextOnDesk;
             }
 
+            // §A.6's RUNNING state (omnibus 2026-08-28, roadmap item 4): `#EDE2CB` plate on `1px
+            // #C9BA9B`, an 8px `#3E8A5F` dot with no glow, type `#3D372E`. The plate is the same
+            // procedural rounded card every tile uses (no sprite was drawn for it - the board draws a
+            // flat plate); the 1px border and the lamp are overlays DrawRunningStatusPlate paints on
+            // Repaint, so this stays one Label control like its HELD twin. Body type, not the banner's
+            // escalated size: the running readout is a quiet state, the held one is the alarm.
+            _runningPlateStyle = new GUIStyle(UiPalette.BuildCardStyle(PoliSimTheme.Tile, 3, HoldBannerPadY, 0))
+            {
+                wordWrap = true,
+                alignment = TextAnchor.MiddleLeft,
+                fontStyle = FontStyle.Normal
+            };
+            PoliSimTheme.WithBody(_runningPlateStyle);
+            _runningPlateStyle.padding = new RectOffset(HoldBannerPadX, HoldBannerPadX, HoldBannerPadY, HoldBannerPadY);
+            _runningPlateStyle.normal.textColor = PoliSimTheme.TextOnPlate;
+
             // ⚠ v2.0 CHROME, 2026-08-12 — the desk calendar (see DrawCalendarPad). The plate is
             // real-colour furniture (drawn untinted, §3.0a), 9-sliced at half the manifest's
             // 18/18/44/22 @2x — the deep top inset is the baked month band above the rule, the bottom
@@ -2385,6 +2407,11 @@ namespace PoliSim.UI
                 // plate loaded - the degraded plain-label form keeps its inherited padding.
                 _holdBannerStyle.padding.left = HoldBannerPadX + HoldBannerLampSize() + HoldBannerLampGap;
             }
+
+            // The RUNNING plate: body type, and the same lamp reserve rule as the hold plate above
+            // (one accessor, RunningLampSize, read here and by DrawRunningStatusPlate).
+            _runningPlateStyle.fontSize = labelFontSize;
+            _runningPlateStyle.padding.left = HoldBannerPadX + RunningLampSize() + HoldBannerLampGap;
 
             // The calendar pad's type, at the board's own ratios to body type (month 8.5 / day 26 /
             // mono 9 beside 12.5 body — §A.6). The pad itself scales from the same labelFontSize base
@@ -4031,7 +4058,9 @@ namespace PoliSim.UI
             bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
             if (!isPaused)
             {
-                return "Clock running";
+                // Omnibus 2026-08-28 (roadmap item 4 allowed the rename with the plate): "Time running"
+                // - the desk has a calendar beside it, not a clock, and the HELD twin says "TIME PAUSED".
+                return "Time running";
             }
 
             var reasons = new List<string>();
@@ -4190,9 +4219,44 @@ namespace PoliSim.UI
             PoliSimTheme.Pill(dotRect, PoliSimTheme.DraftOnDesk);
         }
 
+        /// <summary>The RUNNING lamp's diameter - the board's 8px dot beside 10.5px type, as a ratio of
+        /// the plate's own (body) type size. ONE ACCESSOR, READ BY BOTH SITES: RescaleStylesToScreen
+        /// reserves the left padding from it and DrawRunningStatusPlate draws the dot into it.</summary>
+        private int RunningLampSize()
+        {
+            return Mathf.RoundToInt(_runningPlateStyle.fontSize * (8f / 10.5f));
+        }
+
+        /// <summary>
+        /// §A.6's RUNNING state, B8's second carrier (built 2026-08-28, omnibus roadmap item 4): one
+        /// Label on the `#EDE2CB` plate, its `1px #C9BA9B` edge and the `8px #3E8A5F` lamp painted
+        /// over it on Repaint - overlays, not controls, so the paused/running switch in
+        /// DrawCalendarAndSpeedControls stays a style-and-content change with the control count fixed
+        /// at one. No glow, by the spec's own word. The dot centres on the first text line like the
+        /// hold lamp does.
+        /// </summary>
+        private void DrawRunningStatusPlate(string text)
+        {
+            GUILayout.Label(text, _runningPlateStyle);
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Rect plate = GUILayoutUtility.GetLastRect();
+            PoliSimTheme.RoundedCard(plate, new Color(0f, 0f, 0f, 0f), PoliSimTheme.BorderPlate, 3f);
+            float lamp = RunningLampSize();
+            var dotRect = new Rect(
+                plate.x + HoldBannerPadX,
+                plate.y + HoldBannerPadY + (_runningPlateStyle.lineHeight - lamp) * 0.5f,
+                lamp,
+                lamp);
+            PoliSimTheme.Pill(dotRect, PoliSimTheme.Good);
+        }
+
         private float CalendarAndSpeedControlsHeight(string statusText, bool isPaused, float columnWidth)
         {
-            GUIStyle statusStyle = isPaused ? _holdBannerStyle : _labelStyle;
+            GUIStyle statusStyle = isPaused ? _holdBannerStyle : _runningPlateStyle;
             // v2.0 chrome: the top row is now [calendar pad | status], so the status wraps into the
             // width REMAINING beside the pad, and the row is as tall as the taller of the two. The
             // same subtraction the drawing performs, from the same accessors — measuring at the full
@@ -4225,15 +4289,17 @@ namespace PoliSim.UI
             }
             else
             {
-                GUILayout.Label(statusText, _labelStyle);
+                DrawRunningStatusPlate(statusText);
             }
             GUILayout.EndHorizontal();
 
+            // B5 (§A.6): while time is held every non-Pause speed button wears the disabled face -
+            // rendered, never omitted, so the row's control count is the same in both states.
             GUILayout.BeginHorizontal();
-            DrawSpeedButton("Pause", GameSpeed.Paused);
-            DrawSpeedButton("1x", GameSpeed.Normal);
-            DrawSpeedButton("2x", GameSpeed.Fast);
-            DrawSpeedButton("3x", GameSpeed.VeryFast);
+            DrawSpeedButton("Pause", GameSpeed.Paused, isPaused);
+            DrawSpeedButton("1x", GameSpeed.Normal, isPaused);
+            DrawSpeedButton("2x", GameSpeed.Fast, isPaused);
+            DrawSpeedButton("3x", GameSpeed.VeryFast, isPaused);
 
             // SAVE/LOAD UI (item 8's menu pass): the discoverable path to the saves screen, in the
             // one panel visible on every tab. Enabled UNCONDITIONALLY on purpose - the caller wraps
@@ -4255,14 +4321,25 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        private void DrawSpeedButton(string label, GameSpeed speed)
+        /// <summary>One speed button. <paramref name="timeHeld"/> (B5, built 2026-08-28): while an
+        /// interrupt holds the clock, the non-Pause buttons wear `ButtonKind.Disabled` (`ui_btn_disabled`,
+        /// mutedInk text) and are GUI.enabled-off for the click, composed with the ambient state - the
+        /// same control, same order, every frame. The selected button keeps its brass when it is Pause;
+        /// a held clock at "1x" is exactly the state the disabled face exists to show.</summary>
+        private void DrawSpeedButton(string label, GameSpeed speed, bool timeHeld)
         {
             bool selected = _gameSpeed == speed;
-            GUIStyle style = UiPalette.BuildButtonStyle(_buttonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
+            bool disabled = timeHeld && speed != GameSpeed.Paused;
+            UiPalette.ButtonKind kind = disabled ? UiPalette.ButtonKind.Disabled
+                : selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral;
+            GUIStyle style = UiPalette.BuildButtonStyle(_buttonStyle, kind);
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && !disabled;
             if (GUILayout.Button(label, style))
             {
                 _gameSpeed = speed;
             }
+            GUI.enabled = ambientEnabled;
         }
 
         private void AdvanceTurn()

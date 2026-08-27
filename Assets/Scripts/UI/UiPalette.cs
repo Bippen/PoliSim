@@ -45,7 +45,13 @@ namespace PoliSim.UI
             /// <summary>The currently-selected right-column tab, tinted brighter than Tab.</summary>
             TabSelected,
             /// <summary>The single most important action on screen (Advance Turn).</summary>
-            Primary
+            Primary,
+            /// <summary>§A.6 / B5 (built 2026-08-28, omnibus R-K6): a control that is RENDERED but not
+            /// available right now - the non-Pause speed buttons while time is held. Wears
+            /// `ui_btn_disabled` (real-colour plate, drawn untinted), `mutedInk` text, never bold; the
+            /// procedural fallback is the spec's `#DDD2B8` face. Distinct from GUI.enabled dimming,
+            /// which this project used in its place from 2026-08-12 until the loader landed.</summary>
+            Disabled
         }
 
         // --- Signed-change convention: the ONE green/red pair every delta in the UI uses. ---
@@ -449,22 +455,36 @@ namespace PoliSim.UI
             Color baseColor = GetButtonBaseColor(kind, area);
             var style = new GUIStyle(baseStyle);
 
-            // v2.0: brass for the emphatic kinds, paper for the rest. The pack's disabled plate
-            // (ui_btn_disabled) is NOT loaded here - GUI.enabled dimming over brass/paper stands in for it
-            // (the 2026-08-12 "served by current treatment, revivable" ruling); the held-state speed
-            // buttons that the spec says should wear it are a roadmap item (corrected 2026-08-27).
-            // These sprites are REAL-COLOUR paper furniture rather than white-on-alpha, so they are drawn
-            // untinted for Neutral/TabUnselected and only lightly tinted where an area hue must read
-            // through - the opposite of the old chrome pack, which was tintable by construction.
+            // v2.0: brass for the emphatic kinds, paper for the rest. These sprites are REAL-COLOUR paper
+            // furniture rather than white-on-alpha, so they are drawn untinted for Neutral/TabUnselected
+            // and only lightly tinted where an area hue must read through - the opposite of the old
+            // chrome pack, which was tintable by construction.
+            // Omnibus 2026-08-28 (R-K6, closing roadmap item 4's B5 bullet): the pack's disabled plate
+            // `ui_btn_disabled` gets its loader here at last - the Disabled kind wears it untinted (a
+            // real-colour plate, §3.0a), with no hover/active variation because a disabled control has
+            // no states to show. GUI.enabled dimming over brass/paper had stood in for it since the
+            // 2026-08-12 "served by current treatment, revivable" ruling.
+            bool disabled = kind == ButtonKind.Disabled;
             bool emphatic = kind == ButtonKind.Primary || kind == ButtonKind.TabSelected || kind == ButtonKind.Implement || kind == ButtonKind.Remove;
-            Texture2D normalSprite = IconLibrary.GetChrome(emphatic ? "ui_btn_brass" : "ui_btn_paper");
+            Texture2D normalSprite = IconLibrary.GetChrome(disabled ? "ui_btn_disabled" : emphatic ? "ui_btn_brass" : "ui_btn_paper");
             Texture2D pressedSprite = normalSprite;
             Texture2D hoverSprite = normalSprite;
 
-            style.normal.background = GetTintedChrome(normalSprite, baseColor) ?? GetSolidTexture(baseColor);
-            style.hover.background = GetTintedChrome(hoverSprite, Lighten(baseColor, 0.12f)) ?? GetSolidTexture(Lighten(baseColor, 0.2f));
-            style.active.background = GetTintedChrome(pressedSprite, Darken(baseColor, 0.14f)) ?? GetSolidTexture(Darken(baseColor, 0.25f));
-            style.focused.background = style.normal.background;
+            if (disabled)
+            {
+                Texture2D face = GetTintedChrome(normalSprite, Color.white) ?? GetSolidTexture(baseColor);
+                style.normal.background = face;
+                style.hover.background = face;
+                style.active.background = face;
+                style.focused.background = face;
+            }
+            else
+            {
+                style.normal.background = GetTintedChrome(normalSprite, baseColor) ?? GetSolidTexture(baseColor);
+                style.hover.background = GetTintedChrome(hoverSprite, Lighten(baseColor, 0.12f)) ?? GetSolidTexture(Lighten(baseColor, 0.2f));
+                style.active.background = GetTintedChrome(pressedSprite, Darken(baseColor, 0.14f)) ?? GetSolidTexture(Darken(baseColor, 0.25f));
+                style.focused.background = style.normal.background;
+            }
 
             if (normalSprite != null)
             {
@@ -475,9 +495,9 @@ namespace PoliSim.UI
                 style.border = new RectOffset(10, 10, 10, 14);
             }
 
-            // Ink on paper, cream on brass. The old value was white for everything, which was right on a
-            // dark ground and unreadable on a paper button.
-            Color textColor = emphatic ? PoliSimTheme.Hex(0xF2EADB) : PoliSimTheme.TextPrimary;
+            // Ink on paper, cream on brass, mutedInk on the disabled plate (§A.2/§A.6). The old value was
+            // white for everything, which was right on a dark ground and unreadable on a paper button.
+            Color textColor = disabled ? PoliSimTheme.MutedInk : emphatic ? PoliSimTheme.Hex(0xF2EADB) : PoliSimTheme.TextPrimary;
             style.normal.textColor = textColor;
             style.hover.textColor = textColor;
             style.active.textColor = textColor;
@@ -723,6 +743,9 @@ namespace PoliSim.UI
                     return PoliSimTheme.StockOff;
                 case ButtonKind.TabSelected:
                     return GetAreaColor(area);
+                case ButtonKind.Disabled:
+                    // The spec's `#DDD2B8` face - the procedural fallback when ui_btn_disabled is missing.
+                    return PoliSimTheme.DisabledFace;
                 case ButtonKind.Neutral:
                 default:
                     return PoliSimTheme.Card;
