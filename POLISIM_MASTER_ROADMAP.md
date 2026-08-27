@@ -171,13 +171,14 @@ forward):**
 - **DONE** — Master Sequence I (items 1–9) and Master Sequence II Steps 1, 2, 3 and 5; Round 4; the
   fiscal-engine arc; the law system at 100 of 100 in two categories; the ruled build order (five passes)
   and the shelf's first item, tariff costs (pass 6). Records: `COMPLETED.md` §§27–31.
-- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the send package (Elias's send); **§A**
+- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the send package (the request SENT
+  2026-08-27, hash-verified; the courtesy note alone waits on Elias's send); **§A**
   the ruling queue Q6–Q10 (Elias, at named triggers); **§B** three seed quality debts (a database
   session); **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including
   election night (1h), Step 6, Riksbank-B, the stranded branch and the party marks; **§D1** the eight
-  outstanding cabinet portraits (Design, behind §S); **§E2/§E3/§E4** the mark accounting, the raster
-  diff and the icon promotion; **§V** the built-but-unconfirmed surfaces (Elias's eyes); **§P** the
-  three felt verdicts (a playtest).
+  outstanding cabinet portraits (Design, behind §S); **§E2/§E4** the mark accounting and the icon
+  promotion (the raster diff, E3, is NOT Design's — it is live item 7 below); **§V** the
+  built-but-unconfirmed surfaces (Elias's eyes); **§P** the three felt verdicts (a playtest).
 - **LIVE** — the list below, in order.
 
 ---
@@ -266,10 +267,6 @@ Re-derived 2026-08-27 from every sprite's call site; the counts are cached value
 - **7 chrome names with no load call** — `ui_frame_double`, `ui_btn_disabled` (item 4), `ui_stamp_draft`,
   `ui_portrait_frame_oval`, `ui_btn_paper_canvas` (+`_hover`, `_pressed`); the 2026-08-12 "revivable by
   ruling" set plus the Canvas paper button the pilot never needed.
-- **The 11 superseded chrome SVG sources** under `Chrome/Source/` survived Track 3 (`10f713e` removed
-  the PNGs only) while CLAUDE.md's Track-3 entry says "deleted from disk": delete them, or add a line to
-  `ChromeManifest.txt`'s `!` block recording that the sources are retained deliberately. One-line
-  correction either way.
 - **Two coverage checks that do not exist:** `PortraitCoverageCheck` (enumerate
   `CabinetSystem.CandidatePool` over all six portfolios + the Fed chair pool + the sitting chair's seed
   name) and `AreaIconCoverageCheck` — no check today enumerates portraits, area icons or emblems, so
@@ -277,9 +274,9 @@ Re-derived 2026-08-27 from every sprite's call site; the counts are cached value
 - **The sitting turn-0 Fed chair** (Harriet Ellsworth, `WorldFactory.cs`, deliberately outside the
   candidate pool) has no portrait and no call site asks for one: decide the sitting-chair row's
   treatment. If it gains a portrait, that is one new asset and a fresh Design ask.
-- **Three dead widgets** — `PoliSimWidgets.SupportBar`, `StandingDraftPair`, `DraftTrack` — rejected
-  2026-08-01 (`COMPLETED.md` §29) and still on disk with zero callers. Remove, keeping the rejection
-  record.
+
+*(Two items left this list on 2026-08-27 by Elias's ruling: the eleven superseded SVG sources are
+deleted, and the three dead widgets are deleted — `COMPLETED.md` §§29/33.)*
 
 ### 6. The label-clipping CLASS — open as a watch item (P4)
 
@@ -291,6 +288,19 @@ wrap above. The sibling survey (constant-sized chrome under wrappable labels) is
 CLAUDE.md. **The class closes only by a capture-matrix pass at all supported sizes showing no new
 instance**; rule 15's paired-detector correction is its standing discipline. Instance history:
 `COMPLETED.md` §§17/32.
+
+### 7. The rasterization diff — our half (moved here from the blocked register 2026-08-27, Elias's ruling)
+
+Design asked (2026-08-11) that their strip-cut PNGs be diffed against our own rasterization once before
+the pipeline is trusted; **Design's half closed 2026-08-17** (six per-state button PNGs re-rasterized
+fresh from SVG, pixel-diffed 6/6 identical). Ours is a tooling pass, not a wait: `StripCutDiffCheck`
+exists with the full tolerant-compare machinery, and a rasterizer exists on this machine (Unity's
+built-in vectorgraphics module tessellates every `Chrome/Source/` SVG at import) — but the module's
+`RenderSpriteToTexture2D` path yields a BLANK texture under the batch harness, probed and viewed rather
+than inferred (never attributable to an SVG `<pattern>` parse limit — `ui_slider_track`'s features are
+`linearGradient` + `currentColor`; corrected 2026-08-26). **Closes when either a render path in this
+repo produces comparable pixels or an external rasterizer is installed here.** It had sat under "Waiting
+on Claude Design" — a prerequisite attributed to the wrong supplier is one that lapses.
 
 ---
 

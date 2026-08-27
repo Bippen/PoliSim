@@ -1787,9 +1787,10 @@ implement) and `StandingDraftPair`/`DraftTrack` (hardcoded offsets ignoring `rec
 fragile screen in the project) encoded mechanics and layout this project does not have and were
 rejected only after being checked against the real model — in both cases the roadmap had already
 recommended them before that check. `Portrait` was superseded by real art. **Treat a plausible-sounding
-component as a proposal to verify against the actual code, never as a fit already established.** ⚠ The
-three rejected widgets still exist as dead code in `PoliSimWidgets.cs` with zero callers — their
-removal is a small live item in the roadmap, not covered by this record.
+component as a proposal to verify against the actual code, never as a fit already established.** The
+three rejected widgets sat in `PoliSimWidgets.cs` as dead code with zero callers for 26 days and were
+**deleted 2026-08-27 by Elias's ruling** (git history holds them at `483f03e`; the three `GameController`
+comments that cited them as the road not taken now say so in the past tense).
 
 **5f** (the aesthetic restyling pass) was folded into 5e on 2026-07-31, and the original step-5 plan
 (pilot on Tax Policy, then roll out to the remaining seven with the identical pattern) was superseded
@@ -2129,7 +2130,20 @@ zips in `AssetPackArchive/` (gitignored), every sprite entry accounted for by th
 README is a 2026-08-02 snapshot of seven packs — the check, not the README, is the record, and a stray
 `trip-2026-08-18.pdf` sits there that is not a delivery. **`POLISIM_R4_4_PREREPORT.md` stays on disk
 until D1's nine land** (§22's ruling; its §4 collision search is cited by the live request); its
-"nothing has been built" header describes 2026-08-17 and now says so.
+"nothing has been built" header describes 2026-08-17 and now says so. **The eleven superseded chrome
+SVG sources were deleted 2026-08-27 by Elias's ruling** — Track 3 had removed the PNGs only; the
+per-state SVGs Design shipped supersede the strips, and keeping both was the two-tables problem in
+another costume. `ChromeManifest.txt`'s `!` rows stay (the archived zips still carry the old `.svg`
+entries, matched by stem), which is why the deletion cannot turn `DeliveredAssetCheck` red — and did
+not: re-run after the deletion, every pack `ok`, the eleven names' `.svg` entries logged as
+superseded-by-ruling beside their `.png` twins, `ChromeV2CoverageCheck` 50/50 both directions.
+
+**The seventh request SENT 2026-08-27** (Elias's instruction; Claude Code via `DesignSync`): the
+single codebase-derived request, in place at `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` and at the new
+dated path `send/design_request_2026-08-27/` with its attachments manifest, digests and the eight
+captures; both readbacks hash-identical to the repo file (`9a464915…24eec` / `bf7c2263…7cfb`). The
+lesson that shaped the two-path send: an in-place overwrite of a file Design has already read produces
+nothing that looks new — it cost a round-trip on the previous send.
 
 **Requests fulfilled and retired from the request doc (2026-08-27):** the pre-v2.0 "eleven hues as they
 stand today" table (§3.0 — none of its fifteen values exists at HEAD; the aged v2.0 inks are

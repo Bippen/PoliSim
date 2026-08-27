@@ -15,31 +15,37 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 
 | entry | waiting on | gate |
 |---|---|---|
-| §S — the send package | **Elias — send** | the E2 convention: sending is Elias's |
+| §S — the send package | ✅ **SENT 2026-08-27** (the request, hash-verified, to Design's project); the 1j courtesy note alone still waits on **Elias — send** | the E2 convention: sending is Elias's — this send was on his instruction |
 | §A — the ruling queue Q6–Q10; F2 | **Elias — a decision** | each at its own named trigger |
 | §B — three seed quality debts | **Elias — database access** (an OECD/Eurostat re-sourcing session) | none blocks anything |
 | §D — item 10, the political game, and everything riding it | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
-| §D1 — cabinet portraits, eight outstanding | **Claude Design — delivery**, behind §S | all three gates answered 2026-08-26 |
+| §D1 — cabinet portraits, eight outstanding | **Claude Design — delivery** (the verdict reached them 2026-08-27) | all three gates answered 2026-08-26 |
 | §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
-| §E3 — rasterization diff, our half | **a raster path with comparable output** (our tooling, or a rasterizer installed on this machine) | compare machinery finished and waiting |
+| ~~§E3 — rasterization diff, our half~~ | **MOVED to the roadmap 2026-08-27 (Elias):** Design delivered; ours to close with a tooling pass or a rasterizer on this machine — not blocked on anyone | tombstone below |
 | §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch**, behind §D1 | two `StatNodeId` members first |
 | §V — built, not seen | **Elias — a visual review** | rule 15's third layer |
 | §P — three felt verdicts | **Elias — a playtest** | no measurement can answer them |
 
 ---
 
-# S. Waiting on Elias — the send
+# S. The send — ✅ SENT 2026-08-27 (the request); the courtesy note still waits on Elias
 
-**The next send package to Claude Design is assembled and waits only on the send** (the E2 convention:
-this repo writes; Elias transmits). Contents: **§8** (the calendar panel board request), **§9** (the
-statistics graph weight and treatment ruling), **the §5/D1 verdict** (the register side-by-side PASSED
-2026-08-26 — Design may proceed with the batch; eight files remain, the PoC having landed), and **the
-1j-aware courtesy note** (`CLAUDE_DESIGN_BOARD_1I_NOTE.md`, its two stale claims corrected 2026-08-27 —
-the second law category has since shipped, and the capture names are the reference sets). All three live
-asks sit in `CLAUDE_DESIGN_ASSET_REQUEST.md` §§1–3 with their attachments listed and verified on disk.
-Recorded here so the send is not lost to the cached-status pattern — a package in a document and not in
-anyone's inbox is the failure the E2 convention exists to name. **§D1 is gated behind this entry:**
-Design cannot start the batch until the verdict reaches them.
+**The asset request went to Claude Design's project on 2026-08-27, on Elias's instruction, by Claude
+Code through `DesignSync`** (project `PoliSim v2 Design Progress`, `b3dec27b-620b-452a-9783-e8317cbec4d9`).
+Two copies, because an in-place overwrite of a file Design has already read produces nothing that looks
+new (it cost a round-trip on the last send): **in place** at `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` (the
+path every earlier send used and Design has read) and **at a new dated path**
+`send/design_request_2026-08-27/CLAUDE_DESIGN_ASSET_REQUEST.md`, with `ATTACHMENTS.md` (what the request
+asks, what comes back), `SHA256SUMS.txt`, and the eight captures §2/§3 cite under `captures/`. **Readback
+hash-verified on both paths:** `get_file` returned each document complete, and the readbacks hash to the
+local file's digests exactly — `9a464915…24eec` (CRLF, as uploaded, 29,571 bytes) / `bf7c2263…7cfb`
+(LF-normalized) — diff-identical. What was sent: §1 the portrait verdict and the eight outstanding names,
+§2 the calendar panel board request, §3 the graph-weight ruling, with §0/§4/§5 for context.
+
+**Still unsent — Elias's:** the 1j-aware courtesy note (`CLAUDE_DESIGN_BOARD_1I_NOTE.md`, corrected
+2026-08-27). It was not part of the instruction that sent the request; it is a note, not an ask, and
+carries nothing Design is waiting for. §D1 is no longer gated behind this entry — the verdict is in
+Design's project.
 
 ---
 
@@ -152,13 +158,13 @@ front). **Standing constraint until then (Elias, 2026-08-12, R3): no main-side c
 - **A trade axis for the Trade bill's vote** (pass 6's deferred set): the direction reads the fiscal
   axis by Elias's ruling until real parties give trade its own.
 
-## 🟡 D1. Cabinet portraits — eight outstanding, the batch waits on DESIGN's delivery (behind §S)
+## 🟡 D1. Cabinet portraits — eight outstanding, the batch waits on DESIGN's delivery
 
 ✅ **The register side-by-side PASSED (2026-08-26, Elias's live Editor session):** the painted plate
 belongs beside the existing register — Design's own named gate for the batch. All three gates are
 answered (envelope ACCEPTED, vignette FRAME-OWNED, register PASSED — the deliverable block is
-`CLAUDE_DESIGN_ASSET_REQUEST.md` §1). **The verdict travels in the send package (§S); Design cannot
-start until it arrives, so this entry is gated behind §S, not beside it.**
+`CLAUDE_DESIGN_ASSET_REQUEST.md` §1). **The verdict reached Design's project on 2026-08-27 (§S);
+nothing on our side stands between Design and the batch.**
 
 **Task:** portrait art for the Defense, Foreign Affairs and Education ministers — nine names, of which
 **one landed as the PoC** (`portrait_cabinet_defense_katarzyna_ekelund`, 512×640, imported 2026-08-17);
@@ -201,22 +207,16 @@ land, five on disk — named here so it does not arrive as a surprise batch the 
 `:$DATA` stream — no mark-of-the-web ADS exists on any of them. The outstanding item the request doc's
 former §1F.2 carried is answered (`COMPLETED.md` §24): nothing to observe, nothing blocked.
 
-## 🟡 E3. Design's rasterization diff — our half, gated on a raster path whose OUTPUT is comparable
+## E3 — the rasterization diff, our half: MOVED TO THE ROADMAP (tombstone, 2026-08-27)
 
-Design asked (the request doc's former §1F.1, `COMPLETED.md` §24) that their strip-cut PNGs be diffed
-against our own rasterization once before the pipeline is trusted. **Design's HALF is CLOSED**
-(2026-08-17, the Progress2 manifest): they re-rasterized the six per-state button PNGs fresh from SVG and
-pixel-diffed 6/6 identical. **Our half stays exactly this entry.**
-
-⚠ **The gate, sharpened (2026-08-17) — the blocker named to the component:** a rasterizer DOES exist on
-this machine (Unity's built-in vectorgraphics module, demonstrably tessellating every `Source/` SVG at
-import), and `StripCutDiffCheck` exists with the full tolerant-compare machinery — but the module's
-`RenderSpriteToTexture2D` path yields a BLANK texture under the batch harness, probed and viewed rather
-than inferred. **The supplier, stated honestly (2026-08-27):** either a tooling pass in this repo that
-makes the render path produce pixels (unscheduled, ours) or an external rasterizer installed on this
-machine (Elias's environment). The compare is finished and waiting; E3 closes when either lands. The
-2026-08-26 attribution correction stands: the blank render was never attributable to an SVG `<pattern>`
-parse limit — `ui_slider_track`'s features are `linearGradient` + `currentColor`.
+**Ruled by Elias 2026-08-27: this was never Design's to supply.** Design's half closed 2026-08-17 (they
+re-rasterized the six per-state button PNGs fresh from SVG and pixel-diffed 6/6 identical — the
+Progress2 manifest); our half needs a tooling pass that makes Unity's vectorgraphics
+`RenderSpriteToTexture2D` path produce pixels under the batch harness, or a rasterizer installed on this
+machine. Neither is a named external party, so under this register's own admission test it is startable
+work — **`POLISIM_MASTER_ROADMAP.md` live item 7** carries it with `StripCutDiffCheck`'s finished compare
+machinery and the 2026-08-26 attribution correction. A prerequisite filed under the wrong supplier is
+one that lapses, because nobody on either side is waiting for it — the reason this tombstone exists.
 
 ## 🟡 E4. The `StatNodeId`/icon promotion for R4-1's two Society rows (youth unemployment, life expectancy)
 

@@ -9657,6 +9657,11 @@ treated as a contradiction to resolve, and none survived.
 | R3's creditor-branch live exercise | **a scenario that builds a net creditor** (none exists at HEAD; code-verified meanwhile) |
 | F2 — the rate-cap nominal-on-real artifact | **any future nominal-rates work** (recorded property, softened in practice by the maturity lag) |
 
+*(⚠ Amended 2026-08-27, Elias's ruling: the E3 row's supplier was never Claude Design — their half
+closed 2026-08-17; ours is a tooling pass (a working render path, or a rasterizer installed here), so
+E3 left the blocked register for the roadmap's live list (item 7). A prerequisite filed under the wrong
+supplier lapses, because nobody on either side is waiting for it.)*
+
 ### The standing queues, confirmed
 
 **Q1–Q10 (the write-back ruling queue)**: confirmed a ruling queue by design — every entry names
@@ -13333,3 +13338,58 @@ is anchored — the edge would need a per-country truth the widget has no way to
 folds (`InfrastructureAndDevelopment` onto the Transportation node, `HealthcareAndSocialCare` onto
 HHSDiscretionary, so the non-USA portfolios' lines draw the growth and confidence edges their USA twins
 draw). **Verified under rule 0's UI-only bar:** compile clean; a full capture sweep at 1600×950 (USA) 64/64, 0 overflows / 0 containment escapes / 0 canvas violations, ATTRIB 0; the web renders and the Welfare screen's chip row now carries Debt-to-GDP beside Approval, Poverty and Consumer Confidence — the one visible change. The fix is `56c5163`; the three channels the sweep named but could not draw honestly are a roadmap entry beside the Reset-click gap.
+
+## The seventh request sent, E3's supplier corrected, two deletions by ruling (2026-08-27)
+
+**The send.** On Elias's instruction the codebase-derived asset request went to Claude Design's project
+(`PoliSim v2 Design Progress`, `b3dec27b-620b-452a-9783-e8317cbec4d9`) through `DesignSync` — the first
+send made from this side rather than by hand. **Two paths, deliberately:** in place at
+`uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` (the path all four earlier plans wrote, and the one Design has
+read) and at a new dated folder `send/design_request_2026-08-27/` carrying the request, `ATTACHMENTS.md`
+(what is asked, in send order; what comes back), `SHA256SUMS.txt`, and the eight captures §2/§3 cite
+under `captures/` (12 files written, listed back). Elias's reason for the second path is now a recorded
+lesson: **an in-place overwrite of a file Design has already read produces nothing that looks new** —
+it cost a round-trip on the previous send. **Readback hash-verified on both paths:** `get_file` returned
+each document complete and CRLF-intact (`truncated:false`); transcribed byte-for-byte and hashed, both
+readbacks equal the repo file's digests exactly — `9a464915c8ee1e087637a3f7b9ce18db7f160ed1607c3b550f0e0729cbf24eec`
+(CRLF as uploaded, 29,571 bytes) and `bf7c2263fe7a00a7b544fa0f7b731daf1e04de09fde850ac2169c6f2f3757cfb`
+(LF-normalized, 29,170 bytes), `diff` identical. The PNGs cannot be read back through this channel
+(the 256 KiB cap, recorded 2026-08-26), so their digests travel in `SHA256SUMS.txt` for Design to check.
+`MISSING_PREREQUISITES.md` §S records the send; §D1 is no longer behind it; the 1j courtesy note was not
+part of the instruction and stays unsent (Elias's). **One tool fact for the record:** `list_projects`
+returns only projects the login can write to and came back EMPTY for this project, whose `get_project`
+nevertheless reports `canEdit: true` — the full id had to be recovered from the 2026-08-26 session's
+transcript (the repo's copies elide it to `b3dec27b-…`). It is now in §S so nobody digs for it again.
+
+**E3's supplier, corrected (Elias's ruling).** The rasterization diff sat under "Waiting on Claude Design"
+though Design's half closed 2026-08-17; ours is a tooling pass (a working `RenderSpriteToTexture2D` path)
+or a rasterizer installed on this machine — no external party owes anything. *A prerequisite attributed
+to the wrong supplier is one that lapses, since nobody on either side is waiting for it.* Moved to the
+roadmap's live list (item 7) with a tombstone in the register; the 2026-08-17 register table above
+carries a dated amendment.
+
+**Two deletions, both Elias's one-line rulings.** (1) **The eleven superseded chrome SVG sources** under
+`Chrome/Source/` (+ metas) — Track 3 (`10f713e`) had removed the PNGs only, and this file's own Track-3
+entry said "deleted from disk"; the per-state SVGs Design shipped supersede the strips, and keeping both
+was the two-tables problem in another costume. `ChromeManifest.txt`'s `!` block records the deletion;
+its rows stay because `DeliveredAssetCheck` matches archived entries by stem — re-run after the deletion:
+**0 missing from 0 root zips, 0 missing from archived packs**, every pack `ok`, the eleven `.svg` entries
+logged `supd` beside their `.png` twins (delivery.zip: 2 of 20 present, 18 superseded-by-ruling);
+`ChromeV2CoverageCheck` **50/50 both directions**. (2) **The three dead design-pack widgets** —
+`PoliSimWidgets.SupportBar`, `StandingDraftPair`, `DraftTrack` — rejected 2026-08-01 (`COMPLETED.md` §29)
+and on disk with zero callers for 26 days; removed, a dated comment in their place naming where each
+idea survives (`LedgerRow`'s draft column and `DrawDraftLabel`; `UiPalette.DrawDivergingBar`); the three
+`GameController` comments that cited them as the road not taken now say so in the past tense
+(`ThresholdBar`, which only `SupportBar` called, stays — not in the ruling). **Bar (rule 0, UI-only):**
+compile clean (`StatIconCoverageCheck` batch run, exit 0, 0 `error CS`, 19/19) and a smoke capture sweep
+at 1600×929 as USA — **64 captured, 0 failed, 0 text overflows, 0 containment escapes, 0 canvas
+violations, 0 ATTRIB**.
+
+**Ruled and recorded, no action:** the stranded-branch and item-10 material stays in
+`MISSING_PREREQUISITES.md` §D0 rather than returning to the roadmap (blocked on item 10; the roadmap is
+for startable work — that is what the split is for); the nine unbuilt screen-spec clauses (roadmap item
+4) are NOT started — §V is the higher-leverage item and needs Elias first.
+
+**Harness note:** a PowerShell function parameter named `$args` is shadowed by the automatic variable —
+the first bar run launched Unity with `-logFile` alone and every step "passed" in seconds. The step
+function's parameter is now `$unityArgs`; the run that counts is the second.

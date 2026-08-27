@@ -12,6 +12,12 @@ project. **Date:** 2026-08-27.
 package (`MISSING_PREREQUISITES.md` §S — sending is Elias's, the E2 convention). §4 is not sent; it is
 here so the next ask does not arrive as a surprise.
 
+✅ **SENT 2026-08-27** (on Elias's instruction, via `DesignSync` to Design's project): in place at
+`uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` and at the new dated path `send/design_request_2026-08-27/`
+with `ATTACHMENTS.md`, `SHA256SUMS.txt` and the eight captures; both readbacks hash-identical to this
+file at the send (`9a464915…24eec` CRLF / `bf7c2263…7cfb` LF). `MISSING_PREREQUISITES.md` §S is the
+record; §2/§3's status lines below are kept as they were sent.
+
 **Standing rule: a count in prose is a cached value with no expiry** (working-discipline rule 12).
 Before trusting any number in this document, re-derive it: sprites with
 `find Assets/Resources/Art/UI -name '*.png'`, chrome coverage with `ChromeV2CoverageCheck`, stat icons
