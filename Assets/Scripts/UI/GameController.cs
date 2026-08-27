@@ -2133,12 +2133,13 @@ namespace PoliSim.UI
             }
 
             // §A.6's RUNNING state (omnibus 2026-08-28, roadmap item 4): `#EDE2CB` plate on `1px
-            // #C9BA9B`, an 8px `#3E8A5F` dot with no glow, type `#3D372E`. The plate is the same
-            // procedural rounded card every tile uses (no sprite was drawn for it - the board draws a
-            // flat plate); the 1px border and the lamp are overlays DrawRunningStatusPlate paints on
-            // Repaint, so this stays one Label control like its HELD twin. Body type, not the banner's
+            // #C9BA9B`, an 8px `#3E8A5F` dot with no glow, type `#3D372E`. A FLAT plate, drawn
+            // procedurally under a plain padded label (DrawRunningStatusPlate): the first cut borrowed
+            // BuildCardStyle, whose `ui_panel_paper` 9-slice (22/22/22/28 with a baked drop shadow)
+            // is all edge at one line of height and read as a slider track in the omni captures. No
+            // sprite was drawn for this plate - the board draws it flat. Body type, not the banner's
             // escalated size: the running readout is a quiet state, the held one is the alarm.
-            _runningPlateStyle = new GUIStyle(UiPalette.BuildCardStyle(PoliSimTheme.Tile, 3, HoldBannerPadY, 0))
+            _runningPlateStyle = new GUIStyle(GUI.skin.label)
             {
                 wordWrap = true,
                 alignment = TextAnchor.MiddleLeft,
@@ -4252,14 +4253,18 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawRunningStatusPlate(string text)
         {
-            GUILayout.Label(text, _runningPlateStyle);
+            // The rect is reserved through the same word-wrap sizer GUILayout.Label uses (GetRect with
+            // a wrapping style), so the plate can be painted BEFORE the type - the only order in which
+            // a procedural ground can sit under a label. Still one layout entry, no control.
+            var content = new GUIContent(text);
+            Rect plate = GUILayoutUtility.GetRect(content, _runningPlateStyle, GUILayout.ExpandWidth(true));
             if (Event.current.type != EventType.Repaint)
             {
                 return;
             }
 
-            Rect plate = GUILayoutUtility.GetLastRect();
-            PoliSimTheme.RoundedCard(plate, new Color(0f, 0f, 0f, 0f), PoliSimTheme.BorderPlate, 3f);
+            PoliSimTheme.RoundedCard(plate, PoliSimTheme.Tile, PoliSimTheme.BorderPlate, 3f);
+            GUI.Label(plate, content, _runningPlateStyle);
             float lamp = RunningLampSize();
             float padX = _runningPlateStyle.padding.right;   // the un-widened side is the spec's own X pad
             var dotRect = new Rect(
@@ -5212,7 +5217,10 @@ namespace PoliSim.UI
                     iconSize);
                 // Ink-weight tints both ways on the folder faces: white read on the interim brass but
                 // vanishes on paper stock. (The selected tongue's area-ink icon is painted deferred.)
-                Color iconTint = selected ? Color.white : UiPalette.MutedIconTint;
+                // §A.3's third column, wired 2026-08-28 (omnibus, roadmap item 4): the inactive tongue's
+                // swatch - its icon, in this build - prints in the delivered TAB-SWATCH tint, not the
+                // muted white it wore since the folder pass; the selected tongue keeps the full ink.
+                Color iconTint = selected ? Color.white : PoliSimTheme.TabSwatchTint(area);
                 UiPalette.DrawTintedIcon(iconRect, icon, iconTint);
             }
 
@@ -5957,8 +5965,7 @@ namespace PoliSim.UI
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                DrawColoredLabel(blocksTime ? "HOLDS TIME" : "CAN WAIT", _cardKindStyle,
-                    blocksTime ? PoliSimTheme.Bad : PoliSimTheme.TextMuted);
+                DrawUrgencyChip(blocksTime);
                 GUILayout.EndHorizontal();
                 return;
             }
@@ -5982,10 +5989,30 @@ namespace PoliSim.UI
             GUILayout.BeginHorizontal();
             DrawColoredLabel(kind, _cardKindStyle, UiPalette.GetAreaColor(area));
             GUILayout.FlexibleSpace();
-            DrawColoredLabel(blocksTime ? "HOLDS TIME" : "CAN WAIT", _cardKindStyle,
-                blocksTime ? PoliSimTheme.Bad : PoliSimTheme.TextMuted);
+            DrawUrgencyChip(blocksTime);
             GUILayout.EndHorizontal();
         }
+
+        /// <summary>§A.11's urgency chip as drawn (omnibus 2026-08-28, roadmap item 4): `9.5 bold ls
+        /// .08em`, a `1.5px` border in its own ink, padding `1/7`, rotated `−2°` - `HOLDS TIME` in
+        /// `#9C4238`, `CAN WAIT` in `#8A7A5C` on a `1.5px #B7A98C` border. It was a plain
+        /// DrawColoredLabel until now (the 2026-08-27 sweep). The rect is reserved through GUILayout
+        /// at the stamp's measured size and the stamp is painted into it on Repaint - the reserve is
+        /// the layout, the stamp is paint, so the card's control sequence is unchanged.</summary>
+        private void DrawUrgencyChip(bool blocksTime)
+        {
+            string text = blocksTime ? "HOLDS TIME" : "CAN WAIT";
+            Vector2 size = PoliSimWidgets.StampSize(text, _cardKindStyle, UrgencyChipPadX, UrgencyChipPadY, UrgencyChipBorder);
+            Rect rect = GUILayoutUtility.GetRect(size.x, size.y, GUILayout.Width(size.x), GUILayout.Height(size.y));
+            Color ink = blocksTime ? PoliSimTheme.Bad : PoliSimTheme.HairlineStrong;
+            Color border = blocksTime ? PoliSimTheme.Bad : PoliSimTheme.Hairline;
+            PoliSimWidgets.Stamp(rect, text, _cardKindStyle, ink, border, UrgencyChipBorder, UrgencyChipRotation);
+        }
+
+        private const float UrgencyChipPadX = 7f;
+        private const float UrgencyChipPadY = 1f;
+        private const float UrgencyChipBorder = 1.5f;
+        private const float UrgencyChipRotation = -2f;
 
         /// <summary>Closes a card opened by BeginAreaCard and draws its area spine, using the rect GUILayout just resolved for the whole card - the height isn't knowable until now, which is the entire reason the spine is drawn here rather than up front. For a dossier card (see BeginAreaCard) this is also where the shoulder caption lands, for the same reason: the shoulder is part of the card's own background, and the card has no rect until now.</summary>
         private void EndAreaCard(UiPalette.SystemArea area)
@@ -6106,7 +6133,9 @@ namespace PoliSim.UI
                 case PolicyLawsCategory.Trade:
                     float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
                     _policyLawsContentScrollPosition = GUILayout.BeginScrollView(_policyLawsContentScrollPosition, GUILayout.Height(scrollHeight));
-                    DrawTradePolicyContent();
+                    // The pane's inner width less the scroll view's own bar - the measured budget every
+                    // wrapping label on the Trade screen takes (the 2560 wrap fix, 2026-08-28).
+                    DrawTradePolicyContent(Mathf.Max(0f, PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - GUI.skin.verticalScrollbar.fixedWidth - 12f));
                     GUILayout.EndScrollView();
                     break;
                 case PolicyLawsCategory.Laws:
@@ -8210,16 +8239,21 @@ namespace PoliSim.UI
         }
 
         /// <summary>Policy half of the old Trade tab (the TradePolicyBill and every per-partner row) - see DrawTradeStatsContent's own doc comment for the split reasoning. Called from DrawPolicyLawsTab.</summary>
-        private void DrawTradePolicyContent()
+        private void DrawTradePolicyContent(float contentWidth)
         {
             DrawColoredLabel("Trade Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
-            GUILayout.Label("Master Sequence step 5d: the base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting/resetting whether a partner override exists at all stays an immediate, structural action, unchanged.", _labelStyle);
+            // Omnibus 2026-08-28 (roadmap item 4, the 2560 Trade wrap): every wrapping label on this
+            // screen takes the pane's MEASURED width - the free-aspect pass's fix, applied at the
+            // site it had missed. Width-less, the cost line wrapped after the "+" of "+$0/yr" at 2560
+            // (UiFormat.MoneyDelta's sign read as a break opportunity by a label laying out against
+            // an inferred width) while the other three sizes broke at spaces.
+            GUILayout.Label("Master Sequence step 5d: the base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting/resetting whether a partner override exists at all stays an immediate, structural action, unchanged.", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);
 
             BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
             DrawTradeBillStatusAndIntroduce();
             DrawTradeLiveEstimate();
-            DrawTradeBillCostEstimate();
+            DrawTradeBillCostEstimate(Mathf.Max(0f, contentWidth - AreaCardPadding * 2f - AreaCardSpineWidth));
             EndAreaCard(UiPalette.SystemArea.Trade);
 
             // The long qualifier - "applies to any partner with no override, and only where it isn't
@@ -8240,7 +8274,7 @@ namespace PoliSim.UI
                 interactive: !baseRateInert);
             GUILayout.Space(10f);
 
-            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. The partner mirrors any excess over its standing rate back onto our exports to them from the next boundary, and the change in the tariff take passes through to prices for a year.", _labelStyle);
+            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. The partner mirrors any excess over its standing rate back onto our exports to them from the next boundary, and the change in the tariff take passes through to prices for a year.", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);
 
             // Bars are sized relative to the largest volume across every partner (both directions
@@ -8421,14 +8455,14 @@ namespace PoliSim.UI
         /// (BuildPlayerDecision carries no tariff terms), so this is the one place a draft's cost can be
         /// read before it is introduced. One always-drawn label (wraps: _labelStyle is word-wrapped).
         /// </summary>
-        private void DrawTradeBillCostEstimate()
+        private void DrawTradeBillCostEstimate(float wrapWidth)
         {
             TradeBillEstimate estimate = _simulationManager.EstimateTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
             GUILayout.Label(
                 $"At these rates: tariff take {UiFormat.Money(estimate.Take, MoneyUnit.Billions)}/yr ({UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)}); " +
                 $"partners' mirrored tariffs move our trade balance by {UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions)}/yr; " +
                 $"prices {estimate.PassThroughPp:+0.00;-0.00} pp this year.",
-                _labelStyle);
+                _labelStyle, GUILayout.Width(wrapWidth));
         }
 
         /// <summary>Bundles the base tariff rate draft and every partner override draft into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts. Only a partner with an ACTIVE override gets an entry, mirroring BuildPlayerDecision's own former "only currently-implemented" reasoning.</summary>

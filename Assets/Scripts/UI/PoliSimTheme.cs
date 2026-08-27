@@ -202,6 +202,28 @@ namespace PoliSim.UI
         /// <summary>The desk-weight variant. See <see cref="AreaAccentsOnDesk"/>.</summary>
         public static Color AccentOnDesk(UiPalette.SystemArea area) => AreaAccentsOnDesk[area];
 
+        /// <summary>
+        /// §A.3's THIRD column - the inactive tab-swatch tint, delivered by pass 3 as `tabTint.*` and
+        /// wired 2026-08-28 (omnibus, roadmap item 4): the hue an unselected folder tongue's swatch
+        /// (its icon, in this build) prints in on the closed-stock ground. Snapped values from the
+        /// spec's table (ink at oklch chroma ×0.78, lightness ×0.97) for the six areas that own a
+        /// tongue or a promoted sub-tab; the five the table leaves "—" fall back to the ink, so a
+        /// future tongue in one of those areas is never invisible.
+        /// </summary>
+        private static readonly Dictionary<UiPalette.SystemArea, Color> TabSwatchTints = new Dictionary<UiPalette.SystemArea, Color>
+        {
+            { UiPalette.SystemArea.Fiscal, Hex(0x3D6494) },
+            { UiPalette.SystemArea.Political, Hex(0x96762A) },
+            { UiPalette.SystemArea.Labor, Hex(0xA2653E) },
+            { UiPalette.SystemArea.CrimeJustice, Hex(0x8E4A40) },
+            { UiPalette.SystemArea.Sectors, Hex(0x5B5187) },
+            { UiPalette.SystemArea.Global, Hex(0x4E7291) }
+        };
+
+        /// <summary>The inactive tab swatch's tint for an area - the snapped §A.3 value where one is delivered, the area ink otherwise.</summary>
+        public static Color TabSwatchTint(UiPalette.SystemArea area) =>
+            TabSwatchTints.TryGetValue(area, out Color tint) ? tint : AreaAccents[area];
+
         /// <summary>The same hue at card-tint strength — badge backgrounds, icon plates, decision-card washes.</summary>
         public static Color AccentWash(UiPalette.SystemArea area, float alpha = 0.13f)
         {

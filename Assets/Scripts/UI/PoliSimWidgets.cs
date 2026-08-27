@@ -244,6 +244,43 @@ namespace PoliSim.UI
             return Mathf.Max(1f, outerHeight - padding - margin);
         }
 
+        /// <summary>
+        /// §A.11's stamp treatment (built 2026-08-28, omnibus roadmap item 4): a bordered, rotated
+        /// caption in ONE ink - the urgency chip (`HOLDS TIME` / `CAN WAIT`: 1.5px border, −2°) and
+        /// the generic stamp (`2–3px` border, −2° to −6°, "rotation magnitude scales with
+        /// consequence"). Rotation runs through GUI.matrix around the rect's centre and is restored
+        /// before returning, so nothing drawn after it inherits the tilt. An overlay draw, never a
+        /// control: callers reserve the rect through GUILayout first (see <see cref="StampSize"/>).
+        /// Repaint-gated - GUI.matrix is a paint concern and the layout pass must never see it.
+        /// </summary>
+        public static void Stamp(Rect rect, string text, GUIStyle style, Color ink, Color borderInk, float borderWidth, float rotationDegrees)
+        {
+            if (string.IsNullOrEmpty(text) || Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Matrix4x4 saved = GUI.matrix;
+            GUIUtility.RotateAroundPivot(rotationDegrees, rect.center);
+            PoliSimTheme.RoundedCard(rect, new Color(0f, 0f, 0f, 0f), borderInk, 2f, borderWidth);
+            GUIStyle fitted = MeasuredScratch(style);
+            fitted.wordWrap = false;
+            fitted.alignment = TextAnchor.MiddleCenter;
+            fitted.normal.textColor = ink;
+            GUI.Label(rect, text, fitted);
+            GUI.matrix = saved;
+        }
+
+        /// <summary>The rect a <see cref="Stamp"/> needs: the text's own size in its style plus the
+        /// spec's padding (chip 1/7, stamp 3/9 - passed in), plus room for the border.</summary>
+        public static Vector2 StampSize(string text, GUIStyle style, float padX, float padY, float borderWidth)
+        {
+            GUIStyle probe = MeasuredScratch(style);
+            probe.wordWrap = false;
+            Vector2 size = probe.CalcSize(new GUIContent(text));
+            return new Vector2(size.x + (padX + borderWidth) * 2f, size.y + (padY + borderWidth) * 2f);
+        }
+
         public static Vector2 MeasuredLabel(Rect rect, string text, GUIStyle style, float reserveWidth = 0f)
         {
             if (string.IsNullOrEmpty(text))
