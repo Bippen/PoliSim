@@ -3179,19 +3179,29 @@ namespace PoliSim.UI
                 GUILayout.Label(centralBankFlavorText, _labelStyle);
             }
 
+            Color politicalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Political);
             if (_playerCountry.CurrentFedChair != null)
             {
                 FedChair chair = _playerCountry.CurrentFedChair;
+                // The sitting chair's row is a TEXT treatment, recorded as deliberate (omnibus
+                // 2026-08-28, R-K6): the turn-0 chair (Harriet Ellsworth) sits outside the candidate
+                // pool and has no portrait by decision - no new Design ask - so the row names the
+                // chair and their philosophy in type, and the candidate cards below keep the portraits.
                 GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
                 GUILayout.Label(chair.Description, _labelStyle);
-                // Pass 4 (2026-08-26): the rule's reading and the chair's target, so the mechanism
-                // the USA player lives with is visible - one always-drawn Label at a fixed ordinal
-                // (the branch is immutable per country), content-only variation.
+                // Pass 4 (2026-08-26) put the rule's reading and the chair's target on screen as one
+                // sentence; omnibus 2026-08-28 (roadmap item 4's "concatenated labels") re-measured the
+                // Fed tab at three sentence labels (one per branch) and converts each into the row
+                // family - name, figure, trailing - so a column reads down instead of a sentence across
+                // (DrawDerivedStatsRow's own conversion). Same fixed ordinals per branch, content-only
+                // variation, no control involved.
                 float suggested = TaylorRule.GetSuggestedInterestRate(_playerCountry);
                 float chairTarget = Mathf.Clamp(suggested + chair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
-                GUILayout.Label(
-                    $"Rule reading {suggested:F2}% (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate, the NAIRU) plus the chair's lean of {chair.RateBias:+0.00;-0.00;0.00} points = target {chairTarget:F2}% (held within {CurrencySystem.MinInterestRate:F0}-{CurrencySystem.MaxInterestRate:F0}%). The rate moves {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the way toward the target each turn.",
-                    _labelStyle);
+                DrawDerivedStatRow("Rule reading", -1f, $"{suggested:F2}%",
+                    $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
+                DrawDerivedStatRow("Chair's lean", -1f, $"{chair.RateBias:+0.00;-0.00;0.00} pts", null, politicalInk);
+                DrawDerivedStatRow("Target", -1f, $"{chairTarget:F2}%",
+                    $"held within {CurrencySystem.MinInterestRate:F0}-{CurrencySystem.MaxInterestRate:F0}%; the rate moves {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the way each year", politicalInk);
 
                 DrawFedChairSelectionModal();
             }
@@ -3215,11 +3225,11 @@ namespace PoliSim.UI
                         $"The real {GetCentralBankName(PlayerCountryId)} sets its policy rate independently of the government. This game deliberately hands you the central bank, so monetary policy stays a lever you own - a gameplay choice, stated plainly, not a claim about how {_playerCountry.Name}'s institutions work.",
                         _labelStyle);
                     // Pass 4 (2026-08-26): the advisory reading - what an independent central bank
-                    // on the same rule would set - Riksbank-B's first visible artefact. One
-                    // always-drawn Label ahead of the slider, content-only variation.
-                    GUILayout.Label(
-                        $"For reference, an independent {GetCentralBankName(PlayerCountryId)} following the same rule the Federal Reserve and the ECB use would read {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}% right now (inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate, the NAIRU).",
-                        _labelStyle);
+                    // on the same rule would set - Riksbank-B's first visible artefact. Omnibus
+                    // 2026-08-28: the row family (see the chair branch above), same fixed ordinal.
+                    DrawDerivedStatRow($"Independent {GetCentralBankName(PlayerCountryId)} would read", -1f,
+                        $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
+                        $"the Fed/ECB rule: inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
                     GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                     _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
                 }
@@ -3238,13 +3248,16 @@ namespace PoliSim.UI
                         $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' combined GDP - a simplified version of the real ECB's \"capital key.\" As {_playerCountry.Name}'s governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
                         _labelStyle);
                     // Pass 4 (2026-08-26): the blend and this member's own reading, so the push has a
-                    // visible reference. One always-drawn Label ahead of the slider.
-                    GUILayout.Label(
-                        $"Blended rule reading this turn: {EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}% ({_playerCountry.Name}'s own reading {TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%, from inflation {_playerCountry.State.Inflation:F1}% and unemployment {_playerCountry.State.Unemployment:F1}% against a {_playerCountry.NaturalUnemploymentRate:F1}% structural rate, the NAIRU).",
-                        _labelStyle);
+                    // visible reference. Omnibus 2026-08-28: three rows of the row family (blend, own
+                    // reading, the shared rate), same fixed ordinals ahead of and after the slider.
+                    DrawDerivedStatRow("Blended rule reading this year", -1f,
+                        $"{EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}%", "GDP-weighted across the three members", politicalInk);
+                    DrawDerivedStatRow($"{_playerCountry.Name}'s own reading", -1f,
+                        $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
+                        $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
                     GUILayout.Label($"National Rate Push: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
                     _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, _sliderStyle, _sliderThumbStyle);
-                    GUILayout.Label($"Current Eurozone Interest Rate: {_playerCountry.CurrencyZone.InterestRate:F2}%", _labelStyle);
+                    DrawDerivedStatRow("Eurozone interest rate", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "shared by all three members", politicalInk);
                 }
             }
 
@@ -7499,17 +7512,23 @@ namespace PoliSim.UI
 
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label(isPlayer ? $"{country.Name} (your country)" : $"{country.Name} (read-only)", _headerStyle);
-            GUILayout.Label($"GDP: {UiFormat.Money(state.GDP, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Unemployment: {state.Unemployment:F2}%", _labelStyle);
-            GUILayout.Label($"Inflation: {state.Inflation:F2}%", _labelStyle);
-            GUILayout.Label($"Approval Rating: {state.ApprovalRating:F1}", _labelStyle);
-            GUILayout.Label($"Debt-to-GDP: {state.DebtToGdpRatio:F1}%", _labelStyle);
+            // Omnibus 2026-08-28 (roadmap item 4, "International's two"): the pinned country readout
+            // was eight "Name: value" labels - the row family's last residue on this screen - and is
+            // now read-only ledger rows, name and figure in their own columns (DrawDerivedStatsRow's
+            // own conversion). The event panel beside it keeps its sentence ON PURPOSE: it mirrors the
+            // BREAKING banner's effect wording, and two wordings for one event would be the defect.
+            Color globalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Global);
+            DrawDerivedStatRow("GDP", -1f, UiFormat.Money(state.GDP, MoneyUnit.Billions), null, globalInk);
+            DrawDerivedStatRow("Unemployment", -1f, $"{state.Unemployment:F2}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
+            DrawDerivedStatRow("Inflation", -1f, $"{state.Inflation:F2}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
+            DrawDerivedStatRow("Approval rating", -1f, $"{state.ApprovalRating:F1}", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            DrawDerivedStatRow("Debt-to-GDP", -1f, $"{state.DebtToGdpRatio:F1}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
 
             if (isPlayer)
             {
-                GUILayout.Label($"Poverty Rate: {state.PovertyRate:F1}%", _labelStyle);
-                GUILayout.Label($"Budget Balance (cumulative): {UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions)}", _labelStyle);
-                GUILayout.Label($"Currency Strength: {state.CurrencyStrength:F1}", _labelStyle);
+                DrawDerivedStatRow("Poverty rate", -1f, $"{state.PovertyRate:F1}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
+                DrawDerivedStatRow("Budget balance", -1f, UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), "cumulative", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
+                DrawDerivedStatRow("Currency strength", -1f, $"{state.CurrencyStrength:F1}", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             }
 
             GUILayout.EndVertical();
@@ -8253,7 +8272,7 @@ namespace PoliSim.UI
             BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
             DrawTradeBillStatusAndIntroduce();
             DrawTradeLiveEstimate();
-            DrawTradeBillCostEstimate(Mathf.Max(0f, contentWidth - AreaCardPadding * 2f - AreaCardSpineWidth));
+            DrawTradeBillCostEstimate();
             EndAreaCard(UiPalette.SystemArea.Trade);
 
             // The long qualifier - "applies to any partner with no override, and only where it isn't
@@ -8455,14 +8474,22 @@ namespace PoliSim.UI
         /// (BuildPlayerDecision carries no tariff terms), so this is the one place a draft's cost can be
         /// read before it is introduced. One always-drawn label (wraps: _labelStyle is word-wrapped).
         /// </summary>
-        private void DrawTradeBillCostEstimate(float wrapWidth)
+        private void DrawTradeBillCostEstimate()
         {
             TradeBillEstimate estimate = _simulationManager.EstimateTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
-            GUILayout.Label(
-                $"At these rates: tariff take {UiFormat.Money(estimate.Take, MoneyUnit.Billions)}/yr ({UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)}); " +
-                $"partners' mirrored tariffs move our trade balance by {UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions)}/yr; " +
-                $"prices {estimate.PassThroughPp:+0.00;-0.00} pp this year.",
-                _labelStyle, GUILayout.Width(wrapWidth));
+            // Omnibus 2026-08-28 (roadmap item 4, the 2560 wrap): the explicit width did not stop IMGUI
+            // breaking the line after the "+" of "+$0/yr" (omni_c2560 shows the same break at the
+            // measured width - the sign glyph IS a break opportunity to the text engine, whatever the
+            // width), so the sentence becomes three read-only rows of the row family: each figure sits
+            // in a cell that shrinks and never wraps, and no money delta can ever sit at a line end.
+            Color tradeInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Trade);
+            DrawDerivedStatRow("Tariff take at these rates", -1f,
+                $"{UiFormat.Money(estimate.Take, MoneyUnit.Billions)}/yr",
+                $"{UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)} vs today", tradeInk);
+            DrawDerivedStatRow("Trade balance, partners' mirrored tariffs", -1f,
+                $"{UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions)}/yr", null, tradeInk);
+            DrawDerivedStatRow("Prices this year", -1f,
+                $"{estimate.PassThroughPp:+0.00;-0.00} pp", "tariff pass-through", tradeInk);
         }
 
         /// <summary>Bundles the base tariff rate draft and every partner override draft into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts. Only a partner with an ACTIVE override gets an entry, mirroring BuildPlayerDecision's own former "only currently-implemented" reasoning.</summary>
