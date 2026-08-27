@@ -690,6 +690,11 @@ namespace PoliSim.UI
         /// green lamp exactly as the hold plate's is for the amber one (RescaleStylesToScreen).</summary>
         private GUIStyle _runningPlateStyle;
 
+        /// <summary>§A.8's right-aligned screen caption (built 2026-08-28, omnibus roadmap item 4) -
+        /// `11 bold ls .18em inkFaint` on the board; small bold display type here, right-aligned,
+        /// B6's live/published carrier at screen level ("DOMESTIC BULLETIN — DESK READINGS, LIVE").</summary>
+        private GUIStyle _screenCaptionStyle;
+
         // Master Sequence step 5e, Phase C batch 2: decision-card chrome. Fill sits slightly lighter
         // than the app background so a card reads as raised without a border, matching PoliSimTheme's
         // own Card token rather than inventing a second card color for this one screen.
@@ -2070,6 +2075,9 @@ namespace PoliSim.UI
             _gameOverStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = true };
             _gameOverStyle.normal.textColor = Color.red;
             _cardKindStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = false };
+            _screenCaptionStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, wordWrap = false, alignment = TextAnchor.MiddleRight };
+            PoliSimTheme.WithDisplay(_screenCaptionStyle);
+            _screenCaptionStyle.normal.textColor = PoliSimTheme.TextSecondary;
 
             // v2.0 typography (Elias's direction, 2026-08-03): ONE humanist serif across headers and body,
             // with the monospace reserved for genuine document artifacts and deliberately absent here -
@@ -2427,6 +2435,9 @@ namespace PoliSim.UI
             // Deliberately the smallest text on screen - a card's kind caption is a wayfinding label,
             // not content, and must not compete with the decision's own headline underneath it.
             _cardKindStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * 0.62f));
+            // §A.8's caption at the board's ratio to body type (11 beside 12.5), floored where the
+            // display face stops reading.
+            _screenCaptionStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * (11f / 12.5f)));
 
             // Rebuilt every frame (cheap - a handful of GUIStyle clones reusing cached swatch
             // textures, not per-frame texture allocation) so they always match _tabButtonStyle/
@@ -4289,7 +4300,14 @@ namespace PoliSim.UI
             }
             else
             {
+                // Centred on the pad beside it: at body type the running plate is one line tall
+                // against a pad three lines tall, and top-aligned it read as a slider track (the
+                // first omni_a1600 capture). Spacers are layout, not controls - the count holds.
+                GUILayout.BeginVertical();
+                GUILayout.FlexibleSpace();
                 DrawRunningStatusPlate(statusText);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndVertical();
             }
             GUILayout.EndHorizontal();
 
@@ -5278,10 +5296,23 @@ namespace PoliSim.UI
         }
 
         /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above). RULED 2026-08-12 (Elias): the no-area-tint decision STANDS against §A.8's "bottom 3px area ink" strip and the manifest's "ui_subtab_on's bottom hue strip = ui_tab_spine flipped" - the main-tab spine carries area identity one level up, so the strip would be redundant, not missing.</summary>
-        private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory, float maxWidth = 0f, float rowHeight = 0f) where T : struct, System.Enum
+        private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory, float maxWidth = 0f, float rowHeight = 0f, UiPalette.SystemArea iconArea = UiPalette.SystemArea.Neutral) where T : struct, System.Enum
         {
             bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);
             GUIStyle style = BuildSubTabStyle(selected);
+
+            // Omnibus 2026-08-28 (R-K6): the area icon leads the label on the sub-tab rows - the eight
+            // `icon_area_*` sprites that had no call site find their home here (16px on the board's
+            // 13.5px type, area-ink tint). The reserve is padding on THIS call's fresh style clone, so
+            // the label centres in the remaining width and the row's measured floor sees the icon.
+            Texture2D subTabIcon = IconLibrary.GetAreaIcon(iconArea);
+            float subTabIconSize = 0f;
+            float subTabIconLeft = style.padding.left;
+            if (subTabIcon != null)
+            {
+                subTabIconSize = Mathf.Round(style.fontSize * SubTabIconFontMultiple);
+                style.padding.left += Mathf.RoundToInt(subTabIconSize + SubTabIconGap);
+            }
 
             // REVIEW ITEM 5 ("trade is cut off") WAS HERE, and it is the WIDTH variant of the label
             // class. Five buttons share the Policy/Laws row with ExpandWidth(true) and no width budget:
@@ -5329,6 +5360,95 @@ namespace PoliSim.UI
                 selectedCategory = category;
             }
 
+            DrawSubTabIcon(GUILayoutUtility.GetLastRect(), subTabIcon, subTabIconSize, subTabIconLeft, iconArea);
+        }
+
+        /// <summary>The board's 16px icon beside 13.5px sub-tab type, as a ratio of the live type size.</summary>
+        private const float SubTabIconFontMultiple = 16f / 13.5f;
+        private const float SubTabIconGap = 6f;
+
+        /// <summary>The leading area icon on a sub-tab or Budget-category button: an overlay draw inside
+        /// the padding the button's own style reserved (never a control), area-ink tinted in both states
+        /// per R-K6 - the tongue one level up carries the same hue, and a lifted tint here would read as a
+        /// second, different colour for the same area.</summary>
+        private void DrawSubTabIcon(Rect buttonRect, Texture2D icon, float iconSize, float leftInset, UiPalette.SystemArea area)
+        {
+            if (icon == null || iconSize <= 0f || Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            var iconRect = new Rect(buttonRect.x + leftInset, buttonRect.y + (buttonRect.height - iconSize) * 0.5f, iconSize, iconSize);
+            UiPalette.DrawTintedIcon(iconRect, icon, UiPalette.GetAreaColor(area));
+        }
+
+        /// <summary>§A.8's right-aligned screen caption and the 2px ink rule that closes the sub-tab row
+        /// (built 2026-08-28, omnibus roadmap item 4). The caption is B6's live/published carrier at
+        /// screen level. Drawn through <see cref="LedgerRow.Cell"/> so it shrinks rather than clips at
+        /// the narrow floor. ⚠ ONE ACCESSOR, TWO SITES: every tab that draws this block subtracts
+        /// <see cref="ScreenCaptionBlockHeight"/> from its content reserve - the instance-#12 shape.</summary>
+        private void DrawScreenCaption(string caption)
+        {
+            float line = ScreenCaptionLineHeight();
+            Rect captionRect = GUILayoutUtility.GetRect(10f, line, GUILayout.ExpandWidth(true));
+            LedgerRow.Cell(captionRect, caption, _screenCaptionStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+            GUILayout.Space(ScreenCaptionRuleClearance);
+            Rect ruleRect = GUILayoutUtility.GetRect(10f, ScreenCaptionRuleHeight, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.Rule(ruleRect, PoliSimTheme.TextPrimary);
+            }
+            GUILayout.Space(ScreenCaptionRuleClearance);
+        }
+
+        private const float ScreenCaptionRuleHeight = 2f;
+        private const float ScreenCaptionRuleClearance = 4f;
+
+        private float ScreenCaptionLineHeight()
+        {
+            return _screenCaptionStyle.CalcHeight(new GUIContent("X"), 100f);
+        }
+
+        private float ScreenCaptionBlockHeight()
+        {
+            return ScreenCaptionLineHeight() + ScreenCaptionRuleClearance + ScreenCaptionRuleHeight + ScreenCaptionRuleClearance;
+        }
+
+        /// <summary>The captions, one per sub-screen - the live/published word is the load-bearing
+        /// part (§A.8a's "live desk reading" sits under it). Text is this session's call (R-K10's
+        /// "log one line": the spec gives two examples and no table); the seat count is real.</summary>
+        private string StatisticsScreenCaption()
+        {
+            return _statisticsCategory == StatisticsCategory.Domestic
+                ? "DOMESTIC BULLETIN — DESK READINGS, LIVE"
+                : "INTERNATIONAL BULLETIN — WORLD READINGS, LIVE";
+        }
+
+        private string PolicyLawsScreenCaption()
+        {
+            switch (_policyLawsCategory)
+            {
+                case PolicyLawsCategory.LaborMarket: return "LABOR MARKET — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.CrimeJustice: return "CRIME & JUSTICE — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.Sectors: return "ECONOMIC SECTORS — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.PolicyWeb: return "THE POLICY WEB — REFERENCE, LIVE";
+                case PolicyLawsCategory.Trade: return "TRADE — DRAFTS, NOTHING ENACTED UNTIL PARLIAMENT VOTES";
+                default: return $"THE STATUTE BOOK — {LawCatalog.All.Count} LAWS, BILLS TO THE HOUSE";
+            }
+        }
+
+        private string PoliticsScreenCaption()
+        {
+            switch (_politicsCategory)
+            {
+                case PoliticsCategory.Parliament:
+                    int seats = 0;
+                    foreach (KeyValuePair<PartyArchetype, int> kvp in _playerCountry.ParliamentSeats) { seats += kvp.Value; }
+                    return $"THE NATIONAL ASSEMBLY — {seats} SEATS";
+                case PoliticsCategory.Compass: return "THE POLITICAL COMPASS — SIX COUNTRIES, LIVE";
+                case PoliticsCategory.Cabinet: return "THE CABINET — THREE PORTFOLIOS, LIVE";
+                default: return $"{GetCentralBankName(PlayerCountryId).ToUpperInvariant()} — LIVE";
+            }
         }
 
         /// <summary>
@@ -5466,11 +5586,12 @@ namespace PoliSim.UI
             // buttons and the content reserve below - see the accessor's own doc for the ECB case.
             float subTabRowHeight = SubTabRowHeight(subTabShare, "Domestic", "International");
             DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Global);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
+            DrawScreenCaption(StatisticsScreenCaption());
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f;
+            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight();
             float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
             _statisticsContentScrollPosition = GUILayout.BeginScrollView(_statisticsContentScrollPosition, GUILayout.Height(scrollHeight));
             switch (_statisticsCategory)
@@ -5863,14 +5984,15 @@ namespace PoliSim.UI
             float subTabShare = SubTabShare(availableWidth, 6);
             // Instance #13: one measured row height, shared with the content reserve below.
             float subTabRowHeight = SubTabRowHeight(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
-            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Labor);
+            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.CrimeJustice);
+            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Sectors);
             DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight);
+            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight, UiPalette.SystemArea.Trade);
             DrawSubCategoryButton("Laws", PolicyLawsCategory.Laws, ref _policyLawsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
+            DrawScreenCaption(PolicyLawsScreenCaption());
 
             // Step B2: the stats THIS sub-screen's own levers move, directly under its selector so the
             // numbers change with the screen. Measured before it is drawn and subtracted from the
@@ -5887,11 +6009,11 @@ namespace PoliSim.UI
             // The host's remaining height under the chips (the same budget contentHeight below is
             // cut from) - the panel takes at most its share of it and scrolls for the rest, so a
             // long section can never push the tab's own body off the window (2026-08-25).
-            float policyTraceHostHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - statRowHeight);
+            float policyTraceHostHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight() - statRowHeight);
             float policyTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, policyTraceGapStance, _labelStyle, statRowWidth, policyTraceHostHeight);
             StatTracePanel.Draw(_playerCountry, policyTraceGapStance, _labelStyle, _labelStyle, statRowWidth, policyTraceHostHeight);
 
-            float contentHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - statRowHeight - policyTraceHeight);
+            float contentHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight() - statRowHeight - policyTraceHeight);
             switch (_policyLawsCategory)
             {
                 case PolicyLawsCategory.LaborMarket:
@@ -7035,8 +7157,9 @@ namespace PoliSim.UI
             DrawSubCategoryButton(centralBankName, PoliticsCategory.FederalReserve, ref _politicsCategory, subTabShare, subTabRowHeight);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
+            DrawScreenCaption(PoliticsScreenCaption());
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f;
+            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight();
             switch (_politicsCategory)
             {
                 case PoliticsCategory.Parliament:
@@ -8491,9 +8614,9 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(GUILayout.Width(categoryColumnWidth));
             DrawBudgetProcessCategoryButton("Tax", BudgetProcessCategory.Tax);
             DrawBudgetProcessCategoryButton("Spending", BudgetProcessCategory.Spending);
-            DrawBudgetProcessCategoryButton("Welfare", BudgetProcessCategory.Welfare);
-            DrawBudgetProcessCategoryButton("Infrastructure", BudgetProcessCategory.Infrastructure);
-            DrawBudgetProcessCategoryButton("Sovereign Wealth Fund", BudgetProcessCategory.Swf);
+            DrawBudgetProcessCategoryButton("Welfare", BudgetProcessCategory.Welfare, UiPalette.SystemArea.Welfare);
+            DrawBudgetProcessCategoryButton("Infrastructure", BudgetProcessCategory.Infrastructure, UiPalette.SystemArea.Infrastructure);
+            DrawBudgetProcessCategoryButton("Sovereign Wealth Fund", BudgetProcessCategory.Swf, UiPalette.SystemArea.SovereignWealth);
             GUILayout.EndVertical();
 
             GUILayout.Space(columnSpacing);
@@ -8554,10 +8677,21 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
-        private void DrawBudgetProcessCategoryButton(string label, BudgetProcessCategory category)
+        private void DrawBudgetProcessCategoryButton(string label, BudgetProcessCategory category, UiPalette.SystemArea iconArea = UiPalette.SystemArea.Neutral)
         {
             bool selected = _budgetProcessCategory == category;
             GUIStyle style = BuildSubTabStyle(selected);
+            // Omnibus 2026-08-28 (R-K6): the category column is a sub-tab row stood on end, so the
+            // welfare / infrastructure / sovereign-wealth icons lead their labels here - the same
+            // reserve-on-the-clone + overlay draw as DrawSubCategoryButton.
+            Texture2D icon = IconLibrary.GetAreaIcon(iconArea);
+            float iconSize = 0f;
+            float iconLeft = style.padding.left;
+            if (icon != null)
+            {
+                iconSize = Mathf.Round(style.fontSize * SubTabIconFontMultiple);
+                style.padding.left += Mathf.RoundToInt(iconSize + SubTabIconGap);
+            }
             // Same treatment as the horizontal sub-tabs (see BuildSubTabStyle), and this column is where
             // it matters most: it is the narrowest surface in the UI, so "Sovereign Wealth Fund" and
             // "Infrastructure" wrap here even at large window sizes.
@@ -8565,6 +8699,8 @@ namespace PoliSim.UI
             {
                 _budgetProcessCategory = category;
             }
+
+            DrawSubTabIcon(GUILayoutUtility.GetLastRect(), icon, iconSize, iconLeft, iconArea);
         }
 
         /// <summary>

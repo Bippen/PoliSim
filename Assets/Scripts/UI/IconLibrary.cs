@@ -26,6 +26,25 @@ namespace PoliSim.UI
             return Load(IconResourcesPath + iconName);
         }
 
+        /// <summary>
+        /// The area icon for a <see cref="UiPalette.SystemArea"/> - `icon_area_&lt;area&gt;`, the
+        /// filename derived from the enum like every other art category here. Omnibus 2026-08-28
+        /// (R-K6): the eight area icons that had no call site (`COMPLETED.md` §33) are promoted to the
+        /// sub-tab rows through THIS accessor, and `AreaIconCoverageCheck` enumerates the enum through
+        /// it - one accessor, so the check and the screens cannot ask for different names. Neutral has
+        /// no icon by design (it is the absence of an area) and returns null; every other member returns
+        /// null only when the file is missing, the same contract as <see cref="Get"/>.
+        /// </summary>
+        public static Texture2D GetAreaIcon(UiPalette.SystemArea area)
+        {
+            if (area == UiPalette.SystemArea.Neutral)
+            {
+                return null;
+            }
+
+            return Get("icon_area_" + area.ToString().ToLowerInvariant());
+        }
+
         /// <summary>Shared cache/load for every art category below - keyed on the FULL Resources path, so an icon and a portrait that happened to share a bare filename could never collide in the cache.</summary>
         private static Texture2D Load(string resourcePath)
         {
