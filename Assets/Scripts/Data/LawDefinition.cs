@@ -84,7 +84,7 @@ namespace PoliSim.Data
         /// reasoning, and any honestly-noted caveat stay comment-only; this field is the one
         /// sentence worth putting in front of a player). Surfaced in the law browser's detail pane
         /// for the first time - until now this grounding existed only in source and never reached
-        /// the game (see CLAUDE_DESIGN_ASSET_REQUEST.md §7). Never null for a shipped law - the "no
+        /// the game (the law-browser request, consumed to COMPLETED.md §24). Never null for a shipped law - the "no
         /// citation" case a genre-idiom law reaches for is GENRE-IDIOM itself, stated as such, not
         /// an empty field.</summary>
         public string Citation;

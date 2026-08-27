@@ -3,8 +3,8 @@ namespace PoliSim.Data
     /// <summary>
     /// Political Systems Overhaul Part A (Cabinet), Master Sequence step 1. The confirmed FULL scope
     /// is six generic portfolios (Finance/Treasury, Foreign Affairs, Defense, Interior/Justice,
-    /// Health &amp; Social Affairs, Economy/Trade &amp; Industry - see POLISIM_MASTER_ROADMAP.md Part
-    /// A), but per that document's own content-authoring warning ("6-8 roles x 2-3 candidates x
+    /// Health &amp; Social Affairs, Economy/Trade &amp; Industry - see COMPLETED.md §2, Part A's
+    /// record), but per the original plan's content-authoring warning ("6-8 roles x 2-3 candidates x
     /// multiple decisions each is a real content burden - build 2-3 portfolios with real,
     /// fully-realized content first, mirroring the Sectors 4-&gt;8 pattern, prove the pattern feels
     /// right, then expand"), Part A implemented only the first three - chosen because each lands on a

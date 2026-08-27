@@ -449,7 +449,10 @@ namespace PoliSim.UI
             Color baseColor = GetButtonBaseColor(kind, area);
             var style = new GUIStyle(baseStyle);
 
-            // v2.0: brass for the emphatic kinds, paper for the rest, and the pack's own disabled plate.
+            // v2.0: brass for the emphatic kinds, paper for the rest. The pack's disabled plate
+            // (ui_btn_disabled) is NOT loaded here - GUI.enabled dimming over brass/paper stands in for it
+            // (the 2026-08-12 "served by current treatment, revivable" ruling); the held-state speed
+            // buttons that the spec says should wear it are a roadmap item (corrected 2026-08-27).
             // These sprites are REAL-COLOUR paper furniture rather than white-on-alpha, so they are drawn
             // untinted for Neutral/TabUnselected and only lightly tinted where an area hue must read
             // through - the opposite of the old chrome pack, which was tintable by construction.

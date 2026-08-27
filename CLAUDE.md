@@ -6273,7 +6273,12 @@ who could actually look it up" — and that turned out not to be sufficient.
 Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9. Those are real Eurostat figures. They are also the
 **"Two adults" household-type subset**, not the headline whole-population indicator (`ilc_lvho07a`).
 The correct whole-population 2024 figures are Germany 12.0, Sweden 10.6, EU average 8.2. Sweden differs
-by more than 2x between variants — 5.1 versus 10.6 versus 10.8 for the "18–64" cut.
+by more than 2x between variants — 5.1 versus 10.6 versus 10.8 for the "18–64" cut. *(⚠ Amended
+2026-08-27: the "two adults" attribution was RETRACTED by the seed doc the same day from the API's own
+structure — `ilc_lvho07a`'s dimensions are `freq · unit · rskpovth · age · sex · geo · time`, with no
+household-type axis; the wrong figures were simply another variant. The whole-population figures and
+the variant-axis lesson stand; `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` "CORRECTION TO THE CORRECTION" is
+the authority.)*
 
 **Why it is worth a numbered entry rather than a footnote.** The seed file *already contained an
 explicit warning about exactly this trap*, two sections earlier:
@@ -8093,7 +8098,10 @@ continuation loop, `84b_meeting_decisions`) - stated, not re-built.
 
 ### Track 3 executed (`10f713e`)
 
-The manifest's 11 `!`-rows deleted from disk (+ metas), verified absent from code first: zero
+The manifest's 11 `!`-rows deleted from disk (+ metas) *(⚠ amended 2026-08-27: the PNGs and metas
+only — the commit touched no `.svg`, and all eleven SVG sources are still under `Chrome/Source/`; the
+one-line correction — delete them or record their retention in the manifest — is a roadmap item)*,
+verified absent from code first: zero
 exact-name references (the GameController scrollbar hits are the v2 `_v`/`_h` names; IconLibrary's
 is a doc comment), zero GUID references in any scene/prefab/asset. `DeliveredAssetCheck`'s
 superseded allowance landed IN THE SAME COMMIT, reading the manifest's own `!` rows rather than a
@@ -8741,7 +8749,8 @@ condition stated up front: not fixed, not worsened. `SaveLoadRoundTripDiagnostic
 
 ### The item-7 close-out verdict
 
-- **The taxonomy's final state** (all in the roadmap's table): linear slice, PerDayReversion,
+- **The taxonomy's final state** (all in the translation table — `COMPLETED.md` §28 since 2026-08-27,
+  when the roadmap's PART ONE migrated): linear slice, PerDayReversion,
   probability, clamps-never-scale, sensitivities/target-shapers take nothing, the power slice,
   the affine power slice, and the governing distinction the whole migration ends on: **linear
   distribution for fixed references, compounding for self-references, and boundary residence for

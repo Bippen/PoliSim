@@ -6,8 +6,8 @@ namespace PoliSim.Data
     /// sourced from real government fiscal-year conventions - the USA federal fiscal year starts
     /// October 1; Germany, France, Italy, Poland, and Sweden all budget on the calendar year, starting
     /// January 1. See SimulationManager.IsFiscalYearStart for how this is checked against CurrentDate,
-    /// and the revised step 5 design in POLISIM_MASTER_ROADMAP.md's Part B for what fires on this date
-    /// once 5c wires the actual Annual Budget bill.
+    /// and Part B's step 5 record in COMPLETED.md §5 for what fires on this date - 5c wired the
+    /// Annual Budget bill (the plan left the roadmap 2026-08-27).
     /// </summary>
     public static class FiscalYearData
     {

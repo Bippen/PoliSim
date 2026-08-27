@@ -1,11 +1,12 @@
 # PoliSim UI Chrome — control-chrome sprite pack
 
-Delivered 2026-08-01 by Claude Design. Answers `CLAUDE_DESIGN_ASSET_REQUEST_UI_CHROME.md` in full,
+Delivered 2026-08-01 by Claude Design. Answers the UI-chrome request (consolidated into
+`CLAUDE_DESIGN_ASSET_REQUEST.md` on 2026-08-02 and since fulfilled — `COMPLETED.md` §§8/24) in full,
 with all four section-8 decisions applied (subtle gradients; 6px button / 9px panel corners;
 slider fill included; panel sprite produced).
 
-**Addendum (2026-08-01, same day):** 2 vertical scrollbar sprites added per
-`CLAUDE_DESIGN_ASSET_REQUEST_UI_CHROME_ADDENDUM.md` — 16 of the 17 scroll views are vertical and
+**Addendum (2026-08-01, same day):** 2 vertical scrollbar sprites added per the chrome request's
+addendum (same consolidation) — 16 of the 17 scroll views were vertical then and
 IMGUI has no per-style texture rotation. Mirrored 90 degrees from the delivered horizontal pair:
 caps top/bottom, recess/gradient rotated to read lit-from-top-left. Same alpha values.
 

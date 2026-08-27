@@ -46,7 +46,11 @@ namespace PoliSim.UI
         /// revision badges, by filename minus extension - e.g. "icon_stat_gdp", "icon_trend_up",
         /// "badge_preliminary". All 42 were delivered and imported in `be97ebb`, and
         /// `icon_stat_interestrate` - the one the original manifest missed - landed 2026-08-02, so the
-        /// set is complete at 43.
+        /// set is complete at 43 as a DELIVERY. As a reachable set it is 18: only the StatNodeId names
+        /// PolicyScreenStatsRenderer.GetIconName maps are ever requested; the other 25 (19 stat icons
+        /// without a node, the trend arrows, the badges and the release marker - GraphRenderer and
+        /// PublishedFigure draw those procedurally) are held stock with no call site (2026-08-27,
+        /// COMPLETED.md §33; place-or-hold is a roadmap item).
         ///
         /// Same null-on-missing contract as <see cref="Get"/>: a typo draws nothing rather than
         /// something misleading.

@@ -1689,7 +1689,7 @@ namespace PoliSim.Simulation
             }
         }
 
-        // --- Infrastructure Feedback: ConditionIndex/spending nudge PotentialGrowthRate, combined under one ceiling (resolves ROADMAP_BRIEF.md's Open Questions #2 - "Resolved by Elias: FEED BACK") ---
+        // --- Infrastructure Feedback: ConditionIndex/spending nudge PotentialGrowthRate, combined under one ceiling (resolves the Round 2 brief's Open Questions #2 - "Resolved by Elias: FEED BACK"; COMPLETED.md §§1/11) ---
 
         /// <summary>ConditionIndex value at/above which infrastructure condition is considered "healthy" and applies no growth penalty. 50 - the natural midpoint of the 0-100 ConditionIndex scale, and the same "50 = neutral" convention already used throughout this codebase's policy dials (PoliceFundingLevel, SentencingSeverity, OvertimeRegulationLevel, etc.). Chosen so that no country's seeded ConditionIndex (all >= 55 - see WorldFactory) starts below it, avoiding a turn-1 shock, the same "avoid discontinuity" idiom established since "Turn-1 GDP Consistency."</summary>
         private const float InfrastructureConditionGrowthThreshold = 50f;
@@ -1749,7 +1749,7 @@ namespace PoliSim.Simulation
                 -MaxCombinedInfrastructureGrowthAdjustment, MaxCombinedInfrastructureGrowthAdjustment);
         }
 
-        // --- Sector Integration: Output/Employment performance nudge PotentialGrowthRate/Unemployment, combined with Infrastructure under one all-sources ceiling (resolves ROADMAP_BRIEF.md's Open Questions #1 - "Resolved by Elias: INTEGRATE") ---
+        // --- Sector Integration: Output/Employment performance nudge PotentialGrowthRate/Unemployment, combined with Infrastructure under one all-sources ceiling (resolves the Round 2 brief's Open Questions #1 - "Resolved by Elias: INTEGRATE"; COMPLETED.md §§1/11) ---
 
         /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP the aggregate Sector Output (summed gap vs. each sector's own BaselineOutputShareOfGdp, across all four sectors) sits above its own trend - strong sector performance nudges trend growth up, weak performance drags it down.</summary>
         private const float SectorGrowthSensitivity = 0.05f;

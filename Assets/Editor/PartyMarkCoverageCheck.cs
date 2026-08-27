@@ -122,7 +122,8 @@ namespace PoliSim.EditorTools
                 // Resolution proves the GUID, the path and that the meta parses. It says nothing about
                 // whether block compression took effect - and compression on white-on-alpha at icon size
                 // is the documented damage vector. All four marks resolved at 128x128 while every one was
-                // DXT5. `ImporterSettingsCheck` now asserts this across all 149 sprites; it stays here
+                // DXT5. `ImporterSettingsCheck` now asserts this across every sprite under Art/UI (149
+                // when this was written; its own summary line carries the live count); it stays here
                 // too because this check is what a party-facing failure should name.
                 if (texture.format != TextureFormat.RGBA32)
                 {

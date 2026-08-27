@@ -1,6 +1,7 @@
 # PoliSim Macro Data & Release Calendar — icon pack
 
-Delivered 2026-08-01 by Claude Design. Answers `CLAUDE_DESIGN_ASSET_REQUEST_MACRO.md` in full.
+Delivered 2026-08-01 by Claude Design. Answers the macro icon request (consolidated into
+`CLAUDE_DESIGN_ASSET_REQUEST.md` on 2026-08-02 and since fulfilled — `COMPLETED.md` §§8/15) in full.
 Section 9 open question: **the full 42 were produced**, per the request's own recommendation.
 Third pack in this project, after the 5E imagery pack and the UI-chrome pack; conventions match both.
 

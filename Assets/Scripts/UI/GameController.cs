@@ -18,8 +18,8 @@ namespace PoliSim.UI
     {
         /// <summary>
         /// Master Sequence step 5e, Phase A (tab/IA restructuring): the consolidated top-level tabs (7 originally, 6 since the Tax/Spending merge below),
-        /// replacing the old 18-tab `RightPanelTab` bar - see POLISIM_MASTER_ROADMAP.md's "5e
-        /// implementation plan" for the full old-tab -&gt; new-tab mapping and reasoning behind every
+        /// replacing the old 18-tab `RightPanelTab` bar - see COMPLETED.md §10 (Phase A, the five
+        /// placement calls Elias confirmed; the 5e plan left the roadmap 2026-08-27) for the full old-tab -&gt; new-tab mapping and reasoning behind every
         /// placement (several tabs SPLIT across two destinations - Cabinet, Compass &amp; Demographics,
         /// Trade - and five placements were genuinely ambiguous and required Elias's explicit
         /// confirmation before being built). Deliberately NO visual style change in this phase - same
@@ -414,8 +414,8 @@ namespace PoliSim.UI
         /// figure - Unemployment/Inflation/Approval/PovertyRate/LaborForceParticipation/CrimeIndex/
         /// NetBudgetImpact) down to a shorter display horizon by simple proportion - a display-only
         /// approximation, not a new simulation (Phase 0 doesn't compute genuine sub-turn values yet).
-        /// Matches the "linear/additive rates" category POLISIM_MASTER_ROADMAP.md's own translation
-        /// methodology describes, applied here purely for display rather than to a real constant.
+        /// Matches the "linear/additive rates" category of the Continuous Time translation methodology
+        /// (COMPLETED.md §28, migrated from the roadmap 2026-08-27), applied here purely for display rather than to a real constant.
         /// </summary>
         private static float ScaleLinearForDisplay(float fullTurnValue, int horizonDays)
         {
@@ -2915,7 +2915,7 @@ namespace PoliSim.UI
         /// Master Sequence step 5e, Phase B pilot: the dashboard's headline stats restyled onto
         /// <see cref="PoliSimWidgets.StatTile"/> in a 3-column grid, replacing the old raw
         /// GUILayout.Label two-column list - this was Phase B's actual sprite-pilot target (see
-        /// POLISIM_MASTER_ROADMAP.md). Ten tiles now (nine without an independent currency): Step
+        /// COMPLETED.md §10). Ten tiles now (nine without an independent currency): Step
         /// C4's Credit Rating joined the grid 2026-08-02, beside Debt-to-GDP.
         ///
         /// ⚠ CALENDAR PANEL (see CLAUDE.md): this method's own call from the always-visible left

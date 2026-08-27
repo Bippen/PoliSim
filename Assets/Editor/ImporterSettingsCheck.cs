@@ -11,7 +11,8 @@ namespace PoliSim.EditorTools
     ///
     /// <para><b>WHAT THIS ENUMERATES</b> (rule 14 — cite a check by its enumeration, never by its
     /// intent): every `*.png` under `Assets/Resources/Art/UI/`, recursively, classified by folder and
-    /// filename prefix. 149 files at the time of writing. It does NOT cover fonts, SVG sources, art
+    /// filename prefix (the file count is the check's own output, never this comment's - 149 when
+    /// written, 140 on 2026-08-27 after Track 3 removed the superseded chrome). It does NOT cover fonts, SVG sources, art
     /// outside that root, or whether a sprite is the RIGHT drawing — only how it imported.</para>
     ///
     /// <para><b>Why one check rather than a third per-family one.</b> Block compression on white-on-alpha

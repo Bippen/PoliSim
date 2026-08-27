@@ -18,7 +18,8 @@ namespace PoliSim.Data
     /// gap-to-baseline idiom used elsewhere, since a decay/investment mechanic is fundamentally a
     /// stock, not an equilibrium-seeking value - hard-clamped to [0, 100] every turn so it can never
     /// diverge or decay unboundedly, directly addressing the failure pattern
-    /// ROADMAP_BRIEF.md's Round 2 ordering note flagged for this specific item.
+    /// the Round 2 ordering note flagged for this specific item (the brief was consolidated into the
+    /// master roadmap 2026-07-30; the Rounds 1-3 record is COMPLETED.md §1).
     /// </summary>
     [Serializable]
     public class InfrastructureAsset
