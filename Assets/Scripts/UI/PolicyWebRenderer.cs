@@ -182,7 +182,7 @@ namespace PoliSim.UI
             { PolicyNodeId.SectorDeregulationNationalization, new PolicyNodeInfo { Name = "Deregulation / Nationalization", Area = UiPalette.SystemArea.Sectors, Description = "0 (nationalized) to 100 (deregulated) - the one dial where Output and Employment move in OPPOSITE directions (privatization gains efficiency by shedding labor)." } },
             { PolicyNodeId.SwfContributionRate, new PolicyNodeInfo { Name = "SWF Contribution Rate", Area = UiPalette.SystemArea.SovereignWealth, Description = "% of GDP contributed to (or, if negative, withdrawn from) the Sovereign Wealth Fund each year." } },
             { PolicyNodeId.SwfAssetAllocation, new PolicyNodeInfo { Name = "SWF Asset Allocation", Area = UiPalette.SystemArea.SovereignWealth, Description = "Equities/Bonds/Infrastructure/Real Estate weighting - higher equities weight raises expected AND variance of returns." } },
-            { PolicyNodeId.TariffPolicy, new PolicyNodeInfo { Name = "Tariff Policy", Area = UiPalette.SystemArea.Trade, Description = "This country's own base tariff rate plus any per-partner override." } },
+            { PolicyNodeId.TariffPolicy, new PolicyNodeInfo { Name = "Tariff Policy", Area = UiPalette.SystemArea.Trade, Description = "This country's own base tariff rate plus any per-partner override. Partners mirror an override's excess onto your exports; a change in the take passes through to prices for a year." } },
             { PolicyNodeId.InterestRateDecision, new PolicyNodeInfo { Name = "Interest Rate", Area = UiPalette.SystemArea.Political, Description = "Central bank rate - Taylor-Rule-determined for a country with an independent Fed chair, player-set via PolicyDecision.InterestRateChange otherwise." } },
         };
 
@@ -331,10 +331,15 @@ namespace PoliSim.UI
             e.Add(new PolicyWebEdge(PolicyNodeId.SwfContributionRate, StatNodeId.DebtToGdp, true, 0.5f));
             e.Add(new PolicyWebEdge(PolicyNodeId.SwfAssetAllocation, StatNodeId.DebtToGdp, true, 0.5f));
 
-            // Trade (TradeSystem.ApplyTradeEffects - our OWN tariff rate generates tariffRevenue into
-            // Budget; it does NOT directly move our own TradeBalance, which reacts to partner countries'
-            // tariffs on OUR exports instead - a real asymmetry, not simplified away).
-            e.Add(new PolicyWebEdge(PolicyNodeId.TariffPolicy, StatNodeId.DebtToGdp, true, 0.5f));
+            // Trade (TradeSystem.ApplyTradeEffects; pass 6, 2026-08-27). Our own tariff take is real
+            // revenue since pass 5 - it LOWERS the debt ratio (the `true` this edge carried from the
+            // accumulator era was a sign slip against Increases' own definition, fixed here). Since pass
+            // 6 a per-partner override also moves our OWN TradeBalance - partners mirror its excess onto
+            // our exports (TradeSystem.GetRetaliatoryTariffRate) - and the change in the take passes
+            // through to Inflation for a year (TradeCosts.ImportPricePassThrough).
+            e.Add(new PolicyWebEdge(PolicyNodeId.TariffPolicy, StatNodeId.DebtToGdp, false, 0.5f));
+            e.Add(new PolicyWebEdge(PolicyNodeId.TariffPolicy, StatNodeId.TradeBalance, false, 0.5f));
+            e.Add(new PolicyWebEdge(PolicyNodeId.TariffPolicy, StatNodeId.Inflation, true, 0.5f));
 
             // Interest rate (MacroSystem.ApplyNationalAccounts - rate above TaylorRule.NeutralRealRate
             // dampens Consumption/Investment directly; Unemployment/Inflation react only INDIRECTLY,
@@ -907,7 +912,7 @@ namespace PoliSim.UI
                     break;
                 case PolicyNodeId.TariffPolicy:
                     lines.Add($"Base tariff rate: {country.BaseTariffRate:F1}%");
-                    lines.Add("Generates tariff revenue into Budget/DebtToGdp; does NOT directly move this country's own TradeBalance (that reacts to partners' tariffs on OUR exports instead).");
+                    lines.Add("Tariff revenue lowers the debt ratio; a per-partner override is mirrored by that partner onto our exports (moving our own TradeBalance), and a change in the take passes through to prices for a year (pass 6).");
                     break;
                 case PolicyNodeId.InterestRateDecision:
                     lines.Add($"Current rate: {country.CurrencyZone.InterestRate:F2}%");

@@ -7937,6 +7937,13 @@ namespace PoliSim.UI
             EconomyState state = _playerCountry.State;
             DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             DrawColoredLabel($"Overall Trade Balance: {UiFormat.MoneyDelta(state.TradeBalance, MoneyUnit.Billions)}", _labelStyle, UiPalette.GetDeltaColor(state.TradeBalance, higherIsBetter: true));
+            // Pass 6: the tariff pass-through that actually printed over the last period (the closing
+            // FiscalPeriod's applied term on the report); null before the first boundary, the
+            // DrawSpendingSection posture. One label either way.
+            FiscalTurnReport lastTradeReport = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+            GUILayout.Label(lastTradeReport != null
+                ? $"Tariff pass-through to prices (last year): {lastTradeReport.TariffPassThroughPp:+0.00;-0.00} pp of inflation"
+                : "Tariff pass-through to prices (last year): advance a year", _labelStyle);
             _tradeBalanceGraph.Draw("Trade Balance", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true,
                 moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.TradeBalance));
         }
@@ -7951,19 +7958,28 @@ namespace PoliSim.UI
             BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
             DrawTradeBillStatusAndIntroduce();
             DrawTradeLiveEstimate();
+            DrawTradeBillCostEstimate();
             EndAreaCard(UiPalette.SystemArea.Trade);
 
             // The long qualifier - "applies to any partner with no override, and only where it isn't
             // superseded by trade-bloc membership" - is a property of the SCREEN, not of this row, and it
             // is already said by the paragraph below about overrides beating the usual resolution. The
             // row keeps the range, which is what the trailing column carries everywhere else.
+            // Pass 6 ride-along (2026-08-27): an EU member's base rate is never charged - every partner
+            // resolves at a bloc rate before the base rate is reached (TradeSystem.GetStandingTariffRate's
+            // precedence, pass 5's finding) - so the dial is drawn disabled with the reason as its
+            // trailing text. One control either way (the stable-control-layout rule); the "n/a" standing
+            // value is honest for a rate that is never charged. Since pass 6 the vote reads the average
+            // tariff actually charged, so a moved-but-inert base draft could not sway it anyway.
+            bool baseRateInert = _world.TradeBlocs.Exists(bloc => bloc.IsMember(PlayerCountryId));
             _tariffRateInput = DrawDialRow("General Base Tariff",
                 _playerCountry.BaseTariffRate, GetTariffRateInput(_playerCountry.BaseTariffRate),
                 MinBaseTariffRate, MaxBaseTariffRate, "F2", "%",
-                $"{MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}% range");
+                baseRateInert ? "inert - bloc rates apply to every partner" : $"{MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}% range",
+                interactive: !baseRateInert);
             GUILayout.Space(10f);
 
-            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. Doesn't affect what that partner charges on our exports to them.", _labelStyle);
+            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. The partner mirrors any excess over its standing rate back onto our exports to them from the next boundary, and the change in the tariff take passes through to prices for a year.", _labelStyle);
             GUILayout.Space(6f);
 
             // Bars are sized relative to the largest volume across every partner (both directions
@@ -7995,6 +8011,10 @@ namespace PoliSim.UI
             // GetTariffRate calls TradeSystem.ApplyTradeEffects itself makes for this link.
             float tariffOnOurExports = TradeSystem.GetTariffRate(partner, _playerCountry, _world.TradeBlocs);
             float tariffOnOurImports = TradeSystem.GetTariffRate(_playerCountry, partner, _world.TradeBlocs);
+            // Pass 6: the part of the partner's rate that mirrors OUR override on it. Read live, like
+            // the two rates above, while the simulation charges the rate it planned at the last
+            // boundary - so the label names the timing rather than pretend a Reset click is instant.
+            float retaliationOnOurExports = TradeSystem.GetRetaliatoryTariffRate(partner, _playerCountry, _world.TradeBlocs);
 
             // ⚠ THE PARTNER IS A GROUP HEADER, exactly as a sector is on Economic Sectors. It was a plain
             // label, which was survivable while its override slider sat tight beneath its button - but
@@ -8006,7 +8026,9 @@ namespace PoliSim.UI
             GUILayout.Label(partner.Name, _headerStyle, GUILayout.Width(GetSectorNameColumnWidth()));
             GUILayout.Label(
                 $"Exports={link.ExportVolume:F1}, Imports={link.ImportVolume:F1}, " +
-                $"Tariff on our exports={tariffOnOurExports:F2}%, on our imports={tariffOnOurImports:F2}%" +
+                $"Tariff on our exports={tariffOnOurExports:F2}%" +
+                (retaliationOnOurExports > 0f ? $" (of which {retaliationOnOurExports:F2} retaliation, in force from the next boundary)" : "") +
+                $", on our imports={tariffOnOurImports:F2}%" +
                 (link.HasPlayerTariffOverride ? " (override active)" : ""),
                 _labelStyle);
             GUILayout.EndHorizontal();
@@ -8125,10 +8147,27 @@ namespace PoliSim.UI
             GUI.enabled = ambientEnabled;
         }
 
-        /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern. Only the base rate sways this estimate (see ParliamentSystem.GetTradeBillDirection's own doc comment on why partner overrides are excluded).</summary>
+        /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern. Since pass 6 (2026-08-27) the estimate reads the change in the import-weighted average tariff the draft would charge, overrides included (see ParliamentSystem.GetTradeBillDirection).</summary>
         private void DrawTradeLiveEstimate()
         {
             DrawBillLiveEstimate(ParliamentSystem.GetTradeBillDirection(_playerCountry, BuildTradeBillFromDrafts(), _world));
+        }
+
+        /// <summary>
+        /// Pass 6 (2026-08-27): what the drafted Trade bill would cost at the next boundary, from
+        /// SimulationManager.EstimateTradeBill - the real functions on throwaway clones, never a hand
+        /// sum (pass 5's lesson on the Budget "Net" line). Drafts never reach the preview
+        /// (BuildPlayerDecision carries no tariff terms), so this is the one place a draft's cost can be
+        /// read before it is introduced. One always-drawn label (wraps: _labelStyle is word-wrapped).
+        /// </summary>
+        private void DrawTradeBillCostEstimate()
+        {
+            TradeBillEstimate estimate = _simulationManager.EstimateTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
+            GUILayout.Label(
+                $"At these rates: tariff take {UiFormat.Money(estimate.Take, MoneyUnit.Billions)}/yr ({UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)}); " +
+                $"partners' mirrored tariffs move our trade balance by {UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions)}/yr; " +
+                $"prices {estimate.PassThroughPp:+0.00;-0.00} pp this year.",
+                _labelStyle);
         }
 
         /// <summary>Bundles the base tariff rate draft and every partner override draft into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts. Only a partner with an ACTIVE override gets an entry, mirroring BuildPlayerDecision's own former "only currently-implemented" reasoning.</summary>

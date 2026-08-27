@@ -24,10 +24,11 @@ namespace PoliSim.Data
         /// MOST specific rate and wins over even trade-bloc membership - see GetTariffRate's
         /// precedence. Only ever set on the PLAYER'S own TradePartner links (via
         /// SimulationManager.ApplyPartnerTariffOverrides/GameController's Trade tab); an AI-controlled
-        /// country's links are never touched and stay at the default forever, so this only ever
-        /// affects tariffs the owning country charges on ITS OWN imports from that partner - never
-        /// the reverse (the partner's own tariff on this country's exports is that partner's own
-        /// policy, resolved from the partner's own TradePartner link, untouched by this field).
+        /// country's links are never touched and stay at the default forever. Amended, pass 6
+        /// (2026-08-27): the links are still never written, but the RATE a partner charges on this
+        /// country's exports now responds to this field - TradeSystem.GetRetaliatoryTariffRate mirrors
+        /// the excess of this override over the rate the owner would otherwise charge that partner,
+        /// computed from this link on the fly (never stored on the partner's).
         /// </summary>
         public float PlayerTariffOverride = -1f;
 

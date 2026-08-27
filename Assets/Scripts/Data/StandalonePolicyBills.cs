@@ -55,10 +55,10 @@ namespace PoliSim.Data
     /// Trade tab's tariff policy bundled into one bill - see LaborPolicyBill's own doc comment for the
     /// pattern. NewBaseTariffRate is an ABSOLUTE target (like TaxLine.Rate), not the delta
     /// PolicyDecision.TariffRateChange itself uses - SimulationManager converts between the two at
-    /// apply time (see SimulationManager.ApplyTradeBillEffects). PartnerTariffOverrides is
-    /// deliberately EXCLUDED from the vote direction (see ParliamentSystem.GetTradeBillDirection) -
-    /// the same stated simplification BudgetBill already applies to SWF's asset-mix terms - but still
-    /// applies in full on PASS.
+    /// apply time (see SimulationManager.ApplyTradeBillEffects). PartnerTariffOverrides used to be
+    /// EXCLUDED from the vote direction by analogy to SWF's asset-mix terms; since pass 6
+    /// (2026-08-27) the direction is the change in the import-weighted average tariff the bill would
+    /// charge, overrides included (see ParliamentSystem.GetTradeBillDirection).
     /// </summary>
     public class TradePolicyBill
     {

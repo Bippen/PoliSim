@@ -33,7 +33,7 @@ namespace PoliSim.Simulation
         /// expectations look through the part of it that actually printed (MacroSystem.
         /// ApplyInflationExpectations' lookThroughPp) - see the pass-6 record for the ruling.
         /// </summary>
-        public const float ImportPricePassThrough = 0f;
+        public const float ImportPricePassThrough = 1f;
 
         /// <summary>
         /// Fraction of the EXCESS of a country's override over the rate it would otherwise charge a
@@ -45,7 +45,7 @@ namespace PoliSim.Simulation
         /// at 0) and a base-rate hike is unanswered (a country's base rate IS its standing rate) -
         /// both stated residuals in the record. See TradeSystem.GetRetaliatoryTariffRate.
         /// </summary>
-        public const float RetaliationMirrorFraction = 0f;
+        public const float RetaliationMirrorFraction = 1f;
 
         /// <summary>
         /// Whether per-partner overrides enter the Trade bill's vote. 1.0 is a unit identity: with
@@ -57,7 +57,7 @@ namespace PoliSim.Simulation
         /// fiscal axis" - the model's only axis until item 10; recorded as the pass's taste-adjacent
         /// call, one literal to revert.
         /// </summary>
-        public const float OverrideDirectionWeight = 0f;
+        public const float OverrideDirectionWeight = 1f;
 
         /// <summary>
         /// HARNESS-ONLY (the ForeignPolicyCadenceMultiplier shape): a multiplier TariffCostsDiagnostic
