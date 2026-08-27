@@ -6182,7 +6182,7 @@ namespace PoliSim.UI
             // scroll view past the bottom of the tab.
             float statRowWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - 8f;
             UiPalette.SystemArea statArea = GetPolicyScreenArea(_policyLawsCategory);
-            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
+            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth, country: _playerCountry);
             PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
 
             // Step 2: the trace panel, directly under the chips it explains - measured and
@@ -7717,7 +7717,9 @@ namespace PoliSim.UI
             // from ever needing its own scrollbar - it always renders at exactly the size it's given.
             float diagramHeight = Mathf.Clamp(scrollHeight - _labelStyle.fontSize * 4f, Screen.height * 0.5f, Screen.height * 0.92f);
             Rect webRect = GUILayoutUtility.GetRect(10f, diagramHeight, GUILayout.ExpandWidth(true));
-            _policyWebRenderer.Draw(webRect, _labelStyle, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat);
+            // R-K1 (2026-08-28): the web reads the PLAYER COUNTRY's edge set - the policy rate's
+            // issuance edge draws for the five and not for the USA (Country.BaseDebtInterestRateOverride).
+            _policyWebRenderer.Draw(webRect, _labelStyle, _playerCountry, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat);
 
             if (clickedPolicy.HasValue)
             {
@@ -7762,6 +7764,20 @@ namespace PoliSim.UI
                 GUILayout.Label($"  {line}", _labelStyle);
             }
 
+            // R-K1 (2026-08-28): the node's edges for THIS country, each tagged with its honesty class -
+            // "ledger: <term>" where a ledger term records the effect, "declared" where a formula
+            // asserts it with no term behind it yet. The same distinction the lines draw.
+            List<PolicyWebEdge> outgoing = PolicyWebRenderer.GetEdgesFor(node, _playerCountry);
+            if (outgoing.Count > 0)
+            {
+                GUILayout.Space(4f);
+                GUILayout.Label("Moves:", _labelStyle);
+                foreach (PolicyWebEdge edge in outgoing)
+                {
+                    GUILayout.Label($"  {PolicyWebRenderer.GetStatName(edge.Target)} {(edge.Increases ? "▲" : "▼")} — {PolicyWebRenderer.ProvenanceTag(edge)}", _labelStyle);
+                }
+            }
+
             GUILayout.EndVertical();
         }
 
@@ -7770,13 +7786,29 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
             DrawColoredLabel(PolicyWebRenderer.GetStatName(node), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral));
 
-            List<PolicyWebEdge> incoming = PolicyWebRenderer.GetEdgesForTarget(node);
+            // R-K1 (2026-08-28): this country's edge set, tagged by honesty class (see the policy
+            // panel), and the causal graph's own stat -> stat edges - what this stat is moved by and
+            // what it feeds, every one a ledger term the boundary audit proves.
+            List<PolicyWebEdge> incoming = PolicyWebRenderer.GetEdgesForTarget(node, _playerCountry);
             if (incoming.Count > 0)
             {
-                GUILayout.Label("Affected by:", _labelStyle);
+                GUILayout.Label("Affected by (levers):", _labelStyle);
                 foreach (PolicyWebEdge edge in incoming)
                 {
-                    GUILayout.Label($"  {PolicyWebRenderer.GetPolicyName(edge.Source)}", _labelStyle);
+                    GUILayout.Label($"  {PolicyWebRenderer.GetPolicyName(edge.Source)} {(edge.Increases ? "▲" : "▼")} — {PolicyWebRenderer.ProvenanceTag(edge)}", _labelStyle);
+                }
+            }
+
+            List<StatWebEdge> statEdges = PolicyWebRenderer.GetStatEdgesFor(node);
+            if (statEdges.Count > 0)
+            {
+                GUILayout.Label("In the books (stat → stat):", _labelStyle);
+                foreach (StatWebEdge edge in statEdges)
+                {
+                    string line = edge.Target == node
+                        ? $"  moved by {PolicyWebRenderer.GetStatName(edge.Source)} {(edge.Increases ? "▲" : "▼")} — ledger: {edge.LedgerTerm}"
+                        : $"  feeds {PolicyWebRenderer.GetStatName(edge.Target)} {(edge.Increases ? "▲" : "▼")} — ledger: {edge.LedgerTerm}";
+                    GUILayout.Label(line, _labelStyle);
                 }
             }
 
@@ -8904,7 +8936,7 @@ namespace PoliSim.UI
             // column's scroll view.
             float statRowWidth = PoliSimWidgets.InnerWidth(centerColumnWidth, _boxStyle) - 8f;
             UiPalette.SystemArea statArea = GetPolicyScreenArea(_budgetProcessCategory);
-            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth);
+            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth, country: _playerCountry);
             PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
 
             // Step 2: the trace panel under the chips, pinned with them above the scroll view -

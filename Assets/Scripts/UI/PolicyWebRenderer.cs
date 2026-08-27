@@ -29,19 +29,65 @@ namespace PoliSim.UI
     }
 
     /// <summary>One real effect relationship: <see cref="Source"/> policy node to <see cref="Target"/> stat node. <see cref="Increases"/> is the SIGN of the real formula (does raising the policy dial/rate raise or lower the target) - combined with the target's own HigherIsBetter framing (see StatNodeInfo) to pick green/red, the same judgment GraphRenderer's own title-row delta already makes elsewhere in this UI. <see cref="RelativeStrength"/> is 0-1 and ONLY meaningfully comparable against other edges from the SAME small documented group (e.g. the six welfare programs' own poverty-reduction sensitivities) - 1f (uniform) everywhere a real cross-comparable ratio isn't available, per this task's own "uniform otherwise" instruction.</summary>
+    /// <summary>
+    /// The honesty class of an edge (omnibus 2026-08-28, R-K1 — roadmap item 1, the causal graph
+    /// on the web itself). DERIVED: the edge's effect is a recorded ledger term — the approval
+    /// ledger's, the debt ledger's or the confidence book's — so the line on screen is the same
+    /// arithmetic the boundary audit proves every period; it cannot drift from the model. DECLARED:
+    /// the edge is asserted from a MacroSystem/SimulationManager formula (a coupling table, a
+    /// sensitivity) with no ledger term behind it yet — real, sourced, but not audited on screen.
+    /// The two draw differently (solid vs dashed at reduced ink) and are tagged in the detail panels.
+    /// </summary>
+    public enum EdgeProvenance { Declared, Derived }
+
     public readonly struct PolicyWebEdge
     {
         public readonly PolicyNodeId Source;
         public readonly StatNodeId Target;
         public readonly bool Increases;
         public readonly float RelativeStrength;
+        public readonly EdgeProvenance Provenance;
+        /// <summary>The ledger term this edge derives from (its field name on ApprovalAttribution /
+        /// DebtAttribution, or the confidence book's row), null for a declared edge.</summary>
+        public readonly string LedgerTerm;
 
         public PolicyWebEdge(PolicyNodeId source, StatNodeId target, bool increases, float relativeStrength = 1f)
+            : this(source, target, increases, relativeStrength, EdgeProvenance.Declared, null)
+        {
+        }
+
+        public PolicyWebEdge(PolicyNodeId source, StatNodeId target, bool increases, float relativeStrength, EdgeProvenance provenance, string ledgerTerm)
         {
             Source = source;
             Target = target;
             Increases = increases;
             RelativeStrength = relativeStrength;
+            Provenance = provenance;
+            LedgerTerm = ledgerTerm;
+        }
+    }
+
+    /// <summary>
+    /// A stat → stat edge — the causal graph's own kind (R-K1). Every one is DERIVED from a ledger
+    /// term whose input is another stat: the approval formula's growth and misery terms, the debt
+    /// identity's erosion and interest terms. Drawn as chords inside the Stats wedge when either end
+    /// is the active node; listed on the stat panel as "moved by" and "feeds".
+    /// </summary>
+    public readonly struct StatWebEdge
+    {
+        public readonly StatNodeId Source;
+        public readonly StatNodeId Target;
+        public readonly bool Increases;
+        public readonly float RelativeStrength;
+        public readonly string LedgerTerm;
+
+        public StatWebEdge(StatNodeId source, StatNodeId target, bool increases, float relativeStrength, string ledgerTerm)
+        {
+            Source = source;
+            Target = target;
+            Increases = increases;
+            RelativeStrength = relativeStrength;
+            LedgerTerm = ledgerTerm;
         }
     }
 
@@ -161,14 +207,14 @@ namespace PoliSim.UI
             { PolicyNodeId.VeteransBenefitsMandatory, new PolicyNodeInfo { Name = "Veterans Benefits (Mand.)", Area = UiPalette.SystemArea.Fiscal, Description = "Mandatory spending line." } },
             { PolicyNodeId.FederalRetirement, new PolicyNodeInfo { Name = "Federal Retirement", Area = UiPalette.SystemArea.Fiscal, Description = "Mandatory spending line." } },
             { PolicyNodeId.Defense, new PolicyNodeInfo { Name = "Defense", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line." } },
-            { PolicyNodeId.Transportation, new PolicyNodeInfo { Name = "Transportation (Infra.)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Infrastructure spending category." } },
-            { PolicyNodeId.HHSDiscretionary, new PolicyNodeInfo { Name = "HHS (Healthcare)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Healthcare spending category." } },
+            { PolicyNodeId.Transportation, new PolicyNodeInfo { Name = "Transportation (Infra.)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Infrastructure spending category. A non-USA portfolio's Infrastructure & Development line folds onto this node (R-K1, 2026-08-28): same effect, the country's own line." } },
+            { PolicyNodeId.HHSDiscretionary, new PolicyNodeInfo { Name = "HHS (Healthcare)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Healthcare spending category. A non-USA portfolio's Healthcare & Social Care line folds onto this node (R-K1, 2026-08-28): same effect, the country's own line." } },
             { PolicyNodeId.Education, new PolicyNodeInfo { Name = "Education", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line." } },
             { PolicyNodeId.Justice, new PolicyNodeInfo { Name = "Justice (Spending)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - distinct from the Crime & Justice policy dials." } },
             { PolicyNodeId.HomelandSecurity, new PolicyNodeInfo { Name = "Homeland Security", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line." } },
             { PolicyNodeId.Energy, new PolicyNodeInfo { Name = "Energy (Spending)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line." } },
             { PolicyNodeId.Housing, new PolicyNodeInfo { Name = "Housing (Spending)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - distinct from the HousingAssistance welfare program." } },
-            { PolicyNodeId.OtherDiscretionarySpending, new PolicyNodeInfo { Name = "Other Discretionary", Area = UiPalette.SystemArea.Fiscal, Description = "Consolidated: Veterans Affairs (Disc.), State/Foreign Affairs, Agriculture, Interior, NASA, Commerce, Labor, Treasury Ops, NSF, EPA, SBA, and the four generic non-USA categories (Social Programs, Infrastructure & Development, Public Services, Administration) - each real, but none has a differentiated effect beyond the generic Budget/DebtToGdp channel every spending line shares." } },
+            { PolicyNodeId.OtherDiscretionarySpending, new PolicyNodeInfo { Name = "Other Discretionary", Area = UiPalette.SystemArea.Fiscal, Description = "Consolidated: Veterans Affairs (Disc.), State/Foreign Affairs, Agriculture, Interior, NASA, Commerce, Labor, Treasury Ops, NSF, EPA, SBA, and the generic non-USA categories Social Programs, Public Services and Administration - each real, but none has a differentiated effect beyond the generic Budget/DebtToGdp channel every spending line shares. (Infrastructure & Development and Healthcare & Social Care left this group 2026-08-28: they fold onto the Transportation and HHS nodes, whose effects they carry.)" } },
             { PolicyNodeId.UBI, new PolicyNodeInfo { Name = "UBI", Area = UiPalette.SystemArea.Welfare, Description = "Universal Basic Income generosity level, 0-100%." } },
             { PolicyNodeId.NegativeIncomeTax, new PolicyNodeInfo { Name = "Negative Income Tax", Area = UiPalette.SystemArea.Welfare, Description = "Negative Income Tax generosity level, 0-100%." } },
             { PolicyNodeId.MeansTestedWelfare, new PolicyNodeInfo { Name = "Means-Tested Welfare", Area = UiPalette.SystemArea.Welfare, Description = "Means-tested welfare generosity level, 0-100%." } },
@@ -215,8 +261,38 @@ namespace PoliSim.UI
         /// Every edge, grouped by source for readability. Direction (Increases) and RelativeStrength
         /// are both sourced from the real MacroSystem/SimulationManager formulas researched for this
         /// task - see the inline comment on each group for the specific method/constant.
+        ///
+        /// Omnibus 2026-08-28 (R-K1): the list is no longer purely AUTHORED. Wherever a ledger term
+        /// records an edge's effect (ApprovalAttribution: TaxHikePenalty, SpendingEffect, WelfareEffect,
+        /// PaidLeaveEffect, DrugPolicyEffect; DebtAttribution: PrimaryBalanceEffect for every money
+        /// lever, InterestAtIssuance for the policy rate; the confidence book's policy base) the edge
+        /// is marked DERIVED with its term named - the line is the audited arithmetic. Every other
+        /// edge stays DECLARED, its sign and weight from the formula it cites, and draws in the
+        /// declared idiom (dashed, reduced ink). The authored array survives as the declared set: the
+        /// derived list is additive plumbing, and restoring the old drawing is one provenance swap.
         /// </summary>
         private static readonly List<PolicyWebEdge> Edges = BuildEdges();
+
+        // The ledger term names, once: the field names on ApprovalAttribution / DebtAttribution and
+        // the confidence book's row, so the panel's tag and the ledger cannot spell the same term
+        // two ways.
+        private const string TermTaxHike = "TaxHikePenalty";
+        private const string TermSpending = "SpendingEffect";
+        private const string TermWelfare = "WelfareEffect";
+        private const string TermPaidLeave = "PaidLeaveEffect";
+        private const string TermDrugPolicy = "DrugPolicyEffect";
+        private const string TermGrowth = "GrowthEffect";
+        private const string TermMiseryUnemployment = "MiseryUnemployment";
+        private const string TermMiseryInflation = "MiseryInflation";
+        private const string TermMiseryCrime = "MiseryCrime";
+        private const string TermMiseryCorruption = "MiseryCorruption";
+        private const string TermPrimaryBalance = "PrimaryBalanceEffect";
+        private const string TermInterestAtIssuance = "InterestAtIssuance";
+        private const string TermErosion = "Erosion";
+        private const string TermConfidenceBase = "Policy base (confidence book)";
+
+        private static PolicyWebEdge Derived(PolicyNodeId source, StatNodeId target, bool increases, float relativeStrength, string term)
+            => new PolicyWebEdge(source, target, increases, relativeStrength, EdgeProvenance.Derived, term);
 
         private static List<PolicyWebEdge> BuildEdges()
         {
@@ -229,7 +305,8 @@ namespace PoliSim.UI
             e.Add(new PolicyWebEdge(PolicyNodeId.MinimumWage, StatNodeId.Unemployment, true));
             e.Add(new PolicyWebEdge(PolicyNodeId.MinimumWage, StatNodeId.Poverty, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.PaidFamilyLeave, StatNodeId.Lfpr, true));
-            e.Add(new PolicyWebEdge(PolicyNodeId.PaidFamilyLeave, StatNodeId.Approval, true));
+            // Derived: the approval ledger's PaidLeaveEffect IS this edge, every period.
+            e.Add(Derived(PolicyNodeId.PaidFamilyLeave, StatNodeId.Approval, true, 1f, TermPaidLeave));
             e.Add(new PolicyWebEdge(PolicyNodeId.OvertimeRegulation, StatNodeId.Unemployment, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.RetrainingProgram, StatNodeId.Unemployment, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.RetrainingProgram, StatNodeId.Lfpr, true));
@@ -253,7 +330,8 @@ namespace PoliSim.UI
             e.Add(new PolicyWebEdge(PolicyNodeId.BailReform, StatNodeId.Crime, true, CrimeJusticeCouplings.BailReformCrimeIndexSensitivity / CrimeJusticeCouplings.PoliceFundingSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.BailReform, StatNodeId.PrisonPopulation, false));
             e.Add(new PolicyWebEdge(PolicyNodeId.DrugPolicy, StatNodeId.PrisonPopulation, true, CrimeJusticeCouplings.DrugPolicyPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
-            e.Add(new PolicyWebEdge(PolicyNodeId.DrugPolicy, StatNodeId.Approval, true));
+            // Derived: the approval ledger's DrugPolicyEffect.
+            e.Add(Derived(PolicyNodeId.DrugPolicy, StatNodeId.Approval, true, 1f, TermDrugPolicy));
             e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.PrisonPopulation, false, CrimeJusticeCouplings.JudicialFundingPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.OrganizedCrime, false, CrimeJusticeCouplings.JudicialFundingOrganizedCrimeSensitivity / CrimeJusticeCouplings.BorderEnforcementOrganizedCrimeSensitivity));
             e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.Corruption, false));
@@ -269,9 +347,11 @@ namespace PoliSim.UI
             // are `true`). The three budget edges are one documented group, weighted by their
             // declared per-point costs.
             e.Add(new PolicyWebEdge(PolicyNodeId.SentencingSeverity, StatNodeId.PrisonPopulation, true, CrimeJusticeCouplings.SentencingPrisonPopulationSensitivity / CrimeJusticeCouplings.BailReformPrisonPopulationSensitivity));
-            e.Add(new PolicyWebEdge(PolicyNodeId.PoliceFunding, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint));
-            e.Add(new PolicyWebEdge(PolicyNodeId.JudicialFunding, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint));
-            e.Add(new PolicyWebEdge(PolicyNodeId.BorderEnforcement, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint));
+            // Derived: line-resident spending reaches the debt path through the fiscal engine, and
+            // the debt ledger's PrimaryBalanceEffect records it every day.
+            e.Add(Derived(PolicyNodeId.PoliceFunding, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint, TermPrimaryBalance));
+            e.Add(Derived(PolicyNodeId.JudicialFunding, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint, TermPrimaryBalance));
+            e.Add(Derived(PolicyNodeId.BorderEnforcement, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint, TermPrimaryBalance));
 
             // Taxes: every TaxType shares the SAME two real channels (MacroSystem.ApplyApprovalRating's
             // TaxHikeApprovalSensitivity on a this-turn hike; SimulationManager.GetTotalTaxRevenue feeding
@@ -284,8 +364,10 @@ namespace PoliSim.UI
                 PolicyNodeId.CapitalGainsTax, PolicyNodeId.SalesTax, PolicyNodeId.ExciseTax, PolicyNodeId.PropertyTax,
                 PolicyNodeId.EstateTax, PolicyNodeId.WealthTax, PolicyNodeId.CarbonTax, PolicyNodeId.StampDuty })
             {
-                e.Add(new PolicyWebEdge(tax, StatNodeId.Approval, false));
-                e.Add(new PolicyWebEdge(tax, StatNodeId.DebtToGdp, false));
+                // Both derived: the approval ledger's TaxHikePenalty and the debt ledger's
+                // PrimaryBalanceEffect record exactly these two channels.
+                e.Add(Derived(tax, StatNodeId.Approval, false, 1f, TermTaxHike));
+                e.Add(Derived(tax, StatNodeId.DebtToGdp, false, 1f, TermPrimaryBalance));
             }
 
             // Spending (MacroSystem.ApplyApprovalRating's per-category multipliers, ApplyCategorySpendingEffects,
@@ -322,11 +404,12 @@ namespace PoliSim.UI
             // DebtToGdp, the same edge every spending-category node draws - the couplings pass's rule
             // that money reaching the debt path targets DebtToGdp, applied to the one area that lacked it.
             AddWelfare(e, PolicyNodeId.UBI, WelfareProgramType.UBI);
-            e.Add(new PolicyWebEdge(PolicyNodeId.UBI, StatNodeId.ConsumerConfidence, true));
+            // Derived: the confidence book's "Policy base" row is the healthcare/UBI accumulation.
+            e.Add(Derived(PolicyNodeId.UBI, StatNodeId.ConsumerConfidence, true, 1f, TermConfidenceBase));
             AddWelfare(e, PolicyNodeId.NegativeIncomeTax, WelfareProgramType.NegativeIncomeTax);
             AddWelfare(e, PolicyNodeId.MeansTestedWelfare, WelfareProgramType.MeansTestedWelfare);
             AddWelfare(e, PolicyNodeId.UniversalHealthcare, WelfareProgramType.UniversalHealthcare);
-            e.Add(new PolicyWebEdge(PolicyNodeId.UniversalHealthcare, StatNodeId.BusinessConfidence, true));
+            e.Add(Derived(PolicyNodeId.UniversalHealthcare, StatNodeId.BusinessConfidence, true, 1f, TermConfidenceBase));
             AddWelfare(e, PolicyNodeId.HousingAssistance, WelfareProgramType.HousingAssistance);
             AddWelfare(e, PolicyNodeId.ChildcareSubsidies, WelfareProgramType.ChildcareSubsidies);
 
@@ -360,7 +443,10 @@ namespace PoliSim.UI
             // 6 a per-partner override also moves our OWN TradeBalance - partners mirror its excess onto
             // our exports (TradeSystem.GetRetaliatoryTariffRate) - and the change in the take passes
             // through to Inflation for a year (TradeCosts.ImportPricePassThrough).
-            e.Add(new PolicyWebEdge(PolicyNodeId.TariffPolicy, StatNodeId.DebtToGdp, false, 0.5f));
+            // Derived: the take is revenue on the debt ledger (PrimaryBalanceEffect). The trade-balance
+            // and pass-through edges stay declared - the pass-through is a FiscalPeriod term on the
+            // report, not a ledger term, and the mirrored balance has no ledger at all.
+            e.Add(Derived(PolicyNodeId.TariffPolicy, StatNodeId.DebtToGdp, false, 0.5f, TermPrimaryBalance));
             e.Add(new PolicyWebEdge(PolicyNodeId.TariffPolicy, StatNodeId.TradeBalance, false, 0.5f));
             e.Add(new PolicyWebEdge(PolicyNodeId.TariffPolicy, StatNodeId.Inflation, true, 0.5f));
 
@@ -368,24 +454,91 @@ namespace PoliSim.UI
             // dampens Consumption/Investment directly; Unemployment/Inflation react only INDIRECTLY,
             // through Okun's Law/the Phillips Curve afterward - not drawn as a second direct edge).
             e.Add(new PolicyWebEdge(PolicyNodeId.InterestRateDecision, StatNodeId.Gdp, false));
+            // Derived, PER COUNTRY (R-K1): the policy rate prices new issuance, and the debt ledger's
+            // InterestAtIssuance records it - for the five whose issuance rate follows the policy
+            // rate. The USA's does not (Country.BaseDebtInterestRateOverride, WorldFactory: 3.3), so
+            // IsLiveFor drops this edge for a country with the override set - the web reads the
+            // country's own books, not a six-country average.
+            e.Add(Derived(PolicyNodeId.InterestRateDecision, StatNodeId.DebtToGdp, true, 1f, TermInterestAtIssuance));
 
             return e;
         }
 
         private static void AddSpending(List<PolicyWebEdge> e, PolicyNodeId node, float approvalMultiplier)
         {
-            e.Add(new PolicyWebEdge(node, StatNodeId.Approval, true, approvalMultiplier / 3.0f));
-            e.Add(new PolicyWebEdge(node, StatNodeId.DebtToGdp, true));
+            // Both derived: the approval ledger's SpendingEffect and the debt ledger's PrimaryBalanceEffect.
+            e.Add(Derived(node, StatNodeId.Approval, true, approvalMultiplier / 3.0f, TermSpending));
+            e.Add(Derived(node, StatNodeId.DebtToGdp, true, 1f, TermPrimaryBalance));
         }
 
-        /// <summary>The three edges every welfare program draws: poverty reduction and approval, each weighted by the program's own declared constant relative to UBI's (the largest of both groups), and the debt path its cost reaches (uniform, like every spending node's).</summary>
+        /// <summary>The three edges every welfare program draws: poverty reduction (declared - the poverty reduction is a target pull with no ledger) and approval (derived: the approval ledger's WelfareEffect), each weighted by the program's own declared constant relative to UBI's (the largest of both groups), and the debt path its cost reaches (derived: PrimaryBalanceEffect; uniform, like every spending node's).</summary>
         private static void AddWelfare(List<PolicyWebEdge> e, PolicyNodeId node, WelfareProgramType type)
         {
             e.Add(new PolicyWebEdge(node, StatNodeId.Poverty, false,
                 MacroSystem.GetPovertyReductionSensitivity(type) / MacroSystem.GetPovertyReductionSensitivity(WelfareProgramType.UBI)));
-            e.Add(new PolicyWebEdge(node, StatNodeId.Approval, true,
-                MacroSystem.GetWelfareApprovalSensitivity(type) / MacroSystem.GetWelfareApprovalSensitivity(WelfareProgramType.UBI)));
-            e.Add(new PolicyWebEdge(node, StatNodeId.DebtToGdp, true));
+            e.Add(Derived(node, StatNodeId.Approval, true,
+                MacroSystem.GetWelfareApprovalSensitivity(type) / MacroSystem.GetWelfareApprovalSensitivity(WelfareProgramType.UBI), TermWelfare));
+            e.Add(Derived(node, StatNodeId.DebtToGdp, true, 1f, TermPrimaryBalance));
+        }
+
+        /// <summary>
+        /// The causal graph's stat → stat edges (R-K1), every one a ledger term whose INPUT is another
+        /// stat - derived by construction, listed here from the ledgers' own field names. The approval
+        /// formula: growth against potential (GrowthEffect - the GDP node is the growth carrier this
+        /// web has), and the four misery gaps (unemployment above NAIRU, inflation off target, crime
+        /// and corruption above baseline). The debt identity: inflation erodes the stock (−π·b,
+        /// Erosion) and the policy rate prices issuance (InterestAtIssuance). Weights are the
+        /// formula's own sensitivities relative to the largest in each group. NOT drawn, stated: the
+        /// GiniEffect (no Gini node on this web) and the confidence book's wage-sentiment factor (no
+        /// real-wage node) - two ledger terms whose input stat this web does not carry.
+        /// </summary>
+        private static readonly List<StatWebEdge> StatEdges = BuildStatEdges();
+
+        private static List<StatWebEdge> BuildStatEdges()
+        {
+            var e = new List<StatWebEdge>
+            {
+                new StatWebEdge(StatNodeId.Gdp, StatNodeId.Approval, true, 1f, TermGrowth),
+                new StatWebEdge(StatNodeId.Unemployment, StatNodeId.Approval, false, 1f, TermMiseryUnemployment),
+                new StatWebEdge(StatNodeId.Inflation, StatNodeId.Approval, false, MacroSystem.InflationApprovalSensitivity / MacroSystem.UnemploymentApprovalSensitivity, TermMiseryInflation),
+                new StatWebEdge(StatNodeId.Crime, StatNodeId.Approval, false, MacroSystem.CrimeApprovalSensitivity / MacroSystem.UnemploymentApprovalSensitivity, TermMiseryCrime),
+                new StatWebEdge(StatNodeId.Corruption, StatNodeId.Approval, false, MacroSystem.CorruptionApprovalSensitivity / MacroSystem.UnemploymentApprovalSensitivity, TermMiseryCorruption),
+                new StatWebEdge(StatNodeId.Inflation, StatNodeId.DebtToGdp, false, 1f, TermErosion),
+                new StatWebEdge(StatNodeId.InterestRate, StatNodeId.DebtToGdp, true, 1f, TermInterestAtIssuance),
+            };
+            return e;
+        }
+
+        /// <summary>
+        /// R-K1's per-country edge set, as a predicate over the one shared list rather than six copies:
+        /// the only edge that differs today is the policy rate's derived edge to the debt ratio, which
+        /// does not exist for a country whose issuance rate is pinned by BaseDebtInterestRateOverride
+        /// (the USA). Null country = the full set (the chips' area-level enumeration).
+        /// </summary>
+        public static bool IsLiveFor(PolicyWebEdge edge, Country country)
+        {
+            if (country == null)
+            {
+                return true;
+            }
+
+            if (edge.Source == PolicyNodeId.InterestRateDecision && edge.Target == StatNodeId.DebtToGdp)
+            {
+                return country.BaseDebtInterestRateOverride < 0f;
+            }
+
+            return true;
+        }
+
+        /// <summary>The stat → stat edges touching a stat, either end, for the panel's "moved by" / "feeds" lists.</summary>
+        public static List<StatWebEdge> GetStatEdgesFor(StatNodeId id)
+        {
+            var result = new List<StatWebEdge>();
+            foreach (StatWebEdge edge in StatEdges)
+            {
+                if (edge.Source == id || edge.Target == id) result.Add(edge);
+            }
+            return result;
         }
 
         private Dictionary<PolicyNodeId, Vector2> _policyPixels;
@@ -431,6 +584,9 @@ namespace PoliSim.UI
             var result = new Dictionary<StatNodeId, int>();
             foreach (StatNodeId id in System.Enum.GetValues(typeof(StatNodeId))) result[id] = 0;
             foreach (PolicyWebEdge edge in Edges) result[edge.Target]++;
+            // R-K1: the causal graph's stat → stat edges count at both ends - Approval and DebtToGdp are
+            // the hubs the ledgers say they are.
+            foreach (StatWebEdge edge in StatEdges) { result[edge.Source]++; result[edge.Target]++; }
             return result;
         }
 
@@ -567,6 +723,13 @@ namespace PoliSim.UI
         /// </summary>
         public void Draw(Rect rect, GUIStyle labelStyle, PolicyNodeId? pinnedPolicy, StatNodeId? pinnedStat, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat)
         {
+            Draw(rect, labelStyle, null, pinnedPolicy, pinnedStat, out clickedPolicy, out clickedStat);
+        }
+
+        /// <summary>The per-country form (R-K1): <paramref name="country"/> selects the live edge set
+        /// (see IsLiveFor) - the five draw the policy rate's issuance edge, the USA does not.</summary>
+        public void Draw(Rect rect, GUIStyle labelStyle, Country country, PolicyNodeId? pinnedPolicy, StatNodeId? pinnedStat, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat)
+        {
             EnsureTexturesInitialized();
             clickedPolicy = null;
             clickedStat = null;
@@ -664,7 +827,7 @@ namespace PoliSim.UI
                 {
                     bool matchesActiveNode = (activePolicy.HasValue && edge.Source == activePolicy.Value)
                         || (activeStat.HasValue && edge.Target == activeStat.Value);
-                    if (!matchesActiveNode)
+                    if (!matchesActiveNode || !IsLiveFor(edge, country))
                     {
                         continue;
                     }
@@ -680,7 +843,41 @@ namespace PoliSim.UI
 
                     float t = Mathf.Clamp01(edge.RelativeStrength);
                     float thickness = Mathf.Lerp(MinLineThickness, MaxLineThickness, t);
-                    DrawLineSegment(from, to, thickness, lineColor);
+                    // R-K1's honesty idiom: a DERIVED edge (a ledger term) is a solid line at full ink;
+                    // a DECLARED one (a formula with no ledger term yet) is dashed at reduced ink - the
+                    // Class A / Class D distinction the trace panels already make, on the web.
+                    if (edge.Provenance == EdgeProvenance.Derived)
+                    {
+                        DrawLineSegment(from, to, thickness, lineColor);
+                    }
+                    else
+                    {
+                        DrawDashedLineSegment(from, to, thickness, PoliSimTheme.Tint(lineColor, DeclaredEdgeAlpha));
+                    }
+                }
+
+                // The causal graph's own chords: stat → stat, inside the Stats wedge, drawn when
+                // either end is the active stat. Always derived, so always solid.
+                if (activeStat.HasValue)
+                {
+                    foreach (StatWebEdge edge in StatEdges)
+                    {
+                        if (edge.Source != activeStat.Value && edge.Target != activeStat.Value)
+                        {
+                            continue;
+                        }
+                        if (!_statPixels.TryGetValue(edge.Source, out Vector2 from) || !_statPixels.TryGetValue(edge.Target, out Vector2 to))
+                        {
+                            continue;
+                        }
+
+                        StatNodeInfo statInfo = StatInfo[edge.Target];
+                        Color lineColor = statInfo.HigherIsBetter.HasValue
+                            ? UiPalette.GetDeltaColor(edge.Increases ? 1f : -1f, statInfo.HigherIsBetter.Value)
+                            : UiPalette.NeutralChangeColor;
+                        float thickness = Mathf.Lerp(MinLineThickness, MaxLineThickness, Mathf.Clamp01(edge.RelativeStrength));
+                        DrawLineSegment(from, to, thickness, lineColor);
+                    }
                 }
             }
 
@@ -797,27 +994,31 @@ namespace PoliSim.UI
         /// </summary>
         public static MoneyUnit? GetStatUnit(StatNodeId id) => StatInfo[id].Unit;
 
-        /// <summary>Every stat this policy node has a real edge to, for the detail popup's own effect list.</summary>
-        public static List<PolicyWebEdge> GetEdgesFor(PolicyNodeId id)
+        /// <summary>Every stat this policy node has a real edge to, for the detail popup's own effect list. <paramref name="country"/> (R-K1) selects the live set; null keeps the full one.</summary>
+        public static List<PolicyWebEdge> GetEdgesFor(PolicyNodeId id, Country country = null)
         {
             var result = new List<PolicyWebEdge>();
             foreach (PolicyWebEdge edge in Edges)
             {
-                if (edge.Source == id) result.Add(edge);
+                if (edge.Source == id && IsLiveFor(edge, country)) result.Add(edge);
             }
             return result;
         }
 
-        /// <summary>Every real edge that targets this stat, for the stat detail popup's own "affected by" list.</summary>
-        public static List<PolicyWebEdge> GetEdgesForTarget(StatNodeId id)
+        /// <summary>Every real edge that targets this stat, for the stat detail popup's own "affected by" list. <paramref name="country"/> (R-K1) selects the live set; null keeps the full one.</summary>
+        public static List<PolicyWebEdge> GetEdgesForTarget(StatNodeId id, Country country = null)
         {
             var result = new List<PolicyWebEdge>();
             foreach (PolicyWebEdge edge in Edges)
             {
-                if (edge.Target == id) result.Add(edge);
+                if (edge.Target == id && IsLiveFor(edge, country)) result.Add(edge);
             }
             return result;
         }
+
+        /// <summary>The panel's provenance tag for an edge - "ledger: TaxHikePenalty" for a derived edge, "declared" for a formula-asserted one.</summary>
+        public static string ProvenanceTag(PolicyWebEdge edge)
+            => edge.Provenance == EdgeProvenance.Derived ? $"ledger: {edge.LedgerTerm}" : "declared";
 
         /// <summary>This stat's StatHistory buffer, if this stat is one of the 13 already tracked there - null otherwise (5 of the 18 stat nodes here have no history, e.g. PotentialGrowthRate/ConsumerConfidence/BusinessConfidence, matching the task's own "if one exists" instruction). Continuous Time Migration Phase 0: reads .Quarterly, matching every other graph call site's resolution choice.</summary>
         public static IReadOnlyList<float> GetHistory(StatNodeId id, StatHistory history)
@@ -997,14 +1198,34 @@ namespace PoliSim.UI
             { PolicyNodeId.Energy, SpendingCategory.Energy }, { PolicyNodeId.Housing, SpendingCategory.Housing },
         };
 
+        /// <summary>
+        /// R-K1's two generic-line folds: a non-USA portfolio carries InfrastructureAndDevelopment
+        /// where the USA carries Transportation, and HealthcareAndSocialCare where the USA carries
+        /// HHSDiscretionary - never both (SimulationManager.ResolveSpendingForTurn folds the pairs
+        /// into one Infrastructure/Healthcare effect the same way). The web's node is the effect,
+        /// so the panel reads whichever line the country actually has.
+        /// </summary>
+        private static SpendingCategory? FoldTwin(SpendingCategory category)
+        {
+            switch (category)
+            {
+                case SpendingCategory.Transportation: return SpendingCategory.InfrastructureAndDevelopment;
+                case SpendingCategory.HHSDiscretionary: return SpendingCategory.HealthcareAndSocialCare;
+                default: return null;
+            }
+        }
+
         private static bool TryGetSpendingSummary(PolicyNodeId id, Country country, List<string> lines)
         {
             if (!SpendingNodeMap.TryGetValue(id, out SpendingCategory category)) return false;
 
+            SpendingCategory? twin = FoldTwin(category);
             foreach (SpendingLine line in country.SpendingLines)
             {
-                if (line.Category != category) continue;
-                lines.Add($"Current amount: {UiFormat.Money(line.Amount, MoneyUnit.Billions)} ({(line.IsMandatory ? "Mandatory" : "Discretionary")})");
+                bool folded = twin.HasValue && line.Category == twin.Value;
+                if (line.Category != category && !folded) continue;
+                lines.Add($"Current amount: {UiFormat.Money(line.Amount, MoneyUnit.Billions)} ({(line.IsMandatory ? "Mandatory" : "Discretionary")})"
+                          + (folded ? $" - this country's {DisplayName.Spaced(line.Category.ToString())} line, folded onto this node" : ""));
                 lines.Add($"Approval multiplier: {GetApprovalMultiplier(category):F1}x (Mandatory baseline is {MacroSystem.MandatorySpendingApprovalMultiplier:F1}x, the strongest)");
                 return true;
             }
@@ -1095,6 +1316,27 @@ namespace PoliSim.UI
             GUI.color = color;
             GUI.DrawTexture(rect, _circleTexture, ScaleMode.StretchToFill);
             GUI.color = previous;
+        }
+
+        /// <summary>The declared idiom's ink (R-K1): a formula-asserted edge at 55% - visibly the lighter class beside a solid ledger-backed one, still readable on paper.</summary>
+        private const float DeclaredEdgeAlpha = 0.55f;
+        private const float DeclaredDashOn = 7f;
+        private const float DeclaredDashOff = 5f;
+
+        /// <summary>A dashed chord: the same rotated rect as <see cref="DrawLineSegment"/>, laid down in DeclaredDashOn / DeclaredDashOff runs along the line - the declared edge's own idiom.</summary>
+        private void DrawDashedLineSegment(Vector2 from, Vector2 to, float thickness, Color color)
+        {
+            Vector2 delta = to - from;
+            float length = delta.magnitude;
+            if (length < 1f) return;
+
+            Vector2 direction = delta / length;
+            float period = DeclaredDashOn + DeclaredDashOff;
+            for (float start = 0f; start < length; start += period)
+            {
+                float run = Mathf.Min(DeclaredDashOn, length - start);
+                DrawLineSegment(from + direction * start, from + direction * (start + run), thickness, color);
+            }
         }
 
         /// <summary>Same rotated-stretched-rect technique as MapRenderer.DrawLineSegment.</summary>

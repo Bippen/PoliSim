@@ -127,9 +127,11 @@ namespace PoliSim.UI
         /// measurement and the drawing cannot disagree. Returns 0 for an area with no levers, which is
         /// exactly what Draw then occupies.
         /// </summary>
-        public static float MeasureHeight(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats = DefaultMaxStats)
+        public static float MeasureHeight(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats = DefaultMaxStats, Country country = null)
         {
-            ComputeLayout(area, labelStyle, availableWidth, maxStats, out int shown, out _, out int lines, out int omitted);
+            // R-K1 (2026-08-28): the country selects the live edge set - the same one Draw reads, so
+            // the reserve and the drawing count the same chips (the one-accessor discipline).
+            ComputeLayout(area, labelStyle, availableWidth, maxStats, country, out int shown, out _, out int lines, out int omitted);
             if (shown == 0)
             {
                 return 0f;
@@ -146,8 +148,8 @@ namespace PoliSim.UI
         /// </summary>
         public static void Draw(UiPalette.SystemArea area, Country country, GUIStyle labelStyle, float availableWidth, int maxStats = DefaultMaxStats)
         {
-            IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area);
-            ComputeLayout(area, labelStyle, availableWidth, maxStats, out int shown, out int perRow, out _, out int omitted);
+            IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area, country);
+            ComputeLayout(area, labelStyle, availableWidth, maxStats, country, out int shown, out int perRow, out _, out int omitted);
             if (shown == 0)
             {
                 return;
@@ -196,9 +198,9 @@ namespace PoliSim.UI
         /// guard's own report ("needs 89.2 wide ... at 8px"), not a guess.</summary>
         private const int LabelShrinkFloorPx = 8;
 
-        private static void ComputeLayout(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats, out int shown, out int perRow, out int lines, out int omitted)
+        private static void ComputeLayout(UiPalette.SystemArea area, GUIStyle labelStyle, float availableWidth, int maxStats, Country country, out int shown, out int perRow, out int lines, out int omitted)
         {
-            IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area);
+            IReadOnlyList<StatNodeId> stats = PolicyScreenStats.GetStatsForArea(area, country);
             perRow = Mathf.Max(1, Mathf.FloorToInt(availableWidth / MinChipWidthFor(labelStyle)));
             shown = Mathf.Min(stats.Count, Mathf.Max(1, maxStats));
             omitted = stats.Count - shown;

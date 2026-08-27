@@ -1871,16 +1871,18 @@ namespace PoliSim.Simulation
         private const float GrowthApprovalSensitivity = 0.3f;
 
         /// <summary>Approval points lost per percentage point unemployment sits above NAIRU.</summary>
-        private const float UnemploymentApprovalSensitivity = 0.4f;
+        // internal (2026-08-28, R-K1): the Policy Web's stat -> stat edges weight the four misery
+        // terms by these, relative to each other - read, never restated as literals.
+        internal const float UnemploymentApprovalSensitivity = 0.4f;
 
         /// <summary>Approval points lost per percentage point inflation sits away from the Taylor Rule's inflation target (either direction - deflation hurts too).</summary>
-        private const float InflationApprovalSensitivity = 0.4f;
+        internal const float InflationApprovalSensitivity = 0.4f;
 
         /// <summary>Approval points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - smaller than Unemployment/InflationApprovalSensitivity since CrimeIndex gaps tend to run larger in absolute point terms on its 0-100 scale.</summary>
-        private const float CrimeApprovalSensitivity = 0.2f;
+        internal const float CrimeApprovalSensitivity = 0.2f;
 
         /// <summary>Round 3 item 3: Approval points lost per point CorruptionIndex sits above Country.BaselineCorruptionIndex (and gained per point below) - corruption scandals hurt approval, a real and well-documented political effect. Slightly smaller than CrimeApprovalSensitivity, since corruption's political salience varies more by country/culture than crime's does - a stylized judgment call, not a precisely-fitted figure.</summary>
-        private const float CorruptionApprovalSensitivity = 0.15f;
+        internal const float CorruptionApprovalSensitivity = 0.15f;
 
         // PaidFamilyLeaveApprovalSensitivity moved VERBATIM to LaborCouplings (pass 3's declared
         // labor coupling table, 2026-08-26): value and doc comment carried unchanged; both

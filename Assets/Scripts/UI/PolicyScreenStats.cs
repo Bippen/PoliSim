@@ -26,7 +26,13 @@ namespace PoliSim.UI
     /// </summary>
     public static class PolicyScreenStats
     {
-        private static readonly Dictionary<UiPalette.SystemArea, List<StatNodeId>> Cache = new Dictionary<UiPalette.SystemArea, List<StatNodeId>>();
+        // R-K1 (2026-08-28): the edge set is per country now (PolicyWebRenderer.IsLiveFor), so the
+        // cache is keyed by area AND by the one country fact that changes the set - whether the
+        // issuance rate is pinned (the USA) - rather than by country, which would recompute the same
+        // list five times.
+        private static readonly Dictionary<(UiPalette.SystemArea, bool), List<StatNodeId>> Cache = new Dictionary<(UiPalette.SystemArea, bool), List<StatNodeId>>();
+
+        private static bool RatePinned(Country country) => country != null && country.BaseDebtInterestRateOverride >= 0f;
 
         /// <summary>
         /// The stats this screen's own policy levers genuinely affect, most-affected first.
@@ -35,11 +41,13 @@ namespace PoliSim.UI
         /// programs move belongs above one a single lever nudges - with ties broken by enum order so the
         /// result is deterministic rather than dependent on dictionary iteration. Returns an empty list
         /// for an area with no policy nodes (Neutral), which callers should treat as "draw nothing"
-        /// rather than "fall back to the global row".
+        /// rather than "fall back to the global row". <paramref name="country"/> selects the live edge
+        /// set (R-K1); null is the full set.
         /// </summary>
-        public static IReadOnlyList<StatNodeId> GetStatsForArea(UiPalette.SystemArea area)
+        public static IReadOnlyList<StatNodeId> GetStatsForArea(UiPalette.SystemArea area, Country country = null)
         {
-            if (Cache.TryGetValue(area, out List<StatNodeId> cached))
+            var key = (area, RatePinned(country));
+            if (Cache.TryGetValue(key, out List<StatNodeId> cached))
             {
                 return cached;
             }
@@ -52,7 +60,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                foreach (PolicyWebEdge edge in PolicyWebRenderer.GetEdgesFor(policy))
+                foreach (PolicyWebEdge edge in PolicyWebRenderer.GetEdgesFor(policy, country))
                 {
                     edgeCounts.TryGetValue(edge.Target, out int count);
                     edgeCounts[edge.Target] = count + 1;
@@ -66,7 +74,7 @@ namespace PoliSim.UI
                 return byCount != 0 ? byCount : ((int)a).CompareTo((int)b);
             });
 
-            Cache[area] = ordered;
+            Cache[key] = ordered;
             return ordered;
         }
 
@@ -74,7 +82,7 @@ namespace PoliSim.UI
         /// How many of this screen's levers move this stat. Exposed so a caller can show the strongest
         /// few and honestly say how many were omitted, rather than silently truncating.
         /// </summary>
-        public static int GetLeverCount(UiPalette.SystemArea area, StatNodeId stat)
+        public static int GetLeverCount(UiPalette.SystemArea area, StatNodeId stat, Country country = null)
         {
             int count = 0;
             foreach (PolicyNodeId policy in System.Enum.GetValues(typeof(PolicyNodeId)))
@@ -84,7 +92,7 @@ namespace PoliSim.UI
                     continue;
                 }
 
-                foreach (PolicyWebEdge edge in PolicyWebRenderer.GetEdgesFor(policy))
+                foreach (PolicyWebEdge edge in PolicyWebRenderer.GetEdgesFor(policy, country))
                 {
                     if (edge.Target == stat) count++;
                 }
