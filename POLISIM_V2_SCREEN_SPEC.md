@@ -563,6 +563,63 @@ up 600ms → verdict stamp thunks last.
 *2026-08-27: seventeen of the nineteen resolve to a build site; the `screen caption` (§A.8) does not,
 and one more row has no site — re-derive which before relying on this list. The two are roadmap item 4.*
 
+### A.16 Boards 1k and 1l — the calendar sheet and the graph-weight ruling (answered 2026-08-27; NOT BUILT)
+
+*Design's answers to the seventh request's §2 and §3, read from the live `PoliSim v2 Screens.dc.html`
+(`data-screen-label="1k Calendar panel board"`, `"1l Graph weight ruling"`). Both are pixel rules for the
+existing procedural code — no sprite was asked for or delivered. Roadmap live items 8–9; not started by
+Elias's ruling (§V first). Every number below is a board value under the banner at the top of this file.*
+
+**1k — the left-column calendar panel as ONE almanac sheet** (drawn against the request's FIXED data
+contract, at 691px = 43.2% of 1600, reproducing `couple2s1600_02` and the `capfold_83a` density case):
+
+1. **The X-mark retires; the strike replaces it.** A spent day is the numeral crossed with ONE diagonal
+   ink stroke — the almanac cross-off. Pixel rule: 1.5px at 1600 / 2px at 2560, ink at 55%, angle ≈ −24°,
+   inset 2px into the numeral box. The literal " X" suffix goes (it was doing an almanac's job with a
+   typewriter's tool; the strike frees four characters of cell width at every size).
+2. **The dots-vs-ledger split STANDS.** Grid dots say *that* and *whose area*; the ledger says *what*.
+   Four dots reads as busy, not noise, once **the ledger row carries the same 5px dot** — the two
+   instruments cross-reference instead of restating each other.
+3. **The flip stays INSTANT.** The month is regenerated, not turned; zero staleness IS the honest desk.
+4. **The saturated day earns the heavy-day rule.** At the 4-dot cap the cell gains a **2px ink underline
+   beneath the dot row** — the almanac's red-letter mark in this desk's own ink. The cap stays hard; the
+   merged sentence lives in the ledger.
+5. **One instrument.** Header, grid and ledger are ONE paper sheet — one card, sections separated by
+   rules, one scroll. Three stacked cards would make the column read as a pile; a sheet reads as a place.
+
+Measurements stay measurements (day-cell height via `CalcHeight`; the date column against the widest
+date; the column 43.2% of the window); chrome stays procedural (`RoundedCard`/`Rule`/`Pill`);
+`ui_calendar_pad` untouched; locale honesty untouched (MÅN…SÖN, JANUARI, `FirstDayOfWeek`).
+
+**1l — the graph-weight ruling, SPECIFICATION ONLY** (lands in `BuildSparklinePixels` under the existing
+336-combination tests). The finding restated: the WEIGHT ORDER was flat — history, projection and
+threshold all landed within a device pixel of each other at 2560, so the recorded data could not
+outrank its own reference marker. A series line is mostly horizontal, so its read weight is its VERTICAL
+thickness, which the 300×90 buffer's stretch never multiplies at 2560 (×1.0 V) — the rule therefore
+speaks in buffer px once, with no per-resolution branch (≈ ×0.74 V at 1600, antialiased by the bilinear
+stretch: 3 buffer px ≈ 2.2 device px there, 3 at 2560).
+
+- **R-G1 History: 3 buffer px** (from 2), solid, full ink.
+- **R-G2 Projection: stays 2 buffer px**, lighter alpha, most-recent page only; **dash cadence re-cut
+  from "skip every 3rd step" to 3 on / 2 off** so the gaps stay visible beside a heavier history. It
+  must read "estimate", never "second series".
+- **R-G3 Threshold: stays 1 buffer px**, warm amber, riding label — a reference IS a hairline by design;
+  differentiation comes from the weight order 3 / 2 / 1.
+- **R-G4 Sparklines** (native-resolution buffers, same Bresenham): thickness = `max(2, round(rectHeight
+  / 34))` device px — 2 at small rects, 3 at a 90px 2560 rect.
+- **R-G5 The 300×90 buffer may stand.** Raising it to display resolution is invited, not required; if
+  raised, restate the rule in device px (3 / 2 / 1) and nothing else changes.
+
+**What moves with the weight and what must not:** release-point markers scale to weight + 2 buffer px
+(a 5px square at the new history weight) so they stay proud of the line; the green/red direction deltas
+(header ink), the PRELIMINARY badge + lag dating (text channel) and the **1px dashed revision FRAME do
+NOT move** — the frame is chrome, a separate channel from the projection dashing, and its fine cadence is
+exactly what keeps the two dash meanings apart. The full-width neutral-rate graph (`item5sweden_07d`)
+takes the same 3/2/1 order with its no-judgment ink untouched. **Acceptance, in engineering's own
+harness:** one constant and one cadence change under the 336-combination set; the eye's check is four
+stacked graphs at 2560 where history plainly outranks the amber reference — the inverse of
+`couple2s2560_02a`.
+
 ---
 
 ## C. PASS 3 — DISPOSITIONS AND THE RE-REVIEW FINDINGS — MIGRATED (2026-08-27)

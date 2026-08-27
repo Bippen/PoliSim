@@ -995,6 +995,34 @@ plus R4-4's pinned-capture pattern for probabilistic content.
 
 ---
 
+### R4-4's pre-report, consumed (2026-08-27 — the retention trigger fired with Progress5)
+
+*`POLISIM_R4_4_PREREPORT.md` (2026-08-17, `dd3ccfc`) was kept on disk by §22's ruling until D1's nine
+portraits landed; they did, and the file is deleted — git history holds it in full. What it carried
+that existed nowhere else:*
+
+**The name list — ruling 6's deliverable, signed by Elias as R4-4 ruling R1 (checked 2026-08-17).** One
+GLOBAL candidate pool per portfolio (Part A's structure — the same nine characters serve whichever
+country the player governs), deliberately cross-cultural pairings, all ASCII for the slug rule:
+Defense — Katarzyna Ekelund (Reformist), Rafael Iwasaki (Pragmatic), Gunnar Petrakis (Traditionalist);
+Foreign Affairs — Camille Adeyemi (Reformist), Zofia Nakamura (Pragmatic), Aleksander Whitfield
+(Traditionalist); Education — Yuki Dahlberg (Reformist), Nadia Fitzgerald (Pragmatic), Tobias Marchetti
+(Traditionalist). The shipped values are `CabinetSystem.CandidatePool`; the filenames derive from them.
+
+**The collision search — the absence claim's named search, four parts:** (1) by construction, each name
+is a cross-cultural pairing structurally unattested in any single country's political class; (2) a
+model-knowledge sweep of each full name and each surname within its portfolio against cabinet-level
+officeholders past and present of the six simulated countries — no full-name match, and one
+prominent-surname overlap caught and REMOVED before the list (the Education Reformist was drafted "Yuki
+Andersson"; Andersson is a recent Swedish prime minister's surname); (3) a live web search of each exact
+full name, quoted — no officeholder or public figure matches; private-citizen homonyms are unavoidable for
+any plausible name and are not the bar; (4) the in-game name space — no overlap with the sixteen existing
+portrait names, given names included. **Rule 9's unreversed half governs all nine: original and
+fictional.** The seven rulings (R1 the list; R2 the two shock fields; R3 the asymmetric competence
+channels; R4 coexist with `ForeignPolicySystem` and the cadence comment corrected; R5 Part A parity; R6
+the two-part trajectory criterion; R7 the area colours defaulted) and the batch's record are CLAUDE.md
+"Round 4 batch R4-4".
+
 ## 20. Playtest 1's package and the law system — shipped 2026-08-18 → 2026-08-25
 
 *A pointer entry, per the three-way test: finished work leaves the live file. The detailed
@@ -1099,7 +1127,8 @@ migrate here and delete, with every citation repointed — code doc comments inc
 preserves each report in full, the §12 precedent; this section carries the rulings, the
 consumption record, and the data that existed nowhere else. One deliberate exception:
 `POLISIM_R4_4_PREREPORT.md` stays on disk until D1's nine portraits land — its §4 collision
-search is actively cited by the in-flight art request — then follows this same rule.*
+search is actively cited by the in-flight art request — then follows this same rule. (✅ The nine
+landed 2026-08-27; the file is consumed to §19 and deleted.)*
 
 ### The stock-versus-flow mechanism report (2026-08-17, `bcbba47`)
 
@@ -1410,6 +1439,45 @@ repo root as the standing 1i spec with a dated 1j header pointer; CLAUDE.md "Boa
 implemented" is the build record; §20 carries the law-system story.
 
 ---
+
+### The seventh request — sent, answered and imported in one day (2026-08-27)
+
+**§1 the portrait batch:** sent with the register verdict at 21:0x, delivered by Design as
+`PoliSim v2 Design Progress5.zip` at 21:36 (`ZoneId=3`, `HostUrl=https://claude.ai/`, SHA-256
+`C9B26566…B109F`), verified on the four-pack bar and imported the same evening. **The bar, all six
+steps:** (1) provenance and security — every PNG carries the PNG magic and is 512×640 8-bit RGBA; all
+eight SVGs read in full, pure `rect`/`path`/`ellipse`/`circle` geometry with fill/stroke/opacity, no
+script, handler, href, `foreignObject`, `image`, entity or `data:`; (2) completeness — the delivered
+stems diffed programmatically against the names derived from `CabinetSystem.CandidatePool` by the
+`Slug()` rule: 0 missing, 0 unexpected, spelling exact; every stem a PNG + SVG pair; the manifest's
+pinned sizes matched 16/16; (3) conventions — decoded pixels fully opaque, 0% white, 105–164 distinct
+colours per bust (full-colour, the Portraits class, correctly NOT white-on-alpha); `Portraits/` and
+`Portraits/Source/` under `Assets/Resources/`; single sprites (textureType Default, `spriteMode 0`, the
+PoC's own meta); (4) import — metas copied from the PoC's PNG and SVG metas differing only in the guid
+line, 16 fresh GUIDs collision-checked against the 440 existing; copies byte-identical to the pack;
+(5) **verified by loading — `PortraitCoverageCheck`, born for this import and added to `CheckSuite`:
+25 of 25 pool members resolve through `IconLibrary.GetCabinetPortrait`/`GetFedChairPortrait` (18
+ministers across six portfolios + 7 chairs; the eight new ones 512×640 DXT1 under the full-colour
+compression ruling; the sitting chair reported, not counted)**; (6) `DeliveredAssetCheck` 0 missing
+(Progress5.zip 16/16, no zips at the root), `StatIconCoverageCheck` 19/19, `ChromeV2CoverageCheck`
+both directions clean, `ImporterSettingsCheck` 148 sprites, 0 errors, 0 warnings (FullColour 27 → 35).
+The zip went straight to `AssetPackArchive/` (Elias's placement); the check covers it there. **The
+cabinet set is complete — 18 of 18 ministers + 7 Fed chairs — and NOT yet seen: the roster with the
+batch on it is `MISSING_PREREQUISITES.md` §V's.** `POLISIM_R4_4_PREREPORT.md`'s retention trigger
+fired with the delivery (§22's ruling) — its §4 name list and collision search are recorded in §19 and
+the file is deleted.
+
+**§2 and §3 answered as boards, not files** — screens **1k Calendar panel board** and **1l Graph weight
+ruling** in Design's live `PoliSim v2 Screens.dc.html`, read from the project and recorded in
+`POLISIM_V2_SCREEN_SPEC.md` §A.16 as the standing rules; both are roadmap live items 8–9, NOT started by
+Elias's ruling (§V first). 1k answers the five questions by drawing: the " X" suffix retires for one
+diagonal ink stroke through the numeral; the dots-vs-ledger split stands with the ledger row repeating
+the grid's dot; the flip stays instant; a saturated day gains a 2px underline beneath the dot row; one
+almanac sheet, not three cards; no sprite requested. 1l is a weight-ORDER ruling — the finding was never
+"the lines are thin" but that history, projection and threshold all landed within a device pixel of each
+other at 2560: R-G1 history 3 buffer px · R-G2 projection 2 px, 3-on/2-off dashes · R-G3 threshold 1 px
+amber · R-G4 sparklines `max(2, round(h/34))` · R-G5 the buffer may stand; release markers weight + 2;
+the deltas, the badge and the 1px revision frame untouched.
 
 ### The screen spec's finished sections, and what the build did with each (added 2026-08-27)
 
@@ -2111,7 +2179,7 @@ Portraits 17 · Stats 43 · Textures 1.
 | `PartyArchetype` (4) × `emblem_party_*` | 4 of 4 | drawn in the hemicycle legend | closed |
 | party marks (`mark_party_*`, 5) | 5 | **0** — no `PoliticalParty` on main | item 10 (`MISSING_PREREQUISITES.md` §E2) |
 | `CountryId` (6) × `flag_country_*` | 6 of 6 | two surfaces (Canvas selector, IMGUI fallback) | closed |
-| `CabinetSystem.CandidatePool` (18 ministers) | 10 (the nine shipped portfolios' ministers + the Defense PoC) | drawn via `GetCabinetPortrait`; 8 render the procedural placeholder | 8 outstanding = D1 |
+| `CabinetSystem.CandidatePool` (18 ministers) | 10 at the sweep (the nine shipped portfolios' ministers + the Defense PoC) → **18 of 18 after Progress5 (2026-08-27)** | drawn via `GetCabinetPortrait`; `PortraitCoverageCheck` 25 of 25 through `Resources.Load` | closed (the roster look is §V's) |
 | `FederalReserveSystem` pool (7 chairs) | 7 of 7 | drawn on the selection path | closed |
 | the sitting turn-0 chair (Harriet Ellsworth, `WorldFactory.cs`) | none, and no call site asks | — | a design question on the roadmap, not a gap |
 | `ChromeManifest.txt` (50) | 50 = 50 | 42 loaded; **7 with no load call:** `ui_frame_double`, `ui_btn_disabled`, `ui_stamp_draft`, `ui_portrait_frame_oval`, `ui_btn_paper_canvas` (+`_hover`, `_pressed`); `ui_pixel` named in comments only | held stock (the 2026-08-12 "revivable by ruling" set + the Canvas paper button) |
@@ -2121,16 +2189,16 @@ Portraits 17 · Stats 43 · Textures 1.
 
 **Lasting decisions carried from the inventory:** delivered ≠ reachable — an asset's status has two
 parts and only the first is visible from the inbox (the flags and emblems sat outside `Resources/` for
-weeks); a coverage check is evidence only for the names it ENUMERATES (rule 14) — there is no check that
-enumerates portraits, area icons or emblems, which the roadmap names as a small live item
-(`PortraitCoverageCheck`, `AreaIconCoverageCheck`); the manifest is the SPECIFIED side of a coverage
+weeks); a coverage check is evidence only for the names it ENUMERATES (rule 14) — no check enumerated
+portraits, area icons or emblems at the sweep (`PortraitCoverageCheck` was built the same evening with
+the Progress5 import; `AreaIconCoverageCheck` stays a roadmap item); the manifest is the SPECIFIED side of a coverage
 check and a folder listing can never answer "is everything specified present?"; the project root holding
 no zips is the standing signal and `DeliveredAssetCheck` + `.gitignore` enforce it. **The archive:** 12
 zips in `AssetPackArchive/` (gitignored), every sprite entry accounted for by the check; the folder's
 README is a 2026-08-02 snapshot of seven packs — the check, not the README, is the record, and a stray
-`trip-2026-08-18.pdf` sits there that is not a delivery. **`POLISIM_R4_4_PREREPORT.md` stays on disk
-until D1's nine land** (§22's ruling; its §4 collision search is cited by the live request); its
-"nothing has been built" header describes 2026-08-17 and now says so. **The eleven superseded chrome
+`trip-2026-08-18.pdf` sits there that is not a delivery. **`POLISIM_R4_4_PREREPORT.md` stayed on disk
+until D1's nine landed** (§22's ruling) — they landed the same evening, and it was consumed to §19 and
+deleted. **The eleven superseded chrome
 SVG sources were deleted 2026-08-27 by Elias's ruling** — Track 3 had removed the PNGs only; the
 per-state SVGs Design shipped supersede the strips, and keeping both was the two-tables problem in
 another costume. `ChromeManifest.txt`'s `!` rows stay (the archived zips still carry the old `.svg`

@@ -37,7 +37,8 @@ namespace PoliSim.Simulation
     ///
     /// Every CabinetMinister here (CandidatePool) is an ORIGINAL FICTIONAL character - never a real
     /// person (Master Roadmap working-discipline rule 9; the R4-4 nine were additionally signed by
-    /// Elias with the collision search recorded in POLISIM_R4_4_PREREPORT.md section 4). Six of the
+    /// Elias with the collision search recorded in COMPLETED.md §19 - the pre-report that carried it
+    /// was consumed 2026-08-27 when the portraits landed). Six of the
     /// six confirmed-scope portfolios are implemented since R4-4 - see CabinetPortfolio's own doc
     /// comment for the history and the one remaining convention (Economy/Trade &amp; Industry stays
     /// undefined until built).

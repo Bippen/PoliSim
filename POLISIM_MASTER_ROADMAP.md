@@ -172,12 +172,14 @@ forward):**
   fiscal-engine arc; the law system at 100 of 100 in two categories; the ruled build order (five passes)
   and the shelf's first item, tariff costs (pass 6). Records: `COMPLETED.md` §§27–31.
 - **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the send package (the request SENT
-  2026-08-27, hash-verified; the courtesy note alone waits on Elias's send); **§A**
+  2026-08-27, hash-verified, and ANSWERED the same day — the portraits delivered and imported, §D1
+  closed; boards 1k/1l are live items 8–9 below; the courtesy note alone waits on Elias's send); **§A**
   the ruling queue Q6–Q10 (Elias, at named triggers); **§B** three seed quality debts (a database
   session); **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including
   election night (1h), Step 6, Riksbank-B, the stranded branch and the party marks; **§D1** the eight
-  outstanding cabinet portraits (Design, behind §S); **§E2/§E4** the mark accounting and the icon
-  promotion (the raster diff, E3, is NOT Design's — it is live item 7 below); **§V** the
+  outstanding cabinet portraits — ✅ delivered 2026-08-27, `PortraitCoverageCheck` 25/25 (the roster
+  look is §V's); **§E2/§E4** the mark accounting and the icon promotion (the raster diff, E3, is NOT
+  Design's — it is live item 7 below); **§V** the
   built-but-unconfirmed surfaces (Elias's eyes); **§P** the three felt verdicts (a playtest).
 - **LIVE** — the list below, in order.
 
@@ -267,10 +269,11 @@ Re-derived 2026-08-27 from every sprite's call site; the counts are cached value
 - **7 chrome names with no load call** — `ui_frame_double`, `ui_btn_disabled` (item 4), `ui_stamp_draft`,
   `ui_portrait_frame_oval`, `ui_btn_paper_canvas` (+`_hover`, `_pressed`); the 2026-08-12 "revivable by
   ruling" set plus the Canvas paper button the pilot never needed.
-- **Two coverage checks that do not exist:** `PortraitCoverageCheck` (enumerate
-  `CabinetSystem.CandidatePool` over all six portfolios + the Fed chair pool + the sitting chair's seed
-  name) and `AreaIconCoverageCheck` — no check today enumerates portraits, area icons or emblems, so
-  their coverage is asserted from the filesystem alone (rule 14).
+- **One coverage check that does not exist:** `AreaIconCoverageCheck` — no check enumerates area
+  icons or emblems, so their coverage is asserted from the filesystem alone (rule 14).
+  (`PortraitCoverageCheck` was built 2026-08-27 with the Progress5 import and runs in the suite:
+  every `CandidatePool` minister, every Fed chair and the seeded sitting chair, through `IconLibrary`'s
+  own accessors.)
 - **The sitting turn-0 Fed chair** (Harriet Ellsworth, `WorldFactory.cs`, deliberately outside the
   candidate pool) has no portrait and no call site asks for one: decide the sitting-chair row's
   treatment. If it gains a portrait, that is one new asset and a fresh Design ask.
@@ -301,6 +304,28 @@ than inferred (never attributable to an SVG `<pattern>` parse limit — `ui_slid
 `linearGradient` + `currentColor`; corrected 2026-08-26). **Closes when either a render path in this
 repo produces comparable pixels or an external rasterizer is installed here.** It had sat under "Waiting
 on Claude Design" — a prerequisite attributed to the wrong supplier is one that lapses.
+
+### 8. Board 1k — the calendar panel as ONE almanac sheet (answered 2026-08-27; NOT STARTED — Elias's call)
+
+Design answered request §2 by drawing (`POLISIM_V2_SCREEN_SPEC.md` §A.16 carries the rulings): the
+" X" suffix retires for a single diagonal ink stroke through the numeral (1.5px at 1600 / 2px at
+2560, ink at 55%, ≈ −24°, inset 2px); the dots-vs-ledger split stands and the ledger row repeats the
+grid's own 5px dot; the month flip stays instant; a saturated day (the 4-dot cap) gains a 2px ink
+underline beneath the dot row; header, grid and ledger become one paper sheet separated by rules, one
+scroll. No sprite — `RoundedCard`/`Rule`/`Pill` draw everything; measurements stay measurements. A
+UI-only pass under rule 0's bar (compile + capture, the calendar panel at the four sizes, the
+`capfold_83a` density case re-captured).
+
+### 9. Board 1l — the graph-weight ruling R-G1…R-G5 (answered 2026-08-27; NOT STARTED — Elias's call)
+
+Design answered request §3 as pixel rules, no art (`POLISIM_V2_SCREEN_SPEC.md` §A.16): history 3
+buffer px (from 2), solid; projection stays 2 px, lighter, dash cadence re-cut to 3 on / 2 off;
+threshold stays 1 px amber — a 3 / 2 / 1 weight order; sparklines `max(2, round(rectHeight / 34))`
+device px; the 300×90 buffer may stand (if raised, restate the rule in device px); release-point
+markers scale to weight + 2 px; the green/red deltas, the PRELIMINARY badge and the 1px revision
+frame do NOT move. Lands as one constant and one cadence change in `BuildSparklinePixels` under the
+existing 336-combination regression set; the eye's check is four stacked graphs at 2560 where history
+plainly outranks the amber reference — the inverse of `couple2s2560_02a`.
 
 ---
 
@@ -451,7 +476,7 @@ further down the charter table; the four scoped documents below it are not a sec
 | `POLISIM_V2_SCREEN_SPEC.md` | The v2.0 visual conventions the code cites by section (`LedgerRow.cs`, `GameController.cs`), and the spec of the one unbuilt screen (1h) | never as a whole — a spec is a reference; its finished history moved to `COMPLETED.md` §24 |
 | `LAW_BROWSER_BOARD_RULINGS.md` | Design's Screen 1i rulings, the build target two `GameController.cs` comments cite | the `board1jc*` eye review closes and the comments are repointed |
 | `CLAUDE_DESIGN_BOARD_1I_NOTE.md` | An outbound courtesy note — attachment of the §S send package | the package is sent |
-| `POLISIM_R4_4_PREREPORT.md` | The R4-4 ruling package; its §4 collision search is cited by the live portrait request | D1's portraits land (`COMPLETED.md` §22's ruling) |
+| ~~`POLISIM_R4_4_PREREPORT.md`~~ | The R4-4 ruling package — **consumed to `COMPLETED.md` §19 and deleted 2026-08-27** when D1's portraits landed, per §22's ruling | — |
 
 Deleted under this rule: `VISUAL_REVIEW_BACKLOG.md` (2026-08-02), `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`
 (2026-08-26), the three scoping packages and the derivation reports (2026-08-26, `COMPLETED.md` §§21/22).

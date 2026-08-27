@@ -9127,7 +9127,10 @@ The first CONTENT batch of the arc, built against pre-batch HEAD `dd3ccfc` only 
 pre-report rulings were recorded (R1 names signed as checked-on-2026-08-17; R2–R3 as recommended
 with R3's asymmetry reasoning written down; R4 coexist with FA-competence independence and the
 cadence comment corrected; R5 parity; R6 the concrete two-part criterion; R7 defaulted).
-Everything below is against `POLISIM_R4_4_PREREPORT.md`, which remains the scoping record.
+Everything below is against `POLISIM_R4_4_PREREPORT.md`, which remains the scoping record. *(⚠ Amended
+2026-08-27: the pre-report was consumed and deleted when D1's nine portraits landed, per the 2026-08-26
+retention ruling — its name list, collision search and rulings are `COMPLETED.md` §19; git history holds
+the file at `dd3ccfc`.)*
 
 ### What shipped
 
@@ -13393,3 +13396,71 @@ for startable work — that is what the split is for); the nine unbuilt screen-s
 **Harness note:** a PowerShell function parameter named `$args` is shadowed by the automatic variable —
 the first bar run launched Unity with `-logFile` alone and every step "passed" in seconds. The step
 function's parameter is now `$unityArgs`; the run that counts is the second.
+
+## Progress5 — the batch of eight verified on the six-step bar, imported, and verified by loading (2026-08-27)
+
+**The pack.** `PoliSim v2 Design Progress5.zip` (450,309 bytes, SHA-256
+`C9B265661D38ED77C280F628D44A5BDE02BBB534A11F729C265F805AE65B109F`) arrived the same evening the seventh
+request was sent, answering §1 in full; Elias placed it straight in `AssetPackArchive/` rather than at the
+project root (`DeliveredAssetCheck` covers it there — 16 of 16 present after import). **Provenance:**
+`Zone.Identifier` `ZoneId=3`, `HostUrl=https://claude.ai/` — the same claude.ai download signature as the
+four packs before it. The manifest declares 16 files (8 PNG + 8 SVG) with pinned sizes and says §2/§3 came
+back as boards, not files.
+
+**1 · Security, by content.** Every PNG opens with `89 50 4E 47 0D 0A 1A 0A` and its IHDR reads 512×640,
+bit depth 8, colour type 6 (RGBA) — the PoC's exact envelope. All eight SVGs were read in full, not only
+pattern-matched: 42–47 elements each, exclusively `svg`/`rect`/`path`/`ellipse`/`circle` with
+`fill`/`stroke`/`stroke-width`/`opacity`; the scan for `<script`, `on*=`, `javascript:`, `href`/`xlink:href`,
+`<foreignObject`, `<image`, `<use`, `<!ENTITY`, `<!DOCTYPE`, `data:`, `<style`, `@import`, `url(` found
+nothing in any file. `viewBox 0 0 256 320` on all eight — rendered at 2× to 512×640, as the manifest says.
+
+**2 · Completeness, programmatically.** The expected stems were DERIVED from `CabinetSystem.CandidatePool`
+(the Defense/ForeignAffairs/Education entries) by the `Slug()` rule and `diff`ed against the delivered
+stems: **0 missing, 0 unexpected, every name spelled exactly** — the rename-that-looks-like-an-omission
+class (`icon_crime` → `icon_area_crimejustice`) had no instance. Every stem has both a PNG and an SVG;
+the manifest's pinned byte sizes matched the files 16 of 16. §2 and §3: the live `PoliSim v2 Screens.dc.html`
+now carries `1k Calendar panel board` and `1l Graph weight ruling` (fifteen screen labels in all), read
+from Design's project and recorded in `POLISIM_V2_SCREEN_SPEC.md` §A.16; nothing in the zip claims them.
+
+**3 · The conventions.** Decoded pixels (System.Drawing, every 4th pixel): all eight fully opaque — 0
+translucent, 0 transparent — **0% white, 105–164 distinct 5-bit colours, mean RGB in the 90s/80s/70s** —
+full-colour painted busts, the Portraits class, correctly NOT white-on-alpha (the PoC reads the same:
+174 colours, 0% white). Names derived from the enum and the pool (above). Destination
+`Assets/Resources/Art/UI/Portraits/` for the PNGs and `Portraits/Source/` for the SVGs — under `Resources/`
+where `IconLibrary` loads. Sprite mode: the Portraits template is textureType Default, `spriteMode 0`
+(a Texture2D drawn by `GUI.DrawTexture`, never `Resources.Load<Sprite>`), one image per file — no strip.
+
+**4 · Import.** Metas hand-written by copying the PoC's own PNG meta and SVG meta and changing the guid
+line ALONE (verified: each new meta differs from its template by exactly that one line — nPOTScale None,
+alphaIsTransparency 0 on an opaque plate, compression kept per the full-colour ruling, mipmaps off, wrap
+Clamp); 16 fresh GUIDs from `/dev/urandom`, collision-checked against the 440 existing `guid:` values
+(0 collisions, 0 pre-existing duplicates); copies `cmp`-identical to the pack. Nothing edited under
+`Assets/` while Unity ran.
+
+**5 · Verified by loading, not by finding — `PortraitCoverageCheck` (new, `Assets/Editor/`, in
+`CheckSuite`).** It enumerates every `CabinetMinister` in `CabinetSystem.CandidatePool` and every `FedChair`
+in `FederalReserveSystem.CandidatePool` by reflection (the pools are private statics — the check derives
+from the pool the roster draws from and keeps no list of its own), plus every sitting
+`Country.CurrentFedChair` in `WorldFactory.CreateDefault()`, and loads each through
+`IconLibrary.GetCabinetPortrait`/`GetFedChairPortrait` — the game's path. **25 of 25 pool members resolve**
+(18 ministers across six portfolios + 7 chairs): the sixteen older at 256×256 DXT5, the PoC and the eight
+new at 512×640 DXT1 (compression kept, the 3.0b ruling); the sitting chair Harriet Ellsworth reported with
+no portrait and not counted — none was ever requested. A pool member with no portrait FAILS the check;
+the log fold is armed. `CheckExit`'s self-test loads a known portrait first.
+
+**6 · The four standing checks, all green:** `DeliveredAssetCheck` **0 missing from 0 root zips, 0 missing
+from archived packs** (Progress5.zip 16 of 16); `StatIconCoverageCheck` **19 of 19**; `ChromeV2CoverageCheck`
+**50 of 50 both directions**; `ImporterSettingsCheck` **148 sprites, 0 errors, 0 warnings** (WhiteOnAlpha
+112, FullColour 27 → 35, Tiling 1). Compile clean after the two comment repoints (`error CS` 0).
+
+**What it closes and what it does not.** §D1 CLOSES — the cabinet set is complete, 18 of 18 ministers
++ 7 Fed chairs, `MISSING_PREREQUISITES.md` §D1 a tombstone. **The eight are BUILT-NOT-SEEN** (§V): the PoC
+alone passed the register side-by-side; the batch on the roster beside the sixteen squares is the eye's
+question. `POLISIM_R4_4_PREREPORT.md`'s retention trigger fired — consumed to `COMPLETED.md` §19 (the
+name list, the four-part collision search, the seven rulings) and deleted; `CabinetSystem.cs` and
+`CabinetPortfolio.cs` repointed. The request doc is EMPTY of live asks (§0 the state, §4 the costed set,
+§5 the conventions — the next ask starts from §4). **Boards 1k and 1l are NOT implemented — by Elias's
+ruling they wait behind §V**; they are roadmap live items 8 and 9 with the rulings in the screen spec.
+One thing worth an eye beyond the roster: the new PNGs are 49–59 KB against the PoC's 604 KB — the same
+planar register at the same size, but flat colour where the PoC carried more tonal texture; the
+side-by-side that judged the PoC should be repeated with one of the eight beside it.

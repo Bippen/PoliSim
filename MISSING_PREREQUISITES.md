@@ -19,7 +19,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 | §A — the ruling queue Q6–Q10; F2 | **Elias — a decision** | each at its own named trigger |
 | §B — three seed quality debts | **Elias — database access** (an OECD/Eurostat re-sourcing session) | none blocks anything |
 | §D — item 10, the political game, and everything riding it | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
-| §D1 — cabinet portraits, eight outstanding | **Claude Design — delivery** (the verdict reached them 2026-08-27) | all three gates answered 2026-08-26 |
+| ~~§D1 — cabinet portraits, eight outstanding~~ | ✅ **DELIVERED AND IMPORTED 2026-08-27** (Progress5; `PortraitCoverageCheck` 25 of 25) | tombstone below; the look is §V's |
 | §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
 | ~~§E3 — rasterization diff, our half~~ | **MOVED to the roadmap 2026-08-27 (Elias):** Design delivered; ours to close with a tooling pass or a rasterizer on this machine — not blocked on anyone | tombstone below |
 | §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch**, behind §D1 | two `StatNodeId` members first |
@@ -158,30 +158,18 @@ front). **Standing constraint until then (Elias, 2026-08-12, R3): no main-side c
 - **A trade axis for the Trade bill's vote** (pass 6's deferred set): the direction reads the fiscal
   axis by Elias's ruling until real parties give trade its own.
 
-## 🟡 D1. Cabinet portraits — eight outstanding, the batch waits on DESIGN's delivery
+## D1 — cabinet portraits: ✅ CLOSED 2026-08-27 (tombstone)
 
-✅ **The register side-by-side PASSED (2026-08-26, Elias's live Editor session):** the painted plate
-belongs beside the existing register — Design's own named gate for the batch. All three gates are
-answered (envelope ACCEPTED, vignette FRAME-OWNED, register PASSED — the deliverable block is
-`CLAUDE_DESIGN_ASSET_REQUEST.md` §1). **The verdict reached Design's project on 2026-08-27 (§S);
-nothing on our side stands between Design and the batch.**
-
-**Task:** portrait art for the Defense, Foreign Affairs and Education ministers — nine names, of which
-**one landed as the PoC** (`portrait_cabinet_defense_katarzyna_ekelund`, 512×640, imported 2026-08-17);
-**eight remain (16 files with SVGs)**: `defense_rafael_iwasaki`, `defense_gunnar_petrakis`,
-`foreignaffairs_camille_adeyemi`, `foreignaffairs_zofia_nakamura`, `foreignaffairs_aleksander_whitfield`,
-`education_yuki_dahlberg`, `education_nadia_fitzgerald`, `education_tobias_marchetti` — filenames derived
-from the signed names in `CabinetSystem.CandidatePool` (re-derived 2026-08-27).
-
-**History:** blocked on the portfolios being authored → R4-4 authored all nine (ruling R1, signed;
-`POLISIM_R4_4_PREREPORT.md` §4 holds the collision search and stays on disk until the batch lands) → the
-request SENT 2026-08-17 (Elias) → Design answered with a PROOF, not the batch → the register gate cleared
-2026-08-26. Delivery lands per the E2 convention when it lands — import per §3's treatment rules;
-`ImporterSettingsCheck`/`DeliveredAssetCheck` pick up the files; `DeliveredAssetCheck` runs before this
-is ever reported outstanding again (rule 12).
-
-**Blocks:** nothing. The game renders the procedural placeholder for the eight until art lands —
-coverage of the existing 17 (10 ministers incl. the PoC + 7 Fed chairs) is unaffected.
+**Delivered the same day the verdict was sent** (`PoliSim v2 Design Progress5.zip`, `HostUrl=https://claude.ai/`),
+verified on the four-pack bar and imported: 8 PNG + 8 SVG, every name spelled as derived from
+`CabinetSystem.CandidatePool` (0 missing, 0 unexpected), every PNG 512×640 full-colour opaque (the
+Portraits class), hand-written metas on the PoC's own template with collision-checked GUIDs — and
+**verified by loading, not by finding: `PortraitCoverageCheck` (new, in the suite) resolves 25 of 25 pool
+members through `IconLibrary`'s own accessors**. The cabinet set is complete: 18 of 18 ministers + 7 Fed
+chairs. Record: `COMPLETED.md` §24 (the seventh request's answers) and CLAUDE.md "Progress5". **Not
+done in the sense that matters for a portrait:** none of the eight has been in front of Elias — the
+roster with the batch on it is a §V item. The history (portfolios authored R4-4 → request sent 08-17 →
+the PoC → the register gate 08-26 → the send 08-27 → delivery 08-27) is `COMPLETED.md` §24.
 
 ---
 
@@ -222,8 +210,9 @@ one that lapses, because nobody on either side is waiting for it — the reason 
 
 Both rows exist as plain derived rows with no `StatNodeId` and no icon (`DrawDerivedStatRow` in
 `GameController.cs`). Promotion is two enum members and two icon files; **the icon ask joins the next
-Design asset batch after D1's eight land** (`CLAUDE_DESIGN_ASSET_REQUEST.md` §4 names it as costed, not
-requested). Waiting on Design through a two-link chain, so not startable today.
+Design asset batch** (`CLAUDE_DESIGN_ASSET_REQUEST.md` §4 names it as costed, not requested; D1's
+batch landed 2026-08-27, so nothing queues ahead of it now — the promotion itself is the first step and
+is ours). Waiting on Design once the members exist, so not startable as a request today.
 
 ---
 
@@ -250,6 +239,7 @@ with the list in hand closes most of them; each closes to `COMPLETED.md` with th
 | The SWF emergency drawdown bill on the SWF tab (A2) | `b1c077f` 2026-08-02 | the state-axes set (a pending bill of every type, Sweden) |
 | Option C's deliberate-choice paragraph on the Federal Reserve tab | 2026-08-25 | Politics → Federal Reserve |
 | The Canvas country selector's capture set (the screen itself is seen — every live session opens on it) | `14cbad6` | `01`/`01b` |
+| **The eight new cabinet portraits on the roster** — Defense, Foreign Affairs, Education (the batch of nine; the PoC alone passed the register side-by-side) | Progress5, imported 2026-08-27 | Politics → Cabinet, the six portfolio panels; beside the 16 squares and the PoC |
 
 Not on this list because a session is on record: the Calendar Panel (playtest 2's verdict on it is why
 request §8 exists), the Signing screen (playtest 1's seal/button finding), the folder tongues, save/load
