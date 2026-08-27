@@ -219,23 +219,24 @@ namespace PoliSim.UI
                        $"{ledger.ApprovalAtPeriodOpen:F1} → {ledger.ApprovalAtClose:F1} ({delta:+0.00;-0.00})"
             });
 
-            // Class A - the formula's terms, exact and signed. Sustained gap terms carry the
-            // equilibrium framing; one-off and cyclical terms deliberately do not.
-            Term(rows, "Reversion toward 50", ledger.Reversion, sustained: false);
-            Term(rows, "Growth vs potential", ledger.GrowthEffect, sustained: false);
+            // Class A - the formula's terms, exact and signed. Playtest 3 cut (2026-08-27): the
+            // "≈ x sustained" equilibrium framing the sustained terms carried was a (b) and is cut -
+            // a row is the term and its figure.
+            Term(rows, "Reversion toward 50", ledger.Reversion);
+            Term(rows, "Growth vs potential", ledger.GrowthEffect);
             float misery = ledger.MiseryUnemployment + ledger.MiseryInflation + ledger.MiseryCrime + ledger.MiseryCorruption;
-            Term(rows, "Misery (gaps)", misery, sustained: true);
-            Term(rows, "· unemployment above NAIRU", ledger.MiseryUnemployment, sustained: false, indented: true);
-            Term(rows, "· inflation off target", ledger.MiseryInflation, sustained: false, indented: true);
-            Term(rows, "· crime above baseline", ledger.MiseryCrime, sustained: false, indented: true);
-            Term(rows, "· corruption above baseline", ledger.MiseryCorruption, sustained: false, indented: true);
-            Term(rows, "Tax hikes", ledger.TaxHikePenalty, sustained: false);
-            Term(rows, "Spending changes", ledger.SpendingEffect, sustained: false);
-            Term(rows, "Welfare vs baseline", ledger.WelfareEffect, sustained: true);
-            Term(rows, "Paid family leave vs baseline", ledger.PaidLeaveEffect, sustained: true);
-            Term(rows, "Drug policy stance", ledger.DrugPolicyEffect, sustained: true);
-            Term(rows, "Inequality vs own norm (Gini)", ledger.GiniEffect, sustained: true);
-            Term(rows, "Clamp at 0/100", ledger.ClampLoss, sustained: false);
+            Term(rows, "Misery (gaps)", misery);
+            Term(rows, "· unemployment above NAIRU", ledger.MiseryUnemployment, indented: true);
+            Term(rows, "· inflation off target", ledger.MiseryInflation, indented: true);
+            Term(rows, "· crime above baseline", ledger.MiseryCrime, indented: true);
+            Term(rows, "· corruption above baseline", ledger.MiseryCorruption, indented: true);
+            Term(rows, "Tax hikes", ledger.TaxHikePenalty);
+            Term(rows, "Spending changes", ledger.SpendingEffect);
+            Term(rows, "Welfare vs baseline", ledger.WelfareEffect);
+            Term(rows, "Paid family leave vs baseline", ledger.PaidLeaveEffect);
+            Term(rows, "Drug policy stance", ledger.DrugPolicyEffect);
+            Term(rows, "Inequality vs own norm (Gini)", ledger.GiniEffect);
+            Term(rows, "Clamp at 0/100", ledger.ClampLoss);
 
             // Class B - dated events, post-clamp actuals. Capped with a STATED omission (the
             // chips' own "+N more" idiom - say what was left out, never trim quietly): an
@@ -269,12 +270,9 @@ namespace PoliSim.UI
                 }
             }
 
-            rows.Add(new TraceRow
-            {
-                Header = true,
-                Name = $"Terms {ledger.TermSum + ledger.ClampLoss:+0.00;-0.00} + events {ledger.EventSum:+0.00;-0.00} " +
-                       $"= {delta:+0.00;-0.00} — audited at the boundary."
-            });
+            // Playtest 3 cut (2026-08-27): the audit footer ("Terms x + events y = z — audited at
+            // the boundary") was a (c) of the header's own delta plus a (b) - cut. The audit itself
+            // is CloseAtBoundary's assertion, not a row; ATTRIB fires if the books ever disagree.
             return rows;
         }
 
@@ -286,21 +284,19 @@ namespace PoliSim.UI
             float effective = MacroSystem.EffectiveConsumerConfidence(country, wageGapStance);
             var rows = new List<TraceRow>
             {
-                new TraceRow { Header = true, Name = "Consumer confidence — this period's single book" },
-                // Pass-3 floor sweep (2026-08-26): curated shorter name - the old
-                // "(healthcare/UBI accumulation)" parenthetical bottomed out the name ladder at
-                // the 1280x720 floor ("needs 152.8 wide in 145.1 at 8px" - the single-line trace
-                // row height leaves the wrap step no room, so the shrink floor was the only
-                // resort). The accumulation mechanism stays documented at the term's source; the
-                // row names the term, the figure carries the datum.
-                new TraceRow { Name = "Policy base (healthcare/UBI)", Figure = $"{baseValue:F3}" },
+                // Playtest 3 cut (2026-08-27): "this period's single book", "(healthcare/UBI)",
+                // "(period stance)" and "— what the economy reads" were (b) mechanism notes on rows
+                // whose figures are the (a) - cut; the row names the term, the figure carries the
+                // datum, the gap figure in the trailing column stays (it is a figure).
+                new TraceRow { Header = true, Name = "Consumer confidence" },
+                new TraceRow { Name = "Policy base", Figure = $"{baseValue:F3}" },
                 new TraceRow
                 {
-                    Name = "Wage-sentiment factor (period stance)",
+                    Name = "Wage-sentiment factor",
                     Figure = $"×{(baseValue > 0f ? effective / baseValue : 1f):F4}",
                     Trailing = $"gap {wageGapStance:+0.00;-0.00} pp"
                 },
-                new TraceRow { Name = "Effective — what the economy reads", Figure = $"{effective:F3}" }
+                new TraceRow { Name = "Effective", Figure = $"{effective:F3}" }
             };
             return rows;
         }
@@ -338,18 +334,20 @@ namespace PoliSim.UI
                        $"ratio {ledger.RatioAtPeriodOpen:F1}% → {ledger.RatioAtClose:F1}%"
             });
 
-            MoneyTerm(rows, "Primary balance (before the reaction)", ledger.PrimaryBalanceEffect,
-                ledger.PrimaryBalanceEffect > 0f ? "a primary deficit" : "a primary surplus");
-            MoneyTerm(rows, "Fiscal reaction on revenue", ledger.FiscalReactionEffect, $"stance ×{ledger.FiscalReactionMultiplier:F2}");
+            // Playtest 3 cut (2026-08-27): the trailing MECHANISM texts ("a primary deficit",
+            // "stance ×1.00", "blended pays ... vs issuance", "(rounding, audited)") were (b) and are
+            // cut; the rate and π figures in the trailing column are figures and stay.
+            MoneyTerm(rows, "Primary balance (before the reaction)", ledger.PrimaryBalanceEffect, "");
+            MoneyTerm(rows, "Fiscal reaction on revenue", ledger.FiscalReactionEffect, "");
             MoneyTerm(rows, "Interest at the issuance rate", ledger.InterestAtIssuance, $"{ledger.IssuanceRateAtOpen:F2}→{ledger.IssuanceRateAtClose:F2}%");
-            // Name kept short and the mechanism in the trailing text: the first capture (1600,
-            // 2026-08-25) showed "Maturity lag (blended − issuance)" SHRUNK to fit the name column
-            // rather than wrapping - a parenthetical is one unbreakable run to the measured label.
-            MoneyTerm(rows, "Maturity lag", ledger.RateLagEffect, $"blended pays {ledger.EffectiveRateAtOpen:F2}→{ledger.EffectiveRateAtClose:F2}% vs issuance");
+            // Name kept short: the first capture (1600, 2026-08-25) showed "Maturity lag (blended −
+            // issuance)" SHRUNK to fit the name column rather than wrapping - a parenthetical is one
+            // unbreakable run to the measured label.
+            MoneyTerm(rows, "Maturity lag", ledger.RateLagEffect, $"{ledger.EffectiveRateAtOpen:F2}→{ledger.EffectiveRateAtClose:F2}%");
             MoneyTerm(rows, "Inflation erosion (−π·b)", ledger.Erosion, $"π {ledger.InflationAtOpen:F1}→{ledger.InflationAtClose:F1}%");
             MoneyTerm(rows, ledger.ClampBoundDays > 0
                     ? $"Clamp at guard/ceiling ({ledger.ClampBoundDays} day{(ledger.ClampBoundDays == 1 ? "" : "s")})"
-                    : "Residual (rounding, audited)",
+                    : "Residual",
                 ledger.ClampLoss, "");
 
             if (ledger.Events.Count > 0)
@@ -370,12 +368,8 @@ namespace PoliSim.UI
                 }
             }
 
-            rows.Add(new TraceRow
-            {
-                Header = true,
-                Name = $"Terms {SignedMoney(ledger.TermSum + ledger.ClampLoss)} + events {SignedMoney(ledger.EventSum)} " +
-                       $"= {SignedMoney(delta)} — audited at the boundary ({ledger.DaysRecorded} days)."
-            });
+            // Playtest 3 cut (2026-08-27): the audit footer was a (c) of the header's delta plus a
+            // (b) - cut, as on the approval section; the boundary audit stands where it always did.
 
             // The ratio's identity in three rows, not four - the result rides on the header so the
             // section stays inside a 1600 Budget-tab host (measured on the first capture).
@@ -386,7 +380,10 @@ namespace PoliSim.UI
                 rows.Add(new TraceRow
                 {
                     Header = true,
-                    Name = $"Debt-to-GDP {ledger.RatioAtClose - ledger.RatioAtPeriodOpen:+0.00;-0.00} pp — the ratio's own identity, exact; GDP's drivers are not this section's claim"
+                    // Playtest 3 cut (2026-08-27): "— the ratio's own identity, exact; GDP's drivers
+                    // are not this section's claim" was a (b) - cut; the claim's boundary lives in
+                    // this method's doc comment.
+                    Name = $"Debt-to-GDP {ledger.RatioAtClose - ledger.RatioAtPeriodOpen:+0.00;-0.00} pp"
                 });
                 rows.Add(new TraceRow { Name = "Stock change, at closing GDP", Figure = $"{stockAtClosingGdp:+0.00;-0.00} pp", Trailing = "" });
                 rows.Add(new TraceRow
@@ -418,10 +415,13 @@ namespace PoliSim.UI
             rows.Add(new TraceRow { Name = name, Figure = SignedMoney(value), Trailing = trailing });
         }
 
-        private static void Term(List<TraceRow> rows, string name, float value, bool sustained, bool indented = false)
+        private static void Term(List<TraceRow> rows, string name, float value, bool indented = false)
         {
             // A term that rounds to 0.00 is noise, not honesty - skipped, never shown as a
-            // confident zero. The audit footer still sums the exact values.
+            // confident zero. The boundary audit (CloseAtBoundary) still sums the exact values.
+            // Playtest 3 cut (2026-08-27): the "≈ x sustained" trailing figure on the sustained
+            // terms (value / ApprovalReversionSpeed, an equilibrium projection explained nowhere on
+            // screen) was a (b) and is cut; a row is the term and its figure.
             if (Mathf.Abs(value) < 0.005f)
             {
                 return;
@@ -431,7 +431,7 @@ namespace PoliSim.UI
             {
                 Name = name,
                 Figure = $"{value:+0.00;-0.00}",
-                Trailing = sustained ? $"≈ {value / MacroSystem.ApprovalReversionSpeed:+0.0;-0.0} sustained" : "",
+                Trailing = "",
                 Indented = indented
             });
         }
