@@ -871,13 +871,13 @@ namespace PoliSim.Data
             // dollars WelfarePrograms tracks.
             // Playtest-2 item 4 (ruled 2026-08-25): Sweden graduates from the generic 5-line
             // decomposition to its real utgiftsomrade structure - see SeedSwedenSpendingLines.
-            // Omnibus 2026-08-28 (R-K7): Germany graduates to its real Einzelplan structure - see
-            // SeedGermanySpendingLines. The remaining countries stay on the generic seed until their
-            // own passes.
+            // Omnibus 2026-08-28 (R-K7): Germany graduates to its real Einzelplan structure and
+            // Italy to its real missioni - see SeedGermanySpendingLines / SeedItalySpendingLines.
+            // The remaining countries stay on the generic seed until their own passes.
             SeedSwedenSpendingLines(sweden);
             SeedGermanySpendingLines(germany);
             SeedGenericSpendingLines(france, socialPercent: 38f, defensePercent: 7f, infrastructurePercent: 12f, publicServicesPercent: 25f);
-            SeedGenericSpendingLines(italy, socialPercent: 40f, defensePercent: 4f, infrastructurePercent: 11f, publicServicesPercent: 26f);
+            SeedItalySpendingLines(italy);
             SeedGenericSpendingLines(poland, socialPercent: 34f, defensePercent: 10f, infrastructurePercent: 16f, publicServicesPercent: 22f);
 
             // RECALIBRATION (build-order item 1, terminal rulings 2026-08-26): the mandatory
@@ -1377,6 +1377,108 @@ namespace PoliSim.Data
 
             // The remainder line keeps the exact-sum invariant: Epl 60's core is total-minus-allocated.
             germany.SpendingLines.Add(new SpendingLine(SpendingCategory.FinancialAdministration, total - allocated, isMandatory: false));
+        }
+
+        /// <summary>
+        /// Omnibus 2026-08-28 (R-K7, the third decomposition on Sweden's method, Germany the
+        /// second): Italy's REAL budget structure - the 34 missioni of the bilancio dello Stato 2026
+        /// (legge 30 dicembre 2025 n. 199, the legge di bilancio 2026-2028) - as a PURE
+        /// DECOMPOSITION of the country's existing GDP x GovernmentSpendingRate total, the exact-sum
+        /// invariant kept (every line the game total times the missione's share of the sourced EUR
+        /// sum; the last line, MunicipalGrants, the REMAINDER).
+        ///
+        /// SOURCE (rules 5/9/12): the Ragioneria Generale dello Stato's BDAP open data, dataset
+        /// spd_lbf_spe_elb_cap_01_2026 "2026 - Legge di Bilancio Pubblicata Elaborabile Spese
+        /// Capitolo" - every capitolo of the published law with its missione, programma and titolo
+        /// (CKAN datastore dump 07b33430-ffe6-426d-87a9-9731eebe8031, retrieved 2026-08-28, 4,519,085
+        /// bytes, SHA-256 D9E89E65...), the 2026 competenza column (CP A1) aggregated by missione and
+        /// programma. Its total is 1,253.16 bn; the spesa finale (titoli I and II) 923.12 bn, matching
+        /// the RGS's own 923.1. Figures below in bn EUR.
+        ///
+        /// WHAT IS IN AND WHAT IS OUT, stated. Titolo III rimborso passivita' finanziarie (330.04 -
+        /// debt redemption, not spending) is out everywhere; missione 034 Debito pubblico (interest,
+        /// 103.04) is out - interest has no line, the USA/Sweden rule. Two missioni are out because
+        /// the recalibration (build-order item 1, 2026-08-26) already seeds Italy's transfer layer at
+        /// general-government size in SeedMandatoryTransferLines (SocialSecurity 13.6% of GDP,
+        /// IncomeSecurity 7.70%): 025 Politiche previdenziali (112.70, the transfers to INPS) and 024
+        /// Diritti sociali, politiche sociali e famiglia (69.27, the social-assistance transfers) -
+        /// the same layer, seeded by two passes, counted once, Germany's rule. And programma 029-005
+        /// Regolazioni contabili, restituzioni e rimborsi d'imposte (105.89) is out as a REVENUE-SIDE
+        /// item: tax refunds booked as expenditure, which every seed here nets from revenue (Sweden's
+        /// budget carries no such area) - keeping it would have put a fifth of Italy's G into
+        /// "financial administration". The base is therefore 532.22 bn.
+        ///
+        /// Mapping by missione, with three programma-level splits: 003-006 Concorso dello Stato al
+        /// finanziamento della spesa sanitaria (93.23, the SSN) reads as HealthcareAndSocialCare
+        /// together with 020 Tutela della salute (2.12) - health is a real line here rather than
+        /// hidden inside the regional transfer the way Sweden's UO25 hides municipal services; the
+        /// rest of 003 (61.33) is MunicipalGrants, the remainder. 004-010 Partecipazione italiana
+        /// alle politiche di bilancio in ambito UE (39.25) is EuMembershipFee (Sweden's UO27
+        /// precedent), 004-002 Cooperazione allo sviluppo (0.94) InternationalAid, the rest of 004
+        /// (3.02) StateForeignAffairs. 029's non-refund programmi split between TaxAdministration
+        /// (riscossione, Guardia di Finanza, regolazione della fiscalita': 12.75) and
+        /// FinancialAdministration (tesoreria and the residue, 6.05, with 033 Fondi da ripartire
+        /// 29.79: 35.84). Consolidations: 001 + 002 + 032 CentralGovernment; 007 Ordine pubblico +
+        /// 008 Soccorso civile HomelandSecurity; 022 + 023 + 017 Education; 021 + 030
+        /// CultureAndMedia; 011 Competitivita' (74.68, of which 63.50 is programma 009's tax-credit
+        /// outlays - a real fiscal cost, kept) + 015 + 016 + 031 + 012 BusinessAndIndustry; 013
+        /// Transportation, 014 InfrastructureAndDevelopment, 028 RegionalPlanningAndDevelopment.
+        /// No mandatory line, Germany's rule.
+        ///
+        /// THE DISTORTION, MEASURED: the state budget's non-transfer base (532 bn = 23% of GDP)
+        /// scaled onto a G of 19% of GDP is a smaller stretch than Germany's federal one - Defense
+        /// lands at 1.14% of GDP (Eurostat gov_10a_exp GF02 2024: 1.3), Education at 2.62% (GF09
+        /// 4.0; regional and municipal education is outside the state budget), Health at 3.40% (GF07
+        /// 6.6), BusinessAndIndustry at 2.73% (the tax-credit outlays). Enumerated by the pass's diff.
+        /// </summary>
+        private static void SeedItalySpendingLines(Country italy)
+        {
+            float total = italy.State.GDP * (italy.GovernmentSpendingRate / 100f);
+
+            // (category, 2026 competenza in bn EUR, titoli I+II) - every missione of the base except the remainder line.
+            var areas = new (SpendingCategory Category, float BnEur)[]
+            {
+                (SpendingCategory.HealthcareAndSocialCare, 95.353f),        // 003-006 SSN funding (93.232) + 020 Tutela della salute (2.121)
+                (SpendingCategory.BusinessAndIndustry, 76.574f),            // 011 Competitivita' (74.680) + 015 Comunicazioni (0.956) + 016 Commercio internazionale (0.647) + 031 Turismo (0.253) + 012 Regolazione dei mercati (0.037)
+                (SpendingCategory.Education, 73.481f),                      // 022 Istruzione scolastica (57.798) + 023 universitaria (11.427) + 017 Ricerca e innovazione (4.255)
+                (SpendingCategory.EuMembershipFee, 39.249f),                // 004-010 Partecipazione italiana alle politiche di bilancio in ambito UE
+                (SpendingCategory.FinancialAdministration, 35.840f),        // 029 minus refunds minus the TaxAdministration programmi (6.052) + 033 Fondi da ripartire (29.788)
+                (SpendingCategory.Defense, 31.829f),                        // 005 Difesa e sicurezza del territorio
+                (SpendingCategory.HomelandSecurity, 19.531f),               // 007 Ordine pubblico e sicurezza (12.960) + 008 Soccorso civile (6.571)
+                (SpendingCategory.LaborMarket, 17.098f),                    // 026 Politiche per il lavoro
+                (SpendingCategory.Transportation, 14.493f),                 // 013 Diritto alla mobilita' e sviluppo dei sistemi di trasporto
+                (SpendingCategory.TaxAdministration, 12.745f),              // 029-010 riscossione (7.866) + 029-003 Guardia di Finanza (3.219) + 029-001 (1.058) + 029-007 (0.602)
+                (SpendingCategory.Justice, 11.632f),                        // 006 Giustizia
+                (SpendingCategory.CentralGovernment, 8.781f),               // 001 Organi costituzionali (3.373) + 002 Amministrazione generale (0.832) + 032 Servizi istituzionali e generali (4.576)
+                (SpendingCategory.RegionalPlanningAndDevelopment, 8.507f),  // 028 Sviluppo e riequilibrio territoriale
+                (SpendingCategory.InfrastructureAndDevelopment, 7.897f),    // 014 Infrastrutture pubbliche e logistica
+                (SpendingCategory.CultureAndMedia, 4.237f),                 // 021 Tutela e valorizzazione dei beni culturali (2.881) + 030 Giovani e sport (1.355)
+                (SpendingCategory.Migration, 3.182f),                       // 027 Immigrazione, accoglienza e garanzia dei diritti
+                (SpendingCategory.StateForeignAffairs, 3.023f),             // 004 L'Italia in Europa e nel mondo minus the EU budget participation and development cooperation
+                (SpendingCategory.ClimateAndEnvironment, 2.877f),           // 018 Sviluppo sostenibile e tutela del territorio e dell'ambiente
+                (SpendingCategory.Agriculture, 1.643f),                     // 009 Agricoltura, politiche agroalimentari e pesca
+                (SpendingCategory.Energy, 1.047f),                          // 010 Energia e diversificazione delle fonti energetiche
+                (SpendingCategory.InternationalAid, 0.940f),                // 004-002 Cooperazione allo sviluppo
+                (SpendingCategory.Housing, 0.925f),                         // 019 Casa e assetto urbanistico
+            };
+            const float MunicipalGrantsBnEur = 61.335f;                     // 003 Relazioni finanziarie con le autonomie territoriali minus the SSN programma - the remainder line
+
+            float eurSum = MunicipalGrantsBnEur;
+            foreach ((SpendingCategory _, float eur) in areas)
+            {
+                eurSum += eur;
+            }
+
+            float allocated = 0f;
+            foreach ((SpendingCategory category, float eur) in areas)
+            {
+                float amount = total * (eur / eurSum);
+                allocated += amount;
+                italy.SpendingLines.Add(new SpendingLine(category, amount, isMandatory: false));
+            }
+
+            // The remainder line keeps the exact-sum invariant: the regional transfers are total-minus-allocated.
+            italy.SpendingLines.Add(new SpendingLine(SpendingCategory.MunicipalGrants, total - allocated, isMandatory: false));
         }
 
         /// <summary>
