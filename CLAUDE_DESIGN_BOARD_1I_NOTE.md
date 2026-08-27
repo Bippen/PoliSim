@@ -20,7 +20,9 @@ We read **`1j Law browser at 50`** from your live `PoliSim v2 Screens.dc.html` a
 drawn: the category chips step down (the count moves into the summary line), the ORDER control
 and a real search slot take their place, **AVAILABLE renders as four magnitude BANDS** with
 three-cell rows (the stepped rule promoted from forty repeating cells to four band captions),
-the category cell retires until a second category ships, pending rows carry their real VOTE-IN
+the category cell retired until a second category shipped — which it did the same afternoon
+(Labor Market, 50 laws; the chip row and category cell returned exactly as 1j promised, and the
+filter genuinely narrows for the first time), pending rows carry their real VOTE-IN
 countdowns, and the detail pane gains the kicker, the band range, the two-column IF-ENACTED dial
 grid, and per-party stance rows from real seat data.
 
@@ -36,9 +38,11 @@ adaptation 1i's column header took.
 Your rulings doc stays at our repo root unchanged as delivered, with one dated header line
 noting that 1j overlays its AVAILABLE-row spec.
 
-## Captures (the current board, both sizes)
+## Captures (the 1j board as first built, both sizes — reference sets)
 
-From `../PoliSim-captures/`:
+From `../PoliSim-captures/` (the `board1jc*` sets are the 1j build's reference captures; the second
+category landed after them, so the live board carries a hundred laws across two categories today —
+the composition is unchanged):
 
 - `board1jc1600_06f_policylaws_laws.png` · `board1jc2560_06f_policylaws_laws.png` — the 1j board
   at both sizes (`_rows`/`_deep` scroll variants sit beside them).

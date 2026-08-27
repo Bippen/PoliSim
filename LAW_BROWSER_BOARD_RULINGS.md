@@ -5,7 +5,8 @@ Drawn 2026-08-25 as **Screen 1i** in `PoliSim v2 Screens.dc.html`
 is its written form so the build has a target that is not a chat message.
 
 Drawn against the populated state of `run_85g_bill_laws.png` — 8 in force,
-2 pending, 38 total, one populated category.
+2 pending, 38 total, one populated category (the state on 2026-08-25; the catalog is
+100 laws in two categories at HEAD, 2026-08-27 — the counts below are the board's, not the game's).
 
 > **2026-08-26 — one dated pointer; everything below is unchanged as delivered.** Design's
 > Screen 1j ("Law browser at 50", their §7.1 answer) OVERLAYS the AVAILABLE-row spec below:
@@ -40,6 +41,9 @@ reads faster than a tag. MINOR 1 · MODERATE 2 · MAJOR 3 · SWEEPING 4.
   five hatched chips at `· 0`. This makes an inert filter read as empty
   content rather than a broken control. **It is a legibility fix, not the bug
   fix** — the underlying filter still needs fixing and its cause reporting.
+  *(Closed by content, 2026-08-26: the second `LawCategory` shipped and the
+  filter genuinely narrows; 1i's five drawn categories never entered the enum,
+  so no hatched `· 0` chips render — CLAUDE.md "The second law category ships".)*
 - **Sticky column header inside the scroller** (`position:sticky;top:0`), so
   the header grid and the row grids resolve against the same scrollbar-reduced
   width. A header sibling above the scroller misaligns by the scrollbar width.
@@ -87,12 +91,14 @@ row. `minmax(0,1fr)` not `1fr`: a plain `1fr` cannot shrink below the name
 cell's min-content and the ledger overflows horizontally. The scroller carries
 `scrollbar-gutter:stable`, so header and rows resolve against the same width.
 
-## Open on the engineering side
+## Open on the engineering side — both CLOSED (recorded 2026-08-27)
 
-- **The citation record.** The board draws Portugal, Law 30/2000 / CONFIRMED
-  in the slot for Drug Possession Decriminalisation. It is a real policy and
-  correctly labelled, but it is a **placeholder for the slot** — verify
-  against `LawCatalog`'s own comment for that law and use the recorded
-  source. The slot is Design's; the record is not.
-- Row content for the five unpopulated categories is untested — the board is
-  drawn against one category and designed for ~300 rows across six.
+- **The citation record.** The board drew Portugal, Law 30/2000 / CONFIRMED as
+  a placeholder for the slot. Discharged: the pane reads each law's recorded
+  `RealWorldCitation` from `LawCatalog` (`LawDefinition.cs`), never the board's
+  sample — the slot was Design's; the record is the catalog's.
+- Row content for "the five unpopulated categories" — there are not six
+  categories: `LawCategory` has two members (CrimeJustice, LaborMarket), both
+  populated at 50, and the 1j rebuild rendered both. The eye review of the
+  `board1jc*` capture sets is the one thing still open, and it is
+  `MISSING_PREREQUISITES.md` §V's, not this file's.

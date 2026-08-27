@@ -1,5 +1,12 @@
 # Round 4 batch R4-4 — PRE-REPORT: the three cabinet portfolios (2026-08-17)
 
+> **Status (2026-08-27):** this is the 2026-08-17 ruling package as delivered (`dd3ccfc`). All seven
+> rulings landed and **R4-4 SHIPPED the same day (`453e23f`; CLAUDE.md "Round 4 batch R4-4";
+> `COMPLETED.md` §19)** — "nothing has been built" below describes that morning. The file stays on
+> disk until D1's portraits land, because §4's name list and collision search are cited by the live art
+> request (`CLAUDE_DESIGN_ASSET_REQUEST.md` §1; the retention ruling is `COMPLETED.md` §22); then it
+> follows the consumed-report rule. Everything below is unchanged.
+
 **Defense, Foreign Affairs, Education. A CONTENT batch, not a stat batch. Nothing has been
 built — this document is the ruling 6 deliverable, and R4-4 builds only after the rulings at the
 end land.** Everything below is derived from the code at HEAD (`9f12c96`) and Part A's shipped
