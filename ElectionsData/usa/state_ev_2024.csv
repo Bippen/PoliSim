@@ -1,0 +1,59 @@
+# USA 2024 - presidential winner and electoral-vote split per state [SOURCED] [PROVISIONAL]
+# source: https://www.fec.gov/documents/5645/2024presgeresults.xlsx (FEC "OFFICIAL 2024 PRES GE
+#   RESULTS" sheet, columns "ELECTORAL VOTE: TRUMP (R)" / "ELECTORAL VOTE: HARRIS (D)";
+#   accessed 2026-08-29; EV source per the file: State Certificates of Vote, NARA).
+#   other_EV goes to the OPPOSING candidate: ME = Harris 3 / Trump 1 (ME-2), NE = Trump 4 /
+#   Harris 1 (NE-2). Cross-check: both column sums independently computed = Trump 312,
+#   Harris 226, matching the workbook's own Total row and NARA. 51 rows (50 states + DC).
+state;winner(R/D);winner_EV;other_EV
+AL;R;9;0
+AK;R;3;0
+AZ;R;11;0
+AR;R;6;0
+CA;D;54;0
+CO;D;10;0
+CT;D;7;0
+DE;D;3;0
+DC;D;3;0
+FL;R;30;0
+GA;R;16;0
+HI;D;4;0
+ID;R;4;0
+IL;D;19;0
+IN;R;11;0
+IA;R;6;0
+KS;R;6;0
+KY;R;8;0
+LA;R;8;0
+ME;D;3;1
+MD;D;10;0
+MA;D;11;0
+MI;R;15;0
+MN;D;10;0
+MS;R;6;0
+MO;R;10;0
+MT;R;4;0
+NE;R;4;1
+NV;R;6;0
+NH;D;4;0
+NJ;D;14;0
+NM;D;5;0
+NY;D;28;0
+NC;R;16;0
+ND;R;3;0
+OH;R;17;0
+OK;R;7;0
+OR;D;8;0
+PA;R;19;0
+RI;D;4;0
+SC;R;9;0
+SD;R;3;0
+TN;R;11;0
+TX;R;40;0
+UT;R;6;0
+VT;D;3;0
+VA;D;13;0
+WA;D;12;0
+WV;R;4;0
+WI;R;10;0
+WY;R;3;0

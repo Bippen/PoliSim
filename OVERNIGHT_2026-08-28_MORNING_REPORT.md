@@ -214,6 +214,15 @@ and the national-Poland signature run stands beside them as the measured 70-seat
 constituency-level allocation is mandatory. The overhaul doc's Part 5 obligation is
 DISCHARGED in full for all three countries it names.**
 
+**THE THIRD FETCH — USA joins:** `usa/state_ev_2024.csv` (the FEC xlsx's own EV columns, all
+51 jurisdictions, both sums independently re-computed = 312/226, matching the workbook's Total
+row and NARA). The Electoral College run: **with the two sourced district splits (ME-2 to
+Trump, NE-2 to Harris) — EXACT, 312/226.** One finding worth its own line: PURE winner-take-all
+ALSO totals 312/226 in 2024 — not because WTA is right (it mis-assigns 2 EVs) but because the
+ME and NE district effects cancel exactly this cycle; a model that dropped the district method
+would have been silently lucky. Still not run, stated: Italy (formula unsourced — billed),
+France (no national model); the USA House stays national-totals-only.
+
 ## Part 2 — E-0, what landed of it (the spec-independent halves)
 
 Unit 1 (spec verbatim at root): **BLOCKED — the spec never arrived**; billed. Unit 2 (the

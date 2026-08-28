@@ -171,7 +171,27 @@ namespace PoliSim.EditorTools
             int[] plRealModel = SeatAllocation.PerDistrictSum(plDistricts, plMagnitudes, plEligible, SeatAllocation.DHondtDivisor);
             failures += Report("POLAND 2023 REAL - d'Hondt per okreg over the KBW absolute counts (the actual Sejm system; the definitive run)", plNames, plVotes, plValid, plRealModel, plReal);
 
-            Debug.Log("BACKTEST: NOT RUN, stated: Italy (allocation formula unsourced tonight - billed), France (two-round SMD, no national model exists), USA (full state table not fetched).");
+            // --- USA 2024 ELECTORAL COLLEGE (ElectionsData/usa/state_ev_2024.csv - the FEC
+            // xlsx's own EV columns, sums confirmed vs NARA 312/226; third fetch of the night).
+            // The rule under test is WINNER-TAKE-ALL; ME and NE are the sourced district-method
+            // exceptions (other_EV goes to the opponent). Two models: pure WTA (the deviation
+            // IS the district-method effect, a finding) and WTA + the two sourced splits
+            // (expected exact). Data: parallel arrays, R = true; order as the CSV.
+            bool[] usIsR = { true, true, true, true, false, false, false, false, false, true, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, true, true, true, true, false, false, false, false, true, true, true, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true };
+            int[] usWinnerEv = { 9, 3, 11, 6, 54, 10, 7, 3, 3, 30, 16, 4, 4, 19, 11, 6, 6, 8, 8, 3, 10, 11, 15, 10, 6, 10, 4, 4, 6, 4, 14, 5, 28, 16, 3, 17, 7, 8, 19, 4, 9, 3, 11, 40, 6, 3, 13, 12, 4, 10, 3 };
+            int[] usOtherEv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            int trumpWta = 0, harrisWta = 0, trumpActual = 0, harrisActual = 0;
+            for (int i = 0; i < usIsR.Length; i++)
+            {
+                int total = usWinnerEv[i] + usOtherEv[i];
+                if (usIsR[i]) { trumpWta += total; harrisWta += 0; trumpActual += usWinnerEv[i]; harrisActual += usOtherEv[i]; }
+                else { harrisWta += total; trumpActual += usOtherEv[i]; harrisActual += usWinnerEv[i]; }
+            }
+
+            Debug.Log($"BACKTEST: USA 2024 ELECTORAL COLLEGE - pure winner-take-all model: Trump {trumpWta} / Harris {harrisWta} vs real 312/226 (deviation {Math.Abs(trumpWta - 312) + Math.Abs(harrisWta - 226)} EV = the ME/NE district-method effect, a finding); with the two sourced district splits: Trump {trumpActual} / Harris {harrisActual} vs real 312/226 ({(trumpActual == 312 && harrisActual == 226 ? "EXACT" : "DEVIATES - a finding")}). 51 jurisdictions; the WTA rule alone covers 49 of them.");
+            failures += (trumpActual == 312 && harrisActual == 226) ? 0 : Expect("USA EC with sourced splits", new[] { trumpActual, harrisActual }, new[] { 312, 226 });
+
+            Debug.Log("BACKTEST: NOT RUN, stated: Italy (allocation formula unsourced tonight - billed), France (two-round SMD, no national model exists). The USA House stays national-totals-only (no district model claimed).");
             Debug.Log($"=== SeatAllocationBacktest: synthetic {(failures == 0 ? "ALL PASS" : failures + " FAILED")}; the country tables above are FINDINGS (deviations reported, not asserted) ===");
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
