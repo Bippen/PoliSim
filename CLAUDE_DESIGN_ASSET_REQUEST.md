@@ -520,6 +520,19 @@ tolerance). The 90-pair sweep found two source/shipped mismatches — both asks,
    `x + y = 16k` for every k that touches the 32×32 tile (k = −1…4), perpendicular stroke ≈ 5.7
    (≈ 8 px along x), phase as it is. `StripCutDiffCheck` keeps the pair deferred by name with this
    measurement as the pointer (R-D3); the deferral lifts the day the re-cut sits in budget.
+   **Re-cut #3 landed 2026-08-28** (the screens file's `assets/polisim_ui_v2/svg/ui_hatch_draft.svg`:
+   nine `<rect>`s in a `rotate(45 16 16)` group, 5.657 wide on an 11.314 pitch — 16 px along x, 8 px
+   duty, centred on x + y = 16k; cut to the measurement above). **Imported and diffed the same day
+   (`stripcut_e5close_20260828_191435.log`): structure 7.42 % against 1.00 %, edge 0.02, mismatch
+   7.81 % — down from 33.4 %; period, phase and duty now agree.** The residual, classified pixel by
+   pixel: 64 of the 76 mismatched px straddle the check's alpha-128 ink threshold (the shipped PNG's
+   edge pixels sit at alpha 160, resvg's at 96–152 — the two rasterizers cover a 45° edge on a 32 px
+   tile differently), 12 are solid-vs-void (1.17 % of the canvas). Not a cut error, and not Design's
+   to cut a fourth time on our say-so: a bar question, put to Elias in the v3.1 Phase B report as a
+   RULING NEEDED (name the pair "diagonal-tile, viewed not counted" — the three text stamps' treatment
+   — with the measurement on record; or a fourth cut at ≈ 8.1 px duty; or a classifier refinement,
+   which still reads 1.17 %). The pair stays in `StripCutDiffCheck.DeferredPairs` by name with this
+   measurement as its pointer until ruled. **No further ask to Design under this item.**
 2. **`ui_slider_track.png` — a 256-wide strip whose only source on file is a 24×24 pill:** point
    us at the real source for the strip, or confirm the pill is the intended source and the strip
    a derived export — in which case the derivation (stretch region, caps) goes in the pipeline

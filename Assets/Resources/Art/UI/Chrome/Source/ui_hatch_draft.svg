@@ -1,10 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
 
-<g stroke="#ffffff" stroke-width="4.243" stroke-linecap="butt">
-<line x1="-52" y1="20" x2="20" y2="-52"></line>
-<line x1="-36" y1="36" x2="36" y2="-36"></line>
-<line x1="-20" y1="52" x2="52" y2="-20"></line>
-<line x1="-4" y1="68" x2="68" y2="-4"></line>
-<line x1="12" y1="84" x2="84" y2="12"></line>
+<g transform="rotate(45 16 16)" fill="#ffffff">
+<rect x="-32.084" y="-40" width="5.6569" height="112"></rect>
+<rect x="-20.770" y="-40" width="5.6569" height="112"></rect>
+<rect x="-9.456" y="-40" width="5.6569" height="112"></rect>
+<rect x="1.858" y="-40" width="5.6569" height="112"></rect>
+<rect x="13.172" y="-40" width="5.6569" height="112"></rect>
+<rect x="24.485" y="-40" width="5.6569" height="112"></rect>
+<rect x="35.799" y="-40" width="5.6569" height="112"></rect>
+<rect x="47.113" y="-40" width="5.6569" height="112"></rect>
+<rect x="58.427" y="-40" width="5.6569" height="112"></rect>
 </g>
 </svg>

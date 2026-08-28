@@ -86,6 +86,17 @@ namespace PoliSim.EditorTools
     /// lands**: whichever way it lands (the SVG re-exported to match the PNG, or the PNG re-cut from
     /// the SVG), the entry comes out of `DeferredPairs` in the same commit that imports the answer,
     /// and the pair must then pass on its own. A deferral without an ask on file is not allowed here.
+    ///
+    /// AMENDED 2026-08-28 (the §E5 close, v3.1 Phase B): the answer landed three times and the pair
+    /// still does not pass - re-cut #3 (rects, 16 px period, 8 px duty, centred on x+y=16k, cut to
+    /// §E5's own measurement) reads 7.42% structure, edge 0.02, with period, phase and duty agreeing.
+    /// Classified pixel by pixel, 64 of the 76 mismatched px straddle InkAlpha (the shipped PNG's
+    /// edge pixels at alpha 160, resvg's at 96-152: the two rasterizers cover a 45-degree edge on a
+    /// 32 px tile differently) and 12 are solid-vs-void (1.17%). That is not a cut error, so the
+    /// rule above cannot be applied as written: the entry STAYS, with the measurement as its
+    /// pointer, until Elias rules the pair's treatment (RULING NEEDED in the v3.1 Phase B report -
+    /// viewed-not-counted like the three text stamps, a fourth cut at ~8.1 px duty, or a classifier
+    /// refinement that would still read 1.17%). No classifier change without the ruling.
     /// </summary>
     public static class StripCutDiffCheck
     {
@@ -107,7 +118,7 @@ namespace PoliSim.EditorTools
         /// <summary>R-D3: pairs whose failure is a KNOWN defect with an ask on file - measured and printed, never counted as FAIL, each with its dated pointer. Remove an entry the day its answer lands (class doc).</summary>
         private static readonly Dictionary<string, string> DeferredPairs = new Dictionary<string, string>
         {
-            { "ui_hatch_draft", "deferred 2026-08-28 (R-D3) - a Design-side defect on file as CLAUDE_DESIGN_ASSET_REQUEST.md §E5 (the tiling rotation; the shipped PNG presumed canonical, the SVG source to be re-exported); the deferral ends with Design's §E5 answer" }
+            { "ui_hatch_draft", "deferred 2026-08-28 (R-D3) - CLAUDE_DESIGN_ASSET_REQUEST.md §E5; re-cut #3 imported 2026-08-28 (16 px period, 8 px duty, phase on x+y=16k - cut to the measurement): 7.42% structure, edge 0.02; 64 of 76 mismatched px straddle alpha 128 (rasterizer edge coverage on a 45-degree tile), 12 solid-vs-void (1.17%); not a cut error - awaiting Elias's bar ruling (the v3.1 Phase B report), no classifier change without it" }
         };
 
         /// <summary>
