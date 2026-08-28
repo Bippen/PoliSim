@@ -256,6 +256,12 @@ elections boundary (below).
   exit 0.** Not one byte of the existing game moved all night, measured at both boundaries.
   The boundary commit (this report + the `Elections.meta` sibling file) and the R-SP1 push
   follow; the closing commit confirms origin == HEAD.
+- **CLOSING STATE, confirmed: `6d2a67e` pushed, origin/main == HEAD** (`104cc32..6d2a67e`; the
+  night's commits: `c6cd7d3` finding-3 records · `3b85543` R-W1+census · `7959477` Annex G ·
+  `e30c82b` D7 · `2439b41` the package + Part 1 records · `104cc32` E-0/E-1 · `f524eeb`
+  E-2/E-3 · `6d2a67e` this boundary). Tree clean but for this closing line and the memory
+  update, which ride the closing commit. The morning starts at RULINGS NEEDED above; every
+  [call] line in this log is strikeable.
 
 ## State (re-derived at each boundary)
 
