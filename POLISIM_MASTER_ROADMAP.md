@@ -60,6 +60,35 @@ rule existed to catch first-build defects).
 
 ---
 
+## UI v3.0 — the era (opened 2026-08-28; founding document `POLISIM_UI_V3_DIRECTION.md`)
+
+**The direction is `POLISIM_UI_V3_DIRECTION.md` at the repo root** (installed 2026-08-28, Phase A's first
+commit): the thesis ruled as V3-R1 — *the desk with fewer words, not a different desk* — the three pillars
+(the fold V3-R2, The Desk V3-R3, the cut), what v3.0 is NOT, and validation continuity V3-R4. Its rulings
+bind every v3 pass; the struck alternative (a new visual idiom) is one line to un-strike there, never here.
+The sequence, as written there:
+
+- **Phase A (now, one session):** census · shell + rail built and guarded in both states · the instrument
+  inventory with measured minimum sizes · the Design request written as the request doc's next ask. *The
+  shell builds before the board because it is structure, not aesthetics — it gets re-skinned, not
+  re-architected, when the board lands.*
+- **Send (Elias, one gesture):** the request doc now carries §E5 + the v3 ask — hold the pending
+  request-doc send until Phase A lands so one send carries both; the courtesy note can go any time.
+- **Phase B (on Design's boards):** The Desk built against the board; the (b)-class returns resolved;
+  capture family `v3desk_*`.
+- **Phase C:** per-screen fold defaults tuned on film; §P's density verdict re-read on the folded stage.
+- **Item 10 lands inside v3:** election night is born on the v3 shell — the Desk folded, the map as the
+  stage. **Fallback, stated:** if Design's board has not landed by the gate, election night builds in the
+  OPEN state (pure v2, fully supported) and moves to the stage later; the shell ships either way, so
+  nothing converts twice.
+
+Phase A's kickoff (`KICKOFF_V3_PHASE_A_2026-08-28.md`, delivered with the direction in `Direction.zip`; both
+archived out of tree at `../PoliSim-captures/inbox/`, the zip moved off the root so `DeliveredAssetCheck`
+reads no unfinished delivery) is the live pass while it runs; its record lands in `COMPLETED.md` at its
+Phase 5, when the board below is re-derived.
+
+---
+
 ## Where things stand — re-derived 2026-08-28 (the omnibus, its continuation and the clear-out; HEAD `076273a` + the closing commits)
 
 **This document holds only live work.** Everything finished is in `COMPLETED.md`; everything waiting on a
@@ -270,7 +299,7 @@ happen.
 **Established 2026-08-02 in the first consolidation pass; run again 2026-08-26 and 2026-08-27. This is
 the standing pattern — run it whenever the live documents start describing finished work.**
 
-Ten files at the repo root, each with one job. If a fact belongs in two of them, it belongs in the one
+Eleven files at the repo root (re-derived 2026-08-28: `ls *.md`), each with one job. If a fact belongs in two of them, it belongs in the one
 further down the charter table; the four scoped documents below it are not a second home for anything.
 
 | Document | Holds | Grows or shrinks |
@@ -287,6 +316,7 @@ further down the charter table; the four scoped documents below it are not a sec
 | Document | Job | Retires when |
 |---|---|---|
 | `POLISIM_V2_SCREEN_SPEC.md` | The v2.0 visual conventions the code cites by section (`LedgerRow.cs`, `GameController.cs`), and the spec of the one unbuilt screen (1h) | never as a whole — a spec is a reference; its finished history moved to `COMPLETED.md` §24 |
+| `POLISIM_UI_V3_DIRECTION.md` | The v3.0 founding document (2026-08-28) — the thesis V3-R1, the three pillars (the fold V3-R2, The Desk V3-R3, the cut), what v3.0 is not, the sequence against 13 September, validation continuity V3-R4 | never as a whole — a direction is a reference; its finished phases move to `COMPLETED.md` |
 | `LAW_BROWSER_BOARD_RULINGS.md` | Design's Screen 1i rulings, the build target two `GameController.cs` comments cite | the `board1jc*` eye review closes and the comments are repointed |
 | `CLAUDE_DESIGN_BOARD_1I_NOTE.md` | An outbound courtesy note — attachment of the §S send package | the package is sent |
 | ~~`POLISIM_R4_4_PREREPORT.md`~~ | The R4-4 ruling package — **consumed to `COMPLETED.md` §19 and deleted 2026-08-27** when D1's portraits landed, per §22's ruling | — |
