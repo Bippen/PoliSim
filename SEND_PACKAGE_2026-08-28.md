@@ -9,7 +9,8 @@ disk (CRLF), plus the two sitting screenshots from Elias's own machine:
    for Design's awareness; D2 board 1n-r2; D3 board 1m-r2; D4 the density token table; D5 board 2a; D6 the
    contrast pass) with the six annexes measured by engineering (A the duty audit; B the rail's icons at
    the real cells; C the paddings and dead-space shares; D the sitting's findings; E the Statistics census;
-   F the ink pairs with their contrast ratios) — and **§E5**, still one re-cut away.
+   F the ink pairs with their contrast ratios) — and **§E5** as it stands (Design's second re-cut is on the
+   live project, item 6 below; its import is the §E5-close micro-pass's).
 2. **The courtesy note** — `CLAUDE_DESIGN_BOARD_1I_NOTE.md`, **unchanged since the Phase C paste** (the same
    digest; already in Design's `uploads/`) — listed so the readback can be checked, not because it is new.
 3. **Annex D's two screenshots** — Elias's, not on this machine: `sitting_1_desk_density.png` and
