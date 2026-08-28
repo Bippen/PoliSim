@@ -14,7 +14,7 @@ namespace PoliSim.UI
     /// Fills the game window and rescales its layout/fonts each frame from Screen.width/height so it
     /// stays usable at any resolution rather than assuming a fixed window size.
     /// </summary>
-    public class GameController : MonoBehaviour
+    public partial class GameController : MonoBehaviour
     {
         /// <summary>
         /// Master Sequence step 5e, Phase A (tab/IA restructuring): the consolidated top-level tabs (7 originally, 6 since the Tax/Spending merge below),
@@ -1135,6 +1135,11 @@ namespace PoliSim.UI
         /// </summary>
         private string ShellScreenKey()
         {
+            if (_onDesk)
+            {
+                return DeskScreenKey;   // Screen 0 (v3.0 Phase B) - above the six documents, its own key
+            }
+
             switch (_consolidatedTab)
             {
                 case ConsolidatedTab.Statistics:
@@ -1149,14 +1154,20 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The direction's per-screen defaults: the oversight screen FOLDED - until Screen 0 (The Desk)
-        /// exists, the current landing screen (Statistics > Domestic) carries that default so the
-        /// mechanism is real - and the Budget ledger FOLDED, because its column-hiding (Elias's
-        /// 2026-08-01 directive, §A.5's declared deviation) is now this state rather than a parallel
-        /// mechanism; every other screen OPEN. Phase C tunes these on film.
+        /// The direction's per-screen defaults: the oversight screen FOLDED - Screen 0 (The Desk, v3.0
+        /// Phase B, 2026-08-28) is locked there (R-B3), and Statistics > Domestic keeps the FOLDED
+        /// default it carried while it stood in for the Desk, until Phase C tunes the defaults on
+        /// film - and the Budget ledger FOLDED, because its column-hiding (Elias's 2026-08-01
+        /// directive, §A.5's declared deviation) is now this state rather than a parallel mechanism;
+        /// every other screen OPEN.
         /// </summary>
         private ShellFoldState DefaultShellFold()
         {
+            if (_onDesk)
+            {
+                return ShellFoldState.Folded;
+            }
+
             if (_consolidatedTab == ConsolidatedTab.Budget)
             {
                 return ShellFoldState.Folded;
@@ -1179,10 +1190,16 @@ namespace PoliSim.UI
         /// the fold (one mechanism, not a parallel one) with the toggle rendered on its disabled face
         /// (B5: rendered, never omitted) - a Phase C candidate if the board ever wants the ledger
         /// beside the column.
+        ///
+        /// Screen 0 too (R-B3, v3.0 Phase B, 2026-08-28): the Desk IS the folded stage - its three
+        /// columns take the whole window and the chrome column's own contents (the calendar sheet,
+        /// the speed cluster, the hold banner) live on the stage, so an OPEN Desk would show the
+        /// column twice and the stage in a space it cannot fit. OPEN is unreachable there (R-SP2's
+        /// form), the toggle rendered on its disabled face.
         /// </summary>
         internal bool ShellFoldLocked()
         {
-            return _consolidatedTab == ConsolidatedTab.Budget;
+            return _onDesk || _consolidatedTab == ConsolidatedTab.Budget;
         }
 
         /// <summary>The fold state the frame draws this screen in: the screen's locked state if it has one, else the player's override for it if one was ever made, else the screen's default.</summary>
@@ -1708,6 +1725,8 @@ namespace PoliSim.UI
             _selectedPlayerCountryId = countryId;
             _playerCountry = _world.GetCountry(countryId);
             _prevGdp = _playerCountry.State.GDP;
+            // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.
+            _onDesk = true;
 
             // Signing high-water mark starts at the current newest division, so pre-existing history
             // never fires a backlog of ceremonies on selection.
@@ -2180,6 +2199,12 @@ namespace PoliSim.UI
             // pieces (e.g. Politics = Parliament[ungated] + Compass[ungated] + Cabinet[gated] +
             // FederalReserve[gated]) - see each DrawXTab method below for where it applies its own
             // gate at the right granularity, matching the old per-case behavior exactly.
+            if (_onDesk)
+            {
+                // UI v3.0 Phase B: Screen 0 - the stage above the six documents (GameController.Desk.cs).
+                DrawDeskStage(tabContentHeight, rightColumnWidth, isTimePaused);
+            }
+            else
             switch (_consolidatedTab)
             {
                 case ConsolidatedTab.Statistics:
@@ -4462,6 +4487,9 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         private const float RailIconGridUnits = 24f;
         private const float RailMarginUnits = 10f;
+        /// <summary>Board 1n's active cell: the area-ink wash's alpha and the spine's width at the 39 px cell (scaled with the cell).</summary>
+        private const float RailActiveWashAlpha = 0.12f;
+        private const float RailSpineWidthAt39 = 3f;
         /// <summary>"‹" folds the desk to the rail; "›" unfolds it. Glyphs, not words: the rail's text budget is the chip's month and day.</summary>
         private const string FoldGlyphFold = "‹";
         private const string FoldGlyphUnfold = "›";
@@ -4565,12 +4593,27 @@ namespace PoliSim.UI
         private void DrawRailNavCell(string label, ConsolidatedTab tab, string iconName, float cell, float iconSize, List<KeyValuePair<string, Rect>> cells)
         {
             UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
-            bool selected = _consolidatedTab == tab;
+            // Board 1m, D2: on Screen 0 no cell is active - the Desk sits above the six documents.
+            bool selected = !_onDesk && _consolidatedTab == tab;
             var style = new GUIStyle(_neutralActionButtonStyle) { fixedHeight = 0f, fixedWidth = 0f };
             style.padding = new RectOffset(0, 0, 0, 0);
             if (GUILayout.Button(GUIContent.none, style, GUILayout.Width(cell), GUILayout.Height(cell)))
             {
-                _consolidatedTab = tab;
+                // R-B2 (v3.0 Phase B): a document opens from its icon; the open document's own icon
+                // clicked again returns to the Desk (the calendar chip below is the other way home).
+                if (_onDesk)
+                {
+                    _onDesk = false;
+                    _consolidatedTab = tab;
+                }
+                else if (_consolidatedTab == tab)
+                {
+                    _onDesk = true;
+                }
+                else
+                {
+                    _consolidatedTab = tab;
+                }
             }
 
             if (Event.current.type != EventType.Repaint)
@@ -4583,7 +4626,13 @@ namespace PoliSim.UI
             Color ink = selected ? UiPalette.GetAreaColor(area) : PoliSimTheme.TabSwatchTint(area);
             if (selected)
             {
-                UiPalette.DrawCardSpine(rect, area, TabSpineHeight(), RailGap());
+                // Board 1n (2026-08-28), the active convention folded: a 12% area-ink wash behind the
+                // cell and a spine at its left edge, full cell height - 3 px at the 39 cell, scaled
+                // with the cell - the icon in the same ink. Inactive: the tab-swatch tint, no wash,
+                // no plate. Hover: the button face's own.
+                PoliSimTheme.Rule(rect, PoliSimTheme.AccentWash(area, RailActiveWashAlpha));
+                float spine = Mathf.Max(2f, Mathf.Round(cell * (RailSpineWidthAt39 / 39f)));
+                PoliSimTheme.Rule(new Rect(rect.x, rect.y, spine, rect.height), UiPalette.GetAreaColor(area));
             }
 
             Texture2D icon = IconLibrary.Get(iconName);
@@ -4610,6 +4659,14 @@ namespace PoliSim.UI
         {
             float chipHeight = Mathf.Round(cell * (80f / 72f));
             Rect chip = GUILayoutUtility.GetRect(cell, chipHeight, GUILayout.Width(cell), GUILayout.Height(chipHeight));
+            // R-B2 (v3.0 Phase B): the chip is the way home - it is the calendar sheet collapsed, and
+            // the sheet lives on Screen 0. An invisible click target under the painted chip, drawn
+            // every frame (the control set never varies with state); a click on the Desk is a no-op.
+            if (GUI.Button(chip, GUIContent.none, GUIStyle.none))
+            {
+                _onDesk = true;
+            }
+
             if (Event.current.type != EventType.Repaint)
             {
                 return;
@@ -4649,6 +4706,8 @@ namespace PoliSim.UI
             }
 
             PoliSimWidgets.MeasuredLabel(monthRect, monthText, monthStyle);
+            // Board 1n: the hairline rule between the month and the day - the pad's own materials.
+            PoliSimTheme.Rule(new Rect(chip.x + 3f, monthRect.yMax, chip.width - 6f, 1f), PoliSimTheme.Hairline);
             PoliSimWidgets.MeasuredLabel(dayRect, dayText, dayStyle);
 
             cells.Add(new KeyValuePair<string, Rect>("shell rail: calendar chip", chip));
@@ -5048,7 +5107,10 @@ namespace PoliSim.UI
         /// </summary>
         private float DrawFoldedInterruptBanner(float columnWidth)
         {
-            string interruptText = BuildFoldedInterruptText(includeBudgetProcess: _consolidatedTab != ConsolidatedTab.Budget);
+            // On Screen 0 every hold is listed (no document states its own there) and the speed hint
+            // is dropped - the cluster is on the Desk's masthead, not on an unfolded column (C27 keeps
+            // only its load-bearing half: the reasons, screens named).
+            string interruptText = BuildFoldedInterruptText(includeBudgetProcess: _onDesk || _consolidatedTab != ConsolidatedTab.Budget, includeSpeedHint: !_onDesk);
             if (interruptText == null)
             {
                 return 0f;
@@ -5066,7 +5128,7 @@ namespace PoliSim.UI
         /// out ON that screen - it states that status itself, and repeating it would train players to
         /// ignore the banner - and listed on every other folded screen, where nothing else says it.
         /// </summary>
-        private string BuildFoldedInterruptText(bool includeBudgetProcess)
+        private string BuildFoldedInterruptText(bool includeBudgetProcess, bool includeSpeedHint = true)
         {
             var blocking = new List<string>();
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
@@ -5091,7 +5153,7 @@ namespace PoliSim.UI
 
             return blocking.Count == 0
                 ? null
-                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. The speed controls are on the unfolded desk.";
+                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}." + (includeSpeedHint ? " The speed controls are on the unfolded desk." : string.Empty);
         }
 
         /// <summary>

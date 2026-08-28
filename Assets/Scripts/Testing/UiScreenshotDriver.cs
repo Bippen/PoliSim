@@ -205,6 +205,12 @@ namespace PoliSim.Testing
             // form exists in no capture this harness can produce.
             yield return Capture("01b_running_strip");
 
+            // UI v3.0 Phase B: the game lands on Screen 0 (The Desk) - the one guaranteed RUNNING
+            // capture of the stage, before the warm-up: the lamp green, the speed faces live, the
+            // ledger without a closed period, the rail without a spine (board 1m, D2).
+            yield return Capture("01c_desk");
+            AssertDeskState(controller, "01c_desk");
+
             AdvanceDays(controller, _countryId);
 
             // R-D4: the playtest saves are staged on the warmed-up game BEFORE the sweep's own drafts
@@ -227,6 +233,21 @@ namespace PoliSim.Testing
 
             DivergeSwfWeights(controller);
             DraftSpendingLines(controller);
+            yield return Settle();
+
+            // UI v3.0 Phase B: Screen 0 in the warmed-up game (HELD - the banner above the masthead,
+            // the lamp amber, the speed faces disabled), then the two conditional states the board
+            // draws beside it: the event card filled with an authored event from the pool, and the
+            // game-over stamp with the reason string the game itself prints. Each staged state is
+            // restored before the next capture, and the Desk is left before the tab sweep - a tab
+            // set by field alone would otherwise film the stage under a document's name.
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+            yield return Capture("01d_desk_held");
+            AssertDeskState(controller, "01d_desk_held");
+            yield return CaptureDeskEventCard(controller);
+            yield return CaptureDeskGameOver(controller);
+            SetPrivateField(controller, "_onDesk", false);
             yield return Settle();
 
             for (int i = 0; i < Tabs.Length; i++)
@@ -2132,6 +2153,85 @@ namespace PoliSim.Testing
             return false;
         }
 
+        /// <summary>Screen 0's invariants on the frame just filmed (UI v3.0 Phase B): the controller is
+        /// on the Desk, the fold is locked there (R-B3) and the frame is FOLDED. A miss is an error -
+        /// the capture would otherwise be filed under a name that lies about its state.</summary>
+        private static void AssertDeskState(GameController controller, string stem)
+        {
+            if (!controller.OnDesk)
+            {
+                Debug.LogError($"SHOT: {stem} - the controller is NOT on the Desk; the capture is not Screen 0.");
+            }
+
+            if (!controller.ShellFoldLocked() || controller.EffectiveShellFold() != ShellFoldState.Folded)
+            {
+                Debug.LogError($"SHOT: {stem} - Screen 0 must be locked FOLDED (R-B3); locked={controller.ShellFoldLocked()}, state={controller.EffectiveShellFold()}.");
+            }
+
+            Debug.Log($"SHOT: {stem} - Screen 0 on film, locked {controller.EffectiveShellFold()}.");
+        }
+
+        /// <summary>
+        /// The event card filled (C1/C2/C3): the country's last event is set to the FIRST entry of
+        /// EventSystem's own pool - an authored event, never one written for the film - for one
+        /// capture, then the previous state is restored (the sweep advances no turn after this point,
+        /// and the trajectory dumps run in their own process, so nothing downstream reads the staged
+        /// value). A missing hook is an error: the film would otherwise show the empty reservation
+        /// under a name that promises the card.
+        /// </summary>
+        private IEnumerator CaptureDeskEventCard(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            object sim = simField?.GetValue(controller);
+            FieldInfo dictField = sim?.GetType().GetField("_lastEventsByCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+            var lastEvents = dictField?.GetValue(sim) as Dictionary<CountryId, EconomicEvent>;
+            FieldInfo poolField = typeof(EventSystem).GetField("EventPool", BindingFlags.Static | BindingFlags.NonPublic);
+            var pool = poolField?.GetValue(null) as List<EconomicEvent>;
+            if (lastEvents == null || pool == null || pool.Count == 0)
+            {
+                Debug.LogError("SHOT: the event card could not be staged (_simulationManager/_lastEventsByCountry/EventPool not found) - 01e_desk_event NOT captured.");
+                yield break;
+            }
+
+            bool had = lastEvents.TryGetValue(_countryId, out EconomicEvent previous);
+            lastEvents[_countryId] = pool[0];
+            yield return Settle();
+            yield return Capture("01e_desk_event");
+            Debug.Log($"SHOT: 01e_desk_event - the card filled with the pool's own \"{pool[0].Name}\" (GDP {pool[0].GdpShockPercent:+0.0;-0.0}%, inflation {pool[0].InflationShockPoints:+0.0;-0.0} pts, approval {pool[0].ApprovalEffect:+0.0;-0.0}).");
+            if (had) { lastEvents[_countryId] = previous; } else { lastEvents.Remove(_countryId); }
+            yield return Settle();
+        }
+
+        /// <summary>
+        /// The game-over stamp (C4/C5): _isGameOver raised with the election-loss reason in the exact
+        /// form CheckElection prints it, from the live turn and approval - for one capture, then both
+        /// fields restored. The stage beneath stays what it was; only the frame's gating changes.
+        /// </summary>
+        private IEnumerator CaptureDeskGameOver(GameController controller)
+        {
+            FieldInfo overField = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo reasonField = controller.GetType().GetField("_gameOverReason", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo countryField = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            var country = countryField?.GetValue(controller) as Country;
+            var sim = simField?.GetValue(controller) as SimulationManager;
+            if (overField == null || reasonField == null || country == null || sim == null)
+            {
+                Debug.LogError("SHOT: the game-over stamp could not be staged (_isGameOver/_gameOverReason/_playerCountry/_simulationManager not found) - 01f_desk_gameover NOT captured.");
+                yield break;
+            }
+
+            object wasOver = overField.GetValue(controller);
+            object wasReason = reasonField.GetValue(controller);
+            overField.SetValue(controller, true);
+            reasonField.SetValue(controller, $"Lost re-election at year {sim.CurrentTurn} with {country.State.ApprovalRating:F1} approval (needed at least {ElectionSystem.LosingThreshold:F0}).");
+            yield return Settle();
+            yield return Capture("01f_desk_gameover");
+            overField.SetValue(controller, wasOver);
+            reasonField.SetValue(controller, wasReason);
+            yield return Settle();
+        }
+
         /// <summary>
         /// R-SP5 (2026-08-28): after the map's capture, the separation its renderer measured - every
         /// label at least <see cref="MapRenderer.MinLabelSeparationPx"/> from every other label and
@@ -2203,7 +2303,7 @@ namespace PoliSim.Testing
         {
             if (controller.ShellFoldLocked())
             {
-                yield break;   // the Budget ledger has one legal state; there is no other to sweep
+                yield break;   // a locked screen (the Budget ledger, Screen 0) has one legal state; there is no other to sweep
             }
 
             controller.ToggleShellFold();
@@ -2217,7 +2317,7 @@ namespace PoliSim.Testing
         {
             if (controller.ShellFoldLocked())
             {
-                Debug.Log($"SHOT: {stem} - the shell fold is locked on this screen (the Budget ledger's one legal state); no fold pair exists to film.");
+                Debug.Log($"SHOT: {stem} - the shell fold is locked on this screen (the Budget ledger's and Screen 0's one legal state); no fold pair exists to film.");
                 yield break;
             }
 

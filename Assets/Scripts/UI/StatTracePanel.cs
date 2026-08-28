@@ -184,6 +184,79 @@ namespace PoliSim.UI
             GUILayoutUtility.GetRect(availableWidth, 6f);
         }
 
+        // The approval terms' NAMES, one vocabulary for this panel's rows and Screen 0's ledger (R-B7).
+        private const string TermReversion = "Reversion toward 50";
+        private const string TermGrowth = "Growth vs potential";
+        private const string TermMisery = "Misery (gaps)";
+        private const string TermMiseryUnemployment = "· unemployment above NAIRU";
+        private const string TermMiseryInflation = "· inflation off target";
+        private const string TermMiseryCrime = "· crime above baseline";
+        private const string TermMiseryCorruption = "· corruption above baseline";
+        private const string TermTaxHikes = "Tax hikes";
+        private const string TermSpending = "Spending changes";
+        private const string TermWelfare = "Welfare vs baseline";
+        private const string TermPaidLeave = "Paid family leave vs baseline";
+        private const string TermDrugPolicy = "Drug policy stance";
+        private const string TermGini = "Inequality vs own norm (Gini)";
+        private const string TermClamp = "Clamp at 0/100";
+
+        /// <summary>One row of Screen 0's approval ledger: a term's name and its signed figure.</summary>
+        public readonly struct DeskTerm
+        {
+            public readonly string Name;
+            public readonly float Value;
+
+            public DeskTerm(string name, float value)
+            {
+                Name = name;
+                Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Screen 0's approval ledger (UI v3.0 Phase B, board 1m, R-B7): this panel's OWN Class A terms
+        /// in this panel's order and names - the nine non-misery terms, the four misery gaps as their
+        /// one total, the clamp only when it is not zero, and the period's dated events as one total
+        /// row with their count. Null while no period has closed (the Desk then draws nothing beneath
+        /// its hero numeral rather than a placeholder). The Desk restates nothing: it draws these rows
+        /// through the same read-only ledger lane, no gauge.
+        /// </summary>
+        public static List<DeskTerm> BuildApprovalDeskTerms(Country country)
+        {
+            ApprovalAttribution ledger = country?.ApprovalLedgerLastPeriod;
+            if (ledger == null || !ledger.Closed)
+            {
+                return null;
+            }
+
+            var terms = new List<DeskTerm>
+            {
+                new DeskTerm(TermReversion, ledger.Reversion),
+                new DeskTerm(TermGrowth, ledger.GrowthEffect),
+                new DeskTerm(TermMisery, ledger.MiseryUnemployment + ledger.MiseryInflation + ledger.MiseryCrime + ledger.MiseryCorruption),
+                new DeskTerm(TermTaxHikes, ledger.TaxHikePenalty),
+                new DeskTerm(TermSpending, ledger.SpendingEffect),
+                new DeskTerm(TermWelfare, ledger.WelfareEffect),
+                new DeskTerm(TermPaidLeave, ledger.PaidLeaveEffect),
+                new DeskTerm(TermDrugPolicy, ledger.DrugPolicyEffect),
+                new DeskTerm(TermGini, ledger.GiniEffect)
+            };
+
+            if (!Mathf.Approximately(ledger.ClampLoss, 0f))
+            {
+                terms.Add(new DeskTerm(TermClamp, ledger.ClampLoss));
+            }
+
+            if (ledger.Events.Count > 0)
+            {
+                float eventsTotal = 0f;
+                for (int i = 0; i < ledger.Events.Count; i++) { eventsTotal += ledger.Events[i].AppliedDelta; }
+                terms.Add(new DeskTerm($"Events (dated) ×{ledger.Events.Count}", eventsTotal));
+            }
+
+            return terms;
+        }
+
         /// <summary>The single source both MeasureHeight and Draw read. Null when the panel is
         /// closed or the selected stat has nothing honest to show yet.</summary>
         private static List<TraceRow> BuildRows(Country country, float wageGapStance)
@@ -222,21 +295,21 @@ namespace PoliSim.UI
             // Class A - the formula's terms, exact and signed. Playtest 3 cut (2026-08-27): the
             // "≈ x sustained" equilibrium framing the sustained terms carried was a (b) and is cut -
             // a row is the term and its figure.
-            Term(rows, "Reversion toward 50", ledger.Reversion);
-            Term(rows, "Growth vs potential", ledger.GrowthEffect);
+            Term(rows, TermReversion, ledger.Reversion);
+            Term(rows, TermGrowth, ledger.GrowthEffect);
             float misery = ledger.MiseryUnemployment + ledger.MiseryInflation + ledger.MiseryCrime + ledger.MiseryCorruption;
-            Term(rows, "Misery (gaps)", misery);
-            Term(rows, "· unemployment above NAIRU", ledger.MiseryUnemployment, indented: true);
-            Term(rows, "· inflation off target", ledger.MiseryInflation, indented: true);
-            Term(rows, "· crime above baseline", ledger.MiseryCrime, indented: true);
-            Term(rows, "· corruption above baseline", ledger.MiseryCorruption, indented: true);
-            Term(rows, "Tax hikes", ledger.TaxHikePenalty);
-            Term(rows, "Spending changes", ledger.SpendingEffect);
-            Term(rows, "Welfare vs baseline", ledger.WelfareEffect);
-            Term(rows, "Paid family leave vs baseline", ledger.PaidLeaveEffect);
-            Term(rows, "Drug policy stance", ledger.DrugPolicyEffect);
-            Term(rows, "Inequality vs own norm (Gini)", ledger.GiniEffect);
-            Term(rows, "Clamp at 0/100", ledger.ClampLoss);
+            Term(rows, TermMisery, misery);
+            Term(rows, TermMiseryUnemployment, ledger.MiseryUnemployment, indented: true);
+            Term(rows, TermMiseryInflation, ledger.MiseryInflation, indented: true);
+            Term(rows, TermMiseryCrime, ledger.MiseryCrime, indented: true);
+            Term(rows, TermMiseryCorruption, ledger.MiseryCorruption, indented: true);
+            Term(rows, TermTaxHikes, ledger.TaxHikePenalty);
+            Term(rows, TermSpending, ledger.SpendingEffect);
+            Term(rows, TermWelfare, ledger.WelfareEffect);
+            Term(rows, TermPaidLeave, ledger.PaidLeaveEffect);
+            Term(rows, TermDrugPolicy, ledger.DrugPolicyEffect);
+            Term(rows, TermGini, ledger.GiniEffect);
+            Term(rows, TermClamp, ledger.ClampLoss);
 
             // Class B - dated events, post-clamp actuals. Capped with a STATED omission (the
             // chips' own "+N more" idiom - say what was left out, never trim quietly): an
