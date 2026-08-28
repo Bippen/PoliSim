@@ -20,7 +20,8 @@ precedent (`MISSING_PREREQUISITES.md` §S):
 — new, because a fresh path is what shows as new in Design's inbox; the earlier note path, if it was ever
 pasted, stays as history); the request doc to BOTH `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` (the path every
 earlier send used and Design has read) AND a new dated copy at
-`send/design_request_2026-08-28c/CLAUDE_DESIGN_ASSET_REQUEST.md`.
+`send/design_request_2026-08-28c/CLAUDE_DESIGN_ASSET_REQUEST.md`. *The dated `…-28c` paths are established
+hygiene — ratified standing 2026-08-28 as R-PC4a (the consolidation rider).*
 
 | artifact | SHA-256 (as on disk) | bytes | where it goes |
 |---|---|---|---|

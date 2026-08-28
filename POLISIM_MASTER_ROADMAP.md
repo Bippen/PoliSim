@@ -318,7 +318,9 @@ happen.
 - Five gestures, no sixth (the push is a session's since R-SP1, 2026-08-28 — fast-forward only, at pass
   end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the Phase C package, the one
   current paste: the 1i–1n note and the request doc whose live ask is §E5's hatch re-cut with the
-  figures; it supersedes every earlier package); sit once through `../PoliSim-captures/sv_index.html`
+  figures; it supersedes every earlier package — its dated `…-28c` paste paths and the note's captures
+  re-pointed at the current films are established hygiene, ratified standing 2026-08-28 as R-PC4a and
+  R-PC3a); sit once through `../PoliSim-captures/sv_index.html`
   (§V, the shell's rows, the ladder films, the Desk and the ruled defaults now on it); load the three
   `playtest_*` saves and play (§P — recommended now that the stage is real); 13 September (§D). Nothing waits on a ruling (§A holds only the coupling queue at its triggers), and
   `MISSING_PREREQUISITES.md` is live-only — its tombstones are `COMPLETED.md` §38a.

@@ -192,6 +192,11 @@ namespace PoliSim.Testing
             // presence is what the capture pins, not a pixel value.
             yield return null;
             yield return null;
+            // v3.0 Phase B (consolidation rider, 2026-08-28): the surface beneath the scrim on this
+            // frame and the next is SCREEN 0 (the Desk) - the game lands there now - so the guard
+            // results filed under 01a_selector_yielding and 01b_running_strip are the Desk's, not the
+            // selector's or the strip's. Attribute a text overflow or containment escape read under
+            // these names to the Desk on first reading (the Desk's own frames are 01c-01f).
             yield return Capture("01a_selector_yielding");
 
             yield return WaitForCanvasSettle(controller, wantActive: false);
@@ -202,7 +207,9 @@ namespace PoliSim.Testing
             // on an election eve, so the fed-chair pause is live for the whole main set (and was in
             // every earlier set too). Turn 0 is the one moment guaranteed unpaused: no election eve,
             // no pending decisions, nothing rolled yet. Without this shot the status line's RUNNING
-            // form exists in no capture this harness can produce.
+            // form exists in no capture this harness can produce. (Since v3.0 Phase B the frame under
+            // this name is Screen 0 in its RUNNING state - see the note above 01a - and its guard
+            // results are the Desk's.)
             yield return Capture("01b_running_strip");
 
             // UI v3.0 Phase B: the game lands on Screen 0 (The Desk) - the one guaranteed RUNNING

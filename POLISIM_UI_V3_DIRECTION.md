@@ -53,6 +53,8 @@ player-controlled shell state, everywhere:
 
   A new screen enters the table with a line here before it ships; the player's own flip on any
   unlocked screen is remembered per screen and per save and overrides the default.
+  *Ratified standing 2026-08-28 (the consolidation rider): R-PC2a — the Canvas screens as "the
+  seam's own" is correct layering; R-PC2b — the entry rule is R-PC2 made durable.*
 - Minimum width stays 1280×720; the fold is what makes the floor generous instead of tight.
 
 ### 2. The Desk — the oversight screen (V3-R3)
