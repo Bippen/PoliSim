@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-<defs><pattern id="h" width="16" height="16" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="none"></rect><rect width="6" height="16" fill="#ffffff"></rect></pattern></defs>
-<rect width="32" height="32" fill="url(#h)"></rect>
+
+<g stroke="#ffffff" stroke-width="4.243" stroke-linecap="butt">
+<line x1="-52" y1="20" x2="20" y2="-52"></line>
+<line x1="-36" y1="36" x2="36" y2="-36"></line>
+<line x1="-20" y1="52" x2="52" y2="-20"></line>
+<line x1="-4" y1="68" x2="68" y2="-4"></line>
+<line x1="12" y1="84" x2="84" y2="12"></line>
+</g>
 </svg>

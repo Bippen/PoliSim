@@ -82,6 +82,18 @@ namespace PoliSim.EditorTools
         };
 
         /// <summary>
+        /// Entries removed from Assets/ on DESIGN'S OWN ANSWER, by exact file name with the dated
+        /// reason - the one class the '!' rows cannot carry, because the base name stays live for a
+        /// sibling of another extension (the PNG strip is canonical; its namesake SVG was never its
+        /// source). An archived pack that shipped one of these is not a regression; each skip is
+        /// logged so the allowance stays visible.
+        /// </summary>
+        private static readonly Dictionary<string, string> RemovedOnDesignAnswer = new Dictionary<string, string>
+        {
+            { "ui_slider_track.svg", "removed 2026-08-28 on Design's §E5 answer - the 24×24 pill was the OLD chrome pack's leftover under a colliding name, not the 256×28 strip's parent; the strip is authored raster with no SVG source (StripCutDiffCheck.SourcelessByDesign)" }
+        };
+
+        /// <summary>
         /// Names ChromeManifest.txt rules superseded (its '!'-prefixed rows): delivered once, later
         /// replaced by the v2.0 chrome set, and REMOVED from Assets/ by the Track 3 ruling. Read from
         /// the manifest itself rather than duplicated here, so this allowance cannot drift from the
@@ -184,6 +196,13 @@ namespace PoliSim.EditorTools
                         if (superseded.Contains(Path.GetFileNameWithoutExtension(entry.Name)))
                         {
                             Debug.Log($"  supd {label}: {entry.Name} - removed by ruling (ChromeManifest '!'), not a regression");
+                            supd++;
+                            continue;
+                        }
+
+                        if (RemovedOnDesignAnswer.TryGetValue(entry.Name, out string answer))
+                        {
+                            Debug.Log($"  rmvd {label}: {entry.Name} - {answer}");
                             supd++;
                             continue;
                         }

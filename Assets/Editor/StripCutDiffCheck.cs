@@ -110,6 +110,20 @@ namespace PoliSim.EditorTools
             { "ui_hatch_draft", "deferred 2026-08-28 (R-D3) - a Design-side defect on file as CLAUDE_DESIGN_ASSET_REQUEST.md §E5 (the tiling rotation; the shipped PNG presumed canonical, the SVG source to be re-exported); the deferral ends with Design's §E5 answer" }
         };
 
+        /// <summary>
+        /// §E5 answered (Design, 2026-08-28): sprites whose shipped PNG is AUTHORED RASTER with no SVG
+        /// parent - "the strip is canonical and has no SVG source" - listed by name with Design's own
+        /// account, so the model states the fact instead of the loop silently seeing no pair. The
+        /// 24×24 pill that stood in `Source/` under this name was the OLD chrome pack's leftover, not
+        /// this strip's parent (the regeneration kept the name; the manifest records the collision),
+        /// and was removed with the answer. A source file re-appearing under a listed name is a FAIL:
+        /// either the model is stale or a file was dropped in without an ask.
+        /// </summary>
+        private static readonly Dictionary<string, string> SourcelessByDesign = new Dictionary<string, string>
+        {
+            { "ui_slider_track", "authored raster (256×28, the v2 chrome pack's own regeneration; plain surface, 9-slice 10/10/4/12, ticks tiled by code from ui_slider_tick) - no SVG source exists, per Design's §E5 answer of 2026-08-28; the old pack's 24×24 pill that carried the name in Source/ was its leftover, removed the same day" }
+        };
+
         public static void Run()
         {
             string external = Arg("-stripcutrasterizer=", null);
@@ -229,6 +243,22 @@ namespace PoliSim.EditorTools
 
                 string verdict = ok ? "ok  " : textBearingMiss ? "TEXT" : deferredMiss ? "DEFERRED" : "FAIL";
                 Debug.Log($"  {verdict} {Path.GetFileName(svgPath),-52} {png.width}x{png.height}  mismatch={share:P2}  structure={structureShare:P2} (budget {StructureBudget:P2})  edge/boundary={edgePerBoundary:F2} (budget {EdgeBudgetPerBoundaryPixel:F1}; boundary {boundary}px)  worstΔ={worst}{(resolvedColor ? "  (currentColor -> #ffffff)" : "")}{(textBearingMiss ? "  text-bearing: renderer font difference, viewed not counted" : "")}{(deferredMiss ? "  " + deferralNote : "")}");
+            }
+
+            // The source-less strips, stated by name (see SourcelessByDesign): no pair to compare is
+            // the model's claim, and a source turning up under such a name contradicts it loudly.
+            foreach (KeyValuePair<string, string> entry in SourcelessByDesign)
+            {
+                string[] sources = Directory.GetFiles("Assets/Resources/Art/UI", entry.Key + ".svg", SearchOption.AllDirectories);
+                if (sources.Length > 0)
+                {
+                    failed++;
+                    Debug.Log($"  FAIL {entry.Key}: a source file exists ({sources[0]}) for a sprite the model lists as source-less by Design's answer - re-read §E5 before trusting either");
+                }
+                else
+                {
+                    Debug.Log($"  SOURCELESS {entry.Key}: {entry.Value}");
+                }
             }
 
             Debug.Log($"=== StripCutDiff ({rasterizerName}): {passed} of {compared} comparable pairs within budget (structure <= {StructureBudget:P2} of the canvas AND edge <= {EdgeBudgetPerBoundaryPixel:F1} per boundary pixel - R-C2); {textBearing} text-bearing above budget (named, fonts); {deferred} deferred by name with an ask on file (R-D3, dated in the line); {unrasterizable} unrasterizable-here (named); {currentColorResolved} rendered with currentColor resolved to #ffffff (the root carried no color attribute; Design's pipeline convention); {failed} FAILED ===");
