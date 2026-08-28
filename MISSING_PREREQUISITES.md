@@ -224,8 +224,10 @@ continuation's sets `cont_p1b_<size>_…` (the law browser) and `cont_p3b_<size>
 states, every size); the closing sanity sets `cont_final_1600_…` (USA) and `cont_final_swe_1600_…`
 (Sweden); plus the per-country sets named per row; **and, from UI v3.0 Phase A (2026-08-28), the `v3a_<size>_…`
 family at all four sizes — every screen in its default fold state plus the three fold pairs — and the
-ladder films `v3a_ladder_<size>_ladder_<kind>`** — all under `G:\UNITY\Projects\PoliSim-captures\`. No row
-is verified by code alone (R-C6 retired the two ⚠ rows). "Pinned on film" is containment evidence, not a
+ladder films `v3a_ladder_<size>_ladder_<kind>`; and from the stage-prep micro-pass (2026-08-28) the
+`sp4_<size>_…` family and `sp4_ladder_<size>_ladder_<kind>`, the same sweep on the code after R-SP4 and
+R-SP5** — all under `G:\UNITY\Projects\PoliSim-captures\`. No row is verified by code alone (R-C6 retired
+the two ⚠ rows). "Pinned on film" is containment evidence, not a
 sighting; each item closes to `COMPLETED.md` with the session named. The three findings of playtest 3 are
 closed by their rulings; their surfaces are re-listed here as built.
 
@@ -254,6 +256,8 @@ closed by their rulings; their surfaces are re-listed here as built.
 | **The v3.0 shell — the Canvas class is fold-invariant** (V3-R4) | `8e162b1` | `v3a_*_89e_signing_settled`, `v3a_*_89e_signing_settled_open` | identical by construction (a live Canvas suppresses the IMGUI frame); on film so the claim is film, not prose |
 | **The stat tile's value under the mouse** (found by the v3a film) | `8e162b1` | `v3a_*_02a_statistics_domestic` (the Credit Rating tile) | "AAA" in TextPrimary whatever the cursor does — the skin's pale hover ink no longer reaches a figure |
 | **The instrument ladder** (Phase 3's measurement, not a screen) | `5443342` | `v3a_ladder_1280_ladder_*`, `v3a_ladder_1920_ladder_*` (twenty kinds each) | each instrument at a descending run of sizes with its size captioned; the breaks Annex B states are read from these — the film is the evidence, the table the reading |
+| **The compass on its honest footprint** (R-SP4, the stage-prep micro-pass) | `373ea07` | `sp4_*_07b_politics_compass` (+`_rows`, `_deep`); `sp4_ladder_*_ladder_compass` | the plot square and its two range captions on ONE plate, the captions inside the declared rect (containment-asserted, silent at four sizes); on the ladder each rung captions the footprint it was given — the captions no longer stack at the sheet's corner |
+| **The map's names on their ladder** (R-SP5) | `c9c3c05` | `sp4_*_02b_statistics_international`; `sp4_ladder_*_ladder_map` | on the screens every name at its first rung (the harness measured the smallest gap per size against the 4 px floor — the log lines are quoted in `COMPLETED.md` §40); on the ladder film each rung's caption carries the rung reached (1 full name, 3 ISO code, 4 shrunk) and the gap measured — the small rungs are where the ladder works |
 | **The eight new cabinet portraits at 5.5×** (the roster beside the sixteen squares) | `4e5adbf` | `omni_final_*_07c_politics_cabinet*` | still Elias's eyes (carried from playtest 3) |
 
 **Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's

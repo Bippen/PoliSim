@@ -131,7 +131,11 @@ forward):**
   Records: `COMPLETED.md` §38. **UI v3.0 Phase A (2026-08-28)** — the direction installed, the landing
   screen's text census with its (c) cut, the fold shell and the icon rail (V3-R2; Budget locked FOLDED,
   R-A1), the instrument inventory with measured minimums, the eighth request (two boards) and the
-  regenerated send package. Records: `COMPLETED.md` §39.
+  regenerated send package. Records: `COMPLETED.md` §39. **The stage-prep micro-pass (2026-08-28)** —
+  R-SP1 (sessions push, fast-forward only) and R-SP2 (legal in every reachable state) recorded; R-SP3
+  verified on film (one sparkline renderer, R-G4's floor already on it — Annex B corrected); R-SP4 the
+  compass's honest footprint, containment-asserted; R-SP5 the map's names on §A.9a's ladder with the
+  harness's 4 px separation assert. Records: `COMPLETED.md` §40.
 - **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`, live-only since the clear-out: **§S** one paste
   (`SEND_PACKAGE_2026-08-28.md`); **§A** the coupling queue Q6–Q10 at their triggers — nothing else;
   **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
