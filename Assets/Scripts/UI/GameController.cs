@@ -2762,7 +2762,8 @@ namespace PoliSim.UI
             // v2.0: the unchanged case was `Color.white`, which was the ink ramp's own colour on a dark
             // ground and is near-invisible on paper. Amber still means drafted-not-enacted (B1) and is
             // untouched; only the "no change" colour moved, from white to ink.
-            DrawColoredLabel(text, _labelStyle, changed ? PoliSimTheme.Draft : PoliSimTheme.TextPrimary);
+            // D6 (2026-08-28): a drafted value's LABEL is text on paper - the darkened Caution ink, not the fill amber.
+            DrawColoredLabel(text, _labelStyle, changed ? PoliSimTheme.Caution : PoliSimTheme.TextPrimary);
         }
 
         /// <summary>Overload for the common "Standing: X, Draft: Y" pair, so each call site states the two values it compares instead of hand-rolling an approximate-equality test 20 times over.</summary>

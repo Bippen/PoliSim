@@ -265,31 +265,31 @@ Shapes: **level** (one number now) · **share** (a part of a stated whole) · **
 | TextPrimary | Tile `#EDE2CB` | **11.7** | 27 / 55 hero; 13 / 27 chip numerals | tile and chip numerals |
 | TextSecondary `#5D564A` | Card | **5.9** | 8–9 / 16–19 Desk captions; 12 / 20 mono meta; 13 / 22 weekday | every Desk caption, dates, the bulletin caption |
 | TextSecondary | Tile | **5.6** | 8 / 16 chip labels | the strip's chip labels |
-| TextMuted `#7A7263` | Card | **3.9** | 8 / 16 methodology caption; 13 / 22 "+N more" | the Desk's C20 line, the ledger's overflow row |
-| TextMuted | Tile | **3.7** | 7 / 13 | **the stat tile's label** (`FontLabel` 10 × scale) |
-| Neutral `#6D7480` | Card | **3.8** | 10–12 / 20–24 | zero deltas, neutral figures |
-| Good `#3E8A5F` | Card | **3.4** | 10–12 / 20–24 | positive deltas (numerals, mono) |
-| Bad `#9C4238` | Card | **5.3** | 10–12 / 20–24 | negative deltas |
-| Caution `#BE8A00` | Card | **2.5** | 9 / 19 BREAKING chip; 10 / 16 threshold labels | the event chip, NAIRU / "comfortable" labels riding the graph line |
-| Caution | Tile | **2.4** | 9 / 19 | the BREAKING chip on the event card's plate |
+| TextMuted `#665E4F` (D6 2026-08-28; was `#7A7263` at 3.9) | Card | **5.22** | 8 / 16 methodology caption; 13 / 22 "+N more" | the Desk's C20 line, the ledger's overflow row |
+| TextMuted `#665E4F` (was 3.7) | Tile | **4.98** | 7 / 13 | **the stat tile's label** (`FontLabel` 10 × scale → 11 × scale under D4) |
+| Neutral `#5F6672` (D6; was `#6D7480` at 3.8) | Card | **4.72** | 10–12 / 20–24 | zero deltas, neutral figures (text uses; the Neutral AREA ink stays `#6D7480`) |
+| Good `#2E7048` (D6; was `#3E8A5F` at 3.4) | Card | **4.86** | 10–12 / 20–24 | positive deltas (numerals, mono) |
+| Bad `#9C4238` | Card | **5.3** | 10–12 / 20–24 | negative deltas — untouched by D6 |
+| Caution `#8F6900` (D6, text uses; was `#BE8A00` at 2.5 — the FILL amber keeps `#BE8A00` as `Draft`) | Card | **4.09** | 9 / 19 BREAKING chip; 10 / 16 threshold labels | the event chip, NAIRU / "comfortable" labels riding the graph line — **D6 aimed at ≥ 4.5; measured 4.09** |
+| Caution `#8F6900` (was 2.4) | Tile | **3.90** | 9 / 19 | the BREAKING chip on the event card's plate — **measured 3.90** |
 | TextOnDesk `#F0E7D8` | Desk `#241B10` | **13.8** | 20 / 36 | the HELD / GAME OVER banner |
 | DraftOnDesk `#D4A72C` | Desk | 7.6 | (the lamp, 8 px dot) | not text |
 | TextPrimary | StockOff `#B9A886` | **6.4** | 8 / 16 | the chips' captions (PAUSE · 1× · SAVES · 1D … and the rail's PAUSE/RUN) |
 | InkOnStock `#45392A` | StockOff | 4.8 | 18 / 30 | (the tongues, retired) |
-| light `#F4ECDC` | Brass `#9C8148` | **3.2** | 8 / 16 | the SELECTED chip's caption (1× · FULL TURN) |
+| TextPrimary `#2B2620` (D6's assignment flip; was light `#F4ECDC` at 3.2) | Brass `#9C8148` | **4.03** | 8 / 16 | the SELECTED chip's caption (1× · FULL TURN · RUN) — **D6's table said 5.5; measured 4.03** (brass unchanged) |
 | TextOnPlate `#3D372E` | Tile | 9.2 | 16 / 28 | plate text |
 | Hairline `#B7A98C` | Card | 1.9 | (rules) | not text |
 | HairlineStrong `#8A7A5C` | Card | 3.4 | (rules, the compass grid) | not text |
 | area ink Fiscal `#35619E` | Card | 5.1 | 16 / 28 ledger labels; 22 / 42 headers | calendar rows, section headers |
 | Trade `#23867B` | Card | 3.6 | same | |
-| Political `#A8842E` | Card | **2.9** | same | calendar rows (division/election markers), the Politics header |
+| Political `#8A6B21` (D6; was `#A8842E` at 2.9) | Card | **4.07** | same | calendar rows (division/election markers), the Politics header |
 | Welfare `#A84E7B` | Card | 4.2 | same | |
 | Labor `#B5622F` | Card | 3.6 | same | |
 | CrimeJustice `#9C4238` | Card | 5.3 | same | |
 | Sectors `#62579F` | Card | 5.1 | same | |
 | Infrastructure `#3E7480` | Card | 4.3 | same | |
 | SovereignWealth `#85643A` | Card | 4.4 | same | |
-| Global `#5C87A8` | Card | **3.1** | 16 / 28; 22 / 42 | the Statistics headers, "Domestic" / "International", the calendar's event markers |
+| Global `#47708E` (D6; was `#5C87A8` at 3.1) | Card | **4.31** | 16 / 28; 22 / 42 | the Statistics headers, "Domestic" / "International", the calendar's event markers |
 | tab tint Fiscal `#3D6494` | the rail's paper | 5.0 | (icons 21 / 35) | inactive rail icons — not text |
 | tab tint Political `#96762A` | | 3.5 | | |
 | tab tint Labor `#A2653E` | | 3.8 | | |
@@ -297,7 +297,9 @@ Shapes: **level** (one number now) · **share** (a part of a stated whole) · **
 | tab tint Sectors `#5B5187` | | 5.8 | | |
 | tab tint Global `#4E7291` | | 4.1 | | |
 
-**The pairs below 4.5 : 1 that carry TEXT at 16 px or less at 1280** (the sitting's "readability suffers at small sizes", measured): TextMuted on Tile at 7 px (3.7) — the stat tile label; TextMuted on Card at 8 px (3.9) — the Desk's methodology caption; Caution on Card/Tile at 9–10 px (2.5 / 2.4) — the BREAKING chip and the threshold labels; Good on Card at 10–12 px (3.4) — the positive deltas; the light-on-brass selected chip at 8 px (3.2); Global at 16 px (3.1) and Political at 16 px (2.9) as ledger inks. Everything else at or above the body floor. Rows are (fg, bg, px, where) as R-E3 asks; the judgment is D6's.
+**The pairs below 4.5 : 1 that carry TEXT at 16 px or less at 1280, as first measured** (the sitting's "readability suffers at small sizes"): TextMuted on Tile at 7 px (3.7) — the stat tile label; TextMuted on Card at 8 px (3.9) — the Desk's methodology caption; Caution on Card/Tile at 9–10 px (2.5 / 2.4) — the BREAKING chip and the threshold labels; Good on Card at 10–12 px (3.4) — the positive deltas; the light-on-brass selected chip at 8 px (3.2); Global at 16 px (3.1) and Political at 16 px (2.9) as ledger inks. Rows are (fg, bg, px, where) as R-E3 asks; the judgment was D6's.
+
+**Re-measured 2026-08-28 after D6 was applied (`PoliSimTheme.cs` / `UiPalette.cs`; the same sRGB-luminance arithmetic on the hex values; my measurement is the fact, as D6 asks):** TextMuted 5.22 / 4.98 (target ≥ 5.0: met on Card, 0.02 short on Tile), Good 4.86 (≥ 4.8 ✓), Neutral 4.72 (≥ 4.5 ✓), Global 4.31 and Political 4.07 (≥ 4.0 ✓ both). **Two rows stay under 4.5 with text on them:** Caution at 9–10 px — 4.09 on Card, 3.90 on Tile (D6 aimed at ≥ 4.5; `#8F6900` at L −0.07 does not reach it — a further −0.03 or so would); and the selected chip's caption at 8 px — TextPrimary on brass measures **4.03**, not the 5.5 D6's table gives (up from 3.17; the flip is kept — it is the better of the two assignments and the brass is ruled unchanged). Neither is an ask; both are filed here for Design's next look, with the numbers.
 
 ---
 

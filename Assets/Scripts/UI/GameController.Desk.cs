@@ -274,7 +274,9 @@ namespace PoliSim.UI
             {
                 Color fill = selected ? PoliSimTheme.Brass : disabled ? PoliSimTheme.Tint(PoliSimTheme.StockOff, 0.55f) : PoliSimTheme.StockOff;
                 Color border = selected ? PoliSimTheme.BrassBorder : disabled ? PoliSimTheme.Tint(PoliSimTheme.HairlineStrong, 0.6f) : PoliSimTheme.HairlineStrong;
-                Color ink = selected ? PoliSimTheme.Hex(0xF4ECDC) : disabled ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary;
+                // D6 (2026-08-28): the selected caption is TextPrimary on brass - an ASSIGNMENT flip, not a
+                // value (light-on-brass read 3.2 : 1 at 8 px; measured after the flip 4.03; brass unchanged).
+                Color ink = disabled ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary;
                 PoliSimTheme.RoundedCard(rect, fill, border, 0f);
                 PoliSimWidgets.MeasuredLabel(rect, label, Inked(new GUIStyle(caption), ink));
             }

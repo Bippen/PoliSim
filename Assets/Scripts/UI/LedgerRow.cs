@@ -379,7 +379,8 @@ namespace PoliSim.UI
             // than as a fit (the reasoning behind §A.9a's resort ladder).
             float half = rect.width * 0.5f;
             DrawCell(new Rect(rect.x, rect.y, half, rect.height), standingText, style, rowInk, TextAnchor.MiddleRight);
-            DrawCell(new Rect(rect.x + half, rect.y, half, rect.height), draftText, style, PoliSimTheme.Draft, TextAnchor.MiddleRight);
+            // D6 (2026-08-28): the draft FIGURE is text on paper - the darkened Caution ink; the knob and track above keep the fill amber.
+            DrawCell(new Rect(rect.x + half, rect.y, half, rect.height), draftText, style, PoliSimTheme.Caution, TextAnchor.MiddleRight);
         }
 
         /// <summary>

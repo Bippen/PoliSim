@@ -57,7 +57,8 @@ namespace PoliSim.UI
         private static readonly Color AxisLabelColor = PoliSimTheme.TextSecondary;
 
         /// <summary>Distinct from GridColor (the plain midline) and from HistoryLineColor/ProjectedLineColor, so a threshold/target reference line is never confused with either - a warm amber reads as "reference marker," not "recorded data."</summary>
-        private static readonly Color ThresholdLineColor = PoliSimTheme.Caution;
+        /// <summary>The threshold LINE is a fill: the draft amber (D6, 2026-08-28 — the text/fill split; its label draws in the darkened <see cref="PoliSimTheme.Caution"/>).</summary>
+        private static readonly Color ThresholdLineColor = PoliSimTheme.Draft;
 
         private Texture2D _texture;
         private readonly List<float> _drawnHistory = new List<float>();
@@ -192,7 +193,7 @@ namespace PoliSim.UI
         /// <summary>A release marker on the timeline - furniture rather than data, so it takes the brass the pack uses for furniture instead of the screen yellow it was.</summary>
         private static readonly Color ReleaseMarkerColor = PoliSimTheme.Brass;
         /// <summary>The aged draft/caution amber, not the screen orange it was - a preliminary release is the published-data cousin of a draft, and they should read as the same idea.</summary>
-        private static readonly Color PreliminaryLineColor = PoliSimTheme.Caution;
+        private static readonly Color PreliminaryLineColor = PoliSimTheme.Draft;   // a fill (D6's split, 2026-08-28)
 
         /// <summary>
         /// Master Sequence step 9, Step B: draws a PUBLISHED series - lagged, revisable figures as the
@@ -507,7 +508,7 @@ namespace PoliSim.UI
             }
 
             Color previous = GUI.color;
-            GUI.color = preliminary ? PoliSimTheme.Caution : PoliSimTheme.HairlineStrong;
+            GUI.color = preliminary ? PoliSimTheme.Draft : PoliSimTheme.HairlineStrong;   // the frame is a rule, not text (D6's split)
 
             const float thickness = 1f;
             if (!preliminary)
@@ -745,7 +746,9 @@ namespace PoliSim.UI
             float y = rect.y + rect.height * (1f - normalized);
 
             var style = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.MiddleRight };
-            style.normal.textColor = ThresholdLineColor;
+            // D6: the label is TEXT at 10-16 px and takes the darkened Caution ink; the line it
+            // describes keeps the fill amber - the same idea at the two weights the palette split.
+            style.normal.textColor = PoliSimTheme.Caution;
             GUI.Label(new Rect(rect.x + 2f, y - labelHeight * 0.5f, rect.width - 4f, labelHeight), thresholdLabel, style);
         }
 

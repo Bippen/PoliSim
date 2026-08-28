@@ -117,14 +117,18 @@ namespace PoliSim.UI
             { SystemArea.Neutral, PoliSimTheme.Hex(0x6D7480) },
             { SystemArea.Fiscal, PoliSimTheme.Hex(0x35619E) },          // blue - tax & spending
             { SystemArea.Trade, PoliSimTheme.Hex(0x23867B) },           // teal - tariffs & trade partners
-            { SystemArea.Political, PoliSimTheme.Hex(0xA8842E) },       // ochre - approval, elections, Federal Reserve
+            // D6 (2026-08-28, the v3.1 contrast pass): Political #A8842E → #8A6B21 and Global #5C87A8 →
+            // #47708E — the two area inks that carried 16 px ledger labels and calendar markers below
+            // 3 : 1 (2.9 / 3.1); oklch L −0.07, hue and chroma held. Measured after: 4.07 / 4.31 on Card.
+            // The other nine stand. PoliSimTheme.AreaAccents carries the same two values.
+            { SystemArea.Political, PoliSimTheme.Hex(0x8A6B21) },       // ochre - approval, elections, Federal Reserve
             { SystemArea.Welfare, PoliSimTheme.Hex(0xA84E7B) },         // magenta - welfare programs
             { SystemArea.Labor, PoliSimTheme.Hex(0xB5622F) },           // orange - labor market policy
             { SystemArea.CrimeJustice, PoliSimTheme.Hex(0x9C4238) },    // brick - crime & justice
             { SystemArea.Sectors, PoliSimTheme.Hex(0x62579F) },         // indigo - economic sectors
             { SystemArea.Infrastructure, PoliSimTheme.Hex(0x3E7480) },  // slate - infrastructure
             { SystemArea.SovereignWealth, PoliSimTheme.Hex(0x85643A) }, // bronze - sovereign wealth fund
-            { SystemArea.Global, PoliSimTheme.Hex(0x5C87A8) }           // sky blue - world map overview
+            { SystemArea.Global, PoliSimTheme.Hex(0x47708E) }           // sky blue - world map overview
         };
 
         public static Color GetAreaColor(SystemArea area) => AreaColors[area];

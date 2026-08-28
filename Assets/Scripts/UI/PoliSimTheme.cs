@@ -50,7 +50,8 @@ namespace PoliSim.UI
         // --- Text ramp: ink on paper. ---
         public static readonly Color TextPrimary = Hex(0x2B2620);   // inkText
         public static readonly Color TextSecondary = Hex(0x5D564A); // inkFaint
-        public static readonly Color TextMuted = Hex(0x7A7263);
+        /// <summary>D6 (2026-08-28, the v3.1 contrast pass): `#7A7263` → `#665E4F` — the token carries 7–8 px labels (the tile label, C20), and read 3.9 : 1 on Card; measured after the change 5.22 on Card, 4.98 on Tile (Annex F of the request doc, re-measured).</summary>
+        public static readonly Color TextMuted = Hex(0x665E4F);
         /// <summary>Text sitting on the DESK rather than on paper - the interrupt banner, and only that.</summary>
         public static readonly Color TextOnDesk = Hex(0xF0E7D8);
 
@@ -74,10 +75,17 @@ namespace PoliSim.UI
         public static readonly Color DisabledFace = Hex(0xDDD2B8);
 
         // --- Semantic inks. ---
-        public static readonly Color Good = Hex(0x3E8A5F);
-        public static readonly Color Caution = Hex(0xBE8A00);
+        // D6 (2026-08-28, the v3.1 contrast pass — Design's board D6 against the request doc's Annex F):
+        // where a token carries TEXT below 4.5 : 1 at its real size its VALUE darkens (oklch L −0.07,
+        // hue and chroma held); the identity survives, the whisper does not. Good 3.4 → 4.86 measured;
+        // Caution (text uses) 2.5 → 4.09 on Card / 3.90 on Tile measured (D6 aimed at ≥ 4.5; the
+        // measurement is the fact, filed back); Neutral (text uses) 3.8 → 4.72 measured. Bad stands
+        // (5.3). The draft-amber FILLS keep the old value as `Draft` below — the split the palette
+        // note promised: a threshold LINE and a hatch stay #BE8A00, the label beside them is this ink.
+        public static readonly Color Good = Hex(0x2E7048);
+        public static readonly Color Caution = Hex(0x8F6900);
         public static readonly Color Bad = Hex(0x9C4238);
-        public static readonly Color Neutral = Hex(0x6D7480);
+        public static readonly Color Neutral = Hex(0x5F6672);
 
         /// <summary>
         /// Amber is reserved for "drafted but not enacted" — budget drafts, pending bills.
@@ -88,8 +96,12 @@ namespace PoliSim.UI
         /// "drafted, not enacted" was indistinguishable from "this belongs to Politics". Design caught it
         /// and split them: draft amber `#BE8A00`, Political ochre `#A8842E`. A pencil-amber draft mark can
         /// no longer be read as a Politics legend key.
+        ///
+        /// D6 (2026-08-28): no longer an alias of <see cref="Caution"/>. Caution darkened for its TEXT
+        /// uses; this is the FILL amber — the hatch, the pencil, a graph's threshold line, the
+        /// preliminary-release frame — and keeps `polisim_palette.json`'s `semantic.draftAmber` value.
         /// </summary>
-        public static readonly Color Draft = Caution;
+        public static readonly Color Draft = Hex(0xBE8A00);
 
         /// <summary>
         /// Draft/caution amber at DESK weight — `polisim_palette.json`'s `semantic.draftAmber.lifted`
@@ -138,14 +150,14 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.Neutral, Hex(0x6D7480) },
             { UiPalette.SystemArea.Fiscal, Hex(0x35619E) },
             { UiPalette.SystemArea.Trade, Hex(0x23867B) },
-            { UiPalette.SystemArea.Political, Hex(0xA8842E) },
+            { UiPalette.SystemArea.Political, Hex(0x8A6B21) },   // D6 (2026-08-28): #A8842E → #8A6B21, with UiPalette's on-paper entry
             { UiPalette.SystemArea.Welfare, Hex(0xA84E7B) },
             { UiPalette.SystemArea.Labor, Hex(0xB5622F) },
             { UiPalette.SystemArea.CrimeJustice, Hex(0x9C4238) },
             { UiPalette.SystemArea.Sectors, Hex(0x62579F) },
             { UiPalette.SystemArea.Infrastructure, Hex(0x3E7480) },
             { UiPalette.SystemArea.SovereignWealth, Hex(0x85643A) },
-            { UiPalette.SystemArea.Global, Hex(0x5C87A8) }
+            { UiPalette.SystemArea.Global, Hex(0x47708E) }       // D6 (2026-08-28): #5C87A8 → #47708E, with UiPalette's on-paper entry
         };
 
         /// <summary>
