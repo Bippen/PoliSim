@@ -2482,3 +2482,77 @@ moves, reported, not made. The seven §V rows now wait on Elias's eyes (the cut,
       launched; `.git` untouched — the pin and the commit-map are why it is kept).**
 
 
+
+## 36. The omnibus pass — every live item of the 2026-08-27 board in one session (2026-08-28)
+
+**Elias's kickoff (2026-08-28): "complete all live items in one pass; streamline the working discipline."**
+Ten pre-issued rulings R-K1…R-K10, seven phases, one report at pass end. Anchor `5f56798`; the pass ran
+on `main` alone (rule 13). What follows is the record; `CLAUDE.md` "The omnibus pass" carries the detail
+per phase and per unit.
+
+**Phase 0 — Working Discipline v2 (`0dc3ed8`).** The ten rules at the head of the roadmap; rules 0–15
+as they stood at `5f56798` migrated verbatim to §35 so every "rule N" reference still resolves.
+
+**Phase 1 — the chrome sweep, eleven units in ten commits (`f92e14f` … `476c66c`).** Roadmap item 4 in
+full (the RUNNING status plate; B5's disabled speed-button face and the `ui_btn_disabled` loader; §A.8's
+right-aligned screen caption; §A.3's inactive tab-swatch tints; the §A.2 tokens without a constant — five,
+not three, re-derived per R-K10; §A.11's urgency chip as a rotated bordered stamp; the row-family residues
+on the Fed tab, International and the Trade bill card; the 2560 Trade wrap answered structurally), item 5
+per R-K6 (the eight `icon_area_*` on the sub-tab rows where the row can carry them; the 25 Stats sprites
+and the six chrome names recorded as held stock; the sitting chair's text treatment;
+`AreaIconCoverageCheck`, 14/14, in the suite), boards 1k and 1l per R-K3 (the calendar as one almanac
+sheet with the diagonal strike; the graph weights), the law browser's two residuals per R-K4/R-K5 (the
+ledger pitch measured before → after at three sizes; the name ladder). Each unit compiled and captured at
+the touched sizes before its commit; every guard silent.
+
+**Phase 2 — the causal graph on the Policy Web (`a267fd6`, R-K1).** Derived edges from the ledgers'
+term IDs, declared edges dashed at 55%, stat → stat chords, per-country sets, the two generic-line folds.
+Dumps 6/6 byte-identical; captures clean.
+
+**Phase 3 — the two remaining scenarios measured and dropped (`11c28a2`, R-K2).** Poland convergence to
+`UnemploymentReversionSpeed` a third time; The Unequal Recovery to a new root cause in the political
+model — the Progressive and Conservative seat targets are identical at every approval level, so no
+expansionary bill passes on any drift path except by ±1-seat jitter. `ScenarioLibrary` stays at two. The
+political-model fact goes to item 10's file (§D).
+
+**Phase 4 — the seed spread sourced (`915c800`, R-K9).** OECD PMR 2023-24 and SOCX 2021 through §F's
+mapping as written, every figure `[PROVISIONAL - session-sourced 2026-08-28, Elias to confirm]`; the
+anchored form held (dumps 6/6 identical); the Compass Y axis spreads 19.8 units. Six caveats wait on
+Elias's confirmation (`MISSING_PREREQUISITES.md` §F).
+
+**Phase 5 — the rasterization diff closed (`a15c0c1`, R-K8).** The Unity path is blank even windowed;
+resvg 0.47.0 (origin and digest verified) as `StripCutDiffCheck`'s external rasterizer; the six buttons
+6/6; 77 of 90 within budget; two real findings for Design (the hatch tile's un-rotated tiling; the slider
+track's strip) and nine Stats icons over a blind-set budget by an antialiasing margin (RULINGS NEEDED).
+
+**Phase 6 — the four decompositions (`6307dce` Germany, `ad7b240` Italy, `d33e1ae` Poland, `e04f238`
+France, R-K7).** Sweden's method with one stated deviation: the four's transfer layer already sits in the
+recalibration's `SeedMandatoryTransferLines`, so each decomposition weights G with the state budget's
+non-transfer areas and carries no mandatory line. Sources: bundeshaushalt.de's plan CSV; the RGS BDAP
+chapter dump; the act's own annex (read out of the PDF); the Assemblée's adopted text (État B). Every
+diff noise-level; every capture clean. The scaling distortion measured per country and recorded.
+
+**Phase 7 — the closing gate (`bar_phase7.ps1`, one Unity launch per step, ATTRIB 0 throughout).** The
+capture matrix at 1280×720, 1600×900, 1920×1080 (the first set at that size) and 2560×1440
+(`omni_final_*`, 64/64 each, both text guards silent); `ScreenEdgeCheck` on every set; the closing dump
+byte-identical to the France baseline 6/6 and diffed against `pre_seedspread` (16–18 of 42 fields
+identical, the rest the decompositions' last-ulp noise); equivalence 117/117; round-trip 12/12; parity
+7/7; delivered assets 0 missing; portraits 25/25; area icons 14/14; the matrix 30/30 with 27 cell counts
+identical to the last pre-pass matrix, `welfarestress` moved by the USA's real seeded programs and
+`parliamentstress`/500 by one threshold crossing, no new kind. The rule-15 diff (old beside new, ranked by
+`capdiff.ps1`, read by eye at 1600 and on the 1920 set): every touched screen as built. **The gate's one
+catch, this pass's own — label-clipping instance #14:** the Laws panel 28 px past its frame at every size
+(flagged at three sizes, hidden under the margin column at 1920), measured by a width probe to the Laws
+box's widths being taken one nesting level short, fixed at the nesting (`a331e82`), the four sizes
+re-captured under the same labels; `ScreenEdgeCheck` after the fix 0 clipped at all four. The same commit
+closes the class's second member on that screen, R-K5's residual: the detail pane's scroll content ran
+wider than its viewport (the MAGNITUDE row and the un-widthed action button past the content width in every
+capture back to Phase 2 — a horizontal scrollbar across the pane — and the `FlexibleSpace` pushed the
+status past the viewport, "not enac|" at 1280), measured by a second probe and sized to the pane; read by
+eye at 1280 and 1600. Detail: `CLAUDE.md` "The omnibus pass, Phase 7".
+
+**Consumed rulings:** R-K1 (Phase 2), R-K2 (Phase 3), R-K3 (1k, 1l), R-K4, R-K5, R-K6 (Phase 1), R-K7
+(Phase 6), R-K8 (Phase 5), R-K9 (Phase 4), R-K10 (Phase 1). **Shelved:** nothing. **Deviations, stated:**
+the sub-tab icons drop where a row cannot carry them (R-K6, by width); the four decompositions carry no
+mandatory line (R-K7, the recalibration's block); resvg v0.47.0 rather than the latest release (no Windows
+asset in v0.48.1); the raster budget left as set.

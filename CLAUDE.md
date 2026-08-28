@@ -13814,3 +13814,308 @@ the Editor's remembered Game-view size on the first windowed launch after the ba
 re-run as `pt3usa1280b` at a true 1280×699; the four sizes above are the ones judged. ATTRIB: 0 in every
 log. The `CompassAxisDiagnostic` was not re-run — nothing at the seed changed, by construction and by
 the dumps.
+
+
+## The omnibus pass, Phase 1 — the chrome sweep (2026-08-28)
+
+Elias's omnibus kickoff (2026-08-28) installed Working Discipline v2 (Phase 0, `0dc3ed8`; rules 0–15
+migrated verbatim to `COMPLETED.md` §35) and executed the roadmap's live items in one pass. Phase 1 is
+roadmap item 4 in full, item 5 per R-K6, boards 1k and 1l per R-K3, and the two law-browser residuals
+per R-K4/R-K5 — eleven units, each compiled and captured at the touched sizes before its commit (rule
+1's per-item bar), every capture 64 of 64 with the three guards silent unless stated.
+
+**Units and commits.**
+- `f92e14f` — §A.6's RUNNING status plate (one Label, a procedural `#EDE2CB` card under it, `1px
+  #C9BA9B` edge and the `8px #3E8A5F` lamp as Repaint overlays; "Clock running" → "Time running");
+  B5's disabled speed-button face — `ButtonKind.Disabled` wears `ui_btn_disabled` untinted with
+  `mutedInk` text, GUI.enabled-off for the click, rendered never omitted; five §A.2 tokens re-derived
+  against `PoliSimTheme.cs` (R-K10): `ruleRow #D5C8AB`, `borderPaper #CBBC9D`, `borderPlate #C9BA9B`,
+  `mutedInk #9A917D`, `deskCaption #8D7D5F` — FIVE without a constant, not the sweep's three; two were
+  already bare literals in the Canvas screens — plus `TextOnPlate #3D372E` and `DisabledFace #DDD2B8`.
+  Two fix-forwards on the plate (`c188b28`, `adcb52e`): top-aligned it read as a slider track, and
+  `BuildCardStyle`'s `ui_panel_paper` 9-slice is all edge at one line of height — the plate is drawn
+  flat, its 6/10 padding read as a ratio to its 10.5 type (the lamp's own rule).
+- `c188b28` + `da6a684` — §A.8's right-aligned screen caption and the 2px closing rule on the three
+  sub-tab rows (`DrawScreenCaption`; one accessor, `ScreenCaptionBlockHeight`, feeds the five content
+  reserves; captions this session's wording — "DOMESTIC BULLETIN — DESK READINGS, LIVE", "THE NATIONAL
+  ASSEMBLY — {seats} SEATS" with the real seat sum, "LABOR MARKET — DRAFTS UNTIL PARLIAMENT VOTES", …);
+  R-K6's eight `icon_area_*` promoted to the sub-tab rows through the new `IconLibrary.GetAreaIcon`:
+  Labor / Crime & Justice / Sectors / Trade on Policy/Laws, Global on Statistics › International,
+  Welfare / Infrastructure / Sovereign Wealth on the Budget category column, 16px on the board's 13.5px
+  type, area-ink tint. ⚠ The first capture showed the Policy/Laws row's labels broken to three lines
+  and mid-word beside a 24px icon at 1600 — instance #13's class at a new site (the row height was
+  measured at the bare share). `SubTabRowFitsIcons` now decides ONCE per row whether every label fits
+  beside an icon in two lines with no word broken; `SubTabRowHeight` measures with the reserve when
+  icons are on; a row that cannot carry them goes without — at 1600 the Policy/Laws row has no icons
+  (a width-dependent deviation from R-K6, stated), Statistics and Budget carry theirs.
+- `adcb52e` — §A.3's third column wired (`PoliSimTheme.TabSwatchTint`, six snapped values, ink
+  fallback): the inactive folder tongue's icon prints in the tab-swatch tint instead of muted white;
+  §A.11's urgency chip as a rotated bordered stamp (`PoliSimWidgets.Stamp`/`StampSize`, GUI.matrix
+  around the rect centre, an overlay in a GUILayout-reserved rect — 1.5px border, −2°, HOLDS TIME in
+  `#9C4238`, CAN WAIT in `#8A7A5C` on `#B7A98C`) — the generic stamp treatment is the same widget with
+  the 2–3px / −2°…−6° arguments, built but with no second caller yet; the 2560 Trade wrap by measured
+  width — which did NOT stop the break after the "+" of "+$0/yr" (`omni_c2560`): the sign glyph is a
+  break opportunity to the text engine at any width.
+- `f145ba2` — the label residues as the row family: the Fed tab re-measured at three multi-figure
+  sentence labels (one per branch — the chair's rule reading, the independent advisory reading, the
+  Eurozone blend) plus the shared-rate line, each now `DrawDerivedStatRow` rows (name, figure,
+  trailing) at the same fixed ordinals; International's pinned country readout (eight "Name: value"
+  labels) as rows — the event panel keeps its BREAKING-banner wording on purpose; the Trade bill card's
+  cost line as three rows whose cells shrink and never wrap — the structural answer to the "+" break.
+  Fix-forwards: the card's narrow name column shrank "Trade balance, partners' mirrored tariffs" to a
+  different size from its siblings (D7's objection) — short names, mechanism in the trailing column;
+  the "held within 0-15%; the rate moves 15% of the way each year" trailing text overflowed a 195px
+  trailing cell at the 1280 floor (4 guard hits, `omni_h1280`) — "band 0-15%; closes 15% of the gap per
+  year", `omni_i1280` clean.
+- `6c1483a` — `AreaIconCoverageCheck` (enumerates the ten `SystemArea` members other than Neutral
+  through `GetAreaIcon`, format asserted RGBA32, and every `PartyArchetype` emblem through
+  `GetPartyEmblem`, resolution only — full-colour art, block compression ruled acceptable 2026-08-11)
+  armed in `CheckSuite` (eight checks). ⚠ Its first run asserted RGBA32 on the emblems too and
+  reported all four DXT5 as DAMAGED — the check's error, not the import's, recorded in its header.
+  Green: 14 of 14. The 25 `Stats/` sprites and the six unloaded chrome names recorded as HELD STOCK in
+  `IconLibrary`'s docs (R-K6); the sitting Fed chair's row recorded as a deliberate text treatment, no
+  Design ask.
+- `3fa3eb2` — board 1k (R-K3, §A.16): `PoliSimTheme.Stroke` (a diagonal rule through GUI.matrix); the
+  spent day's numeral crossed at 1.5px@1600 / 2px@2560 (window-height scaled), 55% ink, −24°, inset
+  2px, in the widest numeral's box so every strike is the same length (a 3× zoom of the 2560 grid
+  showed a single-digit day's strike at four pixels when the box was the glyph's own); the " X" suffix
+  gone (row-height sample "99"); the ledger row carries the grid's own 5px area dot; a day at the
+  four-dot cap earns the 2px ink underline; header, month page and ledger one sheet with 1.5px section
+  rules. Flip instant, measurements measurements, `ui_calendar_pad` and the locale honesty untouched.
+- `2b698b0` — board 1l (R-K3): `DrawLine` takes a thickness (rows below the plotted pixel, the old 2px
+  form generalised); history 3 buffer px, projection 2 at 3 on / 2 off (from "skip every 3rd"),
+  threshold 1 (unchanged), sparklines `max(2, round(height/34))`, release ticks weight + 2 = 5px; the
+  deltas, the PRELIMINARY badge and the 1px revision frame untouched; the 300×90 buffer stands (R-G5).
+  `GraphRendererDiagnostic` 3 of 3 (the 336-combination sweep). The eye's check: four stacked graphs
+  at 2560 (`omni_e2560_02a_statistics_domestic_deep`) — history plainly outranks the amber reference.
+- `14740e2` — §A.13's two unbuilt rows, re-derived against the seam (R-K10): rows 1–3 are the IMGUI
+  half (lock; 180ms cover; the hold-and-swap at 100% by declared deviation), row 5 is `SealDrop`'s
+  own 1.3 → 1.0 / 140ms (a declared deviation from the envelope's 1.15 / 120ms, kept because §1g is the
+  ceremony's own spec); rows 4 and 6 had no implementation. `SigningScreen.DocumentEntrance`: 260ms
+  ease-out cubic rise from −24px with the −0.6° settle; the SIGN/FILE button's CanvasGroup invisible
+  and non-interactable until 460ms, then a 200ms fade; `CanvasTransitionSettled` composes
+  `EntranceSettled` so the driver never films the button mid-fade. The ceremony has no capture state in
+  the driver's default set — verified by compile and the seam's flag, listed as such.
+- `476c66c` — R-K4: `DrawLawListRow` reserves `LedgerRow.Height` (two lines for a wrapped name)
+  plus the Budget rows' 10px gap in place of the 1.4× reservation. **Measured on film** (pitch / laws
+  per viewport, before → after): 1280 — 66px / 2.5 → 55px / 2.5 (the §A.8 caption block took the gain
+  at the floor); 1600 — 80px / 4.5 → 66px / 5.3; 2560 — 85px / 6.1 → 68px / 7.6. The 1j board's ~27 is
+  a one-line row; the ledger row is two lines by construction (the wrap-first name ladder) — a one-line
+  row type is a different row, Elias's call (RULINGS NEEDED). R-K5: `DrawLawNameLadder` — the selected
+  law's name at a width measured from the status actually drawn (capped at half the pane), wrapping at
+  word boundaries to two lines at full size and shrinking only past that (floor 8px); "Cash Bail
+  Abolition Act" no longer breaks inside "Abolition" at 1600.
+
+**Consumed rulings:** R-K3 (1k, 1l), R-K4, R-K5, R-K6 (icons, held stock, `ui_btn_disabled`, the
+sitting chair, the check), R-K10 (the §A.2 token count, the §A.13 rows, the Fed label count — three
+sentence labels, not the pass-4 count). **Deviations, stated:** the sub-tab icons drop where the row
+cannot hold them (by width); the RUNNING plate is drawn procedurally (no sprite exists for it); the
+seal beat keeps §1g's timing. **The 1920×1080 capture argument** is Phase 7's closing matrix.
+
+## The omnibus pass, Phases 2–6 — the causal graph, the scenario measurement, the seed spread sourced, the raster diff, the four decompositions (2026-08-28)
+
+**Phase 2 — R-K1, the causal graph on the Policy Web (`a267fd6`).** The ledgers' term IDs became the
+derived edge list: `PolicyWebEdge` carries an `EdgeProvenance` (Derived / Declared) and its ledger term;
+every edge a ledger term records — `ApprovalAttribution`'s TaxHikePenalty, SpendingEffect, WelfareEffect,
+PaidLeaveEffect, DrugPolicyEffect; `DebtAttribution`'s PrimaryBalanceEffect for every money lever and
+InterestAtIssuance for the policy rate; the confidence book's policy base — draws solid, and every other
+edge stays DECLARED (the formula it cites, no term behind it yet) and draws dashed at 55% ink. `StatWebEdge`
+is the graph's own kind: GrowthEffect, the four misery gaps, Erosion and InterestAtIssuance as stat → stat
+chords in the Stats wedge, listed on the stat panel as "moved by" / "feeds" with their terms; GiniEffect and
+the wage-sentiment factor have no node and are said so. `IsLiveFor` is the per-country set — the policy
+rate's issuance edge draws for the five and not for the USA (`BaseDebtInterestRateOverride`); the chips
+and both panels read the player country's set. The two generic-line folds: a non-USA Infrastructure &
+Development / Healthcare & Social Care line reads onto the Transportation / HHS nodes. Indirect effects
+stay undrawn; the authored array survives as the declared set (one provenance swap restores it). Bar:
+dumps 6/6 byte-identical to `traj_pre_seedspread_*`, captures `omni_p2_1600` / `omni_p2_2560` 64/64 clean.
+**Consumed:** R-K1 in full (derived edges, the declared idiom, per-country sets, the two folds, no new screen).
+
+**Phase 3 — R-K2, both remaining scenarios measured and dropped (`11c28a2`).**
+`ScenarioCandidateMeasurementDiagnostic` (retained, the §22 precedent; seed 777, 30 turns, the real
+`SimulationManager`) ran both candidates as policy lines before anything was authored. *Poland convergence*
+fell to the §22 root cause a third time: real wages track `PotentialGrowthRate` one-for-one, so a player can
+only add the tightness term, and `UnemploymentReversionSpeed` (0.7/turn) closes it — wage growth ≥ trend +
+0.5 pp held 0 turns on the no-policy and stimulus lines and 2 turns under an overheat line (+40%
+discretionary two years running, the policy rate to 0; deepest tightness −1.34 pp for one turn); inflation
+never left [1, 4] on any line (max 2.77), so the fail condition is unreachable and "≥ 2%" is met 28 of 30
+turns with no policy. *The Unequal Recovery* (USA, BaselineGini +6 → 45.5, hostile seats P52/C60/Ce52/N36)
+fell to a DIFFERENT root cause, in the political model: the transfer programs are the only levers strong
+enough (3–4 Gini points each at full generosity against 0.08/pt for income tax and 0.02/pt for the wage
+floor), every one is an expansionary bill, and under `PartyArchetypeData` the Progressive and Conservative
+seat targets are identical at every approval level (base 0.32/0.32, sensitivity 0.35/0.35), so the expected
+expansionary alignment is −0.0015 × Nationalist seats — negative everywhere (−0.036 at seed, −0.006 at
+approval 100, −0.09 at approval 30); an expansionary bill passes only by ±1-seat jitter (once, at t14, on a
+line whose approval had already saturated at 100). Failable (no-policy Gini 45.47 against 39.5), winnable
+only on the harness's un-voted path (38.65, with debt at 233% of GDP), impossible in play. Not tuned around.
+`ScenarioLibrary` stays at two; its header carries the disposition. **The political-model fact is new and
+belongs to item 10:** in the pre-item-10 game no expansionary bill passes on any drift path except by
+jitter — the return trigger for the scenario is the party re-seeding. **Consumed:** R-K2.
+
+**Phase 4 — R-K9, the seed spread sourced (`915c800`), every figure `[PROVISIONAL - session-sourced
+2026-08-28, Elias to confirm]`.** Regulation from the OECD PMR 2023-24 (2023 methodology): the economy-wide
+workbook `PMR-Indicator_Econwide_2023-24-and-2018_02.02.2026.xlsx` (oecd.org, SHA-256 D0EBCFC7…) cross-
+checked against the SDMX API (`OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3`) — identical to seven decimals; the
+published "OECD average" (1.3464) and the 38-member simple mean (1.3460) differ by 0.0004, which licenses
+the mean for the sector series where no published average exists. §F's mapping as written — level = 50 ×
+PMR / average, clamped 10–90: USA 58.6, Sweden 29.9, Germany 44.9, France 45.7, Italy 45.7, Poland 39.6;
+sector overrides against the sector means (energy 1.3134, e-communications 1.3056, retail 1.0409): Energy
+37.5 / 41.7 / 17.3 / 30.6 / 27.4 / 52.5, Telecommunications 55.9 / 59.2 / 53.3 / 50.5 / 28.4 / 37.5, Retail
+75.5 / 27.4 / 42.9 / 90 / 90 / 51.0 (France 3.00 and Italy 1.93 clamp). Welfare from SOCX public social
+expenditure, % of GDP, 2021 (the latest year all six report the programme breakdown; dataflow
+`OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0`): healthcare from Health TP41 (not the USA — not universal
+coverage, the spend stays in the budget line), childcare from Family in-kind TP51/K, housing from TP82,
+means-tested from Other social policy areas TP91; generosity = spend / cost share × 100, clamped: USA 15.0 /
+15.7 / 56.8; Sweden 8.8 / 69.5 / 25.2 / 100; Germany 2.6 / 99.9 / 35.2 / 100; France 20.3 / 96.5 / 42.1 /
+100; Italy 26.0 / 68.8 / 2.7 / 58.8; Poland 2.1 / 46.1 / 1.6 / 80.8. Caveats for the confirmation:
+Germany's Bürgergeld is booked under Unemployment in SOCX (its 2.6 understates); childcare clamps at 100
+for three countries (real family in-kind spending exceeds the model's 1%-of-GDP full-generosity cost; the
+ECEC-only reading would give USA 31.5, SWE 100, DEU 81.0, FRA 100, ITA 49.4, POL 67.8); 2021 is a pandemic
+year; Poland's housing line is TP822. Bar: `traj_post_phase4` ≡ `traj_pre_seedspread` 6/6 — the anchored
+form holds under real seeds; `CompassAxisDiagnostic` Y raw 37.5 (Poland) … 57.3 (France), a 19.8-unit
+spread over 461 of 600 px; captures `omni_p4_1600` / `omni_p4_1280` 64/64 and `omni_p4_swe1600` 62/62
+clean. The compass, the Sectors tab and the Welfare tab join §V. **Consumed:** R-K9.
+
+**Phase 5 — R-K8, the rasterization diff closed (`a15c0c1`).** The Unity path probed once more per the
+ruling — a WINDOWED run (the capture harness's own condition) is still blank (every mismatch equals the
+file's ink share, worstΔ 255, the probe PNG an empty 367-byte sheet), so `RenderSpriteToTexture2D` itself
+is the defect; five minutes of the 90-minute bound. resvg: linebender/resvg v0.47.0 `resvg-win64.zip` (the
+newest release with a Windows build AND a publisher digest; v0.48.1 ships no Windows asset), SHA-256
+5684e59c… verified against the GitHub release digest before unpacking, installed out-of-tree at
+`PoliSim-captures\tools\resvg-0.47.0` (exe SHA-256 433A7C74…). `StripCutDiffCheck` takes
+`-stripcutrasterizer=<resvg.exe>`, one process per SVG at the sibling PNG's size, read back through the
+same decoder as Design's file. Two conventions, printed per file: `currentColor` → `#ffffff` where the root
+carries no `color` attribute (50 files; `icon_area_labor.svg` carries it and passed untouched,
+`icon_area_global.svg` lacks it and failed at 36.7% until resolved), and a text-bearing SVG above budget is
+TEXT (fonts differ; the three stamps 6–15%), neither drift nor pass. Result: 77 of 90 within the 2% budget
+— the six per-state canvas buttons 6/6 at 0.04–0.05% (R-K8's closing condition). Named: `ui_slider_track`
+(24×24 source vs 256×28 strip, aspect kept → 28×28). **Two real findings for Design:** `ui_hatch_draft.png`
+shows the pattern's rotate(45) applied to the stripes but not to the tiling (16 px horizontal period where
+the rotated tile gives 22.6; resvg cuts 22) — the shipped PNG is not a faithful cut of its SVG; and nine
+Stats icons sit 0.06–1.2 pp over the 2% budget (2.06–3.21%) on a family of 42 that runs 0.5–3.2% in a
+continuum — antialiasing at a 10.7× upscale of 24-unit strokes, the budget set blind before any comparable
+output existed; left as it is, RULINGS NEEDED. **Consumed:** R-K8.
+
+**Phase 6 — R-K7, the four decompositions on Sweden's method, one commit per country.** The rule as
+applied (the deviation from Sweden's shape, with its reason): Sweden's pass flipped its cash-transfer
+utgiftsområden to mandatory inside its decomposition and added the out-of-budget pension top-up and the
+residual; the other four received that layer from the recalibration as `SeedMandatoryTransferLines`
+(SocialSecurity / IncomeSecurity at general-government size). So each decomposition weights the country's G
+total with the state budget's NON-transfer areas and carries no mandatory line — the identifiable
+cash-transfer areas are left to the block, the same layer counted once. Interest excluded everywhere (the
+USA/Sweden rule); debt redemption and tax refunds booked as expenditure excluded (financing / revenue side);
+EU contributions and transfers to sub-national government in where the document carries them (Sweden's
+UO27 / UO25 precedent); the largest included line the remainder. Every bar: compile, `traj_post_p6_<cc>`
+diffed against the previous baseline (all six pairs differ; 16–20 of 42 fields byte-identical; the rest
+summation-order noise — largest relative mover a near-zero Taylor gap term, largest absolute a cumulative
+Budget accumulator after ~480 turns, every level field within 1e-4 — because the G total is unchanged and
+the effect lines fire only on player changes), the country's capture 62/62 with the three guards silent,
+ATTRIB 0.
+- **Germany (`6307dce`)** — bundeshaushalt.de `HH_2026_ALL.csv` (every Titel of the 2026 Soll; SHA-256
+  3E0CC5A4…), by Einzelplan and Kapitel; 694.27 bn reconciled to the published Kernhaushalt 524.54 within
+  5.2 bn. Base 449.60 = 694.27 − Epl 32 (33.65) − the Aufbauhilfe double count (2.50) − Kap 1102 Rente
+  (140.01) − Kap 1101 Bürgergeld (55.50) − Kap 1701 family (13.01). Sondervermögen in (Bundeswehr → Defense
+  108.61, SVIK → InfrastructureAndDevelopment 58.07, KTF → ClimateAndEnvironment 37.58), EU own resources as
+  EuMembershipFee 43.61; 18 lines, FinancialAdministration (Epl 60's core, 47.35) the remainder. Distortion
+  measured: Defense 5.07% of GDP (GF02 1.4), Education 0.81% (GF09 4.5) — the federal-state property.
+- **Italy (`ad7b240`)** — RGS BDAP dataset `spd_lbf_spe_elb_cap_01_2026` (CKAN dump 07b33430…; SHA-256
+  D9E89E65…), CP A1 by missione/programma; spesa finale 923.12 = the RGS's 923.1. Base 532.22: titolo III
+  (330.04) out; 034 interest (103.04) out; 025 previdenza (112.70) and 024 assistenza (69.27) to the block;
+  029-005 tax refunds (105.89) out. Health a real line (003-006 the SSN 93.23 + 020); 004-010 the EU budget
+  participation 39.25; 011's tax-credit outlays kept; 23 lines, MunicipalGrants (61.33) the remainder.
+  Distortion: Defense 1.14% (1.3), Education 2.62% (4.0), Health 3.40% (6.6).
+- **Poland (`d33e1ae`)** — the act (Dz.U. 2026 poz. 62), Załącznik nr 2 by dział from gov.pl's annex archive
+  (SHA-256 84C84E20…), thousand PLN read out of the PDF's content streams through the fonts' ToUnicode
+  maps (no PDF tool exists on this machine); 32 działy sum to 918,940,000 exactly. Base 527.75 = 918.94 −
+  757 interest (90.39) − 753 ubezpieczenia (195.97) − 855 Rodzina (97.92) − 852 pomoc społeczna (6.91); 758
+  split into EU own resources (41.59 → EuMembershipFee) and the rest (120.94 → MunicipalGrants, remainder);
+  16 lines. Distortion: Defense 3.73% (2.9), Education 1.58% (5.6 — the school subsidy sits in 758), Health
+  1.85% (6.1).
+- **France (`e04f238`)** — LOI n° 2026-103 du 19 février 2026 as adopted (TA n° 227, assemblee-nationale.fr,
+  SHA-256 5AD09939…; Légifrance refuses scripted downloads), État B (CP total 593,890,071,649 = budget.gouv.fr's
+  593.9 bn) and État A's two prélèvements. Base 406.63 bn = 593.89 − Remboursements et dégrèvements (145.60)
+  − charge de la dette (58.62) − SNCF Réseau debt charge (0.66) − Solidarité (31.28), Régimes sociaux (6.07),
+  Monde combattant (1.73), Aide à l'accès au logement (16.57) to the block + PSR collectivités (44.82 →
+  MunicipalGrants) + PSR Union européenne (28.44 → EuMembershipFee). Écologie split by programme (203+205 →
+  Transportation 4.92; 345+174 → Energy 10.71; the rest → Climate 7.14); 22 lines, Education (Enseignement
+  scolaire + Recherche, 121.25) the remainder. Distortion: Defense 3.92% (1.9), Education 7.16% (5.1), Health
+  0.11% (8.9 — the Assurance maladie is outside the state budget).
+**Consumed:** R-K7 (Germany → France → Italy → Poland in effort order; the order of landing was Germany,
+Italy, Poland, France because Italy's and Poland's sources came through first).
+
+## The omnibus pass, Phase 7 — the closing gate (2026-08-28)
+
+**What ran, in order (`bar_phase7.ps1`, every step a separate Unity launch, ATTRIB 0 in every log):** the
+capture matrix at 1280×720 (`omni_final_1280`, 64/64), 1600×900 (`omni_final_1600`, 64/64), 1920×1080
+(`omni_final_1920`, 64/64 — the first set at the most common desktop size) and 2560×1440 (`omni_final_2560`,
+64/64), the two text guards silent on all four; `ScreenEdgeCheck` on each set; the closing dump
+`traj_post_omnibus` — byte-identical to `traj_post_p6_fr` 6/6 (nothing moved after France) and diffed
+against `traj_pre_seedspread` on all six pairs (16–18 of 42 fields byte-identical; the rest the four
+decompositions' summation-order noise — every rate within 1e-4, the large-magnitude accumulators in the
+last float ulp); `AggregationEquivalenceCheck` 117 of 117 within 3%; `SaveLoadRoundTripDiagnostic` PASS,
+12 scenarios (6 countries × 2 seeds); `PreviewParityDiagnostic` 7 of 7 asserted terms for all six;
+`DeliveredAssetCheck` 0 missing; `PortraitCoverageCheck` 25 of 25; `AreaIconCoverageCheck` 14 of 14; the
+matrix `-runmatrix -seed=777` — 30 of 30 cells complete with the exit marker, compared cell by cell
+against `matrix_s777_seedspread_20260827_230413.log` (the last matrix before the pass): 27 of 30 anomaly
+counts identical; `welfarestress` 100/500 moved 35 → 33 and 76 → 73 because the USA now opens with three
+real programs implemented (Phase 4), so the stress cell's implement-everything lands on anchored baselines
+— a policy-path force, the kinds unchanged (Inflation / Unemployment / InterestRate / DebtToGdpRatio) and
+the turn-1 DebtToGdp swing gone; `parliamentstress`/500 moved 94 → 93 on a single 20%-threshold crossing
+with every listed swing differing in the second decimal (last-ulp noise from the decompositions). No new
+anomaly kind anywhere.
+
+**The rule-15 diff (old beside new, structural, by eye — the set is `pt3usa*`).** `capdiff.ps1` ranked the
+64 screens per size by sampled-pixel mismatch to steer the eye (the warm-up is unseeded, so every figure
+differs and the median sits at 12–15%): the top movers are the touched screens — the cabinet (the 5.5×
+portraits), the Fed tab's rows, the Trade card's rows, the graph weights on the Domestic deep capture, the
+seeded Sectors tab, the Decisions' stamp — each read beside its pt3 counterpart at 1600 and on the new
+1920 set: the running plate, the held strip, the captions, the calendar sheet, the compass spread, the
+Budget lists, the saves sheet all as built.
+
+**The one defect the gate caught, and it is this pass's own: instance #14 of the label-clipping class.**
+`ScreenEdgeCheck` flagged the four Laws captures at 1280, 1600 and 2560 (`06f_policylaws_laws`, its
+`_rows`/`_deep` states and `06g_laws_expected_effects`): content flush on the right margin column (545 /
+754 / 1190 px of it — the panel's paper itself), and the pt3 capture beside it fits. At 1920 the same
+overflow is there (the caption "THE STATUTE BOOK — 100 LAWS, BILLS TO THE HOUS|" and the "Laws" tab cut at
+the frame) but under the 2% margin column, so the check passed it — the check reports flushness, never
+overrun magnitude, as its header says. **Measured, not inferred:** a temporary probe (never committed;
+`LawsProbe` lines on the Laws tab's first Repaint, `probe_laws_*.log`) logged every group's laid-out
+width at 1600×929: the area 814.1; the sub-tab row and the caption 814; inside `DrawLawsTab`,
+`lawsInnerWidth` 770.1, `categoryShare` 251.4, and the category, order, status and list/detail rows all
+at 786 — so the Laws box (786 + its own 28 px padding) became 814, the whole area, and the outer
+Policy/Laws box 842, 28 px past the frame. The cause: `lawsInnerWidth` and the chip-row shares were taken
+one box level in from the AREA, while the Laws box sits inside the outer box's `_boxStyle` padding — two
+levels. The fix (`a331e82`): `lawsOuterInnerWidth = InnerWidth(availableWidth, _boxStyle)` is the budget the
+Laws box is drawn into; `lawsInnerWidth` and both `SubTabShare` calls derive from it. Re-probed: rows 754,
+the Laws box 782, the outer box 810 on the 814 area. `ScreenEdgeCheck` after the fix: 0 clipped at all four
+sizes (64 captures each), both text guards silent. Whether the anchor's layout already
+overflowed by less is not verified — the pt3 capture's paper ends at the frame while today's ran past it,
+and the probe measures only the present; the record claims the measured cause and the measured fix.
+
+**The re-capture then showed a second member of the class on the same screen — R-K5's own residual, in
+the same commit.** The detail pane's status read "not enac|" at 1280 where the pt3 capture showed it whole.
+A second probe (never committed; `LAWSPROBE` lines, `shot_probe_detail1280_*.log`) read the pane's real
+rects at 1280×699: `contentWidth` 214.4 against a 225.4 px viewport (`detailPaneWidth` 241.4 less the 15 px
+scrollbar and its 1 px margin); the MAGNITUDE row 278.5 wide — its label sized to "MAGNITUDE: MODERATE",
+its steps fixed — and the un-widthed action button ("Enact Cash Bail Abolition Act") both past the content
+width, so the scroll view laid every row out at that wider width (the name/status row read 274.5 wide with
+its cells at 4–113 and 117–223), drew the horizontal scrollbar that is visible across the pane at 1280 and
+1600 in every capture back to Phase 2 (and by the arithmetic at pt3's width too), and the `FlexibleSpace`
+between the name ladder and the status cell pushed the cell to that wide right edge, past the viewport;
+once R-K5 sized the cell to its text instead of to "ENACTMENT PENDING", the tail was hidden. The probe also
+read IMGUI collapsing the two cells' adjacent margins to the larger of the two (the status at x=117 after a
+ladder ending at 113, not 121), so a row budgeted at `contentWidth` ran 1.6 px past the viewport by itself.
+The fix, in `a331e82`: the status sits directly after the name and the ladder gives up that one collapsed
+margin, so the row's extent is the description label's own; the MAGNITUDE label is capped at what the pane
+leaves beside the steps and wraps; the button takes the labels' extent in a wrapping copy of the neutral
+action style that follows its source through `RescaleStylesToScreen`. Two earlier attempts are recorded in
+the code: subtracting both styles' full margins (the wrong quantity, 16 px for a 4 px gap), and dropping
+the `FlexibleSpace` alone (right, and it did restore the status — an intermediate capture was misread as
+"still cut" and cost a re-capture — but the row still ran past the viewport and the two wide rows still set
+the content wider). Read by eye at 1280 and 1600 after the fix: no horizontal scrollbar, the status whole,
+the name at its ladder size, the button folded. The lesson is the thirteenth's and the fourteenth's again,
+one level further in: a scroll view's content is as wide as its widest child, so every child of a pane that
+clips must be given the pane's width — the un-widthed button was the kind of row the 2026-08-25 pass's own
+comment in `DrawLawDetailPane` warned about, three screens' worth of edits later.
+
+**Consumed:** the closing gate as Discipline v2 rule 1 defines it; the 1920×1080 argument (roadmap item
+4's last bullet).

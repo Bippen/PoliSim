@@ -60,7 +60,7 @@ rule existed to catch first-build defects).
 
 ---
 
-## Where things stand — re-derived 2026-08-27 (the third consolidation pass)
+## Where things stand — re-derived 2026-08-28 (the omnibus pass, HEAD `a331e82` + the records commit)
 
 **This document holds only live work.** Everything finished is in `COMPLETED.md`; everything waiting on a
 named party is in `MISSING_PREREQUISITES.md`; the split is the standing pattern at the bottom of this
@@ -71,175 +71,54 @@ built-but-uncalled are neither finished nor live — they wait on Elias's eyes a
 | Document | Holds |
 |---|---|
 | `COMPLETED.md` | Finished work and lasting decisions. This file shrinks into it, never grows |
-| `MISSING_PREREQUISITES.md` | Work waiting on a named party — Elias's send, decision, eyes or playtest; Design's delivery; item 10; a raster path |
+| `MISSING_PREREQUISITES.md` | Work waiting on a named party — Elias's send, decision, eyes or playtest; Design's delivery; item 10 |
 | `CLAUDE.md` | The detailed technical record for both. **Never superseded** |
 
-**The board, stated once (verified at HEAD `4e5adbf`, 2026-08-27 evening; re-derive it, do not edit it
+**The board, stated once (verified at HEAD `a331e82`, 2026-08-28, the records commit following; re-derive it, do not edit it
 forward):**
 
 - **DONE** — Master Sequence I (items 1–9) and Master Sequence II Steps 1, 2, 3 and 5; Round 4; the
   fiscal-engine arc; the law system at 100 of 100 in two categories; the ruled build order (five passes)
-  and the shelf's first item, tariff costs (pass 6). Records: `COMPLETED.md` §§27–31.
-- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the send package (the request SENT
-  2026-08-27, hash-verified, and ANSWERED the same day — the portraits delivered and imported, §D1
-  closed; boards 1k/1l are live items 8–9 below; the courtesy note alone waits on Elias's send); **§A**
-  the ruling queue Q6–Q10 (Elias, at named triggers); **§B** three seed quality debts (a database
-  session); **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including
-  election night (1h), Step 6, Riksbank-B, the stranded branch and the party marks; **§D1** the eight
-  outstanding cabinet portraits — ✅ delivered 2026-08-27, `PortraitCoverageCheck` 25/25 (the roster
-  look is §V's); **§E2/§E4** the mark accounting and the icon promotion (the raster diff, E3, is NOT
-  Design's — it is live item 7 below); **§F** the sourced figures for the seed spread (Elias — OECD PMR
-  and SOCX; the mechanism is built at `6df94de`, every slot a placeholder, the trajectories byte-identical);
-  **§V** the built-but-unconfirmed surfaces (Elias's eyes — playtest 3 of 2026-08-27 cleared ten of
-  seventeen and ruled the three findings the same evening; the portrait size and the cut are built and
-  captured at `4e5adbf`, the compass waits on §F); **§P** the three felt verdicts (a playtest).
-- **LIVE** — the list below, in order.
+  and the shelf's first item, tariff costs (pass 6); **the omnibus pass of 2026-08-28** — every live item
+  of the 2026-08-27 board: the causal graph on the Policy Web (item 1), the two remaining scenarios
+  measured and dropped (item 2, the §22 precedent), all four budget decompositions (item 3), the chrome
+  and UI residues (item 4), the delivered art placed or held knowingly (item 5), the rasterization diff
+  (item 7), boards 1k and 1l (items 8–9), the seed spread sourced (§F, provisional). Records:
+  `COMPLETED.md` §§27–31, 34, 36.
+- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the courtesy note alone waits on Elias's
+  send; **§A** the ruling queue Q6–Q10 plus the omnibus's `RULINGS NEEDED` (the ledger row type; the
+  raster budget; the anchored form's confirmation); **§B** three seed quality debts (a database session);
+  **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
+  Step 6, Riksbank-B, the stranded branch, the party marks, **and now the political-model fact Phase 3
+  measured (no expansionary bill passes on any drift path before the re-seeding)**; **§E** Design: the two
+  raster findings (the hatch tile's rotation, the slider track's strip) and §E2/§E4; **§F** the
+  session-sourced seed spread, waiting on Elias's CONFIRMATION (six caveats); **§V** the built-but-unseen
+  surfaces of this pass, each with its capture named; **§P** the three felt verdicts (a playtest).
+- **LIVE** — the list below.
 
 ---
 
 ## Live work — startable today
 
-### 1. Scheduled next: the causal-graph screen (trigger FIRED 2026-08-25 — over-fired)
+### 1. The label-clipping CLASS — a watch item, not a task (P4)
 
-The original trigger was *"the ledger carries a second stat's terms"*; the ledger now carries THREE
-(Approval, Consumer Confidence, Debt — Step 2 v1 and its third section, `COMPLETED.md` §30), and the
-term IDs ARE the derived stat → stat edge list. Queued per the fiscal-chain precedent: **derived, never
-authored** — which is also the structural fix for the Policy Web's declared edge list, whose signs
-drifted once already (the 2026-08-27 edge sweep, CLAUDE.md). Startable by Claude with no external
-input; the surface (a screen, a panel section, or the web itself reading the ledger) is the first ruling
-the pass takes under rule 4. **The Policy Web gaps below are sequenced behind it.**
+`PoliSimWidgets.MeasuredLabel` and the sweeps stand. The omnibus closing matrix at 1280×720, 1600×900,
+1920×1080 and 2560×1440 (`omni_final_*`, 2026-08-28) produced **instance #14** — the Laws panel's box
+widths taken one nesting level short, the panel 28 px past its frame at every size, caught by
+`ScreenEdgeCheck` at three of the four sizes (the fourth hid it under the margin column), measured by a
+width probe and fixed under the same gate (`COMPLETED.md` §36, `a331e82`) — together with the class's second
+member on that screen, the detail pane's scroll content wider than its viewport (a second probe; the
+MAGNITUDE row, the action button and the name/status row sized to the pane). After the fix: `ScreenEdgeCheck`
+clean at all four, the two text guards silent, the rule-15 diff against `pt3usa*` read by eye. The class stays open
+as a watch item under rule 3's discipline — this instance is the thirteenth's lesson again (a width
+budget computed against the wrong container) and the gate is what found it; nothing is startable until a
+capture shows another. Instance history: `COMPLETED.md` §§17/32/36.
 
-### 2. Content backlog — the two remaining scenarios (ruled 2026-08-26: keep, build when elected)
+### 2. Nothing else is startable today
 
-Specs migrated from the Step 3 package before its deletion (the format, the evaluator and the first two
-scenarios are shipped — `COMPLETED.md` §30; `ScenarioLibrary.cs` holds exactly two entries today):
-
-- **Poland convergence.** *Deltas:* the seeded 3.0%/turn potential, 59% debt. *Objectives:* sustained
-  real-wage growth with inflation in band N consecutive turns. *Fail:* inflation > 6% three turns
-  running. **Why hard:** growth is the easy half — the tightness → wage → (Q2) sentiment → consumption
-  loop plus the Phillips curve means a convergence boom overheats itself, and the Taylor rule answers
-  with rates. ⚠ Measure against `UnemploymentReversionSpeed` FIRST — it dropped two scenarios on one
-  root cause (`COMPLETED.md` §§22/30).
-- **The Unequal Recovery.** *Deltas:* elevated Gini, a hostile seat composition. *Objectives:* Gini back
-  to baseline without losing a confidence vote. *Fail:* approval < 30. **Why hard:** every lever that
-  closes the Gini gap (welfare, minimum wage, tax) runs through Parliament, and each failed bill charges
-  approval — while the Q1 Gini term is itself pushing approval down until it closes. This is the
-  scenario that proves Step 2's output is load-bearing.
-
-### 3. The four remaining budget decompositions — Germany, France, Italy, Poland
-
-Sweden's 24 sourced utgiftsområde lines shipped 2026-08-25 (ruled: decomposition now, Sweden first) and
-the recalibration (build-order item 1, `290d4ee`) means the other four now decompose CORRECT totals.
-Unscheduled, startable, one country per pass on Sweden's method (real budget documents, retrieval dates,
-all-discretionary and not-byte-identical deviations stated with measured reasons — CLAUDE.md "Item 4
-BUILT").
-
-### 4. Chrome and UI residues — small, no gate, one pass could take them all
-
-Each is a `POLISIM_V2_SCREEN_SPEC.md` clause the 2026-08-27 sweep found unbuilt or half-built, or a
-capture-width item; none needs Design, a ruling, or a playtest first.
-
-- **The status line's RUNNING state (§A.6, B8's second carrier):** only the HELD half is dressed
-  (`DrawHoldBannerLabel`); the running branch is a bare label — the `#EDE2CB` plate on `1px #C9BA9B`
-  with the `8px #3E8A5F` dot is unbuilt. The "Clock running" copy may be renamed in the same edit.
-- **The speed buttons' held-state face (B5):** `DrawSpeedButton` keys on `selected` only; the
-  disabled face (`#DDD2B8` / `1px #C9BA9B` / `#9A917D`, rendered never omitted) has no branch, and
-  `ui_btn_disabled` has no loader anywhere in `Assets/Scripts` (the `UiPalette.BuildButtonStyle` comment
-  that claimed one was corrected 2026-08-27). A third `ButtonKind` branch on one method.
-- **The right-aligned screen caption (§A.8):** `DOMESTIC BULLETIN — DESK READINGS, LIVE` — B6's
-  live/published carrier at screen level. Not built; nothing calls for it; §A.8a's "live desk reading"
-  state is defined as sitting under it.
-- **The inactive tab-swatch tints (§A.3, third column):** delivered as snapped values, never wired —
-  the tab swatch draws the area ink today.
-- **Three §A.2 ink tokens without a constant** (`ruleRow #D5C8AB` — the row-separator weight — among
-  them; the sweep found two more; re-derive the list against `PoliSimTheme.cs` before building).
-- **§A.11's urgency chip** (its `1.5px` border and `−2°` rotation — today a plain `DrawColoredLabel`)
-  and **the generic stamp treatment**; **§A.13's two envelope rows** with no implementation (re-derive
-  which two against `GameController`'s takeover seam before building).
-- **International's two and the Fed's concatenated labels** — the row family's last residues; the
-  Fed's count is stale since pass 4 rebuilt the central-bank tab (`513b348`) — re-measure, then fold
-  into whatever next touches those screens.
-- **The 2560×1440 Trade bill card wrap** (pass 6, Elias: cosmetic): the cost line wraps after the "+"
-  of "+$0/yr" — `UiFormat.MoneyDelta`'s sign glyph read as a break opportunity — while the other three
-  sizes wrap at spaces (`p6usa2560_06e_policylaws_trade` beside `p6usa1280_*`). Reorder the sentence
-  so the money delta does not sit at a wrap point, or give the label the explicit measured width the
-  free-aspect pass gave its siblings.
-- **1920×1080 — the one uncovered capture size**, the most common desktop resolution: a command-line
-  argument (`-shotwidth=1920 -shotheight=1080`), no code change.
-
-### 5. Delivered art with no call site — place it or hold it knowingly (`COMPLETED.md` §33)
-
-Re-derived 2026-08-27 from every sprite's call site; the counts are cached values with no expiry
-(rule 12) — re-run the trace before acting on them.
-
-- **25 of the 43 `Stats/` sprites** have no loader: 19 `icon_stat_*` for stats without a `StatNodeId`,
-  plus `icon_trend_up/down/flat`, `badge_preliminary/revised` and `icon_release_marker`
-  (`GraphRenderer` draws markers and `PublishedFigure` draws badges procedurally). Either widen the
-  display surface or record the 25 as held stock in `IconLibrary.cs`'s doc.
-- **8 of the 10 `icon_area_*` icons** are drawn and reachable but nothing asks for them (only fiscal and
-  political, on the tab bar). Candidates: the sub-tab rows, the Policy Web wedge heads.
-- **7 chrome names with no load call** — `ui_frame_double`, `ui_btn_disabled` (item 4), `ui_stamp_draft`,
-  `ui_portrait_frame_oval`, `ui_btn_paper_canvas` (+`_hover`, `_pressed`); the 2026-08-12 "revivable by
-  ruling" set plus the Canvas paper button the pilot never needed.
-- **One coverage check that does not exist:** `AreaIconCoverageCheck` — no check enumerates area
-  icons or emblems, so their coverage is asserted from the filesystem alone (rule 14).
-  (`PortraitCoverageCheck` was built 2026-08-27 with the Progress5 import and runs in the suite:
-  every `CandidatePool` minister, every Fed chair and the seeded sitting chair, through `IconLibrary`'s
-  own accessors.)
-- **The sitting turn-0 Fed chair** (Harriet Ellsworth, `WorldFactory.cs`, deliberately outside the
-  candidate pool) has no portrait and no call site asks for one: decide the sitting-chair row's
-  treatment. If it gains a portrait, that is one new asset and a fresh Design ask.
-
-*(Two items left this list on 2026-08-27 by Elias's ruling: the eleven superseded SVG sources are
-deleted, and the three dead widgets are deleted — `COMPLETED.md` §§29/33.)*
-
-### 6. The label-clipping CLASS — open as a watch item (P4)
-
-`PoliSimWidgets.MeasuredLabel` (measure in the rendering style, shrink never truncate) was implemented and
-the known sites swept; the class has kept producing instances on NEW AXES since — #12 the frame itself,
-#13 the ECB sub-tab through the COUNTRY axis, the 2026-08-26 width-less-label class (`CalcSize` ignores
-`wordWrap` without an explicit width — six instances, fixed under the minimum-window ruling), the 2560
-wrap above. The sibling survey (constant-sized chrome under wrappable labels) is named-not-fixed in
-CLAUDE.md. **The class closes only by a capture-matrix pass at all supported sizes showing no new
-instance**; rule 15's paired-detector correction is its standing discipline. Instance history:
-`COMPLETED.md` §§17/32.
-
-### 7. The rasterization diff — our half (moved here from the blocked register 2026-08-27, Elias's ruling)
-
-Design asked (2026-08-11) that their strip-cut PNGs be diffed against our own rasterization once before
-the pipeline is trusted; **Design's half closed 2026-08-17** (six per-state button PNGs re-rasterized
-fresh from SVG, pixel-diffed 6/6 identical). Ours is a tooling pass, not a wait: `StripCutDiffCheck`
-exists with the full tolerant-compare machinery, and a rasterizer exists on this machine (Unity's
-built-in vectorgraphics module tessellates every `Chrome/Source/` SVG at import) — but the module's
-`RenderSpriteToTexture2D` path yields a BLANK texture under the batch harness, probed and viewed rather
-than inferred (never attributable to an SVG `<pattern>` parse limit — `ui_slider_track`'s features are
-`linearGradient` + `currentColor`; corrected 2026-08-26). **Closes when either a render path in this
-repo produces comparable pixels or an external rasterizer is installed here.** It had sat under "Waiting
-on Claude Design" — a prerequisite attributed to the wrong supplier is one that lapses.
-
-### 8. Board 1k — the calendar panel as ONE almanac sheet (answered 2026-08-27; NOT STARTED — Elias's call)
-
-Design answered request §2 by drawing (`POLISIM_V2_SCREEN_SPEC.md` §A.16 carries the rulings): the
-" X" suffix retires for a single diagonal ink stroke through the numeral (1.5px at 1600 / 2px at
-2560, ink at 55%, ≈ −24°, inset 2px); the dots-vs-ledger split stands and the ledger row repeats the
-grid's own 5px dot; the month flip stays instant; a saturated day (the 4-dot cap) gains a 2px ink
-underline beneath the dot row; header, grid and ledger become one paper sheet separated by rules, one
-scroll. No sprite — `RoundedCard`/`Rule`/`Pill` draw everything; measurements stay measurements. A
-UI-only pass under rule 0's bar (compile + capture, the calendar panel at the four sizes, the
-`capfold_83a` density case re-captured).
-
-### 9. Board 1l — the graph-weight ruling R-G1…R-G5 (answered 2026-08-27; NOT STARTED — Elias's call)
-
-Design answered request §3 as pixel rules, no art (`POLISIM_V2_SCREEN_SPEC.md` §A.16): history 3
-buffer px (from 2), solid; projection stays 2 px, lighter, dash cadence re-cut to 3 on / 2 off;
-threshold stays 1 px amber — a 3 / 2 / 1 weight order; sparklines `max(2, round(rectHeight / 34))`
-device px; the 300×90 buffer may stand (if raised, restate the rule in device px); release-point
-markers scale to weight + 2 px; the green/red deltas, the PRELIMINARY badge and the 1px revision
-frame do NOT move. Lands as one constant and one cadence change in `BuildSparklinePixels` under the
-existing 336-combination regression set; the eye's check is four stacked graphs at 2560 where history
-plainly outranks the amber reference — the inverse of `couple2s2560_02a`.
-
----
+Every other line of the 2026-08-27 board shipped in the omnibus pass or moved to a named party's queue in
+`MISSING_PREREQUISITES.md`. The next live work is whatever Elias's rulings (§A), confirmation (§F), eyes
+(§V) or the 13 September gate (§D) release.
 
 ## Queued at named triggers — not startable, and no named party owes anything
 
@@ -279,18 +158,16 @@ capital stock), so if one ever ships, two fire together.
   rate anchor, recorded in code); retaliation against a base-dial hike (no excess to mirror — needs a
   seed-anchored base reference; the dial is voted; reach 0.49% of USA GDP); retaliation memory or lag (no
   diplomatic state exists); a trade axis for the vote (item 10's, where real parties land).
-- **Policy Web gaps the edge sweep named (2026-08-27; CLAUDE.md "The Policy Web edge sweep" is the
-  record of what it FIXED) — sequenced behind item 1 above.** Three real channels the web cannot yet draw
-  honestly: `InterestRateDecision → DebtToGdp` (a direct interest-cost channel for five countries, but
-  FALSE for the USA whose debt rate is anchored at `BaseDebtInterestRateOverride`; an edge is one truth
-  for all six, so it needs a per-country edge set or the widget noting the exception); the two
-  generic-line folds — `SpendingCategory.InfrastructureAndDevelopment` onto the Transportation node and
-  `HealthcareAndSocialCare` onto HHSDiscretionary — so the five non-USA portfolios' lines draw the growth
-  and confidence edges their USA twins draw. Indirect effects (the incarceration cost reaching debt
-  through PrisonPopulation, MinimumWage → Approval through Gini, FamilyPolicy → DependencyRatio through
-  BirthRate, TariffPolicy → Gdp through TradeBalance) stay undrawn by the web's own convention. The
-  causal-graph screen derives edges from the ledger's term IDs rather than authoring them — the honest
-  fix for a declared list that drifts.
+- ~~**Policy Web gaps the edge sweep named (2026-08-27)**~~ — ✅ **CONSUMED 2026-08-28 by the omnibus's
+  Phase 2 (`a267fd6`, R-K1):** the per-country edge set (`IsLiveFor` — the policy rate's issuance edge
+  draws for the five, not the USA), the two generic-line folds, and the derived-from-ledger-terms edge
+  list with the declared idiom for the rest. Indirect effects stay undrawn by the web's own convention;
+  `GiniEffect` and the wage-sentiment factor have no node and are said so on the stat panel. Record:
+  `COMPLETED.md` §36.
+- **The Compass Y formula's implemented-average** (flagged by §F, 2026-08-27; live with real seeds since
+  `915c800`): Y averages generosity over IMPLEMENTED programs, so a country with one generous program
+  outranks a broad welfare state. Trigger: Elias's §F confirmation, or the first play that reads the
+  compass against the six seeded portfolios.
 - **Riksbank-B** is NOT on this shelf: it waits on item 10's appointment machinery, a named task —
   `MISSING_PREREQUISITES.md` §D.
 
@@ -346,10 +223,12 @@ capital stock), so if one ever ships, two fire together.
 
 ## Open Questions — a record of decisions, not a queue (rule 4)
 
-**No open question at HEAD (2026-08-27).** Every entry this section held was ruled, closed or migrated:
-decisions live in `COMPLETED.md` §§11/23/32; questions waiting on a named party live in
-`MISSING_PREREQUISITES.md` §A. A new question is written here only until it is ruled, and a ruling given
-in chat and not recorded did not happen.
+**No open question at HEAD (2026-08-28).** Every entry this section held was ruled, closed or migrated:
+decisions live in `COMPLETED.md` §§11/23/32/36; questions waiting on a named party live in
+`MISSING_PREREQUISITES.md` §A — the omnibus pass's three `RULINGS NEEDED` (A4 the ledger row's one-line
+type, A5 the raster check's budget, A6 the anchored form with real seeds in) are there, not here. A new
+question is written here only until it is ruled, and a ruling given in chat and not recorded did not
+happen.
 
 ---
 
@@ -357,8 +236,9 @@ in chat and not recorded did not happen.
 
 - Read **The board** above, then the live list — both re-derived, never edited forward. If the board
   disagrees with `git log`, the log is right and the board is stale.
-- `MISSING_PREREQUISITES.md` **§V and §P** hold what needs your eyes and your play; **§S** holds the
-  send package.
+- `MISSING_PREREQUISITES.md` **§V and §P** hold what needs your eyes and your play; **§A** the three
+  rulings the omnibus report asks for; **§F** the session-sourced seed spread waiting on your
+  confirmation; **§E5** the two strip-cut findings for Design; **§S** the send package.
 - Review the commit log — each unit of work is its own commit, validation results in the message or
   CLAUDE.md.
 
