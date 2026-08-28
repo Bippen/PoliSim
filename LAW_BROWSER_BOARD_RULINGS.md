@@ -106,7 +106,9 @@ cell's min-content and the ledger overflows horizontally. The scroller carries
 **2026-08-28 —** the `board1jc*` sets are two generations superseded (`pt3usa*` after the
 playtest-3 cut, then `omni_final_*` after the omnibus pitch and containment fixes); the open eye
 review is `MISSING_PREREQUISITES.md` §V's current law-browser row, not these sets. The built
-AVAILABLE row is two-line at 66 px against this board's one-line ~27 px — convergence is an open
+AVAILABLE row is two-line at 66 px against this board's 32 px one-line pitch (~27 rows per screen; the
+figure per `a7d877d`'s derivation — the ~27 px that stood here was the omnibus report's misreading,
+corrected 2026-08-28) — convergence is an open
 internal call (A4); if ruled, the one-line type builds to the grid pinned above. *(✅ Ruled and built
 2026-08-28 — R-C1 of the continuation kickoff: one-line rows at the board's proportion, density on
 film 5 → 8 laws per viewport at 1600×900, 3 → 5 at 1280, 7 → 11 at 2560; the current sets are

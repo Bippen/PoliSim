@@ -75,6 +75,17 @@ namespace PoliSim.EditorTools
     /// A file passes only when BOTH hold. The original flat 2% of the canvas is gone: it measured
     /// perimeter and damage with one number, and raising it to clear the nine would have been the
     /// rule-14 shape (a blind bar moved to fit observed failures).
+    ///
+    /// THE DEFERRAL (R-D3, the clear-out kickoff of 2026-08-28). One pair is a KNOWN Design-side
+    /// defect filed as an ask — `ui_hatch_draft` (the source rotates the stripes, the shipped PNG
+    /// rotates the tiling; 48.5% structure) — and it is listed in `DeferredPairs` by name with a
+    /// dated pointer to the ask (CLAUDE_DESIGN_ASSET_REQUEST.md §E5). A deferred pair is still
+    /// measured and still printed with its figures, marked DEFERRED rather than FAIL, and does NOT
+    /// fail the run; any OTHER pair over budget still does — the deferral is by name, never by
+    /// class, so a new defect anywhere reads FAIL. **The deferral dies the day Design's §E5 answer
+    /// lands**: whichever way it lands (the SVG re-exported to match the PNG, or the PNG re-cut from
+    /// the SVG), the entry comes out of `DeferredPairs` in the same commit that imports the answer,
+    /// and the pair must then pass on its own. A deferral without an ask on file is not allowed here.
     /// </summary>
     public static class StripCutDiffCheck
     {
@@ -92,6 +103,12 @@ namespace PoliSim.EditorTools
 
         /// <summary>An external rasterizer that has not returned in this long is killed and the file reported as a named limit.</summary>
         private const int ExternalRasterizerTimeoutMs = 30000;
+
+        /// <summary>R-D3: pairs whose failure is a KNOWN defect with an ask on file - measured and printed, never counted as FAIL, each with its dated pointer. Remove an entry the day its answer lands (class doc).</summary>
+        private static readonly Dictionary<string, string> DeferredPairs = new Dictionary<string, string>
+        {
+            { "ui_hatch_draft", "deferred 2026-08-28 (R-D3) - a Design-side defect on file as CLAUDE_DESIGN_ASSET_REQUEST.md §E5 (the tiling rotation; the shipped PNG presumed canonical, the SVG source to be re-exported); the deferral ends with Design's §E5 answer" }
+        };
 
         public static void Run()
         {
@@ -114,7 +131,7 @@ namespace PoliSim.EditorTools
             string rasterizerName = useExternal ? $"external {Path.GetFileName(external)}" : "Unity vectorgraphics";
             Debug.Log($"StripCutDiff: rasterizer = {rasterizerName}{(useExternal ? " (" + external + ")" : " (RenderSpriteToTexture2D)")}");
 
-            int compared = 0, passed = 0, unrasterizable = 0, failed = 0, textBearing = 0, currentColorResolved = 0;
+            int compared = 0, passed = 0, unrasterizable = 0, failed = 0, textBearing = 0, currentColorResolved = 0, deferred = 0;
 
             foreach (string svgPath in Directory.GetFiles("Assets/Resources/Art/UI", "*.svg", SearchOption.AllDirectories))
             {
@@ -198,19 +215,23 @@ namespace PoliSim.EditorTools
                 // figure and its rendering written out for the eye, never counted as a FAIL and never
                 // counted as a pass either.
                 bool textBearingMiss = !ok && svgText.Contains("<text");
+                // R-D3: a named, dated deferral - measured, printed, never a FAIL; see the class doc.
+                string deferralNote = null;
+                bool deferredMiss = !ok && !textBearingMiss && DeferredPairs.TryGetValue(baseName, out deferralNote);
                 passed += ok ? 1 : 0;
                 textBearing += textBearingMiss ? 1 : 0;
-                failed += ok || textBearingMiss ? 0 : 1;
+                deferred += deferredMiss ? 1 : 0;
+                failed += ok || textBearingMiss || deferredMiss ? 0 : 1;
                 if (!ok)
                 {
                     File.WriteAllBytes(Path.Combine(probeDir, $"stripcut_fail_{baseName}.png"), ours.EncodeToPNG());
                 }
 
-                string verdict = ok ? "ok  " : textBearingMiss ? "TEXT" : "FAIL";
-                Debug.Log($"  {verdict} {Path.GetFileName(svgPath),-52} {png.width}x{png.height}  mismatch={share:P2}  structure={structureShare:P2} (budget {StructureBudget:P2})  edge/boundary={edgePerBoundary:F2} (budget {EdgeBudgetPerBoundaryPixel:F1}; boundary {boundary}px)  worstΔ={worst}{(resolvedColor ? "  (currentColor -> #ffffff)" : "")}{(textBearingMiss ? "  text-bearing: renderer font difference, viewed not counted" : "")}");
+                string verdict = ok ? "ok  " : textBearingMiss ? "TEXT" : deferredMiss ? "DEFERRED" : "FAIL";
+                Debug.Log($"  {verdict} {Path.GetFileName(svgPath),-52} {png.width}x{png.height}  mismatch={share:P2}  structure={structureShare:P2} (budget {StructureBudget:P2})  edge/boundary={edgePerBoundary:F2} (budget {EdgeBudgetPerBoundaryPixel:F1}; boundary {boundary}px)  worstΔ={worst}{(resolvedColor ? "  (currentColor -> #ffffff)" : "")}{(textBearingMiss ? "  text-bearing: renderer font difference, viewed not counted" : "")}{(deferredMiss ? "  " + deferralNote : "")}");
             }
 
-            Debug.Log($"=== StripCutDiff ({rasterizerName}): {passed} of {compared} comparable pairs within budget (structure <= {StructureBudget:P2} of the canvas AND edge <= {EdgeBudgetPerBoundaryPixel:F1} per boundary pixel - R-C2); {textBearing} text-bearing above budget (named, fonts); {unrasterizable} unrasterizable-here (named); {currentColorResolved} rendered with currentColor resolved to #ffffff (the root carried no color attribute; Design's pipeline convention); {failed} FAILED ===");
+            Debug.Log($"=== StripCutDiff ({rasterizerName}): {passed} of {compared} comparable pairs within budget (structure <= {StructureBudget:P2} of the canvas AND edge <= {EdgeBudgetPerBoundaryPixel:F1} per boundary pixel - R-C2); {textBearing} text-bearing above budget (named, fonts); {deferred} deferred by name with an ask on file (R-D3, dated in the line); {unrasterizable} unrasterizable-here (named); {currentColorResolved} rendered with currentColor resolved to #ffffff (the root carried no color attribute; Design's pipeline convention); {failed} FAILED ===");
             CheckExit.Finish(failed == 0 ? 0 : 1);
         }
 
