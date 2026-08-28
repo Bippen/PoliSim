@@ -108,7 +108,10 @@ namespace PoliSim.UI
         /// <see cref="MinStatValueFontSize"/>: a supporting label may shrink further than a headline
         /// figure before it stops being worth drawing, and a shared floor would either clip labels or
         /// hold headline values larger than their tile.</summary>
-        private const int MinMeasuredLabelFontSize = 8;
+        /// <summary>The shrink floor MeasuredLabel stops at (the guard fires below it). Public since R-C1
+        /// (2026-08-28): the law browser's column grid reads it to know when a one-line name cell can no
+        /// longer be carried at all and the category token must step out (GameController.LawRowColumns).</summary>
+        public const int MinMeasuredLabelFontSize = 8;
 
         /// <summary>
         /// Draws text guaranteed to fit its rect, by measuring it in THE STYLE IT WILL ACTUALLY RENDER IN

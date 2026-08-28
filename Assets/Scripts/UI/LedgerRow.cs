@@ -52,6 +52,26 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// The ONE-LINE row's height (R-C1, the continuation kickoff of 2026-08-28): the name's line plus
+        /// the same vertical padding <see cref="Height"/> wraps its two lines in (6 px at the 13 px
+        /// reference, scaled) - the ledger convention with the second line taken out.
+        ///
+        /// Derived, not picked. Board 1i (`board_1i_law_browser.png`, 1920x1080) draws its statute rows
+        /// on a 32 px pitch with a 14 px bold name - 2.29 name-fonts per row, ~26 rows in its 835 px
+        /// scroller (the rulings doc's "~27 rows per screen"). On this UI's px basis - the name at the
+        /// live font size, the Budget rows' flat 10 px gap after each row - the pitch this gives is
+        /// line + 6·scale + 10: ~37 px at a 16 px font (1280x720), ~43 at 20 (1600x900), ~55 at 28
+        /// (2560x1440), 2.0 to 2.3 name-fonts per row - the board's class, measured on film in the
+        /// continuation's Phase 1 record. A caller stacking one-line rows must give the name cell the
+        /// shrink path (<see cref="Cell"/>), never the wrap-first ladder: there is no second line.
+        /// </summary>
+        public static float OneLineHeight(GUIStyle nameStyle)
+        {
+            float line = Mathf.Max(nameStyle.lineHeight, nameStyle.fontSize + 4f);
+            return line + 6f * Scale(nameStyle);
+        }
+
+        /// <summary>
         /// Draws one ledger row and returns the (possibly dragged) draft value.
         ///
         /// <para><b>Control-ID stability.</b> This emits EXACTLY ONE control - the slider - on every

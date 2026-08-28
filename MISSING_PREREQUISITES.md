@@ -317,7 +317,7 @@ rulings; their surfaces are re-listed here as built.
 | **Board 1k — the calendar as one almanac sheet** | `3fa3eb2` | `omni_final_*_0[2-7]` (the left panel) | the diagonal strike, the ledger dot, the 4-dot underline, one sheet |
 | **Board 1l — the graph weights** | `2b698b0` | `omni_final_*_02a_statistics_domestic_deep` | history 3px over the projection's 2px dashes |
 | **§A.13's two envelope rows** (the Signing screen's document entrance and the button fade) | `14740e2` | ⚠ no capture state opens the ceremony — verified by compile and the seam's flag | the 260ms rise, the 460ms button delay |
-| **The law browser at fifty** (the ledger pitch, the name ladder) | `476c66c` | `omni_final_*_06f_policylaws_laws*` | pitch 66px / 5.3 laws per viewport at 1600 (RULINGS NEEDED on the one-line row type); the detail pane's content sized to its viewport in `a331e82` (no horizontal scrollbar, the status whole at 1280) |
+| **The law browser at fifty — the one-line row** (R-C1) | `476c66c` → the continuation's Phase 1 | `cont_p1b_*_06f_policylaws_laws*` (+`_rows`, `_deep`) | one-line rows at board 1i's proportion (37 / 43 / 55 px pitch at 1280 / 1600 / 2560): 3 → 5, 5 → 8, 7 → 11 laws per viewport against the two-line row; the longest statute names shrink, never truncate; the detail pane's content sized to its viewport (`a331e82`) |
 | **The eight new cabinet portraits at 5.5×** (the roster beside the sixteen squares) | `4e5adbf` | `omni_final_*_07c_politics_cabinet*` | still Elias's eyes (carried from playtest 3) |
 
 **Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's

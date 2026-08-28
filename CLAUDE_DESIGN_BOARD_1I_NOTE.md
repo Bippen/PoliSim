@@ -37,11 +37,13 @@ a number dressed as researched; the countdowns are the real datum in that slot).
 band headers became plain caption rows — IMGUI has no sticky inside a scroller, the same stated
 adaptation 1i's column header took.
 
-**Since then, on our side only:** the rows took the Budget ledger's pitch (a two-line row, 66 px
-per law at 1600 — 5.3 laws per viewport), the selected law's name wraps at word boundaries before
-it shrinks, and the detail pane's content is sized to its own viewport. None of it touches your
-three rulings. Whether a one-line row type should converge on your ~27 px grid is an open call
-here (our A4), not an ask.
+**Since then, on our side only — and now converged on your grid (2026-08-28):** the rows are one-line,
+built to board 1i's proportion (your 32 px pitch on a 14 px bold name, 2.29 name-fonts per row; ours
+2.0–2.3 at each window size on our px basis), and the density was measured on film against the
+two-line row we had: 3 → 5 laws in the viewport at 1280×720, 5 → 8 at 1600×900, 7 → 11 at 2560×1440.
+The name keeps full weight and shrinks rather than truncates where our narrower list cannot hold a
+long statute name at full size; the selected law's name in the detail pane wraps at word boundaries;
+the pane's content is sized to its own viewport. None of it touches your three rulings.
 
 ## Screens 1k and 1l — your §2 and §3 answers, built as drawn (2026-08-28)
 

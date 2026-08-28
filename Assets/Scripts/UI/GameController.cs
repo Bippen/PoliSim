@@ -579,6 +579,17 @@ namespace PoliSim.UI
         private readonly List<LawRowEntry> _lawPendingRows = new List<LawRowEntry>();
         private readonly List<LawRowEntry> _lawAvailableRows = new List<LawRowEntry>();
         private readonly List<LawRowEntry> _lawVisibleRows = new List<LawRowEntry>();
+
+        /// <summary>R-C1 (2026-08-28): the widest name the visible law rows will print this frame, at the
+        /// live font, VOTE-IN suffix included - measured once per frame in DrawLawsTab and read by the
+        /// column header and every row through LawRowColumns, so the one-line row's name cell can claim
+        /// width from the fixed cells before MeasuredLabel has to shrink it (see LawRowColumns). Two
+        /// figures because the two row families print the name in different fields: a full row (IN
+        /// FORCE, BEFORE THE HOUSE) in the name cell alone, a compact AVAILABLE row in name + magnitude -
+        /// the first capture measured one need over both and dropped the category token for a row family
+        /// that was not on screen.</summary>
+        private float _lawNameNeedFull;
+        private float _lawNameNeedCompact;
         private Vector2 _politicsContentScrollPosition;
         private Vector2 _worldMapScrollPosition;
         private Vector2 _policyWebScrollPosition;
@@ -6509,8 +6520,26 @@ namespace PoliSim.UI
             // on EVERY frame rather than only when the list happens to be long enough to need a
             // scrollbar - previously a short filtered list (e.g. 1-2 "Pending" rows) rendered full-
             // width rows under a narrower header.
+            // R-C1: the widest name the visible rows will print, measured once per frame at the live font
+            // (CalcSize reports the natural single-line width whatever wordWrap says), plus the cell's own
+            // 4px inset - read by the header and every row through LawRowColumns.
+            _lawNameNeedFull = 0f;
+            _lawNameNeedCompact = 0f;
+            foreach (LawRowEntry entry in _lawEnactedRows)
+            {
+                _lawNameNeedFull = Mathf.Max(_lawNameNeedFull, PoliSimWidgets.MeasuredWidth(LawRowName(entry), _labelStyle, 4f));
+            }
+            foreach (LawRowEntry entry in _lawPendingRows)
+            {
+                _lawNameNeedFull = Mathf.Max(_lawNameNeedFull, PoliSimWidgets.MeasuredWidth(LawRowName(entry), _labelStyle, 4f));
+            }
+            foreach (LawRowEntry entry in _lawAvailableRows)
+            {
+                _lawNameNeedCompact = Mathf.Max(_lawNameNeedCompact, PoliSimWidgets.MeasuredWidth(LawRowName(entry), _labelStyle, 4f));
+            }
+
             float headerRowWidth = Mathf.Max(0f, listWidth - GUI.skin.verticalScrollbar.fixedWidth - 12f);
-            Rect headerRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            Rect headerRect = GUILayoutUtility.GetRect(10f, LedgerRow.OneLineHeight(_labelStyle), GUILayout.ExpandWidth(true));
             DrawLawRowHeader(new Rect(headerRect.x, headerRect.y, headerRowWidth, headerRect.height));
             GUILayout.Space(2f);
 
@@ -6529,7 +6558,7 @@ namespace PoliSim.UI
                 ? 0f
                 : Mathf.Max(LedgerRow.Height(_labelStyle), UiPalette.BuildTextFieldStyle(_labelStyle.fontSize).CalcHeight(new GUIContent("W"), searchFieldWidth));
             float lawsChromeHeight = categoryRowHeight + searchRowHeight + orderRowHeight + statusRowHeight
-                + LedgerRow.Height(_labelStyle) + 6f + 2f + 6f   // the column header, the Space(6f)/Space(2f) around it and the Space(6f) under the chips
+                + LedgerRow.OneLineHeight(_labelStyle) + 6f + 2f + 6f   // the column header (one-line since R-C1), the Space(6f)/Space(2f) around it and the Space(6f) under the chips
                 + 6f + LedgerRow.Height(_labelStyle)            // DrawLawBottomBar: Space(6f) + its one line
                 + _boxStyle.padding.vertical + _labelStyle.fontSize * 0.5f;
             float scrollHeight = Mathf.Max(0f, availableHeight - lawsChromeHeight);
@@ -6606,7 +6635,7 @@ namespace PoliSim.UI
         /// a much narrower window, just not one that binds at the one width this codebase has
         /// actually measured. A narrower-window capture is still open, same as board 1i's own five
         /// unpopulated categories.</summary>
-        private static void LawRowColumns(float rowWidth, GUIStyle style, bool showCategory, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth)
+        private static void LawRowColumns(float rowWidth, GUIStyle style, bool showCategory, float nameNeedFull, float nameNeedCompact, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth)
         {
             // Board 1j (2026-08-26) retired THE CATEGORY CELL while one category held everything,
             // and recorded: "It returns as a cell the day a second LawCategory ships, which is
@@ -6638,6 +6667,45 @@ namespace PoliSim.UI
                 costWidth *= squeeze;
             }
 
+            // R-C1 (the continuation, 2026-08-28): the ONE-LINE row's name has priority on width. Board 1i
+            // gives its name column everything the three fixed cells leave (26px minmax(0,1fr) 128 132 74
+            // on a ~1140px list, ~64% of the row); this list is a third of that width, so the proportions
+            // above leave a long statute name ~140px at the 1280 floor, where the two-line ladder used to
+            // wrap it and a one-line MeasuredLabel would shrink "Restorative Justice & Victim-Offender
+            // Mediation" below its 8px guard floor. So the caller measures the widest visible name once
+            // per frame (nameNeed) and, when the name cell falls short, the fixed cells give ground
+            // together toward their font floors - never below them, and only as far as the name needs.
+            // If the floors still cannot hold the widest name at the guard floor, the category token
+            // steps out for the frame (the R-K6 shape: a cell that cannot be carried is dropped by width,
+            // stated; the chip row still names the categories and the glyph bar keeps the colour). The
+            // header and every row read the same nameNeed, so the grid stays one grid within a frame.
+            // The compact row prints its name across the magnitude cell too, so its need is measured
+            // against name + magnitude at the proportional widths; the grid then answers the larger of
+            // the two families' shortfalls.
+            float nameNeed = Mathf.Max(nameNeedFull, nameNeedCompact - magnitudeWidth);
+            float currentName = Mathf.Max(0f, rowWidth - glyphWidth - categoryWidth - magnitudeWidth - costWidth);
+            if (nameNeed > currentName)
+            {
+                float categoryFloor = showCategory ? fontFloor * 2.5f : 0f;
+                float magnitudeFloor = fontFloor * 3f;
+                float costFloor = fontFloor * 2f;
+                float releasable = Mathf.Max(0f, categoryWidth - categoryFloor) + Mathf.Max(0f, magnitudeWidth - magnitudeFloor) + Mathf.Max(0f, costWidth - costFloor);
+                if (releasable > 0f)
+                {
+                    float share = Mathf.Clamp01((nameNeed - currentName) / releasable);
+                    categoryWidth -= Mathf.Max(0f, categoryWidth - categoryFloor) * share;
+                    magnitudeWidth -= Mathf.Max(0f, magnitudeWidth - magnitudeFloor) * share;
+                    costWidth -= Mathf.Max(0f, costWidth - costFloor) * share;
+                    currentName = Mathf.Max(0f, rowWidth - glyphWidth - categoryWidth - magnitudeWidth - costWidth);
+                }
+
+                float needAtGuardFloor = nameNeed * (PoliSimWidgets.MinMeasuredLabelFontSize / fontFloor);
+                if (showCategory && currentName < needAtGuardFloor)
+                {
+                    categoryWidth = 0f;
+                }
+            }
+
             nameWidth = Mathf.Max(0f, rowWidth - glyphWidth - categoryWidth - magnitudeWidth - costWidth);
         }
 
@@ -6656,7 +6724,7 @@ namespace PoliSim.UI
         /// place).</summary>
         private void DrawLawRowHeader(Rect rect)
         {
-            LawRowColumns(rect.width, _labelStyle, LawCategoryColumnShown, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
+            LawRowColumns(rect.width, _labelStyle, LawCategoryColumnShown, _lawNameNeedFull, _lawNameNeedCompact, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
             float x = rect.x + glyphWidth + nameWidth + categoryWidth + magnitudeWidth;
             // Code-review pass (2026-08-25): -4f to match the row's own cost cell exactly (both
             // right-anchored). Free-aspect pass (2026-08-26): "APPROVAL" gets a curated abbreviation
@@ -6749,7 +6817,10 @@ namespace PoliSim.UI
         /// the playtest-3 pass (2026-08-27).</summary>
         private void DrawLawMagnitudeBandCaption(int tier, int count)
         {
-            Rect rect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle) * 1.2f, GUILayout.ExpandWidth(true));
+            // R-C1 fold-in (2026-08-28): the caption is 1.2x the row it captions - the one-line row now,
+            // as the two-line row before; four captions at the two-line height would have spent a third
+            // of the viewport the one-line row just won back.
+            Rect rect = GUILayoutUtility.GetRect(10f, LedgerRow.OneLineHeight(_labelStyle) * 1.2f, GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint)
             {
                 Color previous = GUI.color;
@@ -6786,12 +6857,13 @@ namespace PoliSim.UI
             LawDefinition law = row.Law;
             bool selected = _selectedLawId == law.Id;
 
-            // R-K4 (omnibus 2026-08-28): the standard ledger pitch the Budget screen uses - LedgerRow's
-            // own height (which already reserves two lines for a wrapped name) plus the Budget rows'
-            // 10px gap - in place of the 1.4x reservation that gave 2.5 / 4.5 / 5.5 laws per viewport at
-            // 1280 / 1600 / 2560 (playtest 3's residual on film). Measured after the change in the
-            // omni_h captures; see CLAUDE.md "Phase 1".
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            // R-C1 (the continuation, 2026-08-28): the ONE-LINE row - LedgerRow.OneLineHeight (the ledger
+            // convention's padding around one line of the name) plus the Budget rows' 10px gap. R-K4 had
+            // set the two-line ledger pitch (66px / 5.3 laws per viewport at 1600); the two-line row was a
+            // construction artifact of the wrap-first name ladder, and the boards drew one-line rows -
+            // density was the original finding (A4 -> R-C1). Measured after the change on film; see
+            // CLAUDE.md "The continuation kickoff (2026-08-28)", Phase 1.
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.OneLineHeight(_labelStyle), GUILayout.ExpandWidth(true));
 
             // Code-review pass (2026-08-25): stages the click into _pendingSelectedLawId instead of
             // writing _selectedLawId directly - see that field's own doc comment for why (the
@@ -6822,16 +6894,10 @@ namespace PoliSim.UI
                 GUI.color = previousGlyph;
             }
 
-            LawRowColumns(rowRect.width, _labelStyle, LawCategoryColumnShown, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
+            LawRowColumns(rowRect.width, _labelStyle, LawCategoryColumnShown, _lawNameNeedFull, _lawNameNeedCompact, out float glyphWidth, out float nameWidth, out float categoryWidth, out float magnitudeWidth, out float costWidth);
             float x = rowRect.x + glyphWidth;
 
-            // Board 1j: BEFORE THE HOUSE rows name their real countdown in the row itself - the
-            // board's VOTE IN chip, carried as a suffix in the name cell (an IMGUI adaptation of
-            // the drawn bordered tag; the datum - LawBill.DaysRemaining - is the real countdown,
-            // not the board's "next sitting," which stays unbuilt for the recorded reason).
-            string rowName = row.PendingBill != null
-                ? $"{law.Name} - VOTE IN {row.PendingBill.DaysRemaining}d"
-                : law.Name;
+            string rowName = LawRowName(row);
 
             if (compact)
             {
@@ -6843,10 +6909,11 @@ namespace PoliSim.UI
                 // (compact and full rows place the token at different x), acceptable because the
                 // two variants never interleave inside one status group and the bands re-anchor
                 // the eye between groups.
-                // Pass 3 floor fix: the wrap-first NAME ladder, not the shrink-only cell - long
-                // statute names wrap to a second line at the 1280 floor instead of shrinking
-                // past the 8px guard floor (the row's 1.4x height already holds two lines).
-                LedgerRow.NameCell(new Rect(x, rowRect.y, nameWidth + magnitudeWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary);
+                // R-C1: the one-line row has no second line to wrap into, so the name takes the shrink
+                // path (MeasuredLabel, shrink-never-truncate) at full weight; the width it needs comes
+                // from LawRowColumns' name-priority release, not from a wrap (pass 3's wrap-first ladder
+                // was the two-line row's answer at the 1280 floor).
+                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth + magnitudeWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
                 x += nameWidth + magnitudeWidth;
                 if (categoryWidth > 0f)
                 {
@@ -6856,8 +6923,8 @@ namespace PoliSim.UI
             }
             else
             {
-                // Pass 3 floor fix: wrap-first name ladder - see the compact branch's comment.
-                LedgerRow.NameCell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary);
+                // R-C1: the shrink path, full weight - see the compact branch's comment.
+                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
                 x += nameWidth;
 
                 // Pass 3: the returned category cell - 1i's "dimmed token" ink (TextMuted), never
@@ -6885,8 +6952,22 @@ namespace PoliSim.UI
         }
 
         /// <summary>R-K4: the Budget screen's own gap between ledger rows (DrawTaxPolicyContent /
-        /// DrawSpendingPolicyContent draw `GUILayout.Space(10f)` after each instrument).</summary>
+        /// DrawSpendingPolicyContent draw `GUILayout.Space(10f)` after each instrument). Kept under
+        /// R-C1's one-line row: the pitch is OneLineHeight + this.</summary>
         private const float LawRowGap = 10f;
+
+        /// <summary>The text a law row prints in its name cell. Board 1j: BEFORE THE HOUSE rows name
+        /// their real countdown in the row itself - the board's VOTE IN chip, carried as a suffix (an
+        /// IMGUI adaptation of the drawn bordered tag; the datum - LawBill.DaysRemaining - is the real
+        /// countdown, not the board's "next sitting," which stays unbuilt for the recorded reason). One
+        /// place, because the per-frame name measurement (_lawNameNeedFull / _lawNameNeedCompact) and
+        /// the row must agree on it.</summary>
+        private static string LawRowName(LawRowEntry row)
+        {
+            return row.PendingBill != null
+                ? $"{row.Law.Name} - VOTE IN {row.PendingBill.DaysRemaining}d"
+                : row.Law.Name;
+        }
 
         private GUIStyle _lawNameStyle;
 
