@@ -4788,10 +4788,13 @@ namespace PoliSim.UI
                 case "compass":
                     foreach (float w in new[] { 480f, 360f, 240f, 180f, 120f, 90f, 64f })
                     {
-                        Rect r = cursor.Place(w, w, captionHeight);
                         GUIStyle style = LadderStyle(w, 480f);
+                        // R-SP4: the rung is the renderer's honest footprint at this width - the plot
+                        // square plus its caption band - not a bare square with captions loose.
+                        Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, w, w, style);
+                        Rect r = cursor.Place(footprint.x, footprint.y, captionHeight);
                         _politicalCompassRenderer.Draw(r, _world.Countries, PlayerCountryId, style);
-                        LadderCaption(r, $"{w}x{w} type {style.fontSize}", captionHeight);
+                        LadderCaption(r, $"{w} plot, {Mathf.Round(footprint.x)}x{Mathf.Round(footprint.y)} footprint, type {style.fontSize}", captionHeight);
                     }
                     break;
                 case "web":
@@ -8352,7 +8355,7 @@ namespace PoliSim.UI
                 case PoliticsCategory.Compass:
                     float compassScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
                     _politicsContentScrollPosition = GUILayout.BeginScrollView(_politicsContentScrollPosition, GUILayout.Height(compassScrollHeight));
-                    DrawPoliticalCompassContent();
+                    DrawPoliticalCompassContent(availableWidth);
                     GUILayout.EndScrollView();
                     break;
                 case PoliticsCategory.Cabinet:
@@ -9250,14 +9253,23 @@ namespace PoliSim.UI
         /// See DrawDemographicsContent for the Demographics half (all five pie charts). No outer box/
         /// scrollview here, matching this codebase's own established "*Content" convention.
         /// </summary>
-        private void DrawPoliticalCompassContent()
+        private void DrawPoliticalCompassContent(float availableWidth)
         {
             DrawColoredLabel("Political Compass", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.Label("Grounded entirely in this game's own tracked policy data - no invented ideology labels. X: average implemented tax rate blended with total government spending (% of GDP) - further right means a bigger fiscal footprint. Y: average sector regulation blended with average implemented welfare generosity - higher means more market regulation and a more generous welfare state. Your own country is ringed in ink.", _labelStyle);
             float compassSize = Mathf.Clamp(Screen.height * 0.4f, 260f, 520f);
-            Rect compassRect = GUILayoutUtility.GetRect(compassSize, compassSize, GUILayout.ExpandWidth(false));
+            // R-SP4 (2026-08-28): reserve the compass's HONEST footprint - the plot square plus its
+            // caption band at the width the captions need, capped at the sheet's own inner width less
+            // the scroll view's gutter - so the renderer's declared rect contains everything it draws
+            // and the layout reflows around the real size rather than a bare square.
+            float footprintWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - CompassScrollGutter;
+            Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, compassSize, footprintWidth, _labelStyle);
+            Rect compassRect = GUILayoutUtility.GetRect(footprint.x, footprint.y, GUILayout.Width(footprint.x), GUILayout.Height(footprint.y));
             _politicalCompassRenderer.Draw(compassRect, _world.Countries, PlayerCountryId, _labelStyle);
         }
+
+        /// <summary>The Compass tab's scroll view takes its vertical scrollbar out of the content's width - the Budget ledger's own 18 px allowance, the same measurement.</summary>
+        private const float CompassScrollGutter = 18f;
 
         /// <summary>Demographics half of the old "Compass & Demographics" tab - see DrawPoliticalCompassContent's own doc comment for the split reasoning. Called from DrawDemographicsTab. Ethnicity/religion breakdowns are explicitly OUT OF SCOPE per the Master Roadmap's own Part C spec - not tracked anywhere in this game's data model.</summary>
         private void DrawDemographicsContent()

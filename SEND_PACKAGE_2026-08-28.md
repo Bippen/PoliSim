@@ -28,7 +28,7 @@ request's Annex C names.
 | artifact | SHA-256 (as on disk) | bytes | where it goes |
 |---|---|---|---|
 | `CLAUDE_DESIGN_BOARD_1I_NOTE.md` - the courtesy note (unchanged since the first 2026-08-28 package: this is its recorded hash) | `1a4fd172fa592fa288768922971fb78c5076f0b084e926fc8e8ec7f9a6f12a8a` | 6 664 | `send/design_note_2026-08-28/CLAUDE_DESIGN_BOARD_1I_NOTE.md` |
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` - the request through section 1 (the v3.0 boards, Annexes A and B) and E5 | `f74e396d8bebf4579dfd999ed632da11ba06768d04c7c38c53706d74feab9d6c` | 45 955 | `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` AND `send/design_request_2026-08-28/CLAUDE_DESIGN_ASSET_REQUEST.md` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` - the request through section 1 (the v3.0 boards, Annexes A and B) and E5 | `fc2972d7c089c99b936418cd230ce250b608d09a6ba332352d4386658f0dafb2` | 45 955 | `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` AND `send/design_request_2026-08-28/CLAUDE_DESIGN_ASSET_REQUEST.md` |
 | `v3a_1280_02a_statistics_domestic.png` | `858554d23ce47084f1b64bc8deca5e4fd5bc0a5a3e9ce706c8f36a7d9a61050f` | 433 644 | `send/design_request_2026-08-28/captures/v3a_1280_02a_statistics_domestic.png` |
 | `v3a_1280_02a_statistics_domestic_open.png` | `209c7328878f4c2d5f648ceebe7ac0540a1b8dbe5b6dfb136504d1ec1bdbac67` | 606 253 | `send/design_request_2026-08-28/captures/v3a_1280_02a_statistics_domestic_open.png` |
 | `v3a_1280_02a_statistics_domestic_rows.png` | `0500a8172a935213b7bcf926c9822351a40e6548668d6e8cc75446550c5894f4` | 453 692 | `send/design_request_2026-08-28/captures/v3a_1280_02a_statistics_domestic_rows.png` |

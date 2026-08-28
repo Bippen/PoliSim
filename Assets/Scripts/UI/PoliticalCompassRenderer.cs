@@ -115,18 +115,25 @@ namespace PoliSim.UI
         /// decluttering pass (pushed down just enough to clear the previous label, top to bottom) so
         /// they never overlap each other even when two dots land close together.
         /// </summary>
-        public void Draw(Rect rect, IReadOnlyList<Country> countries, CountryId playerCountryId, GUIStyle labelStyle)
+        /// <summary>Clearance between the plot square and the caption band, and between the two captions.</summary>
+        private const float CaptionGap = 6f;
+        private const float CaptionLineGap = 2f;
+
+        /// <summary>The two axis captions - the observed, padded range in the text - computed once per call so <see cref="Footprint"/> and <see cref="Draw"/> read the same strings.</summary>
+        private static (string X, string Y) CaptionTexts(IReadOnlyList<Country> countries)
         {
-            EnsureTexturesInitialized();
-            GUI.DrawTexture(rect, _backgroundTexture, ScaleMode.StretchToFill);
+            ComputeRanges(countries, out float[] _, out float[] _, out float minX, out float maxX, out float minY, out float maxY);
+            return ($"X: fiscal size, {minX:F0} (smaller govt) to {maxX:F0} (bigger govt)",
+                    $"Y: regulation & welfare generosity, {minY:F0} (less) to {maxY:F0} (more)");
+        }
 
-            float margin = labelStyle.fontSize * 1.5f;
-            var plotRect = new Rect(rect.x + margin, rect.y + margin, rect.width - margin * 2f, rect.height - margin * 2f);
-
+        private static void ComputeRanges(IReadOnlyList<Country> countries, out float[] xValues, out float[] yValues,
+            out float minX, out float maxX, out float minY, out float maxY)
+        {
             int count = countries.Count;
-            var xValues = new float[count];
-            var yValues = new float[count];
-            float minX = float.MaxValue, maxX = float.MinValue, minY = float.MaxValue, maxY = float.MinValue;
+            xValues = new float[count];
+            yValues = new float[count];
+            minX = float.MaxValue; maxX = float.MinValue; minY = float.MaxValue; maxY = float.MinValue;
             for (int i = 0; i < count; i++)
             {
                 xValues[i] = GetFiscalSizeAxisValue(countries[i]);
@@ -138,6 +145,67 @@ namespace PoliSim.UI
             }
             PadRange(ref minX, ref maxX);
             PadRange(ref minY, ref maxY);
+        }
+
+        /// <summary>A caption style at the plot's own axis-label voice: two points under the label type, wrapping (a caption wraps rather than shrinks - shrinking to dodge the containment assert is the one thing R-SP4 forbids).</summary>
+        private static GUIStyle CaptionStyle(GUIStyle labelStyle, bool wrap)
+        {
+            var style = new GUIStyle(labelStyle) { fontSize = Mathf.Max(9, labelStyle.fontSize - 2), wordWrap = wrap, alignment = TextAnchor.UpperLeft };
+            style.normal.textColor = AxisLabelColor;
+            style.hover.textColor = AxisLabelColor;
+            style.active.textColor = AxisLabelColor;
+            style.focused.textColor = AxisLabelColor;
+            return style;
+        }
+
+        /// <summary>The caption band's height at <paramref name="width"/>: both captions wrapped to it, plus the gaps.</summary>
+        private static float CaptionBandHeight((string X, string Y) captions, GUIStyle captionStyle, float width)
+        {
+            return CaptionGap
+                   + captionStyle.CalcHeight(new GUIContent(captions.X), width)
+                   + CaptionLineGap
+                   + captionStyle.CalcHeight(new GUIContent(captions.Y), width);
+        }
+
+        /// <summary>
+        /// R-SP4 (the stage-prep micro-pass, 2026-08-28): the compass's HONEST footprint - the plot
+        /// square plus the caption band beneath it, at the width the captions need (their single-line
+        /// width, capped at what the host can give; past the cap they wrap). Until this pass the two
+        /// range captions were GUILayout labels emitted after the plot, landing wherever the layout
+        /// cursor stood - under the plot on the Compass tab, at the sheet's corner on the ladder film -
+        /// so the renderer's declared rect did not contain everything it drew. Callers reserve THIS,
+        /// not a bare square, and <see cref="Draw"/> asserts that every rect it lays down sits inside
+        /// the one it was given.
+        /// </summary>
+        public Vector2 Footprint(IReadOnlyList<Country> countries, float plotSize, float availableWidth, GUIStyle labelStyle)
+        {
+            (string X, string Y) captions = CaptionTexts(countries);
+            GUIStyle flat = CaptionStyle(labelStyle, wrap: false);
+            float need = Mathf.Max(flat.CalcSize(new GUIContent(captions.X)).x, flat.CalcSize(new GUIContent(captions.Y)).x);
+            float width = Mathf.Min(Mathf.Max(availableWidth, 1f), Mathf.Max(plotSize, need));
+            GUIStyle wrapped = CaptionStyle(labelStyle, wrap: true);
+            return new Vector2(width, plotSize + CaptionBandHeight(captions, wrapped, width));
+        }
+
+        public void Draw(Rect rect, IReadOnlyList<Country> countries, CountryId playerCountryId, GUIStyle labelStyle)
+        {
+            EnsureTexturesInitialized();
+            GUI.DrawTexture(rect, _backgroundTexture, ScaleMode.StretchToFill);
+
+            // R-SP4: the plot is the square that leaves the caption band its measured height; the band
+            // takes the rect's full width beneath it. Everything below is placed inside `rect` and
+            // asserted so - the containment guard is the point of the change, not an afterthought.
+            (string X, string Y) captions = CaptionTexts(countries);
+            GUIStyle captionStyle = CaptionStyle(labelStyle, wrap: true);
+            float bandHeight = CaptionBandHeight(captions, captionStyle, rect.width);
+            float plotSide = Mathf.Max(1f, Mathf.Min(rect.width, rect.height - bandHeight));
+            var plotSquare = new Rect(rect.x, rect.y, plotSide, plotSide);
+
+            float margin = labelStyle.fontSize * 1.5f;
+            var plotRect = new Rect(plotSquare.x + margin, plotSquare.y + margin, plotSquare.width - margin * 2f, plotSquare.height - margin * 2f);
+
+            ComputeRanges(countries, out float[] xValues, out float[] yValues, out float minX, out float maxX, out float minY, out float maxY);
+            int count = countries.Count;
 
             DrawGridlines(plotRect);
 
@@ -220,13 +288,18 @@ namespace PoliSim.UI
                 GUI.Label(new Rect(labelX, labelY, labelSize.x, labelSize.y), country.Name, labelStyle);
             }
 
-            // Plain GUILayout rows below the plot rect (not more absolute-positioned GUI.Label
-            // overlays) for the observed axis range - simpler and can't collide with anything else,
-            // unlike the corner/edge overlay labels this replaced.
-            var rangeStyle = new GUIStyle(labelStyle) { fontSize = Mathf.Max(9, labelStyle.fontSize - 2) };
-            rangeStyle.normal.textColor = AxisLabelColor;
-            GUILayout.Label($"X: fiscal size, {minX:F0} (smaller govt) to {maxX:F0} (bigger govt)", rangeStyle);
-            GUILayout.Label($"Y: regulation & welfare generosity, {minY:F0} (less) to {maxY:F0} (more)", rangeStyle);
+            // The caption band, INSIDE the declared rect (R-SP4) - each caption at the height it wraps
+            // to at this width, so the rect is exact by construction and the assert below is the proof.
+            float xHeight = captionStyle.CalcHeight(new GUIContent(captions.X), rect.width);
+            float yHeight = captionStyle.CalcHeight(new GUIContent(captions.Y), rect.width);
+            var xRect = new Rect(rect.x, plotSquare.yMax + CaptionGap, rect.width, xHeight);
+            var yRect = new Rect(rect.x, xRect.yMax + CaptionLineGap, rect.width, yHeight);
+            GUI.Label(xRect, captions.X, captionStyle);
+            GUI.Label(yRect, captions.Y, captionStyle);
+
+            UiContainmentGuard.Check("Compass plot", plotSquare, rect);
+            UiContainmentGuard.Check("Compass caption X", xRect, rect);
+            UiContainmentGuard.Check("Compass caption Y", yRect, rect);
         }
 
         /// <summary>Pads an observed [min, max] range by 15% on each side (or a flat +-5 for an unreachably narrow/zero range) so dots never sit flush against the plot's own edge.</summary>
