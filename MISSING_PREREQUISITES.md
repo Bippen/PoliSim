@@ -15,7 +15,8 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 
 | entry | waiting on | gate |
 |---|---|---|
-| §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`: the note and the request doc through §E5, each with its digest and its path) | the E2 convention: sending is Elias's |
+| §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`: the note, the request doc through §1 — the v3.0 boards — and §E5, and the annex captures, each with its digest and its path) | the E2 convention: sending is Elias's |
+| §E6 — the v3.0 Phase A boards ("Screen 0, The Desk, folded"; "the rail") | **Claude Design — two boards at 1280×720**, once the package is pasted | the request doc §1 with Annexes A–C; v3.0 Phase B builds against them |
 | §A — the coupling queue Q6–Q10; F2 | **Elias — a decision**, each at its own named trigger | no trigger has fired; nothing else waits on a ruling |
 | §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
 | §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
@@ -40,12 +41,14 @@ local file's digests exactly — `9a464915…24eec` (CRLF, as uploaded, 29,571 b
 (LF-normalized) — diff-identical. What was sent: §1 the portrait verdict and the eight outstanding names,
 §2 the calendar panel board request, §3 the graph-weight ruling, with §0/§4/§5 for context.
 
-**Still unsent — Elias's, now one gesture:** `SEND_PACKAGE_2026-08-28.md` at the repo root names the two
-artifacts (the courtesy note, rewritten 1i–1l-aware with R-C8's convergence paragraph; the request doc
-through §E5), each with its SHA-256 as on disk and its destination path; the glance after the paste is
-the readback hash. The note was not part of the instruction that sent the
-request; it is a note, not an ask, and carries nothing Design is waiting for. §D1 is no longer gated
-behind this entry — the verdict is in Design's project.
+**Still unsent — Elias's, now one gesture (regenerated 2026-08-28 for UI v3.0 Phase A):**
+`SEND_PACKAGE_2026-08-28.md` at the repo root names the artifacts — the courtesy note (unchanged from its
+recorded hash), the request doc through §1 (the v3.0 boards, with Annex A the census and Annex B the
+inventory) and §E5, and the Annex C captures (the landing screen in both shell states, the rail as built,
+the ladder films) — each with its SHA-256 as on disk and its destination path; the glance after the paste
+is the readback hash. The direction's own sequencing: the request-doc send was held until Phase A landed
+so ONE send carries §E5 and the v3 ask. The note is a note, not an ask, and carries nothing Design is
+waiting for. §D1 is no longer gated behind this entry — the verdict is in Design's project.
 
 ---
 
@@ -196,6 +199,20 @@ Design asset batch** (`CLAUDE_DESIGN_ASSET_REQUEST.md` §4 names it as costed, n
 batch landed 2026-08-27, so nothing queues ahead of it now — the promotion itself is the first step and
 is ours). Waiting on Design once the members exist, so not startable as a request today.
 
+## 🟡 E6. The UI v3.0 Phase A boards — "Screen 0, The Desk, folded" and "the rail" (gate: the §S paste, then Design)
+
+The eighth request (`CLAUDE_DESIGN_ASSET_REQUEST.md` §1, 2026-08-28): two boards at **1280×720 first**,
+drawn against three annexes we supply — the census of every text element on the landing screen with its
+class (Annex A: (a) 44 · (b) 18 · (c) cut), the inventory of every instrument the game already draws with
+its **measured** minimum legible size (Annex B, from the ladder films), and the captures (Annex C, in the
+package). The direction's constraints travel with it: the text budget (captions at mono 9.5 and instrument
+labels only), no new hues or fonts or Canvas, delivered sprites plus primitives with gaps costed as
+follow-ups, the rail's required contents, the instant flip, the floor first; and the three deviation
+conventions (neutral valence, no invented data, IMGUI adaptations declared). **What waits on it:** v3.0
+Phase B — The Desk built against board one (`v3desk_*`), the rail re-skinned against board two, every (b)
+in the census resolved as an instrument or dropped. Election night's fallback stands if the boards have
+not landed by the 13 September gate: it builds in the OPEN state and moves to the stage later.
+
 ---
 
 # V. Waiting on Elias — a visual review (built, not seen; rule 3's third layer)
@@ -205,7 +222,9 @@ Everything visual the two passes shipped, each row ON FILM with its capture name
 matrix `omni_final_<size>_<screen>.png` at 1280×720, 1600×900, 1920×1080 and 2560×1440 (USA); the
 continuation's sets `cont_p1b_<size>_…` (the law browser) and `cont_p3b_<size>_…` (the seven film-gap
 states, every size); the closing sanity sets `cont_final_1600_…` (USA) and `cont_final_swe_1600_…`
-(Sweden); plus the per-country sets named per row — all under `G:\UNITY\Projects\PoliSim-captures\`. No row
+(Sweden); plus the per-country sets named per row; **and, from UI v3.0 Phase A (2026-08-28), the `v3a_<size>_…`
+family at all four sizes — every screen in its default fold state plus the three fold pairs — and the
+ladder films `v3a_ladder_<size>_ladder_<kind>`** — all under `G:\UNITY\Projects\PoliSim-captures\`. No row
 is verified by code alone (R-C6 retired the two ⚠ rows). "Pinned on film" is containment evidence, not a
 sighting; each item closes to `COMPLETED.md` with the session named. The three findings of playtest 3 are
 closed by their rulings; their surfaces are re-listed here as built.
@@ -227,7 +246,14 @@ closed by their rulings; their surfaces are re-listed here as built.
 | **Board 1l — the graph weights** | `2b698b0` | `omni_final_*_02a_statistics_domestic_deep` | history 3px over the projection's 2px dashes |
 | **The signing ceremony's entrance — §A.13 rows 4 and 6** (R-C6) | `14740e2` → `548a558` | `cont_p3b_*_89d_signing_entrance`, `cont_p3b_*_89e_signing_settled` | the document caught mid-rise with the SIGN button still invisible (row 4; row 6's first half), then settled with the button faded in (row 6's second half); the harness's own staged division on the paper, named as such |
 | **The law browser at fifty — the one-line row** (R-C1) | `476c66c` → `a7d877d` | `cont_p1b_*_06f_policylaws_laws*` (+`_rows`, `_deep`) | one-line rows at board 1i's proportion (37 / 43 / 55 px pitch at 1280 / 1600 / 2560): 3 → 5, 5 → 8, 7 → 11 laws per viewport against the two-line row; the longest statute names shrink, never truncate; the detail pane's content sized to its viewport (`a331e82`) |
-| **The Trade tab's Reset click, draft-only** (R-D2) | `4e44777` | `clear_p1c_*_06m_policylaws_trade_draft_moved`, `clear_p1c_*_06n_policylaws_trade_draft_reset` | the first partner's dial drafted +10 (amber, hatched) beside its 3.00 % standing override, then the draft back at 3.00 % with the override still active and \ | `e08c8c0` | `cont_final_swe_1600_02a_statistics_domestic_deep` (Sweden); `cont_final_1600_02a_statistics_domestic_deep` (the USA, unchanged at 65.3) | Sweden's Homeownership row reads 58.2 where the estimate read 62.1; Italy 75.2, Poland 84.7, France 58.6 in their own runs — a figure, not a layout |
+| **The Trade tab's Reset click, draft-only** (R-D2) | `4e44777` | `clear_p1c_*_06m_policylaws_trade_draft_moved`, `clear_p1c_*_06n_policylaws_trade_draft_reset` | the first partner's dial drafted +10 (amber, hatched) beside its 3.00 % standing override, then the draft back at 3.00 % with the override still active and "Reset draft" still offered — nothing live moved |
+| **The re-sourced homeownership on the housing row** (R-C5) | `e08c8c0` | `cont_final_swe_1600_02a_statistics_domestic_deep` (Sweden); `cont_final_1600_02a_statistics_domestic_deep` (the USA, unchanged at 65.3) | Sweden's Homeownership row reads 58.2 where the estimate read 62.1; Italy 75.2, Poland 84.7, France 58.6 in their own runs — a figure, not a layout |
+| **The v3.0 shell — the landing screen FOLDED, the rail** (V3-R2) | `8e162b1` | `v3a_*_02a_statistics_domestic` (the default, folded), `v3a_*_02a_statistics_domestic_open` (the same screen unfolded — the pair) | the rail on its paper sheet: six icon cells (Statistics in its area ink behind a spine, the others in the tab-swatch tint), the calendar chip (month + day), the HELD lamp with its glow, the "›" toggle; the folded banner above the sheet carrying the reasons; the stage taking the width — the cell is 39 px at 1280, 46 at the 1600 view, 55 at 1920, 64 at 2560 |
+| **The v3.0 shell — a ledger screen OPEN by default, folded on request** (V3-R2) | `8e162b1` | `v3a_*_07a_politics_parliament` (the default, open — the OPEN strip's "‹" toggle at its right end beside the status line), `v3a_*_07a_politics_parliament_folded` (the pair) | the OPEN frame unchanged but for the toggle; folded, the hemicycle with the whole width |
+| **The v3.0 shell — Budget locked FOLDED** (R-A1, the one lock) | `8e162b1` | `v3a_*_05b_budget_spending` (+`_rows`, `_deep`); `v3a_*_91_interrupt_held_budget` | the ledger beside the rail instead of the bare desk; the toggle on its disabled face (B5); the HELD banner above the sheet on 91; at 1280 the ledger's names on two lines and "not implemented" in a column that asks what it holds (instance #15) |
+| **The v3.0 shell — the Canvas class is fold-invariant** (V3-R4) | `8e162b1` | `v3a_*_89e_signing_settled`, `v3a_*_89e_signing_settled_open` | identical by construction (a live Canvas suppresses the IMGUI frame); on film so the claim is film, not prose |
+| **The stat tile's value under the mouse** (found by the v3a film) | `8e162b1` | `v3a_*_02a_statistics_domestic` (the Credit Rating tile) | "AAA" in TextPrimary whatever the cursor does — the skin's pale hover ink no longer reaches a figure |
+| **The instrument ladder** (Phase 3's measurement, not a screen) | `5443342` | `v3a_ladder_1280_ladder_*`, `v3a_ladder_1920_ladder_*` (twenty kinds each) | each instrument at a descending run of sizes with its size captioned; the breaks Annex B states are read from these — the film is the evidence, the table the reading |
 | **The eight new cabinet portraits at 5.5×** (the roster beside the sixteen squares) | `4e5adbf` | `omni_final_*_07c_politics_cabinet*` | still Elias's eyes (carried from playtest 3) |
 
 **Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's
