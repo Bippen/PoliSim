@@ -50,14 +50,45 @@ namespace PoliSim.EditorTools
     /// `ui_slider_track`'s SVG-&lt;pattern&gt; KeyNotFoundException is the one true parse limit).
     /// The external path is what closes the diff; the Unity path is kept as the in-repo
     /// rasterizer for the day its render works, and its probe result is re-recorded per run.
+    ///
+    /// THE BUDGETS (R-C2, the continuation kickoff of 2026-08-28 — set from an inspection, not
+    /// blind). The omnibus sweep left nine Stats icons at 2.06–3.21% under the original flat 2%
+    /// budget, which had been set before any comparable output existed. Every one of the nine was
+    /// read by eye beside its resvg rendering with a per-pixel mismatch mask, and all 90 pairs were
+    /// then measured the same way (stripcut_family.csv in the continuation's record): the
+    /// mismatched pixels fall into two DAMAGE CLASSES, and the check asserts each against its own bar.
+    /// - EDGE — both renderers put ink at the pixel and disagree on coverage: antialiasing at a
+    ///   10.7× upscale of 24-unit strokes. Its count scales with the silhouette's PERIMETER, not
+    ///   with damage (the prison bars' long outline read 3.21% of the canvas with not one pixel of
+    ///   shape difference), so the bar is per boundary pixel of Design's silhouette: the family
+    ///   runs 0.14–1.55 mismatched pixels per boundary pixel (a band under two pixels wide); a
+    ///   one-pixel stroke offset or weight change would put a mismatched pixel on BOTH sides of
+    ///   every boundary pixel plus the band — three or more. The bar sits at 2.0: above the whole
+    ///   family with a 29% margin, below the smallest geometric error.
+    /// - STRUCTURE — a pixel solidly inked (alpha > 128) in one render and void in the other: a
+    ///   shape present, missing, misplaced or misdrawn. Measured against the canvas: the largest
+    ///   sound pair in the family is icon_stat_population at 0.58% (its three figures' shoulders
+    ///   overlap and the two rasterizers join the strokes differently), the next 0.32%; the known
+    ///   defects read 3.6–11% (the three text stamps — fonts, exempted by name below) and 48.5% (the
+    ///   hatch tile's tiling, §E5); one missing 24-unit stroke piece would be ~9%. The bar sits at
+    ///   1.0%: above the sound family with margin, a third of the smallest defect ever measured.
+    /// A file passes only when BOTH hold. The original flat 2% of the canvas is gone: it measured
+    /// perimeter and damage with one number, and raising it to clear the nine would have been the
+    /// rule-14 shape (a blind bar moved to fit observed failures).
     /// </summary>
     public static class StripCutDiffCheck
     {
         /// <summary>Per-channel tolerance (of 255) - generous enough to ignore AA and colour-space rounding at edges, far too small to pass a wrong or missing shape.</summary>
         private const int ChannelTolerance = 32;
 
-        /// <summary>A file passes when at most this share of pixels mismatch - edge pixels on a dense silhouette stay well under it; a missing/misplaced element blows past it.</summary>
-        private const float MismatchBudget = 0.02f;
+        /// <summary>STRUCTURE budget (R-C2): the share of the canvas where one render is solidly inked and the other void. See the class doc for the derivation (sound family max 0.58%; smallest known defect 3.6%).</summary>
+        private const float StructureBudget = 0.01f;
+
+        /// <summary>EDGE budget (R-C2): coverage disagreements per boundary pixel of Design's silhouette. See the class doc for the derivation (family max 1.55; a one-pixel geometric error reads three or more).</summary>
+        private const float EdgeBudgetPerBoundaryPixel = 2.0f;
+
+        /// <summary>The alpha above which a pixel counts as solidly inked for the STRUCTURE class and the silhouette's boundary - the midpoint, so a half-covered antialiased edge pixel is neither.</summary>
+        private const int InkAlpha = 128;
 
         /// <summary>An external rasterizer that has not returned in this long is killed and the file reported as a named limit.</summary>
         private const int ExternalRasterizerTimeoutMs = 30000;
@@ -128,22 +159,40 @@ namespace PoliSim.EditorTools
                 compared++;
                 Color32[] a = png.GetPixels32();
                 Color32[] b = ours.GetPixels32();
-                int mismatched = 0, worst = 0;
+                int width = png.width;
+                int mismatched = 0, edge = 0, structure = 0, boundary = 0, worst = 0;
                 for (int i = 0; i < a.Length; i++)
                 {
                     int d = Mathf.Max(
                         Mathf.Abs(a[i].r - b[i].r), Mathf.Abs(a[i].g - b[i].g),
                         Mathf.Abs(a[i].b - b[i].b), Mathf.Abs(a[i].a - b[i].a));
+                    bool inkA = a[i].a > InkAlpha;
+                    bool inkB = b[i].a > InkAlpha;
                     if (d > ChannelTolerance)
                     {
                         mismatched++;
+                        if (inkA != inkB) { structure++; } else { edge++; }
+                    }
+
+                    // The silhouette's boundary in Design's PNG: an inked pixel with a void 4-neighbour
+                    // (or the canvas edge). The EDGE class is measured per pixel of it.
+                    if (inkA)
+                    {
+                        int x = i % width, y = i / width;
+                        bool voidNeighbour = x == 0 || a[i - 1].a <= InkAlpha
+                            || x == width - 1 || a[i + 1].a <= InkAlpha
+                            || y == 0 || a[i - width].a <= InkAlpha
+                            || i + width >= a.Length || a[i + width].a <= InkAlpha;
+                        if (voidNeighbour) { boundary++; }
                     }
 
                     worst = Mathf.Max(worst, d);
                 }
 
                 float share = (float)mismatched / a.Length;
-                bool ok = share <= MismatchBudget;
+                float structureShare = (float)structure / a.Length;
+                float edgePerBoundary = boundary > 0 ? (float)edge / boundary : (edge > 0 ? float.PositiveInfinity : 0f);
+                bool ok = structureShare <= StructureBudget && edgePerBoundary <= EdgeBudgetPerBoundaryPixel;
                 // A text-bearing SVG above budget is the two rasterizers' FONTS disagreeing (glyph
                 // outlines, hinting, fallback family), not pipeline drift - reported by name with its
                 // figure and its rendering written out for the eye, never counted as a FAIL and never
@@ -158,10 +207,10 @@ namespace PoliSim.EditorTools
                 }
 
                 string verdict = ok ? "ok  " : textBearingMiss ? "TEXT" : "FAIL";
-                Debug.Log($"  {verdict} {Path.GetFileName(svgPath),-52} {png.width}x{png.height}  mismatch={share:P2}  worstΔ={worst}{(resolvedColor ? "  (currentColor -> #ffffff)" : "")}{(textBearingMiss ? "  text-bearing: renderer font difference, viewed not counted" : "")}");
+                Debug.Log($"  {verdict} {Path.GetFileName(svgPath),-52} {png.width}x{png.height}  mismatch={share:P2}  structure={structureShare:P2} (budget {StructureBudget:P2})  edge/boundary={edgePerBoundary:F2} (budget {EdgeBudgetPerBoundaryPixel:F1}; boundary {boundary}px)  worstΔ={worst}{(resolvedColor ? "  (currentColor -> #ffffff)" : "")}{(textBearingMiss ? "  text-bearing: renderer font difference, viewed not counted" : "")}");
             }
 
-            Debug.Log($"=== StripCutDiff ({rasterizerName}): {passed} of {compared} comparable pairs within budget; {textBearing} text-bearing above budget (named, fonts); {unrasterizable} unrasterizable-here (named); {currentColorResolved} rendered with currentColor resolved to #ffffff (the root carried no color attribute; Design's pipeline convention); {failed} FAILED ===");
+            Debug.Log($"=== StripCutDiff ({rasterizerName}): {passed} of {compared} comparable pairs within budget (structure <= {StructureBudget:P2} of the canvas AND edge <= {EdgeBudgetPerBoundaryPixel:F1} per boundary pixel - R-C2); {textBearing} text-bearing above budget (named, fonts); {unrasterizable} unrasterizable-here (named); {currentColorResolved} rendered with currentColor resolved to #ffffff (the root carried no color attribute; Design's pipeline convention); {failed} FAILED ===");
             CheckExit.Finish(failed == 0 ? 0 : 1);
         }
 
