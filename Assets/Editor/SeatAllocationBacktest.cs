@@ -105,7 +105,73 @@ namespace PoliSim.EditorTools
             int[] plModel = SeatAllocation.HighestAverages(plMasked, 460, SeatAllocation.DHondtDivisor);
             failures += Report("POLAND 2023 SIGNATURE - NATIONAL d'Hondt (the WRONG system on purpose; the real Sejm is 41-district d'Hondt - recorded signature PiS 169, Konf 34)", plNames, plVotes, plValid, plModel, plReal);
 
-            Debug.Log("BACKTEST: NOT RUN, stated: Italy (allocation formula unsourced tonight - billed), France (two-round SMD, no national model exists), USA (full state table not fetched). Poland's REAL 41-district allocation awaits the billed per-district absolute counts; PerDistrictSum is ready for them.");
+            // --- GERMANY 2025 ON EXACT COUNTS (ElectionsData/germany/national_counts_2025.csv:
+            // kerg2.csv Bund rows, the second fetch of the night - the Part 5 constraint
+            // honoured in full for Germany too) ---
+            long[] deCounts = { 11196374, 10328780, 8149124, 5762380, 4356532, 2964028, 76138, 2472947, 2148757 };
+            const long deCountsValid = 49649512;
+            int[] deModel2 = SeatAllocation.AllocateWithThreshold(deCounts, deCountsValid, 0.05, 630, SeatAllocation.SainteLagueDivisor, deExempt);
+            failures += Report("GERMANY 2025 ON EXACT COUNTS - the same regime over kerg2.csv's own integers (the definitive run; the shares run above stays as the precision result)", deNames, deCounts, deCountsValid, deModel2, deReal);
+
+            // --- POLAND 2023 REAL: d'Hondt in each of the 41 okregi over the absolute counts
+            // (ElectionsData/poland/district_votes_2023.csv - the KBW file, national sums
+            // verified exactly), magnitudes from okregi_sejm (sum 460), eligibility national
+            // (art. 196/197: PiS/NL/Konf 5%, KO/TD 8%, MN exempt) ---
+            int[] plMagnitudes = { 12, 8, 14, 12, 13, 15, 12, 12, 10, 9, 12, 8, 14, 10, 9, 10, 9, 12, 20, 12, 12, 11, 15, 14, 12, 14, 9, 7, 9, 9, 12, 9, 16, 8, 10, 12, 9, 9, 10, 8, 12 };
+            long[][] plDistricts =
+            {
+                new long[] { 174643, 169540, 53958, 47715, 31770, 0 },
+                new long[] { 107797, 120188, 39215, 25806, 19478, 0 },
+                new long[] { 206899, 286713, 106624, 88089, 54132, 0 },
+                new long[] { 162603, 186914, 80426, 52959, 34266, 0 },
+                new long[] { 183131, 158719, 84308, 60473, 34232, 0 },
+                new long[] { 294847, 131712, 102894, 37083, 54325, 0 },
+                new long[] { 231882, 79501, 59577, 25691, 35594, 0 },
+                new long[] { 143530, 195091, 77933, 47911, 33672, 0 },
+                new long[] { 122433, 187527, 54283, 55770, 25428, 0 },
+                new long[] { 184929, 86083, 54479, 25340, 30247, 0 },
+                new long[] { 221031, 138038, 77313, 41188, 36383, 0 },
+                new long[] { 156308, 88408, 54585, 22036, 28754, 0 },
+                new long[] { 232430, 232799, 127693, 83633, 58435, 0 },
+                new long[] { 229587, 68804, 49487, 13594, 37301, 0 },
+                new long[] { 196433, 68690, 75229, 16152, 32241, 0 },
+                new long[] { 195218, 99146, 75526, 28848, 28877, 0 },
+                new long[] { 190418, 82003, 54690, 20874, 28593, 0 },
+                new long[] { 262236, 100902, 83681, 26149, 44299, 0 },
+                new long[] { 345380, 741286, 227127, 230648, 124220, 0 },
+                new long[] { 231905, 257470, 110086, 51556, 51573, 0 },
+                new long[] { 150022, 161241, 61155, 34763, 31150, 25778 },
+                new long[] { 241790, 70054, 60938, 19750, 38080, 0 },
+                new long[] { 347688, 119259, 83676, 32828, 63854, 0 },
+                new long[] { 258277, 126971, 114898, 29478, 59648, 0 },
+                new long[] { 155318, 257009, 90599, 57967, 38406, 0 },
+                new long[] { 199709, 258909, 92793, 56887, 49203, 0 },
+                new long[] { 163506, 127677, 64778, 34601, 34909, 0 },
+                new long[] { 117756, 94313, 47698, 30497, 21256, 0 },
+                new long[] { 116827, 139711, 51681, 35673, 26934, 0 },
+                new long[] { 145230, 114404, 47525, 26117, 30527, 0 },
+                new long[] { 162458, 193596, 69825, 44509, 35240, 0 },
+                new long[] { 112389, 114519, 37221, 81646, 21512, 0 },
+                new long[] { 310266, 137941, 90975, 45048, 43197, 0 },
+                new long[] { 105373, 95410, 46101, 24269, 19590, 0 },
+                new long[] { 126432, 129339, 63007, 31631, 27119, 0 },
+                new long[] { 194416, 154990, 87628, 46222, 37838, 0 },
+                new long[] { 162192, 100580, 69740, 39761, 29208, 0 },
+                new long[] { 120301, 144114, 72996, 32378, 28370, 0 },
+                new long[] { 116666, 262779, 98589, 73345, 35182, 0 },
+                new long[] { 101023, 124625, 39776, 28101, 19379, 0 },
+                new long[] { 159575, 222427, 69957, 52032, 32942, 0 },
+            };
+            int magSum = 0;
+            foreach (int m in plMagnitudes) { magSum += m; }
+            Debug.Log($"BACKTEST: Poland real-system inputs - 41 districts, magnitudes sum {magSum} (must be 460); eligibility national, MN exempt.");
+            var plEligible = new bool[6];
+            for (int i = 0; i < 6; i++) { plEligible[i] = plMasked[i] > 0 || plExempt[i]; }
+
+            int[] plRealModel = SeatAllocation.PerDistrictSum(plDistricts, plMagnitudes, plEligible, SeatAllocation.DHondtDivisor);
+            failures += Report("POLAND 2023 REAL - d'Hondt per okreg over the KBW absolute counts (the actual Sejm system; the definitive run)", plNames, plVotes, plValid, plRealModel, plReal);
+
+            Debug.Log("BACKTEST: NOT RUN, stated: Italy (allocation formula unsourced tonight - billed), France (two-round SMD, no national model exists), USA (full state table not fetched).");
             Debug.Log($"=== SeatAllocationBacktest: synthetic {(failures == 0 ? "ALL PASS" : failures + " FAILED")}; the country tables above are FINDINGS (deviations reported, not asserted) ===");
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }

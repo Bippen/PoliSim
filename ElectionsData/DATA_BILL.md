@@ -4,13 +4,12 @@ Per R-N4/Part 3.6: everything below is billed, not guessed. Each line names the 
 stayed open, and the candidate source for the morning (or a later session).
 
 ## Returns
-- **Germany — exact absolute party counts** (national + per Land): the three-decimal shares
-  are inside the recorded seat-sensitive band, but the constraint is counts. Candidate:
-  `kerg2.csv` itself (already located, machine-readable; parse its Bund/Land rows).
-- **Poland — per-district ABSOLUTE counts**: the night carries per-district percent-of-valid
-  (all 41) and national counts. Candidate: the obwieszczenie's per-district vote tables
-  (eli.gov.pl, fetched but not transcribed at that depth) or KBW's absolute-votes CSV
-  (`wyniki_gl_na_listy_po_okregach_sejm_csv.zip`, sibling of the percent file).
+- ~~**Germany — exact absolute party counts**~~ **FILLED the same night** (second fetch):
+  `germany/national_counts_2025.csv` — kerg2.csv Bund rows, the Gültige total confirmed
+  exactly (per-Land exact counts remain fetchable from the same file if ever needed).
+- ~~**Poland — per-district ABSOLUTE counts**~~ **FILLED the same night** (second fetch):
+  `poland/district_votes_2023.csv` — the KBW absolute-votes CSV, all 41 okręgi × six
+  committees, verified by exact national-sum cross-check on all six.
 - **Italy — party TOTAL seats from a primary source**: Eligendo publishes only the PR seat
   column; totals are [UNCONFIRMED] (Wikipedia, PR components corroborated exactly). Candidate:
   the Interior Ministry's results dossier

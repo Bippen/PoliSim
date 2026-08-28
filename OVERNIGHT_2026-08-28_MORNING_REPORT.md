@@ -196,11 +196,23 @@ Synthetics: ALL PASS (the divisor-decisive case — pure S-L seats B, the 1.2 mo
 the seat away — and the d'Hondt-vs-S-L divergence case; plus the per-district-vs-national
 structural gap demonstrated on synthetic districts: [4,2,0] vs [4,1,1]). Not run, stated in
 the harness's own output: Italy (formula unsourced — billed), France (no national model
-exists), USA (12 of 51 states fetched). Harness exit 0; log
-`backtest_seats_20260829.log`. **The overhaul doc's Part 5 obligation — "port to C# and
-reproduce; re-derive Germany and Poland from scratch" — is DISCHARGED for Sweden (exact),
-Germany (exact, from published shares), and the Poland signature (exact reproduction of the
-recorded gap).**
+exists), USA (12 of 51 states fetched). Harness exit 0; logs `backtest_seats_20260829.log`,
+`backtest_seats2_20260829.log`.
+
+**THE SECOND FETCH AND THE DEFINITIVE RUNS (a follow-up agent worked the bill down the same
+night):** `poland/district_votes_2023.csv` (the KBW absolute-votes file, all 41 okręgi × six
+committees, ALL SIX national sums matching exactly) and `germany/national_counts_2025.csv`
+(kerg2.csv's Bund rows, the Gültige total exact) landed, the two bill lines struck. Then:
+
+| definitive run | result |
+|---|---|
+| **Germany 2025 on EXACT COUNTS** (kerg2's own integers, same regime) | **EXACT — total deviation 0** (all nine rows) |
+| **Poland 2023 REAL** — d'Hondt in each of the 41 okręgi over the absolute counts (magnitudes sum 460, national eligibility, MN exempt) | **EXACT — total deviation 0: PiS 194, KO 157, TD 65, NL 26, Konf 18, MN 0 — the actual Sejm reproduced seat-for-seat** |
+
+**Three chambers now reproduce EXACTLY from official counts (Sweden, Germany, Poland-real),
+and the national-Poland signature run stands beside them as the measured 70-seat proof of WHY
+constituency-level allocation is mandatory. The overhaul doc's Part 5 obligation is
+DISCHARGED in full for all three countries it names.**
 
 ## Part 2 — E-0, what landed of it (the spec-independent halves)
 

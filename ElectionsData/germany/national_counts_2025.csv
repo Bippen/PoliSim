@@ -1,0 +1,15 @@
+# Germany Bundestag 2025 - EXACT national Zweitstimmen counts [SOURCED] [PROVISIONAL]
+# source: kerg2.csv, https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/opendata/btw25/csv/kerg2.csv
+#   (accessed 2026-08-29; rows Gebietsart=Bund, Gruppenart=Partei, Stimme=2; status Endgueltig,
+#   Stand 14.03.2025; the Bund Gueltige Stimme-2 total confirmed exactly.)
+party;votes
+CDU;11196374
+AfD;10328780
+SPD;8149124
+GRUENE;5762380
+Die Linke;4356532
+CSU;2964028
+SSW;76138
+BSW;2472947
+FDP;2148757
+Gueltige;49649512
