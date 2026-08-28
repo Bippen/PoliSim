@@ -15,7 +15,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 
 | entry | waiting on | gate |
 |---|---|---|
-| §S — the send package | ✅ **SENT 2026-08-27** (the request, hash-verified, to Design's project); the 1j courtesy note alone still waits on **Elias — send** | the E2 convention: sending is Elias's — this send was on his instruction |
+| §S — the send package | ✅ **SENT 2026-08-27** (the request, hash-verified, to Design's project); the courtesy note (rewritten 1i–1l-aware 2026-08-28) alone still waits on **Elias — send** | the E2 convention: sending is Elias's — this send was on his instruction |
 | §A — the ruling queue Q6–Q10; F2; **the omnibus's A4–A6** (the ledger row type, the raster budget, the anchored form) | **Elias — a decision** | each at its own named trigger; A4–A6 are the 2026-08-28 report's `RULINGS NEEDED` |
 | §B — three seed quality debts | **Elias — database access** (an OECD/Eurostat re-sourcing session) | none blocks anything |
 | §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
@@ -23,7 +23,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 | §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
 | ~~§E3 — rasterization diff, our half~~ | ✅ **CLOSED 2026-08-28** (the omnibus, `a15c0c1`: resvg as `StripCutDiffCheck`'s external rasterizer, the six buttons 6/6) | tombstone below; its two findings are §E5 |
 | §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch**, behind §D1 | two `StatNodeId` members first |
-| §E5 — two strip-cut findings (the hatch tile's tiling, the slider track's strip) | **Claude Design — re-cut or explain** (Elias to say which side is the truth) | the next batch |
+| §E5 — two strip-cut findings (the hatch tile's tiling, the slider track's strip) | **Claude Design — re-cut or explain** (Elias to say which side is the truth) | filed as `CLAUDE_DESIGN_ASSET_REQUEST.md` §E5 (2026-08-28), goes with the next send |
 | §F — the session-sourced seed spread (OECD PMR 2023-24, SOCX 2021) | **Elias — CONFIRM** the mapping and six caveats | every figure `[PROVISIONAL]`; the trajectories byte-identical either way |
 | §V — built, not seen (the omnibus review package, every surface with its capture named) | **Elias — a visual review** | rule 3's third layer |
 | §P — three felt verdicts | **Elias — a playtest** | no measurement can answer them |
@@ -44,10 +44,10 @@ local file's digests exactly — `9a464915…24eec` (CRLF, as uploaded, 29,571 b
 (LF-normalized) — diff-identical. What was sent: §1 the portrait verdict and the eight outstanding names,
 §2 the calendar panel board request, §3 the graph-weight ruling, with §0/§4/§5 for context.
 
-**Still unsent — Elias's:** the 1j-aware courtesy note (`CLAUDE_DESIGN_BOARD_1I_NOTE.md`, corrected
-2026-08-27). It was not part of the instruction that sent the request; it is a note, not an ask, and
-carries nothing Design is waiting for. §D1 is no longer gated behind this entry — the verdict is in
-Design's project.
+**Still unsent — Elias's:** the courtesy note (`CLAUDE_DESIGN_BOARD_1I_NOTE.md`, corrected
+2026-08-27, rewritten 1i–1l-aware 2026-08-28). It was not part of the instruction that sent the
+request; it is a note, not an ask, and carries nothing Design is waiting for. §D1 is no longer gated
+behind this entry — the verdict is in Design's project.
 
 ---
 

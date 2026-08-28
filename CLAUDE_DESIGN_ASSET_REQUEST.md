@@ -215,3 +215,21 @@ load through the game's own accessor, never with a directory listing.
 **1 source asset → 2 files** (`.png` + `.svg`), as in every previous pack. No zip at the project root
 means every delivery is imported and archived — a zip appearing there is the signal something is
 unfinished, and `DeliveredAssetCheck` enforces it.
+
+## §E5 — two pipeline findings from the rasterization diff (2026-08-28)
+
+Our half of the strip-cut diff closed (external rasterizer, the six canvas buttons 6/6 within
+tolerance). The 90-pair sweep found two source/shipped mismatches — both asks, neither urgent:
+
+1. **`ui_hatch_draft.png` — 60% pixel mismatch against its SVG source:** the source applies the
+   rotation to the stripes, the shipped PNG applies it to the tiling. **Our presumption: the
+   shipped PNG is canonical** — it is what two playtests reviewed on screen — so the ask is
+   *confirm, and re-export the SVG source to match the shipped render*, not a choice of which to
+   adopt. If the SVG was the intent, say so and we re-import instead.
+2. **`ui_slider_track.png` — a 256-wide strip whose only source on file is a 24×24 pill:** point
+   us at the real source for the strip, or confirm the pill is the intended source and the strip
+   a derived export — in which case the derivation (stretch region, caps) goes in the pipeline
+   note so the diff can model it.
+
+Everything else in the 90-pair sweep sat inside budget; nine `Stats/` icons near the 2% line are
+ours to inspect (A5), not Design's.

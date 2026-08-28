@@ -102,3 +102,9 @@ cell's min-content and the ledger overflows horizontally. The scroller carries
   populated at 50, and the 1j rebuild rendered both. The eye review of the
   `board1jc*` capture sets is the one thing still open, and it is
   `MISSING_PREREQUISITES.md` §V's, not this file's.
+
+**2026-08-28 —** the `board1jc*` sets are two generations superseded (`pt3usa*` after the
+playtest-3 cut, then `omni_final_*` after the omnibus pitch and containment fixes); the open eye
+review is `MISSING_PREREQUISITES.md` §V's current law-browser row, not these sets. The built
+AVAILABLE row is two-line at 66 px against this board's one-line ~27 px — convergence is an open
+internal call (A4); if ruled, the one-line type builds to the grid pinned above.
