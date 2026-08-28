@@ -638,6 +638,29 @@ stacked graphs at 2560 where history plainly outranks the amber reference — th
 
 ---
 
+
+### A.17 Screen 0 — The Desk, and the rail re-skinned (boards 1m and 1n, read 2026-08-28; built the same day, UI v3.0 Phase B)
+
+**The boards are the spec.** Board 1m ("Screen 0 — The Desk, folded", v3.0 board one, drawn 2026-08-28 against Annex A's census and Annex B's measured minimums at 1280×720) and board 1n ("the rail", v3.0 board two, a re-skin of the built rail — "the derivation untouched, only the air moved"), both on the live screens file. What they rule, restated here so the code can cite a line:
+
+**1m — the split (D1).** The chrome census folds with the chrome, so every chrome (a) lands on the stage or the rail: C6 the masthead · C7–C12 the calendar sheet · C16–C22 the effects card · C23–C25 the rail chip · C27 the HELD banner (above the masthead) · C28 the speed cluster (on the masthead, D5). The content rows (S-) keep their document — Statistics stands one rail cell away, unchanged — and the stage restates only its ten headlines, as the chip strip. *Strike the split and the stage is the old screen again: the census's 44 (a) do not fit 1149×691 at their minimums.*
+
+**1m — the placement at 1280×720** (the sheet's inner area 1118×660; every size scales these by the inner area's ratio): the masthead 26 tall — the flag and `{COUNTRY} · YEAR {N}` left, `DESK READINGS · LIVE` and the cluster (PAUSE 1× 2× 3× SAVES) right; three columns 420 / 240 / 425 with 16 px gaps — the map plate 420×290 over the approval ledger 420×222; the compass 240×240 over the effects card 240×272; the calendar sheet 425×380 over the event card's reservation 425×136; a rule; the chip strip 10 × ~104 × 56. Instruments at or above Annex B's minimums: map 420×290 (min 360×216 with names), compass 240 (its floor), ledger 420 at 13 px (min 360/13), sheet 425 (min 420), chip line 42×16 (≥ 36×10), diverging bars 64×9 (height traded, declared), rail chip 39 (min 32).
+
+**1m — the seven declared deviations**, accepted as built: D1 the split · D2 no active spine on Screen 0 (the Desk sits above the six documents) · D3 the compass's axis captions inside its rect (the renderer's own footprint since R-SP4 does exactly this) · D4 C20's methodology sentence as a mono caption · D5 the speed cluster and Saves on the masthead · D6 approval as a hero numeral over the nine-term ledger — no face exists, none invented · D7 trend lines and chip deltas in neutral ink.
+
+**1m — the (b) resolutions on this surface:** C3 → the event card's three bars · C10/C13 dropped (the 1k precedent) · C18 → the horizon control carries it · C26 → the lamp · S1's labels → the rail's icons. Every other (b) stays with its document.
+
+**1m — the conditionals:** the event card draws only while an event is live (the BREAKING chip, the name, the description as its only text, the three bars; the empty state is the reservation, undrawn); HELD rides above the masthead with the lamp amber and the speed faces disabled (B5, rendered never omitted); GAME OVER is §A.11's stamp over the dimmed stage with the reason as one caption.
+
+**1m — the text budget audit, the board's own line:** every string ≤ a mono 9.5 caption or an instrument's label/numeral · zero sentences · marks inside plates are the renderers' output · glyphs are the delivered sprites · the tab→ink mapping is re-read from §A.3/the code, never from a board.
+
+**1n — the rail.** The derivation untouched: cell = the icons' 24-unit grid + 10 units of air each side (39 / 46 / 55 / 64 px at the four sizes). The air: the nav block top-anchored under the sheet's cap, the utility block (chip · lamp · toggle) bottom-anchored, one breathing gap between — never equal distribution. Active: a 3 px spine at the cell's left edge, full cell height, in the area ink; the icon in the same ink; a 12 % area-ink wash behind the cell. Inactive: the tab-swatch tint (§A.3's third column), no wash, no plate. Hover: the stock hover face, tint unchanged. Contents exactly V3-R2's four — six icons, the chip (the pad's mono month over its numeral day, a hairline rule between), the lamp (RUNNING green, no glow; HELD `#D4A72C` with `0 0 6px rgba(212,167,44,.7)`), the toggle on the stockOff plate ("›" folded, "‹" on the open strip). The flip is instant. On Screen 0 no spine draws (1m, D2). Deviations none; gaps none.
+
+**Gaps costed by the boards: none asked.** Two optional notes carried, not asks: an approval dial face would be a NEW instrument (one further board first; procedural arc and needle, no sprite); the chip sparklines' weight is R-G4's already.
+
+**Built (Phase B, 2026-08-28):** `GameController.Desk.cs` (Screen 0), the rail's active convention and the chip's rule in `GameController.DrawRailNavCell` / `DrawRailCalendarChip`, the ledger accessor `StatTracePanel.BuildApprovalDeskTerms`, the harness's `01c_desk` · `01d_desk_held` · `01e_desk_event` · `01f_desk_gameover`. The build's own reversible calls are R-B1…R-B14 (`COMPLETED.md` §41).
+
 ## C. PASS 3 — DISPOSITIONS AND THE RE-REVIEW FINDINGS — MIGRATED (2026-08-27)
 
 *The nine §1D dispositions (D1–D9 + the locale and banner items) and the seven re-review findings

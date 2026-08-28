@@ -16,12 +16,12 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 | entry | waiting on | gate |
 |---|---|---|
 | §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`: the note, the request doc through §1 — the v3.0 boards — and §E5, and the annex captures, each with its digest and its path) | the E2 convention: sending is Elias's |
-| §E6 — the v3.0 Phase A boards ("Screen 0, The Desk, folded"; "the rail") | **Claude Design — two boards at 1280×720**, once the package is pasted | the request doc §1 with Annexes A–C; v3.0 Phase B builds against them |
+| ~~§E6 — the v3.0 Phase A boards~~ **LANDED 2026-08-28** — boards 1m ("Screen 0 — The Desk, folded", 1280×720) and 1n ("the rail") on the live screens file, no gap costed | — | built the same day (v3.0 Phase B, `COMPLETED.md` §41); the row retires with the next re-derivation |
 | §A — the coupling queue Q6–Q10; F2 | **Elias — a decision**, each at its own named trigger | no trigger has fired; nothing else waits on a ruling |
 | §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
 | §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
 | §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch** (nothing queues ahead of it since D1 landed 2026-08-27) | two `StatNodeId` members first — ours, before the ask |
-| §E5 — two strip-cut findings (the hatch tile's tiling, the slider track's strip) | **Claude Design — re-cut or explain**, once the package is pasted | in the request doc; `StripCutDiffCheck` defers the hatch pair by name until the answer lands (R-D3) |
+| §E5 — the hatch tile's SVG source (the slider strip's half CLOSED 2026-08-28: source-less by Design's account, the legacy pill removed, the model states it) | **Claude Design — one re-cut**: the 2026-08-28 re-export has a 32 px period where the shipped PNG's is 16 (measured on the PNG; the phase is fine, the duty ≈8 px along x) — the ask, with the figures, is in the request doc §E5 | `StripCutDiffCheck` keeps the pair deferred by name with the measurement as its pointer (R-D3); structure 33.4 % after the re-export, against 1 % |
 | §V — built, not seen (every surface on film, its capture named; `../PoliSim-captures/sv_index.html` is the one sitting) | **Elias — a visual review** | rule 3's third layer |
 | §P — three felt verdicts, each a staged save (`playtest_1_trade_bill_costs`, `playtest_2_riksbank_rate_decision`, `playtest_3_dense_midgame`) | **Elias — load, play, judge** | no measurement can answer them |
 
@@ -224,10 +224,11 @@ continuation's sets `cont_p1b_<size>_…` (the law browser) and `cont_p3b_<size>
 states, every size); the closing sanity sets `cont_final_1600_…` (USA) and `cont_final_swe_1600_…`
 (Sweden); plus the per-country sets named per row; **and, from UI v3.0 Phase A (2026-08-28), the `v3a_<size>_…`
 family at all four sizes — every screen in its default fold state plus the three fold pairs — and the
-ladder films `v3a_ladder_<size>_ladder_<kind>`; and from the stage-prep micro-pass (2026-08-28) the
+ladder films `v3a_ladder_<size>_ladder_<kind>`; from the stage-prep micro-pass (2026-08-28) the
 `sp4_<size>_…` family and `sp4_ladder_<size>_ladder_<kind>`, the same sweep on the code after R-SP4 and
-R-SP5** — all under `G:\UNITY\Projects\PoliSim-captures\`. No row is verified by code alone (R-C6 retired
-the two ⚠ rows). "Pinned on film" is containment evidence, not a
+R-SP5; and from v3.0 Phase B (2026-08-28) the `v3desk_<size>_…` family — the sweep plus Screen 0's four
+frames (`01c_desk`, `01d_desk_held`, `01e_desk_event`, `01f_desk_gameover`) at four sizes** — all under
+`G:\UNITY\Projects\PoliSim-captures\`. No row is verified by code alone (R-C6 retired the two ⚠ rows). "Pinned on film" is containment evidence, not a
 sighting; each item closes to `COMPLETED.md` with the session named. The three findings of playtest 3 are
 closed by their rulings; their surfaces are re-listed here as built.
 
@@ -258,6 +259,9 @@ closed by their rulings; their surfaces are re-listed here as built.
 | **The instrument ladder** (Phase 3's measurement, not a screen) | `5443342` | `v3a_ladder_1280_ladder_*`, `v3a_ladder_1920_ladder_*` (twenty kinds each) | each instrument at a descending run of sizes with its size captioned; the breaks Annex B states are read from these — the film is the evidence, the table the reading |
 | **The compass on its honest footprint** (R-SP4, the stage-prep micro-pass) | `373ea07` | `sp4_*_07b_politics_compass` (+`_rows`, `_deep`); `sp4_ladder_*_ladder_compass` | the plot square and its two range captions on ONE plate, the captions inside the declared rect (containment-asserted, silent at four sizes); on the ladder each rung captions the footprint it was given — the captions no longer stack at the sheet's corner |
 | **The map's names on their ladder** (R-SP5) | `c9c3c05` | `sp4_*_02b_statistics_international`; `sp4_ladder_*_ladder_map` | on the screens every name at its first rung (the harness measured the smallest gap per size against the 4 px floor — the log lines are quoted in `COMPLETED.md` §40); on the ladder film each rung's caption carries the rung reached (1 full name, 3 ISO code, 4 shrunk) and the gap measured — the small rungs are where the ladder works |
+| **Screen 0 — The Desk** (v3.0 Phase B, board 1m) | §41 | `v3desk_*_01c_desk` (RUNNING, turn 0: the lamp green, the cluster live, the ledger with no period yet); `v3desk_*_01d_desk_held` (the warmed-up game: HELD above the masthead, the lamp amber, the faces disabled, the ten-row ledger, the sparklines) | the masthead, the map plate, the approval ledger, the compass, the effects card, the calendar sheet, the chip strip — each at the board's placement scaled to the size; the rail without a spine (D2); the 1280 film is the board's own frame |
+| **The Desk's conditionals** (C1–C5 on the stage) | §41 | `v3desk_*_01e_desk_event` (the card filled with the pool's own "Recession in a Trading Partner": the BREAKING chip, the name, the description, the three bars); `v3desk_*_01f_desk_gameover` (the stamp over the dimmed stage, the election-loss reason as the game prints it) | staged by the harness through the game's own event pool and the game's own reason string — nothing invented for the film — and restored after each frame |
+| **The rail re-skinned** (board 1n) | §41 | every `v3desk_*` document capture (the active cell: the 12 % wash and the 3 px spine; the chip's rule); `v3desk_*_01c_desk` (no spine on Screen 0) | the derivation untouched; the air and the active convention as the board draws them |
 | **The eight new cabinet portraits at 5.5×** (the roster beside the sixteen squares) | `4e5adbf` | `omni_final_*_07c_politics_cabinet*` | still Elias's eyes (carried from playtest 3) |
 
 **Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's

@@ -78,7 +78,10 @@ invention.
   request-doc send until Phase A lands so one send carries both; the courtesy note can go any
   time.
 - **Phase B (on Design's boards):** The Desk built against the board; the (b)-class returns
-  resolved; capture family `v3desk_*`.
+  resolved; capture family `v3desk_*`. **Built 2026-08-28, the day boards 1m and 1n landed on the
+  live screens file** — Screen 0 (`GameController.Desk.cs`) and the rail's re-skin, against the
+  boards as read into `POLISIM_V2_SCREEN_SPEC.md` §A.17; the build's own reversible calls are
+  R-B1…R-B14 (`COMPLETED.md` §41).
 - **Phase C:** per-screen fold defaults tuned on film; §P's density verdict re-read on the folded
   stage.
 - **Item 10 lands inside v3:** election night is born on the v3 shell — the Desk folded, the map

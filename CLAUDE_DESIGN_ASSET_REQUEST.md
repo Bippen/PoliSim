@@ -1,13 +1,14 @@
 # Claude Design asset request — PoliSim
 
-**Status — ONE LIVE ASK (2026-08-28): §1, the eighth request — two boards for UI v3.0, Phase A.** The
-seventh request (2026-08-27) was answered the same day and migrated per this document's charter
-("appended to, then emptied on delivery"): `COMPLETED.md` §24, the rulings to `POLISIM_V2_SCREEN_SPEC.md`
-§A.16. **§1 is the next ask** — boards, not sprites: *"Screen 0, The Desk, folded"* and *"the rail"*, drawn
-at 1280×720 first against three annexes we supply (the census of the landing screen's text, the inventory
-of every instrument with its measured minimum size, the captures). **§E5** (two strip-cut findings) is
-still open and travels in the same send. What else is here: **§0** the delivered set as it stands, **§4**
-what is costed but not yet requestable, and **§5** the standing conventions.
+**Status — NO LIVE BOARD ASK; ONE RE-CUT PENDING (2026-08-28, evening).** The eighth request (§1, the two
+UI v3.0 boards) was **answered the same day it was sent** — boards 1m ("Screen 0 — The Desk, folded")
+and 1n ("the rail") on the live screens file, no gap costed — and migrated per this document's charter
+("appended to, then emptied on delivery"): the ask and its annexes verbatim to `COMPLETED.md` §41, the
+boards' rulings to `POLISIM_V2_SCREEN_SPEC.md` §A.17, the build the same day (v3.0 Phase B). **§E5** is
+half closed (the slider strip: source-less by Design's account, done as asked) and half a measured
+re-cut away (the hatch source: the 2026-08-28 re-export carries a 32 px period where the shipped PNG's
+is 16 — the figures are in §E5, the one re-cut is the live ask). What else is here: **§0** the delivered
+set as it stands, **§4** what is costed but not yet requestable, and **§5** the standing conventions.
 **Date:** 2026-08-28.
 
 **Standing rule: a count in prose is a cached value with no expiry** (working-discipline rule 12).
@@ -21,138 +22,16 @@ rule exists to catch at least four times.
 
 ---
 
-## 1. The eighth request — two boards for UI v3.0, Phase A (2026-08-28): "Screen 0, The Desk, folded" and "the rail"
 
-**What this asks for, in one sentence:** two boards, drawn at **1280×720 first** (then 1600×900 if you wish) — *"Screen 0, The Desk, folded"* and *"the rail"* — designed against three annexes we supply below: the census of every text element on today's landing screen with its class, the inventory of every instrument the game already draws with its **measured** minimum legible size, and the current landing-screen captures. No sprites are requested by this ask; a gap a board proves becomes a follow-up ask, costed, never an inline invention.
+## 1. The eighth request — ANSWERED 2026-08-28 and migrated
 
-**Why (the direction, one paragraph).** UI v3.0 is *the desk with fewer words, not a different desk* (`POLISIM_UI_V3_DIRECTION.md`, V3-R1). Two altitudes, one idiom: the landing surface becomes an instrument stage — full-bleed, graphical, nearly wordless — while the deep screens (Budget, laws, the statistics ledgers) stay the documents they are. Same paper, inks, fonts, sprites and stamps; your eleven boards, the 96-sprite pack and every capture carry over. The shell that makes room for the stage is **built** (Phase A: the fold — `ShellFoldState` OPEN/FOLDED, the chrome column and the tab tongues collapsing to one icon rail; the mechanism is structure and gets re-skinned, not re-architected, when your board lands). What is **not** built is the stage itself: The Desk is a board first (this ask), built second (Phase B).
+Two boards for UI v3.0 — *"Screen 0, The Desk, folded"* and *"the rail"* — asked 2026-08-28 against three
+annexes (the census of the landing screen's text, the instrument inventory with measured minimums, the
+captures) and **answered the same day** as boards 1m and 1n on the live screens file, with §E5 answered
+beside them. The ask as sent, with Annexes A and B verbatim, is `COMPLETED.md` §41; the boards as read are
+`POLISIM_V2_SCREEN_SPEC.md` §A.17; the build is v3.0 Phase B (`GameController.Desk.cs`, the same day).
+Nothing of it is live here.
 
-### 1.1 Board one — "Screen 0, The Desk, folded"
-
-The landing surface in the FOLDED shell: the rail at the left (board two), the stage taking the rest — at 1280×720 that is **1229 × 691 px of desk inside the 2 % margin, of which the stage is ≈ 1149 × 691 after the rail (39 px cell + sheet padding) and the 24 px column gap**; at 1920×1080 the stage is ≈ 1751 × 1037 (rail cell 55 px). Composed from the instruments in Annex B — the world map, the compass, the approval attribution, the sparkline strip, the calendar sheet, the stamps, the stepped rule — and nothing authored: **everything on The Desk is derived, attributed and drawn.**
-
-**Hard constraints (V3-R3, binding):**
-
-- **The text budget is absolute:** captions at mono 9.5 (Courier Prime, the document face) and instrument labels only; no sentences, no paragraphs, no restatements. A number appears as an instrument (a dial, a bar, a rule, a sparkline) with the numeral as the instrument's label, never as a text row.
-- **The census is the content list:** every class-(a) element in Annex A is required content (as an instrument or a label, not as the prose it is today); class (b) may return **only as an instrument**; class (c) never returns (it is already cut).
-- **No new hues, no new fonts, no Canvas** — the eleven area inks, the semantic three, the aged paper set (`PoliSimTheme.cs`, `POLISIM_V2_SCREEN_SPEC.md` §A.3), Pagella and Courier Prime as chosen. The stage is IMGUI like the frame it folds.
-- **Delivered sprites plus primitives:** the 148 sprites on disk (§0) and rule 10's procedural marks — axes, lines, dots, bars, rules, the stepped rule, the glow. A gap the board proves (a dial face, a compass rose, a stamp we do not have) becomes a follow-up ask with its cost stated; do not draw one in as if it existed.
-- **Instant flip:** the fold does not tween; the board shows one state (folded) and the rail's toggle is the way back.
-- **The floor first:** 1280×720 is where graphics-first pays or fails; the measured minimums in Annex B are at that size and at 1080p — an instrument placed below its minimum is a board defect, not a build problem.
-
-**The three deviation conventions you already know, restated because they bind here:** neutral valence (no instrument may look good or bad by its shape alone — `GetDeltaColor` keys to *good*, not to *up*, and the inks carry it); no invented data (every figure on the board must be one the inventory says the game holds; a placeholder numeral is fine, a placeholder *stat* is not); IMGUI adaptations declared (a treatment IMGUI cannot draw — a runtime blur, a non-rectangular mask, a tween — is named on the board as "adapt", never assumed).
-
-### 1.2 Board two — "the rail"
-
-The FOLDED chrome. Built in Phase A as an icon rail on the paper sheet the column stands on; the board re-skins it. **Required contents, exactly (V3-R2):** the six navigation icons (the tongues' own: `icon_nav_statistics`, `icon_nav_decisions`, `icon_nav_demographics`, `icon_area_fiscal`, `icon_nav_policylaws`, `icon_area_political`; the active one in its area ink behind a spine, the others in the tab-swatch tint — §A.3's third column), the calendar chip (the pad's own materials: month and day numeral), the status dot carrying B8's two states faithfully (HELD amber **with the glow**, `0 0 6px rgba(212,167,44,.7)`; RUNNING green, no glow), and the fold toggle. **Nothing else.** The rail's measure is derived from the icons' own 24-unit grid — a cell is the grid plus 10 units of air each side (55 px at 1080p, 39 px at 720p, 64 px at 1440p) — so the board may move the air, not the derivation. The built rail is on film in Annex C (`v3a_1280_02a_statistics_domestic`, `v3a_1920_…`) so you draw against the thing that exists.
-
-### 1.3 The annexes
-
-- **Annex A — the census** (below): every text element on the landing screen and the OPEN chrome column, with content, px size at 720/1080, role and class, counted.
-- **Annex B — the instrument inventory** (below): renderer, what it takes, data and honesty class, whether it stands alone, and the minimum legible size **measured on film** with the break stated.
-- **Annex C — the captures** (in the send package, `captures/`): the landing screen in both shell states at 1280×720 and 1920×1080 (`v3a_<size>_02a_statistics_domestic` folded — the default — and `…_open`), the rail as built, the ladder films behind Annex B (`v3a_ladder_<size>_ladder_<kind>`), and for reference the OPEN chrome column's own text (`v3a_<size>_02a_statistics_domestic_open`, `_rows`, `_deep`).
-
-**What comes back and where it lands:** two boards on the live screens file (1m, 1n, in your numbering) or as PNG at 1280×720; any gap costed in a line under each. The day they land: Phase B builds The Desk against board one (`v3desk_*` capture family), the rail is re-skinned against board two, every (b) in Annex A is resolved as an instrument or dropped, and this section migrates to `COMPLETED.md`.
-
-### Annex A — the census: every text element on the landing screen (Statistics › Domestic) and the OPEN chrome column, from the film (`clear_p1c_1920_02*`, `clear_p1c_1280_02_statistics`; code at HEAD `23cbb84`)
-
-Classes (the direction's taxonomy): **(a)** load-bearing · **(b)** restating an instrument that exists or could · **(c)** decoration. Classification honesty: unsure between (a) and (b) is (a). Sizes are the rendered font in px at **1280×720 / 1920×1080** (the two ends of the film; 1600×900 and 2560×1440 lie between and above — every style is `Screen.height`-derived and clamped, `GameController.RescaleStylesToScreen`, widget type at `clamp(h/1080, 0.6, 1.5)` × the theme constants). "×n" = the element repeats.
-
-| # | where | element (content) | px 720 / 1080 | role | class |
-|---|---|---|---|---|---|
-| C1 | chrome · top banner (only while an event is live) | `BREAKING: {event name}` | 20 / 30 | event headline | (a) |
-| C2 | | the event's description sentence | 16 / 24 | narrative | (a) — the event's only text |
-| C3 | | `Effects: GDP ±x.x%, Inflation ±x.x pts, Approval ±x.x` | 16 / 24 | three deltas as a sentence | (b) — an event stamp with three instruments; the map's event dots already carry the event |
-| C4 | chrome · (only at game over) | `GAME OVER` | 20 / 30 | state | (a) |
-| C5 | | the game-over reason | 16 / 24 | | (a) |
-| C6 | chrome · calendar sheet | `{Country} - Year {N}` | 23 / 35 | country name + elapsed turn | (a) — the name has no other home in the chrome; "Year N" is the turn count, not the pad's calendar year |
-| C7 | | `JANUARI 2029` (MMMM yyyy, OS locale) | 23 / 35 | the month page's own label | (a) |
-| C8 | | weekday abbreviations ×7 | 13 / 19 | instrument labels | (a) |
-| C9 | | day numerals 1–31 (spent days struck; today tinted; up to four area dots) | 15 / 23 | instrument | (a) |
-| C10 | | `This Month` | 23 / 35 | section header | (b) — the page above names the month and the rows date themselves (the playtest-3 "Derived" precedent) |
-| C11 | | `{m}/{d}` ×n | 16 / 24 | row date | (a) |
-| C12 | | marker label in area ink (`Unemployment published`, `Budget bill due`, …) ×n | 16 / 24 | what lands that day | (a) — cross-references the grid dot (that + whose area), says what; not a restatement |
-| C13 | | `Nothing scheduled this month.` (only when empty) | 16 / 24 | empty state | (b) — the empty ledger under its rule could carry it |
-| C14 | chrome · policy preview | `This Year's Policy` | 23 / 35 | panel header | (b) — `Estimated Effects` and the rows name the subject |
-| C15 | | ~~`Show tab guide` / `Hide tab guide` button + its paragraph naming the pre-consolidation ten tabs~~ | (skin) / 16–24 | help text | **(c) — CUT `23cbb84`** |
-| C16 | | `Estimated Effects` | 23 / 35 | the list's label | (a) |
-| C17 | | horizon buttons `1 Day` `1 Week` `1 Month` `Full Turn` | 18 / 26 | controls | (a) |
-| C18 | | `Over the next {horizon}` | 16 / 24 | | (b) — restates the selected horizon button |
-| C19 | | `(±5-10% margin of error)` | 16 / 24 | the estimate's error band | (a) — no instrument carries it (a band on the figures could; until then (a)) |
-| C20 | | `- a linear/compounding-scaled display estimate from the full 365-day projection, not a simulated sub-year value.` | 16 / 24 | methodology disclosure | (a) — honesty text; unsure → (a) |
-| C21 | | ~~`Projection only, not a guarantee.`~~ | | hedge | **(c) — CUT `23cbb84`** |
-| C22 | | eight effect rows `GDP Growth: +x%` … `Net Budget Impact: $x` (good/bad ink) | 16 / 24 | the estimate's figures | (a) — the figures; their sentence form is pre-v2 (on the stage they are instruments) |
-| C23 | chrome · pinned strip · calendar pad | `JAN.` (MMM, OS locale) | 11 / 16 | | (a) |
-| C24 | | `30` | 33 / 50 | | (a) |
-| C25 | | `2029` (Courier) | 12 / 17 | | (a) |
-| C26 | | `Time running` (RUNNING plate) | 16 / 24 | state | (b) — the green lamp beside it carries the state; the rail keeps the lamp |
-| C27 | | `TIME PAUSED: {reasons} to continue.` (HELD plate) | 20 / 30 | the resolving screens named | (a) — B8's load-bearing half |
-| C28 | | `Pause` `1x` `2x` `3x` `Saves` | 23 / 35 | controls | (a) |
-| S1 | content · tab strip | tongue labels `Statistics` `Decisions` `Demographics` `Budget` `Policy/Laws` `Politics` (over their icons) | 13 / 19 | navigation | (a) OPEN — folded, the icons carry it and the labels are (b) |
-| S2 | content · sheet | `Statistics` | 23 / 35 | header | (b) — the pulled-forward tongue says it |
-| S3 | sub-tabs | `Domestic` / `International` | 18 / 26 | navigation | (a) |
-| S4 | caption | `DOMESTIC BULLETIN — DESK READINGS, LIVE` | 14 / 21 | B6's screen-level live/published carrier | (a) — its first half restates the sub-tab; its second half is the only statement that these are live readings |
-| S5 | | `Domestic` | 23 / 35 | header | (b) — the selected sub-tab says it |
-| S6 | tiles ×10 | labels `GDP` `UNEMPLOYMENT` `INFLATION` `APPROVAL RATING` `CURRENCY STRENGTH` `POVERTY RATE` `GOVERNMENT DEBT` `DEBT-TO-GDP` `CREDIT RATING` `BUDGET BALANCE` | 7 / 10 | instrument labels | (a) |
-| S7 | | values (`$29.8T` `4.37` `2.20` `47.7` `101.4` `18.3` `$38.8T` `130.1` `AAA` `-$5.46T`) | 28 / 42 (shrink to fit, floor 11) | figures | (a) |
-| S8 | | unit `%` ×5 | 9 / 13 | units | (a) |
-| S9 | | GDP delta `+0.00%`; `OUTLOOK +` / `OUTLOOK -` on Credit Rating when not Stable | 9 / 13 bold | | (a) |
-| S10 | derived ledger | row names `GDP per capita` `Tax burden` `Government spending` `Deficit`/`Surplus` `Primary deficit`/`Primary surplus` | 16 / 24 | | (a) |
-| S11 | | figures (`$85.8k` `19.3%` …) | 16 / 24 | | (a) |
-| S12 | | trailing `of GDP` ×3, `of GDP, excl. interest`; the empty states `no population` / `not yet computed` + `advance a year` | 16 / 24 | units; empty states | (a) the units; (b) the empty-state phrases |
-| S13 | | `Sector shares of GDP` | 16 / 24 | group label | (b) — each row's trailing `of GDP` says it and the rows are named sectors |
-| S14 | | eight sector rows: names, figures, `of GDP` ×8 | 16 / 24 | | (a) — a unit column read down, not eight restatements |
-| S15 | | `Sector shares of GDP: not tracked for this country.` (conditional) | 16 / 24 | empty state | (b) |
-| S16 | six graphs | titles `GDP` `Unemployment` `Inflation` `Approval Rating` `Poverty Rate` `Debt-to-GDP` | 16 / 24 | instrument labels | (a) |
-| S17 | | the `(dashed = next-year estimate)` suffix ×3 | 16 / 24 | a legend key | (b) — a key could be an instrument (1l drew the line weights; the key is what the suffix restates) |
-| S18 | | change label `+2,5%` per graph | 16 / 24 bold | | (a) — prints in the OS culture (`+2,5%`) where the tiles print invariant (`+0.00%`); an existing inconsistency, logged, not v3's |
-| S19 | | `< Older` / `Newer >` | 10 / 16 | controls (disabled on one page) | (a) |
-| S20 | | range label (blank on one page; `Last 50 years`; `N-M years ago`) | 10 / 16 | | (a) |
-| S21 | | axis labels min / mid / max ×3 per graph | 10 / 16 | | (a) |
-| S22 | | threshold labels `NAIRU`, `comfortable` | 10 / 16 | | (a) |
-| S23 | | `No data yet - advance a year.` (conditional) | 16 / 24 | empty state | (b) |
-| S24 | Society box | `Society` | 23 / 35 | header | (b) — the rows name themselves; their area inks carry the grouping |
-| S25 | | rows `Youth unemployment` `Life expectancy` `Income inequality (Gini)` `Real wages` `Productivity` `Housing overburden` (EU five only) `Homeownership` `House prices` | 16 / 24 | | (a) |
-| S26 | | figures | 16 / 24 | | (a) |
-| S27 | | trailing `of youth labor force` `years at birth` `0-100 scale` `index, 100 = start of term` ×2 `$ per hour (PPP), against your own past` `spend >40% of income on housing` `of households` / `of households (primary metric)` | 16 / 24 | units and their definitions | (a) — the two caveats (`against your own past`, `(primary metric)`) are rulings made visible; unsure → (a) |
-| S28 | As published | `As published` | 23 / 35 | header | (b) — every title beneath carries "as published" |
-| S29 | | `What the public sees: lagged, and revised as later estimates arrive.` | 16 / 24 | | (b) — restates B6's two channels, the badge chip (published) and the dashed frame (preliminary) |
-| S30 | | ~~`Compare against the live figures above.`~~ | | instruction | **(c) — CUT `23cbb84`** |
-| S31 | three published graphs | `GDP as published` `Unemployment as published` `Inflation as published` + change label, page row, axis labels, date axis, `latest: {value} ({lag})`, the badge chip `PRELIMINARY` / `FINAL` | 16 / 24; 10 / 16 | | (a) |
-| S32 | | range buttons `1yr` `5yr` `All` | 10 / 16 | controls | (a) |
-| S33 | bulletin | `PRELIMINARY`/`FINAL` chip · `Poverty rate as published: 18.3` · `for Jan 2028 - Dec 2028, released 1 Mar 2029` | 16 / 24 | B6's channel 1 | (a) |
-| S34 | | `{label}: not yet published - the first release is still ahead.` / the graph's `Not yet published - the first release is still ahead.` (conditional) | 16 / 24 | empty states | (b) |
-
-**Counts (element kinds, ×n collapsed):** (a) **44** · (b) **18** (C3 C10 C13 C14 C18 C26 S2 S5 S12-part S13 S15 S17 S23 S24 S28 S29 S34, plus S1's labels once folded) · (c) **3 kinds, 4 text elements** — cut at `23cbb84`. Nothing on this screen was cut that a board might have wanted back: every (b) stands and waits for the board.
-
-### Annex B — the instrument inventory: every self-contained figure the code already draws, with its minimum legible size measured on film
-
-The ladder films are `v3a_ladder_1920_ladder_<kind>` (1920×1080: body type 23 px) and `v3a_ladder_1280_ladder_<kind>` (1280×720: body type 16 px), each rung captioned with its size in Courier under it; the sizes below are absolute pixels and hold at both (the type-bearing instruments were re-read on the 720p film). Read this table with the direction's rule: **candidates only, no new instruments.** "Honesty class" is the data's provenance vocabulary the code already uses — LIVE (`Country.State`, the desk reading), PUBLISHED (`Country.Published`, lagged and revisable — B6's badge and dashed frame), DERIVED (`DerivedStats`, arithmetic on live values), LEDGER (Class A attribution terms, recorded at the boundary and audited), SEED (`WorldFactory` constants, tagged `[VERIFIED]`/`[PROVISIONAL]`), CHROME (delivered art, no data). "Stands alone" = draws correctly outside its screen with only the data named.
-
-| # | instrument (the direction's name) | renderer, entry point | takes | data · honesty class | stands alone? | minimum legible size — MEASURED, and the break |
-|---|---|---|---|---|---|---|
-| I1 | **the world map** | `MapRenderer.Draw(Rect, countries, playerId, eventMarkers, turn, fadeTurns, labelStyle, out clicked…)` (`MapRenderer.cs:105`) | a Rect (host 260 px tall, full column width) | six GDP-sized nodes at fixed illustrative positions (`CountryMapPositions` — **not geography**: no polygons, no coastlines), trade-volume lines, fading event dots · LIVE (`Country.State.GDP`, `TradePartners`, the event markers) | yes — one call, its own textures | **with names: 360×216 (type 12–17)** — at 240×144 the names collide; **nodes and lines alone: 120×72** (six nodes distinct), merging at 90×54. *(Corrected 2026-08-28, R-SP5: the names now take §A.9a's resort ladder — the full name, then the ISO 3166-1 alpha-3 code, then shrink toward the 8-px floor — and the renderer measures the smallest gap between any two labels or a label and another node; the harness asserts ≥ 4 px on the International screen (25.8 px at 1600×929, every name at its first rung) and the ladder film carries the rung and the gap in each rung's caption. The first filing's "United States / France touch at every size" was the ladder film's small rungs, not the screens.)* |
-| I2 | **the compass** | `PoliticalCompassRenderer.Draw(Rect, countries, playerId, labelStyle)` (`:118`) | a Rect (host square, `clamp(0.4·h, 260, 520)`) | one dot per country on two 0–100 axes, `GetFiscalSizeAxisValue` / `GetRegulationWelfareAxisValue` · DERIVED from LIVE (+ the seed portfolios, `[PROVISIONAL]` until the database session) | **yes, since R-SP4 (2026-08-28)** — the renderer declares an honest footprint (`Footprint`: the plot square plus the caption band at the width the captions need, wrapped never shrunk) and containment-asserts the plot and both captions inside the rect it is given; the first filing of this row found the captions loose (GUILayout labels after the plot) | **with names: 240×240 at 8-px type** (crowded), 360 at 12 px comfortable; **dots alone: 90×90**, merging at 64 |
-| I3 | **the approval face with its nine-term attribution** | **does not exist as a face or a dial.** What exists: (a) the Approval headline **tile** (`PoliSimWidgets.StatTile`, `:387`); (b) the Approval **graph** (`GraphRenderer.Draw`, `:118`); (c) the attribution **ledger panel** (`StatTracePanel.Draw(country, gapStance, style, style, width, hostHeight)`, `StatTracePanel.cs:149` — GUILayout, no Rect; `MeasureHeight` first) with **13 term rows** (12 Class-A terms + ClampLoss; the nine the direction names are the nine non-misery terms) and up to four dated events, every row `fill = -1` (no gauge: "there is no proportion here") | (a) a Rect + scale; (b) a width; (c) a width + host height | (a) LIVE; (b) LIVE history (`StatHistory.ApprovalRating.Quarterly`); (c) LEDGER (`Country.ApprovalLedgerLastPeriod`, Class A terms + Class B events, the boundary identity audited) | (a) yes; (b) yes (its own texture cache per instance); (c) yes given the country — its section selection is static (`RequestSelection`, committed in `MeasureHeight`) | **tile: label legible to scale 0.8 (264×98, label 8 px), the hero figure alone to scale 0.3 (99×37, 13 px)**; **graph: 240 px wide** at 9-px furniture (title, change, axis), the line alone to 120; **ledger: 360 px wide at 13-px type (the header line, the terms, the indented misery sub-rows all read); at 240 / 9 px the sub-row labels ("· unemployment above NAIRU") overflow their name column at the 8-px floor - the guard's own record on both films**. **A face or dial would be a NEW instrument** — Phase B's, drawn on the board first |
-| I4 | **the sparkline strip at 1l's weights** | `GraphRenderer.DrawSparkline(Rect, history, color, maxPoints = 40)` (`:914`); the strip is `PolicyScreenStatsRenderer.Draw(area, country, labelStyle, availableWidth, maxStats = 4)` (`:149`, GUILayout) — one chip per stat: icon 22/16·type, value, trend arrow, sparkline 72×20 per 16 px type | a Rect (the bare line); a width (the strip) | LIVE (`Country.State`, never published — the class doc's ruling); history for the line · **1l's weight law applies to it — R-G4, `thickness = max(2, round(rectHeight/34))` device px, so 2 px at the chip's 20–35 px rects (the graph's 3 px at a 90 px rect is the same law at a taller rect)**; no projection segment (a sparkline has no estimate to dash). *(Corrected 2026-08-28, R-SP3: this row's first filing said no 1l weight reached the sparkline — it does, through the one renderer the strip and the graphs share, `GraphRenderer.BuildSparklinePixels`; the eye pair at 1280 and 2560 is on film.)* | yes (the line); the strip needs `PolicyScreenStats.GetStatsForArea` | **line: the shape reads to 36×10**, comfortable 54×15 (the chip's own 72×20); a dash at 24×7. **strip: 280 px wide at 9-px type** (four chips stacked), 380 at 12 px in two columns; 200 / 8 px is the floor and reads as a footnote |
-| I5 | **the calendar sheet** | `GameController.DrawCalendarMonthGrid(monthStart, today, markers)` + `DrawCalendarMonthLedger` (`:2961`, `:3141`; GUILayout) — the month page (weekday header, day cells, struck spent days, up to four area dots per day) and the dated ledger | a width (the column) | markers from `BuildCalendarMonthMarkers` — release days (`ReleaseCalendar`), pending bills' days, the election cycle, divisions, events · LIVE schedule facts | no — a GameController method reading the simulation's calendars; extractable | **420 px wide at the sheet's own type** (16 px at 720p, 23 at 1080p): at 320 the weekday row clips its seventh column; at 240 the month header wraps and the ledger's names break mid-word; below that the numerals overlap |
-| I5b | the calendar **pad** / the rail's **chip** | `DrawCalendarPad()` (`:4390`, size from body type: 64/12.5 × label) and `DrawRailCalendarChip(cell, …)` (v3a — the pad's sprite at cell size, month + day) | the pad: none (its own size); the chip: a cell width | `SimulationManager.CurrentDate` · LIVE | the chip yes (a cell width); the pad no | **chip: a 32-px cell** (32×36: month 9 px, day 13 px); at 24 the day numeral has no line box left (the guard's own record, both films); the rail's 39 px at 720p and 55 at 1080p sit above the floor |
-| I6 | **the event / alert stamps** | the division verdict stamps: `ui_stamp_carried` / `ui_stamp_rejected` (170×50 @1×, rotation baked) via `UiPalette.DrawTintedIcon` (`GameController.cs` ~`:8605`); the urgency chip: `PoliSimWidgets.Stamp(Rect, text, style, ink, borderInk, borderWidth, rotation)` (`:272`, procedural, −2°); the badge chip `PoliSimWidgets.Badge` (`ui_chip`); the HELD lamp `DrawHeldLamp` (v3a) | a Rect | CHROME (the sprites) · the chip's text is (a) content; the lamp is B8's state | yes | **sprite stamp: 68×20** (the word reads), comfortable 85×25, 51×15 the break; **procedural chip: 9-px type** (83×20), 8 the floor, 7 breaks; **lamp: 8 px with its glow readable**, 6 the dot alone, 4 a speck |
-| I7 | **the stepped rule** | `GameController.DrawMagnitudeSteps(Rect, tier, stepWidth, gap)` (`:7538`) — always four steps, filled to the tier, one ink | a Rect | a law's magnitude tier (1–4) · SEED/content | yes | **32×8** (four steps and the fill count read), comfortable 48×12; 24×6 marginal; 16×4 dots |
-| I8 | the hemicycle | `HemicycleRenderer.Draw(title, seats, labelStyle)` (`:38`; GUILayout, **fixed `AreaWidth 340 × AreaHeight 190`**, five rows, 10 px dots) + a legend of `LedgerRow.DrawReadOnly` rows | none (its constants) | `Country.ParliamentSeats` · LIVE (seat drift) — re-keys under item 10 | yes at its one size | **does not shrink** — no size parameter; the legend rows need ≥ ~430 px of row width at 23-px type (a 440 px frame clipped "Nationalist Front" by 9 px); a Phase B change if the board wants it smaller |
-| I9 | the pie | `PieChartRenderer.Draw(title, slices, labelStyle, valueFormat, moneyUnit)` (`:58`; **fixed `Diameter 120`**, solid — no donut) | none (its constant) | demographics shares · LIVE | yes at its one size | **does not shrink**; and the eight-ink cap makes it a ledger past eight categories (`RankedBarLedgerRenderer`) |
-| I10 | the line graph (1l's weights live here) | `GraphRenderer.Draw(title, history, projected, labelStyle, higherIsBetter, moneyUnit, threshold…)` / `DrawPublished(...)` (`:118` / `:214`; GUILayout; texture 300×90, display height `clamp(0.075·h, 50, 90)`) — title + signed change, page row, axis min/mid/max, threshold label; the published form adds the date axis, release markers, the badge, the dashed frame | a width | LIVE history (`StatHistory.*.Quarterly`, 250 entries) or PUBLISHED series | yes (one instance per chart — it caches its texture) | **240 px wide at 9-px furniture**; 320 at 12 px comfortable; the plot line alone reads at 120 |
-| I11 | the policy web | `PolicyWebRenderer.Draw(Rect, labelStyle, country, pinnedPolicy, pinnedStat, out…)` (`:731`) — the ring, ~73 nodes sized by degree, edges on hover/pin, solid = DERIVED (a ledger term) / dashed = DECLARED | a Rect (host `clamp(…, 0.5·h, 0.92·h)` square) | the edge set per country · LEDGER (Derived) and DECLARED | yes | **with labels: 240×240 at 9-px type** (crowded), 360 at 13 px comfortable; **the ring alone reads at 180**, a blob at 120 |
-| I12 | the flag | `IconLibrary.GetFlag(CountryId)` — full-colour art, never tinted (`:163`) | a Rect (3:2) | CHROME | yes | **24×16** recognisable (stripes and canton), 30×20 comfortable; 18×12 breaks |
-| I13 | the area / nav icons | `IconLibrary.GetAreaIcon(area)` / `Get("icon_nav_*")` through `UiPalette.DrawTintedIcon` — white-on-alpha, tinted (`:38`, `:323`) | a Rect (square) | CHROME | yes | **12 px** readable, 16 comfortable, 10 recognisable, 8 a blob (§5.2's 22 px guidance stands) |
-| I14 | the read-only ledger row (the gauge lane) | `LedgerRow.DrawReadOnly(Rect, name, fill, figureText, trailingText, barInk, nameStyle, figureStyle)` (`:399`) — name, track + fill, figure, unit; `fill < 0` = no gauge | a Rect (its height from `LedgerRow.Height(style)`) | any proportion · LIVE or DERIVED | yes | **10-px type** (row 33 px tall) reads; 8 px is the floor and reads as a footnote — a document form, not a stage instrument; listed because the direction's "a bar" is this lane |
-| I15 | the bars | `UiPalette.DrawDivergingBar(Rect, value, displayRange)` (`:602`, fills outward from centre, green right / red left); `PoliSimWidgets.ThresholdBar(Rect, fraction, thresholdFraction, fill)` (`:537`) | a Rect | a signed alignment; a share with a threshold · LIVE/DERIVED | yes | **40×14** (the fill and the centre line / tick read), comfortable 64×14; 24×14 breaks |
-| I16 | the stat tile | `PoliSimWidgets.StatTile(Rect, label, value, suffix, delta, deltaIsGood, subLabel, area, scale, barFraction, thresholdFraction)` (`:387`; height from `StatTileHeight(scale, hasDelta, hasBar)`) — the printed plate, label at 10·scale, hero figure at 42·scale (shrinks to 11), delta at 13·scale | a Rect + a scale | LIVE | yes | **scale 0.8 (264×98)** with its label; the hero figure alone to scale 0.3 (99×37) |
-| — | **not instruments, listed so the board does not ask:** the portraits (`DrawPersonPortrait`, a person, not a reading), the country selector and the signing document (Canvas screens, their own class), the ranked bar ledger (a table), the trace panel's chips (I4's strip) | | | | | |
-
-**How the sizes were measured.** `GameController.DrawInstrumentLadder` (harness-only; no player path reaches it) draws one kind per capture on a paper sheet at a descending run of sizes, each rung by the instrument's own renderer on the live game's data, with a Courier caption of the size; instruments that carry type take a label style scaled with the rung and floored at the guard's 8 px, so a 64 px map is not measured with 24 px names. The break is read by eye on the film at both sizes and stated per row; where the code's own guards recorded a rung (the chip's day numeral at the 24-px cell, the sheet's at its narrowest rungs), the log line is the break's second witness (`shot_v3a_ladder_*.log`, reported not gated).
-
----
 
 ## 0. The delivered set at HEAD — derived 2026-08-27 (after Progress5), so nothing is asked for twice
 
@@ -358,10 +237,31 @@ tolerance). The 90-pair sweep found two source/shipped mismatches — both asks,
    shipped PNG is canonical** — it is what two playtests reviewed on screen — so the ask is
    *confirm, and re-export the SVG source to match the shipped render*, not a choice of which to
    adopt. If the SVG was the intent, say so and we re-import instead.
+   **Answered 2026-08-28 (the live screens file, "§E5 answered"): presumption confirmed, the source
+   re-exported** with explicit 45° stripes — stated as a 16 px horizontal period and a 6 px
+   horizontal duty (perpendicular width 4.243) — and the verification left to our rasterizer, with
+   the offer: *"if it still mismatches, the residual is duty or phase — say which and I re-cut once."*
+   **Imported and diffed the same day (resvg, `stripcut_b1_20260828_150949.log`): still outside
+   budget — structure 33.4 % against 1 %, edge 0.40, down from 48.5 %.** The residual, measured on
+   the shipped 32×32 PNG rather than guessed: its stripes run along `x + y` with a **16 px period**
+   (the alpha profile along `x + y` repeats every 16), centred within half a pixel of the multiples
+   of 16 — **the phase is fine** — and the ink is ≈8 px wide along x (5.7 perpendicular; coverage
+   50.4 %). The re-export's five lines sit at `x + y = −32, 0, 32, 64, 96` — **a 32 px period, twice
+   the PNG's** — at 6 / 4.243. So the residual is the period first and the duty second: the stated
+   intent (16 px) was right, the file is off by a factor of two. **The one re-cut asked:** lines at
+   `x + y = 16k` for every k that touches the 32×32 tile (k = −1…4), perpendicular stroke ≈ 5.7
+   (≈ 8 px along x), phase as it is. `StripCutDiffCheck` keeps the pair deferred by name with this
+   measurement as the pointer (R-D3); the deferral lifts the day the re-cut sits in budget.
 2. **`ui_slider_track.png` — a 256-wide strip whose only source on file is a 24×24 pill:** point
    us at the real source for the strip, or confirm the pill is the intended source and the strip
    a derived export — in which case the derivation (stretch region, caps) goes in the pipeline
    note so the diff can model it.
+   **Answered 2026-08-28 — CLOSED:** the strip is Design's own authored raster, regenerated with
+   the v2 chrome pack (plain surface, 9-slice 10/10/4/12, ticks tiled by code), no SVG source
+   exists, and the pill was the old pack's leftover under a colliding name. Done as asked: the pill
+   removed from `Source/`, the strip listed source-less in the check's model
+   (`StripCutDiffCheck.SourcelessByDesign`, printed by name on every run; a source re-appearing
+   under the name is a FAIL). No SVG authored from the strip is requested.
 
 Everything else in the 90-pair sweep sat inside budget; nine `Stats/` icons near the 2% line are
 ours to inspect (A5), not Design's.

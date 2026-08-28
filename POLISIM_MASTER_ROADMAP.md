@@ -81,7 +81,7 @@ The sequence, as written there:
 - **Send (Elias, one gesture):** the request doc now carries §E5 + the v3 ask — hold the pending
   request-doc send until Phase A lands so one send carries both; the courtesy note can go any time.
 - **Phase B (on Design's boards):** The Desk built against the board; the (b)-class returns resolved;
-  capture family `v3desk_*`.
+  capture family `v3desk_*`. **BUILT 2026-08-28**, the day boards 1m and 1n landed (`COMPLETED.md` §41).
 - **Phase C:** per-screen fold defaults tuned on film; §P's density verdict re-read on the folded stage.
 - **Item 10 lands inside v3:** election night is born on the v3 shell — the Desk folded, the map as the
   stage. **Fallback, stated:** if Design's board has not landed by the gate, election night builds in the
@@ -93,9 +93,13 @@ in `Direction.zip`, both archived out of tree at `../PoliSim-captures/inbox/`): 
 pure decoration cut; the shell and the rail built and guarded in both states at four sizes with the
 trajectories byte-identical; the instrument inventory measured on the ladder films; the eighth request
 written as the request doc's §1 with its three annexes; the send package regenerated. Record:
-`COMPLETED.md` §39, `CLAUDE.md` "UI v3.0 Phase A (2026-08-28)". **Phase B is WAITING, not live** — on
-Design's two boards (`MISSING_PREREQUISITES.md` §E6), after Elias's one paste (§S). **Phase C** queues behind
-Phase B. Nothing of v3.0 is startable today.
+`COMPLETED.md` §39, `CLAUDE.md` "UI v3.0 Phase A (2026-08-28)". **Phase B BUILT 2026-08-28** — Design's
+two boards (1m "Screen 0 — The Desk, folded", 1n "the rail") landed on the live screens file the same
+day and Screen 0 was built against them (`GameController.Desk.cs`; the boards as read into the spec's
+§A.17; the build's fourteen reversible calls R-B1…R-B14 in `COMPLETED.md` §41; the `v3desk_*` family on
+film at four sizes). **Phase C is the next startable v3.0 work:** the per-screen fold defaults tuned on
+film (Statistics › Domestic still carries the FOLDED default it held as the Desk's stand-in) and §P's
+density verdict re-read on the stage.
 
 ---
 
@@ -140,9 +144,9 @@ forward):**
   (`SEND_PACKAGE_2026-08-28.md`); **§A** the coupling queue Q6–Q10 at their triggers — nothing else;
   **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
   Step 6, Riksbank-B, the stranded branch, the party marks, and the political-model fact (no expansionary
-  bill passes on any drift path before the re-seeding); **§E** Design: **§E6 the v3.0 boards** ("Screen 0,
-  The Desk, folded" and "the rail" — v3.0 Phase B waits on them), §E5's two strip-cut findings (the
-  hatch tile's tiling, the slider strip), all in the request doc for the one send, and §E2/§E4; **§V**
+  bill passes on any drift path before the re-seeding); **§E** Design: §E6's boards LANDED and were built
+  2026-08-28 (the row retires at the next re-derivation), §E5's hatch source still one re-cut away (the
+  slider half closed), the ask in the request doc, and §E2/§E4; **§V**
   every surface on film — the `v3a_*` family and the ladder films included — one sitting through
   `../PoliSim-captures/sv_index.html`; **§P** the three felt
   verdicts, each a staged save — load, play, judge — read in the no-expansionary-passage context (R-C7).
@@ -307,9 +311,9 @@ happen.
 - Five gestures, no sixth (the push is a session's since R-SP1, 2026-08-28 — fast-forward only, at pass
   end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the one send now carries §E5 AND
   the v3.0 boards ask with its annex captures); sit once through `../PoliSim-captures/sv_index.html` (§V,
-  the shell's rows and the ladder films now on it); load the three `playtest_*` saves and play (§P);
-  answer §E5 when Design does, and hand v3.0 Phase B its boards when Design draws them (§E6); 13
-  September (§D). Nothing waits on a ruling (§A holds only the coupling queue at its triggers), and
+  the shell's rows, the ladder films and the Desk now on it); load the three `playtest_*` saves and play
+  (§P); paste the request doc's §E5 measurement to Design for the one re-cut (the boards, §E6, landed and
+  are built); 13 September (§D). Nothing waits on a ruling (§A holds only the coupling queue at its triggers), and
   `MISSING_PREREQUISITES.md` is live-only — its tombstones are `COMPLETED.md` §38a.
 - Review the commit log — each unit of work is its own commit, validation results in the message or
   CLAUDE.md.
