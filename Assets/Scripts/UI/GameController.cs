@@ -2018,6 +2018,15 @@ namespace PoliSim.UI
                 return;
             }
 
+            // UI v3.0 Phase A, Phase 3 (harness only): the instrument ladder replaces the frame for
+            // one capture at a time. No player path sets it; see DrawInstrumentLadder.
+            if (_instrumentLadder != null)
+            {
+                DrawInstrumentLadder(_instrumentLadder);
+                DrawCanvasRestoreScrim();
+                return;
+            }
+
             bool hasPendingFedChairSelection = UpdateFedChairSelectionState();
             // Political Systems Overhaul Part A: same "must resolve before advancing" idiom as Fed
             // Chair selection - a fired cabinet decision needs a player-picked response, not something
@@ -4690,6 +4699,337 @@ namespace PoliSim.UI
             }
 
             PoliSimTheme.Pill(dotRect, PoliSimTheme.DraftOnDesk);
+        }
+
+        // ------------------------------------------------------------------------------------------
+        // UI v3.0 Phase A, Phase 3 — the instrument ladder (a HARNESS-ONLY overlay). No player path
+        // sets _instrumentLadder; the screenshot driver does (-shotladder), one kind per capture, and
+        // OnGUI then draws that instrument alone on a paper sheet at a descending run of pixel sizes
+        // with a mono caption of the size under each rung, so its minimum legible size is measured on
+        // film - shrink until it breaks, state the break - rather than guessed. Every rung is drawn by
+        // the instrument's own renderer on the live game's data; nothing here is a new instrument.
+        // Instruments that carry type take a label style scaled with the rung (floored at the guard's
+        // 8 px), because a 64 px map with 24 px names measures nothing. Instruments whose size is a
+        // constant (the hemicycle, the pie) are drawn once and captioned with the constant.
+        // ------------------------------------------------------------------------------------------
+        private string _instrumentLadder;
+        private readonly Dictionary<string, GraphRenderer> _ladderGraphs = new Dictionary<string, GraphRenderer>();
+
+        internal void SetInstrumentLadder(string kind)
+        {
+            _instrumentLadder = string.IsNullOrEmpty(kind) ? null : kind;
+            // The trace panel's selection is asked for once here (an absolute request, committed by
+            // the panel's own MeasureHeight on the next Layout - which the ladder's rung calls, as
+            // every host does; the first ladder film skipped it and captured an empty panel).
+            StatTracePanel.RequestSelection(_instrumentLadder == "trace" ? StatNodeId.Approval : (StatNodeId?)null);
+        }
+
+        private struct LadderCursor
+        {
+            public float X, Y, RowHeight, Left, Right, Gap;
+
+            public Rect Place(float width, float height, float captionHeight)
+            {
+                if (X + width > Right && X > Left)
+                {
+                    X = Left;
+                    Y += RowHeight + Gap;
+                    RowHeight = 0f;
+                }
+
+                var rect = new Rect(X, Y, width, height);
+                X += width + Gap;
+                RowHeight = Mathf.Max(RowHeight, height + captionHeight);
+                return rect;
+            }
+        }
+
+        private GUIStyle LadderStyle(float rung, float full)
+        {
+            return new GUIStyle(_labelStyle) { fontSize = Mathf.Max(8, Mathf.RoundToInt(_labelStyle.fontSize * rung / full)), wordWrap = false };
+        }
+
+        private void LadderCaption(Rect rung, string text, float captionHeight)
+        {
+            GUI.Label(new Rect(rung.x, rung.yMax + 2f, Mathf.Max(rung.width, 140f), captionHeight), text, _calendarMetaStyle);
+        }
+
+        private void DrawInstrumentLadder(string kind)
+        {
+            float marginX = Screen.width * ScreenMarginFraction;
+            float marginY = Screen.height * ScreenMarginFraction;
+            var area = new Rect(marginX, marginY, Screen.width - marginX * 2f, Screen.height - marginY * 2f);
+            GUI.Box(area, GUIContent.none, _boxStyle);
+
+            float pad = _boxStyle.padding.left + 10f;
+            float captionHeight = _calendarMetaStyle.lineHeight + 6f;
+            GUI.Label(new Rect(area.x + pad, area.y + pad, area.width - pad * 2f, captionHeight),
+                $"LADDER {kind} - {Screen.width}x{Screen.height}; body type {_labelStyle.fontSize} px, tab type {_tabButtonStyle.fontSize} px; captions: rung size, type where scaled",
+                _calendarMetaStyle);
+            var cursor = new LadderCursor { X = area.x + pad, Y = area.y + pad + captionHeight + 10f, Left = area.x + pad, Right = area.xMax - pad, Gap = 16f };
+
+            StatHistory history = _playerCountry.History;
+            Color fiscalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
+            System.DateTime today = _simulationManager.CurrentDate;
+            var monthStart = new System.DateTime(today.Year, today.Month, 1);
+
+            switch (kind)
+            {
+                case "map":
+                    foreach (float w in new[] { 480f, 360f, 240f, 180f, 120f, 90f, 64f })
+                    {
+                        float h = Mathf.Round(w * 0.6f);
+                        Rect r = cursor.Place(w, h, captionHeight);
+                        GUIStyle style = LadderStyle(w, 480f);
+                        _mapRenderer.Draw(r, _world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns, style, out _, out _);
+                        LadderCaption(r, $"{w}x{h} type {style.fontSize}", captionHeight);
+                    }
+                    break;
+                case "compass":
+                    foreach (float w in new[] { 480f, 360f, 240f, 180f, 120f, 90f, 64f })
+                    {
+                        Rect r = cursor.Place(w, w, captionHeight);
+                        GUIStyle style = LadderStyle(w, 480f);
+                        _politicalCompassRenderer.Draw(r, _world.Countries, PlayerCountryId, style);
+                        LadderCaption(r, $"{w}x{w} type {style.fontSize}", captionHeight);
+                    }
+                    break;
+                case "web":
+                    foreach (float w in new[] { 640f, 480f, 360f, 240f, 180f, 120f })
+                    {
+                        Rect r = cursor.Place(w, w, captionHeight);
+                        GUIStyle style = LadderStyle(w, 640f);
+                        _policyWebRenderer.Draw(r, style, _playerCountry, null, null, out _, out _);
+                        LadderCaption(r, $"{w}x{w} type {style.fontSize}", captionHeight);
+                    }
+                    break;
+                case "sparkline":
+                    foreach (float w in new[] { 288f, 216f, 144f, 108f, 72f, 54f, 36f, 24f, 16f })
+                    {
+                        float h = Mathf.Round(w / 3.6f);
+                        Rect r = cursor.Place(w, h, captionHeight);
+                        GraphRenderer.DrawSparkline(r, history.Gdp.Quarterly, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+                        LadderCaption(r, $"{w}x{h}", captionHeight);
+                    }
+                    break;
+                case "chipstrip":
+                    foreach (float w in new[] { 700f, 520f, 380f, 280f, 200f })
+                    {
+                        Rect r = cursor.Place(w, 220f, captionHeight);
+                        GUIStyle style = LadderStyle(w, 700f);
+                        GUILayout.BeginArea(r);
+                        PolicyScreenStatsRenderer.Draw(UiPalette.SystemArea.Fiscal, _playerCountry, style, w);
+                        GUILayout.EndArea();
+                        LadderCaption(r, $"width {w} type {style.fontSize}", captionHeight);
+                    }
+                    break;
+                case "tile":
+                    foreach (float s in new[] { 1f, 0.8f, 0.65f, 0.5f, 0.4f, 0.3f })
+                    {
+                        float w = Mathf.Round(330f * s);
+                        float h = PoliSimWidgets.StatTileHeight(s, true, false);
+                        Rect r = cursor.Place(w, h, captionHeight);
+                        PoliSimWidgets.StatTile(r, "GDP", UiFormat.Money(_playerCountry.State.GDP, MoneyUnit.Billions), null, "+1.20%", true, null, UiPalette.SystemArea.Global, s);
+                        LadderCaption(r, $"{w}x{Mathf.Round(h)} scale {s}", captionHeight);
+                    }
+                    break;
+                case "graph":
+                    foreach (float w in new[] { 640f, 480f, 320f, 240f, 160f, 120f })
+                    {
+                        GUIStyle style = LadderStyle(w, 640f);
+                        float h = style.lineHeight * 3f + 110f;
+                        Rect r = cursor.Place(w, h, captionHeight);
+                        string key = "graph" + w;
+                        if (!_ladderGraphs.TryGetValue(key, out GraphRenderer graph))
+                        {
+                            graph = new GraphRenderer();
+                            _ladderGraphs[key] = graph;
+                        }
+
+                        GUILayout.BeginArea(r);
+                        graph.Draw("Approval Rating", history.ApprovalRating.Quarterly, null, style, higherIsBetter: true, moneyUnit: null);
+                        GUILayout.EndArea();
+                        LadderCaption(r, $"width {w} type {style.fontSize}", captionHeight);
+                    }
+                    break;
+                case "trace":
+                    foreach (float w in new[] { 640f, 480f, 360f, 240f })
+                    {
+                        GUIStyle style = LadderStyle(w, 640f);
+                        Rect r = cursor.Place(w, 420f, captionHeight);
+                        float gapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
+                        GUILayout.BeginArea(r);
+                        // Measure first, as every host does: the panel applies a pending selection there.
+                        StatTracePanel.MeasureHeight(_playerCountry, gapStance, style, w, 420f);
+                        StatTracePanel.Draw(_playerCountry, gapStance, style, style, w, 420f);
+                        GUILayout.EndArea();
+                        LadderCaption(r, $"width {w} type {style.fontSize}", captionHeight);
+                    }
+                    break;
+                case "sheet":
+                    foreach (float w in new[] { 560f, 420f, 320f, 240f, 180f, 130f })
+                    {
+                        Rect r = cursor.Place(w, 520f, captionHeight);
+                        GUILayout.BeginArea(r);
+                        GUILayout.BeginVertical(_boxStyle);
+                        Dictionary<int, List<CalendarMarker>> markers = BuildCalendarMonthMarkers(monthStart, today);
+                        DrawCalendarMonthGrid(monthStart, today, markers);
+                        DrawCalendarMonthLedger(monthStart, markers);
+                        GUILayout.EndVertical();
+                        GUILayout.EndArea();
+                        LadderCaption(r, $"width {w} (the sheet's own type)", captionHeight);
+                    }
+                    break;
+                case "chip":
+                    foreach (float c in new[] { 123f, 96f, 72f, 55f, 46f, 39f, 32f, 24f })
+                    {
+                        float h = Mathf.Round(c * (80f / 72f));
+                        Rect r = cursor.Place(c, h, captionHeight);
+                        var scratch = new List<KeyValuePair<string, Rect>>();
+                        GUILayout.BeginArea(r);
+                        DrawRailCalendarChip(c, scratch);
+                        GUILayout.EndArea();
+                        LadderCaption(r, $"{c}x{h}", captionHeight);
+                    }
+                    break;
+                case "stamp":
+                    foreach (float w in new[] { 170f, 136f, 102f, 85f, 68f, 51f, 34f, 24f })
+                    {
+                        float h = Mathf.Round(w * (50f / 170f));
+                        Rect r = cursor.Place(w, h, captionHeight);
+                        UiPalette.DrawTintedIcon(r, IconLibrary.GetChrome("ui_stamp_carried"), PoliSimTheme.Good);
+                        LadderCaption(r, $"{w}x{h}", captionHeight);
+                    }
+                    break;
+                case "stampchip":
+                    foreach (int fs in new[] { 15, 13, 12, 11, 10, 9, 8, 7 })
+                    {
+                        var style = new GUIStyle(_cardKindStyle) { fontSize = fs };
+                        Vector2 size = PoliSimWidgets.StampSize("HOLDS TIME", style, UrgencyChipPadX, UrgencyChipPadY, UrgencyChipBorder);
+                        Rect r = cursor.Place(size.x, size.y, captionHeight);
+                        PoliSimWidgets.Stamp(r, "HOLDS TIME", style, PoliSimTheme.Bad, PoliSimTheme.Bad, UrgencyChipBorder, UrgencyChipRotation);
+                        LadderCaption(r, $"type {fs} ({Mathf.Round(size.x)}x{Mathf.Round(size.y)})", captionHeight);
+                    }
+                    break;
+                case "steps":
+                    foreach (float w in new[] { 120f, 90f, 64f, 48f, 32f, 24f, 16f, 12f })
+                    {
+                        float h = Mathf.Round(w / 4f);
+                        Rect r = cursor.Place(w, h, captionHeight);
+                        float gap = w / 16f;
+                        DrawMagnitudeSteps(r, 3, (w - gap * 3f) / 4f, gap);
+                        LadderCaption(r, $"{w}x{h}", captionHeight);
+                    }
+                    break;
+                case "hemicycle":
+                    {
+                        // 640 wide: the legend's ledger rows need the row width the Parliament screen
+                        // gives them (a 440 frame clipped "Nationalist Front" at 23 px - the frame, not
+                        // the instrument).
+                        Rect r = cursor.Place(640f, 330f, captionHeight);
+                        GUILayout.BeginArea(r);
+                        _hemicycleRenderer.Draw(string.Empty, _playerCountry.ParliamentSeats, _labelStyle);
+                        GUILayout.EndArea();
+                        LadderCaption(r, "fixed 340x190 by its constants - no size parameter", captionHeight);
+                    }
+                    break;
+                case "pie":
+                    {
+                        Rect r = cursor.Place(640f, 360f, captionHeight);
+                        GUILayout.BeginArea(r);
+                        _dependencyRatioPieChart.Draw(string.Empty, new[]
+                        {
+                            new PieSlice("Working-age", 100f - _playerCountry.State.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor)),
+                            new PieSlice("Dependents", _playerCountry.State.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral)),
+                        }, _labelStyle, "F1", moneyUnit: null);
+                        GUILayout.EndArea();
+                        LadderCaption(r, "fixed diameter 120 by its constant - no size parameter", captionHeight);
+                    }
+                    break;
+                case "flag":
+                    foreach (float w in new[] { 78f, 52f, 39f, 30f, 24f, 18f, 12f })
+                    {
+                        float h = Mathf.Round(w * 2f / 3f);
+                        Rect r = cursor.Place(w, h, captionHeight);
+                        Texture2D flag = IconLibrary.GetFlag(PlayerCountryId);
+                        if (flag != null && Event.current.type == EventType.Repaint)
+                        {
+                            GUI.DrawTexture(r, flag, ScaleMode.ScaleToFit, true);
+                        }
+
+                        LadderCaption(r, $"{w}x{h}", captionHeight);
+                    }
+                    break;
+                case "icon":
+                    foreach (float s in new[] { 30f, 24f, 22f, 18f, 16f, 14f, 12f, 10f, 8f })
+                    {
+                        Rect r = cursor.Place(s, s, captionHeight);
+                        UiPalette.DrawTintedIcon(r, IconLibrary.GetAreaIcon(UiPalette.SystemArea.Fiscal), fiscalInk);
+                        LadderCaption(r, $"{s}", captionHeight);
+                    }
+
+                    cursor.X = cursor.Left;
+                    cursor.Y += cursor.RowHeight + cursor.Gap * 2f;
+                    cursor.RowHeight = 0f;
+                    foreach (float s in new[] { 30f, 24f, 22f, 18f, 16f, 14f, 12f, 10f, 8f })
+                    {
+                        Rect r = cursor.Place(s, s, captionHeight);
+                        UiPalette.DrawTintedIcon(r, IconLibrary.Get("icon_nav_statistics"), UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+                        LadderCaption(r, $"{s}", captionHeight);
+                    }
+                    break;
+                case "row":
+                    foreach (int fs in new[] { 24, 20, 16, 14, 12, 10, 8 })
+                    {
+                        var style = new GUIStyle(_labelStyle) { fontSize = fs };
+                        Rect r = cursor.Place(560f, LedgerRow.Height(style), captionHeight);
+                        LedgerRow.DrawReadOnly(r, "Tax burden", 0.193f, "19.3%", "of GDP", fiscalInk, style, style);
+                        LadderCaption(r, $"type {fs}, row {Mathf.Round(r.height)} tall", captionHeight);
+                    }
+                    break;
+                case "bars":
+                    foreach (float w in new[] { 300f, 200f, 140f, 100f, 64f, 40f, 24f })
+                    {
+                        Rect r = cursor.Place(w, 14f, captionHeight);
+                        if (Event.current.type == EventType.Repaint)
+                        {
+                            UiPalette.DrawDivergingBar(r, 0.05f, PendingBillLeanDisplayRange);
+                        }
+
+                        LadderCaption(r, $"{w}x14 diverging", captionHeight);
+                    }
+
+                    cursor.X = cursor.Left;
+                    cursor.Y += cursor.RowHeight + cursor.Gap * 2f;
+                    cursor.RowHeight = 0f;
+                    foreach (float w in new[] { 300f, 200f, 140f, 100f, 64f, 40f, 24f })
+                    {
+                        Rect r = cursor.Place(w, 14f, captionHeight);
+                        if (Event.current.type == EventType.Repaint)
+                        {
+                            PoliSimWidgets.ThresholdBar(r, 0.62f, 0.8f, fiscalInk);
+                        }
+
+                        LadderCaption(r, $"{w}x14 threshold", captionHeight);
+                    }
+                    break;
+                case "dot":
+                    foreach (float d in new[] { 20f, 16f, 12f, 10f, 8f, 6f, 4f })
+                    {
+                        float glow = Mathf.Round(d * (6f / 8f));
+                        Rect slot = cursor.Place(d + glow * 2f, d + glow * 2f, captionHeight);
+                        if (Event.current.type == EventType.Repaint)
+                        {
+                            DrawHeldLamp(new Rect(slot.x + glow, slot.y + glow, d, d), glow);
+                        }
+
+                        LadderCaption(slot, $"dot {d} glow {glow}", captionHeight);
+                    }
+                    break;
+                default:
+                    GUI.Label(new Rect(cursor.X, cursor.Y, 600f, captionHeight), $"unknown ladder kind '{kind}'", _calendarMetaStyle);
+                    break;
+            }
         }
 
         /// <summary>

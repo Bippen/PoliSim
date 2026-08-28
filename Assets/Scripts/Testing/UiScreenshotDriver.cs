@@ -218,6 +218,13 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // UI v3.0 Phase A, Phase 3: the instrument ladder instead of the sweep - the run ends here.
+            if (Ladder)
+            {
+                yield return CaptureInstrumentLadder(controller);
+                yield break;
+            }
+
             DivergeSwfWeights(controller);
             DraftSpendingLines(controller);
             yield return Settle();
@@ -2117,6 +2124,42 @@ namespace PoliSim.Testing
             }
 
             return false;
+        }
+
+        /// <summary>UI v3.0 Phase A, Phase 3: `-shotladder` films each candidate stage instrument at a
+        /// descending run of sizes (GameController.DrawInstrumentLadder) instead of the tab sweep, so
+        /// the inventory's minimum legible sizes are measured on film. Set from the command line.</summary>
+        public bool Ladder;
+
+        /// <summary>The ladder's kinds, in the order they are filmed - one capture each, named `ladder_{kind}`.</summary>
+        private static readonly string[] LadderKinds =
+        {
+            "map", "compass", "web", "sparkline", "chipstrip", "tile", "graph", "trace", "sheet", "chip",
+            "stamp", "stampchip", "steps", "hemicycle", "pie", "flag", "icon", "row", "bars", "dot"
+        };
+
+        private IEnumerator CaptureInstrumentLadder(GameController controller)
+        {
+            foreach (string kind in LadderKinds)
+            {
+                controller.SetInstrumentLadder(kind);
+                yield return Settle();
+                yield return Capture($"ladder_{kind}");
+            }
+
+            controller.SetInstrumentLadder(null);
+            yield return Settle();
+
+            // The guards' counts on a ladder run are the ladder's own breaks - it shrinks instruments
+            // until they fail, and a break the guard records is a measurement, not a defect. Reported,
+            // not gated: the run is clean when every capture wrote and nothing else errored. The
+            // error fold is read BEFORE the reports print (their OVERFLOW lines are LogErrors, and
+            // counting them made the first ladder runs exit 1 on their own measurement).
+            int errorsDuringCaptures = _loggedErrors;
+            Debug.Log($"SHOT: ladder done, {_captured} captured, {_failed} failed.");
+            Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded - on a ladder run these are the rungs that broke, reported not gated.");
+            Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded - on a ladder run these are the rungs that broke, reported not gated.");
+            Finish(_failed == 0 && errorsDuringCaptures == 0 ? 0 : 1);
         }
 
         /// <summary>

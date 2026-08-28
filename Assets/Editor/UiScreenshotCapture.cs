@@ -140,8 +140,10 @@ namespace PoliSim.EditorTools
             driver.PinStates = Environment.GetCommandLineArgs().Contains("-shotstates");
             // R-D4 (the clear-out kickoff, 2026-08-28): stage the three playtest saves instead of the sweep.
             driver.StageSaves = Environment.GetCommandLineArgs().Contains("-shotsaves");
+            // UI v3.0 Phase A, Phase 3 (2026-08-28): film the instrument ladder instead of the sweep.
+            driver.Ladder = Environment.GetCommandLineArgs().Contains("-shotladder");
             driver.Locale = Arg("-shotlocale=", "");
-            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
+            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 
         private static string Arg(string prefix, string fallback)
