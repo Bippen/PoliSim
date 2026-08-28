@@ -3066,3 +3066,31 @@ visible by eye would contradict the ruling's premise and send the pair back to F
 edge and §E register carry the close. The request doc is deliberately untouched: the §S package's
 recorded digest must keep matching the pasted file, and the bar was Elias's own question, never an ask
 to Design.
+
+## 47. The film seeded and the cursor parked — determinism for rule-15 diffs (2026-08-28)
+
+**The ratified candidate** (§45's gate paragraph: *"seed the chair draw so two films of one code are
+pixel-identical"*). `UiScreenshotDriver.Start` now calls `SimulationRandom.Seed(777)` — `FilmSeed`, the
+trajectory baselines' own standing seed — before the game advances a single day, so the Fed-chair
+candidate draw and every other `SimulationRandom` consumer the warm-up touches replays the same sequence
+every run; and `ParkCursor()` (the harness's one P/Invoke, `SetCursorPos`) parks the OS cursor at the
+primary screen's top-left before the first capture — the Game View is laid out at the screen origin by
+`UiScreenshotCapture.ResizeGameView`, so (0,0) is its tab strip, never a game pixel, and under any
+future layout it is the SAME spot every run, deterministic either way. The two variance sources the
+v31b/v31bf compare named (the chair names on the Decisions and Federal Reserve sheets; the hover box
+under the resting mouse — quirk 16's class) are both closed.
+
+**Measured: two full sweeps of one code at 1280×720** (`det_a_*` / `det_b_*`, each 79 captured / 0
+failed / exit 0, the seed and the park both on the log): **76 of 79 frames byte-identical by SHA-256.**
+The three that differ are WALL-CLOCK frames, each with its cause on record: `01a_selector_yielding`
+(the scrim caught mid-envelope — the driver's own comment: alpha varies with frame rate; presence is
+what the capture pins, not a pixel value), `89d_signing_entrance` (the document caught mid-rise — the
+same staged-envelope class), and `92_saves_menu` (the two `zz_driver_capture_*` saves the harness
+itself writes carry the real save timestamp — the A film prints "saved … 19:18 UTC", the B film
+"19:19 UTC"; both films viewed, the minute the only difference on the frame). A rule-15 diff on those
+three names reads the clock, not the code; on the other 76 it now reads nothing unless the code moved.
+
+**One deliberate family discontinuity:** the first seeded family's random-dependent surfaces (candidate
+names, event timing, publication noise) differ ONCE from every unseeded family before it (`v31bf_*` and
+back), and never again between themselves. Byte-comparisons of capture families are meaningful from
+`det_*` on.

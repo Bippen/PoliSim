@@ -40,6 +40,9 @@ namespace PoliSim.Testing
         /// </summary>
         public const string DefaultOutputDirectory = "../PoliSim-captures";
 
+        /// <summary>The film seed (2026-08-28, the ratified candidate): every <see cref="SimulationRandom"/> stream made reproducible for a capture run, so two films of one code are byte-stable run-to-run. 777 is the trajectory baselines' own standing seed.</summary>
+        private const int FilmSeed = 777;
+
         public string OutputDirectory = DefaultOutputDirectory;
         public string Label = "run";
         /// <summary>Which country to play as, set from `-shotcountry=` (default USA — the only country any set contained before 2026-08-12). Parsed against CountryId in Start and FAILS the run on a bad name: a typo must not silently capture the default country under the requested country's label.</summary>
@@ -145,6 +148,21 @@ namespace PoliSim.Testing
                 System.Threading.Thread.CurrentThread.CurrentCulture = culture;
                 Debug.Log($"SHOT: thread culture overridden to {Locale}.");
             }
+
+            // THE FILM SEED (2026-08-28, the flagged candidate ratified - COMPLETED.md §45's gate
+            // paragraph: two films of one code differed run to run only by the Fed-chair candidate
+            // draw and the cursor). Every stream is seeded here, before the game advances a single
+            // day, so the chair draw - and every other SimulationRandom consumer the warm-up
+            // touches - replays the same sequence every run: films of one code are byte-stable, and
+            // a rule-15 diff measures the code, not the clock. Family-to-family this is one
+            // deliberate discontinuity: the first seeded family's random-dependent surfaces
+            // (candidate names, event timing, publication noise) differ once from every unseeded
+            // family before it, and never again between themselves.
+            SimulationRandom.Seed(FilmSeed);
+            Debug.Log($"SHOT: SimulationRandom seeded ({FilmSeed}) - the film is deterministic run-to-run.");
+
+            // THE CURSOR, PARKED (the candidate's second half) - see ParkCursor's own doc.
+            ParkCursor();
 
             Directory.CreateDirectory(OutputDirectory);
 
@@ -993,6 +1011,36 @@ namespace PoliSim.Testing
             UnityEditor.EditorApplication.Exit(exitCode);
 #endif
         }
+
+        /// <summary>
+        /// THE CURSOR, PARKED (2026-08-28, the ratified candidate's second half). The OS cursor is an
+        /// input to the film: wherever it rests over the Game View, IMGUI draws that control's hover
+        /// state - the v31b/v31bf compare found one 66x24 box on the 2560 Desk differing by 842 px
+        /// for exactly this reason, and a difference between two runs of the same code can be the
+        /// mouse. Parked once, before the first capture, at the primary screen's top-left: a fixed
+        /// spot on the Editor window's chrome ABOVE the Game View's content (the view is laid out at
+        /// the screen origin by UiScreenshotCapture.ResizeGameView, so (0,0) is its tab strip, never
+        /// a game pixel) - and even if a future layout put content there, it is the SAME spot every
+        /// run, so the film stays deterministic either way. Win32-only by P/Invoke; anywhere else the
+        /// method logs and does nothing, and a run-to-run diff can still be the mouse.
+        /// </summary>
+        private static void ParkCursor()
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            bool parked = SetCursorPos(0, 0);
+            Debug.Log(parked
+                ? "SHOT: cursor parked at (0,0) - no hover state can vary between two films of one code."
+                : "SHOT: cursor park FAILED (SetCursorPos returned false) - the film may carry a hover state; a run-to-run diff can be the mouse.");
+#else
+            Debug.Log("SHOT: cursor park skipped - not a Windows platform; a run-to-run diff can be the mouse.");
+#endif
+        }
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+        /// <summary>Win32: moves the OS cursor. The one P/Invoke this harness carries - see <see cref="ParkCursor"/>.</summary>
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetCursorPos(int x, int y);
+#endif
 
         /// <summary>Params rather than a single `object arg` (widened for the country-leak fix) so this can also invoke a zero-argument method like ResetPlayerCountrySelection, not only SelectPlayerCountry's one-argument shape.</summary>
         private static void Invoke(object target, string method, params object[] args)
