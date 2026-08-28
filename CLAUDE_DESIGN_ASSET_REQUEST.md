@@ -1,15 +1,17 @@
 # Claude Design asset request — PoliSim
 
-**Status — NO LIVE BOARD ASK; ONE RE-CUT PENDING (2026-08-28, evening).** The eighth request (§1, the two
-UI v3.0 boards) was **answered the same day it was sent** — boards 1m ("Screen 0 — The Desk, folded")
-and 1n ("the rail") on the live screens file, no gap costed — and migrated per this document's charter
-("appended to, then emptied on delivery"): the ask and its annexes verbatim to `COMPLETED.md` §41, the
-boards' rulings to `POLISIM_V2_SCREEN_SPEC.md` §A.17, the build the same day (v3.0 Phase B). **§E5** is
-half closed (the slider strip: source-less by Design's account, done as asked) and half a measured
-re-cut away (the hatch source: the 2026-08-28 re-export carries a 32 px period where the shipped PNG's
-is 16 — the figures are in §E5, the one re-cut is the live ask). What else is here: **§0** the delivered
-set as it stands, **§4** what is costed but not yet requestable, and **§5** the standing conventions.
-**Date:** 2026-08-28.
+**Status — ONE LIVE ASK (2026-08-28, evening): §1, the ninth request — UI v3.1, "one frame, denser,
+instruments" — six asks from Elias's first live sitting on the v3.0 build, with six engineering-measured
+annexes.** D1 (one frame everywhere) is a ruling already applied on our side — the duty audit in Annex A
+gated it and found no orphan; D2–D6 are Design's: board 1n-r2 (the rail: a home cell's face, icon
+legibility at the real cells), board 1m-r2 (the Desk: density and the Year-0 empty states), a revised
+density token table against Annex C, board 2a "Statistics drawn" against Annex E, and a contrast pass
+against Annex F. The eighth request (the v3.0 boards) was answered the day it was sent and migrated to
+`COMPLETED.md` §41. **§E5:** Design's second re-cut of the hatch source is on the live project (read
+2026-08-28 evening: a 16 px period, an 8 px duty — the measured figures); its import and diff are the
+§E5-close micro-pass's, so §E5 stands here as written until that pass closes it.
+What else is here: **§0** the delivered set as it stands, **§4** what is costed but not yet requestable,
+**§5** the standing conventions. **Date:** 2026-08-28.
 
 **Standing rule: a count in prose is a cached value with no expiry** (working-discipline rule 12).
 Before trusting any number in this document, re-derive it: sprites with
@@ -22,16 +24,282 @@ rule exists to catch at least four times.
 
 ---
 
+## 1. The ninth request — UI v3.1: one frame, denser, instruments (2026-08-28)
 
-## 1. The eighth request — ANSWERED 2026-08-28 and migrated
+*The request as Elias delivered it with the v3.1 Phase A kickoff (archived verbatim at `../PoliSim-captures/inbox/DESIGN_REQUEST_V3_1.md`); only the heading levels are changed to sit inside this document. The six annexes it names follow, engineering-measured (R-E3).*
 
-Two boards for UI v3.0 — *"Screen 0, The Desk, folded"* and *"the rail"* — asked 2026-08-28 against three
-annexes (the census of the landing screen's text, the instrument inventory with measured minimums, the
-captures) and **answered the same day** as boards 1m and 1n on the live screens file, with §E5 answered
-beside them. The ask as sent, with Annexes A and B verbatim, is `COMPLETED.md` §41; the boards as read are
-`POLISIM_V2_SCREEN_SPEC.md` §A.17; the build is v3.0 Phase B (`GameController.Desk.cs`, the same day).
-Nothing of it is live here.
 
+**From Elias's first live sitting on the v3.0 build (two findings-screenshots attached as Annex D).
+Six asks, one theme: the Desk's frame won — now everything gets it, tighter, with the data drawn
+instead of listed.** Boards at 1280×720 first, as before. All standing conventions (§5) hold: PNG
+canonical, deviations declared not silent, no new hues without a costed case, derived data only —
+we will refuse rows the model doesn't hold, as with 1m, and you've seen that refusal is respected
+on both sides.
+
+### D1 — One frame everywhere (ruling, for your awareness; no board needed)
+
+The OPEN state (chrome column + tab tongues, the "half screen") retires. Every screen now lives in
+the Desk's frame: the rail, one full-bleed sheet. Budget's form becomes the game's form. The
+chrome column's duties are covered (audit in Annex A): oversight lives on the Desk, interrupts on
+the rail's banner, time and status in the rail. You are not asked to draw this — you are told so
+that 1n-r2 and every future board assumes it.
+
+### D2 — The rail, revision 2 (board 1n-r2)
+
+- **A home cell, obvious.** Topmost, visually first-class — the one cell that reads "back to the
+  Desk" without being learned. Engineering ships a structural interim (existing glyph) the same
+  day; your board replaces its face. The calendar-chip-as-home stays as the second, learned way.
+- **Icon legibility at the real cells.** Measured cells: 39 / 46 / 55 / 64 px at 1280 / 1600 /
+  1920 / 2560 (Annex B has each icon at each size). Elias's finding: not readable, not intuitive
+  enough. Your call to make, stated as a question: captions under the icons (mono, tiny) · larger
+  cells · redrawn glyphs at small-size-first · some mix. The rail may grow wider if legibility
+  earns it; say the number.
+
+### D3 — The Desk, revision 2 (board 1m-r2: density)
+
+Elias's finding, verbatim in substance: too much dead paper, text too small because spacing eats
+the room. Revise 1m with: tighter margins and inter-plate gaps, larger base type, the bottom
+strip integrated into the sheet rather than floating, and — explicitly — **the Year-0 / empty
+states designed** (the approval ledger with no last period, the effects card at all-zero, the
+sparklines with no history). Part of the perceived emptiness is empty states nothing was ever
+drawn for; density alone won't fix what absence causes. Annex C carries the measured current
+paddings so your cuts are numbers against numbers.
+
+### D4 — Global density tokens
+
+The same tightening, game-wide: screen padding, panel padding, plate gaps, row pitches where not
+already ruled (the law browser's one-line pitch stands). Deliver as a revised token table against
+Annex C's current values — one number per token, we apply mechanically. Type may grow where the
+reclaimed room allows; say where.
+
+### D5 — Statistics as instruments (new board: "2a — Statistics drawn")
+
+Elias's ask: the fitting form for each dataset — bar charts, pie/share forms where parts truly
+sum to a whole (sector shares of GDP), graphs where time matters — and declutter. Annex E is the
+content census of today's Statistics screens: every dataset, its shape (share / series / level /
+distribution), and its current form. Constraints, standing: derived data only; the categorical
+cap (eight series) holds; honesty classes stay visible (PRELIMINARY, revision frames, the dashed
+next-year convention); no new hues — the palette you set is the palette. Sub-tab structure is
+yours to keep or collapse; screen granularity is ours and stays.
+
+### D6 — Contrast pass
+
+Elias's finding: readability suffers at small sizes. Annex F measures today's ink pairs
+(foreground/background, px size, where used). Revise the faint-ink assignments where they fall
+below comfortable reading at their real sizes — new *values* for existing tokens, not new tokens.
+
+**Annexes (engineering-supplied, in this doc):** A — chrome-column duty audit (what the column
+carried, where each duty now lives). B — the rail's icons at real cell sizes. C — measured
+paddings and dead-space figures per screen at 1280 and 2560. D — Elias's two sitting screenshots.
+E — Statistics content census. F — ink-pair contrast table. Captures: the current `v3c_*` /
+`v3desk_*` sets.
+
+### Annex A — the chrome column's duty audit (R-E1's gate; from the code at HEAD `999e47e`, every method the OPEN branch alone called)
+
+The OPEN frame drew, and only the OPEN frame drew: `DrawTopBanner` (the event banner, the game-over banner), `DrawCalendarPanel` (the country/year header, the 1k month page, the dated ledger), `DrawPolicyControls` → `DrawPolicyPreview` (the horizon buttons, the eight estimates, the margin and methodology lines), `DrawCalendarAndSpeedControls` (the calendar pad, the RUNNING plate / HELD banner, the OPEN fold toggle, the speed row, Saves), and `DrawConsolidatedTabs` / `DrawActiveFolderTongue` (the six tongues with their labels, the pulled-forward active folder). The census (Annex A of the eighth request) numbered their text C1–C28 and S1. Each duty, and where it lives with one frame:
+
+| # | duty the OPEN chrome uniquely carried (census rows) | home with ONE FRAME | on every screen? | verdict |
+|---|---|---|---|---|
+| 1 | the live event — name, description, its three effects (C1–C3, `DrawTopBanner`) | the Desk's event card (C1/C2 as captions, C3 as three bars) and the map's event dots | no — the Desk, one rail cell away (the home cell) | covered (oversight → the Desk) |
+| 2 | game over and its reason (C4–C5, `DrawTopBanner`) | the Desk's §A.11 stamp; **and the rail's folded banner on every screen** — behaviour #8 (a player can always see why the clock is stopped) applied to the game-over hold, added in this pass (R-E1's own "must satisfy #8 on every screen") | yes, from this pass | covered (interrupts → the banner) |
+| 3 | the country's name and the turn count (C6, the calendar panel header) | the Desk's masthead (`{COUNTRY} · YEAR {N}`); the country's identity on every screen through the home cell's flag (R-E2's glyph) | the name yes (the flag), the year the Desk's | covered (oversight → the Desk; identity → the rail) |
+| 4 | the month page and the dated ledger (C7–C13) | the Desk's calendar column (the same 1k sheet) | no — the Desk; the rail's chip says the day | covered (oversight → the Desk) |
+| 5 | the policy preview — horizon, eight estimates, margin, methodology (C14–C22) | the Desk's effects card (the same cached `PreviewTurn`, the same horizon) | no — the Desk; the one draft the preview still reads (the interest-rate change) is set on the Federal Reserve document, read on the Desk | covered (the preview → the effects card), one interaction cost recorded |
+| 6 | the calendar pad — month, day, year (C23–C25) | the rail's chip (month, day); the year on the Desk's month header and masthead | month and day yes; the year the Desk's | covered (time → the rail) |
+| 7 | the RUNNING plate (C26) | the rail's lamp (green, no glow) | yes | covered (status → the rail) |
+| 8 | the HELD banner — the reasons, screens named (C27) | the rail's folded banner above the sheet, on every screen (Budget's own hold omitted on Budget, which states it) | yes | covered (interrupts → the banner) |
+| 9 | the speed controls — Pause · 1× · 2× · 3× (C28) | the Desk's masthead cluster (all four); **the rail's bottom cell — the fold toggle's cell, freed by ONE FRAME — becomes the player's PAUSE / RUN chip (R-E1a, the audit's one addition)**; disabled while an interrupt or game over holds the clock (B5) | pause/run yes; the speed choice the Desk's | covered (speed → the rail and the Desk) |
+| 10 | Saves (C28's fifth button) | the Desk's masthead | no — the Desk, one cell away; not time-critical | covered (oversight → the Desk) |
+| 11 | navigation — the six tongues and their labels (S1) | the rail's six icons (labels retired with the tongues — Design's D2 answers legibility) | yes | covered (navigation → the rail) |
+| 12 | the active document shown (the pulled-forward folder) | the rail's active cell — the 12 % wash and the spine (board 1n) | yes | covered |
+| 13 | the fold toggle itself (OPEN ↔ FOLDED) | retires — there is one frame; its cell is row 9's | — | retired by ruling |
+
+**Finding: no orphan.** Every duty has a named home; two homes are added in this pass rather than assumed — the game-over line on the folded banner (row 2, behaviour #8) and the rail's pause/run chip (row 9, R-E1a). Two interaction costs are recorded, not hidden: the interest-rate draft's estimate is read on the Desk (row 5) and Saves is the Desk's (row 10). **The retirement proceeds.**
+
+### Annex B — the rail's icons at the real cells (rendered on film, cropped from the `v31_*` matrix at each size; the crops are in the paste's `annex_b/`)
+
+The cell is derived, not chosen: the icons' 24-unit grid plus 10 units of air each side, the unit being the tongue icon's pixel size / 24 — `cell = round(icon × 44 / 24)`; the icon is `round(tab type × 1.15)`, the tab type `clamp(0.024 × h, 18, 30)`.
+
+| window | client height | tab type | icon px | cell px | the HOME flag (v3.1) | crop |
+|---|---|---|---|---|---|---|
+| 1280×720 | 699 | 18 | 21 | 39 | 24×16 | `annex_b_rail_1280.png` |
+| 1600×900 | 929 | 22 | 25 | 46 | 29×19 | `annex_b_rail_1600.png` |
+| 1920×1080 | 1059 | 25 | 29 | 53 — measured 55 on film (the sheet's own rounding) | 33×22 | `annex_b_rail_1920.png` |
+| 2560×1440 | 1419 | 30 | 35 | 64 | 40×27 | `annex_b_rail_2560.png` |
+
+The seven cells, top to bottom, and the sprite each draws (white-on-alpha, tinted; the flag full-colour):
+
+| cell | sprite | ink when active / inactive | what it is meant to read as |
+|---|---|---|---|
+| HOME (v3.1, first, a rule beneath) | `flag_country_<countryid>` (full colour) | brass wash + spine on the Desk / plain | back to the Desk; the country |
+| 1 | `icon_nav_statistics` | Global ink `#5C87A8` / tint `#4E7291` | Statistics |
+| 2 | `icon_nav_decisions` | CrimeJustice `#9C4238` / `#8E4A40` | Decisions |
+| 3 | `icon_nav_demographics` | Labor `#B5622F` / `#A2653E` | Demographics |
+| 4 | `icon_area_fiscal` | Fiscal `#35619E` / `#3D6494` | Budget (the area icon by design) |
+| 5 | `icon_nav_policylaws` | Sectors `#62579F` / `#5B5187` | Policy / Laws |
+| 6 | `icon_area_political` | Political `#A8842E` / `#96762A` | Politics (the area icon by design) |
+| chip | `ui_calendar_pad` at cell width | — | the day (and the second way home) |
+| lamp | procedural dot, 8 px at the 720 type ratio | Good green / DraftOnDesk amber with the glow | RUNNING / HELD |
+| PAUSE · RUN (v3.1) | the desk chip (StockOff plate, brass when paused) | — | the player's own hold |
+
+Your call, as D2 states it: captions under the icons (mono, tiny) · larger cells · redrawn glyphs at small-size-first · some mix. The rail may grow wider if legibility earns it — say the number; the derivation above is what the code will follow.
+
+### Annex C — the measured paddings, gaps and pitches (from the code's own tokens at HEAD; the px columns are the values at the two film sizes, 1280×699 and 2560×1419 client), and the dead-space share per screen (from the film)
+
+**The frame.** `s` = the widget scale `clamp(h / 1080, 0.6, 1.5)` → **0.65 at 1280, 1.31 at 2560**; every style's type comes from `Screen.height` (the type table below).
+
+| token (where it lives) | rule | px at 1280 | px at 2560 | note |
+|---|---|---|---|---|
+| screen margin (`ScreenMarginFraction`) | 2 % of the window, each side | 26 × 14 | 51 × 28 | the desk ground showing around the frame |
+| rail → sheet gap (`ColumnSpacingFraction`) | 2 % of the area width | 25 | 50 | |
+| section spacing (`SectionSpacingFraction`) | 3 % of the area height | 20 | 41 | vertical breathing between stacked panels (OPEN-era; still used inside sheets) |
+| the sheet (`_boxStyle` = the skin's box) | padding + margin, fixed px | 28 per nesting level | 28 | **not scaled** — measured (the LAWSPROBE, 1600): a box inside a box's padding costs 28 px per level |
+| area card (`StyleBoxAsPaper`) | padding 14 / 14 / 12 / 14; 9-slice border 22 / 22 / 22 / 28 | as stated, fixed | as stated | the paper sprite's own inset |
+| dossier card (`_dossierCardStyle`) | padding 18 + 8 (spine) / 18 / 32 / 20 | fixed | fixed | Decisions and the bill panels |
+| hold banner (`_holdBannerStyle`) | padding 10 / 6; lamp gap 6 | fixed | fixed | |
+| stat tile (`PoliSimWidgets.StatTile`) | padX 17·s, padY 16·s, label block 20·s, value gap 9·s, delta 18·s (+8·s before a bar) | 11 / 10 / 13 / 6 / 12 | 22 / 21 / 26 / 12 / 24 | height from `StatTileHeight`: ≈ 98·s |
+| tile grid gap (`DrawHeadlineStatTiles`) | 8·s | 5 | 11 | three columns |
+| ledger row (`LedgerRow.Height`) | max(2·line, 12·s + line) + 6·s, line = max(lineHeight, size + 4) | ≈ 44 at 16 px type | ≈ 78 at 28 px | the two-line lane; the one-line pitch is line + 6·s (≈ 24 / 40) |
+| law-browser row pitch (R-C1) | one-line + the 10 px gap | ≈ 37 | ≈ 55 | **stands, by the request's own rule** |
+| line graph (`GraphRenderer`) | display height clamp(0.075·h, 50, 90); buffer 300×90 | 52 | 90 | the width stretches to the column |
+| calendar sheet (1k) | cell gap 3·s; the dot row 10; dot 5; strike inset 2; section rule 1.5 with 6 above and below | 2 / 10 / 5 | 4 / 10 / 5 | the dot row and dot are fixed px by ruling |
+| the Desk (board 1m, scaled by the sheet's inner ratio to 1118×660) | masthead 26; column gaps 16; plate gaps 16 (12 above the event card); the strip's rule 10 above, 9 below; chip pad 7 × 5; chip gap 8 | the board's own at 1280 (ux = uy ≈ 1.0) | ×2.05 / ×2.03 | **every Desk value is the board's — D3's revision replaces them as a set** |
+| the rail | cell = icon × 44 / 24 (the icons' grid + 10 units of air each side); cell gap 4 units | cell 39, icon 21 | cell 64, icon 35 | 1600: 46 / 25 · 1920: 55 / 30 |
+| radii (`PoliSimTheme`) | panel 19 · card 16 · inset 14 · chip 12 · control 11 | fixed | fixed | |
+| bars (`PoliSimTheme`) | sm 6 · md 8 · lg 12 | fixed | fixed | |
+
+**Type today (px, from `RescaleStylesToScreen`'s clamps on `Screen.height`, then the derived styles):**
+
+| style | rule | 1280 (h 699) | 2560 (h 1419) | used for |
+|---|---|---|---|---|
+| header | clamp(0.032·h, 22, 42) | 22 | 42 | section headers, the calendar month |
+| body / label | clamp(0.022·h, 16, 28) | 16 | 28 | ledger names, figures, paragraphs, map names on documents |
+| tab | clamp(0.024·h, 18, 30) | 18 | 30 | (the tongues, retired) — the rail's icon size derives from it (×1.15) |
+| banner | clamp(0.028·h, 20, 36) | 20 | 36 | the HELD / GAME OVER banner |
+| mono meta (Courier) | max(9, body × 9/12.5) | 12 | 20 | dates, captions on documents |
+| calendar weekday / day numeral | body × 0.8 / × 0.95 | 13 / 15 | 22 / 27 | the 1k sheet |
+| stat tile label / hero / small | 10·s / 42·s / 13·s | 7 / 27 / 8 | 13 / 55 / 17 | the ten plates |
+| the Desk's captions (`DeskPx`) | board px × h / 720, floor 8 | 8–9 (the 6.5 and 7 px captions floor at 8) | 16–19 | every Desk caption |
+| the Desk's body / numerals | 11–13 / 13.5–30 × h / 720 | 11–13 / 13–29 | 22–26 / 27–59 | the ledger names, the chips' numerals, the hero |
+
+**Dead-space share per screen** (the film, `v31_*` at 1280 and 2560, the code as pushed). *Method, so the numbers can be reproduced or disputed:* the content column (right of the rail and its gap, top margin to bottom margin — the held banner inside it counts as content) is cut into blocks of 16 px at 1280 and 32 px at 2560 (the same fraction of the frame); the paper reference is the column's modal colour (16-level bins, sampled every 4 px — the plain paper dominates every screen); a block is EMPTY when no sampled pixel in it differs from that reference by more than 28 on any channel (the paper sprite's grain stays under it); dead space = empty blocks / all blocks. `deadspace.ps1` in the pass's scratch; its output is the table below, verbatim. **How to read the rows:** `01c_desk` (43.5 % / 45.5 %) is an **empty state, not spacing** — turn 0: the ledger has no period, the effects card is all-zero, the sparklines have no history (the held Desk at turn 3, `01d_desk_held`, reads 35.8 % / 37.7 % with the same layout); the Policy Web (55.5 % / 63.7 %), the Compass (55.6 % / 62.3 %) and Parliament (50.4 % / 57 %) are **an instrument's own negative space** — a ring, a square plot, a fixed-size hemicycle — not padding; Demographics (58.6 % / 66.7 %: a fixed 120 px pie beside short ledgers) and Statistics › Domestic (44.2 % / 46 %: ten plates with their gaps, the graphs below the fold) are the **spacing-and-form** cases D3/D4/D5 are for; Decisions (17.6 %) and Budget (28.8 %) are the densest. The 2560 figures run higher than the 1280 ones on every screen — the frame grows faster than its content, which is the sitting's finding in numbers.
+
+**The dead-space table (measured on the `v31_*` film, 2026-08-28):**
+
+| screen | window | dead space (share of the sheet) | empty blocks | paper reference |
+|---|---|---|---|---|
+| 01c_desk | 1280 | 43,5 % | 1285 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 01d_desk_held | 1280 | 35,8 % | 1057 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 02a_statistics_domestic | 1280 | 44,2 % | 1306 of 2952 blocks of 16 px | paper #E8E8C8 |
+| 02b_statistics_international | 1280 | 33,8 % | 997 of 2952 blocks of 16 px | paper #F8E8D8 |
+| 03_decisions | 1280 | 17,6 % | 521 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 04_demographics | 1280 | 58,6 % | 1729 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 05b_budget_spending | 1280 | 28,8 % | 849 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 06a_policylaws_labormarket | 1280 | 36 % | 1063 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 06d_policylaws_policyweb | 1280 | 55,5 % | 1639 of 2952 blocks of 16 px | paper #F8E8D8 |
+| 06f_policylaws_laws | 1280 | 35,1 % | 1036 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 07a_politics_parliament | 1280 | 50,4 % | 1489 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 07b_politics_compass | 1280 | 55,6 % | 1642 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 07c_politics_cabinet | 1280 | 31,8 % | 939 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 07d_politics_federalreserve | 1280 | 42,5 % | 1254 of 2952 blocks of 16 px | paper #E8E8D8 |
+| 01c_desk | 2560 | 45,5 % | 1396 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 01d_desk_held | 2560 | 37,7 % | 1157 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 02a_statistics_domestic | 2560 | 46 % | 1411 of 3066 blocks of 32 px | paper #E8E8C8 |
+| 02b_statistics_international | 2560 | 45,6 % | 1397 of 3066 blocks of 32 px | paper #F8E8D8 |
+| 03_decisions | 2560 | 41,1 % | 1259 of 3066 blocks of 32 px | paper #E8D8C8 |
+| 04_demographics | 2560 | 66,7 % | 2045 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 05b_budget_spending | 2560 | 31,2 % | 956 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 06a_policylaws_labormarket | 2560 | 34,4 % | 1055 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 06d_policylaws_policyweb | 2560 | 63,7 % | 1952 of 3066 blocks of 32 px | paper #F8E8D8 |
+| 06f_policylaws_laws | 2560 | 36,1 % | 1107 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 07a_politics_parliament | 2560 | 57 % | 1747 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 07b_politics_compass | 2560 | 62,3 % | 1909 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 07c_politics_cabinet | 2560 | 27,5 % | 843 of 3066 blocks of 32 px | paper #E8E8D8 |
+| 07d_politics_federalreserve | 2560 | 32,9 % | 1010 of 3066 blocks of 32 px | paper #E8E8D8 |
+
+### Annex D — Elias's two sitting screenshots (2026-08-28, the first live sitting on the v3.0 build)
+
+**The images are Elias's and travel with the paste** — they were not on disk, in the inbox or among the Design uploads when this request was assembled, so this annex carries the findings in his words and the two frames he judged, and the screenshots go in beside it when he pastes (the E2 convention: sending is his). Place them under `send/design_request_2026-08-28d/annex_d/` as `sitting_1_desk_density.png` and `sitting_2_rail_icons.png`.
+
+- **Screenshot 1 — the Desk (Screen 0, 1280×720 or the sitting's window):** *"too much dead paper, text too small because spacing eats the room."* The frame he judged is the `v3desk_*` / `v31_*` `01c_desk` / `01d_desk_held` family; the measured paddings and the dead-space shares are Annex C; the Year-0 empty states are flagged there as "empty-state, not spacing" — D3's board designs them.
+- **Screenshot 2 — a document with the rail (the icons at the real cells):** *"not readable, not intuitive enough"* — the six tinted icons at 39 / 46 / 55 / 64 px cells; and *"readability suffers at small sizes"* — the faint inks at their real sizes. Annex B renders each icon at each cell; Annex F measures the ink pairs; the structural HOME cell (the flag, first position, a rule beneath) shipped in v3.1 Phase A as the interim your 1n-r2 re-skins.
+
+### Annex E — the Statistics content census: every dataset on the two Statistics screens, its shape and its current form (from the code at HEAD, `DrawDomesticStatisticsContent` / `DrawInternationalStatisticsContent` and the methods they call)
+
+Shapes: **level** (one number now) · **share** (a part of a stated whole) · **series** (a value over time) · **distribution** (parts of one whole, summing to it) · **relation** (things and their links). Honesty class as Annex B of the eighth request used it (LIVE / PUBLISHED / DERIVED / LEDGER). "Current form" is what draws today.
+
+| # | dataset | shape | honesty | current form | notes for the board |
+|---|---|---|---|---|---|
+| E1 | GDP, unemployment, inflation, approval rating, currency strength (independent-currency countries only), poverty rate, government debt, debt-to-GDP, credit rating, budget balance | level ×10 | LIVE | ten `StatTile` plates in a 3-column grid (label, hero numeral, unit; GDP's turn delta and the rating's outlook as the only pills) | the same ten are the Desk's chip strip (S6); a tile is a plate, not an instrument — the board may keep, shrink or replace them |
+| E2 | GDP per capita | level (currency per person, no denominator) | DERIVED | read-only ledger row, no gauge | |
+| E3 | tax burden · government spending · deficit/surplus · primary deficit/surplus | share of GDP ×4 | DERIVED (from the last fiscal report; "advance a year" before the first) | ledger rows with a gauge and the trailing unit `of GDP` | four shares of one whole — but not parts of each other; a bar ledger, not a pie |
+| E4 | sector shares of GDP — eight sectors | **distribution** (parts of one whole, summing to it) | LIVE | eight ledger rows, each `of GDP` | **the one true pie/share form on the screen** (D5's example); eight = the categorical cap exactly |
+| E5 | GDP over time (+ the dashed next-year estimate) | series | LIVE history (quarterly) + the preview's projection | `GraphRenderer` line graph: title with signed change, 300×90 buffer, axis min/mid/max, page row | R-G1..R-G5 weights |
+| E6 | unemployment over time (+ NAIRU threshold, + the dashed estimate) | series + a reference level | LIVE + the country's NAIRU | line graph with the amber threshold and its riding label | |
+| E7 | inflation over time | series | LIVE | line graph | |
+| E8 | approval rating over time (+ the dashed estimate) | series | LIVE | line graph | |
+| E9 | poverty rate over time | series | LIVE | line graph | |
+| E10 | debt-to-GDP over time (+ the "comfortable" threshold) | series + a reference level | LIVE + the country's comfortable ratio | line graph with the amber threshold | |
+| E11 | youth unemployment | share (of the youth labour force) | LIVE | ledger row with gauge | |
+| E12 | life expectancy | level (years) | LIVE | ledger row, no gauge (§A.9b) | |
+| E13 | income inequality (Gini) | level on a 0–100 scale | LIVE | ledger row with gauge | |
+| E14 | real wages · house prices | index (100 = start of term) ×2 | LIVE | ledger rows, no gauge (unbounded index) | the honest comparison is the country's own past — a series form would fit if a history were kept (`RealWageIndex`/`HousePriceIndex` are in `StatHistory`) |
+| E15 | productivity | level ($ per hour, PPP) | LIVE | ledger row, no gauge | history kept (`Productivity`) |
+| E16 | housing overburden (EU five only) · homeownership | share ×2 (of households) | LIVE | ledger rows with gauge; the USA's overburden row is ABSENT by ruling, not zero | |
+| E17 | GDP as published · unemployment as published · inflation as published | series, PUBLISHED (lagged, revisable; monthly cadence) | PUBLISHED | `GraphRenderer.DrawPublished`: the date axis, release markers, the PRELIMINARY/FINAL badge, the dashed revision frame, the 1yr/5yr/All pager, `latest: {value} ({lag})` | the honesty channels (B6) must survive any redesign |
+| E18 | poverty rate as published | level, PUBLISHED (annual cadence) | PUBLISHED | a bulletin (`PublishedFigure`): badge · figure · the reference period and release date | annual = a bulletin, not a graph (eleven points beside a daily series read as broken) |
+| E19 | the sentence "What the public sees: lagged, and revised as later estimates arrive." | — (a (b) restatement of the badge and the frame) | — | one label | waits for the board to return as an instrument or not at all |
+| E20 | the world map — six countries as GDP-sized nodes at fixed illustrative positions, trade-volume lines, fading event dots | relation | LIVE (`Country.State.GDP`, `TradePartners`, the event markers) | `MapRenderer` plate, names on §A.9a's ladder (R-SP5); hover readout; click pins a detail panel below | not geography — no polygons, no coastlines |
+| E21 | the pinned country/event detail under the map | level (the clicked country's headline readings) / the event's text | LIVE | a text panel | |
+| E22 | tariff pass-through to prices | level (pp of inflation, last period) | LEDGER (the closing fiscal period's applied term) | one label | |
+| E23 | trade balance over time (+ the current level in the title) | series | LIVE history | line graph (`_tradeBalanceGraph`) | |
+| E24 | "Recent activity" — the last eleven turn-log lines | series of events (text) | LIVE (`_turnLog`) | eleven labels | a (b)-class list; the Desk's calendar ledger and event card carry the dated facts |
+
+**Counts:** 24 dataset rows; shapes — level 9 · share 6 · distribution 1 · series 10 (E5–E10, E17 ×3, E23) · relation 1; forms today — tiles 1 grid · ledger rows 13 · line graphs 10 · bulletin 1 · map 1 · text 3. **Where the form and the shape disagree (the board's subject):** E4 is a distribution drawn as eight rows; E3 four shares of GDP drawn as gauges that read as unrelated; E14/E15 indices and a level with histories kept but drawn as single numbers; E1's ten levels drawn as ten plates. Standing constraints: derived data only; the eight-series cap; the honesty channels visible; no new hues.
+
+### Annex F — the ink pairs as they render today: foreground, background, px at the two film sizes, where used, and the measured WCAG contrast ratio (computed from the hex values in `PoliSimTheme.cs` / `UiPalette.cs`; 4.5 : 1 is the conventional body-text floor, 3 : 1 the large-text floor — stated as reference lines, not as this project's rule)
+
+| ink (token) | on | ratio | px at 1280 / 2560 | where it is read at that size |
+|---|---|---|---|---|
+| TextPrimary `#2B2620` | Card `#F0E7D8` | **12.2** | 16 / 28 body; 22 / 42 headers; 11–13 / 22–26 Desk labels | body, ledger names, the Desk's row labels |
+| TextPrimary | Tile `#EDE2CB` | **11.7** | 27 / 55 hero; 13 / 27 chip numerals | tile and chip numerals |
+| TextSecondary `#5D564A` | Card | **5.9** | 8–9 / 16–19 Desk captions; 12 / 20 mono meta; 13 / 22 weekday | every Desk caption, dates, the bulletin caption |
+| TextSecondary | Tile | **5.6** | 8 / 16 chip labels | the strip's chip labels |
+| TextMuted `#7A7263` | Card | **3.9** | 8 / 16 methodology caption; 13 / 22 "+N more" | the Desk's C20 line, the ledger's overflow row |
+| TextMuted | Tile | **3.7** | 7 / 13 | **the stat tile's label** (`FontLabel` 10 × scale) |
+| Neutral `#6D7480` | Card | **3.8** | 10–12 / 20–24 | zero deltas, neutral figures |
+| Good `#3E8A5F` | Card | **3.4** | 10–12 / 20–24 | positive deltas (numerals, mono) |
+| Bad `#9C4238` | Card | **5.3** | 10–12 / 20–24 | negative deltas |
+| Caution `#BE8A00` | Card | **2.5** | 9 / 19 BREAKING chip; 10 / 16 threshold labels | the event chip, NAIRU / "comfortable" labels riding the graph line |
+| Caution | Tile | **2.4** | 9 / 19 | the BREAKING chip on the event card's plate |
+| TextOnDesk `#F0E7D8` | Desk `#241B10` | **13.8** | 20 / 36 | the HELD / GAME OVER banner |
+| DraftOnDesk `#D4A72C` | Desk | 7.6 | (the lamp, 8 px dot) | not text |
+| TextPrimary | StockOff `#B9A886` | **6.4** | 8 / 16 | the chips' captions (PAUSE · 1× · SAVES · 1D … and the rail's PAUSE/RUN) |
+| InkOnStock `#45392A` | StockOff | 4.8 | 18 / 30 | (the tongues, retired) |
+| light `#F4ECDC` | Brass `#9C8148` | **3.2** | 8 / 16 | the SELECTED chip's caption (1× · FULL TURN) |
+| TextOnPlate `#3D372E` | Tile | 9.2 | 16 / 28 | plate text |
+| Hairline `#B7A98C` | Card | 1.9 | (rules) | not text |
+| HairlineStrong `#8A7A5C` | Card | 3.4 | (rules, the compass grid) | not text |
+| area ink Fiscal `#35619E` | Card | 5.1 | 16 / 28 ledger labels; 22 / 42 headers | calendar rows, section headers |
+| Trade `#23867B` | Card | 3.6 | same | |
+| Political `#A8842E` | Card | **2.9** | same | calendar rows (division/election markers), the Politics header |
+| Welfare `#A84E7B` | Card | 4.2 | same | |
+| Labor `#B5622F` | Card | 3.6 | same | |
+| CrimeJustice `#9C4238` | Card | 5.3 | same | |
+| Sectors `#62579F` | Card | 5.1 | same | |
+| Infrastructure `#3E7480` | Card | 4.3 | same | |
+| SovereignWealth `#85643A` | Card | 4.4 | same | |
+| Global `#5C87A8` | Card | **3.1** | 16 / 28; 22 / 42 | the Statistics headers, "Domestic" / "International", the calendar's event markers |
+| tab tint Fiscal `#3D6494` | the rail's paper | 5.0 | (icons 21 / 35) | inactive rail icons — not text |
+| tab tint Political `#96762A` | | 3.5 | | |
+| tab tint Labor `#A2653E` | | 3.8 | | |
+| tab tint CrimeJustice `#8E4A40` | | 5.4 | | |
+| tab tint Sectors `#5B5187` | | 5.8 | | |
+| tab tint Global `#4E7291` | | 4.1 | | |
+
+**The pairs below 4.5 : 1 that carry TEXT at 16 px or less at 1280** (the sitting's "readability suffers at small sizes", measured): TextMuted on Tile at 7 px (3.7) — the stat tile label; TextMuted on Card at 8 px (3.9) — the Desk's methodology caption; Caution on Card/Tile at 9–10 px (2.5 / 2.4) — the BREAKING chip and the threshold labels; Good on Card at 10–12 px (3.4) — the positive deltas; the light-on-brass selected chip at 8 px (3.2); Global at 16 px (3.1) and Political at 16 px (2.9) as ledger inks. Everything else at or above the body floor. Rows are (fg, bg, px, where) as R-E3 asks; the judgment is D6's.
+
+---
 
 ## 0. The delivered set at HEAD — derived 2026-08-27 (after Progress5), so nothing is asked for twice
 

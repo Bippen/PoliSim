@@ -1,45 +1,53 @@
-# The send package — 2026-08-28, regenerated for UI v3.0 Phase C (paste-and-glance; sending is Elias's)
+# The send package — 2026-08-28, regenerated for UI v3.1 Phase A (paste-and-glance; sending is Elias's)
 
-**This paste supersedes every earlier package** (the two 2026-08-28 generations for Phase A and the
-2026-08-27 send): the boards it asked for have landed and are built, so the ask and its annex captures
-are no longer in it. Two documents, each with its SHA-256 as on disk (CRLF), per the hash-verified send
-precedent (`MISSING_PREREQUISITES.md` §S):
+**This paste supersedes every earlier package** (the Phase C paste of the same day — landed, see
+`MISSING_PREREQUISITES.md` §S — and everything before it). Two documents, each with its SHA-256 as on
+disk (CRLF), plus the two sitting screenshots from Elias's own machine:
 
-1. **The courtesy note, now 1i–1n** — `CLAUDE_DESIGN_BOARD_1I_NOTE.md`, rewritten 2026-08-28 (v3.0
-   Phase C): the two v3.0 boards built the day they landed, the three build calls stated (the ways home,
-   the two refused rows and why, the FOLDED lock) — the same three your board already carries as accepted
-   corrections — 1n as the re-skin it was, and a plain thanks for the same-day boards. A note, not an
-   ask; nothing in it needs an answer.
-2. **The request doc** — `CLAUDE_DESIGN_ASSET_REQUEST.md`, its one live ask being **§E5's hatch re-cut with
-   the measured figures** (the 2026-08-28 re-export's stripes sit at a 32 px period where the shipped PNG's
-   is 16; the phase is fine, the duty ≈8 px along x; lines at `x + y = 16k`, perpendicular stroke ≈5.7).
-   §1 (the boards ask) is migrated to `COMPLETED.md` §41 and stands in the doc only as a stub; §0/§4/§5 are
-   context Design already holds.
+1. **The request doc** — `CLAUDE_DESIGN_ASSET_REQUEST.md`, through **§1, the ninth request: UI v3.1, "one
+   frame, denser, instruments"** — Elias's six asks from the first live sitting (D1 the one-frame ruling,
+   for Design's awareness; D2 board 1n-r2; D3 board 1m-r2; D4 the density token table; D5 board 2a; D6 the
+   contrast pass) with the six annexes measured by engineering (A the duty audit; B the rail's icons at
+   the real cells; C the paddings and dead-space shares; D the sitting's findings; E the Statistics census;
+   F the ink pairs with their contrast ratios) — and **§E5**, still one re-cut away.
+2. **The courtesy note** — `CLAUDE_DESIGN_BOARD_1I_NOTE.md`, **unchanged since the Phase C paste** (the same
+   digest; already in Design's `uploads/`) — listed so the readback can be checked, not because it is new.
+3. **Annex D's two screenshots** — Elias's, not on this machine: `sitting_1_desk_density.png` and
+   `sitting_2_rail_icons.png`, to `send/design_request_2026-08-28d/annex_d/`. Annex B's four rail crops
+   (`annex_b_rail_<size>.png`, out of tree beside the captures) go to `send/design_request_2026-08-28d/annex_b/`.
 
-**Where each goes:** the note to a NEW dated path (`send/design_note_2026-08-28c/CLAUDE_DESIGN_BOARD_1I_NOTE.md`
-— new, because a fresh path is what shows as new in Design's inbox; the earlier note path, if it was ever
-pasted, stays as history); the request doc to BOTH `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` (the path every
-earlier send used and Design has read) AND a new dated copy at
-`send/design_request_2026-08-28c/CLAUDE_DESIGN_ASSET_REQUEST.md`. *The dated `…-28c` paths are established
-hygiene — ratified standing 2026-08-28 as R-PC4a (the consolidation rider).*
+**Where each goes:** the request doc to BOTH `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` (the path every earlier
+send used) AND a new dated copy at `send/design_request_2026-08-28d/CLAUDE_DESIGN_ASSET_REQUEST.md` (the app
+also names a duplicate by its digest, which is how the Phase C paste was recognised); the note nowhere new
+(it is there); the images as above. *The dated `…-28d` paths are established hygiene (R-PC4a).*
 
 | artifact | SHA-256 (as on disk) | bytes | where it goes |
 |---|---|---|---|
-| `CLAUDE_DESIGN_BOARD_1I_NOTE.md` - the courtesy note, 1i-1n (rewritten 2026-08-28, v3.0 Phase C) | `26892355f4ff6bba1639c89382aa8b41f9272a3c4e5a34dbd9fb94597da4b8ad` | 11 959 | `send/design_note_2026-08-28c/CLAUDE_DESIGN_BOARD_1I_NOTE.md` |
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` - the request doc; the one live ask is section E5 (the hatch re-cut with the measured figures) | `b545233b1e3cc88d8b245bbca54e8f381254172bdd3a5e6a5d5506f0ce3c98a6` | 20 099 | `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` AND `send/design_request_2026-08-28c/CLAUDE_DESIGN_ASSET_REQUEST.md` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` - the request doc through section 1, the ninth request (v3.1) with Annexes A-F, and section E5 | `9a98b00e7b86efaf6db27aa1b14339b817bc560dfb4c1c4c74a3c548b8385d2b` | 51 558 | `uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` AND `send/design_request_2026-08-28d/CLAUDE_DESIGN_ASSET_REQUEST.md` |
+| `CLAUDE_DESIGN_BOARD_1I_NOTE.md` - the courtesy note, 1i-1n, unchanged since the Phase C paste (already in Design's uploads/) | `26892355f4ff6bba1639c89382aa8b41f9272a3c4e5a34dbd9fb94597da4b8ad` | 11 959 | nowhere new - listed for the readback check |
+| `annex_b_rail_1280.png` - Annex B, the rail at the 1280 cell (a document beside the Desk) | `332eb36a7ed1d498c8b6a1db69ba1dcbad763559a93663d1502b7205819ddc63` | 43 768 | `send/design_request_2026-08-28d/annex_b/annex_b_rail_1280.png` |
+| `annex_b_rail_1600.png` - Annex B, the rail at the 1600 cell (a document beside the Desk) | `7b2b8749a393dd80eb4074092d7b3df0e64b4630a6282e72c67cac380ff27847` | 57 034 | `send/design_request_2026-08-28d/annex_b/annex_b_rail_1600.png` |
+| `annex_b_rail_1920.png` - Annex B, the rail at the 1920 cell (a document beside the Desk) | `aa0d860a7ec42f10b6bc7e4892e40f36399aa631087ebf8f70fbbfe336a71c4b` | 68 843 | `send/design_request_2026-08-28d/annex_b/annex_b_rail_1920.png` |
+| `annex_b_rail_2560.png` - Annex B, the rail at the 2560 cell (a document beside the Desk) | `df9afb596832b3a2609b792aeee531c353280617fe8d94231db092baddff91e7` | 89 388 | `send/design_request_2026-08-28d/annex_b/annex_b_rail_2560.png` |
 
-**The glance, after the paste:** read each document back (`get_file`) and hash the readback; the digests
-above are what the readback must equal (`sha256sum` in Git Bash on the CRLF file; a LF-normalized readback
-hashes differently — compare like with like). Then mark §S in `MISSING_PREREQUISITES.md` SENT with the
-date, the way the 2026-08-27 send is marked.
+**The glance, after the paste:** read the request doc back (`get_file`) and hash the readback; the digest
+above is what the readback must equal (`sha256sum` in Git Bash on the CRLF file; a LF-normalized readback
+hashes differently). The images are verified by listing. Then mark §S in `MISSING_PREREQUISITES.md` SENT
+with the date, the way the Phase C paste is marked.
 
-**What comes back, and where it lands:** one thing only — **Design's hatch re-cut** (`svg/ui_hatch_draft.svg`
-at the 16 px period). The day it lands: import it over `Assets/Resources/Art/UI/Chrome/Source/ui_hatch_draft.svg`,
-run `StripCutDiffCheck` with the external rasterizer (`-stripcutrasterizer=G:\UNITY\Projects\PoliSim-captures\tools\resvg-0.47.0\resvg.exe`),
-and if the pair sits in budget remove `ui_hatch_draft` from `DeferredPairs` in the same commit (R-D3's close
-condition). If it still misses, measure the residual on the PNG as before and say which. The note asks for
-nothing and expects nothing back.
+**What comes back, and where it lands:** (1) **board 1n-r2** — the rail: on arrival, the home cell's face
+replaces the flag interim and the rail's width follows Design's number if legibility earned one (v3.1 Phase
+B, `v31b_*` film); (2) **board 1m-r2** — the Desk revised for density with the Year-0 empty states designed:
+built against the board as 1m was, the Desk's layout constants replaced as a set; (3) **the density token
+table** — one number per token against Annex C's current values, applied mechanically (`GameController`'s
+fractions and the `PoliSimTheme` / `PoliSimWidgets` constants), then a full matrix; (4) **board 2a,
+Statistics drawn** — built against the board with the honesty channels intact, the eight-series cap and
+the palette unchanged; (5) **the contrast pass** — new values for existing tokens in `PoliSimTheme.cs`,
+then a full matrix and Annex F re-measured; (6) **the hatch re-cut** (§E5) — **already on the live project
+as of 2026-08-28 evening** (`svg/ui_hatch_draft.svg`: nine 45°-rotated rects at 11.314 spacing, 5.657 wide —
+a 16 px horizontal period and an 8 px duty, the measured figures exactly); its import, the resvg diff and
+the deferral's lift are the §E5-close micro-pass's, the next pass after this one. Each lands in its own
+pass with its own film; none is started before its board.
 
-**Not in this package, by design:** the capture films (reference material out of tree, named in the note —
-no import on Design's side); the request doc's §0/§4/§5 (context Design already holds); the boards ask and
-its annexes (answered, migrated).
+**Not in this package, by design:** the capture films beyond the four rail crops (reference material out of
+tree, named in the annexes); the request doc's §0/§4/§5 (context Design already holds); the answered asks.
