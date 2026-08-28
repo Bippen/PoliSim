@@ -4555,6 +4555,10 @@ namespace PoliSim.UI
 
             GUILayout.BeginVertical(_boxStyle, GUILayout.Width(railWidth), GUILayout.Height(areaHeight - _boxStyle.margin.vertical));
 
+            // v3.1 R-E2 (2026-08-28): HOME first - the structural interim Design's 1n-r2 re-skins.
+            DrawRailHomeCell(cell, iconSize, cells);
+            DrawRailHomeSeparator(cell);
+
             DrawRailNavCell("Statistics", ConsolidatedTab.Statistics, "icon_nav_statistics", cell, iconSize, cells);
             DrawRailNavCell("Decisions", ConsolidatedTab.Decisions, "icon_nav_decisions", cell, iconSize, cells);
             DrawRailNavCell("Demographics", ConsolidatedTab.Demographics, "icon_nav_demographics", cell, iconSize, cells);
@@ -4582,6 +4586,67 @@ namespace PoliSim.UI
                     UiContainmentGuard.Check(cells[i].Key, cells[i].Value, rail);
                 }
             }
+        }
+
+        /// <summary>
+        /// v3.1 R-E2 (2026-08-28): the rail's topmost cell is HOME - the one cell that reads "back to
+        /// the Desk" without being learned (the sitting's sharpest complaint). A structural interim
+        /// on the most legible existing glyph - the player's FLAG (full colour, `IconLibrary.GetFlag`,
+        /// the one non-tinted mark in the rail, so it is first-class by contrast alone; at the 39 cell it
+        /// draws 24×16, Annex B I12's "recognisable" floor, and grows with the cell) - and it carries
+        /// C6's country identity onto every screen now that the OPEN header is gone. Active on the
+        /// Desk with board 1n's convention in the Desk's own brass (no area owns Screen 0). Design's
+        /// 1n-r2 replaces the face; the affordance ships now. The calendar chip stays the second,
+        /// learned way home (R-B2).
+        /// </summary>
+        private void DrawRailHomeCell(float cell, float iconSize, List<KeyValuePair<string, Rect>> cells)
+        {
+            var style = new GUIStyle(_neutralActionButtonStyle) { fixedHeight = 0f, fixedWidth = 0f };
+            style.padding = new RectOffset(0, 0, 0, 0);
+            if (GUILayout.Button(GUIContent.none, style, GUILayout.Width(cell), GUILayout.Height(cell)))
+            {
+                _onDesk = true;
+            }
+
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Rect rect = GUILayoutUtility.GetLastRect();
+            if (_onDesk)
+            {
+                PoliSimTheme.Rule(rect, PoliSimTheme.Tint(PoliSimTheme.Brass, RailActiveWashAlpha));
+                float spine = Mathf.Max(2f, Mathf.Round(cell * (RailSpineWidthAt39 / 39f)));
+                PoliSimTheme.Rule(new Rect(rect.x, rect.y, spine, rect.height), PoliSimTheme.Brass);
+            }
+
+            float flagWidth = Mathf.Round(iconSize * 1.15f);
+            float flagHeight = Mathf.Round(flagWidth * (2f / 3f));
+            var flagRect = new Rect(rect.x + (rect.width - flagWidth) * 0.5f, rect.y + (rect.height - flagHeight) * 0.5f, flagWidth, flagHeight);
+            Texture2D flag = IconLibrary.GetFlag(PlayerCountryId);
+            if (flag != null)
+            {
+                GUI.DrawTexture(flagRect, flag, ScaleMode.StretchToFill, true);
+            }
+            else
+            {
+                LedgerRow.Cell(flagRect, "H", _tabButtonStyle, PoliSimTheme.Brass, TextAnchor.MiddleCenter);
+            }
+
+            cells.Add(new KeyValuePair<string, Rect>("shell rail: home", flagRect));
+        }
+
+        /// <summary>The rule beneath HOME (R-E2: "first position + a separator rule beneath") - a hairline-strong rule across the cell with the rail's gap on either side.</summary>
+        private void DrawRailHomeSeparator(float cell)
+        {
+            GUILayout.Space(RailGap());
+            Rect rule = GUILayoutUtility.GetRect(cell, 1f, GUILayout.Width(cell), GUILayout.Height(1f));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.Rule(new Rect(rule.x + 3f, rule.y, Mathf.Max(1f, rule.width - 6f), 1f), PoliSimTheme.HairlineStrong);
+            }
+            GUILayout.Space(RailGap());
         }
 
         /// <summary>One navigation cell of the rail: a square paper button carrying the tongue's icon. Active = area ink behind the tab-swatch convention's spine stood on end; inactive = the delivered tab-swatch tint. A missing sprite degrades to the tab's initial in the same ink - the rail never shows a blank cell that navigates somewhere.</summary>
