@@ -13726,6 +13726,12 @@ live-deviation form instead**, the revert is one subtraction per site — `Basel
 term dropped from `WelfareEffectDelta` and `GetTotalWelfareCost` — and THAT commit takes the row
 ("row 9, seed identity: every figure ever recorded on the five AI countries' no-policy paths").
 
+*(✅ Confirmed 2026-08-28 — R-C3 of the continuation kickoff, with the sourced seeds in (`915c800`): the
+anchored form stands — "sourced seeds move what the countries are, not what they do unprompted." A6 is
+retired from `MISSING_PREREQUISITES.md` §A; the live-deviation revert above stays as the recorded
+alternative, unexercised. The figures themselves were confirmed the same day (R-C4; basis notes in
+`POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §8).)*
+
 ### 2. The portraits — 3.2 → 5.5, the cost measured
 
 `DrawPersonPortrait` (`GameController.cs`, `height = fontSize × 5.5`). Art drawn: **61×78 px at

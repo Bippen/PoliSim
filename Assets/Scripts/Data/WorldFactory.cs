@@ -590,8 +590,9 @@ namespace PoliSim.Data
             // country's real position. A slot reads (Type, implemented, generosity); a program with
             // no slot is present, not implemented, at DefaultWelfareGenerosity.
             //
-            // [PROVISIONAL - session-sourced 2026-08-28, Elias to confirm] (R-K9 of the omnibus; the
-            // MISSING_PREREQUISITES.md §F mapping followed as written). FACT half - which programs a
+            // [PROVISIONAL - session-sourced 2026-08-28; mapping confirmed by Elias 2026-08-28 (R-C4);
+            // [VERIFIED] waits on the §B database session] (R-K9 of the omnibus; the §F mapping followed
+            // as written; basis notes: POLISIM_SEED_DATA_MACRO_OVERHAUL.md §8). FACT half - which programs a
             // country really runs: universal statutory health coverage, the five and not the USA
             // (Medicare/Medicaid are not universal coverage; that public spending stays in the sourced
             // Healthcare budget line); a national means-tested cash social-assistance scheme, a
@@ -604,7 +605,7 @@ namespace PoliSim.Data
             // income-maintenance component, nothing is added twice) -> means-tested. generosity =
             // clamp(spend / CostShareOfGdp x 100, 0, 100) with the cost shares the budget already
             // books (WelfareProgramCostShares: healthcare 10, means-tested 6, housing 1.5,
-            // childcare 1). Caveats carried to the confirmation (COMPLETED.md §36): Germany's minimum
+            // childcare 1). Caveats confirmed 2026-08-28 (R-C4; POLISIM_SEED_DATA_MACRO_OVERHAUL.md §8): Germany's minimum
             // income (Bürgergeld) is booked under Unemployment in SOCX, so its means-tested figure
             // understates; childcare clamps at 100 for three countries because real family in-kind
             // spending exceeds the model's 1%-of-GDP full-generosity cost; 2021 is a pandemic year.
@@ -740,8 +741,9 @@ namespace PoliSim.Data
             // stays anchored to the sourced output shares - which already embody that regulation.
             // A country-wide figure applies to every sector; a (SectorType, level) pair overrides one.
             //
-            // [PROVISIONAL - session-sourced 2026-08-28, Elias to confirm] (R-K9 of the omnibus; the
-            // MISSING_PREREQUISITES.md §F mapping followed as written). OECD Product Market Regulation
+            // [PROVISIONAL - session-sourced 2026-08-28; mapping confirmed by Elias 2026-08-28 (R-C4);
+            // [VERIFIED] waits on the §B database session] (R-K9 of the omnibus; the §F mapping followed
+            // as written; basis notes: POLISIM_SEED_DATA_MACRO_OVERHAUL.md §8). OECD Product Market Regulation
             // indicators, 2023-24 vintage on the 2023 methodology (0-6, lower = less regulated):
             // economy-wide from the OECD's own workbook PMR-Indicator_Econwide_2023-24-and-2018_
             // 02.02.2026.xlsx (oecd.org, retrieved 2026-08-28, SHA-256 D0EBCFC7...; its published

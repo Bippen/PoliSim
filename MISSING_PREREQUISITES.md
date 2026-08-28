@@ -16,7 +16,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 | entry | waiting on | gate |
 |---|---|---|
 | §S — the send package | ✅ **SENT 2026-08-27** (the request, hash-verified, to Design's project); the courtesy note (rewritten 1i–1l-aware 2026-08-28) alone still waits on **Elias — send** | the E2 convention: sending is Elias's — this send was on his instruction |
-| §A — the ruling queue Q6–Q10; F2; **the omnibus's A4–A6** (the ledger row type, the raster budget, the anchored form) | **Elias — a decision** | each at its own named trigger; A4–A6 are the 2026-08-28 report's `RULINGS NEEDED` |
+| §A — the ruling queue Q6–Q10; F2 (~~the omnibus's A4–A6~~ ✅ **RULED 2026-08-28** by the continuation kickoff — R-C1 the one-line row, R-C2 the per-class raster budgets, R-C3 the anchored form confirmed; tombstone below) | **Elias — a decision** | each at its own named trigger; nothing from the omnibus report remains open |
 | §B — three seed quality debts | **Elias — database access** (an OECD/Eurostat re-sourcing session) | none blocks anything |
 | §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
 | ~~§D1 — cabinet portraits, eight outstanding~~ | ✅ **DELIVERED AND IMPORTED 2026-08-27** (Progress5; `PortraitCoverageCheck` 25 of 25) | tombstone below; the look is §V's |
@@ -24,7 +24,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 | ~~§E3 — rasterization diff, our half~~ | ✅ **CLOSED 2026-08-28** (the omnibus, `a15c0c1`: resvg as `StripCutDiffCheck`'s external rasterizer, the six buttons 6/6) | tombstone below; its two findings are §E5 |
 | §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch**, behind §D1 | two `StatNodeId` members first |
 | §E5 — two strip-cut findings (the hatch tile's tiling, the slider track's strip) | **Claude Design — re-cut or explain** (Elias to say which side is the truth) | filed as `CLAUDE_DESIGN_ASSET_REQUEST.md` §E5 (2026-08-28), goes with the next send |
-| §F — the session-sourced seed spread (OECD PMR 2023-24, SOCX 2021) | **Elias — CONFIRM** the mapping and six caveats | every figure `[PROVISIONAL]`; the trajectories byte-identical either way |
+| ~~§F — the session-sourced seed spread (OECD PMR 2023-24, SOCX 2021)~~ | ✅ **CONFIRMED 2026-08-28** (R-C4: the mapping and the six caveats; basis notes and two standing notes in `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §8) | tombstone below; `[PROVISIONAL]` until the §B database session upgrades to `[VERIFIED]` |
 | §V — built, not seen (the omnibus review package, every surface with its capture named) | **Elias — a visual review** | rule 3's third layer |
 | §P — three felt verdicts | **Elias — a playtest** | no measurement can answer them |
 
@@ -63,25 +63,28 @@ full 2026-08-17), the SWF emergency drawdown (a standalone tier-3 bill, ruled AN
 `b1c077f`), cabinet appointments staying UNILATERAL — all resolved 2026-08-02; the reasoning migrated IN
 FULL to `COMPLETED.md` §23 so none is reopened as an unanswered question later.
 
-**The omnibus pass's `RULINGS NEEDED` (2026-08-28; the report carries the same three, each a one-line
-answer, each written back here when given):**
+**The omnibus pass's `RULINGS NEEDED` (2026-08-28) — ✅ ALL THREE RULED 2026-08-28 by the continuation
+kickoff (pre-issued rulings, each strikeable in the kickoff message; none struck). Tombstone:**
 
-- **A4 — the ledger row's one-line type.** R-K4 set the law browser's row pitch to the Budget's ledger
-  pitch and measured it (1600: 80px / 4.5 laws per viewport → 66px / 5.3; 2560: 85 / 6.1 → 68 / 7.6; 1280:
-  66 / 2.5 → 55 / 2.5, the §A.8 caption block taking the floor's gain). The 1j board's ~27px is a ONE-LINE
-  row; the ledger row is two lines by construction (the wrap-first name ladder). A one-line row type is a
-  different row — build it, or accept the two-line pitch as the browser's? (`476c66c`,
-  `omni_final_*_06f_policylaws_laws*`.)
-- **A5 — the raster check's budget.** `StripCutDiffCheck`'s 2% mismatch budget was set before any
-  comparable output existed; with resvg, nine of the 42 Stats icons sit at 2.06–3.21% on a family that
-  runs 0.5–3.2% in a continuum (antialiasing at a 10.7× upscale of 24-unit strokes). Raise the budget to
-  4% (all nine pass, the largest at 3.21%), or keep 2% and hand-inspect the nine? Left as set (§E5).
-- **A6 — the anchored form, confirmed with real seeds in.** The seed-spread mechanism (`6df94de`) measures
-  every welfare and regulation effect from the country's seeded position, so the sourced seeds (`915c800`)
-  moved the compass and the dials' starting positions and NOT the no-policy trajectories (6/6 identical).
-  That is the honest form Elias ruled for on 2026-08-27 with the figures still unsourced; now that they
-  are in, confirm it stands — the live-deviation alternative (effects measured from zero, every baseline
-  moving) is one revert away and is recorded in `CLAUDE.md` "Playtest 3, the rulings".
+- **A4 → R-C1: build the one-line row type.** "The two-line row is a construction artifact; the boards drew
+  one-line rows and density was the original finding." Both law-row families go one-line (AVAILABLE
+  three-cell per 1j, IN FORCE / BEFORE THE HOUSE four-cell per 1i), the height derived from the board's
+  proportion (the 1i board: rows on a 32 px pitch at 1080p, ~26 in its scroller, a 14 px bold name — 2.29
+  name-fonts per row) translated to our px basis through the ledger conventions; the name cell keeps full
+  weight with `MeasuredLabel` shrink-never-truncate; the detail pane untouched. Built as the
+  continuation's Phase 1 with the density measured before and after — record: `COMPLETED.md` §37,
+  `CLAUDE.md` "The continuation kickoff (2026-08-28)". (The 2026-08-28 report's "~27px" was a misreading
+  of the rulings doc's "~27 rows per screen"; the board's row is 32 px.)
+- **A5 → R-C2: keep the 2% budget; inspect the nine.** Eye-read the nine `Stats/` diff pairs, classify the
+  damage per pair, then set per-damage-class budgets in `StripCutDiffCheck` from what the inspection
+  finds, each with its reason in the check's header (rule 6); re-run the 90-pair sweep; a pair that turns
+  out to be a real Design-side defect joins §E5 as an ask, not a budget. "Raising a blind bar to clear
+  observed failures is the rule-14 shape — do not do that." Executed as the continuation's Phase 2 —
+  record: `COMPLETED.md` §37, `CLAUDE.md` "The continuation kickoff (2026-08-28)".
+- **A6 → R-C3: the anchored seed-spread form is CONFIRMED** with the sourced seeds in — "sourced seeds
+  move what the countries are, not what they do unprompted." Recorded where the anchor is documented
+  (`CLAUDE.md` "Playtest 3, the rulings" §1, the dated confirmation line); the live-deviation revert note
+  stays there as the recorded alternative, unexercised.
 
 # B. Database access — three quality debts survive (none blocks anything)
 
@@ -269,68 +272,22 @@ is ours). Waiting on Design once the members exist, so not startable as a reques
 
 ---
 
-# F. Waiting on Elias — CONFIRM the session-sourced seed spread (sourced 2026-08-28 under R-K9; every figure `[PROVISIONAL]`)
+# F — the session-sourced seed spread: ✅ CONFIRMED 2026-08-28 (tombstone)
 
-**The ruling (playtest 3, finding 1):** option (i), a per-country seed spread for sector regulation and
-implemented welfare programs, from real data per the standing rule — "do NOT invent a spread to make
-the plot look good; if the figures need sourcing, say so and Elias will source them." R-K9 of the omnibus
-kickoff (2026-08-28) had the session source them from the OECD primary datasets and tag every value
-`[PROVISIONAL - session-sourced 2026-08-28, Elias to confirm]`; they landed at `915c800` in the slots the
-mechanism (`6df94de`) had held open. **What waits on Elias is the confirmation** — of the mapping (which
-was §F's own proposal, followed as written) and of the six caveats below — not the sourcing. The
-trajectories stayed byte-identical (the anchored form; `traj_post_phase4` ≡ `traj_pre_seedspread` 6/6), so
-a struck figure costs one literal, nothing downstream.
+**R-C4 of the continuation kickoff (Elias, 2026-08-28): the mapping and the six caveats are CONFIRMED.**
+The whole sourcing record — sources, SDMX keys, the two tables, the six caveats as basis notes under the
+variant-axis rule, and two standing notes (a re-source trigger for the day SOCX publishes a post-pandemic
+common year; the childcare-clamp compression, known and accepted) — now lives where seed data lives:
+`POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §8. The slot tags in `WorldFactory.cs` read "mapping confirmed by
+Elias 2026-08-28"; the `[VERIFIED]` upgrade path remains the §B database session. The trajectories were
+byte-identical through the sourcing (the anchored form, confirmed as R-C3); nothing downstream moved.
+History: the ruling of playtest 3 (finding 1, option (i)); R-K9 of the omnibus (`915c800`, this section's
+own proposal followed as written); the confirmation. The section's sourcing text as it stood at `dc6f491`
+is in git history.
 
-**Regulation — OECD Product Market Regulation, 2023-24 vintage on the 2023 methodology (0–6, lower = less
-regulated).** Economy-wide from the OECD's own workbook `PMR-Indicator_Econwide_2023-24-and-2018_02.02.2026.xlsx`
-(oecd.org, retrieved 2026-08-28, SHA-256 D0EBCFC7…; sheet `PMR_Econwide_2023-24`, its published "OECD
-average" row 1.3464), cross-checked against the SDMX API (`OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3` — identical to
-seven decimals for all six; the published average and the 38-member simple mean differ by 0.0004, so the
-mean is the convention the sector series use, where no published row exists). Mapping: level = 50 × PMR /
-average, clamped 10–90.
-
-| country | PMR 2023 | level | ENERGY (mean 1.3134) | ECOMM (1.3056) | RETAIL_TRADE (1.0409) |
-|---|---|---|---|---|---|
-| USA | 1.5786 | 58.6 | 0.9855 → 37.5 | 1.4606 → 55.9 | 1.5714 → 75.5 |
-| Sweden | 0.8063 | 29.9 | 1.0959 → 41.7 | 1.5459 → 59.2 | 0.5714 → 27.4 |
-| Germany | 1.2080 | 44.9 | 0.4543 → 17.3 | 1.3928 → 53.3 | 0.8929 → 42.9 |
-| France | 1.2297 | 45.7 | 0.8027 → 30.6 | 1.3188 → 50.5 | 3.0000 → 90 (144.1 clamped) |
-| Italy | 1.2310 | 45.7 | 0.7207 → 27.4 | 0.7426 → 28.4 | 1.9286 → 90 (92.6 clamped) |
-| Poland | 1.0664 | 39.6 | 1.3779 → 52.5 | 0.9784 → 37.5 | 1.0612 → 51.0 |
-
-**Welfare — OECD SOCX public social expenditure by policy area, % of GDP, 2021** (the latest year all six
-report the programme breakdown — the USA runs to 2023, France to 2022; dataflow
-`OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0`, expenditure source Public, retrieved 2026-08-28). The FACT half
-as proposed: universal statutory health coverage — the five, not the USA; means-tested, housing and
-childcare — all six; UBI and NIT — none. The FIGURE half: generosity = clamp(spend / CostShareOfGdp × 100,
-0, 100) with the budget's own cost shares (healthcare 10, means-tested 6, housing 1.5, childcare 1).
-
-| country | Health TP41 → healthcare | Family in-kind TP51/K → childcare | Housing TP82 → housing | Other social policy TP91 → means-tested |
-|---|---|---|---|---|
-| USA | 9.496 — not implemented (stays in the Healthcare budget line) | 0.568 → 56.8 | 0.236 → 15.7 | 0.900 → 15.0 |
-| Sweden | 6.954 → 69.5 | 2.049 → 100 (204.9) | 0.378 → 25.2 | 0.529 → 8.8 |
-| Germany | 9.994 → 99.9 | 1.436 → 100 (143.6) | 0.528 → 35.2 | 0.156 → 2.6 |
-| France | 9.654 → 96.5 | 1.353 → 100 (135.3) | 0.632 → 42.1 | 1.216 → 20.3 |
-| Italy | 6.880 → 68.8 | 0.588 → 58.8 | 0.041 → 2.7 | 1.559 → 26.0 |
-| Poland | 4.613 → 46.1 | 0.808 → 80.8 | 0.024 → 1.6 | 0.127 → 2.1 |
-
-**The six caveats, for the confirmation (each a one-literal change if struck):**
-1. "The cash social-assistance component of income support" was read as TP91's cash half, which TP91's
-   total already contains — means-tested = TP91 total, nothing counted twice.
-2. Germany's minimum income (Bürgergeld) is booked under Unemployment (TP71) in SOCX, not TP91 — its 2.6
-   understates the real scheme; the aggregate dataflow cannot separate it. Poland's 2.1 is the same class.
-3. Childcare follows "family, services/in-kind" (TP51/K), which includes home help and other in-kind
-   services; ECEC alone (TP521) gives USA 31.5, SWE 100 (149), DEU 81.0, FRA 100 (124), ITA 49.4, POL 67.8.
-   Three countries clamp at 100 under either reading — the model's 1%-of-GDP full-generosity cost sits
-   below real spending.
-4. 2021 is a pandemic-affected year (USA health 9.496 vs 8.956 in 2023); "latest common year" followed.
-5. Poland's housing line is TP822 "other benefits in kind" (no TP821 entry); the fact half's ✓ kept.
-6. France's retail indicator jumped 1.99 → 3.00 between 2018 and 2023 and clamps at 90, as does Italy's 1.93.
-
-**What landed:** one line per country for regulation, one tuple per implemented program for welfare, the
-`[PLACEHOLDER]` tags retired; the Compass Y axis spreads (raw 37.5 Poland … 57.3 France, 19.8 units over
-461 of 600 px — `CompassAxisDiagnostic`, `compass_post_phase4`); the Sectors and Welfare tabs open at the
-real positions (§V); the no-policy trajectories byte-identical.
+**The ruling (playtest 3, finding 1), kept for the record:** option (i), a per-country seed spread for sector
+regulation and implemented welfare programs, from real data per the standing rule — "do NOT invent a
+spread to make the plot look good; if the figures need sourcing, say so and Elias will source them."
 
 **Still flagged, not this section's to decide:** the same uniform-50 finding holds for the other four
 sector dials and the labor/crime dials the seed file lists as uniform placeholders; the Compass Y formula
@@ -386,3 +343,8 @@ so either way:
    ("still not independent"); the next play says whether it holds until item 10.
 3. **The Trade bill's costs felt** (pass 6) — the bill card's cost line, the partner row's retaliation,
    the inflation year, and a hike that now fails at the seed composition.
+
+**Context for every verdict on this list (R-C7, 2026-08-28):** every felt verdict to date was played in the
+no-expansionary-passage regime §D0 records — no tax-raising, spending-raising or welfare-implementing bill
+passes except by ±1-seat jitter until item 10's real parties re-seed the house. The verdicts are read with
+that context when item 10 changes it; none is re-opened by it.

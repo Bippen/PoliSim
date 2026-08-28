@@ -870,6 +870,110 @@ it; the work belongs to Step C4's closure.)*
 
 Also worth modeling: France carries a *negative outlook* while southern European sovereigns are stable — outlook is a real signal distinct from the rating itself, and a cheap way to telegraph a downgrade before it lands.
 
+### 8. Sector regulation and the welfare portfolio — the §F seed spread (sourced 2026-08-28 under R-K9; mapping and caveats CONFIRMED by Elias 2026-08-28, R-C4)
+
+**Status:** every figure `[PROVISIONAL - session-sourced 2026-08-28; mapping confirmed by Elias 2026-08-28]`.
+Not `[VERIFIED]`: that upgrade is the §B database session's (a second retrieval from a session with
+database access, the rule every other row of this file follows). Seeded in `WorldFactory.cs`
+(`SeedSectorRegulation` / `SeedWelfarePrograms`, `915c800`) in the ANCHORED form (`6df94de`;
+`CLAUDE.md` "Playtest 3, the rulings" §1; confirmed R-C3): the seeds move what a country IS — its dial
+positions, the programs on its tabs, its place on the compass — never the no-policy trajectory
+(byte-identical 6 of 6 through the sourcing). The session's working record: `phase4_sourcing` in the
+omnibus report; the queries below are reproducible as written.
+
+#### 8a. Regulation — OECD Product Market Regulation, 2023-24 vintage on the 2023 methodology
+
+- **Source A, economy-wide:** the OECD's own workbook `PMR-Indicator_Econwide_2023-24-and-2018_02.02.2026.xlsx`
+  (`https://www.oecd.org/content/dam/oecd/en/topics/policy-sub-issues/product-market-regulation/`…, retrieved
+  2026-08-28, 116,589 bytes, SHA-256 prefix `D0EBCFC71A2103B5`); sheet `PMR_Econwide_2023-24`, column E
+  "PMR (2023 methodology)", row 64 "OECD average" = 1.3464008.
+- **Source B, the cross-check and the sector series:** SDMX dataflow `OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3`,
+  `https://sdmx.oecd.org/public/rest/data/OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3/all?startPeriod=2018&format=csvfilewithlabels`
+  (5,264 rows, years 2018 and 2023). Economy-wide identical to the workbook to seven decimals for all six
+  (USA 1.5785896, SWE 0.8063377, DEU 1.2080490, FRA 1.2296512, ITA 1.2310206, POL 1.0663764). The API carries
+  no OECD-aggregate row; the published average reproduces as the 38-member simple mean to 0.0004, so the
+  simple mean is the sector denominator: ENERGY 1.3134 (n=38), ECOMM 1.3056 (n=38), RETAIL_TRADE 1.0409 (n=38).
+- **Basis (the variant-axis rule):** indicator = the composite PMR on the **2023 methodology** — NOT
+  comparable with the 2018-methodology series the OECD also publishes (the workbook's 2018 column is the
+  2018 vintage recomputed on the 2023 methodology: USA 1.5851, SWE 0.8673, DEU 1.4316, FRA 1.2554, ITA 1.2859,
+  POL 1.2797); scale 0–6, lower = less regulated; economy-wide = the composite; sectors: ENERGY (the OECD's
+  composite of electricity and natural gas), ECOMM (fixed and mobile), RETAIL_TRADE (general retail — the
+  medicines indicator is NOT folded in); reference year 2023 (in force 2023-01-01 for five, 2024-01-01 the
+  USA).
+- **Mapping (§F's own proposal, followed as written):** level = 50 × PMR / average, clamped 10–90, so 50
+  keeps its meaning (OECD-average stringency); the five sectors without a PMR series take the country-wide
+  level.
+
+| country | PMR 2023 | level | ENERGY → Energy | ECOMM → Telecommunications | RETAIL_TRADE → Retail |
+|---|---|---|---|---|---|
+| USA | 1.5786 | 58.6 | 0.9855 → 37.5 | 1.4606 → 55.9 | 1.5714 → 75.5 |
+| Sweden | 0.8063 | 29.9 | 1.0959 → 41.7 | 1.5459 → 59.2 | 0.5714 → 27.4 |
+| Germany | 1.2080 | 44.9 | 0.4543 → 17.3 | 1.3928 → 53.3 | 0.8929 → 42.9 |
+| France | 1.2297 | 45.7 | 0.8027 → 30.6 | 1.3188 → 50.5 | 3.0000 → 90 (144.1, clamped) |
+| Italy | 1.2310 | 45.7 | 0.7207 → 27.4 | 0.7426 → 28.4 | 1.9286 → 90 (92.6, clamped) |
+| Poland | 1.0664 | 39.6 | 1.3779 → 52.5 | 0.9784 → 37.5 | 1.0612 → 51.0 |
+
+- **Basis note (caveat 6, confirmed):** France's RETAIL_TRADE jumped 1.99 → 3.00 between the 2018 and 2023
+  vintages and clamps at 90; Italy's 1.93 clamps too. The clamp is the mapping's, not the data's: both are
+  seeded at the ceiling and a future retail move is measured from 90.
+
+#### 8b. Welfare — OECD SOCX public social expenditure by policy area, % of GDP, 2021
+
+- **Source:** SDMX dataflow `OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0`,
+  `https://sdmx.oecd.org/public/rest/data/OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0/USA+SWE+DEU+FRA+ITA+POL.A.SOCX.PT_B1GQ.ES10..._Z?startPeriod=2015&format=csvfilewithlabels`
+  (3,120 rows; retrieved 2026-08-28; every observation status A). The DSD's arity was read from the API
+  first (Part 4 §5 d-bis): eight key dimensions, the price base `_Z` included.
+- **Basis (the variant-axis rule):** PUBLIC expenditure only (EXPEND_SOURCE ES10 — mandatory-private and
+  voluntary-private excluded); UNIT_MEASURE PT_B1GQ = percentage of GDP; policy-area codes TP41 Health,
+  TP51/K Family services and in-kind, TP82 Housing, TP91 Other social policy areas; reference year 2021 =
+  the latest year all six report the programme breakdown (the USA runs to 2023, France to 2022, the other
+  four to 2021).
+- **The FACT half (which programs a country really runs), §F's proposal confirmed:** universal statutory
+  health coverage — the five, not the USA (Medicare/Medicaid are not universal coverage; that public spending
+  stays in the sourced Healthcare budget line); a national means-tested cash social-assistance scheme, a
+  national housing allowance and a public childcare/ECEC entitlement — all six; UBI and a negative income
+  tax — none.
+- **The FIGURE half:** generosity = clamp(spend / CostShareOfGdp × 100, 0, 100) with the cost shares the
+  budget already books (`WelfareProgramCostShares`: healthcare 10, means-tested 6, housing 1.5, childcare 1).
+
+| country | TP41 Health → healthcare | TP51/K Family in-kind → childcare | TP82 Housing → housing | TP91 Other → means-tested |
+|---|---|---|---|---|
+| USA | 9.496 — not implemented (stays in the Healthcare budget line) | 0.568 → 56.8 | 0.236 → 15.7 | 0.900 → 15.0 |
+| Sweden | 6.954 → 69.5 | 2.049 → 100 (204.9, clamped) | 0.378 → 25.2 | 0.529 → 8.8 |
+| Germany | 9.994 → 99.9 | 1.436 → 100 (143.6, clamped) | 0.528 → 35.2 | 0.156 → 2.6 |
+| France | 9.654 → 96.5 | 1.353 → 100 (135.3, clamped) | 0.632 → 42.1 | 1.216 → 20.3 |
+| Italy | 6.880 → 68.8 | 0.588 → 58.8 | 0.041 → 2.7 | 1.559 → 26.0 |
+| Poland | 4.613 → 46.1 | 0.808 → 80.8 | 0.024 → 1.6 | 0.127 → 2.1 |
+
+**Basis notes — the six caveats of the confirmation (R-C4, 2026-08-28; each a one-literal change if it
+were ever struck):**
+1. **Means-tested = the TP91 total.** §F's "cash social-assistance component of income support" was read as
+   TP91's cash half (TP911 income maintenance + TP912), which the TP91 total already contains — nothing is
+   counted twice. (The USA's SNAP sits in TP922, in kind, 0.52 of its 0.900; TANF in TP911.)
+2. **Germany's minimum income (Bürgergeld / ALG II) is booked under Unemployment (TP71) in SOCX,** not
+   under TP91, so Germany's 2.6 understates the real scheme, and the aggregate dataflow cannot separate the
+   social-assistance part of TP711; Poland's 2.1 is the same class, smaller.
+3. **Childcare follows TP51/K (family services and in-kind),** which includes home help and other in-kind
+   family services; ECEC alone (TP521) would give USA 31.5, SWE 100 (149), DEU 81.0, FRA 100 (124), ITA 49.4,
+   POL 67.8 — three countries clamp at 100 under either reading (see the standing note below).
+4. **2021 is a pandemic-affected year** (the USA's health line 9.496 in 2021 against 8.956 in 2023); §F's
+   "latest common year" rule was followed as written (see the re-source trigger below).
+5. **Poland's housing line is TP822 "other benefits in kind"** (SOCX carries no TP821 housing-assistance entry
+   for Poland); the fact half's ✓ is kept at the figure.
+6. The regulation clamp — 8a's basis note.
+
+**Two standing notes (R-C4):**
+- **Re-source trigger:** the day SOCX publishes a post-pandemic year common to all six (2022 needs Sweden,
+  Germany, Italy and Poland to report the breakdown; 2023 needs those and France), re-pull the four lines on
+  the same basis (ES10, PT_B1GQ, the same policy-area codes) and re-derive the tuples — one literal per
+  slot, the no-policy trajectories unaffected by construction (the anchored form).
+- **The childcare-clamp compression, known and accepted:** three countries' real family in-kind spend
+  (Sweden 2.05, Germany 1.44, France 1.35 % of GDP) exceeds the booked full-generosity cost
+  (`WelfareProgramCostShares` childcare = 1.0 % of GDP), so the clamp at 100 compresses the real spread
+  between them and Poland (0.81) / Italy (0.59) / the USA (0.57). Recorded as known; revisited ONLY if the
+  Welfare tab reads wrong or a mechanic needs childcare differentiation — because the constant is what the
+  budget books, and moving it to fit a seed would be tuning the model to the data (R-K2's shape).
+
 ---
 
 ## PART 3 — Tier 0 derived stats — RETIRED 2026-08-27
