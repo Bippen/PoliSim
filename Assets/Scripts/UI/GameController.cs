@@ -162,7 +162,6 @@ namespace PoliSim.UI
         // (deadspace.ps1); the re-measure is the fact.
         private const float ScreenMarginFraction = 0.012f;
         private const float ColumnSpacingFraction = 0.012f;
-        private const float LeftColumnWidthFraction = 0.45f;
         private const float SectionSpacingFraction = 0.02f;
 
         /// <summary>Fixed display height (px) for the World Map tab's map rect - the map itself stretches to whatever width the tab gives it (see MapRenderer.Draw's ScaleMode.StretchToFill), so only the height needs pinning to keep its aspect roughly sane.</summary>
@@ -528,12 +527,6 @@ namespace PoliSim.UI
 
         private readonly List<string> _turnLog = new List<string>();
         private Vector2 _logScrollPosition;
-        private Vector2 _leftColumnScrollPosition;
-
-        /// <summary>UI v3.0 (V3-R2): the player's fold choice per screen, keyed by <see cref="ShellScreenKey"/>.
-        /// Empty = every screen at its default (<see cref="DefaultShellFold"/>). Persisted through
-        /// <c>UiDraftState.ShellFoldOverrides</c>.</summary>
-        private readonly Dictionary<string, ShellFoldState> _shellFoldOverrides = new Dictionary<string, ShellFoldState>();
 
         private ConsolidatedTab _consolidatedTab = ConsolidatedTab.Statistics;
         private StatisticsCategory _statisticsCategory = StatisticsCategory.Domestic;
@@ -652,16 +645,8 @@ namespace PoliSim.UI
         /// touches (row height, bar-to-sheet gap, deferred paint) must branch the SAME way within a
         /// frame.</summary>
         private bool _folderTabsLive;
-        /// <summary>The selected tongue's deferred-paint state — written by DrawConsolidatedTabButton
-        /// every event, consumed by DrawActiveFolderTongue later the SAME OnGUI pass (see the
-        /// paintDeferred comment there for why the tongue cannot paint in bar order).</summary>
-        private GUIStyle _activeTongueStyle;
-        private Rect _activeTongueRect;
-        private string _activeTongueLabel;
-        private Texture2D _activeTongueIcon;
-        private float _activeTongueIconSize;
-        private float _activeTongueIconTop;
-        private UiPalette.SystemArea _activeTongueArea;
+        // The selected tongue's deferred-paint state (the v2.0 folder-tongue pass) went with the
+        // tongues themselves - the OPEN state's deletion, v3.1 Phase B (2026-08-28).
 
         // ── SAVE/LOAD UI (item 8's menu pass, 2026-08-16) ──
         /// <summary>While true, OnGUI draws ONLY the saves screen (the codebase's screen-swap idiom -
@@ -1010,20 +995,8 @@ namespace PoliSim.UI
                 FedChairCandidatesForTurn = _fedChairCandidatesForTurn,
                 SeenDivisionNumber = _seenDivisionNumber,
                 PrevGdp = _prevGdp,
-                LastGrowthPercent = _lastGrowthPercent,
-                ShellFoldOverrides = CaptureShellFoldOverrides()
+                LastGrowthPercent = _lastGrowthPercent
             };
-        }
-
-        private Dictionary<string, int> CaptureShellFoldOverrides()
-        {
-            var map = new Dictionary<string, int>();
-            foreach (KeyValuePair<string, ShellFoldState> pair in _shellFoldOverrides)
-            {
-                map[pair.Key] = (int)pair.Value;
-            }
-
-            return map;
         }
 
         /// <summary>Null-tolerant (a batch-written save has no UI layer): null restores every draft
@@ -1111,16 +1084,8 @@ namespace PoliSim.UI
                     : 0);
             _prevGdp = ui?.PrevGdp ?? 0f;
             _lastGrowthPercent = ui?.LastGrowthPercent ?? 0f;
-            // UI v3.0: a pre-v3 save carries no map and lands every screen on its default; an unknown
-            // value (a future state this build does not have) reads as OPEN, the frame that always exists.
-            _shellFoldOverrides.Clear();
-            if (ui?.ShellFoldOverrides != null)
-            {
-                foreach (KeyValuePair<string, int> pair in ui.ShellFoldOverrides)
-                {
-                    _shellFoldOverrides[pair.Key] = pair.Value == (int)ShellFoldState.Folded ? ShellFoldState.Folded : ShellFoldState.Open;
-                }
-            }
+            // A v3.0 save's ShellFoldOverrides map is read past without effect: ONE FRAME (v3.1 R-E1)
+            // has no fold to restore, and the member left UiDraftState in v3.1 Phase B.
 
             _gameSpeed = GameSpeed.Paused;
         }
@@ -1128,101 +1093,6 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         // UI v3.0 — the shell fold (V3-R2, POLISIM_UI_V3_DIRECTION.md, 2026-08-28)
         // ------------------------------------------------------------------------------------------
-
-        /// <summary>
-        /// The screen the fold state is keyed by - SCREEN granularity, the project's standing rule.
-        /// Statistics, Policy/Laws and Politics key by sub-screen (Domestic is the landing screen with
-        /// the oversight default; International, the Policy Web, the Laws browser are their own
-        /// screens); Budget keys by TAB, because its five categories are one ledger behind a category
-        /// rail (§A.5's "Budget full-screen" is one column layout, not five); Decisions and
-        /// Demographics have no sub-screen.
-        /// </summary>
-        private string ShellScreenKey()
-        {
-            if (_onDesk)
-            {
-                return DeskScreenKey;   // Screen 0 (v3.0 Phase B) - above the six documents, its own key
-            }
-
-            switch (_consolidatedTab)
-            {
-                case ConsolidatedTab.Statistics:
-                    return "Statistics/" + _statisticsCategory;
-                case ConsolidatedTab.PolicyLaws:
-                    return "PolicyLaws/" + _policyLawsCategory;
-                case ConsolidatedTab.Politics:
-                    return "Politics/" + _politicsCategory;
-                default:
-                    return _consolidatedTab.ToString();
-            }
-        }
-
-        /// <summary>
-        /// The fold-default table, ruled (R-PC2, v3.0 Phase C, 2026-08-28; the direction doc holds the
-        /// table as the single source): a screen defaults FOLDED ONLY if its content is designed for
-        /// the full-width stage - today exactly Screen 0 (The Desk, R-B3) and the Budget ledger
-        /// (Elias's 2026-08-01 directive, §A.5's declared deviation), both LOCKED there. Everything
-        /// else defaults OPEN - Statistics > Domestic included, reverted the day the Desk took the
-        /// landing duty it had stood in for since Phase A. The default is what the frame draws until
-        /// the player flips a screen (the override is remembered per screen and per save).
-        /// </summary>
-        private ShellFoldState DefaultShellFold()
-        {
-            // v3.1 R-E1: ONE FRAME - the table collapsed to one row; every screen is FOLDED.
-            return ShellFoldState.Folded;
-        }
-
-        /// <summary>
-        /// The one screen whose fold is LOCKED: the Budget ledger. Its three-column row (category /
-        /// line-items / live estimate) was given the whole window on 2026-08-01 because at column width
-        /// it overflowed; the v3a film confirmed the OPEN state is not legal there (category labels
-        /// wrapping mid-word, twenty containment escapes at 1600), and making it legal would be the
-        /// per-element redesign of a deep screen the direction rules out. So Budget's shell state is
-        /// the fold (one mechanism, not a parallel one) with the toggle rendered on its disabled face
-        /// (B5: rendered, never omitted) - a Phase C candidate if the board ever wants the ledger
-        /// beside the column.
-        ///
-        /// Screen 0 too (R-B3, v3.0 Phase B, 2026-08-28): the Desk IS the folded stage - its three
-        /// columns take the whole window and the chrome column's own contents (the calendar sheet,
-        /// the speed cluster, the hold banner) live on the stage, so an OPEN Desk would show the
-        /// column twice and the stage in a space it cannot fit. OPEN is unreachable there (R-SP2's
-        /// form), the toggle rendered on its disabled face.
-        /// </summary>
-        internal bool ShellFoldLocked()
-        {
-            // v3.1 R-E1 (2026-08-28, ONE FRAME - gated on the duty audit, Annex A of the ninth
-            // request, no orphan): the OPEN state retires and every screen lives in the Desk's frame,
-            // locked FOLDED. The enum, the overrides and the OPEN branch stay one pass for the
-            // harness's historical states and the record; v3.1 Phase B deletes them.
-            return true;
-        }
-
-        /// <summary>The fold state the frame draws this screen in: the screen's locked state if it has one, else the player's override for it if one was ever made, else the screen's default.</summary>
-        internal ShellFoldState EffectiveShellFold()
-        {
-            if (ShellFoldLocked())
-            {
-                return ShellFoldState.Folded;
-            }
-
-            return _shellFoldOverrides.TryGetValue(ShellScreenKey(), out ShellFoldState state) ? state : DefaultShellFold();
-        }
-
-        /// <summary>The player's flip (the toggle in either state; the harness's both-state sweep). Instant: the next OnGUI lays out the other frame. Recorded per screen, so a screen unfolded to read stays unfolded when the player returns to it. A no-op on a locked screen.</summary>
-        internal void SetShellFold(ShellFoldState state)
-        {
-            if (ShellFoldLocked())
-            {
-                return;
-            }
-
-            _shellFoldOverrides[ShellScreenKey()] = state;
-        }
-
-        internal void ToggleShellFold()
-        {
-            SetShellFold(EffectiveShellFold() == ShellFoldState.Folded ? ShellFoldState.Open : ShellFoldState.Folded);
-        }
 
         private static void CopyDrafts<TKey>(Dictionary<TKey, float> source, Dictionary<TKey, float> target)
         {
@@ -2077,122 +1947,37 @@ namespace PoliSim.UI
             // guarantee without giving the space back, DrawBudgetProcessTab re-surfaces any pending
             // interrupt as its own banner - now DrawFoldedInterruptBanner, every folded screen's.
             //
-            // UI v3.0 (V3-R2, 2026-08-28): ONE fold, everywhere. That whole-window layout is no longer
-            // a parallel mechanism - it is the FOLDED state of the shell, which every screen now has:
-            // OPEN is the frame exactly as before (chrome column at LeftColumnWidthFraction, tongues,
-            // content column); FOLDED collapses the column and the tongues to the icon rail
-            // (DrawFoldedRail) and the content column takes the rest. Budget defaults FOLDED (the
-            // directive, kept), the landing screen defaults FOLDED (the oversight default until The
-            // Desk exists), everything else OPEN; the player's flip is remembered per screen and per
-            // save. The instant flip is the calendar's own ruling - nothing tweens. The interrupt
-            // banner the Budget tab re-surfaced is now the folded frame's banner on every screen.
-            bool folded = EffectiveShellFold() == ShellFoldState.Folded;
+            // UI v3.1 R-E1 (2026-08-28, ONE FRAME): the rail and one full-bleed sheet on every screen -
+            // the Desk's frame. The v3.0 shell fold (V3-R2: OPEN was the v2 frame - the chrome column at
+            // 45 % of the area with the banner, the calendar panel, the policy controls and the
+            // calendar/speed strip, plus the folder tongues; FOLDED collapsed it to the rail) was
+            // retired on the duty audit (the ninth request's Annex A - every duty the column and the
+            // tongues carried has a home on the Desk or the rail, no orphan) and its branch, its enum
+            // and its persisted overrides were deleted in v3.1 Phase B (COMPLETED.md section 45). The
+            // interrupt banner the Budget tab once re-surfaced is the frame's banner on every screen
+            // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
             bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
-            string timeStatusText = BuildTimeStatusText(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess);
-            float leftColumnWidth = folded ? RailWidth() : areaWidth * LeftColumnWidthFraction;
+            float leftColumnWidth = RailWidth();
             float rightColumnWidth = areaWidth - leftColumnWidth - columnSpacing;
 
             GUILayout.BeginArea(new Rect(marginX, marginY, areaWidth, areaHeight));
             GUILayout.BeginHorizontal();
 
-            if (folded)
-            {
-                DrawFoldedRail(leftColumnWidth, areaHeight, isTimePaused);
-                GUILayout.Space(columnSpacing);
-            }
-            else
-            {
-            // ⚠ UNREACHABLE since v3.1 R-E1 (2026-08-28, ONE FRAME): EffectiveShellFold is FOLDED on
-            // every screen, so this OPEN branch - the chrome column (DrawTopBanner, DrawCalendarPanel,
-            // DrawPolicyControls, DrawCalendarAndSpeedControls) and, below, the tongues
-            // (DrawConsolidatedTabs, DrawActiveFolderTongue) - never draws. Kept one pass for the record
-            // and the harness's historical states; v3.1 Phase B deletes it with the enum. Its duties
-            // and their homes are the ninth request's Annex A.
-            // v2.0: the left column stands on paper like every other panel. Without a sheet under it its
-            // banner, dashboard headings and preview text were ink on bare desk - present, and unreadable.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(leftColumnWidth));
-
-            // Continuous Time Migration Phase 0: the calendar/speed control panel replaces the old
-            // Advance Turn button in this same pinned-outside-scroll-view slot, for the same reason -
-            // always visible and clickable regardless of how tall the banner/dashboard/sliders/
-            // preview content gets. One extra row taller than the single button it replaces (date +
-            // status line, then the speed button row). Master Sequence step 5a briefly reserved a
-            // second row for a temporary Acknowledge button (see git history) - removed now that step
-            // 5c's real Budget Process introduce-bill flow replaced it, back to the original one-row
-            // reservation.
-            // ⚠ MEASURED FROM THE STRING THAT WILL BE DRAWN, not assumed from a font size. See
-            // CalendarAndSpeedControlsHeight for why the old one-line assumption cut the speed strip.
-            float calendarAreaHeight = CalendarAndSpeedControlsHeight(timeStatusText, isTimePaused, leftColumnWidth) + sectionSpacing;
-            // ⚠ INSTANCE #12, LEFT COLUMN. The scroll view was budgeted against the RAW area height,
-            // though it lives inside a `_boxStyle` box whose padding and margin come out of that height
-            // first - so the column stood `padding.vertical + margin.vertical` taller than the clip rect
-            // containing it, and the overrun landed on whatever was drawn last: the Pause/1x/2x/3x strip,
-            // the one control visible from every tab. Floored at zero so a pathological status banner
-            // collapses the SCROLL VIEW, which can scroll, rather than pushing the pinned strip off the
-            // bottom, which cannot.
-            float leftScrollHeight = Mathf.Max(0f, PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - calendarAreaHeight);
-
-            _leftColumnScrollPosition = GUILayout.BeginScrollView(_leftColumnScrollPosition, GUILayout.Height(leftScrollHeight));
-            DrawTopBanner();
-            GUILayout.Space(sectionSpacing);
-            DrawCalendarPanel();
-            GUILayout.Space(sectionSpacing);
-
-            GUI.enabled = !_isGameOver;
-            DrawPolicyControls();
-            GUI.enabled = true;
-            GUILayout.EndScrollView();
-
-            GUILayout.Space(sectionSpacing);
-
-            GUI.enabled = !_isGameOver;
-            DrawCalendarAndSpeedControls(timeStatusText, isTimePaused);
-            GUI.enabled = true;
-
-            GUILayout.EndVertical();
-
+            DrawFoldedRail(leftColumnWidth, areaHeight, isTimePaused);
             GUILayout.Space(columnSpacing);
-            }
 
             GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
-            float tabRowsHeight = 0f;
-            float tabPanelGap = 0f;
-            float foldedBannerHeight = 0f;
-            if (folded)
-            {
-                // UI v3.0: the tongues fold into the rail and the content sheet starts at the top of
-                // the column. The held interrupt's REASONS - the load-bearing half of B8, the rail's
-                // dot carrying the state - re-surface here as the desk banner the Budget precedent
-                // already drew, measured so the sheet below is reserved against it (instance #12).
-                foldedBannerHeight = DrawFoldedInterruptBanner(rightColumnWidth);
-                // No tongue was laid out this frame, so nothing may be re-painted over the sheet
-                // from a previous frame's rect.
-                _activeTongueStyle = null;
-            }
-            else
-            {
-                DrawConsolidatedTabs(rightColumnWidth);
-                // v2.0 folder-tongue pass: with the real faces live there is NO gap — the tongues end flush
-                // against the content sheet (§A.7's joined look; the clones zero margin.bottom for the same
-                // reason), and the selected tongue is re-painted over the sheet's top keyline after the
-                // sheet draws (DrawActiveFolderTongue, below the tab switch). The interim treatment keeps
-                // its floating bar.
-                tabPanelGap = _folderTabsLive ? 0f : sectionSpacing * 0.5f;
-                if (tabPanelGap > 0f)
-                {
-                    GUILayout.Space(tabPanelGap);
-                }
-
-                // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
-                // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
-                tabRowsHeight = ConsolidatedTabRowHeight();
-            }
+            // The content sheet starts at the top of the column. The held interrupt's REASONS - the
+            // load-bearing half of B8, the rail's dot carrying the state - surface here as the banner
+            // the Budget precedent already drew, measured so the sheet below is reserved against it
+            // (instance #12).
+            float foldedBannerHeight = DrawFoldedInterruptBanner(rightColumnWidth);
 
             // ⚠ INSTANCE #12, RIGHT COLUMN — same defect, same line of reasoning. Every tab wraps its
             // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
             // before the content gets any. Budgeting against the raw height made the right column
             // overrun its clip rect on every screen where it is the taller of the two.
-            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - tabRowsHeight - tabPanelGap - foldedBannerHeight;
+            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - foldedBannerHeight;
             // Master Sequence step 5e, Phase A: game-over gating stays exactly where the OLD 18-tab
             // dispatch had it, not a blanket gate here - several old tabs were deliberately NEVER
             // gated (WorldMap/PolicyWeb/Parliament/Compass are read-only visualizations, still fully
@@ -2228,14 +2013,6 @@ namespace PoliSim.UI
                 case ConsolidatedTab.Politics:
                     DrawPoliticsTab(tabContentHeight, rightColumnWidth);
                     break;
-            }
-
-            // Folder-tongue pass: the selected tongue paints HERE, after the content sheet, so it sits
-            // over the sheet's top keyline — the folder pulled forward. See DrawConsolidatedTabButton's
-            // paintDeferred comment for the full reasoning. (Folded: no tongue exists to paint.)
-            if (!folded)
-            {
-                DrawActiveFolderTongue();
             }
 
             GUILayout.EndVertical();
@@ -2819,63 +2596,6 @@ namespace PoliSim.UI
             style.normal.textColor = color;
             GUILayout.Label(text, style, options);
             style.normal.textColor = previous;
-        }
-
-        /// <summary>Above the dashboard: a game-over banner takes priority (the game has effectively ended), otherwise the current turn's event (if any) as "BREAKING: ...".</summary>
-        private void DrawTopBanner()
-        {
-            if (_isGameOver)
-            {
-                GUILayout.BeginVertical(_boxStyle);
-                GUILayout.Label("GAME OVER", _gameOverStyle);
-                GUILayout.Label(_gameOverReason, _labelStyle);
-                GUILayout.EndVertical();
-                return;
-            }
-
-            EconomicEvent activeEvent = _simulationManager.GetLastEvent(PlayerCountryId);
-            if (activeEvent == null)
-            {
-                return;
-            }
-
-            GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label($"BREAKING: {activeEvent.Name}", _eventBannerStyle);
-            GUILayout.Label(activeEvent.Description, _labelStyle);
-            GUILayout.Label(
-                $"Effects: GDP {activeEvent.GdpShockPercent:+0.0;-0.0}%, Inflation {activeEvent.InflationShockPoints:+0.0;-0.0} pts, Approval {activeEvent.ApprovalEffect:+0.0;-0.0}",
-                _labelStyle);
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// Calendar Panel — replaces the old dashboard (country header + headline stat-tile grid) in
-        /// this slot. See CLAUDE.md's "Calendar Panel" section for the full data contract; in brief:
-        ///
-        /// The tile grid this displaces is not lost — `DrawHeadlineStatTiles` is the SAME method
-        /// Statistics -> Domestic already calls (see that method's own doc comment), so every figure
-        /// is still one tab click away, several with a history graph the dashboard never had. What
-        /// this slot loses is the "glance from any tab" convenience, for real — that trade is
-        /// deliberate, made for a genuinely new capability (a real calendar), not a redundant one.
-        /// The one piece of `DrawDashboard`'s content with NO other home anywhere in the UI — the
-        /// country-name-plus-year header — is preserved verbatim as this panel's own first line.
-        /// `DrawPolicyControls`'s "This Year's Policy" preview is UNTOUCHED and still draws directly
-        /// below this panel in the same scroll view — it is deliberately NOT tab-owned (see its own
-        /// doc comment), so it stays exactly where a player can see it without tab-hopping.
-        /// </summary>
-        private void DrawCalendarPanel()
-        {
-            GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label($"{_playerCountry.Name} - Year {_simulationManager.CurrentTurn}", _headerStyle);
-
-            System.DateTime today = _simulationManager.CurrentDate;
-            var monthStart = new System.DateTime(today.Year, today.Month, 1);
-            Dictionary<int, List<CalendarMarker>> markers = BuildCalendarMonthMarkers(monthStart, today);
-
-            DrawCalendarMonthGrid(monthStart, today, markers);
-            DrawCalendarMonthLedger(monthStart, markers);
-
-            GUILayout.EndVertical();
         }
 
         /// <summary>One dated item landing on a real calendar day. See CLAUDE.md's "Calendar Panel" data contract for which systems feed this and — just as deliberately — which are excluded.</summary>
@@ -3902,30 +3622,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Phase 4's compact dashboard "home view": routing text pointing at every tab (kept brief
-        /// since there are now 11 of them) plus the live Policy Preview panel - the preview is
-        /// deliberately NOT tab-owned, since it summarizes the draft PolicyDecision across every tab
-        /// at once, letting the player gauge this turn's effect without tab-hopping.
-        /// </summary>
-        private void DrawPolicyControls()
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            // v3.0 Phase A census (2026-08-28): the "Show tab guide" button and its paragraph were the
-            // landing screen's one pure class-(c) element in the chrome column - a collapsed help text
-            // naming the pre-consolidation ten tabs (Tax/Spending/Federal Reserve/...), none of which is a
-            // tab any more, restating no live instrument and carrying no fact this header does not. Cut
-            // under the direction's "pure (c) dies immediately" rule; the control count of this column
-            // drops by one permanently, which is not the behaviour-5 hazard (that is a count that CHANGES
-            // with background state).
-            GUILayout.Label("This Year's Policy", _headerStyle);
-
-            DrawPolicyPreview();
-
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>
         /// Live estimate of this turn's effect under the sliders' current values, via
         /// SimulationManager.PreviewTurn (reuses the real MacroSystem/SimulationManager formulas
         /// against a throwaway clone rather than a separate hand-rolled estimate) plus a cosmetic
@@ -4184,98 +3880,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Continuous Time Migration Phase 0: replaces the old single "Advance Turn" button - a date
-        /// readout (plus a status line while the clock is paused for a reason other than the player's
-        /// own Pause choice) and Pause/1x/2x/3x speed buttons, mirroring the tab bar's own
-        /// selected-vs-unselected visual idiom (UiPalette.BuildButtonStyle's Primary kind for whichever
-        /// speed is currently active, Neutral for the rest) rather than inventing a new button-state
-        /// convention just for this row.
-        ///
-        /// Persistent, unmissable pause indicator (POLISIM_MASTER_ROADMAP.md working discipline's
-        /// fifth failure pattern, "background/timed state mutation vs. active UI interaction" -
-        /// investigated after a reported freeze that the IMGUI stable-control-layout fix, commit
-        /// adb34ae, did NOT resolve). This is drawn in OnGUI's pinned-outside-scroll-view slot (see
-        /// OnGUI), so it's the ONE piece of UI guaranteed visible from every tab at any scroll
-        /// position, at any time. That matters because all three systems that can legitimately pause
-        /// Update's day-loop - Fed Chair term appointment, a Cabinet decision, a Foreign Policy
-        /// meeting - render their ACTUAL resolution UI (the candidate picker / DrawCabinetDecisionModal
-        /// / DrawForeignPolicyMeetingModal) only inside their own specific tab's draw call. A player
-        /// on, say, Tax Policy when one of these fires sees nothing wrong except that simulated days
-        /// silently stop advancing - indistinguishable from a hang unless they happen to check this
-        /// exact line and then navigate to the right tab. Before this fix, that line existed for Fed
-        /// Chair and Cabinet only (a modest _labelStyle line, easy to miss) and said NOTHING at all for
-        /// a pending Foreign Policy meeting - the one of the three most likely to fire early in a
-        /// fresh session, since it rolls per DAY (~1%) rather than per 121-day TURN like the other two.
-        /// Now: exactly one Label control either way (per DrawTaxPolicy's stable-control-layout
-        /// pattern - content and style vary, the control itself never does), escalated to
-        /// _holdBannerStyle (banner weight on the ui_banner_hold desk plate - originally
-        /// _eventBannerStyle's bare bold/orange, dressed by the v2.0 chrome pass of 2026-08-12)
-        /// whenever ANY of the three is true, always naming which one and which tab resolves it.
-        ///
-        /// Master Sequence step 5a added a fourth condition, hasPendingBudgetProcess, per the revised
-        /// Part B design's explicit "extend the existing global banner, don't build a fourth ad-hoc
-        /// pause system" instruction - 5a's own temporary "Acknowledge" placeholder button (see git
-        /// history) is gone now that step 5c built the real Budget Process introduce-bill flow; this
-        /// banner now names the Budget Process tab exactly like the other three conditions name their
-        /// own tab, rather than trying to resolve the pause from inside the banner itself.
-        ///
-        /// BUG FOUND VIA LIVE PLAY (fixed here): the original if/else-if chain showed only ONE reason,
-        /// in a fixed priority order - if a Foreign Policy meeting became pending at the same time as
-        /// (or was already pending when) the annual budget pause opened, the banner showed ONLY the
-        /// Foreign Policy message, completely hiding that a budget bill also needed introducing -
-        /// Update's own gate correctly kept blocking on BOTH conditions underneath, but the player had
-        /// no visible way to know the budget process was one of the reasons. Fixed by listing EVERY
-        /// currently-true reason in one combined message, ordered Fed Chair/Cabinet (structural,
-        /// pre-existing) then Budget Process then Foreign Policy (an optional meeting is the least
-        /// consequential of the four) - "time is paused and here's why" must never be ambiguous. Still
-        /// exactly one Label control either way (per DrawTaxPolicy's stable-control-layout pattern -
-        /// content and style vary, the control itself never does).
-        /// </summary>
-        /// <summary>
-        /// ⚠ **THE STRING IS BUILT BY THE CALLER NOW, and that is a layout fix rather than a tidy-up.**
-        /// Every property the comment above describes — escalating to the larger `_holdBannerStyle`, and
-        /// naming every pending reason at once — makes this line TALLER, and the height had to be
-        /// reserved before the line could be drawn. Splitting the build out lets
-        /// <see cref="CalendarAndSpeedControlsHeight"/> measure the exact string that will be drawn,
-        /// rather than a guess about how tall it might be.
-        /// </summary>
-        private string BuildTimeStatusText(bool hasPendingFedChairSelection, bool hasPendingCabinetDecisions,
-            bool hasPendingForeignPolicyMeeting, bool hasPendingBudgetProcess)
-        {
-            // v2.0 chrome (2026-08-12): the date is no longer this string's prefix — the calendar pad
-            // beside it (DrawCalendarPad) is the date's carrier now, in both states. The running form
-            // becomes a quiet state readout; the paused form keeps every reason, which is the part
-            // that was ever load-bearing.
-            bool isPaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
-            if (!isPaused)
-            {
-                // Omnibus 2026-08-28 (roadmap item 4 allowed the rename with the plate): "Time running"
-                // - the desk has a calendar beside it, not a clock, and the HELD twin says "TIME PAUSED".
-                return "Time running";
-            }
-
-            var reasons = new List<string>();
-            if (hasPendingFedChairSelection)
-            {
-                reasons.Add("choose the next Fed Chair (Federal Reserve tab)");
-            }
-            if (hasPendingCabinetDecisions)
-            {
-                reasons.Add("resolve the pending Cabinet decision (Cabinet tab)");
-            }
-            if (hasPendingBudgetProcess)
-            {
-                reasons.Add("introduce the annual budget bill (Budget Process tab)");
-            }
-            if (hasPendingForeignPolicyMeeting)
-            {
-                reasons.Add("respond to the pending Foreign Policy meeting (Foreign Policy tab)");
-            }
-
-            return $"TIME PAUSED: {string.Join("; ", reasons)} to continue.";
-        }
-
-        /// <summary>
         /// How tall this block will be — the status label at the width it will actually wrap into, plus
         /// the speed-button row, plus the margins GUILayout puts around each.
         ///
@@ -4469,9 +4073,6 @@ namespace PoliSim.UI
             cells.Add(new KeyValuePair<string, Rect>(key, rect));
             return clicked;
         }
-        /// <summary>"‹" folds the desk to the rail; "›" unfolds it. Glyphs, not words: the rail's text budget is the chip's month and day.</summary>
-        private const string FoldGlyphFold = "‹";
-        private const string FoldGlyphUnfold = "›";
 
         /// <summary>The rail's icon is the tongue's icon, at the tongue's own measure (one accessor with DrawConsolidatedTabButton's arithmetic, so the two can never disagree).</summary>
         private float RailIconSize()
@@ -4493,29 +4094,6 @@ namespace PoliSim.UI
         private float RailGap()
         {
             return Mathf.Round(RailIconSize() * (4f / RailIconGridUnits));
-        }
-
-        /// <summary>The fold toggle's width in the OPEN column's pinned strip, beside the pad and the status line.</summary>
-        private float FoldToggleWidth()
-        {
-            return Mathf.Round(_labelStyle.fontSize * 1.6f);
-        }
-
-        /// <summary>
-        /// The fold toggle - ONE control in either state. Sits at the bottom of the chrome in both
-        /// states (the pinned strip's right end when OPEN, the rail's bottom cell when FOLDED), so the
-        /// eye finds it where it left it. The flip is instant: the next OnGUI lays out the other frame.
-        /// </summary>
-        private void DrawFoldToggle(float width, float height, bool folded)
-        {
-            bool locked = ShellFoldLocked();
-            GUIStyle face = locked ? UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Disabled) : _neutralActionButtonStyle;
-            var style = new GUIStyle(face) { fixedHeight = 0f, fixedWidth = 0f, wordWrap = false, alignment = TextAnchor.MiddleCenter };
-            style.padding = new RectOffset(2, 2, 2, 2);
-            if (GUILayout.Button(folded ? FoldGlyphUnfold : FoldGlyphFold, style, GUILayout.Width(width), GUILayout.Height(height)) && !locked)
-            {
-                ToggleShellFold();
-            }
         }
 
         /// <summary>
@@ -5274,142 +4852,6 @@ namespace PoliSim.UI
             return Mathf.RoundToInt(_runningPlateStyle.fontSize * (8f / 10.5f));
         }
 
-        /// <summary>
-        /// §A.6's RUNNING state, B8's second carrier (built 2026-08-28, omnibus roadmap item 4): one
-        /// Label on the `#EDE2CB` plate, its `1px #C9BA9B` edge and the `8px #3E8A5F` lamp painted
-        /// over it on Repaint - overlays, not controls, so the paused/running switch in
-        /// DrawCalendarAndSpeedControls stays a style-and-content change with the control count fixed
-        /// at one. No glow, by the spec's own word. The dot centres on the first text line like the
-        /// hold lamp does.
-        /// </summary>
-        private void DrawRunningStatusPlate(string text)
-        {
-            // The rect is reserved through the same word-wrap sizer GUILayout.Label uses (GetRect with
-            // a wrapping style), so the plate can be painted BEFORE the type - the only order in which
-            // a procedural ground can sit under a label. Still one layout entry, no control.
-            var content = new GUIContent(text);
-            Rect plate = GUILayoutUtility.GetRect(content, _runningPlateStyle, GUILayout.ExpandWidth(true));
-            if (Event.current.type != EventType.Repaint)
-            {
-                return;
-            }
-
-            PoliSimTheme.RoundedCard(plate, PoliSimTheme.Tile, PoliSimTheme.BorderPlate, 3f);
-            GUI.Label(plate, content, _runningPlateStyle);
-            float lamp = RunningLampSize();
-            float padX = _runningPlateStyle.padding.right;   // the un-widened side is the spec's own X pad
-            var dotRect = new Rect(
-                plate.x + padX,
-                plate.y + _runningPlateStyle.padding.top + (_runningPlateStyle.lineHeight - lamp) * 0.5f,
-                lamp,
-                lamp);
-            PoliSimTheme.Pill(dotRect, PoliSimTheme.Good);
-        }
-
-        private float CalendarAndSpeedControlsHeight(string statusText, bool isPaused, float columnWidth)
-        {
-            GUIStyle statusStyle = isPaused ? _holdBannerStyle : _runningPlateStyle;
-            // v2.0 chrome: the top row is now [calendar pad | status], so the status wraps into the
-            // width REMAINING beside the pad, and the row is as tall as the taller of the two. The
-            // same subtraction the drawing performs, from the same accessors — measuring at the full
-            // width would under-count the wrapped lines, which is the exact quiet failure this
-            // method's own doc comment describes.
-            Vector2 pad = CalendarPadSize();
-            // The fold toggle (v3.0) sits at the row's right end: its width, its gap and its own
-            // margins come out of the status line's wrap width exactly as the drawing lays them out.
-            float statusWidth = PoliSimWidgets.InnerWidth(columnWidth, _boxStyle, 1, statusStyle) - pad.x - CalendarPadGap
-                                - CalendarPadGap - FoldToggleWidth() - _neutralActionButtonStyle.margin.horizontal;
-            float statusHeight = statusStyle.CalcHeight(new GUIContent(statusText), statusWidth) + statusStyle.margin.vertical;
-            float speedRowHeight = _buttonStyle.fixedHeight + _buttonStyle.margin.vertical;
-
-            return Mathf.Max(pad.y, statusHeight) + speedRowHeight;
-        }
-
-        private void DrawCalendarAndSpeedControls(string statusText, bool isPaused)
-        {
-            GUILayout.BeginVertical();
-
-            // v2.0 chrome: [calendar pad | status line] over the speed row. The board (§A.6) lays all
-            // three in one row, but this UI's speed buttons are deliberately outsized and would not
-            // survive losing the pad's width — so the pad shares the STATUS row, whose text wraps.
-            GUILayout.BeginHorizontal();
-            DrawCalendarPad();
-            GUILayout.Space(CalendarPadGap);
-
-            // One Label either way (DrawHoldBannerLabel is itself a single Label plus an overlay), so
-            // the paused/running switch stays a style-and-content change, never a control-count change.
-            if (isPaused)
-            {
-                DrawHoldBannerLabel(statusText);
-            }
-            else
-            {
-                // Centred on the pad beside it: at body type the running plate is one line tall
-                // against a pad three lines tall, and top-aligned it read as a slider track (the
-                // first omni_a1600 capture). Spacers are layout, not controls - the count holds.
-                GUILayout.BeginVertical();
-                GUILayout.FlexibleSpace();
-                DrawRunningStatusPlate(statusText);
-                GUILayout.FlexibleSpace();
-                GUILayout.EndVertical();
-            }
-
-            // UI v3.0: the fold toggle, pinned at the strip's right end - the rail puts it in the same
-            // corner (its bottom cell), so the eye finds it where it left it in either state. Measured
-            // out of the status line's width by CalendarAndSpeedControlsHeight (one subtraction, both sites).
-            GUILayout.Space(CalendarPadGap);
-            DrawFoldToggle(FoldToggleWidth(), CalendarPadSize().y, folded: false);
-            GUILayout.EndHorizontal();
-
-            // B5 (§A.6): while time is held every non-Pause speed button wears the disabled face -
-            // rendered, never omitted, so the row's control count is the same in both states.
-            GUILayout.BeginHorizontal();
-            DrawSpeedButton("Pause", GameSpeed.Paused, isPaused);
-            DrawSpeedButton("1x", GameSpeed.Normal, isPaused);
-            DrawSpeedButton("2x", GameSpeed.Fast, isPaused);
-            DrawSpeedButton("3x", GameSpeed.VeryFast, isPaused);
-
-            // SAVE/LOAD UI (item 8's menu pass): the discoverable path to the saves screen, in the
-            // one panel visible on every tab. Enabled UNCONDITIONALLY on purpose - the caller wraps
-            // this whole panel in GUI.enabled = !_isGameOver, and a game-over player is exactly the
-            // player who most needs Load; composed (saved and restored), not clobbered, per the
-            // stable-layout discipline's own GUI.enabled rule.
-            bool wasEnabled = GUI.enabled;
-            GUI.enabled = true;
-            // Same base style as the speed buttons beside it, so the row stays one even rank -
-            // the first capture had it on the smaller tab-button metric, floating short of its
-            // neighbours.
-            if (GUILayout.Button("Saves", UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Neutral)))
-            {
-                OpenSavesMenu();
-            }
-            GUI.enabled = wasEnabled;
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>One speed button. <paramref name="timeHeld"/> (B5, built 2026-08-28): while an
-        /// interrupt holds the clock, the non-Pause buttons wear `ButtonKind.Disabled` (`ui_btn_disabled`,
-        /// mutedInk text) and are GUI.enabled-off for the click, composed with the ambient state - the
-        /// same control, same order, every frame. The selected button keeps its brass when it is Pause;
-        /// a held clock at "1x" is exactly the state the disabled face exists to show.</summary>
-        private void DrawSpeedButton(string label, GameSpeed speed, bool timeHeld)
-        {
-            bool selected = _gameSpeed == speed;
-            bool disabled = timeHeld && speed != GameSpeed.Paused;
-            UiPalette.ButtonKind kind = disabled ? UiPalette.ButtonKind.Disabled
-                : selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral;
-            GUIStyle style = UiPalette.BuildButtonStyle(_buttonStyle, kind);
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && !disabled;
-            if (GUILayout.Button(label, style))
-            {
-                _gameSpeed = speed;
-            }
-            GUI.enabled = ambientEnabled;
-        }
-
         private void AdvanceTurn()
         {
             var decisions = new Dictionary<CountryId, PolicyDecision>();
@@ -6090,262 +5532,6 @@ namespace PoliSim.UI
                                   + ConsolidatedTabLabelBottomPadding;
 
             return Mathf.Max(_tabButtonStyle.fixedHeight, stackedHeight);
-        }
-
-        /// <summary>The tab bar as a ROW: the button plus the margin GUILayout puts above and below it. Separate from <see cref="ConsolidatedTabButtonHeight"/> because the button's own style must not carry the margin term — a `fixedHeight` that included it would draw a taller BUTTON, not a taller row. With the folder faces live only the TOP margin survives: `BuildFolderTabStyle` zeroes `margin.bottom` so the tongues end flush against the content sheet, and this reserve must agree with what the clones actually lay out.</summary>
-        private float ConsolidatedTabRowHeight()
-        {
-            return ConsolidatedTabButtonHeight()
-                   + (_folderTabsLive ? _tabButtonStyle.margin.top : _tabButtonStyle.margin.vertical);
-        }
-
-        /// <summary>
-        /// Explicitly divided evenly across <paramref name="availableWidth"/> - the SAME
-        /// rightColumnWidth OnGUI already computes fresh from Screen.width every frame - so the row
-        /// can never exceed its actual budget at any window size, matching the screen-relative
-        /// approach already used everywhere else in this class (see the old DrawRightColumnTabs' own
-        /// doc comment on why this matters, kept in git history).
-        /// </summary>
-        private void DrawConsolidatedTabs(float availableWidth)
-        {
-            // ⚠ EACH BUTTON ALSO CARRIES ITS OWN MARGIN, which a bare division does not account for -
-            // the exact shape InnerWidth's doc describes and exists to prevent, forgotten here because
-            // this row was written before the helper was. GUILayout inserts `_tabButtonStyle.margin`
-            // between every pair, so n buttons at `availableWidth / n` sum to wider than the row.
-            //
-            // v2.0 folder-tongue pass: §A.7 pads the strip `0 14px`, so with the faces live the row is
-            // inset from both edges (and the width budget shrinks to match) - tongues must not sit on
-            // the content sheet's rounded top corners. The degraded bar keeps the full-width row.
-            float stripInset = _folderTabsLive ? FolderTabStripSideInset : 0f;
-            float buttonWidth = PoliSimWidgets.InnerWidth(availableWidth - stripInset * 2f, null, ConsolidatedTabsPerRow, _tabButtonStyle);
-
-            GUILayout.BeginHorizontal();
-            if (stripInset > 0f)
-            {
-                GUILayout.Space(stripInset);
-            }
-            // Master Sequence step 5e, Phase C: all 6 tabs carry their icon. The four icon_nav_* ones
-            // exist precisely because Statistics/Decisions/Demographics/Policy-Laws map to no single
-            // UiPalette.SystemArea; Budget and Politics instead reuse the existing area icons directly,
-            // exactly as the 5E asset manifest specified (see COMPLETED.md section 8) ("Tax/Spending/
-            // Politics tabs reuse the existing icon_area_fiscal/icon_area_political icons directly - no
-            // new art needed").
-            //
-            // **Said "7 tabs", and described a Tax/Spending icon SHARE, until 2026-08-03.** Both were
-            // left behind by the 2026-08-01 merge that turned those two tabs into the single Budget tab -
-            // there is no longer any sharing to flag, because there is only one tab. Same stale-count
-            // failure as GetConsolidatedTabArea's own comment; see there for why it is worth naming.
-            DrawConsolidatedTabButton("Statistics", ConsolidatedTab.Statistics, buttonWidth, "icon_nav_statistics");
-            DrawConsolidatedTabButton("Decisions", ConsolidatedTab.Decisions, buttonWidth, "icon_nav_decisions");
-            DrawConsolidatedTabButton("Demographics", ConsolidatedTab.Demographics, buttonWidth, "icon_nav_demographics");
-            DrawConsolidatedTabButton("Budget", ConsolidatedTab.Budget, buttonWidth, "icon_area_fiscal");
-            DrawConsolidatedTabButton("Policy/Laws", ConsolidatedTab.PolicyLaws, buttonWidth, "icon_nav_policylaws");
-            DrawConsolidatedTabButton("Politics", ConsolidatedTab.Politics, buttonWidth, "icon_area_political");
-            if (stripInset > 0f)
-            {
-                GUILayout.Space(stripInset);
-            }
-            GUILayout.EndHorizontal();
-        }
-
-        /// <summary>
-        /// Each tab is tinted by its own SystemArea (see GetConsolidatedTabArea) - selected uses the
-        /// bright TabSelected variant, unselected the dimmer Tab variant, so the currently-open tab
-        /// reads as visibly "lit up" in its own area's hue rather than just bold+yellow text. A click now
-        /// does nothing except change which tab is selected - the Tax/Spending merge (see ConsolidatedTab)
-        /// removed the one exception, which used to seed `_budgetProcessCategory` so those two entry
-        /// points landed on different sub-categories of the same screen.
-        ///
-        /// Master Sequence step 5e, Phase C: when <paramref name="iconName"/> is given, the icon is
-        /// stacked ABOVE the label (see the ConsolidatedTabIcon* constants for why beside-it was
-        /// abandoned). Crucially the space is RESERVED via `style.padding.top` BEFORE the button
-        /// draws, rather than the icon being overlaid on top afterwards - overlaying was the actual
-        /// cause of the icon-over-text collision Elias reported, since GUILayout centres the label in
-        /// whatever box it is given and neither party knew about the other. Padding makes the label's
-        /// own layout account for the icon, so they cannot collide at any window size or label length.
-        /// Every style change here is made on the per-call CLONE that BuildButtonStyle already returns,
-        /// never on `_tabButtonStyle` itself - that shared style also backs the sub-category buttons and
-        /// the Implement/Remove/Neutral action buttons, which must not inherit a taller tab bar's
-        /// geometry. A missing/failed-to-load texture degrades to the plain text-only button rather
-        /// than a gap, since the padding is only applied once the texture is known to be non-null.
-        /// </summary>
-        private void DrawConsolidatedTabButton(string label, ConsolidatedTab tab, float width, string iconName = null)
-        {
-            UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
-            bool selected = _consolidatedTab == tab;
-            // v2.0 folder-tongue pass: the real §A.7 faces when all three loaded, the interim
-            // brass/paper treatment otherwise - BuildFolderTabStyle returns null on any missing face so
-            // the bar degrades wholesale, never one mixed tongue at a time.
-            GUIStyle style = _folderTabsLive ? UiPalette.BuildFolderTabStyle(_tabButtonStyle, selected) : null;
-            if (style == null)
-            {
-                style = UiPalette.BuildButtonStyle(_tabButtonStyle, selected ? UiPalette.ButtonKind.TabSelected : UiPalette.ButtonKind.Tab, area);
-            }
-
-            Texture2D icon = iconName != null ? IconLibrary.Get(iconName) : null;
-            float iconSize = 0f;
-            float iconTop = ConsolidatedTabIconTopInset();
-            if (icon != null)
-            {
-                iconSize = Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
-                int labelFontSize = Mathf.Max(11, Mathf.RoundToInt(_tabButtonStyle.fontSize * ConsolidatedTabLabelFontScale));
-
-                style.fontSize = labelFontSize;
-                style.alignment = TextAnchor.MiddleCenter;
-                style.padding.top = Mathf.RoundToInt(iconTop + iconSize + ConsolidatedTabIconLabelGap);
-                style.padding.bottom = Mathf.RoundToInt(ConsolidatedTabLabelBottomPadding);
-                // Left/right trimmed to near-zero so the label gets the button's full width on one
-                // line - the whole point of stacking. Never smaller than the base height, so a very
-                // short window can't produce a tab bar shorter than the rest of the UI expects.
-                style.padding.left = 2;
-                style.padding.right = 2;
-                // ⚠ ONE ACCESSOR, READ BY BOTH SITES. OnGUI must RESERVE this height before the bar is
-                // drawn and this method must IMPOSE it — exactly the separation UiContainmentGuard's doc
-                // names as the shape that drifts in silence, and it HAD already drifted: OnGUI reserved
-                // `_tabButtonStyle.fixedHeight` while this took the LARGER of that and the stacked
-                // icon+label height, so at any font size where the icon won, the tab content below was
-                // pushed down by the difference with nothing reporting it.
-                style.fixedHeight = ConsolidatedTabButtonHeight();
-            }
-
-            // ⚠ THE SELECTED TONGUE IS LAID OUT HERE AND PAINTED LATER (folder faces only). The content
-            // sheet draws after this bar and would paint its top keyline across the tongue's bottom -
-            // the opposite of §A.7's "folder pulled forward". So the selected tab's BUTTON renders
-            // through a fully invisible clone (same geometry, same control, same click handling; the
-            // stable-control-layout guarantee needs the control, not its pixels) and its visuals are
-            // re-painted OVER the sheet by DrawActiveFolderTongue, extended FolderTongueJoinOverlap
-            // over the sheet's edge. Painting it twice instead would double the face's baked
-            // semi-transparent shadow into a visible dark rim.
-            bool paintDeferred = _folderTabsLive && selected;
-            GUIStyle buttonStyle = style;
-            if (paintDeferred)
-            {
-                buttonStyle = new GUIStyle(style);
-                buttonStyle.normal.background = null;
-                buttonStyle.hover.background = null;
-                buttonStyle.active.background = null;
-                buttonStyle.focused.background = null;
-                Color hidden = new Color(0f, 0f, 0f, 0f);
-                buttonStyle.normal.textColor = hidden;
-                buttonStyle.hover.textColor = hidden;
-                buttonStyle.active.textColor = hidden;
-                buttonStyle.focused.textColor = hidden;
-            }
-
-            bool clicked = GUILayout.Button(label, buttonStyle, GUILayout.Width(width));
-            Rect buttonRect = GUILayoutUtility.GetLastRect();
-            bool hovered = buttonRect.Contains(Event.current.mousePosition);
-
-            if (paintDeferred)
-            {
-                // Stored fresh every event and consumed later the same OnGUI pass, so a stale rect can
-                // never be painted (a takeover-suppressed frame never reaches the paint site either).
-                _activeTongueStyle = style;
-                _activeTongueRect = buttonRect;
-                _activeTongueLabel = label;
-                _activeTongueIcon = icon;
-                _activeTongueIconSize = iconSize;
-                _activeTongueIconTop = iconTop;
-                _activeTongueArea = area;
-            }
-            else if (icon != null)
-            {
-                var iconRect = new Rect(
-                    buttonRect.x + (buttonRect.width - iconSize) * 0.5f,
-                    buttonRect.y + iconTop,
-                    iconSize,
-                    iconSize);
-                // Ink-weight tints both ways on the folder faces: white read on the interim brass but
-                // vanishes on paper stock. (The selected tongue's area-ink icon is painted deferred.)
-                // §A.3's third column, wired 2026-08-28 (omnibus, roadmap item 4): the inactive tongue's
-                // swatch - its icon, in this build - prints in the delivered TAB-SWATCH tint, not the
-                // muted white it wore since the folder pass; the selected tongue keeps the full ink.
-                Color iconTint = selected ? Color.white : PoliSimTheme.TabSwatchTint(area);
-                UiPalette.DrawTintedIcon(iconRect, icon, iconTint);
-            }
-
-            // ⚠ v2.0 CHROME, 2026-08-12 — B7: `ui_tab_spine` across the tab's top edge. §A.7's tongue
-            // spec: the active tab carries the area INK, the inactive its LIFTED weight — identity on
-            // every tongue, full strength only on the folder pulled forward. Height at the board's own
-            // ratio (a 3px edge on 15px tab type), floored so it never vanishes at the small clamp.
-            // An overlay draw like the icon above — not a control, so the stable-control-layout
-            // guarantee is untouched — and Repaint-gated because GUIStyle.Draw is a paint call.
-            // GUI.color multiplies the white-on-alpha sprite into the hue (this sprite is WoA — the
-            // one rendering class where tinting is the CORRECT handling per §3.0a, unlike the
-            // real-colour plates around it).
-            //
-            // Folder-tongue pass: the spine rides the TONGUE's visible top edge, which the off/hover
-            // faces bake lower on their canvas (the measured FolderXTongueTop constants), and stops
-            // just inside the tongue's own corner curve. The selected tab's spine is painted deferred
-            // with the rest of its tongue.
-            if (!paintDeferred && _tabSpineStyle.normal.background != null && Event.current.type == EventType.Repaint)
-            {
-                float spineHeight = TabSpineHeight();
-                float spineTop = 0f;
-                float spineSideInset = 0f;
-                if (_folderTabsLive)
-                {
-                    spineTop = selected ? FolderOnTongueTop : (hovered ? FolderHoverTongueTop : FolderOffTongueTop);
-                    spineSideInset = FolderSpineSideInset;
-                }
-                Color savedColor = GUI.color;
-                GUI.color = selected ? UiPalette.GetAreaColor(area) : PoliSimTheme.AccentOnDesk(area);
-                _tabSpineStyle.Draw(new Rect(buttonRect.x + spineSideInset, buttonRect.y + spineTop,
-                    buttonRect.width - spineSideInset * 2f, spineHeight), false, false, false, false);
-                GUI.color = savedColor;
-            }
-
-            if (clicked)
-            {
-                // Nothing to seed since Tax and Spending merged into one Budget tab: the Budget Process
-                // screen's own category selector is now the only thing that sets _budgetProcessCategory,
-                // so it keeps whatever the player last chose instead of a tab click silently resetting it.
-                _consolidatedTab = tab;
-            }
-        }
-
-        /// <summary>
-        /// The deferred half of the folder-tongue treatment: paints the SELECTED tab's face, label,
-        /// icon and spine after the content sheet has drawn, extended <see cref="FolderTongueJoinOverlap"/>
-        /// down over the sheet's top keyline — §A.7's folder pulled forward, and the manifest's own
-        /// "joined look: draw overlapping content sheet by 2px". Pure paint over a control that already
-        /// laid out and handled its click in bar order (see DrawConsolidatedTabButton's paintDeferred
-        /// block), so control count and order are untouched. The 9-slice centre band absorbs the extra
-        /// height; the label's position comes from padding.top and does not move.
-        /// </summary>
-        private void DrawActiveFolderTongue()
-        {
-            if (!_folderTabsLive || _activeTongueStyle == null || Event.current.type != EventType.Repaint)
-            {
-                return;
-            }
-
-            var tongueRect = new Rect(_activeTongueRect.x, _activeTongueRect.y,
-                _activeTongueRect.width, _activeTongueRect.height + FolderTongueJoinOverlap);
-            _activeTongueStyle.Draw(tongueRect, new GUIContent(_activeTongueLabel), false, false, false, false);
-
-            if (_activeTongueIcon != null)
-            {
-                var iconRect = new Rect(
-                    _activeTongueRect.x + (_activeTongueRect.width - _activeTongueIconSize) * 0.5f,
-                    _activeTongueRect.y + _activeTongueIconTop,
-                    _activeTongueIconSize,
-                    _activeTongueIconSize);
-                // Area INK, not white: the interim treatment's white icon read on brass and would
-                // vanish on the paper tongue. Full ink strength is the selected tab's privilege, the
-                // same rule the spine below follows.
-                UiPalette.DrawTintedIcon(iconRect, _activeTongueIcon, UiPalette.GetAreaColor(_activeTongueArea));
-            }
-
-            if (_tabSpineStyle.normal.background != null)
-            {
-                Color savedColor = GUI.color;
-                GUI.color = UiPalette.GetAreaColor(_activeTongueArea);
-                _tabSpineStyle.Draw(new Rect(_activeTongueRect.x + FolderSpineSideInset,
-                    _activeTongueRect.y + FolderOnTongueTop,
-                    _activeTongueRect.width - FolderSpineSideInset * 2f, TabSpineHeight()), false, false, false, false);
-                GUI.color = savedColor;
-            }
         }
 
         /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above). RULED 2026-08-12 (Elias): the no-area-tint decision STANDS against §A.8's "bottom 3px area ink" strip and the manifest's "ui_subtab_on's bottom hue strip = ui_tab_spine flipped" - the main-tab spine carries area identity one level up, so the strip would be redundant, not missing.</summary>

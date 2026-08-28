@@ -165,13 +165,9 @@ namespace PoliSim.Persistence
         public float PrevGdp;
         public float LastGrowthPercent;
 
-        /// <summary>
-        /// UI v3.0 (2026-08-28, V3-R2): the player's per-screen fold overrides, keyed by
-        /// GameController.ShellScreenKey and valued as (int)ShellFoldState. Null on every save written
-        /// before v3.0 and on batch-written saves, which restores to "no override" - every screen at
-        /// its default. Navigation itself (the selected tab) stays unpersisted per the rule above; the
-        /// fold is a standing choice ABOUT a screen, not a place in it, which is why it rides here.
-        /// </summary>
-        public Dictionary<string, int> ShellFoldOverrides;
+        // `ShellFoldOverrides` (UI v3.0, V3-R2: the player's per-screen fold choice) lived here from
+        // 2026-08-28 to 2026-08-28 - retired with the OPEN state (v3.1 R-E1, ONE FRAME; the deletion in
+        // v3.1 Phase B, COMPLETED.md section 45). A save that still carries the key is read without it
+        // (JsonUtility ignores members the class no longer has); there is no state to restore.
     }
 }

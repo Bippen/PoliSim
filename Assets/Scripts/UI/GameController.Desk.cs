@@ -47,8 +47,6 @@ namespace PoliSim.UI
         /// <summary>The harness reads it to assert the state it films.</summary>
         internal bool OnDesk => _onDesk;
 
-        private const string DeskScreenKey = "Desk";
-
         /// <summary>The stage's inner rect as the last Repaint measured it - what the Layout event sees (DrawDeskStage).</summary>
         private Rect _deskInnerRect;
 
