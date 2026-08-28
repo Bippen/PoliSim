@@ -307,6 +307,66 @@ Shapes: **level** (one number now) · **share** (a part of a stated whole) · **
 
 ---
 
+## Annex G — the Policy Web, measured (2026-08-28 night; R-W3: the annexes are measurements, not prose)
+
+The base for board 2b. Everything below is measured — the occupancy by a row-run scan for the
+web's flat plate colour on the films (the same script both eras), the counts by
+`PolicyWebCensus` (batch, from the same public API the screen draws from), the type from the
+code's own formulas at the four capture heights.
+
+**G.1 — Occupancy, before → after the interim full-sheet build (R-W1).** The web's plate on
+the `06d` frame at rest:
+
+| size | before: plate px / % of window / % of sheet | after: plate px / % of window / % of sheet |
+|---|---|---|
+| 1280×720 | 1120×328 · 41.1 % · 43.6 % | 1120×448 · **56.1 %** · **59.6 %** |
+| 1600×900 | 1421×483 · 46.2 % · 48.9 % | 1423×591 · **59.8 %** · **63.3 %** |
+| 1920×1080 | 1722×569 · 48.2 % · 51.0 % | 1722×733 · **62.1 %** · **65.6 %** |
+| 2560×1440 | 2331×1162 · 74.6 % · 78.7 % | 2331×1162 · 74.6 % · 78.7 % (the old ceiling already filled this frame) |
+
+Before the build, the visible plate at the three smaller sizes was SHORTER than the diagram's
+own half-screen floor — the ring was clipped by the fold at rest. After it, the plate is the
+scroll viewport exactly, at every size.
+
+**G.2 — The ring's arithmetic (why the wide plate is not a wide ring).** `PolicyWebRenderer.
+Draw`: radius = min(width, height)/2 − labelMargin − MaxNodeDiameter/2, where labelMargin =
+the widest wedge header as rendered ("Sovereign Wealth" / "Crime & Justice") + 2·5 px pad.
+Height-bound at every capture size — a circle cannot use the plate's horizontal room, and the
+header margin is reserved on ALL sides though the wide headers only need it left and right.
+That geometry is the composition question the board owns.
+
+**G.3 — Labels (the ladder at the real sizes).** Always-on: the 9 wedge headers at
+max(9, body−1) px = **16 / 21 / 25 / 29** at 1280/1600/1920/2560. On hover/click only: ONE
+node label at the body size = **17 / 22 / 26 / 30** (both from `RescaleStylesToScreen`'s
+clamp(0.024·h, 17, 30); the node label clamps into the plate rect rather than reserving
+radius). At rest no node is labelled and no edge draws — the resting frame is dots, headers
+and dividers.
+
+**G.4 — The census (`PolicyWebCensus`, batch-measured).** 73 nodes = 55 policy + 18 stat;
+wedges: Labor 6 · Crime & Justice 6 · Fiscal 28 · Welfare 6 · Sectors 5 · Sovereign Wealth 2 ·
+Trade 1 · Political 1 · Stats 18. Policy→stat edges: 121 full set = **73 derived + 48
+declared**; per country: USA 120 (72 derived — the policy rate's issuance edge does not exist
+under `BaseDebtInterestRateOverride`), the other five 121. Stat→stat (the causal graph): 7,
+all derived. One node draws no edge, stated by name: Tariffs (Tax Line) — an enum-member-only
+node. Edge ink today: DERIVED solid at full ink, DECLARED dashed at reduced ink; effect colour
+from the target stat's own good/bad framing; thickness spans 1.1–3.4 px on RelativeStrength
+(uniform 1.0 where no cross-comparable ratio exists).
+
+**G.5 — The clicked-node readout, verbatim contents (the pane board 2b may re-compose; the
+CONTENTS are the model's, R-W2).** Policy node: the name in its area ink · the description ·
+"Current effects:" (computed lines from the live dials) · "Moves:" — one line per edge,
+"<stat> ▲/▼ — ledger: <term>" or "— declared". Stat node: the name · "Affected by (levers):"
+(same line form) · "In the books (stat → stat):" — "moved by <stat> ▲/▼ — ledger: <term>" /
+"feeds <stat> …" · the 50-year neutral-ink history graph where one of the 13 tracked stats,
+else the sentence "No trend history tracked for this stat yet."
+
+**G.6 — The films (the deterministic family — byte-stable run-to-run outside three named
+clock frames).** Rest: `pweb_1280_06d_policylaws_policyweb.png`, `pweb_2560_06d_…`. Clicked:
+`pweb_1280_06k_…_node_policy(.png/_rows)` (Income Tax pinned), `pweb_1280_06l_…_node_stat`
+(Approval pinned), and the 2560 twins — all under `..\PoliSim-captures\`.
+
+---
+
 ## 0. The delivered set at HEAD — derived 2026-08-27 (after Progress5), so nothing is asked for twice
 
 **The checks (logs `..\PoliSim-captures\logs\p5_*_20260827_*.log`):**
