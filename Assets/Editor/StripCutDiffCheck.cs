@@ -97,6 +97,17 @@ namespace PoliSim.EditorTools
     /// pointer, until Elias rules the pair's treatment (RULING NEEDED in the v3.1 Phase B report -
     /// viewed-not-counted like the three text stamps, a fourth cut at ~8.1 px duty, or a classifier
     /// refinement that would still read 1.17%). No classifier change without the ruling.
+    ///
+    /// RULED 2026-08-28 (Elias, on the Phase B report's RULING NEEDED): the pair is named
+    /// "diagonal-tile, viewed not counted" - the three text stamps' treatment, extended by name. The
+    /// entry moved from `DeferredPairs` to `ViewedNotCountedPairs` with the third cut's measurement
+    /// standing as its record, the deferral retired (the R-D3 table is empty until the next
+    /// ask-on-file case), and the classifier stands unchanged. The suite reads green with FOUR
+    /// viewed-not-counted - the three text stamps (matched by their &lt;text&gt; element, as before)
+    /// and this pair (matched by name) - and zero deferred. A viewed-not-counted pair is still
+    /// measured and printed with its figures every run; what it can never do is FAIL the run or
+    /// count as a pass, and any OTHER pair over budget still fails - the exemption is by name (or
+    /// the stamps' structural &lt;text&gt; mark), never by class.
     /// </summary>
     public static class StripCutDiffCheck
     {
@@ -115,10 +126,24 @@ namespace PoliSim.EditorTools
         /// <summary>An external rasterizer that has not returned in this long is killed and the file reported as a named limit.</summary>
         private const int ExternalRasterizerTimeoutMs = 30000;
 
-        /// <summary>R-D3: pairs whose failure is a KNOWN defect with an ask on file - measured and printed, never counted as FAIL, each with its dated pointer. Remove an entry the day its answer lands (class doc).</summary>
-        private static readonly Dictionary<string, string> DeferredPairs = new Dictionary<string, string>
+        /// <summary>R-D3: pairs whose failure is a KNOWN defect with an ask on file - measured and printed, never counted as FAIL, each with its dated pointer. Remove an entry the day its answer lands (class doc). EMPTY since the ruling of 2026-08-28 (the hatch pair moved to <see cref="ViewedNotCountedPairs"/>); the mechanism stands for the next ask-on-file case.</summary>
+        private static readonly Dictionary<string, string> DeferredPairs = new Dictionary<string, string>();
+
+        /// <summary>
+        /// The ruling of 2026-08-28 (Elias, on the v3.1 Phase B report's RULING NEEDED): pairs whose
+        /// over-budget reading is a MEASURED renderer difference, not drift - the three text stamps'
+        /// treatment, extended by name, with the measurement on record here. Such a pair is still
+        /// measured and printed every run, marked VIEWED, never a FAIL and never a pass.
+        /// `ui_hatch_draft` is "diagonal-tile, viewed not counted": after Design's third cut (16 px
+        /// period, 8 px duty, phase on x+y=16k) period, phase and duty agree and 7.42% structure
+        /// remains - 64 of the 76 mismatched px straddle InkAlpha (the shipped PNG's 45-degree edge
+        /// pixels at alpha 160, resvg's at 96-152; a 32 px diagonal tile is nearly all edge), 12
+        /// solid-vs-void (1.17%). Residual rasterizer edge coverage, not a cut error - the AMENDED
+        /// paragraph in the class doc carries the derivation.
+        /// </summary>
+        private static readonly Dictionary<string, string> ViewedNotCountedPairs = new Dictionary<string, string>
         {
-            { "ui_hatch_draft", "deferred 2026-08-28 (R-D3) - CLAUDE_DESIGN_ASSET_REQUEST.md §E5; re-cut #3 imported 2026-08-28 (16 px period, 8 px duty, phase on x+y=16k - cut to the measurement): 7.42% structure, edge 0.02; 64 of 76 mismatched px straddle alpha 128 (rasterizer edge coverage on a 45-degree tile), 12 solid-vs-void (1.17%); not a cut error - awaiting Elias's bar ruling (the v3.1 Phase B report), no classifier change without it" }
+            { "ui_hatch_draft", "diagonal-tile, viewed not counted (ruled 2026-08-28 - the three text stamps' treatment; was DEFERRED under R-D3): re-cut #3 reads 7.42% structure, edge 0.02; 64/76 mismatched px straddle alpha 128 (rasterizer coverage of a 45-degree edge on a 32 px tile), 12 solid-vs-void (1.17%); the record: CLAUDE_DESIGN_ASSET_REQUEST.md §E5, COMPLETED.md §46" }
         };
 
         /// <summary>
@@ -156,7 +181,7 @@ namespace PoliSim.EditorTools
             string rasterizerName = useExternal ? $"external {Path.GetFileName(external)}" : "Unity vectorgraphics";
             Debug.Log($"StripCutDiff: rasterizer = {rasterizerName}{(useExternal ? " (" + external + ")" : " (RenderSpriteToTexture2D)")}");
 
-            int compared = 0, passed = 0, unrasterizable = 0, failed = 0, textBearing = 0, currentColorResolved = 0, deferred = 0;
+            int compared = 0, passed = 0, unrasterizable = 0, failed = 0, textBearing = 0, viewedByName = 0, currentColorResolved = 0, deferred = 0;
 
             foreach (string svgPath in Directory.GetFiles("Assets/Resources/Art/UI", "*.svg", SearchOption.AllDirectories))
             {
@@ -240,20 +265,26 @@ namespace PoliSim.EditorTools
                 // figure and its rendering written out for the eye, never counted as a FAIL and never
                 // counted as a pass either.
                 bool textBearingMiss = !ok && svgText.Contains("<text");
+                // The ruling of 2026-08-28: a named pair whose miss is measured renderer difference -
+                // the text stamps' treatment by name. Checked before the deferral so a ruled pair can
+                // never silently re-enter DEFERRED.
+                string viewedNote = null;
+                bool viewedByNameMiss = !ok && !textBearingMiss && ViewedNotCountedPairs.TryGetValue(baseName, out viewedNote);
                 // R-D3: a named, dated deferral - measured, printed, never a FAIL; see the class doc.
                 string deferralNote = null;
-                bool deferredMiss = !ok && !textBearingMiss && DeferredPairs.TryGetValue(baseName, out deferralNote);
+                bool deferredMiss = !ok && !textBearingMiss && !viewedByNameMiss && DeferredPairs.TryGetValue(baseName, out deferralNote);
                 passed += ok ? 1 : 0;
                 textBearing += textBearingMiss ? 1 : 0;
+                viewedByName += viewedByNameMiss ? 1 : 0;
                 deferred += deferredMiss ? 1 : 0;
-                failed += ok || textBearingMiss || deferredMiss ? 0 : 1;
+                failed += ok || textBearingMiss || viewedByNameMiss || deferredMiss ? 0 : 1;
                 if (!ok)
                 {
                     File.WriteAllBytes(Path.Combine(probeDir, $"stripcut_fail_{baseName}.png"), ours.EncodeToPNG());
                 }
 
-                string verdict = ok ? "ok  " : textBearingMiss ? "TEXT" : deferredMiss ? "DEFERRED" : "FAIL";
-                Debug.Log($"  {verdict} {Path.GetFileName(svgPath),-52} {png.width}x{png.height}  mismatch={share:P2}  structure={structureShare:P2} (budget {StructureBudget:P2})  edge/boundary={edgePerBoundary:F2} (budget {EdgeBudgetPerBoundaryPixel:F1}; boundary {boundary}px)  worstΔ={worst}{(resolvedColor ? "  (currentColor -> #ffffff)" : "")}{(textBearingMiss ? "  text-bearing: renderer font difference, viewed not counted" : "")}{(deferredMiss ? "  " + deferralNote : "")}");
+                string verdict = ok ? "ok  " : textBearingMiss ? "TEXT" : viewedByNameMiss ? "VIEWED" : deferredMiss ? "DEFERRED" : "FAIL";
+                Debug.Log($"  {verdict} {Path.GetFileName(svgPath),-52} {png.width}x{png.height}  mismatch={share:P2}  structure={structureShare:P2} (budget {StructureBudget:P2})  edge/boundary={edgePerBoundary:F2} (budget {EdgeBudgetPerBoundaryPixel:F1}; boundary {boundary}px)  worstΔ={worst}{(resolvedColor ? "  (currentColor -> #ffffff)" : "")}{(textBearingMiss ? "  text-bearing: renderer font difference, viewed not counted" : "")}{(viewedByNameMiss ? "  " + viewedNote : "")}{(deferredMiss ? "  " + deferralNote : "")}");
             }
 
             // The source-less strips, stated by name (see SourcelessByDesign): no pair to compare is
@@ -272,7 +303,7 @@ namespace PoliSim.EditorTools
                 }
             }
 
-            Debug.Log($"=== StripCutDiff ({rasterizerName}): {passed} of {compared} comparable pairs within budget (structure <= {StructureBudget:P2} of the canvas AND edge <= {EdgeBudgetPerBoundaryPixel:F1} per boundary pixel - R-C2); {textBearing} text-bearing above budget (named, fonts); {deferred} deferred by name with an ask on file (R-D3, dated in the line); {unrasterizable} unrasterizable-here (named); {currentColorResolved} rendered with currentColor resolved to #ffffff (the root carried no color attribute; Design's pipeline convention); {failed} FAILED ===");
+            Debug.Log($"=== StripCutDiff ({rasterizerName}): {passed} of {compared} comparable pairs within budget (structure <= {StructureBudget:P2} of the canvas AND edge <= {EdgeBudgetPerBoundaryPixel:F1} per boundary pixel - R-C2); {textBearing + viewedByName} viewed not counted ({textBearing} text-bearing fonts + {viewedByName} ruled by name, the 2026-08-28 ruling); {deferred} deferred by name with an ask on file (R-D3, dated in the line); {unrasterizable} unrasterizable-here (named); {currentColorResolved} rendered with currentColor resolved to #ffffff (the root carried no color attribute; Design's pipeline convention); {failed} FAILED ===");
             CheckExit.Finish(failed == 0 ? 0 : 1);
         }
 

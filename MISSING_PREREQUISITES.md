@@ -21,7 +21,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 | §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
 | §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
 | §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch** (nothing queues ahead of it since D1 landed 2026-08-27) | two `StatNodeId` members first — ours, before the ask |
-| §E5 — the hatch tile's SVG source (the slider strip's half CLOSED 2026-08-28; the hatch cut three times by Design, the third to our own measurement — imported `1d9926d`) | **Elias — a bar ruling**: re-cut #3 reads 7.42 % structure against the 1 % budget with period, phase and duty agreeing; 64 of the 76 mismatched px are the two rasterizers' coverage of a 45° edge on a 32 px tile, 12 solid-vs-void (1.17 %) — name the pair "diagonal-tile, viewed not counted" (the text stamps' treatment), ask a fourth cut (≈ 8.1 px duty), or refine the classifier (still 1.17 %) | `StripCutDiffCheck` keeps the pair deferred by name with the third measurement as its pointer (R-D3); no classifier change without the ruling; Design's side is closed |
+| ~~§E5 — the hatch tile's SVG source~~ **CLOSED end-to-end 2026-08-28, both sides** — Design's half (three cuts, the slider strip sourceless-by-design) and Elias's bar ruling the same night: the pair named **"diagonal-tile, viewed not counted"** (the three text stamps' treatment) | — | executed in `StripCutDiffCheck.ViewedNotCountedPairs` with the measurement on record; the deferral retired (R-D3's table empty) — the suite reads green with 4 viewed-not-counted and zero deferred; the pair's eye-diff is a §V row; records `COMPLETED.md` §46; the row retires with the next re-derivation |
 | §V — built, not seen (every surface on film, its capture named; `../PoliSim-captures/sv_index.html` is the one sitting) | **Elias — a visual review** | rule 3's third layer |
 | §P — three felt verdicts, each a staged save (`playtest_1_trade_bill_costs`, `playtest_2_riksbank_rate_decision`, `playtest_3_dense_midgame`) | **Elias — load, play, judge** | no measurement can answer them |
 
@@ -169,33 +169,21 @@ land, five on disk — named here so it does not arrive as a surprise batch the 
 `:$DATA` stream — no mark-of-the-web ADS exists on any of them. The outstanding item the request doc's
 former §1F.2 carried is answered (`COMPLETED.md` §24): nothing to observe, nothing blocked.
 
-## 🟡 E5. Two strip-cut findings from our half of the rasterization diff (2026-08-28) — Design's half closed the same day (item 2 closed; item 1 cut three times); what remains is Elias's bar ruling on the hatch pair
+## 🟢 E5. CLOSED end-to-end 2026-08-28, both sides — Design's half (the slider strip sourceless-by-design; the hatch cut three times) and Elias's bar ruling: "diagonal-tile, viewed not counted" (the row retires with the next re-derivation)
 
-The diff closed on its own condition (the six per-state canvas buttons 6/6 — `COMPLETED.md` §36, roadmap
-item 7) and the full sweep of 90 SVG/PNG pairs surfaced two pairs where the shipped PNG is not a cut of
-its source, both viewed rather than inferred (`StripCutDiffCheck` with resvg 0.47.0, `stripcut_resvg2_*.log`;
-the check's own renderings beside Design's in `%TEMP%\stripcut_fail_<name>.png`):
-
-1. **`ui_hatch_draft.png`** (Chrome, 32×32): the source's `<pattern width="16" … patternTransform="rotate(45)">`
-   gives stripes with a 16/cos45 = 22.6 px horizontal period; Design's PNG has a **16 px** horizontal
-   period — the rotation was applied to the stripe content but not to the tiling. Mismatch 60%. Either
-   the PNG is re-cut from the SVG, or the SVG is re-authored to what the PNG shows — Elias's call which
-   side is the truth (the in-game asset is the PNG).
-   **Cut three times, 2026-08-28** (60 % → 33.4 % → **7.42 % structure** against the 1 % budget; re-cut #3
-   imported, `stripcut_e5close_20260828_191435.log`): period, phase and duty now agree, and 64 of the 76
-   mismatched px straddle the alpha-128 threshold (the two rasterizers' coverage of a 45° edge on a 32 px
-   tile), 12 are solid-vs-void (1.17 %). Design's side is closed; the bar question — viewed-not-counted
-   like the text stamps, a fourth cut, or a classifier refinement — is Elias's (RULING NEEDED, the v3.1
-   Phase B report). The pair stays deferred by name (R-D3) with the measurement as its pointer.
-2. **`ui_slider_track.png`** (Chrome, 256×28): the source is a 24×24 pill with a vertical gradient; the
-   PNG is a 256-wide strip. Not comparable as a rasterization of the source (resvg keeps the aspect and
-   returns 28×28). Either the strip's real source is a different SVG that should be in `Source/`, or the
-   24×24 pill was stretched — say which.
-
-Not Design's: the nine Stats icons that sat 0.06–1.2 pp over the old flat 2% budget were antialiasing along stroke
-silhouettes — the check now asserts two damage classes against their own bars (R-C2, `283e4ba`) and passes them;
-the hatch pair is deferred by name until the answer lands (R-D3, `4df1dbc`). The three stamps differ only by font
-rendering (`TEXT`, named).
+Both findings of our half of the rasterization diff are settled. (1) **`ui_hatch_draft.png`** (Chrome,
+32×32): Design cut the pair three times (60 % → 33.4 % → **7.42 % structure**; re-cut #3 to our own
+measurement — 16 px period, 8 px duty, phase on x+y=16k — imported `1d9926d`), and the residual is the
+two rasterizers' coverage of a 45° edge on a 32 px tile, not a cut error (64 of the 76 mismatched px
+straddle alpha 128; 12 solid-vs-void = 1.17 %). **Elias ruled the same night: "diagonal-tile, viewed
+not counted" — the three text stamps' treatment.** Executed: the entry moved from
+`StripCutDiffCheck.DeferredPairs` to `ViewedNotCountedPairs` with the measurement on record in the
+check's own table; the deferral retired (R-D3's mechanism stands, empty); the classifier untouched,
+exactly as the ruling's own condition required. The suite reads green with **4 viewed-not-counted**
+(the three text stamps + this pair) **and zero deferred**. The pair's eye-diff is a §V row.
+(2) **`ui_slider_track.png`**: authored raster with no SVG source, per Design's own answer —
+`SourcelessByDesign` states it by name and a source re-appearing under the name is a FAIL.
+Records: `COMPLETED.md` §46; the ask's history in `CLAUDE_DESIGN_ASSET_REQUEST.md` §E5.
 
 ## 🟡 E4. The `StatNodeId`/icon promotion for R4-1's two Society rows (youth unemployment, life expectancy)
 
@@ -284,6 +272,7 @@ closed by their rulings; their surfaces are re-listed here as built.
 | **D4's density and D6's inks on every sheet** (the token table and the contrast pass; the paper sprite's shadow moved outside the box rect) | §45 | every `v31bf_<size>_*` capture beside its `v31_<size>_*` twin: the 1.2 % margins, the 10/10/8/10 paper padding counted from the paper's visible edge, the 17 px body at 1280, the darker muted/caution/good/neutral inks, the Global and Political headers, the selected chip's dark caption on brass | the re-measured dead-space shares (request doc Annex C) rose on the content-short screens — Decisions, Demographics, the short Politics screens — and fell only where the screen was re-composed; the density direction's next move is theirs, not the tokens' |
 | **Statistics › Domestic OPEN by default** (R-PC2, v3.0 Phase C — the fold-default table ruled; **superseded by ONE FRAME the same evening**) | §42 | `v3c_1280_02a_statistics_domestic`, `v3c_2560_02a_statistics_domestic` (the default, OPEN: the chrome column and the tongues back beside the ledger); `v3c_<size>_02a_statistics_domestic_folded` (the pair) | the screen opens in the state it had before Phase A; the guards and the edge check ran in both states at both sizes; the only FOLDED defaults are the two locked screens (the Desk, Budget) |
 | **The eight new cabinet portraits at 5.5×** (the roster beside the sixteen squares) | `4e5adbf` | `omni_final_*_07c_politics_cabinet*` | still Elias's eyes (carried from playtest 3) |
+| **The hatch pair's eye-diff — "diagonal-tile, viewed not counted"** (the 2026-08-28 ruling; the residual viewed, not inferred) | §46 | `%TEMP%\stripcut_fail_ui_hatch_draft.png` (our resvg rendering, rewritten by every `StripCutDiffCheck` run) beside `Assets/Resources/Art/UI/Chrome/ui_hatch_draft.png` (Design's cut, the in-game asset) | the 32 px diagonal tile with period, phase and duty agreeing; the only difference should be coverage along the 45° stripe edges (the shipped PNG's edge pixels at alpha 160, resvg's at 96–152) — a visible SHAPE difference by eye would contradict the ruling's premise and sends the pair back to FAIL |
 
 **Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's
 dead nested scroll; Sweden's 24-line budget decomposition; the SWF emergency drawdown bill; option C's

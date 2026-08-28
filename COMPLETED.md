@@ -3033,3 +3033,36 @@ The ladder films are `v3a_ladder_1920_ladder_<kind>` (1920×1080: body type 23 p
 **Unit 7 — the OPEN state deleted (§44's promise: "v3.1 Phase B deletes them").** After the boards' bar came back green, the v3.0 shell fold's residue went out whole: in `GameController.cs` the OnGUI OPEN branch (the chrome column at 45 % of the area with `DrawTopBanner`, `DrawCalendarPanel`, `DrawPolicyControls`, `DrawCalendarAndSpeedControls` — with `DrawRunningStatusPlate`, `DrawSpeedButton`, `CalendarAndSpeedControlsHeight`, `BuildTimeStatusText` — and the tongues: `DrawConsolidatedTabs`, `DrawConsolidatedTabButton`, `DrawActiveFolderTongue`, `ConsolidatedTabRowHeight`, the seven `_activeTongue*` fields), the fold toggle (`DrawFoldToggle`, `FoldToggleWidth`, the two glyphs), the fold state itself (`_shellFoldOverrides`, `CaptureShellFoldOverrides`, `ShellScreenKey`, `DefaultShellFold`, `ShellFoldLocked`, `EffectiveShellFold`, `SetShellFold`, `ToggleShellFold`, `LeftColumnWidthFraction`, `_leftColumnScrollPosition`; the Desk's `DeskScreenKey`), the enum `ShellFoldState.cs` with its meta, `UiDraftState.ShellFoldOverrides` (a v3.0 save carrying the key is read past it — `JsonUtility` ignores members the class no longer has; nothing to restore), and in the harness `SweepOtherFoldState`, `CaptureFoldPair` with their six call sites and the "locked FOLDED" half of `AssertDeskState`. 22 members removed by a brace-matching script (`remove_methods.ps1`, the pass's scratch; dry-run first, then the compiler and a grep as the proof), the rest by hand; `DrawPolicyPreview`, `DrawCalendarMonthGrid`, `BuildCalendarMonthMarkers`, `_tabButtonStyle` and the tab-icon constants stay — the Desk, the Budget screen and the rail read them. OnGUI now reads as the frame it draws: the rail, the gap, the banner-measured sheet. Kept on purpose: `_runningPlateStyle` and `RunningLampSize` (styled per frame, drawn by nothing — one accessor the hold banner's padding shares) and the historical comments that name the old methods. The `.meta` Unity generated for `GameController.Statistics.cs` rides this commit (unit 6's path list missed it).
 
 **The gate — the full matrix, twice.** The boards' bar (`v31b_*`, the code at `96bc38e`): 79 captured at each of 1280 / 1600 / 1920 / 2560 (the 78-screen sweep plus Screen 0's four frames), 0 text overflows, 0 containment escapes, 0 canvas text violations, `ScreenEdgeCheck` 0 clipped, ATTRIB 0; trajectories `traj_v31b_*` ≡ `traj_v31_*` ≡ `traj_v3c_*` 6/6 by SHA-256 (nothing here is simulation); the eight checks green. The final bar (`v31bf_*`, the code at `c3b7c63`, after the deletion): **the same result line for line** — 79 / 0 / 0 / 0 / 0 clipped at every size (the 1600 run took ten minutes to a clean exit — the watch-line class, recorded, not touched), 12/12 identical, the eight checks green, `UpstreamCheck` at 8 ahead and tracking (cleared by the push). Between the two families the film differs only where a run differs from itself: the Fed-chair candidate draw (three names on the Decisions and Federal Reserve sheets — a UI-side unseeded roll; the layout identical) and the cursor (842 px in one 66×24 box on the 2560 Desk); the dead-space shares re-measured on `v31bf` sit within 1 pt of `v31b` for that reason (`deadspace_v31bf.md`). *A candidate for the harness, not done: seed the chair draw so two films of one code are pixel-identical.* The single-size probes along the way: `v31b_probe` (D6 + D4 + the rail — the bold POLITICS caught), `v31b_desk` / `v31b_swe2` (the first 1m-r2 film — the shadow and the double reserve caught), `v31b_desk2` / `v31b_swe2` (clean), `v31b_stats` (2a, clean), `v31b7` (the deletion, clean). **The dead-space re-measure (D4's own ask):** at 1280 the Desk 43.9 % (43.5 before), Domestic 42.1 (44.2), Decisions 27.2 (17.6), Demographics 67.6 (58.6), Budget 28.6 (28.8), Laws 42.5 (35.1), Compass 57.9 (55.6); at 2560 the same shape — the spacing cut compacts a fixed quantity of content, so the share of empty paper RISES on content-short screens and falls only where a screen was re-composed (Domestic); filed back in the request doc's Annex C with the candidates for Design's next look (Demographics, Decisions, the short Politics screens). `sv_index.html` regenerated (39 rows). **The push:** R-SP1's fast-forward at the pass's end, the outcome in the report.
+
+## 46. The hatch ruling executed — "diagonal-tile, viewed not counted"; §E5 closed end-to-end, both sides (2026-08-28)
+
+**The ruling (Elias, answering §45's one RULING NEEDED):** the hatch pair takes the three text stamps'
+treatment — named **"diagonal-tile, viewed not counted"**, the third cut's measurement standing as the
+record, no fourth cut asked, the classifier untouched (the ruling's own condition — no classifier change
+without it — honoured by making none).
+
+**Executed in `StripCutDiffCheck`.** The ruling's category exists as a second named table,
+`ViewedNotCountedPairs`: pairs whose over-budget reading is MEASURED renderer difference, not drift —
+still measured, still printed with their figures every run, marked VIEWED, never a FAIL and never a
+pass; the exemption by name (or the stamps' structural `<text>` mark), never by class, so a new defect
+anywhere still reads FAIL. `ui_hatch_draft` moved there from `DeferredPairs` carrying re-cut #3's
+measurement (7.42 % structure, edge 0.02; 64 of the 76 mismatched px straddle alpha 128 — the two
+rasterizers' coverage of a 45° edge on a 32 px tile; 12 solid-vs-void = 1.17 %). `DeferredPairs` stands
+EMPTY — the deferral retired, R-D3's mechanism kept for the next ask-on-file case — and the named branch
+runs before the deferral check, so a ruled pair can never silently re-enter DEFERRED. The summary line
+prints ONE viewed-not-counted figure (text-bearing + ruled by name).
+
+**The suite, verified at HEAD** (resvg 0.47.0, `stripcut_ruling_20260828.log`): **86 of 90 comparable
+pairs within budget; 4 viewed not counted (3 text-bearing fonts + 1 ruled by name); 0 deferred; 0
+unrasterizable-here; 0 FAILED — exit 0.** Green with four viewed-not-counted and zero deferred — the
+ruling's exact shape.
+
+**The records, both sides.** `MISSING_PREREQUISITES.md`: the register row and §E5 read CLOSED
+end-to-end (Design's half — three cuts, the slider strip sourceless-by-design — closed in the day's
+earlier record; Elias's half, the bar ruling, closed by this pass) and retire at the next re-derivation;
+**the pair's eye-diff joined §V** (`%TEMP%\stripcut_fail_ui_hatch_draft.png`, our resvg rendering
+rewritten each run, beside `Assets/Resources/Art/UI/Chrome/ui_hatch_draft.png` — a shape difference
+visible by eye would contradict the ruling's premise and send the pair back to FAIL). The roadmap's live
+edge and §E register carry the close. The request doc is deliberately untouched: the §S package's
+recorded digest must keep matching the pasted file, and the bar was Elias's own question, never an ask
+to Design.
