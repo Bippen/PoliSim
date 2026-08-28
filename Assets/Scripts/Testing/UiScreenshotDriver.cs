@@ -51,6 +51,12 @@ namespace PoliSim.Testing
         /// <summary>Set by `-shotstates`: run the state-pinning pass (cabinet, budget pause, decision search, pending bills) after the main sweep. Off by default so ordinary chrome runs stay fast and their sets comparable with history.</summary>
         public bool PinStates;
 
+        /// <summary>Set by `-shotsaves` (R-D4, the clear-out kickoff of 2026-08-28): instead of the sweep, stage the
+        /// playtest saves - one per felt verdict in MISSING_PREREQUISITES.md §P - through the REAL save service
+        /// into the real saves directory, each state filmed once as proof, so §P is load-play-judge rather than
+        /// set-up-first. USA stages the Trade-bill and dense-mid-game saves; Sweden the Riksbank-B one.</summary>
+        public bool StageSaves;
+
         /// <summary>Set by `-shotlocale=` (e.g. "en-US"): overrides the thread culture before anything draws, so number/date formatting can be captured in a locale other than the OS's. Empty = OS culture, which is what every set before 2026-08-12 rendered in (sv-SE on this machine — the decimal-comma set).</summary>
         public string Locale = "";
 
@@ -200,6 +206,18 @@ namespace PoliSim.Testing
             yield return Capture("01b_running_strip");
 
             AdvanceDays(controller, _countryId);
+
+            // R-D4: the playtest saves are staged on the warmed-up game BEFORE the sweep's own drafts
+            // (diverged SWF weights, drafted spending lines) go in - a playtester should open a clean
+            // book, not the harness's amber. The run ends here in that mode.
+            if (StageSaves)
+            {
+                yield return StagePlaytestSaves(controller);
+                Debug.Log($"SHOT: playtest saves staged, {_captured} proof capture(s), {_failed} failed.");
+                Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+                yield break;
+            }
+
             DivergeSwfWeights(controller);
             DraftSpendingLines(controller);
             yield return Settle();
@@ -482,6 +500,174 @@ namespace PoliSim.Testing
             InvokeNoArg(controller, "SignPendingDivision");
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
+        }
+
+        /// <summary>
+        /// R-D4: the three playtest saves, through the real service into the real saves directory
+        /// (`SaveGameService.DefaultSaveDirectory`), each state filmed once under this run's label.
+        /// Every state is produced the way play produces it - the shared day model, the public sim API,
+        /// the controller's own draft dictionaries - the state-pin idiom of CaptureStatePins.
+        /// (1) `playtest_1_trade_bill_costs` (USA): a partner override drafted so the Trade bill card
+        ///     shows its costs (the draft rides the save's UiDraftState.PartnerTariffInputs; the override
+        ///     flag on at the effective rate, inert until a bill moves it). Navigation is not saved, so the
+        ///     player opens Policy/Laws › Trade - the file name says so.
+        /// (2) `playtest_2_riksbank_rate_decision` (Sweden): a rate decision drafted on the Riksbank tab
+        ///     (the draft rides UiDraftState.InterestRateChangeInput), so the load opens on the surface the
+        ///     felt verdict is about - option C's naming of the player-set rate. NOT a pending appointment:
+        ///     on main no chair is seeded for Sweden (Riksbank-B's appointment machinery ships with item 10,
+        ///     MISSING_PREREQUISITES.md §D0), so the first cut of this save - named for a pending selection
+        ///     and asserted on one - correctly refused to write.
+        /// (3) `playtest_3_dense_midgame` (USA): the budget-process pause, pending cabinet decisions and
+        ///     a foreign-policy meeting reached by the bounded searches, then one bill of every type and
+        ///     twelve enacted laws - the decision density the verdict is about.
+        /// A save that cannot be staged is logged and skipped, never written half-made.
+        /// </summary>
+        private IEnumerator StagePlaytestSaves(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo worldField = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo inputsField = controller.GetType().GetField("_partnerTariffInputs", BindingFlags.Instance | BindingFlags.NonPublic);
+            var sim = simField?.GetValue(controller) as SimulationManager;
+            var world = worldField?.GetValue(controller) as World;
+            var inputs = inputsField?.GetValue(controller) as Dictionary<CountryId, float>;
+            Country player = sim?.World?.GetCountry(_countryId);
+            if (sim == null || world == null || inputs == null || player == null)
+            {
+                Debug.LogError("SHOT: playtest staging failed to reach the simulation - no save written.");
+                yield break;
+            }
+
+            string dir = PoliSim.Persistence.SaveGameService.DefaultSaveDirectory;
+            Directory.CreateDirectory(dir);
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+
+            if (_countryId == CountryId.Sweden)
+            {
+                // (2) the Riksbank rate decision, drafted: +0.25 on the tab's own slider draft, the tab
+                // open on the Riksbank, so the load lands on option C's naming - the verdict's surface.
+                if (!SetPrivateField(controller, "_interestRateChangeInput", 0.25f))
+                {
+                    Debug.LogError("SHOT: could not draft the Riksbank rate - playtest_2 NOT written.");
+                    yield break;
+                }
+                SetEnumField(controller, "_consolidatedTab", "Politics");
+                SetEnumField(controller, "_politicsCategory", "FederalReserve");
+                ResetScrolls(controller);
+                yield return Settle();
+                WritePlaytestSave(controller, sim, world, dir, "playtest_2_riksbank_rate_decision");
+                yield return Capture("p2_riksbank_rate_decision");
+                yield break;
+            }
+
+            // (1) the Trade bill open with its costs on screen.
+            if (player.TradePartners.Count > 0)
+            {
+                TradePartner link = player.TradePartners[0];
+                Country partner = world.GetCountry(link.PartnerId);
+                float effective = TradeSystem.GetTariffRate(player, partner, world.TradeBlocs);
+                float previousOverride = link.PlayerTariffOverride;
+                link.PlayerTariffOverride = Mathf.Clamp(effective, 0f, 50f);
+                inputs[link.PartnerId] = Mathf.Clamp(link.PlayerTariffOverride + 10f, 0f, 50f);
+                SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+                SetEnumField(controller, "_policyLawsCategory", "Trade");
+                ResetScrolls(controller);
+                yield return Settle();
+                WritePlaytestSave(controller, sim, world, dir, "playtest_1_trade_bill_costs");
+                yield return Capture("p1_trade_bill_costs");
+                // the draft stays in the save; the running game is put back so the dense state starts clean
+                link.PlayerTariffOverride = previousOverride;
+                inputs.Remove(link.PartnerId);
+            }
+            else
+            {
+                Debug.LogError("SHOT: no trade partner - playtest_1 NOT written.");
+            }
+
+            // (3) the dense mid-game: the pause, the decisions, the meeting, then the bills - the
+            // CaptureStatePins searches, in their load-bearing order (bills last, so no countdown ticks).
+            int days = 0;
+            while (!sim.GetPendingBudgetProcess(_countryId) && days < MaxStateSearchDays)
+            {
+                if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                sim.AdvanceCountryDayTick(_countryId);
+                days++;
+            }
+            // A cabinet can only roll decisions for portfolios that HAVE a minister, and the warmed-up
+            // game has none (the player appoints) - so the authored portfolios are filled first, the
+            // first candidate of each from the public pool (the CaptureStatePins idiom), and the search
+            // then waits for a decision AND a meeting, two years at most so the save does not drift.
+            int appointed = 0;
+            foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                try
+                {
+                    List<CabinetMinister> candidates = CabinetSystem.GenerateCandidates(portfolio);
+                    if (candidates != null && candidates.Count > 0) { player.CabinetMinisters[portfolio] = candidates[0]; appointed++; }
+                }
+                catch (System.Exception e) { Debug.Log($"SHOT: no candidate pool for {portfolio} ({e.GetType().Name}) - not appointed."); }
+            }
+            days = 0;
+            while ((sim.GetPendingCabinetDecisions(_countryId).Count == 0 || sim.GetPendingForeignPolicyMeeting(_countryId) == null) && days < 365 * 2)
+            {
+                if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                sim.AdvanceCountryDayTick(_countryId);
+                days++;
+            }
+            Debug.Log($"SHOT: dense staging - {appointed} minister(s) appointed, decision/meeting search {days} day(s).");
+            if (sim.GetPendingCabinetDecisions(_countryId).Count == 0)
+            {
+                // The roll is 12%/minister/turn and the window two boundaries - a miss is likely. Pin one
+                // rolled from the live pools through the real roller (CaptureStatePins' own R4-4 idiom:
+                // rolled, never fabricated), so the dense book carries every decision surface.
+                FieldInfo pendingField = typeof(SimulationManager).GetField("_pendingCabinetDecisionsByCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (pendingField?.GetValue(sim) is Dictionary<CountryId, List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>> pendingByCountry)
+                {
+                    var pinned = new List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>();
+                    for (int i = 0; i < 1000 && pinned.Count == 0; i++)
+                    {
+                        foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in CabinetSystem.TryRollDecisions(player)) { pinned.Add((portfolio, decision)); break; }
+                    }
+                    if (pinned.Count > 0) { pendingByCountry[_countryId] = pinned; Debug.Log($"SHOT: dense staging - pinned a rolled {pinned[0].Portfolio} decision ({pinned[0].Decision.Name})."); }
+                    else { Debug.Log("SHOT: dense staging - no cabinet decision rolled in 1000 tries; the save carries none."); }
+                }
+            }
+
+            TaxType? taxPick = null;
+            foreach (TaxLine line in player.TaxLines) { if (!line.IsImplemented) { taxPick = line.Type; break; } }
+            if (taxPick == null && player.TaxLines.Count > 0) { taxPick = player.TaxLines[0].Type; }
+            if (taxPick != null) { sim.IntroduceTaxProgramBill(_countryId, taxPick.Value, isAdd: !FindTaxLine(player, taxPick.Value).IsImplemented); }
+            WelfareProgramType? welfarePick = null;
+            foreach (WelfareProgram program in player.WelfarePrograms) { if (!program.IsImplemented) { welfarePick = program.Type; break; } }
+            if (welfarePick != null) { sim.IntroduceWelfareProgramBill(_countryId, welfarePick.Value, true); }
+            sim.IntroduceLaborBill(_countryId, new LaborPolicyBill { MinimumWage = 12f });
+            sim.IntroduceCrimeJusticeBill(_countryId, new CrimeJusticePolicyBill { PoliceFunding = 55f });
+            foreach (string enactId in new[] { "three_strikes_law", "cash_bail_abolition_act", "drug_decriminalization_act", "public_defender_funding_act", "body_worn_camera_program", "court_backlog_reduction_program", "frontex_border_cooperation_agreement", "restorative_justice_program", "parental_leave_expansion_act", "raise_the_wage_act", "working_time_regulation_act", "active_labor_market_programs_act" })
+            {
+                player.EnactedLaws.Add(new EnactedLaw { LawId = enactId, EnactedOn = sim.CurrentDate });
+            }
+            foreach (string recompute in new[] { "RecomputeCrimeJusticeDialsFromEnactedLaws", "RecomputeLaborDialsFromEnactedLaws" })
+            {
+                sim.GetType().GetMethod(recompute, BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(sim, new object[] { player });
+            }
+            sim.IntroduceLawBill(_countryId, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
+            sim.IntroduceLawBill(_countryId, new LawBill { LawId = "skilled_worker_immigration_act", IsRepeal = false });
+            sim.IntroduceTradeBill(_countryId, new TradePolicyBill { NewBaseTariffRate = player.BaseTariffRate + 2f });
+
+            Debug.Log($"SHOT: dense state - budget pause {sim.GetPendingBudgetProcess(_countryId)}, cabinet decisions {sim.GetPendingCabinetDecisions(_countryId).Count}, meeting {(sim.GetPendingForeignPolicyMeeting(_countryId) != null)}, enacted laws {player.EnactedLaws.Count}, turn {sim.CurrentTurn}.");
+            SetEnumField(controller, "_consolidatedTab", "Decisions");
+            ResetScrolls(controller);
+            yield return Settle();
+            WritePlaytestSave(controller, sim, world, dir, "playtest_3_dense_midgame");
+            yield return Capture("p3_dense_midgame");
+        }
+
+        /// <summary>One playtest save through the real service - the same call the saves-menu capture makes.</summary>
+        private void WritePlaytestSave(GameController controller, SimulationManager sim, World world, string dir, string name)
+        {
+            string path = System.IO.Path.Combine(dir, name + ".json");
+            PoliSim.Persistence.SaveGameService.SaveToFile(path,
+                PoliSim.Persistence.SaveGameService.CreateSaveGame(sim, world, _countryId, controller.CaptureUiDrafts()));
+            Debug.Log($"SHOT: wrote playtest save {path} ({new FileInfo(path).Length} bytes).");
         }
 
         /// <summary>R-D2's pair - see CaptureFilmGaps (d). Skips with a logged error, never a wrong

@@ -138,8 +138,10 @@ namespace PoliSim.EditorTools
             driver.Country = Arg("-shotcountry=", "USA");
             // State pinning and locale override (2026-08-12): flags of the same capture-config family.
             driver.PinStates = Environment.GetCommandLineArgs().Contains("-shotstates");
+            // R-D4 (the clear-out kickoff, 2026-08-28): stage the three playtest saves instead of the sweep.
+            driver.StageSaves = Environment.GetCommandLineArgs().Contains("-shotsaves");
             driver.Locale = Arg("-shotlocale=", "");
-            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
+            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 
         private static string Arg(string prefix, string fallback)
