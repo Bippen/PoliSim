@@ -24,6 +24,10 @@ namespace PoliSim.EditorTools
     /// <para>This is rule 14 pointed at the repo instead of at a sprite: the enumeration gap was not
     /// inside any check, it was the population none of them was over. A backup is a check whose scope is
     /// the work itself.</para>
+    ///
+    /// <para>R-SP1 (2026-08-28): sessions push at pass end, FAST-FORWARD ONLY (never a force flag from a
+    /// session; force stays Elias's), so the threshold below is one a session clears itself rather than a
+    /// red Elias inherits. The check stays armed as the tripwire for the case where that did not happen.</para>
     /// </summary>
     public static class UpstreamCheck
     {

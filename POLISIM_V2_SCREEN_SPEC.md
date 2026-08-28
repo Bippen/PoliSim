@@ -231,8 +231,9 @@ no longer its own mechanism: it is the Budget ledger's FOLDED default, so "left 
 at 1080p, 39 px at 720p, 64 px at 1440p, plus the sheet's padding). Per-screen defaults: the landing
 screen (Statistics › Domestic, carrying the oversight default until Screen 0 exists) and Budget FOLDED;
 every other screen OPEN. The flip is instant; the player's choice persists per screen and per save
-(`UiDraftState.ShellFoldOverrides`). Every screen is legal in both states (the guards run in both, the
-folded frame's interrupt banner carrying the HELD reasons above the sheet); only defaults are canonical
+(`UiDraftState.ShellFoldOverrides`). Every screen is legal in every reachable state (R-SP2, 2026-08-28 —
+the guards run in each; a locked state is unreachable and recorded per screen: the Budget ledger, R-A1),
+the folded frame's interrupt banner carrying the HELD reasons above the sheet; only defaults are canonical
 on film (V3-R4).
 
 ### A.6 The left column (persistent chrome)

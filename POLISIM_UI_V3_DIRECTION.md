@@ -28,7 +28,9 @@ player-controlled shell state, everywhere:
   fold toggle. Everything else yields to the stage.
 - **State rules:** the flip is **instant** (the calendar's own ruling — this desk does not tween);
   the state persists per save; per-screen defaults — the oversight screen defaults FOLDED, ledger
-  screens default OPEN; every screen must be *legal* in both states (guards run in both), but only
+  screens default OPEN; every screen must be *legal* in every state a player can reach (guards run
+  in each; locking a state — R-A1's Budget precedent — is a legitimate way to make it unreachable,
+  recorded per screen: **R-SP2, ratified 2026-08-28**, amending "in both states"), but only
   defaults are canonical on film (V3-R4).
 - Minimum width stays 1280×720; the fold is what makes the floor generous instead of tight.
 
@@ -91,3 +93,8 @@ one folded/unfolded pair per column-layout class (standard, Budget full-screen, 
 across the corpus. Guards, edge checks, and the containment assert run in both states in the
 harness even where film shows one. The label-clipping class stays closed — a folded-state clip is
 a new instance of the old class and is treated as such.
+
+**Amended 2026-08-28 (R-SP2, the stage-prep micro-pass — ratified):** "legal in both states" reads
+*legal in every state a player can reach*. Locking a state (the Budget ledger's FOLDED lock, R-A1)
+is a legitimate way to make a state unreachable; each lock is recorded per screen, and the harness
+sweeps and films only the states that remain reachable.

@@ -33,7 +33,13 @@ record, only from the standing text.
    are always recorded explicitly, never silent.
 5. **Commits.** One unit, one commit, descriptive message; stage by explicit path; confirm staged
    contents match the message (the check runs, the narration doesn't). Verify Unity processes
-   exited before batch runs.
+   exited before batch runs. **The push (R-SP1, 2026-08-28, standing — supersedes R-D1's
+   one-push scope): sessions push at pass end, fast-forward only.** Procedure: `git fetch origin`;
+   if `origin/main` is an ancestor of HEAD, `git push origin main` (no force flag of any kind, ever,
+   from a session); re-fetch and confirm `origin/main == HEAD`. Any non-fast-forward state, any
+   lease or credential surprise, anything that would want `--force*`: stop and hand Elias the exact
+   state — force remains exclusively his. `UpstreamCheck` stays armed as the tripwire; its
+   threshold is now one a session clears itself rather than a red Elias inherits.
 6. **A check is evidence only for what it enumerates — name the enumeration when citing it.** Do
    not build a third site-specific guard; the three guard scopes stand as defined.
 7. **Load-bearing invariants may not regress:** the eight behaviours (amber draft cue,
@@ -294,15 +300,13 @@ happen.
 
 - Read **The board** above, then the live list — both re-derived, never edited forward. If the board
   disagrees with `git log`, the log is right and the board is stale.
-- Six gestures: **push** (`main` is eleven commits ahead of `origin/main` after Phase A — the five of the
-  clear-out plus this pass's six — which crosses `UpstreamCheck`'s ten-commit threshold, so the next gate
-  reads red until the push; the push stays Elias's by convention, R-D1 having amended it once only);
-  paste `SEND_PACKAGE_2026-08-28.md` (§S — the one send now carries §E5 AND the v3.0 boards ask with its
-  annex captures); sit once through `../PoliSim-captures/sv_index.html` (§V, the shell's rows and the
-  ladder films now on it); load the three `playtest_*` saves and play (§P); answer §E5 when Design does,
-  and hand v3.0 Phase B its boards when Design draws them (§E6); 13 September (§D). Nothing waits on a
-  ruling (§A holds only the coupling queue at its triggers), and `MISSING_PREREQUISITES.md` is live-only
-  — its tombstones are `COMPLETED.md` §38a.
+- Five gestures, no sixth (the push is a session's since R-SP1, 2026-08-28 — fast-forward only, at pass
+  end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the one send now carries §E5 AND
+  the v3.0 boards ask with its annex captures); sit once through `../PoliSim-captures/sv_index.html` (§V,
+  the shell's rows and the ladder films now on it); load the three `playtest_*` saves and play (§P);
+  answer §E5 when Design does, and hand v3.0 Phase B its boards when Design draws them (§E6); 13
+  September (§D). Nothing waits on a ruling (§A holds only the coupling queue at its triggers), and
+  `MISSING_PREREQUISITES.md` is live-only — its tombstones are `COMPLETED.md` §38a.
 - Review the commit log — each unit of work is its own commit, validation results in the message or
   CLAUDE.md.
 
