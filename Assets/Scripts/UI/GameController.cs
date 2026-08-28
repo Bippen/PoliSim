@@ -7702,6 +7702,14 @@ namespace PoliSim.UI
         /// (see PolicyWebRenderer for the full node/edge data and rendering technique - reuses
         /// MapRenderer's own node+line approach). Clicking a node pins a detail panel below, the same
         /// "click pins a panel, exactly one at a time" idiom the World Map tab already established.
+        ///
+        /// R-W1 (the Policy Web micro-pass, 2026-08-28, from the sitting's third finding): the web
+        /// takes the FULL SHEET - the diagram rect is the scroll viewport itself, drawn FIRST, so at
+        /// rest the ring fills the sheet's inner area edge to edge; the explainer paragraph and the
+        /// clicked-node readout live below the fold, unchanged in content (the frame's own caption
+        /// names the screen, so the in-sheet duplicate title went with the move - a build call,
+        /// recorded). Same nodes, same edges, same clicked-node idiom - the room, not the
+        /// composition; board 2b (ask D7) refines the composition and nothing built here fights it.
         /// </summary>
         private void DrawPolicyWebTab(float availableHeight)
         {
@@ -7710,17 +7718,13 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _policyWebScrollPosition = GUILayout.BeginScrollView(_policyWebScrollPosition, GUILayout.Height(scrollHeight));
 
-            DrawColoredLabel("Policy Web", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("The ~9 category headers around the ring are always shown. Hover a node (or click to pin it, and its details below, even after you move away) to reveal its own name and ONLY its own connections - too many of the ~73 nodes to label them all at once legibly. Colored by area; line color follows this game's usual green/red convention (from that STAT's own perspective), thickness reflects relative effect strength where that's meaningfully comparable, uniform otherwise.", _labelStyle);
-            GUILayout.Space(6f);
-
-            // Sized off the tab's own actual panel space, not a fixed pixel canvas (see
-            // PolicyWebRenderer's own class doc comment) - width matches the column's real available
-            // width via ExpandWidth, height is a large majority of what's left in the scroll viewport
-            // after the header text above, floored/ceilinged in Screen.height terms so a very short or
-            // very tall window still gets something reasonable. This is what keeps the diagram itself
-            // from ever needing its own scrollbar - it always renders at exactly the size it's given.
-            float diagramHeight = Mathf.Clamp(scrollHeight - _labelStyle.fontSize * 4f, Screen.height * 0.5f, Screen.height * 0.92f);
+            // R-W1: the drawing rect IS the sheet's inner viewport - full width (ExpandWidth accounts
+            // for the scrollbar the below-the-fold content raises), the viewport's own height, floored
+            // at the old half-screen minimum so a pathologically short window still gets a ring worth
+            // drawing (then the viewport scrolls, exactly as before). The old ceiling is gone: the
+            // viewport is the bound now, and the ring scales with it (radius = min(w, h)/2 less the
+            // header-label margin - PolicyWebRenderer.Draw's own arithmetic, untouched).
+            float diagramHeight = Mathf.Max(scrollHeight, Screen.height * 0.5f);
             Rect webRect = GUILayoutUtility.GetRect(10f, diagramHeight, GUILayout.ExpandWidth(true));
             // R-K1 (2026-08-28): the web reads the PLAYER COUNTRY's edge set - the policy rate's
             // issuance edge draws for the five and not for the USA (Country.BaseDebtInterestRateOverride).
@@ -7738,6 +7742,11 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(10f);
+
+            // R-W1: the explainer follows the web now (the sheet caption carries the title); its text
+            // is the same paragraph, below the fold with the readout it introduces.
+            GUILayout.Label("The ~9 category headers around the ring are always shown. Hover a node (or click to pin it, and its details below, even after you move away) to reveal its own name and ONLY its own connections - too many of the ~73 nodes to label them all at once legibly. Colored by area; line color follows this game's usual green/red convention (from that STAT's own perspective), thickness reflects relative effect strength where that's meaningfully comparable, uniform otherwise.", _labelStyle);
+            GUILayout.Space(6f);
 
             if (_selectedPolicyWebPolicyNode.HasValue)
             {
