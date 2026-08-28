@@ -104,9 +104,20 @@ film at four sizes). **Phase C CLOSED 2026-08-28** — the fold-default table ru
 FOLDED only if its content is designed for the full-width stage: the Desk and Budget, both locked;
 Statistics › Domestic reverted to OPEN and filmed at 1280 and 2560), R-B2/R-B3/R-B4 ratified standing,
 the courtesy note rewritten 1i–1n-aware, the send package regenerated as one current paste
-(`COMPLETED.md` §42). **v3.0 Phases A–C are closed. The era's live edge reads WAITING:** Design's hatch
-re-cut (§E5, the one open ask) · 13 September (item 10, election night born on the v3 shell). Nothing of
-v3.0 is startable by a session today; §P (the three felt verdicts, now on the real stage) is Elias's.
+(`COMPLETED.md` §42). **v3.0 Phases A–C are closed.**
+
+**UI v3.1 opened and its Phase A CLOSED the same evening (2026-08-28, `COMPLETED.md` §44)** — from Elias's
+first live sitting on the v3.0 build: the OPEN state retired on the duty audit (ONE FRAME: the rail and one
+full-bleed sheet on every screen — the direction doc's v3.1 section, its table one row), the rail's HOME
+cell (the flag, the structural interim), the PAUSE/RUN chip in the fold toggle's freed cell, the game-over
+reason on the banner everywhere, six annexes measured (the audit, the icons at the real cells, the paddings
+and dead-space shares, the sitting's findings, the Statistics census, the ink-pair contrast table), the
+ninth request installed and the paste regenerated. **The era's live edge reads WAITING:** v3.1 Phase B on
+Design's boards 1n-r2 (the rail) · 1m-r2 (the Desk's density and empty states) · 2a (Statistics drawn) and
+the density-token and contrast tables — each built in its own pass as it lands; **the §E5-close micro-pass**
+— Design's second hatch re-cut is on the live project (read this evening: a 16 px period, 8 px duty — the
+measured figures), not yet imported or diffed; · 13 September (item 10, election night born on the v3 shell).
+Nothing of v3.x is startable by a session today except the §E5-close; §P (the three felt verdicts) is Elias's.
 
 ---
 
@@ -316,11 +327,10 @@ happen.
 - Read **The board** above, then the live list — both re-derived, never edited forward. If the board
   disagrees with `git log`, the log is right and the board is stale.
 - Five gestures, no sixth (the push is a session's since R-SP1, 2026-08-28 — fast-forward only, at pass
-  end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the Phase C package, the one
-  current paste: the 1i–1n note and the request doc whose live ask is §E5's hatch re-cut with the
-  figures; it supersedes every earlier package — its dated `…-28c` paste paths and the note's captures
-  re-pointed at the current films are established hygiene, ratified standing 2026-08-28 as R-PC4a and
-  R-PC3a); sit once through `../PoliSim-captures/sv_index.html`
+  end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the v3.1 Phase A package, the one
+  current paste: the request doc through the ninth request with its six annexes, the note unchanged, the
+  two sitting screenshots and the four rail crops from Elias's side; it supersedes the Phase C paste,
+  which landed — the dated `…-28d` paths are R-PC4a's hygiene); sit once through `../PoliSim-captures/sv_index.html`
   (§V, the shell's rows, the ladder films, the Desk and the ruled defaults now on it); load the three
   `playtest_*` saves and play (§P — recommended now that the stage is real); 13 September (§D). Nothing waits on a ruling (§A holds only the coupling queue at its triggers), and
   `MISSING_PREREQUISITES.md` is live-only — its tombstones are `COMPLETED.md` §38a.
