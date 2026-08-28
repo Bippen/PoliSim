@@ -281,6 +281,7 @@ namespace PoliSim.Testing
                 SetEnumField(controller, sub.Key, sub.Value[0]);
             }
 
+            yield return CaptureFilmGaps(controller);
             yield return CaptureHeldState(controller);
             yield return CaptureSavesMenu(controller);
 
@@ -353,6 +354,124 @@ namespace PoliSim.Testing
 
                 Application.logMessageReceived -= OnRunLog;
             }
+        }
+
+        /// <summary>
+        /// R-C6 (the continuation kickoff, 2026-08-28): the surfaces §V listed as verified by code alone,
+        /// put on film in the MAIN sweep so every omni set carries them. Every pin here is UI-STATE ONLY
+        /// - a capture state may pose the UI, never move the model: no day advances, no sim write.
+        /// (a) The trace panel open on Policy/Laws for each of its three sections (approval, confidence,
+        ///     the fiscal chain) through the driver's absolute RequestSelection, assert-own-name before
+        ///     the shutter (the 93-series idiom, which lives behind -shotstates and so was in no omni set).
+        /// (b) A Policy Web node selected - one policy node, one stat node - because the derived/declared
+        ///     idiom and the stat chords draw only on a click; the two private selection fields are set
+        ///     the way a click sets them (one pinned, the other cleared).
+        /// (c) The signing ceremony's ENTRANCE (§A.13 rows 4 and 6): staged the way the rejected-form
+        ///     capture stages a ceremony - one DivisionRecord appended through DivisionLog.Append, the
+        ///     queue the day tick fills, then TriggerSigningForNewestDivision - and filmed twice: two
+        ///     frames after the canvas goes live (the document rising, the SIGN button still invisible)
+        ///     and again once the seam reports the entrance settled (the button faded in). Presence is
+        ///     what the mid-entrance frame pins, not a pixel value (the yielding-state idiom). Runs LAST
+        ///     in this pass so the appended record is not on the Parliament tab's division list in the
+        ///     tab captures; the record stays in the run's log, named as the harness's.
+        /// </summary>
+        private IEnumerator CaptureFilmGaps(GameController controller)
+        {
+            // (a) the trace panel, three sections
+            SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+            SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
+            foreach ((StatNodeId stat, string stem) in new[]
+            {
+                (StatNodeId.Approval, "06h_policylaws_trace_approval"),
+                (StatNodeId.ConsumerConfidence, "06i_policylaws_trace_confidence"),
+                (StatNodeId.DebtToGdp, "06j_policylaws_trace_debt")
+            })
+            {
+                ResetScrolls(controller);
+                StatTracePanel.RequestSelection(stat);
+                yield return Settle();
+                if (StatTracePanel.SelectedStat != stat)
+                {
+                    Debug.LogError($"SHOT: {stem} - the trace panel is NOT open on {stat}; this capture would be misnamed.");
+                }
+                yield return Capture(stem);
+            }
+            StatTracePanel.RequestSelection(null);
+            yield return Settle();
+
+            // (b) a Policy Web node selected - a policy node, then a stat node
+            FieldInfo policyNodeField = controller.GetType().GetField("_selectedPolicyWebPolicyNode", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo statNodeField = controller.GetType().GetField("_selectedPolicyWebStatNode", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (policyNodeField == null || statNodeField == null)
+            {
+                Debug.LogError("SHOT: the Policy Web selection fields were not found - the 06k/06l node captures are MISSING, not clean.");
+            }
+            else
+            {
+                SetEnumField(controller, "_policyLawsCategory", "PolicyWeb");
+                // Each node state twice: the diagram with the pinned node's chords, then scrolled past it
+                // to the readout the click pins below - the derived / declared idiom and the ledger-term
+                // chords in text, which is what the first capture of this state left below the fold.
+                policyNodeField.SetValue(controller, PolicyNodeId.IncomeTax);
+                statNodeField.SetValue(controller, null);
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture("06k_policylaws_policyweb_node_policy");
+                ScrollBy(controller, 900f);
+                yield return Settle();
+                yield return Capture("06k_policylaws_policyweb_node_policy_rows");
+
+                policyNodeField.SetValue(controller, null);
+                statNodeField.SetValue(controller, StatNodeId.Approval);
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture("06l_policylaws_policyweb_node_stat");
+                ScrollBy(controller, 900f);
+                yield return Settle();
+                yield return Capture("06l_policylaws_policyweb_node_stat_rows");
+
+                statNodeField.SetValue(controller, null);
+                SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
+                ResetScrolls(controller);
+                yield return Settle();
+            }
+
+            // (c) the ceremony's entrance, staged without a day advanced
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            Country player = (simField?.GetValue(controller) as SimulationManager)?.World?.GetCountry(_countryId);
+            var sim = simField?.GetValue(controller) as SimulationManager;
+            if (player == null || sim == null)
+            {
+                Debug.LogError("SHOT: could not reach the player country - the 89d/89e entrance captures are MISSING, not clean.");
+                yield break;
+            }
+
+            SetEnumField(controller, "_consolidatedTab", "Statistics");
+            ResetScrolls(controller);
+            yield return Settle();
+            player.Divisions.Append("Harness: staged division for the entrance capture (R-C6)", sim.CurrentDate, 0.25f, passed: true);
+            InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+            for (int i = 0; i < MaxCanvasSettleFrames && !controller.CanvasSelectorActive; i++)
+            {
+                yield return null;
+            }
+            if (!controller.CanvasSelectorActive)
+            {
+                Debug.LogError("SHOT: the signing canvas never went live - 89d_signing_entrance would show the dashboard; MISSING, not clean.");
+            }
+            yield return null;
+            yield return null;
+            yield return Capture("89d_signing_entrance");
+            RecordCanvasTextAssert("89d_signing_entrance", controller);
+
+            yield return WaitForCanvasSettle(controller, wantActive: true);
+            yield return Settle();
+            yield return Capture("89e_signing_settled");
+            RecordCanvasTextAssert("89e_signing_settled", controller);
+
+            InvokeNoArg(controller, "SignPendingDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
         }
 
         /// <summary>
