@@ -122,11 +122,14 @@ defect the first film exposed), 1n-r2's captioned rail, 1m-r2's Desk with its Ye
 Statistics as instruments; then the OPEN state's residue deleted whole (§44's promise). The dead-space
 share re-measured after D4 says the reclaim has nowhere to go on content-short screens until they are
 re-composed the way 2a re-composed Domestic — filed for Design's next look in the request doc's Annex C.
-**The era's live edge:** nothing of v3.x is out for signature — the next ask starts at the request doc's §4
-(redrawn rail glyphs, refused as a costed follow-up) and Annex C's corrections; §P (the three felt
-verdicts) is Elias's (the hatch pair's bar ruling landed 2026-08-28 — "diagonal-tile, viewed not
-counted", executed, `COMPLETED.md` §46); 13 September (item 10, election night born on the
-v3 shell). Nothing of v3.x is startable by a session today.
+**The era's live edge:** ONE ask is out for installing — the tenth request (D7, board 2b, "the Policy
+Web, drawn to be read"; the sitting's third finding, its scale half already built and live as the
+Policy Web micro-pass, `COMPLETED.md` §48) — riding the §S paste (`SEND_PACKAGE_2026-08-28.md`,
+regenerated late night, rows n of N); §P (the three felt verdicts) is Elias's (the hatch pair's bar
+ruling landed 2026-08-28 — "diagonal-tile, viewed not counted", executed, `COMPLETED.md` §46);
+13 September (item 10, election night born on the v3 shell). Beyond the paste, nothing of v3.x is
+startable by a session today; the overnight elections track (E-0/E-1 and the allocation layer) runs
+UNWIRED under its own rules — the overnight report is its record.
 
 ---
 

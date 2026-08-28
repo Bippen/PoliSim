@@ -3094,3 +3094,41 @@ three names reads the clock, not the code; on the other 76 it now reads nothing 
 names, event timing, publication noise) differ ONCE from every unseeded family before it (`v31bf_*` and
 back), and never again between themselves. Byte-comparisons of capture families are meaningful from
 `det_*` on.
+
+## 48. The Policy Web micro-pass — bigger now, understandable via board 2b (2026-08-28 late night)
+
+**The authority:** Elias, from the sitting — *the Policy Web should be bigger, more understandable, and
+use the page's dead space* — split per the R-E2 precedent: scale structural and same-day (R-W1),
+comprehension to Design as ask D7 (board 2b) against measured annexes (R-W3), the finding §V's third
+row first (phase 0, `c6cd7d3`).
+
+**R-W1 built (`3b85543`).** `DrawPolicyWebTab`: the diagram rect IS the scroll viewport — full width,
+the viewport's own height, drawn FIRST, floored at the old half-screen minimum, the 0.92·h ceiling gone;
+the explainer paragraph follows the web below the fold; same nodes, same edges, same clicked-node idiom.
+Two build calls, one line each: the in-sheet duplicate "Policy Web" title dropped (the frame's caption
+names the screen); the explainer relocated, not reworded. `PolicyWebCensus` rode along (Annex G's
+counting half; batch, rendering-free, from the same public API the screen draws).
+
+**The proofs.** `pweb_*` filmed at 1280/1600/1920/2560 — 79/0 each; occupancy before → after: 41.1/46.2/
+48.2/74.6 → **56.1/59.8/62.1/74.6 %** of window (43.6/48.9/51.0/78.7 → 59.6/63.3/65.6/78.7 % of sheet;
+plate 1120×328 → 1120×448 at 1280 — the fold-clip at rest is gone; 2560 unchanged, the old ceiling
+already filled it); rule-15 byte-diff vs `det_a`: 68/79 identical, the SEVEN policy-web frames the only
+code-caused differences, and `01_country_selector` joined the time-envelope class (the Italy card a few
+px lower mid-settle — pixel-diffed to bbox (465,392)–(814,615), both films viewed; an IMGUI-only change
+cannot move a Canvas card); trajectories `traj_pweb_*` ≡ `traj_v31bf_*` 6/6 by SHA-256; `ScreenEdgeCheck`
+316 captures 0 clipped; the eight checks green (run as eight `-executeMethod` invocations — `CheckSuite`
+has no batch entry, a wrong-entry-point detour recorded in the overnight report).
+
+**The census (Annex G.4).** 73 nodes = 55 policy + 18 stat (Fiscal 28 the giant wedge; Trade and
+Political 1 each); policy→stat 121 = 73 derived + 48 declared (USA 120 — `IsLiveFor`'s one predicate);
+stat→stat 7, all derived; one edge-less node by name (Tariffs (Tax Line)).
+
+**D7 installed (`e30c82b`) and the package regenerated.** The request doc's §2: board 2b at 1280 first,
+against Annex G (`7959477`) — the full-sheet composition (the ring's height-bound geometry is the
+board's question), a legend (flagged new UI content), weight/arrowheads from the model's own magnitudes,
+the clicked-node pane's composition with fixed contents; R-W2's constraints written into the ask. The
+status line flipped to ONE LIVE ASK; `SEND_PACKAGE_2026-08-28.md` regenerated (rows n of N, digest
+`85690abf…`, 65 004 bytes CRLF; the courtesy note unchanged). Sending stays Elias's, one paste.
+
+**RULINGS NEEDED: none.** The dead-space paradox's other screens (Demographics, Decisions, short
+Politics) stay Annex C candidates, exactly as filed.
