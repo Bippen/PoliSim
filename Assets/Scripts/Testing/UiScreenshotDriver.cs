@@ -258,6 +258,12 @@ namespace PoliSim.Testing
                     yield return Settle();
                     yield return Capture(stem);
 
+                    // R-SP5: the map's label separation, measured by the renderer on the capture frame.
+                    if (stem == "02b_statistics_international")
+                    {
+                        AssertMapLabelSeparation(controller, stem);
+                    }
+
                     // v3.0 (V3-R4): the other fold state's guards on every screen, at scroll zero - a
                     // scroll view lays out and repaints its whole content, so one sweep covers the
                     // text and containment guards for the screen. On film only for one screen per
@@ -2124,6 +2130,30 @@ namespace PoliSim.Testing
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// R-SP5 (2026-08-28): after the map's capture, the separation its renderer measured - every
+        /// label at least <see cref="MapRenderer.MinLabelSeparationPx"/> from every other label and
+        /// node, after §A.9a's ladder - is asserted. A miss is an error: the ladder could not clear the
+        /// floor at this size, which is the measurement the ruling wants reported, and the run's fold
+        /// turns red on it.
+        /// </summary>
+        private static void AssertMapLabelSeparation(GameController controller, string screen)
+        {
+            FieldInfo field = controller.GetType().GetField("_mapRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(field?.GetValue(controller) is MapRenderer map))
+            {
+                Debug.LogError("SHOT: _mapRenderer not found - the map-label separation assert VERIFIED NOTHING.");
+                return;
+            }
+
+            float gap = map.LastMinLabelSeparation;
+            Debug.Log($"SHOT: map labels on {screen} - {map.LastLabelRects.Count} label(s), smallest gap {gap:F1} px against the {MapRenderer.MinLabelSeparationPx} px floor, ladder rung {map.LastLabelRung}.");
+            if (gap < MapRenderer.MinLabelSeparationPx)
+            {
+                Debug.LogError($"SHOT: MAP LABELS {gap:F1} px apart on {screen} ({map.LastLabelViolation}) - the resort ladder could not clear the floor at this size.");
+            }
         }
 
         /// <summary>UI v3.0 Phase A, Phase 3: `-shotladder` films each candidate stage instrument at a

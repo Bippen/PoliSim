@@ -4782,7 +4782,10 @@ namespace PoliSim.UI
                         Rect r = cursor.Place(w, h, captionHeight);
                         GUIStyle style = LadderStyle(w, 480f);
                         _mapRenderer.Draw(r, _world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns, style, out _, out _);
-                        LadderCaption(r, $"{w}x{h} type {style.fontSize}", captionHeight);
+                        // R-SP5: the measurement on the film itself - the names' highest ladder rung and
+                        // the smallest gap the renderer measured at this rung (inf = one label or none).
+                        string separation = float.IsPositiveInfinity(_mapRenderer.LastMinLabelSeparation) ? "-" : Mathf.Round(_mapRenderer.LastMinLabelSeparation).ToString(CultureInfo.InvariantCulture);
+                        LadderCaption(r, $"{w}x{h} type {style.fontSize} rung {_mapRenderer.LastLabelRung} gap {separation}", captionHeight);
                     }
                     break;
                 case "compass":
