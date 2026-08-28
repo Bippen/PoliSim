@@ -58,14 +58,29 @@ sessions pulled most of the figures live; what it remains is the seed authority 
 
 | Country | Value | Confidence |
 |---|---|---|
-| USA | 65.3 | [VERIFIED] OECD |
-| France | 58.5 | [VERIFIED] OECD |
-| Germany | 41.0 | [VERIFIED] OECD — lowest among major economies, a genuine structural outlier |
-| Poland | **86.8** | ⚠ **[ESTIMATED]** — 95% band 78.4–95.2 |
-| Italy | **74.4** | ⚠ **[ESTIMATED]** — 95% band 66.8–82.1 |
-| Sweden | **62.1** | ⚠ **[ESTIMATED]** — 95% band 54.9–69.4 |
+| USA | 65.3 | [VERIFIED] OECD AHD HM1.3 — ACS 2023 (25.98 outright + 39.32 mortgage = 65.31) |
+| France | 58.6 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (34.63 + 23.94 = 58.56; the 58.5 that stood here was this figure rounded down) |
+| Germany | 41.0 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (24.25 + 16.71 = 40.96) — lowest among major economies, a genuine structural outlier |
+| Poland | 84.7 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (74.09 + 10.66 = 84.74); *was `[ESTIMATED]` 86.8, band 78.4–95.2 — inside the band* |
+| Italy | 75.2 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (65.17 + 10.03 = 75.20); *was `[ESTIMATED]` 74.4, band 66.8–82.1 — inside the band* |
+| Sweden | 58.2 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (17.79 + 40.40 = 58.19); *was `[ESTIMATED]` 62.1, band 54.9–69.4 — inside the band* |
 
-#### 📐 THE ESTIMATE — a four-point regression from the Eurostat population basis
+**✅ RE-SOURCED 2026-08-28 (R-C5 of the continuation kickoff) — all six from ONE file on ONE basis.** The
+Affordable Housing Database's HM1.3 workbook is reachable on the OECD's file host (the www host serves
+a bot-check page; the `webfs` host serves the file): `https://webfs.oecd.org/Els-com/Affordable_Housing_Database/HM1-3-Housing-tenures.xlsx`
+(OECD 2025 edition, 862,240 bytes, SHA-256 prefix `04aaa3407d55ee09`; the PDF beside it). Sheet
+`HM1.3.1` "Share of households in different tenure types, in percent, 2024 or latest year available";
+owner = *own outright* + *owner with mortgage*; the vintage note on the sheet: 2024 (EU-SILC 2024) except
+Korea, Switzerland and the United States 2023, Canada/Chile/Mexico/UK 2022, Australia 2021, Türkiye and
+Iceland 2020; Hungary withheld under revision. **The basis is confirmed to the digit against the anchors
+that already stood here:** Switzerland 38.20 (2023 column), Slovak Republic 93.45, OECD 70.07, Canada 68.67,
+Australia 62.66 — so the four bridge anchors' vintage, the debt this file flagged, is: this edition's
+2024 values (Switzerland 2023). The by-year annex (sheet `HM1.3.A1`) carries 2010–2024 per country:
+Sweden 58.27 / 58.28 / 58.19 (2022 / 2023 / 2024), Italy 73.10 / 73.95 / 75.20, Poland 84.14 / 84.72 / 84.74,
+France 60.47 / 60.17 / 58.56, Germany 40.74 / 41.25 / 40.96. A seed change on four countries (three
+estimates and France's rounding) — the sim-math bar ran on it (the continuation's Phase 4 record).
+
+#### 📐 THE ESTIMATE that stood here 2026-08-02 → 2026-08-28 — a four-point regression from the Eurostat population basis (superseded; kept as the method's record)
 
 **Rung 3 of the fallback ladder.** The OECD Affordable Housing Database is absent from SDMX; its HM1.3
 note is reachable and confirms the basis exactly (*"share of households in different tenure types, in
@@ -109,7 +124,9 @@ The evidence does not support it: the two low-ownership countries sit on **oppos
 ⚠ **The real residual risk is VINTAGE, not fit.** The four AHD anchors come from this file and **their year
 is not recorded**, while the Eurostat side is 2024. Homeownership moves slowly so the effect is small — but
 it is unquantified, and an unrecorded vintage is precisely what produced the 90.86 problem. **Whoever finds
-the AHD vintage should record it here.**
+the AHD vintage should record it here.** *(✅ Found 2026-08-28: the anchors are the HM1.3 workbook's 2024
+column — Switzerland its 2023 — see the re-sourcing note above; the estimate's residual against the real
+figures: Poland −2.1, Italy +0.8, Sweden −3.9 pp, all inside the 95% bands it quoted.)*
 
 ⚠ **The old indicative ranges (Italy ~72–73, Sweden ~63–65) were deliberately NOT used**, not even as a
 sanity check, per this file's own instruction that they sit on unknown bases. That the estimates land near
@@ -560,6 +577,35 @@ values.* The US sitting ~3 years below comparable countries is real and worth pr
 | France | 0.7 | [VERIFIED] OECD Taxing Wages 2025 — lowest among the major economies |
 | Sweden | **1.3** | ⚠ **[ESTIMATED]** — nominal 4.1% (Medlingsinstitutet, whole economy, full-year 2024) minus 2.84% KPI annual average. The nominal figure is sourced, the deflator is secondary, **the subtraction is derived** |
 | USA | **1.0** | [VERIFIED] BLS Real Earnings (released 2025-01-15) — real average hourly earnings, all employees, Dec 2023→Dec 2024, SA, CPI-U deflated |
+
+**✅ THE SAME-BASIS SET, RECORDED 2026-08-28 (R-C5 of the continuation kickoff) — derived from two OECD
+SDMX series, nothing seeded from it (R4-2 stands: the index opens at 100).** One basis for all six: the
+Taxing Wages single worker at 100% of the average wage, gross earnings before taxes (GEBT) and net income
+after taxes (NIAT), national currency (XDC), from `OECD.CTP.TPS,DSD_TAX_WAGES_COMP@DF_TW_COMP,2.1`
+(`…/USA+SWE+DEU+FRA+ITA+POL.GEBT+NIAT.XDC.S_C0.AW100._Z.A?startPeriod=2022`; seven key dimensions, all
+stated; every observation status A; retrieved 2026-08-28), deflated by the national CPI's annual-average
+growth from `OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0` (`…/USA+SWE+DEU+FRA+ITA+POL.A.N.CPI.PA._T.N.GY`;
+eight key dimensions, all stated; status A). real = (1 + nominal) / (1 + CPI) − 1.
+
+| Country | GEBT nominal 2024 | NIAT nominal 2024 | CPI 2024 | **real gross 2024** | **real net 2024** |
+|---|---|---|---|---|---|
+| USA | 4.38 | 4.28 | 2.95 | 1.39 | 1.29 |
+| Sweden | 4.53 | 5.70 | 2.84 | 1.65 | 2.78 |
+| Germany | 5.13 | 4.81 | 2.26 | 2.81 | 2.50 |
+| France | 3.93 | 3.48 | 2.00 | 1.89 | 1.45 |
+| Italy | 3.12 | 0.32 | 0.98 | 2.12 | −0.66 |
+| Poland | 12.16 | 11.43 | 3.65 | 8.21 | 7.51 |
+
+**Basis (the variant-axis rule):** earnings = Taxing Wages' modelled average worker (S_C0, AW100), NOT
+economy-wide earnings; net = after income tax and employee social contributions, cash transfers included;
+deflator = national CPI, annual average over annual average (Sweden's KPI is interest-inclusive — the
+factor-of-two note below applies); year 2024 over 2023 (the dataflow also carries 2025). **The set does NOT
+reproduce the press-cited Taxing Wages figures the table above carries for Italy, Germany and France
+(2.7 / 2.2 / 0.7)** — the report computes its real change with its own deflator vintage and, for Italy, the
+2024 net figure moves only 0.32% nominal (the 2024 cuneo-fiscale reshaping is in the modelled net), so the
+press figure's basis is not this one; the derived set is recorded as a coherent set and adopted for
+nothing. Tag: components `[VERIFIED]` (status A, SDMX, queries stated), the subtraction ours — the same
+class as Sweden's row below, now for all six on one basis.
 
 ### 🟡 THE THREE-BASES MIX: BLOCKER → CONVENTION, BY RULING (Elias, 2026-08-16, R4-2)
 

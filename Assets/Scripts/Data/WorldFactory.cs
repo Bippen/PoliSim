@@ -322,12 +322,18 @@ namespace PoliSim.Data
             // [VERIFIED] OECD; three are the doc's own four-point fitted regression from the
             // Eurostat population basis - honest estimates with STATED 95% bands, seeded at the
             // point estimate and never to be quoted as settled.
-            usa.BaselineHomeownership = 65.3f;     // [VERIFIED] OECD AHD - the ruled primary metric
-            france.BaselineHomeownership = 58.5f;  // [VERIFIED] OECD AHD
-            germany.BaselineHomeownership = 41.0f; // [VERIFIED] OECD AHD - the genuine structural outlier
-            poland.BaselineHomeownership = 86.8f;  // ⚠ [ESTIMATED] fitted bridge, 95% band 78.4-95.2
-            italy.BaselineHomeownership = 74.4f;   // ⚠ [ESTIMATED] fitted bridge, 95% band 66.8-82.1
-            sweden.BaselineHomeownership = 62.1f;  // ⚠ [ESTIMATED] fitted bridge, 95% band 54.9-69.4
+            // R-C5 (the continuation, 2026-08-28): all six from ONE file on ONE basis - the OECD
+            // Affordable Housing Database's own HM1.3 workbook (HM1-3-Housing-tenures.xlsx, OECD 2025
+            // edition, sheet HM1.3.1 "share of households in different tenure types, 2024 or latest"),
+            // owner outright + owner with mortgage, EU-SILC 2024 for the five, ACS 2023 for the USA;
+            // the three fitted-bridge estimates replaced by the same-basis figures (each landed inside
+            // its 95% band), France's 58.5 was the same file's 58.56 rounded down. Seed doc §1.
+            usa.BaselineHomeownership = 65.3f;     // [VERIFIED] OECD AHD HM1.3 (ACS 2023) - the ruled primary metric
+            france.BaselineHomeownership = 58.6f;  // [VERIFIED] OECD AHD HM1.3 (EU-SILC 2024)
+            germany.BaselineHomeownership = 41.0f; // [VERIFIED] OECD AHD HM1.3 (EU-SILC 2024) - the genuine structural outlier
+            poland.BaselineHomeownership = 84.7f;  // [VERIFIED] OECD AHD HM1.3 (EU-SILC 2024); was [ESTIMATED] 86.8, band 78.4-95.2
+            italy.BaselineHomeownership = 75.2f;   // [VERIFIED] OECD AHD HM1.3 (EU-SILC 2024); was [ESTIMATED] 74.4, band 66.8-82.1
+            sweden.BaselineHomeownership = 58.2f;  // [VERIFIED] OECD AHD HM1.3 (EU-SILC 2024); was [ESTIMATED] 62.1, band 54.9-69.4
 
             // ROUND 4 BATCH R4-5 (C5): labour productivity, GDP per hour worked. ALL SIX on ONE
             // IDENTICAL basis, stated per line as the build directive requires: OECD `DSD_PDB`,

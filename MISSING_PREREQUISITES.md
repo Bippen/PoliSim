@@ -17,7 +17,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 |---|---|---|
 | §S — the send package | ✅ **SENT 2026-08-27** (the request, hash-verified, to Design's project); the courtesy note (rewritten 1i–1l-aware 2026-08-28) alone still waits on **Elias — send** | the E2 convention: sending is Elias's — this send was on his instruction |
 | §A — the ruling queue Q6–Q10; F2 (~~the omnibus's A4–A6~~ ✅ **RULED 2026-08-28** by the continuation kickoff — R-C1 the one-line row, R-C2 the per-class raster budgets, R-C3 the anchored form confirmed; tombstone below) | **Elias — a decision** | each at its own named trigger; nothing from the omnibus report remains open |
-| §B — three seed quality debts | **Elias — database access** (an OECD/Eurostat re-sourcing session) | none blocks anything |
+| ~~§B — three seed quality debts~~ | ✅ **ATTEMPTED AND SETTLED 2026-08-28** (R-C5: the AHD workbook reached on the OECD file host — three homeownership figures re-sourced on the household basis and the anchors' vintage recorded; the real-wage set recorded on one basis, derived, nothing seeded) | tombstone below; the §F/§8 `[PROVISIONAL]` → `[VERIFIED]` upgrade is what a database session still owes |
 | §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
 | ~~§D1 — cabinet portraits, eight outstanding~~ | ✅ **DELIVERED AND IMPORTED 2026-08-27** (Progress5; `PortraitCoverageCheck` 25 of 25) | tombstone below; the look is §V's |
 | §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
@@ -86,17 +86,20 @@ kickoff (pre-issued rulings, each strikeable in the kickoff message; none struck
   (`CLAUDE.md` "Playtest 3, the rulings" §1, the dated confirmation line); the live-deviation revert note
   stays there as the recorded alternative, unexercised.
 
-# B. Database access — three quality debts survive (none blocks anything)
+# B. Database access — ✅ the three quality debts SETTLED 2026-08-28 (R-C5; tombstone)
 
 **Every figure that blocked a batch was sourced 2026-08-02** — the sourcing history is `COMPLETED.md`
-§23; the values, queries and status flags are `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. What remains is
-**QUALITY DEBT, not gaps**, waiting on a re-sourcing session with database access:
+§23; the values, queries and status flags are `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. The three quality
+debts that survived were attempted by the continuation kickoff's Phase 4 under the API cross-check gate
+(same-basis or the debt stands — no invention, no basis-mixing) and all three settled:
 
-| Debt | Where | What would settle it |
-|---|---|---|
-| **The real-wage row mixes THREE bases** | seed §5 | Re-source all six from OECD Taxing Wages 2025 (one basis, in SDMX). *Correct figures, incoherent set — the housing-overburden defect again.* The index itself opens at 100 for all six by ruling (R4-2), so nothing is seeded from the row |
-| **The AHD vintage behind C1's estimates is unrecorded** | seed §1 | Find the year of the four OECD anchors. **Unrecorded vintage is exactly what made 90.86 undecidable** — the canonical example |
-| **Three homeownership figures are `[ESTIMATED]`, not sourced** | seed §1 | Italy 74.4 / Sweden 62.1 / Poland 86.8 — rung 3 of the fallback ladder (a fitted bridge with 95% bands), replaced the moment same-basis OECD household figures exist. *Placeholders that play correctly, not facts.* (The USA Gini `[ESTIMATED]` is NOT this debt: the seed doc records it as unfixable by a better number — a scale-equivalence question, not a lookup) |
+| Debt | Outcome (2026-08-28) |
+|---|---|
+| **The real-wage row mixes THREE bases** (seed §5) | A same-basis set for all six recorded — Taxing Wages 2.1 (single worker, 100% AW, GEBT and NIAT) deflated by the national CPI, both in SDMX with every dimension stated; **derived, nothing seeded** (R4-2: the index opens at 100). It does not reproduce the press-cited figures for Italy/Germany/France, and says so |
+| **The AHD vintage behind C1's estimates is unrecorded** (seed §1) | Found: the anchors are the HM1.3 workbook's 2024 column (Switzerland 2023), confirmed to the digit; the workbook itself is reachable on `webfs.oecd.org` |
+| **Three homeownership figures are `[ESTIMATED]`** (seed §1) | Replaced by the same-basis OECD household figures from that workbook — Sweden 58.2, Italy 75.2, Poland 84.7 (each inside its 95% band); France 58.5 → 58.6 (the file's 58.56). **A seed change on four countries: the sim-math bar ran** — the continuation's Phase 4 record |
+
+What a database session still owes: the §F seed spread's `[PROVISIONAL]` → `[VERIFIED]` upgrade (seed §8).
 
 **Standing rule, three-for-three (kept live here — it governs any re-sourcing):** for any cross-country
 statistic, **assume an undocumented variant axis exists** and record the basis alongside every value —
