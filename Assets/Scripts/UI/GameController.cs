@@ -8562,7 +8562,7 @@ namespace PoliSim.UI
             // site it had missed. Width-less, the cost line wrapped after the "+" of "+$0/yr" at 2560
             // (UiFormat.MoneyDelta's sign read as a break opportunity by a label laying out against
             // an inferred width) while the other three sizes broke at spaces.
-            GUILayout.Label("Master Sequence step 5d: the base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting/resetting whether a partner override exists at all stays an immediate, structural action, unchanged.", _labelStyle, GUILayout.Width(contentWidth));
+            GUILayout.Label("Master Sequence step 5d: the base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting whether a partner override exists at all stays an immediate, structural action (it starts at today's effective rate, so it changes nothing by itself); Reset returns a partner's draft to its standing override - the override itself moves only through the bill.", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);
 
             BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
