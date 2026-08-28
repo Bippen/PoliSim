@@ -5260,7 +5260,7 @@ namespace PoliSim.UI
 
             return blocking.Count == 0
                 ? null
-                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}." + (includeSpeedHint ? " The speed controls are on the unfolded desk." : string.Empty);
+                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}." + (includeSpeedHint ? " The speed controls are on the Desk." : string.Empty);
         }
 
         /// <summary>
