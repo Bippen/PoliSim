@@ -2556,3 +2556,54 @@ eye at 1280 and 1600. Detail: `CLAUDE.md` "The omnibus pass, Phase 7".
 the sub-tab icons drop where a row cannot carry them (R-K6, by width); the four decompositions carry no
 mandatory line (R-K7, the recalibration's block); resvg v0.47.0 rather than the latest release (no Windows
 asset in v0.48.1); the raster budget left as set.
+
+## 37. The continuation kickoff — the queue drained, the one-line row, the diff budgets, the film gaps, the seed debts (2026-08-28)
+
+**Authority:** Elias's continuation kickoff of 2026-08-28 ("drain the queue, close the film gaps"), issued
+as the confirmation for R-C3 and R-C4 and pre-issuing R-C1, R-C2, R-C5 (the flagged assumption), R-C6,
+R-C7 and R-C8 — none struck. Anchor `dc6f491`; Working Discipline v2; five phases, five commits, staged by
+explicit path; nothing dropped (rule 10's order was 4, 3, 2). Detail: `CLAUDE.md` "The continuation
+kickoff (2026-08-28)".
+
+**Phase 0 — the queue drained (`2f77bd1`).** R-C1…R-C4 and R-C7 written into their owning documents;
+`MISSING_PREREQUISITES.md` §A's A4–A6 tombstoned as ruled, §F tombstoned as CONFIRMED with its sourcing body
+moved to `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §8 (basis notes, two standing notes), §P's R-C7 context line;
+the R-C3 confirmation under `CLAUDE.md` "Playtest 3, the rulings" §1; `WorldFactory.cs`'s slot tags
+(comments, compile-checked). `RULINGS NEEDED` emptied of everything not Elias-in-person.
+
+**Phase 1 — the one-line law row (R-C1, `a7d877d`).** Both families one-line at board 1i's proportion
+(32 px on a 14 px name = 2.29 name-fonts; ours 37 / 43 / 55 px at 1280 / 1600 / 2560 = 2.31 / 2.16 / 1.96):
+`LedgerRow.OneLineHeight` + the Budget rows' 10 px gap; the name at full weight through `MeasuredLabel`
+with priority on width (the fixed cells give ground toward their floors; the category token steps out only
+where the floors cannot carry the widest name at the guard floor — the R-K6 shape). Density on film: 3 → 5,
+5 → 8, 7 → 11 laws per viewport. Guards silent, `ScreenEdgeCheck` 0 clipped ×4. R-C8 rode it: the courtesy
+note's convergence paragraph (unsent), the rulings doc's dated line, §V's row.
+
+**Phase 2 — the raster budgets (R-C2, `283e4ba`).** The nine inspected by eye with mismatch masks and all
+90 pairs measured: every over-budget pixel was EDGE (antialiasing along a stroke silhouette; the share
+tracked perimeter). `StripCutDiffCheck` now asserts STRUCTURE ≤ 1.0 % of the canvas and EDGE ≤ 2.0 per
+silhouette-boundary pixel, each with its reason in the header (rule 6). Re-sweep 86 of 90 within budget,
+3 text-bearing, 1 unrasterizable, 1 FAILED — the hatch tile (§E5), as it should. The flat 2 % is gone; no
+new Design ask.
+
+**Phase 3 — the capture states (R-C6, `548a558`).** Seven UI-state-only captures in the driver's main
+sweep — the trace panel on Policy/Laws for its three sections, a Policy Web policy node and a stat node
+selected, the signing ceremony mid-entrance and settled — the no-policy trajectories byte-identical to `traj_post_omnibus` 6 of 6 (SHA-256 B14824EB / 4B936887 / C9E4F01F / B66B19A5 / 5AB4658A / 6D00383D at both seeds, all three horizons) — a capture state may pose the UI, never move the model; §V's two
+⚠ rows gone.
+
+**Phase 4 — the §B debts (R-C5, `e08c8c0`).** The AHD HM1.3 workbook reached on the OECD file host; the
+three homeownership estimates replaced by same-basis household figures (Sweden 58.2, Italy 75.2, Poland
+84.7, each inside its 95 % band) and France 58.5 → 58.6; the anchors' vintage recorded (the 2024 column,
+Switzerland 2023); the real-wage set recorded on one basis (Taxing Wages 2.1 + national CPI, derived,
+nothing seeded). The sim-math bar on the seed change: 41 of 42 fields byte-identical on all six diffs (`Homeownership` the one mover, by the seed delta), equivalence 117/117, round-trip 12/12, parity 7/7, the matrix 30/30 like-for-like with not one tuple different.. §B tombstoned.
+
+**Phase 5 — the gate and the records (the records commit following `e08c8c0`).** closing sets USA 73/73 and Sweden 71/71, guards silent, 0 clipped; seven of the eight checks green and `UpstreamCheck` flagging 52 unpushed commits (the push Elias's). §V regenerated as the final review
+checklist (every row on film, every row naming its capture).
+
+**Consumed rulings:** R-C1 (Phase 1), R-C2 (Phase 2), R-C3 and R-C4 (Phase 0, confirmations), R-C5 (Phase
+4), R-C6 (Phase 3), R-C7 (Phase 0), R-C8 (Phase 1). **Shelved:** nothing. **Deviations, stated:** the
+category token steps out of the one-line row by width where the floors cannot carry the widest name (the
+R-K6 shape); the derived real-wage set does not reproduce the press-cited Taxing Wages figures and is
+recorded, not adopted; the kickoff's "Poland's housing clamp at 90" was read as §F's caveats 5 and 6 as
+written. **RULINGS NEEDED:** none — only Elias-in-person items remain (the sends, §V's eyes, §P's play,
+13 September).

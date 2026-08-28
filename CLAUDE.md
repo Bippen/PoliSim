@@ -14125,3 +14125,95 @@ comment in `DrawLawDetailPane` warned about, three screens' worth of edits later
 
 **Consumed:** the closing gate as Discipline v2 rule 1 defines it; the 1920×1080 argument (roadmap item
 4's last bullet).
+
+## The continuation kickoff — the queue drained, the one-line row, the diff budgets, the film gaps, the seed debts (2026-08-28)
+
+Elias's continuation kickoff (2026-08-28, "drain the queue, close the film gaps") pre-issued the four pending
+rulings with the recommended answers as pre-rulings, each strikeable in the kickoff message (none struck),
+built the one unit those rulings unlocked, and converted the last verified-by-code caveats into captures.
+Anchor `dc6f491`; Working Discipline v2; five phases, each its own commit, staged by explicit path; the
+sim-math bar ran once, where a seed value changed (Phase 4). Nothing dropped (rule 10's order was 4, 3, 2;
+the budget held).
+
+**Phase 0 — the queue drained (`2f77bd1`).** R-C1…R-C4 and R-C7 written into their owning documents:
+`MISSING_PREREQUISITES.md` §A's A4–A6 tombstoned as ruled (the omnibus report's "~27px" corrected to the
+rulings doc's "~27 rows per screen" — the 1i board's rows sit on a 32 px pitch); §F tombstoned as CONFIRMED,
+its sourcing body moved to the seed doc's new §8 with the six caveats as basis notes under the variant-axis
+rule and two standing notes (the re-source trigger for a post-pandemic SOCX common year; the childcare-clamp
+compression, known and accepted because the constant is what the budget books); §P gained R-C7's context
+line; the R-C3 confirmation was written under "Playtest 3, the rulings" §1 above, where the anchor is
+documented; `WorldFactory.cs`'s slot tags read "mapping confirmed by Elias 2026-08-28 (R-C4)" — comments
+only, compile-checked. One judgment call logged: the kickoff's parenthetical "Poland's housing clamp at 90"
+was read as §F's caveats 5 and 6 as written (Poland's housing line is TP822; the retail clamp at 90 is
+France's and Italy's).
+
+**Phase 1 — the one-line row (R-C1, `a7d877d`).** Derived, not picked: board 1i (`board_1i_law_browser.png`,
+1920×1080) sets its statute rows on a 32 px pitch with a 14 px bold name — 2.29 name-fonts per row, ~26 rows
+in its 835 px scroller. On this UI's px basis the row is `LedgerRow.OneLineHeight` (one line of the name
+plus the ledger convention's 6-at-13 px padding) and the Budget rows' flat 10 px gap: 37 / 43 / 55 px pitch at
+1280 / 1600 / 2560 — 2.31 / 2.16 / 1.96 name-fonts per row, the board's class. The grid (`LawRowColumns`): a
+one-line name cannot wrap, so it takes the shrink path (`LedgerRow.Cell` → `MeasuredLabel`,
+shrink-never-truncate) at full weight, and the name has priority on width — the caller measures the widest
+visible name per row family once per frame (full rows in the name cell, compact AVAILABLE rows across name +
+magnitude) and the fixed cells give ground together toward their font floors, never below; if the floors
+still cannot carry the widest name at the 8 px guard floor, the category token steps out for the frame (the
+R-K6 shape, by width, stated). ⚠ The first capture measured ONE need over both families and dropped the
+token at 1280 for a row family that was not on screen — corrected before the bar (`cont_p1` → `cont_p1b`).
+The column header and the band captions follow the one-line height (the captions at 1.2× the row, as
+before); `MinMeasuredLabelFontSize` public for the grid's floor test; the detail pane untouched. **Measured
+on film** (the `_rows` captures, viewport ÷ pitch): 1280 — 3 → 5 laws (55 → 37 px); 1600 — 5 → 8 (66 → 43);
+2560 — 7 → 11 (68 → 55). The cost, stated: at 1600 the longest statute names ("Rehabilitation-Centered
+Corrections Model", "287(g) Immigration Enforcement Agreements") print at ~13–14 px against the row's 20;
+at 1280 the widest at ~10 px — legal (the guard silent), read beside the captures. Bar: `cont_p1b_*` 64/64 at
+all four sizes, both text guards silent, `ScreenEdgeCheck` 0 clipped ×4 — the class closed at the omnibus
+gate did not reopen. R-C8 rode the unit: the courtesy note's "one honest gap" paragraph became the
+convergence statement (still unsent, sending Elias's); the rulings doc's dated line; §V's row.
+
+**Phase 2 — the diff budgets (R-C2, `283e4ba`).** The nine Stats icons at 2.06–3.21 % were each rendered
+beside their resvg counterpart with a per-pixel mismatch mask: every mismatched pixel lies on a stroke
+silhouette where both renderers put ink and disagree on coverage — antialiasing at a 10.7× upscale of
+24-unit strokes; ink-vs-void disagreements are 0–76 pixels in eight of them and 378 (0.58 %) in
+`icon_stat_population`, at the three figures' overlapping shoulders. The prison bars read 3.21 % with not
+one pixel of shape difference: the flat share measured PERIMETER. All 90 comparable pairs measured the same
+way (`stripcut_family.csv`): EDGE (coverage disagreement) 0.14–1.55 mismatched pixels per boundary pixel of
+Design's silhouette; STRUCTURE (a pixel solidly inked in one render, void in the other) at most 0.58 % for a
+sound pair, 3.6–11 % for the three text stamps (fonts, exempt by name as before), 48.5 % for the hatch tile
+(§E5). The bars, each with its reason in the check's header (rule 6): STRUCTURE ≤ 1.0 % of the canvas (above
+the sound family with margin, a third of the smallest defect ever measured, a ninth of one missing 24-unit
+stroke piece); EDGE ≤ 2.0 per boundary pixel (29 % above the family's maximum; a one-pixel stroke offset or
+weight change reads three or more). A file passes only when both hold; the flat 2 % is gone. Re-sweep: 86 of
+90 within budget (the nine included), 3 text-bearing, 1 unrasterizable (the slider strip's aspect), 1 FAILED
+— the hatch tile at 48.5 % structure, already §E5's ask; the check's per-file figures reproduce the offline
+measurement to the digit. No pair turned out to be a Design-side defect beyond it.
+
+**Phase 3 — the capture states (R-C6, `548a558`).** Seven captures added to the driver's MAIN sweep so every
+omni set carries them, each a UI-state pose that moves no model: `06h/06i/06j_policylaws_trace_*` (approval,
+confidence, the fiscal chain) through `StatTracePanel.RequestSelection` with assert-own-name before the
+shutter — the 93-series idiom, which lived behind `-shotstates` and so was in no omni set;
+`06k/06l_policylaws_policyweb_node_*` by setting the two private selection fields the way a click sets them
+(`IncomeTax` pinned, then `Approval`); `89d_signing_entrance` two frames after the canvas goes live (§A.13
+row 4's document rising, row 6's SIGN button still invisible) and `89e_signing_settled` once the seam reports
+the entrance settled, staged the way the rejected-form capture stages a ceremony — one `DivisionRecord`
+appended through `DivisionLog.Append`, then `TriggerSigningForNewestDivision` — and run last in the pass so
+the appended record is not on the Parliament tab's list in the tab captures. Bar: `cont_p3_*` 73/73 at all four sizes, both text guards silent, the three canvas asserts clean, `ScreenEdgeCheck` 0 clipped ×4 (the seven surfaces read by eye at 1600, the pinned node's readout on the `_rows` twins); the
+no-policy trajectories byte-identical to `traj_post_omnibus` 6 of 6 (SHA-256 B14824EB / 4B936887 / C9E4F01F / B66B19A5 / 5AB4658A / 6D00383D at both seeds, all three horizons) — a capture state may pose the UI, never move the model.
+
+**Phase 4 — the §B debts (R-C5, `e08c8c0`).** The OECD Affordable Housing Database's HM1.3 workbook is
+reachable on the OECD file host (`webfs.oecd.org/Els-com/Affordable_Housing_Database/HM1-3-Housing-tenures.xlsx`,
+OECD 2025 edition; the www host serves a bot-check page — that is what "do not parse" had meant). Sheet
+HM1.3.1, share of households by tenure, 2024 or latest: owner = own outright + owner with mortgage. The basis
+is the seed's own to the digit — Germany 40.96, Switzerland 38.20 (2023), Slovak Republic 93.45, OECD 70.07,
+USA 65.31 (ACS 2023) reproduce the anchors that stood in the file — so the three fitted-bridge estimates were
+replaced by same-basis figures, each inside its 95 % band (Sweden 62.1 → 58.2, Italy 74.4 → 75.2, Poland 86.8
+→ 84.7), and France's 58.5 was the same file's 58.56 rounded down (→ 58.6). The vintage debt closed: the
+anchors are this edition's 2024 column (EU-SILC 2024); the by-year annex is quoted in seed §1. The real-wage
+row: a same-basis set for all six, derived from Taxing Wages 2.1 (single worker at 100 % AW, gross before
+taxes and net after taxes, national currency; seven key dimensions, all stated) deflated by the national
+CPI's annual-average growth (eight dimensions, all stated): real net 2024 USA 1.29, SWE 2.78, DEU 2.50,
+FRA 1.45, ITA −0.66, POL 7.51 (real gross 1.39 / 1.65 / 2.81 / 1.89 / 2.12 / 8.21) — recorded, nothing seeded
+(R4-2), and it does not reproduce the press-cited 2.7 / 2.2 / 0.7 for Italy / Germany / France, which the
+record says. **A seed change on four countries, so the sim-math bar:** the trajectory dump (`traj_cont_p4_*`, 36 public `EconomyState` fields per country per turn) against `traj_post_omnibus_*` — **41 of 42 fields byte-identical across the whole trajectory at both seeds and all three horizons**, the one mover `Homeownership` itself (max relative 6.28 % at turn 1, Sweden — the 3.9-point seed delta, constant to the end: the anchored form moves what a country IS and nothing downstream reads the stat); `AggregationEquivalenceCheck` 117 of 117 within 3 %; `SaveLoadRoundTripDiagnostic` 12 of 12 clean; `PreviewParityDiagnostic` 7 of 7 for all six; the 30-cell matrix at seed 777 (100 and 500 turns) like-for-like against `matrix_post_omnibus_s777_20260828_020738` — 30 of 30 anomaly counts identical, the same four kinds (`InterestRate` / `Inflation` / `Unemployment` / `DebtToGdpRatio` swung), not one (turn, country, stat) tuple different; ATTRIB 0 in every log.
+
+**Phase 5 — the gate and the records (the records commit following `e08c8c0`).** the closing sets `cont_final_1600` (USA, 73/73) and `cont_final_swe_1600` (Sweden, 71/71 — no fed-chair HELD pair on a country without an independent chair), both text guards silent, the three canvas asserts clean, `ScreenEdgeCheck` 0 clipped on both; Sweden's Homeownership row on film at 58.2 % (`cont_final_swe_1600_02a_statistics_domestic_deep`); the eight armed checks — delivered assets 0 missing, importer settings 148 sprites with 0 errors, stat icons 19 of 19, portraits 25 of 25, area icons and emblems 14 of 14, chrome 50 of 50 in both directions, the party-mark check verifying nothing by design (no party system on this branch), and `UpstreamCheck` exit 1: 52 commits ahead of `origin/main`, above its 10-commit threshold — the work exists on one disk, and the push is Elias's. `MISSING_PREREQUISITES.md` §V regenerated as
+the final review checklist — every row on film, every row naming its capture, the two Editor-only ⚠ rows
+gone; `RULINGS NEEDED` reduced to Elias-in-person items (the sends, §V, §P, 13 September).

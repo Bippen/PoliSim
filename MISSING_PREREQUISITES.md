@@ -25,7 +25,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 | §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch**, behind §D1 | two `StatNodeId` members first |
 | §E5 — two strip-cut findings (the hatch tile's tiling, the slider track's strip) | **Claude Design — re-cut or explain** (Elias to say which side is the truth) | filed as `CLAUDE_DESIGN_ASSET_REQUEST.md` §E5 (2026-08-28), goes with the next send |
 | ~~§F — the session-sourced seed spread (OECD PMR 2023-24, SOCX 2021)~~ | ✅ **CONFIRMED 2026-08-28** (R-C4: the mapping and the six caveats; basis notes and two standing notes in `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §8) | tombstone below; `[PROVISIONAL]` until the §B database session upgrades to `[VERIFIED]` |
-| §V — built, not seen (the omnibus review package, every surface with its capture named) | **Elias — a visual review** | rule 3's third layer |
+| §V — built, not seen (the review package of the omnibus and its continuation — every surface on film, its capture named, no row verified by code alone) | **Elias — a visual review** | rule 3's third layer |
 | §P — three felt verdicts | **Elias — a playtest** | no measurement can answer them |
 
 ---
@@ -299,19 +299,24 @@ welfare state.
 
 # V. Waiting on Elias — a visual review (built, not seen; rule 3's third layer)
 
-**The review package of the omnibus pass (2026-08-28).** Everything visual the pass shipped, each with
-its capture named — the closing matrix `omni_final_<size>_<screen>.png` at 1280×720, 1600×900, 1920×1080
-and 2560×1440 (USA) plus the per-country sets named per row, all under
-`G:\UNITY\Projects\PoliSim-captures\`. "Pinned on film" is containment evidence, not a sighting; each item
-closes to `COMPLETED.md` with the session named. The three findings of playtest 3 are closed by their
-rulings; their surfaces are re-listed here as built.
+**The review package of the omnibus pass and its continuation (2026-08-28) — the final review checklist.**
+Everything visual the two passes shipped, each row ON FILM with its capture named — the omnibus closing
+matrix `omni_final_<size>_<screen>.png` at 1280×720, 1600×900, 1920×1080 and 2560×1440 (USA); the
+continuation's sets `cont_p1b_<size>_…` (the law browser) and `cont_p3b_<size>_…` (the seven film-gap
+states, every size); the closing sanity sets `cont_final_1600_…` (USA) and `cont_final_swe_1600_…`
+(Sweden); plus the per-country sets named per row — all under `G:\UNITY\Projects\PoliSim-captures\`. No row
+is verified by code alone (R-C6 retired the two ⚠ rows). "Pinned on film" is containment evidence, not a
+sighting; each item closes to `COMPLETED.md` with the session named. The three findings of playtest 3 are
+closed by their rulings; their surfaces are re-listed here as built.
 
 | surface | built | the capture | what to look for |
 |---|---|---|---|
-| **The Compass — the Y axis** (Politics › Compass) | `915c800` | `omni_final_*_07b_politics_compass` | six countries on both axes (raw Y 37.5 Poland … 57.3 France); the sourced spread is PROVISIONAL (§F) |
+| **The Compass — the Y axis** (Politics › Compass) | `915c800` | `omni_final_*_07b_politics_compass` | six countries on both axes (raw Y 37.5 Poland … 57.3 France); the sourced spread, confirmed 2026-08-28 (seed §8, `[PROVISIONAL]` until the database session) |
 | **The Economic Sectors tab at the sourced positions** (Policy/Laws › Economic Sectors) | `915c800` | `omni_final_*_06c_policylaws_sectors` (+`_rows`, `_deep`) | Regulation opens at the country's PMR level (USA 59; Energy 38, Telecoms 56, Retail 76), not 50 |
 | **The Welfare tab at the sourced portfolio** (Budget › Welfare) | `915c800` | `omni_final_*_05c_budget_welfare`; Sweden `omni_p4_swe1600_05c_budget_welfare` | the USA opens with means-tested / housing / childcare implemented and no universal healthcare; Sweden with four |
-| **The Policy Web's causal graph** (Policy/Laws › Policy Web) | `a267fd6` | `omni_final_*_06d_policylaws_policyweb` | ⚠ the derived / declared idiom and the stat chords draw on a CLICKED node — no capture state pins one; the rest is verified by code |
+| **The Policy Web's causal graph** (Policy/Laws › Policy Web) | `a267fd6` | `omni_final_*_06d_policylaws_policyweb` | the ring with its always-shown category headers; edge colours from the stat's own perspective |
+| **The Policy Web with a node pinned — the derived / declared idiom, the stat chords** (R-C6) | `548a558` | `cont_p3b_*_06k_policylaws_policyweb_node_policy` (+`_rows`), `cont_p3b_*_06l_policylaws_policyweb_node_stat` (+`_rows`) | Income Tax pinned: its chords on the ring, then (scrolled) the readout below — each edge tagged DERIVED (a ledger term) or DECLARED; Approval pinned: the stat chords ("moved by … — ledger: …") |
+| **The trace panel on Policy/Laws, three sections** (R-C6) | `548a558` | `cont_p3b_*_06h_policylaws_trace_approval`, `_06i_policylaws_trace_confidence`, `_06j_policylaws_trace_debt` | under the stat row of the Labor Market host: the approval ledger's rows (reversion toward 50, growth vs potential, the misery gaps with their sub-rows); the confidence book; the fiscal chain (primary balance, the reaction, interest at issuance, the maturity lag, erosion, the stock change) |
 | **The four budget decompositions** (Budget › Spending, per country) | `6307dce` / `ad7b240` / `d33e1ae` / `e04f238` | `omni_p6_de1600_05b_budget_spending_rows`, `omni_p6_it1600_…`, `omni_p6_pl1600_…`, `omni_p6_fr1600_…` (+`_deep`) | the real areas at the game's G level; the largest line the remainder; the % of GDP column carries the method's distortion (Germany's Defense 5.1%) |
 | **The RUNNING status plate and the disabled speed face** (§A.6, B5) | `f92e14f` → `adcb52e` | `omni_final_*_01b_running_strip`, `_90_interrupt_held` | the plate under the label, the lamp, the muted 1×/2×/3× faces while held |
 | **The screen captions and the sub-tab icons** (§A.8, R-K6) | `c188b28`, `da6a684` | every `omni_final_*_0[2-7]*` | the caption right-aligned above the rule; icons on Statistics and Budget rows, none on the Policy/Laws row at 1600 (by width) |
@@ -319,8 +324,9 @@ rulings; their surfaces are re-listed here as built.
 | **The row family on the Fed tab, International, the Trade bill card** | `f145ba2` | `omni_final_*_07d_politics_federalreserve*`, `_02b_statistics_international*`, `_06e_policylaws_trade*` | rows, not sentence labels; the Trade card's three cost rows |
 | **Board 1k — the calendar as one almanac sheet** | `3fa3eb2` | `omni_final_*_0[2-7]` (the left panel) | the diagonal strike, the ledger dot, the 4-dot underline, one sheet |
 | **Board 1l — the graph weights** | `2b698b0` | `omni_final_*_02a_statistics_domestic_deep` | history 3px over the projection's 2px dashes |
-| **§A.13's two envelope rows** (the Signing screen's document entrance and the button fade) | `14740e2` | ⚠ no capture state opens the ceremony — verified by compile and the seam's flag | the 260ms rise, the 460ms button delay |
-| **The law browser at fifty — the one-line row** (R-C1) | `476c66c` → the continuation's Phase 1 | `cont_p1b_*_06f_policylaws_laws*` (+`_rows`, `_deep`) | one-line rows at board 1i's proportion (37 / 43 / 55 px pitch at 1280 / 1600 / 2560): 3 → 5, 5 → 8, 7 → 11 laws per viewport against the two-line row; the longest statute names shrink, never truncate; the detail pane's content sized to its viewport (`a331e82`) |
+| **The signing ceremony's entrance — §A.13 rows 4 and 6** (R-C6) | `14740e2` → `548a558` | `cont_p3b_*_89d_signing_entrance`, `cont_p3b_*_89e_signing_settled` | the document caught mid-rise with the SIGN button still invisible (row 4; row 6's first half), then settled with the button faded in (row 6's second half); the harness's own staged division on the paper, named as such |
+| **The law browser at fifty — the one-line row** (R-C1) | `476c66c` → `a7d877d` | `cont_p1b_*_06f_policylaws_laws*` (+`_rows`, `_deep`) | one-line rows at board 1i's proportion (37 / 43 / 55 px pitch at 1280 / 1600 / 2560): 3 → 5, 5 → 8, 7 → 11 laws per viewport against the two-line row; the longest statute names shrink, never truncate; the detail pane's content sized to its viewport (`a331e82`) |
+| **The re-sourced homeownership on the housing row** (R-C5) | `e08c8c0` | `cont_final_swe_1600_02a_statistics_domestic_deep` (Sweden); `cont_final_1600_02a_statistics_domestic_deep` (the USA, unchanged at 65.3) | Sweden's Homeownership row reads 58.2 where the estimate read 62.1; Italy 75.2, Poland 84.7, France 58.6 in their own runs — a figure, not a layout |
 | **The eight new cabinet portraits at 5.5×** (the roster beside the sixteen squares) | `4e5adbf` | `omni_final_*_07c_politics_cabinet*` | still Elias's eyes (carried from playtest 3) |
 
 **Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's

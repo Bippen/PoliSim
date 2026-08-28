@@ -60,7 +60,7 @@ rule existed to catch first-build defects).
 
 ---
 
-## Where things stand — re-derived 2026-08-28 (the omnibus pass, HEAD `a331e82` + the records commit)
+## Where things stand — re-derived 2026-08-28 (the omnibus pass and its continuation, HEAD `e08c8c0` + the records commit)
 
 **This document holds only live work.** Everything finished is in `COMPLETED.md`; everything waiting on a
 named party is in `MISSING_PREREQUISITES.md`; the split is the standing pattern at the bottom of this
@@ -74,7 +74,7 @@ built-but-uncalled are neither finished nor live — they wait on Elias's eyes a
 | `MISSING_PREREQUISITES.md` | Work waiting on a named party — Elias's send, decision, eyes or playtest; Design's delivery; item 10 |
 | `CLAUDE.md` | The detailed technical record for both. **Never superseded** |
 
-**The board, stated once (verified at HEAD `a331e82`, 2026-08-28, the records commit following; re-derive it, do not edit it
+**The board, stated once (verified at HEAD `e08c8c0`, 2026-08-28 — the continuation's last unit, its records commit following; re-derive it, do not edit it
 forward):**
 
 - **DONE** — Master Sequence I (items 1–9) and Master Sequence II Steps 1, 2, 3 and 5; Round 4; the
@@ -83,17 +83,22 @@ forward):**
   of the 2026-08-27 board: the causal graph on the Policy Web (item 1), the two remaining scenarios
   measured and dropped (item 2, the §22 precedent), all four budget decompositions (item 3), the chrome
   and UI residues (item 4), the delivered art placed or held knowingly (item 5), the rasterization diff
-  (item 7), boards 1k and 1l (items 8–9), the seed spread sourced (§F, provisional). Records:
-  `COMPLETED.md` §§27–31, 34, 36.
-- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the courtesy note alone waits on Elias's
-  send; **§A** the ruling queue Q6–Q10 plus the omnibus's `RULINGS NEEDED` (the ledger row type; the
-  raster budget; the anchored form's confirmation); **§B** three seed quality debts (a database session);
+  (item 7), boards 1k and 1l (items 8–9), the seed spread sourced (§F; confirmed 2026-08-28). Records:
+  `COMPLETED.md` §§27–31, 34, 36. **The continuation of 2026-08-28** — the ruling queue drained (R-C1…R-C4,
+  R-C7), the one-line law row (R-C1), the raster check's two damage-class budgets (R-C2), the seven film-gap
+  captures (R-C6), the three seed quality debts settled (R-C5). Records: `COMPLETED.md` §37.
+- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the courtesy note (rewritten 1i–1l-aware,
+  R-C8's convergence paragraph in) waits on Elias's send; **§A** the coupling queue Q6–Q10 at their
+  triggers — nothing else (the omnibus's three `RULINGS NEEDED` were ruled by the continuation kickoff);
   **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
-  Step 6, Riksbank-B, the stranded branch, the party marks, **and now the political-model fact Phase 3
-  measured (no expansionary bill passes on any drift path before the re-seeding)**; **§E** Design: the two
-  raster findings (the hatch tile's rotation, the slider track's strip) and §E2/§E4; **§F** the
-  session-sourced seed spread, waiting on Elias's CONFIRMATION (six caveats); **§V** the built-but-unseen
-  surfaces of this pass, each with its capture named; **§P** the three felt verdicts (a playtest).
+  Step 6, Riksbank-B, the stranded branch, the party marks, and the political-model fact (no expansionary
+  bill passes on any drift path before the re-seeding); **§E** Design: §E5's two strip-cut findings (the
+  hatch tile's tiling, the slider strip), filed in the request doc for the next send, and §E2/§E4; **§V**
+  the review package of the omnibus and its continuation — every surface on film, its capture named, no
+  row verified by code alone; **§P** the three felt verdicts (a playtest), read in the no-expansionary-passage
+  context (R-C7). §B (the seed quality debts) and §F (the seed spread's confirmation) are tombstones —
+  settled and confirmed 2026-08-28; what a database session still owes is seed §8's `[PROVISIONAL]` →
+  `[VERIFIED]` upgrade.
 - **LIVE** — the list below.
 
 ---
@@ -112,13 +117,18 @@ MAGNITUDE row, the action button and the name/status row sized to the pane). Aft
 clean at all four, the two text guards silent, the rule-15 diff against `pt3usa*` read by eye. The class stays open
 as a watch item under rule 3's discipline — this instance is the thirteenth's lesson again (a width
 budget computed against the wrong container) and the gate is what found it; nothing is startable until a
-capture shows another. Instance history: `COMPLETED.md` §§17/32/36.
+capture shows another. Instance history: `COMPLETED.md` §§17/32/36. The continuation (2026-08-28,
+`a7d877d`) rebuilt the law rows ONE-LINE under R-C1 — a new row type, captured on its own round at all
+four sizes (`cont_p1b_*`), the two text guards silent, `ScreenEdgeCheck` 0 clipped — and the class did
+not reopen; the one width-dependent behaviour it added is stated in the code (the category token steps
+out only where the fixed cells' floors cannot carry the widest visible name at the guard floor).
 
 ### 2. Nothing else is startable today
 
-Every other line of the 2026-08-27 board shipped in the omnibus pass or moved to a named party's queue in
-`MISSING_PREREQUISITES.md`. The next live work is whatever Elias's rulings (§A), confirmation (§F), eyes
-(§V) or the 13 September gate (§D) release.
+Every other line of the 2026-08-27 board shipped in the omnibus pass or its continuation, or moved to a
+named party's queue in `MISSING_PREREQUISITES.md`. Nothing waits on a ruling. The next live work is
+whatever Elias's eyes (§V), play (§P), the coupling queue's triggers (§A) or the 13 September gate (§D)
+release.
 
 ## Queued at named triggers — not startable, and no named party owes anything
 
@@ -226,7 +236,8 @@ capital stock), so if one ever ships, two fire together.
 **No open question at HEAD (2026-08-28).** Every entry this section held was ruled, closed or migrated:
 decisions live in `COMPLETED.md` §§11/23/32/36; questions waiting on a named party live in
 `MISSING_PREREQUISITES.md` §A — the omnibus pass's three `RULINGS NEEDED` (A4 the ledger row's one-line
-type, A5 the raster check's budget, A6 the anchored form with real seeds in) are there, not here. A new
+type, A5 the raster check's budget, A6 the anchored form with real seeds in) were ruled by the continuation
+kickoff of 2026-08-28 (R-C1…R-C3) and are tombstoned there; the queue holds Q6–Q10 at their triggers. A new
 question is written here only until it is ruled, and a ruling given in chat and not recorded did not
 happen.
 
@@ -236,9 +247,10 @@ happen.
 
 - Read **The board** above, then the live list — both re-derived, never edited forward. If the board
   disagrees with `git log`, the log is right and the board is stale.
-- `MISSING_PREREQUISITES.md` **§V and §P** hold what needs your eyes and your play; **§A** the three
-  rulings the omnibus report asks for; **§F** the session-sourced seed spread waiting on your
-  confirmation; **§E5** the two strip-cut findings for Design; **§S** the send package.
+- `MISSING_PREREQUISITES.md` **§V and §P** hold what needs your eyes and your play — §V is the final
+  review checklist, every row on film with its capture named; **§E5** the two strip-cut findings, filed
+  in the request doc for the next send; **§S** the courtesy note. Nothing waits on a ruling: the
+  continuation kickoff of 2026-08-28 consumed the four (§A holds only the coupling queue at its triggers).
 - Review the commit log — each unit of work is its own commit, validation results in the message or
   CLAUDE.md.
 
