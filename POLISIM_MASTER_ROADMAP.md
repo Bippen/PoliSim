@@ -151,7 +151,14 @@ capital stock), so if one ever ships, two fire together.
   which is why pass 4 fixed the RULE instead. Trigger: the first mechanic that needs the level output
   gap to mean something (a capital stock, an investment-deepening return, or a displayed "output gap"
   stat).
-- **The un-voted "Reset to Default" click — a NAMED GAP (Elias, 2026-08-27), not a note.** It is the
+- ~~**The un-voted "Reset to Default" click — a NAMED GAP (Elias, 2026-08-27), not a note.**~~ ✅ **CLEARED
+  2026-08-28 (R-D2 of the clear-out kickoff; the trigger below became a dated deadline, 13 September,
+  sixteen days out):** the click edits the DRAFT, never the live state — "Reset draft" returns the
+  partner's dial to the standing override and the override's rate moves only through the Trade bill, a
+  cut voted like a rise; Set Override unchanged (inert at the effective rate). The alternative — the
+  click filing a reset bill — is one routing change away if a playtest ever wants it. Bar: trajectories
+  byte-identical, the draft-moved / draft-reset pair on film (`clear_p1_<size>_06m/06n_policylaws_trade_*`).
+  Record: `COMPLETED.md` §38. The entry as it stood, for the record: It is the
   same shape as the free lever pass 6 priced: resetting a partner override is an immediate, structural
   on/off on the Trade tab (`GameController.DrawTradePartnerRow`, the `TaxLine.IsImplemented` idiom), so a
   player who has taken the take can cut back to the standing rate for free, un-voted, and the partner's

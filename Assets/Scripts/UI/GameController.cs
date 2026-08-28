@@ -8589,7 +8589,7 @@ namespace PoliSim.UI
                 interactive: !baseRateInert);
             GUILayout.Space(10f);
 
-            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. The partner mirrors any excess over its standing rate back onto our exports to them from the next boundary, and the change in the tariff take passes through to prices for a year.", _labelStyle, GUILayout.Width(contentWidth));
+            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. The partner mirrors any excess over its standing rate back onto our exports to them from the next boundary, and the change in the tariff take passes through to prices for a year. Reset returns a partner's DRAFT to its standing rate; the override itself moves only through a Trade bill - a cut is voted like a rise.", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);
 
             // Bars are sized relative to the largest volume across every partner (both directions
@@ -8659,17 +8659,29 @@ namespace PoliSim.UI
 
             // Control 1 of 2 - the toggle. One button whose label and style switch, rather than two
             // buttons in exclusive branches, so the control COUNT never depends on state.
-            if (GUILayout.Button(hasOverride ? "Reset to Default" : "Set Override",
+            //
+            // R-D2 (the clear-out kickoff, 2026-08-28): the second face of this button used to CLEAR
+            // the live override on the spot - an un-voted, instant cut back to the standing rate that
+            // ended the partner's mirrored tariff at the next boundary, the named gap pass 6 priced
+            // everything else around (roadmap, "the un-voted Reset-to-Default click"). Reset is an
+            // EDITING gesture now: it returns this partner's draft dial to the standing override and
+            // touches nothing live - the override's rate moves only through the Trade bill, a cut
+            // voted like a rise, 21 days and a division record like any other. Enabling is unchanged:
+            // the flag comes on at today's EFFECTIVE rate, so turning it on never itself changes the
+            // tariff (economically inert until a bill moves the rate). The alternative - the click
+            // filing a reset bill - is one routing change away if a playtest ever wants it.
+            if (GUILayout.Button(hasOverride ? "Reset draft" : "Set Override",
                     hasOverride ? _removeButtonStyle : _implementButtonStyle, GUILayout.Width(buttonWidth)))
             {
-                // Both directions are immediate (a structural on/off, like TaxLine.IsImplemented), not a
-                // this-turn delta - the preview cache is invalidated right away rather than waiting for
-                // the usual slider-changed check. Enabling starts the override at today's EFFECTIVE rate
-                // rather than 0, so turning it on never itself changes the tariff.
-                link.PlayerTariffOverride = hasOverride
-                    ? -1f
-                    : Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
-                RecomputePolicyPreview();
+                if (hasOverride)
+                {
+                    ResetPartnerTariffDraft(link.PartnerId);
+                }
+                else
+                {
+                    link.PlayerTariffOverride = Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
+                    RecomputePolicyPreview();
+                }
             }
             GUILayout.EndHorizontal();
 
@@ -8685,6 +8697,16 @@ namespace PoliSim.UI
             {
                 _partnerTariffInputs[link.PartnerId] = newRate;
             }
+        }
+
+        /// <summary>R-D2: the Reset click's whole effect - the partner's draft dial returns to the standing
+        /// override (the draft entry is dropped, so GetPartnerTariffInput falls back to the live value) and
+        /// the preview cache is invalidated. Nothing live is written. One method, because the capture
+        /// driver exercises the same path by reflection (the driver's private-member idiom).</summary>
+        private void ResetPartnerTariffDraft(CountryId partnerId)
+        {
+            _partnerTariffInputs.Remove(partnerId);
+            RecomputePolicyPreview();
         }
 
         /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceTradeBill/GetPendingTradeBill).</summary>

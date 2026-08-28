@@ -436,6 +436,16 @@ namespace PoliSim.Testing
                 yield return Settle();
             }
 
+            // (d) R-D2 (the clear-out kickoff, 2026-08-28): the Reset click edits the DRAFT, never the live
+            // state - shown as a pair on the Trade tab. The first partner's override flag is turned on
+            // at today's effective rate (what the Set Override button does; economically inert - the same
+            // tariff, no retaliation excess, so no model movement even if days later advance), the draft
+            // dial is moved +10 points through the same dictionary the slider writes, and the row is
+            // captured; then the controller's own ResetPartnerTariffDraft runs by reflection (the
+            // button's path minus the click) and the row is captured again: the draft back at the
+            // standing rate beside an override still active. Both writes are undone afterwards.
+            yield return CaptureTradeDraftReset(controller);
+
             // (c) the ceremony's entrance, staged without a day advanced
             FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
             Country player = (simField?.GetValue(controller) as SimulationManager)?.World?.GetCountry(_countryId);
@@ -471,6 +481,59 @@ namespace PoliSim.Testing
 
             InvokeNoArg(controller, "SignPendingDivision");
             yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
+        }
+
+        /// <summary>R-D2's pair - see CaptureFilmGaps (d). Skips with a logged error, never a wrong
+        /// capture, if the player has no trade partner or the reflection misses.</summary>
+        private IEnumerator CaptureTradeDraftReset(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo worldField = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo inputsField = controller.GetType().GetField("_partnerTariffInputs", BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo reset = controller.GetType().GetMethod("ResetPartnerTariffDraft", BindingFlags.Instance | BindingFlags.NonPublic);
+            var sim = simField?.GetValue(controller) as SimulationManager;
+            var world = worldField?.GetValue(controller) as World;
+            var inputs = inputsField?.GetValue(controller) as Dictionary<CountryId, float>;
+            Country player = sim?.World?.GetCountry(_countryId);
+            if (sim == null || world == null || inputs == null || reset == null || player == null || player.TradePartners.Count == 0)
+            {
+                Debug.LogError("SHOT: trade draft-reset staging failed (reflection or no trade partner) - the 06m/06n captures are MISSING, not clean.");
+                yield break;
+            }
+
+            TradePartner link = player.TradePartners[0];
+            Country partner = world.GetCountry(link.PartnerId);
+            float effective = TradeSystem.GetTariffRate(player, partner, world.TradeBlocs);
+            float previousOverride = link.PlayerTariffOverride;
+            link.PlayerTariffOverride = Mathf.Clamp(effective, 0f, 50f);
+            inputs[link.PartnerId] = Mathf.Clamp(link.PlayerTariffOverride + 10f, 0f, 50f);
+
+            SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+            SetEnumField(controller, "_policyLawsCategory", "Trade");
+            ResetScrolls(controller);
+            // 700px, not the sweep's 900: the first partner's header row stays in frame above its
+            // controls at 1600 (the 900px stop put the name just above the fold).
+            ScrollBy(controller, 700f);
+            yield return Settle();
+            yield return Capture("06m_policylaws_trade_draft_moved");
+
+            reset.Invoke(controller, new object[] { link.PartnerId });
+            yield return Settle();
+            // Assert-own-name: the draft is back at the standing override (the dial row rewrites its
+            // dictionary entry every frame with the slider's current value, so "key absent" is not the
+            // test - "value equals the live override" is) and the live override itself has not moved.
+            bool draftAtStanding = !inputs.TryGetValue(link.PartnerId, out float draftNow) || Mathf.Abs(draftNow - link.PlayerTariffOverride) < 0.001f;
+            if (!draftAtStanding || !link.HasPlayerTariffOverride || Mathf.Abs(link.PlayerTariffOverride - Mathf.Clamp(effective, 0f, 50f)) > 0.001f)
+            {
+                Debug.LogError("SHOT: 06n_policylaws_trade_draft_reset - the draft did not reset or the live override moved; this capture would be misnamed.");
+            }
+            yield return Capture("06n_policylaws_trade_draft_reset");
+
+            link.PlayerTariffOverride = previousOverride;
+            inputs.Remove(link.PartnerId);
+            SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
+            ResetScrolls(controller);
             yield return Settle();
         }
 

@@ -2482,7 +2482,9 @@ than building a new mechanic alongside the existing `BaseTariffRate`/`TariffRate
   requested override rate (sent via `PartnerTariffOverrides` on Advance Turn, same deferred-commit
   timing as the tax-rate sliders), plus a "Reset to Default" button that IMMEDIATELY clears the
   override back to `-1f` and forces a preview recompute - the same immediate-action pattern
-  Implement/Remove already established, not a new one invented for this feature.
+  Implement/Remove already established, not a new one invented for this feature. *(✅ amended
+  2026-08-28, R-D2 of the clear-out kickoff: the button's second face is "Reset draft" and edits the
+  draft only — `ResetPartnerTariffDraft`; the live override moves only through the Trade bill.)*
 - **A real correctness fix, found not asked-for**: `SimulationManager.ClonePreviewCountry` previously
   shared the real `Country.TradePartners` list reference with the preview clone (documented at the
   time as safe, since nothing mutated it - "TradeSystem only ever reads it, never mutates it"). That
@@ -13158,8 +13160,10 @@ axis for a revenue instrument — not an approximation pending item 10 — and t
 other revenue instrument already gets; when trade gains its own axis the literal reverts; until then
 the alternative is leaving the lever free, which is what this pass exists to close.)* Not closed,
 recorded: the un-voted "Reset to Default" click is a free instant cut that ends retaliation next
-boundary; the harness `PolicyDecision` path bypasses the vote (its privilege for every lever). No
-approval charge on a passed hike — a fourth force and a new approval writer.
+boundary *(✅ closed 2026-08-28, R-D2 of the clear-out kickoff — the click edits the draft, never the
+live state; the cut rides the bill like the rise)*; the harness `PolicyDecision` path bypasses the
+vote (its privilege for every lever). No approval charge on a passed hike — a fourth force and a new
+approval writer.
 
 **The build (`4650a76`; plumbing `4352665`).** `TradeCosts.cs` (three constants, the harness-only
 measurement scale); `TradeSystem` (the split, `GetRetaliatoryTariffRate`); `FiscalPeriod.PlannedTariffPassThroughPp`
