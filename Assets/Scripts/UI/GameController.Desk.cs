@@ -786,33 +786,9 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawDeskChipStrip(Rect r)
         {
-            EconomyState state = _playerCountry.State;
-            StatHistory history = _playerCountry.History;
-            var chips = new List<(string label, string value, string delta, bool deltaIsGood, IReadOnlyList<float> series)>
-            {
-                ("GDP", UiFormat.Money(state.GDP, MoneyUnit.Billions), _lastGrowthPercent.ToString("+0.00;-0.00;0", CultureInfo.InvariantCulture) + "%", _lastGrowthPercent >= 0f, history?.Gdp.Quarterly),
-                ("Unemployment", UiFormat.Number(state.Unemployment, 2) + "%", null, false, history?.Unemployment.Quarterly),
-                ("Inflation", UiFormat.Number(state.Inflation, 2) + "%", null, false, history?.Inflation.Quarterly),
-                ("Approval Rating", UiFormat.Number(state.ApprovalRating, 1), null, false, history?.ApprovalRating.Quarterly)
-            };
-
-            if (PlayerHasIndependentCurrency())
-            {
-                chips.Add(("Currency Strength", UiFormat.Number(state.CurrencyStrength, 1), null, false, null));
-            }
-
-            chips.Add(("Poverty Rate", UiFormat.Number(state.PovertyRate, 1) + "%", null, false, history?.PovertyRate.Quarterly));
-            chips.Add(("Government Debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, false, null));
-            chips.Add(("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1) + "%", null, false, history?.DebtToGdpRatio.Quarterly));
-
-            SovereignRatingState rating = _playerCountry.Rating;
-            bool hasOutlookSignal = rating.HasBeenReviewed && rating.Outlook != RatingOutlook.Stable;
-            chips.Add(("Credit Rating",
-                rating.HasBeenReviewed ? CreditRatingSystem.Format(rating.Rating) : "-",
-                hasOutlookSignal ? (rating.Outlook == RatingOutlook.Positive ? "OUTLOOK +" : "OUTLOOK -") : null,
-                rating.Outlook == RatingOutlook.Positive,
-                null));
-            chips.Add(("Budget Balance", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, false, null));
+            // ONE list with the Statistics plates (BuildHeadlineReadings, board 2a) - the strip and
+            // the sheet one cell away can never disagree about the tenth reading.
+            List<HeadlineReading> chips = BuildHeadlineReadings();
 
             // 1m-r2: the strip is part of the sheet - no plates, a hairline divider between
             // neighbours, padding 6; caption 7.5 in the muted ink, numeral 17 bold, sparkline 46×10 -
@@ -831,7 +807,7 @@ namespace PoliSim.UI
 
             for (int i = 0; i < chips.Count; i++)
             {
-                var chip = chips[i];
+                HeadlineReading chip = chips[i];
                 var plate = new Rect(r.x + i * width, r.y, width, r.height);
                 if (i > 0 && Event.current.type == EventType.Repaint)
                 {
@@ -839,16 +815,16 @@ namespace PoliSim.UI
                 }
 
                 var inner = new Rect(plate.x + padX, plate.y + padY, plate.width - padX * 2f, plate.height - padY * 2f);
-                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y, inner.width, captionHeight), chip.label.ToUpperInvariant(), caption);
+                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y, inner.width, captionHeight), chip.Label.ToUpperInvariant(), caption);
 
-                bool hasSeries = chip.series != null && chip.series.Count >= 2;
+                bool hasSeries = chip.Series != null && chip.Series.Count >= 2;
                 float sparkX = inner.xMax - sparkWidth;
                 if (Event.current.type == EventType.Repaint)
                 {
                     var spark = new Rect(sparkX, inner.yMax - sparkHeight, sparkWidth, sparkHeight);
                     if (hasSeries)
                     {
-                        GraphRenderer.DrawSparkline(spark, chip.series, PoliSimTheme.TextSecondary);
+                        GraphRenderer.DrawSparkline(spark, chip.Series, PoliSimTheme.TextSecondary);
                     }
                     else
                     {
@@ -861,14 +837,14 @@ namespace PoliSim.UI
                 // The delta's rect is the DELTA style's own measured height (bold 7 → 9 px at 1600 stands
                 // taller than the 6.5 → 8 px caption whose height it borrowed on the first matrix: "0%"
                 // needs 11.2 tall in 10.0).
-                GUIStyle delta = string.IsNullOrEmpty(chip.delta) ? null : DeskCaption(7f, UiPalette.GetDeltaColor(chip.deltaIsGood ? 1f : -1f, higherIsBetter: true), bold: true);
+                GUIStyle delta = string.IsNullOrEmpty(chip.Delta) ? null : DeskCaption(7f, UiPalette.GetDeltaColor(chip.DeltaIsGood ? 1f : -1f, higherIsBetter: true), bold: true);
                 float deltaHeight = delta == null ? 0f : DeskCaptionHeight(delta);
                 var numeralRect = new Rect(inner.x, inner.y + captionHeight, Mathf.Max(1f, numeralRight - inner.x), Mathf.Max(1f, inner.yMax - deltaHeight - inner.y - captionHeight));
-                PoliSimWidgets.MeasuredLabel(numeralRect, chip.value, numeral);
+                PoliSimWidgets.MeasuredLabel(numeralRect, chip.Value, numeral);
 
                 if (delta != null)
                 {
-                    PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.yMax - deltaHeight, Mathf.Max(1f, numeralRight - inner.x), deltaHeight), chip.delta, delta);
+                    PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.yMax - deltaHeight, Mathf.Max(1f, numeralRight - inner.x), deltaHeight), chip.Delta, delta);
                 }
             }
         }

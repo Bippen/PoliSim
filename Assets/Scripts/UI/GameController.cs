@@ -3250,138 +3250,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Master Sequence step 5e, Phase B pilot: the dashboard's headline stats restyled onto
-        /// <see cref="PoliSimWidgets.StatTile"/> in a 3-column grid, replacing the old raw
-        /// GUILayout.Label two-column list - this was Phase B's actual sprite-pilot target (see
-        /// COMPLETED.md §10). Ten tiles now (nine without an independent currency): Step
-        /// C4's Credit Rating joined the grid 2026-08-02, beside Debt-to-GDP.
-        ///
-        /// ⚠ CALENDAR PANEL (see CLAUDE.md): this method's own call from the always-visible left
-        /// column was retired when the Calendar Panel replaced that slot - see DrawCalendarPanel's
-        /// doc comment for the full reasoning. The ONLY remaining caller is Statistics -> Domestic
-        /// (DrawDomesticStatisticsContent), so every tile is still one tab click away and several now
-        /// sit beside a history graph the old dashboard never had.
-        ///
-        /// **Only two tiles can show a delta pill, and for different reasons.** GDP has a real
-        /// turn-over-turn delta (_lastGrowthPercent, tracked via _prevGdp). Credit Rating shows its
-        /// OUTLOOK, which is not a delta at all but a forward signal, and only when that signal is
-        /// Positive or Negative. Every other tile gets no pill rather than a fabricated one, since no
-        /// comparable prior-turn value is tracked for them.
-        /// DrawHeadlineGraphs (the procedural line graphs) is untouched by this pass - rule 10's own
-        /// carve-out keeps every data visualization procedural; only the icon/portrait/background
-        /// layer moves to sprite art.
-        /// </summary>
-        private void DrawHeadlineStatTiles(EconomyState state, bool hasIndependentCurrency)
-        {
-            // Screen-derived, not a fixed 1.0. Hardcoding 1.0 meant the tile's own type sizes stayed
-            // constant (FontStatHero is 42px) while the tiles themselves narrowed with the window - so
-            // below roughly 1080p the headline figures no longer fit, which is what let a wrapped value
-            // render as a fragment (see PoliSimWidgets.StatTile). Every other control in this class
-            // already derives its size from Screen.height; this one was the exception.
-            float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.5f);
-            const int columns = 3;
-            float tileHeight = 0f;   // set from PoliSimWidgets.StatTileHeight once the tiles are known
-            float gap = 6f * scale;   // D4 (2026-08-28): the tile grid gap 8s → 6s
-
-            var tiles = new List<(string label, string value, string suffix, string delta, bool deltaIsGood, UiPalette.SystemArea area)>
-            {
-                // The GDP tile is where this bug has now appeared three times - "9,3", then "29k". The
-                // suffix column stays null because the amount now carries its own ("$29.0T"), and a
-                // tile suffix would render "$29.0T B".
-                //
-                // States MoneyUnit.Billions directly rather than reading the stat metadata, because this
-                // reads the FIELD rather than a StatNodeId: billions is a fact about EconomyState.GDP,
-                // and GetStatUnit(...).Value would throw inside OnGUI if that entry were ever cleared -
-                // the sparkline crash is what an exception in a draw call costs. Generic code that
-                // formats an arbitrary stat still asks the metadata, which is what it is for.
-                ("GDP", UiFormat.Money(state.GDP, MoneyUnit.Billions), null, _lastGrowthPercent.ToString("+0.00;-0.00;0", CultureInfo.InvariantCulture) + "%", _lastGrowthPercent >= 0f, UiPalette.SystemArea.Global),
-                ("Unemployment", UiFormat.Number(state.Unemployment, 2), "%", null, false, UiPalette.SystemArea.Labor),
-                ("Inflation", UiFormat.Number(state.Inflation, 2), "%", null, false, UiPalette.SystemArea.Fiscal),
-                ("Approval Rating", UiFormat.Number(state.ApprovalRating, 1), null, null, false, UiPalette.SystemArea.Political),
-            };
-
-            if (hasIndependentCurrency)
-            {
-                tiles.Add(("Currency Strength", UiFormat.Number(state.CurrencyStrength, 1), null, null, false, UiPalette.SystemArea.Trade));
-            }
-
-            tiles.Add(("Poverty Rate", UiFormat.Number(state.PovertyRate, 1), "%", null, false, UiPalette.SystemArea.Welfare));
-            tiles.Add(("Government Debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, null, false, UiPalette.SystemArea.Fiscal));
-            tiles.Add(("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1), "%", null, false, UiPalette.SystemArea.Fiscal));
-
-            // Step C4, placed 2026-08-02 (PROVISIONAL - see roadmap; revisable after visual review).
-            // Directly after Debt-to-GDP on purpose: a sovereign rating is a judgment ABOUT the fiscal
-            // position, not an independent variable, so it belongs beside the number it is mostly a
-            // judgment about.
-            //
-            // Reads the STANDING rating rather than recomputing per frame. Per Elias's A1 ruling
-            // (2026-08-02) the rating is set by scheduled annual review and is unchanged between
-            // reviews - that is the design, not a staleness bug, and recomputing here would reintroduce
-            // exactly the per-turn thrash the review cadence exists to remove.
-            SovereignRatingState rating = _playerCountry.Rating;
-            // Only a Positive or Negative outlook gets a pill. StatTile's pill is binary - good or bad -
-            // and "Stable" is genuinely neither, so colouring it either way would assert something the
-            // model does not claim. An absent pill is already this grid's norm (seven of the other tiles
-            // show none), so absence reads as "nothing to telegraph", which is precisely what Stable
-            // means. The outlook exists to warn of a MOVE; no move, no warning.
-            bool hasOutlookSignal = rating.HasBeenReviewed && rating.Outlook != RatingOutlook.Stable;
-            tiles.Add((
-                "Credit Rating",
-                // Em dash until the first review runs. An unrated sovereign is not a top-rated one, and
-                // defaulting to AAA would be the confident-wrong-number failure this project keeps
-                // finding. In practice the first review runs on day one, so this is a guard rather than
-                // a state the player normally sees.
-                rating.HasBeenReviewed ? CreditRatingSystem.Format(rating.Rating) : "-",
-                null,
-                hasOutlookSignal ? (rating.Outlook == RatingOutlook.Positive ? "OUTLOOK +" : "OUTLOOK -") : null,
-                rating.Outlook == RatingOutlook.Positive,
-                UiPalette.SystemArea.Fiscal));
-
-            // Signed on purpose: a budget balance's direction is the whole reading, and "+$120B" against
-            // "-$120B" should not depend on the player noticing a minus sign in a headline-size figure.
-            tiles.Add(("Budget Balance", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, null, false, UiPalette.SystemArea.Fiscal));
-
-            // ⚠ ASKED, NOT ASSUMED. `92 * scale` was a measurement of a tile WITHOUT a delta, applied to
-            // a grid where most tiles have one - so the delta drew past the tile's bottom edge onto the
-            // next row's keyline. The grid is uniform, so the question is whether ANY tile carries a
-            // delta; sizing every tile for the tallest is what keeps the rows aligned.
-            bool anyDelta = false;
-            for (int i = 0; i < tiles.Count; i++)
-            {
-                if (!string.IsNullOrEmpty(tiles[i].delta))
-                {
-                    anyDelta = true;
-                    break;
-                }
-            }
-
-            tileHeight = PoliSimWidgets.StatTileHeight(scale, anyDelta, hasBar: false);
-
-            int rows = Mathf.CeilToInt(tiles.Count / (float)columns);
-            float totalHeight = rows * tileHeight + (rows - 1) * gap;
-            Rect gridRect = GUILayoutUtility.GetRect(0f, totalHeight, GUILayout.ExpandWidth(true));
-            float columnWidth = (gridRect.width - gap * (columns - 1)) / columns;
-
-            for (int i = 0; i < tiles.Count; i++)
-            {
-                int row = i / columns;
-                int col = i % columns;
-                var tileRect = new Rect(gridRect.x + col * (columnWidth + gap), gridRect.y + row * (tileHeight + gap), columnWidth, tileHeight);
-                var tile = tiles[i];
-                PoliSimWidgets.StatTile(tileRect, tile.label, tile.value, tile.suffix, tile.delta, tile.deltaIsGood, null, tile.area, scale);
-            }
-        }
-
-        /// <summary>
-        /// Phase 2 of the UI revamp's dashboard graphs - proves the GraphRenderer pattern on the
-        /// three headline stats before rolling it out further. Each graph reads its country's own
-        /// StatHistory (Phase 1) and, once a policy preview has been computed at least once this
-        /// session, extends one point further using that PreviewTurn estimate - not a separate
-        /// hand-rolled forecast, the same "reuse the real preview math" idiom the existing text
-        /// preview already established.
-        /// </summary>
-
-        /// <summary>
         /// Generates 2-3 Fed chair candidates the first time the upcoming turn is detected as an
         /// election turn (see ElectionSystem.IsElectionTurn), and remembers which turn they were
         /// generated for so picking a candidate doesn't immediately regenerate a fresh set on the
@@ -6839,193 +6707,30 @@ namespace PoliSim.UI
 
             float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight();
             float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
+            // Board 2a (2026-08-28): the grids lay their columns out from the content width on the
+            // Layout event (GameController.Statistics.cs), so it is derived here, not measured a frame late.
+            float contentWidth = StatsContentWidth(availableWidth);
             _statisticsContentScrollPosition = GUILayout.BeginScrollView(_statisticsContentScrollPosition, GUILayout.Height(scrollHeight));
             switch (_statisticsCategory)
             {
                 case StatisticsCategory.Domestic:
-                    DrawDomesticStatisticsContent();
+                    DrawDomesticStatisticsContent(contentWidth);
                     break;
                 case StatisticsCategory.International:
-                    DrawInternationalStatisticsContent(contentHeight);
+                    DrawInternationalStatisticsContent();
                     break;
             }
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
 
-        /// <summary>
-        /// Domestic statistics: this country's own numbers AND their graphs, together. Restructured
-        /// 2026-08-01 - the left column now carries headline numbers only, so a stat and its history are
-        /// no longer split across two parts of the screen where they could not be read against each
-        /// other.
-        /// </summary>
-        private void DrawDomesticStatisticsContent()
-        {
-            EconomyState state = _playerCountry.State;
-            bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
-
-            DrawColoredLabel("Domestic", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            DrawHeadlineStatTiles(state, hasIndependentCurrency);
-            GUILayout.Space(10f);
-            DrawDerivedStatsRow();
-            GUILayout.Space(10f);
-
-            // Next-turn projections carried over from the old left-column graphs rather than dropped in
-            // the move - the dashed segment is a real feature, and losing it silently would have been a
-            // regression disguised as a relocation.
-            float? projectedGdp = null;
-            float? projectedUnemployment = null;
-            float? projectedApproval = null;
-            if (_hasCachedPreview)
-            {
-                projectedGdp = state.GDP * (1f + _cachedGdpGrowthPercentRaw / 100f);
-                projectedUnemployment = state.Unemployment + _cachedUnemploymentChangeRaw;
-                projectedApproval = state.ApprovalRating + _cachedApprovalChangeRaw;
-            }
-
-            StatHistory history = _playerCountry.History;
-            // The unit comes from the stat's own metadata rather than a MoneyUnit literal here. A literal
-            // would be a second place that knows GDP is in billions, which is how the P2 unit bug spread
-            // across 21 sites in the first place.
-            _gdpGraph.Draw("GDP (dashed = next-year estimate)", history.Gdp.Quarterly, projectedGdp, _labelStyle, higherIsBetter: true,
-                moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
-            _unemploymentGraph.Draw("Unemployment (dashed = next-year estimate)", history.Unemployment.Quarterly, projectedUnemployment, _labelStyle, higherIsBetter: false, moneyUnit: null,
-                thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU");
-            _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
-            _approvalGraph.Draw("Approval Rating (dashed = next-year estimate)", history.ApprovalRating.Quarterly, projectedApproval, _labelStyle, higherIsBetter: true, moneyUnit: null);
-            _povertyGraph.Draw("Poverty Rate", history.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
-            _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
-                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable");
-
-            // ROUND 4 BATCH 1 (C3): the two new social stats, as read-only ledger rows via the
-            // Derived-panel pattern rather than headline tiles or StatNodeId entries - a stat can
-            // land on screen icon-free this way with zero asset work, which is the pilot batch's
-            // display answer (icon/StatNodeId promotion is an arc-level batching decision, deferred).
-            //
-            // These are STORED simulation stats, not derived arithmetic, so they get their own small
-            // block rather than a seat inside "Derived" - putting them there would misstate what the
-            // panel's own doc comment promises ("every figure here is DERIVED, never stored").
-            GUILayout.Space(12f);
-            GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Society", _headerStyle);
-            DrawDerivedStatRow("Youth unemployment", state.YouthUnemployment / 100f,
-                UiFormat.Number(state.YouthUnemployment, 1) + "%",
-                "of youth labor force", UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
-            // ⚠ LIFE EXPECTANCY HAS NO DENOMINATOR - years at birth are not a share of anything, so
-            // the fill is negative and no gauge is drawn, per §A.9b (the GDP-per-capita precedent).
-            DrawDerivedStatRow("Life expectancy", -1f,
-                UiFormat.Number(state.LifeExpectancy, 1), "years at birth",
-                UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
-            // ROUND 4 BATCH 2 (C2). Gini lives on a genuine 0-100 scale (the source's own label),
-            // so it earns a gauge; the trailing text names the scale rather than a fake unit.
-            DrawDerivedStatRow("Income inequality (Gini)", state.Gini / 100f,
-                UiFormat.Number(state.Gini, 1), "0-100 scale", UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
-            // ⚠ A BASE-100 INDEX IS UNBOUNDED BY CONSTRUCTION - §A.9b's negative-fill treatment,
-            // decided deliberately per the batch directive, not defaulted: any fill denominator
-            // would be an invented ceiling. The trailing text carries the one honest comparison
-            // (its own starting level); cross-country level comparison is NOT claimed, by ruling.
-            DrawDerivedStatRow("Real wages", -1f,
-                UiFormat.Number(state.RealWageIndex, 1), "index, 100 = start of term",
-                UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
-            // ROUND 4 BATCH R4-5 (C5): productivity, beside its wage sibling. §A.9b negative-fill
-            // DECIDED DELIBERATELY: unlike the two index siblings the level is REAL (USD PPP per
-            // hour, one basis), but it is still unbounded, and any fill denominator would be an
-            // invented ceiling. The trailing text carries the OECD's own usage rule - this ledger
-            // shows only the player's country, so cross-country comparison is structurally absent,
-            // and the text keeps it honest anyway.
-            DrawDerivedStatRow("Productivity", -1f,
-                UiFormat.Number(state.Productivity, 1), "$ per hour (PPP), against your own past",
-                UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
-            // ROUND 4 BATCH 3 (C1): the housing three, with THE ASYMMETRY DECIDED DELIBERATELY -
-            // the primary metric leads per the ruling: overburden first for the EU five,
-            // homeownership first for the USA, whose overburden row is ABSENT (not zero, not
-            // greyed - absent). Drawing "0.0%" would fabricate a figure no source publishes;
-            // the missing row IS the recorded USA-on-homeownership ruling made visible.
-            Color housingInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
-            if (_playerCountry.TracksHousingOverburden)
-            {
-                DrawDerivedStatRow("Housing overburden", state.HousingOverburden / 100f,
-                    UiFormat.Number(state.HousingOverburden, 1) + "%",
-                    "spend >40% of income on housing", housingInk);
-            }
-            DrawDerivedStatRow("Homeownership", state.Homeownership / 100f,
-                UiFormat.Number(state.Homeownership, 1) + "%",
-                _playerCountry.TracksHousingOverburden ? "of households" : "of households (primary metric)",
-                housingInk);
-            // House prices: the R4-2 unbounded-index treatment verbatim (§A.9b negative-fill).
-            DrawDerivedStatRow("House prices", -1f,
-                UiFormat.Number(state.HousePriceIndex, 1), "index, 100 = start of term",
-                housingInk);
-            GUILayout.EndVertical();
-
-            GUILayout.Space(12f);
-            DrawColoredLabel("As published", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            // v3.0 Phase A census (2026-08-28): "Compare against the live figures above." was an instruction
-            // restating this section's placement under the live graphs - pure (c), cut. The first sentence
-            // stays as a (b): it restates what the badge chip and the dashed frame carry, and waits for the
-            // v3 board to return as an instrument or not at all.
-            GUILayout.Label("What the public sees: lagged, and revised as later estimates arrive.", _labelStyle);
-            GUILayout.Space(4f);
-
-            _gdpPublishedGraph.DrawPublished("GDP as published",
-                _playerCountry.Published.Series.TryGetValue(PublishedStat.Gdp, out PublishedSeries gdpPublished) ? gdpPublished : null,
-                _labelStyle, higherIsBetter: true, _simulationManager.CurrentDate, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
-
-            _unemploymentPublishedGraph.DrawPublished("Unemployment as published",
-                _playerCountry.Published.Series.TryGetValue(PublishedStat.Unemployment, out PublishedSeries unemploymentPublished) ? unemploymentPublished : null,
-                _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate, moneyUnit: null);
-
-            // Inflation joins the two graphs because it SHARES THEIR CADENCE - monthly, 143 releases over
-            // twelve years - so "compare against the live figures above" earns its place here.
-            _inflationPublishedGraph.DrawPublished("Inflation as published",
-                _playerCountry.Published.Series.TryGetValue(PublishedStat.Inflation, out PublishedSeries inflationPublished) ? inflationPublished : null,
-                _labelStyle, higherIsBetter: false, _simulationManager.CurrentDate, moneyUnit: null);
-
-            // ⚠ AND POVERTY RATE DOES NOT, because it publishes ANNUALLY - eleven releases in twelve
-            // years, per PublicationCadenceCheck. Eleven points beside a daily live series reads as a
-            // broken graph rather than as a comparison. An annual published figure is a bulletin - this
-            // number, for this period, released on this date - so it renders as one. Placed here rather
-            // than beside its live twin on Welfare so every published figure stays discoverable in one
-            // place, which matters more for a bulletin than adjacency does.
-            GUILayout.Space(8f);
-            PublishedFigure.Draw("Poverty rate as published",
-                _playerCountry.Published.Series.TryGetValue(PublishedStat.PovertyRate, out PublishedSeries povertyPublished) ? povertyPublished : null,
-                _labelStyle, moneyUnit: null);
-
-            // The [DEBUG] publication-lag dump lived here from `dd7e323` until 2026-08-02. It printed the
-            // live GDP figure beside every published entry's reference period, publication date, value and
-            // revision status, so the graph above could be cross-checked against the data behind it.
-            //
-            // REMOVED because it did its job: review item 8 (revision treatment) passed, which is the
-            // confirmation that the graph and the data agree - the exact question the dump existed to
-            // answer. It was explicitly never to ship, and keeping a diagnostic past the confirmation it
-            // was waiting for is how a temporary thing becomes permanent.
-            //
-            // If provenance ever needs re-checking, `PublicationSystem`'s own tests reach the same data
-            // without a UI surface, which is the better place for it.
-        }
-
-        /// <summary>
-        /// International statistics: the world map plus everything cross-country, now including Trade -
-        /// which absorbed the old peer sub-tab because trade IS international relations, and was only
-        /// ever a sibling for historical reasons. The turn log lives here too, since its content is
-        /// world-wide rather than domestic.
-        /// </summary>
-        private void DrawInternationalStatisticsContent(float availableHeight)
-        {
-            DrawColoredLabel("International", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            DrawWorldMapContent();
-
-            GUILayout.Space(10f);
-            DrawTradeStatsContent();
-
-            GUILayout.Space(10f);
-            DrawColoredLabel("Recent activity", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            for (int i = _turnLog.Count - 1; i >= 0 && i > _turnLog.Count - 12; i--)
-            {
-                GUILayout.Label(_turnLog[i], _labelStyle);
-            }
-        }
+        // Statistics › Domestic and › International moved to GameController.Statistics.cs on 2026-08-28
+        // (UI v3.1 Phase B, board 2a - "Statistics drawn"): the ten headline plates, the fiscal
+        // position on one axis, the sector distribution bar, the six live graphs in a 3-column grid,
+        // the Society rows with their gauges and row-end sparklines, and the published band with its
+        // key and bulletin. The [DEBUG] publication-lag dump that once lived under the published
+        // graphs (`dd7e323` to 2026-08-02) stays removed: review item 8 confirmed the graph and the
+        // data agree, and `PublicationSystem`'s own tests reach the same data without a UI surface.
 
         /// <summary>
         /// Master Sequence step 5e, Phase A: Decisions tab - every currently pending interrupt shown
@@ -8737,101 +8442,14 @@ namespace PoliSim.UI
         /// the live headline tiles and above the "As published" section, so mixing a lagged figure in
         /// here would misrepresent which of the two a player is looking at.
         /// </summary>
-        private void DrawDerivedStatsRow()
-        {
-            FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-
-            GUILayout.BeginVertical(_boxStyle);
-            // Playtest 3 cut (2026-08-27): the "Derived" box header was a (b) - the rows name
-            // themselves - and is cut; the box opens on its first row.
-
-            // ⚠ v2.0 CONVERSION, 2026-08-11 — five concatenated label lines become read-only ledger rows.
-            // Every figure here was previously built INTO its own label string ("Tax burden: 38.2% of
-            // GDP"), which is the pre-v2.0 pattern and the one §A.9 exists to replace: name, gauge,
-            // figure, unit, each in its own column, so a column can be read down instead of a sentence
-            // read across.
-            //
-            // These are `DrawReadOnly` rather than disabled sliders for the same reason Infrastructure is
-            // - a derived statistic is an OUTPUT, there is nothing to drag under any circumstances, and a
-            // disabled slider would assert a lever this screen has never had (behaviour 5).
-            Color fiscalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
-
-            // ⚠ GDP PER CAPITA HAS NO DENOMINATOR, so it passes a negative fill and draws no gauge -
-            // see LedgerRow.DrawReadOnly. It is currency per person, not a share of anything.
-            float? perCapita = DerivedStats.GdpPerCapita(_playerCountry);
-            DrawDerivedStatRow("GDP per capita", -1f,
-                perCapita.HasValue ? UiFormat.Money(perCapita.Value, MoneyUnit.Thousands) : "n/a",
-                perCapita.HasValue ? null : "no population",
-                UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-
-            // "advance a year" rather than a zero: no turn has produced a FiscalTurnReport yet, and a
-            // 0.0% tax burden is a confident wrong number of exactly the kind this project keeps finding.
-            // The gauge is suppressed in that state too - an empty track would BE that wrong number.
-            float? taxBurden = DerivedStats.TaxBurdenPercentOfGdp(_playerCountry, report);
-            DrawDerivedStatRow("Tax burden", taxBurden.HasValue ? taxBurden.Value / 100f : -1f,
-                taxBurden.HasValue ? UiFormat.Number(taxBurden.Value, 1) + "%" : "not yet computed",
-                taxBurden.HasValue ? "of GDP" : "advance a year", fiscalInk);
-
-            float? spending = DerivedStats.SpendingPercentOfGdp(_playerCountry, report);
-            DrawDerivedStatRow("Government spending", spending.HasValue ? spending.Value / 100f : -1f,
-                spending.HasValue ? UiFormat.Number(spending.Value, 1) + "%" : "not yet computed",
-                spending.HasValue ? "of GDP" : "advance a year", fiscalInk);
-
-            // Positive is a deficit, so "higher is better" is FALSE here - the opposite of the
-            // BudgetBalance colouring elsewhere, because the sign convention is the opposite too. The
-            // NAME changes with the sign rather than the number carrying a minus: a row headed "Surplus"
-            // showing 4.8% is unambiguous where "Deficit: -4.8%" needs a second reading.
-            float? deficit = DerivedStats.DeficitPercentOfGdp(_playerCountry, report);
-            DrawDerivedStatRow(
-                deficit.HasValue && deficit.Value < 0f ? "Surplus" : "Deficit",
-                deficit.HasValue ? Mathf.Abs(deficit.Value) / 100f : -1f,
-                deficit.HasValue ? UiFormat.Number(Mathf.Abs(deficit.Value), 1) + "%" : "not yet computed",
-                deficit.HasValue ? "of GDP" : "advance a year",
-                deficit.HasValue ? UiPalette.GetDeltaColor(deficit.Value, higherIsBetter: false) : fiscalInk);
-
-            // Playtest finding 2 (2026-08-25), per the single-book rider: the row above IS the real
-            // balance (BudgetBalance is net of interest - verified at ApplyRevenueAndSpending, where
-            // TotalSpending includes InterestOnDebt). The primary balance is worth showing - the
-            // fiscal trace panel already decomposes it - so it appears AS a labeled second line from
-            // the SAME report, never as an unlabeled "Surplus" that could be mistaken for the book.
-            float? primaryDeficit = DerivedStats.PrimaryDeficitPercentOfGdp(_playerCountry, report);
-            DrawDerivedStatRow(
-                primaryDeficit.HasValue && primaryDeficit.Value < 0f ? "Primary surplus" : "Primary deficit",
-                primaryDeficit.HasValue ? Mathf.Abs(primaryDeficit.Value) / 100f : -1f,
-                primaryDeficit.HasValue ? UiFormat.Number(Mathf.Abs(primaryDeficit.Value), 1) + "%" : "not yet computed",
-                primaryDeficit.HasValue ? "of GDP, excl. interest" : "advance a year",
-                primaryDeficit.HasValue ? UiPalette.GetDeltaColor(primaryDeficit.Value, higherIsBetter: false) : fiscalInk);
-
-            // ⚠ EIGHT SECTORS WERE ONE CONCATENATED STRING - "Agriculture 2.1% | Commerce 18.3% | ..."
-            // joined with pipes into a single label. That is the densest thing on this screen and the
-            // least readable: no two shares can be compared without counting characters, and the line
-            // wrapped differently at every window width. One row each, each with its own gauge, is the
-            // whole argument for the ledger form.
-            List<(SectorType Type, float SharePercent)> shares = DerivedStats.SectorSharesOfGdp(_playerCountry);
-            if (shares.Count > 0)
-            {
-                GUILayout.Space(6f);
-                GUILayout.Label("Sector shares of GDP", _labelStyle);
-                for (int i = 0; i < shares.Count; i++)
-                {
-                    // ⚠ Spaced, NOT Of — `SectorType.Energy` resolves through the curated policy table to
-                    // "Energy (Spending)", a discretionary spending line rather than an economic sector.
-                    // See DisplayName.Spaced.
-                    DrawDerivedStatRow(DisplayName.Spaced(shares[i].Type.ToString()), shares[i].SharePercent / 100f,
-                        UiFormat.Number(shares[i].SharePercent, 1) + "%", "of GDP",
-                        UiPalette.GetCategoricalColor(i));
-                }
-            }
-            else
-            {
-                GUILayout.Label("Sector shares of GDP: not tracked for this country.", _labelStyle);
-            }
-
-            GUILayout.EndVertical();
-        }
+        // The fiscal shares and the sector shares moved to GameController.Statistics.cs on 2026-08-28
+        // (board 2a): the four shares on ONE printed axis, the eight sectors as one stacked
+        // distribution bar. What the old ledger rows carried in their comments still holds there - a
+        // figure no closed year has computed is stated, never drawn as a track at zero; the deficit
+        // rows are named by their sign; DisplayName.Spaced, never Of, for a sector's name.
 
         /// <summary>
-        /// One derived statistic as a read-only ledger row, so the five sites above read as a table
+        /// One derived statistic as a read-only ledger row, so the sites that use it read as a table
         /// rather than five bespoke label calls. <paramref name="fill"/> below zero draws no gauge — for
         /// a figure with no denominator, or one not yet computed.
         /// </summary>
