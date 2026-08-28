@@ -167,3 +167,10 @@ installed as the request doc's ninth ask).
 A touches no density value, type size, Statistics form, icon face or ink value — those are
 Design's; the one structural exception is the home cell. **Phase B:** built on the boards and the
 token tables as they land, the way v3.0 Phase B was.
+
+**Phase B (engineering, 2026-08-28 — Design answered the same day, in full):** the five answers
+(1n-r2, 1m-r2, 2a, the D4 and D6 tables) read into the spec as §A.18 and built in order — the §E5
+close, D6, D4, 1n-r2, 1m-r2, 2a — one unit one commit against the `v31b_*` matrix; the two
+re-measures the tables ask for (Annex F after D6, the dead-space share after D4) filed back as
+numbers. Redrawn rail glyphs stay a costed follow-up (1n-r2's refusal); the hatch pair's bar is
+Elias's ruling (§E5). The record is `COMPLETED.md` §45.
