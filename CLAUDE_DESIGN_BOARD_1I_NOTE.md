@@ -1,12 +1,14 @@
-# Note to Design — the law browser, the almanac sheet and the graph weights: 1i–1l shipped
+# Note to Design — the law browser, the almanac sheet, the graph weights, the Desk and the rail: 1i–1n shipped
 
-**A courtesy update, not a request. Nothing here needs an answer** — it closes the loop on four
+**A courtesy update, not a request. Nothing here needs an answer** — it closes the loop on six
 screens end to end: Screen 1i built against your rulings doc, the §7.1 density finding you answered
-with Screen 1j and 1j implemented the same day we read it, and the two boards that answered §2 and §3
+with Screen 1j and 1j implemented the same day we read it, the two boards that answered §2 and §3
 of our 2026-08-27 request — **1k Calendar panel board** and **1l Graph weight ruling** — built as drawn
-in the omnibus pass of 2026-08-28. Written for sending when convenient (the E2 convention: sending is
-Elias's). *Rewritten 1i–1l-aware 2026-08-28; the 1j-aware note (2026-08-26, corrected 2026-08-27) and
-the original 1i-only note (2026-08-25) are in git history.*
+in the omnibus pass of 2026-08-28, and the two v3.0 boards — **1m Screen 0, The Desk, folded** and
+**1n the rail** — built the day they landed. Written for sending when convenient (the E2 convention:
+sending is Elias's). *Rewritten 1i–1n-aware 2026-08-28 (v3.0 Phase C); the 1i–1l note (2026-08-28),
+the 1j-aware note (2026-08-26, corrected 2026-08-27) and the original 1i-only note (2026-08-25) are in
+git history.*
 
 ## Screen 1i — built as delivered (2026-08-25)
 
@@ -66,12 +68,75 @@ Your rulings doc stays at our repo root unchanged as delivered, with two dated l
 2026-08-26 pointer (1j overlays its AVAILABLE-row spec) and a 2026-08-28 line naming the current
 capture sets and the open one-line-row call.
 
+
+## Screens 1m and 1n — your v3.0 boards, built the day they landed (2026-08-28)
+
+**Thank you for the same-day boards.** The ask went out in the morning with its three annexes and the
+two boards were on the live screens file by the afternoon — drawn against the census and the measured
+minimums rather than around them, with the split argued on the board itself. That let Screen 0 be
+built, filmed at four sizes and pushed the same day.
+
+**1m, Screen 0 — built as drawn.** The placement is the board's own: the sheet's 1118×660 inner area
+at 1280×720 with the masthead, the three columns (420 / 240 / 425), the map over the approval ledger,
+the compass over the effects card, the calendar sheet over the event card, the chip strip — scaled by
+the sheet's ratio at the other sizes, so at 1280×720 the stage is your frame. All seven declared
+deviations stand as you drew them (the split; no active spine on Screen 0; the compass's captions inside
+its rect — our renderer's own footprint since the stage-prep pass does exactly that; C20 as a mono
+caption; the speed cluster on the masthead; approval as a hero numeral over the nine-term ledger, no
+dial invented; neutral ink on the lines). The (b) resolutions landed as you resolved them: the event's
+three effects as bars on the card, "This Month" and the empty sentence dropped, the horizon control
+carrying its own label, the lamp carrying the running state, the rail's icons carrying the labels.
+
+**Three calls the build made, stated rather than silent — and now standing on both sides** (your board
+carries them as "standing corrections from the build, accepted"; our direction doc ratified them the
+same day):
+
+- *The ways home.* The board draws no way back to the Desk from a document. Ours: the rail's calendar
+  chip (the sheet collapsed, so its click opens the sheet's home) and the open document's own rail icon
+  clicked a second time. Nothing was added to the rail; the two existing cells gained the behaviour.
+- *Two rows refused.* The effects card draws eight figures, not ten: your debt-to-GDP and currency rows
+  are not estimates the game computes — the preview projects GDP growth, inflation, unemployment,
+  approval, poverty, participation, crime and the net budget, and nothing else. Printing the two would
+  have been a number the model does not hold, so the refusal is the model's honesty, not a layout
+  preference. If those estimates are ever wanted they are a simulation feature with its own measurement
+  pass, never a UI patch — recorded as such.
+- *The FOLDED lock.* Screen 0 has one legal state. The chrome column's contents (the calendar sheet, the
+  speed cluster, the hold banner) live on the stage, so an OPEN Desk would show them twice and squeeze
+  the stage into a space it cannot fit; the toggle draws on its disabled face there, the way the Budget
+  ledger's does.
+
+**Two things you could not see from the board, both ours:** the event card is filmed with an event from
+the game's own pool (staged by the harness for one frame, then restored — nothing was written for the
+film), and the game-over stamp with the reason string the game itself prints. And the chip strip's
+sparklines run through the same renderer as the Statistics graphs, so your 1l weights already reach them
+— the "one engineering constant if wanted" turned out to be in place.
+
+**1n, the rail — built as the re-skin it was.** The derivation untouched (the icons' 24-unit grid plus
+10 units of air: 39 / 46 / 55 / 64 px at the four sizes, as before); the air moved as drawn — the nav
+block top-anchored under the sheet's cap, the utility block (chip · lamp · toggle) bottom-anchored with
+one breathing gap between; the active cell's 3 px spine at the left edge, full cell height, in the area
+ink, with the 12 % area-ink wash behind it; inactive cells in the tab-swatch tint; the hairline between
+the chip's month and day; the lamp's two states carried as before; no spine on Screen 0. Nothing added,
+nothing asked.
+
+**Since then, on our side only:** the fold-default table is now ruled — a screen defaults FOLDED only
+if its content is designed for the full-width stage, which today is exactly the Desk and the Budget
+ledger (both locked); every document defaults OPEN, so Statistics › Domestic, which had carried the
+landing duty as a stand-in before the Desk existed, opens with its column again.
+
 ## Captures — the current reference sets
 
-From `../PoliSim-captures/`, the omnibus closing matrix of 2026-08-28 (`omni_final_<size>_…`, USA,
-at 1280×720, 1600×900, 1920×1080 and 2560×1440). The earlier `board1jc*` sets — the 1j build's first
-captures — are superseded twice over and kept only as history:
+From `../PoliSim-captures/` (USA, at 1280×720, 1600×900, 1920×1080 and 2560×1440). The earlier
+`board1jc*` sets — the 1j build's first captures — are superseded and kept only as history:
 
+- `v3desk_<size>_01c_desk.png` — Screen 0 as the game lands on it (RUNNING, turn 0: the lamp green,
+  the cluster live, the ledger before its first period); `v3desk_<size>_01d_desk_held.png` — the
+  warmed-up game (HELD above the masthead, the lamp amber, the speed faces disabled, the ten-row
+  ledger, the strip's sparklines); `v3desk_<size>_01e_desk_event.png` — the event card filled;
+  `v3desk_<size>_01f_desk_gameover.png` — the stamp over the dimmed stage. The 1280 frame is your
+  board's own size.
+- the rail on any `v3desk_<size>_0[2-7]*` capture — the active cell's spine and wash (1n) — and on
+  `01c_desk`, without a spine.
 - `omni_final_<size>_06f_policylaws_laws.png` (`_rows` / `_deep` scroll variants beside them) — the
   law browser at a hundred laws across two categories: 1i's grouping and stepped rule, 1j's bands,
   chips, order control and search slot, the detail pane.
@@ -79,11 +144,13 @@ captures — are superseded twice over and kept only as history:
   (a post-1i addition: each law's long-run stat shifts derived from the declared coupling table the
   simulation itself reads — neutral, no authored valence, the model's coupling gaps left visible
   by ruling).
-- the left panel of any `omni_final_<size>_0[2-7]*` capture — e.g. `omni_final_2560_02_statistics.png`
-  — the almanac sheet (1k): the strikes, the ledger dot, the underline, the section rules.
+- the left panel of any `v3c_<size>_02_statistics.png` or `omni_final_<size>_0[2-7]*` capture — the
+  almanac sheet (1k): the strikes, the ledger dot, the underline, the section rules; on Screen 0 the
+  same sheet stands in the third column.
 - `omni_final_2560_02a_statistics_domestic_deep.png` — four stacked graphs at 2560, the weight
   order (1l).
 
 These are reference material, out of tree beside the other captures — no import on your side,
-nothing to reconcile. (The two pipeline findings from our half of the rasterization diff are a
-separate, small ask, filed in the request doc as §E5 — not part of this note.)
+nothing to reconcile. (The one open pipeline item from our half of the rasterization diff — the hatch
+tile's source, one re-cut away — is a separate, small ask, filed in the request doc as §E5 — not part
+of this note.)
