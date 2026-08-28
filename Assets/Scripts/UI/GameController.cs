@@ -526,9 +526,6 @@ namespace PoliSim.UI
         private Vector2 _logScrollPosition;
         private Vector2 _leftColumnScrollPosition;
 
-        /// <summary>Collapsed by default - the "every system has its own tab" routing text is a one-time onboarding note, not something that needs to keep costing vertical space in the dashboard on every turn once a player already knows the layout.</summary>
-        private bool _showTabGuide;
-
         private ConsolidatedTab _consolidatedTab = ConsolidatedTab.Statistics;
         private StatisticsCategory _statisticsCategory = StatisticsCategory.Domestic;
         private PolicyLawsCategory _policyLawsCategory = PolicyLawsCategory.LaborMarket;
@@ -3830,19 +3827,14 @@ namespace PoliSim.UI
         {
             GUILayout.BeginVertical(_boxStyle);
 
-            GUILayout.BeginHorizontal();
+            // v3.0 Phase A census (2026-08-28): the "Show tab guide" button and its paragraph were the
+            // landing screen's one pure class-(c) element in the chrome column - a collapsed help text
+            // naming the pre-consolidation ten tabs (Tax/Spending/Federal Reserve/...), none of which is a
+            // tab any more, restating no live instrument and carrying no fact this header does not. Cut
+            // under the direction's "pure (c) dies immediately" rule; the control count of this column
+            // drops by one permanently, which is not the behaviour-5 hazard (that is a count that CHANGES
+            // with background state).
             GUILayout.Label("This Year's Policy", _headerStyle);
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button(_showTabGuide ? "Hide tab guide" : "Show tab guide", GUILayout.ExpandWidth(false)))
-            {
-                _showTabGuide = !_showTabGuide;
-            }
-            GUILayout.EndHorizontal();
-
-            if (_showTabGuide)
-            {
-                GUILayout.Label("Every system now has its own tab (Tax/Spending/Federal Reserve/Welfare/Labor Market/Crime & Justice/Economic Sectors/Infrastructure/Sovereign Wealth Fund/Trade) - the estimate below reflects your current draft across all of them at once.", _labelStyle);
-            }
 
             DrawPolicyPreview();
 
@@ -3893,7 +3885,9 @@ namespace PoliSim.UI
             DrawHorizonButton(PreviewHorizon.OneMonth);
             DrawHorizonButton(PreviewHorizon.FullTurn);
             GUILayout.EndHorizontal();
-            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-year value. Projection only, not a guarantee.", _labelStyle);
+            // v3.0 Phase A census (2026-08-28): "Projection only, not a guarantee." was a third hedge on a
+            // figure already headed "Estimated" with its margin stated in the same sentence - pure (c), cut.
+            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-year value.", _labelStyle);
 
             // Each line's color follows UiPalette's single green-good/red-bad convention, honoring
             // which direction is actually good for that specific stat (e.g. Unemployment/Inflation/
@@ -5885,7 +5879,11 @@ namespace PoliSim.UI
 
             GUILayout.Space(12f);
             DrawColoredLabel("As published", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("What the public sees: lagged, and revised as later estimates arrive. Compare against the live figures above.", _labelStyle);
+            // v3.0 Phase A census (2026-08-28): "Compare against the live figures above." was an instruction
+            // restating this section's placement under the live graphs - pure (c), cut. The first sentence
+            // stays as a (b): it restates what the badge chip and the dashed frame carry, and waits for the
+            // v3 board to return as an instrument or not at all.
+            GUILayout.Label("What the public sees: lagged, and revised as later estimates arrive.", _labelStyle);
             GUILayout.Space(4f);
 
             _gdpPublishedGraph.DrawPublished("GDP as published",
