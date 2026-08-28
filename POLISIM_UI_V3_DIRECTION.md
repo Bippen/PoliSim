@@ -27,11 +27,32 @@ player-controlled shell state, everywhere:
   materials), the status dot (HELD glow / RUNNING green — B8's carrier survives folding), and the
   fold toggle. Everything else yields to the stage.
 - **State rules:** the flip is **instant** (the calendar's own ruling — this desk does not tween);
-  the state persists per save; per-screen defaults — the oversight screen defaults FOLDED, ledger
-  screens default OPEN; every screen must be *legal* in every state a player can reach (guards run
-  in each; locking a state — R-A1's Budget precedent — is a legitimate way to make it unreachable,
-  recorded per screen: **R-SP2, ratified 2026-08-28**, amending "in both states"), but only
-  defaults are canonical on film (V3-R4).
+  the state persists per save; per-screen defaults by the table below; every screen must be *legal*
+  in every state a player can reach (guards run in each; locking a state — R-A1's Budget precedent
+  — is a legitimate way to make it unreachable, recorded per screen: **R-SP2, ratified
+  2026-08-28**, amending "in both states"), but only defaults are canonical on film (V3-R4).
+- **The fold-default table, ruled (R-PC2, Phase C, 2026-08-28) — the single source; the code's
+  `GameController.DefaultShellFold` / `ShellFoldLocked` follow it:** a screen defaults FOLDED
+  **only if its content is designed for the full-width stage.** Today that is exactly two screens,
+  both locked (the reachable-state principle). Everything else defaults OPEN — which reverted
+  **Statistics › Domestic** to OPEN the day the Desk took the landing duty it had stood in for
+  since Phase A. Filmed at 1280 and 2560 in the state each changed default now opens in
+  (`v3c_<size>_02a_statistics_domestic`, with `_folded` as its pair).
+
+  | screen | default | locked? |
+  |---|---|---|
+  | Screen 0 — The Desk | FOLDED | yes (R-B3) |
+  | Budget (the ledger, all five categories) | FOLDED | yes (R-A1) |
+  | Statistics › Domestic | OPEN (reverted 2026-08-28) | no |
+  | Statistics › International | OPEN | no |
+  | Decisions | OPEN | no |
+  | Demographics | OPEN | no |
+  | Policy/Laws (every category, the Policy Web, the Laws browser) | OPEN | no |
+  | Politics (Parliament, Compass, Cabinet, Federal Reserve) | OPEN | no |
+  | The Canvas screens (the selector, signing) | the seam's own — the frame beneath keeps its screen's state | — |
+
+  A new screen enters the table with a line here before it ships; the player's own flip on any
+  unlocked screen is remembered per screen and per save and overrides the default.
 - Minimum width stays 1280×720; the fold is what makes the floor generous instead of tight.
 
 ### 2. The Desk — the oversight screen (V3-R3)

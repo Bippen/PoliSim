@@ -226,8 +226,10 @@ states, every size); the closing sanity sets `cont_final_1600_…` (USA) and `co
 family at all four sizes — every screen in its default fold state plus the three fold pairs — and the
 ladder films `v3a_ladder_<size>_ladder_<kind>`; from the stage-prep micro-pass (2026-08-28) the
 `sp4_<size>_…` family and `sp4_ladder_<size>_ladder_<kind>`, the same sweep on the code after R-SP4 and
-R-SP5; and from v3.0 Phase B (2026-08-28) the `v3desk_<size>_…` family — the sweep plus Screen 0's four
-frames (`01c_desk`, `01d_desk_held`, `01e_desk_event`, `01f_desk_gameover`) at four sizes** — all under
+R-SP5; from v3.0 Phase B (2026-08-28) the `v3desk_<size>_…` family — the sweep plus Screen 0's four
+frames (`01c_desk`, `01d_desk_held`, `01e_desk_event`, `01f_desk_gameover`) at four sizes; and from
+v3.0 Phase C (2026-08-28) the `v3c_<size>_…` family at 1280 and 2560, the sweep on the ruled fold
+defaults (Statistics › Domestic OPEN, its `_folded` pair beside it)** — all under
 `G:\UNITY\Projects\PoliSim-captures\`. No row is verified by code alone (R-C6 retired the two ⚠ rows). "Pinned on film" is containment evidence, not a
 sighting; each item closes to `COMPLETED.md` with the session named. The three findings of playtest 3 are
 closed by their rulings; their surfaces are re-listed here as built.
@@ -262,6 +264,7 @@ closed by their rulings; their surfaces are re-listed here as built.
 | **Screen 0 — The Desk** (v3.0 Phase B, board 1m) | §41 | `v3desk_*_01c_desk` (RUNNING, turn 0: the lamp green, the cluster live, the ledger with no period yet); `v3desk_*_01d_desk_held` (the warmed-up game: HELD above the masthead, the lamp amber, the faces disabled, the ten-row ledger, the sparklines) | the masthead, the map plate, the approval ledger, the compass, the effects card, the calendar sheet, the chip strip — each at the board's placement scaled to the size; the rail without a spine (D2); the 1280 film is the board's own frame |
 | **The Desk's conditionals** (C1–C5 on the stage) | §41 | `v3desk_*_01e_desk_event` (the card filled with the pool's own "Recession in a Trading Partner": the BREAKING chip, the name, the description, the three bars); `v3desk_*_01f_desk_gameover` (the stamp over the dimmed stage, the election-loss reason as the game prints it) | staged by the harness through the game's own event pool and the game's own reason string — nothing invented for the film — and restored after each frame |
 | **The rail re-skinned** (board 1n) | §41 | every `v3desk_*` document capture (the active cell: the 12 % wash and the 3 px spine; the chip's rule); `v3desk_*_01c_desk` (no spine on Screen 0) | the derivation untouched; the air and the active convention as the board draws them |
+| **Statistics › Domestic OPEN by default** (R-PC2, v3.0 Phase C — the fold-default table ruled) | §42 | `v3c_1280_02a_statistics_domestic`, `v3c_2560_02a_statistics_domestic` (the default, OPEN: the chrome column and the tongues back beside the ledger); `v3c_<size>_02a_statistics_domestic_folded` (the pair) | the screen opens in the state it had before Phase A; the guards and the edge check ran in both states at both sizes; the only FOLDED defaults are the two locked screens (the Desk, Budget) |
 | **The eight new cabinet portraits at 5.5×** (the roster beside the sixteen squares) | `4e5adbf` | `omni_final_*_07c_politics_cabinet*` | still Elias's eyes (carried from playtest 3) |
 
 **Cleared 2026-08-27 (playtest 3, seen by Elias):** the Canvas country selector's set; Turn → Year; Budget's

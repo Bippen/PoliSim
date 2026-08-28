@@ -1154,26 +1154,17 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The direction's per-screen defaults: the oversight screen FOLDED - Screen 0 (The Desk, v3.0
-        /// Phase B, 2026-08-28) is locked there (R-B3), and Statistics > Domestic keeps the FOLDED
-        /// default it carried while it stood in for the Desk, until Phase C tunes the defaults on
-        /// film - and the Budget ledger FOLDED, because its column-hiding (Elias's 2026-08-01
-        /// directive, §A.5's declared deviation) is now this state rather than a parallel mechanism;
-        /// every other screen OPEN.
+        /// The fold-default table, ruled (R-PC2, v3.0 Phase C, 2026-08-28; the direction doc holds the
+        /// table as the single source): a screen defaults FOLDED ONLY if its content is designed for
+        /// the full-width stage - today exactly Screen 0 (The Desk, R-B3) and the Budget ledger
+        /// (Elias's 2026-08-01 directive, §A.5's declared deviation), both LOCKED there. Everything
+        /// else defaults OPEN - Statistics > Domestic included, reverted the day the Desk took the
+        /// landing duty it had stood in for since Phase A. The default is what the frame draws until
+        /// the player flips a screen (the override is remembered per screen and per save).
         /// </summary>
         private ShellFoldState DefaultShellFold()
         {
-            if (_onDesk)
-            {
-                return ShellFoldState.Folded;
-            }
-
-            if (_consolidatedTab == ConsolidatedTab.Budget)
-            {
-                return ShellFoldState.Folded;
-            }
-
-            if (_consolidatedTab == ConsolidatedTab.Statistics && _statisticsCategory == StatisticsCategory.Domestic)
+            if (_onDesk || _consolidatedTab == ConsolidatedTab.Budget)
             {
                 return ShellFoldState.Folded;
             }

@@ -228,9 +228,12 @@ bottom, the calendar chip from the pad's own materials, the status dot carrying 
 HELD glow, and the fold toggle; nothing else) and the content column takes the rest. Budget full-screen is
 no longer its own mechanism: it is the Budget ledger's FOLDED default, so "left column hidden" now reads
 "the rail" — a cell of the icons' own 24-unit grid plus 10 units of air each side (`icon × 44/24`: 55 px
-at 1080p, 39 px at 720p, 64 px at 1440p, plus the sheet's padding). Per-screen defaults: the landing
-screen (Statistics › Domestic, carrying the oversight default until Screen 0 exists) and Budget FOLDED;
-every other screen OPEN. The flip is instant; the player's choice persists per screen and per save
+at 1080p, 39 px at 720p, 64 px at 1440p, plus the sheet's padding). Per-screen defaults by the ruled
+table (R-PC2, 2026-08-28, `POLISIM_UI_V3_DIRECTION.md` — the single source): a screen defaults FOLDED
+only if its content is designed for the full-width stage — Screen 0 (the Desk, R-B3) and the Budget
+ledger (R-A1), both locked; every other screen OPEN, Statistics › Domestic included (it carried the
+FOLDED default as the Desk's stand-in from Phase A until the Desk was built, and reverted the same
+day). The flip is instant; the player's choice persists per screen and per save
 (`UiDraftState.ShellFoldOverrides`). Every screen is legal in every reachable state (R-SP2, 2026-08-28 —
 the guards run in each; a locked state is unreachable and recorded per screen: the Budget ledger, R-A1),
 the folded frame's interrupt banner carrying the HELD reasons above the sheet; only defaults are canonical
