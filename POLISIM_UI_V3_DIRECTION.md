@@ -147,3 +147,28 @@ a new instance of the old class and is treated as such.
 *legal in every state a player can reach*. Locking a state (the Budget ledger's FOLDED lock, R-A1)
 is a legitimate way to make a state unreachable; each lock is recorded per screen, and the harness
 sweeps and films only the states that remain reachable.
+
+## UI v3.1 — one frame, denser, instruments (opened 2026-08-28, from the first live sitting)
+
+**The sitting's verdict (Elias, 2026-08-28, two screenshots — §V's first sitting rows):** the
+Desk's frame wins; the OPEN "half screen" dies; density, instruments, icons and contrast go to
+Design as v3.1 (`DESIGN_REQUEST_V3_1.md`, archived out of tree at `../PoliSim-captures/inbox/`,
+installed as the request doc's ninth ask).
+
+- **D1 — one frame everywhere (R-E1, a ruling GATED on the duty audit):** the OPEN state retires
+  and every screen lives in the Desk's frame — the rail, one full-bleed sheet. The gate: the audit
+  enumerates every duty the OPEN column and the tongues uniquely carried and names each duty's new
+  home (Annex A of the request doc); an orphan STOPS the retirement. If covered, every screen
+  defaults FOLDED and locks, and the fold-default table above collapses to one row: ONE FRAME.
+- **D2 — the rail, revision 2 (board 1n-r2):** an obvious home cell (a structural interim ships
+  now — R-E2 — Design re-skins its face) and icon legibility at the real cells, Design's call.
+- **D3 — the Desk, revision 2 (board 1m-r2):** density and the Year-0 empty states designed.
+- **D4 — global density tokens:** a revised token table against the measured current values.
+- **D5 — Statistics as instruments (board 2a):** the fitting form per dataset, against the census.
+- **D6 — the contrast pass:** new values for the faint-ink tokens, against the measured pairs.
+
+**Phase A (engineering, 2026-08-28):** the audit, the retirement if covered, the structural home
+(R-E2), the annexes measured (R-E3), the request installed, the paste regenerated. **R-E4:** Phase
+A touches no density value, type size, Statistics form, icon face or ink value — those are
+Design's; the one structural exception is the home cell. **Phase B:** built on the boards and the
+token tables as they land, the way v3.0 Phase B was.
