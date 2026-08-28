@@ -1,17 +1,19 @@
 # Claude Design asset request — PoliSim
 
-**Status — ONE LIVE ASK (2026-08-28, evening): §1, the ninth request — UI v3.1, "one frame, denser,
-instruments" — six asks from Elias's first live sitting on the v3.0 build, with six engineering-measured
-annexes.** D1 (one frame everywhere) is a ruling already applied on our side — the duty audit in Annex A
-gated it and found no orphan; D2–D6 are Design's: board 1n-r2 (the rail: a home cell's face, icon
-legibility at the real cells), board 1m-r2 (the Desk: density and the Year-0 empty states), a revised
-density token table against Annex C, board 2a "Statistics drawn" against Annex E, and a contrast pass
-against Annex F. The eighth request (the v3.0 boards) was answered the day it was sent and migrated to
-`COMPLETED.md` §41. **§E5:** Design's second re-cut of the hatch source is on the live project (read
-2026-08-28 evening: a 16 px period, an 8 px duty — the measured figures); its import and diff are the
-§E5-close micro-pass's, so §E5 stands here as written until that pass closes it.
-What else is here: **§0** the delivered set as it stands, **§4** what is costed but not yet requestable,
-**§5** the standing conventions. **Date:** 2026-08-28.
+**Status — NO LIVE ASK (2026-08-28, night). The ninth request — UI v3.1, "one frame, denser,
+instruments" — was answered in full the evening it was sent** (boards 1n-r2, 1m-r2 and 2a, the D4 density
+token table and the D6 contrast pass, all on the live screens file) **and built the same night as UI v3.1
+Phase B** (`COMPLETED.md` §45; the boards and tables as read are the spec's §A.18). Its text stays below as
+§1 with its six annexes, marked answered — the annexes are the measurements Design built against, and
+three of them carry a correction or a re-measure filed back for Design's next look, none an ask: **Annex C's
+paper-box padding was quoted from the box rect, not from the paper** (the sprite's own drop shadow sat inside
+the rect — measured 14/14/10/26 px; it now hangs outside, so the padding tokens mean what the table took
+them to mean); **Annex F re-measured after D6** (Caution 4.09 / 3.90 against the pass's 4.5; TextPrimary on
+brass 4.03, not the table's 5.5); **§E5's hatch pair after the third cut** (7.42 % — rasterizer edge coverage,
+not a cut error; the bar question is Elias's). The eighth request (the v3.0 boards) was answered the day it
+was sent and migrated to `COMPLETED.md` §41. What else is here: **§0** the delivered set as it stands, **§4**
+what is costed but not yet requestable (redrawn rail glyphs joined it — refused by 1n-r2 as a costed
+follow-up), **§5** the standing conventions. **Date:** 2026-08-28.
 
 **Standing rule: a count in prose is a cached value with no expiry** (working-discipline rule 12).
 Before trusting any number in this document, re-derive it: sprites with
@@ -24,9 +26,9 @@ rule exists to catch at least four times.
 
 ---
 
-## 1. The ninth request — UI v3.1: one frame, denser, instruments (2026-08-28)
+## 1. The ninth request — UI v3.1: one frame, denser, instruments (2026-08-28) — ANSWERED IN FULL THE SAME EVENING; BUILT AS v3.1 PHASE B THE SAME NIGHT
 
-*The request as Elias delivered it with the v3.1 Phase A kickoff (archived verbatim at `../PoliSim-captures/inbox/DESIGN_REQUEST_V3_1.md`); only the heading levels are changed to sit inside this document. The six annexes it names follow, engineering-measured (R-E3).*
+*The request as Elias delivered it with the v3.1 Phase A kickoff (archived verbatim at `../PoliSim-captures/inbox/DESIGN_REQUEST_V3_1.md`); only the heading levels are changed to sit inside this document. The six annexes it names follow, engineering-measured (R-E3). **Answered 2026-08-28:** 1n-r2, 1m-r2, 2a, D4, D6 on the live screens file — read into `POLISIM_V2_SCREEN_SPEC.md` §A.18 verbatim and built (`COMPLETED.md` §45). Kept here, not migrated, because the annexes are the measured base the answer was computed against and the next request starts from their corrections (the status line above).*
 
 
 **From Elias's first live sitting on the v3.0 build (two findings-screenshots attached as Annex D).
@@ -217,6 +219,8 @@ Your call, as D2 states it: captions under the icons (mono, tiny) · larger cell
 | 07c_politics_cabinet | 2560 | 27,5 % | 843 of 3066 blocks of 32 px | paper #E8E8D8 |
 | 07d_politics_federalreserve | 2560 | 32,9 % | 1010 of 3066 blocks of 32 px | paper #E8E8D8 |
 
+**Re-measured after D4 and the five boards were built (the `v31b_*` film, 2026-08-28, the same method and script — the re-measure is the fact, as D4 asks):** 1280 → `01c_desk` 43.9 % (was 43.5; the Year-0 empty states are now drawn furniture, and the board's own expectation of ≈ 30 % is not what this method reads on the built Desk) · `01d_desk_held` 39.7 (35.8) · `02a_statistics_domestic` **42.1 (44.2)** · `02b_statistics_international` 39.3 (33.8) · `03_decisions` **27.2 (17.6)** · `04_demographics` **67.6 (58.6)** · `05b_budget_spending` 28.6 (28.8) · `06a_policylaws_labormarket` 37.7 (36.0) · `06d_policylaws_policyweb` 57.7 (55.5) · `06f_policylaws_laws` 42.5 (35.1) · `07a_politics_parliament` 52.3 (50.4) · `07b_politics_compass` 57.9 (55.6) · `07c_politics_cabinet` 38.0 (31.8) · `07d_politics_federalreserve` 44.2 (42.5); 2560 → the Desk 44.5 (45.5) · held 43.5 (37.7) · Domestic 42.9 (46.0) · International 50.8 (45.6) · Decisions 57.7 (41.1) · Demographics 68.7 (66.7) · Budget 35.8 (31.2) · Labor 38.3 (34.4) · Policy Web 66.9 (63.7) · Laws 41.7 (36.1) · Parliament 59.7 (57.0) · Compass 69.7 (62.3) · Cabinet 30.4 (27.5) · Federal Reserve 40.4 (32.9). **What the numbers say:** the spacing cut COMPACTS content, so on a screen whose content is a fixed quantity — a short list, a fixed-size instrument, a ledger that ends above the fold — the share of empty paper RISES (Decisions +9.6 pts, Demographics +9.0, Laws +7.4 at 1280; the 2560 rows more so); the one screen re-composed for the reclaim, Statistics › Domestic (board 2a), is the one that fell (−2.1 / −3.1). D4's expectation ("Demographics and Domestic drop ~10–14 pts from spacing alone") held for neither: the reclaim has nowhere to go until the content grows into it — 6 % more body type (16 → 17) does not — or the screen is re-composed the way 2a re-composed Domestic. The paper-box correction (the shadow outside the rect, Annex C's base) is in these numbers too. Filed for Design's next look; the candidates are Demographics, Decisions and the short Politics screens, in that order.
+
 ### Annex D — Elias's two sitting screenshots (2026-08-28, the first live sitting on the v3.0 build)
 
 **The images are Elias's and travel with the paste** — they were not on disk, in the inbox or among the Design uploads when this request was assembled, so this annex carries the findings in his words and the two frames he judged, and the screenshots go in beside it when he pastes (the E2 convention: sending is his). Place them under `send/design_request_2026-08-28d/annex_d/` as `sitting_1_desk_density.png` and `sitting_2_rail_icons.png`.
@@ -356,6 +360,10 @@ Derived from the screens that exist and the one that does not (`POLISIM_V2_SCREE
 - **The roster beyond eighteen** — flagged 2026-08-25, not requested: more portfolios means more
   candidates and a larger batch later; a future ask for "twelve" or "fifteen" is a fresh request, not
   scope creep against the one just delivered.
+- **The rail's six navigation glyphs redrawn small-size-first** — refused by board 1n-r2 (2026-08-28) as a
+  costed follow-up: the captions under the cells answered the sitting's legibility finding; a redraw of
+  the delivered `icon_nav_*` / `icon_area_*` set at 22 / 26 / 31 / 36 px is a fresh ask if the captioned
+  rail is still not enough at the next sitting. Same envelope as the delivered set (24-unit grid, SVG).
 
 Nothing else. The two built Canvas screens (1f the selector, 1g signing) needed nine pass-3 sprites and
 consumed six of them; the three paper-canvas button states are delivered and unwired. Boards 1k and 1l

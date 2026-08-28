@@ -112,12 +112,19 @@ full-bleed sheet on every screen — the direction doc's v3.1 section, its table
 cell (the flag, the structural interim), the PAUSE/RUN chip in the fold toggle's freed cell, the game-over
 reason on the banner everywhere, six annexes measured (the audit, the icons at the real cells, the paddings
 and dead-space shares, the sitting's findings, the Statistics census, the ink-pair contrast table), the
-ninth request installed and the paste regenerated. **The era's live edge reads WAITING:** v3.1 Phase B on
-Design's boards 1n-r2 (the rail) · 1m-r2 (the Desk's density and empty states) · 2a (Statistics drawn) and
-the density-token and contrast tables — each built in its own pass as it lands; **the §E5-close micro-pass**
-— Design's second hatch re-cut is on the live project (read this evening: a 16 px period, 8 px duty — the
-measured figures), not yet imported or diffed; · 13 September (item 10, election night born on the v3 shell).
-Nothing of v3.x is startable by a session today except the §E5-close; §P (the three felt verdicts) is Elias's.
+ninth request installed and the paste regenerated. **v3.1 Phase B CLOSED the same night (2026-08-28,
+`COMPLETED.md` §45)** — Design answered the ninth request in full the evening it was sent, and the five
+answers were built in order against the `v31b_*` matrix: the §E5 close (the hatch's third cut measured at
+7.42 %, the residual rasterizer edge coverage — the bar question is Elias's), D6's inks with Annex F
+re-measured, D4's tokens mechanically (and the paper sprite's shadow moved outside the box rect — a v2.0
+defect the first film exposed), 1n-r2's captioned rail, 1m-r2's Desk with its Year-0 empty states, 2a's
+Statistics as instruments; then the OPEN state's residue deleted whole (§44's promise). The dead-space
+share re-measured after D4 says the reclaim has nowhere to go on content-short screens until they are
+re-composed the way 2a re-composed Domestic — filed for Design's next look in the request doc's Annex C.
+**The era's live edge:** nothing of v3.x is out for signature — the next ask starts at the request doc's §4
+(redrawn rail glyphs, refused as a costed follow-up) and Annex C's corrections; §P (the three felt
+verdicts) and the hatch pair's bar ruling are Elias's; 13 September (item 10, election night born on the
+v3 shell). Nothing of v3.x is startable by a session today.
 
 ---
 
@@ -163,8 +170,8 @@ forward):**
   **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
   Step 6, Riksbank-B, the stranded branch, the party marks, and the political-model fact (no expansionary
   bill passes on any drift path before the re-seeding); **§E** Design: §E6's boards LANDED and were built
-  2026-08-28 (the row retires at the next re-derivation), §E5's hatch source still one re-cut away (the
-  slider half closed), the ask in the request doc, and §E2/§E4; **§V**
+  2026-08-28 (the row retires at the next re-derivation), §E5's Design half CLOSED 2026-08-28 (the hatch
+  cut three times, 7.42 % after the third — the bar ruling is Elias's, not an ask), and §E2/§E4; **§V**
   every surface on film — the `v3a_*` family and the ladder films included — one sitting through
   `../PoliSim-captures/sv_index.html`; **§P** the three felt
   verdicts, each a staged save — load, play, judge — read in the no-expansionary-passage context (R-C7).
