@@ -60,7 +60,7 @@ rule existed to catch first-build defects).
 
 ---
 
-## Where things stand — re-derived 2026-08-28 (the omnibus pass and its continuation, HEAD `e08c8c0` + the records commit)
+## Where things stand — re-derived 2026-08-28 (the omnibus, its continuation and the clear-out; HEAD `076273a` + the closing commits)
 
 **This document holds only live work.** Everything finished is in `COMPLETED.md`; everything waiting on a
 named party is in `MISSING_PREREQUISITES.md`; the split is the standing pattern at the bottom of this
@@ -74,7 +74,7 @@ built-but-uncalled are neither finished nor live — they wait on Elias's eyes a
 | `MISSING_PREREQUISITES.md` | Work waiting on a named party — Elias's send, decision, eyes or playtest; Design's delivery; item 10 |
 | `CLAUDE.md` | The detailed technical record for both. **Never superseded** |
 
-**The board, stated once (verified at HEAD `e08c8c0`, 2026-08-28 — the continuation's last unit, its records commit following; re-derive it, do not edit it
+**The board, stated once (verified at HEAD `076273a`, 2026-08-28 — the clear-out's Phase 4, the remote holding the tree through Phase 1; re-derive it, do not edit it
 forward):**
 
 - **DONE** — Master Sequence I (items 1–9) and Master Sequence II Steps 1, 2, 3 and 5; Round 4; the
@@ -86,19 +86,20 @@ forward):**
   (item 7), boards 1k and 1l (items 8–9), the seed spread sourced (§F; confirmed 2026-08-28). Records:
   `COMPLETED.md` §§27–31, 34, 36. **The continuation of 2026-08-28** — the ruling queue drained (R-C1…R-C4,
   R-C7), the one-line law row (R-C1), the raster check's two damage-class budgets (R-C2), the seven film-gap
-  captures (R-C6), the three seed quality debts settled (R-C5). Records: `COMPLETED.md` §37.
-- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`: **§S** the courtesy note (rewritten 1i–1l-aware,
-  R-C8's convergence paragraph in) waits on Elias's send; **§A** the coupling queue Q6–Q10 at their
-  triggers — nothing else (the omnibus's three `RULINGS NEEDED` were ruled by the continuation kickoff);
+  captures (R-C6), the three seed quality debts settled (R-C5). Records: `COMPLETED.md` §37. **The
+  clear-out of 2026-08-28** — the two riders (R-D3), the Reset click draft-only (R-D2), the push (R-D1),
+  the send package, the §V index (R-D5), the three playtest saves (R-D4), the prereqs file live-only.
+  Records: `COMPLETED.md` §38.
+- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`, live-only since the clear-out: **§S** one paste
+  (`SEND_PACKAGE_2026-08-28.md`); **§A** the coupling queue Q6–Q10 at their triggers — nothing else;
   **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
   Step 6, Riksbank-B, the stranded branch, the party marks, and the political-model fact (no expansionary
   bill passes on any drift path before the re-seeding); **§E** Design: §E5's two strip-cut findings (the
   hatch tile's tiling, the slider strip), filed in the request doc for the next send, and §E2/§E4; **§V**
-  the review package of the omnibus and its continuation — every surface on film, its capture named, no
-  row verified by code alone; **§P** the three felt verdicts (a playtest), read in the no-expansionary-passage
-  context (R-C7). §B (the seed quality debts) and §F (the seed spread's confirmation) are tombstones —
-  settled and confirmed 2026-08-28; what a database session still owes is seed §8's `[PROVISIONAL]` →
-  `[VERIFIED]` upgrade.
+  every surface on film, one sitting through `../PoliSim-captures/sv_index.html`; **§P** the three felt
+  verdicts, each a staged save — load, play, judge — read in the no-expansionary-passage context (R-C7).
+  Every tombstone the file carried is migrated to `COMPLETED.md` §38a; what a database session still
+  owes is seed §8's `[PROVISIONAL]` → `[VERIFIED]` upgrade.
 - **LIVE** — the list below.
 
 ---
@@ -125,10 +126,11 @@ out only where the fixed cells' floors cannot carry the widest visible name at t
 
 ### 2. Nothing else is startable today
 
-Every other line of the 2026-08-27 board shipped in the omnibus pass or its continuation, or moved to a
-named party's queue in `MISSING_PREREQUISITES.md`. Nothing waits on a ruling. The next live work is
-whatever Elias's eyes (§V), play (§P), the coupling queue's triggers (§A) or the 13 September gate (§D)
-release.
+Every other line of the 2026-08-27 board shipped in the omnibus pass, its continuation or the clear-out,
+or moved to a named party's queue in `MISSING_PREREQUISITES.md`. Nothing waits on a ruling; the machine
+side is idle and the remote holds the tree through the clear-out's Phase 1. Elias's side, each one
+gesture: paste the send package's two artifacts · sit once through `sv_index.html` · load three saves
+and play · answer §E5 when Design does · 13 September. There is no sixth thing.
 
 ## Queued at named triggers — not startable, and no named party owes anything
 
@@ -254,10 +256,10 @@ happen.
 
 - Read **The board** above, then the live list — both re-derived, never edited forward. If the board
   disagrees with `git log`, the log is right and the board is stale.
-- `MISSING_PREREQUISITES.md` **§V and §P** hold what needs your eyes and your play — §V is the final
-  review checklist, every row on film with its capture named; **§E5** the two strip-cut findings, filed
-  in the request doc for the next send; **§S** the courtesy note. Nothing waits on a ruling: the
-  continuation kickoff of 2026-08-28 consumed the four (§A holds only the coupling queue at its triggers).
+- Five gestures, no sixth: paste `SEND_PACKAGE_2026-08-28.md`'s two artifacts (§S); sit once through
+  `../PoliSim-captures/sv_index.html` (§V); load the three `playtest_*` saves and play (§P); answer
+  §E5 when Design does; 13 September (§D). Nothing waits on a ruling (§A holds only the coupling queue
+  at its triggers), and `MISSING_PREREQUISITES.md` is live-only — its tombstones are `COMPLETED.md` §38a.
 - Review the commit log — each unit of work is its own commit, validation results in the message or
   CLAUDE.md.
 

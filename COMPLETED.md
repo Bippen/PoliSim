@@ -2607,3 +2607,154 @@ R-K6 shape); the derived real-wage set does not reproduce the press-cited Taxing
 recorded, not adopted; the kickoff's "Poland's housing clamp at 90" was read as §F's caveats 5 and 6 as
 written. **RULINGS NEEDED:** none — only Elias-in-person items remain (the sends, §V's eyes, §P's play,
 13 September).
+
+## 38. The clear-out kickoff — the riders, the Reset click, the push, the send package, the §V index, the playtest saves, the prereqs file live-only (2026-08-28)
+
+**Authority:** Elias's clear-out kickoff of 2026-08-28 ("clear out the rest"): finish what a session can
+finish and reduce what is physically Elias's to single gestures. Pre-issued rulings R-D1 (the push — the
+flagged assumption, not struck), R-D2 (the Reset click), R-D3 (the deferral), R-D4 (§P staging, bounded),
+R-D5 (the §V index). Explicitly not swept: the trigger-queued items whose triggers have not fired. Anchor
+`2f42deb`; Working Discipline v2; one unit, one commit, staged by path. Detail: `CLAUDE.md` "The clear-out
+kickoff (2026-08-28)".
+
+**Phase 0 — the two riders (`4df1dbc`).** The rulings doc's 2026-08-28 line now reads "this board's 32 px
+one-line pitch (~27 rows per screen)", the figure per `a7d877d`'s derivation (the "~27 px" was the omnibus
+report's misreading, propagated by the session). R-D3: `StripCutDiffCheck` carries a `DeferredPairs` table
+by name — `ui_hatch_draft` with its dated §E5 pointer — measured and printed, marked DEFERRED, never a FAIL;
+any other pair over budget still fails; the header says the deferral dies the day Design's §E5 answer
+lands. Re-run: exit 0 — 86 of 90 within budget, 3 text-bearing, 1 deferred, 1 unrasterizable, 0 FAILED.
+
+**Phase 1 — the Reset click, draft-only (R-D2, `4e44777`).** "Reset draft" returns the partner's dial to the
+standing override through `ResetPartnerTariffDraft` and writes nothing live; the override's rate moves only
+through the Trade bill — a cut voted like a rise. Set Override unchanged (inert at the effective rate). The
+driver films the pair in the main sweep (`06m` draft moved +10, `06n` draft reset beside the override still
+active), assert-own-name on the reset. Bar: `clear_p1c_*` 75/75 at all four sizes, guards silent, 0
+clipped; the no-policy trajectories byte-identical 6 of 6. The roadmap's queue entry tombstoned with its
+date; the alternative (the click files a reset bill) recorded as one routing change away.
+
+**Phase 2 — the push (R-D1).** `git fetch origin` — the remote tip `e86c79dc9819c11e9ca4e843a79894de9e9c6ace` (2026-08-26, "The second law category ships"), an ancestor of local HEAD with nothing on `origin/main` unknown to local history (`HEAD..origin/main` empty; 55 commits to push, the post-rewrite line intact); `git push --force-with-lease=main:e86c79dc9819c11e9ca4e843a79894de9e9c6ace origin main` → `e86c79d..4e44777  main -> main`; `git fetch origin` again → `origin/main` = `4e4477755f90572d0c862a6087ed7656ccb876fb` = local HEAD, CONFIRMED. No credential prompt (the credential manager held the token; `GIT_TERMINAL_PROMPT=0`, `GCM_INTERACTIVE=never` so a prompt would have failed fast, not hung), no lease rejection, no retry. `UpstreamCheck`'s convention ("the push is Elias's") was amended for this one push by this kickoff and is recorded here; the four commits after it (Phases 3–6) are local and under the check's own 10-commit threshold — the convention is back with Elias.
+
+**Phase 3 — the send package (`d30eb1a`).** `SEND_PACKAGE_2026-08-28.md`: the note and the request doc through
+§E5, each with its SHA-256 as on disk and its destination path; the readback-hash glance; what comes back
+and where it lands (the import commit that removes the deferral). Sending stays Elias's.
+
+**Phase 4 — the §V index (R-D5, `076273a`).** `Tools/sv_index.ps1` generates `../PoliSim-captures/sv_index.html`
+— one section per checklist row, every capture at every size linked, the 1600 one previewed; the
+checklist's own shorthand read as written; a token that matches nothing is listed, not dropped. Tooling
+in-tree, output out of tree, nothing binary committed.
+
+**Phase 5 — the playtest saves (R-D4, `8c7081b`).** The driver's `-shotsaves` mode stages the three saves
+through the real service on the warmed-up game before the sweep's harness drafts go in, each filmed once:
+`playtest_1_trade_bill_costs` (USA), `playtest_2_riksbank_rate_decision` (Sweden — a rate decision drafted on the Riksbank tab, option C's naming being the verdict; no appointment can be pending on `main`, Riksbank-B's machinery ships with item 10), `playtest_3_dense_midgame`
+(USA). §P is load-play-judge.
+
+**Phase 6 — the gate and the records.** the eight armed checks green — delivered assets 0 missing, importer settings 148 sprites with 0 errors, stat icons 19 of 19, portraits 25 of 25, area icons and emblems 14 of 14, chrome 50 of 50 in both directions, the party-mark check verifying nothing by design, and `UpstreamCheck` exit 0 (four local commits, under its 10-commit threshold); the strip-cut sweep green with its one named deferral (Phase 0); the touched screens captured and edge-checked per unit (`clear_p1c_*` 75/75 at four sizes, 0 clipped); the no-policy trajectories byte-identical to `traj_cont_p4` 6 of 6 (Phase 1 moved no byte); ATTRIB 0 throughout. `MISSING_PREREQUISITES.md` re-derived to LIVE-ONLY — every
+tombstoned section's body migrated verbatim to §38a below; what waits: the paste (§S), the coupling queue at
+its triggers (§A), item 10 and its riders (§D), Design's §E2/§E4/§E5, §V's sitting, §P's play.
+
+**Consumed rulings:** R-D1 (Phase 2), R-D2 (Phase 1), R-D3 (Phase 0), R-D4 (Phase 5), R-D5 (Phase 4).
+**Shelved:** nothing. **Deviations, stated:** the button's second face is labelled "Reset draft" (the
+honest label for what it now does); the R-D1 push covered Phases 0–1 as ruled — the commits after it are
+local and under `UpstreamCheck`'s own 10-commit threshold, the convention back with Elias. **RULINGS
+NEEDED:** none.
+
+### 38a. Tombstones migrated from `MISSING_PREREQUISITES.md` (2026-08-28, verbatim — the prereqs file is live-only from here)
+
+**The omnibus pass's `RULINGS NEEDED` (2026-08-28) — ✅ ALL THREE RULED 2026-08-28 by the continuation
+kickoff (pre-issued rulings, each strikeable in the kickoff message; none struck). Tombstone:**
+
+- **A4 → R-C1: build the one-line row type.** "The two-line row is a construction artifact; the boards drew
+  one-line rows and density was the original finding." Both law-row families go one-line (AVAILABLE
+  three-cell per 1j, IN FORCE / BEFORE THE HOUSE four-cell per 1i), the height derived from the board's
+  proportion (the 1i board: rows on a 32 px pitch at 1080p, ~26 in its scroller, a 14 px bold name — 2.29
+  name-fonts per row) translated to our px basis through the ledger conventions; the name cell keeps full
+  weight with `MeasuredLabel` shrink-never-truncate; the detail pane untouched. Built as the
+  continuation's Phase 1 with the density measured before and after — record: `COMPLETED.md` §37,
+  `CLAUDE.md` "The continuation kickoff (2026-08-28)". (The 2026-08-28 report's "~27px" was a misreading
+  of the rulings doc's "~27 rows per screen"; the board's row is 32 px.)
+- **A5 → R-C2: keep the 2% budget; inspect the nine.** Eye-read the nine `Stats/` diff pairs, classify the
+  damage per pair, then set per-damage-class budgets in `StripCutDiffCheck` from what the inspection
+  finds, each with its reason in the check's header (rule 6); re-run the 90-pair sweep; a pair that turns
+  out to be a real Design-side defect joins §E5 as an ask, not a budget. "Raising a blind bar to clear
+  observed failures is the rule-14 shape — do not do that." Executed as the continuation's Phase 2 —
+  record: `COMPLETED.md` §37, `CLAUDE.md` "The continuation kickoff (2026-08-28)".
+- **A6 → R-C3: the anchored seed-spread form is CONFIRMED** with the sourced seeds in — "sourced seeds
+  move what the countries are, not what they do unprompted." Recorded where the anchor is documented
+  (`CLAUDE.md` "Playtest 3, the rulings" §1, the dated confirmation line); the live-deviation revert note
+  stays there as the recorded alternative, unexercised.
+
+#### B. Database access — ✅ the three quality debts SETTLED 2026-08-28 (R-C5; tombstone)
+
+**Every figure that blocked a batch was sourced 2026-08-02** — the sourcing history is `COMPLETED.md`
+§23; the values, queries and status flags are `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`. The three quality
+debts that survived were attempted by the continuation kickoff's Phase 4 under the API cross-check gate
+(same-basis or the debt stands — no invention, no basis-mixing) and all three settled:
+
+| Debt | Outcome (2026-08-28) |
+|---|---|
+| **The real-wage row mixes THREE bases** (seed §5) | A same-basis set for all six recorded — Taxing Wages 2.1 (single worker, 100% AW, GEBT and NIAT) deflated by the national CPI, both in SDMX with every dimension stated; **derived, nothing seeded** (R4-2: the index opens at 100). It does not reproduce the press-cited figures for Italy/Germany/France, and says so |
+| **The AHD vintage behind C1's estimates is unrecorded** (seed §1) | Found: the anchors are the HM1.3 workbook's 2024 column (Switzerland 2023), confirmed to the digit; the workbook itself is reachable on `webfs.oecd.org` |
+| **Three homeownership figures are `[ESTIMATED]`** (seed §1) | Replaced by the same-basis OECD household figures from that workbook — Sweden 58.2, Italy 75.2, Poland 84.7 (each inside its 95% band); France 58.5 → 58.6 (the file's 58.56). **A seed change on four countries: the sim-math bar ran** — the continuation's Phase 4 record |
+
+What a database session still owes: the §F seed spread's `[PROVISIONAL]` → `[VERIFIED]` upgrade (seed §8).
+
+**Standing rule, three-for-three (kept live here — it governs any re-sourcing):** for any cross-country
+statistic, **assume an undocumented variant axis exists** and record the basis alongside every value —
+indicator code, population base, threshold, year. Housing overburden had 8 variants where its warning
+implied 3; youth unemployment 4 where it implied 2; homeownership 4+ with no warning at all. A bare
+number is unfalsifiable later.
+
+#### C / D2 / E1 / F — tombstones (closed sections, migrated 2026-08-26)
+
+- **C — visual review:** empty since 2026-08-02; all eleven items confirmed. Record: `COMPLETED.md` §16.
+  (Its successor is §V below — a different list, the same supplier.)
+- **D2 — Round 4 scoping:** released 2026-08-02; the arc closed 2026-08-17. Record: `COMPLETED.md` §19.
+- **E1 — `icon_stat_interestrate`:** delivered the same day it was recorded as awaiting. Record: `COMPLETED.md` §15.
+- **F — Step C4's closure:** ✅ **CLOSED 2026-08-17 — the F register's count is ZERO.** The closure
+  chain, the 1,416 → 19 measurement table and the double-count fix: `COMPLETED.md` §23.
+
+#### D1 — cabinet portraits: ✅ CLOSED 2026-08-27 (tombstone)
+
+**Delivered the same day the verdict was sent** (`PoliSim v2 Design Progress5.zip`, `HostUrl=https://claude.ai/`),
+verified on the four-pack bar and imported: 8 PNG + 8 SVG, every name spelled as derived from
+`CabinetSystem.CandidatePool` (0 missing, 0 unexpected), every PNG 512×640 full-colour opaque (the
+Portraits class), hand-written metas on the PoC's own template with collision-checked GUIDs — and
+**verified by loading, not by finding: `PortraitCoverageCheck` (new, in the suite) resolves 25 of 25 pool
+members through `IconLibrary`'s own accessors**. The cabinet set is complete: 18 of 18 ministers + 7 Fed
+chairs. Record: `COMPLETED.md` §24 (the seventh request's answers) and CLAUDE.md "Progress5". **Not
+done in the sense that matters for a portrait:** none of the eight has been in front of Elias — the
+roster with the batch on it is a §V item. The history (portfolios authored R4-4 → request sent 08-17 →
+the PoC → the register gate 08-26 → the send 08-27 → delivery 08-27) is `COMPLETED.md` §24.
+
+#### E3 — the rasterization diff, our half: MOVED TO THE ROADMAP (tombstone, 2026-08-27)
+
+**Ruled by Elias 2026-08-27: this was never Design's to supply.** Design's half closed 2026-08-17 (they
+re-rasterized the six per-state button PNGs fresh from SVG and pixel-diffed 6/6 identical — the
+Progress2 manifest); our half needs a tooling pass that makes Unity's vectorgraphics
+`RenderSpriteToTexture2D` path produce pixels under the batch harness, or a rasterizer installed on this
+machine. Neither is a named external party, so under this register's own admission test it is startable
+work — **`POLISIM_MASTER_ROADMAP.md` live item 7** carries it with `StripCutDiffCheck`'s finished compare
+machinery and the 2026-08-26 attribution correction. A prerequisite filed under the wrong supplier is
+one that lapses, because nobody on either side is waiting for it — the reason this tombstone exists.
+
+#### F — the session-sourced seed spread: ✅ CONFIRMED 2026-08-28 (tombstone)
+
+**R-C4 of the continuation kickoff (Elias, 2026-08-28): the mapping and the six caveats are CONFIRMED.**
+The whole sourcing record — sources, SDMX keys, the two tables, the six caveats as basis notes under the
+variant-axis rule, and two standing notes (a re-source trigger for the day SOCX publishes a post-pandemic
+common year; the childcare-clamp compression, known and accepted) — now lives where seed data lives:
+`POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §8. The slot tags in `WorldFactory.cs` read "mapping confirmed by
+Elias 2026-08-28"; the `[VERIFIED]` upgrade path remains the §B database session. The trajectories were
+byte-identical through the sourcing (the anchored form, confirmed as R-C3); nothing downstream moved.
+History: the ruling of playtest 3 (finding 1, option (i)); R-K9 of the omnibus (`915c800`, this section's
+own proposal followed as written); the confirmation. The section's sourcing text as it stood at `dc6f491`
+is in git history.
+
+**The ruling (playtest 3, finding 1), kept for the record:** option (i), a per-country seed spread for sector
+regulation and implemented welfare programs, from real data per the standing rule — "do NOT invent a
+spread to make the plot look good; if the figures need sourcing, say so and Elias will source them."
+
+**Still flagged, not this section's to decide:** the same uniform-50 finding holds for the other four
+sector dials and the labor/crime dials the seed file lists as uniform placeholders; the Compass Y formula
+averages generosity over IMPLEMENTED programs, so a country with one generous program outranks a broad
+welfare state.

@@ -14221,3 +14221,88 @@ record says. **A seed change on four countries, so the sim-math bar:** the traje
 **Phase 5 — the gate and the records (the records commit following `e08c8c0`).** the closing sets `cont_final_1600` (USA, 73/73) and `cont_final_swe_1600` (Sweden, 71/71 — no fed-chair HELD pair on a country without an independent chair), both text guards silent, the three canvas asserts clean, `ScreenEdgeCheck` 0 clipped on both; Sweden's Homeownership row on film at 58.2 % (`cont_final_swe_1600_02a_statistics_domestic_deep`); the eight armed checks — delivered assets 0 missing, importer settings 148 sprites with 0 errors, stat icons 19 of 19, portraits 25 of 25, area icons and emblems 14 of 14, chrome 50 of 50 in both directions, the party-mark check verifying nothing by design (no party system on this branch), and `UpstreamCheck` exit 1: 52 commits ahead of `origin/main`, above its 10-commit threshold — the work exists on one disk, and the push is Elias's. `MISSING_PREREQUISITES.md` §V regenerated as
 the final review checklist — every row on film, every row naming its capture, the two Editor-only ⚠ rows
 gone; `RULINGS NEEDED` reduced to Elias-in-person items (the sends, §V, §P, 13 September).
+
+## The clear-out kickoff — the riders, the Reset click, the push, the send package, the §V index, the playtest saves (2026-08-28)
+
+Elias's clear-out kickoff of 2026-08-28: the rest divides into what a session can finish and what is
+physically Elias's; this pass finished the first set and reduced the second to single gestures.
+Explicitly not swept: the trigger-queued items whose triggers have not fired (term accumulation,
+investment deepening, the government-consumption block, pass 6's deferred set) — pulling them forward
+would be speculative construction. Anchor `2f42deb`; six commits; one unit, one commit, by path.
+
+**Phase 0 — the two riders (`4df1dbc`).** (a) `LAW_BROWSER_BOARD_RULINGS.md`'s 2026-08-28 annotation had
+"this board's one-line ~27 px" — the omnibus report's misreading of "~27 rows per screen", propagated by
+the session into the annotation; it now reads "this board's 32 px one-line pitch (~27 rows per screen)",
+per `a7d877d`'s derivation, the ✅ line untouched. (b) R-D3 in `StripCutDiffCheck`: a `DeferredPairs`
+table by name, each entry a dated pointer to the ask on file — `ui_hatch_draft` (the tiling rotation,
+48.5 % structure; the shipped PNG presumed canonical; `CLAUDE_DESIGN_ASSET_REQUEST.md` §E5). A deferred
+pair is measured and printed with its figures, marked DEFERRED, never a FAIL; any OTHER pair over budget
+still fails — by name, never by class. The header states when the deferral dies: the day Design's §E5
+answer lands, in the commit that imports it, and the pair must then pass on its own; a deferral without
+an ask on file is not allowed. Re-run: exit 0 — 86 of 90 within the two bars, 3 text-bearing, 1 deferred,
+1 unrasterizable (the slider strip), 0 FAILED. ⚠ The first re-run failed to compile on an `out`
+variable behind a short-circuit `&&` (definite assignment) — fixed before the run that counts.
+
+**Phase 1 — the Reset click, draft-only (R-D2, `4e44777`).** The named gap (roadmap, "the un-voted
+Reset-to-Default click"): the button's second face cleared the live override on the spot — an un-voted,
+instant cut back to the standing rate that ended the partner's mirrored tariff at the next boundary. Its
+queue trigger ("before item 10 opens the vote to real parties") is a dated deadline sixteen days out, so
+it cleared now, in the minimal honest shape: Reset is an EDITING gesture. "Reset draft" calls
+`ResetPartnerTariffDraft(partnerId)` — the draft entry dropped (so `GetPartnerTariffInput` falls back to
+the live override), the preview cache invalidated — and writes nothing live; the override's rate moves
+only through the Trade bill, a cut voted like a rise, 21 days and a division record. Set Override is
+unchanged (the flag comes on at today's effective rate — economically inert until a bill moves it). The
+tab's paragraph says so. The alternative — the click filing a reset bill — is one routing change away if
+a playtest ever wants it. On film, in the main sweep (`CaptureFilmGaps` (d)): the first partner's override
+flag on at the effective rate (what Set Override does; no model movement even if days later advance), the
+draft dial moved +10 through the slider's own dictionary and captured (`06m_policylaws_trade_draft_moved`
+— 13.00 % amber against 3.00 % standing), then `ResetPartnerTariffDraft` by reflection and captured again
+(`06n_policylaws_trade_draft_reset` — the draft back at 3.00 % beside an override still active and
+"Reset draft" still offered); both writes undone afterwards. ⚠ The first bar folded on the driver's own
+assert-own-name: it tested "draft key absent" after the reset, but the dial row rewrites its dictionary
+entry every frame with the slider's current value — the right test is "draft value equals the live
+override, and the live override unmoved"; corrected, the bar ran clean. Bar: `clear_p1c_*` 75/75 at all
+four sizes, both text guards silent, `ScreenEdgeCheck` 0 clipped ×4; the no-policy trajectories
+byte-identical to `traj_post_omnibus` 6 of 6. Records: the roadmap's queue entry tombstoned with its
+date; this file's two pass-6 mentions carry dated amendments.
+
+**Phase 2 — the push (R-D1, the flagged assumption, not struck).** The procedure, no step skipped:
+`git fetch origin` — the remote tip `e86c79dc9819c11e9ca4e843a79894de9e9c6ace` (2026-08-26, "The second law category ships"), an ancestor of local HEAD with nothing on `origin/main` unknown to local history (`HEAD..origin/main` empty; 55 commits to push, the post-rewrite line intact); `git push --force-with-lease=main:e86c79dc9819c11e9ca4e843a79894de9e9c6ace origin main` → `e86c79d..4e44777  main -> main`; `git fetch origin` again → `origin/main` = `4e4477755f90572d0c862a6087ed7656ccb876fb` = local HEAD, CONFIRMED. No credential prompt (the credential manager held the token; `GIT_TERMINAL_PROMPT=0`, `GCM_INTERACTIVE=never` so a prompt would have failed fast, not hung), no lease rejection, no retry. `UpstreamCheck`'s convention ("the push is Elias's") was amended for this one push by this kickoff and is recorded here; the four commits after it (Phases 3–6) are local and under the check's own 10-commit threshold — the convention is back with Elias.
+
+**Phase 3 — the send package (`d30eb1a`).** `SEND_PACKAGE_2026-08-28.md` at the repo root: the courtesy note
+(`1a4fd172…`, 6,664 bytes) to a new dated path in Design's project, and the request doc through §E5
+(`4f7ee0d2…`, 17,632 bytes) to the same two paths the 2026-08-27 send used; the glance after the paste is
+the readback hash against the two digests; what comes back (Design's §E5 answer) and where it lands (the
+import commit that removes the R-D3 deferral) are written out. Sending stays Elias's.
+
+**Phase 4 — the §V index (R-D5, `076273a`).** `Tools/sv_index.ps1` reads §V's table under "# V." and writes
+`../PoliSim-captures/sv_index.html`: one section per row in checklist order, every backticked capture
+token expanded against the capture folder — the checklist's own shorthand read as written (a "_06i_…"
+continuation of the previous token's prefix up to its size slot, "_rows" / "_deep" as the scrolled
+variants of every base named so far in the row, an ellipsis as the previous token's screen tail,
+character-class globs through PowerShell's own wildcards) — every matching file linked, the 1600 one
+previewed inline, a token that matches nothing listed as missing rather than dropped. Tooling in-tree,
+output out of tree, nothing binary committed. ⚠ Two of the checklist's own conventions defeated the
+first cut (the digit-led continuation tokens; the ellipsis — which also needs the script saved with a
+BOM, or PowerShell 5.1 reads the "…" as three bytes of ANSI); both read as written now.
+
+**Phase 5 — the playtest saves (R-D4, bounded — cheap, so built; `8c7081b`).** The save carries the whole
+simulation state and the controller's draft layer (round-trip 12/12), so authored states cost a driver
+mode, not infrastructure: `-shotsaves` stages the three on the warmed-up game BEFORE the sweep's own
+harness drafts (diverged SWF weights, drafted spending lines) go in — a playtester opens a clean book —
+and writes each through `SaveGameService.CreateSaveGame` / `SaveToFile` into the real saves directory,
+filming each state once. USA: `playtest_1_trade_bill_costs` (a partner override drafted so the Trade bill
+card shows its cost rows; navigation is not saved by design — the file name says where to look) and
+`playtest_3_dense_midgame` (the budget-process pause, pending cabinet decisions and a foreign-policy
+meeting by the bounded searches, one bill of every type, twelve enacted laws). Sweden:
+`playtest_2_riksbank_rate_decision` (a rate decision drafted on the Riksbank tab, the load opening on
+option C's naming — the verdict's surface). ⚠ The first cut named this save for a pending Riksbank
+appointment and asserted on one; it refused to write, correctly — on `main` no chair is seeded for Sweden
+(Riksbank-B's appointment machinery ships with item 10, §D0), so no appointment can be pending; the
+staging was re-cut to the verdict's actual surface.
+
+**Phase 6 — the gate and the records.** the eight armed checks green — delivered assets 0 missing, importer settings 148 sprites with 0 errors, stat icons 19 of 19, portraits 25 of 25, area icons and emblems 14 of 14, chrome 50 of 50 in both directions, the party-mark check verifying nothing by design, and `UpstreamCheck` exit 0 (four local commits, under its 10-commit threshold); the strip-cut sweep green with its one named deferral (Phase 0); the touched screens captured and edge-checked per unit (`clear_p1c_*` 75/75 at four sizes, 0 clipped); the no-policy trajectories byte-identical to `traj_cont_p4` 6 of 6 (Phase 1 moved no byte); ATTRIB 0 throughout. `MISSING_PREREQUISITES.md` re-derived to LIVE-ONLY: every
+tombstoned section's body migrated verbatim to `COMPLETED.md` §38a; the register re-derived to what waits
+(the paste, the coupling queue at its triggers, item 10 and its riders, Design's §E2/§E4/§E5, §V's sitting,
+§P's play); §V gains the Reset pair's row; §P gains the load-play-judge lines. The board after this pass:
+machine side idle, the remote holding the tree through Phase 1; Elias's side five gestures and no sixth.
