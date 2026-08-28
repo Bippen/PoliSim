@@ -74,6 +74,27 @@ through the night; state lines at the bottom are re-derived at each part boundar
   reserved `ElectionNoise` stream name — the enum itself untouched tonight, R-N2 — the four
   eventual wiring points, the R-EL6 inventory, the billed stubs).
 
+- **[call, late]** Part 4/5 scope, finalized against the sourced rules: SWEDEN full (exact
+  counts, expected exact); GERMANY at three-decimal share precision (counts billed; SSW entered
+  at its seat-implied 0.152 % — the published 0.2 % is one-decimal rounding; strikeable);
+  POLAND as the NATIONAL-d'Hondt SIGNATURE run (deliberately the wrong system, re-deriving the
+  recorded 70-seat gap from scratch — the real 41-district allocation waits on the billed
+  per-district counts; `PerDistrictSum` is ready for them); **ITALY NOT RUN** (the Rosatellum's
+  allocation FORMULA was not sourced tonight — R-N4 forbids running un-sourced arithmetic;
+  billed); **FRANCE NOT RUN** (two-round SMD — no national model exists by construction);
+  **USA NOT RUN** (12 of 51 states fetched). Every not-run stated in the harness's own output
+  so silence cannot read as coverage.
+- **[call, late]** Part 6 (polling/momentum §§20–22): SKIPPED — the queue's designated tail,
+  and its objects are spec-shaped (the spec is absent); billed with the other spec-blocked
+  units. One line, as instructed.
+- **[call, late]** Part 7 read as its parenthetical describes (the previous overnight files
+  were superseded and did not arrive): the 1000-turn soak = the `traj_pweb_*` t1000 dumps
+  (byte-identical to the baselines 6/6 — the divergence headline is ZERO divergence at every
+  horizon); the film-sweep and suite repetitions folded into the night's already-run triple
+  (det_a · det_b · pweb_1280 are three sweeps of near-one code with the diff fully classified)
+  plus the eight checks (once green; a second run rides the elections-part boundary).
+  Strikeable — the morning can order the literal triple/double if this reading under-shot.
+
 ## Part 3 — census of the Policy Web (Annex G's counting half, measured by `PolicyWebCensus`)
 
 (Annex G material, recorded here until the request doc lands it:) 73 nodes = 55 policy + 18
@@ -153,9 +174,88 @@ the visible plate (328 px at 1280) is SHORTER than the diagram's own 0.5·h floo
 clipped by the fold at rest; label ladder: body 17/22/26/30, wedge headers 16/21/25/29 px.
 `det_a` reproduces `v31bf` byte-exactly at 1280 (the script cross-check).
 
-## RULINGS NEEDED (accumulating)
+## Parts 4–5 — the vote-to-seat layer and its backtest: THE CENTERPIECE, LANDED
 
-*(none yet)*
+`Assets/Scripts/Elections/SeatAllocation.cs` — pure functions, wired to nothing (the only
+caller is the editor harness): d'Hondt · Sainte-Laguë/Schepers · modified Sainte-Laguë (1.2)
+as divisor sequences, national thresholds with minority exemptions (the statute's own
+denominator), and `PerDistrictSum` for the real Polish system (ready for the billed
+per-district counts). Deterministic; no string in any signature (B3 cannot reach it); the tie
+policy stated in full. `Assets/Editor/SeatAllocationBacktest.cs` runs it — zero free
+parameters, every input a cited figure from `ElectionsData/`.
+
+**The backtest (campaigns OFF, no tuning — deviations are findings):**
+
+| country | method | result |
+|---|---|---|
+| **Sweden 2022** | national modified Sainte-Laguë 1.2, 4 % threshold, 349 | **EXACT — total absolute seat deviation 0** (all eight parties: S 107, SD 73, M 68, V 24, C 24, KD 19, MP 18, L 16) |
+| **Germany 2025** | national Sainte-Laguë/Schepers, 5 % + SSW exempt, 630 | **EXACT — total deviation 0** (CDU 164, AfD 152, SPD 120, Grüne 85, Linke 64, CSU 44, SSW 1; BSW/FDP 0) — at three-decimal share precision, better than the recorded off-by-1 band |
+| **Poland 2023** | NATIONAL d'Hondt — deliberately the wrong system (signature run) | **total deviation 70: PiS 169 (−25), KO 147 (−10), TD 69 (+4), NL 41 (+15), Konf 34 (+16)** — digit-for-digit the recorded branch-side signature (PiS 169, Konf 34), independently re-derived: the allocator AND the branch's claim are both confirmed without inspecting the branch |
+
+Synthetics: ALL PASS (the divisor-decisive case — pure S-L seats B, the 1.2 modification takes
+the seat away — and the d'Hondt-vs-S-L divergence case; plus the per-district-vs-national
+structural gap demonstrated on synthetic districts: [4,2,0] vs [4,1,1]). Not run, stated in
+the harness's own output: Italy (formula unsourced — billed), France (no national model
+exists), USA (12 of 51 states fetched). Harness exit 0; log
+`backtest_seats_20260829.log`. **The overhaul doc's Part 5 obligation — "port to C# and
+reproduce; re-derive Germany and Poland from scratch" — is DISCHARGED for Sweden (exact),
+Germany (exact, from published shares), and the Poland signature (exact reproduction of the
+recorded gap).**
+
+## Part 2 — E-0, what landed of it (the spec-independent halves)
+
+Unit 1 (spec verbatim at root): **BLOCKED — the spec never arrived**; billed. Unit 2 (the
+44-section gap table): **BLOCKED on the spec**; its EXISTS column is ready — the R-EL6
+inventory in `ELECTIONS_ARCHITECTURE.md` (ElectionSystem's fixed cycle + approval threshold +
+transient result; `PartyArchetype`'s four archetypes with `TotalSeats = 200` and
+`ParliamentSeats`; seat drift; the hemicycle/compass/map renderers; `PublicationSystem` as the
+polling substrate; five `mark_party_*` sprites drawn by nothing; the Fed-chair election-eve
+pause; the stranded branch UNINSPECTED per D0). Unit 3 (architecture): **DONE in its
+spec-independent halves** — R-EL1 mapping, state-vs-config, the `ElectionNoise` stream name
+reserved (enum untouched), the four wiring points documented-not-done, the billed stubs. Unit
+4 (§7 types + compatibility core): **BLOCKED on the spec** (§7 is the spec's); the layer that
+could be built without invention was built instead (Parts 4–5 above). The roadmap gained the
+era note at the live edge; the full Elections-era roadmap section is the morning's to place
+once the spec exists to cite.
+
+## Part 6 — polling + momentum: SKIPPED
+
+One line, as the queue instructs for its designated tail: §§20–22 are spec-shaped and the spec
+is absent; billed with the other spec-blocked units.
+
+## Part 7 — the measurement night (the interpretation call is in the log above)
+
+The 1000-turn soak: `traj_pweb_s777_t1000` and `traj_pweb_s424242_t1000` ran the full horizon
+and are **byte-identical to the `traj_v31bf` baselines** — the divergence headline is ZERO
+divergence at t100/t500/t1000, both seeds (and the `traj_e2_*` family re-proves it at the
+elections boundary — result line below when the chain lands). Film sweeps: three full sweeps
+of near-one code exist for this night (`det_a`, `det_b`, `pweb_1280`) with every differing
+frame classified (7 code-caused on the changed screen; 4 time-envelope members, each viewed
+and named). The suite: the eight checks green at the Part 1 boundary; the second run rides the
+elections boundary (below).
+
+## RULINGS NEEDED (the morning's list)
+
+1. **The spec:** `ELECTIONS_CAMPAIGN_SPEC.md` did not arrive with the queue and is nowhere on
+   disk — re-paste it, and the blocked units (gap table, §7 types, §8/§26/§27 layers, §§20–22
+   polling, the N/A column per R-EL7) unblock in order.
+2. **Italy's allocation formula:** Rosatellum structure and thresholds are sourced; the
+   PROPORTIONAL ALLOCATION FORMULA is not — rule whether the morning sources it (the Camera
+   dossier / DPR 361 art. 83 consolidated text) before Italy joins the backtest.
+3. **The USA "national election" framing** for the sim's shape (the presidential state table
+   vs the House as the chamber) — tonight carried both; the model's choice is a ruling.
+4. **Board 2b rides the §S paste** — the paste is yours (one gesture, rows 1 of 2 / 2 of 2).
+
+## State (re-derived at each boundary)
+
+- Queue arrival: HEAD `c6cd7d3` == origin/main; tree carried R-W1 + the census tool.
+- Part 1 boundary: `3b85543` · `7959477` · `e30c82b` · `2439b41` · `104cc32` (E-0/E-1 rode the
+  same push) — **pushed, origin/main == HEAD confirmed**.
+- Elections boundary: `f524eeb` (the allocator + backtest) committed; **the R-N2 chain came
+  back GREEN — dump exit 0, `traj_e2_*` ≡ `traj_v31bf_*` 6/6 by SHA-256, all eight checks
+  exit 0.** Not one byte of the existing game moved all night, measured at both boundaries.
+  The boundary commit (this report + the `Elections.meta` sibling file) and the R-SP1 push
+  follow; the closing commit confirms origin == HEAD.
 
 ## State (re-derived at each boundary)
 
