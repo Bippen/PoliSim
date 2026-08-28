@@ -6317,7 +6317,15 @@ namespace PoliSim.UI
             // its natural width and stretches the whole box past the window - CalcSize ignores
             // wordWrap with no width given) stands for every label below, which is why lawsInnerWidth
             // survives the cut.
-            float lawsInnerWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
+            // Omnibus closing gate (2026-08-28), label-clipping instance #14 - measured, not inferred:
+            // this box sits INSIDE DrawPolicyLawsTab's own _boxStyle box, so every width here is two
+            // paddings in from the area, not one. Sized against availableWidth (one level), the chip
+            // rows and the list/detail split laid out at 786px on an 814px area (LAWSPROBE, 1600x929),
+            // the box grew to the area's full width and the outer box to 842 - the Laws panel ran 28px
+            // past its frame at every size, and only the 2% margin column at 1920 hid it from
+            // ScreenEdgeCheck. The outer box's inner width is the budget this box is drawn into.
+            float lawsOuterInnerWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle);
+            float lawsInnerWidth = PoliSimWidgets.InnerWidth(lawsOuterInnerWidth, _boxStyle, 1, _labelStyle);
 
             // Board 1j (2026-08-26, §7.1's answer) said THE CATEGORY CHIPS STEP DOWN while one
             // category held everything, and promised: "The chip row returns, hatched counts and
@@ -6332,7 +6340,7 @@ namespace PoliSim.UI
             // categories that never entered the enum). The summary line below drops its
             // "all CRIME & JUSTICE" clause - the chips carry the per-category counts now.
             GUILayout.BeginHorizontal();
-            float categoryShare = SubTabShare(availableWidth, 3);
+            float categoryShare = SubTabShare(lawsOuterInnerWidth, 3);
             string allChipLabel = $"All - {LawCatalog.All.Count}";
             string crimeChipLabel = $"Crime & Justice - {CrimeJusticeLawCount}";
             string laborChipLabel = $"Labor Market - {LaborMarketLawCount}";
@@ -6390,7 +6398,7 @@ namespace PoliSim.UI
             // floor their sum overran the row ("Availab|" cut at the box edge in the enumeration
             // capture). SubTabShare/SubTabRowHeight is the sub-tab rows' own established pair.
             GUILayout.BeginHorizontal();
-            float statusShare = SubTabShare(availableWidth, 4);
+            float statusShare = SubTabShare(lawsOuterInnerWidth, 4);
             float statusRowHeight = SubTabRowHeight(statusShare, "All statuses", "Enacted", "Pending", "Available");
             DrawSubCategoryButton("All statuses", LawStatusFilter.All, ref _lawStatusFilter, statusShare, statusRowHeight);
             DrawSubCategoryButton("Enacted", LawStatusFilter.Enacted, ref _lawStatusFilter, statusShare, statusRowHeight);
@@ -6882,6 +6890,12 @@ namespace PoliSim.UI
 
         private GUIStyle _lawNameStyle;
 
+        /// <summary>Closing gate (2026-08-28): the detail pane's action button style - the neutral
+        /// action style with word wrap on - and the source style it was copied from, so a rebuilt
+        /// source (RescaleStylesToScreen on a resize) rebuilds the copy.</summary>
+        private GUIStyle _lawActionButtonStyle;
+        private GUIStyle _lawActionButtonSource;
+
         /// <summary>
         /// R-K5 (omnibus 2026-08-28): the selected law's name at an explicit MEASURED width, wrapping
         /// at word boundaries to two lines at full size and shrinking only past that - the resort
@@ -7097,10 +7111,22 @@ namespace PoliSim.UI
             // pane; the name takes the rest and goes through the two-line ladder (DrawLawNameLadder),
             // so a short status no longer starves the name and a long name no longer breaks mid-word.
             float statusWidth = Mathf.Min(contentWidth * 0.5f, _labelStyle.CalcSize(new GUIContent(statusLabel)).x + 24f);
-            float nameWidth = Mathf.Max(0f, contentWidth - statusWidth);
+            // Closing gate (2026-08-28): the status sits directly after the name, no FlexibleSpace.
+            // The pane's scroll view lays every row out at its WIDEST child's width, and two children
+            // ran past contentWidth (the MAGNITUDE row's fixed cells and the un-widthed action button,
+            // both capped below), so a FlexibleSpace pushed the status cell to that wider right edge -
+            // past the viewport - and once R-K5 sized the cell to its text, the tail was hidden ("not
+            // enac|" at 1280, whole in the pt3 capture, whose 200px cell left the left-aligned text
+            // well inside). A first attempt subtracted both styles' full margins from the name instead
+            // - wrong diagnosis. A geometry probe (never committed) then read the row at 1280: IMGUI
+            // collapses the ladder's right margin and the label's left margin to the larger of the two
+            // (status cell at x=117 after a ladder ending at 113), so that one gap comes out of the
+            // name's budget and the row's extent is the description label's own, not 4px past it -
+            // which alone set the scroll content 1.6px wider than its 225.4px viewport.
+            float innerGap = Mathf.Max(_headerStyle.margin.right, _labelStyle.margin.left);
+            float nameWidth = Mathf.Max(0f, contentWidth - statusWidth - innerGap);
             GUILayout.BeginHorizontal();
             DrawLawNameLadder(law.Name, nameWidth);
-            GUILayout.FlexibleSpace();
             DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(statusWidth));
             GUILayout.EndHorizontal();
 
@@ -7117,7 +7143,12 @@ namespace PoliSim.UI
             float detailStepGap = 3f * stepScale;
             float detailStepsWidth = detailStepWidth * 4f + detailStepGap * 3f;
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"MAGNITUDE: {LawMagnitudeLabel(tier)}", _labelStyle, GUILayout.Width(_labelStyle.CalcSize(new GUIContent("MAGNITUDE: MODERATE")).x + 8f));
+            // Closing gate (2026-08-28): the label's cell is capped at what the pane leaves beside the
+            // steps - probed at 1280, this row measured 278.5px against a 214.4px content width and set
+            // the whole scroll content wider than its viewport: a horizontal scrollbar across the pane
+            // at 1280 and 1600, every row's right edge past the visible pane. The label wraps when capped.
+            float magnitudeLabelWidth = Mathf.Min(_labelStyle.CalcSize(new GUIContent("MAGNITUDE: MODERATE")).x + 8f, Mathf.Max(0f, contentWidth - detailStepsWidth));
+            GUILayout.Label($"MAGNITUDE: {LawMagnitudeLabel(tier)}", _labelStyle, GUILayout.Width(magnitudeLabelWidth));
             Rect stepsRect = GUILayoutUtility.GetRect(detailStepsWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(detailStepsWidth));
             DrawMagnitudeSteps(new Rect(stepsRect.x, stepsRect.y + stepsRect.height * 0.25f, detailStepsWidth, stepsRect.height * 0.5f), tier, detailStepWidth, detailStepGap);
             // Playtest 3 cut (2026-08-27): the band's dial-movement range ("±15-22") beside the steps
@@ -7211,7 +7242,17 @@ namespace PoliSim.UI
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && !_isGameOver;
             string actionLabel = enacted ? $"Repeal {law.Name}" : $"Enact {law.Name}";
-            if (GUILayout.Button(actionLabel, _neutralActionButtonStyle))
+            // Closing gate (2026-08-28): the button takes the labels' own extent and wraps its text -
+            // un-widthed, "Enact Cash Bail Abolition Act" asked for its single-line width and was the
+            // pane's other over-wide child (see the MAGNITUDE row). The wrapping copy follows its
+            // source style, which RescaleStylesToScreen replaces on a resize.
+            if (_lawActionButtonStyle == null || !ReferenceEquals(_lawActionButtonSource, _neutralActionButtonStyle))
+            {
+                _lawActionButtonStyle = new GUIStyle(_neutralActionButtonStyle) { wordWrap = true };
+                _lawActionButtonSource = _neutralActionButtonStyle;
+            }
+            float actionWidth = Mathf.Max(0f, contentWidth + _labelStyle.margin.horizontal - _lawActionButtonStyle.margin.horizontal);
+            if (GUILayout.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
             {
                 _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
             }
