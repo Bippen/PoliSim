@@ -83,6 +83,9 @@ The sequence, as written there:
 - **Phase B (on Design's boards):** The Desk built against the board; the (b)-class returns resolved;
   capture family `v3desk_*`. **BUILT 2026-08-28**, the day boards 1m and 1n landed (`COMPLETED.md` §41).
 - **Phase C:** per-screen fold defaults tuned on film; §P's density verdict re-read on the folded stage.
+  **CLOSED 2026-08-28** — the defaults ruled as a table (R-PC2), the note to 1i–1n, one current paste
+  (`COMPLETED.md` §42); §P is now yours, recommended after this pass so the density verdict is read on
+  the real stage.
 - **Item 10 lands inside v3:** election night is born on the v3 shell — the Desk folded, the map as the
   stage. **Fallback, stated:** if Design's board has not landed by the gate, election night builds in the
   OPEN state (pure v2, fully supported) and moves to the stage later; the shell ships either way, so
@@ -97,9 +100,13 @@ written as the request doc's §1 with its three annexes; the send package regene
 two boards (1m "Screen 0 — The Desk, folded", 1n "the rail") landed on the live screens file the same
 day and Screen 0 was built against them (`GameController.Desk.cs`; the boards as read into the spec's
 §A.17; the build's fourteen reversible calls R-B1…R-B14 in `COMPLETED.md` §41; the `v3desk_*` family on
-film at four sizes). **Phase C is the next startable v3.0 work:** the per-screen fold defaults tuned on
-film (Statistics › Domestic still carries the FOLDED default it held as the Desk's stand-in) and §P's
-density verdict re-read on the stage.
+film at four sizes). **Phase C CLOSED 2026-08-28** — the fold-default table ruled (a screen defaults
+FOLDED only if its content is designed for the full-width stage: the Desk and Budget, both locked;
+Statistics › Domestic reverted to OPEN and filmed at 1280 and 2560), R-B2/R-B3/R-B4 ratified standing,
+the courtesy note rewritten 1i–1n-aware, the send package regenerated as one current paste
+(`COMPLETED.md` §42). **v3.0 Phases A–C are closed. The era's live edge reads WAITING:** Design's hatch
+re-cut (§E5, the one open ask) · 13 September (item 10, election night born on the v3 shell). Nothing of
+v3.0 is startable by a session today; §P (the three felt verdicts, now on the real stage) is Elias's.
 
 ---
 
@@ -309,11 +316,11 @@ happen.
 - Read **The board** above, then the live list — both re-derived, never edited forward. If the board
   disagrees with `git log`, the log is right and the board is stale.
 - Five gestures, no sixth (the push is a session's since R-SP1, 2026-08-28 — fast-forward only, at pass
-  end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the one send now carries §E5 AND
-  the v3.0 boards ask with its annex captures); sit once through `../PoliSim-captures/sv_index.html` (§V,
-  the shell's rows, the ladder films and the Desk now on it); load the three `playtest_*` saves and play
-  (§P); paste the request doc's §E5 measurement to Design for the one re-cut (the boards, §E6, landed and
-  are built); 13 September (§D). Nothing waits on a ruling (§A holds only the coupling queue at its triggers), and
+  end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the Phase C package, the one
+  current paste: the 1i–1n note and the request doc whose live ask is §E5's hatch re-cut with the
+  figures; it supersedes every earlier package); sit once through `../PoliSim-captures/sv_index.html`
+  (§V, the shell's rows, the ladder films, the Desk and the ruled defaults now on it); load the three
+  `playtest_*` saves and play (§P — recommended now that the stage is real); 13 September (§D). Nothing waits on a ruling (§A holds only the coupling queue at its triggers), and
   `MISSING_PREREQUISITES.md` is live-only — its tombstones are `COMPLETED.md` §38a.
 - Review the commit log — each unit of work is its own commit, validation results in the message or
   CLAUDE.md.

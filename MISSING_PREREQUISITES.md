@@ -15,7 +15,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 
 | entry | waiting on | gate |
 |---|---|---|
-| §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`: the note, the request doc through §1 — the v3.0 boards — and §E5, and the annex captures, each with its digest and its path) | the E2 convention: sending is Elias's |
+| §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`, regenerated for v3.0 Phase C and superseding every earlier package: the 1i–1n courtesy note to a new dated path, and the request doc — its one live ask §E5's hatch re-cut with the measured figures — to `uploads/` and a new dated copy; two digests, no captures) | the E2 convention: sending is Elias's |
 | ~~§E6 — the v3.0 Phase A boards~~ **LANDED 2026-08-28** — boards 1m ("Screen 0 — The Desk, folded", 1280×720) and 1n ("the rail") on the live screens file, no gap costed | — | built the same day (v3.0 Phase B, `COMPLETED.md` §41); the row retires with the next re-derivation |
 | §A — the coupling queue Q6–Q10; F2 | **Elias — a decision**, each at its own named trigger | no trigger has fired; nothing else waits on a ruling |
 | §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
