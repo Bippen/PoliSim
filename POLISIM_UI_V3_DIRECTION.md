@@ -41,20 +41,15 @@ player-controlled shell state, everywhere:
 
   | screen | default | locked? |
   |---|---|---|
-  | Screen 0 — The Desk | FOLDED | yes (R-B3) |
-  | Budget (the ledger, all five categories) | FOLDED | yes (R-A1) |
-  | Statistics › Domestic | OPEN (reverted 2026-08-28) | no |
-  | Statistics › International | OPEN | no |
-  | Decisions | OPEN | no |
-  | Demographics | OPEN | no |
-  | Policy/Laws (every category, the Policy Web, the Laws browser) | OPEN | no |
-  | Politics (Parliament, Compass, Cabinet, Federal Reserve) | OPEN | no |
-  | The Canvas screens (the selector, signing) | the seam's own — the frame beneath keeps its screen's state | — |
+  | **ONE FRAME — every screen (Screen 0 and the six documents; the Canvas screens keep the seam's own layering)** | FOLDED | yes (R-E1, v3.1, 2026-08-28) |
 
-  A new screen enters the table with a line here before it ships; the player's own flip on any
-  unlocked screen is remembered per screen and per save and overrides the default.
-  *Ratified standing 2026-08-28 (the consolidation rider): R-PC2a — the Canvas screens as "the
-  seam's own" is correct layering; R-PC2b — the entry rule is R-PC2 made durable.*
+  **The table collapsed to one row on 2026-08-28 (v3.1 R-E1, the OPEN state retired — gated on the
+  duty audit, Annex A of the ninth request: no orphan).** The row it replaced — Screen 0 and Budget
+  FOLDED and locked, every document OPEN, Statistics › Domestic reverted 2026-08-28 (R-PC2), the
+  Canvas screens as the seam's own (R-PC2a), the entry rule (R-PC2b) — stood for one evening and is
+  in git history; the entry rule survives in its new form: a new screen enters the frame, there is
+  no other. The player's flip and the per-save override are unreachable (the enum and the persisted
+  overrides stay one pass for the harness's historical states; v3.1 Phase B deletes them).
 - Minimum width stays 1280×720; the fold is what makes the floor generous instead of tight.
 
 ### 2. The Desk — the oversight screen (V3-R3)

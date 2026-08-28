@@ -2310,7 +2310,7 @@ namespace PoliSim.Testing
         {
             if (controller.ShellFoldLocked())
             {
-                yield break;   // a locked screen (the Budget ledger, Screen 0) has one legal state; there is no other to sweep
+                yield break;   // ONE FRAME (v3.1 R-E1): every screen has one legal state; there is no other to sweep
             }
 
             controller.ToggleShellFold();
@@ -2324,7 +2324,7 @@ namespace PoliSim.Testing
         {
             if (controller.ShellFoldLocked())
             {
-                Debug.Log($"SHOT: {stem} - the shell fold is locked on this screen (the Budget ledger's and Screen 0's one legal state); no fold pair exists to film.");
+                Debug.Log($"SHOT: {stem} - the shell fold is locked on this screen (ONE FRAME since v3.1 R-E1: every screen's one legal state); no fold pair exists to film.");
                 yield break;
             }
 

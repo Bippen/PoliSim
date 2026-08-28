@@ -1164,12 +1164,8 @@ namespace PoliSim.UI
         /// </summary>
         private ShellFoldState DefaultShellFold()
         {
-            if (_onDesk || _consolidatedTab == ConsolidatedTab.Budget)
-            {
-                return ShellFoldState.Folded;
-            }
-
-            return ShellFoldState.Open;
+            // v3.1 R-E1: ONE FRAME - the table collapsed to one row; every screen is FOLDED.
+            return ShellFoldState.Folded;
         }
 
         /// <summary>
@@ -1190,7 +1186,11 @@ namespace PoliSim.UI
         /// </summary>
         internal bool ShellFoldLocked()
         {
-            return _onDesk || _consolidatedTab == ConsolidatedTab.Budget;
+            // v3.1 R-E1 (2026-08-28, ONE FRAME - gated on the duty audit, Annex A of the ninth
+            // request, no orphan): the OPEN state retires and every screen lives in the Desk's frame,
+            // locked FOLDED. The enum, the overrides and the OPEN branch stay one pass for the
+            // harness's historical states and the record; v3.1 Phase B deletes them.
+            return true;
         }
 
         /// <summary>The fold state the frame draws this screen in: the screen's locked state if it has one, else the player's override for it if one was ever made, else the screen's default.</summary>
@@ -2098,6 +2098,12 @@ namespace PoliSim.UI
             }
             else
             {
+            // ⚠ UNREACHABLE since v3.1 R-E1 (2026-08-28, ONE FRAME): EffectiveShellFold is FOLDED on
+            // every screen, so this OPEN branch - the chrome column (DrawTopBanner, DrawCalendarPanel,
+            // DrawPolicyControls, DrawCalendarAndSpeedControls) and, below, the tongues
+            // (DrawConsolidatedTabs, DrawActiveFolderTongue) - never draws. Kept one pass for the record
+            // and the harness's historical states; v3.1 Phase B deletes it with the enum. Its duties
+            // and their homes are the ninth request's Annex A.
             // v2.0: the left column stands on paper like every other panel. Without a sheet under it its
             // banner, dashboard headings and preview text were ink on bare desk - present, and unreadable.
             GUILayout.BeginVertical(_boxStyle, GUILayout.Width(leftColumnWidth));
@@ -4562,11 +4568,9 @@ namespace PoliSim.UI
             GUILayout.Space(RailGap());
             DrawRailStatusDot(cell, isTimePaused, cells);
             GUILayout.Space(RailGap());
-            DrawFoldToggle(cell, Mathf.Round(cell * 0.8f), folded: true);
-            if (Event.current.type == EventType.Repaint)
-            {
-                cells.Add(new KeyValuePair<string, Rect>("shell rail: toggle", GUILayoutUtility.GetLastRect()));
-            }
+            // v3.1 R-E1: the fold toggle retired with the OPEN state; its cell carries the player's
+            // pause/run control (R-E1a, the duty audit's one addition).
+            DrawRailPauseChip(cell, isTimePaused, cells);
 
             GUILayout.EndVertical();
 
@@ -4735,6 +4739,45 @@ namespace PoliSim.UI
 
             cells.Add(new KeyValuePair<string, Rect>("shell rail: status dot", new Rect(dotRect.x - glow, dotRect.y - glow, dot + glow * 2f, dot + glow * 2f)));
         }
+
+        /// <summary>
+        /// v3.1 R-E1a (2026-08-28, the duty audit's one addition): with the OPEN strip retired, the
+        /// player's own pause/run control needs a home on every screen ("time/status/speed - the rail
+        /// and the Desk"). The fold toggle's cell, freed by ONE FRAME, carries it: one desk chip (the
+        /// Desk's own control form) reading PAUSE while the clock runs and RUN while the player holds
+        /// it; the speed choice (1x/2x/3x) stays on the Desk's masthead. B5 holds: while an interrupt
+        /// holds the clock the chip wears the disabled face (that hold is not the player's to lift
+        /// here - the lamp says HELD and the banner says why), and at game over likewise. RUN returns
+        /// to the speed the player last ran at.
+        /// </summary>
+        private void DrawRailPauseChip(float cell, bool isTimePaused, List<KeyValuePair<string, Rect>> cells)
+        {
+            float height = Mathf.Round(cell * 0.8f);
+            Rect slot = GUILayoutUtility.GetRect(cell, height, GUILayout.Width(cell), GUILayout.Height(height));
+            bool playerPaused = _gameSpeed == GameSpeed.Paused;
+            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
+            bool disabled = isTimePaused || _isGameOver;
+            if (DrawDeskChipButton(slot, playerPaused ? "RUN" : "PAUSE", caption, selected: playerPaused, disabled: disabled))
+            {
+                if (playerPaused)
+                {
+                    _gameSpeed = _lastRunningSpeed;
+                }
+                else
+                {
+                    _lastRunningSpeed = _gameSpeed;
+                    _gameSpeed = GameSpeed.Paused;
+                }
+            }
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                cells.Add(new KeyValuePair<string, Rect>("shell rail: pause chip", slot));
+            }
+        }
+
+        /// <summary>The speed the player last ran at, restored by the rail's RUN (v3.1 R-E1a); Normal until a speed was ever chosen.</summary>
+        private GameSpeed _lastRunningSpeed = GameSpeed.Normal;
 
         /// <summary>The HELD lamp: the amber dot with §A.6's glow (`0 0 6px rgba(212,167,44,.7)`) as stepped halos from rule 10's primitives - no sprite ships one, and the direction asks for it by name. Repaint-gated by its callers.</summary>
         private static void DrawHeldLamp(Rect dotRect, float glow)
@@ -5121,6 +5164,14 @@ namespace PoliSim.UI
         /// </summary>
         private string BuildFoldedInterruptText(bool includeBudgetProcess, bool includeSpeedHint = true)
         {
+            // v3.1 R-E1 (ONE FRAME): the OPEN column's game-over banner (C4/C5) retired with the
+            // column; behaviour #8 - a player can always see why the clock is stopped - now rides this
+            // banner on every screen. The reason is the game's own string, nothing added to it.
+            if (_isGameOver)
+            {
+                return $"GAME OVER - {_gameOverReason}";
+            }
+
             var blocking = new List<string>();
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
