@@ -2472,6 +2472,19 @@ namespace PoliSim.UI
             // dressed here); the explicit numbers are applied, so a nesting level now costs 20 px of
             // width (plus the skin's own margin), not the 16 the first row says. Two literals to revert.
             box.padding = new RectOffset(10, 10, 8, 10);
+            // ⚠ THE SHADOW HANGS OUTSIDE THE RECT (v3.1 Phase B, 2026-08-28 - found on the first
+            // 1m-r2 film, where the ledger's first glyphs and the strip's numerals vanished into the
+            // paper's edge). ui_panel_paper carries its drop shadow INSIDE the texture: measured from
+            // the PNG's alpha, the paper is opaque only from 14 px in at the left and right, 10 at the
+            // top and 26 at the bottom, and the 9-slice border draws that edge 1:1 on screen. With the
+            // margins inside the layout rect, every padding value counted from the box rect, not from
+            // the paper: the VISIBLE padding was 0/0/2/−12 at 14/14/12/14 and would be −4/−4/−2/−16 at
+            // D4's numbers - content flush with the paper's edge, and the last row of every scroll
+            // view standing in the bottom shadow, since v2.0. `overflow` draws the background that
+            // much larger than the rect, so the rect IS the paper and the shadow falls on the ground
+            // (or on the parent sheet) as a drop shadow should; the padding tokens now mean what
+            // Annex C and D4 took them to mean, and no layout width moved. Four measured literals.
+            box.overflow = new RectOffset(14, 14, 10, 26);
         }
 
         /// <summary>
@@ -4575,7 +4588,16 @@ namespace PoliSim.UI
             }
 
             float captionTop = glyphSlot.yMax + RailCaptionGap(cell);
-            PoliSimWidgets.MeasuredLabel(new Rect(rect.x, captionTop, rect.width, Mathf.Max(1f, rect.yMax - pad - captionTop)), caption, RailCaptionStyle(cell, captionInk, active));
+            GUIStyle captionStyle = RailCaptionStyle(cell, captionInk, active);
+            // The weight yields before the size: the cell's width is the rail's fixed measure and the
+            // caption already sits at the guard's floor at 1280, so a bold caption that does not fit
+            // the cell (POLITICS, 43 px in 39 on the first v31b film - the bold face is wider) draws at
+            // regular weight in the area ink rather than shrinking below the floor or overflowing.
+            if (active && captionStyle.CalcSize(new GUIContent(caption)).x > rect.width)
+            {
+                captionStyle.fontStyle = FontStyle.Normal;
+            }
+            PoliSimWidgets.MeasuredLabel(new Rect(rect.x, captionTop, rect.width, Mathf.Max(1f, rect.yMax - pad - captionTop)), caption, captionStyle);
             cells.Add(new KeyValuePair<string, Rect>(key, rect));
             return clicked;
         }

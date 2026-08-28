@@ -200,6 +200,12 @@ namespace PoliSim.UI
         private const string TermGini = "Inequality vs own norm (Gini)";
         private const string TermClamp = "Clamp at 0/100";
 
+        /// <summary>The nine term rows <see cref="BuildApprovalDeskTerms"/> always emits, in its order - Screen 0's Year-0 empty state (board 1m-r2, 2026-08-28) draws them with em-dash figures before the first period closes, so the ledger's shape is on the sheet from day one and no name is written twice.</summary>
+        public static readonly string[] ApprovalDeskTermNames =
+        {
+            TermReversion, TermGrowth, TermMisery, TermTaxHikes, TermSpending, TermWelfare, TermPaidLeave, TermDrugPolicy, TermGini
+        };
+
         /// <summary>One row of Screen 0's approval ledger: a term's name and its signed figure.</summary>
         public readonly struct DeskTerm
         {
