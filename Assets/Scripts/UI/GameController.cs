@@ -4502,6 +4502,83 @@ namespace PoliSim.UI
         /// <summary>Board 1n's active cell: the area-ink wash's alpha and the spine's width at the 39 px cell (scaled with the cell).</summary>
         private const float RailActiveWashAlpha = 0.12f;
         private const float RailSpineWidthAt39 = 3f;
+        /// <summary>Board 1n-r2 (2026-08-28): the HOME cell's wash while the Desk is up - brass at 0.16 (`rgba(156,129,72,0.16)`), the spine brass at the nav cells' width.</summary>
+        private const float RailHomeWashAlpha = 0.16f;
+
+        // ------------------------------------------------------------------------------------------
+        // Board 1n-r2 (2026-08-28, v3.1 Phase B): the rail's WIDTH is unchanged - the cell is still the
+        // icons' grid plus the air (39 / 46 / 55 / 64) - and every cell grows DOWN to carry a caption:
+        // the bare glyph on the sheet (the plate border dropped, so the icon takes 22 of the 39 cell
+        // - 22 / 26 / 31 / 36 at the four sizes), a 2-unit gap, a mono caption at 7.5 of the 39 cell
+        // (DESK · STATS · DOCKET · PEOPLE · BUDGET · LAWS · POLITICS; the fit rule is ≤ 8 characters),
+        // padding above and below. The cell's height ≈ 47 / 56 / 66 / 77. Active = the 1n wash and
+        // spine, the caption in the area ink and bold; inactive = the tab-swatch tint on the glyph,
+        // the caption in TextSecondary; hover = a faint stock wash (the plate face that answered the
+        // cursor is gone). The glyphs themselves are the delivered set - a redraw was refused by 1n-r2
+        // as a costed follow-up. The utility block (chip · lamp · PAUSE/RUN) is unchanged.
+        // ------------------------------------------------------------------------------------------
+        private static float RailGlyphSize(float cell) => Mathf.Round(cell * (22f / 39f));
+        private static float RailCellPad(float cell) => Mathf.Round(cell * (5f / 39f));
+        private static float RailCaptionGap(float cell) => Mathf.Max(1f, Mathf.Round(cell * (2f / 39f)));
+
+        /// <summary>1n-r2's caption: mono, 7.5 at the 39 cell scaled with the cell (8 / 9 / 11 / 12 - the guard's 8 is the floor, and 7.5 rounds to it at 1280), bold when the cell is active.</summary>
+        private GUIStyle RailCaptionStyle(float cell, Color ink, bool bold)
+        {
+            var style = new GUIStyle(_calendarMetaStyle)
+            {
+                fontSize = Mathf.Max(PoliSimWidgets.MinMeasuredLabelFontSize, Mathf.RoundToInt(7.5f * cell / 39f)),
+                alignment = TextAnchor.MiddleCenter,
+                wordWrap = false,
+                fontStyle = bold ? FontStyle.Bold : FontStyle.Normal
+            };
+            style.padding = new RectOffset(0, 0, 0, 0);
+            return Inked(style, ink);
+        }
+
+        /// <summary>1n-r2's cell height: pad · glyph · gap · caption · pad, from the cell's own width.</summary>
+        private float RailCellHeight(float cell)
+        {
+            GUIStyle caption = RailCaptionStyle(cell, PoliSimTheme.TextSecondary, false);
+            return RailCellPad(cell) * 2f + RailGlyphSize(cell) + RailCaptionGap(cell) + caption.CalcSize(new GUIContent("ÅG")).y;
+        }
+
+        /// <summary>
+        /// One 1n-r2 cell: an invisible button over the whole rect (emitted on every event - the control
+        /// set never varies with state), the wash and the spine when active or a faint stock wash under
+        /// the cursor otherwise, the caption beneath the glyph slot; the caller paints the face into the
+        /// slot. Returns the click. The whole cell is registered with the containment guard.
+        /// </summary>
+        private bool DrawRailCell(string key, float cell, bool active, Color wash, Color spineInk, string caption, Color captionInk, List<KeyValuePair<string, Rect>> cells, out Rect glyphSlot)
+        {
+            float height = RailCellHeight(cell);
+            Rect rect = GUILayoutUtility.GetRect(cell, height, GUILayout.Width(cell), GUILayout.Height(height));
+            bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none);
+
+            float pad = RailCellPad(cell);
+            float glyph = RailGlyphSize(cell);
+            glyphSlot = new Rect(rect.x + (rect.width - glyph) * 0.5f, rect.y + pad, glyph, glyph);
+
+            if (Event.current.type != EventType.Repaint)
+            {
+                return clicked;
+            }
+
+            if (active)
+            {
+                PoliSimTheme.Rule(rect, wash);
+                float spine = Mathf.Max(2f, Mathf.Round(cell * (RailSpineWidthAt39 / 39f)));
+                PoliSimTheme.Rule(new Rect(rect.x, rect.y, spine, rect.height), spineInk);
+            }
+            else if (rect.Contains(Event.current.mousePosition))
+            {
+                PoliSimTheme.Rule(rect, PoliSimTheme.Tint(PoliSimTheme.StockOff, 0.45f));
+            }
+
+            float captionTop = glyphSlot.yMax + RailCaptionGap(cell);
+            PoliSimWidgets.MeasuredLabel(new Rect(rect.x, captionTop, rect.width, Mathf.Max(1f, rect.yMax - pad - captionTop)), caption, RailCaptionStyle(cell, captionInk, active));
+            cells.Add(new KeyValuePair<string, Rect>(key, rect));
+            return clicked;
+        }
         /// <summary>"‹" folds the desk to the rail; "›" unfolds it. Glyphs, not words: the rail's text budget is the chip's month and day.</summary>
         private const string FoldGlyphFold = "‹";
         private const string FoldGlyphUnfold = "›";
@@ -4565,21 +4642,21 @@ namespace PoliSim.UI
         private void DrawFoldedRail(float railWidth, float areaHeight, bool isTimePaused)
         {
             float cell = RailCellWidth();
-            float iconSize = RailIconSize();
             var cells = new List<KeyValuePair<string, Rect>>();
 
             GUILayout.BeginVertical(_boxStyle, GUILayout.Width(railWidth), GUILayout.Height(areaHeight - _boxStyle.margin.vertical));
 
-            // v3.1 R-E2 (2026-08-28): HOME first - the structural interim Design's 1n-r2 re-skins.
-            DrawRailHomeCell(cell, iconSize, cells);
+            // v3.1 R-E2 (2026-08-28): HOME first; board 1n-r2 gave it its face the same day.
+            DrawRailHomeCell(cell, cells);
             DrawRailHomeSeparator(cell);
 
-            DrawRailNavCell("Statistics", ConsolidatedTab.Statistics, "icon_nav_statistics", cell, iconSize, cells);
-            DrawRailNavCell("Decisions", ConsolidatedTab.Decisions, "icon_nav_decisions", cell, iconSize, cells);
-            DrawRailNavCell("Demographics", ConsolidatedTab.Demographics, "icon_nav_demographics", cell, iconSize, cells);
-            DrawRailNavCell("Budget", ConsolidatedTab.Budget, "icon_area_fiscal", cell, iconSize, cells);
-            DrawRailNavCell("Policy/Laws", ConsolidatedTab.PolicyLaws, "icon_nav_policylaws", cell, iconSize, cells);
-            DrawRailNavCell("Politics", ConsolidatedTab.Politics, "icon_area_political", cell, iconSize, cells);
+            // 1n-r2's captions (≤ 8 characters each; the documents' names stay on their own sheets).
+            DrawRailNavCell("STATS", ConsolidatedTab.Statistics, "icon_nav_statistics", cell, cells);
+            DrawRailNavCell("DOCKET", ConsolidatedTab.Decisions, "icon_nav_decisions", cell, cells);
+            DrawRailNavCell("PEOPLE", ConsolidatedTab.Demographics, "icon_nav_demographics", cell, cells);
+            DrawRailNavCell("BUDGET", ConsolidatedTab.Budget, "icon_area_fiscal", cell, cells);
+            DrawRailNavCell("LAWS", ConsolidatedTab.PolicyLaws, "icon_nav_policylaws", cell, cells);
+            DrawRailNavCell("POLITICS", ConsolidatedTab.Politics, "icon_area_political", cell, cells);
 
             GUILayout.FlexibleSpace();
 
@@ -4614,11 +4691,15 @@ namespace PoliSim.UI
         /// 1n-r2 replaces the face; the affordance ships now. The calendar chip stays the second,
         /// learned way home (R-B2).
         /// </summary>
-        private void DrawRailHomeCell(float cell, float iconSize, List<KeyValuePair<string, Rect>> cells)
+        private void DrawRailHomeCell(float cell, List<KeyValuePair<string, Rect>> cells)
         {
-            var style = new GUIStyle(_neutralActionButtonStyle) { fixedHeight = 0f, fixedWidth = 0f };
-            style.padding = new RectOffset(0, 0, 0, 0);
-            if (GUILayout.Button(GUIContent.none, style, GUILayout.Width(cell), GUILayout.Height(cell)))
+            // Board 1n-r2 (2026-08-28): the home face is the flag (24 of the 39 cell, 3:2) over the
+            // caption DESK; on the Desk the brass wash at 0.16 and the brass spine, the caption bold in
+            // TextPrimary (brass text on paper would whisper - the D6 flip's own reasoning; a build
+            // call, one literal). Off the Desk: the flag alone over DESK in TextSecondary.
+            bool active = _onDesk;
+            if (DrawRailCell("shell rail: home", cell, active, PoliSimTheme.Tint(PoliSimTheme.Brass, RailHomeWashAlpha), PoliSimTheme.Brass,
+                    "DESK", active ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary, cells, out Rect slot))
             {
                 _onDesk = true;
             }
@@ -4628,17 +4709,9 @@ namespace PoliSim.UI
                 return;
             }
 
-            Rect rect = GUILayoutUtility.GetLastRect();
-            if (_onDesk)
-            {
-                PoliSimTheme.Rule(rect, PoliSimTheme.Tint(PoliSimTheme.Brass, RailActiveWashAlpha));
-                float spine = Mathf.Max(2f, Mathf.Round(cell * (RailSpineWidthAt39 / 39f)));
-                PoliSimTheme.Rule(new Rect(rect.x, rect.y, spine, rect.height), PoliSimTheme.Brass);
-            }
-
-            float flagWidth = Mathf.Round(iconSize * 1.15f);
+            float flagWidth = Mathf.Round(cell * (24f / 39f));
             float flagHeight = Mathf.Round(flagWidth * (2f / 3f));
-            var flagRect = new Rect(rect.x + (rect.width - flagWidth) * 0.5f, rect.y + (rect.height - flagHeight) * 0.5f, flagWidth, flagHeight);
+            var flagRect = new Rect(slot.x + (slot.width - flagWidth) * 0.5f, slot.y + (slot.height - flagHeight) * 0.5f, flagWidth, flagHeight);
             Texture2D flag = IconLibrary.GetFlag(PlayerCountryId);
             if (flag != null)
             {
@@ -4648,8 +4721,6 @@ namespace PoliSim.UI
             {
                 LedgerRow.Cell(flagRect, "H", _tabButtonStyle, PoliSimTheme.Brass, TextAnchor.MiddleCenter);
             }
-
-            cells.Add(new KeyValuePair<string, Rect>("shell rail: home", flagRect));
         }
 
         /// <summary>The rule beneath HOME (R-E2: "first position + a separator rule beneath") - a hairline-strong rule across the cell with the rail's gap on either side.</summary>
@@ -4664,15 +4735,15 @@ namespace PoliSim.UI
             GUILayout.Space(RailGap());
         }
 
-        /// <summary>One navigation cell of the rail: a square paper button carrying the tongue's icon. Active = area ink behind the tab-swatch convention's spine stood on end; inactive = the delivered tab-swatch tint. A missing sprite degrades to the tab's initial in the same ink - the rail never shows a blank cell that navigates somewhere.</summary>
-        private void DrawRailNavCell(string label, ConsolidatedTab tab, string iconName, float cell, float iconSize, List<KeyValuePair<string, Rect>> cells)
+        /// <summary>One navigation cell of the rail (board 1n-r2): the tongue's glyph bare on the sheet over its caption. Active = the area-ink wash and spine, the glyph and the caption in the area ink; inactive = the delivered tab-swatch tint on the glyph, the caption in TextSecondary. A missing sprite degrades to the caption's initial in the same ink - the rail never shows a blank cell that navigates somewhere.</summary>
+        private void DrawRailNavCell(string caption, ConsolidatedTab tab, string iconName, float cell, List<KeyValuePair<string, Rect>> cells)
         {
             UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
             // Board 1m, D2: on Screen 0 no cell is active - the Desk sits above the six documents.
             bool selected = !_onDesk && _consolidatedTab == tab;
-            var style = new GUIStyle(_neutralActionButtonStyle) { fixedHeight = 0f, fixedWidth = 0f };
-            style.padding = new RectOffset(0, 0, 0, 0);
-            if (GUILayout.Button(GUIContent.none, style, GUILayout.Width(cell), GUILayout.Height(cell)))
+            Color areaInk = UiPalette.GetAreaColor(area);
+            if (DrawRailCell("shell rail: " + caption, cell, selected, PoliSimTheme.AccentWash(area, RailActiveWashAlpha), areaInk,
+                    caption, selected ? areaInk : PoliSimTheme.TextSecondary, cells, out Rect slot))
             {
                 // R-B2 (v3.0 Phase B): a document opens from its icon; the open document's own icon
                 // clicked again returns to the Desk (the calendar chip below is the other way home).
@@ -4696,31 +4767,18 @@ namespace PoliSim.UI
                 return;
             }
 
-            Rect rect = GUILayoutUtility.GetLastRect();
-            var iconRect = new Rect(rect.x + (rect.width - iconSize) * 0.5f, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
-            Color ink = selected ? UiPalette.GetAreaColor(area) : PoliSimTheme.TabSwatchTint(area);
-            if (selected)
-            {
-                // Board 1n (2026-08-28), the active convention folded: a 12% area-ink wash behind the
-                // cell and a spine at its left edge, full cell height - 3 px at the 39 cell, scaled
-                // with the cell - the icon in the same ink. Inactive: the tab-swatch tint, no wash,
-                // no plate. Hover: the button face's own.
-                PoliSimTheme.Rule(rect, PoliSimTheme.AccentWash(area, RailActiveWashAlpha));
-                float spine = Mathf.Max(2f, Mathf.Round(cell * (RailSpineWidthAt39 / 39f)));
-                PoliSimTheme.Rule(new Rect(rect.x, rect.y, spine, rect.height), UiPalette.GetAreaColor(area));
-            }
-
+            // Board 1n (2026-08-28), the active convention, kept by 1n-r2: the wash and the spine are
+            // DrawRailCell's; the glyph in the area ink when active, the tab-swatch tint otherwise.
+            Color ink = selected ? areaInk : PoliSimTheme.TabSwatchTint(area);
             Texture2D icon = IconLibrary.Get(iconName);
             if (icon != null)
             {
-                UiPalette.DrawTintedIcon(iconRect, icon, ink);
+                UiPalette.DrawTintedIcon(slot, icon, ink);
             }
             else
             {
-                LedgerRow.Cell(iconRect, label.Substring(0, 1), _tabButtonStyle, ink, TextAnchor.MiddleCenter);
+                LedgerRow.Cell(slot, caption.Substring(0, 1), _tabButtonStyle, ink, TextAnchor.MiddleCenter);
             }
-
-            cells.Add(new KeyValuePair<string, Rect>("shell rail: " + label, iconRect));
         }
 
         /// <summary>
