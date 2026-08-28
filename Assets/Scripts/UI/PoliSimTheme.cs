@@ -112,11 +112,12 @@ namespace PoliSim.UI
         public static readonly Color DraftOnDesk = Hex(0xD4A72C);
 
         // --- Geometry. All radii in unscaled px; multiply by the caller's UI scale. ---
-        public const float RadiusPanel = 19f;
-        public const float RadiusCard = 16f;
-        public const float RadiusInset = 14f;
-        public const float RadiusChip = 12f;
-        public const float RadiusControl = 11f;
+        // D4 (2026-08-28): 19/16/14/12/11 → 16/13/11/10/9.
+        public const float RadiusPanel = 16f;
+        public const float RadiusCard = 13f;
+        public const float RadiusInset = 11f;
+        public const float RadiusChip = 10f;
+        public const float RadiusControl = 9f;
 
         public const float SpaceXs = 6f;
         public const float SpaceSm = 10f;

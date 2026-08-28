@@ -156,10 +156,14 @@ namespace PoliSim.UI
 
         // Layout is expressed as fractions of Screen.width/height, not fixed pixel values, so it
         // scales at any window size instead of sitting in a small fixed-size corner box.
-        private const float ScreenMarginFraction = 0.02f;
-        private const float ColumnSpacingFraction = 0.02f;
+        // D4 (2026-08-28, the v3.1 density token table, applied mechanically against Annex C's
+        // measured values): the screen margin and the rail→sheet gap 2 % → 1.2 % (26×14 → 15×8 and
+        // 25 → 15 at 1280), the section spacing 3 % → 2 % (20 → 13). Re-measured on film after
+        // (deadspace.ps1); the re-measure is the fact.
+        private const float ScreenMarginFraction = 0.012f;
+        private const float ColumnSpacingFraction = 0.012f;
         private const float LeftColumnWidthFraction = 0.45f;
-        private const float SectionSpacingFraction = 0.03f;
+        private const float SectionSpacingFraction = 0.02f;
 
         /// <summary>Fixed display height (px) for the World Map tab's map rect - the map itself stretches to whatever width the tab gives it (see MapRenderer.Draw's ScaleMode.StretchToFill), so only the height needs pinning to keep its aspect roughly sane.</summary>
         private const float WorldMapHeight = 260f;
@@ -2415,7 +2419,8 @@ namespace PoliSim.UI
             {
                 _dossierCardStyle.normal.background = dossier;
                 _dossierCardStyle.border = new RectOffset(14, 14, 26, 15);
-                _dossierCardStyle.padding = new RectOffset(18 + AreaCardSpineWidth, 18, 32, 20);
+                // D4 (2026-08-28): 18+8/18/32/20 → 14+8/14/22/14.
+                _dossierCardStyle.padding = new RectOffset(14 + AreaCardSpineWidth, 14, 22, 14);
                 _dossierCardStyle.margin = new RectOffset(0, 0, 0, 0);
             }
 
@@ -2461,7 +2466,12 @@ namespace PoliSim.UI
 
             box.normal.background = paper;
             box.border = new RectOffset(22, 22, 22, 28);
-            box.padding = new RectOffset(14, 14, 12, 14);
+            // D4 (2026-08-28): 14/14/12/14 → 10/10/8/10, the 9-slice insets unchanged. D4's table
+            // names this padding twice - as "the skin box, 28 px per nesting level → 16" and as "area
+            // card padding → 10/10/8/10" - and they are ONE style (`_boxStyle` is the skin's box
+            // dressed here); the explicit numbers are applied, so a nesting level now costs 20 px of
+            // width (plus the skin's own margin), not the 16 the first row says. Two literals to revert.
+            box.padding = new RectOffset(10, 10, 8, 10);
         }
 
         /// <summary>
@@ -2565,7 +2575,9 @@ namespace PoliSim.UI
         private void RescaleStylesToScreen()
         {
             int headerFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.032f), 22, 42);
-            int labelFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.022f), 16, 28);
+            // D4 (2026-08-28): body/label type clamp(0.022h, 16, 28) → clamp(0.024h, 17, 30) - it grows
+            // into the reclaim. Headers, buttons, tabs and the banner are unchanged by the table.
+            int labelFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.024f), 17, 30);
             int buttonFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.032f), 22, 38);
             int tabFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.024f), 18, 30);
             int bannerFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.028f), 20, 36);
@@ -2625,14 +2637,16 @@ namespace PoliSim.UI
             // The calendar pad's type, at the board's own ratios to body type (month 8.5 / day 26 /
             // mono 9 beside 12.5 body — §A.6). The pad itself scales from the same labelFontSize base
             // in CalendarPadSize, so type and furniture cannot drift apart.
-            _calendarMonthStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (8.5f / 12.5f)));
+            // D4 (2026-08-28): the mono meta floor max(9, ·) → max(10, ·) - here, the meta line and the
+            // division meta below.
+            _calendarMonthStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * (8.5f / 12.5f)));
             _calendarDayStyle.fontSize = Mathf.RoundToInt(labelFontSize * (26f / 12.5f));
-            _calendarMetaStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * (9f / 12.5f)));
+            _calendarMetaStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * (9f / 12.5f)));
             // Calendar Panel: weekday header a touch smaller than body type (a caption, not content);
             // in-grid day numbers a touch larger, so "has this day passed" reads at a glance.
             _calendarWeekdayStyle.fontSize = Mathf.Max(8, Mathf.RoundToInt(labelFontSize * 0.8f));
             _calendarDayNumberStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * 0.95f));
-            _divisionMetaStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(labelFontSize * 0.85f));
+            _divisionMetaStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * 0.85f));
             // Deliberately the smallest text on screen - a card's kind caption is a wayfinding label,
             // not content, and must not compete with the decision's own headline underneath it.
             _cardKindStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(labelFontSize * 0.62f));
@@ -3015,7 +3029,7 @@ namespace PoliSim.UI
 
             float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.5f);
             float cellHeight = CalendarDayCellHeight();
-            float gap = 3f * scale;
+            float gap = 2f * scale;   // D4 (2026-08-28): the calendar sheet's cell gap 3s → 2s; dots, strike and rules stand by ruling
             Rect gridRect = GUILayoutUtility.GetRect(0f, rows * cellHeight + (rows - 1) * gap, GUILayout.ExpandWidth(true));
             float cellWidth = (gridRect.width - gap * 6f) / 7f;
 
@@ -3254,7 +3268,7 @@ namespace PoliSim.UI
             float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.5f);
             const int columns = 3;
             float tileHeight = 0f;   // set from PoliSimWidgets.StatTileHeight once the tiles are known
-            float gap = 8f * scale;
+            float gap = 6f * scale;   // D4 (2026-08-28): the tile grid gap 8s → 6s
 
             var tiles = new List<(string label, string value, string suffix, string delta, bool deltaIsGood, UiPalette.SystemArea area)>
             {
@@ -7524,7 +7538,7 @@ namespace PoliSim.UI
             }
 
             float headerRowWidth = Mathf.Max(0f, listWidth - GUI.skin.verticalScrollbar.fixedWidth - 12f);
-            Rect headerRect = GUILayoutUtility.GetRect(10f, LedgerRow.OneLineHeight(_labelStyle), GUILayout.ExpandWidth(true));
+            Rect headerRect = GUILayoutUtility.GetRect(10f, LedgerRow.LawBrowserRowHeight(_labelStyle), GUILayout.ExpandWidth(true));
             DrawLawRowHeader(new Rect(headerRect.x, headerRect.y, headerRowWidth, headerRect.height));
             GUILayout.Space(2f);
 
@@ -7543,7 +7557,7 @@ namespace PoliSim.UI
                 ? 0f
                 : Mathf.Max(LedgerRow.Height(_labelStyle), UiPalette.BuildTextFieldStyle(_labelStyle.fontSize).CalcHeight(new GUIContent("W"), searchFieldWidth));
             float lawsChromeHeight = categoryRowHeight + searchRowHeight + orderRowHeight + statusRowHeight
-                + LedgerRow.OneLineHeight(_labelStyle) + 6f + 2f + 6f   // the column header (one-line since R-C1), the Space(6f)/Space(2f) around it and the Space(6f) under the chips
+                + LedgerRow.LawBrowserRowHeight(_labelStyle) + 6f + 2f + 6f   // the column header (one-line since R-C1), the Space(6f)/Space(2f) around it and the Space(6f) under the chips
                 + 6f + LedgerRow.Height(_labelStyle)            // DrawLawBottomBar: Space(6f) + its one line
                 + _boxStyle.padding.vertical + _labelStyle.fontSize * 0.5f;
             float scrollHeight = Mathf.Max(0f, availableHeight - lawsChromeHeight);
@@ -7805,7 +7819,7 @@ namespace PoliSim.UI
             // R-C1 fold-in (2026-08-28): the caption is 1.2x the row it captions - the one-line row now,
             // as the two-line row before; four captions at the two-line height would have spent a third
             // of the viewport the one-line row just won back.
-            Rect rect = GUILayoutUtility.GetRect(10f, LedgerRow.OneLineHeight(_labelStyle) * 1.2f, GUILayout.ExpandWidth(true));
+            Rect rect = GUILayoutUtility.GetRect(10f, LedgerRow.LawBrowserRowHeight(_labelStyle) * 1.2f, GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint)
             {
                 Color previous = GUI.color;
@@ -7848,7 +7862,7 @@ namespace PoliSim.UI
             // construction artifact of the wrap-first name ladder, and the boards drew one-line rows -
             // density was the original finding (A4 -> R-C1). Measured after the change on film; see
             // CLAUDE.md "The continuation kickoff (2026-08-28)", Phase 1.
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.OneLineHeight(_labelStyle), GUILayout.ExpandWidth(true));
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.LawBrowserRowHeight(_labelStyle), GUILayout.ExpandWidth(true));
 
             // Code-review pass (2026-08-25): stages the click into _pendingSelectedLawId instead of
             // writing _selectedLawId directly - see that field's own doc comment for why (the

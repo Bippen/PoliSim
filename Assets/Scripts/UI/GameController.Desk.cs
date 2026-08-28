@@ -71,9 +71,12 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         // Type: the board's px sizes at 720, scaled by the window height, floored at the guard's 8.
         // ------------------------------------------------------------------------------------------
+        /// <summary>D4 (2026-08-28): the Desk caption floor 8 → 9 (the guard's 8 stays the shrink floor everywhere else).</summary>
+        private const int DeskCaptionFloorPx = 9;
+
         private static int DeskPx(float boardPx)
         {
-            return Mathf.Max(PoliSimWidgets.MinMeasuredLabelFontSize, Mathf.RoundToInt(boardPx * Screen.height / DeskBoardHeight));
+            return Mathf.Max(DeskCaptionFloorPx, Mathf.RoundToInt(boardPx * Screen.height / DeskBoardHeight));
         }
 
         private static GUIStyle Inked(GUIStyle style, Color ink)

@@ -167,7 +167,7 @@ namespace PoliSim.UI
             // handles that) - a Screen.height fraction, clamped, so three stacked graphs cost
             // meaningfully less of the dashboard's vertical budget on a typical window than the old
             // fixed TextureHeight (90px) did, without losing plot resolution.
-            float displayHeight = Mathf.Clamp(Screen.height * 0.075f, 50f, TextureHeight);
+            float displayHeight = Mathf.Clamp(Screen.height * 0.085f, 56f, 110f);   // D4 (2026-08-28): clamp(0.075h, 50, 90) → clamp(0.085h, 56, 110); the 300×90 buffer stands (R-G5) and stretches
             Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture != null)
             {
@@ -290,7 +290,7 @@ namespace PoliSim.UI
                 Regenerate(values, null, thresholdValue);
             }
 
-            float displayHeight = Mathf.Clamp(Screen.height * 0.075f, 50f, TextureHeight);
+            float displayHeight = Mathf.Clamp(Screen.height * 0.085f, 56f, 110f);   // D4 (2026-08-28): clamp(0.075h, 50, 90) → clamp(0.085h, 56, 110); the 300×90 buffer stands (R-G5) and stretches
             Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture == null)
             {

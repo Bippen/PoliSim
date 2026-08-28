@@ -356,13 +356,19 @@ namespace PoliSim.UI
         /// (`run_02_statistics.png`, top-left). A magic number in the caller and a cumulative `y` in the
         /// widget are two statements of the same geometry, which is one more than can be kept true.
         /// </summary>
-        private const float TilePadY = 16f;
+        // D4 (2026-08-28, the v3.1 density token table, applied mechanically): the tile's pads
+        // 17/16/20/9/18 (padX / padY / label block / value gap / delta) → 12/11/16/6/14, the label at
+        // 11 rather than FontLabel's 10 (a tile's caption is the smallest text in the game and the
+        // one the sitting named); height ≈ 98·s → ≈ 80·s. The 9-slice plate is untouched.
+        private const float TilePadX = 12f;
+        private const float TilePadY = 11f;
         private const float TileLabelHeight = 12f;
-        private const float TileLabelBlock = 20f;
-        private const float TileValueGap = 9f;
-        private const float TileDeltaHeight = 18f;
+        private const float TileLabelBlock = 16f;
+        private const float TileValueGap = 6f;
+        private const float TileDeltaHeight = 14f;
         private const float TileDeltaGap = 8f;
         private const float TileValueLeading = 1.05f;
+        private const int TileLabelFontSize = 11;
 
         /// <summary>
         /// How tall a tile must be to hold what it will be asked to draw. Callers laying out a grid
@@ -430,7 +436,7 @@ namespace PoliSim.UI
 
             PoliSimTheme.TopAccent(rect, area, 2f * scale);
 
-            float padX = 17f * scale;
+            float padX = TilePadX * scale;
             float padY = TilePadY * scale;
             float x = rect.x + padX;
             float y = rect.y + padY;
@@ -446,7 +452,7 @@ namespace PoliSim.UI
             float contentBottom = y + TileLabelHeight * scale;
 
             MeasuredLabel(new Rect(x, y, innerWidth, TileLabelHeight * scale), label.ToUpperInvariant(),
-                Sized(_label, PoliSimTheme.FontLabel, PoliSimTheme.TextMuted, scale));
+                Sized(_label, TileLabelFontSize, PoliSimTheme.TextMuted, scale));
             y += TileLabelBlock * scale;
 
             var valueStyle = Sized(_value, PoliSimTheme.FontStatHero, PoliSimTheme.TextPrimary, scale, TextAnchor.LowerLeft);

@@ -48,8 +48,17 @@ namespace PoliSim.UI
         {
             float line = Mathf.Max(nameStyle.lineHeight, nameStyle.fontSize + 4f);
             float scale = Scale(nameStyle);
-            return Mathf.Max(line * 2f, RefTrackHeight * scale + line) + 6f * scale;
+            // D4 (2026-08-28, the v3.1 density token table): the two-line lane's track term and its
+            // padding "12s + line, +6s → 8s + line, +4s" (Annex C quoted the term as 12; the drawn
+            // track is RefTrackHeight = 15, which stays - it is a bar height, not a lane term, and it
+            // fits inside two lines at every size this UI reaches: 15·s < line for fonts under ~27 px
+            // and the serif's own line box carries it above that).
+            return Mathf.Max(line * 2f, RefLaneTrackTerm * scale + line) + RefLanePadding * scale;
         }
+
+        /// <summary>D4's lane term and padding (see <see cref="Height"/>): 8 and 4 at the 13 px reference, scaled.</summary>
+        private const float RefLaneTrackTerm = 8f;
+        private const float RefLanePadding = 4f;
 
         /// <summary>
         /// The ONE-LINE row's height (R-C1, the continuation kickoff of 2026-08-28): the name's line plus
@@ -66,6 +75,22 @@ namespace PoliSim.UI
         /// shrink path (<see cref="Cell"/>), never the wrap-first ladder: there is no second line.
         /// </summary>
         public static float OneLineHeight(GUIStyle nameStyle)
+        {
+            // D4 (2026-08-28): the one-line pitch line + 6s → line + 4s (≈ 24 → ≈ 22 at 16 px). At the
+            // time of the change this accessor's only callers were the law browser's four sites, whose
+            // pitch D4 rules STANDS (R-C1) - they moved to LawBrowserRowHeight below, so the token
+            // moved and the browser held. A new one-line ledger reads this.
+            float line = Mathf.Max(nameStyle.lineHeight, nameStyle.fontSize + 4f);
+            return line + RefLanePadding * Scale(nameStyle);
+        }
+
+        /// <summary>
+        /// The law browser's row pitch, frozen at R-C1's derivation (line + 6·scale; the browser adds its
+        /// own 10 px gap) - D4's table rules it STANDS while the ledger's one-line token moved to +4s,
+        /// so the two are separate accessors on purpose: the browser's ~27 rows per screen were measured
+        /// on film against board 1i and are not a density token.
+        /// </summary>
+        public static float LawBrowserRowHeight(GUIStyle nameStyle)
         {
             float line = Mathf.Max(nameStyle.lineHeight, nameStyle.fontSize + 4f);
             return line + 6f * Scale(nameStyle);
