@@ -526,6 +526,11 @@ namespace PoliSim.UI
         private Vector2 _logScrollPosition;
         private Vector2 _leftColumnScrollPosition;
 
+        /// <summary>UI v3.0 (V3-R2): the player's fold choice per screen, keyed by <see cref="ShellScreenKey"/>.
+        /// Empty = every screen at its default (<see cref="DefaultShellFold"/>). Persisted through
+        /// <c>UiDraftState.ShellFoldOverrides</c>.</summary>
+        private readonly Dictionary<string, ShellFoldState> _shellFoldOverrides = new Dictionary<string, ShellFoldState>();
+
         private ConsolidatedTab _consolidatedTab = ConsolidatedTab.Statistics;
         private StatisticsCategory _statisticsCategory = StatisticsCategory.Domestic;
         private PolicyLawsCategory _policyLawsCategory = PolicyLawsCategory.LaborMarket;
@@ -1001,8 +1006,20 @@ namespace PoliSim.UI
                 FedChairCandidatesForTurn = _fedChairCandidatesForTurn,
                 SeenDivisionNumber = _seenDivisionNumber,
                 PrevGdp = _prevGdp,
-                LastGrowthPercent = _lastGrowthPercent
+                LastGrowthPercent = _lastGrowthPercent,
+                ShellFoldOverrides = CaptureShellFoldOverrides()
             };
+        }
+
+        private Dictionary<string, int> CaptureShellFoldOverrides()
+        {
+            var map = new Dictionary<string, int>();
+            foreach (KeyValuePair<string, ShellFoldState> pair in _shellFoldOverrides)
+            {
+                map[pair.Key] = (int)pair.Value;
+            }
+
+            return map;
         }
 
         /// <summary>Null-tolerant (a batch-written save has no UI layer): null restores every draft
@@ -1090,7 +1107,109 @@ namespace PoliSim.UI
                     : 0);
             _prevGdp = ui?.PrevGdp ?? 0f;
             _lastGrowthPercent = ui?.LastGrowthPercent ?? 0f;
+            // UI v3.0: a pre-v3 save carries no map and lands every screen on its default; an unknown
+            // value (a future state this build does not have) reads as OPEN, the frame that always exists.
+            _shellFoldOverrides.Clear();
+            if (ui?.ShellFoldOverrides != null)
+            {
+                foreach (KeyValuePair<string, int> pair in ui.ShellFoldOverrides)
+                {
+                    _shellFoldOverrides[pair.Key] = pair.Value == (int)ShellFoldState.Folded ? ShellFoldState.Folded : ShellFoldState.Open;
+                }
+            }
+
             _gameSpeed = GameSpeed.Paused;
+        }
+
+        // ------------------------------------------------------------------------------------------
+        // UI v3.0 — the shell fold (V3-R2, POLISIM_UI_V3_DIRECTION.md, 2026-08-28)
+        // ------------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// The screen the fold state is keyed by - SCREEN granularity, the project's standing rule.
+        /// Statistics, Policy/Laws and Politics key by sub-screen (Domestic is the landing screen with
+        /// the oversight default; International, the Policy Web, the Laws browser are their own
+        /// screens); Budget keys by TAB, because its five categories are one ledger behind a category
+        /// rail (§A.5's "Budget full-screen" is one column layout, not five); Decisions and
+        /// Demographics have no sub-screen.
+        /// </summary>
+        private string ShellScreenKey()
+        {
+            switch (_consolidatedTab)
+            {
+                case ConsolidatedTab.Statistics:
+                    return "Statistics/" + _statisticsCategory;
+                case ConsolidatedTab.PolicyLaws:
+                    return "PolicyLaws/" + _policyLawsCategory;
+                case ConsolidatedTab.Politics:
+                    return "Politics/" + _politicsCategory;
+                default:
+                    return _consolidatedTab.ToString();
+            }
+        }
+
+        /// <summary>
+        /// The direction's per-screen defaults: the oversight screen FOLDED - until Screen 0 (The Desk)
+        /// exists, the current landing screen (Statistics > Domestic) carries that default so the
+        /// mechanism is real - and the Budget ledger FOLDED, because its column-hiding (Elias's
+        /// 2026-08-01 directive, §A.5's declared deviation) is now this state rather than a parallel
+        /// mechanism; every other screen OPEN. Phase C tunes these on film.
+        /// </summary>
+        private ShellFoldState DefaultShellFold()
+        {
+            if (_consolidatedTab == ConsolidatedTab.Budget)
+            {
+                return ShellFoldState.Folded;
+            }
+
+            if (_consolidatedTab == ConsolidatedTab.Statistics && _statisticsCategory == StatisticsCategory.Domestic)
+            {
+                return ShellFoldState.Folded;
+            }
+
+            return ShellFoldState.Open;
+        }
+
+        /// <summary>
+        /// The one screen whose fold is LOCKED: the Budget ledger. Its three-column row (category /
+        /// line-items / live estimate) was given the whole window on 2026-08-01 because at column width
+        /// it overflowed; the v3a film confirmed the OPEN state is not legal there (category labels
+        /// wrapping mid-word, twenty containment escapes at 1600), and making it legal would be the
+        /// per-element redesign of a deep screen the direction rules out. So Budget's shell state is
+        /// the fold (one mechanism, not a parallel one) with the toggle rendered on its disabled face
+        /// (B5: rendered, never omitted) - a Phase C candidate if the board ever wants the ledger
+        /// beside the column.
+        /// </summary>
+        internal bool ShellFoldLocked()
+        {
+            return _consolidatedTab == ConsolidatedTab.Budget;
+        }
+
+        /// <summary>The fold state the frame draws this screen in: the screen's locked state if it has one, else the player's override for it if one was ever made, else the screen's default.</summary>
+        internal ShellFoldState EffectiveShellFold()
+        {
+            if (ShellFoldLocked())
+            {
+                return ShellFoldState.Folded;
+            }
+
+            return _shellFoldOverrides.TryGetValue(ShellScreenKey(), out ShellFoldState state) ? state : DefaultShellFold();
+        }
+
+        /// <summary>The player's flip (the toggle in either state; the harness's both-state sweep). Instant: the next OnGUI lays out the other frame. Recorded per screen, so a screen unfolded to read stays unfolded when the player returns to it. A no-op on a locked screen.</summary>
+        internal void SetShellFold(ShellFoldState state)
+        {
+            if (ShellFoldLocked())
+            {
+                return;
+            }
+
+            _shellFoldOverrides[ShellScreenKey()] = state;
+        }
+
+        internal void ToggleShellFold()
+        {
+            SetShellFold(EffectiveShellFold() == ShellFoldState.Folded ? ShellFoldState.Open : ShellFoldState.Folded);
         }
 
         private static void CopyDrafts<TKey>(Dictionary<TKey, float> source, Dictionary<TKey, float> target)
@@ -1433,7 +1552,9 @@ namespace PoliSim.UI
         {
             if (_selectedPlayerCountryId.HasValue)
             {
-                string interrupt = BuildFullScreenInterruptText();
+                // v3.0: the folded frame's text (its wording now), the Budget ledger's own pause left
+                // out as before - the seam names the same states it always did.
+                string interrupt = BuildFoldedInterruptText(includeBudgetProcess: false);
                 if (interrupt != null)
                 {
                     float marginX = Screen.width * ScreenMarginFraction;
@@ -1931,15 +2052,32 @@ namespace PoliSim.UI
             // precisely so a player can always see WHY time is blocked (working discipline item 2, which
             // exists because of a real "time silently stopped and I couldn't tell why" bug). To keep that
             // guarantee without giving the space back, DrawBudgetProcessTab re-surfaces any pending
-            // interrupt as its own banner - see DrawFullScreenPendingInterruptBanner.
-            bool budgetFullScreen = _consolidatedTab == ConsolidatedTab.Budget;
-            float leftColumnWidth = budgetFullScreen ? 0f : areaWidth * LeftColumnWidthFraction;
-            float rightColumnWidth = budgetFullScreen ? areaWidth : areaWidth - leftColumnWidth - columnSpacing;
+            // interrupt as its own banner - now DrawFoldedInterruptBanner, every folded screen's.
+            //
+            // UI v3.0 (V3-R2, 2026-08-28): ONE fold, everywhere. That whole-window layout is no longer
+            // a parallel mechanism - it is the FOLDED state of the shell, which every screen now has:
+            // OPEN is the frame exactly as before (chrome column at LeftColumnWidthFraction, tongues,
+            // content column); FOLDED collapses the column and the tongues to the icon rail
+            // (DrawFoldedRail) and the content column takes the rest. Budget defaults FOLDED (the
+            // directive, kept), the landing screen defaults FOLDED (the oversight default until The
+            // Desk exists), everything else OPEN; the player's flip is remembered per screen and per
+            // save. The instant flip is the calendar's own ruling - nothing tweens. The interrupt
+            // banner the Budget tab re-surfaced is now the folded frame's banner on every screen.
+            bool folded = EffectiveShellFold() == ShellFoldState.Folded;
+            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
+            string timeStatusText = BuildTimeStatusText(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess);
+            float leftColumnWidth = folded ? RailWidth() : areaWidth * LeftColumnWidthFraction;
+            float rightColumnWidth = areaWidth - leftColumnWidth - columnSpacing;
 
             GUILayout.BeginArea(new Rect(marginX, marginY, areaWidth, areaHeight));
             GUILayout.BeginHorizontal();
 
-            if (!budgetFullScreen)
+            if (folded)
+            {
+                DrawFoldedRail(leftColumnWidth, areaHeight, isTimePaused);
+                GUILayout.Space(columnSpacing);
+            }
+            else
             {
             // v2.0: the left column stands on paper like every other panel. Without a sheet under it its
             // banner, dashboard headings and preview text were ink on bare desk - present, and unreadable.
@@ -1955,8 +2093,6 @@ namespace PoliSim.UI
             // reservation.
             // ⚠ MEASURED FROM THE STRING THAT WILL BE DRAWN, not assumed from a font size. See
             // CalendarAndSpeedControlsHeight for why the old one-line assumption cut the speed strip.
-            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
-            string timeStatusText = BuildTimeStatusText(hasPendingFedChairSelection, hasPendingCabinetDecisions, hasPendingForeignPolicyMeeting, hasPendingBudgetProcess);
             float calendarAreaHeight = CalendarAndSpeedControlsHeight(timeStatusText, isTimePaused, leftColumnWidth) + sectionSpacing;
             // ⚠ INSTANCE #12, LEFT COLUMN. The scroll view was budgeted against the RAW area height,
             // though it lives inside a `_boxStyle` box whose padding and margin come out of that height
@@ -1990,26 +2126,44 @@ namespace PoliSim.UI
             }
 
             GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
-            DrawConsolidatedTabs(rightColumnWidth);
-            // v2.0 folder-tongue pass: with the real faces live there is NO gap — the tongues end flush
-            // against the content sheet (§A.7's joined look; the clones zero margin.bottom for the same
-            // reason), and the selected tongue is re-painted over the sheet's top keyline after the
-            // sheet draws (DrawActiveFolderTongue, below the tab switch). The interim treatment keeps
-            // its floating bar.
-            float tabPanelGap = _folderTabsLive ? 0f : sectionSpacing * 0.5f;
-            if (tabPanelGap > 0f)
+            float tabRowsHeight = 0f;
+            float tabPanelGap = 0f;
+            float foldedBannerHeight = 0f;
+            if (folded)
             {
-                GUILayout.Space(tabPanelGap);
+                // UI v3.0: the tongues fold into the rail and the content sheet starts at the top of
+                // the column. The held interrupt's REASONS - the load-bearing half of B8, the rail's
+                // dot carrying the state - re-surface here as the desk banner the Budget precedent
+                // already drew, measured so the sheet below is reserved against it (instance #12).
+                foldedBannerHeight = DrawFoldedInterruptBanner(rightColumnWidth);
+                // No tongue was laid out this frame, so nothing may be re-painted over the sheet
+                // from a previous frame's rect.
+                _activeTongueStyle = null;
+            }
+            else
+            {
+                DrawConsolidatedTabs(rightColumnWidth);
+                // v2.0 folder-tongue pass: with the real faces live there is NO gap — the tongues end flush
+                // against the content sheet (§A.7's joined look; the clones zero margin.bottom for the same
+                // reason), and the selected tongue is re-painted over the sheet's top keyline after the
+                // sheet draws (DrawActiveFolderTongue, below the tab switch). The interim treatment keeps
+                // its floating bar.
+                tabPanelGap = _folderTabsLive ? 0f : sectionSpacing * 0.5f;
+                if (tabPanelGap > 0f)
+                {
+                    GUILayout.Space(tabPanelGap);
+                }
+
+                // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
+                // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
+                tabRowsHeight = ConsolidatedTabRowHeight();
             }
 
-            // Master Sequence step 5e, Phase A: ONE tab row now (7 short-labeled consolidated tabs,
-            // see DrawConsolidatedTabs) - replaces the old 5-row reservation entirely.
-            float tabRowsHeight = ConsolidatedTabRowHeight();
             // ⚠ INSTANCE #12, RIGHT COLUMN — same defect, same line of reasoning. Every tab wraps its
             // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
             // before the content gets any. Budgeting against the raw height made the right column
             // overrun its clip rect on every screen where it is the taller of the two.
-            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - tabRowsHeight - tabPanelGap;
+            float tabContentHeight = PoliSimWidgets.InnerHeight(areaHeight, _boxStyle) - tabRowsHeight - tabPanelGap - foldedBannerHeight;
             // Master Sequence step 5e, Phase A: game-over gating stays exactly where the OLD 18-tab
             // dispatch had it, not a blanket gate here - several old tabs were deliberately NEVER
             // gated (WorldMap/PolicyWeb/Parliament/Compass are read-only visualizations, still fully
@@ -2043,8 +2197,11 @@ namespace PoliSim.UI
 
             // Folder-tongue pass: the selected tongue paints HERE, after the content sheet, so it sits
             // over the sheet's top keyline — the folder pulled forward. See DrawConsolidatedTabButton's
-            // paintDeferred comment for the full reasoning.
-            DrawActiveFolderTongue();
+            // paintDeferred comment for the full reasoning. (Folded: no tongue exists to paint.)
+            if (!folded)
+            {
+                DrawActiveFolderTongue();
+            }
 
             GUILayout.EndVertical();
 
@@ -4286,6 +4443,311 @@ namespace PoliSim.UI
             GUI.Label(metaRect, date.Year.ToString(), _calendarMetaStyle);
         }
 
+        // ------------------------------------------------------------------------------------------
+        // UI v3.0 — the folded shell: the icon rail (V3-R2). The rail's grid: the delivered icons are
+        // authored on a 24-unit grid (§5.2, "SVG source 24×24 geometry"); a rail cell is that grid plus
+        // RailMarginUnits of air each side, the unit being the tongue icon's own pixel size / 24 - so
+        // the rail is derived from the icons' grid and scales exactly as the tongues do. Measured: at
+        // 1080p (tab type 26 → icon 30 px, unit 1.25) the cell is 55 px; at 720p (icon 21) 39 px; at
+        // 1440p (icon 35) 64 px; the rail's outer width adds the paper sheet's own padding.
+        // ------------------------------------------------------------------------------------------
+        private const float RailIconGridUnits = 24f;
+        private const float RailMarginUnits = 10f;
+        /// <summary>"‹" folds the desk to the rail; "›" unfolds it. Glyphs, not words: the rail's text budget is the chip's month and day.</summary>
+        private const string FoldGlyphFold = "‹";
+        private const string FoldGlyphUnfold = "›";
+
+        /// <summary>The rail's icon is the tongue's icon, at the tongue's own measure (one accessor with DrawConsolidatedTabButton's arithmetic, so the two can never disagree).</summary>
+        private float RailIconSize()
+        {
+            return Mathf.Round(_tabButtonStyle.fontSize * ConsolidatedTabIconFontMultiple);
+        }
+
+        private float RailCellWidth()
+        {
+            return Mathf.Round(RailIconSize() * (RailIconGridUnits + 2f * RailMarginUnits) / RailIconGridUnits);
+        }
+
+        /// <summary>The rail's outer width: one cell plus the paper sheet's own padding. ONE ACCESSOR, READ BY BOTH SITES: OnGUI reserves the column at it and DrawFoldedRail lays the cells out inside it.</summary>
+        private float RailWidth()
+        {
+            return RailCellWidth() + _boxStyle.padding.horizontal;
+        }
+
+        private float RailGap()
+        {
+            return Mathf.Round(RailIconSize() * (4f / RailIconGridUnits));
+        }
+
+        /// <summary>The fold toggle's width in the OPEN column's pinned strip, beside the pad and the status line.</summary>
+        private float FoldToggleWidth()
+        {
+            return Mathf.Round(_labelStyle.fontSize * 1.6f);
+        }
+
+        /// <summary>
+        /// The fold toggle - ONE control in either state. Sits at the bottom of the chrome in both
+        /// states (the pinned strip's right end when OPEN, the rail's bottom cell when FOLDED), so the
+        /// eye finds it where it left it. The flip is instant: the next OnGUI lays out the other frame.
+        /// </summary>
+        private void DrawFoldToggle(float width, float height, bool folded)
+        {
+            bool locked = ShellFoldLocked();
+            GUIStyle face = locked ? UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Disabled) : _neutralActionButtonStyle;
+            var style = new GUIStyle(face) { fixedHeight = 0f, fixedWidth = 0f, wordWrap = false, alignment = TextAnchor.MiddleCenter };
+            style.padding = new RectOffset(2, 2, 2, 2);
+            if (GUILayout.Button(folded ? FoldGlyphUnfold : FoldGlyphFold, style, GUILayout.Width(width), GUILayout.Height(height)) && !locked)
+            {
+                ToggleShellFold();
+            }
+        }
+
+        /// <summary>
+        /// The FOLDED chrome: the column and the tongues collapsed to one icon rail on the same paper
+        /// sheet the column stands on. Top to bottom: the six tongues as six icon cells in the tongues'
+        /// own order (navigation - the active tab's icon in its area INK behind a spine, the others in
+        /// the delivered tab-swatch tint, §A.3's third column); a spacer; then the OPEN strip folded -
+        /// the calendar chip (the pad's own materials at cell size: month and day numeral), the status
+        /// dot (B8's two states: HELD amber with the spec's glow, RUNNING green without), and the
+        /// toggle. Nothing else: everything the column carried yields to the stage. Every cell's rect
+        /// is asserted inside the rail (UiContainmentGuard - the rail is the fourth stack-inside-a-
+        /// fixed-rect site) because the stack's height is arithmetic, and arithmetic drifts in silence.
+        /// </summary>
+        private void DrawFoldedRail(float railWidth, float areaHeight, bool isTimePaused)
+        {
+            float cell = RailCellWidth();
+            float iconSize = RailIconSize();
+            var cells = new List<KeyValuePair<string, Rect>>();
+
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(railWidth), GUILayout.Height(areaHeight - _boxStyle.margin.vertical));
+
+            DrawRailNavCell("Statistics", ConsolidatedTab.Statistics, "icon_nav_statistics", cell, iconSize, cells);
+            DrawRailNavCell("Decisions", ConsolidatedTab.Decisions, "icon_nav_decisions", cell, iconSize, cells);
+            DrawRailNavCell("Demographics", ConsolidatedTab.Demographics, "icon_nav_demographics", cell, iconSize, cells);
+            DrawRailNavCell("Budget", ConsolidatedTab.Budget, "icon_area_fiscal", cell, iconSize, cells);
+            DrawRailNavCell("Policy/Laws", ConsolidatedTab.PolicyLaws, "icon_nav_policylaws", cell, iconSize, cells);
+            DrawRailNavCell("Politics", ConsolidatedTab.Politics, "icon_area_political", cell, iconSize, cells);
+
+            GUILayout.FlexibleSpace();
+
+            DrawRailCalendarChip(cell, cells);
+            GUILayout.Space(RailGap());
+            DrawRailStatusDot(cell, isTimePaused, cells);
+            GUILayout.Space(RailGap());
+            DrawFoldToggle(cell, Mathf.Round(cell * 0.8f), folded: true);
+            if (Event.current.type == EventType.Repaint)
+            {
+                cells.Add(new KeyValuePair<string, Rect>("shell rail: toggle", GUILayoutUtility.GetLastRect()));
+            }
+
+            GUILayout.EndVertical();
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                Rect rail = GUILayoutUtility.GetLastRect();
+                for (int i = 0; i < cells.Count; i++)
+                {
+                    UiContainmentGuard.Check(cells[i].Key, cells[i].Value, rail);
+                }
+            }
+        }
+
+        /// <summary>One navigation cell of the rail: a square paper button carrying the tongue's icon. Active = area ink behind the tab-swatch convention's spine stood on end; inactive = the delivered tab-swatch tint. A missing sprite degrades to the tab's initial in the same ink - the rail never shows a blank cell that navigates somewhere.</summary>
+        private void DrawRailNavCell(string label, ConsolidatedTab tab, string iconName, float cell, float iconSize, List<KeyValuePair<string, Rect>> cells)
+        {
+            UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
+            bool selected = _consolidatedTab == tab;
+            var style = new GUIStyle(_neutralActionButtonStyle) { fixedHeight = 0f, fixedWidth = 0f };
+            style.padding = new RectOffset(0, 0, 0, 0);
+            if (GUILayout.Button(GUIContent.none, style, GUILayout.Width(cell), GUILayout.Height(cell)))
+            {
+                _consolidatedTab = tab;
+            }
+
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Rect rect = GUILayoutUtility.GetLastRect();
+            var iconRect = new Rect(rect.x + (rect.width - iconSize) * 0.5f, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
+            Color ink = selected ? UiPalette.GetAreaColor(area) : PoliSimTheme.TabSwatchTint(area);
+            if (selected)
+            {
+                UiPalette.DrawCardSpine(rect, area, TabSpineHeight(), RailGap());
+            }
+
+            Texture2D icon = IconLibrary.Get(iconName);
+            if (icon != null)
+            {
+                UiPalette.DrawTintedIcon(iconRect, icon, ink);
+            }
+            else
+            {
+                LedgerRow.Cell(iconRect, label.Substring(0, 1), _tabButtonStyle, ink, TextAnchor.MiddleCenter);
+            }
+
+            cells.Add(new KeyValuePair<string, Rect>("shell rail: " + label, iconRect));
+        }
+
+        /// <summary>
+        /// The calendar chip: the desk pad's own sprite at cell width (the whole sprite scaled, not
+        /// 9-sliced - at chip size the pad's baked bands would eat its face), with the month and the
+        /// day numeral at the pad's own ratios to its width (§A.6: month 8.5 and day 26 on a 64 pad),
+        /// both floored where the display face stops reading and both through MeasuredLabel. No year:
+        /// the chip says "when", the unfolded pad says the rest.
+        /// </summary>
+        private void DrawRailCalendarChip(float cell, List<KeyValuePair<string, Rect>> cells)
+        {
+            float chipHeight = Mathf.Round(cell * (80f / 72f));
+            Rect chip = GUILayoutUtility.GetRect(cell, chipHeight, GUILayout.Width(cell), GUILayout.Height(chipHeight));
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            Texture2D plate = _calendarPadPlateStyle.normal.background;
+            if (plate != null)
+            {
+                GUI.DrawTexture(chip, plate, ScaleMode.StretchToFill, true);
+            }
+            else
+            {
+                PoliSimTheme.RoundedCard(chip, PoliSimTheme.Hex(0xF4ECDC), PoliSimTheme.Hairline, 3f);
+            }
+
+            System.DateTime date = _simulationManager.CurrentDate;
+            var monthStyle = new GUIStyle(_calendarMonthStyle) { fontSize = Mathf.Max(9, Mathf.RoundToInt(cell * (8.5f / 64f))), wordWrap = false };
+            var dayStyle = new GUIStyle(_calendarDayStyle) { fontSize = Mathf.Max(9, Mathf.RoundToInt(cell * (26f / 64f))), wordWrap = false };
+            // The month band is the pad's own (2/80 .. 20/80 of the height) or the STRING's measured
+            // box, whichever is taller - at chip size the band is shorter than a 9 px line (11.5
+            // against 14.8 px at 1600, the first v3a film's 44 overflows), and a label must be given
+            // its own height. Measured with CalcSize, the guard's own measure, not `lineHeight` (the
+            // font's line spacing, 11.4 px here - the second v3a film, same 44). The day numeral takes
+            // what remains above the sprite's baked shadow (69/80) and shrinks to fit it - the only
+            // resort a numeral has that cannot misreport.
+            string monthText = date.ToString("MMM").ToUpperInvariant();
+            string dayText = date.Day.ToString();
+            float monthTop = chip.y + chip.height * (2f / 80f);
+            float monthHeight = Mathf.Max(chip.height * (18f / 80f), monthStyle.CalcSize(new GUIContent(monthText)).y);
+            var monthRect = new Rect(chip.x, monthTop, chip.width, monthHeight);
+            float dayTop = Mathf.Max(chip.y + chip.height * (24f / 80f), monthRect.yMax);
+            var dayRect = new Rect(chip.x, dayTop, chip.width, Mathf.Max(1f, chip.y + chip.height * (69f / 80f) - dayTop));
+            float dayNeed = dayStyle.CalcSize(new GUIContent(dayText)).y;
+            if (dayNeed > dayRect.height && dayNeed > 0f)
+            {
+                dayStyle.fontSize = Mathf.Max(9, Mathf.FloorToInt(dayStyle.fontSize * dayRect.height / dayNeed));
+            }
+
+            PoliSimWidgets.MeasuredLabel(monthRect, monthText, monthStyle);
+            PoliSimWidgets.MeasuredLabel(dayRect, dayText, dayStyle);
+
+            cells.Add(new KeyValuePair<string, Rect>("shell rail: calendar chip", chip));
+        }
+
+        /// <summary>
+        /// B8's carrier on the rail: the lamp alone. HELD - the amber dot with §A.6's glow
+        /// (`0 0 6px rgba(212,167,44,.7)`, drawn as stepped halos from rule 10's primitives; no sprite
+        /// ships one, and the direction asks for it by name); RUNNING - the green dot, no glow, the
+        /// spec's own word. Sized at the spec's ratio (an 8px dot beside 10.5px type) to the tab type
+        /// the rail's icons are measured from. The reasons behind a HELD state are text, and text is
+        /// not the rail's to carry: they print on the folded frame's banner (DrawFoldedInterruptBanner).
+        /// </summary>
+        private void DrawRailStatusDot(float cell, bool isTimePaused, List<KeyValuePair<string, Rect>> cells)
+        {
+            float dot = Mathf.Round(_tabButtonStyle.fontSize * (8f / 10.5f));
+            float glow = Mathf.Round(dot * (6f / 8f));
+            float slotHeight = dot + glow * 2f + 4f;
+            Rect slot = GUILayoutUtility.GetRect(cell, slotHeight, GUILayout.Width(cell), GUILayout.Height(slotHeight));
+            if (Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            var dotRect = new Rect(slot.x + (slot.width - dot) * 0.5f, slot.y + (slot.height - dot) * 0.5f, dot, dot);
+            if (isTimePaused)
+            {
+                DrawHeldLamp(dotRect, glow);
+            }
+            else
+            {
+                PoliSimTheme.Pill(dotRect, PoliSimTheme.Good);
+            }
+
+            cells.Add(new KeyValuePair<string, Rect>("shell rail: status dot", new Rect(dotRect.x - glow, dotRect.y - glow, dot + glow * 2f, dot + glow * 2f)));
+        }
+
+        /// <summary>The HELD lamp: the amber dot with §A.6's glow (`0 0 6px rgba(212,167,44,.7)`) as stepped halos from rule 10's primitives - no sprite ships one, and the direction asks for it by name. Repaint-gated by its callers.</summary>
+        private static void DrawHeldLamp(Rect dotRect, float glow)
+        {
+            const int haloSteps = 4;
+            for (int i = haloSteps; i >= 1; i--)
+            {
+                float spread = glow * i / haloSteps;
+                Color halo = PoliSimTheme.DraftOnDesk;
+                halo.a = 0.7f * (1f - (float)i / (haloSteps + 1)) * 0.5f;
+                PoliSimTheme.Pill(new Rect(dotRect.x - spread, dotRect.y - spread, dotRect.width + spread * 2f, dotRect.height + spread * 2f), halo);
+            }
+
+            PoliSimTheme.Pill(dotRect, PoliSimTheme.DraftOnDesk);
+        }
+
+        /// <summary>
+        /// The FOLDED frame's interrupt banner, at the top of the content column: the rail's dot
+        /// carries the HELD state, this carries the reasons - the load-bearing half of B8 (working
+        /// discipline item 2's "why has time stopped" guarantee, which the OPEN strip meets with its
+        /// status line). Generalised from the Budget tab's full-screen banner, which was this exact
+        /// idea for one screen. Returns the height it consumed so the sheet below is reserved against
+        /// it (instance #12's discipline: measured from the string drawn, at the width it is drawn in).
+        /// </summary>
+        private float DrawFoldedInterruptBanner(float columnWidth)
+        {
+            string interruptText = BuildFoldedInterruptText(includeBudgetProcess: _consolidatedTab != ConsolidatedTab.Budget);
+            if (interruptText == null)
+            {
+                return 0f;
+            }
+
+            DrawHoldBannerLabel(interruptText);
+            GUILayout.Space(4f);
+            float textWidth = columnWidth - _holdBannerStyle.margin.horizontal;
+            return _holdBannerStyle.CalcHeight(new GUIContent(interruptText), textWidth) + _holdBannerStyle.margin.vertical + 4f;
+        }
+
+        /// <summary>
+        /// The banner's text, or null when nothing holds the clock. Split from the draw site so it can
+        /// be measured (you cannot measure what is not a value). The Budget ledger's own pause is left
+        /// out ON that screen - it states that status itself, and repeating it would train players to
+        /// ignore the banner - and listed on every other folded screen, where nothing else says it.
+        /// </summary>
+        private string BuildFoldedInterruptText(bool includeBudgetProcess)
+        {
+            var blocking = new List<string>();
+            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
+            {
+                blocking.Add("a Fed Chair appointment (Federal Reserve tab)");
+            }
+
+            if (_simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0)
+            {
+                blocking.Add("a Cabinet decision (Cabinet tab)");
+            }
+
+            if (_simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
+            {
+                blocking.Add("a Foreign Policy meeting (Foreign Policy tab)");
+            }
+
+            if (includeBudgetProcess && _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
+            {
+                blocking.Add("the annual budget bill (Budget tab)");
+            }
+
+            return blocking.Count == 0
+                ? null
+                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. The speed controls are on the unfolded desk.";
+        }
+
         /// <summary>
         /// The HELD lamp dot's diameter. Derived from the banner's own type size at the spec's own
         /// proportion — §A.6 draws an 8px dot beside 10.5px type, and the ratio is what carries over,
@@ -4375,7 +4837,10 @@ namespace PoliSim.UI
             // width would under-count the wrapped lines, which is the exact quiet failure this
             // method's own doc comment describes.
             Vector2 pad = CalendarPadSize();
-            float statusWidth = PoliSimWidgets.InnerWidth(columnWidth, _boxStyle, 1, statusStyle) - pad.x - CalendarPadGap;
+            // The fold toggle (v3.0) sits at the row's right end: its width, its gap and its own
+            // margins come out of the status line's wrap width exactly as the drawing lays them out.
+            float statusWidth = PoliSimWidgets.InnerWidth(columnWidth, _boxStyle, 1, statusStyle) - pad.x - CalendarPadGap
+                                - CalendarPadGap - FoldToggleWidth() - _neutralActionButtonStyle.margin.horizontal;
             float statusHeight = statusStyle.CalcHeight(new GUIContent(statusText), statusWidth) + statusStyle.margin.vertical;
             float speedRowHeight = _buttonStyle.fixedHeight + _buttonStyle.margin.vertical;
 
@@ -4410,6 +4875,12 @@ namespace PoliSim.UI
                 GUILayout.FlexibleSpace();
                 GUILayout.EndVertical();
             }
+
+            // UI v3.0: the fold toggle, pinned at the strip's right end - the rail puts it in the same
+            // corner (its bottom cell), so the eye finds it where it left it in either state. Measured
+            // out of the status line's width by CalendarAndSpeedControlsHeight (one subtraction, both sites).
+            GUILayout.Space(CalendarPadGap);
+            DrawFoldToggle(FoldToggleWidth(), CalendarPadSize().y, folded: false);
             GUILayout.EndHorizontal();
 
             // B5 (§A.6): while time is held every non-Pause speed button wears the disabled face -
@@ -8880,8 +9351,9 @@ namespace PoliSim.UI
         /// site-specific fixes did not end that class; sharing one measurement between the reserve and
         /// the drawing does.
         ///
-        /// <para>Five pieces, in the order they are drawn: the header, the interrupt banner when one is
-        /// showing, the standing description, the bill-status line, and the Introduce button. Each is
+        /// <para>Four pieces, in the order they are drawn: the header, the standing description, the
+        /// bill-status line, and the Introduce button (the interrupt banner left this sheet for the
+        /// folded frame's own banner in OnGUI, v3.0, and is measured there). Each is
         /// measured in the style it renders in, at
         /// <see cref="PoliSimWidgets.InnerWidth"/> of the available width — measuring at the raw width
         /// would under-count the wrapped lines, which is the quiet way to reintroduce this bug.</para>
@@ -8891,12 +9363,6 @@ namespace PoliSim.UI
             float textWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
 
             float height = _headerStyle.CalcHeight(new GUIContent("Budget Process"), textWidth) + _headerStyle.margin.vertical;
-
-            string interruptText = BuildFullScreenInterruptText();
-            if (interruptText != null)
-            {
-                height += _holdBannerStyle.CalcHeight(new GUIContent(interruptText), textWidth) + _holdBannerStyle.margin.vertical + 4f;
-            }
 
             height += _labelStyle.CalcHeight(new GUIContent(BudgetProcessDescription), textWidth) + _labelStyle.margin.vertical;
             height += 8f;
@@ -8908,58 +9374,13 @@ namespace PoliSim.UI
             return height;
         }
 
-        private void DrawFullScreenPendingInterruptBanner()
-        {
-            // The Budget tab runs full-screen (see OnGUI), which hides the calendar/speed strip - and that
-            // strip is normally the ONLY always-visible indicator of why simulated time has stopped.
-            // Working discipline item 2 exists because of a real bug where time silently halted and the
-            // player had no way to tell why, since the resolving UI lived on a tab they weren't looking at.
-            // Going full-screen here would recreate exactly that, in the one screen most likely to be open
-            // when an interrupt fires - so any pending interrupt is re-surfaced here instead.
-            //
-            // The Budget Process's own pause is deliberately NOT listed: this screen already states that
-            // status directly, and repeating it would train players to ignore the banner.
-            string interruptText = BuildFullScreenInterruptText();
-            if (interruptText == null)
-            {
-                return;
-            }
-
-            DrawHoldBannerLabel(interruptText);
-            GUILayout.Space(4f);
-        }
-
-        /// <summary>
-        /// The banner's text, or null when nothing is blocking.
-        ///
-        /// ⚠ **SPLIT OUT OF THE DRAW SITE SO IT CAN BE MEASURED — the precondition, not a tidy-up.**
-        /// <see cref="BudgetProcessHeaderHeight"/> must know how tall this banner will be BEFORE it is
-        /// drawn, and a string that exists only as an argument to `GUILayout.Label` cannot be measured by
-        /// anything. **You cannot measure what is not a value**, so building it first is step one of the
-        /// accessor pattern rather than an incidental cleanup.
-        /// </summary>
-        private string BuildFullScreenInterruptText()
-        {
-            var blocking = new List<string>();
-            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
-            {
-                blocking.Add("a Fed Chair appointment");
-            }
-
-            if (_simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0)
-            {
-                blocking.Add("a Cabinet decision");
-            }
-
-            if (_simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
-            {
-                blocking.Add("a Foreign Policy meeting");
-            }
-
-            return blocking.Count == 0
-                ? null
-                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}. Open the Decisions tab to resolve it; speed controls are on any other tab.";
-        }
+        // The Budget tab's full-screen interrupt banner (DrawFullScreenPendingInterruptBanner /
+        // BuildFullScreenInterruptText, 2026-08-01 → 2026-08-28) lived here. It re-surfaced a pending
+        // interrupt because going full-screen hid the calendar/speed strip - the only always-visible
+        // indicator of why simulated time has stopped (working discipline item 2's bug). UI v3.0 made
+        // that hiding the FOLDED state of every screen, so the banner became the folded frame's own:
+        // DrawFoldedInterruptBanner / BuildFoldedInterruptText, drawn by OnGUI above the content sheet
+        // on every folded screen, the Budget ledger's own pause still left out on this screen.
 
         /// <summary>
         /// Master Sequence step 5b: the Budget Process full-screen UI shell - left category selector /
@@ -8994,7 +9415,6 @@ namespace PoliSim.UI
             float contentWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle);
 
             DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            DrawFullScreenPendingInterruptBanner();
             // Explicit Width, not left to GUILayout's own inference - the horizontal 3-column row
             // below can otherwise push this outer group's computed "natural" width past the screen
             // edge (a boxed column's GUILayout.Width request plus its GUIStyle's own padding can add
@@ -9179,7 +9599,7 @@ namespace PoliSim.UI
 
         /// <summary>
         /// The bill-status line's text. Split out for the same reason as
-        /// <see cref="BuildFullScreenInterruptText"/>: it is drawn here and MEASURED in
+        /// <see cref="BuildFoldedInterruptText"/>: it is drawn here and MEASURED in
         /// <see cref="BudgetProcessHeaderHeight"/>, and its three variants differ in length enough to
         /// change how many lines it wraps to.
         /// </summary>

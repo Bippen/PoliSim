@@ -220,6 +220,21 @@ Screen padding `20px / 24px / 18px`. Column gap `22px`.
 at 2560×1440), and the Budget full-screen hides the column outright. The "held constant" intent is
 served by the fraction being one constant; nothing re-derives 430px.
 
+⚠ **UI v3.0 (2026-08-28, `POLISIM_UI_V3_DIRECTION.md` V3-R2): the two column layouts are the two
+states of ONE shell fold.** OPEN is the standard grid above, exactly; FOLDED collapses the chrome column
+and the tab tongues to one icon rail (`GameController.DrawFoldedRail`: the six nav/area icons as
+navigation — active in area ink behind a spine, inactive in the tab-swatch tint — then, pinned at the
+bottom, the calendar chip from the pad's own materials, the status dot carrying B8's two states with the
+HELD glow, and the fold toggle; nothing else) and the content column takes the rest. Budget full-screen is
+no longer its own mechanism: it is the Budget ledger's FOLDED default, so "left column hidden" now reads
+"the rail" — a cell of the icons' own 24-unit grid plus 10 units of air each side (`icon × 44/24`: 55 px
+at 1080p, 39 px at 720p, 64 px at 1440p, plus the sheet's padding). Per-screen defaults: the landing
+screen (Statistics › Domestic, carrying the oversight default until Screen 0 exists) and Budget FOLDED;
+every other screen OPEN. The flip is instant; the player's choice persists per screen and per save
+(`UiDraftState.ShellFoldOverrides`). Every screen is legal in both states (the guards run in both, the
+folded frame's interrupt banner carrying the HELD reasons above the sheet); only defaults are canonical
+on film (V3-R4).
+
 ### A.6 The left column (persistent chrome)
 
 ⚠ **As built (2026-08-27):** items 1 and 3 moved by a recorded decision — the **Calendar Panel**

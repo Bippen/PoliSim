@@ -100,7 +100,14 @@ namespace PoliSim.UI
                 fontSize = Mathf.RoundToInt(unscaledSize * scale),
                 alignment = anchor
             };
+            // All four states, not `normal` alone: a label draws its HOVER state under the mouse, and
+            // the runtime skin's hover ink is a pale cream - so a headline figure the cursor happened
+            // to rest on printed near-white (the v3a film, 2026-08-28: "AAA" on the Credit Rating
+            // tile, the cursor over it during the capture). One ink, whatever the mouse does.
             s.normal.textColor = color;
+            s.hover.textColor = color;
+            s.active.textColor = color;
+            s.focused.textColor = color;
             return s;
         }
 
@@ -176,6 +183,12 @@ namespace PoliSim.UI
             scratch.font = source.font;
             scratch.alignment = source.alignment;
             scratch.normal.textColor = source.normal.textColor;
+            // The hover/active/focused inks too (2026-08-28): the scratch is drawn by GUI.Label, which
+            // picks the hover state under the mouse, so a scratch that copied only `normal` printed the
+            // skin's pale hover ink there - see Sized.
+            scratch.hover.textColor = source.hover.textColor;
+            scratch.active.textColor = source.active.textColor;
+            scratch.focused.textColor = source.focused.textColor;
             scratch.padding = source.padding;
             return scratch;
         }

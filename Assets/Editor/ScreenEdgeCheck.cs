@@ -45,7 +45,19 @@ namespace PoliSim.EditorTools
         /// </summary>
         private const int ContentThreshold = 30;
 
-        /// <summary>Sub-pixel seams and antialiasing leave a handful of stray pixels on any edge; a real clipped panel leaves hundreds. Same "a guard that cries wolf gets switched off" reasoning as the two C# guards. ⚠ Also asserted rather than measured.</summary>
+        /// <summary>
+        /// The LONGEST CONTIGUOUS RUN of content pixels along a line before the line counts as flush
+        /// (a count of stray pixels until 2026-08-28). A real element at the margin line is a contiguous
+        /// edge - the narrowest that can sit there is the v3 rail's 39 px cell at 720p, a panel is
+        /// hundreds - while the desk's own grain never runs. ⚠ MEASURED, 2026-08-28 (UI v3.0 Phase A):
+        /// at 1280×720 every capture's bottom margin line carries 36 grain speckles above
+        /// <see cref="ContentThreshold"/> (max Manhattan distance 39; real content measures 60+), in
+        /// runs of one or two pixels at the tile's 128 px seams. As a COUNT they exceeded 20 on every
+        /// frame and were hidden only because the tab tongues made the TOP line flush too (the
+        /// asymmetry rule below); the folded, running landing frame has no tongues, and the grain
+        /// surfaced as a false CLIPPED (`v3a_1280_01b_running_strip`). A run length asks the question
+        /// the check exists for - does an EDGE reach the line - and the grain cannot answer it.
+        /// </summary>
         private const int FlushMinPixels = 20;
 
         public static void Run()
@@ -99,7 +111,7 @@ namespace PoliSim.EditorTools
             }
 
             Debug.Log($"=== Screen edges: {paths.Length} capture(s), {flagged} clipped " +
-                      $"(4 pixel lines per screen; right/bottom only; flushness, not overrun) ===");
+                      $"(4 pixel lines per screen; right/bottom only; flushness as the longest content run, not overrun) ===");
             CheckExit.Finish(flagged == 0 ? 0 : 1);
         }
 
@@ -153,16 +165,23 @@ namespace PoliSim.EditorTools
                 int bottomY = marginY;                  // bottom-up: the capture's bottom edge is low y
                 int topY = height - marginY - 1;
 
+                // Longest contiguous run per line (see FlushMinPixels): a run resets on the first
+                // desk pixel, so isolated grain speckles never accumulate into a verdict.
+                int leftRun = 0, rightRun = 0, topRun = 0, bottomRun = 0;
                 for (int y = 0; y < height; y++)
                 {
-                    if (IsContent(pixels[y * width + marginX], desk)) { left++; }
-                    if (IsContent(pixels[y * width + rightX], desk)) { right++; }
+                    leftRun = IsContent(pixels[y * width + marginX], desk) ? leftRun + 1 : 0;
+                    rightRun = IsContent(pixels[y * width + rightX], desk) ? rightRun + 1 : 0;
+                    left = Mathf.Max(left, leftRun);
+                    right = Mathf.Max(right, rightRun);
                 }
 
                 for (int x = 0; x < width; x++)
                 {
-                    if (IsContent(pixels[topY * width + x], desk)) { top++; }
-                    if (IsContent(pixels[bottomY * width + x], desk)) { bottom++; }
+                    topRun = IsContent(pixels[topY * width + x], desk) ? topRun + 1 : 0;
+                    bottomRun = IsContent(pixels[bottomY * width + x], desk) ? bottomRun + 1 : 0;
+                    top = Mathf.Max(top, topRun);
+                    bottom = Mathf.Max(bottom, bottomRun);
                 }
 
                 return true;

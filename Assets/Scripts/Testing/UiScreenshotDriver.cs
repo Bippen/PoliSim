@@ -231,6 +231,7 @@ namespace PoliSim.Testing
 
                 yield return Settle();
                 yield return Capture($"{i + 2:00}_{Tabs[i].ToLowerInvariant()}");
+                yield return SweepOtherFoldState(controller);
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))
                 {
@@ -249,6 +250,20 @@ namespace PoliSim.Testing
                     ResetScrolls(controller);
                     yield return Settle();
                     yield return Capture(stem);
+
+                    // v3.0 (V3-R4): the other fold state's guards on every screen, at scroll zero - a
+                    // scroll view lays out and repaints its whole content, so one sweep covers the
+                    // text and containment guards for the screen. On film only for one screen per
+                    // column-layout class: the landing screen (default FOLDED - the standard class
+                    // seen unfolded) and Parliament (default OPEN - the standard class seen folded);
+                    // the Budget ledger's fold is LOCKED (its OPEN state is not legal - the v3a smoke
+                    // film, twenty containment escapes at 1600), so the full-screen class has one
+                    // state and no pair, which CaptureFoldPair says in the log.
+                    yield return SweepOtherFoldState(controller);
+                    if (stem == "02a_statistics_domestic" || stem == "05b_budget_spending" || stem == "07a_politics_parliament")
+                    {
+                        yield return CaptureFoldPair(controller, stem);
+                    }
 
                     // ⚠ A SECOND CAPTURE, SCROLLED PAST THE PREAMBLE. Every sub-screen opens with a
                     // header, explanatory prose and a summary block that together fill most of the panel,
@@ -496,6 +511,10 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("89e_signing_settled");
             RecordCanvasTextAssert("89e_signing_settled", controller);
+            // v3.0 (V3-R4): the Canvas column-layout class's fold pair. A live Canvas screen suppresses
+            // the IMGUI frame entirely (CanvasSeamSuppressesImgui), so the pair is expected to be
+            // identical by construction - filmed so the claim is on film rather than in prose.
+            yield return CaptureFoldPair(controller, "89e_signing_settled");
 
             InvokeNoArg(controller, "SignPendingDivision");
             yield return WaitForCanvasSettle(controller, wantActive: false);
@@ -1200,7 +1219,7 @@ namespace PoliSim.Testing
         /// Drives the calendar to the eve of an election turn so the Fed-chair selection fires through
         /// its own real path (GameController.UpdateFedChairSelectionState), then captures the HELD
         /// state twice — on a standard tab (the calendar strip's banner) and on Budget full-screen
-        /// (DrawFullScreenPendingInterruptBanner's re-surfaced copy). Those are the two sites of B8's
+        /// (DrawFoldedInterruptBanner's re-surfaced copy, v3.0). Those are the two sites of B8's
         /// always-visible interrupt indicator, and the `ui_banner_hold` plate dressed onto them.
         ///
         /// ⚠ **Without this pass the hold banner's presence in the set is LUCK, not a guarantee.**
@@ -1264,11 +1283,15 @@ namespace PoliSim.Testing
             }
 
             yield return Capture("90_interrupt_held");
+            // v3.0: the HELD state's other frame - the rail's glowing dot and the folded banner on
+            // Statistics, the OPEN strip's hold plate on Budget - swept for the guards, not filmed.
+            yield return SweepOtherFoldState(controller);
 
             SetEnumField(controller, "_consolidatedTab", "Budget");
             ResetScrolls(controller);
             yield return Settle();
             yield return Capture("91_interrupt_held_budget");
+            yield return SweepOtherFoldState(controller);
         }
 
         /// <summary>Bound on each state search (budget pause, decision/meeting rolls). Generous — four sim years — but a bound, per this harness's standing rule that an unbounded wait is a hang with no log line.</summary>
@@ -2094,6 +2117,42 @@ namespace PoliSim.Testing
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// UI v3.0 Phase A (V3-R4): every screen must be LEGAL in both fold states, but only the default
+        /// is canonical on film. So after a capture in the default state the harness flips the shell,
+        /// settles (the guards fire on Repaint: text overflow, containment, and the rail's own containment
+        /// asserts), and flips back without capturing. ScreenEdgeCheck reads film only, so it sees the
+        /// other state through <see cref="CaptureFoldPair"/>'s pairs - one per column-layout class.
+        /// </summary>
+        private IEnumerator SweepOtherFoldState(GameController controller)
+        {
+            if (controller.ShellFoldLocked())
+            {
+                yield break;   // the Budget ledger has one legal state; there is no other to sweep
+            }
+
+            controller.ToggleShellFold();
+            yield return Settle();
+            controller.ToggleShellFold();
+            yield return Settle();
+        }
+
+        /// <summary>The other state ON FILM, named by the state it shows (`_open` / `_folded`), then the default restored. On a locked screen the pair does not exist and the harness says so rather than filming the same frame twice.</summary>
+        private IEnumerator CaptureFoldPair(GameController controller, string stem)
+        {
+            if (controller.ShellFoldLocked())
+            {
+                Debug.Log($"SHOT: {stem} - the shell fold is locked on this screen (the Budget ledger's one legal state); no fold pair exists to film.");
+                yield break;
+            }
+
+            controller.ToggleShellFold();
+            yield return Settle();
+            yield return Capture(stem + (controller.EffectiveShellFold() == ShellFoldState.Folded ? "_folded" : "_open"));
+            controller.ToggleShellFold();
+            yield return Settle();
         }
 
         private static void InvokeNoArg(object target, string method)

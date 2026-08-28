@@ -21,7 +21,10 @@ namespace PoliSim.UI
     /// <see cref="PolicyScreenStatsRenderer"/>. A general "every rect inside its parent" check would
     /// need a container stack this codebase does not have, and building one to satisfy a check is the
     /// wrong trade. These three are where the pattern lives: each is handed a rect, walks a cumulative
-    /// offset through it, and has a SEPARATE height accessor its caller uses to reserve space.</para>
+    /// offset through it, and has a SEPARATE height accessor its caller uses to reserve space.
+    /// UI v3.0 (2026-08-28) added a fourth site of the same shape: <c>GameController.DrawFoldedRail</c>,
+    /// the icon rail - a stack inside a fixed rect whose cells are sized by arithmetic on the icon
+    /// grid, asserted against the rail's own rect on every Repaint.</para>
     ///
     /// ⚠ **THAT SEPARATION IS THE THING BEING GUARDED.** `StatTileHeight` walks the same named
     /// constants the drawing walks, which is correct today and is exactly the shape that drifts in

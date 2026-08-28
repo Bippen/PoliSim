@@ -107,7 +107,7 @@ namespace PoliSim.UI
             float barFraction = -1f)
         {
             float scale = Scale(nameStyle);
-            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle),
+            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle), FigureNeed(standingText, draftText, figureStyle),
                 out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
             Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
@@ -166,7 +166,25 @@ namespace PoliSim.UI
             return string.IsNullOrEmpty(trailingText) ? 0f : figureStyle.CalcSize(new GUIContent(trailingText)).x;
         }
 
-        private static void Columns(Rect row, GUIStyle nameStyle, float trailingNeed,
+        /// <summary>
+        /// What the figure column's content needs, so <see cref="Columns"/> can size it rather than
+        /// assume it (2026-08-28, UI v3.0 Phase A - label-clipping instance #15). A pair is drawn in two
+        /// halves that shrink together (<see cref="DrawFigurePair"/>), so the pair's need is twice the
+        /// wider half. Zero for an empty cell, which leaves the proportional width untouched.
+        /// </summary>
+        private static float FigureNeed(string standingText, string draftText, GUIStyle figureStyle)
+        {
+            float standing = string.IsNullOrEmpty(standingText) ? 0f : figureStyle.CalcSize(new GUIContent(standingText)).x;
+            if (string.IsNullOrEmpty(draftText))
+            {
+                return standing;
+            }
+
+            float draft = figureStyle.CalcSize(new GUIContent(draftText)).x;
+            return Mathf.Max(standing, draft) * 2f;
+        }
+
+        private static void Columns(Rect row, GUIStyle nameStyle, float trailingNeed, float figureNeed,
             out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect)
         {
             float scale = Scale(nameStyle);
@@ -204,6 +222,17 @@ namespace PoliSim.UI
             if (trailingNeed > trailingWidth)
             {
                 trailingWidth = Mathf.Min(trailingNeed, row.width * 0.34f);
+            }
+
+            // ⚠ THE FIGURE COLUMN ASKS WHAT IT IS HOLDING TOO (2026-08-28, UI v3.0 Phase A - the
+            // label-clipping class's instance #15). The v3 rail took ~75 px from the Budget ledger's
+            // centre column at 1280×720, and "not implemented" - a STATUS WORD in a column proportioned
+            // for "$1.05T" - no longer fit at the guard's 8 px floor (60.6 px needed in 57.4, twelve
+            // captures). Same rule as the trailing column, same cap, the track giving ground: a
+            // proportion is a measurement at one width, and a word is not a figure.
+            if (figureNeed > figureWidth)
+            {
+                figureWidth = Mathf.Min(figureNeed, row.width * 0.34f);
             }
 
             // If the floors still do not fit - a very narrow window - the fixed columns give ground
@@ -400,7 +429,7 @@ namespace PoliSim.UI
             Rect row, string name, float fill, string figureText, string trailingText,
             Color barInk, GUIStyle nameStyle, GUIStyle figureStyle)
         {
-            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle),
+            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle), FigureNeed(figureText, null, figureStyle),
                 out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
             DrawNameCell(nameRect, name, nameStyle, PoliSimTheme.TextPrimary);
@@ -546,6 +575,40 @@ namespace PoliSim.UI
                 GUI.Label(rect, content, style);
                 return;
             }
+
+            // §A.9a's missing rung (2026-08-28, UI v3.0 Phase A - the label-clipping class's instance
+            // #15, its second column): TWO LINES AT A REDUCED SIZE before one line at the floor. The
+            // wrap at full size fails for one of two reasons - a token wider than the column, or two
+            // lines taller than the row - and both give way to a smaller size long before the 8 px
+            // floor does: in the rail-narrowed Budget ledger at 1280×720 "Universal Healthcare" and
+            // "Negative Income Tax" shrank to 8 px on one line and still missed by 3 px, where two
+            // lines at 13 px fit. Largest size first, so the name gives up as little as it can; the
+            // shared cell style's size is restored either way (CellStyle re-seeds it, but a caller
+            // composing beside this cell in the same frame must not see the shrunken value).
+            int fullSize = style.fontSize;
+            for (int size = fullSize - 1; size >= PoliSimWidgets.MinMeasuredLabelFontSize; size--)
+            {
+                style.fontSize = size;
+                float widestRun = WidestUnbreakableRun(text, style);
+                if (widestRun > rect.width)
+                {
+                    continue;
+                }
+
+                style.wordWrap = true;
+                float reducedHeight = style.CalcHeight(content, rect.width);
+                if (reducedHeight > rect.height)
+                {
+                    continue;
+                }
+
+                UiOverflowGuard.Check(text, new Vector2(widestRun, reducedHeight), rect.size, style.fontSize);
+                GUI.Label(rect, content, style);
+                style.fontSize = fullSize;
+                return;
+            }
+
+            style.fontSize = fullSize;
 
             // Two lines still will not hold it - shrink, which is the floor of the ladder rather than
             // its first move. MeasuredLabel re-seeds wordWrap itself, so the cached style is safe to
