@@ -1,19 +1,22 @@
 # Claude Design asset request — PoliSim
 
-**Status — NO LIVE ASK (2026-08-28, night). The ninth request — UI v3.1, "one frame, denser,
-instruments" — was answered in full the evening it was sent** (boards 1n-r2, 1m-r2 and 2a, the D4 density
-token table and the D6 contrast pass, all on the live screens file) **and built the same night as UI v3.1
-Phase B** (`COMPLETED.md` §45; the boards and tables as read are the spec's §A.18). Its text stays below as
+**Status — ONE LIVE ASK (2026-08-28, late night): the TENTH request — D7, board 2b, "the
+Policy Web, drawn to be read" (§2 below, drawn against Annex G's measurements; it reaches you
+with the next §S paste).** The ninth request — UI v3.1, "one frame, denser, instruments" — was
+answered in full the evening it was sent (boards 1n-r2, 1m-r2 and 2a, the D4 density token table
+and the D6 contrast pass, all on the live screens file) and built the same night as UI v3.1
+Phase B (`COMPLETED.md` §45; the boards and tables as read are the spec's §A.18). Its text stays below as
 §1 with its six annexes, marked answered — the annexes are the measurements Design built against, and
 three of them carry a correction or a re-measure filed back for Design's next look, none an ask: **Annex C's
 paper-box padding was quoted from the box rect, not from the paper** (the sprite's own drop shadow sat inside
 the rect — measured 14/14/10/26 px; it now hangs outside, so the padding tokens mean what the table took
 them to mean); **Annex F re-measured after D6** (Caution 4.09 / 3.90 against the pass's 4.5; TextPrimary on
-brass 4.03, not the table's 5.5); **§E5's hatch pair after the third cut** (7.42 % — rasterizer edge coverage,
-not a cut error; the bar question is Elias's). The eighth request (the v3.0 boards) was answered the day it
+brass 4.03, not the table's 5.5); **§E5's hatch pair — CLOSED end-to-end 2026-08-28** (the third cut's
+7.42 % is rasterizer edge coverage, not a cut error; Elias ruled it "diagonal-tile, viewed not counted" the
+same night — nothing owed on either side). The eighth request (the v3.0 boards) was answered the day it
 was sent and migrated to `COMPLETED.md` §41. What else is here: **§0** the delivered set as it stands, **§4**
 what is costed but not yet requestable (redrawn rail glyphs joined it — refused by 1n-r2 as a costed
-follow-up), **§5** the standing conventions. **Date:** 2026-08-28.
+follow-up), **§5** the standing conventions. **Date:** 2026-08-28 (late night).
 
 **Standing rule: a count in prose is a cached value with no expiry** (working-discipline rule 12).
 Before trusting any number in this document, re-derive it: sprites with
@@ -304,6 +307,50 @@ Shapes: **level** (one number now) · **share** (a part of a stated whole) · **
 **The pairs below 4.5 : 1 that carry TEXT at 16 px or less at 1280, as first measured** (the sitting's "readability suffers at small sizes"): TextMuted on Tile at 7 px (3.7) — the stat tile label; TextMuted on Card at 8 px (3.9) — the Desk's methodology caption; Caution on Card/Tile at 9–10 px (2.5 / 2.4) — the BREAKING chip and the threshold labels; Good on Card at 10–12 px (3.4) — the positive deltas; the light-on-brass selected chip at 8 px (3.2); Global at 16 px (3.1) and Political at 16 px (2.9) as ledger inks. Rows are (fg, bg, px, where) as R-E3 asks; the judgment was D6's.
 
 **Re-measured 2026-08-28 after D6 was applied (`PoliSimTheme.cs` / `UiPalette.cs`; the same sRGB-luminance arithmetic on the hex values; my measurement is the fact, as D6 asks):** TextMuted 5.22 / 4.98 (target ≥ 5.0: met on Card, 0.02 short on Tile), Good 4.86 (≥ 4.8 ✓), Neutral 4.72 (≥ 4.5 ✓), Global 4.31 and Political 4.07 (≥ 4.0 ✓ both). **Two rows stay under 4.5 with text on them:** Caution at 9–10 px — 4.09 on Card, 3.90 on Tile (D6 aimed at ≥ 4.5; `#8F6900` at L −0.07 does not reach it — a further −0.03 or so would); and the selected chip's caption at 8 px — TextPrimary on brass measures **4.03**, not the 5.5 D6's table gives (up from 3.17; the flip is kept — it is the better of the two assignments and the brass is ruled unchanged). Neither is an ask; both are filed here for Design's next look, with the numbers.
+
+---
+
+## 2. The tenth request — D7: "the Policy Web, drawn to be read" (board 2b; 2026-08-28 late night)
+
+**From Elias's first live sitting, the third finding, in his words:** *the Policy Web should be
+bigger, more understandable, and use the page's dead space.* Split the way the rail was (the
+R-E2 precedent): the SCALE half is already built and live — the web now takes the full sheet
+(the interim numbers are Annex G.1, and the board is a refinement of that build, not a rescue —
+nothing in it fights a full-sheet composition). What we ask you to draw is the COMPREHENSION
+half.
+
+**One board — 2b, "the Policy Web, drawn to be read", at 1280×720 first** (the real inner
+plate there is 1120×448 — Annex G.1), against Annex G's measurements and the four film crops
+named in G.6:
+
+- **The full-sheet composition.** The instrument is a ring today (Annex G.2: height-bound, the
+  header margin reserved on every side), so more than half the plate's width is structurally
+  empty. Your call how the full sheet is used — a bigger ring with the freed margins spent
+  differently, a non-circular arrangement of the same nodes, the readout beside rather than
+  below — the nodes, edges and wedge grouping are the content, the geometry is yours.
+- **A legend.** The web's ink today (Annex G.4) distinguishes DERIVED (solid, full ink) from
+  DECLARED (dashed, reduced) and colours an edge by the target stat's own good/bad framing —
+  nothing on the sheet says so. Draw the legend that makes the distinction readable; it is NEW
+  UI content and is flagged as such.
+- **Weight and direction.** Edge thickness already encodes the coupling table's own relative
+  strength (1.1–3.4 px; uniform where no comparable ratio exists — Annex G.4); direction is
+  today implied by which end is a policy and which a stat. You MAY encode weight more legibly
+  and MAY add arrowheads — both from the model's own magnitudes only.
+- **The clicked-node pane.** Its composition is yours (today it is stacked labels below the
+  web — contents verbatim in Annex G.5); its CONTENTS are the model's and fixed.
+
+**The constraints (R-W2, standing):** the web's content stays derived-only — the edges are the
+model's own tables (the ledger terms and the coupling formulas), the DERIVED/DECLARED
+distinction stays visible, effects stay in the neutral good/bad convention already ruled. You
+may NOT invent edges, introduce valence colours beyond that convention, or draw narrative
+groupings the model does not hold (the nine wedges are the model's grouping). Captions within
+the standing text budget (mono, the caption sizes the D4 table rules); no new hues without a
+costed case; no Canvas — this is an IMGUI sheet.
+
+*(Also in this document since the last paste: Annex G below; §E5 closed end-to-end in the
+status line. The Demographics / Decisions / short-Politics re-composition candidates stay
+Annex C's filed notes — candidates for your initiative, not asks, until Elias's sitting says
+otherwise.)*
 
 ---
 
