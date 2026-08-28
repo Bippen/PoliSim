@@ -661,6 +661,8 @@ stacked graphs at 2560 where history plainly outranks the amber reference — th
 
 **Built (Phase B, 2026-08-28):** `GameController.Desk.cs` (Screen 0), the rail's active convention and the chip's rule in `GameController.DrawRailNavCell` / `DrawRailCalendarChip`, the ledger accessor `StatTracePanel.BuildApprovalDeskTerms`, the harness's `01c_desk` · `01d_desk_held` · `01e_desk_event` · `01f_desk_gameover`. The build's own reversible calls are R-B1…R-B14 (`COMPLETED.md` §41).
 
+**Margin — read vs built, ratified standing 2026-08-28 (R-PC1, Phase C):** where this section records the boards, three of the build's calls now stand as rulings, not as reversible defaults — **R-B2** the two ways home (the calendar chip; the open document's icon clicked again — the boards drew no way back); **R-B3** Screen 0 locked FOLDED (OPEN unreachable there); **R-B4** the effects card's eight are the preview's own, and board 1m's debt-to-GDP and currency rows are refused because the model does not estimate them — if ever wanted, a simulation feature with its own measurement pass (candidate slot: after item 10), never a UI patch. Design's live screens file carries the same three under board 1m as *"standing corrections from the build, accepted"* (its `BUILT 2026-08-28` block, read back the same day: *"a board error, theirs the right fix, R-B4"*). Everything else §A.17 records as drawn was built as drawn.
+
 ## C. PASS 3 — DISPOSITIONS AND THE RE-REVIEW FINDINGS — MIGRATED (2026-08-27)
 
 *The nine §1D dispositions (D1–D9 + the locale and banner items) and the seven re-review findings

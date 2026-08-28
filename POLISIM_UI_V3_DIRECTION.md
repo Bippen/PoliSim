@@ -52,6 +52,29 @@ rail are boards first (the Phase A request), built second. Design draws against 
 instrument inventory, the way 1i was drawn against a real capture — at **1280×720 first**, because
 the floor is where graphics-first pays or fails.
 
+**Ratified standing 2026-08-28 (R-PC1, Phase C) — three of the build's calls (`COMPLETED.md` §41):**
+
+- **R-B2, the ways home.** The boards name no way back to the Desk; the rail's calendar chip (the
+  sheet collapsed, so its click opens the sheet's home) and the open document's own rail icon
+  clicked again return to Screen 0. The Desk's rail shows no spine (board 1m, D2).
+- **R-B3, the lock.** Screen 0 locks FOLDED — its three columns take the whole window and the
+  chrome column's contents (the sheet, the cluster, the hold banner) live on the stage; OPEN is
+  unreachable there (R-SP2's form), the toggle rendered on its disabled face.
+- **R-B4, the eight.** The effects card draws C22's eight figures — the preview's own. Board 1m's
+  two further rows, **debt-to-GDP and currency, are refused because the model does not estimate
+  them**; the refusal is the model's honesty, not a layout choice. *Recorded line:* if those two
+  estimates are ever wanted they are a **simulation feature with its own measurement pass**
+  (candidate slot: after item 10), never a UI patch that prints a number the preview does not
+  compute.
+
+Design's side already holds the same three: the live screens file's board 1m gained a `BUILT
+2026-08-28 (631a9d4, v3desk_*)` block the same day — *"pointer, not an edit. Standing corrections
+from the build, accepted: the effects card draws C22's eight rows (this board's debt-to-GDP /
+currency rows were not estimates the game holds — a board error, theirs the right fix, R-B4); ways
+home = calendar chip / active icon again (R-B2, the board named none); Screen 0 locks FOLDED
+(R-B3)."* Read back through the Design MCP at the Phase C kickoff; the file is otherwise unchanged
+since the Phase B read.
+
 ### 3. The cut (the main page's text)
 
 Phase A takes a film-based census of the current landing screen's every text element, classified
