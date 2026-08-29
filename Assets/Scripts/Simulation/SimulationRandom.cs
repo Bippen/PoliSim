@@ -44,7 +44,23 @@ namespace PoliSim.Simulation
             SovereignWealth = 5,
 
             /// <summary>Noise on preliminary published figures (Step A's revision mechanic). Its own stream specifically so publishing cannot perturb any simulation consumer's draws - the whole point of this class.</summary>
-            PublicationRevision = 6
+            PublicationRevision = 6,
+
+            /// <summary>
+            /// Election-day noise (elections spec §27: `Final Vote = Expected Vote + Election
+            /// Noise`), added 2026-08-29. APPENDED, never inserted - this enum's own rule above -
+            /// so every existing stream's seed offset is untouched and no baseline moves; the
+            /// trajectory suite is re-proven byte-identical at the boundary that adds it.
+            ///
+            /// Its own stream because election noise must not perturb any simulation consumer's
+            /// draws, and so one election can be re-run reproducibly without re-running the
+            /// economy - the isolation argument this class was built on.
+            ///
+            /// ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2: the election system is unwired).
+            /// The name exists so that whatever eventually wires it cannot be tempted to borrow
+            /// another consumer's stream.
+            /// </summary>
+            ElectionNoise = 7
         }
 
         private static int? _masterSeed;
