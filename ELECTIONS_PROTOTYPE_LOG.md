@@ -398,3 +398,46 @@ box, and `ResolveBand`'s doc states that a future non-monotone stage forces it t
 
 The play-calibration list opens after W-E4, per the W-B3/W-B10 review ruling, with
 `CampaignPressure.PersuasionPerCompatibilityPoint` as its first entry.
+
+---
+
+## W-E4 — the polling screen (2026-08-29)
+
+Files: `Assets/Scripts/UI/GameController.CampaignPolling.cs`,
+`Assets/Scripts/Elections/PollingScreenSnapshot.cs`.
+
+**§21's decision made arithmetic.** Kronor against percentage points of precision, every ± DERIVED
+from the offer's sample size by `PollingSystem.MarginOfErrorPp` — the same function a conducted poll
+reports with, so the price list cannot promise an accuracy the polls fail to deliver. Sample sizes
+and prices are `[AUTHORED-DRAFT]`; the ladder's SHAPE (each point costing more than the last) is √n
+and is not authored at all.
+
+### Calls logged (R-N1)
+
+- **Regional / demographic / turnout depth is NOT folded into the cost-per-point figure.** They are
+  different KINDS of answer, not narrower ones; averaging a capability into a precision score would
+  hide the trade §21 exists to pose. Named on the row, excluded from the price, and the footnote
+  says why.
+- **The ± is quoted at a NAMED party's NAMED share**, because a poll's margin depends on the
+  proportion measured — one number for a whole poll would be wrong.
+- **§20's other error sources are printed on the screen that sells precision** — late swings,
+  turnout, undecided voters, tactical voting, house lean — because a price list that sold precision
+  without naming what it does not cover would be selling a false promise.
+
+### A durable layout fact (now three instances)
+
+**Pagella and the mono document face do not share a line box.** At 1920 an 11 px mono caption is
+21.2 px tall against a 13 px body's 20.1, and `DeskPx`'s integer rounding makes the crossover
+width-dependent. A row that measures its height from one face and draws a label in the other is a
+latent clip. **Rule: such a row takes `Mathf.Max` of both measured heights.** W-E1's momentum
+caption, W-E3's options ledger and W-E4's offer head all now do.
+
+**Both genuine overflow classes today appeared at exactly ONE of the four widths** — the mono/body
+mismatch only at 1920, the over-long caption only at 1280. That is the concrete argument for the
+screen class's four-width film.
+
+### The list is open
+
+`ELECTIONS_PLAY_CALIBRATION.md` created on the completion of W-E1/E3/E4, per the W-B3/W-B10 ruling.
+Six entries; `PersuasionPerCompatibilityPoint` first; the enthusiasm-vs-salience model question and
+earned-media dominance both carried there with their rulings attached.

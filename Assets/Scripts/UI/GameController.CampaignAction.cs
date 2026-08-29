@@ -96,7 +96,11 @@ namespace PoliSim.UI
             }
 
             GUIStyle costStyle = DeskCaption(10.5f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
-            float nameHeight = DeskBody(13f, PoliSimTheme.TextPrimary).CalcSize(new GUIContent("Ag")).y;
+            // Same class as the polling screen's head line: the row carries a BODY name and a MONO
+            // cost, and the two faces do not share a line box. Take the taller, not the name's.
+            float nameHeight = Mathf.Max(
+                DeskBody(13f, PoliSimTheme.TextPrimary).CalcSize(new GUIContent("Ag")).y,
+                Mathf.Ceil(DeskCaptionHeight(DeskCaption(10.5f, PoliSimTheme.TextPrimary))));
             float barHeight = Mathf.Round(7f * uy);
             float rowHeight = nameHeight + barHeight + Mathf.Round(11f * uy);
             float costWidth = Mathf.Ceil(costStyle.CalcSize(new GUIContent("000,000 kr · 0 h")).x) + Mathf.Round(8f * ux);

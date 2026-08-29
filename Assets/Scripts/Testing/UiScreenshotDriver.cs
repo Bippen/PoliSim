@@ -2405,8 +2405,9 @@ namespace PoliSim.Testing
             // would be worse than either being wrong alone. R-N1: `-shotcampaign` films the whole
             // Track E set rather than gaining a flag per screen, because each Unity launch costs
             // ~40 s of warm-up and the screens share their staging; the items stay separable by
-            // capture NAME (`e1_*`, `e3_*`), which is what a reviewer actually reads.
+            // capture NAME (`e1_*`, `e3_*`, `e4_*`), which is what a reviewer actually reads.
             yield return CaptureActionScreen(controller, perceived);
+            yield return CapturePollingScreen(controller, perceived);
 
             Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
                       $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
@@ -2432,6 +2433,91 @@ namespace PoliSim.Testing
         /// The ± figures are the measurement, and the band's width is that measurement propagated
         /// through §42's chain by `CampaignActions.ResolveBand` — proven by sweep in
         /// `ChainBandHarness` to bound the whole uncertainty box. Nothing here is an authored ±.
+        /// <summary>
+        /// W-E4's pass — the polling screen at three readings.
+        ///
+        /// §21's four offers are **[AUTHORED-DRAFT]** in sample size and price (real Swedish polling
+        /// prices are W-F5's to source, and the pass says so in its log line), but every ± beside
+        /// them is DERIVED by `PollingSystem.MarginOfErrorPp` from that sample size — the same
+        /// function a conducted poll reports with, so the price list cannot promise a precision the
+        /// polls then fail to deliver.
+        ///
+        /// The three readings exist to show the decision from both ends:
+        /// - **`rich`** — the whole ladder affordable, so the question is genuinely "is the extra
+        ///   information worth it" rather than "what can I have".
+        /// - **`poor`** — late in the campaign with the chest nearly gone, where most of the ladder
+        ///   greys out and the question answers itself.
+        /// - **`nomomentum`** — §22's stock at rest, so the centre column's empty state is on film.
+        /// </summary>
+        private IEnumerator CapturePollingScreen(GameController controller, double perceived)
+        {
+            var states = new[]
+            {
+                new PollingFilmState("rich", new DateTime(2026, 8, 21), 1_120_000.0, 2.2),
+                new PollingFilmState("poor", new DateTime(2026, 9, 4), 96_000.0, -1.4),
+                new PollingFilmState("nomomentum", new DateTime(2026, 8, 21), 1_120_000.0, 0.0),
+            };
+
+            foreach (PollingFilmState state in states)
+            {
+                var day = new CampaignFilmState(state.Stem, state.Today, state.Money, 12.0, 1_460, 4, 3,
+                    state.MomentumShockPp);
+                CampaignSnapshot campaign = BuildCampaignSnapshot(day, perceived);
+
+                // The ± is quoted at the PLAYER's own polled share, because a margin of error depends
+                // on the proportion measured - quoting one number for a whole poll would be wrong,
+                // and the screen says which share it used.
+                int player = campaign.PlayerPartyIndex;
+                double quotedShare = campaign.LatestPoll.Share(player);
+
+                // §21's ladder: cheap/low-sample/large-uncertainty through to
+                // expensive/large-sample/regional/demographic/turnout, exactly as the spec lists it.
+                var offers = new[]
+                {
+                    MakeOffer("Public tracker", 600, 40_000, false, false, false, campaign),
+                    MakeOffer("Standard commission", 1_200, 120_000, false, false, false, campaign),
+                    MakeOffer("Regional breakdown", 2_400, 260_000, true, false, false, campaign),
+                    MakeOffer("Full internal programme", 6_000, 620_000, true, true, true, campaign),
+                };
+
+                controller.SetCampaignPollingScreen(new PollingScreenSnapshot(
+                    campaign, offers, 3, quotedShare, campaign.PartyNames[player]));
+                yield return Settle();
+                yield return Capture($"e4_campaign_polling_{state.Stem}");
+
+                Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                    "SHOT: W-E4 {0} - +/-{1:F2}pp at n=600 down to +/-{2:F2}pp at n=6000 on {3}'s {4:P1}; "
+                    + "sample sizes and prices are [AUTHORED-DRAFT] (W-F5 sources them), every +/- is DERIVED "
+                    + "by PollingSystem.MarginOfErrorPp.",
+                    state.Stem, offers[0].MarginOfErrorPp(quotedShare), offers[3].MarginOfErrorPp(quotedShare),
+                    campaign.PartyNames[player], quotedShare));
+            }
+
+            controller.SetCampaignPollingScreen(null);
+            yield return Settle();
+        }
+
+        private static PollOffer MakeOffer(string name, int sampleSize, double cost, bool regional,
+            bool demographic, bool turnout, CampaignSnapshot campaign)
+        {
+            return new PollOffer(name, sampleSize, cost, regional, demographic, turnout,
+                cost <= campaign.Resources.Money);
+        }
+
+        /// <summary>One filmed polling day: the money and the momentum are what vary.</summary>
+        private readonly struct PollingFilmState
+        {
+            public readonly string Stem;
+            public readonly DateTime Today;
+            public readonly double Money;
+            public readonly double MomentumShockPp;
+
+            public PollingFilmState(string stem, DateTime today, double money, double momentumShockPp)
+            {
+                Stem = stem; Today = today; Money = money; MomentumShockPp = momentumShockPp;
+            }
+        }
+
         /// </summary>
         private IEnumerator CaptureActionScreen(GameController controller, double perceived)
         {

@@ -3509,3 +3509,86 @@ Both Track E screens read bottom-empty at every width, W-E3 worse than W-E1 befo
 bands were added and still noticeably so after. Per the standing dead-space ruling this stays a
 recorded finding and a Track H Design line — the v3 stage's text budget applies, and filling space
 with invented rows would break it.
+
+## 54. W-E4 — the polling screen, and §21's decision made arithmetic (2026-08-29)
+
+**§21 is one sentence, and this screen exists to serve it:** *"The player should have to decide
+whether additional information is worth the cost."* A decision needs both sides priced, so the right
+column puts kronor against **percentage points of precision** — and every ± on it is DERIVED from
+the offer's sample size by `PollingSystem.MarginOfErrorPp`, the same function a conducted poll
+reports with. The price list cannot promise an accuracy the polls then fail to deliver, because it
+is not making a promise: it is quoting the same arithmetic.
+
+**The ladder, as filmed** (quoted at S's polled 31.6 %):
+
+| offer | n | cost | ± | per point gained |
+|---|---|---|---|---|
+| Public tracker | 600 | 40 000 kr | ±3.7 | the baseline |
+| Standard commission | 1 200 | 120 000 kr | ±2.6 | 73 433 kr |
+| Regional breakdown | 2 400 | 260 000 kr | ±1.9 | 118 294 kr |
+| Full internal programme | 6 000 | 620 000 kr | ±1.2 | 228 048 kr |
+
+**Each point of precision costs more than the last, and that is arithmetic rather than design** — it
+falls out of √n. The sample sizes and prices are **[AUTHORED-DRAFT]** (W-F5 sources real party
+finances); the *shape* of the ladder is not authored at all.
+
+**The screen states what money cannot buy, on the same sheet that sells precision.** §20's other
+sources of difference — late swings, turnout, undecided voters, tactical voting, and each house's own
+lean — are named as NOT being in the ±, which describes sampling error and nothing else (W-B10). A
+price list that sold precision without saying so would be selling a false promise.
+
+**§22's momentum gets the centre column**, with the half-life the code actually uses, and states the
+two things a player would otherwise have to infer: momentum cannot be made permanent (a lasting gain
+is a reputation change, §38 — a different stock), and it shifts where the race *appears* to be
+without touching the preference underneath, which is why a poll can move before anything real has.
+
+### The judgement this item turned on
+
+**Regional, demographic and turnout depth are deliberately NOT folded into the cost-per-point
+figure.** Doing so would have made a tidier column — one number per row, sortable — but those are
+different KINDS of answer, not narrower ones. Averaging a capability into a precision score would
+hide exactly the trade §21 says the player should have to make. They are named on the row instead,
+and the footnote says why they are not priced per point.
+
+### Two defects, both caught by the guards this time
+
+1. **A caption 446 px wide in a 425 px slot at 1280** — the full programme's `n = 6,000 · REGIONAL ·
+   DEMOGRAPHIC · TURNOUT MODEL · 228,048 kr PER POINT OF PRECISION GAINED`. Fixed by splitting the
+   row into TWO caption lines rather than abbreviating: what the offer IS and what its extra
+   precision COSTS are two facts, and shrinking the item's own subject to fit a tidy row would have
+   been the wrong trade.
+2. **A 1.1 px height overflow at 1920 only** — `120,000 kr · ± 2.6` needing 21.2 px in 20.1. See the
+   class below.
+
+### A durable fact about this codebase's two type faces
+
+**Pagella and the mono document face do not share a line box.** At 1920 an 11 px mono caption
+measures 21.2 px tall against a 13 px body's 20.1 px, and because `DeskPx` rounds to integers the two
+faces cross over at different points on the ladder. **Any row that measures its height from one face
+and then draws a label in the other is a latent clip**, and whether it actually clips depends on the
+width. The rule: a row carrying labels in BOTH faces takes `Mathf.Max` of both measured heights.
+Three instances this session — W-E1's momentum caption, W-E3's options ledger, W-E4's offer head —
+all now do.
+
+**This is also the concrete case for filming at four widths rather than one.** Both genuine overflow
+classes today appeared at exactly ONE of the four: the mono/body mismatch only at 1920, the long
+caption only at 1280. A single representative size would have shipped both.
+
+### The play-calibration list is now open
+
+`ELECTIONS_PLAY_CALIBRATION.md`, created on the completion of W-E1/E3/E4 exactly as the W-B3/W-B10
+review ruled. Six entries, `CampaignPressure.PersuasionPerCompatibilityPoint` first, each stating
+what is measured, what would settle it, and **what must not be done in the meantime**. Its governing
+rule is written at the top: nothing on the list is tuned to make a gate pass. The two model findings
+this session produced — enthusiasm's insensitivity to salience, and earned media's dominance — are
+carried there WITH their rulings attached, so neither can be quietly re-solved as a tuning problem
+later.
+
+### The three screens are now one loop
+
+Campaign HQ shows where you stand (the race *as polled*, never as it is); the action screen prices
+what you could do about it as a range whose width is your own measurement error carried through §42's
+chain; the polling screen sells narrower measurement and quotes what each marginal point costs. A
+wide band on the action screen is a reason to visit the polling screen, and the polling screen's
+prices are meaningful because W-E3 showed what a wide band costs in confidence. Both ends derive from
+the same `MarginOfErrorPp`, so they cannot contradict each other.
