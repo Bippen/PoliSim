@@ -942,3 +942,77 @@ adjustment 2 / 4 / 1 / 7 / 1 / 9 / 7 / 8 (= 39), no seat returned. 12 of 12 (the
   and verify the per-valkrets seat table.
 
 **R-N2 held at this boundary:** `traj_wd2_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `seats_wd2_20260829.log`, `campaignai_wd2_20260829.log`.
+
+---
+
+## W-E2 — the campaign map: 29 valkretsar as polled, the swing index, and §36's gate drawn as absence (2026-08-29)
+
+Files: `Assets/Scripts/Elections/SwingRegions.cs` (`SwingRegions`, `MapRegionReading`, `MapTile`,
+`CampaignMapSnapshot`, `SwedenCartogram`), `Assets/Scripts/UI/GameController.CampaignMap.cs` (the
+screen), the OnGUI branch in `GameController.cs`, the driver's `CaptureCampaignMap` +
+`ReadValkretsVectors` pass; films `we2_campaign_<w>_e2_campaign_map_{unbought,regional,full}` at
+1280 / 1600 / 1920 / 2560.
+
+**Done-when.** *The map renders 29 constituencies* — the 5 × 10 cartogram carries all 29
+valkretsar (the driver errors if the file gives any other count). *Uncertainty is visually
+distinct from data* — an unbought valkrets is a hatched tile figured "?" with nothing behind it
+(no shares, no leader, no index — `MapRegionReading.Measured` false), a bought one is shaded by
+the player's polled share with its ± and framed by what the poll can say. *Buying polling visibly
+sharpens it* — the same day filmed three times: nothing bought (29 hatched, the ledger empty and
+the gate text naming the two offers and what each buys, ±10 / ±6 on the player's share by
+`MarginOfErrorPp`); the regional breakdown (n = 2 400 / 29 = 82 per valkrets: 29 read, 11 swing
+regions, **19 too close to call** — the lead inside its own ±); the full programme (n = 206 per
+valkrets: 12 swing, **13 too close to call**). Six of the nineteen dashed frames become solid; the
+figures' ± halve.
+
+### Decisions taken and logged (R-N1)
+
+- **The gate is ABSENCE, not blur.** §36 says the map must not tell the player where the race is
+  close until they pay to find out. An averaged or rounded regional reading would be telling them
+  anyway; an unbought valkrets therefore carries no reading at all, and the tile says "?" over the
+  draft hatch — the established idiom for "not real yet" (`ui_hatch_draft`, the ledger rows' draft
+  band), not a new sprite.
+- **A reading is a Poll of the valkrets, or nothing** — `SwingRegions.FromPoll` derives leader,
+  runner-up, gap, the gap's own error (the two ± combined in quadrature) and §25's index from the
+  polled shares and nothing else; `TooCloseToCall` is `gap ≤ gapError`, so a 40.5 / 39.8 on a
+  small sample is drawn as what it is — undecidable — with a dashed frame in the caution ink.
+- **§25's index:** `100 × max(0, 1 − gap / 20)` — 100 at a tie, 0 at a 20-point lead.
+  `[AUTHORED-DRAFT] FullScaleGapPp = 20` (the lead at which a valkrets stops being worth
+  contesting); `[AUTHORED-DRAFT] CampaignMapSwingFrameIndex = 60` (the index at which a tile is
+  framed bold). Both strikeable; the key on the sheet names them.
+- **The per-valkrets sample is the national sample over 29.** A "regional breakdown" of n = 2 400
+  affords 82 respondents per valkrets, and the honest ± at that size is ±10 on a 30 % share — which
+  is why nineteen of twenty-nine leads are inside their error at that price. The screen does not
+  pretend the breakdown buys more than it does; that IS the §21 trade.
+- **The cartogram is a reading aid, not geography** — `SwedenCartogram.Layout`, hand-laid, north at
+  the top, no borders, `[AUTHORED-DRAFT]`. A drawn map is a Track H Design line.
+- **The truth polled is SOURCED per valkrets:** 2018's absolute counts for all eight parties
+  (`valkrets_votes_2018.csv`) as each valkrets's preference vector — the only eight-party
+  per-valkrets vector on disk (the 2022 table carries five; W-F1 bills the rest). Shares are of the
+  eight-party vote; weights are each valkrets's share of the national valid vote.
+- **The shade is the player's own polled share**, scaled to its strongest valkrets, so the darkest
+  tile is where the party is strongest; the frames are about the RACE (the index), not the party.
+  A leader-coloured choropleth would need eight party inks the palette does not have
+  (`PoliSimTheme.Party` keys four archetypes) — a Design line, not an invention here.
+- **The horse-race poll on the AI's view now has a regional companion it could read** — the
+  professional's "targets swing voters" rider (W-C1) is NOT discharged here: local actions are
+  worthless in the placeholder environment (W-B4), so wiring the index into the AI's importance
+  would change nothing measurable. It waits for W-B4 with the rest.
+
+### Fix-forward found by this film
+
+**P-A1's "1280" campaign film was not at 1280.** `pa_campaign_1280_*` measures 1918 × 953 — the
+first GUI launch after a killed Editor kept the previous session's window size (the environment
+quirk on record), while the sweep and the three other widths were at their stated sizes. The true
+1280 run came with this item's film and found what the 1918 one could not: P-A1's rewritten
+caption *HOW A MESSAGE BECOMES VOTES — EVERY STAGE MULTIPLIES* is 1.1 px too wide for the action
+screen's 250-board-px plate at the 8 px floor (249.4 in 248.3). Fixed here — *HOW A MESSAGE BECOMES
+VOTES — EACH STAGE MULTIPLIES* — and the 1280 campaign family re-filmed on the fixed code
+(`we2_campaign_1280_*`, 16 frames, 0 overflows). §61's film line is corrected to say so.
+
+### Riders
+
+- **W-B4** — the AI's local targeting reads `SwingIndex` once local actions can matter.
+- **W-E6 / W-E7** — the same cartogram draws results arriving and the final count.
+- **W-F1** — the 2022 eight-party per-valkrets counts replace 2018 as the map's truth.
+- **W-H4** — a drawn valkrets map and eight party inks are Design lines.

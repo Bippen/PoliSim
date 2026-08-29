@@ -2408,6 +2408,7 @@ namespace PoliSim.Testing
             // capture NAME (`e1_*`, `e3_*`, `e4_*`), which is what a reviewer actually reads.
             yield return CaptureActionScreen(controller, perceived);
             yield return CapturePollingScreen(controller, perceived);
+            yield return CaptureCampaignMap(controller, perceived);
 
             Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
                       $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
@@ -2599,6 +2600,117 @@ namespace PoliSim.Testing
 
             controller.SetCampaignActionScreen(null);
             yield return Settle();
+        }
+
+
+        /// <summary>
+        /// W-E2's pass: the campaign map in three readings of the SAME campaign day — nothing
+        /// bought, the regional breakdown bought, the full programme bought — so the film shows
+        /// §36's gate, the uncertainty it lifts, and the sharpening the bigger sample buys.
+        ///
+        /// The truth polled is SOURCED: each valkrets's 2018 Riksdag result
+        /// (`ElectionsData/sweden/valkrets_votes_2018.csv`, Valmyndigheten's absolute counts, all
+        /// eight parties) as that valkrets's preference vector — the only per-valkrets vector on disk
+        /// for all eight (the 2022 table carries five; W-F1 bills the rest). Each bought valkrets is
+        /// polled by `PollingSystem.Conduct` at the offer's per-valkrets sample (the national n
+        /// divided over 29 — what a "regional breakdown" of that size actually affords), seeded per
+        /// valkrets so the film is byte-stable. The offer line's ± figures are `MarginOfErrorPp` at
+        /// the same per-valkrets samples, quoted at the player's national share.
+        /// </summary>
+        private IEnumerator CaptureCampaignMap(GameController controller, double perceived)
+        {
+            var day = new CampaignFilmState("campaign", new DateTime(2026, 8, 21), 1_120_000.0, 12.0, 1_460, 4, 3, 2.2);
+            CampaignSnapshot campaign = BuildCampaignSnapshot(day, perceived);
+
+            string[] names;
+            double[] weights;
+            double[][] truth = ReadValkretsVectors(out names, out weights);
+            if (truth == null)
+            {
+                Debug.LogError("SHOT: the 2018 valkrets file could not be read - the map pass captured NOTHING.");
+                yield break;
+            }
+
+            MapTile[] layout = SwedenCartogram.Layout();
+            var readings = new[]
+            {
+                ("unbought", "", 0),
+                ("regional", "Regional breakdown", 2_400 / 29),
+                ("full", "Full internal programme", 6_000 / 29),
+            };
+
+            double playerShare = Sweden2022Shares[0];
+            string offerLine = string.Format(CultureInfo.InvariantCulture,
+                "THE REGIONAL BREAKDOWN (n = 2,400 · 260,000 kr) READS EACH VALKRETS AT ABOUT ±{0:F0} ON YOUR SHARE; " +
+                "THE FULL INTERNAL PROGRAMME (n = 6,000 · 620,000 kr) AT ABOUT ±{1:F0}. THE ± IS SAMPLING ERROR ONLY.",
+                PollingSystem.MarginOfErrorPp(playerShare, 2_400 / 29), PollingSystem.MarginOfErrorPp(playerShare, 6_000 / 29));
+
+            foreach ((string stem, string bought, int perRegion) in readings)
+            {
+                var regions = new MapRegionReading[names.Length];
+                for (int r = 0; r < names.Length; r++)
+                {
+                    if (perRegion <= 0)
+                    {
+                        regions[r] = SwingRegions.Unknown(names[r], weights[r]);
+                        continue;
+                    }
+
+                    var house = new PollingHouse("Novus", perRegion, 0, new double[truth[r].Length]);
+                    Poll poll = PollingSystem.Conduct(truth[r], house, day.Today.AddDays(-2), new System.Random(CampaignFilmSeed + 1000 * perRegion + r));
+                    regions[r] = SwingRegions.FromPoll(names[r], weights[r], poll);
+                }
+
+                var snapshot = new CampaignMapSnapshot(campaign, regions, layout, Sweden2022Parties, 0, bought, perRegion,
+                    day.Today.AddDays(-2), offerLine);
+                controller.SetCampaignMapScreen(snapshot);
+                yield return Settle();
+                yield return Capture($"e2_campaign_map_{stem}");
+
+                int measured = snapshot.MeasuredCount;
+                int swing = 0, close = 0;
+                foreach (MapRegionReading reading in regions) { if (reading.Measured && reading.SwingIndex >= 60.0) { swing++; } if (reading.TooCloseToCall) { close++; } }
+                Debug.Log($"SHOT: map '{stem}' - {measured} of {names.Length} valkretsar read at n = {perRegion} each; {swing} swing (index >= 60), {close} too close to call.");
+                if (names.Length != 29) { Debug.LogError($"SHOT: the map staged {names.Length} valkretsar, not 29."); }
+            }
+
+            controller.SetCampaignMapScreen(null);
+            yield return Settle();
+        }
+
+        /// <summary>The 2018 per-valkrets result as a preference vector per valkrets, in the driver's party order (S, SD, M, V, C, KD, MP, L), with each valkrets's share of the national valid vote as its weight.</summary>
+        private static double[][] ReadValkretsVectors(out string[] names, out double[] weights)
+        {
+            names = null; weights = null;
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            if (!File.Exists(path)) { return null; }
+
+            // csv order: valkrets;valid;S;M;SD;C;V;KD;L;MP -> S, SD, M, V, C, KD, MP, L
+            int[] map = { 2, 4, 3, 6, 5, 7, 9, 8 };
+            var rows = new List<double[]>();
+            var nameList = new List<string>();
+            var validList = new List<double>();
+            foreach (string raw in File.ReadAllLines(path))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("valkrets;")) { continue; }
+                string[] cells = line.Split(';');
+                double valid = double.Parse(cells[1], CultureInfo.InvariantCulture);
+                var shares = new double[8];
+                double partySum = 0.0;
+                for (int p = 0; p < 8; p++) { shares[p] = double.Parse(cells[map[p]], CultureInfo.InvariantCulture); partySum += shares[p]; }
+                for (int p = 0; p < 8; p++) { shares[p] /= partySum; }   // the eight parties' shares of the eight-party vote
+                rows.Add(shares);
+                nameList.Add(cells[0]);
+                validList.Add(valid);
+            }
+
+            double total = 0.0;
+            foreach (double v in validList) { total += v; }
+            names = nameList.ToArray();
+            weights = new double[validList.Count];
+            for (int i = 0; i < weights.Length; i++) { weights[i] = validList[i] / total; }
+            return rows.ToArray();
         }
 
         /// <summary>One filmed reading of the SAME action: only the measurement changes between them.</summary>

@@ -1979,7 +1979,12 @@ namespace PoliSim.UI
             // pieces (e.g. Politics = Parliament[ungated] + Compass[ungated] + Cabinet[gated] +
             // FederalReserve[gated]) - see each DrawXTab method below for where it applies its own
             // gate at the right granularity, matching the old per-case behavior exactly.
-            if (_campaignPollingScreen.HasValue)
+            if (_campaignMapScreen.HasValue)
+            {
+                // W-E2 (harness only), same contract as its three siblings below.
+                DrawCampaignMapStage(tabContentHeight, rightColumnWidth, _campaignMapScreen.Value);
+            }
+            else if (_campaignPollingScreen.HasValue)
             {
                 // W-E4 (harness only), same contract as its two siblings below.
                 DrawCampaignPollingStage(tabContentHeight, rightColumnWidth, _campaignPollingScreen.Value);

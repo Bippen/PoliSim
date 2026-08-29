@@ -4070,7 +4070,7 @@ fit; every rewrite says the same thing to the player that the tag said to the bu
 **The census, after** (`metatext_after2_20260829.log`): 74 files, 2 058 literals, **0 hits**.
 
 **Filmed.** The three Track E screens at 1280 / 1600 / 1920 / 2560 (`pa_campaign_<w>_*`, three
-staged days each) and the full sweep at 1280 and 2560 (`pa_sweep_<w>_*` — the laws tab, the
+staged days each) — **corrected at W-E2 (§63): the `pa_campaign_1280_*` run measured 1918 × 953 (the first GUI launch after a killed Editor kept the previous window size); the campaign screens' true 1280 film is `we2_campaign_1280_*`, on the fixed caption, 0 overflows** and the full sweep at 1280 and 2560 (`pa_sweep_<w>_*` — the laws tab, the
 draft-dial sheets, the Policy Web, Statistics), `ScreenEdgeCheck -edgepattern=pa_*.png` clean;
 §V's four Playtest-1 rows name these films.
 
@@ -4108,3 +4108,67 @@ frames — the sheet ending on the Society rows, the main graphs' PRELIMINARY ch
 
 **Records.** `MISSING_PREREQUISITES.md` §P (finding 2 answered, dated) and §V (the row's capture
 named); the `CLAUDE.md` dated section.
+
+## 63. W-E2 — the campaign map: the 29 valkretsar as polled, §25's swing index, §36's gate drawn as absence (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/SwingRegions.cs` — `SwingRegions.Index` (§25: 100 at
+a tie, 0 at a 20-point lead), `FromPoll` (a valkrets's reading DERIVED from a `Poll` of it and
+nothing else: leader, runner-up, the gap, the gap's own error, whether the lead is inside it),
+`MapRegionReading` (a poll, or `Measured` false and nothing), `CampaignMapSnapshot`,
+`SwedenCartogram` (the 29 on a hand-laid 5 × 10 grid). `Assets/Scripts/UI/GameController.CampaignMap.cs`
+— the fourth Track E screen on the shared board: the cartogram left (703), the swing ledger right
+(440), the strip below; reachable only through `SetCampaignMapScreen` from the driver (R-N2). The
+driver's `CaptureCampaignMap` stages one campaign day three ways and polls each valkrets's SOURCED
+2018 vector with `PollingSystem.Conduct` at the offer's per-valkrets sample.
+
+**The done-when.** *29 constituencies* — every tile of the cartogram is a valkrets and the driver
+errors on any other count. *Uncertainty visually distinct from data* — an unbought valkrets is the
+draft hatch and a "?" with no reading behind it; a bought one is shaded by the player's polled
+share, figured with its ±, framed bold when the index is 60 or more and dashed in the caution ink
+when the lead is inside its own sampling error. *Buying polling visibly sharpens it* — the same
+day filmed three times at each of four widths: **nothing bought** (29 hatched, the ledger empty,
+the gate naming the two offers with the ± each buys on the player's share — ±10 and ±6 by
+`MarginOfErrorPp`); **the regional breakdown** (82 per valkrets: 29 read, 11 swing regions, 19 too
+close to call); **the full programme** (206 per valkrets: 12 swing, 13 too close to call — six
+dashed frames turn solid, the ± halve).
+
+### The judgement this item turned on
+
+**§36's gate is ABSENCE.** The spec says the map must not tell the player where the race is close
+until they invest in polling. A blurred, averaged or rounded regional reading would be telling
+them anyway — a 40 / 39 shown as "close-ish" is the information the gate exists to withhold. So
+an unbought valkrets carries NO reading: no shares, no leader, no index; the tile says "?" over the
+ledger rows' draft hatch (the established "not real yet" idiom — no sprite invented), and the
+ledger beside it is empty with the offers' prices instead of guesses. And a bought reading says
+only what its sample can: at the regional breakdown's 82 respondents per valkrets nineteen leads
+are inside their own error, and the sheet draws every one of them as undecidable rather than
+picking a leader by a hair. That is the §21 trade made visible — the breakdown at 260 000 kr buys
+the map, the programme at 620 000 kr buys the map you can act on.
+
+### Calls logged (R-N1)
+
+The per-valkrets sample is the national n over 29 (what a "breakdown" of that size affords). The
+shade is the player's own share (the frames are about the race); a leader-coloured map needs eight
+party inks the palette does not have — a Design line. The cartogram claims no geography. The truth
+polled is 2018's eight-party per-valkrets counts (the only eight-party per-valkrets vector on
+disk; W-F1 bills 2022's). `[AUTHORED-DRAFT]`: `FullScaleGapPp = 20`, `CampaignMapSwingFrameIndex =
+60`, the cartogram layout. W-C1's "targets swing voters" rider is not discharged here — local
+actions cannot matter until W-B4, so wiring the index into the AI would change nothing measurable.
+
+### Fix-forward found by this film, and a correction to §61
+
+`pa_campaign_1280_*` — P-A1's "1280" campaign film — measures **1918 × 953**: the first GUI launch
+after a killed Editor kept the previous window size (the quirk on record), while the sweep and the
+other three widths were at their stated sizes. The first true 1280 run came with this item and
+found what 1918 could not: P-A1's rewritten caption *HOW A MESSAGE BECOMES VOTES — EVERY STAGE
+MULTIPLIES* was 1.1 px too wide for the action screen's plate at the 8 px floor. Fixed — *… EACH
+STAGE MULTIPLIES* — and the 1280 campaign family re-filmed on the fixed code (`we2_campaign_1280_*`:
+16 frames, 0 overflows). **§61's claim of four widths for the campaign screens holds for 1600 /
+1920 / 2560 from its own film and for 1280 from this one.**
+
+**Filmed.** `we2_campaign_<w>_e2_campaign_map_{unbought,regional,full}` at 1280 / 1600 / 1920 /
+2560 beside the three sibling screens; `ScreenEdgeCheck -edgepattern=we2_*.png` clean; guards
+silent on the fixed code.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-E2; `ELECTIONS_GAP_TABLE.md` rows 24–25 extended;
+`MISSING_PREREQUISITES.md` §V gains the map row; the `CLAUDE.md` dated section.

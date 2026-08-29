@@ -205,7 +205,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 250f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, "HOW A MESSAGE BECOMES VOTES — EVERY STAGE MULTIPLIES", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "HOW A MESSAGE BECOMES VOTES — EACH STAGE MULTIPLIES", ux, uy);
 
             GUIStyle nameStyle = DeskBody(12f, PoliSimTheme.TextPrimary);
             GUIStyle valueStyle = DeskCaption(11f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight);
