@@ -1016,3 +1016,5 @@ VOTES — EACH STAGE MULTIPLIES* — and the 1280 campaign family re-filmed on t
 - **W-E6 / W-E7** — the same cartogram draws results arriving and the final count.
 - **W-F1** — the 2022 eight-party per-valkrets counts replace 2018 as the map's truth.
 - **W-H4** — a drawn valkrets map and eight party inks are Design lines.
+
+**R-N2 held at this boundary:** `traj_we2_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0 (`MetaTextCheck` clean with the map screen); `campaignai_we2_20260829.log`.

@@ -4172,3 +4172,5 @@ silent on the fixed code.
 
 **Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-E2; `ELECTIONS_GAP_TABLE.md` rows 24–25 extended;
 `MISSING_PREREQUISITES.md` §V gains the map row; the `CLAUDE.md` dated section.
+
+**R-N2 at the boundary (run after the commit, the proof landing in the next records commit).** `traj_we2_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0 (`check_*_we2.log` — `MetaTextCheck` clean over 75 files with the map screen in: 2 084 literals, 0 hits); `campaignai_we2_20260829.log` all assertions pass, 8 PEND.
