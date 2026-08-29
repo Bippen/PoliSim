@@ -3929,3 +3929,38 @@ re-measures `2a-iv / 2c`; W-F4 brings per-valkrets eligible counts and per-group
 `CLAUDE.md` dated section.
 
 **R-N2 at the boundary.** `traj_wb11_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wb11.log`); harness logs `gotv_wb11_20260829.log` (10 of 10), `campaignai_wb11_20260829.log` (all assertions pass, 8 PEND).
+
+## 59. W-D1 — election day (§27): every valkrets counted independently, controlled uncertainty on its own stream, and 1/√n proven on the real 29 (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/ElectionDay.cs` — `Count`: for each region, W-B11's
+`RegionVotes` (eligible × preference × each party's supporters' turnout — where the ground game
+lands), then §27's `Final Vote = Expected Vote + Election Noise` as Day-1's `ApplyNoise` on the
+region's shares at the declared 1.2 pp, turned back into whole votes against the region's votes
+cast; national votes and shares as the vote-weighted sum of regions; `EffectiveRegions` (1 / Σ w²);
+a digest of every regional count. `Assets/Editor/ElectionDayHarness.cs` — 10 of 10.
+`CampaignRun.Result` now carries the campaign's accumulated ground contacts (`Gotv`) and the
+valkrets names, so an AI campaign can be counted (the W-B11 rider). Pure, unwired (R-N2); every
+draw from the `System.Random` the caller passes — the harness passes `SimulationRandom`'s
+`ElectionNoise` stream, so one election re-runs under a seed without re-running the economy.
+
+**The done-when.** Seed 777 twice: digest `7b7ce512348e9941` both times — every regional vote
+count identical; seed 778 differs. Over 400 replays the regional share σ is 1.167 pp against the
+declared 1.2 (re-normalisation shrinks it by 3 %), and the national σ is **0.259 pp against 0.260
+predicted** by σ / √N_eff with N_eff = 20.15 of the 29 valkretsar by eligible weight — Day-1
+measured the 1/√n behaviour on eight equal regions (0.95 → 0.35 pp); this is the same law on the
+real, unequal ones, matched to a third of a percent. The count is a count: each region's party
+votes sum to its votes cast to rounding, the nation's to the sum of regions (6 272 372 of
+6 272 383), turnout is W-B11's exactly (84.43 % — the three worked valkretsar lift the base 0.22
+pp), and with σ = 0 the count is the expected result to the vote, 29 × 8.
+
+**Not here, by ruling.** Seats (W-D2 — `SeatAllocation` waits for this result); voter groups
+(one preference vector per region, the 2022 vector repeated, until W-A2 and W-F4 make them
+differ — the API already takes a per-region array); tactical voting (§23, W-A4); election-day
+events. The national uncertainty at these magnitudes is a quarter of a point per party — inside
+§27's "matters, cannot be perfectly predicted" band; whether that is *felt* is a play question on
+Day-1's declared `RegionalNoiseSigmaPp`, recorded beside calibration entry 1.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-D1; `ELECTIONS_GAP_TABLE.md` row 27 extended; the
+`CLAUDE.md` dated section.
+
+**R-N2 at the boundary.** `traj_wd1_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wd1.log`); harness logs `electionday_wd1_20260829.log` (10 of 10), `campaignai_wd1_20260829.log` (all assertions pass, 8 PEND).

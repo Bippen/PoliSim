@@ -825,3 +825,55 @@ stays PEND on the same two. Nothing was raised to keep the line green.
 - **W-B3's weights** — the persuasion per personal contact, calibration entry 10.
 
 **R-N2 held at this boundary:** `traj_wb11_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `gotv_wb11_20260829.log`, `campaignai_wb11_20260829.log`.
+
+---
+
+## W-D1 — election day (§27): every valkrets counted, noise on the `ElectionNoise` stream, 1/√n proven on the real 29 (2026-08-29)
+
+Files: `Assets/Scripts/Elections/ElectionDay.cs`, `Assets/Editor/ElectionDayHarness.cs`;
+`CampaignRun` now accumulates the campaign's door-knocking into a `RegionalMobilization` that its
+`Result` exposes (`Gotv`, `RegionNames`) — the W-B11 rider, discharged.
+
+**Done-when.** *The same seed reproduces a result exactly* — seed 777 on `ElectionNoise` twice:
+digest `7b7ce512348e9941` both times, every regional vote count identical; seed 778 differs.
+*400 replays show the noise matching its declared σ* — regional share σ 1.167 pp against the
+declared 1.2 (re-normalisation's shrink, 0.97 of it); national σ **0.259 pp against 0.260
+predicted** by σ/√N_eff, N_eff = 20.15 of the 29 valkretsar by eligible weight — the 1/√n
+behaviour Day-1 measured on eight equal regions, now on the real, unequal ones, to a third of a
+percent. 10 of 10.
+
+### Decisions taken and logged (R-N1)
+
+- **§27 per region is W-B11's `RegionVotes`:** eligible × preference × each party's supporters'
+  turnout — the ground game lands exactly here and nowhere else; with σ = 0 the count IS the
+  expected result to the vote, region by region (asserted).
+- **Noise on the SHARES, votes from the shares** (`ApplyNoise` at Day-1's declared 1.2 pp, then
+  × the region's votes cast, rounded to whole votes). National shares are the vote-weighted sum
+  of regions, never a mean of regional shares — the trap the chain harness already guards.
+- **`EffectiveRegions = 1 / Σ w²`** is the number the national σ divides by; stated in code so a
+  future re-districting is a measurement, not a surprise.
+- **One preference vector per region** (the 2022 vector repeated) until W-A2's per-region priors
+  and W-F4's groups make them differ — the caller hands `ElectionDay.Count` a per-region array
+  already, so that change is data.
+- **Rounding to whole votes** makes a region's party votes sum to its votes cast only to ±4
+  votes (one per party); asserted at that tolerance and printed (6 272 372 of 6 272 383).
+- **Seats are W-D2's** — `SeatAllocation` is exact and waits for this result; nothing allocated here.
+
+### Findings carried forward
+
+1. **National uncertainty is a quarter of a point.** At the declared regional σ the nation moves
+   ±0.26 pp per party per replay — inside the "good strategy matters, cannot be perfectly
+   predicted" band §27 asks for, at these magnitudes; whether a quarter-point is *felt* as
+   uncertainty is a play question (a calibration line under entry 1's neighbourhood, not a new
+   entry: `RegionalNoiseSigmaPp` is Day-1's declared constant).
+2. **The turnout the count reports (84.43 %) is W-B11's exactly** — the three worked valkretsar
+   lift the nation 0.22 pp above base.
+
+### Riders
+
+- **W-D2** — `SeatAllocation` on `ElectionDay.Result` through the LIVE path (per-valkrets fixed
+  seats, the adjustment seats, the thresholds), Sweden 2022 still seat-for-seat.
+- **W-E6** — election night draws `Result.Regions` arriving in a seeded order.
+- **W-A2 / W-F4** — per-region preference vectors replace the repeated national one.
+
+**R-N2 held at this boundary:** `traj_wd1_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `electionday_wd1_20260829.log`, `campaignai_wd1_20260829.log`.

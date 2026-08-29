@@ -171,6 +171,10 @@ namespace PoliSim.Elections
             public int PublicPolls;
             /// <summary>W-B9: §22 momentum per party at the end — moved by coverage and nothing else.</summary>
             public double[] MomentumPpAtEnd;
+            /// <summary>W-B11 → W-D1: every party's ground contacts per valkrets over the campaign - what election day's turnout reads.</summary>
+            public RegionalMobilization Gotv;
+            /// <summary>The valkretsar, in the run's order - election day's names.</summary>
+            public string[] RegionNames;
             /// <summary>A deterministic digest of every decision and the final shares — two runs of one seed must print the same one.</summary>
             public string Digest;
         }
@@ -206,6 +210,9 @@ namespace PoliSim.Elections
             var lastOwnPollDay = new int[partyCount];
             var reserve = new double[partyCount];
             var volunteerHoursLeft = new double[partyCount];   // W-B11: a day's volunteer-hours, the bound on doors knocked
+            var regionEligible = new double[setup.Regions.Length];
+            for (int r = 0; r < regionEligible.Length; r++) { regionEligible[r] = setup.Regions[r].Audience; }
+            var gotv = new RegionalMobilization(regionEligible, partyCount);   // W-B11: the ground game election day will read (W-D1)
             var profiles = new PersonalityProfile[partyCount];
             for (int p = 0; p < partyCount; p++)
             {
@@ -221,6 +228,8 @@ namespace PoliSim.Elections
             var digest = new StringBuilder();
             int publicPolls = 0;
             int totalDays = setup.Calendar.TotalCampaignDays;
+            var names = new string[setup.Regions.Length];
+            for (int r = 0; r < names.Length; r++) { names[r] = setup.Regions[r].Name; }
 
             for (int day = 0; day < totalDays; day++)
             {
@@ -324,7 +333,8 @@ namespace PoliSim.Elections
                         // a region. W-B3's placeholder reach fraction no longer applies to it.
                         if (d.Kind == CampaignActionKind.DoorToDoor)
                         {
-                            audience = GotvModel.Contacts(GotvModel.Spec(GotvOperation.DoorKnocking), d.Spend, volunteerHoursLeft[p], out _, out double doorHours);
+                            int doorRegion = d.Target.RegionIndex >= 0 ? d.Target.RegionIndex : 0;
+                            audience = gotv.Operate(doorRegion, p, GotvOperation.DoorKnocking, d.Spend, volunteerHoursLeft[p], out _, out double doorHours);
                             volunteerHoursLeft[p] -= doorHours;
                         }
                         else if (d.Kind == CampaignActionKind.Interview)
@@ -398,6 +408,8 @@ namespace PoliSim.Elections
                 DaysRun = totalDays,
                 PublicPolls = publicPolls,
                 MomentumPpAtEnd = (double[])momentumPp.Clone(),
+                Gotv = gotv,
+                RegionNames = names,
                 Digest = Fnv1a64(digest.ToString()),
             };
         }
