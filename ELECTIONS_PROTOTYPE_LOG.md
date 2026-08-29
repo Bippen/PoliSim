@@ -91,3 +91,36 @@ supports the claim.
 - **Successor maps for Italy and Poland** — sourced bookkeeping lifting the name-join: the PD
   lineage, Lega's transformation, PiS/United Right composition, KO's assembly. **Build only if
   either becomes a playable target**; until then their gate rows stay LOW CONFIDENCE by design.
+
+## W-A5 — perceived vs actual performance (§19) · DONE
+
+The gap table called §19 an EXISTS row, and it was right: `PublicationSystem` already writes
+`Country.Published` on the real release calendar with a noisy preliminary print and a later
+revision, while `Country.State` holds the truth. **The vote model now reads `Published` and never
+`State`** — `PerceivedPerformance.Actual()` exists only so the divergence can be reported, and
+nothing feeding a vote share may call it.
+
+- **[AUTHORED-DRAFT]** `UnemploymentNeutral = 6.0 %`, span 6.0 — 6 % reads neutral, 0 % reads 100.
+- **[AUTHORED-DRAFT]** `InflationNeutral = 2.0 %`, span 6.0 — and **deviation either way is
+  punished**: deflation is not a bonus, which a naive lower-is-better mapping would wrongly imply.
+- **[AUTHORED-DRAFT]** `GrowthNeutral = 2.0 %`, span 6.0.
+- **[AUTHORED-DRAFT]** `IncumbentSwingSpan = 0.15` — ±15 % on the incumbent's preference at the
+  extremes. Deliberately modest: §39 forbids any single variable dominating, and a government that
+  could win on published statistics alone would make the campaign layer pointless.
+- **[call]** A stat that has **never been published** drops out of the average rather than being
+  filled from `State` — the electorate has no figure to react to, and leaking the truth in would
+  defeat the whole mechanism.
+
+**Proven on a real six-year run** (Sweden, the release calendar producing the lag rather than any
+injection): 36 of 36 samples show the published figure differing from the live one; **36 of 36
+match an earlier true value more closely than the current one**, i.e. perception tracks the
+publication rather than being merely noisy; the incumbent's modelled share differs at every sample
+depending on which series drives it; and the divergence prints as a signed §31-style attribution
+line, every term derived.
+
+**Finding, recorded rather than dressed up:** in a *calm* economy the effect is small — the largest
+published-vs-true gap over six years was **0.052 pp** of unemployment and the largest incumbent
+effect **0.111 pp** of its own share. The mechanism is real, correctly wired to perception, and
+currently quiet; it is a **shock** (a recession scenario, a sharp inflation turn) that would
+exercise it properly, because that is when preliminary prints and revisions diverge most. Worth
+re-measuring under `Italy Debt Crisis` or a comparable scenario before judging the magnitude.
