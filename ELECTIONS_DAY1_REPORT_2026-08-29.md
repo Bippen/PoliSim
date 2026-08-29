@@ -194,3 +194,53 @@ reproduces multiparty national vote shares to ~3–7 pp mean absolute deviation.
 floor to build up from, and it says the first two rungs worth building are precisely the two the
 deviations implicate — **§8 loyalty damping first, §27 regional structure second**. It also says
 nothing more should be fitted: the fix is a layer with real content, not a fifth knob.
+
+## Phase 5 — the E-phase plan, sized against the two tables
+
+The seat rung is **finished to the limit of what national data can prove** (5 of 6 exact; France
+needs constituency data nothing has asked for yet). The vote rung is **at ~3–7 pp with a
+placeholder instrument**, and its errors name their own fixes. That sizes the plan:
+
+| phase | what it is | state after Day-1 | sized at |
+|---|---|---|---|
+| **E-0** foundation | architecture, types, the gap table | spec-independent halves DONE; §7 types + the 44-section gap table PARKED | unblocks the hour the spec lands |
+| **E-1** data spine | sourced returns, rules, positions, salience | **DONE** for six countries; bill worked down to four named items | France constituency data is the one large fetch left |
+| **E-2** votes→seats | the allocators | **DONE — 5/6 exact** (Sweden, Germany, Poland-real, Italy-PR, USA-EC) | closed unless France is wanted |
+| **E-3** votes-from-model | the chain | placeholder instrument at 3.3–7.0 pp; §39's real chain PARKED | **§8 loyalty damping is the highest-value single unit in the whole plan** — it is what both deviation signatures ask for |
+| **E-4** regional structure | §27 aggregation | not started | second rung; Germany's CSU +7.4 pp is its measurable target |
+| **E-5** campaigns, polling, momentum | §§20–22 and above | not started, spec-shaped | last; nothing below it is blocked on it |
+
+**The 13 September minimum, named.** Sweden votes 13 Sept 2026 — item 10's gate, sixteen days
+out. The minimum that must exist by then is small and is now almost entirely built: (1) the
+Swedish allocator, **exact and proven** (modified Sainte-Laguë 1.2, 4 % threshold, 349 seats);
+(2) the 2022 seed data it re-anchors from, **sourced with exact counts**; (3) a re-seeding pass
+that swaps the 2022 figures for the 2026 result the day it is official. Nothing in E-3, E-4 or
+E-5 is required for that gate. **The one thing 13 September needs that does not exist is the
+wiring** — and wiring is R-N2's standing prohibition, so it is a deliberate decision for Elias,
+not an oversight to fix quietly.
+
+## RULINGS NEEDED
+
+1. **The spec — third request.** `ELECTIONS_CAMPAIGN_SPEC.md` has now failed to arrive twice
+   (overnight queue, Day-1 kickoff). Everything §-shaped stays parked until it lands: the
+   44-section gap table with its N/A column (R-EL7 cannot be applied to sections nobody can
+   read), §7's types, and §39's chain. **If the file is large, paste it in pieces** — Phase 0's
+   count check works on the assembled whole.
+2. **France:** fetch the 577 × 2 constituency results and build the two-round model (closing the
+   seat table at 6/6), or rule France structurally out of the seat rung. Today it is reported as
+   the latter.
+3. **Italy's sub-national stages:** worth building (they decide *which* deputies sit, not the
+   per-list totals)? They need the Eligendo HTML scrape and the art. 84 cascade.
+4. **Nebraska LB3** (`[UNCONFIRMED]`): if the district method was repealed, `district_method_2024.md`'s
+   rule half needs re-sourcing before any future cycle is modelled.
+5. **13 September:** does the Swedish gate want wiring (which R-N2 currently forbids), or does it
+   stay a measurement-only exercise until the spec's chain exists?
+
+## State at close
+
+- **R-N2 held at every part — five proof runs today** (`d1p4`, `d1p3a`, `d1p3b`, `d1p5`, plus the
+  harness runs themselves): trajectory dump exit 0 each time, the six baselines byte-identical to
+  `traj_v31bf_*` by SHA-256 each time, all eight checks exit 0 each time. **Nothing of the
+  election system is wired to anything.**
+- Commits: `cb17c85` (Phase 0 + Phase 4) · `bd34c8c` (Phase 3, both rulings) · the close.
+- Phases 1–2 remain parked on the spec, by Phase 0's own instruction — not attempted, not guessed.

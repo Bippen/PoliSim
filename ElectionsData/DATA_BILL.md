@@ -10,6 +10,26 @@ stayed open, and the candidate source for the morning (or a later session).
 - ~~**Poland — per-district ABSOLUTE counts**~~ **FILLED the same night** (second fetch):
   `poland/district_votes_2023.csv` — the KBW absolute-votes CSV, all 41 okręgi × six
   committees, verified by exact national-sum cross-check on all six.
+## Filled on Day-1 (2026-08-29) — struck from the bill
+
+- ~~Italy's allocation FORMULA~~ **SOURCED** → `italy/rosatellum_allocation.md` (DPR 361/1957
+  art. 83 consolidated, in force at 25-9-2022, quoted clause by clause; implemented as
+  `Rosatellum.cs`; the 2022 national stage reproduces exactly).
+- ~~USA full 51-state EV table~~ **SOURCED** (overnight, third fetch) → `usa/state_ev_2024.csv`.
+- ~~USA district-method statutes + ME/NE district results~~ **SOURCED** →
+  `usa/district_method_2024.md` (Me. 21-A §802; Neb. §32-710 + §32-1038(1); seven pluralities,
+  cross-footed to zero residual).
+
+## Still owed
+
+- **France — per-circonscription results, both rounds** (577 × 2). The ONLY way to model French
+  seats at all; nothing national exists to implement. Candidate: the Ministry's data.gouv
+  dataset family (the same publisher as the régions CSV already used).
+- **Italy — per-circoscrizione and per-collegio *cifre elettorali*** (27 circoscrizioni, 49
+  collegi) for the sub-national stages (art. 83 lett. h/i, art. 83-bis) and the art. 84
+  cascade. Available on Eligendo Archivio as HTML only (`…&tpe=C…`, `…&tpe=P…`). ⚠ The
+  comune-level open-data CSV is NOT a substitute — its `VOTILISTA` sums undershoot the
+  published *cifre elettorali* by 2.6–4.6 %.
 - **Italy — party TOTAL seats from a primary source**: Eligendo publishes only the PR seat
   column; totals are [UNCONFIRMED] (Wikipedia, PR components corroborated exactly). Candidate:
   the Interior Ministry's results dossier
@@ -32,7 +52,11 @@ stayed open, and the candidate source for the morning (or a later session).
 - **USA lrgen and EU position**: no item in GPS-2019; CHES-USA unpublished ("Coming soon").
   Candidate: CHES-USA when it publishes; V-Party/Manifesto RILE as interim named alternatives.
 - **US positions vintage**: GPS-2019 is pre-2020 — flag any use with the vintage; re-source
-  when CHES-USA lands.
+  when CHES-USA lands. **Day-1 note:** this is now load-bearing — Phase 4's USA case runs on
+  these coordinates.
+- **Nebraska's district method may be repealed** (LB3, 109th Legislature, `[UNCONFIRMED]`) —
+  a live-rule expiry, not a data gap, but it invalidates `usa/district_method_2024.md`'s rule
+  half if it passed. Verify when `nebraskalegislature.gov` is reachable.
 - **Italia Viva** (no CHES 2024 row), **KO as a coalition** (PO row stands in), **AVS**
   (components only). State the mapping wherever these feed a model.
 

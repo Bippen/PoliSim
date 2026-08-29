@@ -3132,3 +3132,57 @@ status line flipped to ONE LIVE ASK; `SEND_PACKAGE_2026-08-28.md` regenerated (r
 
 **RULINGS NEEDED: none.** The dead-space paradox's other screens (Demographics, Decisions, short
 Politics) stay Annex C candidates, exactly as filed.
+
+## 49. Elections Day-1 — the seat rung closed at 5/6, the vote rung opened at 3–7 pp (2026-08-29)
+
+**Phase 0 stopped the spec-dependent half again.** `ELECTIONS_CAMPAIGN_SPEC.md` did not arrive
+with the Day-1 kickoff either (0 sections found; searched repo, captures + inbox, Downloads,
+Desktop, Documents). Phases 1–2 stayed parked — the 44-section gap table, §7's types, §39's
+chain — unguessed, exactly as the overnight pass had left them. Phases 3–5 ran.
+
+**R-EL8 — the USA's real allocation (`ElectoralCollege.cs`, pure, unwired).** Winner-take-all as
+the STATE CHOICE 48 states and DC direct, plus Maine's and Nebraska's congressional-district
+method, from the statutes (Me. 21-A §802; Neb. §32-710 with §32-1038(1); art. II §1 cl. 2; NARA
+538/270). **Trump 312 / Harris 226 — EXACT**, computed from seven sourced ME/NE pluralities
+rather than a pre-split column. The counterfactual that justifies the ruling prints beside it:
+forced winner-take-all *also* gives 312/226, because ME-2 and NE-2 cancel one each way — the
+overnight match had been luck, and now it cannot be mistaken for validation. Three items recorded
+rather than quietly fixed: the kickoff's own Nebraska cite (§32-714) is the vacancies section,
+not the district method; Nebraska's statute text is an Internet Archive capture (the legislature
+host refused connections) corroborated by the SOS canvass book; and **LB3 may repeal the district
+method** (`[UNCONFIRMED]`) — do not model Nebraska as permanently district-method. Maine's
+presidential race is legally RCV-eligible (§1(27-C)(D)) and was decided in round one only because
+Harris cleared §723-A(2)'s inclusive 50 % bar at 51.71 %.
+
+**R-EL9 — Italy's Rosatellum (`Rosatellum.cs`, pure, unwired).** The allocation arithmetic the
+overnight pass refused to guess is now sourced (DPR 361/1957 art. 83 consolidated, in force at
+25-9-2022) and implemented: **floored Hare with largest remainders, applied twice** — which is
+why it needed its own implementation rather than the divisor machinery. **ITALY 2022 CAMERA,
+proportional stage, 245 seats: deviation 0 across all eleven lists**, reproducing three statutory
+behaviours at once — the 1 % strip (NM, IC discarded), the 1–3 % transfer (+Europa's votes to PD
+and AVS), and the minority route (SVP-PATT admitted at 0.42 %). An ambiguous clause was settled
+by arithmetic, not preference: lett. g)'s divisor is the ADMITTED lists' sum; the coalition-figure
+reading is nine seats out. The two tiers are **parallel — no *scorporo***. Sub-national stages
+(lett. h/i, art. 83-bis, art. 84) stated NOT implemented with their reason and data requirement;
+the comune-level CSV trap recorded (its sums undershoot the *cifre elettorali* by 2.6–4.6 %).
+
+**The seat table now reads FIVE OF SIX EXACT** — Sweden, Germany, Poland-real, Italy-PR, USA-EC —
+with France reported honestly as structurally out of scope (two-round SMD in 577 constituencies
+has no national allocation to implement).
+
+**Phase 4 — the vote rung, the day's centerpiece (`VoteModel.cs` + `VoteShareBacktest.cs`).**
+Sourced CHES 2024 / GPS-2019 positions and EB105 / Gallup salience through a declared placeholder
+instrument — a 2-D Gaussian electorate, proximity choice by softmax, **four parameters and not one
+party-specific constant** — against the official returns, campaigns off. Multiparty fields:
+**Sweden 3.25, Italy 5.61, Germany 5.78, Poland 6.99 pp** mean absolute deviation calibrated (from
+6.4–10.3 at the zero-parameter prior); France 1.16 and USA 0.00 reported as structure, not skill
+(4 blocs / 2 parties). **The deviations have two systematic signatures — empty-quadrant inflation
+(BSW +10.2, TD +15.9, KD +8.2) and large-party under-prediction (CDU −9.3, AfD −11.7, KO −16.7,
+M −10.0) — which are one absence stated twice, and name §8 loyalty damping as the highest-value
+unit in the plan; Germany's CSU +7.4 names §27 regional structure as the second.**
+
+**R-N2 held at every part:** four proof runs today (`d1p4`, `d1p3a`, `d1p3b`, plus the closing
+one), each with the trajectory dump exit 0, the six baselines byte-identical by SHA-256, and all
+eight checks exit 0. Nothing of the election system is wired to anything. Commits `cb17c85`
+(Phase 0 + 4) · `bd34c8c` (Phase 3) + the close. Full record, call log and RULINGS NEEDED:
+`ELECTIONS_DAY1_REPORT_2026-08-29.md`.

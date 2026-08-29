@@ -128,8 +128,55 @@ Policy Web micro-pass, `COMPLETED.md` §48) — riding the §S paste (`SEND_PACK
 regenerated late night, rows n of N); §P (the three felt verdicts) is Elias's (the hatch pair's bar
 ruling landed 2026-08-28 — "diagonal-tile, viewed not counted", executed, `COMPLETED.md` §46);
 13 September (item 10, election night born on the v3 shell). Beyond the paste, nothing of v3.x is
-startable by a session today; the overnight elections track (E-0/E-1 and the allocation layer) runs
-UNWIRED under its own rules — the overnight report is its record.
+startable by a session today; the elections track runs UNWIRED under its own rules — see the era
+below.
+
+---
+
+## The ELECTIONS era (opened overnight 2026-08-28→29; Day-1 2026-08-29)
+
+**The standing invariant (R-N2): the election system is UNWIRED** — reachable from no gameplay
+path, no UI, no turn-loop or save hook — **and every part ends with the trajectory suite
+byte-identical.** Held at six consecutive boundaries so far (two overnight, four on Day-1): the
+six baselines identical by SHA-256 every time, the eight checks green every time.
+
+**⚠ THE ERA'S ONE BLOCKER: `ELECTIONS_CAMPAIGN_SPEC.md` HAS NEVER ARRIVED.** It was to be pasted
+with the overnight queue and again with the Day-1 kickoff; both times the instruction came without
+it (Phase 0's content check: 0 sections). Everything §-shaped is therefore **parked, not guessed**:
+the 44-section gap table with R-EL7's N/A column, §7's types and compatibility core, §39's chain
+(§8 loyalty, §26 turnout, §27 aggregation), §§20–22 polling. **Re-pasting the spec — in pieces if
+it is large — unblocks all of it.**
+
+**What is BUILT and PROVEN (E-1 through E-3's first rung):**
+
+- **The sourced spine** — `ElectionsData/`, out of tree for Unity, in tree for git: official
+  returns and statute-cited rules for all six countries, CHES 2024 positions, EB105/Gallup
+  salience, every file with its source register and vintage, everything `[PROVISIONAL]` until
+  re-verified. `DATA_BILL.md` names what is still owed (France's 577 × 2 constituency results;
+  Italy's per-circoscrizione *cifre*; the US positions' pre-2020 vintage; Nebraska's LB3 status).
+- **The seat rung — FIVE OF SIX EXACT.** Sweden (modified Sainte-Laguë 1.2), Germany
+  (Sainte-Laguë/Schepers on exact counts), Poland (d'Hondt in each of the 41 okręgi — the real
+  system, seat-for-seat), Italy (Rosatellum's floored Hare ×2, R-EL9), USA (the Electoral College
+  with Maine's and Nebraska's district method, R-EL8). **France is structurally out**, not missing:
+  a two-round system in 577 single-member constituencies has no national allocation to implement.
+  The overhaul doc's Part 5 port-and-reproduce obligation is discharged in full.
+- **The vote rung — opened at 3–7 pp** with an explicitly declared placeholder instrument (four
+  parameters, no party-specific constants), and its errors name their own fixes.
+
+**The E-phase plan, sized against those two tables:** E-0 unblocks the hour the spec lands · E-1 is
+done but for France's fetch · **E-2 is CLOSED** unless France is wanted · **E-3's next unit is §8
+loyalty damping — the single highest-value piece in the plan**, because both deviation signatures
+(empty-quadrant inflation, large-party under-prediction) ask for exactly it · E-4 is §27 regional
+structure (Germany's CSU +7.4 pp is its measurable target) · E-5 (campaigns, polling, momentum) is
+last and blocks nothing below it.
+
+**The 13 September minimum, named:** Sweden votes 13 Sept 2026 (item 10's gate). Everything
+measurable for it already exists — the Swedish allocator is exact and proven, the 2022 seed data
+is sourced with exact counts, and a re-seeding pass from the official result is all that remains.
+**The only missing piece is WIRING, which R-N2 forbids by standing rule** — so it is Elias's
+decision, not a session's gap. Records: `COMPLETED.md` §§46–49 and the two reports
+(`OVERNIGHT_2026-08-28_MORNING_REPORT.md`, `ELECTIONS_DAY1_REPORT_2026-08-29.md`), each carrying
+its full strikeable call log.
 
 ---
 
