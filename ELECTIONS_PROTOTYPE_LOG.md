@@ -124,3 +124,32 @@ effect **0.111 pp** of its own share. The mechanism is real, correctly wired to 
 currently quiet; it is a **shock** (a recession scenario, a sharp inflation turn) that would
 exercise it properly, because that is when preliminary prints and revisions diverge most. Worth
 re-measuring under `Italy Debt Crisis` or a comparable scenario before judging the magnitude.
+
+## W-B1 — the campaign clock and calendar (§3) · DONE
+
+`CampaignClock.cs` (pure, unwired) lays §3's phases on the game's existing day clock:
+**Dormant → PreCampaign → Campaign → ElectionDay → Concluded**. Nothing advances anything; the
+type answers "what phase is this date" and "what is legal in it", and the turn loop is untouched.
+
+- **[AUTHORED-DRAFT]** `DefaultCampaignWeeks = 8` — the worklist's figure for Sweden's window.
+- **[AUTHORED-DRAFT]** `DefaultPreCampaignWeeks = 26` — long enough for §3's preparation verbs to
+  matter, short enough that the game is not a spreadsheet for half a year. Strikeable.
+- **[call]** Phases **gate legality**, and a verb outside its window is *unavailable*, not merely
+  weaker — a rally in the pre-campaign is not a thing. That is what makes the pre-campaign a
+  different game rather than a slower version of the same one.
+- **[call]** Which verbs continue into the campaign: fundraising, hiring, polling, opening an
+  office and changing strategy do (§11 says strategy may change during); **candidate training,
+  ad preparation and policy development do not** — by the campaign they are what you already have.
+- **[call]** Election day leaves only the ground game (§26): GOTV and door-knocking. Persuasion is
+  over; turnout is not.
+
+**Proven** by walking all 279 days from before the pre-campaign to after polling day: five
+transitions, each on its computed date (pre-campaign 2026-01-18, campaign 2026-07-19, election
+2026-09-13, concluded 2026-09-14), the sequence monotonic with no phase revisited; legality flips
+at the boundaries; **a snap election works as pure data** (3-week campaign, 1-week run-up, no code
+change). Legal-action counts by phase: Dormant 0 · PreCampaign 8 · Campaign 13 · ElectionDay 2 ·
+Concluded 0.
+
+**One self-inflicted test error, caught and recorded:** assertion 5's own date arithmetic was off
+by a day (it asserted the campaign was open on 2027-02-27 when the campaign opens on the 28th).
+The code was right; the test was wrong, and it was the test that changed.
