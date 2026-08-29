@@ -1095,3 +1095,96 @@ plans · the five candidate profiles.
 - **W-C2** — the AI's plan reacts to the opponent's last move (today it is a fixed cycle).
 
 **R-N2 held at this boundary:** `traj_wb7_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `debate_wb7_20260829.log`, `campaignai_wb7_20260829.log`.
+
+---
+
+## W-B8 — scandals (§17): a lifecycle, seven responses with distinct outcome distributions, damage on two stocks at two speeds, nothing scripted as game over (2026-08-29)
+
+Files: `Assets/Scripts/Elections/Scandals.cs` (`ScandalKind`, `ScandalSeverity`, `ScandalResponse`,
+`Scandal`, `ScandalOutcome`, `Scandals`), `Assets/Editor/ScandalHarness.cs`,
+`SimulationRandom.Stream.Scandal = 10` APPENDED; the AI campaign carries a live credibility per party
+and answers a staged scandal by personality (`CampaignRun`: `Setup.Scandals`,
+`ScandalResponseFor`).
+
+**Done-when.** *The lifecycle runs deterministically under a seed* — seed 777, a MAJOR corruption
+scandal at evidence 0.5, `Deny`: every day's coverage, the momentum shock and the credibility cost
+identical twice; across 200 seeds 75 denials are caught out and 125 survive (the evidence surfaces
+on some seeds, not all). *Each response has a measured DISTINCT outcome distribution* — over 400
+seeds per response the seven differ pairwise in mean or spread by at least 0.90 (the closest pair
+Explain / SacrificeStaffMember); §17's two sentences hold as measurements. *Nothing scripted as
+game over* — `ScandalOutcome` has no member that could end anything (by reflection), a
+resignation replaces the candidate and the campaign goes on, and a catastrophic scandal on the
+worst response with certain evidence costs at most 45 % of credibility — a large cost, not an
+ending. 15 of 15.
+
+**The table, measured (a MAJOR corruption scandal, evidence 0.5, 400 seeds; damage = 100 ×
+credibility cost − momentum pp):** Deny 11.5 ± 9.0 (152 of 400 caught out) · Apologize 9.9 ± 0 ·
+Explain 10.8 ± 0 · AttackSource 12.3 ± 4.0 (181 caught) · Ignore 13.2 ± 0 · Resign 7.2 ± 0 ·
+SacrificeStaffMember 11.7 ± 0. The apology: the largest momentum decline of the responses that keep
+the candidate (−3.9 pp) and among the smallest lasting costs (0.060) — *"a transparent apology may
+reduce long-term damage but cause a short-term polling decline."* The denial: the smallest immediate
+cost (−1.07 pp) and the widest spread (9.0); against STRONG evidence (0.95) the worst response on
+average (16.0 against the next worst 14.4), against WEAK (0.05) the best (5.3 against 7.2) — *"a
+denial can work if evidence is weak but become catastrophic if evidence later appears."*
+
+### Decisions taken and logged (R-N1)
+
+- **Damage lands on two stocks at two speeds and on nothing else.** A momentum shock (§22 — the
+  short-term polling decline, decays on its own half-life), a coverage shock per day of the story
+  (§13 — the media system decays it on the news cycle), and a CREDIBILITY cost — the lasting one,
+  on the stock §42's chain multiplies by. Applied, the preference recomputed from the same
+  compatibility is bit-identical; the same rally then persuades less in exact proportion to the
+  credibility lost (382 → 350, 91.6 %). A scandal reaches the vote only through the chain.
+- **The evidence is a hidden variable (§36):** the party responds on `EvidenceAsSeen` — the truth
+  plus a uniform ± 0.25 — never on the truth. The AI's rule: deny when the evidence LOOKS weak
+  (below 0.3 as seen), otherwise by personality (the professional explains, the establishment and
+  the grassroots party apologise, the populist attacks the source, the chaotic denies).
+- **Escalation is the catch-out:** `Deny` and `AttackSource` are exposed; each aftermath day the
+  evidence surfaces with probability `evidence × 0.15`; caught, the credibility cost multiplies
+  (×6 for the denial, ×2 for the attack), the momentum cost ×1.5, and the story restarts.
+  ⚠ The first table had the denial's escalation at ×3, and a caught denial was then no worse than
+  simply ignoring the story — §17's "catastrophic" not realised. Set to ×6 at design time so a
+  caught denial is the worst outcome on the table; recorded as the shape the spec's own sentence
+  demands, not as a tuning against play.
+- **A staff sacrifice for a scandal no staff member could carry reads as cynical** (×1.6 on the
+  lasting cost): an offensive statement 0.096 against a finance violation's 0.060.
+- **The AI campaign stages one scandal** (day 30, the leading party, MAJOR corruption at evidence
+  0.5); S (professional) sees 0.59 and explains; −2.4 pp momentum, six days of coverage, credibility
+  0.600 → 0.550 on its live figure and nowhere else; the campaign runs to the end. Dynamic generation
+  — a probability per day from §36's hidden variables — is a later item (the gap table's §17 row
+  says so); today the harness stages them.
+- **Distinct distributions, not distinct means:** a denial and a resignation can average alike (a
+  gamble and a certainty) and still be different things to choose between; the assertion compares
+  mean OR spread.
+
+### [AUTHORED-DRAFT] values, one line each (calibration entry 12)
+
+Base by severity (momentum pp / credibility / days / coverage): Minor 0.5 / 0.02 / 2 / 0.15 ·
+Moderate 1.5 / 0.06 / 4 / 0.40 · Major 3.0 / 0.12 / 7 / 0.80 · Catastrophic 5.0 / 0.25 / 12 / 1.50 ·
+the response table (momentum × / credibility × / days × / exposed / escalation / coverage ×): Deny
+0.3 / 0.3 / 1.0 / yes / 6 / 1.0 · Apologize 1.3 / 0.5 / 0.6 / no / – / 0.8 · Explain 0.8 / 0.7 / 0.9
+/ no / – / 0.9 · AttackSource 0.5 / 0.6 / 1.3 / yes / 2 / 1.5 · Ignore 0.8 / 0.9 / 1.5 / no / – / 1.1
+· Resign 1.6 / 0.2 / 0.7 / no / – / 1.4 · SacrificeStaffMember 0.7 / 0.5 / 0.8 / no / – / 1.0 ·
+`SurfaceRatePerDay 0.15` · `EvidenceEstimateError 0.25` · `CynicalSacrificeMultiplier 1.6` · the
+AI's deny-threshold 0.3 and its responses by personality · the staged scandal.
+
+### Findings carried forward
+
+1. **Ignoring is never right at these numbers** (13.2, the worst mean of the seven): a story left
+   alone runs half again as long. Whether a quiet week should sometimes be the right call is a
+   play question (entry 12).
+2. **The resignation is cheapest and no one takes it** — the AI never resigns; W-C2's reactivity
+   and a candidate the player cares about (W-F6) are what would make it a real choice.
+
+### Riders
+
+- **W-C2** — the AI weighs the evidence it sees against the response table rather than following a
+  personality rule.
+- **W-E5 / W-E1** — the scandal's day on the screens: the story, the seven responses, the evidence
+  as seen (a range, never a figure).
+- **§36 / W-B5** — dynamic generation with a scandal-resistance draw per candidate (§16's
+  attribute is on the profile and unread).
+- **W-B7** — the same shock seam; a debate the day after a scandal is where `ScandalResistance`
+  and `Integrity` should bite.
+
+**R-N2 held at this boundary:** `traj_wb8_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `scandal_wb8_20260829.log`, `campaignai_wb8_20260829.log`.

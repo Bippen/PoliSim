@@ -263,3 +263,31 @@ a debate or like a lottery? W-E5's screen is where it will be felt.
 **What must NOT happen.** `EventSigma` raised so the harness's 400-of-400 lines look "more
 realistic" — a debate's randomness is a design decision with its own reason, to be made against a
 screen and a played loop, not against a table.
+
+## 12. The scandal table (W-B8)
+
+**What is known.** All [AUTHORED-DRAFT]: the four severities' base damage (Minor 0.5 pp / 0.02
+credibility / 2 days / 0.15 coverage; Moderate 1.5 / 0.06 / 4 / 0.40; Major 3.0 / 0.12 / 7 /
+0.80; Catastrophic 5.0 / 0.25 / 12 / 1.50), the seven responses' multipliers (momentum /
+credibility / duration / coverage: Deny 0.3 / 0.3 / 1.0 / 1.0, Apologize 1.3 / 0.5 / 0.6 / 0.8,
+Explain 0.8 / 0.7 / 0.9 / 0.9, AttackSource 0.5 / 0.6 / 1.3 / 1.5, Ignore 0.8 / 0.9 / 1.5 / 1.1,
+Resign 1.6 / 0.2 / 0.7 / 1.4, SacrificeStaffMember 0.7 / 0.5 / 0.8 / 1.0), the escalations (a
+caught denial ×6 on the lasting cost, a caught attack ×2, momentum ×1.5 for both),
+`SurfaceRatePerDay` 0.15, `EvidenceEstimateError` ±0.25, `CynicalSacrificeMultiplier` 1.6, the
+AI's deny-threshold (0.3 as seen) and its responses by personality.
+
+**What is measured.** Over 400 seeds on a MAJOR corruption scandal at evidence 0.5 (damage =
+100 × credibility cost − momentum pp): Deny 11.5 ± 9.0 (152 caught out), Apologize 9.9, Explain
+10.8, AttackSource 12.3 ± 4.0, Ignore 13.2, Resign 7.2, SacrificeStaffMember 11.7. Against strong
+evidence (0.95) the denial averages 16.0, the next worst 14.4; against weak (0.05) 5.3 against
+7.2. The worst case (catastrophic, denied, certain evidence, caught) costs 45 % of credibility.
+
+**What would settle it.** Play: is ignoring a story ever the right call (at these numbers never
+— the worst mean of the seven); is a resignation ever taken (the AI never resigns; W-C2's
+reactivity and W-F6's candidate are what would make it a choice); does a caught denial FEEL
+catastrophic on W-E5's screen, or merely expensive. The one change already made — the caught
+denial's escalation ×3 → ×6 — was made because at ×3 a caught denial was no worse than ignoring,
+which contradicts §17's sentence; it is recorded as the shape the spec demands, not as a fit.
+
+**What must NOT happen.** Any multiplier moved so `ScandalHarness` 2a's pairwise distinctness or
+2c's "denial widest" line passes, or so the C1 harness's staged scandal costs a rounder number.

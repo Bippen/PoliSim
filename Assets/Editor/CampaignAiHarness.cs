@@ -175,6 +175,20 @@ namespace PoliSim.EditorTools
                 first.Debates.Count == 2 && first.Debates[0].CoverageShock > 0 && first.Debates[0].MomentumShockPp > 0,
                 $"{first.Debates.Count} debates");
 
+            // W-B8: the staged scandal broke, was answered, and the campaign went on - the credibility cost is
+            // on the party's live figure and nowhere else.
+            sb.Append("  scandals (W-B8): ");
+            foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in first.Scandals)
+            {
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "day {0}: {1} - {2}, escalated {3}, momentum {4:+0.00;-0.00} pp, credibility cost {5:F3}, {6} days in the news  ",
+                    xDay, first.Parties[xParty].Name, xResponse, xOutcome.Escalated, xOutcome.MomentumShockPp, xOutcome.CredibilityCost, xOutcome.DaysInTheNews));
+            }
+
+            sb.Append(string.Format(CultureInfo.InvariantCulture, "credibility at the end: S {0:F3}, SD {1:F3}\n", first.Parties[0].CredibilityAtEnd, first.Parties[1].CredibilityAtEnd));
+            failures += Assert(sb, "1g. W-B8: the staged scandal broke on day 30, the party answered, lost credibility on its live figure only, and campaigned to the end",
+                first.Scandals.Count == 1 && first.Parties[0].CredibilityAtEnd < FlatCredibility && first.Parties[1].CredibilityAtEnd == FlatCredibility && first.Parties[0].TotalActions > 0 && first.DaysRun == setup.Calendar.TotalCampaignDays,
+                $"{first.Scandals.Count} scandal, S credibility {first.Parties[0].CredibilityAtEnd:F3} of {FlatCredibility:F2}");
+
             // ---------- 2. five personalities, measurably different ----------
             var mixes = new double[5][];
             for (int p = 0; p < 5; p++) { mixes[p] = first.Parties[p].Mix(); }
@@ -399,7 +413,7 @@ namespace PoliSim.EditorTools
         private static CampaignRun.Result RunSeeded(CampaignRun.Setup setup, int seed)
         {
             SimulationRandom.Seed(seed);
-            return CampaignRun.Simulate(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi), SimulationRandom.For(SimulationRandom.Stream.Debate));
+            return CampaignRun.Simulate(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi), SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B7: a candidate per personality - §16's attributes as the personality's own emphasis, no names (W-F6 labels real leaders). Game fiction, equal in sum by design.</summary>
@@ -475,8 +489,12 @@ namespace PoliSim.EditorTools
                 "    strategies (W-B6): prof SwingVoter, pop Populist, est BroadAppeal, grass BaseMobilization, chaos NegativeCampaign; electorate loyalty {0:F1} (one group, W-A1 weighted mean)\n",
                 electorateLoyalty));
 
+            // W-B8: one staged scandal - a MAJOR corruption story breaks for the leading party (S) on day 30 with
+            // middling evidence; the AI responds by personality on the evidence as it sees it. [AUTHORED-DRAFT] staging.
+            var scandals = new[] { (30, 0, new Scandal(ScandalKind.Corruption, ScandalSeverity.Major, 0.5)) };
+
             return new CampaignRun.Setup(CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
-                national, regions, publicHouse, 7, internalHouse, electorateLoyalty);
+                national, regions, publicHouse, 7, internalHouse, electorateLoyalty, null, null, scandals);
         }
 
         private static RegionAudience[] ReadValkretsar(out double national)

@@ -85,7 +85,15 @@ namespace PoliSim.Simulation
             /// stream so a debate replays under a seed without re-running the AI's choices or the
             /// economy. ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2).
             /// </summary>
-            Debate = 9
+            Debate = 9,
+
+            /// <summary>
+            /// A scandal's lifecycle draws (elections spec §17: whether the evidence surfaces, and
+            /// how strong the party estimates it to be — §36), added 2026-08-29 at W-B8. APPENDED
+            /// after Debate, never inserted; the trajectory suite is re-proven byte-identical at the
+            /// boundary that adds it. ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2).
+            /// </summary>
+            Scandal = 10
         }
 
         private static int? _masterSeed;

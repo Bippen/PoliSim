@@ -82,13 +82,16 @@ namespace PoliSim.Elections
             public readonly MediaOutlet[] Outlets;
             /// <summary>W-B7: the campaign days (0-based) on which the two parties leading the PUBLISHED poll debate. Null = the default two, at the end of weeks three and six.</summary>
             public readonly int[] DebateDays;
+            /// <summary>W-B8: scandals staged to break - (campaign day, party, the scandal). Null = none. §17's dynamic generation (a probability per day from §36's hidden variables) is a later item; today the harness stages them.</summary>
+            public readonly (int Day, int Party, Scandal Scandal)[] Scandals;
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
-                MediaOutlet[] outlets = null, int[] debateDays = null)
+                MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null)
             {
                 ElectorateLoyalty = electorateLoyalty;
+                Scandals = scandals ?? new (int, int, Scandal)[0];
                 Outlets = outlets ?? MediaCatalog.Archetypes(1);
                 DebateDays = debateDays ?? new[] { 20, 41 };
                 if (parties == null || parties.Length == 0) { throw new ArgumentException("no parties"); }
@@ -136,6 +139,9 @@ namespace PoliSim.Elections
             /// <summary>W-B7: debates stood and won.</summary>
             public int DebatesStood;
             public int DebatesWon;
+            /// <summary>W-B8: the party's credibility at the end - its starting figure less every scandal's lasting cost.</summary>
+            public double CredibilityAtEnd;
+            public int ScandalsSurvived;
             /// <summary>The campaign day on which the party had spent 80 % of its war chest (the total day count if it never did) - front-loading against pacing.</summary>
             public int DayEightyPercentSpent = -1;
             public double MoneyLeft;
@@ -185,17 +191,24 @@ namespace PoliSim.Elections
             public RegionalMobilization Gotv;
             /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks.</summary>
             public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
+            /// <summary>W-B8: every scandal - day, party, the response chosen, the outcome.</summary>
+            public List<(int Day, int Party, ScandalResponse Response, ScandalOutcome Outcome)> Scandals;
             /// <summary>The valkretsar, in the run's order - election day's names.</summary>
             public string[] RegionNames;
             /// <summary>A deterministic digest of every decision and the final shares — two runs of one seed must print the same one.</summary>
             public string Digest;
         }
 
-        public static Result Simulate(Setup setup, System.Random random, System.Random debateRandom = null)
+        public static Result Simulate(Setup setup, System.Random random, System.Random debateRandom = null, System.Random scandalRandom = null)
         {
             if (random == null) { throw new ArgumentNullException(nameof(random)); }
             debateRandom = debateRandom ?? random;
+            scandalRandom = scandalRandom ?? random;
             var debates = new List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)>();
+            var scandals = new List<(int Day, int Party, ScandalResponse Response, ScandalOutcome Outcome)>();
+            var credibility = new double[setup.Parties.Length];
+            for (int p = 0; p < credibility.Length; p++) { credibility[p] = setup.Parties[p].Credibility; }
+            var pendingCoverage = new Dictionary<int, List<(int Party, double Raw)>>();   // a scandal's story, day by day
 
             int partyCount = setup.Parties.Length;
             int issueCount = IssueVector.IssueCount;
@@ -301,7 +314,7 @@ namespace PoliSim.Elections
                     // The poll decision is taken on the view BEFORE today's measurement, and the
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
-                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p]);
+                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility);
                     if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
                     {
                         if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
@@ -320,7 +333,7 @@ namespace PoliSim.Elections
                         }
                     }
 
-                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p]);
+                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility);
 
                     // Actions: the AI's plan, applied one by one against the TRUE inputs - the
                     // world's response, which the AI estimated but did not see.
@@ -366,7 +379,7 @@ namespace PoliSim.Elections
                         StrategyModifiers modifiers = CampaignStrategyModel.Modifiers(profiles[p].Strategy, setup.ElectorateLoyalty,
                             d.Target.Issue.HasValue && IsTopSalience(setup, d.Target.Issue.Value));
                         CampaignActions.ChainTrace trace = CampaignStrategyModel.Resolve(spec, audience, salience, match,
-                            setup.Parties[p].Credibility, d.Spend, modifiers);
+                            credibility[p], d.Spend, modifiers);
                         pressure.Add(p, trace);
                         if (modifiers.OpponentShare > 0.0)
                         {
@@ -387,12 +400,39 @@ namespace PoliSim.Elections
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
 
-                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p]);
+                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility);
                     }
                 }
 
                 // The day closes: the true preference is RECOMPUTED from the moved inputs, never patched.
                 truePreference = CurrentPreference(setup, prior, pressure);
+
+                // W-B8: a staged scandal breaks for its party; the party responds by personality on the
+                // evidence AS IT SEES IT (§36); the story's days queue into coverage, the momentum shock
+                // lands now, the credibility cost is lasting and the chain prices it from tomorrow.
+                foreach ((int sDay, int sParty, Scandal scandal) in setup.Scandals)
+                {
+                    if (sDay != day) { continue; }
+                    double seen = Scandals.EvidenceAsSeen(scandal, scandalRandom);
+                    ScandalResponse response = ScandalResponseFor(profiles[sParty].Kind, seen);
+                    ScandalOutcome outcome = Scandals.Resolve(scandal, response, scandalRandom);
+                    for (int k = 0; k < outcome.CoverageShockPerDay.Length; k++)
+                    {
+                        if (!pendingCoverage.TryGetValue(day + k, out List<(int Party, double Raw)> list)) { list = new List<(int, double)>(); pendingCoverage[day + k] = list; }
+                        list.Add((sParty, outcome.CoverageShockPerDay[k]));
+                    }
+
+                    momentum.AddShock(sParty, outcome.MomentumShockPp);
+                    credibility[sParty] *= 1.0 - outcome.CredibilityCost;
+                    ledgers[sParty].ScandalsSurvived++;
+                    scandals.Add((day, sParty, response, outcome));
+                    Append(digest, day, sParty, CampaignActionKind.DevelopPolicy, "scandal " + scandal.Kind + " " + response, outcome.CredibilityCost);
+                }
+
+                if (pendingCoverage.TryGetValue(day, out List<(int Party, double Raw)> today0))
+                {
+                    foreach ((int cParty, double raw) in today0) { coverage.AddShock(cParty, raw); }
+                }
 
                 // W-B7: on a debate day the two parties leading the PUBLISHED poll debate - each on its
                 // personality's plan, on its own ground (its most salient true issue), with its candidate's
@@ -436,6 +476,7 @@ namespace PoliSim.Elections
             {
                 ledgers[p].MoneyLeft = pools[p].Money;
                 ledgers[p].CoverageAtEnd = coverage.Coverage(p);
+                ledgers[p].CredibilityAtEnd = credibility[p];
                 if (ledgers[p].DayEightyPercentSpent < 0) { ledgers[p].DayEightyPercentSpent = totalDays; }
             }
 
@@ -455,6 +496,7 @@ namespace PoliSim.Elections
                 Gotv = gotv,
                 RegionNames = names,
                 Debates = debates,
+                Scandals = scandals,
                 Digest = Fnv1a64(digest.ToString()),
             };
         }
@@ -463,14 +505,28 @@ namespace PoliSim.Elections
 
         private static AiView BuildView(Setup setup, int party, CampaignPhase phase, DateTime today, ResourcePool pool,
             double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay,
-            List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday)
+            List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday, double[] credibility)
         {
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
             return new AiView(party, phase, setup.Calendar.DaysUntilElection(today), pool, reserve,
                 latest.HasValue, latest ?? default, (double[])momentumPp.Clone(), issues,
-                setup.Parties[party].Credibility, setup.NationalAudience, setup.Regions, since,
+                credibility[party], setup.NationalAudience, setup.Regions, since,
                 PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
                 bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday);
+        }
+
+        /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>
+        public static ScandalResponse ScandalResponseFor(AiPersonality personality, double evidenceAsSeen)
+        {
+            if (evidenceAsSeen < 0.3) { return ScandalResponse.Deny; }
+            switch (personality)
+            {
+                case AiPersonality.Professional: return ScandalResponse.Explain;
+                case AiPersonality.Establishment: return ScandalResponse.Apologize;
+                case AiPersonality.Grassroots: return ScandalResponse.Apologize;
+                case AiPersonality.Populist: return ScandalResponse.AttackSource;
+                default: return ScandalResponse.Deny;
+            }
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B7: exchanges per debate and the preparation every AI puts in (it does not plan hours yet - W-B5's staff would).</summary>
