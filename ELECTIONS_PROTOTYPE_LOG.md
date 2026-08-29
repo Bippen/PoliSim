@@ -1018,3 +1018,80 @@ VOTES — EACH STAGE MULTIPLIES* — and the 1280 campaign family re-filmed on t
 - **W-H4** — a drawn valkrets map and eight party inks are Design lines.
 
 **R-N2 held at this boundary:** `traj_we2_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0 (`MetaTextCheck` clean with the map screen); `campaignai_we2_20260829.log`.
+
+---
+
+## W-B7 — debates (§15): exchanges from attributes, preparation, ownership, the clash and one seeded draw; the result a coverage and momentum shock, never a share (2026-08-29)
+
+Files: `Assets/Scripts/Elections/Debates.cs` (`DebateMove`, `DebatePreparation`, `DebateExchange`,
+`DebateResult`, `Debates`), `Assets/Editor/DebateHarness.cs`, `SimulationRandom.Stream.Debate = 9`
+APPENDED; the AI campaign holds two debates (`CampaignRun`: `DebateDays`, `DebatePlanFor`, a
+`Candidate` per party).
+
+**Done-when.** *The same seed and choices reproduce a debate exactly* — seed 777 on the `Debate`
+stream twice: six exchanges bit-identical (points, events, topics); seed 778 differs; the same
+seed with a different plan differs. *Performance moves media coverage and momentum rather than
+vote share directly* — structurally (`DebateResult` has no share / vote / preference / party
+member, by reflection) and behaviourally: applied to `MediaCoverage` and `MomentumTracker` the
+result moves both (+0.66 coverage, ±2.17 pp momentum), and **the preference recomputed after the
+debate is bit-identical** — a debate has no route to a vote share; the polls move because
+momentum shifts where the race APPEARS to be. 14 of 14.
+
+### Decisions taken and logged (R-N1)
+
+- **A debate is a sequence of exchanges**, each a pair of §15's seven moves resolved as
+  `skill × prepared × ownership × clash + event`: the move's §16 attribute blend, §35's curve on
+  preparation hours between a 0.7 floor and 1, the topic's ownership between 0.8 and 1.2, the
+  move-pair table, and one Gaussian draw at σ 4 index points. The performance index is the mean;
+  **the margin is the difference and both shocks scale with it** — a close debate makes little news
+  and moves nothing, a rout does both, bounded by the index's range.
+- **The clash table is §15's verbs as consequences:** an attack into `IgnoreAttack` is wasted
+  (×0.6), into a `Counterattack` dangerous (×0.8 against ×1.25), into `DefendPolicy` blunted (×0.9,
+  the defence ×1.15); a counterattack with nothing to counter is empty (×0.7); `ChangeSubject`
+  hands the next topic to the changer and lands against statistics (×1.1).
+- **§22's worked example is the momentum rate's anchor:** `MomentumPpPerMarginPoint = 0.20`, so a
+  10-point rout is +2.0 pp — the spec's "strong debate" — decaying to 0.5 pp after two weeks on the
+  tracker's own half-life. `CoveragePerMarginPoint = 0.10`: a 10-point rout is a full news day.
+- **The AI campaign holds two debates** (days 20 and 41) between the two parties leading the
+  PUBLISHED poll — chosen from the tracker, never the truth — each on its personality's plan
+  (populist: appeal, attack, change the subject; professional: statistics, defend, counter;
+  establishment: defend, statistics, ignore; grassroots: appeal, defend, statistics; chaotic:
+  attack, counter, change) on its own ground (its most salient contested issue) with a fixed 8
+  hours' preparation (the AI does not plan hours — W-B5's staff would). Seed 777: day 20 S v M,
+  margin −2.8 (M), coverage +0.28, ±0.55 pp; day 41 S v SD, margin −9.5 (SD), +0.95, ±1.89 pp. The
+  C1 harness asserts the two were held and shocked both; its digest moves; every C1 line holds.
+- **Candidates are `[AUTHORED-DRAFT]` per personality, unnamed** (§16's attributes as the
+  personality's emphasis — the orator populist, the wonk establishment — game fiction; W-F6 labels
+  real leaders). The harness's two are the spec's own example shape: charisma 90 / knowledge 45
+  against knowledge 92 / charisma 45.
+- **Ownership is the party's true issue-match on the topic** (the run is the world); a player's
+  debate would price it through the same polled measurement the action screen uses.
+
+### [AUTHORED-DRAFT] values, one line each (calibration entry 11)
+
+`PreparationScale 12 h` · `PreparationFloor 0.7` · `OwnershipFloor 0.8 / OwnershipSpan 0.4` ·
+`EventSigma 4` · `CoveragePerMarginPoint 0.10` · `MomentumPpPerMarginPoint 0.20` · the seven
+attribute blends · the clash table · `DebateExchanges 6` · `DebatePreparationHours 8` · the five
+plans · the five candidate profiles.
+
+### Findings carried forward
+
+1. **The orator wins the emotional debate 400 of 400** against the wonk and the prepared twin
+   beats the unprepared 400 of 400 — at σ 4 the event term is small against a 20-point skill gap;
+   whether upsets should be possible is a play question (entry 11).
+2. **`ChangeSubject` at 100.0 twice** in the seed-777 debate — the orator changing the subject on
+   home ground hits the index ceiling; the clamp at 100 hides how far over it went. A ceiling that
+   never binds would be honest; recorded, not tuned.
+3. **A test that measured nothing, caught:** the first ownership test gave the twin a different
+   topic list, which made the exchanges alternate between both grounds and the pair exactly
+   symmetric (199 of 400). The corrected test holds the topic and varies only ownership (400 of 400).
+
+### Riders
+
+- **W-E5** — the debate screen draws `DebateExchange[]` as the running state and `DebateResult`
+  as the verdict; the pre-debate choices are `DebatePreparation`.
+- **W-B8** — a scandal is a `MediaCoverage.AddShock` with a credibility cost, the same seam.
+- **W-B5** — preparation hours become a staff decision.
+- **W-C2** — the AI's plan reacts to the opponent's last move (today it is a fixed cycle).
+
+**R-N2 held at this boundary:** `traj_wb7_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `debate_wb7_20260829.log`, `campaignai_wb7_20260829.log`.

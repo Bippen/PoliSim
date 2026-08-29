@@ -76,7 +76,16 @@ namespace PoliSim.Simulation
             /// ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2). `CampaignAi` takes a
             /// `System.Random` from its caller; today the only caller is `CampaignAiHarness`.
             /// </summary>
-            CampaignAi = 8
+            CampaignAi = 8,
+
+            /// <summary>
+            /// A debate's exchange draws (elections spec §15: "Random Event" among the performance
+            /// terms), added 2026-08-29 at W-B7. APPENDED after CampaignAi, never inserted; the
+            /// trajectory suite is re-proven byte-identical at the boundary that adds it. Its own
+            /// stream so a debate replays under a seed without re-running the AI's choices or the
+            /// economy. ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2).
+            /// </summary>
+            Debate = 9
         }
 
         private static int? _masterSeed;

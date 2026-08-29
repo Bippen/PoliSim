@@ -163,6 +163,18 @@ namespace PoliSim.EditorTools
             failures += Assert(sb, "1e. W-B9: no party gave more interviews than the outlets offered it (availability, not a price)",
                 withinSlots, "8 of 8 within their bookings");
 
+            // W-B7: the debates held, and what they did - coverage and momentum, never the preference.
+            sb.Append("\n  debates (W-B7): ");
+            foreach ((int dDay, int dA, int dB, double dMargin, double dCoverage, double dMomentum) in first.Debates)
+            {
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "day {0}: {1} v {2}, margin {3:+0.0;-0.0}, coverage +{4:F2}, momentum +/-{5:F2} pp  ", dDay, first.Parties[dA].Name, first.Parties[dB].Name, dMargin, dCoverage, dMomentum));
+            }
+
+            sb.Append('\n');
+            failures += Assert(sb, "1f. W-B7: the two scheduled debates were held between the parties leading the PUBLISHED poll, each shocking coverage and momentum",
+                first.Debates.Count == 2 && first.Debates[0].CoverageShock > 0 && first.Debates[0].MomentumShockPp > 0,
+                $"{first.Debates.Count} debates");
+
             // ---------- 2. five personalities, measurably different ----------
             var mixes = new double[5][];
             for (int p = 0; p < 5; p++) { mixes[p] = first.Parties[p].Mix(); }
@@ -387,7 +399,21 @@ namespace PoliSim.EditorTools
         private static CampaignRun.Result RunSeeded(CampaignRun.Setup setup, int seed)
         {
             SimulationRandom.Seed(seed);
-            return CampaignRun.Simulate(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi));
+            return CampaignRun.Simulate(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi), SimulationRandom.For(SimulationRandom.Stream.Debate));
+        }
+
+        /// <summary>[AUTHORED-DRAFT] W-B7: a candidate per personality - §16's attributes as the personality's own emphasis, no names (W-F6 labels real leaders). Game fiction, equal in sum by design.</summary>
+        private static CandidateProfile CandidateFor(AiPersonality personality, string party)
+        {
+            switch (personality)
+            {
+                //                                        charisma debate comm cred integ knowledge campaign popularity scandal
+                case AiPersonality.Populist: return new CandidateProfile(party, 85, 80, 75, 50, 55, 45, 65, 70, 55);
+                case AiPersonality.Professional: return new CandidateProfile(party, 65, 70, 70, 70, 70, 70, 75, 60, 70);
+                case AiPersonality.Establishment: return new CandidateProfile(party, 55, 65, 65, 80, 75, 80, 60, 60, 75);
+                case AiPersonality.Grassroots: return new CandidateProfile(party, 70, 60, 65, 80, 85, 60, 60, 55, 70);
+                default: return new CandidateProfile(party, 75, 75, 60, 45, 45, 50, 55, 65, 40);
+            }
         }
 
         private static CampaignRun.Setup BuildSetup(out string note)
@@ -420,7 +446,7 @@ namespace PoliSim.EditorTools
             {
                 var match = new double[IssueVector.IssueCount];
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
-                parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match, Volunteers);
+                parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match, Volunteers, CandidateFor(Assignment[p], Parties[p]));
             }
 
             // SOURCED regions: the 29 valkretsar's valid votes, 2018.

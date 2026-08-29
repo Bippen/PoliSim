@@ -45,11 +45,15 @@ namespace PoliSim.Elections
             public readonly double[] TrueIssueMatch;
             /// <summary>W-B11: the party's volunteers (§9) - their hours bound how many doors a day it can knock (`GotvModel.Contacts`); §10's offices (W-B4) grow them.</summary>
             public readonly int Volunteers;
+            /// <summary>W-B7: the party's candidate (§16's attributes, [AUTHORED-DRAFT] game fiction, W-F6's to label) - who stands in its debates. Default: a flat 60 everywhere.</summary>
+            public readonly CandidateProfile Candidate;
 
-            public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch, int volunteers = 0)
+            public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch, int volunteers = 0,
+                CandidateProfile? candidate = null)
             {
                 Name = name; Personality = personality; Credibility = credibility; StartingMoney = startingMoney;
                 TrueIssueMatch = trueIssueMatch; Volunteers = volunteers;
+                Candidate = candidate ?? new CandidateProfile(name, 60, 60, 60, 60, 60, 60, 60, 60, 60);
             }
         }
 
@@ -76,14 +80,17 @@ namespace PoliSim.Elections
             public readonly double ElectorateLoyalty;
             /// <summary>W-B9: the outlets that book interviews and carry television (§13/§14). Null = the archetype roster over a one-group electorate.</summary>
             public readonly MediaOutlet[] Outlets;
+            /// <summary>W-B7: the campaign days (0-based) on which the two parties leading the PUBLISHED poll debate. Null = the default two, at the end of weeks three and six.</summary>
+            public readonly int[] DebateDays;
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
-                MediaOutlet[] outlets = null)
+                MediaOutlet[] outlets = null, int[] debateDays = null)
             {
                 ElectorateLoyalty = electorateLoyalty;
                 Outlets = outlets ?? MediaCatalog.Archetypes(1);
+                DebateDays = debateDays ?? new[] { 20, 41 };
                 if (parties == null || parties.Length == 0) { throw new ArgumentException("no parties"); }
                 if (priorShares.Length != parties.Length || loyaltyPerParty.Length != parties.Length || compatibility.Length != parties.Length)
                 {
@@ -126,6 +133,9 @@ namespace PoliSim.Elections
             /// <summary>W-B9: interview slots the outlets offered this party over the campaign, and its coverage stock at the end.</summary>
             public int SlotsOffered;
             public double CoverageAtEnd;
+            /// <summary>W-B7: debates stood and won.</summary>
+            public int DebatesStood;
+            public int DebatesWon;
             /// <summary>The campaign day on which the party had spent 80 % of its war chest (the total day count if it never did) - front-loading against pacing.</summary>
             public int DayEightyPercentSpent = -1;
             public double MoneyLeft;
@@ -173,15 +183,19 @@ namespace PoliSim.Elections
             public double[] MomentumPpAtEnd;
             /// <summary>W-B11 → W-D1: every party's ground contacts per valkrets over the campaign - what election day's turnout reads.</summary>
             public RegionalMobilization Gotv;
+            /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks.</summary>
+            public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
             /// <summary>The valkretsar, in the run's order - election day's names.</summary>
             public string[] RegionNames;
             /// <summary>A deterministic digest of every decision and the final shares — two runs of one seed must print the same one.</summary>
             public string Digest;
         }
 
-        public static Result Simulate(Setup setup, System.Random random)
+        public static Result Simulate(Setup setup, System.Random random, System.Random debateRandom = null)
         {
             if (random == null) { throw new ArgumentNullException(nameof(random)); }
+            debateRandom = debateRandom ?? random;
+            var debates = new List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)>();
 
             int partyCount = setup.Parties.Length;
             int issueCount = IssueVector.IssueCount;
@@ -380,6 +394,36 @@ namespace PoliSim.Elections
                 // The day closes: the true preference is RECOMPUTED from the moved inputs, never patched.
                 truePreference = CurrentPreference(setup, prior, pressure);
 
+                // W-B7: on a debate day the two parties leading the PUBLISHED poll debate - each on its
+                // personality's plan, on its own ground (its most salient true issue), with its candidate's
+                // attributes and a fixed preparation. The result shocks coverage and momentum and nothing else.
+                if (publicPoll.HasValue && Array.IndexOf(setup.DebateDays, day) >= 0)
+                {
+                    int a = -1, b = -1;
+                    for (int p = 0; p < partyCount; p++)
+                    {
+                        if (a < 0 || publicPoll.Value.Share(p) > publicPoll.Value.Share(a)) { b = a; a = p; }
+                        else if (b < 0 || publicPoll.Value.Share(p) > publicPoll.Value.Share(b)) { b = p; }
+                    }
+
+                    if (a >= 0 && b >= 0)
+                    {
+                        DebateResult debate = Debates.Resolve(
+                            setup.Parties[a].Candidate, DebatePlanFor(profiles[a].Kind, TopIssue(setup, a)), issue => OwnershipOf(setup, a, issue),
+                            setup.Parties[b].Candidate, DebatePlanFor(profiles[b].Kind, TopIssue(setup, b)), issue => OwnershipOf(setup, b, issue),
+                            DebateExchanges, debateRandom);
+                        int winner = debate.Winner == 0 ? a : (debate.Winner == 1 ? b : -1);
+                        int loser = winner == a ? b : a;
+                        coverage.AddShock(a, debate.CoverageShock);
+                        coverage.AddShock(b, debate.CoverageShock);
+                        if (winner >= 0) { momentum.AddShock(winner, debate.MomentumShockPp); momentum.AddShock(loser, -debate.MomentumShockPp); }
+                        ledgers[a].DebatesStood++; ledgers[b].DebatesStood++;
+                        if (winner >= 0) { ledgers[winner].DebatesWon++; }
+                        debates.Add((day, a, b, debate.Margin, debate.CoverageShock, debate.MomentumShockPp));
+                        Append(digest, day, a, CampaignActionKind.TrainCandidate, "debate v " + setup.Parties[b].Name, debate.Margin);
+                    }
+                }
+
                 // W-B9 -> §22: the day's coverage GAIN (saturated, so bounded) is the momentum shock;
                 // then §22's own decay. Coverage is the only thing that shocks momentum today.
                 double[] gains = coverage.CloseDay();
@@ -410,6 +454,7 @@ namespace PoliSim.Elections
                 MomentumPpAtEnd = (double[])momentumPp.Clone(),
                 Gotv = gotv,
                 RegionNames = names,
+                Debates = debates,
                 Digest = Fnv1a64(digest.ToString()),
             };
         }
@@ -426,6 +471,46 @@ namespace PoliSim.Elections
                 setup.Parties[party].Credibility, setup.NationalAudience, setup.Regions, since,
                 PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
                 bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday);
+        }
+
+        /// <summary>[AUTHORED-DRAFT] W-B7: exchanges per debate and the preparation every AI puts in (it does not plan hours yet - W-B5's staff would).</summary>
+        public const int DebateExchanges = 6;
+        public const double DebatePreparationHours = 8.0;
+
+        /// <summary>[AUTHORED-DRAFT] W-B7: each personality's debate plan, §32's bullets as §15's moves.</summary>
+        public static DebatePreparation DebatePlanFor(AiPersonality personality, IssueId topic)
+        {
+            DebateMove[] plan;
+            switch (personality)
+            {
+                case AiPersonality.Populist: plan = new[] { DebateMove.AppealEmotionally, DebateMove.AttackOpponent, DebateMove.ChangeSubject }; break;
+                case AiPersonality.Professional: plan = new[] { DebateMove.PresentStatistics, DebateMove.DefendPolicy, DebateMove.Counterattack }; break;
+                case AiPersonality.Establishment: plan = new[] { DebateMove.DefendPolicy, DebateMove.PresentStatistics, DebateMove.IgnoreAttack }; break;
+                case AiPersonality.Grassroots: plan = new[] { DebateMove.AppealEmotionally, DebateMove.DefendPolicy, DebateMove.PresentStatistics }; break;
+                default: plan = new[] { DebateMove.AttackOpponent, DebateMove.Counterattack, DebateMove.ChangeSubject }; break;
+            }
+
+            return new DebatePreparation(DebatePreparationHours, new[] { topic }, plan);
+        }
+
+        /// <summary>A party's ground: its most salient contested issue weighted by its own match (the world's truth - the run is the world).</summary>
+        private static IssueId TopIssue(Setup setup, int party)
+        {
+            int best = -1;
+            for (int i = 0; i < setup.TrueSalience.Length; i++)
+            {
+                if (double.IsNaN(setup.TrueSalience[i]) || double.IsNaN(setup.Parties[party].TrueIssueMatch[i])) { continue; }
+                if (best < 0 || setup.TrueSalience[i] * setup.Parties[party].TrueIssueMatch[i] > setup.TrueSalience[best] * setup.Parties[party].TrueIssueMatch[best]) { best = i; }
+            }
+
+            return best < 0 ? IssueId.Economy : (IssueId)best;
+        }
+
+        /// <summary>§15's issue ownership: the party's true issue-match on the topic (0 where it takes no position).</summary>
+        private static double OwnershipOf(Setup setup, int party, IssueId issue)
+        {
+            double m = setup.Parties[party].TrueIssueMatch[(int)issue];
+            return double.IsNaN(m) ? 0.0 : m;
         }
 
         /// <summary>Whether an issue is the electorate's most salient (the populist's "prioritised" test for a one-group electorate).</summary>

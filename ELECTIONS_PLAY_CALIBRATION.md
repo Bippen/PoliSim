@@ -243,3 +243,23 @@ on canvassing are the obvious source — billed, not typed).
 
 **What must NOT happen.** The door-to-door persuasion weight raised so the grassroots party
 knocks doors and `CampaignAiHarness` 2a-iv / 2c pass.
+
+## 11. The debate's magnitudes (W-B7)
+
+**What is known.** All [AUTHORED-DRAFT]: `PreparationScale` 12 h, `PreparationFloor` 0.7,
+ownership 0.8–1.2, `EventSigma` 4 index points, `CoveragePerMarginPoint` 0.10,
+`MomentumPpPerMarginPoint` 0.20 (anchored on §22's "strong debate ≈ +2 pp"), the seven attribute
+blends, the clash table, six exchanges, a fixed 8 hours' preparation for every AI, the five plans,
+the five unnamed candidates.
+
+**What is measured.** With a 20-point skill gap the stronger debater wins 400 of 400 seeds; the
+prepared twin beats the unprepared 400 of 400; the home-ground twin 400 of 400. `ChangeSubject` on
+home ground hits the index ceiling of 100.
+
+**What would settle it.** Play: should a weaker debater ever win a debate (a larger `EventSigma`,
+or an event term that scales with the stakes), and does a +2 pp swing from one evening feel like
+a debate or like a lottery? W-E5's screen is where it will be felt.
+
+**What must NOT happen.** `EventSigma` raised so the harness's 400-of-400 lines look "more
+realistic" — a debate's randomness is a design decision with its own reason, to be made against a
+screen and a played loop, not against a table.

@@ -4174,3 +4174,53 @@ silent on the fixed code.
 `MISSING_PREREQUISITES.md` §V gains the map row; the `CLAUDE.md` dated section.
 
 **R-N2 at the boundary (run after the commit, the proof landing in the next records commit).** `traj_we2_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0 (`check_*_we2.log` — `MetaTextCheck` clean over 75 files with the map screen in: 2 084 literals, 0 hits); `campaignai_we2_20260829.log` all assertions pass, 8 PEND.
+
+## 64. W-B7 — debates (§15): exchanges from attributes, preparation, ownership, the clash and one seeded draw; a coverage and momentum shock, never a share (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/Debates.cs` — §15's seven moves, `DebatePreparation`
+(hours, topics, a plan), `Debates.Resolve` (exchanges as `skill × prepared × ownership × clash +
+event`: the move's §16 attribute blend, §35's curve on preparation between a 0.7 floor and 1, the
+topic's ownership between 0.8 and 1.2, the move-pair clash table, one Gaussian draw at σ 4), and
+`DebateResult` — each candidate's performance index, the margin, a coverage shock and a momentum
+shock, **and no share, vote, preference or party member** (the W-B3 bar, asserted by reflection).
+`SimulationRandom.Stream.Debate = 9` APPENDED (trajectories re-proven byte-identical).
+`Assets/Editor/DebateHarness.cs` — 14 of 14. The AI campaign holds two debates on days 20 and 41
+between the two parties leading the PUBLISHED poll, each on its personality's plan and its own
+ground with an `[AUTHORED-DRAFT]` unnamed candidate; the C1 harness asserts both were held and
+shocked coverage and momentum, its digest moves, every C1 line holds.
+
+**The done-when.** Seed 777 on the `Debate` stream twice: six exchanges bit-identical; seed 778
+differs; the same seed with a different plan differs. Applied to `MediaCoverage` and
+`MomentumTracker`, the seed-777 debate (the orator's emotional plan against the wonk's statistics,
+margin +10.9) gains +0.66 coverage and ±2.17 pp momentum, and **the preference recomputed
+afterwards is bit-identical** — the decisive test, the same one W-B3 passed for actions: a debate
+moves where the race appears to be and how much the press talks about it, and nothing else until
+those mechanisms carry it. The polls move (36.55 → 38.72 % apparent for the winner).
+
+**§15's terms are real, measured.** Attributes: the orator wins the emotional debate 400 of 400
+seeds. Preparation: 8 hours beats 0 between identical candidates 400 of 400. Ownership: a
+candidate on their own ground beats their twin off it 400 of 400 — ⚠ after a first test that
+measured nothing (the twin had a different topic list, so the exchanges alternated between both
+grounds and the pair was exactly symmetric: 199 of 400; the corrected test holds the topic and
+varies only ownership). The clash table: an attack into silence 51.3, into a defence 76.9, into
+statistics 85.5; a counterattack with an attack to counter 66.3, against statistics 37.1. §22's
+worked example anchors the momentum rate: a 10-point rout is +2.0 pp, 0.5 pp after two weeks.
+
+**In the AI campaign** (seed 777): day 20 S v M, margin −2.8 to M, coverage +0.28, ±0.55 pp; day
+41 S v SD, −9.5 to SD, +0.95, ±1.89 pp — the same §13 chain W-B9 built, now with its first shock
+from an event rather than from activity. Plans per personality are §32's bullets as §15's moves
+(the populist appeals, attacks and changes the subject; the professional presents statistics,
+defends and counters; the establishment defends, presents and ignores; the grassroots appeals,
+defends and presents; the chaotic attacks, counters and changes). Preparation is a fixed 8 hours
+— the AI does not plan hours; W-B5's staff would.
+
+**Findings.** Upsets are rare at σ 4 against a 20-point skill gap — a play question (calibration
+entry 11). `ChangeSubject` on home ground hits the index ceiling of 100 twice in one debate; a
+clamp that binds hides magnitude — recorded, not tuned. Everything authored is one line each in the
+log: the scales, the floors, the two shock rates, the seven attribute blends, the clash table, the
+five plans, the five candidates.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-B7; `ELECTIONS_PLAY_CALIBRATION.md` entry 11;
+`ELECTIONS_GAP_TABLE.md` rows 15–16; the `CLAUDE.md` dated section.
+
+**R-N2 at the boundary that appends the `Debate` stream.** `traj_wb7_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0 (`check_*_wb7.log`); harness logs `debate_wb7_20260829.log` (14 of 14), `campaignai_wb7_20260829.log` (all assertions pass, 8 PEND).
