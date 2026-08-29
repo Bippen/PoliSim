@@ -153,3 +153,37 @@ Concluded 0.
 **One self-inflicted test error, caught and recorded:** assertion 5's own date arithmetic was off
 by a day (it asserted the campaign was open on 2027-02-27 when the campaign opens on the 28th).
 The code was right; the test was wrong, and it was the test that changed.
+
+## W-B2 — resources and §35's diminishing returns · DONE
+
+`CampaignResources.cs` (pure, unwired). Three resources because they constrain differently:
+**money** (raisable, spends on everything, obeys §35), **time** (a fixed hours budget per campaign
+day that cannot be saved, borrowed or bought — the resource that makes a campaign a series of
+choices rather than a shopping list), and **volunteers** (§26's ground-game stock).
+
+**§35 as a DECLARED CURVE, not a table of magic numbers:**
+`effectiveness(spend) = 1 − exp(−spend / scale)`. Smooth, bounded, with marginal return strictly
+decreasing everywhere — so the first krona beats the millionth *by construction*, and there is no
+threshold a player can game by spending just over it.
+
+- **[AUTHORED-DRAFT]** `MoneyScale = 500 000` SEK — chosen so §35's four prose bands fall out of
+  ONE formula: 18.1 % of the effect at 100k, 63.2 % at 500k, 98.2 % at 2m, ~100 % at 10m.
+  ⚠ Re-derive from real party spending when W-F5 sources it.
+- **[AUTHORED-DRAFT]** `HoursPerCampaignDay = 12` — long enough to be a real day, short enough that
+  §9's action costs (rally 4, interview 2, debate prep 6, tour 8) force daily trade-offs.
+- **[AUTHORED-DRAFT]** `VolunteerHoursPerDay = 3`.
+- **[call]** An unaffordable spend is **REFUSED, not clamped** — a clamp would let an over-budget
+  campaign act at a silent discount, which is how a resource system becomes decorative.
+- **[call, threshold]** The done-when's "first krona ≫ millionth" is asserted at **>5×** and comes
+  out at **7.4×**, not the 100× a first draft assumed. The reason is a real trade-off, not a
+  weakened test: at a 500k scale the millionth krona is only two scale-lengths out. A smaller scale
+  would make the ratio look far more impressive (200k → ~150×) **and would be the wrong curve**,
+  because it flattens the 500k→2m band that §35 explicitly calls "moderate impact" into nothing.
+  The scale reproduces the spec's bands; the ratio is a consequence. The dramatic figure is
+  reported alongside: the five-millionth krona is worth **22 026×** less than the first.
+
+**Proven:** the curve strictly increasing and strictly concave over a 0–5m sweep (201 samples);
+return per krona falling monotonically across all four bands (1.81E-6 → 2.29E-9); an unaffordable
+spend refused with the pool untouched; a negative pool impossible to construct; hours resetting
+daily while money and volunteers carry; and a worked campaign day where the fourth action is
+correctly refused for want of hours.
