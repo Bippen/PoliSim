@@ -1,4 +1,4 @@
-# Elections prototype — the running log (worklist `ELECTIONS_PROTOTYPE_WORKLIST.md`)
+# Elections prototype — the running log (worklist `ELECTIONS_PROTOTYPE_WORKLIST.md` — Elias's kickoff of 2026-08-29 13:02, installed at root verbatim 2026-08-29 evening; until then it lived only in the session transcript)
 
 **Purpose (W-H3):** every `[AUTHORED-DRAFT]` value and every reversible decision, one strikeable
 line each, in one place. Items are recorded as they are consumed, in execution order.
