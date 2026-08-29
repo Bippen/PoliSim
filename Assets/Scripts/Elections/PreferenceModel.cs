@@ -91,5 +91,49 @@ namespace PoliSim.Elections
             for (int i = 0; i < result.Length; i++) { result[i] /= total; }
             return result;
         }
+
+        /// <summary>
+        /// W-A1's form: **loyalty PER PARTY** rather than one value for the electorate. Each party
+        /// keeps its own damping toward its own prior, which is what the derived-from-volatility
+        /// loyalty produces (<see cref="LoyaltyModel"/>) and what spec §5/§8 describe — a party
+        /// with a stable historical base holds it; a party that has just swung wildly holds little.
+        ///
+        /// The shares are renormalised after damping, so the per-party lambdas cannot leak
+        /// probability mass: what one party fails to hold is redistributed by the persuasion term
+        /// rather than vanishing.
+        /// </summary>
+        public static double[] Preference(double[] compatibility, double[] priorShares, double[] loyaltyPerParty)
+        {
+            if (priorShares == null || priorShares.Length != compatibility.Length)
+            {
+                throw new ArgumentException("prior shares must be one per party");
+            }
+
+            if (loyaltyPerParty == null || loyaltyPerParty.Length != compatibility.Length)
+            {
+                throw new ArgumentException("loyalty must be one per party");
+            }
+
+            double[] persuaded = PersuadedShares(compatibility);
+
+            double priorSum = 0.0;
+            foreach (double p in priorShares) { priorSum += p; }
+            if (priorSum <= 0.0)
+            {
+                return persuaded;   // no prior electorate anywhere - everything is persuasion
+            }
+
+            var result = new double[compatibility.Length];
+            double total = 0.0;
+            for (int i = 0; i < result.Length; i++)
+            {
+                double lambda = ElectionScales.Clamp(loyaltyPerParty[i]) / ElectionScales.Max;
+                result[i] = lambda * (priorShares[i] / priorSum) + (1.0 - lambda) * persuaded[i];
+                total += result[i];
+            }
+
+            for (int i = 0; i < result.Length; i++) { result[i] /= total; }
+            return result;
+        }
     }
 }
