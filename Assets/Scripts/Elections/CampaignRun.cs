@@ -43,11 +43,13 @@ namespace PoliSim.Elections
             public readonly double StartingMoney;
             /// <summary>The TRUE issue-match per <see cref="IssueId"/> (NaN where the issue is not contested). Never handed to the AI; measured through polling.</summary>
             public readonly double[] TrueIssueMatch;
+            /// <summary>W-B11: the party's volunteers (§9) - their hours bound how many doors a day it can knock (`GotvModel.Contacts`); §10's offices (W-B4) grow them.</summary>
+            public readonly int Volunteers;
 
-            public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch)
+            public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch, int volunteers = 0)
             {
                 Name = name; Personality = personality; Credibility = credibility; StartingMoney = startingMoney;
-                TrueIssueMatch = trueIssueMatch;
+                TrueIssueMatch = trueIssueMatch; Volunteers = volunteers;
             }
         }
 
@@ -203,13 +205,14 @@ namespace PoliSim.Elections
             var issues = new IssueMeasurement[partyCount][];
             var lastOwnPollDay = new int[partyCount];
             var reserve = new double[partyCount];
+            var volunteerHoursLeft = new double[partyCount];   // W-B11: a day's volunteer-hours, the bound on doors knocked
             var profiles = new PersonalityProfile[partyCount];
             for (int p = 0; p < partyCount; p++)
             {
                 ledgers[p] = new PartyLedger(setup.Parties[p].Name, setup.Parties[p].Personality);
                 ledgers[p].DailyActionCount = new int[setup.Calendar.TotalCampaignDays][];
                 for (int d0 = 0; d0 < ledgers[p].DailyActionCount.Length; d0++) { ledgers[p].DailyActionCount[d0] = new int[CampaignActions.TheEight.Length]; }
-                pools[p] = new ResourcePool(setup.Parties[p].StartingMoney, 0.0, 0);
+                pools[p] = new ResourcePool(setup.Parties[p].StartingMoney, 0.0, setup.Parties[p].Volunteers);
                 issues[p] = new IssueMeasurement[issueCount];
                 lastOwnPollDay[p] = int.MinValue;
                 profiles[p] = PersonalityCatalog.Profile(setup.Parties[p].Personality);
@@ -270,11 +273,12 @@ namespace PoliSim.Elections
 
                     // The pace releases today's money into the reserve (capped at what the party has).
                     reserve[p] = Math.Min(pools[p].Money, reserve[p] + CampaignAi.DailyRelease(profiles[p], pools[p].Money, totalDays - day));
+                    volunteerHoursLeft[p] = CampaignEconomy.VolunteerHours(pools[p].Volunteers);
 
                     // The poll decision is taken on the view BEFORE today's measurement, and the
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
-                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p]);
+                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p]);
                     if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
                     {
                         if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
@@ -293,7 +297,7 @@ namespace PoliSim.Elections
                         }
                     }
 
-                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p]);
+                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p]);
 
                     // Actions: the AI's plan, applied one by one against the TRUE inputs - the
                     // world's response, which the AI estimated but did not see.
@@ -315,7 +319,15 @@ namespace PoliSim.Elections
                         // W-B9: an interview goes out through the outlet that booked it (and consumes
                         // the booking); television across the television outlets - their combined reach is a
                         // ceiling on the whole electorate, a viewership rather than the country.
-                        if (d.Kind == CampaignActionKind.Interview)
+                        // W-B11: door-to-door reaches the doors the volunteers can actually knock in the
+                        // hours they have (money and hours both bind) - an absolute count, not 2 % of
+                        // a region. W-B3's placeholder reach fraction no longer applies to it.
+                        if (d.Kind == CampaignActionKind.DoorToDoor)
+                        {
+                            audience = GotvModel.Contacts(GotvModel.Spec(GotvOperation.DoorKnocking), d.Spend, volunteerHoursLeft[p], out _, out double doorHours);
+                            volunteerHoursLeft[p] -= doorHours;
+                        }
+                        else if (d.Kind == CampaignActionKind.Interview)
                         {
                             if (bookedReach[p].Count == 0) { break; }   // no booking - cannot happen (Evaluate filtered), refuse rather than invent one
                             audience = setup.NationalAudience * bookedReach[p][0];
@@ -351,7 +363,7 @@ namespace PoliSim.Elections
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
 
-                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p]);
+                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p]);
                     }
                 }
 
@@ -394,14 +406,14 @@ namespace PoliSim.Elections
 
         private static AiView BuildView(Setup setup, int party, CampaignPhase phase, DateTime today, ResourcePool pool,
             double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay,
-            List<double> bookedReach, double bestOutletReach, double[] audienceByKind)
+            List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday)
         {
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
             return new AiView(party, phase, setup.Calendar.DaysUntilElection(today), pool, reserve,
                 latest.HasValue, latest ?? default, (double[])momentumPp.Clone(), issues,
                 setup.Parties[party].Credibility, setup.NationalAudience, setup.Regions, since,
                 PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
-                bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind);
+                bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday);
         }
 
         /// <summary>Whether an issue is the electorate's most salient (the populist's "prioritised" test for a one-group electorate).</summary>

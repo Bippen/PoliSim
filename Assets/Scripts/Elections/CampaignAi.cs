@@ -154,15 +154,17 @@ namespace PoliSim.Elections
         public readonly double PollCost;
         /// <summary>W-B9: the audience each NATIONAL §12 action can reach through the media landscape today, in `TheEight`'s order (television's and the platforms' ceilings, the party's own following, the press's interest in it) — public facts, or its own; null = the whole electorate for every kind (W-B3's placeholder).</summary>
         public readonly double[] NationalAudienceByKind;
+        /// <summary>W-B11: the volunteer-hours this party still has today - the bound on how many doors a door-to-door action can knock (its own books).</summary>
+        public readonly double VolunteerHoursToday;
 
         public AiView(int partyIndex, CampaignPhase phase, int daysUntilElection, ResourcePool resources,
             double spendingReserve, bool hasPoll, Poll latestPoll, double[] momentumPp, IssueMeasurement[] issues,
             double ownCredibility, double nationalAudience, RegionAudience[] regions, int daysSinceOwnPoll,
             CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0,
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
-            double[] nationalAudienceByKind = null)
+            double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0)
         {
-            NationalAudienceByKind = nationalAudienceByKind;
+            NationalAudienceByKind = nationalAudienceByKind; VolunteerHoursToday = volunteerHoursToday;
             PartyIndex = partyIndex; Phase = phase; DaysUntilElection = daysUntilElection; Resources = resources;
             SpendingReserve = spendingReserve; HasPoll = hasPoll; LatestPoll = latestPoll; MomentumPp = momentumPp;
             Issues = issues; OwnCredibility = ownCredibility; NationalAudience = nationalAudience; Regions = regions;
@@ -509,10 +511,17 @@ namespace PoliSim.Elections
                     {
                         foreach (int region in regionChoices)
                         {
+                            // W-B11: a door-to-door action reaches the doors the volunteers can knock (money and
+                            // hours both bind), wherever it is aimed; a rally or town hall still draws on the region.
+                            double localAudience = kind == CampaignActionKind.DoorToDoor
+                                ? GotvModel.Contacts(GotvModel.Spec(GotvOperation.DoorKnocking), spend, view.VolunteerHoursToday, out _, out _)
+                                : view.Regions[region].Audience;
+                            if (localAudience <= 0.0) { continue; }
+
                             foreach (IssueId? issue in issueChoices)
                             {
                                 ScoredCandidate? c = Score(view, profile, spec, spend, smallest, region, view.Regions[region].Name,
-                                    view.Regions[region].Audience, issue, topSalience, topIssue);
+                                    localAudience, issue, topSalience, topIssue);
                                 if (c.HasValue) { result.Add(c.Value); }
                             }
                         }

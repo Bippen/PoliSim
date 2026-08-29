@@ -220,3 +220,26 @@ feel like an independent force (does making news get you booked, does a quiet we
 **What must NOT happen.** A slot count or threshold moved so a particular personality gets
 interviewed; a newsworthiness figure moved so the establishment "feels" like traditional media.
 The `PEND` lines in `CampaignAiHarness` name what those claims actually wait on (W-B4/B11, W-B5).
+
+## 10. The ground game's scale and worth (W-B11)
+
+**What is known.** GOTV's operations are [AUTHORED-DRAFT] per contact (a call 3 kr / 0.10 h /
+weight 0.5, a door 5 kr / 0.25 h / 1.0, a lift 60 kr / 0.50 h / 3.0, a reminder 1 kr / 0.02 h /
+0.25) and `MobilizationScale` 0.5 weighted contacts per eligible voter; the staging gives every
+party 800 volunteers (2 400 volunteer-hours a day). W-B3's door-to-door persuasion weight is 0.55
+(a town hall's is 1.0, a rally's 0.30).
+
+**What is measured.** With doors counted as the volunteers can knock them (W-B11), a door-to-door
+action reaches ~3 000 doors, and at 0.55 per contact it is not worth its five hours against a
+post to a party's whole following — so no rational personality knocks doors and the grassroots
+party's separation from the media personalities (asserted at W-B9 on the 2 %-of-a-region
+placeholder, 16 000 doors an afternoon) is gone: L1 0.20 / 0.17. On election-day GOTV the same
+volunteers move a worked valkrets +0.8 to +4.9 points of turnout and the nation +0.32.
+
+**What would settle it.** W-B4's offices (volunteers grow with organisation — 800 is a guess) and
+a sourced or played answer to how much a personal contact persuades relative to a broadcast
+impression; the literature says a great deal more per contact (Gerber & Green's field experiments
+on canvassing are the obvious source — billed, not typed).
+
+**What must NOT happen.** The door-to-door persuasion weight raised so the grassroots party
+knocks doors and `CampaignAiHarness` 2a-iv / 2c pass.

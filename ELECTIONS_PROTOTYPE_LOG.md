@@ -741,3 +741,87 @@ advertises but the unbooked; no party can afford a 500 000 kr buy on the day und
   interview row reads "no booking today" rather than a price.
 
 **R-N2 held at this boundary:** `traj_wb9_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `media_wb9b_20260829.log`, `campaignai_wb9b_20260829.log`.
+
+---
+
+## W-B11 — Get-Out-The-Vote (§26): mobilization as volunteer-bound contacts, per region and per party (2026-08-29)
+
+Files: `Assets/Scripts/Elections/GotvModel.cs` (`GotvOperation`, `GotvSpec`, `GotvModel`,
+`RegionalMobilization`), `Assets/Editor/GotvHarness.cs`, `ElectionsData/sweden/turnout_history.md`
+(SOURCED, PROVISIONAL); door-to-door in the AI campaign rewired to real contacts.
+
+**Done-when.** *Mobilisation spending measurably moves turnout in targeted regions only* — S
+door-knocks three valkretsar (80 000 doors each): Stockholms län 84.21 → 85.03 %, Skåne läns södra
+→ 86.41 %, Gotlands län → 89.07 %; the other 26 at exactly base turnout bit for bit; the other
+seven parties' supporters' turnout unchanged in all 29; S's vote share in Stockholm 30.80 → 31.47 %
+with SD's votes unchanged to the vote. *National turnout inside historically plausible bounds* —
+every party's whole chest and 60 000 volunteer-hours on the doors nationwide: 85.26 %, within
+2002–2022's [80.11, 87.18] widened by two points; unlimited lifts for everyone everywhere: 100 %
+and not a vote more (stated, not hidden). 10 of 10.
+
+### Decisions taken and logged (R-N1)
+
+- **Mobilization is per REGION and per PARTY, and it is contacts.** `mobilization = 50 + 50 ×
+  (1 − exp(−(weighted contacts / eligible) / 0.5))`: 50 is `TurnoutModel`'s neutral, so an
+  unworked region is at base by construction, and the curve is §35's, so no budget passes 100.
+  `TurnoutModel` keeps no party term (its doc's rule stands); GOTV is party-specific through the
+  mobilization INPUT — a party's supporters turn out at its own mobilization, everyone else's at
+  50 — and a region's turnout is the preference-weighted mean.
+- **Contacts cost money AND volunteer-hours, and volunteers bind:** 1 m kr with 0 hours knocks 0
+  doors (asserted). §10's offices (W-B4) are what grow them.
+- **Base turnout is SOURCED and uniform across valkretsar** (2022: 84.21 %); eligible per valkrets
+  is DERIVED as 2018 valid votes ÷ 87.18 % (7 429 141 against the true 7 775 390) because
+  per-valkrets eligible counts are not on disk — billed in `turnout_history.md` (val.se's
+  `Röstberättigade` per valdistrikt). Engagement, enthusiasm and salience at the neutral 50 in the
+  harness so GOTV is the only thing moving.
+- **The historical series** (2002 80.11 · 2006 81.99 · 2010 84.63 · 2014 85.81 · 2018 87.18 · 2022
+  84.21) is filed `[SOURCED] [PROVISIONAL]`: 2014/2018/2022 agree with the two files already on
+  disk; 2002–2010 are the recorder's knowledge of val.se's series, to be read back (R-K9).
+- **Door-to-door in the AI campaign now reaches the doors the volunteers can knock**
+  (`GotvModel.Contacts(DoorKnocking, spend, volunteer-hours left today)`), for the world's response
+  and the AI's estimate alike; each party's `Volunteers` (staging 800 each, equal by design)
+  supplies 2 400 volunteer-hours a day. W-B3's 2 %-of-a-region placeholder no longer applies to
+  door-to-door (rallies and town halls still draw on the region — W-B4's).
+- **GOTV on election day itself is W-D1's:** `RegionalMobilization` is the state a campaign builds
+  up to polling day; the AI run stops the day before, so its GOTV verbs (`GetOutTheVote`, legal
+  only on election day) are not exercised there yet.
+
+### [AUTHORED-DRAFT] values, one line each (calibration entry 10)
+
+Per contact — phone banking 3 kr / 0.10 h / weight 0.5 · door knocking 5 kr / 0.25 h / 1.0 ·
+transport 60 kr / 0.50 h / 3.0 · election-day reminders 1 kr / 0.02 h / 0.25 · `MobilizationScale
+0.5` · staging volunteers 800 per party.
+
+### C1's PEND lines — the clearance report the list asked for
+
+W-B11 was named on `PEND 2c` (door-to-door's largest share) beside W-B4, and on `2a-iii/2a-iv`'s
+grassroots half. **Cleared: none. Changed: one, honestly for the worse.** With doors counted as
+volunteers can knock them, a door-to-door action reaches ~3 000 doors, and at W-B3's per-contact
+persuasion weight (0.55) that is not worth five hours against a post to the party's whole
+following — so no rational personality knocks doors (chaotic 20 %, the rest 0 %), and the
+grassroots separation W-B9 produced (0.71 / 0.61, asserted as `2a-iv`) is gone (0.20 / 0.17).
+**`2a-iv` goes back to PEND** with its true blockers: the ground game's SCALE (W-B4: offices grow
+volunteers — 800 is a guess) and the persuasion a personal contact is worth (calibration entry 10;
+the canvassing literature says far more per contact than a broadcast impression — billed). `2c`
+stays PEND on the same two. Nothing was raised to keep the line green.
+
+### Findings carried forward
+
+1. **The grassroots separation was the placeholder's.** 16 000 doors an afternoon made
+   door-knocking look worth it; 3 000 do not. The honest reach exposed that the model's persuasion
+   per personal contact is the open question, not the count.
+2. **One party's whole ground game moves the nation by a third of a point** (+0.32 pp; its own
+   supporters +1.05) and a worked small valkrets by nearly five — the regional lever §10 promises
+   exists, at these magnitudes.
+3. **The eligible-per-valkrets gap** understates the electorate by 4.5 % (7.43 m derived against
+   7.78 m actual); a data line, not a model line.
+
+### Riders
+
+- **W-D1** — election day runs `RegionalMobilization.RegionVotes` per valkrets with the campaign's
+  accumulated contacts; the GOTV verbs become the AI's election-day plan.
+- **W-B4** — offices grow volunteers; `PEND 2a-iv / 2c` re-measured there.
+- **W-F4** — per-valkrets eligible counts and, with voter groups, per-group base turnout.
+- **W-B3's weights** — the persuasion per personal contact, calibration entry 10.
+
+**R-N2 held at this boundary:** `traj_wb11_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `gotv_wb11_20260829.log`, `campaignai_wb11_20260829.log`.

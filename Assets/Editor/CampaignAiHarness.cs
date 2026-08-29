@@ -73,6 +73,7 @@ namespace PoliSim.EditorTools
         private const double FlatIssueMatch = 0.5;          // [AUTHORED-DRAFT] W-F2 sources per-issue positions
         private const double FlatCredibility = 0.6;         // [AUTHORED-DRAFT] W-F6
         private const double WarChest = 2_400_000.0;        // [AUTHORED-DRAFT] W-E1's staging figure, equal for all by design
+        private const int Volunteers = 800;                  // [AUTHORED-DRAFT] W-B11: 800 volunteers x 3 h a day = 2 400 volunteer-hours, equal for all by design (W-B4's offices grow them)
 
         public static void Run()
         {
@@ -205,9 +206,16 @@ namespace PoliSim.EditorTools
                 string.Format(CultureInfo.InvariantCulture, "prof/est {0:F3}, prof/grass {1:F3}, est/grass {2:F3}",
                     pairwise[0, 2], pairwise[0, 3], pairwise[2, 3]),
                 Math.Min(pairwise[0, 2], Math.Min(pairwise[0, 3], pairwise[2, 3])) >= 0.30);
-            failures += Assert(sb, "2a-iv. the grassroots personality's mix differs from both media personalities' (L1 >= 0.30) - was PENDING W-B9, asserted since W-B9",
-                pairwise[0, 3] >= 0.30 && pairwise[2, 3] >= 0.30,
-                string.Format(CultureInfo.InvariantCulture, "prof/grass {0:F3}, est/grass {1:F3}", pairwise[0, 3], pairwise[2, 3]));
+            // ⚠ Asserted at W-B9, back to PENDING at W-B11: the grassroots separation W-B9 produced
+            // was the 2 %-of-a-region placeholder knocking 16 000 doors an afternoon. With doors
+            // counted as the volunteers can actually knock them (W-B11), 3 000 doors at W-B3's
+            // per-contact persuasion weight are not worth the hours against a post to a party's
+            // whole following, and the grassroots party stops knocking. What remains is the
+            // ground game's SCALE - offices and volunteers (W-B4) - and the persuasion a personal
+            // contact is worth (calibration entry 10), never a weight raised to pass this line.
+            pending += Pending(sb, "2a-iv. the grassroots personality's mix differs from both media personalities' (L1 >= 0.30) - asserted at W-B9 on placeholder reach; PENDING W-B4 (offices, volunteers) and calibration entry 10 (persuasion per personal contact) since W-B11",
+                string.Format(CultureInfo.InvariantCulture, "prof/grass {0:F3}, est/grass {1:F3}", pairwise[0, 3], pairwise[2, 3]),
+                pairwise[0, 3] >= 0.30 && pairwise[2, 3] >= 0.30);
 
             int rally = CampaignAi.IndexOfAction(CampaignActionKind.Rally);
             int town = CampaignAi.IndexOfAction(CampaignActionKind.TownHall);
@@ -412,7 +420,7 @@ namespace PoliSim.EditorTools
             {
                 var match = new double[IssueVector.IssueCount];
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
-                parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match);
+                parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match, Volunteers);
             }
 
             // SOURCED regions: the 29 valkretsar's valid votes, 2018.

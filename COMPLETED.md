@@ -3868,3 +3868,64 @@ on W-B5 / W-B4 / W-B11 / W-B7 / W-B8 / W-F5 / W-F6 / W-E2 / W-E3); `ELECTIONS_PL
 entry 9; `ELECTIONS_GAP_TABLE.md` rows 13 and 14 discharged; the `CLAUDE.md` dated section.
 
 **R-N2 at the boundary.** `traj_wb9_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wb9.log`); harness logs `media_wb9b_20260829.log` (14 of 14), `campaignai_wb9b_20260829.log` (all assertions pass, 7 PEND).
+
+## 58. W-B11 — Get-Out-The-Vote (§26): mobilization as volunteer-bound contacts, per region and per party; targeted regions only, the nation within its history (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/GotvModel.cs` — §26's four operations (phone banking,
+door knocking, transport, election-day reminders) as cost, volunteer-hours and weight per contact;
+`GotvModel.Contacts` (bounded by money AND hours, whichever runs out first); `Mobilization` (50 +
+50 × (1 − exp(−contacts per eligible / 0.5)) — `TurnoutModel`'s neutral 50 for an unworked
+region, §35's curve so no budget passes 100); `RegionalMobilization` (every party's weighted
+contacts in every region, and the turnout, region votes and national turnout they produce through
+`TurnoutModel`). `Assets/Editor/GotvHarness.cs` — 10 of 10 on the 29 valkretsar.
+`ElectionsData/sweden/turnout_history.md` — the 2002–2022 series, `[SOURCED] [PROVISIONAL]`. Pure,
+unwired (R-N2).
+
+**Per region and per party, through the input.** `TurnoutModel` keeps no party term — turnout is
+a property of a group in a context, and that rule stands. GOTV is the one thing that IS
+party-specific about turnout ("get SUPPORTERS to vote"), and it enters through the mobilization
+INPUT: a party's supporters in a worked region turn out at its own mobilization there, everyone
+else's at 50; a region's turnout is the preference-weighted mean; the nation's is eligible-
+weighted over regions, never a mean of rates. §31 can later say "you won on turnout" and mean it.
+
+**The done-when.** S door-knocks three valkretsar with 400 000 kr and 20 000 volunteer-hours each
+(80 000 doors each): Stockholms län 84.21 → 85.03 %, Skåne läns södra → 86.41 %, Gotlands län →
+89.07 % (the same doors are a fifth of a small electorate and a fiftieth of a large one); **the
+other 26 valkretsar at exactly base turnout, bit for bit; the other seven parties' supporters'
+turnout unchanged in all 29**; S's vote share in Stockholm 30.80 → 31.47 % with SD's votes
+unchanged to the vote — the turnout advantage, preference untouched. Every party's whole chest
+and 60 000 volunteer-hours on the doors nationwide: **85.26 %**, inside 2002–2022's [80.11, 87.18]
+widened by two points; unlimited lifts for everyone everywhere: 100 % and not a vote more — stated,
+not hidden. Volunteers bind (1 m kr and 0 hours knocks 0 doors); the first 10 000 doors move
+mobilization more than the next 10 000.
+
+**Staging, with its classes.** Base turnout SOURCED (2022, 84.21 %, Valmyndigheten) and uniform
+per valkrets; eligible per valkrets DERIVED as 2018 valid votes ÷ 87.18 % (7 429 141 against the
+true 7 775 390 — the per-valkrets `Röstberättigade` counts are billed); the 2002–2010 turnouts
+written from the recorder's knowledge of val.se's series and marked to be read back (2014/2018/2022
+agree with the files already on disk). `[AUTHORED-DRAFT]`: the four operations' per-contact
+figures, `MobilizationScale`, 800 volunteers per party — calibration entry 10.
+
+### C1's PEND lines — the clearance the list asked for
+
+W-B11 was named on `PEND 2c` and on the grassroots half of `2a-iii`. **Cleared: none. Changed:
+one, honestly for the worse.** Door-to-door in the AI campaign now reaches the doors the
+volunteers can knock (`GotvModel.Contacts` on the day's volunteer-hours, for the world's response
+and the AI's estimate alike) instead of W-B3's 2 % of a region: ~3 000 doors an action, not
+16 000. At W-B3's per-contact persuasion weight (0.55) that is not worth five hours against a post
+to the party's whole following, so no rational personality knocks doors and the grassroots
+separation W-B9 produced (0.71 / 0.61, asserted as `2a-iv`) is gone (0.20 / 0.17). **`2a-iv` goes
+back to `PEND`** with its true blockers — the ground game's scale (W-B4: offices grow volunteers;
+800 is a guess) and the persuasion a personal contact is worth (calibration entry 10; the
+canvassing literature is the source, billed) — and `2c` stays on the same two. Nothing was raised
+to keep a line green; the digest moves to `f0ca739d9c7529c7` and every other assertion holds.
+
+**Riders.** W-D1 runs `RegionalMobilization.RegionVotes` per valkrets on election day with the
+campaign's accumulated contacts and gives the AI its election-day plan; W-B4 grows volunteers and
+re-measures `2a-iv / 2c`; W-F4 brings per-valkrets eligible counts and per-group base turnout.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-B11; `ELECTIONS_PLAY_CALIBRATION.md` entry 10;
+`ELECTIONS_GAP_TABLE.md` row 26 extended; `ElectionsData/sweden/turnout_history.md`; the
+`CLAUDE.md` dated section.
+
+**R-N2 at the boundary.** `traj_wb11_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wb11.log`); harness logs `gotv_wb11_20260829.log` (10 of 10), `campaignai_wb11_20260829.log` (all assertions pass, 8 PEND).
