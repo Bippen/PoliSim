@@ -68,6 +68,15 @@ or illustration sections — plus §40's ruling conflict counted among them).
 **Built today, from NEW to done: four** — §7 compatibility, §8 loyalty, §26 turnout, §27
 election-day aggregation with noise. Together they are the spine of §39.
 
+**Day-2 update (2026-08-29).** §24's structural half is now built too (`RegionalVoteModel.cs`:
+per-region electorate weights and per-region party availability, sourced for Germany) — the row
+moves from EXTENDS-with-data-only to **EXTENDS, partially discharged**; what remains of §24 is
+per-region voter-group composition and per-region priors. §8 and §27 were **measured against
+reality** rather than merely built: both correct the deviations they were named for, but a uniform
+loyalty constant regresses Italy, so R-EL13's wiring gate FAILED and nothing was wired. The next
+unit the measurements name is **deriving loyalty per country (or per group, as §5/§8 specify)
+rather than assuming one constant** — see `ELECTIONS_DAY2_REPORT_2026-08-29.md`.
+
 ## D0 reconciled — what this system replaces
 
 `MISSING_PREREQUISITES.md` §D0 (item 10, "REALISTIC POLITICS AND ELECTIONS", gated on Sweden's

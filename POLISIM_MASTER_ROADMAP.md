@@ -159,6 +159,12 @@ R-EL7) and reconciles D0: **this spec IS item 10's political model.**
   with Maine's and Nebraska's district method, R-EL8). **France is structurally out**, not missing:
   a two-round system in 577 single-member constituencies has no national allocation to implement.
   The overhaul doc's Part 5 port-and-reproduce obligation is discharged in full.
+- **Named future item (R-EL10, 2026-08-29): "France constituency model" — UNSIZED, UNSTARTED.**
+  Modelling French seats needs all 577 constituencies across two rounds with runoff behaviour
+  (qualification at 12.5 % of registered voters, withdrawals, second-round transfers). It serves
+  one country, nothing before 13 September needs it, and it is named here so it reads as a
+  decision rather than an oversight. **No placeholder and no approximation is to be built** —
+  France appears in every table as structurally out of scope, with its reason.
 - **The vote rung — opened at 3–7 pp** with an explicitly declared placeholder instrument (four
   parameters, no party-specific constants), and its errors named their own fixes.
 - **The spec's chain, first half built the same day** (all pure, all unwired): §7 compatibility
@@ -168,20 +174,32 @@ R-EL7) and reconciles D0: **this spec IS item 10's political model.**
   Phase-4 deviation signatures** (the empty-quadrant newcomer 60.2 % → 12.3 %, the incumbent
   25.2 % → 53.9 %).
 
-**The E-phase plan, sized against those tables:** **E-0 CLOSED** (spec installed, gap table
-complete, §7 types built) · E-1 done but for France's fetch · **E-2 CLOSED** unless France is
-wanted · **E-3 half-built** — §8/§26/§27 landed; what remains of §39 is base support, candidate
-appeal (§16), campaign effects (§12), media (§13/§14), momentum (§22) and tactical voting (§23) ·
-E-4 is §24's regional objects (Germany's CSU +7.4 pp is its measurable target) · E-5 (the campaign
-layer proper, §9–§12/§15/§17/§32–§33) is last and blocks nothing below it. §19 needs no building,
-only a read — the macro simulation already IS government performance, and `PublicationSystem`
-already IS the perceived-vs-actual split.
+**The E-phase plan, re-sized against Day-2's measurements (2026-08-29):** **E-0 CLOSED** (spec
+installed, gap table complete, §7 types built) · E-1 done; France is out by ruling, Italy's
+sub-national stages billed as before-playable · **E-2 CLOSED** — five chambers exact, unchanged
+through Day-2 · **E-3 measured, and its next unit is now known**: §8 loyalty improves three
+countries sharply (Sweden 3.25 → 1.75, Poland 6.99 → 3.84, Germany 5.78 → 4.66) and §27 corrects
+the CSU deviation from candidacy facts alone (+7.36 → −3.68), **but a UNIFORM loyalty constant
+regresses Italy (5.61 → 6.69), so the gate failed and nothing wired.** The next unit is therefore
+**deriving loyalty rather than assuming it** — per-country volatility from the previous two
+elections is sourced and cheap; per-group loyalty as §5/§8 actually specify is the fuller answer
+and needs the voter-group layer. Second: **per-region priors**, without which §27 and §8 do not
+compose (Germany's both-layers run is worse than §8 alone for exactly that reason) · E-4 is the
+rest of §39 (base support, candidate appeal §16, campaign effects §12, media §13/§14, momentum
+§22, tactical voting §23) · E-5 (the campaign layer proper) is last and blocks nothing below it.
+§19 needs no building, only a read — the macro simulation already IS government performance, and
+`PublicationSystem` already IS the perceived-vs-actual split.
 
-**The 13 September minimum, named:** Sweden votes 13 Sept 2026 (item 10's gate). Everything
-measurable for it already exists — the Swedish allocator is exact and proven, the 2022 seed data
-is sourced with exact counts, and a re-seeding pass from the official result is all that remains.
-**The only missing piece is WIRING, which R-N2 forbids by standing rule** — so it is Elias's
-decision, not a session's gap. Records: `COMPLETED.md` §§46–49 and the two reports
+**The 13 September minimum, restated after Day-2's gate (2026-08-29):** Sweden votes 13 Sept 2026,
+15 days out. The SEAT side is ready and proven — the Swedish allocator reproduces 2022 exactly and
+the seed data is sourced with exact counts, so a re-seeding pass from the official result is all
+that side needs. **The VOTE side did not clear its gate:** R-EL13 required no country to regress
+and Italy did (5.61 → 6.69 pp), so nothing was wired and the election system remains unreachable
+from any gameplay path. **Honestly stated, that makes 13 September a re-seeding exercise, not a
+playable election** — and the gate is the reason, not the calendar. What would change it is
+R-EL13's own list: derive loyalty rather than assume it (the recommendation is per-country
+volatility from the previous two elections — sourced, not fitted), fetch per-region priors so §27
+and §8 compose, then re-run the gate. Records: `COMPLETED.md` §§46–49 and the two reports
 (`OVERNIGHT_2026-08-28_MORNING_REPORT.md`, `ELECTIONS_DAY1_REPORT_2026-08-29.md`), each carrying
 its full strikeable call log.
 

@@ -3234,3 +3234,65 @@ model's structure, not because a constant was tuned to say so.
 **R-N2 held across six proof runs today.** Commits `b88cff5` (Phase 1) · `12662c6` (Phase 2).
 The Day-1 report's addendum carries the full record; RULINGS NEEDED #1 (paste the spec) is closed,
 the other four stand.
+
+## 51. Elections Day-2 — the four verdicts, §27 built, and the wiring gate FAILED (2026-08-29)
+
+**The headline: R-EL13's gate FAILED, so nothing was wired.** Three countries improved, some
+sharply; **Italy regressed 5.61 → 6.69 pp**, and the gate required that none regress. The ruling
+worked exactly as written — a model better in most places and worse in one did not go live because
+a schedule wanted it to. Wiring waits; R-N2 still stands, unbroken.
+
+| country | Day-1 | best Day-2 | verdict |
+|---|---|---|---|
+| GERMANY-8 (like-for-like) | 5.78 | **4.66** (+§8) | IMPROVED |
+| SWEDEN | 3.25 | **1.75** (+§8) | IMPROVED |
+| POLAND | 6.99 | **3.84** (+§8) | IMPROVED |
+| **ITALY** | 5.61 | **6.69** (+§8) | **REGRESSED** |
+
+The **seat half passed unchanged** — five chambers still reproduce at deviation 0, the deliberate
+national-Poland signature still exactly 70.
+
+**Why Italy regressed, reported rather than tuned away.** Italy 2018 → 2022 is the most volatile
+pair in the set: FdI grew **6.7×** (4.35 → 29.27 %) while M5S **halved** (32.68 → 17.38 %). A
+uniform loyalty of 60 asserts that ~60 % of voters vote as before, which for that election is
+simply false — so §8 damped FdI down (dev −19.25) and held M5S up (+12.10). **The layer is right;
+the global constant is wrong**, and the spec agrees: §5/§8 make loyalty a per-voter-group
+attribute, not one national number. **The constant was NOT re-fitted to open the gate** — the
+kickoff forbids it, and a constant tuned until the gate opens would make the gate meaningless.
+`Loyalty = 60` was chosen a priori as the spec's own middle rung and never varied.
+
+**Where the layers did work.** §8 corrected the deviations Day-1 named it for — BSW +10.18 →
+**+0.94**, Poland's TD +15.93 → **+2.58**, Sweden's M −9.97 → **−3.54**, KD +8.16 → **+3.86**.
+**§27 corrected the CSU deviation from candidacy facts alone** (+7.36 → **−3.68**, no fitted
+parameter): the CSU contests one Land of sixteen, and once the model knows that, its predicted
+share falls from 13.62 % to 2.57 % against 6.26 % actual. One honest limit found: §27 and §8 do
+**not** compose yet — Germany's both-layers run (5.01) is worse than §8 alone (4.55) because the
+regional run damps each region toward the **national** prior. Per-region priors are the fix, and
+that is a data item, not a model defect.
+
+**A flaw in my own test, found and corrected before reporting.** The first run compared a
+nine-party Germany (SSW added for §27's availability case) against Day-1's eight-party 5.78.
+Corrected with **GERMANY-8**, Day-1's exact set, whose run A recomputes to **5.78 — matching to
+the digit**, which is also the proof the harness reproduces Day-1 rather than quoting it. The
+nine-party run is retained as the §27 demonstration and explicitly excluded from the gate.
+
+**Part 1's verdicts.** R-EL10: France recorded **structurally out of scope with its reason**, plus
+a named unsized roadmap item; no placeholder, no approximation. R-EL11: Italy's sub-national
+stages billed as *before playable, not before trusted*. **R-EL12: Nebraska LB3 RESOLVED — NOT
+ENACTED** (cloture failed 31–18 on 8 Apr 2025; indefinitely postponed 17 Apr 2026; LR24CA never
+floor-debated; the initiative route withdrawn June 2026). The district method stands, so no
+variant was needed — but the ruling's forward half is recorded (a **dated variant** if it ever
+changes; `ElectoralCollege.Jurisdiction` is already shaped for it), with its **expiry** (110th
+Legislature, January 2027) and its **sourcing gap** (the Legislature's host refused connections
+and the Archive is tool-blocked; three agreeing independent lines, not the journal of record).
+
+**Part 2 built** `RegionalVoteModel.cs` (pure, unwired) on a new sourced catalog,
+`land_votes_2025.csv` — per-Land absolute Zweitstimmen from the official `kerg2.csv`, sums
+cross-checked exactly (valid 49,649,512; CDU 11,196,374; CSU 2,964,028), its zeros carrying the
+candidacy facts. Per-region electorate *positions* were deliberately not fitted: that would be
+circular in a backtest, so every region runs the national electorate and §27's improvement is
+structure, not tuning.
+
+**R-N2 held:** dump exit 0, baselines byte-identical **6/6**, all eight checks exit 0. **Part 4
+was skipped by rule and there is no revert handle, because nothing was wired.** Commit `4301bdc`;
+full record, call log and four RULINGS NEEDED in `ELECTIONS_DAY2_REPORT_2026-08-29.md`.
