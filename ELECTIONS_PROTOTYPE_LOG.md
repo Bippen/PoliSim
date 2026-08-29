@@ -1,0 +1,93 @@
+# Elections prototype — the running log (worklist `ELECTIONS_PROTOTYPE_WORKLIST.md`)
+
+**Purpose (W-H3):** every `[AUTHORED-DRAFT]` value and every reversible decision, one strikeable
+line each, in one place. Items are recorded as they are consumed, in execution order.
+
+---
+
+## Standing rulings recorded into their owning documents
+
+- **Non-circularity is an INVARIANT, not a convention** (2026-08-29) — loyalty always derives from
+  the two elections *preceding* the one modelled. Written into `LoyaltyModel`'s own class doc so a
+  future session cannot regress it: modelling the next election uses the two most recent results;
+  backtesting 2022 uses 2013 and 2018, never 2018 and 2022. W-A3 runs in the backtest direction.
+- **LOW CONFIDENCE reaches the gate, not just the log** (2026-08-29) — each country's name-join
+  coverage prints beside its MAD in the gate table, and a MAD change in a low-coverage country is
+  stated as weaker evidence. A gate passing on the high-coverage countries while a low-coverage one
+  stays noisy is reported as **a real pass with a stated scope**, never as four equal countries.
+  Recorded in `GateReRun`'s doc and in the verdict text itself.
+- **USA and France carry NO loyalty value at all** (2026-08-29) — one election on disk means
+  volatility is uncomputable, and an absent value the model refuses to run on is honest where a
+  silent default would reinstate the very constant W-A1 removed. `LoyaltyModel.CanDerive` states
+  it in code. Billed: the USA's second election as a data line; France stays out of scope (R-EL10).
+
+---
+
+## W-A1 — loyalty derived from volatility · DONE (`10d76fc`)
+
+- **[call]** Formula: `loyalty = 100 × (1 − |v(T−1) − v(T−2)| / max(v(T−1), v(T−2)))`. Relative,
+  not absolute, so a 5-point move means the right thing to a 40 % party and a 6 % one; the larger
+  of the two as denominator so doubling and halving are symmetric (both 50). **Zero authored
+  constants** — the only inputs are two sourced elections.
+- **[call]** A party absent at T−2 scores loyalty **0** — the correct statement of newness (nobody
+  had a habit of voting for it), not a fallback.
+- **Result:** Sweden's size-weighted mean loyalty 89.3, Italy's 48.4; Italy's FdI **16.7** and M5S
+  **47.2** against Day-2's global 60 — the constant that crushed FdI in Day-2's gate.
+- **Coverage constraint discovered and recorded:** name-join continuity covers ~99 % of the vote in
+  Sweden, ~95 % Germany, **~53 % Italy, ~38 % Poland**. Below ~80 % the input is contaminated by
+  organisational reshuffling. Independently supports Sweden as the prototype target (0.1).
+- **Shortfall against the done-when's "all six":** USA and France not computable — billed.
+
+## W-A2 — per-region priors, §27+§8 composition · DONE
+
+- **[call]** Region **electorate weights come from the PRIOR election**, not the target — stricter
+  than Day-2, which used the target's own weights. The target's turnout therefore cannot leak in.
+- **[call]** Party **availability** comes from the target election's ballot access, which is known
+  before any vote is cast and so is not a prediction.
+- **[call]** "No worse" is judged at a **declared tolerance of 0.01 pp**, with the raw delta printed
+  at four decimals so the tolerance can never hide a regression. Needed because where regions are
+  homogeneous in availability (Sweden: all eight parties in all 29 valkretsar) §27 is correctly a
+  **no-op**, and the only residual is whether damping is applied per region then summed, or once
+  nationally — Jensen-type aggregation order, not model quality.
+- **Result:** Germany **5.17 vs 5.85** §8-only (−0.68 pp, the composition fixed); Sweden delta
+  **+0.0037 pp** inside tolerance. Proven on two countries, as the done-when requires.
+
+## W-A3 — the gate re-run · DONE
+
+**No parameter was re-fitted.** Spatial electorates are Day-1's; loyalties are computed from
+sourced returns; the run uses the **backtest direction** throughout.
+
+| country | coverage | Day-1 | Day-2 | Day-3 | verdict |
+|---|---|---|---|---|---|
+| SWEDEN | 99 % | 3.25 | 1.75 | **1.46** | IMPROVED |
+| GERMANY-8 | 95 % | 5.78 | 4.66 | **5.36** | IMPROVED |
+| POLAND | 38 % | 6.99 | 3.84 | **3.15** | IMPROVED · LOW CONFIDENCE |
+| ITALY | 53 % | 5.61 | 6.69 | **7.14** | REGRESSED · LOW CONFIDENCE |
+
+**VERDICT: PASS WITH STATED SCOPE** — both high-coverage countries improved on Day-1. Italy still
+regresses, and its loyalty input is known to be contaminated, so that is weak evidence against the
+model rather than a model failure. The pass is real; its scope is the two countries whose data
+supports the claim.
+
+**Three findings reported rather than smoothed:**
+
+1. **Germany's Day-3 (5.36) is WORSE than its Day-2 (4.66).** Derived loyalty beat Day-1 but lost
+   to the uniform 60 for Germany specifically. The gate's rule is improvement on Day-1, which is
+   met — but the honest reading is that Germany's 2017→2021 volatility is not a good predictor of
+   2021→2025 behaviour, and saying so is worth more than the passing number.
+2. **§27's value is concentrated in regionally-confined parties.** In W-A2's nine-party set (with
+   SSW) both-layers beat §8-alone; in W-A3's eight-party like-for-like set (SSW excluded, per
+   Day-1's basis) it does not (5.80 vs 5.36). SSW is the party §27 exists to fix — remove it and
+   the layer has little left to correct in Germany.
+3. **Italy's FdI is not a loyalty problem.** Even at its derived loyalty of 45.1 it is under-
+   predicted by 19 pp, because FdI went 4.35 → 29.27 % on a surge no pre-2022 data contains. That
+   is a **missing-mechanism** finding (leadership, opposition positioning, a collapsed government),
+   not a calibration one, and no loyalty value will fix it.
+
+## Billed to Track F as a consequence
+
+- **USA second election** (2020 + 2016 House national shares) — would make the USA's loyalty
+  computable; the only country of the two where it would pay for itself.
+- **Successor maps for Italy and Poland** — sourced bookkeeping lifting the name-join: the PD
+  lineage, Lega's transformation, PiS/United Right composition, KO's assembly. **Build only if
+  either becomes a playable target**; until then their gate rows stay LOW CONFIDENCE by design.

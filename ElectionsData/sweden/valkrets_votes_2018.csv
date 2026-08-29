@@ -1,0 +1,40 @@
+# Sweden Riksdag 2018 - per-valkrets results, ABSOLUTE counts [SOURCED] [PROVISIONAL]
+# source: Valmyndigheten, https://historik.val.se/val/val2018/statistik/2018_R_per_valdistrikt.xlsx
+#   sheet "R antal" (absolute counts), aggregated to valkrets by the VALKRETSNAMN column;
+#   accessed 2026-08-29. No valkrets-level CSV is published - the valdistrikt workbook is the
+#   official machine-readable source and its aggregation reproduces every national total exactly,
+#   which validates both the aggregation and the file's completeness (late/uppsamlings districts included).
+# ALL NINE COLUMN SUMS VERIFIED against the national figures (valid 6,476,725; S 1,830,386;
+#   M 1,284,698; SD 1,135,627; C 557,500; V 518,454; KD 409,478; L 355,546; MP 285,899) - all MATCH.
+# 'valid' is RÖSTER GILTIGA (excludes blank and invalid), so party columns do not sum to it -
+#   minor parties and the OVR bucket make up the remainder.
+valkrets;valid;S;M;SD;C;V;KD;L;MP
+Stockholms län;815031;187924;212009;124226;69786;56466;56884;56525;39042
+Stockholms kommun;611206;145245;133731;60135;55428;80217;29776;47988;47044
+Uppsala län;241489;65168;45790;37297;22246;21102;16661;15071;13404
+Södermanlands län;183449;57612;37401;35450;13577;12162;10089;7958;6773
+Östergötlands län;300778;87450;61354;53017;25162;20352;20065;16082;12595
+Jönköpings län;229580;63782;40542;44216;23084;11283;27437;9096;7401
+Kronobergs län;124570;36817;23893;25258;11712;7531;9418;4383;4020
+Kalmar län;160864;50178;27733;33075;15774;9851;11583;6038;4645
+Gotlands län;41129;12254;6822;5226;7075;3704;1699;1539;2037
+Blekinge län;104514;32824;18038;26342;7094;5699;5954;4197;3025
+Skåne läns västra;191506;50041;40284;50069;12298;9074;10257;9930;6788
+Skåne läns södra;252804;55185;60619;55903;19994;13426;13527;17768;12435
+Skåne läns norra och östra;202502;50610;40881;58360;13855;8275;13150;8984;5816
+Malmö kommun;193298;56248;37645;32480;11003;23021;7426;10812;10783
+Hallands län;216982;56021;49630;40392;21960;10498;15415;12444;7690
+Västra Götalands läns västra;243278;58966;52958;43848;19932;16607;18724;16757;12166
+Västra Götalands läns norra;174573;53328;30794;37391;13809;11029;11347;8124;6349
+Västra Götalands läns södra;143505;40234;27197;28221;13760;9213;10445;7624;4891
+Västra Götalands läns östra;177001;53888;32569;34501;16533;10106;13837;7662;5425
+Göteborgs kommun;349645;83097;69432;47040;24893;48946;19283;25337;24286
+Värmlands län;183966;62369;30219;33118;17071;12779;11657;8168;6133
+Örebro län;195157;64646;32470;35499;15254;14775;13520;8888;7189
+Västmanlands län;172719;54287;33122;34740;11539;12181;9969;9448;5108
+Dalarnas län;188027;57776;31320;39029;18813;13654;11522;6848;6249
+Gävleborgs län;185413;63232;28334;36330;16825;15483;9782;7441;5661
+Västernorrlands län;163001;64882;22255;25360;16108;13335;8816;5601;4366
+Jämtlands län;85223;28632;12218;13257;13086;7179;4118;2439;3049
+Västerbottens län;178837;68197;24139;19571;18078;22696;9376;7038;6925
+Norrbottens län;166678;69493;21299;26276;11751;17810;7741;5356;4604

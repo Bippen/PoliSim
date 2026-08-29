@@ -12,11 +12,18 @@ namespace PoliSim.Elections
     /// and the constant was wrong. Spec §5/§8 say as much — loyalty is a per-group (and plainly
     /// per-party, per-country) attribute, not one number for the world.
     ///
-    /// **The derivation, and the one rule that makes it honest.** A party's loyalty is computed
-    /// from **the two elections BEFORE the one being predicted** — T−1 and T−2 — never from the
-    /// target election itself. Deriving loyalty from how much a party changed AT T and then using
-    /// it to predict T would be reading the answer off the answer sheet. This is why the type
-    /// insists on two historical share vectors and never sees the target.
+    /// **NON-CIRCULARITY IS AN INVARIANT OF THIS TYPE, NOT A CONVENTION** (ruled 2026-08-29, and
+    /// written here so no future session can regress it). A party's loyalty is computed from **the
+    /// two elections BEFORE the one being modelled** — never from the target election itself:
+    /// - modelling the NEXT, unplayed election → the two most recent results;
+    /// - backtesting 2022 → the 2013 and 2018 results, NOT 2018 and 2022.
+    ///
+    /// Deriving loyalty from how much a party changed AT T and then using it to predict T reads the
+    /// answer off the answer sheet, and any figure so produced is worthless as validation even when
+    /// it looks excellent — especially then. This type therefore takes two historical share vectors
+    /// and is never given the target; a caller that wants the circular form has to construct it
+    /// deliberately and visibly, which is the point. **W-A3's gate re-run uses the backtest
+    /// direction.**
     ///
     /// <code>
     /// relativeChange_i = |v(T-1)_i - v(T-2)_i| / max(v(T-1)_i, v(T-2)_i)
@@ -38,6 +45,20 @@ namespace PoliSim.Elections
     /// </summary>
     public static class LoyaltyModel
     {
+        /// <summary>
+        /// **A country with fewer than two prior elections on file has NO loyalty value, and the
+        /// model refuses to run rather than defaulting** (ruled 2026-08-29). A silent default would
+        /// reinstate exactly the global constant this type exists to remove — and it would do so
+        /// invisibly, which is worse than the constant was. The USA (one election on disk) and
+        /// France (one, and out of scope for seats by R-EL10) are the current cases; the USA's
+        /// second election is billed as a data line.
+        /// </summary>
+        public static bool CanDerive(double[] previous, double[] previousPrevious)
+        {
+            return previous != null && previousPrevious != null
+                   && previous.Length == previousPrevious.Length && previous.Length > 0;
+        }
+
         /// <summary>One party's loyalty (0–100) from its shares at the two preceding elections. Shares may be percentages or fractions as long as both are on the same scale.</summary>
         public static double PartyLoyalty(double sharePrevious, double sharePreviousPrevious)
         {

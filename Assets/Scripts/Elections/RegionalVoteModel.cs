@@ -185,5 +185,97 @@ namespace PoliSim.Elections
             for (int p = 0; p < votes.Length; p++) { votes[p] /= totalVotes; }
             return votes;
         }
+
+        /// <summary>
+        /// W-A2's form — §27 and §8 composing properly: each region is damped toward **its own**
+        /// prior with **per-party** loyalty (from <see cref="LoyaltyModel"/>), rather than toward a
+        /// national prior with one constant.
+        ///
+        /// Day-2 measured why this matters: the both-layers run came out WORSE than §8 alone
+        /// (Germany 5.01 vs 4.55) because every region was damped toward the national prior, which
+        /// is the wrong prior for any particular region — Bavaria is not Germany-in-miniature. With
+        /// each region carrying its own history the two layers stop fighting.
+        ///
+        /// <paramref name="regionPriorShares"/> is [region][party], each row that region's own
+        /// previous-election shares (zeros for parties that did not stand there — a real fact, e.g.
+        /// the Greens' rejected Saarland list in 2021, not missing data).
+        /// </summary>
+        public static double[] NationalSharesWithRegionalLoyalty(VoteModel.PartyPoint[] parties,
+            RegionInput[] regions, VoteModel.Electorate electorate, double wEcon,
+            double[][] regionPriorShares, double[] loyaltyPerParty)
+        {
+            if (regionPriorShares == null || regionPriorShares.Length != regions.Length)
+            {
+                throw new ArgumentException("one prior-share vector per region");
+            }
+
+            if (loyaltyPerParty == null || loyaltyPerParty.Length != parties.Length)
+            {
+                throw new ArgumentException("loyalty must be one per party");
+            }
+
+            var votes = new double[parties.Length];
+            double totalVotes = 0.0;
+
+            for (int r = 0; r < regions.Length; r++)
+            {
+                RegionInput region = regions[r];
+                int availableCount = 0;
+                for (int p = 0; p < parties.Length; p++)
+                {
+                    if (region.PartyAvailable == null || region.PartyAvailable[p]) { availableCount++; }
+                }
+
+                if (availableCount == 0) { continue; }
+
+                var subset = new VoteModel.PartyPoint[availableCount];
+                var indexMap = new int[availableCount];
+                int cursor = 0;
+                for (int p = 0; p < parties.Length; p++)
+                {
+                    if (region.PartyAvailable != null && !region.PartyAvailable[p]) { continue; }
+
+                    subset[cursor] = parties[p];
+                    indexMap[cursor] = p;
+                    cursor++;
+                }
+
+                VoteModel.Electorate regionElectorate = region.ElectorateOverride ?? electorate;
+                double[] spatial = VoteModel.PredictShares(subset, regionElectorate, wEcon);
+
+                // This region's own prior, restricted to the parties standing here.
+                var priorSubset = new double[availableCount];
+                double priorSum = 0.0;
+                for (int i = 0; i < availableCount; i++)
+                {
+                    priorSubset[i] = Math.Max(0.0, regionPriorShares[r][indexMap[i]]);
+                    priorSum += priorSubset[i];
+                }
+
+                var damped = new double[availableCount];
+                double dampedSum = 0.0;
+                for (int i = 0; i < availableCount; i++)
+                {
+                    double lambda = priorSum > 0.0
+                        ? ElectionScales.Clamp(loyaltyPerParty[indexMap[i]]) / ElectionScales.Max
+                        : 0.0;
+                    double priorShare = priorSum > 0.0 ? priorSubset[i] / priorSum : 0.0;
+                    damped[i] = lambda * priorShare + (1.0 - lambda) * spatial[i];
+                    dampedSum += damped[i];
+                }
+
+                for (int i = 0; i < availableCount; i++)
+                {
+                    double regionVotes = (damped[i] / dampedSum) * region.ElectorateWeight;
+                    votes[indexMap[i]] += regionVotes;
+                    totalVotes += regionVotes;
+                }
+            }
+
+            if (totalVotes <= 0.0) { return votes; }
+
+            for (int p = 0; p < votes.Length; p++) { votes[p] /= totalVotes; }
+            return votes;
+        }
     }
 }

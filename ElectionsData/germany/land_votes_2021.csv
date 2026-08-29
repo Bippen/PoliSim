@@ -1,0 +1,29 @@
+# Germany Bundestag 2021 - per-Land Zweitstimmen, ABSOLUTE counts [SOURCED] [PROVISIONAL]
+# source: w-btw21_kerg2.csv, https://www.bundeswahlleiterin.de/dam/jcr/860495c9-83fb-4068-8a99-c1c985ffffd2/w-btw21_kerg2.csv
+#   (linked from .../bundestagswahlen/2021/ergebnisse.html; accessed 2026-08-29; rows Gebietsart=Land,
+#   Stimme=2). VERSION: post-revision - header "Stand 23.02.2024", filename prefix w- (Wiederholungswahl),
+#   every Bund row carries "Ergebnis der Wiederholungswahl in Teilen Berlins am 11.02.2024". Matches the
+#   national post-revision figures to the vote, so there is no version discrepancy.
+# ALL NINE COLUMN SUMS VERIFIED against the national figures (valid 46,298,387; CDU 8,774,920;
+#   AfD 4,809,233; SPD 11,901,558; GRUENE 6,814,408; Linke 2,255,864; CSU 2,402,827; SSW 55,578;
+#   FDP 5,291,013) - all MATCH.
+# STRUCTURAL ZEROS, real not missing: CDU=0 in Bayern and CSU=0 elsewhere (they never compete in one
+#   Land); SSW=0 outside Schleswig-Holstein; GRUENE=0 in Saarland - their Landesliste was REJECTED in
+#   2021, so they genuinely received no Zweitstimmen there. The sums only match because these are real.
+land;valid;CDU;AfD;SPD;GRUENE;Linke;CSU;SSW;FDP
+Schleswig-Holstein;1762754;388399;119566;494055;322763;64238;0;55578;220039
+Mecklenburg-Vorpommern;918859;160103;165342;267368;71956;101735;0;0;75555
+Hamburg;1005544;155220;50537;298342;250532;67578;0;0;114602
+Niedersachsen;4523221;1093579;336434;1498500;726613;148657;0;0;474638
+Bremen;328040;56499;22575;103224;68427;25352;0;0;30481
+Brandenburg;1529643;233891;277412;450573;137472;129762;0;0;142426
+Sachsen-Anhalt;1201940;252286;235492;305085;78701;115330;0;0;114024
+Berlin;1682945;289140;159025;374413;370735;194010;0;0;136998
+Nordrhein-Westfalen;9888030;2566719;717510;2880226;1587067;366947;0;0;1130154
+Sachsen;2462897;422879;607044;474804;212320;230012;0;0;271166
+Hessen;3300810;753512;290978;910035;521411;142585;0;0;421621
+Thueringen;1264911;213414;303233;296446;83220;144693;0;0;114283
+Rheinland-Pfalz;2334152;576533;215205;685534;293135;76123;0;0;272451
+Bayern;7571313;0;679915;1361242;1067830;210838;2402827;0;798591
+Baden-Wuerttemberg;5949660;1477612;571336;1287934;1022226;196874;0;0;908039
+Saarland;573668;135134;57629;213777;0;41130;0;0;65945
