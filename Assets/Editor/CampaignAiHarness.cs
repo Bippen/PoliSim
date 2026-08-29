@@ -74,6 +74,7 @@ namespace PoliSim.EditorTools
         private const double FlatCredibility = 0.6;         // [AUTHORED-DRAFT] W-F6
         private const double WarChest = 2_400_000.0;        // [AUTHORED-DRAFT] W-E1's staging figure, equal for all by design
         private const int Volunteers = 800;                  // [AUTHORED-DRAFT] W-B11: 800 volunteers x 3 h a day = 2 400 volunteer-hours, equal for all by design (W-B4's offices grow them)
+        private const double OfficeOperationsPerDay = 2_000.0;   // [AUTHORED-DRAFT] W-B4: what each staged office puts into its own daily ground operation (400 doors a day at 5 kr)
 
         public static void Run()
         {
@@ -189,6 +190,23 @@ namespace PoliSim.EditorTools
                 first.Scandals.Count == 1 && first.Parties[0].CredibilityAtEnd < FlatCredibility && first.Parties[1].CredibilityAtEnd == FlatCredibility && first.Parties[0].TotalActions > 0 && first.DaysRun == setup.Calendar.TotalCampaignDays,
                 $"{first.Scandals.Count} scandal, S credibility {first.Parties[0].CredibilityAtEnd:F3} of {FlatCredibility:F2}");
 
+            // W-B4: every party's staged offices opened, were paid for day by day, recruited, and their own
+            // operations knocked doors in their regions - the ground game election day reads (W-B11 -> W-D1).
+            {
+                bool officesRan = true;
+                var offices = new StringBuilder();
+                for (int p = 0; p < first.Parties.Length; p++)
+                {
+                    CampaignRun.PartyLedger l = first.Parties[p];
+                    int staged = setup.Parties[p].Offices.Length;
+                    officesRan &= l.OfficesOpened == staged && l.OfficeMoney > staged * CampaignOffices.OpenCost && l.OfficeContacts > 0 && l.OfficeVolunteersAtEnd == staged * CampaignOffices.VolunteerCapacity;
+                    officesRan &= first.Offices[p].Count == staged;
+                    offices.Append(string.Format(CultureInfo.InvariantCulture, "{0} {1} offices {2:N0} kr {3:N0} doors {4} volunteers; ", l.Name, l.OfficesOpened, l.OfficeMoney, l.OfficeContacts, l.OfficeVolunteersAtEnd));
+                }
+
+                failures += Assert(sb, "1h. W-B4: every party opened its staged offices, paid for them through the campaign, recruited them to capacity, and their operations knocked doors", officesRan, offices.ToString());
+            }
+
             // ---------- 2. five personalities, measurably different ----------
             var mixes = new double[5][];
             for (int p = 0; p < 5; p++) { mixes[p] = first.Parties[p].Mix(); }
@@ -213,7 +231,10 @@ namespace PoliSim.EditorTools
             // Since W-B9 the two largest parties' days are both filled by the interviews the media
             // book them, so the populist and the professional converge on the media's schedule;
             // what would separate them is the populist's rallies (local, W-B4's reach) - PENDING.
-            pending += Pending(sb, "2a-ii. the populist personality's mix differs from every other's (L1 >= 0.30) - PENDING W-B4 (rallies; both large parties' days are the media's bookings)",
+            // W-B4 landed (2026-08-30): the populist's four staged offices give its rallies four full
+            // regions, but the grassroots party's six give it more; the populist is 0.274 from its
+            // nearest neighbour. Where a party sites its offices is the staged plan's - W-B5/W-C2.
+            pending += Pending(sb, "2a-ii. the populist personality's mix differs from every other's (L1 >= 0.30) - PENDING W-B5/W-C2 since W-B4 (the office plan is staged: four offices against the grassroots party's six; both large parties' days are the media's bookings)",
                 string.Format(CultureInfo.InvariantCulture, "min {0:F3}", MinAgainstOthers(pairwise, 1)), MinAgainstOthers(pairwise, 1) >= 0.30);
 
             // ⚠ The rational three collapse onto one strategy, and that is the ENVIRONMENT's fact,
@@ -239,9 +260,13 @@ namespace PoliSim.EditorTools
             // whole following, and the grassroots party stops knocking. What remains is the
             // ground game's SCALE - offices and volunteers (W-B4) - and the persuasion a personal
             // contact is worth (calibration entry 10), never a weight raised to pass this line.
-            pending += Pending(sb, "2a-iv. the grassroots personality's mix differs from both media personalities' (L1 >= 0.30) - asserted at W-B9 on placeholder reach; PENDING W-B4 (offices, volunteers) and calibration entry 10 (persuasion per personal contact) since W-B11",
-                string.Format(CultureInfo.InvariantCulture, "prof/grass {0:F3}, est/grass {1:F3}", pairwise[0, 3], pairwise[2, 3]),
-                pairwise[0, 3] >= 0.30 && pairwise[2, 3] >= 0.30);
+            // CLEARED at W-B4 (2026-08-30): with six offices the grassroots party's local audience is
+            // six full regions, and its RALLIES (not its door-knocking - 2c still pends on entry 10)
+            // separate it from both media personalities; the doors are knocked by the offices' own
+            // operations, outside the action mix this line measures.
+            failures += Assert(sb, "2a-iv. the grassroots personality's mix differs from both media personalities' (L1 >= 0.30) - PENDING W-B4 from W-B11, CLEARED at W-B4: the offices' local audience makes its rallies pay",
+                pairwise[0, 3] >= 0.30 && pairwise[2, 3] >= 0.30,
+                string.Format(CultureInfo.InvariantCulture, "prof/grass {0:F3}, est/grass {1:F3}", pairwise[0, 3], pairwise[2, 3]));
 
             int rally = CampaignAi.IndexOfAction(CampaignActionKind.Rally);
             int town = CampaignAi.IndexOfAction(CampaignActionKind.TownHall);
@@ -251,9 +276,9 @@ namespace PoliSim.EditorTools
             int social = CampaignAi.IndexOfAction(CampaignActionKind.SocialPost);
             int interview = CampaignAi.IndexOfAction(CampaignActionKind.Interview);
 
-            pending += Pending(sb, "2b. §32 populist: the largest rally + social-post share of any personality - PENDING W-B4 (a rally is local; local reach is the placeholder)",
+            pending += Pending(sb, "2b. §32 populist: the largest rally + social-post share of any personality - PENDING W-B5/W-C2 since W-B4 (a rally now draws on the party's organisation in the region; the staged plan gives the grassroots party more offices, so it rallies more)",
                 Describe(mixes, rally, social), Leads(mixes, 1, rally, social));
-            pending += Pending(sb, "2c. §32 grassroots: the largest door-to-door share of any personality - PENDING W-B4/B11 (door-to-door reach as volunteer-hours, not a fraction of the region)",
+            pending += Pending(sb, "2c. §32 grassroots: the largest door-to-door share of any personality - PENDING calibration entry 10 since W-B4 (the ground game's doors are knocked by the offices' own operations, outside the action mix; a door-to-door ACTION at 15 000 kr for 3 000 doors is still not worth its hours to any rational personality)",
                 Describe(mixes, door), Leads(mixes, 3, door));
 
             double[] broadcast = new double[5];
@@ -402,7 +427,7 @@ namespace PoliSim.EditorTools
                       "       question (bounded reach, repeated-exposure decay; W-B9's media interest) before it is a calibration one.\n");
 
             sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "\n=== CampaignAiHarness: {0}; {1} PENDING on W-B4/B11 (local reach) and W-B5 (a budget plan) - printed with their measurements, not counted as passes ===\n",
+                "\n=== CampaignAiHarness: {0}; {1} PENDING on W-B5/W-C2 (a budget plan, the office plan) and calibration entry 10 (persuasion per personal contact) - printed with their measurements, not counted as passes ===\n",
                 failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED", pending));
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);
@@ -417,6 +442,31 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B7: a candidate per personality - §16's attributes as the personality's own emphasis, no names (W-F6 labels real leaders). Game fiction, equal in sum by design.</summary>
+        /// <summary>
+        /// [AUTHORED-DRAFT] W-B4: each personality's office plan, as §32 describes its ground game -
+        /// the grassroots party six offices, the populist four (its rallies are local), the
+        /// professional three, the establishment two, the chaotic one - each in the largest
+        /// valkretsar by electorate. Where a party SHOULD site them (its swing regions, W-E2) is
+        /// W-B5's plan and W-C2's reactivity; today the plan is staged, and the harness says so.
+        /// </summary>
+        private static int[] OfficesFor(AiPersonality personality, RegionAudience[] regions)
+        {
+            int count;
+            switch (personality)
+            {
+                case AiPersonality.Grassroots: count = 6; break;
+                case AiPersonality.Populist: count = 4; break;
+                case AiPersonality.Professional: count = 3; break;
+                case AiPersonality.Establishment: count = 2; break;
+                default: count = 1; break;
+            }
+
+            var order = new List<int>();
+            for (int r = 0; r < regions.Length; r++) { order.Add(r); }
+            order.Sort((a, b) => regions[b].Audience.CompareTo(regions[a].Audience));
+            return order.GetRange(0, count).ToArray();
+        }
+
         private static CandidateProfile CandidateFor(AiPersonality personality, string party)
         {
             switch (personality)
@@ -455,16 +505,17 @@ namespace PoliSim.EditorTools
             salience[(int)IssueId.Defense] = 0.17;
             salience[(int)IssueId.Education] = 0.16;
 
+            // SOURCED regions: the 29 valkretsar's valid votes, 2018.
+            RegionAudience[] regions = ReadValkretsar(out double national);
+
             var parties = new CampaignRun.PartySetup[Parties.Length];
             for (int p = 0; p < parties.Length; p++)
             {
                 var match = new double[IssueVector.IssueCount];
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
-                parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match, Volunteers, CandidateFor(Assignment[p], Parties[p]));
+                parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match, Volunteers, CandidateFor(Assignment[p], Parties[p]),
+                    OfficesFor(Assignment[p], regions), OfficeOperationsPerDay);
             }
-
-            // SOURCED regions: the 29 valkretsar's valid votes, 2018.
-            RegionAudience[] regions = ReadValkretsar(out double national);
 
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[Parties.Length]);
             var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[Parties.Length], isInternal: true);

@@ -314,3 +314,30 @@ threshold, and is lending to 5.0 % (the overshoot at even odds) what a player wo
 better — the May → September Δ mixes tactical lending with four months of genuine movement, and
 fitting it would put the campaign inside the layer. The form was chosen with the 2022 figures on
 the table; the honest next test is one the model has not seen.
+
+## 14. The office's five attributes and the staged plan (W-B4)
+
+**What is known.** All [AUTHORED-DRAFT]: `OpenCost` 100 000 kr, `MaintenancePerDay` 2 000,
+`StaffCapacity` 3, `VolunteerCapacity` 150, `RecruitPerDay` 5, `VisitFraction` 0.25,
+`StarvationPerDay` 0.10, `LocalPollSampleSize` 300; the C1 staging's plan (grassroots 6, populist
+4, professional 3, establishment 2, chaotic 1, in the largest valkretsar) at 2 000 kr a day of
+operations each; the harness's 200 headquarters volunteers and 1.5 M kr ground budget.
+
+**What is measured.** An office at capacity: 450 volunteer-hours a day, 1 800 doors a day at
+most, 81 900 doors over 60 days on a 10 000 kr operation; mobilisation 58.0 in Stockholms län,
++7 859 votes. Three offices against ten on the same money: 14 248 votes against 0 at 1.5 M kr,
+22 534 against 4 087 at 2.4 M, 22 534 against 31 536 at 4 M — the crossover. In the AI campaign
+the six-office parties spend 1.67 M of a 2.4 M war chest on offices; the one-office party
+278 300.
+
+**What would settle it.** Play: does opening an office feel like a decision (100 000 kr and a
+month to full strength against 500 000 for one television buy)? Is 150 volunteers an office or a
+committee? Does the crossover at 4 M kr sit where a player with a real budget meets it? The
+door-to-door ACTION (entry 10) against the office's own operation: the same door knocked at two
+prices — 5 kr and 0.25 h on the office, 15 000 kr and 5 h for 3 000 on the action — is a seam a
+player will find.
+
+**What must NOT happen.** `VisitFraction` or `VolunteerCapacity` moved so C1's 2a-ii / 2b lines
+(the populist's rallies) pass — they pend on WHERE the offices are sited (W-B5/W-C2), not on how
+much an office is worth; `OpenCost` or `MaintenancePerDay` moved so the crossover lands on a
+rounder budget.

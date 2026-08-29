@@ -47,13 +47,17 @@ namespace PoliSim.Elections
             public readonly int Volunteers;
             /// <summary>W-B7: the party's candidate (§16's attributes, [AUTHORED-DRAFT] game fiction, W-F6's to label) - who stands in its debates. Default: a flat 60 everywhere.</summary>
             public readonly CandidateProfile Candidate;
+            /// <summary>W-B4: the regions the party opens §10 offices in on day 0 (its plan - [AUTHORED-DRAFT] staging per personality until W-B5/W-C2 site them), and what each office spends on its own daily operation. Empty = no offices.</summary>
+            public readonly int[] Offices;
+            public readonly double OfficeOperationsPerDay;
 
             public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch, int volunteers = 0,
-                CandidateProfile? candidate = null)
+                CandidateProfile? candidate = null, int[] offices = null, double officeOperationsPerDay = 0.0)
             {
                 Name = name; Personality = personality; Credibility = credibility; StartingMoney = startingMoney;
                 TrueIssueMatch = trueIssueMatch; Volunteers = volunteers;
                 Candidate = candidate ?? new CandidateProfile(name, 60, 60, 60, 60, 60, 60, 60, 60, 60);
+                Offices = offices ?? new int[0]; OfficeOperationsPerDay = officeOperationsPerDay;
             }
         }
 
@@ -142,6 +146,11 @@ namespace PoliSim.Elections
             /// <summary>W-B8: the party's credibility at the end - its starting figure less every scandal's lasting cost.</summary>
             public double CredibilityAtEnd;
             public int ScandalsSurvived;
+            /// <summary>W-B4: the party's offices - how many opened, what they cost over the campaign (opening, maintenance, operations), the doors their own operations knocked, their volunteers at the end.</summary>
+            public int OfficesOpened;
+            public double OfficeMoney;
+            public double OfficeContacts;
+            public int OfficeVolunteersAtEnd;
             /// <summary>The campaign day on which the party had spent 80 % of its war chest (the total day count if it never did) - front-loading against pacing.</summary>
             public int DayEightyPercentSpent = -1;
             public double MoneyLeft;
@@ -189,6 +198,8 @@ namespace PoliSim.Elections
             public double[] MomentumPpAtEnd;
             /// <summary>W-B11 → W-D1: every party's ground contacts per valkrets over the campaign - what election day's turnout reads.</summary>
             public RegionalMobilization Gotv;
+            /// <summary>W-B4: every party's office network at the end.</summary>
+            public OfficeNetwork[] Offices;
             /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks.</summary>
             public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
             /// <summary>W-B8: every scandal - day, party, the response chosen, the outcome.</summary>
@@ -240,6 +251,8 @@ namespace PoliSim.Elections
             var regionEligible = new double[setup.Regions.Length];
             for (int r = 0; r < regionEligible.Length; r++) { regionEligible[r] = setup.Regions[r].Audience; }
             var gotv = new RegionalMobilization(regionEligible, partyCount);   // W-B11: the ground game election day will read (W-D1)
+            var offices = new OfficeNetwork[partyCount];                       // W-B4: each party's §10 offices
+            var officeHoursLeft = new double[partyCount][];                     // W-B4: each office's volunteer-hours still unspent today, per region
             var profiles = new PersonalityProfile[partyCount];
             for (int p = 0; p < partyCount; p++)
             {
@@ -247,6 +260,18 @@ namespace PoliSim.Elections
                 ledgers[p].DailyActionCount = new int[setup.Calendar.TotalCampaignDays][];
                 for (int d0 = 0; d0 < ledgers[p].DailyActionCount.Length; d0++) { ledgers[p].DailyActionCount[d0] = new int[CampaignActions.TheEight.Length]; }
                 pools[p] = new ResourcePool(setup.Parties[p].StartingMoney, 0.0, setup.Parties[p].Volunteers);
+
+                // W-B4: the party's offices open on day 0, each paying its opening cost from the war chest.
+                offices[p] = new OfficeNetwork(setup.Regions.Length);
+                officeHoursLeft[p] = new double[setup.Regions.Length];
+                double chest = pools[p].Money;
+                foreach (int region in setup.Parties[p].Offices)
+                {
+                    if (offices[p].Open(region, 0, setup.Parties[p].OfficeOperationsPerDay, ref chest)) { ledgers[p].OfficesOpened++; }
+                }
+
+                ledgers[p].OfficeMoney += pools[p].Money - chest;
+                pools[p] = pools[p].WithMoney(chest);
                 issues[p] = new IssueMeasurement[issueCount];
                 lastOwnPollDay[p] = int.MinValue;
                 profiles[p] = PersonalityCatalog.Profile(setup.Parties[p].Personality);
@@ -311,10 +336,22 @@ namespace PoliSim.Elections
                     reserve[p] = Math.Min(pools[p].Money, reserve[p] + CampaignAi.DailyRelease(profiles[p], pools[p].Money, totalDays - day));
                     volunteerHoursLeft[p] = CampaignEconomy.VolunteerHours(pools[p].Volunteers);
 
+                    // W-B4: the offices' day - maintenance paid (or the office starves), volunteers recruited,
+                    // each office's own operation into the ground game; their hours are then the region's
+                    // extra ceiling on doors for the party's door-to-door actions today.
+                    {
+                        double chest = pools[p].Money;
+                        ledger.OfficeMoney += offices[p].Day(gotv, p, GotvOperation.DoorKnocking, ref chest, out double officeContacts);
+                        ledger.OfficeContacts += officeContacts;
+                        pools[p] = pools[p].WithMoney(chest);
+                        reserve[p] = Math.Min(reserve[p], pools[p].Money);
+                        for (int r = 0; r < officeHoursLeft[p].Length; r++) { officeHoursLeft[p][r] = offices[p].VolunteerHours(r); }
+                    }
+
                     // The poll decision is taken on the view BEFORE today's measurement, and the
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
-                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility);
+                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p]);
                     if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
                     {
                         if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
@@ -333,7 +370,7 @@ namespace PoliSim.Elections
                         }
                     }
 
-                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility);
+                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p]);
 
                     // Actions: the AI's plan, applied one by one against the TRUE inputs - the
                     // world's response, which the AI estimated but did not see.
@@ -350,7 +387,11 @@ namespace PoliSim.Elections
                         if (ledger.DayEightyPercentSpent < 0 && pools[p].Money <= 0.2 * setup.Parties[p].StartingMoney) { ledger.DayEightyPercentSpent = day; }
 
                         CampaignActions.ActionSpec spec = CampaignActions.Spec(d.Kind);
-                        double audience = d.Target.RegionIndex >= 0 ? setup.Regions[d.Target.RegionIndex].Audience : audienceByKind[p][CampaignAi.IndexOfAction(d.Kind)];
+                        // W-B4: a local action's audience is the region's electorate scaled by the party's
+                        // organisation there (a visit without an office draws a quarter of a full office's).
+                        double audience = d.Target.RegionIndex >= 0
+                            ? CampaignOffices.LocalAudience(setup.Regions[d.Target.RegionIndex].Audience, offices[p].Influence(d.Target.RegionIndex))
+                            : audienceByKind[p][CampaignAi.IndexOfAction(d.Kind)];
 
                         // W-B9: an interview goes out through the outlet that booked it (and consumes
                         // the booking); television across the television outlets - their combined reach is a
@@ -361,8 +402,10 @@ namespace PoliSim.Elections
                         if (d.Kind == CampaignActionKind.DoorToDoor)
                         {
                             int doorRegion = d.Target.RegionIndex >= 0 ? d.Target.RegionIndex : 0;
-                            audience = gotv.Operate(doorRegion, p, GotvOperation.DoorKnocking, d.Spend, volunteerHoursLeft[p], out _, out double doorHours);
-                            volunteerHoursLeft[p] -= doorHours;
+                            audience = gotv.Operate(doorRegion, p, GotvOperation.DoorKnocking, d.Spend, volunteerHoursLeft[p] + officeHoursLeft[p][doorRegion], out _, out double doorHours);
+                            double fromOffice = Math.Min(doorHours, officeHoursLeft[p][doorRegion]);   // W-B4: the office's volunteers first, headquarters' after
+                            officeHoursLeft[p][doorRegion] -= fromOffice;
+                            volunteerHoursLeft[p] -= doorHours - fromOffice;
                         }
                         else if (d.Kind == CampaignActionKind.Interview)
                         {
@@ -400,7 +443,7 @@ namespace PoliSim.Elections
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
 
-                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility);
+                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p]);
                     }
                 }
 
@@ -477,6 +520,7 @@ namespace PoliSim.Elections
                 ledgers[p].MoneyLeft = pools[p].Money;
                 ledgers[p].CoverageAtEnd = coverage.Coverage(p);
                 ledgers[p].CredibilityAtEnd = credibility[p];
+                ledgers[p].OfficeVolunteersAtEnd = offices[p].TotalVolunteers;
                 if (ledgers[p].DayEightyPercentSpent < 0) { ledgers[p].DayEightyPercentSpent = totalDays; }
             }
 
@@ -494,6 +538,7 @@ namespace PoliSim.Elections
                 PublicPolls = publicPolls,
                 MomentumPpAtEnd = (double[])momentumPp.Clone(),
                 Gotv = gotv,
+                Offices = offices,
                 RegionNames = names,
                 Debates = debates,
                 Scandals = scandals,
@@ -505,12 +550,28 @@ namespace PoliSim.Elections
 
         private static AiView BuildView(Setup setup, int party, CampaignPhase phase, DateTime today, ResourcePool pool,
             double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay,
-            List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday, double[] credibility)
+            List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday, double[] credibility,
+            OfficeNetwork offices = null, double[] officeHoursLeft = null)
         {
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
+
+            // W-B4: the regions as THIS party can reach them - the electorate scaled by its own organisation
+            // there, and its own office's unspent volunteer-hours (both its own books, no truth).
+            RegionAudience[] regions = setup.Regions;
+            if (offices != null)
+            {
+                regions = new RegionAudience[setup.Regions.Length];
+                for (int r = 0; r < regions.Length; r++)
+                {
+                    regions[r] = new RegionAudience(setup.Regions[r].Name,
+                        CampaignOffices.LocalAudience(setup.Regions[r].Audience, offices.Influence(r)),
+                        officeHoursLeft != null ? officeHoursLeft[r] : offices.VolunteerHours(r));
+                }
+            }
+
             return new AiView(party, phase, setup.Calendar.DaysUntilElection(today), pool, reserve,
                 latest.HasValue, latest ?? default, (double[])momentumPp.Clone(), issues,
-                credibility[party], setup.NationalAudience, setup.Regions, since,
+                credibility[party], setup.NationalAudience, regions, since,
                 PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
                 bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday);
         }

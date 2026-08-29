@@ -4328,3 +4328,50 @@ switch, not a forecast of the campaign. A final-week poll of record is billed.
 `CLAUDE.md` dated section.
 
 **R-N2 at the boundary (no stream appended).** `traj_wa4_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0.
+
+## 67. W-B4 — campaign offices (§10): organisation as local reach, volunteers recruited not bought, a daily operation into the ground game, maintenance paid or starved (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/CampaignOffices.cs` — §10's office with its five
+attributes (cost, staff capacity, volunteer capacity, regional influence, maintenance) and its five
+provisions: `CampaignOffices.LocalAudience` (the region's electorate × (0.25 + 0.75 × influence)
+— a visit with no organisation draws a quarter of a full office's), `CampaignOffice` (volunteers
+recruited +5 a day to 150, influence = volunteers over capacity), `OfficeNetwork` (`Open` pays the
+opening cost or refuses; `Day` pays each office's maintenance or STARVES it — no recruits, no
+operation, influence down — recruits, and runs each office's own ground operation into
+`RegionalMobilization` bounded by its money and its volunteer-hours). `Assets/Editor/CampaignOfficesHarness.cs`
+— 11 of 11. The AI campaign carries one network per party (`PartySetup.Offices`, the offices' day
+before the party's actions, local audience by influence, office hours on the region's door-to-door
+ceiling, `PartyLedger.Office*`, `Result.Offices`); `RegionAudience.VolunteerHours` lets the AI
+price a door-to-door action on the office's hours; the C1 harness stages an office plan per
+personality ([AUTHORED-DRAFT]: grassroots 6, populist 4, professional 3, establishment 2, chaotic
+1, in the largest valkretsar, 2 000 kr a day of operations each) and asserts the offices ran (1h).
+
+**The done-when.** *Regional door-to-door reach:* the office region has 450 volunteer-hours a
+day a region without has none of; 50 000 kr knocks 2 400 doors on headquarters' 200 volunteers and
+4 200 with the office's hours; the office's own operation knocks 81 900 doors over 60 days in its
+region and none anywhere else; a rally's local audience with a full office is four times a
+visit's. *GOTV:* the office region's mobilisation ends at 58.0, every other region's at exactly
+50; turnout there 87.18 → 89.98 %, +7 859 votes. *Concentration beats spread in a measured
+scenario:* the same money, three offices in the three largest valkretsar against ten thin — at
+1.5 M kr (the prototype's ground budget) 14 248 votes against 0, at 2.4 M 22 534 against 4 087;
+**spreading first wins at 4 M kr** (31 536 against 22 534) — measured and reported, not hidden:
+fixed costs against §35's concavity. The economics: an office the party cannot afford is not
+opened, a starved office recruits nothing, and nothing is spent that the party does not have.
+
+**C1's PEND lines, re-measured (8 → 7).** **2a-iv CLEARED** — the grassroots party separates
+from both media personalities (0.490 / 0.450), honestly by its RALLIES (six offices, six full
+regions) and not by door-knocking; converted to an assertion. 2a-ii (populist 0.274) and 2b
+(rally + social: pop 50 %, grass 78 %) stay PEND on the staged office plan — W-B5/W-C2 site
+offices; 2c (door-to-door: grass 0 %) stays PEND on calibration entry 10 — the ground game's doors
+are the offices' own, and the door-to-door ACTION at 15 000 kr for 3 000 doors buys nothing a rally
+does not. 2a-iii, 2d, 2e, 2e-ii unchanged (W-B5).
+
+**Findings.** A concentrated network saturates on its volunteers (three offices plateau at
+22 534 votes from 2.4 M kr up — 1 800 doors an office a day, money past that unspent); ten offices
+thin at a prototype budget mobilise nothing (the opening alone starves the operations); where there
+is no office, local reach FELL — the placeholder had been an office everywhere at full strength.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-B4; `ELECTIONS_PLAY_CALIBRATION.md` entry 14;
+`ELECTIONS_GAP_TABLE.md` row 10; the `CLAUDE.md` dated section.
+
+**R-N2 at the boundary (no stream appended).** `traj_wb4_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0.

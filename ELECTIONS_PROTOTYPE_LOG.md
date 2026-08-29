@@ -1276,3 +1276,105 @@ target T + one belief-sigma · the blocs as staged.
   rather than bounded from May.
 
 **R-N2 held at this boundary:** `traj_wa4_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harness `tactical_wa4b_20260829.log` (12 of 12 — the bar's first run failed one mis-specified assertion, 3d, which asserted KD "receives nothing" when L's leavers bring it 0.02 pp; the assertion was corrected to what the design says and the harness re-run).
+
+---
+
+## W-B4 — campaign offices (§10): organisation as local reach, volunteers recruited not bought, a daily operation into the ground game, maintenance paid or starved (2026-08-30)
+
+Files: `Assets/Scripts/Elections/CampaignOffices.cs` (`CampaignOffices`, `CampaignOffice`,
+`OfficeNetwork`), `Assets/Editor/CampaignOfficesHarness.cs`; the AI campaign carries one network
+per party (`CampaignRun`: `PartySetup.Offices/OfficeOperationsPerDay`, the offices' day, local
+audience by influence, office hours on the door-to-door ceiling, `PartyLedger.Office*`,
+`Result.Offices`); `RegionAudience.VolunteerHours` (`CampaignAi`); the C1 harness stages an office
+plan per personality and asserts the offices ran (1h). No stream appended.
+
+**Done-when.** *Offices measurably change regional door-to-door reach* — the office region has
+450 volunteer-hours a day a region without has none of; the same 50 000 kr door-to-door action
+knocks 2 400 doors on headquarters' 200 volunteers and 4 200 with the office's hours; the office's
+own daily operation knocks 81 900 doors over 60 days in its region and none anywhere else; a
+rally's local audience with a full office is four times a visit's (934 883 against 233 721 of
+Stockholms län). *And GOTV* — the office region's mobilisation ends at 58.0 against the untouched
+50 everywhere else; the party's turnout there 87.18 → 89.98 %, +7 859 votes. *Concentration in
+few regions beats spreading thin in a measured scenario* — the same money, three offices in the
+three largest valkretsar against ten spread thin: at 0.9 / 1.5 / 2.4 M kr three offices mobilise
+4 740 / 14 248 / 22 534 votes against 0 / 0 / 4 087; asserted at the prototype's ground budget
+(1.5 M of a 2.4 M war chest). **Measured, not asserted: spreading first wins at 4 M kr** (31 536
+against 22 534) — the fixed costs against §35's concavity. The economics: a second office the party
+cannot afford is not opened and nothing is paid; when the money runs out the office starves (six
+starved days of ten, influence 0.00, 0 kr left of 111 000, nothing spent that was not there). 11 of
+11.
+
+**In the AI campaign** (seed 777, every C1 line holds; 1h added): every party opened its staged
+offices, paid for them day by day and recruited them to capacity — S 3 offices 910 000 kr 59 200
+doors; SD 4 / 1 125 000 / 70 200; M 2 / 636 600 / 42 520; V 6 / 1 665 000 / 103 000; C 1 /
+278 300 / 17 260; MP 6 / 1 665 000 / 103 000; L 3 / 910 000 / 59 200.
+
+### C1's PEND lines, re-measured with offices (reported per the standing order)
+
+- **2a-iv CLEARED** — the grassroots personality's mix differs from both media personalities'
+  (prof/grass 0.490, est/grass 0.450 ≥ 0.30). Honestly stated: it separates by its RALLIES —
+  six offices make six full regions its local audience — not by door-knocking; the doors are
+  knocked by the offices' own operations, outside the action mix the line measures. Converted
+  from PEND to an assertion.
+- **2a-ii still PEND** (populist min 0.274): its four staged offices give its rallies four full
+  regions, the grassroots party's six give more. Blocker re-labelled W-B5/W-C2 — where a party
+  sites its offices is the staged plan's.
+- **2b still PEND** (rally + social: pop 50 %, grass 78 %, est 57 %) — the same cause; re-labelled
+  W-B5/W-C2.
+- **2c still PEND** (door-to-door share: grass 0 %, chaos 19 %) — a door-to-door ACTION at 15 000 kr
+  for 3 000 doors is still not worth its hours to any rational personality; the ground game's doors
+  are the offices'. Re-labelled calibration entry 10.
+- 2a-iii, 2d, 2e, 2e-ii unchanged (W-B5's budget plan). **8 → 7 PEND.**
+
+### Decisions taken and logged (R-N1)
+
+- **Organisation is what local reach was pretending to be.** W-B3's placeholder gave every rally
+  the whole region wherever it was held — an office everywhere at full strength. Now the local
+  audience is the electorate × (`VisitFraction` 0.25 + 0.75 × influence): a visit with no
+  organisation draws a quarter of a full office's. Where there is no office, local reach FELL.
+- **Influence is recruited, not bought:** volunteers over capacity, +5 a day to 150 — half at 15
+  days, full at 30; an office opened late is worth less; a starved office loses 0.10 a day.
+- **§10's five provisions land as:** local organisation = influence; volunteer recruitment = the
+  recruit rate; door-to-door = the office's hours on the region's ceiling AND its own daily
+  operation (`GotvOperation.DoorKnocking`, funded by `OperationsPerDay`); election-day turnout =
+  those contacts in `RegionalMobilization` (W-B11 → W-D1); local polling = an office region
+  counts as polled at `LocalPollSampleSize` 300 — a RIDER to W-E2's snapshot, not wired here.
+- **§10's five attributes:** `OpenCost` 100 000 kr, `StaffCapacity` 3 (W-B5 fills it),
+  `VolunteerCapacity` 150, influence, `MaintenancePerDay` 2 000 — paid every day or the office
+  starves; nothing is spent the party does not have.
+- **The office plan is STAGED per personality** ([AUTHORED-DRAFT], §32's ground-game descriptions:
+  grassroots 6, populist 4, professional 3, establishment 2, chaotic 1, each in the largest
+  valkretsar; operations 2 000 kr a day each). Siting by swing (W-E2's index) is W-B5's plan and
+  W-C2's reactivity; the harness says so.
+- **Concentration is an economics, not a rule:** fixed costs per office against §35's concave
+  mobilisation; the harness measures the crossover (4 M kr) rather than asserting a side.
+
+### [AUTHORED-DRAFT] values, one line each (calibration entry 14)
+
+`OpenCost` 100 000 · `MaintenancePerDay` 2 000 · `StaffCapacity` 3 · `VolunteerCapacity` 150 ·
+`RecruitPerDay` 5 · `VisitFraction` 0.25 · `StarvationPerDay` 0.10 · `LocalPollSampleSize` 300 ·
+the staged plan (6/4/3/2/1) and 2 000 kr a day of operations · the harness's 200 headquarters
+volunteers and 1.5 M ground budget.
+
+### Findings carried forward
+
+1. **A concentrated network saturates on its volunteers:** three offices plateau at 22 534 votes
+   from 2.4 M kr up — 450 h a day is 1 800 doors an office, and money past that is unspent. The
+   volunteer capacity, not the money, is the ceiling of a small network (entry 14).
+2. **Ten offices thin at a prototype budget mobilise nothing:** 10 × 220 000 kr of fixed cost
+   exceeds 1.5 M — the opening alone starves the operations. §10's "concentrate in a few swing
+   regions" is what the economics say at this scale.
+3. **The AI's door-to-door action is still dead** (2c): with offices knocking 400 doors a day each
+   on their own, the ACTION's price (15 000 kr for 3 000 doors, 5 hours) buys nothing a rally
+   does not — calibration entry 10's question, sharpened.
+
+### Riders
+
+- **W-B5** — staff fill `StaffCapacity`; the field organiser raises an office's recruit rate or
+  capacity; the budget plan sites offices.
+- **W-C2** — the AI opens and closes offices on the published swing index, not on day 0.
+- **W-E2** — an office region as a bought reading at `LocalPollSampleSize`.
+- **W-E1 / W-E5** — the office as a screen object: cost, capacity, influence as a range.
+- **W-D1** — election day reads the offices' contacts already (through `Result.Gotv`).
+
+**R-N2 held at this boundary:** `traj_wb4_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `offices_wb4b_20260830.log` (11 of 11), `campaignai_wb4b_20260830.log` (all assertions pass, 1h added, 2a-iv cleared, 7 PEND).

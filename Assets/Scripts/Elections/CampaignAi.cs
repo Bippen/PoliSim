@@ -108,10 +108,12 @@ namespace PoliSim.Elections
     {
         public readonly string Name;
         public readonly double Audience;
+        /// <summary>W-B4: the volunteer-hours the party's own office in this region still has today (0 without an office) - added to the ceiling on doors a door-to-door action can knock there.</summary>
+        public readonly double VolunteerHours;
 
-        public RegionAudience(string name, double audience)
+        public RegionAudience(string name, double audience, double volunteerHours = 0.0)
         {
-            Name = name; Audience = audience;
+            Name = name; Audience = audience; VolunteerHours = volunteerHours;
         }
     }
 
@@ -514,7 +516,7 @@ namespace PoliSim.Elections
                             // W-B11: a door-to-door action reaches the doors the volunteers can knock (money and
                             // hours both bind), wherever it is aimed; a rally or town hall still draws on the region.
                             double localAudience = kind == CampaignActionKind.DoorToDoor
-                                ? GotvModel.Contacts(GotvModel.Spec(GotvOperation.DoorKnocking), spend, view.VolunteerHoursToday, out _, out _)
+                                ? GotvModel.Contacts(GotvModel.Spec(GotvOperation.DoorKnocking), spend, view.VolunteerHoursToday + view.Regions[region].VolunteerHours, out _, out _)
                                 : view.Regions[region].Audience;
                             if (localAudience <= 0.0) { continue; }
 
