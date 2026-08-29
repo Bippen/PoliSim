@@ -50,14 +50,18 @@ namespace PoliSim.Elections
             /// <summary>W-B4: the regions the party opens §10 offices in on day 0 (its plan - [AUTHORED-DRAFT] staging per personality until W-B5/W-C2 site them), and what each office spends on its own daily operation. Empty = no offices.</summary>
             public readonly int[] Offices;
             public readonly double OfficeOperationsPerDay;
+            /// <summary>W-B5: the roles the party hires on day 0 (§9, [AUTHORED-DRAFT] staging per personality) and, if it hires a campaign manager, how many television buys the manager's budget plan sets money aside for.</summary>
+            public readonly StaffRole[] Staff;
+            public readonly int TelevisionBuys;
 
             public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch, int volunteers = 0,
-                CandidateProfile? candidate = null, int[] offices = null, double officeOperationsPerDay = 0.0)
+                CandidateProfile? candidate = null, int[] offices = null, double officeOperationsPerDay = 0.0, StaffRole[] staff = null, int televisionBuys = 0)
             {
                 Name = name; Personality = personality; Credibility = credibility; StartingMoney = startingMoney;
                 TrueIssueMatch = trueIssueMatch; Volunteers = volunteers;
                 Candidate = candidate ?? new CandidateProfile(name, 60, 60, 60, 60, 60, 60, 60, 60, 60);
                 Offices = offices ?? new int[0]; OfficeOperationsPerDay = officeOperationsPerDay;
+                Staff = staff ?? new StaffRole[0]; TelevisionBuys = televisionBuys;
             }
         }
 
@@ -151,6 +155,11 @@ namespace PoliSim.Elections
             public double OfficeMoney;
             public double OfficeContacts;
             public int OfficeVolunteersAtEnd;
+            /// <summary>W-B5: the payroll - staff hired, what their salaries cost over the campaign (the resource ledger's line), days a member went unpaid, and what the manager's plan still held at the end.</summary>
+            public int StaffHired;
+            public double StaffMoney;
+            public int UnpaidStaffDays;
+            public double TelevisionFundAtEnd;
             /// <summary>The campaign day on which the party had spent 80 % of its war chest (the total day count if it never did) - front-loading against pacing.</summary>
             public int DayEightyPercentSpent = -1;
             public double MoneyLeft;
@@ -200,6 +209,8 @@ namespace PoliSim.Elections
             public RegionalMobilization Gotv;
             /// <summary>W-B4: every party's office network at the end.</summary>
             public OfficeNetwork[] Offices;
+            /// <summary>W-B5: every party's staff roster at the end.</summary>
+            public StaffRoster[] Staff;
             /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks.</summary>
             public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
             /// <summary>W-B8: every scandal - day, party, the response chosen, the outcome.</summary>
@@ -253,6 +264,7 @@ namespace PoliSim.Elections
             var gotv = new RegionalMobilization(regionEligible, partyCount);   // W-B11: the ground game election day will read (W-D1)
             var offices = new OfficeNetwork[partyCount];                       // W-B4: each party's §10 offices
             var officeHoursLeft = new double[partyCount][];                     // W-B4: each office's volunteer-hours still unspent today, per region
+            var staff = new StaffRoster[partyCount];                            // W-B5: each party's §9 staff and, with a manager, its budget plan
             var profiles = new PersonalityProfile[partyCount];
             for (int p = 0; p < partyCount; p++)
             {
@@ -272,6 +284,17 @@ namespace PoliSim.Elections
 
                 ledgers[p].OfficeMoney += pools[p].Money - chest;
                 pools[p] = pools[p].WithMoney(chest);
+
+                // W-B5: the party's staff, hired on day 0; a manager brings the budget plan (television buys at the action's price).
+                staff[p] = new StaffRoster();
+                foreach (StaffRole role in setup.Parties[p].Staff)
+                {
+                    staff[p].Hire(role, 0, role == StaffRole.CampaignManager
+                        ? new BudgetPlan(setup.Parties[p].TelevisionBuys, CampaignActions.Spec(CampaignActionKind.TelevisionAd).MoneyCost)
+                        : null);
+                }
+
+                ledgers[p].StaffHired = staff[p].Count;
                 issues[p] = new IssueMeasurement[issueCount];
                 lastOwnPollDay[p] = int.MinValue;
                 profiles[p] = PersonalityCatalog.Profile(setup.Parties[p].Personality);
@@ -333,7 +356,8 @@ namespace PoliSim.Elections
                     PartyLedger ledger = ledgers[p];
 
                     // The pace releases today's money into the reserve (capped at what the party has).
-                    reserve[p] = Math.Min(pools[p].Money, reserve[p] + CampaignAi.DailyRelease(profiles[p], pools[p].Money, totalDays - day));
+                    double release = CampaignAi.DailyRelease(profiles[p], pools[p].Money, totalDays - day);
+                    reserve[p] = Math.Min(pools[p].Money, reserve[p] + release);
                     volunteerHoursLeft[p] = CampaignEconomy.VolunteerHours(pools[p].Volunteers);
 
                     // W-B4: the offices' day - maintenance paid (or the office starves), volunteers recruited,
@@ -348,19 +372,37 @@ namespace PoliSim.Elections
                         for (int r = 0; r < officeHoursLeft[p].Length; r++) { officeHoursLeft[p][r] = offices[p].VolunteerHours(r); }
                     }
 
+                    // W-B5: payday - salaries from the party's money (an unpaid member gives nothing today);
+                    // the manager's plan sets aside its share of today's release for television; the
+                    // advisor's and the strategist's multipliers land on the audiences the AI is handed.
+                    {
+                        double chest = pools[p].Money;
+                        int unpaidBefore = 0;
+                        foreach (CampaignStaffMember m in staff[p].Members) { unpaidBefore += m.UnpaidDays; }
+                        ledger.StaffMoney += staff[p].PayDay(ref chest);
+                        int unpaidAfter = 0;
+                        foreach (CampaignStaffMember m in staff[p].Members) { unpaidAfter += m.UnpaidDays; }
+                        ledger.UnpaidStaffDays += unpaidAfter - unpaidBefore;
+                        pools[p] = pools[p].WithMoney(chest);
+                        reserve[p] = Math.Min(reserve[p], pools[p].Money);
+                        BudgetPlan plan = staff[p].ActivePlan;
+                        if (plan != null) { reserve[p] -= plan.Save(Math.Min(release, reserve[p])); }
+                        for (int k = 0; k < audienceByKind[p].Length; k++) { audienceByKind[p][k] *= staff[p].ReachMultiplier(CampaignActions.TheEight[k]); }
+                    }
+
                     // The poll decision is taken on the view BEFORE today's measurement, and the
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
-                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p]);
+                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p]);
                     if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
                     {
                         if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
                         {
                             pools[p] = afterPoll;
                             reserve[p] -= setup.InternalHouse.Cost;
-                            latestPoll[p] = PollingSystem.Conduct(momentum.Apply(truePreference), setup.InternalHouse, today, random);
+                            latestPoll[p] = PollingSystem.Conduct(momentum.Apply(truePreference), staff[p].Improve(setup.InternalHouse), today, random);
                             issues[p] = CampaignIntelligence.MeasureIssues(setup.TrueSalience, setup.Parties[p].TrueIssueMatch,
-                                setup.InternalHouse.SampleSize, random);
+                                staff[p].Improve(setup.InternalHouse).SampleSize, random);
                             lastOwnPollDay[p] = day;
                             ledger.PollsBought++;
                             ledger.PollMoney += setup.InternalHouse.Cost;
@@ -370,7 +412,7 @@ namespace PoliSim.Elections
                         }
                     }
 
-                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p]);
+                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p]);
 
                     // Actions: the AI's plan, applied one by one against the TRUE inputs - the
                     // world's response, which the AI estimated but did not see.
@@ -384,6 +426,10 @@ namespace PoliSim.Elections
                         if (!pools[p].TrySpend(d.Spend, d.Hours, out ResourcePool after)) { break; }
                         pools[p] = after;
                         reserve[p] -= d.Spend;
+                        if (d.Kind == CampaignActionKind.TelevisionAd && staff[p].ActivePlan != null)
+                        {
+                            reserve[p] += staff[p].ActivePlan.Pay(d.Spend);   // W-B5: the fund pays first; what it covers was never the day's reserve
+                        }
                         if (ledger.DayEightyPercentSpent < 0 && pools[p].Money <= 0.2 * setup.Parties[p].StartingMoney) { ledger.DayEightyPercentSpent = day; }
 
                         CampaignActions.ActionSpec spec = CampaignActions.Spec(d.Kind);
@@ -443,7 +489,7 @@ namespace PoliSim.Elections
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
 
-                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p]);
+                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p]);
                     }
                 }
 
@@ -521,6 +567,7 @@ namespace PoliSim.Elections
                 ledgers[p].CoverageAtEnd = coverage.Coverage(p);
                 ledgers[p].CredibilityAtEnd = credibility[p];
                 ledgers[p].OfficeVolunteersAtEnd = offices[p].TotalVolunteers;
+                ledgers[p].TelevisionFundAtEnd = staff[p].Plan?.Fund ?? 0.0;
                 if (ledgers[p].DayEightyPercentSpent < 0) { ledgers[p].DayEightyPercentSpent = totalDays; }
             }
 
@@ -539,6 +586,7 @@ namespace PoliSim.Elections
                 MomentumPpAtEnd = (double[])momentumPp.Clone(),
                 Gotv = gotv,
                 Offices = offices,
+                Staff = staff,
                 RegionNames = names,
                 Debates = debates,
                 Scandals = scandals,
@@ -551,7 +599,7 @@ namespace PoliSim.Elections
         private static AiView BuildView(Setup setup, int party, CampaignPhase phase, DateTime today, ResourcePool pool,
             double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay,
             List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday, double[] credibility,
-            OfficeNetwork offices = null, double[] officeHoursLeft = null)
+            OfficeNetwork offices = null, double[] officeHoursLeft = null, StaffRoster staff = null)
         {
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
 
@@ -573,7 +621,8 @@ namespace PoliSim.Elections
                 latest.HasValue, latest ?? default, (double[])momentumPp.Clone(), issues,
                 credibility[party], setup.NationalAudience, regions, since,
                 PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
-                bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday);
+                bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday,
+                staff?.ActivePlan?.Fund ?? 0.0);
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>

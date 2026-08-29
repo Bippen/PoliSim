@@ -124,7 +124,7 @@ namespace PoliSim.Elections
         /// <paramref name="gotv"/> for <paramref name="party"/>, bounded by the operation's money
         /// and the office's volunteer-hours (W-B11's `Contacts`). Returns the money spent today.
         /// </summary>
-        public double Day(RegionalMobilization gotv, int party, GotvOperation operation, ref double money, out double contacts)
+        public double Day(RegionalMobilization gotv, int party, GotvOperation operation, ref double money, out double contacts, double scale = 1.0)
         {
             double spent = 0.0;
             contacts = 0.0;
@@ -139,8 +139,9 @@ namespace PoliSim.Elections
 
                 money -= CampaignOffices.MaintenancePerDay;
                 spent += CampaignOffices.MaintenancePerDay;
-                o.Volunteers = Math.Min(CampaignOffices.VolunteerCapacity, o.Volunteers + CampaignOffices.RecruitPerDay);
-                o.Influence = (double)o.Volunteers / CampaignOffices.VolunteerCapacity;
+                int capacity = (int)Math.Round(CampaignOffices.VolunteerCapacity * Math.Max(1.0, scale));   // W-B5: the field organizer scales recruiting and capacity
+                o.Volunteers = Math.Min(capacity, o.Volunteers + (int)Math.Round(CampaignOffices.RecruitPerDay * Math.Max(1.0, scale)));
+                o.Influence = (double)o.Volunteers / capacity;
 
                 double budget = Math.Min(o.OperationsPerDay, money);
                 if (budget > 0.0 && gotv != null)

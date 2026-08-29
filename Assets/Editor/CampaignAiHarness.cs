@@ -207,6 +207,29 @@ namespace PoliSim.EditorTools
                 failures += Assert(sb, "1h. W-B4: every party opened its staged offices, paid for them through the campaign, recruited them to capacity, and their operations knocked doors", officesRan, offices.ToString());
             }
 
+            // W-B5: every party's staged hires stand, their payroll is on the ledger to the krona (a
+            // salary a day each for every day the party could pay, the unpaid days counted - a party
+            // that burns its war chest on offices and a front-loaded pace goes broke before polling
+            // day, and the ledger says so rather than pretending), and the managed parties' plans
+            // bought the television they were made for.
+            {
+                bool payrollHolds = true;
+                var payroll = new StringBuilder();
+                int tvSlot = CampaignAi.IndexOfAction(CampaignActionKind.TelevisionAd);
+                for (int p = 0; p < first.Parties.Length; p++)
+                {
+                    CampaignRun.PartyLedger l = first.Parties[p];
+                    int hires = setup.Parties[p].Staff.Length;
+                    payrollHolds &= l.StaffHired == hires && first.Staff[p].Count == hires
+                        && Math.Abs(l.StaffMoney - (hires * first.DaysRun - l.UnpaidStaffDays) * CampaignStaff.SalaryPerDay) < 1e-6;
+                    if (setup.Parties[p].TelevisionBuys > 0) { payrollHolds &= l.ActionCount[tvSlot] >= setup.Parties[p].TelevisionBuys; }
+                    payroll.Append(string.Format(CultureInfo.InvariantCulture, "{0} {1} hired {2:N0} kr ({3} unpaid staff-days), TV buys {4} of {5} planned; ",
+                        l.Name, l.StaffHired, l.StaffMoney, l.UnpaidStaffDays, l.ActionCount[tvSlot], setup.Parties[p].TelevisionBuys));
+                }
+
+                failures += Assert(sb, "1i. W-B5: every party's hires stand, the payroll is on the ledger to the krona (unpaid days counted, not hidden), and the managed parties bought the television their plans were made for", payrollHolds, payroll.ToString());
+            }
+
             // ---------- 2. five personalities, measurably different ----------
             var mixes = new double[5][];
             for (int p = 0; p < 5; p++) { mixes[p] = first.Parties[p].Mix(); }
@@ -234,8 +257,10 @@ namespace PoliSim.EditorTools
             // W-B4 landed (2026-08-30): the populist's four staged offices give its rallies four full
             // regions, but the grassroots party's six give it more; the populist is 0.274 from its
             // nearest neighbour. Where a party sites its offices is the staged plan's - W-B5/W-C2.
-            pending += Pending(sb, "2a-ii. the populist personality's mix differs from every other's (L1 >= 0.30) - PENDING W-B5/W-C2 since W-B4 (the office plan is staged: four offices against the grassroots party's six; both large parties' days are the media's bookings)",
-                string.Format(CultureInfo.InvariantCulture, "min {0:F3}", MinAgainstOthers(pairwise, 1)), MinAgainstOthers(pairwise, 1) >= 0.30);
+            // CLEARED at W-B5 (2026-08-30): the populist's digital strategist and its manager's one
+            // television buy separate it from every other personality (min 0.419).
+            failures += Assert(sb, "2a-ii. the populist personality's mix differs from every other's (L1 >= 0.30) - PENDING W-B4 then W-B5, CLEARED at W-B5: its digital strategist and its manager's television buy",
+                MinAgainstOthers(pairwise, 1) >= 0.30, string.Format(CultureInfo.InvariantCulture, "min {0:F3}", MinAgainstOthers(pairwise, 1)));
 
             // ⚠ The rational three collapse onto one strategy, and that is the ENVIRONMENT's fact,
             // not the AI's: with a free national interview available six times a day (W-B3's
@@ -249,7 +274,10 @@ namespace PoliSim.EditorTools
             // media's fair bookings, the press's interest and an even spending pace leave them:
             // interviews, announcements, posts. What separates them is a budget plan (television,
             // W-B5) - still PENDING, and never an affinity chosen to pass this line.
-            pending += Pending(sb, "2a-iii. professional / establishment / grassroots separate (L1 >= 0.30) - grassroots separates since W-B9; professional / establishment PENDING W-B5 (a budget plan for television)",
+            // W-B5 landed (2026-08-30): both rational personalities hire a manager with a television
+            // plan on equal money and converge on the same schedule (0.061 apart); what would separate
+            // them is unequal money (W-F5) or a plan that reacts (W-C2), never an affinity.
+            pending += Pending(sb, "2a-iii. professional / establishment / grassroots separate (L1 >= 0.30) - grassroots separates since W-B9; professional / establishment PENDING W-C2 / W-F5 since W-B5 (two rational planners on equal money converge)",
                 string.Format(CultureInfo.InvariantCulture, "prof/est {0:F3}, prof/grass {1:F3}, est/grass {2:F3}",
                     pairwise[0, 2], pairwise[0, 3], pairwise[2, 3]),
                 Math.Min(pairwise[0, 2], Math.Min(pairwise[0, 3], pairwise[2, 3])) >= 0.30);
@@ -301,17 +329,25 @@ namespace PoliSim.EditorTools
             // Advertising claims are PENDING on a budget plan (W-B5's campaign manager): with even
             // pacing and no plan, no party can afford a 500 000 kr television buy on the day, and
             // the only advertiser is whoever the media will not book. Recorded, not forced.
-            pending += Pending(sb, "2d. §32 grassroots: a low advertising budget (broadcast at most a quarter of its spending, and below the professional's and the establishment's) - PENDING W-B5 (a budget plan; today nobody advertises but the unbooked)",
+            // CLEARED at W-B5 (2026-08-30): with a manager's plan the professional and the establishment
+            // advertise (30 %, 40 % of spend); the grassroots party, with a field organizer and no
+            // plan, advertises nothing.
+            failures += Assert(sb, "2d. §32 grassroots: a low advertising budget (broadcast at most a quarter of its spending, and below the professional's and the establishment's) - PENDING W-B5, CLEARED at W-B5: the others' managers plan television, the grassroots party plans none",
+                adShare[3] <= 0.25 && adShare[3] < adShare[0] && adShare[3] < adShare[2],
                 string.Format(CultureInfo.InvariantCulture, "ad share of spend: prof {0:P0}, pop {1:P0}, est {2:P0}, grass {3:P0}, chaos {4:P0}",
-                    adShare[0], adShare[1], adShare[2], adShare[3], adShare[4]),
-                adShare[3] <= 0.25 && adShare[3] < adShare[0] && adShare[3] < adShare[2]);
+                    adShare[0], adShare[1], adShare[2], adShare[3], adShare[4]));
 
-            pending += Pending(sb, "2e. §32 establishment: strong traditional media - the largest television + interview share of any personality - PENDING W-B5 (television needs a budget plan) and the media's own interest (it books the newsworthy, and the establishment makes little news)",
+            // W-B5 landed (2026-08-30): television is bought by plan now, but the interview half of
+            // this line is the media's - they book the newsworthy, and the populist (rallies, a
+            // digital strategist, a television buy) makes more news than the establishment.
+            pending += Pending(sb, "2e. §32 establishment: strong traditional media - the largest television + interview share of any personality - PENDING W-B9's media interest since W-B5 (the outlets book the newsworthy; the populist makes more news) - W-C2 / W-F5",
                 Describe(mixes, tv, interview), Leads(mixes, 2, tv, interview));
 
-            pending += Pending(sb, "2e-ii. §32 establishment: buys the most television of any personality - PENDING W-B5 (no party can afford the 500 000 kr buy on the day under even pacing)",
-                $"TV buys: prof {first.Parties[0].ActionCount[tv]}, pop {first.Parties[1].ActionCount[tv]}, est {first.Parties[2].ActionCount[tv]}, grass {first.Parties[3].ActionCount[tv]}, chaos {first.Parties[4].ActionCount[tv]}",
-                LeadsCount(first, 2, tv));
+            // CLEARED at W-B5 (2026-08-30): the establishment's manager plans two buys and buys them;
+            // the count is the STAGED plan's (calibration entry 15) - what a budget plan is.
+            failures += Assert(sb, "2e-ii. §32 establishment: buys the most television of any personality - PENDING W-B5, CLEARED at W-B5: its manager's plan holds two buys and it makes them (the count is the staged plan's)",
+                LeadsCount(first, 2, tv),
+                $"TV buys: prof {first.Parties[0].ActionCount[tv]}, pop {first.Parties[1].ActionCount[tv]}, est {first.Parties[2].ActionCount[tv]}, grass {first.Parties[3].ActionCount[tv]}, chaos {first.Parties[4].ActionCount[tv]}");
 
             failures += Assert(sb, "2h. §32 populist front-loads and the professional paces: the populist reaches 80 % of its war chest spent on an earlier day",
                 first.Parties[1].DayEightyPercentSpent < first.Parties[0].DayEightyPercentSpent,
@@ -427,7 +463,7 @@ namespace PoliSim.EditorTools
                       "       question (bounded reach, repeated-exposure decay; W-B9's media interest) before it is a calibration one.\n");
 
             sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "\n=== CampaignAiHarness: {0}; {1} PENDING on W-B5/W-C2 (a budget plan, the office plan) and calibration entry 10 (persuasion per personal contact) - printed with their measurements, not counted as passes ===\n",
+                "\n=== CampaignAiHarness: {0}; {1} PENDING on W-C2 / W-F5 (a reactive plan, unequal money) and calibration entry 10 (persuasion per personal contact) - printed with their measurements, not counted as passes ===\n",
                 failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED", pending));
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);
@@ -480,6 +516,36 @@ namespace PoliSim.EditorTools
             }
         }
 
+        /// <summary>
+        /// [AUTHORED-DRAFT] W-B5: each personality's hires, as §32 describes it - the professional a
+        /// manager and a pollster; the populist a manager and a digital strategist; the establishment
+        /// a manager and a media advisor; the grassroots party a field organizer; the chaotic nobody.
+        /// The manager's plan: television buys the establishment 2, the professional and the populist
+        /// 1 - the "budget plan" W-B9 found a greedy AI cannot improvise.
+        /// </summary>
+        private static StaffRole[] StaffFor(AiPersonality personality)
+        {
+            switch (personality)
+            {
+                case AiPersonality.Professional: return new[] { StaffRole.CampaignManager, StaffRole.Pollster };
+                case AiPersonality.Populist: return new[] { StaffRole.CampaignManager, StaffRole.DigitalStrategist };
+                case AiPersonality.Establishment: return new[] { StaffRole.CampaignManager, StaffRole.MediaAdvisor };
+                case AiPersonality.Grassroots: return new[] { StaffRole.FieldOrganizer };
+                default: return new StaffRole[0];
+            }
+        }
+
+        private static int TelevisionBuysFor(AiPersonality personality)
+        {
+            switch (personality)
+            {
+                case AiPersonality.Establishment: return 2;
+                case AiPersonality.Professional: return 1;
+                case AiPersonality.Populist: return 1;
+                default: return 0;
+            }
+        }
+
         private static CampaignRun.Setup BuildSetup(out string note)
         {
             var sb = new StringBuilder();
@@ -514,7 +580,7 @@ namespace PoliSim.EditorTools
                 var match = new double[IssueVector.IssueCount];
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
                 parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match, Volunteers, CandidateFor(Assignment[p], Parties[p]),
-                    OfficesFor(Assignment[p], regions), OfficeOperationsPerDay);
+                    OfficesFor(Assignment[p], regions), OfficeOperationsPerDay, StaffFor(Assignment[p]), TelevisionBuysFor(Assignment[p]));
             }
 
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[Parties.Length]);

@@ -341,3 +341,31 @@ player will find.
 (the populist's rallies) pass — they pend on WHERE the offices are sited (W-B5/W-C2), not on how
 much an office is worth; `OpenCost` or `MaintenancePerDay` moved so the crossover lands on a
 rounder budget.
+
+## 15. The staff's salaries and bonuses, and the manager's plan (W-B5)
+
+**What is known.** All [AUTHORED-DRAFT]: `SalaryPerDay` 1 800 kr (every role alike at the
+prototype's depth), `MediaAdvisorReach` 1.20, `DigitalReach` 1.25, `PollsterSample` 1.5,
+`FieldOrganizerScale` 1.5 (on the recruit rate AND the capacity), `ManagerFundShare` 0.5; the C1
+staging's hires and television buys per personality (professional manager + pollster, 1 buy;
+populist manager + digital strategist, 1; establishment manager + media advisor, 2; grassroots
+field organizer; chaotic nobody).
+
+**What is measured.** An interview 9 720 → 11 664 persuasion with the advisor; a post 75 854 →
+94 818 reach with the strategist; the party's poll ± 2.59 → 2.12 pp with the pollster; an office
+150 → 225 volunteers, full on day 29 not 30, with the organizer; the fund 500 000 kr on day 24 of
+an even 40 000 kr-a-day release. In the AI campaign the payroll costs a two-hire party 183 600–
+190 800 kr over 60 days and every party with fixed costs runs out of money before polling day
+(SD 38 of 120 staff-days unpaid; S 10; M 6; V 12).
+
+**What would settle it.** Play on W-E1's screen: is 1 800 kr a day a hire a player weighs against
+a 100 000 kr office or a 500 000 kr television buy? Does the establishment's second buy FEEL like
+a strategy or like a staged number (the count is the plan's; the plan is staged)? Should the
+manager's plan cover the organisation's fixed costs first (finding 2) — and if it does, does the
+populist still go broke, which §32 might want? Should the field organizer make an office FAST
+(rate ≫ capacity) or LARGE (capacity ≫ rate)?
+
+**What must NOT happen.** A multiplier or the fund share moved so C1's 2a-iii (professional /
+establishment) or 2e (television + interview) passes — the first pends on equal money and a plan
+that does not react, the second on the media's own interest; neither is a staff bonus. The
+staged buys moved so 2e-ii looks less staged than it is.

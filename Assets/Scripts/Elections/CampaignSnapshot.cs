@@ -84,10 +84,12 @@ namespace PoliSim.Elections
         public readonly string Role;
         public readonly string Name;
         public readonly string BonusLabel;
+        /// <summary>W-B5: the salary a day (the payroll line on the ledger); 0 for a vacant post.</summary>
+        public readonly double SalaryPerDay;
 
-        public StaffMember(string role, string name, string bonusLabel)
+        public StaffMember(string role, string name, string bonusLabel, double salaryPerDay = 0.0)
         {
-            Role = role; Name = name; BonusLabel = bonusLabel;
+            Role = role; Name = name; BonusLabel = bonusLabel; SalaryPerDay = salaryPerDay;
         }
     }
 

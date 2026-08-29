@@ -4375,3 +4375,56 @@ is no office, local reach FELL — the placeholder had been an office everywhere
 `ELECTIONS_GAP_TABLE.md` row 10; the `CLAUDE.md` dated section.
 
 **R-N2 at the boundary (no stream appended).** `traj_wb4_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0.
+
+## 68. W-B5 — staff (§9, prototype depth): five roles, a salary a day on the ledger, a bonus on the action the role touches, the manager's budget plan; §37 deferred (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/CampaignStaff.cs` — the five roles the worklist names
+(`StaffRole`), `CampaignStaffMember` (a role and a salary — **and no experience, level, speciality or
+growth member: §37's deferral recorded in the type**), `BudgetPlan` (the campaign manager's:
+`ManagerFundShare` 0.5 of each day's release set aside while a planned television buy is short; the
+fund spendable on television and on nothing else; the fund pays first), `StaffRoster` (`Hire`,
+`PayDay` — salaries from the party's money member by member, an unpaid member gives nothing that
+day and is not dismissed — `ReachMultiplier`, `Improve` for the pollster's larger sample,
+`OfficeScale` for the field organizer, `ActivePlan`). `Assets/Editor/CampaignStaffHarness.cs` — 10
+of 10. The AI campaign carries one roster per party (payday before the actions, the plan's saving
+from the day's release, the multipliers on the audiences the AI is handed, `AiView.TelevisionFund`,
+`PartyLedger.StaffMoney/UnpaidStaffDays/TelevisionFundAtEnd`, `Result.Staff`);
+`OfficeNetwork.Day(... scale)`; the Campaign HQ screen's ORGANISATION ledger draws a PAYROLL row
+from `CampaignSnapshot.StaffMember.SalaryPerDay`, filmed at four widths and edge-checked.
+
+**The done-when.** *Hiring changes the relevant action's effectiveness:* the media advisor — an
+interview persuades 9 720 → 11 664 (×1.20), a rally to the bit the same; the digital strategist —
+a post reaches 75 854 → 94 818, an interview the same; the pollster — 1 200 → 1 800 respondents at
+the same 120 000 kr, ± 2.59 → 2.12 pp; the field organizer — an office holds 225 volunteers not
+150; the manager — the plan holds the 500 000 kr television money on day 24 of an even release,
+which a party without a manager never has. With all five hired, rally, town hall, door-to-door and
+television reach exactly what they did. *The payroll appears in the resource ledger:* five on the
+roster is 9 000 kr a day, paid to the krona; a party that cannot pay everyone pays whom it can;
+`PartyLedger.StaffMoney` carries it in the AI campaign and the HQ ledger's PAYROLL row on the
+screen. *§37 deferred, recorded.*
+
+**In the AI campaign** (seed 777; every C1 line holds; 1i added): the staged hires stand — the
+professional a manager and a pollster, the populist a manager and a digital strategist, the
+establishment a manager and a media advisor, the grassroots party a field organizer, the chaotic
+nobody ([AUTHORED-DRAFT]) — and the payroll is on the ledger with the unpaid days counted: S
+183 600 kr (10 unpaid staff-days), SD 133 200 (38), M 190 800 (6), V 79 200 (12); the managed
+parties bought the television their plans were made for (1, 1, 2).
+
+**C1's PEND lines, re-measured (7 → 4).** **2a-ii CLEARED** (the populist 0.419 from its nearest —
+its digital strategist and its television buy); **2d CLEARED** (the grassroots party's advertising
+0 % against 30 % and 40 % — the others' managers plan television, it plans none); **2e-ii CLEARED**
+(the establishment buys 2 against 1, 1, 0, 0 — its plan holds two; the count is the staged plan's,
+which is what a budget plan is). 2a-iii stays PEND (prof/est 0.061 — two rational planners on equal
+money converge; W-C2 / W-F5); 2e stays PEND (television + interview: the populist makes more news
+and the media book the newsworthy; W-C2 / W-F5); 2b, 2c unchanged.
+
+**Findings.** The field organizer is capacity, not speed (×1.5 on both the rate and the capacity
+nearly cancel: day 29 instead of 30). The parties go broke before polling day — offices,
+operations and payroll are fixed daily costs the pace does not see; the plan covers television
+only, and a plan over every fixed cost is §9's manager in full (W-C2). Equal money with a plan makes
+the two rational personalities the same campaign.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-B5; `ELECTIONS_PLAY_CALIBRATION.md` entry 15;
+`ELECTIONS_GAP_TABLE.md` rows 9 and 37; the `CLAUDE.md` dated section.
+
+**R-N2 at the boundary (no stream appended).** `traj_wb5_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0; the HQ film edge-checked at four widths, 0 clipped.

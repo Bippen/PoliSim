@@ -263,6 +263,16 @@ namespace PoliSim.UI
                 }
             }
 
+            // W-B5: the payroll, a line on the resource ledger - the sum of the salaries above, a day.
+            if (s.Staff != null && s.Staff.Length > 0)
+            {
+                double payroll = 0.0;
+                foreach (StaffMember member in s.Staff) { payroll += member.SalaryPerDay; }
+                DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Payroll",
+                    string.Format(CultureInfo.InvariantCulture, "{0} kr/day", Kronor(payroll)), nameStyle, figureStyle);
+                y += rowHeight;
+            }
+
             y += Mathf.Round(6f * uy);
             if (Event.current.type == EventType.Repaint)
             {

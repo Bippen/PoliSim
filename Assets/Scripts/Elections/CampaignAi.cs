@@ -158,15 +158,17 @@ namespace PoliSim.Elections
         public readonly double[] NationalAudienceByKind;
         /// <summary>W-B11: the volunteer-hours this party still has today - the bound on how many doors a door-to-door action can knock (its own books).</summary>
         public readonly double VolunteerHoursToday;
+        /// <summary>W-B5: what the campaign manager's budget plan has set aside for television (its own books) - spendable on a television buy and on nothing else; 0 without a manager.</summary>
+        public readonly double TelevisionFund;
 
         public AiView(int partyIndex, CampaignPhase phase, int daysUntilElection, ResourcePool resources,
             double spendingReserve, bool hasPoll, Poll latestPoll, double[] momentumPp, IssueMeasurement[] issues,
             double ownCredibility, double nationalAudience, RegionAudience[] regions, int daysSinceOwnPoll,
             CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0,
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
-            double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0)
+            double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0)
         {
-            NationalAudienceByKind = nationalAudienceByKind; VolunteerHoursToday = volunteerHoursToday;
+            NationalAudienceByKind = nationalAudienceByKind; VolunteerHoursToday = volunteerHoursToday; TelevisionFund = televisionFund;
             PartyIndex = partyIndex; Phase = phase; DaysUntilElection = daysUntilElection; Resources = resources;
             SpendingReserve = spendingReserve; HasPoll = hasPoll; LatestPoll = latestPoll; MomentumPp = momentumPp;
             Issues = issues; OwnCredibility = ownCredibility; NationalAudience = nationalAudience; Regions = regions;
@@ -507,7 +509,8 @@ namespace PoliSim.Elections
                 foreach (double multiplier in spends)
                 {
                     double spend = spec.MoneyCost > 0 ? spec.MoneyCost * multiplier : 0.0;
-                    if (spend > spendable) { continue; }
+                    // W-B5: the manager's television fund is spendable on television and on nothing else.
+                    if (spend > spendable + (kind == CampaignActionKind.TelevisionAd ? view.TelevisionFund : 0.0)) { continue; }
 
                     if (spec.IsLocal)
                     {

@@ -2803,9 +2803,9 @@ namespace PoliSim.Testing
                 ? new StaffMember[0]
                 : new[]
                 {
-                    new StaffMember("Campaign manager", "Filled", "[AUTHORED-DRAFT] +10 % action effect"),
-                    new StaffMember("Press secretary", "Filled", "[AUTHORED-DRAFT] +15 % earned media"),
-                    new StaffMember("Field director", "Filled", "[AUTHORED-DRAFT] +20 % volunteer hours"),
+                    new StaffMember("Campaign manager", "Filled", "[AUTHORED-DRAFT] +10 % action effect", CampaignStaff.SalaryPerDay),
+                    new StaffMember("Press secretary", "Filled", "[AUTHORED-DRAFT] +15 % earned media", CampaignStaff.SalaryPerDay),
+                    new StaffMember("Field director", "Filled", "[AUTHORED-DRAFT] +20 % volunteer hours", CampaignStaff.SalaryPerDay),
                     new StaffMember("Pollster", "Vacant", "—"),
                 };
 
