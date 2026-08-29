@@ -68,7 +68,7 @@ namespace PoliSim.UI
     }
 
     /// <summary>
-    /// A stat → stat edge — the causal graph's own kind (R-K1). Every one is DERIVED from a ledger
+    /// A stat → stat edge — the causal graph's own kind. Every one is DERIVED from a ledger
     /// term whose input is another stat: the approval formula's growth and misery terms, the debt
     /// identity's erosion and interest terms. Drawn as chords inside the Stats wedge when either end
     /// is the active node; listed on the stat panel as "moved by" and "feeds".
@@ -207,8 +207,8 @@ namespace PoliSim.UI
             { PolicyNodeId.VeteransBenefitsMandatory, new PolicyNodeInfo { Name = "Veterans Benefits (Mand.)", Area = UiPalette.SystemArea.Fiscal, Description = "Mandatory spending line." } },
             { PolicyNodeId.FederalRetirement, new PolicyNodeInfo { Name = "Federal Retirement", Area = UiPalette.SystemArea.Fiscal, Description = "Mandatory spending line." } },
             { PolicyNodeId.Defense, new PolicyNodeInfo { Name = "Defense", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line." } },
-            { PolicyNodeId.Transportation, new PolicyNodeInfo { Name = "Transportation (Infra.)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Infrastructure spending category. A non-USA portfolio's Infrastructure & Development line folds onto this node (R-K1, 2026-08-28): same effect, the country's own line." } },
-            { PolicyNodeId.HHSDiscretionary, new PolicyNodeInfo { Name = "HHS (Healthcare)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Healthcare spending category. A non-USA portfolio's Healthcare & Social Care line folds onto this node (R-K1, 2026-08-28): same effect, the country's own line." } },
+            { PolicyNodeId.Transportation, new PolicyNodeInfo { Name = "Transportation (Infra.)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Infrastructure spending category. A non-USA portfolio's Infrastructure & Development line folds onto this node: same effect, the country's own line." } },
+            { PolicyNodeId.HHSDiscretionary, new PolicyNodeInfo { Name = "HHS (Healthcare)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - this project's Healthcare spending category. A non-USA portfolio's Healthcare & Social Care line folds onto this node: same effect, the country's own line." } },
             { PolicyNodeId.Education, new PolicyNodeInfo { Name = "Education", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line." } },
             { PolicyNodeId.Justice, new PolicyNodeInfo { Name = "Justice (Spending)", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line - distinct from the Crime & Justice policy dials." } },
             { PolicyNodeId.HomelandSecurity, new PolicyNodeInfo { Name = "Homeland Security", Area = UiPalette.SystemArea.Fiscal, Description = "Discretionary spending line." } },
@@ -262,7 +262,7 @@ namespace PoliSim.UI
         /// are both sourced from the real MacroSystem/SimulationManager formulas researched for this
         /// task - see the inline comment on each group for the specific method/constant.
         ///
-        /// Omnibus 2026-08-28 (R-K1): the list is no longer purely AUTHORED. Wherever a ledger term
+        /// Omnibus 2026-08-28: the list is no longer purely AUTHORED. Wherever a ledger term
         /// records an edge's effect (ApprovalAttribution: TaxHikePenalty, SpendingEffect, WelfareEffect,
         /// PaidLeaveEffect, DrugPolicyEffect; DebtAttribution: PrimaryBalanceEffect for every money
         /// lever, InterestAtIssuance for the policy rate; the confidence book's policy base) the edge
@@ -454,7 +454,7 @@ namespace PoliSim.UI
             // dampens Consumption/Investment directly; Unemployment/Inflation react only INDIRECTLY,
             // through Okun's Law/the Phillips Curve afterward - not drawn as a second direct edge).
             e.Add(new PolicyWebEdge(PolicyNodeId.InterestRateDecision, StatNodeId.Gdp, false));
-            // Derived, PER COUNTRY (R-K1): the policy rate prices new issuance, and the debt ledger's
+            // Derived, PER COUNTRY: the policy rate prices new issuance, and the debt ledger's
             // InterestAtIssuance records it - for the five whose issuance rate follows the policy
             // rate. The USA's does not (Country.BaseDebtInterestRateOverride, WorldFactory: 3.3), so
             // IsLiveFor drops this edge for a country with the override set - the web reads the
@@ -482,7 +482,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The causal graph's stat → stat edges (R-K1), every one a ledger term whose INPUT is another
+        /// The causal graph's stat → stat edges, every one a ledger term whose INPUT is another
         /// stat - derived by construction, listed here from the ledgers' own field names. The approval
         /// formula: growth against potential (GrowthEffect - the GDP node is the growth carrier this
         /// web has), and the four misery gaps (unemployment above NAIRU, inflation off target, crime
@@ -726,7 +726,7 @@ namespace PoliSim.UI
             Draw(rect, labelStyle, null, pinnedPolicy, pinnedStat, out clickedPolicy, out clickedStat);
         }
 
-        /// <summary>The per-country form (R-K1): <paramref name="country"/> selects the live edge set
+        /// <summary>The per-country form: <paramref name="country"/> selects the live edge set
         /// (see IsLiveFor) - the five draw the policy rate's issuance edge, the USA does not.</summary>
         public void Draw(Rect rect, GUIStyle labelStyle, Country country, PolicyNodeId? pinnedPolicy, StatNodeId? pinnedStat, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat)
         {
@@ -994,7 +994,7 @@ namespace PoliSim.UI
         /// </summary>
         public static MoneyUnit? GetStatUnit(StatNodeId id) => StatInfo[id].Unit;
 
-        /// <summary>Every stat this policy node has a real edge to, for the detail popup's own effect list. <paramref name="country"/> (R-K1) selects the live set; null keeps the full one.</summary>
+        /// <summary>Every stat this policy node has a real edge to, for the detail popup's own effect list. <paramref name="country"/> selects the live set; null keeps the full one.</summary>
         public static List<PolicyWebEdge> GetEdgesFor(PolicyNodeId id, Country country = null)
         {
             var result = new List<PolicyWebEdge>();
@@ -1005,7 +1005,7 @@ namespace PoliSim.UI
             return result;
         }
 
-        /// <summary>Every real edge that targets this stat, for the stat detail popup's own "affected by" list. <paramref name="country"/> (R-K1) selects the live set; null keeps the full one.</summary>
+        /// <summary>Every real edge that targets this stat, for the stat detail popup's own "affected by" list. <paramref name="country"/> selects the live set; null keeps the full one.</summary>
         public static List<PolicyWebEdge> GetEdgesForTarget(StatNodeId id, Country country = null)
         {
             var result = new List<PolicyWebEdge>();
@@ -1318,7 +1318,7 @@ namespace PoliSim.UI
             GUI.color = previous;
         }
 
-        /// <summary>The declared idiom's ink (R-K1): a formula-asserted edge at 55% - visibly the lighter class beside a solid ledger-backed one, still readable on paper.</summary>
+        /// <summary>The declared idiom's ink: a formula-asserted edge at 55% - visibly the lighter class beside a solid ledger-backed one, still readable on paper.</summary>
         private const float DeclaredEdgeAlpha = 0.55f;
         private const float DeclaredDashOn = 7f;
         private const float DeclaredDashOff = 5f;

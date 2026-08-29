@@ -77,7 +77,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, "YOUR LAST POLL — §20", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "YOUR LAST POLL", ux, uy);
 
             Poll poll = s.Campaign.LatestPoll;
             GUIStyle nameStyle = DeskBody(13f, PoliSimTheme.TextPrimary);
@@ -108,7 +108,7 @@ namespace PoliSim.UI
             // error and nothing else (W-B10), and no sample size buys away any of these.
             GUIStyle note = DeskCaptionWrapped(8.5f, PoliSimTheme.TextMuted);
             string noteText = Invariant(
-                "{0} · n = {1:N0} · FIELDED {2}. THE ± IS SAMPLING ERROR AND NOTHING ELSE. §20's OTHER "
+                "{0} · n = {1:N0} · FIELDED {2}. THE ± IS SAMPLING ERROR AND NOTHING ELSE. THE OTHER "
                 + "SOURCES OF DIFFERENCE — LATE SWINGS, TURNOUT, UNDECIDED VOTERS, TACTICAL VOTING, AND "
                 + "EACH HOUSE'S OWN LEAN — ARE NOT IN IT, AND NO SAMPLE SIZE BUYS THEM AWAY.",
                 poll.House.ToUpperInvariant(), poll.SampleSize,
@@ -130,7 +130,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 250f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, "MOMENTUM — §22", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "MOMENTUM", ux, uy);
 
             GUIStyle nameStyle = DeskBody(12f, PoliSimTheme.TextPrimary);
             float rowHeight = Mathf.Max(Mathf.Round(19f * uy), nameStyle.CalcSize(new GUIContent("Ag")).y);
@@ -166,7 +166,7 @@ namespace PoliSim.UI
             GUIStyle note = DeskCaptionWrapped(8.5f, PoliSimTheme.TextMuted);
             string noteText = Invariant(
                 "MOMENTUM DECAYS ON A {0:F0}-DAY HALF-LIFE AND CANNOT BE MADE PERMANENT — A LASTING GAIN "
-                + "IS A REPUTATION CHANGE (§38), WHICH IS A DIFFERENT STOCK. IT SHIFTS WHERE THE RACE "
+                + "IS A REPUTATION CHANGE, WHICH IS A DIFFERENT THING. IT SHIFTS WHERE THE RACE "
                 + "APPEARS TO BE WITHOUT TOUCHING THE PREFERENCE UNDERNEATH, WHICH IS WHY A POLL CAN "
                 + "MOVE BEFORE ANYTHING REAL HAS.", PollingSystem.MomentumHalfLifeDays);
             float noteHeight = Mathf.Ceil(note.CalcHeight(new GUIContent(noteText), r.width));
@@ -186,7 +186,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, "WHAT BETTER INFORMATION COSTS — §21", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "WHAT BETTER INFORMATION COSTS", ux, uy);
 
             if (s.Offers == null || s.Offers.Length == 0)
             {
@@ -288,8 +288,8 @@ namespace PoliSim.UI
                 + "NOT ONE NUMBER FOR THE WHOLE POLL. PRECISION IMPROVES WITH THE SQUARE ROOT OF THE "
                 + "SAMPLE, SO EACH POINT COSTS MORE THAN THE LAST. REGIONAL, DEMOGRAPHIC AND TURNOUT "
                 + "DEPTH ARE DIFFERENT KINDS OF ANSWER, NOT NARROWER ONES, AND ARE DELIBERATELY NOT "
-                + "PRICED PER POINT. SAMPLE SIZES AND PRICES ARE [AUTHORED-DRAFT]; THE ± FIGURES ARE "
-                + "DERIVED FROM THEM.", s.QuotedPartyName, s.QuotedShare * 100.0);
+                + "PRICED PER POINT. SAMPLE SIZES AND PRICES ARE ILLUSTRATIVE; THE ± FIGURES "
+                + "FOLLOW FROM THE SAMPLE SIZES.", s.QuotedPartyName, s.QuotedShare * 100.0);
             float noteHeight = Mathf.Ceil(note.CalcHeight(new GUIContent(noteText), r.width));
             var noteRect = new Rect(r.x, y, r.width, noteHeight);
             if (Event.current.type == EventType.Repaint)

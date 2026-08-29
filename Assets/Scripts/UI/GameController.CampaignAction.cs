@@ -86,7 +86,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, "WHAT YOU COULD RUN TODAY — §12", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "WHAT YOU COULD RUN TODAY", ux, uy);
 
             if (s.Options == null || s.Options.Length == 0)
             {
@@ -186,7 +186,7 @@ namespace PoliSim.UI
                     affordable, s.Options.Length, scale)
                 : string.Format(CultureInfo.InvariantCulture,
                     "{0} OF {1} AFFORDABLE ON TODAY'S MONEY AND HOURS — THE REST WOULD BE REFUSED, NOT DISCOUNTED. "
-                    + "NOTHING IS POLLED, SO NO ROW CARRIES AN ESTIMATE AND THE TRACKS ARE EMPTY (§36).",
+                    + "NOTHING IS POLLED, SO NO ROW CARRIES AN ESTIMATE AND THE TRACKS ARE EMPTY.",
                     affordable, s.Options.Length);
             float noteHeight = Mathf.Ceil(note.CalcHeight(new GUIContent(noteText), r.width));
             var noteRect = new Rect(r.x, y, r.width, noteHeight);
@@ -205,7 +205,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 250f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, "§42'S CHAIN — EVERY STAGE MULTIPLIES", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "HOW A MESSAGE BECOMES VOTES — EVERY STAGE MULTIPLIES", ux, uy);
 
             GUIStyle nameStyle = DeskBody(12f, PoliSimTheme.TextPrimary);
             GUIStyle valueStyle = DeskCaption(11f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight);
@@ -303,7 +303,7 @@ namespace PoliSim.UI
             {
                 GUIStyle absent = DeskCaptionWrapped(9f, PoliSimTheme.Caution);
                 const string absentText = "NOT MEASURED — YOU HAVE NOT POLLED THIS AUDIENCE, SO THERE IS NO HONEST "
-                                          + "ESTIMATE TO SHOW. COMMISSION POLLING (§36) AND THIS BECOMES A RANGE. "
+                                          + "ESTIMATE TO SHOW. COMMISSION POLLING AND THIS BECOMES A RANGE. "
                                           + "AN UNBOUGHT FACT IS AN ABSENT ESTIMATE, NOT A WIDE ONE.";
                 float h = Mathf.Ceil(absent.CalcHeight(new GUIContent(absentText), r.width));
                 var absentRect = new Rect(r.x, y, r.width, h);
@@ -322,7 +322,7 @@ namespace PoliSim.UI
             y += Mathf.Round(16f * uy);
             y = DrawEstimateBand(r, y, ux, uy, "ENTHUSIASM PRESSURE",
                 s.Estimate.Low.Enthusiasm, s.Estimate.Mid.Enthusiasm, s.Estimate.High.Enthusiasm,
-                "NOT SENSITIVE TO WHAT YOU POLLED — §42 DERIVES ENTHUSIASM FROM EXPOSURE AND "
+                "NOT SENSITIVE TO WHAT YOU POLLED — ENTHUSIASM FOLLOWS FROM EXPOSURE AND "
                 + "CREDIBILITY ALONE, AND YOU KNOW BOTH EXACTLY. THE POINT IS THE WHOLE ANSWER.");
             y += Mathf.Round(18f * uy);
 
@@ -340,13 +340,13 @@ namespace PoliSim.UI
             string methodText = string.Format(CultureInfo.InvariantCulture,
                 "THE SPAN IS YOUR OWN MEASUREMENT ERROR CARRIED THROUGH THE CHAIN — {0}, n = {1:N0}, "
                 + "FIELDED {2}, ±{3:F0} POINTS ON SALIENCE AND ±{4:F0} ON ISSUE MATCH. BUY A BIGGER "
-                + "SAMPLE (§21) AND THE RANGE NARROWS; IT IS NOT AN AUTHORED MARGIN.{5}",
+                + "SAMPLE AND THE RANGE NARROWS; THE MARGIN IS MEASURED, NOT INVENTED.{5}",
                 p.PollHouse.ToUpperInvariant(), p.SampleSize,
                 p.FieldDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(),
                 p.SalienceError * 100.0, p.MatchError * 100.0,
                 p.RegionalDetailBought
                     ? " REGIONAL DETAIL IS BOUGHT, SO THIS IS THE REGION'S OWN READING."
-                    : " REGIONAL DETAIL IS NOT BOUGHT (§36), SO THIS IS THE NATIONAL READING.");
+                    : " REGIONAL DETAIL IS NOT BOUGHT, SO THIS IS THE NATIONAL READING.");
             float methodHeight = Mathf.Ceil(method.CalcHeight(new GUIContent(methodText), r.width));
             var methodRect = new Rect(r.x, y, r.width, methodHeight);
             if (Event.current.type == EventType.Repaint)

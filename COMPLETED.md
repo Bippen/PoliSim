@@ -4010,3 +4010,71 @@ the fixed tier, exactly as the method intends.
 `CLAUDE.md` dated section.
 
 **R-N2 at the boundary.** `traj_wd2_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wd2.log`); harness logs `seats_wd2_20260829.log` (12 of 12), `campaignai_wd2_20260829.log` (all assertions pass, 8 PEND).
+
+## 61. P-A1 — the meta-text census and cut: 131 developer-facing strings off the player's surfaces, and `MetaTextCheck` armed as the ninth check (2026-08-29)
+
+**The finding (Playtest 1, finding 1, Elias):** *developer-facing text is leaking into player
+surfaces — "COMPLETED" in the laws tab, progress markers, anything addressed to the builder rather
+than the player.* The item: census every UI string against a banned-token review, classify, cut
+every artifact, arm a guard so the class cannot silently return.
+
+**The guard first, so the census is the guard's own output.** `Assets/Editor/MetaTextCheck.cs`
+scans every string literal (plain, interpolated, verbatim) in the player-reachable UI sources —
+`Assets/Scripts/UI/*.cs`, `LawCatalog.cs` (the laws tab prints its names, descriptions and
+citations verbatim) and `Assets/Scripts/Data/*.cs` (display names) — with comments stripped first,
+so a doc comment naming a ruling is not a hit and only text that can reach a label is. The banned
+classes, each a pattern stated in the header: completion/progress language addressed to the
+builder (`COMPLETED`, `IMPLEMENTED` as a tag, `TODO`, `WIP`, `STUB`, `PLACEHOLDER`); internal
+references (`§`, `section N`, `R-XN`, `W-XN`, `board 1m`, `Annex X`); build vocabulary (`Master
+Sequence`, `step 5d`, `Phase A`, `this pass`, `harness`, `backtest`, `Design's`, `the spec`);
+data-class tags (`[AUTHORED-DRAFT]`, `PROVISIONAL`, `UNCONFIRMED`, `[DERIVED]`, `IS DERIVED`,
+`SOURCED`); research-status vocabulary on citations (`CONFIRMED -`, `GENRE-IDIOM`, `DIRECTIONAL`).
+The allowlist, enumerated with reasons: `PRELIMINARY` / `REVISED` / `FINAL` on published figures
+(a status of the data, addressed to the player); a law's `not implemented` / `implemented`
+enactment state; the Policy Web's `DERIVED` / `DECLARED` edge idiom (R-C6); `SCENARIO COMPLETE` on
+the verdict screen. Armed in `CheckSuite` as the ninth check (the Editor-open run and the menu),
+and in every bar from here on.
+
+**The census, before** (`metatext_before_20260829.log`: 74 files, 2 068 literals, **124 hits**;
+the widened second pass found **7 more**):
+
+| class | where | count |
+|---|---|---|
+| citation status prefix (`CONFIRMED - …`, `CONFIRMED as/for/, …`, `GENRE-IDIOM/DIRECTIONAL - …`) | `LawCatalog.cs` — every citation the laws tab prints | 103 |
+| research-status vocabulary inside a citation (`DIRECTIONAL/GENRE-IDIOM elsewhere.`) | `LawCatalog.cs` | 3 |
+| section-sign references (`— §9`, `(§36)`, `§42'S CHAIN`, `§20's OTHER`) | the three Track E screens | 17 |
+| `EVERY FIGURE ON THIS SHEET IS DERIVED` (masthead) | Campaign HQ | 1 |
+| `[AUTHORED-DRAFT]` (the polling ladder's footnote) | the polling screen | 1 |
+| `Master Sequence step 5d` / `this pass` (draft-dial explainers) | Tax, Welfare, Trade, Sectors | 6 |
+| ruling parentheticals `(R-K1, …)` in node descriptions | `PolicyWebRenderer.cs` | 10 (cut by the script; in comments or text alike) |
+
+**What Elias saw as "COMPLETED" is the citation class:** the laws tab printed every law's research
+citation with its status prefix — *CONFIRMED - the US Truth in Sentencing…* — 103 times. The word
+he remembered was the class he meant.
+
+**The cut, by class.** Citations lose their status prefix and mid-text status words at the SOURCE
+(the research bookkeeping stays in the comments beside each law, where it belongs): *CONFIRMED -
+the US First Step Act…* → *The US First Step Act…*, *CONFIRMED as a standing model - Germany's…* →
+*As a standing model - Germany's…*. The Track E screens' captions are rewritten in the player's
+language — *RESOURCES — §9 · WAR CHEST…* → *RESOURCES — WAR CHEST, THE DAY, THE GROUND*; *§42'S
+CHAIN — EVERY STAGE MULTIPLIES* → *HOW A MESSAGE BECOMES VOTES — EVERY STAGE MULTIPLIES*; *AS
+PUBLISHED — §19. NO SCREEN HERE READS THE TRUE STATE.* → *AS PUBLISHED — WHAT THE COUNTRY HAS BEEN
+TOLD, NOT THE TRUE STATE.*; *OPEN TO YOU TODAY — §3 PHASE GATING* → *… — WHAT THIS PHASE ALLOWS*;
+*SAMPLE SIZES AND PRICES ARE [AUTHORED-DRAFT]; THE ± FIGURES ARE DERIVED FROM THEM* → *… ARE
+ILLUSTRATIVE; THE ± FIGURES FOLLOW FROM THE SAMPLE SIZES*; *IT IS NOT AN AUTHORED MARGIN* → *THE
+MARGIN IS MEASURED, NOT INVENTED*; the masthead's *EVERY FIGURE ON THIS SHEET IS DERIVED* goes (a
+claim to the builder, not the player). The draft-dial explainers drop *Master Sequence step 5d:* and
+*(Master Sequence step 5d)* and say *for now* instead of *in this pass*. Nothing was shortened to
+fit; every rewrite says the same thing to the player that the tag said to the builder.
+
+**The census, after** (`metatext_after2_20260829.log`): 74 files, 2 058 literals, **0 hits**.
+
+**Filmed.** The three Track E screens at 1280 / 1600 / 1920 / 2560 (`pa_campaign_<w>_*`, three
+staged days each) and the full sweep at 1280 and 2560 (`pa_sweep_<w>_*` — the laws tab, the
+draft-dial sheets, the Policy Web, Statistics), `ScreenEdgeCheck -edgepattern=pa_*.png` clean;
+§V's four Playtest-1 rows name these films.
+
+**Records.** `MISSING_PREREQUISITES.md` §P (finding 1 answered, dated) and §V (the row's capture
+named); the `CLAUDE.md` dated section; the check-suite doc says nine.
+
+**The film and the guard.** `pa_campaign_<w>_*` (13 frames at each of 1280 / 1600 / 1920 / 2560) and `pa_sweep_<w>_*` (77 at 1280 and at 2560), 0 overflows, 0 escapes, 0 ATTRIB; `ScreenEdgeCheck -edgepattern=pa_*.png` clean over 206 captures; `MetaTextCheck` 0 hits (`metatext_after2_20260829.log`).

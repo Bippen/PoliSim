@@ -146,7 +146,7 @@ namespace PoliSim.Simulation
                 Name = "Truth in Sentencing Act",
                 Description = "Requires offenders to serve a much larger share of their imposed sentence before parole eligibility, and narrows the discretion judges have to depart from guideline sentences.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US Truth in Sentencing Incentive Grants program (1994 Crime Act), tying federal funding to states requiring violent offenders serve at least 85% of their sentence.",
+                Citation = "The US Truth in Sentencing Incentive Grants program (1994 Crime Act), tying federal funding to states requiring violent offenders serve at least 85% of their sentence.",
                 SentencingSeverityDelta = 15f,
                 BailReformDelta = -8f,
                 EnactmentApprovalCost = 1.0f
@@ -157,7 +157,7 @@ namespace PoliSim.Simulation
                 Name = "Cash Bail Reform Act",
                 Description = "Replaces cash bail with risk-based pretrial release for most non-violent charges, and directs new funding toward the court staff needed to run individualized release hearings.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "DIRECTIONAL - the broader US pretrial-reform trend toward risk-based release, distinct from and less extreme than this catalog's own full Cash Bail Abolition Act.",
+                Citation = "The broader US pretrial-reform trend toward risk-based release, distinct from and less extreme than this catalog's own full Cash Bail Abolition Act.",
                 BailReformDelta = 18f,
                 JudicialFundingDelta = 6f,
                 EnactmentApprovalCost = 1.0f
@@ -168,7 +168,7 @@ namespace PoliSim.Simulation
                 Name = "Border Security Act",
                 Description = "Expands border enforcement staffing and surveillance infrastructure, and redirects a portion of drug-interdiction resources toward enforcement rather than treatment diversion.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the shape of the US Secure Fence Act (2006) and subsequent staffing/surveillance appropriations, generalized rather than tied to one bill's exact figures.",
+                Citation = "The shape of the US Secure Fence Act (2006) and subsequent staffing/surveillance appropriations, generalized rather than tied to one bill's exact figures.",
                 BorderEnforcementDelta = 20f,
                 DrugPolicyDelta = -5f,
                 EnactmentApprovalCost = 1.5f
@@ -179,7 +179,7 @@ namespace PoliSim.Simulation
                 Name = "Community Policing Initiative",
                 Description = "Funds neighborhood policing programs and community liaison officers, paired with stricter enforcement of drug offenses in the areas they cover.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US COPS Office (Community Oriented Policing Services), created by the 1994 Violent Crime Control Act, funding local community-policing programs nationally.",
+                Citation = "The US COPS Office (Community Oriented Policing Services), created by the 1994 Violent Crime Control Act, funding local community-policing programs nationally.",
                 PoliceFundingDelta = 15f,
                 DrugPolicyDelta = 10f,
                 EnactmentApprovalCost = 0.5f
@@ -202,7 +202,7 @@ namespace PoliSim.Simulation
                 Name = "Three Strikes Law",
                 Description = "Mandates a lengthy or life sentence for a third serious or violent felony conviction, regardless of the individual circumstances.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - California's 1994 law (25-to-life for any third felony), copied by 20+ US states; narrowed by a 2012 ballot measure (Prop 36) to require the third strike itself be serious/violent.",
+                Citation = "California's 1994 law (25-to-life for any third felony), copied by 20+ US states; narrowed by a 2012 ballot measure (Prop 36) to require the third strike itself be serious/violent.",
                 // CONFIRMED - California's 1994 law (25-to-life for any third felony), copied by
                 // 20+ US states; later narrowed by a 2012 ballot measure (Prop 36, ~70% approval)
                 // to require the third strike itself be serious/violent. MAJOR: one of the most
@@ -218,7 +218,7 @@ namespace PoliSim.Simulation
                 Name = "Mandatory Minimum Sentencing Act",
                 Description = "Sets fixed minimum prison terms for a range of offenses that judges cannot depart below regardless of circumstances, with the heaviest minimums attached to drug offenses.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US federal 1986 Anti-Drug Abuse Act (the 100:1 crack/powder cocaine disparity) and France's 'peines plancher' (2007-2014, repealed after evidence found no deterrent effect).",
+                Citation = "The US federal 1986 Anti-Drug Abuse Act (the 100:1 crack/powder cocaine disparity) and France's 'peines plancher' (2007-2014, repealed after evidence found no deterrent effect).",
                 // CONFIRMED - US federal 1986 Anti-Drug Abuse Act (the 100:1 crack/powder cocaine
                 // disparity); France's "peines plancher" (2007-2014, repealed after evidence found
                 // no deterrent effect, only longer sentences for the same recidivism rate - a real
@@ -236,7 +236,7 @@ namespace PoliSim.Simulation
                 Name = "First Step Act",
                 Description = "Retroactively reduces some mandatory minimums, expands judges' discretion to depart from sentencing guidelines in qualifying cases, and expands access to rehabilitation programming.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US First Step Act (2018); ~30,000 released early by 2023, with recidivism ~37% lower among those released under it (Council on Criminal Justice).",
+                Citation = "The US First Step Act (2018); ~30,000 released early by 2023, with recidivism ~37% lower among those released under it (Council on Criminal Justice).",
                 // CONFIRMED - US federal law, 2018. ~30,000 released early by 2023 and recidivism
                 // ~37% lower among those released under it (Council on Criminal Justice), though
                 // implementation was widely reported as uneven. MODERATE, not MAJOR: a real,
@@ -251,7 +251,7 @@ namespace PoliSim.Simulation
                 Name = "Rehabilitation-Centered Corrections Model",
                 Description = "Reorients the corrections system around reintegration rather than punishment - short sentences, open-prison placements, and heavy use of fines and community sanctions over incarceration.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED as a standing model - Germany's constitutional Resozialisierungsgebot (rehabilitation mandate) and Sweden's own tradition before its 2023 reversal.",
+                Citation = "As a standing model - Germany's constitutional Resozialisierungsgebot (rehabilitation mandate) and Sweden's own tradition before its 2023 reversal.",
                 // CONFIRMED as a real, standing model, not a single bill - Germany's constitutional
                 // "Resozialisierungsgebot" (rehabilitation mandate, rooted in 1970s Federal
                 // Constitutional Court rulings; German incarceration runs about 76/100k against the
@@ -272,7 +272,7 @@ namespace PoliSim.Simulation
                 Name = "Cash Bail Abolition Act",
                 Description = "Eliminates monetary bail entirely - pretrial release or detention is decided solely on a judge's assessment of flight and public-safety risk.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Illinois' Pretrial Fairness Act, upheld by the state supreme court in July 2023 and effective that September - the first full statewide bail abolition in the US.",
+                Citation = "Illinois' Pretrial Fairness Act, upheld by the state supreme court in July 2023 and effective that September - the first full statewide bail abolition in the US.",
                 // CONFIRMED - Illinois' Pretrial Fairness Act, upheld by the state supreme court in
                 // July 2023 and effective that September - the first full statewide abolition in the
                 // US (distinct from and going further than this catalog's own "Cash Bail Reform
@@ -287,7 +287,7 @@ namespace PoliSim.Simulation
                 Name = "Bail Reform Rollback",
                 Description = "Restores judges' authority to detain a defendant pretrial based on perceived danger to the public, partially reversing an earlier bail-reform law under political pressure.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - New York's 2019 reform was partially rolled back in 2020/2022/2023 after a 2020 NYC murder spike, despite researchers (including the NYCLU) finding no clear causal link to the original reform.",
+                Citation = "New York's 2019 reform was partially rolled back in 2020/2022/2023 after a 2020 NYC murder spike, despite researchers (including the NYCLU) finding no clear causal link to the original reform.",
                 // CONFIRMED - New York's 2019 reform narrowed bail-eligible offenses; after a 2020
                 // NYC murder spike (+40% in a year) and sustained political pressure, the
                 // legislature enacted partial rollbacks in 2020, 2022, and 2023, despite researchers
@@ -307,7 +307,7 @@ namespace PoliSim.Simulation
                 Name = "Drug Decriminalization Act",
                 Description = "Shifts personal possession of small amounts of all drugs from a criminal matter to a civil one - a fine and a referral to a treatment-and-assessment panel rather than prosecution. Trafficking remains a criminal offense.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Portugal's Law 30/2000 (Lei n. 30/2000), decriminalizing personal drug possession from July 2001 - this dial's standard real-world calibration touchstone (associated with lower HIV transmission and, for many years, below-EU-average drug deaths).",
+                Citation = "Portugal's Law 30/2000 (Lei n. 30/2000), decriminalizing personal drug possession from July 2001 - this dial's standard real-world calibration touchstone (associated with lower HIV transmission and, for many years, below-EU-average drug deaths).",
                 // CONFIRMED, cited here as the standard real-world touchstone for this dial's low
                 // end (Portugal's 2001 decriminalization, per this project's own instruction to use
                 // it for calibration even though Portugal isn't one of the six seeded countries) -
@@ -327,7 +327,7 @@ namespace PoliSim.Simulation
                 Name = "Cannabis Legalization Act",
                 Description = "Legalizes adult possession and home cultivation of cannabis in limited amounts, plus non-commercial cultivation clubs; commercial retail is deferred to separate pilot programs.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Germany's Cannabisgesetz, effective April 1, 2024, passed by the Scholz coalition; courts had to retroactively review and expunge prior convictions.",
+                Citation = "Germany's Cannabisgesetz, effective April 1, 2024, passed by the Scholz coalition; courts had to retroactively review and expunge prior convictions.",
                 // CONFIRMED, real and recent - Germany's Cannabisgesetz, effective April 1, 2024,
                 // passed by the Scholz coalition over opposition. Courts had to retroactively review
                 // and expunge prior convictions - a genuine administrative burden, which is where
@@ -345,7 +345,7 @@ namespace PoliSim.Simulation
                 Name = "Zero-Tolerance Drug Policy",
                 Description = "Criminalizes drug use itself, not just possession or sale, and empowers police to compel testing on suspicion of use alone, in pursuit of an explicit national goal of a drug-free society.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Sweden's own regime since 1988, one of the strictest in the EU by the EU drug agency's (EMCDDA) comparative reporting.",
+                Citation = "Sweden's own regime since 1988, one of the strictest in the EU by the EU drug agency's (EMCDDA) comparative reporting.",
                 // CONFIRMED - Sweden's own regime since 1988, one of the strictest in the EU by the
                 // EU drug agency's (EMCDDA) comparative reporting. Comparative drug-death-rate claims
                 // for this policy are genuinely contested methodologically, so none is asserted here
@@ -363,7 +363,7 @@ namespace PoliSim.Simulation
                 Name = "Public Defender & Legal Aid Funding Act",
                 Description = "Substantially increases funding for public defenders and legal aid, reducing attorney caseloads and expanding access to counsel for defendants who cannot afford one.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED as a standing question - the US constitutional right to counsel (Gideon v. Wainwright, 1963) is chronically underfunded; all six seeded countries run their own legal-aid systems facing the same funding-adequacy debate.",
+                Citation = "As a standing question - the US constitutional right to counsel (Gideon v. Wainwright, 1963) is chronically underfunded; all six seeded countries run their own legal-aid systems facing the same funding-adequacy debate.",
                 // CONFIRMED as a real, persistent policy question, not one single bill - the US
                 // constitutional right to counsel (Gideon v. Wainwright, 1963) is chronically
                 // underfunded in practice, a widely-documented crisis; all six seeded countries have
@@ -384,7 +384,7 @@ namespace PoliSim.Simulation
                 Name = "Immigration Detention Expansion Act",
                 Description = "Expands detention capacity and staffing for individuals awaiting immigration proceedings or removal, distinct from physical border-barrier construction.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - US ICE immigration-detention capacity, a routine, contested appropriations line that has expanded and contracted repeatedly across administrations.",
+                Citation = "US ICE immigration-detention capacity, a routine, contested appropriations line that has expanded and contracted repeatedly across administrations.",
                 // CONFIRMED as a real, recurring policy lever - US immigration-detention capacity
                 // has expanded and contracted repeatedly across administrations (ICE detention
                 // funding is a routine, contested appropriations line), kept deliberately distinct
@@ -412,7 +412,7 @@ namespace PoliSim.Simulation
                 Name = "Body-Worn Camera Program",
                 Description = "Equips police officers with body-worn cameras and funds the storage and review infrastructure the footage requires.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - rapid US adoption after Ferguson (2014). A DC Metro randomized trial (2017) found modest-to-no effect on use of force but materially better evidence and complaint resolution.",
+                Citation = "Rapid US adoption after Ferguson (2014). A DC Metro randomized trial (2017) found modest-to-no effect on use of force but materially better evidence and complaint resolution.",
                 // CONFIRMED - rapid US adoption after Ferguson (2014), driven by DOJ grant funding.
                 // A DC Metro randomized trial (2017) found modest-to-no effect on use of force but
                 // materially better evidence and complaint resolution - the real headline effect
@@ -429,7 +429,7 @@ namespace PoliSim.Simulation
                 Name = "Militarized Police Equipment Program",
                 Description = "Transfers surplus military-grade equipment and vehicles to local police departments at little or no cost, expanding their tactical capability.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US DoD 1033 Program (1997 NDAA), restricted by the Obama administration in 2015 after Ferguson, reversed by the Trump administration in 2017.",
+                Citation = "The US DoD 1033 Program (1997 NDAA), restricted by the Obama administration in 2015 after Ferguson, reversed by the Trump administration in 2017.",
                 // CONFIRMED - the US DoD 1033 Program (created by the 1997 NDAA), which came under
                 // national scrutiny after Ferguson 2014 (armored vehicles facing protesters);
                 // restricted by the Obama administration in 2015, reversed by the Trump
@@ -446,7 +446,7 @@ namespace PoliSim.Simulation
                 Name = "Cybercrime Investigation Unit",
                 Description = "Establishes a dedicated police unit and funding stream for investigating online fraud, hacking, and digital exploitation offenses.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "GENRE-IDIOM/DIRECTIONAL - every modern police force has built out some form of cybercrime capability over the past two decades, not tied to one single confirmed founding law across all six countries.",
+                Citation = "Every modern police force has built out some form of cybercrime capability over the past two decades, not tied to one single confirmed founding law across all six countries.",
                 // GENRE-IDIOM/DIRECTIONAL - every modern police force has built out some form of
                 // cybercrime capability over the past two decades, but this project isn't citing one
                 // single confirmed founding law across all six countries the way, say, Germany's
@@ -461,7 +461,7 @@ namespace PoliSim.Simulation
                 Name = "Gang Crime Sentencing Escalation",
                 Description = "Sharply raises maximum sentences for crimes committed within organized criminal networks and removes reduced sentencing discounts for young offenders in gang cases.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Sweden's Tido Agreement (Oct 2022, in force April 2024): gang-related sentences up to double the previous maximum; 2023 prison sentences up 25% year-on-year.",
+                Citation = "Sweden's Tido Agreement (Oct 2022, in force April 2024): gang-related sentences up to double the previous maximum; 2023 prison sentences up 25% year-on-year.",
                 // CONFIRMED - Sweden's Tidö Agreement (Oct 2022), in force from April 2024:
                 // gang-related sentences up to double the previous maximum (capped at 18 years), and
                 // abolished the sentencing discount for 18-21-year-olds in gang crime cases. Real
@@ -483,7 +483,7 @@ namespace PoliSim.Simulation
                 Name = "Court Backlog Reduction Program",
                 Description = "Invests in additional judges, court staff, and procedural reform aimed at cutting multi-year case backlogs and excessive trial delays.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Italy's 2001 Pinto Law and its post-COVID EU Recovery Plan (PNRR, 2021+), which made judicial-backlog reduction a large, EU-monitored funding condition.",
+                Citation = "Italy's 2001 Pinto Law and its post-COVID EU Recovery Plan (PNRR, 2021+), which made judicial-backlog reduction a large, EU-monitored funding condition.",
                 // CONFIRMED - Italy is the standard European reference case: its 2001 "Pinto Law"
                 // compensates citizens for excessive trial delays (a tacit admission of the
                 // problem), and its post-COVID EU Recovery Plan (PNRR, 2021+) made judicial-backlog
@@ -502,7 +502,7 @@ namespace PoliSim.Simulation
                 Name = "Court Interpreter & Translation Funding",
                 Description = "Funds qualified interpreters and translated materials for non-native speakers in criminal proceedings.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US Court Interpreters Act (1978) and the EU's Directive 2010/64/EU on the right to interpretation and translation, binding on Germany, France, Italy, Sweden, and Poland.",
+                Citation = "The US Court Interpreters Act (1978) and the EU's Directive 2010/64/EU on the right to interpretation and translation, binding on Germany, France, Italy, Sweden, and Poland.",
                 // CONFIRMED - the US Court Interpreters Act (1978, federal courts) and the EU's
                 // Directive 2010/64/EU on the right to interpretation and translation in criminal
                 // proceedings (binding on Germany, France, Italy, Sweden, and Poland alike - a
@@ -518,7 +518,7 @@ namespace PoliSim.Simulation
                 Name = "Victim & Witness Support Services Funding",
                 Description = "Funds victim counseling, court accompaniment, case-status notification services, and protection against witness intimidation.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US Victims of Crime Act (VOCA, 1984) and the EU's Victims' Rights Directive (2012), binding across Germany, France, Italy, Sweden, and Poland.",
+                Citation = "The US Victims of Crime Act (VOCA, 1984) and the EU's Victims' Rights Directive (2012), binding across Germany, France, Italy, Sweden, and Poland.",
                 // CONFIRMED - the US Victims of Crime Act (VOCA, 1984, funded via criminal fines
                 // rather than general taxation - a distinctive mechanism that faced a well-publicized
                 // real funding shortfall in the 2020s as fine revenue declined) and the EU's Victims'
@@ -533,7 +533,7 @@ namespace PoliSim.Simulation
                 Name = "Frontex Border Cooperation Agreement",
                 Description = "Deepens funding and operational cooperation with the EU's joint border and coast guard agency for surveillance, patrol, and deportation-flight support.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Frontex (founded 2004), its budget expanded roughly 40x after the 2015 migrant crisis, targeting a 10,000-officer standing corps by 2027.",
+                Citation = "Frontex (founded 2004), its budget expanded roughly 40x after the 2015 migrant crisis, targeting a 10,000-officer standing corps by 2027.",
                 // CONFIRMED - Frontex, founded 2004, with its budget expanded roughly 40x after the
                 // 2015 migrant crisis and a standing corps of 10,000 officers targeted by 2027; the
                 // agency has also been repeatedly investigated for complicity in Mediterranean/Aegean
@@ -552,7 +552,7 @@ namespace PoliSim.Simulation
                 Name = "Refugee & Asylum Fast-Track Processing",
                 Description = "Expands staffing and streamlines procedure for asylum claims, reducing detention time and processing backlogs for people awaiting a decision.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "GENRE-IDIOM/DIRECTIONAL - a real, recurring EU migration-policy debate over asylum-system capacity and processing time, not tied to one single confirmed law.",
+                Citation = "A real, recurring EU migration-policy debate over asylum-system capacity and processing time, not tied to one single confirmed law.",
                 // GENRE-IDIOM/DIRECTIONAL - a real, recurring policy debate across all six countries
                 // (asylum-system capacity and processing-time reform is a standing item in EU
                 // migration policy generally), not tied here to one single confirmed law the way the
@@ -572,7 +572,7 @@ namespace PoliSim.Simulation
                 Name = "Sanctuary City Policy",
                 Description = "Bars local police from asking about immigration status or assisting federal immigration enforcement in routine policing.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - a real US policy adopted by hundreds of jurisdictions since the 1980s-2000s, repeatedly contested in court over threatened federal funding cutoffs.",
+                Citation = "A real US policy adopted by hundreds of jurisdictions since the 1980s-2000s, repeatedly contested in court over threatened federal funding cutoffs.",
                 // CONFIRMED - a real US policy adopted by hundreds of jurisdictions since the
                 // 1980s-2000s, repeatedly contested in court over federal funding cutoffs threatened
                 // in retaliation. The real mechanism is INTERIOR enforcement cooperation (or its
@@ -588,7 +588,7 @@ namespace PoliSim.Simulation
                 Name = "Prosecutorial Discretion Guidelines",
                 Description = "Directs prosecutors to deprioritize charging low-level, non-violent offenses - including simple drug possession - freeing capacity for serious crime.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US 'progressive prosecutor' trend (Philadelphia's Larry Krasner, elected 2017; Los Angeles' George Gascon, elected 2020), a documented, politically contested real trend.",
+                Citation = "The US 'progressive prosecutor' trend (Philadelphia's Larry Krasner, elected 2017; Los Angeles' George Gascon, elected 2020), a documented, politically contested real trend.",
                 // CONFIRMED - the real US "progressive prosecutor" trend (Philadelphia DA Larry
                 // Krasner, elected 2017; Los Angeles DA George Gascon, elected 2020, among others),
                 // each adopting office-wide charging-deprioritization policies for low-level offenses
@@ -617,7 +617,7 @@ namespace PoliSim.Simulation
                 Name = "Electronic Monitoring Program",
                 Description = "Substitutes GPS ankle monitoring for a portion of short prison terms or as a release condition, rather than incarceration.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED, scope varies by country - France's electronic-monitoring custody alternative (in genuine use since ~2000) versus Germany's narrower post-sentence supervision use (since 2011).",
+                Citation = "Scope varies by country - France's electronic-monitoring custody alternative (in genuine use since ~2000) versus Germany's narrower post-sentence supervision use (since 2011).",
                 // CONFIRMED, though real scope varies by country - France's "placement sous
                 // surveillance electronique" (1997 law, in genuine use as a custody alternative
                 // since ~2000) versus Germany's narrower post-sentence supervision use (since 2011,
@@ -636,7 +636,7 @@ namespace PoliSim.Simulation
                 Name = "Restorative Justice & Victim-Offender Mediation",
                 Description = "Establishes a formal mediation process between victim and offender that can reduce or substitute for a criminal sentence.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED for Germany - Tater-Opfer-Ausgleich, codified into the Criminal Code (Sec. 46a StGB) in 1994. DIRECTIONAL/GENRE-IDIOM elsewhere.",
+                Citation = "For Germany - Tater-Opfer-Ausgleich, codified into the Criminal Code (Sec. 46a StGB) in 1994. The others follow the same direction.",
                 // CONFIRMED for Germany - "Tater-Opfer-Ausgleich," codified into the Criminal Code
                 // (Sec. 46a StGB) in 1994, can reduce or substitute punishment.
                 // DIRECTIONAL/GENRE-IDIOM elsewhere - pilot programs exist in France and Poland but
@@ -650,7 +650,7 @@ namespace PoliSim.Simulation
                 Name = "Juvenile Justice Reform",
                 Description = "Raises the age of adult-court jurisdiction and channels youth offenders into a separate, rehabilitation-focused juvenile justice track.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Germany's Jugendgerichtsgesetz (a separate juvenile code since 1953) and the US 'raise the age' state trend (roughly ten states, 2007-2019).",
+                Citation = "Germany's Jugendgerichtsgesetz (a separate juvenile code since 1953) and the US 'raise the age' state trend (roughly ten states, 2007-2019).",
                 // CONFIRMED - Germany's Jugendgerichtsgesetz (a separate, strongly rehabilitative
                 // juvenile criminal code since 1953) and the US "raise the age" state trend (e.g.
                 // New York 2017; roughly ten states raised the age to 18 between 2007 and 2019).
@@ -669,7 +669,7 @@ namespace PoliSim.Simulation
                 Name = "Hate Crime Sentencing Enhancement",
                 Description = "Adds an additional penalty on top of the underlying offense when the crime is proven to be motivated by bias against the victim's identity.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED for the US - the federal Hate Crimes Sentencing Enhancement Act (1994). DIRECTIONAL/GENRE-IDIOM for the European five, which typically use a separate hate-speech offense instead.",
+                Citation = "For the US - the federal Hate Crimes Sentencing Enhancement Act (1994). For the European five, which typically use a separate hate-speech offense instead.",
                 // CONFIRMED for the US - the federal Hate Crimes Sentencing Enhancement Act (1994)
                 // plus nearly all states' own enhancement statutes. DIRECTIONAL/GENRE-IDIOM for the
                 // European five, which typically criminalize hate speech/incitement as a SEPARATE
@@ -686,7 +686,7 @@ namespace PoliSim.Simulation
                 Name = "Risk-Based Pretrial Assessment",
                 Description = "Replaces cash-bail decisions with an algorithmic risk score for flight and public-safety danger, expanding summons-in-lieu-of-arrest for low-risk defendants.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - New Jersey's 2017 Criminal Justice Reform Act; pretrial jail population fell over 40% in two years, violent crime fell about 44% from 2015 to 2019.",
+                Citation = "New Jersey's 2017 Criminal Justice Reform Act; pretrial jail population fell over 40% in two years, violent crime fell about 44% from 2015 to 2019.",
                 // CONFIRMED - New Jersey's 2017 Criminal Justice Reform Act (Public Safety
                 // Assessment). Pretrial jail population fell over 40% in two years; the
                 // court-appearance rate barely moved (92.7% to 89.4%); violent crime fell about 44%
@@ -705,7 +705,7 @@ namespace PoliSim.Simulation
                 Name = "Mental Health Diversion Courts",
                 Description = "Establishes specialized court dockets that divert defendants with serious mental illness into judicially-supervised treatment instead of standard prosecution.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the first mental health court, Broward County, Florida, 1997, with federal support following via the America's Law Enforcement and Mental Health Project Act (2000).",
+                Citation = "The first mental health court, Broward County, Florida, 1997, with federal support following via the America's Law Enforcement and Mental Health Project Act (2000).",
                 // CONFIRMED - the first mental health court, Broward County, Florida, 1997, with
                 // federal support following via the America's Law Enforcement and Mental Health
                 // Project Act (2000). Evidence generally shows lower recidivism for graduates versus
@@ -723,7 +723,7 @@ namespace PoliSim.Simulation
                 Name = "Drug Courts Program",
                 Description = "Establishes specialized court dockets that divert eligible non-violent drug offenders into supervised treatment instead of prosecution or incarceration.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED for the US - the first drug court, Miami-Dade County, 1989; roughly 3,000 now operate nationally. DIRECTIONAL/GENRE-IDIOM elsewhere.",
+                Citation = "For the US - the first drug court, Miami-Dade County, 1989; roughly 3,000 now operate nationally. The others follow the same direction.",
                 // CONFIRMED for the US - the first drug court, Miami-Dade County, 1989; roughly
                 // 3,000 now operate nationally. DIRECTIONAL/GENRE-IDIOM for the other five countries,
                 // which have structurally different analogues (Germany's "Therapie statt Strafe"
@@ -744,7 +744,7 @@ namespace PoliSim.Simulation
                 Name = "Strict Drug Classification Equalization Act",
                 Description = "Equalizes the legal treatment and penalties for cannabis with those for harder drugs, removing distinctions in sentencing between drug categories.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Italy's 2006 Fini-Giovanardi law equalized cannabis and hard-drug penalties; struck down by Italy's Constitutional Court in 2014 on procedural grounds.",
+                Citation = "Italy's 2006 Fini-Giovanardi law equalized cannabis and hard-drug penalties; struck down by Italy's Constitutional Court in 2014 on procedural grounds.",
                 // CONFIRMED - Italy's 2006 Fini-Giovanardi law equalized cannabis and hard-drug
                 // penalties; Italy's Constitutional Court struck it down in 2014 on procedural
                 // grounds, reverting the country to its earlier, more lenient framework. Included
@@ -764,7 +764,7 @@ namespace PoliSim.Simulation
                 Name = "Physical Border Barrier Construction",
                 Description = "Constructs a physical steel-and-sensor barrier along the border, paired with a surge in border-guard personnel to block irregular crossings.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Poland's Belarus border wall (built Jan-Jun 2022, 187km, ~$407M), later supplemented by a ~206km electronic sensor layer.",
+                Citation = "Poland's Belarus border wall (built Jan-Jun 2022, 187km, ~$407M), later supplemented by a ~206km electronic sensor layer.",
                 // CONFIRMED - Poland's Belarus border wall, built January-June 2022 (187km,
                 // 5.5-meter steel construction, roughly $407M), later supplemented by a roughly
                 // 206km electronic sensor layer (about EUR72M, completed roughly 2023), in response
@@ -783,7 +783,7 @@ namespace PoliSim.Simulation
                 Name = "Schengen Border Reimposition",
                 Description = "Reinstates border checks at internal frontiers that would normally be open under a shared free-movement area, citing migration and cross-border crime concerns.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED, real and recent - Germany reinstated checks at all nine of its land borders by September 2024, citing migration and serious-crime concerns.",
+                Citation = "Real and recent - Germany reinstated checks at all nine of its land borders by September 2024, citing migration and serious-crime concerns.",
                 // CONFIRMED, real and recent - Germany reinstated checks at all nine of its land
                 // borders by September 2024 (Poland, Czechia, Austria, and Switzerland from October
                 // 2023), with the interior minister citing migration and "acute dangers... serious
@@ -800,7 +800,7 @@ namespace PoliSim.Simulation
                 Name = "Amnesty & Regularization Program",
                 Description = "Grants legal status to undocumented residents who meet defined criteria (length of residence, clean record, employment), rather than pursuing removal.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "DIRECTIONAL/GENRE-IDIOM - several real historical amnesty/regularization programs exist across immigration-receiving countries, not tied to one confirmed law common to the six seeded countries.",
+                Citation = "Several real historical amnesty/regularization programs exist across immigration-receiving countries, not tied to one confirmed law common to the six seeded countries.",
                 // DIRECTIONAL/GENRE-IDIOM - several real historical amnesty/regularization programs
                 // exist across immigration-receiving countries, but this project isn't citing one
                 // single confirmed law common to the six seeded countries the way, say, Poland's
@@ -817,7 +817,7 @@ namespace PoliSim.Simulation
                 Name = "Human Trafficking Task Force",
                 Description = "Funds a dedicated, cross-agency police unit investigating human trafficking and forced-labor networks, coordinating with border authorities on victim identification.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "GENRE-IDIOM/DIRECTIONAL - dedicated anti-trafficking task forces are a common institutional response across many countries; the US TVPA framework (2000) is the closest single anchor.",
+                Citation = "Dedicated anti-trafficking task forces are a common institutional response across many countries; the US TVPA framework (2000) is the closest single anchor.",
                 // GENRE-IDIOM/DIRECTIONAL - dedicated anti-trafficking task forces are a real,
                 // common institutional response across many countries (the US TVPA framework since
                 // 2000 is the closest single confirmed anchor, though this law isn't citing that Act
@@ -848,7 +848,7 @@ namespace PoliSim.Simulation
                 Name = "287(g) Immigration Enforcement Agreements",
                 Description = "Authorizes state and local police to enter formal agreements with federal immigration authorities, deputizing officers to identify, detain, and process individuals for immigration violations during routine policing.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US 287(g) program (Immigration and Nationality Act Sec. 287(g), added by IIRIRA 1996), formalizing ICE-local police enforcement agreements; participation expanded sharply from the mid-2000s onward.",
+                Citation = "The US 287(g) program (Immigration and Nationality Act Sec. 287(g), added by IIRIRA 1996), formalizing ICE-local police enforcement agreements; participation expanded sharply from the mid-2000s onward.",
                 // CONFIRMED - US 287(g) program, added to the Immigration and Nationality Act by the
                 // 1996 IIRIRA; dormant for its first several years, then adopted by a growing number
                 // of state and local agencies from the mid-2000s on, and expanded further in several
@@ -870,7 +870,7 @@ namespace PoliSim.Simulation
                 Name = "Hot Spot Policing Program",
                 Description = "Concentrates additional patrol presence and targeted enforcement on the small number of locations and individuals responsible for a disproportionate share of violent crime, rather than spreading resources evenly.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the Kansas City Gun Experiment (1992-93) and Boston's Operation Ceasefire (1996), among the most consistently evidence-backed policing strategies in criminology (Braga et al. meta-analyses).",
+                Citation = "The Kansas City Gun Experiment (1992-93) and Boston's Operation Ceasefire (1996), among the most consistently evidence-backed policing strategies in criminology (Braga et al. meta-analyses).",
                 // CONFIRMED - place-based and focused-deterrence policing, proven out by the Kansas
                 // City Gun Experiment (1992-93, a randomized hot-spot patrol trial) and Boston's
                 // Operation Ceasefire (1996, a focused-deterrence intervention credited with a sharp
@@ -888,7 +888,7 @@ namespace PoliSim.Simulation
                 Name = "Veterans Treatment Courts",
                 Description = "Establishes specialized court dockets for justice-involved military veterans, linking eligible defendants to VA benefits, mentorship, and treatment in lieu of standard prosecution.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the first veterans treatment court, Buffalo, New York (2008, Judge Robert Russell); several hundred now operate across the US.",
+                Citation = "The first veterans treatment court, Buffalo, New York (2008, Judge Robert Russell); several hundred now operate across the US.",
                 // CONFIRMED - the first veterans treatment court opened in Buffalo, New York in
                 // January 2008 under Judge Robert Russell, explicitly modeled on the existing drug-
                 // and mental-health-court diversion shape already in this catalog; several hundred
@@ -907,7 +907,7 @@ namespace PoliSim.Simulation
                 Name = "Financial Crimes & Anti-Money-Laundering Unit",
                 Description = "Establishes a dedicated police and prosecutorial unit investigating money laundering, large-scale fraud, and illicit financial flows, distinct from digital/cybercrime investigation.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US FinCEN (Financial Crimes Enforcement Network, established 1990) and the EU's Anti-Money Laundering Directives (in force since 1991, tightened repeatedly), both funding dedicated financial-crime investigative capacity.",
+                Citation = "The US FinCEN (Financial Crimes Enforcement Network, established 1990) and the EU's Anti-Money Laundering Directives (in force since 1991, tightened repeatedly), both funding dedicated financial-crime investigative capacity.",
                 // CONFIRMED - the US Treasury's FinCEN (established 1990) and the EU's own Anti-Money
                 // Laundering Directive framework (first adopted 1991, through several later
                 // tightenings) both stand up real, dedicated financial-crime investigative capacity.
@@ -927,7 +927,7 @@ namespace PoliSim.Simulation
                 Name = "Stand Your Ground Law",
                 Description = "Removes the legal duty to retreat before using deadly force in self-defense in any place a person is lawfully present, and grants broad immunity from prosecution when the claim is upheld.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Florida's 2005 Stand Your Ground law, copied in some form by over 30 US states; associated in multiple peer-reviewed studies with more justifiable-homicide rulings and, in several states, higher homicide rates overall.",
+                Citation = "Florida's 2005 Stand Your Ground law, copied in some form by over 30 US states; associated in multiple peer-reviewed studies with more justifiable-homicide rulings and, in several states, higher homicide rates overall.",
                 // CONFIRMED - Florida enacted the first modern "Stand Your Ground" law in 2005,
                 // removing the common-law duty to retreat and adding a pretrial immunity hearing;
                 // more than 30 US states have adopted some form since. Multiple peer-reviewed studies
@@ -947,7 +947,7 @@ namespace PoliSim.Simulation
                 Name = "Anti-Mafia Asset Confiscation Law",
                 Description = "Empowers courts to seize assets from individuals with proven organized-crime associations even without a criminal conviction, based on a documented mismatch between lawful income and accumulated wealth.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Italy's Rognoni-La Torre law (1982), creating the mafia-association offense and non-conviction-based asset confiscation, strengthened repeatedly since (most recently the 2011 Anti-Mafia Code).",
+                Citation = "Italy's Rognoni-La Torre law (1982), creating the mafia-association offense and non-conviction-based asset confiscation, strengthened repeatedly since (most recently the 2011 Anti-Mafia Code).",
                 // CONFIRMED - Italy's Rognoni-La Torre law (1982, passed after the Mafia assassination
                 // of its co-author, General Carlo Alberto Dalla Chiesa) created the "mafia
                 // association" criminal offense (Art. 416-bis) and non-conviction-based asset
@@ -985,7 +985,7 @@ namespace PoliSim.Simulation
                 Name = "Pretrial Preventive Detention Act",
                 Description = "Authorizes courts to detain a defendant before trial based on a finding of danger to the community, not flight risk alone - the first legal basis for denying bail on dangerousness grounds rather than only to secure appearance.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US federal Bail Reform Act of 1984, upheld by the Supreme Court in United States v. Salerno (1987), establishing pretrial detention for dangerousness as constitutional.",
+                Citation = "The US federal Bail Reform Act of 1984, upheld by the Supreme Court in United States v. Salerno (1987), establishing pretrial detention for dangerousness as constitutional.",
                 // CONFIRMED - the US federal Bail Reform Act of 1984 was the first federal law to
                 // authorize pretrial detention based on a finding of DANGER to the community, not
                 // flight risk alone - a structural break from the prior presumption (bail exists only
@@ -1004,7 +1004,7 @@ namespace PoliSim.Simulation
                 Name = "Percentage Bail Deposit Program",
                 Description = "Lets a defendant pay a fraction (typically 10%) of the court-set bail amount directly to the court to secure release, refunded on appearance, rather than paying a commercial bail bondsman's non-refundable premium.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Illinois pioneered the '10 percent bail' cash-deposit program in 1964, since adopted in some form by roughly half of US states.",
+                Citation = "Illinois pioneered the '10 percent bail' cash-deposit program in 1964, since adopted in some form by roughly half of US states.",
                 // CONFIRMED - Illinois introduced the "10 percent bail" deposit program in 1964,
                 // letting defendants pay a refundable 10% deposit to the court instead of a
                 // commercial bondsman's non-refundable premium (typically also ~10%, but never
@@ -1022,7 +1022,7 @@ namespace PoliSim.Simulation
                 Name = "Drug-Free Zone Sentencing Enhancement",
                 Description = "Imposes an additional mandatory sentence enhancement for drug offenses committed within a defined distance of a school, park, or other designated protected zone.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - widespread US state and federal 'drug-free zone' enhancement laws adopted from the 1970s through the 1990s (New Jersey's 1987 law a frequently cited model; codified federally at 21 U.S.C. Sec. 860).",
+                Citation = "Widespread US state and federal 'drug-free zone' enhancement laws adopted from the 1970s through the 1990s (New Jersey's 1987 law a frequently cited model; codified federally at 21 U.S.C. Sec. 860).",
                 // CONFIRMED - drug-free zone enhancement laws spread across nearly every US state
                 // from the 1970s through the 1990s (New Jersey's 1987 law a frequently cited model),
                 // with a federal equivalent codified at 21 U.S.C. Sec. 860; real, widely documented
@@ -1042,7 +1042,7 @@ namespace PoliSim.Simulation
                 Name = "Counter-Narcotics Interdiction Funding Act",
                 Description = "Funds joint military and law-enforcement interdiction operations against drug trafficking and production, including cross-border coordination with source and transit countries.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - Plan Colombia (launched 2000), a joint US-Colombia counter-narcotics and interdiction program totaling roughly $10 billion in US aid over two decades.",
+                Citation = "Plan Colombia (launched 2000), a joint US-Colombia counter-narcotics and interdiction program totaling roughly $10 billion in US aid over two decades.",
                 // CONFIRMED - Plan Colombia, launched in 2000 under the Clinton and Pastrana
                 // administrations, funded aerial coca eradication, interdiction operations, and
                 // military/police training against drug production and trafficking; roughly $10
@@ -1061,7 +1061,7 @@ namespace PoliSim.Simulation
                 Name = "National Guard Border Deployment",
                 Description = "Deploys National Guard troops to support border-patrol operations with surveillance, logistics, and infrastructure work, distinct from a standing physical barrier or federal agency staffing increase.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - repeated US National Guard deployments to the southern border (Operation Jump Start 2006, a 2010 deployment, Operation Guardian Support 2018-19), plus state-level deployments such as Texas's Operation Lone Star since 2021.",
+                Citation = "Repeated US National Guard deployments to the southern border (Operation Jump Start 2006, a 2010 deployment, Operation Guardian Support 2018-19), plus state-level deployments such as Texas's Operation Lone Star since 2021.",
                 // CONFIRMED - the US has repeatedly deployed National Guard troops to the US-Mexico
                 // border in a support (not law-enforcement-authority) role: Operation Jump Start
                 // (2006, Bush), a 2010 deployment (Obama), and Operation Guardian Support (2018-19,
@@ -1081,7 +1081,7 @@ namespace PoliSim.Simulation
                 Name = "Pretrial Services Agency Establishment",
                 Description = "Establishes a dedicated agency to supervise and support defendants released before trial - court-date reminders, check-ins, and referrals - giving judges a real supervised-release option instead of a binary cash-or-jail choice.",
                 Category = LawCategory.CrimeJustice,
-                Citation = "CONFIRMED - the US federal Pretrial Services Act of 1982, establishing a pretrial services agency in every federal district, building on the pioneering DC Pretrial Services Agency (established 1968).",
+                Citation = "The US federal Pretrial Services Act of 1982, establishing a pretrial services agency in every federal district, building on the pioneering DC Pretrial Services Agency (established 1968).",
                 // CONFIRMED - the DC Pretrial Services Agency (established 1968, the first of its
                 // kind) demonstrated supervised pretrial release as a real alternative to cash bail or
                 // detention; the federal Pretrial Services Act of 1982 then established an equivalent
@@ -1116,7 +1116,7 @@ namespace PoliSim.Simulation
                 Name = "Federal Minimum Wage Increase Act",
                 Description = "Roughly doubles the statutory minimum wage in annual steps, lifting the wage floor from the bottom quarter of the wage distribution toward 60% of the median wage.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the US Raise the Wage Act (House-passed 2019, reintroduced 2021/2023), phasing the federal minimum to $15/hr - roughly doubling the federal Kaitz index - with the CBO's 2019 median estimates of ~1.3M jobs cost and ~1.3M people lifted from poverty.",
+                Citation = "The US Raise the Wage Act (House-passed 2019, reintroduced 2021/2023), phasing the federal minimum to $15/hr - roughly doubling the federal Kaitz index - with the CBO's 2019 median estimates of ~1.3M jobs cost and ~1.3M people lifted from poverty.",
                 // CONFIRMED - the flagship contested labor bill of the era. SWEEPING primary
                 // (+16 Kaitz points; x2 scale -> 32): the USA's seeded Kaitz is 29, and the CBO's
                 // modeled $15 federal floor lands the effective index near ~45 - this delta IS
@@ -1134,7 +1134,7 @@ namespace PoliSim.Simulation
                 Name = "Minimum Wage Indexation Act",
                 Description = "Ties annual minimum-wage upratings to median-wage growth by statutory formula, ending ad-hoc political uprating rounds.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - France's SMIC statutory indexation formula (price- and wage-linked, with discretionary coups de pouce on top) and US state indexation amendments (Florida 2004, Colorado 2006).",
+                Citation = "France's SMIC statutory indexation formula (price- and wage-linked, with discretionary coups de pouce on top) and US state indexation amendments (Florida 2004, Colorado 2006).",
                 // CONFIRMED - indexation is a real, widespread mechanism. MINOR (+3 Kaitz; x2 ->
                 // 6): a formula locks in modest upward real drift versus a nominally frozen floor
                 // that erodes - the delta prices the drift a formula protects, not a headline
@@ -1149,7 +1149,7 @@ namespace PoliSim.Simulation
                 Name = "Subminimum Wage Abolition Act",
                 Description = "Phases out tipped, youth and disability subminimum wages so the full statutory floor applies to every covered worker.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Washington DC's Initiative 82 (2022), phasing out the tipped minimum wage by 2027; seven US states already apply the full minimum to tipped workers.",
+                Citation = "Washington DC's Initiative 82 (2022), phasing out the tipped minimum wage by 2027; seven US states already apply the full minimum to tipped workers.",
                 // CONFIRMED - a real, recurring reform with a named enacted instance. MODERATE
                 // (+4 Kaitz; x2 -> 8): abolishing subminimums raises the EFFECTIVE economy-wide
                 // wage floor for the covered groups - real and felt, but smaller than a headline
@@ -1163,7 +1163,7 @@ namespace PoliSim.Simulation
                 Name = "Wage Floor Restraint Act",
                 Description = "Freezes the nominal minimum wage and narrows its sectoral coverage, letting the floor erode against the median wage over time.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the UK's abolition of the Wages Councils (Trade Union Reform and Employment Rights Act 1993), removing sectoral minimum-wage floors entirely until the 1998 National Minimum Wage Act restored a statutory floor.",
+                Citation = "The UK's abolition of the Wages Councils (Trade Union Reform and Employment Rights Act 1993), removing sectoral minimum-wage floors entirely until the 1998 National Minimum Wage Act restored a statutory floor.",
                 // CONFIRMED - the dial's real down direction, proven by an enacted national
                 // rollback. MODERATE (-6 Kaitz; x2 -> 12): the 1993-1998 UK window is the
                 // documented case of a wage floor eroding by policy choice; the magnitude is a
@@ -1178,7 +1178,7 @@ namespace PoliSim.Simulation
                 Name = "Paid Family Leave Insurance Act",
                 Description = "Creates a payroll-funded insurance program paying about twelve weeks of wage replacement for new parents and family caregivers.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the US FAMILY Act model and the enacted state programs it generalizes (California 2002, first in the nation; New Jersey, New York, Washington) - all roughly 8-12 weeks, payroll-insurance funded.",
+                Citation = "The US FAMILY Act model and the enacted state programs it generalizes (California 2002, first in the nation; New Jersey, New York, Washington) - all roughly 8-12 weeks, payroll-insurance funded.",
                 // CONFIRMED - the standard first-mandate shape. MODERATE (+12 weeks; x1 - the
                 // class doc's own FMLA-scale calibration case): for the USA (baseline 0 weeks)
                 // this is the from-zero mandate the FAMILY Act proposes; for a high-baseline
@@ -1194,7 +1194,7 @@ namespace PoliSim.Simulation
                 Name = "Parental Leave Expansion Act",
                 Description = "Extends paid parental leave toward a Nordic-scale entitlement, with months reserved for each parent to equalize uptake.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Sweden's 480-day parental insurance with three reserved months per parent (2016) and Germany's Elterngeld reform (2007), the explicit redesign of parental benefits as pro-natalist family policy.",
+                Citation = "Sweden's 480-day parental insurance with three reserved months per parent (2016) and Germany's Elterngeld reform (2007), the explicit redesign of parental benefits as pro-natalist family policy.",
                 // CONFIRMED - two landmark systems, one shape. SWEEPING primary (+26 weeks; x1 -
                 // half a year of additional entitlement, the Nordic-scale build-out the class
                 // doc's calibration names). MINOR secondary FamilyPolicyDelta +5: Elterngeld's
@@ -1210,7 +1210,7 @@ namespace PoliSim.Simulation
                 Name = "Working Time Regulation Act",
                 Description = "Caps average weekly working hours, mandates daily and weekly rest periods, and sets a paid annual leave minimum.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the EU Working Time Directive (2003/88/EC): a 48-hour average weekly cap, daily/weekly rest requirements, and four weeks' paid annual leave.",
+                Citation = "The EU Working Time Directive (2003/88/EC): a 48-hour average weekly cap, daily/weekly rest requirements, and four weeks' paid annual leave.",
                 // CONFIRMED - the canonical working-time statute. MODERATE (+10): a real, felt
                 // strictness shift with defined scope - short of the French 35-hour framework's
                 // reach (which would grade MAJOR on this dial). The unemployment effect the pane
@@ -1224,7 +1224,7 @@ namespace PoliSim.Simulation
                 Name = "Working Hours Deregulation Act",
                 Description = "Loosens statutory hour caps and lets firm-level agreements override sectoral working-time rules on overtime terms.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - France's El Khomri labor law (2016), letting company-level accords set overtime terms below branch agreements - the loosening of the 35-hour framework that drove the Nuit debout protests.",
+                Citation = "France's El Khomri labor law (2016), letting company-level accords set overtime terms below branch agreements - the loosening of the 35-hour framework that drove the Nuit debout protests.",
                 // CONFIRMED - the opposed pair's other half, an enacted national loosening.
                 // MODERATE (-9): the El Khomri reform inverted the norm hierarchy for working
                 // time without abolishing the caps themselves - a real, felt deregulation short
@@ -1238,7 +1238,7 @@ namespace PoliSim.Simulation
                 Name = "Active Labour Market Programs Act",
                 Description = "Funds job-search assistance, retraining guarantees and activation requirements at the scale of the strongest real systems.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Denmark's flexicurity active-labor-market system (~2% of GDP on active measures, the OECD's highest) and Germany's Hartz III/IV job-center activation reforms (2003-05).",
+                Citation = "Denmark's flexicurity active-labor-market system (~2% of GDP on active measures, the OECD's highest) and Germany's Hartz III/IV job-center activation reforms (2003-05).",
                 // CONFIRMED - two named systems define the shape. MODERATE (+12): a
                 // flexicurity-scale ALMP build-out is a substantial, defined program expansion -
                 // real spending and real activation rules - but the dial is a 0-100 abstraction
@@ -1253,7 +1253,7 @@ namespace PoliSim.Simulation
                 Name = "Skilled Worker Immigration Act",
                 Description = "Opens points-tested work visas, eases credential recognition and lowers salary thresholds for skilled migrants.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Germany's Fachkraefteeinwanderungsgesetz (2020, expanded 2023 with the Chancenkarte points card) and the EU Blue Card framework it builds on.",
+                Citation = "Germany's Fachkraefteeinwanderungsgesetz (2020, expanded 2023 with the Chancenkarte points card) and the EU Blue Card framework it builds on.",
                 // CONFIRMED - a named, twice-legislated national opening. MODERATE (+9): a real
                 // widening of labor migration channels for a defined population (skilled
                 // workers), well short of open-borders scale on a 0-100 openness dial. The
@@ -1277,7 +1277,7 @@ namespace PoliSim.Simulation
                 Name = "Universal Child Benefit Act",
                 Description = "Pays a flat monthly benefit per child to every family, unconditionally, as an explicit pro-natalist and child-poverty measure.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Poland's Rodzina 500+ program (2016, raised to 800+ in 2024): a flat monthly per-child payment, explicitly pro-natalist in its framing, one of Europe's largest family-benefit expansions.",
+                Citation = "Poland's Rodzina 500+ program (2016, raised to 800+ in 2024): a flat monthly per-child payment, explicitly pro-natalist in its framing, one of Europe's largest family-benefit expansions.",
                 // CONFIRMED - a named, enacted flagship. MODERATE (+12): 500+ was a genuinely
                 // large reorientation of family policy (~1.5% of GDP at launch), short of the
                 // total-reorientation SWEEPING tier. Its documented fertility effect was small -
@@ -1293,7 +1293,7 @@ namespace PoliSim.Simulation
                 Name = "Universal Childcare Act",
                 Description = "Guarantees subsidized childcare places at a low flat parent fee, universally rather than means-tested.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Quebec's $5-a-day universal childcare (1997, the canonical natural experiment for maternal labor-supply effects) and Sweden's maxtaxa fee cap (2002).",
+                Citation = "Quebec's $5-a-day universal childcare (1997, the canonical natural experiment for maternal labor-supply effects) and Sweden's maxtaxa fee cap (2002).",
                 // CONFIRMED - two named systems. MODERATE (+10) on FamilyPolicy. Cross-category
                 // tension stated honestly: childcare's best-documented effect is maternal LABOR
                 // SUPPLY, and in this model that channel belongs to WelfareProgramType.
@@ -1310,7 +1310,7 @@ namespace PoliSim.Simulation
                 Name = "Child Tax Credit Expansion Act",
                 Description = "Expands the per-child tax credit, makes it fully refundable and pays it monthly, reaching the lowest-income families for the first time.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the US American Rescue Plan's 2021 Child Tax Credit expansion ($3,000-3,600, fully refundable, paid monthly July-December 2021), which roughly halved measured child poverty while in force.",
+                Citation = "The US American Rescue Plan's 2021 Child Tax Credit expansion ($3,000-3,600, fully refundable, paid monthly July-December 2021), which roughly halved measured child poverty while in force.",
                 // CONFIRMED - enacted, measured, and lapsed (the lapse is the political story, not
                 // this law's). MODERATE (+7): a large one-parameter expansion of an existing
                 // instrument - real and felt, below the create-a-new-program tier of the two laws
@@ -1324,7 +1324,7 @@ namespace PoliSim.Simulation
                 Name = "Family Benefit Retrenchment Act",
                 Description = "Caps means-tested family support at two children and freezes child-benefit rates, retrenching family policy for fiscal savings.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the UK's two-child limit on Child Tax Credit/Universal Credit (announced 2015, in force 2017) plus the 2010s child-benefit freezes - the clearest recent retrenchment of a rich-country family-benefit system.",
+                Citation = "The UK's two-child limit on Child Tax Credit/Universal Credit (announced 2015, in force 2017) plus the 2010s child-benefit freezes - the clearest recent retrenchment of a rich-country family-benefit system.",
                 // CONFIRMED - the dial's real DOWN direction, enacted and still in force. MODERATE
                 // (-8): a coverage cap plus rate freeze retrenches genuinely but leaves the
                 // benefit architecture standing (abolition would grade deeper). The batch
@@ -1338,7 +1338,7 @@ namespace PoliSim.Simulation
                 Name = "Humanitarian Admissions Expansion Act",
                 Description = "Opens group-based humanitarian admission with immediate work rights, bypassing case-by-case asylum queues for a designated displaced population.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the EU's first-ever activation of the Temporary Protection Directive (March 2022) for people fleeing Ukraine: immediate residence and LABOR MARKET ACCESS across the bloc, ~4 million registrations within a year.",
+                Citation = "The EU's first-ever activation of the Temporary Protection Directive (March 2022) for people fleeing Ukraine: immediate residence and LABOR MARKET ACCESS across the bloc, ~4 million registrations within a year.",
                 // CONFIRMED - the largest opening of European labor-market access to a displaced
                 // population in the modern era (Germany's 2015 opening is the directional
                 // precedent, but 2022's is the statutory instrument). MODERATE (+11) on the
@@ -1353,7 +1353,7 @@ namespace PoliSim.Simulation
                 Name = "Immigration Restriction Act",
                 Description = "Tightens asylum criteria, raises income and language thresholds for residence, and ends preferential regional free-movement admission.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Denmark's 2015-2019 restrictive 'paradigm shift' (temporary-protection-first asylum, the 2016 L87 tightening package) and the UK's post-Brexit points system ending EU free movement (2021) - two enacted national restrictions.",
+                Citation = "Denmark's 2015-2019 restrictive 'paradigm shift' (temporary-protection-first asylum, the 2016 L87 tightening package) and the UK's post-Brexit points system ending EU free movement (2021) - two enacted national restrictions.",
                 // CONFIRMED - the opposed pair's other half, twice over. MODERATE (-12): ending a
                 // free-movement channel plus systematic asylum tightening is a real, large
                 // narrowing of the openness dial, short of a closed-borders reorientation.
@@ -1368,7 +1368,7 @@ namespace PoliSim.Simulation
                 Name = "Seasonal Guest Worker Program Act",
                 Description = "Creates capped, employer-sponsored seasonal work visas for agriculture and tourism, with mandatory return and no settlement track.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the US H-2A/H-2B seasonal visa programs and Germany's bilateral seasonal-worker agreements (the 1990s Polish agreements; the 2020 harvest-worker exceptions) - the standard bounded-opening shape.",
+                Citation = "The US H-2A/H-2B seasonal visa programs and Germany's bilateral seasonal-worker agreements (the 1990s Polish agreements; the 2020 harvest-worker exceptions) - the standard bounded-opening shape.",
                 // CONFIRMED - a recurring, deliberately bounded instrument. MINOR (+5): capped,
                 // sector-specific, non-settlement admission is the openness dial's smallest real
                 // positive step - the point of the design is smallness. Uncontroversial
@@ -1382,7 +1382,7 @@ namespace PoliSim.Simulation
                 Name = "Apprenticeship System Act",
                 Description = "Establishes a statutory dual apprenticeship system - firm-based training with wage subsidies paired with vocational schooling and recognized credentials.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Germany's Berufsbildungsgesetz (1969, modernized 2005/2020), the statute behind the dual vocational system routinely credited for Germany's low youth unemployment; Switzerland's VET law is the sibling case.",
+                Citation = "Germany's Berufsbildungsgesetz (1969, modernized 2005/2020), the statute behind the dual vocational system routinely credited for Germany's low youth unemployment; Switzerland's VET law is the sibling case.",
                 // CONFIRMED - a named statute behind the world's benchmark system. MODERATE (+9):
                 // building a statutory dual system is a substantial, defined training-capacity
                 // reform on the 0-100 retraining dial - the flexicurity-scale ALMP act (batch 1)
@@ -1397,7 +1397,7 @@ namespace PoliSim.Simulation
                 Name = "Lifelong Learning Accounts Act",
                 Description = "Gives every worker an individual, portable training account credited annually, spendable on accredited courses at their own initiative.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - France's Compte Personnel de Formation (2014, monetized in euros 2018) and Singapore's SkillsFuture credits (2015) - the two flagship individual-training-account systems.",
+                Citation = "France's Compte Personnel de Formation (2014, monetized in euros 2018) and Singapore's SkillsFuture credits (2015) - the two flagship individual-training-account systems.",
                 // CONFIRMED - two named systems, one instrument shape. MINOR (+6): individual
                 // accounts widen ACCESS to training without building delivery capacity the way
                 // the apprenticeship statute or an ALMP build-out does - the smallest real
@@ -1412,7 +1412,7 @@ namespace PoliSim.Simulation
                 Name = "Shorter Workweek Pilot Act",
                 Description = "Grants public-sector workers a right to reduced weekly hours at full pay and funds matched private-sector trials of a shorter week.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED for Iceland's 2015-2019 public-sector trials (which led ~86% of the workforce to gain reduced-hours rights by 2021); DIRECTIONAL as a general statutory instrument - the UK's 2022 four-day-week pilot was large but private and voluntary.",
+                Citation = "For Iceland's 2015-2019 public-sector trials (which led ~86% of the workforce to gain reduced-hours rights by 2021); as a general statutory instrument, the UK's 2022 four-day-week pilot was large but private and voluntary.",
                 // Hybrid label, honestly split: Iceland's outcome is documented; a general
                 // statutory shorter week is still a live debate, not an enacted national norm.
                 // MINOR (+6) on working-time strictness: rights-to-reduce plus pilots move the
@@ -1436,7 +1436,7 @@ namespace PoliSim.Simulation
                 Name = "Paternity Leave Equalization Act",
                 Description = "Raises paid paternity leave to full parity with maternity leave, non-transferable between parents and paid at full replacement rate.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Spain's 2021 equalization of paternity and maternity leave at 16 weeks each, non-transferable, 100% pay - the first large economy to reach full parity.",
+                Citation = "Spain's 2021 equalization of paternity and maternity leave at 16 weeks each, non-transferable, 100% pay - the first large economy to reach full parity.",
                 // CONFIRMED - a named, enacted parity reform. MODERATE (+8 weeks): Spain's path
                 // added ~11 paternity weeks over 2017-2021; +8 grades the parity step itself, a
                 // real expansion of the household's total paid entitlement smaller than the
@@ -1450,7 +1450,7 @@ namespace PoliSim.Simulation
                 Name = "Parental Leave Quota Act",
                 Description = "Reserves a use-it-or-lose-it share of the parental leave entitlement for each parent, modestly extending the total to fund the reserved weeks.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Norway's 1993 'daddy quota' (the first reserved-weeks scheme, now 15 weeks per parent), the model Sweden's and Iceland's reserved months follow.",
+                Citation = "Norway's 1993 'daddy quota' (the first reserved-weeks scheme, now 15 weeks per parent), the model Sweden's and Iceland's reserved months follow.",
                 // CONFIRMED - the instrument that invented reserved leave. MINOR (+4 weeks): a
                 // quota mostly REALLOCATES existing entitlement; the delta prices only the modest
                 // extension that funds the reserved share - grading the reallocation as a large
@@ -1464,7 +1464,7 @@ namespace PoliSim.Simulation
                 Name = "Right to Disconnect Act",
                 Description = "Obliges employers above a size threshold to negotiate binding rules on out-of-hours contact and email, with working-time enforcement behind them.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - France's right-to-disconnect provision (Article 55 of the 2016 El Khomri law, in force 2017), the first national disconnection statute, since echoed in Belgium and Portugal.",
+                Citation = "France's right-to-disconnect provision (Article 55 of the 2016 El Khomri law, in force 2017), the first national disconnection statute, since echoed in Belgium and Portugal.",
                 // CONFIRMED - a named first-in-kind statute. MINOR (+5): disconnection rules
                 // extend working-time protection into a new margin (availability) without
                 // touching the headline hour caps - a narrow, real strictness step. Note the
@@ -1480,7 +1480,7 @@ namespace PoliSim.Simulation
                 Name = "Working Time Opt-Out Act",
                 Description = "Lets individual workers sign away the statutory weekly hours cap, making the ceiling advisory wherever employer and worker agree.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the UK's blanket use of the Working Time Directive's Article 22 individual opt-out from the 48-hour cap, the standing exception the European Parliament repeatedly (and unsuccessfully) voted to phase out.",
+                Citation = "The UK's blanket use of the Working Time Directive's Article 22 individual opt-out from the 48-hour cap, the standing exception the European Parliament repeatedly (and unsuccessfully) voted to phase out.",
                 // CONFIRMED - a real, standing, contested carve-out. MINOR (-6): an individual
                 // opt-out hollows the cap's bindingness without repealing the framework - the
                 // El Khomri-style norm-hierarchy inversion (-9 MODERATE) cuts deeper because it
@@ -1495,7 +1495,7 @@ namespace PoliSim.Simulation
                 Name = "Adequate Minimum Wage Directive Act",
                 Description = "Commits statutory minimum-wage setting to an adequacy framework benchmarked at 60% of the median wage, with regular reference-tested upratings.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the EU Adequate Minimum Wages Directive (2022/2041): a 60%-of-median indicative adequacy reference for members with statutory floors, plus a collective-bargaining-coverage pillar for those without.",
+                Citation = "The EU Adequate Minimum Wages Directive (2022/2041): a 60%-of-median indicative adequacy reference for members with statutory floors, plus a collective-bargaining-coverage pillar for those without.",
                 // CONFIRMED - the directive is real and in force (transposition due 2024).
                 // MODERATE (+5 Kaitz; x2 -> 10): an adequacy framework pulls a below-reference
                 // floor toward 60% of median over successive upratings - real convergence
@@ -1513,7 +1513,7 @@ namespace PoliSim.Simulation
                 Name = "Trade Adjustment Assistance Act",
                 Description = "Funds extended retraining, income support during training, and relocation allowances for workers displaced by trade competition.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the US Trade Adjustment Assistance program (Trade Expansion Act 1962, expanded 1974/2002/2015, lapsed 2022) - the canonical trade-displacement retraining instrument.",
+                Citation = "The US Trade Adjustment Assistance program (Trade Expansion Act 1962, expanded 1974/2002/2015, lapsed 2022) - the canonical trade-displacement retraining instrument.",
                 // CONFIRMED - six decades of enacted history. MINOR (+5): TAA is real but
                 // narrow - it reaches certified trade-displaced workers only, a targeted slice
                 // of the retraining dial next to the economy-wide ALMP and apprenticeship
@@ -1527,7 +1527,7 @@ namespace PoliSim.Simulation
                 Name = "Citizenship Modernization Act",
                 Description = "Permits dual citizenship, shortens naturalization residence requirements, and eases the path for the second generation born in-country.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Germany's citizenship modernization law (in force June 2024): general dual citizenship and naturalization after five years (three with exceptional integration), replacing the renunciation requirement.",
+                Citation = "Germany's citizenship modernization law (in force June 2024): general dual citizenship and naturalization after five years (three with exceptional integration), replacing the renunciation requirement.",
                 // CONFIRMED - a named, just-enacted reform. MINOR (+6) on the openness dial:
                 // citizenship terms shape long-run settlement attractiveness and integration
                 // rather than admission volume itself - a real but indirect widening, graded at
@@ -1541,7 +1541,7 @@ namespace PoliSim.Simulation
                 Name = "Family Housing Support Act",
                 Description = "Grants escalating housing subsidies and loan forgiveness per child, tying family-formation support to explicit natalist targets.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Hungary's CSOK housing-subsidy scheme (2015) and the 2019 Family Protection Action Plan (loan forgiveness per child, lifetime income-tax exemption for mothers of four) - the era's most aggressive natalist package.",
+                Citation = "Hungary's CSOK housing-subsidy scheme (2015) and the 2019 Family Protection Action Plan (loan forgiveness per child, lifetime income-tax exemption for mothers of four) - the era's most aggressive natalist package.",
                 // CONFIRMED - named, enacted, explicitly natalist. MODERATE (+9): a large,
                 // multi-instrument commitment - short of SWEEPING because it reshapes incentives
                 // within the existing family-policy architecture rather than reorienting it.
@@ -1558,7 +1558,7 @@ namespace PoliSim.Simulation
                 Name = "Flexicurity Package Act",
                 Description = "Adopts the flexicurity triangle: easier hiring and dismissal, generous transitional support, and guaranteed retraining for every displaced worker.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Denmark's flexicurity model (the 1990s Rasmussen-era labor reforms), the OECD's standing reference case for combining flexible dismissal rules with strong active support.",
+                Citation = "Denmark's flexicurity model (the 1990s Rasmussen-era labor reforms), the OECD's standing reference case for combining flexible dismissal rules with strong active support.",
                 // CONFIRMED as a model; THE WEAK-PROXY PATTERN, exercised in labor for the first
                 // time (the wanted-effects log's own pre-authorized rule): flexicurity's CORE is
                 // employment-protection loosening, and EPL has NO dial in this model (logged
@@ -1577,7 +1577,7 @@ namespace PoliSim.Simulation
                 Name = "Demographic Response Package Act",
                 Description = "Bundles family benefits, leave expansion and managed labor migration into one statutory response to workforce aging.",
                 Category = LawCategory.LaborMarket,
-                Citation = "DIRECTIONAL - the aging-response packages every fast-aging economy now legislates in some form: Japan's Children's Future Strategy (2023, 3.6T yen), Germany's Demografiestrategie framework - a real policy genre, not one single statute.",
+                Citation = "The aging-response packages every fast-aging economy now legislates in some form: Japan's Children's Future Strategy (2023, 3.6T yen), Germany's Demografiestrategie framework - a real policy genre, not one single statute.",
                 // DIRECTIONAL - the genre is real, the bundle is this catalog's own composition.
                 // A genuinely TRIPLE-DIAL law (the batch charter's composition exercise):
                 // MODERATE primary FamilyPolicyDelta +7 (the benefit leg), MINOR secondaries
@@ -1604,7 +1604,7 @@ namespace PoliSim.Simulation
                 Name = "Youth Minimum Wage Act",
                 Description = "Introduces reduced statutory minimum-wage rates for workers under 21, stepped by age, to price young entrants into their first jobs.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the Netherlands' statutory youth minimum wage (age-stepped rates from 15 to the adult floor at 21, softened in 2017/2019 but standing), the canonical differentiated-floor design.",
+                Citation = "The Netherlands' statutory youth minimum wage (age-stepped rates from 15 to the adult floor at 21, softened in 2017/2019 but standing), the canonical differentiated-floor design.",
                 // CONFIRMED - a standing national design. MINOR (-3 Kaitz; x2 -> 6): an age
                 // carve-out lowers the EFFECTIVE economy-wide floor modestly - the mirror of the
                 // subminimum-abolition act above, and the honest small shape of the dial's down
@@ -1619,7 +1619,7 @@ namespace PoliSim.Simulation
                 Name = "Living Wage Procurement Act",
                 Description = "Requires government contractors and subsidy recipients to pay a living-wage rate above the statutory floor.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Baltimore's 1994 living-wage ordinance (the first) and the ~140 US city/county ordinances that followed; the UK's public-sector London Living Wage adoption is the sibling case.",
+                Citation = "Baltimore's 1994 living-wage ordinance (the first) and the ~140 US city/county ordinances that followed; the UK's public-sector London Living Wage adoption is the sibling case.",
                 // CONFIRMED - a thirty-year enacted family. MINOR (+3 Kaitz; x2 -> 6): procurement
                 // coverage raises the effective floor for the contractor workforce only - real,
                 // narrow, exactly the administrative tier. Funding tier (0.5).
@@ -1632,7 +1632,7 @@ namespace PoliSim.Simulation
                 Name = "Wage Theft Enforcement Act",
                 Description = "Funds wage-and-hour inspection capacity, adds treble damages for unpaid wages, and lets regulators pursue violations without a worker complaint.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - California's wage-theft statutes (criminalization 2021, the Private Attorneys General Act) and repeated US DOL Wage and Hour Division enforcement expansions.",
+                Citation = "California's wage-theft statutes (criminalization 2021, the Private Attorneys General Act) and repeated US DOL Wage and Hour Division enforcement expansions.",
                 // CONFIRMED - named instruments. MINOR (+2 Kaitz; x2 -> 4): enforcement raises
                 // the floor workers actually RECEIVE toward the floor the statute already
                 // promises - a real effective-wage effect, the smallest on this dial. Funding
@@ -1646,7 +1646,7 @@ namespace PoliSim.Simulation
                 Name = "Maternity Protection Act",
                 Description = "Guarantees a minimum of fourteen weeks' paid maternity leave with dismissal protection and health safeguards, per the international standard.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - ILO Maternity Protection Convention C183 (2000): a 14-week paid-leave minimum with cash benefits and dismissal protection, ratified by 43 states.",
+                Citation = "ILO Maternity Protection Convention C183 (2000): a 14-week paid-leave minimum with cash benefits and dismissal protection, ratified by 43 states.",
                 // CONFIRMED - the international floor itself. MINOR (+6 weeks): ratifying the
                 // C183 floor is a real but bounded step - most of this model's countries already
                 // exceed it (the delta reads as topping-up and hardening protection), and for a
@@ -1661,7 +1661,7 @@ namespace PoliSim.Simulation
                 Name = "Carers' Leave Act",
                 Description = "Adds short statutory paid leave for workers caring for sick relatives, plus protected paternity days at birth.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the EU Work-Life Balance Directive (2019/1158): five days' carers' leave a year and ten working days' paternity leave, transposition due 2022.",
+                Citation = "The EU Work-Life Balance Directive (2019/1158): five days' carers' leave a year and ten working days' paternity leave, transposition due 2022.",
                 // CONFIRMED - a named directive in force. MINOR (+3 weeks): days-scale
                 // entitlements summed across the new categories - the smallest real expansion
                 // shape on this dial. Funding tier (0.5).
@@ -1674,7 +1674,7 @@ namespace PoliSim.Simulation
                 Name = "Night Work Restriction Act",
                 Description = "Caps average night-shift hours, mandates health assessments for night workers, and grants transfer rights to day work on medical grounds.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the EU Working Time Directive's night-work provisions (8-hour average cap, health assessments) and ILO Night Work Convention C171 (1990).",
+                Citation = "The EU Working Time Directive's night-work provisions (8-hour average cap, health assessments) and ILO Night Work Convention C171 (1990).",
                 // CONFIRMED - standing international and EU law. MINOR (+4): a real strictness
                 // step on one margin of working time, inside the WTD framework the MODERATE act
                 // above establishes wholesale. Funding tier (0.5).
@@ -1687,7 +1687,7 @@ namespace PoliSim.Simulation
                 Name = "Annualized Hours Act",
                 Description = "Lets working-time limits average over a full year by agreement, trading weekly caps for seasonal flexibility.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the Working Time Directive's own 12-month averaging reference period via collective agreement, and the French/German annualization accords (modulation du temps de travail) built on it.",
+                Citation = "The Working Time Directive's own 12-month averaging reference period via collective agreement, and the French/German annualization accords (modulation du temps de travail) built on it.",
                 // CONFIRMED - a standard enacted flexibility instrument. MINOR (-5): annualization
                 // keeps the caps but hollows their week-by-week bite - a smaller loosening than
                 // the opt-out (-6) since the annual ceiling still binds. Funding tier (0.5) -
@@ -1701,7 +1701,7 @@ namespace PoliSim.Simulation
                 Name = "Workfare Activation Act",
                 Description = "Conditions out-of-work benefits on mandatory job search, training participation and work placements, with sanctions for refusal.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Wisconsin Works (1996, the US workfare template) and the UK's Universal Credit conditionality regime - benefit conditionality with mandatory activation.",
+                Citation = "Wisconsin Works (1996, the US workfare template) and the UK's Universal Credit conditionality regime - benefit conditionality with mandatory activation.",
                 // CONFIRMED - enacted twice over. THE WEAK-PROXY RULE, second labor use, stated:
                 // workfare's CORE is benefit conditionality, and benefit rules have no dial
                 // (unemployment insurance is the non-player automatic stabilizer - the
@@ -1717,7 +1717,7 @@ namespace PoliSim.Simulation
                 Name = "Remote Work Visa Act",
                 Description = "Creates a residence visa for foreign employees of foreign firms working remotely, with income thresholds and no local labor-market test.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Estonia's digital-nomad visa (2020, the first), followed by Portugal (2022) and Spain (2023, in the startup law).",
+                Citation = "Estonia's digital-nomad visa (2020, the first), followed by Portugal (2022) and Spain (2023, in the startup law).",
                 // CONFIRMED - a new but thrice-enacted class. MINOR (+4): a genuinely novel
                 // admission channel with deliberately small volumes - openness moves, a little.
                 // Funding tier (0.5).
@@ -1730,7 +1730,7 @@ namespace PoliSim.Simulation
                 Name = "Labor Migration Quota Act",
                 Description = "Imposes annual numerical caps on work-based residence permits, allocated by lottery or priority ranking once the cap binds.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Switzerland's 2014 'against mass immigration' initiative (a constitutional quota mandate) and the US H-1B annual cap with its lottery - two standing quota designs.",
+                Citation = "Switzerland's 2014 'against mass immigration' initiative (a constitutional quota mandate) and the US H-1B annual cap with its lottery - two standing quota designs.",
                 // CONFIRMED - the openness dial's structural down-shape. MODERATE (-7): a binding
                 // numerical cap narrows admission mechanically - deeper than any single-channel
                 // tweak, short of the paradigm-shift restriction act (-12). Hottest tier (1.5) -
@@ -1756,7 +1756,7 @@ namespace PoliSim.Simulation
                 Name = "Sectoral Wage Boards Act",
                 Description = "Empowers tripartite boards to set binding minimum pay above the statutory floor for named low-wage sectors.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - New York's 2015 fast-food wage board (a $15 sectoral floor by administrative order under a 1930s wage-board statute) and Australia's modern-award system of binding sectoral minimums.",
+                Citation = "New York's 2015 fast-food wage board (a $15 sectoral floor by administrative order under a 1930s wage-board statute) and Australia's modern-award system of binding sectoral minimums.",
                 // CONFIRMED - two living designs. MODERATE (+4 Kaitz; x2 -> 8): sectoral boards
                 // lift effective floors for whole low-wage industries - broader than procurement
                 // coverage, narrower than a headline-rate change. Contested tier (1.0).
@@ -1769,7 +1769,7 @@ namespace PoliSim.Simulation
                 Name = "Public Sector Family Leave Act",
                 Description = "Grants the government's own workforce paid parental leave first, setting the employer-of-reference standard private mandates later follow.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the US Federal Employee Paid Leave Act (2019): 12 weeks' paid parental leave for ~2 million federal workers, in a country with no general mandate.",
+                Citation = "The US Federal Employee Paid Leave Act (2019): 12 weeks' paid parental leave for ~2 million federal workers, in a country with no general mandate.",
                 // CONFIRMED - a named, enacted first-mover shape. MINOR (+5 weeks): covering the
                 // public workforce moves the economy-wide entitlement average genuinely but
                 // partially - the general mandate (MODERATE +12) is the next law over. Funding
@@ -1783,7 +1783,7 @@ namespace PoliSim.Simulation
                 Name = "Adoption Leave Parity Act",
                 Description = "Extends the full paid parental leave entitlement to adoptive and surrogate parents at parity with birth parents.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the UK's statutory adoption leave (Employment Act 2002, aligned to maternity-leave parity in 2015) - the standard parity design.",
+                Citation = "The UK's statutory adoption leave (Employment Act 2002, aligned to maternity-leave parity in 2015) - the standard parity design.",
                 // CONFIRMED - enacted parity. MINOR (+3 weeks): parity extends coverage to a
                 // small population rather than lengthening the entitlement - the smallest honest
                 // shape on this dial. Funding tier (0.5).
@@ -1796,7 +1796,7 @@ namespace PoliSim.Simulation
                 Name = "Telework Rights Act",
                 Description = "Makes flexible and remote working a day-one statutory right to request, refusable only on enumerated business grounds.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the Netherlands' Flexible Working Act (2016, extended toward telework in 2022) and the UK's day-one right to request flexible working (2024).",
+                Citation = "The Netherlands' Flexible Working Act (2016, extended toward telework in 2022) and the UK's day-one right to request flexible working (2024).",
                 // CONFIRMED - two enacted rights. MINOR (+3): a right to REQUEST with enumerated
                 // refusal grounds regulates the working-arrangement margin lightly - real, small,
                 // administrative. Funding tier (0.5).
@@ -1809,7 +1809,7 @@ namespace PoliSim.Simulation
                 Name = "Overtime Pay Threshold Act",
                 Description = "Raises the salary ceiling under which workers must receive overtime premiums, restoring coverage eroded by inflation.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the US Department of Labor's FLSA overtime-threshold rules (2019's $35,568; 2024's two-step raise toward $58,656, partially enjoined) - the recurring coverage-restoration fight.",
+                Citation = "The US Department of Labor's FLSA overtime-threshold rules (2019's $35,568; 2024's two-step raise toward $58,656, partially enjoined) - the recurring coverage-restoration fight.",
                 // CONFIRMED - a named, twice-fought rule. MINOR (+5): threshold restoration
                 // re-extends premium-pay protection to salaried workers priced out of it - a
                 // real strictness step below the framework-scale acts. Contested tier (1.0) -
@@ -1823,7 +1823,7 @@ namespace PoliSim.Simulation
                 Name = "National Retraining Guarantee Act",
                 Description = "Guarantees mid-career workers a year of funded study at high wage replacement to retrain for shortage occupations.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Sweden's omstallningsstudiestod (2022): up to a year of transition study support at ~80% wage replacement for established workers, the era's largest retraining entitlement.",
+                Citation = "Sweden's omstallningsstudiestod (2022): up to a year of transition study support at ~80% wage replacement for established workers, the era's largest retraining entitlement.",
                 // CONFIRMED - a named, just-built entitlement. MODERATE (+7): an individual
                 // GUARANTEE at high replacement is a genuine capacity-and-entitlement step
                 // beyond accounts (+6 MINOR) and below the flexicurity/ALMP system builds
@@ -1837,7 +1837,7 @@ namespace PoliSim.Simulation
                 Name = "Parental Benefit Modernization Act",
                 Description = "Restructures the parental benefit to be part-time compatible, with bonus months when both parents share work and care.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Germany's ElterngeldPlus (2015): benefit months usable alongside part-time work, plus partnership bonus months - the modernization layer on the 2007 Elterngeld.",
+                Citation = "Germany's ElterngeldPlus (2015): benefit months usable alongside part-time work, plus partnership bonus months - the modernization layer on the 2007 Elterngeld.",
                 // CONFIRMED - a named second-generation reform. MODERATE (+9) on FamilyPolicy:
                 // restructuring the flagship benefit's architecture is a real, felt shift inside
                 // the existing system - the create-a-program tier sits above it. Funding tier
@@ -1851,7 +1851,7 @@ namespace PoliSim.Simulation
                 Name = "Family Reunification Act",
                 Description = "Grants settled residents a statutory right to bring spouses and minor children, with income and housing conditions harmonized down.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the EU Family Reunification Directive (2003/86/EC), the standing statutory right for third-country nationals across the bloc.",
+                Citation = "The EU Family Reunification Directive (2003/86/EC), the standing statutory right for third-country nationals across the bloc.",
                 // CONFIRMED - standing directive. MINOR (+6): reunification is a large real
                 // admission channel, but the directive CODIFIES rights more than it widens
                 // volumes - graded at the dial's small tier, honestly. Contested tier (1.0).
@@ -1864,7 +1864,7 @@ namespace PoliSim.Simulation
                 Name = "Refugee Work Authorization Act",
                 Description = "Grants asylum seekers labor-market access from day one of their claim instead of after a waiting period.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - Sweden's day-one work exemption (AT-UND) for asylum seekers, against Germany's 3-month and the USA's 180-day waiting rules - the openness margin is the WAIT, and it is legislated.",
+                Citation = "Sweden's day-one work exemption (AT-UND) for asylum seekers, against Germany's 3-month and the USA's 180-day waiting rules - the openness margin is the WAIT, and it is legislated.",
                 // CONFIRMED - a real cross-country design margin. MINOR (+5): work authorization
                 // changes what admitted people may DO, not how many are admitted - a genuine
                 // but bounded openness step. Contested tier (1.0).
@@ -1877,7 +1877,7 @@ namespace PoliSim.Simulation
                 Name = "Immigration Skills Levy Act",
                 Description = "Charges employers a levy per sponsored foreign worker and earmarks the proceeds for domestic workforce training.",
                 Category = LawCategory.LaborMarket,
-                Citation = "CONFIRMED - the UK's Immigration Skills Charge (2017): GBP 1,000 per sponsored worker per year, framed and hypothecated as domestic-skills funding.",
+                Citation = "The UK's Immigration Skills Charge (2017): GBP 1,000 per sponsored worker per year, framed and hypothecated as domestic-skills funding.",
                 // CONFIRMED - a named levy. The category's closing DUAL-DIAL law, both legs
                 // real: MINOR ImmigrationPolicyDelta -3 (a per-head sponsorship cost narrows
                 // employer demand at the margin) and MINOR RetrainingProgramDelta +3 (the

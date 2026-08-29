@@ -3399,7 +3399,7 @@ namespace PoliSim.UI
             _laborMarketScrollPosition = GUILayout.BeginScrollView(_laborMarketScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Labor Market", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
-            GUILayout.Label("Master Sequence step 5d: every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Labor LAWS (the Laws tab) stack their own offsets on top of the statutory base these sliders set - a row's note names the law effect when one is moving its dial.", _labelStyle);
+            GUILayout.Label("Every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Labor LAWS (the Laws tab) stack their own offsets on top of the statutory base these sliders set - a row's note names the law effect when one is moving its dial.", _labelStyle);
             GUILayout.Space(8f);
 
             BeginAreaCard("LABOR MARKET BILL", UiPalette.SystemArea.Labor);
@@ -8481,7 +8481,7 @@ namespace PoliSim.UI
             // site it had missed. Width-less, the cost line wrapped after the "+" of "+$0/yr" at 2560
             // (UiFormat.MoneyDelta's sign read as a break opportunity by a label laying out against
             // an inferred width) while the other three sizes broke at spaces.
-            GUILayout.Label("Master Sequence step 5d: the base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting whether a partner override exists at all stays an immediate, structural action (it starts at today's effective rate, so it changes nothing by itself); Reset returns a partner's draft to its standing override - the override itself moves only through the bill.", _labelStyle, GUILayout.Width(contentWidth));
+            GUILayout.Label("The base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting whether a partner override exists at all stays an immediate, structural action (it starts at today's effective rate, so it changes nothing by itself); Reset returns a partner's draft to its standing override - the override itself moves only through the bill.", _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(6f);
 
             BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
@@ -9176,7 +9176,7 @@ namespace PoliSim.UI
         private void DrawTaxPolicyContent()
         {
             DrawColoredLabel("Tax Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            GUILayout.Label("A rate slider below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Implementing or removing a tax entirely is separate - it submits its own standalone bill immediately (Master Sequence step 5d), resolving independently of the annual cycle. See the Parliament tab for seat composition.", _labelStyle);
+            GUILayout.Label("A rate slider below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Implementing or removing a tax entirely is separate - it submits its own standalone bill immediately, resolving independently of the annual cycle. See the Parliament tab for seat composition.", _labelStyle);
             GUILayout.Space(8f);
 
             float taxTypeNameColumnWidth = GetTaxTypeNameColumnWidth();
@@ -9347,7 +9347,7 @@ namespace PoliSim.UI
         private void DrawWelfarePolicyContent()
         {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
-            GUILayout.Label("A generosity slider below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Implementing or removing a program entirely is separate - it submits its own standalone bill immediately (Master Sequence step 5d), resolving independently of the annual cycle.", _labelStyle);
+            GUILayout.Label("A generosity slider below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Implementing or removing a program entirely is separate - it submits its own standalone bill immediately, resolving independently of the annual cycle.", _labelStyle);
             _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
             GUILayout.Space(8f);
 
@@ -9480,7 +9480,7 @@ namespace PoliSim.UI
             _sectorPolicyScrollPosition = GUILayout.BeginScrollView(_sectorPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Economic Sectors", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
-            GUILayout.Label("Output/Employment/the sector's own metric are descriptive only in this pass - the five dials below nudge them, but they don't feed back into GDP/Unemployment. Master Sequence step 5d: every dial is a DRAFT across every sector - nothing happens until you introduce them all as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
+            GUILayout.Label("Output/Employment/the sector's own metric are descriptive only for now - the five dials below nudge them, but they don't feed back into GDP/Unemployment. Every dial is a DRAFT across every sector - nothing happens until you introduce them all as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
             GUILayout.Space(8f);
 
             BeginAreaCard("ECONOMIC SECTORS BILL", UiPalette.SystemArea.Sectors);

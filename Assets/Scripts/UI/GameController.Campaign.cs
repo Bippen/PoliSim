@@ -167,7 +167,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / CampaignResourcesPlateHeight;
-            float y = DrawCampaignLedgerHead(r, "RESOURCES — §9 · WAR CHEST, THE DAY, THE GROUND", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "RESOURCES — WAR CHEST, THE DAY, THE GROUND", ux, uy);
 
             // Money as the hero numeral, in the Desk's hero composition.
             GUIStyle hero = DeskNumeral(34f, PoliSimTheme.TextPrimary);
@@ -226,7 +226,7 @@ namespace PoliSim.UI
             // §19's distinction, printed because it is load-bearing rather than decorative: the
             // electorate reacts to the PUBLISHED figure, and this screen only ever sees that one.
             PoliSimWidgets.MeasuredLabel(new Rect(r.x, y + Mathf.Round(2f * uy), r.width, rowHeight),
-                "AS PUBLISHED — §19. NO SCREEN HERE READS THE TRUE STATE.",
+                "AS PUBLISHED — WHAT THE COUNTRY HAS BEEN TOLD, NOT THE TRUE STATE.",
                 DeskCaption(8.5f, PoliSimTheme.TextMuted));
         }
 
@@ -237,7 +237,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / 264f;
-            float y = DrawCampaignLedgerHead(r, "ORGANISATION — §9 STAFF · §10 OFFICES", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "ORGANISATION — STAFF · OFFICES", ux, uy);
 
             GUIStyle nameStyle = DeskBody(13f, PoliSimTheme.TextPrimary);
             GUIStyle roleStyle = DeskCaption(8.5f, PoliSimTheme.TextMuted);
@@ -433,7 +433,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / CampaignResourcesPlateHeight;
-            float y = DrawCampaignLedgerHead(r, "TODAY'S QUEUE — §12", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "TODAY'S QUEUE", ux, uy);
 
             GUIStyle nameStyle = DeskBody(13f, PoliSimTheme.TextPrimary);
             GUIStyle targetStyle = DeskCaption(9f, PoliSimTheme.TextSecondary);
@@ -519,7 +519,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / 264f;
-            float y = DrawCampaignLedgerHead(r, "OPEN TO YOU TODAY — §3 PHASE GATING", ux, uy);
+            float y = DrawCampaignLedgerHead(r, "OPEN TO YOU TODAY — WHAT THIS PHASE ALLOWS", ux, uy);
 
             CampaignActionKind[] legal = CampaignLegality.LegalActions(s.Phase);
 
@@ -597,7 +597,7 @@ namespace PoliSim.UI
 
             PoliSimWidgets.MeasuredLabel(
                 new Rect(r.x, y + captionHeight + Mathf.Round(6f * uy), r.width, captionHeight),
-                string.Format(CultureInfo.InvariantCulture, "TODAY {0} · EVERY FIGURE ON THIS SHEET IS DERIVED",
+                string.Format(CultureInfo.InvariantCulture, "TODAY {0}",
                     s.Today.ToString("d MMMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()),
                 DeskCaption(8.5f, PoliSimTheme.TextMuted));
         }
