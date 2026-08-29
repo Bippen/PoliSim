@@ -67,11 +67,14 @@ namespace PoliSim.Elections
             public readonly int PublicPollEveryDays;
             /// <summary>What a party buys when it commissions its own poll (§21): horse race AND issue detail.</summary>
             public readonly PollingHouse InternalHouse;
+            /// <summary>The electorate's loyalty as ONE group (0–100) — W-A1's size-weighted mean, a public derivation from past returns — until W-F4's voter groups give §11's strategies their per-group targets.</summary>
+            public readonly double ElectorateLoyalty;
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
-                PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse)
+                PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0)
             {
+                ElectorateLoyalty = electorateLoyalty;
                 if (parties == null || parties.Length == 0) { throw new ArgumentException("no parties"); }
                 if (priorShares.Length != parties.Length || loyaltyPerParty.Length != parties.Length || compatibility.Length != parties.Length)
                 {
@@ -252,9 +255,20 @@ namespace PoliSim.Elections
                         CampaignActions.ActionSpec spec = CampaignActions.Spec(d.Kind);
                         double audience = d.Target.RegionIndex >= 0 ? setup.Regions[d.Target.RegionIndex].Audience : setup.NationalAudience;
                         TrueMessage(setup, p, d.Target.Issue, out double salience, out double match);
-                        CampaignActions.ChainTrace trace = CampaignActions.Resolve(spec, audience, salience, match,
-                            setup.Parties[p].Credibility, d.Spend);
+
+                        // W-B6: the party's strategy modifies the world's response - the electorate
+                        // as one group at its derived loyalty (W-F4's groups make this per group),
+                        // the message prioritised when it is on the electorate's most salient issue.
+                        StrategyModifiers modifiers = CampaignStrategyModel.Modifiers(profiles[p].Strategy, setup.ElectorateLoyalty,
+                            d.Target.Issue.HasValue && IsTopSalience(setup, d.Target.Issue.Value));
+                        CampaignActions.ChainTrace trace = CampaignStrategyModel.Resolve(spec, audience, salience, match,
+                            setup.Parties[p].Credibility, d.Spend, modifiers);
                         pressure.Add(p, trace);
+                        if (modifiers.OpponentShare > 0.0)
+                        {
+                            int target = view.PolledLeaderOtherThanSelf;   // chosen from the Poll, not the truth
+                            if (target >= 0) { pressure.AddAgainst(target, trace.Persuasion * modifiers.OpponentShare); }
+                        }
 
                         int slot = CampaignAi.IndexOfAction(d.Kind);
                         ledger.ActionCount[slot]++;
@@ -301,7 +315,22 @@ namespace PoliSim.Elections
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
             return new AiView(party, phase, setup.Calendar.DaysUntilElection(today), pool, reserve,
                 latest.HasValue, latest ?? default, (double[])momentumPp.Clone(), issues,
-                setup.Parties[party].Credibility, setup.NationalAudience, setup.Regions, since);
+                setup.Parties[party].Credibility, setup.NationalAudience, setup.Regions, since,
+                PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty);
+        }
+
+        /// <summary>Whether an issue is the electorate's most salient (the populist's "prioritised" test for a one-group electorate).</summary>
+        private static bool IsTopSalience(Setup setup, IssueId issue)
+        {
+            double top = double.NegativeInfinity;
+            int topIndex = -1;
+            for (int i = 0; i < setup.TrueSalience.Length; i++)
+            {
+                if (double.IsNaN(setup.TrueSalience[i])) { continue; }
+                if (setup.TrueSalience[i] > top) { top = setup.TrueSalience[i]; topIndex = i; }
+            }
+
+            return topIndex == (int)issue;
         }
 
         // ---------- the truth ----------

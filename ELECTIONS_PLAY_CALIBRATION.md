@@ -170,3 +170,26 @@ week five is fun to beat or merely dead is a play question.
 where door-knocking is worthless — that is a number chosen to make a test pass. The `PEND` lines
 in `CampaignAiHarness` exist so nobody is tempted: they flip to assertions when the mechanism lands,
 with the affinities untouched.
+
+## 8. §11's strategy magnitudes (W-B6)
+
+**What is known.** The five strategies' SHAPES are the spec's own bullets (a loyal group's turnout
+lifts under Base Mobilization, a swing group's persuasion under Swing Voter, a focus group's under
+Populist, an opponent's standing falls under Negative, Broad reaches more and persuades less per
+head); the MAGNITUDES — ×1.15 / ×0.85 / ×0.5, 0.6 and 0.5 per loyalty and swing, 0.7 + 0.8·swing
+and 0.3·loyalty, 0.6 / ×0.8 / ×0.9 / ×1.5 / ×1.5, ×1.5 / ×1.3 / ×0.6 — are [AUTHORED-DRAFT].
+
+**What is measured.** In a 30-electorate sweep (W-B3's week under each strategy, the outcome in
+the model's own units) Base Mobilization wins 21, Broad Appeal 6, Populist 3, **Swing Voter and
+Negative Campaign 0**. Base's lead is the enthusiasm conversion (60 000 per turnout point against
+40 000 per compatibility point) as much as its own multipliers; Swing's loyal-group cost outweighs
+its swing gain at every loyal share; Negative against a symmetric opponent loses to its own cut.
+
+**What would settle it.** §26/W-D1 deciding how turnout weighs against persuasion at election
+time (that conversion is the sweep's metric), W-F4's voter groups (the strategies target groups;
+today the electorate is one), then play — is a Swing Voter campaign ever the right call, and does
+going negative feel like a gamble or a mistake?
+
+**What must NOT happen.** A Swing or Negative multiplier raised so the sweep table looks balanced.
+The done-when asked for no DOMINANT strategy, and there is none; a strategy that never wins is a
+measured statement to carry to play, not a bug to tune away.

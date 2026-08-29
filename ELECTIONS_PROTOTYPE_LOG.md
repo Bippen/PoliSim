@@ -552,3 +552,80 @@ chaotic party's 284 decisions were all blind).
 - **W-B8** — the attack verb, if §11's negative campaign brings one, is scored by the same §33 terms.
 
 **R-N2 held at this boundary:** `traj_wc1_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wc1.log`); harness `campaignai_wc1d_20260829.log`.
+
+---
+
+## W-B6 — campaign strategy (§11): the five as modifiers over the whole chain (2026-08-29)
+
+Files: `Assets/Scripts/Elections/CampaignStrategy.cs` (`CampaignStrategy`, `StrategyModifiers`,
+`CampaignStrategyModel`), `CampaignPressure.AddAgainst` (in `CampaignActions.cs`),
+`Assets/Editor/CampaignStrategyHarness.cs`; the AI (W-C1) given a strategy per personality and
+its run applying the modifiers on both sides of the seam.
+
+**Done-when.** Each strategy's stated trade-off shown (7 of 7 assertions on the same rally for a
+loyal group at 85 and a swing group at 20, on and off the focus issue) and **no strategy dominates
+a 30-electorate sweep** (loyal share 0.1–0.9 × focused/diffuse issues × opponent 0.4/1.0/1.6):
+Base Mobilization wins 21, Broad Appeal 6, Populist 3, **Swing Voter and Negative Campaign win
+nowhere** — recorded below, not tuned.
+
+### Decisions taken and logged (R-N1)
+
+- **A strategy is multipliers on §42's stages, never an action and never a vote delta.** Reach and
+  credibility multiply the chain's INPUTS (so a zero anywhere still annihilates the effect);
+  persuasion, enthusiasm and salience-shift multiply its outputs; the result is the same
+  `ChainTrace` every consumer reads. `None` is the identity — every earlier measurement stands
+  (asserted).
+- **Every multiplier depends on WHO the group is** — loyalty (0–100, `swing = 1 − loyalty/100`)
+  and whether the group prioritises the message's focus issue (`Prioritises`: the issue's weight at
+  or above the group's mean weight). That is what makes each strategy a trade-off: the same
+  strategy lifts one group and lowers another.
+- **The negative campaign's only route to an opponent is `CampaignPressure.AddAgainst`** — a
+  negative pressure on the opponent's compatibility, recomputed by `PreferenceModel` like every
+  other pressure. Backlash is an expected cost (credibility ×0.9), not a seeded event — the event
+  is §17/§18's (W-B8). Media attention ×1.5 is CARRIED on the modifiers for W-B9 and read by nothing
+  yet.
+- **The AI runs strategies now** (`PersonalityProfile.Strategy`): professional → Swing Voter,
+  populist → Populist, establishment → Broad Appeal, grassroots → Base Mobilization, chaotic →
+  Negative Campaign (its target the leading OTHER party in the latest poll it has seen — chosen
+  from a `Poll`, never the truth). The modifiers apply to the AI's own estimate (`Points`) exactly
+  as to the world's response (`CampaignRun`), so a party cannot mis-price its own strategy. The
+  electorate is ONE group at W-A1's size-weighted mean loyalty (`Setup.ElectorateLoyalty`, 89.7 for
+  Sweden — a public derivation) until W-F4's voter groups give the strategies per-group targets;
+  "prioritised" for a one-group electorate means the message is on its most salient issue.
+  W-C1's digest moves accordingly (`d7670f73…` → `463560d1…`); every C1 assertion still passes.
+- **The sweep's outcome metric is the model's own unit conversion** — own persuasion / 40 000 +
+  enthusiasm / 60 000, minus the opponent's, with negative pressure counted through
+  `CampaignPressure`. A different weighting of turnout against persuasion would move the table;
+  this one is the model's, not the harness's.
+
+### [AUTHORED-DRAFT] magnitudes, one line each (the shapes are the spec's; strikeable)
+
+Broad: reach ×1.15, persuasion ×0.85, polarisation ×0.5 · Base: enthusiasm ×(1 + 0.6·loyalty),
+persuasion ×(1 − 0.5·swing) · Swing: persuasion ×(0.7 + 0.8·swing), enthusiasm ×(1 − 0.3·loyalty) ·
+Negative: opponent share 0.6, own persuasion ×0.8, credibility ×0.9, media ×1.5, polarisation ×1.5 ·
+Populist: focus persuasion ×1.5 and enthusiasm ×1.3, other persuasion ×0.6.
+
+### Findings carried forward
+
+1. **Swing Voter and Negative Campaign win no electorate in the sweep.** Swing's loyal-group cost
+   (enthusiasm ×0.745 at loyalty 85) outweighs its swing-group gain at every loyal share; Negative's
+   60 % against the opponent is worth less than its own 20 % persuasion cut plus the credibility
+   cost when the opponent runs an identical week. Both are the model's statement at these
+   magnitudes and this metric — a play-calibration line (entry 8), never tuned to make the table
+   prettier. §32's professional runs Swing Voter regardless, because "targets swing voters" is what
+   the spec says it does; whether that is a losing choice is now a measured question.
+2. **Base Mobilization's 21 of 30 is the enthusiasm conversion.** One enthusiasm point costs 60 000
+   pressure against 40 000 for persuasion, and Base lifts enthusiasm by up to 60 %; at a loyal
+   share above 0.5 nothing beats that. Entry 8 carries it beside finding 1.
+3. **Media attention is a multiplier nothing reads yet.** It is on the modifiers so W-B9 has its
+   input the day it lands.
+
+### Riders
+
+- **W-B9** — read `StrategyModifiers.MediaAttentionMultiplier` into media interest.
+- **W-B8** — the backlash as a seeded event on its own stream, replacing the expected-cost
+  credibility multiplier or standing beside it (a design choice with its own reason).
+- **W-F4** — the strategies target VOTER GROUPS; the one-group electorate retires when the groups
+  exist, and `CampaignRun` should then apply modifiers per group.
+
+**R-N2 held at this boundary:** `traj_wb6_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `strategy_wb6b_20260829.log` and `campaignai_wb6_20260829.log`.

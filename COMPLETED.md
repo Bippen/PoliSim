@@ -3707,3 +3707,79 @@ on W-B9 / W-B4 / W-B11 / W-E2 / W-B8); `ELECTIONS_PLAY_CALIBRATION.md` (entry 1'
 7); `ELECTIONS_GAP_TABLE.md` rows 32 and 33 discharged; the `CLAUDE.md` dated section.
 
 **R-N2 at the boundary that appends a stream.** `traj_wc1_*` ≡ `traj_run_*` (W-E4's family, itself ≡ `traj_wb10_*`) — six of six identical by SHA-256 (`80e0c878…`, `85135b71…`, `35c0f578…`, `57c77cc4…`, `a76586bc…`, `a86a81f7…`), zero ATTRIB in the dump; the eight asset checks exit 0 (`check_*_wc1.log`). Harness log `campaignai_wc1d_20260829.log`. Not one byte of the existing game moved.
+
+## 56. W-B6 — campaign strategy (§11): five trade-offs as modifiers over the whole chain, and a sweep with no dominant strategy (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/CampaignStrategy.cs` — `CampaignStrategy` (None +
+§11's five), `StrategyModifiers` (reach, persuasion, enthusiasm, credibility, salience-shift,
+media-attention multipliers and an opponent share) and `CampaignStrategyModel` (`Modifiers` per
+strategy × group loyalty × whether the group prioritises the focus issue; `Resolve`, which applies
+them to §42's chain and returns the same `ChainTrace` every consumer reads; `Prioritises`).
+`CampaignPressure.AddAgainst` — the negative campaign's only route to an opponent, still a
+compatibility pressure. `Assets/Editor/CampaignStrategyHarness.cs` — the proof. The W-C1 AI given a
+strategy per personality and its run applying the modifiers on both sides of the seam. Pure,
+unwired (R-N2).
+
+**A strategy is multipliers, not an action and not a vote delta.** Reach and credibility multiply
+the chain's inputs, so a zero anywhere still annihilates the effect; persuasion, enthusiasm and
+salience-shift multiply its outputs; `None` is the identity and every earlier measurement stands
+(asserted). Every multiplier depends on WHO the group is — its loyalty and whether it prioritises
+the message's issue — which is what makes each strategy a trade-off rather than a bonus: the same
+strategy lifts one group and lowers another, and which groups an electorate contains decides which
+strategy wins.
+
+**The five, as the spec's bullets turned into shapes** (magnitudes `[AUTHORED-DRAFT]`, tabled in
+the log): Broad Appeal — more reach, less persuasion per head, half the polarisation. Base
+Mobilization — enthusiasm up with loyalty, persuasion down with swing. Swing Voter — persuasion up
+with swing, enthusiasm down with loyalty. Negative Campaign — 60 % of the message's persuasion
+lands AGAINST the targeted opponent, own persuasion ×0.8, credibility ×0.9 (the backlash as an
+expected cost; the seeded EVENT is W-B8's), media attention ×1.5 (carried for W-B9, read by nothing
+yet), polarisation ×1.5. Populist — ×1.5 persuasion and ×1.3 enthusiasm for a group that
+prioritises the focus issue, ×0.6 persuasion for one that does not.
+
+**The done-when.** (1) *Each strategy's stated trade-off* — seven assertions on the same rally
+(salience 0.6, match 0.6, credibility 0.7, full spend) for a loyal group at 85 and a swing group at
+20, on and off the focus issue: Broad reach 3 793 → 4 362 with persuasion per head 0.0756 → 0.0643;
+Base loyal enthusiasm 2 124 → 3 207 with swing persuasion 229 → 138; Swing swing-persuasion 229 →
+307 with loyal persuasion 229 → 188 and loyal enthusiasm 2 124 → 1 582; Negative −99 against the
+opponent, own persuasion 229 → 165, credibility 0.70 → 0.63, media ×1.5; Populist focus group 229 →
+344, other group 229 → 138; `Prioritises` yes/no; `None` identical. (2) *No strategy dominating in
+a measured sweep* — thirty electorates (loyal share 0.1–0.9 × focused/diffuse issue weights ×
+opponent strength 0.4/1.0/1.6), the W-B3 week run identically under each strategy, the cell's
+outcome own persuasion + enthusiasm minus the opponent's in the model's own units: **Base
+Mobilization 21, Broad Appeal 6, Populist 3, Swing Voter 0, Negative 0** — no strategy wins every
+cell, three win somewhere.
+
+### Two findings, recorded not tuned
+
+- **Swing Voter and Negative Campaign win no electorate.** Swing's loyal-group cost outweighs its
+  swing-group gain at every loyal share; Negative's 60 % against an opponent running the identical
+  week is worth less than its own 20 % persuasion cut plus the credibility cost. Both are the
+  model's statement at these magnitudes and this metric; the play-calibration list's entry 8
+  carries them. §32's professional runs Swing Voter regardless, because that is what the spec says
+  it does — whether that is a losing choice is now a measured question rather than an assumption.
+- **Base Mobilization's 21 of 30 is the enthusiasm conversion** (60 000 per turnout point against
+  40 000 per compatibility point, and Base lifts enthusiasm by up to 60 %). The sweep's metric is
+  the model's own unit conversion, not the harness's; a different weighting of turnout against
+  persuasion would move the table, and that weighting is §26/W-D1's to settle.
+
+### The AI runs strategies now
+
+`PersonalityProfile.Strategy`: professional → Swing Voter, populist → Populist, establishment →
+Broad Appeal, grassroots → Base Mobilization, chaotic → Negative Campaign — its target the leading
+OTHER party in the latest poll it has seen (`AiView.PolledLeaderOtherThanSelf`: chosen from a
+`Poll`, never the truth). The modifiers apply to the AI's own estimate exactly as to the world's
+response, so a party cannot mis-price its own strategy. The electorate is ONE group at W-A1's
+size-weighted mean loyalty (89.7 for Sweden, a public derivation from past returns) until W-F4's
+voter groups exist; "prioritised" for a one-group electorate means the message is on its most
+salient issue. W-C1's digest moves (`d7670f73…` → `463560d1…`) and every one of its assertions
+still passes, its four `PEND` lines unchanged.
+
+**Riders:** W-B9 reads the media-attention multiplier; W-B8 decides whether the backlash becomes a
+seeded event beside or instead of the expected cost; W-F4 retires the one-group electorate and
+`CampaignRun` applies modifiers per group.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-B6; `ELECTIONS_PLAY_CALIBRATION.md` entry 8;
+`ELECTIONS_GAP_TABLE.md` row 11 discharged; the `CLAUDE.md` dated section.
+
+**R-N2 at the boundary.** `traj_wb6_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wb6.log`); harness logs `strategy_wb6b_20260829.log`, `campaignai_wb6_20260829.log`.

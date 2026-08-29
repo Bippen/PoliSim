@@ -291,6 +291,17 @@ namespace PoliSim.Elections
 
         public int PartyCount => _persuasion.Length;
 
+        /// <summary>
+        /// W-B6 / §11's negative campaign: persuasion pressure landing AGAINST a party. The only
+        /// route by which one campaign can lower another's standing, and it is still pressure on
+        /// compatibility recomputed by `PreferenceModel` — never a share written down.
+        /// </summary>
+        public void AddAgainst(int opponentIndex, double persuasion)
+        {
+            if (persuasion < 0) { throw new ArgumentException("pressure against an opponent is given as a positive magnitude"); }
+            _persuasion[opponentIndex] -= persuasion;
+        }
+
         public void Add(int partyIndex, CampaignActions.ChainTrace trace)
         {
             _persuasion[partyIndex] += trace.Persuasion;

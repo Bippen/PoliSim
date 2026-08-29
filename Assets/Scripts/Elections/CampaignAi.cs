@@ -142,15 +142,41 @@ namespace PoliSim.Elections
         public readonly RegionAudience[] Regions;
         /// <summary>Days since this party last commissioned a poll; -1 when it never has.</summary>
         public readonly int DaysSinceOwnPoll;
+        /// <summary>§11's strategy this party has chosen for itself (W-B6) — its own decision, which it knows.</summary>
+        public readonly CampaignStrategy OwnStrategy;
+        /// <summary>The electorate's loyalty (0–100) as W-A1 derives it from PUBLISHED past returns — a public fact, so a strategy can be priced against it.</summary>
+        public readonly double ElectorateLoyalty;
 
         public AiView(int partyIndex, CampaignPhase phase, int daysUntilElection, ResourcePool resources,
             double spendingReserve, bool hasPoll, Poll latestPoll, double[] momentumPp, IssueMeasurement[] issues,
-            double ownCredibility, double nationalAudience, RegionAudience[] regions, int daysSinceOwnPoll)
+            double ownCredibility, double nationalAudience, RegionAudience[] regions, int daysSinceOwnPoll,
+            CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0)
         {
             PartyIndex = partyIndex; Phase = phase; DaysUntilElection = daysUntilElection; Resources = resources;
             SpendingReserve = spendingReserve; HasPoll = hasPoll; LatestPoll = latestPoll; MomentumPp = momentumPp;
             Issues = issues; OwnCredibility = ownCredibility; NationalAudience = nationalAudience; Regions = regions;
-            DaysSinceOwnPoll = daysSinceOwnPoll;
+            DaysSinceOwnPoll = daysSinceOwnPoll; OwnStrategy = ownStrategy; ElectorateLoyalty = electorateLoyalty;
+        }
+
+        /// <summary>
+        /// The leading OTHER party in the latest poll this party has seen — the negative campaign's
+        /// target, chosen from a Poll and nothing else. -1 when no poll has been seen.
+        /// </summary>
+        public int PolledLeaderOtherThanSelf
+        {
+            get
+            {
+                if (!HasPoll) { return -1; }
+                int leader = -1;
+                double best = -1.0;
+                for (int i = 0; i < LatestPoll.PartyCount; i++)
+                {
+                    if (i == PartyIndex) { continue; }
+                    if (LatestPoll.Share(i) > best) { best = LatestPoll.Share(i); leader = i; }
+                }
+
+                return leader;
+            }
         }
 
         public bool HasAnyIssueMeasurement
@@ -190,11 +216,15 @@ namespace PoliSim.Elections
         public readonly bool ActsBlind;
         /// <summary>The spend levels evaluated per money action, as multiples of the spec's cost (§35 makes the choice real).</summary>
         public readonly double[] SpendMultipliers;
+        /// <summary>§11's strategy this personality runs (W-B6) — the modifiers over the whole chain that its own estimates and the world's response both apply.</summary>
+        public readonly CampaignStrategy Strategy;
 
         public PersonalityProfile(AiPersonality kind, string name, double[] affinity, double temperature,
             double riskAversion, double optimism, double costWeight, double spendPace, double enthusiasmValue,
-            int pollEveryDays, bool focusOnTopSalience, bool actsBlind, double[] spendMultipliers)
+            int pollEveryDays, bool focusOnTopSalience, bool actsBlind, double[] spendMultipliers,
+            CampaignStrategy strategy = CampaignStrategy.None)
         {
+            Strategy = strategy;
             if (affinity == null || affinity.Length != CampaignActions.TheEight.Length)
             {
                 throw new ArgumentException("one affinity per §12 action, in TheEight's order");
@@ -252,7 +282,8 @@ namespace PoliSim.Elections
                         new[] { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
                         temperature: 0.0, riskAversion: 1.0, optimism: 0.35, costWeight: 1.0,
                         spendPace: 1.0, enthusiasmValue: 0.5, pollEveryDays: 7,
-                        focusOnTopSalience: false, actsBlind: false, spendMultipliers: new[] { 0.5, 1.0, 2.0 });
+                        focusOnTopSalience: false, actsBlind: false, spendMultipliers: new[] { 0.5, 1.0, 2.0 },
+                        strategy: CampaignStrategy.SwingVoter);
 
                 case AiPersonality.Populist:
                     // "High-salience issues, large rallies, social media heavy, aggressive": rallies and
@@ -262,7 +293,8 @@ namespace PoliSim.Elections
                         new[] { 1.8, 0.8, 0.8, 0.9, 1.1, 1.8, 1.2, 0.6 },
                         temperature: 0.15, riskAversion: 0.3, optimism: 0.7, costWeight: 0.4,
                         spendPace: 1.6, enthusiasmValue: 1.0, pollEveryDays: 14,
-                        focusOnTopSalience: true, actsBlind: true, spendMultipliers: new[] { 1.0, 2.0, 3.0 });
+                        focusOnTopSalience: true, actsBlind: true, spendMultipliers: new[] { 1.0, 2.0, 3.0 },
+                        strategy: CampaignStrategy.Populist);
 
                 case AiPersonality.Establishment:
                     // "Strong traditional media, broad messaging, moderate policies": television,
@@ -272,7 +304,8 @@ namespace PoliSim.Elections
                         new[] { 0.8, 1.0, 0.6, 1.8, 1.0, 0.6, 1.6, 1.4 },
                         temperature: 0.05, riskAversion: 1.2, optimism: 0.5, costWeight: 0.7,
                         spendPace: 1.0, enthusiasmValue: 0.4, pollEveryDays: 14,
-                        focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0, 2.0 });
+                        focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0, 2.0 },
+                        strategy: CampaignStrategy.BroadAppeal);
 
                 case AiPersonality.Grassroots:
                     // "Low advertising budget, strong volunteers, door-to-door, high turnout":
@@ -282,7 +315,8 @@ namespace PoliSim.Elections
                         new[] { 1.0, 1.5, 2.2, 0.2, 0.5, 1.2, 1.0, 0.8 },
                         temperature: 0.10, riskAversion: 0.8, optimism: 0.5, costWeight: 1.0,
                         spendPace: 0.7, enthusiasmValue: 1.6, pollEveryDays: 21,
-                        focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0 });
+                        focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0 },
+                        strategy: CampaignStrategy.BaseMobilization);
 
                 case AiPersonality.Chaotic:
                     // "Inconsistent strategy, high-risk decisions, unpredictable messaging": a hot
@@ -292,7 +326,8 @@ namespace PoliSim.Elections
                         new[] { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
                         temperature: 1.0, riskAversion: -0.6, optimism: 1.0, costWeight: 0.2,
                         spendPace: 2.5, enthusiasmValue: 0.8, pollEveryDays: 0,
-                        focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0, 3.0 });
+                        focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0, 3.0 },
+                        strategy: CampaignStrategy.NegativeCampaign);
 
                 default:
                     throw new ArgumentException($"{kind} is not one of §32's five personalities");
@@ -399,6 +434,7 @@ namespace PoliSim.Elections
             // Issue candidates: the measured issues by measured salience, the general message beside them.
             List<int> issueOrder = MeasuredIssuesBySalience(view);
             double topSalience = issueOrder.Count > 0 ? Math.Max(1e-9, view.Issues[issueOrder[0]].Salience) : 1.0;
+            IssueId? topIssue = issueOrder.Count > 0 ? (IssueId)issueOrder[0] : (IssueId?)null;
             var issueChoices = new List<IssueId?>();
             if (issueOrder.Count == 0)
             {
@@ -441,7 +477,7 @@ namespace PoliSim.Elections
                             foreach (IssueId? issue in issueChoices)
                             {
                                 ScoredCandidate? c = Score(view, profile, spec, spend, smallest, region, view.Regions[region].Name,
-                                    view.Regions[region].Audience, issue, topSalience);
+                                    view.Regions[region].Audience, issue, topSalience, topIssue);
                                 if (c.HasValue) { result.Add(c.Value); }
                             }
                         }
@@ -451,7 +487,7 @@ namespace PoliSim.Elections
                         foreach (IssueId? issue in issueChoices)
                         {
                             ScoredCandidate? c = Score(view, profile, spec, spend, smallest, -1, "National",
-                                view.NationalAudience, issue, topSalience);
+                                view.NationalAudience, issue, topSalience, topIssue);
                             if (c.HasValue) { result.Add(c.Value); }
                         }
                     }
@@ -510,15 +546,21 @@ namespace PoliSim.Elections
 
         private static ScoredCandidate? Score(AiView view, PersonalityProfile profile, CampaignActions.ActionSpec spec,
             double spend, double smallestSpend, int regionIndex, string targetLabel, double audience, IssueId? issue,
-            double topSalience)
+            double topSalience, IssueId? topIssue)
         {
             // What the party has MEASURED about the message's subject - or nothing.
             bool measured = TryMeasurement(view, issue, out double salience, out double salienceError,
                 out double match, out double matchError);
             if (!measured && !profile.ActsBlind) { return null; }   // no estimate, and this personality will not guess
 
+            // The party's own strategy (W-B6) modifies its own estimate exactly as it will modify
+            // the world's response: the electorate as one group at its published loyalty, the
+            // message "prioritised" when it is on the most salient issue the party has measured.
+            StrategyModifiers m = CampaignStrategyModel.Modifiers(view.OwnStrategy, view.ElectorateLoyalty,
+                issue.HasValue && topIssue.HasValue && issue.Value == topIssue.Value);
+
             Band(spec, audience, view.OwnCredibility, spend, measured, salience, salienceError, match, matchError,
-                profile, out double expectedPts, out double spanPts, out double lowPts, out double highPts);
+                profile, m, out double expectedPts, out double spanPts, out double lowPts, out double highPts);
 
             double importance = profile.Affinity(spec.Kind) * (measured ? Math.Max(0.0, salience) / topSalience : 0.5);
             double probabilityOfSuccess = highPts > 0 ? 0.5 + 0.5 * (lowPts / highPts) : 0.5;
@@ -530,7 +572,7 @@ namespace PoliSim.Elections
             if (spend > 0.0 && smallestSpend > 0.0)
             {
                 Band(spec, audience, view.OwnCredibility, smallestSpend, measured, salience, salienceError, match, matchError,
-                    profile, out double smallExpected, out _, out double smallLow, out double smallHigh);
+                    profile, m, out double smallExpected, out _, out double smallLow, out double smallHigh);
                 double smallSuccess = smallHigh > 0 ? 0.5 + 0.5 * (smallLow / smallHigh) : 0.5;
                 double smallValue = smallExpected * importance * smallSuccess;
                 double efficiency = smallValue / smallestSpend;   // points per krona at the smallest outlay
@@ -550,24 +592,30 @@ namespace PoliSim.Elections
 
         /// <summary>§42's band at this spend, read in points at the personality's optimism; blind = a flat prior over both unmeasured inputs.</summary>
         private static void Band(CampaignActions.ActionSpec spec, double audience, double credibility, double spend, bool measured,
-            double salience, double salienceError, double match, double matchError, PersonalityProfile profile,
+            double salience, double salienceError, double match, double matchError, PersonalityProfile profile, StrategyModifiers m,
             out double expectedPts, out double spanPts, out double lowPts, out double highPts)
         {
             CampaignActions.ChainBand band = measured
                 ? CampaignActions.ResolveBand(spec, audience, salience, salienceError, match, matchError, credibility, spend)
                 : CampaignActions.ResolveBand(spec, audience, 0.5, 0.5, 0.5, 0.5, credibility, spend);
 
-            lowPts = Points(band.Low, profile);
-            highPts = Points(band.High, profile);
+            lowPts = Points(band.Low, profile, m);
+            highPts = Points(band.High, profile, m);
             expectedPts = lowPts + profile.Optimism * (highPts - lowPts);
             spanPts = highPts - lowPts;
         }
 
-        /// <summary>Persuasion and enthusiasm pressures converted to the model's own units and weighted by what this personality values.</summary>
-        private static double Points(CampaignActions.ChainTrace trace, PersonalityProfile profile)
+        /// <summary>
+        /// Persuasion and enthusiasm pressures converted to the model's own units and weighted by
+        /// what this personality values, under the party's own strategy modifiers (W-B6): reach and
+        /// credibility scale both pressures linearly in the chain, so applying them here is exactly
+        /// what `CampaignStrategyModel.Resolve` does to the world's response.
+        /// </summary>
+        private static double Points(CampaignActions.ChainTrace trace, PersonalityProfile profile, StrategyModifiers m)
         {
-            return trace.Persuasion / CampaignPressure.PersuasionPerCompatibilityPoint
-                   + profile.EnthusiasmValue * trace.Enthusiasm / CampaignPressure.EnthusiasmPerTurnoutPoint;
+            double linear = m.ReachMultiplier * m.CredibilityMultiplier;
+            return trace.Persuasion * linear * m.PersuasionMultiplier / CampaignPressure.PersuasionPerCompatibilityPoint
+                   + profile.EnthusiasmValue * trace.Enthusiasm * linear * m.EnthusiasmMultiplier / CampaignPressure.EnthusiasmPerTurnoutPoint;
         }
 
         /// <summary>The measurement behind a message: one issue's, or for a general message the mean over the issues measured.</summary>

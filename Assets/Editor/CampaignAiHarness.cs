@@ -390,8 +390,16 @@ namespace PoliSim.EditorTools
                 regions.Length, national, FlatIssueMatch, FlatCredibility, WarChest));
 
             note = sb.ToString();
+            // W-B6: the electorate as one group at W-A1's size-weighted mean loyalty (a public
+            // derivation from past returns), until W-F4's voter groups give the strategies their
+            // per-group targets.
+            double electorateLoyalty = LoyaltyModel.WeightedMeanLoyalty(loyalty, prior);
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "    strategies (W-B6): prof SwingVoter, pop Populist, est BroadAppeal, grass BaseMobilization, chaos NegativeCampaign; electorate loyalty {0:F1} (one group, W-A1 weighted mean)\n",
+                electorateLoyalty));
+
             return new CampaignRun.Setup(CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
-                national, regions, publicHouse, 7, internalHouse);
+                national, regions, publicHouse, 7, internalHouse, electorateLoyalty);
         }
 
         private static RegionAudience[] ReadValkretsar(out double national)

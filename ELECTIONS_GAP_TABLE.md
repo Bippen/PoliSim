@@ -23,7 +23,7 @@ standing rulings, each named.
 | 8 | Voter Loyalty | **NEW → BUILT 2026-08-29** | `Elections/PreferenceModel.cs` — loyalty damping of compatibility toward a group's prior attachment. **This was the layer both Phase-4 deviation signatures implicated**, which is why it is the first chain unit built. |
 | 9 | Campaign Resources | **NEW** | Money/time/staff/volunteers. Distinct from the government budget the game simulates — a campaign purse is not a fiscal line. |
 | 10 | Campaign Offices | **NEW** | Regional organisation; depends on §24 existing first. |
-| 11 | Campaign Strategy | **NEW** | The five strategies are modifiers over §12's action set. |
+| 11 | Campaign Strategy | **NEW → BUILT W-B6 (2026-08-29)** | The five strategies are modifiers over §12's action set. `CampaignStrategy.cs`: the five as modifiers over the whole chain, each bullet a shape (loyal/swing, focus/other, opponent share); no dominant strategy in a 30-electorate sweep. |
 | 12 | Campaign Actions | **NEW** | The player-facing verbs. Bound by §42: an action may never be a flat vote delta. |
 | 13 | Media System | **EXTENDS** | `PublicationSystem` is a real publication/lag/revision layer (preliminary → revised figures) — the substrate for coverage, but coverage itself is NEW. |
 | 14 | Media Bias / Audience | **NEW** | Outlet-audience segmentation. |
