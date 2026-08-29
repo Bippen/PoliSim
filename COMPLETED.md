@@ -3964,3 +3964,49 @@ Day-1's declared `RegionalNoiseSigmaPp`, recorded beside calibration entry 1.
 `CLAUDE.md` dated section.
 
 **R-N2 at the boundary.** `traj_wd1_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wd1.log`); harness logs `electionday_wd1_20260829.log` (10 of 10), `campaignai_wd1_20260829.log` (all assertions pass, 8 PEND).
+
+## 60. W-D2 — vote-to-seat on the live path (§28): Sweden's own procedure end to end, 2022 seat-for-seat, the return branch made to fire (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/SeatConversion.cs` — vallagen 14 kap. as a procedure
+over `SeatAllocation`'s exact divisor arithmetic: eligibility (4 % nationally or 12 % in a
+valkrets for that valkrets's fixed seats), the statute's distribution of the 310 fixed seats among
+the valkretsar by eligible voters (one per 310th part, remainder by largest surplus), the modified
+odd-number method within each valkrets, the totalfördelning over 349, återföring (a party over
+its total returns its weakest fixed seats, re-allocated within the valkrets under every party's
+cap), and the 39 adjustment seats placed where each party's next comparison number is highest;
+`Sweden(ElectionDay.Result)` is the live path. `Assets/Editor/SeatConversionHarness.cs` — 12 of
+12. Pure, unwired (R-N2); no draw anywhere.
+
+**The done-when.** The exact 2022 national counts regionalised over the 29 valkretsar by the 2018
+per-valkrets distribution (national sums exact to the vote), fed as an `ElectionDay.Result` into
+the live path: **107 / 73 / 68 / 24 / 24 / 19 / 18 / 16 — seat for seat** — fixed 105 / 69 / 67 /
+17 / 23 / 10 / 11 / 8 (= 310) and adjustment 2 / 4 / 1 / 7 / 1 / 9 / 7 / 8 (= 39), no seat
+returned, Stockholms län 39 fixed seats and Gotlands län 2 by the 310th-part rule. Not the
+backtest's national shortcut: the full procedure.
+
+**The branches, exercised rather than asserted.** The 12 % rule: L at 35 % of Gotland and nothing
+anywhere else (0.25 % nationally) takes 1 of Gotland's 2 fixed seats and no other seat, 349 in all.
+⚠ **Återföring — the first synthetic exercised nothing.** Fixed seats follow ELIGIBLE voters, so a
+party concentrated in one valkrets stays under its total (KD's whole vote in Stockholm: 12 fixed of
+19). What pushes fixed seats past a total is a valkrets where few OTHER votes are cast relative to
+its electorate: every other party's Stockholm vote cut by 70 % and KD's whole vote there gives KD
+24 fixed seats against 21 entitled — **3 returned**, every party at exactly its national
+entitlement, Stockholm still holding its 39. Determinism (29 × 8 identical on a second pass) and
+W-D1's counted election converting to 349 — S 108 / SD 73 / M 67 / V 24 / C 25 / KD 18 / MP 18 /
+L 16 at seed 777: a quarter-point of share noise is three seats, so §27's "cannot be perfectly
+predicted" is now visible in seats.
+
+**Derived and billed.** Eligible per valkrets (2018 valid ÷ 87.18 %) and therefore the fixed seats
+per valkrets are `[DERIVED] [PROVISIONAL]`; the real 2022 per-valkrets seat table and val.se's
+per-valkrets eligible counts are billed (W-F1). The party totals do not depend on either unless a
+seat is returned, which is why the live path is exact from a derived regionalisation. Personal
+votes (candidate ordering) are not modelled — seats, not names.
+
+**A finding.** The adjustment tier does real work for the small parties — KD 9 of 19, L 8 of 16,
+MP 7 of 18, V 7 of 24 come from the 39 — because the 1.2 first divisor under-represents them in
+the fixed tier, exactly as the method intends.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-D2; `ELECTIONS_GAP_TABLE.md` row 28 extended; the
+`CLAUDE.md` dated section.
+
+**R-N2 at the boundary.** `traj_wd2_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wd2.log`); harness logs `seats_wd2_20260829.log` (12 of 12), `campaignai_wd2_20260829.log` (all assertions pass, 8 PEND).

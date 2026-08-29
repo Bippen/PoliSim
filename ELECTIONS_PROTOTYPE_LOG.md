@@ -877,3 +877,68 @@ percent. 10 of 10.
 - **W-A2 / W-F4** — per-region preference vectors replace the repeated national one.
 
 **R-N2 held at this boundary:** `traj_wd1_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `electionday_wd1_20260829.log`, `campaignai_wd1_20260829.log`.
+
+---
+
+## W-D2 — vote-to-seat on the live path (§28): Sweden's own procedure, 2022 seat-for-seat (2026-08-29)
+
+Files: `Assets/Scripts/Elections/SeatConversion.cs`, `Assets/Editor/SeatConversionHarness.cs`.
+`SeatAllocation` (the divisor arithmetic, exact for five chambers since the overnight) is what it
+calls; this file is the Swedish PROCEDURE around it — vallagen 14 kap. — which the backtest never
+needed because a national totalfördelning gives the same party totals as the full procedure
+whenever no seat is returned.
+
+**Done-when.** *Sweden's 2022 returns reproduce seat-for-seat through the live path* — the exact
+2022 national counts regionalised over the 29 valkretsar (by the 2018 per-valkrets distribution;
+national sums exact to the vote), fed as an `ElectionDay.Result` into `SeatConversion.Sweden`:
+**107 / 73 / 68 / 24 / 24 / 19 / 18 / 16**, fixed 105 / 69 / 67 / 17 / 23 / 10 / 11 / 8 (= 310) +
+adjustment 2 / 4 / 1 / 7 / 1 / 9 / 7 / 8 (= 39), no seat returned. 12 of 12 (the 12 % rule, the
+återföring branch firing, determinism, W-D1's counted election converting to 349).
+
+### The procedure, as built (R-N1 calls inside it)
+
+1. **Eligibility** — 4 % nationally, or 12 % in a valkrets for that valkrets's fixed seats only.
+2. **310 fixed seats per valkrets** — the statute's "one seat per 310th part of the national
+   eligible electorate, the remainder by largest surplus" (`FixedSeatsPerRegion`: Stockholms län
+   39, Gotlands län 2), then the modified odd-number method (1.2, 3, 5, …) within each valkrets
+   among the parties eligible there.
+3. **Totalfördelning** — 349 over the nationally-eligible parties as one valkrets, the same
+   divisors, seats held by 12 %-only parties deducted first.
+4. **Återföring** — a party over its total gives back its lowest-comparison-number fixed seats
+   first; each returned seat is re-allocated within its valkrets to the next comparison number
+   among parties still under their totals (the 2018 reform's rule). ⚠ **The first synthetic for
+   this exercised nothing:** fixed seats follow ELIGIBLE voters, so a party concentrated in one
+   valkrets stays under its total (KD all in Stockholm: 12 fixed of 19). What makes fixed seats
+   exceed a total is a valkrets where few OTHER votes are cast relative to its electorate — every
+   other party's Stockholm vote cut by 70 % and KD's whole vote there: 24 fixed against 21
+   entitled, **3 returned**, every party at its total, Stockholm still at its 39.
+5. **39 adjustment seats** — each party's total minus its fixed seats, placed valkrets by valkrets
+   where its next comparison number is highest.
+
+- **The 12 % rule, exercised:** L at 35 % of Gotland and nothing elsewhere (0.25 % nationally)
+  takes 1 of Gotland's 2 fixed seats and nothing else, no adjustment seat, 349 in all.
+- **DERIVED and billed:** eligible per valkrets (2018 valid ÷ 87.18 %) and therefore the fixed seats
+  per valkrets are `[DERIVED] [PROVISIONAL]`; the real 2022 per-valkrets seat table and val.se's
+  per-valkrets eligible counts are billed for verification. The party TOTALS do not depend on
+  either unless a seat is returned — which is why the live path is exact from a derived
+  regionalisation.
+- **Personal votes (§ 93's candidate ordering) are not modelled** — seats, not names.
+
+### Findings carried forward
+
+1. **The adjustment tier does real work for the small parties:** KD 9 of its 19 seats, L 8 of 16,
+   MP 7 of 18, V 7 of 24 come from the 39 — the fixed tier under-represents them by the divisor's
+   1.2 first step, exactly as designed.
+2. **W-D1's counted election (seed 777, noise on) converts to S 108 / SD 73 / M 67 / V 24 / C 25 /
+   KD 18 / MP 18 / L 16** — a quarter-point of noise moves three seats; §27's "cannot be perfectly
+   predicted" is now visible in seats, not shares.
+
+### Riders
+
+- **W-E6 / W-E7** — election night draws `RegionSeats` filling per valkrets; the results screen
+  reads `Seats`, `FixedSeatsWon`, `AdjustmentSeats`.
+- **W-D3** — coalition arithmetic reads `Seats` (175 the majority line).
+- **W-F1** — the real 2022 per-valkrets counts and seat table replace the derived regionalisation
+  and verify the per-valkrets seat table.
+
+**R-N2 held at this boundary:** `traj_wd2_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `seats_wd2_20260829.log`, `campaignai_wd2_20260829.log`.
