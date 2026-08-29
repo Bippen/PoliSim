@@ -28,11 +28,16 @@ namespace PoliSim.EditorTools
     ///   ~70-seat national-vs-district signature from scratch. Agreement with the recorded
     ///   figures (PiS 169, Konfederacja 34) confirms both this allocator and the branch-side
     ///   claim without inspecting the branch.
-    /// - ITALY: NOT run — the Rosatellum's proportional allocation FORMULA was not sourced
-    ///   tonight (thresholds and structure were; the formula is billed), and this harness does
-    ///   not run un-sourced arithmetic. FRANCE: NOT run — two-round SMD has no national model
-    ///   by construction. USA: NOT run — the full 51-state table was not fetched (12 states
-    ///   landed). Each stated here so silence cannot read as coverage.
+    /// - USA 2024 ELECTORAL COLLEGE (added Day-1, R-EL8): the REAL rule — 49 winner-take-all
+    ///   jurisdictions plus Maine's and Nebraska's congressional-district method, computed from
+    ///   the statutes via <see cref="PoliSim.Elections.ElectoralCollege"/>, with the
+    ///   forced-winner-take-all counterfactual printed beside it because the two district
+    ///   effects cancel in 2024's national total.
+    /// - ITALY: NOT run — the Rosatellum's proportional allocation FORMULA is not yet sourced
+    ///   (thresholds and structure are; the formula is R-EL9's sourcing task), and this harness
+    ///   does not run un-sourced arithmetic. FRANCE: NOT run — two-round SMD has no national
+    ///   model by construction. The USA House stays national-totals-only. Each stated here so
+    ///   silence cannot read as coverage.
     /// - SYNTHETIC vectors first: the divisor-decisive case (A=100, B=22, 3 seats: pure
     ///   Sainte-Laguë gives B a seat, the 1.2 modification takes it away) and a
     ///   d'Hondt-vs-Sainte-Laguë divergence case (100/80/30 × 4) — the first-divisor coverage
@@ -171,27 +176,77 @@ namespace PoliSim.EditorTools
             int[] plRealModel = SeatAllocation.PerDistrictSum(plDistricts, plMagnitudes, plEligible, SeatAllocation.DHondtDivisor);
             failures += Report("POLAND 2023 REAL - d'Hondt per okreg over the KBW absolute counts (the actual Sejm system; the definitive run)", plNames, plVotes, plValid, plRealModel, plReal);
 
-            // --- USA 2024 ELECTORAL COLLEGE (ElectionsData/usa/state_ev_2024.csv - the FEC
-            // xlsx's own EV columns, sums confirmed vs NARA 312/226; third fetch of the night).
-            // The rule under test is WINNER-TAKE-ALL; ME and NE are the sourced district-method
-            // exceptions (other_EV goes to the opponent). Two models: pure WTA (the deviation
-            // IS the district-method effect, a finding) and WTA + the two sourced splits
-            // (expected exact). Data: parallel arrays, R = true; order as the CSV.
+            // --- USA 2024 ELECTORAL COLLEGE, BY THE REAL RULE (R-EL8, ruled 2026-08-29).
+            // Winner-take-all is a STATE CHOICE that 48 states and DC direct; Maine and Nebraska
+            // direct the congressional-district method instead (Me. 21-A s802; Neb. s32-710 with
+            // s32-1038(1) - the statutes and the per-district results are
+            // ElectionsData/usa/district_method_2024.md). The model computes the split FROM the
+            // district winners by the statute; it does not read a pre-split answer.
+            // Candidate index 0 = Trump (R), 1 = Harris (D). Jurisdiction EVs from
+            // ElectionsData/usa/state_ev_2024.csv (FEC); ME/NE district winners from the state
+            // canvasses.
             bool[] usIsR = { true, true, true, true, false, false, false, false, false, true, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, true, true, true, true, false, false, false, false, true, true, true, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true };
-            int[] usWinnerEv = { 9, 3, 11, 6, 54, 10, 7, 3, 3, 30, 16, 4, 4, 19, 11, 6, 6, 8, 8, 3, 10, 11, 15, 10, 6, 10, 4, 4, 6, 4, 14, 5, 28, 16, 3, 17, 7, 8, 19, 4, 9, 3, 11, 40, 6, 3, 13, 12, 4, 10, 3 };
-            int[] usOtherEv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            int trumpWta = 0, harrisWta = 0, trumpActual = 0, harrisActual = 0;
-            for (int i = 0; i < usIsR.Length; i++)
+            string[] usNames = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY" };
+            int[] usTotalEv = { 9, 3, 11, 6, 54, 10, 7, 3, 3, 30, 16, 4, 4, 19, 11, 6, 6, 8, 8, 4, 10, 11, 15, 10, 6, 10, 4, 5, 6, 4, 14, 5, 28, 16, 3, 17, 7, 8, 19, 4, 9, 3, 11, 40, 6, 3, 13, 12, 4, 10, 3 };
+            var usJurisdictions = new ElectoralCollege.Jurisdiction[usNames.Length];
+            for (int i = 0; i < usNames.Length; i++)
             {
-                int total = usWinnerEv[i] + usOtherEv[i];
-                if (usIsR[i]) { trumpWta += total; harrisWta += 0; trumpActual += usWinnerEv[i]; harrisActual += usOtherEv[i]; }
-                else { harrisWta += total; trumpActual += usOtherEv[i]; harrisActual += usWinnerEv[i]; }
+                int statewide = usIsR[i] ? 0 : 1;
+                if (usNames[i] == "ME")
+                {
+                    // 2 at-large (statewide Harris) + ME-1 Harris + ME-2 Trump.
+                    usJurisdictions[i] = new ElectoralCollege.Jurisdiction("ME", 4, statewide, 2, new[] { 1, 0 });
+                }
+                else if (usNames[i] == "NE")
+                {
+                    // 2 at-large (statewide Trump) + NE-1 Trump + NE-2 Harris + NE-3 Trump.
+                    usJurisdictions[i] = new ElectoralCollege.Jurisdiction("NE", 5, statewide, 2, new[] { 0, 1, 0 });
+                }
+                else
+                {
+                    usJurisdictions[i] = new ElectoralCollege.Jurisdiction(usNames[i], usTotalEv[i], statewide);
+                }
             }
 
-            Debug.Log($"BACKTEST: USA 2024 ELECTORAL COLLEGE - pure winner-take-all model: Trump {trumpWta} / Harris {harrisWta} vs real 312/226 (deviation {Math.Abs(trumpWta - 312) + Math.Abs(harrisWta - 226)} EV = the ME/NE district-method effect, a finding); with the two sourced district splits: Trump {trumpActual} / Harris {harrisActual} vs real 312/226 ({(trumpActual == 312 && harrisActual == 226 ? "EXACT" : "DEVIATES - a finding")}). 51 jurisdictions; the WTA rule alone covers 49 of them.");
-            failures += (trumpActual == 312 && harrisActual == 226) ? 0 : Expect("USA EC with sourced splits", new[] { trumpActual, harrisActual }, new[] { 312, 226 });
+            int[] usReal = ElectoralCollege.Allocate(usJurisdictions, 2);
+            int[] usWtaOnly = ElectoralCollege.AllocateAsIfWinnerTakeAll(usJurisdictions, 2);
+            int usWinner = ElectoralCollege.Winner(usReal);
+            Debug.Log($"BACKTEST: USA 2024 ELECTORAL COLLEGE by the real rule (49 winner-take-all jurisdictions + ME and NE by congressional district): Trump {usReal[0]} / Harris {usReal[1]} vs real 312/226 - {(usReal[0] == 312 && usReal[1] == 226 ? "EXACT" : "DEVIATES, a finding")}; majority {ElectoralCollege.MajorityToElect} reached by {(usWinner < 0 ? "nobody - contingent election, not modelled" : usWinner == 0 ? "Trump" : "Harris")}.");
+            Debug.Log($"BACKTEST: USA counterfactual - every jurisdiction forced winner-take-all: Trump {usWtaOnly[0]} / Harris {usWtaOnly[1]}. The district method moved {Math.Abs(usReal[0] - usWtaOnly[0])} elector(s) in each direction this cycle, so the two effects CANCEL in the national total: a model that dropped the district rule would have matched 312/226 by luck. That cancellation is why R-EL8 required the rule to be built from the statutes rather than inferred from a matching total.");
+            failures += Expect("USA EC by the real rule", usReal, new[] { 312, 226 });
 
-            Debug.Log("BACKTEST: NOT RUN, stated: Italy (allocation formula unsourced tonight - billed), France (two-round SMD, no national model exists). The USA House stays national-totals-only (no district model claimed).");
+            // --- ITALY 2022, CAMERA, THE PROPORTIONAL STAGE (R-EL9, ruled 2026-08-29; the
+            // allocation arithmetic sourced in ElectionsData/italy/rosatellum_allocation.md).
+            // Floored-Hare twice: lett. f) between coalitions/standalone lists, lett. g) inside
+            // each coalition over its ADMITTED lists only. Coalition 0 = centre-right,
+            // 1 = centre-left, -1 = standalone. SVP-PATT enters by the minority route at 0.42%.
+            // The 146 college seats are already out of the pool: 245 proportional seats.
+            // Compared against Eligendo's PROPORTIONAL seat column (not total seats - the two
+            // tiers are parallel, so a party's college wins are not part of this test).
+            var itLists = new[]
+            {
+                new Rosatellum.ListEntry("FdI",   7301303, 0),
+                new Rosatellum.ListEntry("Lega",  2470318, 0),
+                new Rosatellum.ListEntry("FI",    2279266, 0),
+                new Rosatellum.ListEntry("NM",     254127, 0),
+                new Rosatellum.ListEntry("PD",    5348676, 1),
+                new Rosatellum.ListEntry("AVS",   1021808, 1),
+                new Rosatellum.ListEntry("+Eur",   796057, 1),
+                new Rosatellum.ListEntry("IC",     173555, 1),
+                new Rosatellum.ListEntry("M5S",   4335494, -1),
+                new Rosatellum.ListEntry("AzIV",  2186505, -1),
+                new Rosatellum.ListEntry("SVP",    117032, -1, true),
+            };
+            const long itValid = 28098196;
+            int[] itReal = { 69, 23, 22, 0, 57, 11, 0, 0, 41, 21, 1 };
+            int[] itModel = Rosatellum.AllocateNational(itLists, itValid, 245, out string itTrace);
+            Debug.Log("BACKTEST: Italy working (art. 83 stage by stage) -\n" + itTrace);
+            var itNames = new string[itLists.Length];
+            var itVotes = new long[itLists.Length];
+            for (int i = 0; i < itLists.Length; i++) { itNames[i] = itLists[i].Name; itVotes[i] = itLists[i].Votes; }
+            failures += Report("ITALY 2022 CAMERA - Rosatellum national proportional stage, 245 seats, floored Hare twice (expected EXACT vs Eligendo's proportional seat column)", itNames, itVotes, itValid, itModel, itReal);
+
+            Debug.Log("BACKTEST: NOT RUN, stated: Italy's SUB-NATIONAL stages (lett. h/i into the 28 circoscrizioni, art. 83-bis into the 49 collegi, and the art. 84 incapienza cascade - they need per-circoscrizione and per-collegio cifre elettorali that exist only as HTML on Eligendo; they change WHICH deputies sit, not the per-list national totals above). FRANCE: NOT run - two-round SMD has no national model by construction. The USA House stays national-totals-only (no district model claimed).");
             Debug.Log($"=== SeatAllocationBacktest: synthetic {(failures == 0 ? "ALL PASS" : failures + " FAILED")}; the country tables above are FINDINGS (deviations reported, not asserted) ===");
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }

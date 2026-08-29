@@ -48,6 +48,105 @@ spec's model wearing the spec's name.
   a spatial model's discrimination, and its positions are GPS-2019 (pre-2020 vintage). It is
   included for completeness, not as evidence.
 
+## Phase 3a — R-EL8, the USA's real allocation: BUILT AND EXACT
+
+`Assets/Scripts/Elections/ElectoralCollege.cs` (pure, unwired) implements the rule from the
+statutes, not from the answer: winner-take-all as the **state choice** 48 states and DC direct,
+and the congressional-district method where Maine and Nebraska direct it instead. Sourcing is
+`ElectionsData/usa/district_method_2024.md` — **Me. Rev. Stat. tit. 21-A §802** ("One
+presidential elector shall be chosen from each congressional district and 2 at large"),
+**Neb. Rev. Stat. §32-710** (structure) with **§32-1038(1)** (allocation: highest statewide vote
+elects the two at-large electors, highest vote in a district elects that district's elector),
+under **U.S. Const. art. II §1 cl. 2** and NARA's 538/270.
+
+**Result: Trump 312 / Harris 226 — EXACT, computed from the seven sourced ME/NE
+statewide-and-district pluralities rather than read from a pre-split column.** The allocator
+asserts its own elector total (538) and reports the no-majority contingent case rather than
+resolving it.
+
+**The counterfactual that justifies the ruling.** Forcing every jurisdiction to winner-take-all
+*also* yields 312/226 — because Maine's district elector (ME-2 → Trump) and Nebraska's (NE-2 →
+Harris) are one each way and cancel exactly. Two electors are misassigned and the national total
+is unchanged. Last night's run had matched 312/226 with the split *supplied as data*; that match
+was luck, and R-EL8 is why it is no longer load-bearing. Both numbers print side by side in the
+harness so the coincidence can never be mistaken for a validation again.
+
+**Three corrections and cautions the sourcing forced, each recorded rather than quietly fixed:**
+1. **The kickoff's Nebraska citation was wrong.** §32-714 governs elector vacancies and
+   faithless electors, not the district method. The correct pair is §32-710 + §32-1038(1).
+2. **Nebraska's statute text is an Internet Archive capture, not a live fetch** —
+   `nebraskalegislature.gov` refused connections throughout; corroborated by the NE Secretary of
+   State's own canvass book, which recites the rule and cites §32-1038. Re-verify when reachable.
+3. **A live-rule expiry, flagged `[UNCONFIRMED]`:** LB3 in Nebraska's 109th Legislature is
+   described as amending §32-1038 to make all five electors statewide. Unverified (same
+   unreachable host). **Do not model Nebraska as permanently district-method.**
+   Also recorded: Maine's presidential race is legally RCV-eligible (§1(27-C)(D)) and was decided
+   in round one only because Harris cleared §723-A(2)'s inclusive 50 % bar at 51.71 % — treating
+   ME as plurality is correct for 2024 and must not be generalised.
+
+## Phase 3b — R-EL9, Italy's Rosatellum: SOURCED, BUILT, EXACT
+
+The overnight pass refused to run Italy because its *structure* was sourced but its *allocation
+arithmetic* was not, and R-N4 forbids running un-sourced arithmetic. That gap is now closed to
+the same statute-cited standard as the other five: `ElectionsData/italy/rosatellum_allocation.md`
+carries DPR 361/1957 art. 83 as consolidated and in force at 25-9-2022, quoted clause by clause.
+
+**The method is Hare with largest remainders applied TWICE, with the quotient truncated to an
+integer both times** ("non tiene conto dell'eventuale parte frazionaria") — which is why it could
+not run on the existing divisor-method machinery and needed its own implementation,
+`Assets/Scripts/Elections/Rosatellum.cs` (pure, unwired).
+
+**Result — ITALY 2022 CAMERA, proportional stage, 245 seats: total absolute seat deviation 0**,
+every one of eleven lists exact: FdI 69, Lega 23, FI 22, PD 57, AVS 11, M5S 41, Azione–IV 21,
+SVP-PATT 1, and correctly ZERO for Noi Moderati, +Europa and Impegno Civico. The run reproduces
+three distinct statutory behaviours at once:
+- the **1 % strip** (Noi Moderati 0.90 % and Impegno Civico 0.62 % struck from their coalitions'
+  figures, not redistributed, while still sitting in the threshold denominator);
+- the **1–3 % transfer** (+Europa at 2.83 % counts toward the centre-left's figure — buying it
+  seats — but is excluded from the intra-coalition distribution, so its votes end up with PD and
+  AVS);
+- the **minority route** (SVP-PATT admitted at **0.42 % nationally**, an eighth of the 3 % bar,
+  under art. 83 c.1 lett. e) n.2 — it met both limbs: 23.15 % regionally and 2 of Trentino-Alto
+  Adige's 4 colleges).
+
+**A textual ambiguity settled by arithmetic, not by preference:** lett. g)'s divisor is the sum of
+the coalition's ADMITTED lists, not the coalition's own figure. Reading it the other way puts the
+result **nine seats out** (PD 50 / AVS 9). The implementation states the correct reading and the
+data file records the check.
+
+**Structural fact the model depends on:** the two tiers are **parallel, not compensatory** — there
+is no *scorporo*. The 146 college seats come out of the POOL; nothing in art. 83 reads a party's
+college wins. The Camera's own 2018 dossier proves it empirically (the centre-right won 111
+colleges and still took its full proportional share; LeU won none and got no compensation).
+
+**Scope stated, so silence claims nothing:** this is the NATIONAL stage. The devolution to the 28
+circoscrizioni (lett. h/i), the 49 collegi (art. 83-bis) and the art. 84 *incapienza* cascade are
+NOT implemented — they need per-circoscrizione and per-collegio *cifre elettorali* that exist only
+as HTML on Eligendo, and they change WHICH deputies sit, not the per-list national totals. One
+trap recorded for whoever attempts them: **the Ministry's comune-level open-data CSV must not be
+fed into the allocation** — its `VOTILISTA` sums undershoot Eligendo's published figures by
+2.6–4.6 %, almost certainly because art. 83 operates on the *cifra elettorale* after art. 58 c.3
+redistributes uninominal-only ballots.
+
+## The seat table after Phase 3 — five of six reproduce EXACTLY
+
+| country | rule implemented | deviation |
+|---|---|---|
+| Sweden 2022 | national modified Sainte-Laguë 1.2, 4 % threshold, 349 | **0** |
+| Germany 2025 | national Sainte-Laguë/Schepers on exact counts, 5 % + SSW exemption, 630 | **0** |
+| Poland 2023 | d'Hondt in each of the 41 okręgi, national eligibility, MN exempt, 460 | **0** |
+| Italy 2022 | Rosatellum national proportional stage, floored Hare ×2, 245 | **0** |
+| USA 2024 | Electoral College: 49 WTA jurisdictions + ME/NE district method, 538 | **0** |
+| France 2024 | — **NOT RUN, and not a gap in the model** | n/a |
+
+**France is the honest exception, not an omission:** a two-round majority system in 577
+single-member circonscriptions has **no national allocation to implement** — seats are decided
+constituency by constituency across two rounds, so reproducing it requires the per-circonscription
+results of both rounds (the Ministry publishes them; the night's pass deliberately did not fetch
+577 × 2 tables for a model that claims nothing about them). Reporting it as "5 of 6 exact, the
+sixth structurally out of scope" is the accurate statement; "6/6" would require building a French
+constituency model that no part of the plan has yet asked for.
+
 ## Phase 4 — the vote-share backtest (the centerpiece): THE TABLE
 
 Sourced positions (CHES 2024 / GPS-2019) + sourced salience (EB105 Spring 2026 / Gallup July
