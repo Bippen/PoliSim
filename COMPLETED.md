@@ -3296,3 +3296,121 @@ structure, not tuning.
 **R-N2 held:** dump exit 0, baselines byte-identical **6/6**, all eight checks exit 0. **Part 4
 was skipped by rule and there is no revert handle, because nothing was wired.** Commit `4301bdc`;
 full record, call log and four RULINGS NEEDED in `ELECTIONS_DAY2_REPORT_2026-08-29.md`.
+
+## 52. W-E1 — Campaign HQ, the first screen of the Track E class (2026-08-29)
+
+**What shipped.** `Assets/Scripts/UI/GameController.Campaign.cs` — Campaign HQ, drawn in the v3
+idiom: the folded rail plus one full-bleed sheet, the Desk's own 1156×680 board and its three
+columns at 440 / 250 / 440, type scaled by `DeskPx` and floored at D4's 9 px, plate captions at
+8.5, ledger rows at the Desk's pitch. It reuses `DeskCaption` / `DeskCaptionWrapped` / `DeskBody` /
+`DeskNumeral` / `DrawDeskChipButton` / `DeskCaptionHeight` directly rather than restating them, so
+the two stages share **one** type ladder. Six plates: resources (§9), organisation (§9 staff, §10
+offices), the race as polled (§20–§22), today's queue (§12), what the phase permits (§3), and the
+campaign-window strip.
+
+**R-N2 is held structurally, not by convention.** The screen draws only when `_campaignScreen` has
+a value, and the only setter is `internal void SetCampaignScreen(CampaignSnapshot?)`, called by the
+screenshot driver and nothing else. The branch sits beside `_onDesk` inside the frame's content
+column — so the rail is the real rail and the sheet is composed in the frame it will ship in — but
+there is no rail cell, no tab, no save hook and no gameplay path that reaches it. Wiring at W-G1 is
+*adding the rail cell*, and nothing else. Same shape as the `DrawInstrumentLadder` precedent.
+
+**Every figure is derived, and the boundary is stated rather than blurred.** The screen lays out a
+`CampaignSnapshot` (new, `Assets/Scripts/Elections/CampaignSnapshot.cs`) and computes nothing of its
+own beyond summing what it is handed. In the filmed states: the poll is a real
+`PollingSystem.Conduct` draw against Sweden's **SOURCED** 2022 vector (Valmyndigheten's final count,
+`ElectionsData/sweden/returns_2022.md`); the ± comes out of that draw; momentum is a real
+`MomentumTracker` shock decayed on §22's half-life; every queued action's cost is read from
+`CampaignActions.Spec`; the legality list is `CampaignLegality.LegalActions`, derived and never
+restated; the perceived-economy index is `PerceivedPerformance.Perceived` read off the **live**
+warmed-up country (31.0 / 100). The war chest, volunteer counts and office upkeep are
+**[AUTHORED-DRAFT]** staging, logged as such by the pass itself, with W-F5 named as what sources
+party finances. No spec illustration ships as data.
+
+**W-B10's rule reaches the view layer through the type.** The screen is handed a `Poll`, which
+*cannot express a truth* (proven by reflection in W-B10's harness), so "the UI never sees the truth"
+is enforced by what the view is given rather than by care at the call site. The ± is drawn as a
+shaded band **under** the point estimate rather than printed beside it: the interval is the width of
+what is actually known, not a footnote to a number that looks exact.
+
+**The five `mark_party_*` sprites got their first call site.** `IconLibrary.GetPartyMark` is added
+as the one-line wrapper over `Resources.Load` that `PartyMarkCoverageCheck`'s own comment already
+promised, and it takes the **full file stem** (`"mark_party_se_s"`) — the same key that check passes
+to `Resources.Load` and compares against file names. A suffix-based accessor would have been a
+second naming convention beside the check's; when the party system's seeds land on `main`, their
+mark names now feed both without translation. Marks are drawn untinted, per rule 9a and the
+accessor's contract.
+
+### Two defects the film caught, fixed at the measurement rather than by shrinking the type
+
+1. **`CampaignActions.Spec` throws for §3's preparation verbs.** The staging pass built the queue
+   from `CampaignLegality.LegalActions(phase)`, which in the campaign phase legitimately includes
+   `RecruitStaff`, `Fundraise` and the rest — but only §12's eight have specs, so the first film
+   died mid-capture on `ArgumentException: RecruitStaff is not one of §12's eight campaign actions`.
+   The queue is now built from `CampaignActions.TheEight` **intersected with** legality, which is
+   what §12's queue actually is; a pre-campaign day therefore shows the empty state, correctly.
+2. **Two label-clipping instances of the known class**, both at the caption floor. The momentum
+   caption was given a board-derived 9 px slot while its glyph box is 11.2 px at the 9 px floor
+   (`lineHeight < CalcSize height` — the recorded IMGUI fact); it now takes `DeskCaptionHeight`, and
+   the race row's pitch takes the caption height too, so the caption can neither clip nor collide
+   with the next party's name. The poll's methodology line was drawn with `MeasuredLabel`, whose
+   overflow guard measures the **one-line** form and so reported a genuinely wrapping caption as
+   "needs 503.7 wide in 248.3"; it now follows the Desk's established pattern for a wrapped caption
+   (`GUI.Label` plus `UiContainmentGuard.Check` against its own wrapped height), and the block is
+   measured **before** the rows are budgeted so the reserve is its real height rather than a board
+   figure that stops matching once the caption floor stops scaling.
+
+   The methodology line was **not** trimmed to fit. "(SAMPLING ERROR ONLY)" is the honest scope of
+   the ± — it is precisely the thing published margins of error understate — and dropping it to save
+   a line would have made the screen overstate what the poll knows.
+
+### Calls logged (R-N1), each strikeable
+
+- **A mark key is the full file stem, not a suffix** (above).
+- **Staff rows carry no personal names.** Inventing people is inventing data; the ledger shows the
+  post, whether it is filled, and the draft bonus. Names belong to W-B5 with their own sourcing.
+- **The race bars scale to the leader's band, not to 100 %** — eight parties none of which clears a
+  third would otherwise read as eight stubs — and the axis is **named** in the methodology line,
+  because an unlabelled rescaled bar is a lie by omission.
+- **The masthead chips are drawn `disabled`.** Nothing is wired, and a chip that looked live while
+  doing nothing would be the worse lie.
+- **An over-committed queue is shown as over-committed.** `ResourcePool.TrySpend` refuses rather
+  than clamping (W-B2), so a queue genuinely can be unaffordable; the screen says so in the caution
+  ink instead of printing a plausible total.
+- **`-shotcampaign` demands `-shotcountry=Sweden` and fails the run otherwise.** The staged returns
+  are sourced *as Swedish*; filming them under another country's frame would put real Valmyndigheten
+  figures beside the wrong flag.
+- **`PartyMarkCoverageCheck` exits 0 while verifying NOTHING, and that is not evidence for the new
+  accessor.** The check enumerates *seeded parties*, and `PoliSim.Data.PoliticalParty` does not
+  exist on `main` — it says so loudly ("VERIFIED NOTHING; this is not evidence of coverage") and
+  passes, correctly, because there is no claim to falsify. The evidence that `GetPartyMark`'s key
+  convention is right is therefore the **film**: `mark_party_se_s` resolves and draws in the
+  masthead at all four widths. When the party branch lands, that check becomes the real test of
+  the convention, and it will test the same key this accessor takes.
+
+### Two more the film caught on being LOOKED at, not on a guard
+
+3. **Money rendered without thousands separators** — the war chest filmed as `1120000`. `UiFormat.Number`
+   is a plain `F0` and `UiFormat.Money` is dollar-prefixed and tiered (`$1.12M`), so neither fits a
+   sheet denominated in kronor at full precision; a local `Kronor` helper (`N0`, invariant, matching
+   every other numeric site here) now formats all five money sites. A seven-digit hero numeral with
+   no separators is illegible at a glance, which is the one job a hero numeral has.
+4. **The middle staged day was itself over budget**, so the first film showed the over-committed
+   reading twice and the normal one never. It is re-staged at exactly the 12 h `StartDay` grants
+   (Rally 4 + Town hall 3 + Door to door 5 = `340,000 kr · 12 of 12 h`, no caution), so the three
+   captures now show three distinct readings: nothing yet, a full but affordable day, and a day the
+   resource system would refuse.
+
+   Both were found by **looking at the film**, not by a guard — the guards were already silent. That
+   is the argument for the screen class filming at four widths rather than asserting at one.
+
+### Findings recorded, not chased
+
+- **The sheet reads bottom-empty in all three columns at every width.** Per the standing dead-space
+  ruling this is a recorded finding and a Track H Design line, not a gap to fill with invented
+  content; the v3 stage's text budget applies and inventing rows to fill space would break it.
+- **`mark_party_se_s` reads faint on paper at 24 px.** The mark is drawn untinted by rule, so this
+  is a Design-ask line about the art's value range, not something the screen may correct.
+- **§12's `Interview` costs `0 kr · 2 h`** and films that way, which is exactly the asymmetry the
+  W-B3 review ruled belongs to W-B9 as *media interest* — a party nobody covers cannot buy its way
+  onto the air — rather than as a cost bolted onto the action.

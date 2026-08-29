@@ -142,8 +142,11 @@ namespace PoliSim.EditorTools
             driver.StageSaves = Environment.GetCommandLineArgs().Contains("-shotsaves");
             // UI v3.0 Phase A, Phase 3 (2026-08-28): film the instrument ladder instead of the sweep.
             driver.Ladder = Environment.GetCommandLineArgs().Contains("-shotladder");
+            // W-E1 (2026-08-29): film Campaign HQ instead of the sweep. Stages SOURCED Swedish
+            // returns, so it demands -shotcountry=Sweden and fails loudly under any other.
+            driver.CampaignHq = Environment.GetCommandLineArgs().Contains("-shotcampaign");
             driver.Locale = Arg("-shotlocale=", "");
-            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
+            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 
         private static string Arg(string prefix, string fallback)

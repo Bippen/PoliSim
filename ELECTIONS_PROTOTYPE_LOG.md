@@ -278,3 +278,86 @@ at the best-compromise 7 days (+2.0 → 1.22 → 0.50 → 0.10) and the harness 
 spec actually requires** — monotone, materially reduced within a fortnight, substantially gone
 within a month. If play shows the tail is too fat, the honest upgrade is a **named second
 mechanism** (a news-cycle half-life distinct from a reputation one, §38), not a fudged exponent.
+
+---
+
+## Standing rulings from the W-B3 / W-B10 review (2026-08-29)
+
+- **Campaign magnitude stays untouched until there is a loop to feel.** +0.19 pp for a hard week
+  (~1.5 points over eight weeks) is roughly right for a real campaign and probably wrong for a
+  game — but feel cannot be calibrated against a loop that does not exist.
+  `CampaignPressure.PersuasionPerCompatibilityPoint` is left alone through W-E1/E3/E4, after which
+  a **play-calibration list** opens in the records with this constant as its first entry. It will
+  not be the last thing that needs a human's hands.
+- **Interview dominance is W-B9's, as a MECHANISM, not a nerf.** Earned media is free because
+  *someone else decides whether to book you*, so the scarce resource is **media interest**.
+  Implement it in §13 as availability driven by newsworthiness (coverage, momentum, recent events)
+  — never as a flat cost or cap bolted onto the action. This also hands §13's coverage loop a real
+  input: **a party nobody covers cannot buy its way onto the air.**
+- **§22's arithmetic contradiction stands recorded, not fitted.** The compromise 7-day half-life
+  with the inconsistency documented in the constant's own doc is correct. If play later wants
+  accelerating decay, that is a **deliberate design choice with its own reason** — never a
+  reconstruction of §22's inconsistent illustrative example.
+
+## The screen class (Track E, from W-E1 on)
+
+These are the first screens of a new class, not re-skins. Each is its own item: filmed at
+1280/1600/1920/2560, guards silent, `ScreenEdgeCheck` clean, any new label-clipping instance
+treated as the known class. Built structurally in the v3 idiom — rail, one full-bleed sheet,
+ledger rows, instruments, existing sprites; **no sprite is invented**, and a gap becomes a line
+for the Track H Design ask. Every figure is derived; the v3 stage's text budget applies.
+**R-N2 holds: the screens read the model through harness-staged state and are reachable from no
+gameplay path** — the `DrawInstrumentLadder` precedent, where a private field only the screenshot
+driver sets swaps the frame for one capture at a time.
+
+---
+
+## W-E1 — Campaign HQ (2026-08-29)
+
+The first screen of the Track E class. Files: `Assets/Scripts/UI/GameController.Campaign.cs` (the
+screen), `Assets/Scripts/Elections/CampaignSnapshot.cs` (what it is handed),
+`IconLibrary.GetPartyMark` (the five delivered marks' first call site), and the driver's
+`-shotcampaign` pass.
+
+**How R-N2 is held.** The screen draws only when `_campaignScreen` has a value, and the only setter
+is `internal void SetCampaignScreen(CampaignSnapshot?)`, called by the screenshot driver. The branch
+sits beside `_onDesk` inside the frame's content column, so the rail is the real rail and the sheet
+is composed in the frame it will ship in — but there is no rail cell, no tab, no save hook and no
+gameplay path. Wiring at W-G1 is *adding the rail cell*, and nothing else.
+
+**What is derived, stated rather than blurred.** The poll is a real `PollingSystem.Conduct` draw
+against Sweden's SOURCED 2022 vector (`ElectionsData/sweden/returns_2022.md`; Valmyndigheten's final
+count); the ± comes out of that draw; momentum is a real `MomentumTracker` shock decayed on §22's
+half-life; every queued action's cost is read from `CampaignActions.Spec`; the legality list is
+`CampaignLegality.LegalActions`, never restated; the perceived-economy index is
+`PerceivedPerformance.Perceived` read off the LIVE warmed-up country. The war chest, volunteer
+counts and office upkeep are **[AUTHORED-DRAFT] staging** and the pass logs them as such (W-F5 will
+source real party finances). No spec illustration ships as data.
+
+### Decisions taken and logged (R-N1)
+
+- **~~A mark key is a suffix~~ → a mark key is the FULL file stem.** `IconLibrary.GetPartyMark`
+  takes `"mark_party_se_s"`, not `"se_s"`, so it is the literal one-line wrapper over the
+  `Resources.Load` call `PartyMarkCoverageCheck` already makes and compares against file names.
+  A second naming convention beside the check's would have been the worse outcome; when the party
+  system's seeds land on `main`, their mark names feed both without translation.
+- **Staff rows carry no personal names.** Inventing people is inventing data. The ledger shows the
+  post, whether it is filled, and the draft bonus. Names belong to W-B5 with their own sourcing.
+- **The race bars scale to the leader's band, not to 100 %.** Eight parties none of which clears a
+  third would otherwise read as eight stubs. The axis is NAMED in the methodology line, because an
+  unlabelled rescaled bar is a lie by omission.
+- **The ± band is drawn under the point estimate, not printed beside it.** W-B10's rule that the UI
+  never sees the truth is carried into the view by the type it is handed (a `Poll`, which cannot
+  express a truth); showing the interval as the bar's own width makes the uncertainty part of the
+  reading rather than a footnote to it.
+- **The masthead chips are drawn `disabled`.** Nothing is wired, and a chip that looked live while
+  doing nothing would be the worse lie.
+- **An over-committed queue is shown as over-committed.** `ResourcePool.TrySpend` refuses rather
+  than clamping (W-B2), so a queue genuinely can be unaffordable; the screen says so in the caution
+  ink instead of showing a plausible total.
+
+### A note on the film harness
+
+`-shotcampaign` demands `-shotcountry=Sweden` and fails the run otherwise: the staged returns are
+sourced *as Swedish*, and filming them under another country's frame would put real Valmyndigheten
+figures beside the wrong flag — exactly the quiet wrongness the data classes exist to prevent.

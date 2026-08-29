@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using PoliSim.Data;
+using PoliSim.Elections;
 using PoliSim.Simulation;
 using PoliSim.UI;
 using UnityEngine;
@@ -253,6 +255,13 @@ namespace PoliSim.Testing
             if (Ladder)
             {
                 yield return CaptureInstrumentLadder(controller);
+                yield break;
+            }
+
+            // W-E1: Campaign HQ instead of the sweep - the run ends here.
+            if (CampaignHq)
+            {
+                yield return CaptureCampaignHq(controller);
                 yield break;
             }
 
@@ -2289,6 +2298,219 @@ namespace PoliSim.Testing
         /// descending run of sizes (GameController.DrawInstrumentLadder) instead of the tab sweep, so
         /// the inventory's minimum legible sizes are measured on film. Set from the command line.</summary>
         public bool Ladder;
+
+        /// <summary>W-E1: `-shotcampaign` films Campaign HQ (GameController.Campaign.cs) instead of
+        /// the tab sweep — three staged days, so the empty states, the full ledgers and the
+        /// over-budget caution are all on film rather than only the flattering one. Set from the
+        /// command line; R-N2 holds, so this is the ONLY path that reaches the screen.</summary>
+        public bool CampaignHq;
+
+        /// <summary>
+        /// Sweden's 2022 Riksdag result — the SOURCED vector every polled figure on the campaign
+        /// screen descends from (ElectionsData/sweden/returns_2022.md; Valmyndigheten's RD_S.json
+        /// final count, 6 477 970 valid votes). It is used here as the campaign's TRUE preference,
+        /// which the real `PollingSystem.Conduct` then samples: the screen therefore shows a genuine
+        /// poll of genuine data, never a hand-written percentage. Order matches
+        /// <see cref="Sweden2022Parties"/>.
+        /// </summary>
+        private static readonly double[] Sweden2022Shares =
+        {
+            0.3033, 0.2054, 0.1910, 0.0675, 0.0671, 0.0534, 0.0508, 0.0461
+        };
+
+        private static readonly string[] Sweden2022Parties =
+        {
+            "S", "SD", "M", "V", "C", "KD", "MP", "L"
+        };
+
+        /// <summary>
+        /// Four of Sweden's 29 valkretsar, spelled as Valmyndigheten spells them
+        /// (ElectionsData/sweden/valkrets_votes_2018.csv). Real constituency names, so the office
+        /// ledger names places that exist; the volunteer and upkeep figures beside them are
+        /// [AUTHORED-DRAFT] staging and are logged as such by the pass below.
+        /// </summary>
+        private static readonly string[] SwedenValkretsar =
+        {
+            "Blekinge län", "Dalarnas län", "Gotlands län", "Gävleborgs län"
+        };
+
+        /// <summary>
+        /// W-E1's pass. Three staged days of one Swedish campaign, each filmed once.
+        ///
+        /// **What is derived and what is staged, stated rather than blurred.** The poll is a real
+        /// <see cref="PollingSystem.Conduct"/> draw against the sourced 2022 vector; the margins of
+        /// error come out of that draw; momentum is a real <see cref="MomentumTracker"/> shock
+        /// decayed on §22's half-life; every queued action's cost is read from
+        /// <see cref="CampaignActions.Spec"/>; the legality list is
+        /// <see cref="CampaignLegality.LegalActions"/>; the perceived-economy index is
+        /// <see cref="PerceivedPerformance.Perceived"/> read off the LIVE warmed-up country. The war
+        /// chest, the volunteer counts and the office upkeep are [AUTHORED-DRAFT] staging (W-F5 will
+        /// source real party finances) and no figure here is a spec illustration.
+        ///
+        /// **Staff carry no personal names.** Inventing people would be inventing data; the rows
+        /// show the post, whether it is filled, and the draft bonus. Names are W-B5's business, with
+        /// their own sourcing.
+        ///
+        /// The pass is SEEDED (`CampaignFilmSeed`) so the poll draw is byte-stable run to run — the
+        /// same rule-15 reasoning that seeded the main film.
+        /// </summary>
+        private const int CampaignFilmSeed = 20260913;
+
+        private IEnumerator CaptureCampaignHq(GameController controller)
+        {
+            if (_countryId != CountryId.Sweden)
+            {
+                // The staged data is Swedish and sourced as Swedish. Filming it under another
+                // country's frame would put real Swedish returns beside the wrong flag, which is
+                // exactly the quiet wrongness the data classes exist to prevent.
+                Debug.LogError($"SHOT: -shotcampaign stages SOURCED Swedish returns but the run is playing {_countryId} " +
+                               "- pass -shotcountry=Sweden. NOTHING captured.");
+                Finish(1);
+                yield break;
+            }
+
+            double perceived = ReadPerceivedEconomy(controller);
+
+            var states = new[]
+            {
+                // Three days chosen so the film shows the screen's THREE distinct readings, not the
+                // flattering one three times: nothing yet, a full but affordable day, and a day the
+                // resource system would refuse.
+                //  - precampaign: every empty state at once (no staff, no offices, nothing queued)
+                //    and §3's preparation verbs as the only ones open.
+                //  - campaign: a fully booked, affordable day - Rally 4 h + Town hall 3 h + Door to
+                //    door 5 h is exactly the 12 h `StartDay` grants, so the queue reads 12 of 12
+                //    with no caution. A film in which every day is over budget never shows the
+                //    normal case.
+                //  - overcommitted: over on BOTH money and hours, so the caution line and
+                //    `TrySpend`'s refusal are on film rather than merely implemented.
+                new CampaignFilmState("precampaign", new DateTime(2026, 6, 1), 2_400_000.0, 12.0, 180, 0, 0, 0.0),
+                new CampaignFilmState("campaign", new DateTime(2026, 8, 21), 1_120_000.0, 12.0, 1_460, 4, 3, 2.2),
+                new CampaignFilmState("overcommitted", new DateTime(2026, 9, 4), 210_000.0, 3.0, 1_820, 4, 7, -1.4),
+            };
+
+            foreach (CampaignFilmState state in states)
+            {
+                controller.SetCampaignScreen(BuildCampaignSnapshot(state, perceived));
+                yield return Settle();
+                yield return Capture($"e1_campaign_hq_{state.Stem}");
+            }
+
+            controller.SetCampaignScreen(null);
+            yield return Settle();
+
+            Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
+                      $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
+                      "war chest, volunteers and office upkeep are [AUTHORED-DRAFT] staging (W-F5 sources party finances).");
+            Debug.Log($"SHOT: campaign done, {_captured} captured, {_failed} failed.");
+            Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
+            Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
+            Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>One filmed day: what varies between the three captures.</summary>
+        private readonly struct CampaignFilmState
+        {
+            public readonly string Stem;
+            public readonly DateTime Today;
+            public readonly double Money;
+            public readonly double Hours;
+            public readonly int Volunteers;
+            public readonly int Offices;
+            public readonly int QueuedActions;
+            public readonly double MomentumShockPp;
+
+            public CampaignFilmState(string stem, DateTime today, double money, double hours,
+                int volunteers, int offices, int queuedActions, double momentumShockPp)
+            {
+                Stem = stem; Today = today; Money = money; Hours = hours; Volunteers = volunteers;
+                Offices = offices; QueuedActions = queuedActions; MomentumShockPp = momentumShockPp;
+            }
+        }
+
+        private CampaignSnapshot BuildCampaignSnapshot(CampaignFilmState state, double perceivedEconomy)
+        {
+            CampaignCalendar calendar = CampaignCalendar.Sweden2026;
+            CampaignPhase phase = calendar.PhaseOn(state.Today);
+
+            // The poll: a real draw against the sourced vector, by a house with no lean, so what the
+            // screen shows differs from the truth only by honest sampling error.
+            var house = new PollingHouse("Novus", 1_200, 120_000, new double[Sweden2022Shares.Length]);
+            Poll poll = PollingSystem.Conduct(Sweden2022Shares, house, state.Today.AddDays(-2),
+                new System.Random(CampaignFilmSeed + state.Stem.Length));
+
+            // Momentum: a real shock decayed on §22's half-life over the days since it landed.
+            var momentum = new MomentumTracker(Sweden2022Shares.Length);
+            if (Math.Abs(state.MomentumShockPp) > 0.0)
+            {
+                momentum.AddShock(0, state.MomentumShockPp);
+                momentum.Advance(3);
+            }
+
+            var momentumPp = new double[Sweden2022Shares.Length];
+            for (int i = 0; i < momentumPp.Length; i++) { momentumPp[i] = momentum.MomentumPp(i); }
+
+            // The queue: every cost read from the action's own spec, never typed here.
+            //
+            // ⚠ Queued from `CampaignActions.TheEight` INTERSECTED with the phase's legality, not
+            // from the legality list alone. Only §12's eight have specs - `Spec` throws
+            // "RecruitStaff is not one of §12's eight campaign actions" for the §3 preparation
+            // verbs, which `LegalActions(Campaign)` legitimately includes. The first film caught it
+            // as an ArgumentException mid-capture. The queue is a queue of §12 actions, which is
+            // what §12's queue is; a pre-campaign day therefore shows the empty state, correctly.
+            var specced = new System.Collections.Generic.List<CampaignActionKind>();
+            foreach (CampaignActionKind kind in CampaignActions.TheEight)
+            {
+                if (CampaignLegality.IsLegal(kind, phase)) { specced.Add(kind); }
+            }
+
+            var queue = new QueuedAction[Mathf.Min(state.QueuedActions, specced.Count)];
+            for (int i = 0; i < queue.Length; i++)
+            {
+                CampaignActions.ActionSpec spec = CampaignActions.Spec(specced[i]);
+                queue[i] = new QueuedAction(specced[i],
+                    spec.IsLocal ? SwedenValkretsar[i % SwedenValkretsar.Length] : "National",
+                    spec.MoneyCost, spec.Hours);
+            }
+
+            // Staff: the post, whether it is filled, and the draft bonus. No invented people.
+            var staff = state.Offices == 0
+                ? new StaffMember[0]
+                : new[]
+                {
+                    new StaffMember("Campaign manager", "Filled", "[AUTHORED-DRAFT] +10 % action effect"),
+                    new StaffMember("Press secretary", "Filled", "[AUTHORED-DRAFT] +15 % earned media"),
+                    new StaffMember("Field director", "Filled", "[AUTHORED-DRAFT] +20 % volunteer hours"),
+                    new StaffMember("Pollster", "Vacant", "—"),
+                };
+
+            var offices = new RegionalOffice[Mathf.Min(state.Offices, SwedenValkretsar.Length)];
+            for (int i = 0; i < offices.Length; i++)
+            {
+                offices[i] = new RegionalOffice(SwedenValkretsar[i], 120 + i * 85, 4_000 + i * 1_500);
+            }
+
+            return new CampaignSnapshot(
+                "Socialdemokraterna", "mark_party_se_s", "Sweden", phase, state.Today, calendar,
+                new ResourcePool(state.Money, state.Hours, state.Volunteers),
+                2_400_000.0, poll, Sweden2022Parties, 0, momentumPp,
+                queue, staff, offices, perceivedEconomy);
+        }
+
+        /// <summary>§19's index off the LIVE warmed-up country — the one figure on the screen that
+        /// comes from the running game rather than from staging.</summary>
+        private double ReadPerceivedEconomy(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            Country player = (simField?.GetValue(controller) as SimulationManager)?.World?.GetCountry(_countryId);
+            if (player == null)
+            {
+                Debug.LogError("SHOT: the live country could not be read - the perceived-economy figure would be invented, so the pass fails rather than guessing.");
+                return double.NaN;
+            }
+
+            return PerceivedPerformance.Perceived(player, null).Index;
+        }
 
         /// <summary>The ladder's kinds, in the order they are filmed - one capture each, named `ladder_{kind}`.</summary>
         private static readonly string[] LadderKinds =

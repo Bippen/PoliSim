@@ -171,6 +171,31 @@ namespace PoliSim.UI
             return Load(EmblemResourcesPath + "emblem_party_" + archetype.ToString().ToLowerInvariant());
         }
 
+        /// <summary>
+        /// A REAL party's identity mark, by its full mark name — the file stem, e.g.
+        /// `"mark_party_se_s"`. Five were delivered and, until Campaign HQ (W-E1, 2026-08-29), drawn
+        /// by **nothing**; this is their first call site.
+        ///
+        /// **The argument is the whole stem, not a suffix**, and deliberately so: that is exactly
+        /// what `PartyMarkCoverageCheck` passes to `Resources.Load` and exactly what it compares
+        /// against the folder's file names, so this is the one-line wrapper over that call which the
+        /// check's own comment promises rather than a second naming convention beside it. When the
+        /// party system's seeds land, their mark names feed straight in with no translation.
+        ///
+        /// Distinct from <see cref="GetPartyEmblem"/> in both subject and rule: an emblem belongs to
+        /// a fictional <see cref="PoliSim.Data.PartyArchetype"/>, a mark to a real party. Rule 9a
+        /// governs the art — a mark is ORIGINAL art recognisable by silhouette and real colour,
+        /// never the organisation's registered logo. Like flags and emblems it is authored in its
+        /// own colours: **do not tint it.** Returns null when the file is missing, the same contract
+        /// as everything else here.
+        /// </summary>
+        public static Texture2D GetPartyMark(string markName)
+        {
+            if (string.IsNullOrEmpty(markName)) { return null; }
+
+            return Load(EmblemResourcesPath + markName);
+        }
+
         private const string PortraitResourcesPath = "Art/UI/Portraits/";
 
         /// <summary>

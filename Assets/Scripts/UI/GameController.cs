@@ -1985,7 +1985,15 @@ namespace PoliSim.UI
             // pieces (e.g. Politics = Parliament[ungated] + Compass[ungated] + Cabinet[gated] +
             // FederalReserve[gated]) - see each DrawXTab method below for where it applies its own
             // gate at the right granularity, matching the old per-case behavior exactly.
-            if (_onDesk)
+            if (_campaignScreen.HasValue)
+            {
+                // W-E1 (harness only): Campaign HQ replaces the content sheet for one capture at a
+                // time - the rail stays real, so the screen is composed in the frame it will ship
+                // in. No player path sets _campaignScreen; see GameController.Campaign.cs. R-N2
+                // holds until W-G1, so there is deliberately no rail cell and no tab reaching it.
+                DrawCampaignHqStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value);
+            }
+            else if (_onDesk)
             {
                 // UI v3.0 Phase B: Screen 0 - the stage above the six documents (GameController.Desk.cs).
                 DrawDeskStage(tabContentHeight, rightColumnWidth, isTimePaused);
