@@ -361,3 +361,40 @@ source real party finances). No spec illustration ships as data.
 `-shotcampaign` demands `-shotcountry=Sweden` and fails the run otherwise: the staged returns are
 sourced *as Swedish*, and filming them under another country's frame would put real Valmyndigheten
 figures beside the wrong flag — exactly the quiet wrongness the data classes exist to prevent.
+
+---
+
+## W-E3 — the action screen (2026-08-29)
+
+Files: `Assets/Scripts/UI/GameController.CampaignAction.cs` (the screen),
+`Assets/Scripts/Elections/ActionScreenSnapshot.cs` (what it is handed),
+`CampaignActions.ChainBand` + `ResolveBand` (the model half),
+`Assets/Editor/ChainBandHarness.cs` (the proof).
+
+**The estimate's range is a propagated measurement.** The band spans §42's chain evaluated at the
+ends of the player's own polling error on salience and issue-match; audience is structural,
+credibility is the party's own record, spend is exact. `ChainBandHarness` sweeps 41×41 points per
+action across all eight (13 448 interior points) to prove the two-corner shortcut really bounds the
+box, and `ResolveBand`'s doc states that a future non-monotone stage forces it to become a sweep.
+
+### Findings carried forward
+
+- **Enthusiasm carries NO measurement uncertainty.** §42 derives it from exposure and credibility,
+  neither of which is polled, so its band is a point. Possibly wrong about the world — it is odd
+  that caring more about an issue changes persuasion but not motivation to turn out — but a change
+  here is a MODEL change with its own reason and harness, never a width invented at the drawing
+  layer. Recorded, not fixed.
+- **Interview dominance is now visible on a screen**, not just in a harness log: 0 kr, 2 h, one of
+  the longest bands on the sheet. This is the input W-B9's ruling asks for — media INTEREST as the
+  scarce resource (§13 availability driven by newsworthiness), never a flat cost or cap on the
+  action.
+- **Five defects on this item passed every guard.** All five fitted their rects; all five were wrong.
+  The screen class's four-width film and a human reading it are what caught them — recorded because
+  it is the standing argument for the cost of that film.
+- **The dead-space class recurs on both Track E screens**, worse before the per-option bands were
+  added. Stays a ruling and a Track H Design line, not a fix.
+
+### Next
+
+The play-calibration list opens after W-E4, per the W-B3/W-B10 review ruling, with
+`CampaignPressure.PersuasionPerCompatibilityPoint` as its first entry.

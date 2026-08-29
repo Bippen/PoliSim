@@ -3414,3 +3414,98 @@ accessor's contract.
 - **§12's `Interview` costs `0 kr · 2 h`** and films that way, which is exactly the asymmetry the
   W-B3 review ruled belongs to W-B9 as *media interest* — a party nobody covers cannot buy its way
   onto the air — rather than as a cost bolted onto the action.
+
+## 53. W-E3 — the action screen, and an estimate that earns its range (2026-08-29)
+
+**The item's bar was "ranges, never false precision", so the range was built before the screen was.**
+`CampaignActions.ResolveBand` evaluates §42's chain at the low, mid and high ends of the inputs the
+player ACTUALLY measures — polled salience and issue-match. The audience is structural (Sweden's
+sourced 2022 electorate), credibility is the party's own record and spend is chosen exactly, so the
+only uncertainty in the estimate is the uncertainty the player really has. The band's width is
+therefore a propagated measurement, not an authored ±, and buying a bigger sample (§21) visibly
+narrows it.
+
+**`ChainBandHarness` proves the shortcut instead of asserting it.** `ResolveBand` evaluates only two
+CORNERS of the uncertainty box, which is exact only while persuasion is monotone in both inputs —
+true today because salience and match enter in exactly one place (`relevance = salience × match`)
+and every later stage multiplies by a non-negative factor. A comment claiming that is worth nothing,
+so the harness sweeps a 41×41 grid for each of §12's eight actions — **13 448 interior points, none
+outside the band** — and the method's own doc says plainly that if a future stage breaks monotonicity
+this must become a sweep. Also asserted: a wider measured interval gives a wider estimate (span
+1 034 vs 103), a PERFECT measurement collapses the band to a point (span 0.000E+000), an unpolled
+quantity yields **no** estimate rather than a wide one (§36), and W-B3's structural bar survives the
+widening — reflection over `ChainBand` still finds no share, no preference, no party.
+
+**The screen.** Same board, same idiom and the same primitives as Campaign HQ, reused rather than
+restated so the two campaign screens cannot drift into two dialects. Three columns: §12's actions
+with what each costs and what each would buy; **§42's chain, stage by stage** — the first time that
+architecture is visible to anything but a harness, with the invariant printed ("zero any stage and
+the effect is zero"); and the selected action's estimate with its provenance.
+
+**Every option carries its own band, on ONE shared scale.** The decision this screen serves is
+*which* action to run, and that is a comparison — a screen that prices only the row you already
+clicked makes the player click all eight to find out. A per-row scale would have made a 5 000 kr
+social post look exactly as promising as a 500 000 kr television buy, so the scale is shared and its
+top is printed.
+
+### Five defects, and how each was found
+
+**The guards were silent for all five.** Every one passed `UiContainmentGuard`, the overflow guard
+and `ScreenEdgeCheck`, because all five fitted their rects perfectly. That is not a failure of the
+guards — they answer "does the text fit" — it is the concrete case for why this screen class films
+at four widths and why somebody reads the film.
+
+1. **`ENTHUSIASM PRESSURE  3,477 — 3,477`** — a range that is not a range. The band was correctly
+   zero-width; rendering it as a span was false precision wearing the costume of honesty. It now
+   prints as a POINT with its reason. See the model finding below.
+2. **`Reach 94 613`** — this machine's sv-SE culture rendering `{0:N0}` with a non-breaking space.
+   **B3's recorded defect class, in code written today.** Every numeric on both screens now goes
+   through an `Invariant` helper or an explicit `CultureInfo.InvariantCulture`.
+3. **The masthead said "CAMPAIGN HQ" on the action screen.** The title is now a parameter, which is
+   also what let the two screens keep sharing one masthead.
+4. **The sheet was ~60 % empty** — and that was a DESIGN failure, not a spacing one: the screen could
+   not answer the question it exists for. Fixed by adding real derived content (a band per option),
+   never by shrinking the board to fit what little it had.
+5. **`TOP OF SCALE 1`** on the unmeasured capture. `PersuasionScale` falls back to 1.0 so the bars
+   can divide safely, and that safe fallback leaked onto the screen as a fact. On the one screen
+   whose entire subject is not printing numbers it cannot justify, a phantom scale had to go; the
+   sentence is now printed only when a scale exists.
+
+### A model finding, recorded and NOT papered over
+
+**Enthusiasm carries no measurement uncertainty in the current model.** §42 derives it from exposure
+and credibility alone, and neither is polled, so no polling error can reach it — which is why its
+band is a point rather than a span. That may well be wrong about the world: it is odd that how much
+an electorate CARES about an issue changes how persuaded they are but not how motivated they are to
+turn out. **It is not fixed here.** If enthusiasm should depend on salience, that is a change to the
+model with its own reason and its own harness — never a width invented at the drawing layer to make
+the screen look consistent.
+
+### A finding the screen made visible for the first time
+
+**Interview dominance is now legible.** `Interview` costs 0 kr and 2 h and draws one of the longest
+bands on the sheet. This is exactly W-B3's recorded result — that an interviews-only player is
+currently optimal — lifted out of a harness log and onto a screen where it can be judged. It is also
+precisely the input the W-B9 ruling asks for: earned media is free because *someone else decides
+whether to book you*, so the scarce resource is media INTEREST, to be implemented in §13 as
+availability driven by newsworthiness rather than as a cost bolted onto the action.
+
+### Calls logged (R-N1), each strikeable
+
+- **`-shotcampaign` films the whole Track E set** rather than gaining a flag per screen: each Unity
+  launch costs ~40 s of warm-up and the screens share their staging. The items stay separable by
+  capture NAME (`e1_*`, `e3_*`), which is what a reviewer actually reads.
+- **Both Track E screens draw from the SAME staged campaign day**, so they cannot disagree about the
+  war chest or the hours. Two campaign screens contradicting each other would be worse than either
+  being wrong alone.
+- **A zero-width band prints as a point with its reason**, never as `x — x`.
+- **The estimate's mid is a hairline tick inside the band, not a headline numeral.** The eye must
+  take the interval first and the point second; a bold mid with a small ± beside it is the exact
+  false precision this item forbids.
+
+### The dead-space class, measured rather than impressionistic
+
+Both Track E screens read bottom-empty at every width, W-E3 worse than W-E1 before the per-option
+bands were added and still noticeably so after. Per the standing dead-space ruling this stays a
+recorded finding and a Track H Design line — the v3 stage's text budget applies, and filling space
+with invented rows would break it.

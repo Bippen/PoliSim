@@ -1985,7 +1985,12 @@ namespace PoliSim.UI
             // pieces (e.g. Politics = Parliament[ungated] + Compass[ungated] + Cabinet[gated] +
             // FederalReserve[gated]) - see each DrawXTab method below for where it applies its own
             // gate at the right granularity, matching the old per-case behavior exactly.
-            if (_campaignScreen.HasValue)
+            if (_campaignActionScreen.HasValue)
+            {
+                // W-E3 (harness only), same contract as the branch below it.
+                DrawCampaignActionStage(tabContentHeight, rightColumnWidth, _campaignActionScreen.Value);
+            }
+            else if (_campaignScreen.HasValue)
             {
                 // W-E1 (harness only): Campaign HQ replaces the content sheet for one capture at a
                 // time - the rail stays real, so the screen is composed in the frame it will ship

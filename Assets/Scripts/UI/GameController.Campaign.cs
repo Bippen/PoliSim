@@ -91,7 +91,7 @@ namespace PoliSim.UI
             Rect Board(float x, float y, float w, float h) =>
                 new Rect(inner.x + x * ux, inner.y + y * uy, w * ux, h * uy);
 
-            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot);
+            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ");
 
             DrawCampaignResources(Board(0f, 36f, 440f, CampaignResourcesPlateHeight), snapshot);
             DrawCampaignStaffAndOffices(Board(0f, 348f, 440f, 264f), snapshot);
@@ -112,7 +112,7 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         // The masthead: who is campaigning, in what phase, with how long left.
         // ------------------------------------------------------------------------------------------
-        private void DrawCampaignMasthead(Rect r, CampaignSnapshot s)
+        private void DrawCampaignMasthead(Rect r, CampaignSnapshot s, string screenTitle)
         {
             float ux = r.width / 1156f;
             float uy = r.height / 28f;
@@ -138,7 +138,7 @@ namespace PoliSim.UI
 
             PoliSimWidgets.MeasuredLabel(
                 new Rect(x + titleWidth + Mathf.Round(12f * ux), r.y, Mathf.Round(260f * ux), r.height),
-                "CAMPAIGN HQ", DeskCaption(9f, PoliSimTheme.TextSecondary));
+                screenTitle, DeskCaption(9f, PoliSimTheme.TextSecondary));
 
             // The phase and the countdown on the board's own chip face. Read-only here: the click is
             // swallowed by `disabled` because nothing is wired (R-N2), and a chip that looked live

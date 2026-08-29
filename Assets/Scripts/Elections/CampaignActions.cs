@@ -193,6 +193,81 @@ namespace PoliSim.Elections
                 persuasion, enthusiasm, salienceShift);
         }
 
+        /// <summary>
+        /// §42's chain evaluated across the uncertainty in its MEASURED inputs — the low, mid and
+        /// high traces. W-E3's screen shows the low–high span and never the mid alone.
+        ///
+        /// **Why a band exists at all, and why it is not decoration.** A player does not know the
+        /// electorate's true salience or how well a position suits a group; they know what POLLING
+        /// told them, and a poll carries sampling error (§20–§21, W-B10). The honest estimate of an
+        /// action's effect is therefore an interval, and its width is that measured error propagated
+        /// through the chain — not an authored "±10 %" bolted on afterwards. Where a quantity was
+        /// never measured at all (§36: the player did not buy that poll), there is no estimate to
+        /// show and <see cref="Measured"/> is false; the screen must say so rather than print a
+        /// number it cannot justify.
+        /// </summary>
+        public readonly struct ChainBand
+        {
+            public readonly ChainTrace Low;
+            public readonly ChainTrace Mid;
+            public readonly ChainTrace High;
+            /// <summary>False when an input was never polled — then there is NO estimate, not a wide one.</summary>
+            public readonly bool Measured;
+
+            public ChainBand(ChainTrace low, ChainTrace mid, ChainTrace high, bool measured)
+            {
+                Low = low; Mid = mid; High = high; Measured = measured;
+            }
+
+            public static ChainBand Unmeasured(CampaignActionKind kind)
+            {
+                var empty = new ChainTrace(kind, 0, 0, 0, 0, 0, 0, 0, 0);
+                return new ChainBand(empty, empty, empty, measured: false);
+            }
+
+            /// <summary>The span of the persuasion estimate, in the same units as the trace.</summary>
+            public double PersuasionSpan => High.Persuasion - Low.Persuasion;
+
+            public double EnthusiasmSpan => High.Enthusiasm - Low.Enthusiasm;
+        }
+
+        /// <summary>
+        /// Resolves §42's chain at the low, mid and high ends of what was measured.
+        ///
+        /// ⚠ **Evaluating the two CORNERS is exact here, and only because of a property of
+        /// `Resolve`.** Salience and issue-match enter the chain in exactly one place —
+        /// `relevance = clamp01(salience) × clamp01(match)` — and every later stage multiplies by a
+        /// non-negative factor, so persuasion is monotonically non-decreasing in both. The minimum
+        /// over the uncertainty box is therefore at (low, low) and the maximum at (high, high); no
+        /// interior point can beat either. `ChainBandHarness` asserts this by sweeping the box
+        /// rather than trusting the argument. **If a future stage makes the chain non-monotone in
+        /// either input, the corners stop being the extremes and this must become a sweep.**
+        ///
+        /// <paramref name="salienceError"/> and <paramref name="matchError"/> are the half-widths of
+        /// the measured 95 % intervals, on the same 0–1 scale as the values themselves. Pass
+        /// <paramref name="measured"/> false when the quantity was never polled at all.
+        /// </summary>
+        public static ChainBand ResolveBand(ActionSpec spec, double audience,
+            double issueSalience, double salienceError,
+            double issueMatch, double matchError,
+            double credibility, double spend, bool measured = true)
+        {
+            if (salienceError < 0 || matchError < 0)
+            {
+                throw new ArgumentException("a measured interval's half-width cannot be negative");
+            }
+
+            if (!measured) { return ChainBand.Unmeasured(spec.Kind); }
+
+            ChainTrace low = Resolve(spec, audience, issueSalience - salienceError,
+                issueMatch - matchError, credibility, spend);
+            ChainTrace mid = Resolve(spec, audience, issueSalience, issueMatch, credibility, spend);
+            ChainTrace high = Resolve(spec, audience, issueSalience + salienceError,
+                issueMatch + matchError, credibility, spend);
+
+            return new ChainBand(low, mid, high, measured: true);
+        }
+
         private static double Clamp01(double v) => v < 0 ? 0 : (v > 1 ? 1 : v);
     }
 

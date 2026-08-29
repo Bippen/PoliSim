@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using PoliSim.Data;
@@ -2399,6 +2400,14 @@ namespace PoliSim.Testing
             controller.SetCampaignScreen(null);
             yield return Settle();
 
+            // W-E3's three states, filmed from the SAME staged campaign day so the two screens agree
+            // about the war chest and the hours - two campaign screens disagreeing about the money
+            // would be worse than either being wrong alone. R-N1: `-shotcampaign` films the whole
+            // Track E set rather than gaining a flag per screen, because each Unity launch costs
+            // ~40 s of warm-up and the screens share their staging; the items stay separable by
+            // capture NAME (`e1_*`, `e3_*`), which is what a reviewer actually reads.
+            yield return CaptureActionScreen(controller, perceived);
+
             Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
                       $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
                       "war chest, volunteers and office upkeep are [AUTHORED-DRAFT] staging (W-F5 sources party finances).");
@@ -2406,6 +2415,124 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
             Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// W-E3's pass — the action screen at three readings that must look DIFFERENT from one
+        /// another, because the item's bar is about what the estimate communicates:
+        ///
+        /// - **`tight`** — a big, recent poll. The band is narrow, and acting on the number is
+        ///   reasonable.
+        /// - **`loose`** — a small, stale poll. The band is wide *for the same action and the same
+        ///   spend*, because the player knows less. Nothing about the world changed; only the
+        ///   measurement did, and the screen must show that as width.
+        /// - **`unmeasured`** — §36's gate. No poll of this audience at all, so the screen prints
+        ///   **no number**: an unbought fact is an absent estimate, not a wide one.
+        ///
+        /// The ± figures are the measurement, and the band's width is that measurement propagated
+        /// through §42's chain by `CampaignActions.ResolveBand` — proven by sweep in
+        /// `ChainBandHarness` to bound the whole uncertainty box. Nothing here is an authored ±.
+        /// </summary>
+        private IEnumerator CaptureActionScreen(GameController controller, double perceived)
+        {
+            var day = new CampaignFilmState("campaign", new DateTime(2026, 8, 21), 1_120_000.0, 12.0, 1_460, 4, 3, 2.2);
+            CampaignSnapshot campaign = BuildCampaignSnapshot(day, perceived);
+
+            // The audience is STRUCTURAL, not polled: Sweden's electorate at the 2022 election
+            // (7,775,390 eligible, Valmyndigheten) scaled to the one valkrets this action targets.
+            // It carries no measurement error, which is why the band's width comes from the polled
+            // quantities alone.
+            const double audience = 7_775_390.0 * 0.035;
+            const double salience = 0.55;
+            const double issueMatch = 0.60;
+            const double credibility = 0.70;
+
+            var readings = new[]
+            {
+                new ActionFilmReading("tight", 0.03, 0.04, true, "Novus", 4_000, new DateTime(2026, 8, 19), true),
+                new ActionFilmReading("wide", 0.14, 0.18, true, "Novus", 600, new DateTime(2026, 7, 28), false),
+                new ActionFilmReading("unmeasured", 0.0, 0.0, false, "—", 0, new DateTime(2026, 8, 19), false),
+            };
+
+            foreach (ActionFilmReading reading in readings)
+            {
+                CampaignActionKind[] legal = CampaignLegality.LegalActions(campaign.Phase);
+                var options = new System.Collections.Generic.List<ActionOption>();
+                foreach (CampaignActionKind kind in CampaignActions.TheEight)
+                {
+                    if (!CampaignLegality.IsLegal(kind, campaign.Phase)) { continue; }
+
+                    CampaignActions.ActionSpec spec = CampaignActions.Spec(kind);
+                    bool affordable = spec.MoneyCost <= campaign.Resources.Money
+                                      && spec.Hours <= campaign.Resources.Hours;
+
+                    // EVERY option is priced, not only the selected one: the decision this screen
+                    // serves is which action to run, and that is a comparison. Each band is the same
+                    // measurement carried through that action's own spec, so the rows differ by what
+                    // the action IS rather than by how well it happens to have been measured.
+                    CampaignActions.ChainBand optionBand = CampaignActions.ResolveBand(spec, audience,
+                        salience, reading.SalienceError, issueMatch, reading.MatchError,
+                        credibility, spec.MoneyCost, reading.Measured);
+
+                    options.Add(new ActionOption(kind,
+                        spec.IsLocal ? SwedenValkretsar[0] : "National",
+                        spec.MoneyCost, spec.Hours, affordable, optionBand));
+                }
+
+                // Television ad: national, expensive, and the one whose estimate a player would most
+                // want to price before spending half a million kronor on it.
+                int selected = options.FindIndex(o => o.Kind == CampaignActionKind.TelevisionAd);
+
+                var provenance = new EstimateProvenance(reading.House, reading.SampleSize,
+                    reading.FieldDate, reading.SalienceError, reading.MatchError, reading.RegionalDetail);
+
+                var snapshot = new ActionScreenSnapshot(campaign, options.ToArray(), selected, provenance);
+                CampaignActions.ChainBand band = snapshot.Estimate;
+
+                controller.SetCampaignActionScreen(snapshot);
+                yield return Settle();
+                yield return Capture($"e3_campaign_action_{reading.Stem}");
+
+                if (reading.Measured)
+                {
+                    Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                        "SHOT: W-E3 {0} - persuasion {1:N0}-{2:N0} (mid {3:N0}) from +/-{4:F0}pp salience and +/-{5:F0}pp match, "
+                        + "n={6:N0}; the span is measurement carried through the chain, not an authored margin.",
+                        reading.Stem, band.Low.Persuasion, band.High.Persuasion, band.Mid.Persuasion,
+                        reading.SalienceError * 100.0, reading.MatchError * 100.0, reading.SampleSize));
+                }
+                else
+                {
+                    Debug.Log("SHOT: W-E3 unmeasured - NO estimate printed (§36); an unbought fact is absent, not wide.");
+                }
+
+                // The legality list is derived; naming it here keeps the log honest about what the
+                // options column was built from rather than implying a hand-written eight.
+                if (legal.Length == 0) { Debug.LogError("SHOT: no legal actions in the staged phase - the options column would be empty."); }
+            }
+
+            controller.SetCampaignActionScreen(null);
+            yield return Settle();
+        }
+
+        /// <summary>One filmed reading of the SAME action: only the measurement changes between them.</summary>
+        private readonly struct ActionFilmReading
+        {
+            public readonly string Stem;
+            public readonly double SalienceError;
+            public readonly double MatchError;
+            public readonly bool Measured;
+            public readonly string House;
+            public readonly int SampleSize;
+            public readonly DateTime FieldDate;
+            public readonly bool RegionalDetail;
+
+            public ActionFilmReading(string stem, double salienceError, double matchError, bool measured,
+                string house, int sampleSize, DateTime fieldDate, bool regionalDetail)
+            {
+                Stem = stem; SalienceError = salienceError; MatchError = matchError; Measured = measured;
+                House = house; SampleSize = sampleSize; FieldDate = fieldDate; RegionalDetail = regionalDetail;
+            }
         }
 
         /// <summary>One filmed day: what varies between the three captures.</summary>
