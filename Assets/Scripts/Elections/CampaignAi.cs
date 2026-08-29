@@ -146,16 +146,29 @@ namespace PoliSim.Elections
         public readonly CampaignStrategy OwnStrategy;
         /// <summary>The electorate's loyalty (0–100) as W-A1 derives it from PUBLISHED past returns — a public fact, so a strategy can be priced against it.</summary>
         public readonly double ElectorateLoyalty;
+        /// <summary>W-B9: the interview bookings this party still holds today, as the reach (share of the electorate) of each booking outlet — its own diary. Empty = nobody will book it today, whatever it would pay.</summary>
+        public readonly double[] InterviewReachToday;
+        /// <summary>W-B9: the largest outlet's reach ceiling — where a television buy goes; a public fact about the media.</summary>
+        public readonly double BestOutletReach;
+        /// <summary>What this party's own poll costs (§21's price list, W-E4) — so a party that polls can keep the money back for it.</summary>
+        public readonly double PollCost;
+        /// <summary>W-B9: the audience each NATIONAL §12 action can reach through the media landscape today, in `TheEight`'s order (television's and the platforms' ceilings, the party's own following, the press's interest in it) — public facts, or its own; null = the whole electorate for every kind (W-B3's placeholder).</summary>
+        public readonly double[] NationalAudienceByKind;
 
         public AiView(int partyIndex, CampaignPhase phase, int daysUntilElection, ResourcePool resources,
             double spendingReserve, bool hasPoll, Poll latestPoll, double[] momentumPp, IssueMeasurement[] issues,
             double ownCredibility, double nationalAudience, RegionAudience[] regions, int daysSinceOwnPoll,
-            CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0)
+            CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0,
+            double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
+            double[] nationalAudienceByKind = null)
         {
+            NationalAudienceByKind = nationalAudienceByKind;
             PartyIndex = partyIndex; Phase = phase; DaysUntilElection = daysUntilElection; Resources = resources;
             SpendingReserve = spendingReserve; HasPoll = hasPoll; LatestPoll = latestPoll; MomentumPp = momentumPp;
             Issues = issues; OwnCredibility = ownCredibility; NationalAudience = nationalAudience; Regions = regions;
             DaysSinceOwnPoll = daysSinceOwnPoll; OwnStrategy = ownStrategy; ElectorateLoyalty = electorateLoyalty;
+            InterviewReachToday = interviewReachToday ?? new double[0]; BestOutletReach = bestOutletReach;
+            PollCost = pollCost;
         }
 
         /// <summary>
@@ -429,6 +442,30 @@ namespace PoliSim.Elections
         /// </summary>
         public static List<ScoredCandidate> Evaluate(AiView view, PersonalityProfile profile, ResourcePool available, double reserve)
         {
+            // A party that polls keeps its poll's price back once the poll is due: the measurement
+            // comes before the spending it would inform.
+            double reservation = 0.0;
+            if (profile.PollEveryDays > 0 && (view.DaysSinceOwnPoll < 0 || view.DaysSinceOwnPoll >= profile.PollEveryDays))
+            {
+                reservation = view.PollCost;
+            }
+
+            double spendableNow = Math.Max(0.0, Math.Min(available.Money, reserve) - reservation);
+            return Candidates(view, profile, available, spendableNow);
+
+            // ⚠ There is deliberately NO saving rule here. Two were tried at W-B9 and both were
+            // worse than none: "save for the better action, do only free things meanwhile" left a
+            // party with no bookings idle for days; "save, but keep doing the cheap things" left
+            // the establishment party posting on social media for a week at a time to afford one
+            // television buy, making no news and never getting booked. A big-ticket buy needs a
+            // BUDGET PLAN - a share of the war chest set aside per channel before the campaign -
+            // which is a campaign manager's job (§9's staff, W-B5) and is recorded there, not
+            // improvised as a greedy heuristic here. Until then the pace releases money evenly
+            // and a party buys what it can afford on the day.
+        }
+
+        private static List<ScoredCandidate> Candidates(AiView view, PersonalityProfile profile, ResourcePool available, double spendable)
+        {
             var result = new List<ScoredCandidate>();
 
             // Issue candidates: the measured issues by measured salience, the general message beside them.
@@ -452,8 +489,6 @@ namespace PoliSim.Elections
 
             // Region candidates for local actions: the largest few, by public audience.
             List<int> regionChoices = LargestRegions(view, LocalCandidateRegions);
-
-            double spendable = Math.Min(available.Money, reserve);
 
             foreach (CampaignActionKind kind in CampaignActions.TheEight)
             {
@@ -484,10 +519,32 @@ namespace PoliSim.Elections
                     }
                     else
                     {
+                        // W-B9: an interview needs a booking (its audience is the booking outlet's
+                        // reach - no booking, no candidate: availability, not a price); television
+                        // goes through the biggest outlet, whose reach is a ceiling on the electorate.
+                        double nationalAudience = view.NationalAudienceByKind != null
+                            ? view.NationalAudienceByKind[IndexOfAction(kind)]
+                            : view.NationalAudience;
+                        string label = "National";
+                        if (kind == CampaignActionKind.Interview)
+                        {
+                            if (view.InterviewReachToday == null || view.InterviewReachToday.Length == 0) { continue; }
+                            nationalAudience = view.NationalAudience * view.InterviewReachToday[0];
+                            label = "Booked outlet";
+                        }
+                        else if (kind == CampaignActionKind.TelevisionAd)
+                        {
+                            if (view.NationalAudienceByKind == null) { nationalAudience = view.NationalAudience * view.BestOutletReach; }
+                            label = "Television";
+                        }
+                        else if (kind == CampaignActionKind.SocialPost) { label = "Own following"; }
+                        else if (kind == CampaignActionKind.DigitalAd) { label = "Platforms"; }
+                        else if (kind == CampaignActionKind.PolicyAnnouncement) { label = "The press"; }
+
                         foreach (IssueId? issue in issueChoices)
                         {
-                            ScoredCandidate? c = Score(view, profile, spec, spend, smallest, -1, "National",
-                                view.NationalAudience, issue, topSalience, topIssue);
+                            ScoredCandidate? c = Score(view, profile, spec, spend, smallest, -1, label,
+                                nationalAudience, issue, topSalience, topIssue);
                             if (c.HasValue) { result.Add(c.Value); }
                         }
                     }
@@ -568,15 +625,21 @@ namespace PoliSim.Elections
 
             // Money, priced at the action's own efficiency at its smallest outlay (§35: concave,
             // so every bigger outlay is less efficient; CostWeight says how much less is tolerated).
+            // ⚠ Only the INCREMENT above the smallest outlay is priced. The first draft priced the
+            // whole spend, so at CostWeight 1.0 the smallest outlay's cost equalled its value and
+            // every money action scored exactly zero for the professional and grassroots
+            // personalities - floating-point noise then decided whether a party announced policy
+            // or held town halls all campaign. Money's first claim is the reserve (a constraint);
+            // the money term is what a BIGGER outlay costs beyond it.
             double costPts = 0.0;
-            if (spend > 0.0 && smallestSpend > 0.0)
+            if (spend > smallestSpend && smallestSpend > 0.0)
             {
                 Band(spec, audience, view.OwnCredibility, smallestSpend, measured, salience, salienceError, match, matchError,
                     profile, m, out double smallExpected, out _, out double smallLow, out double smallHigh);
                 double smallSuccess = smallHigh > 0 ? 0.5 + 0.5 * (smallLow / smallHigh) : 0.5;
                 double smallValue = smallExpected * importance * smallSuccess;
                 double efficiency = smallValue / smallestSpend;   // points per krona at the smallest outlay
-                costPts = profile.CostWeight * spend * efficiency;
+                costPts = profile.CostWeight * (spend - smallestSpend) * efficiency;
             }
 
             double relativeWidth = expectedPts > 0 ? spanPts / expectedPts : 0.0;

@@ -3783,3 +3783,88 @@ seeded event beside or instead of the expected cost; W-F4 retires the one-group 
 `ELECTIONS_GAP_TABLE.md` row 11 discharged; the `CLAUDE.md` dated section.
 
 **R-N2 at the boundary.** `traj_wb6_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wb6.log`); harness logs `strategy_wb6b_20260829.log`, `campaignai_wb6_20260829.log`.
+
+## 57. W-B9 — the media system (§13) and audience segmentation (§14): media interest as availability, coverage that cannot spiral, the same message by outlet (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/MediaSystem.cs` — `MediaOutlet` (reach ceiling, daily
+slots, interest threshold, audience composition over voter groups, television flag),
+`MediaSystem` (newsworthiness per action, the news-cycle decay, the saturating gain, the interest
+function, the per-kind national audience a party can reach through the media landscape, and
+`ResolveThroughOutlet` — a message resolved per voter group with that group's own salience and
+match, weighted by the outlet's composition), `MediaCoverage` (coverage as a decaying stock with a
+saturating daily gain; the gain is the momentum shock), `MediaInterest` with its `BookingLedger`
+(the outlets' diary — entitlement carried day to day), `MediaCatalog` (archetype outlets).
+`Assets/Editor/MediaHarness.cs` — the proof, 14 of 14. The AI campaign now runs under the media.
+Pure, unwired (R-N2).
+
+**The standing ruling, executed.** Earned media is free because someone else decides whether to
+book you, so the scarce resource is media INTEREST — availability driven by newsworthiness, never
+a cost or a cap on the interview. Each day the outlets allocate their slots in proportion to
+`1 − exp(−(coverage + 0.15·|momentum pp| + 0.8·polled share + events))`; a party at 4 % with no
+coverage is booked by no outlet whatever it would pay, the same party after a day of news is booked
+seven times, a bigger party is booked more on a quiet day, and the interview's spec is still 0 kr
+with no cap (asserted). **Bookings are a ledger:** the first allocation let the two most
+newsworthy parties take every slot in the country; the second (largest remainder per day) starved
+the fourth — a party at 19 % went eight weeks without an interview; the ledger carries each
+party's fractional entitlement per outlet across days (82/82/57/38 of 270 slots over a month at
+steady interest, the two under every threshold never).
+
+**Coverage cannot spiral, and it creates momentum.** The stock decays on a 3-day news-cycle
+half-life (distinct from §22's 7-day momentum half-life — the second mechanism W-B10's doc named
+rather than a fudged exponent; the spike follows the declared curve to 1.7e-16 and is at 0.10 %
+after a month) and grows only through `1 − exp(−raw)`, so a year of maximal news peaks at exactly
+the stated ceiling 4.85 and interest stays under 1. The day's GAIN shocks §22's momentum at 1.5 pp
+per unit — bounded because the gain is — and momentum, coverage and the published race feed back
+into tomorrow's interest: §13's own chain, with its diminishing returns built in.
+
+**§14 — the same message by outlet.** An outlet is a reach ceiling and an audience composition.
+One climate television message resolved for a two-group electorate whose groups differ only in
+what they care about: ×1.90 per person reached through the young-urban outlet against the
+older-rural one; a crime message ×2.00 the other way; through the general-population outlet the
+two are identical to 1e-9 — the audience decides, not the outlet.
+
+**The media landscape bounds what a national action can reach** (`MediaSystem.NationalAudience`):
+television = the television outlets' combined reach (0.80 — across them, not through the largest,
+which had made television strictly dominated by digital); a digital ad = the platforms' 0.55; a
+social post = the party's own following (polled share × 0.30 — a party nobody follows posts to
+nobody); a policy announcement = the press's interest in the party. W-B3's placeholder had every
+national action address the whole electorate; under the media the AI campaign's compatibility
+bonuses fell from +197…+225 (every party clamped at 100) to **+7…+37**. That is the mechanism half
+of W-C1's saturation finding, delivered without touching `PersuasionPerCompatibilityPoint`.
+
+### The AI under the media, and what it exposed in the AI
+
+Three defects in W-C1's scoring that six free interviews a day had masked, all fixed and logged:
+money priced on the whole spend made every money action score exactly zero at `CostWeight` 1.0
+(the increment above the smallest outlay is priced now — seed-to-seed variability fell from 0.652
+to 0.029 once the knife-edge went); the reserve spent daily meant no party ever polled again (the
+poll's price is kept back once a poll is due — polls back to 6/4/4/3); and two saving rules were
+tried for the television buy and both were worse than none (idling; a week of social posts to
+afford one buy) — **there is deliberately no saving rule**, because a big-ticket buy needs a budget
+plan, which is §9's campaign manager's (W-B5), recorded there.
+
+**What the C1 harness says now** (digest `5152fe7bc2b41c0c`; 20 assertions green, 7 `PEND`):
+every party booked 50–81 times; the grassroots parties knock doors (26–33 each) and separate from
+both media personalities (L1 0.71 / 0.61 — the W-B9 rider, half discharged); the chaotic party is
+distinct from all (0.477) and the most inconsistent day to day (1.035); the professional polls
+most and never acts blind; the populist has 80 % of its chest spent by day 34 against the
+professional's 44. **Pending, blockers named:** the professional and the establishment converge
+(0.101) on what fair bookings, the press's interest and even pacing leave them — separation waits
+on a budget plan for television (W-B5); the populist against the rest (0.292) and its rallies wait
+on real local reach (W-B4); the advertising claims wait on W-B5 (nobody advertises but the
+unbooked); door-to-door's "largest share" on W-B4/B11 (holds early: 12 % against the chaotic's
+19 %). Affinities untouched throughout.
+
+### Data classes and what is billed
+
+`[AUTHORED-DRAFT]`: every constant (calibration entry 9), the outlet ARCHETYPES — no real outlet
+name carries an authored number. Billed: real Swedish outlet reach (Kantar / Orvesto), real
+follower counts (W-F5/F6). Hooks left for their owners: `MediaCoverage.AddShock` for debates,
+scandals and events (W-B7/B8/§18); virality (§13) not modelled; the action screen's booking diary
+and per-kind audiences (W-E2/E3).
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-B9 (the calls, the constants, the C1 state, the riders
+on W-B5 / W-B4 / W-B11 / W-B7 / W-B8 / W-F5 / W-F6 / W-E2 / W-E3); `ELECTIONS_PLAY_CALIBRATION.md`
+entry 9; `ELECTIONS_GAP_TABLE.md` rows 13 and 14 discharged; the `CLAUDE.md` dated section.
+
+**R-N2 at the boundary.** `traj_wb9_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wb9.log`); harness logs `media_wb9b_20260829.log` (14 of 14), `campaignai_wb9b_20260829.log` (all assertions pass, 7 PEND).

@@ -23,9 +23,12 @@ namespace PoliSim.Elections
     /// `PreferenceModel.Preference(compatibility + campaignBonus, prior, loyaltyPerParty)` — the
     /// same recomputation W-B3's harness proved, so a campaign changes inputs and the shares are
     /// always derived; with no actions at all the shares equal the prior by construction (asserted).
-    /// Momentum (§22) is carried and decays but takes no shock, because nothing that shocks it
-    /// (debates §15, events §18, media §13) exists yet — the view shows zeros honestly rather than
-    /// an invented drift. Pre-campaign days are not simulated: §3's preparation verbs have no
+    /// Momentum (§22) is shocked by the day's COVERAGE gain (W-B9: `MediaCoverage.CloseDay` ×
+    /// `MediaSystem.MomentumPpPerCoverage`, bounded because the gain saturates) and by nothing
+    /// else yet — debates (§15) and events (§18) will add their own shocks. Interviews are
+    /// BOOKINGS: each day the outlets allocate their slots by media interest (coverage, momentum,
+    /// the PUBLISHED race), and a party without a booking has no interview to give. Pre-campaign
+    /// days are not simulated: §3's preparation verbs have no
     /// price yet, so the run covers the campaign proper (W-B1's `CampaignStart` to the day before
     /// polling day) and stops at election day, which is W-D1's.
     /// </summary>
@@ -69,12 +72,16 @@ namespace PoliSim.Elections
             public readonly PollingHouse InternalHouse;
             /// <summary>The electorate's loyalty as ONE group (0–100) — W-A1's size-weighted mean, a public derivation from past returns — until W-F4's voter groups give §11's strategies their per-group targets.</summary>
             public readonly double ElectorateLoyalty;
+            /// <summary>W-B9: the outlets that book interviews and carry television (§13/§14). Null = the archetype roster over a one-group electorate.</summary>
+            public readonly MediaOutlet[] Outlets;
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
-                PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0)
+                PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
+                MediaOutlet[] outlets = null)
             {
                 ElectorateLoyalty = electorateLoyalty;
+                Outlets = outlets ?? MediaCatalog.Archetypes(1);
                 if (parties == null || parties.Length == 0) { throw new ArgumentException("no parties"); }
                 if (priorShares.Length != parties.Length || loyaltyPerParty.Length != parties.Length || compatibility.Length != parties.Length)
                 {
@@ -114,10 +121,17 @@ namespace PoliSim.Elections
             public int PollsBought;
             public double PollMoney;
             public int BlindDecisions;
+            /// <summary>W-B9: interview slots the outlets offered this party over the campaign, and its coverage stock at the end.</summary>
+            public int SlotsOffered;
+            public double CoverageAtEnd;
+            /// <summary>The campaign day on which the party had spent 80 % of its war chest (the total day count if it never did) - front-loading against pacing.</summary>
+            public int DayEightyPercentSpent = -1;
             public double MoneyLeft;
             public double PersuasionDelivered;
             public double EnthusiasmDelivered;
             public readonly List<DecisionRecord> Log = new List<DecisionRecord>();
+            /// <summary>Action counts per campaign day (day x TheEight) - how consistent the party's strategy was from one day to the next.</summary>
+            public int[][] DailyActionCount;
 
             public PartyLedger(string name, AiPersonality personality)
             {
@@ -153,6 +167,8 @@ namespace PoliSim.Elections
             public PartyLedger[] Parties;
             public int DaysRun;
             public int PublicPolls;
+            /// <summary>W-B9: §22 momentum per party at the end — moved by coverage and nothing else.</summary>
+            public double[] MomentumPpAtEnd;
             /// <summary>A deterministic digest of every decision and the final shares — two runs of one seed must print the same one.</summary>
             public string Digest;
         }
@@ -173,6 +189,13 @@ namespace PoliSim.Elections
             var momentum = new MomentumTracker(partyCount);
             var momentumPp = new double[partyCount];
 
+            // --- W-B9: the media, an independent force ---
+            var coverage = new MediaCoverage(partyCount);
+            var bookingLedger = new MediaInterest.BookingLedger(setup.Outlets.Length, partyCount);   // the outlets' diary - entitlement carried day to day
+            var bookedReach = new List<double>[partyCount];
+            Poll? publicPoll = null;   // what the MEDIA see of the race: the published tracker, never an internal poll
+            double bestOutletReach = MediaOutlet.TelevisionReach(setup.Outlets);   // a television buy runs across the television outlets
+
             // --- what each party knows ---
             var ledgers = new PartyLedger[partyCount];
             var pools = new ResourcePool[partyCount];
@@ -184,6 +207,8 @@ namespace PoliSim.Elections
             for (int p = 0; p < partyCount; p++)
             {
                 ledgers[p] = new PartyLedger(setup.Parties[p].Name, setup.Parties[p].Personality);
+                ledgers[p].DailyActionCount = new int[setup.Calendar.TotalCampaignDays][];
+                for (int d0 = 0; d0 < ledgers[p].DailyActionCount.Length; d0++) { ledgers[p].DailyActionCount[d0] = new int[CampaignActions.TheEight.Length]; }
                 pools[p] = new ResourcePool(setup.Parties[p].StartingMoney, 0.0, 0);
                 issues[p] = new IssueMeasurement[issueCount];
                 lastOwnPollDay[p] = int.MinValue;
@@ -204,7 +229,38 @@ namespace PoliSim.Elections
                 {
                     Poll tracker = PollingSystem.Conduct(momentum.Apply(truePreference), setup.PublicHouse, today, random);
                     publicPolls++;
+                    publicPoll = tracker;
                     for (int p = 0; p < partyCount; p++) { latestPoll[p] = tracker; }
+                }
+
+                // W-B9: the outlets decide whom to book today - from coverage, momentum and the
+                // PUBLISHED race, the ruling's "someone else decides whether to book you".
+                var interest = new double[partyCount];
+                for (int p = 0; p < partyCount; p++)
+                {
+                    double polledShare = publicPoll.HasValue ? publicPoll.Value.Share(p) : 0.0;
+                    interest[p] = MediaSystem.Interest(coverage.Coverage(p), momentumPp[p], polledShare);
+                    bookedReach[p] = new List<double>();
+                }
+
+                foreach (InterviewBooking booking in bookingLedger.Allocate(setup.Outlets, interest))
+                {
+                    bookedReach[booking.PartyIndex].Add(setup.Outlets[booking.OutletIndex].Reach);
+                    ledgers[booking.PartyIndex].SlotsOffered++;
+                }
+
+                // W-B9: what each national channel can reach for each party today - television and the
+                // platforms as ceilings, a post to the party's own following, an announcement carried
+                // in proportion to the press's interest. The AI is handed the same figures.
+                var audienceByKind = new double[partyCount][];
+                for (int p = 0; p < partyCount; p++)
+                {
+                    double polledShare = publicPoll.HasValue ? publicPoll.Value.Share(p) : 0.0;
+                    audienceByKind[p] = new double[CampaignActions.TheEight.Length];
+                    for (int k = 0; k < CampaignActions.TheEight.Length; k++)
+                    {
+                        audienceByKind[p][k] = MediaSystem.NationalAudience(CampaignActions.TheEight[k], setup.NationalAudience, setup.Outlets, polledShare, interest[p]);
+                    }
                 }
 
                 for (int p = 0; p < partyCount; p++)
@@ -218,7 +274,7 @@ namespace PoliSim.Elections
                     // The poll decision is taken on the view BEFORE today's measurement, and the
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
-                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p]);
+                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p]);
                     if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
                     {
                         if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
@@ -237,7 +293,7 @@ namespace PoliSim.Elections
                         }
                     }
 
-                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p]);
+                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p]);
 
                     // Actions: the AI's plan, applied one by one against the TRUE inputs - the
                     // world's response, which the AI estimated but did not see.
@@ -251,9 +307,21 @@ namespace PoliSim.Elections
                         if (!pools[p].TrySpend(d.Spend, d.Hours, out ResourcePool after)) { break; }
                         pools[p] = after;
                         reserve[p] -= d.Spend;
+                        if (ledger.DayEightyPercentSpent < 0 && pools[p].Money <= 0.2 * setup.Parties[p].StartingMoney) { ledger.DayEightyPercentSpent = day; }
 
                         CampaignActions.ActionSpec spec = CampaignActions.Spec(d.Kind);
-                        double audience = d.Target.RegionIndex >= 0 ? setup.Regions[d.Target.RegionIndex].Audience : setup.NationalAudience;
+                        double audience = d.Target.RegionIndex >= 0 ? setup.Regions[d.Target.RegionIndex].Audience : audienceByKind[p][CampaignAi.IndexOfAction(d.Kind)];
+
+                        // W-B9: an interview goes out through the outlet that booked it (and consumes
+                        // the booking); television across the television outlets - their combined reach is a
+                        // ceiling on the whole electorate, a viewership rather than the country.
+                        if (d.Kind == CampaignActionKind.Interview)
+                        {
+                            if (bookedReach[p].Count == 0) { break; }   // no booking - cannot happen (Evaluate filtered), refuse rather than invent one
+                            audience = setup.NationalAudience * bookedReach[p][0];
+                            bookedReach[p].RemoveAt(0);
+                        }
+
                         TrueMessage(setup, p, d.Target.Issue, out double salience, out double match);
 
                         // W-B6: the party's strategy modifies the world's response - the electorate
@@ -270,8 +338,12 @@ namespace PoliSim.Elections
                             if (target >= 0) { pressure.AddAgainst(target, trace.Persuasion * modifiers.OpponentShare); }
                         }
 
+                        // W-B9: every action makes (some) news; the strategy's media attention scales it.
+                        coverage.AddRaw(p, MediaSystem.RawNewsworthiness(spec, d.Spend, modifiers));
+
                         int slot = CampaignAi.IndexOfAction(d.Kind);
                         ledger.ActionCount[slot]++;
+                        ledger.DailyActionCount[day][slot]++;
                         ledger.MoneyByAction[slot] += d.Spend;
                         if (d.Blind) { ledger.BlindDecisions++; }
                         ledger.PersuasionDelivered += trace.Persuasion;
@@ -279,17 +351,27 @@ namespace PoliSim.Elections
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
 
-                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p]);
+                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p]);
                     }
                 }
 
                 // The day closes: the true preference is RECOMPUTED from the moved inputs, never patched.
                 truePreference = CurrentPreference(setup, prior, pressure);
+
+                // W-B9 -> §22: the day's coverage GAIN (saturated, so bounded) is the momentum shock;
+                // then §22's own decay. Coverage is the only thing that shocks momentum today.
+                double[] gains = coverage.CloseDay();
+                for (int p = 0; p < partyCount; p++) { momentum.AddShock(p, MediaSystem.MomentumPpPerCoverage * gains[p]); }
                 momentum.Advance(1.0);
                 for (int p = 0; p < partyCount; p++) { momentumPp[p] = momentum.MomentumPp(p); }
             }
 
-            for (int p = 0; p < partyCount; p++) { ledgers[p].MoneyLeft = pools[p].Money; }
+            for (int p = 0; p < partyCount; p++)
+            {
+                ledgers[p].MoneyLeft = pools[p].Money;
+                ledgers[p].CoverageAtEnd = coverage.Coverage(p);
+                if (ledgers[p].DayEightyPercentSpent < 0) { ledgers[p].DayEightyPercentSpent = totalDays; }
+            }
 
             for (int p = 0; p < partyCount; p++)
             {
@@ -303,6 +385,7 @@ namespace PoliSim.Elections
                 Parties = ledgers,
                 DaysRun = totalDays,
                 PublicPolls = publicPolls,
+                MomentumPpAtEnd = (double[])momentumPp.Clone(),
                 Digest = Fnv1a64(digest.ToString()),
             };
         }
@@ -310,13 +393,15 @@ namespace PoliSim.Elections
         // ---------- the seam: what the AI is handed ----------
 
         private static AiView BuildView(Setup setup, int party, CampaignPhase phase, DateTime today, ResourcePool pool,
-            double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay)
+            double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay,
+            List<double> bookedReach, double bestOutletReach, double[] audienceByKind)
         {
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
             return new AiView(party, phase, setup.Calendar.DaysUntilElection(today), pool, reserve,
                 latest.HasValue, latest ?? default, (double[])momentumPp.Clone(), issues,
                 setup.Parties[party].Credibility, setup.NationalAudience, setup.Regions, since,
-                PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty);
+                PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
+                bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind);
         }
 
         /// <summary>Whether an issue is the electorate's most salient (the populist's "prioritised" test for a one-group electorate).</summary>

@@ -193,3 +193,30 @@ going negative feel like a gamble or a mistake?
 **What must NOT happen.** A Swing or Negative multiplier raised so the sweep table looks balanced.
 The done-when asked for no DOMINANT strategy, and there is none; a strategy that never wins is a
 measured statement to carry to play, not a bug to tune away.
+
+## 9. The media system's constants (W-B9)
+
+**What is known.** All [AUTHORED-DRAFT]: the news-cycle half-life 3 days (distinct from momentum's
+7 by design), `CoverageScale` 1, `MomentumPpPerCoverage` 1.5, the interest weights (coverage 1,
+|momentum| 0.15 per pp, polled share 0.8, events 1), the newsworthiness per action (policy
+announcement .25, interview .20, rally .15, television .10, town hall .05, digital .05, social .03,
+door-to-door .01), `PlatformReach` .55, `FollowingRatio` .30, and the outlet ARCHETYPES (public
+broadcaster .45 / 3 slots / threshold .15, commercial television .35 / 2 / .25, tabloid .30 / 2 /
+.10, broadsheet .15 / 2 / .30) with their two-group compositions. Real Swedish outlets' reach
+(Kantar / Orvesto) and real follower counts are billed as data lines.
+
+**What is measured.** Coverage decays on its curve and cannot spiral (ceiling 4.85); the same
+message performs ×1.9–2.0 differently by outlet audience; bookings are availability (a party at
+4 % with no coverage is booked nowhere, the same party after a day of news is booked seven times);
+over the AI campaign every party is booked 50–81 times in 56 days under the ledger. The compat-
+ibility bonuses fell from +197…+225 (everything national, everyone saturated) to +7…+37 once
+television, the platforms, a party's following and the press's interest bounded what a national
+action can reach — entry 1's saturation finding is now mostly W-B3's placeholder audiences, not
+the constant.
+
+**What would settle it.** Sourced reach and follower figures first; then play — does the media
+feel like an independent force (does making news get you booked, does a quiet week cost you air)?
+
+**What must NOT happen.** A slot count or threshold moved so a particular personality gets
+interviewed; a newsworthiness figure moved so the establishment "feels" like traditional media.
+The `PEND` lines in `CampaignAiHarness` name what those claims actually wait on (W-B4/B11, W-B5).
