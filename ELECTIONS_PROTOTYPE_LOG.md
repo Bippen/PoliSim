@@ -247,3 +247,34 @@ where it gives them: rally 4, interview 2, policy announcement 3); `PersuasionPe
    is time and access, not money — but it means a player who only does interviews is currently
    optimal, which §34 says the design should not reward. The fix is an availability/fatigue limit
    on earned media (a §13 concern), noted for W-B9 rather than patched here.
+
+## W-B10 — polling and momentum (§20–§22) · DONE
+
+`Polling.cs` (pure, unwired). **The structural rule: the UI never sees the truth.** A `Poll` carries
+sampled shares, sample size, MoE, field date and house — and no reference to the true preference
+vector, proven by reflection. `Conduct` is the only function that touches truth, and it can only
+return a `Poll`.
+
+**Three error sources kept separate because they behave differently:** sampling error (random,
+shrinks with √n, and is what the MoE describes), **house effect** (systematic, per-house,
+per-party, and does NOT shrink with sample size), and turnout error (deliberately absent — it is
+§26's at election time, named so the omission is visible).
+
+**Measured, over 2 000 replays of an unbiased pollster:**
+- **coverage 94.63 %** against a nominal 95 % — the margin of error is *honest*, which is the only
+  test of a MoE that means anything;
+- **0 of 2 000** polls equalled the truth exactly;
+- a house's lean **survives a 10× larger sample** (2.34 pp at n=1000, 2.35 pp at n=10 000) while
+  sampling precision improves by **exactly √10** (±2.92 → ±0.92, ratio 3.16);
+- §21's purchase is real: ±3.67 pp for 40 000 kr against ±1.42 pp for 350 000 kr.
+
+**[AUTHORED-DRAFT]** the house roster and their leans; `MomentumHalfLifeDays = 7.0`.
+
+**Finding — §22's own worked example is internally inconsistent.** Its three points for a +2.0
+shock (~1.4 after several days, ~0.4 after two weeks, ~0.0 after a month) imply half-lives of
+~9.7, ~6.0 and ~5.3 days respectively: the spec describes decay that *accelerates*. Rather than
+invent a bespoke curve to hit three mutually contradictory numbers, this keeps a plain exponential
+at the best-compromise 7 days (+2.0 → 1.22 → 0.50 → 0.10) and the harness asserts **the shape the
+spec actually requires** — monotone, materially reduced within a fortnight, substantially gone
+within a month. If play shows the tail is too fat, the honest upgrade is a **named second
+mechanism** (a news-cycle half-life distinct from a reputation one, §38), not a fudged exponent.
