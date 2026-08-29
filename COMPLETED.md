@@ -3186,3 +3186,51 @@ one), each with the trajectory dump exit 0, the six baselines byte-identical by 
 eight checks exit 0. Nothing of the election system is wired to anything. Commits `cb17c85`
 (Phase 0 + 4) · `bd34c8c` (Phase 3) + the close. Full record, call log and RULINGS NEEDED:
 `ELECTIONS_DAY1_REPORT_2026-08-29.md`.
+
+## 50. The spec lands — E-0 closed, the §39 chain's first half built (2026-08-29, later the same day)
+
+**`ELECTIONS_CAMPAIGN_SPEC.md` arrived on the third attempt and passed Phase 0's content check**
+(44 sections; §42 the causal chain; §44 the last) — installed verbatim at root before anything was
+built on it, exactly as the gate required.
+
+**Phase 1.** `ELECTIONS_GAP_TABLE.md` classifies all 44 sections — **EXISTS 3 · EXTENDS 10 ·
+NEW 22 · N/A 9**, every N/A with its one-line reason (R-EL7 live; six are principles or
+illustrations, and §40 is the one N/A-by-ruling). Three findings the classification surfaced, each
+turning a "NEW" into an "EXTENDS": **§19's actual-vs-perceived split already exists** as
+`PublicationSystem`'s preliminary/revised figures; **§31's "why you won" table is the approval
+attribution ledger** pointed at a vote share; **§24's regional data is already sourced** for six
+countries, so regions are modelling rather than research. **D0 reconciled:** this spec IS item
+10's political model — `PartyArchetype`, `TotalSeats = 200` and `ElectionSystem`'s approval
+threshold retire; seat drift, bill scoring and the renderers survive; `PublicationSystem` is
+promoted, not replaced; wiring stays R-N2-forbidden.
+**§7 built** — `ElectionTypes.cs` (§41's field lists as plain value types) + `Compatibility.cs`
+(the five-term formula, [AUTHORED-DRAFT] weights logged). Two decisions carry weight: **undefined
+axes are skipped, never centred** (CHES fills three of eight; padding the rest with 50 would
+invent party positions), and **a missing sub-score's weight is redistributed** so sparse profiles
+are not punished. The party-side scalars sum to only 0.30 deliberately — **campaigning cannot
+outrun positioning**, which is §44's design question expressed as arithmetic. Harness: **9/9.**
+**§40 diverges by ruling, not preference:** the spec's ScriptableObjects and 13-manager
+MonoBehaviour tree lose to R-EL1 (catalogs in code) and R-N2 (no wiring); §40's actual point,
+modularity, is kept as one concern per pure static class.
+
+**Phase 2 — the §39 chain's first half, all pure and unwired.** `PreferenceModel.cs` (§8:
+`λ·prior + (1−λ)·persuaded`, Sharpness 3.0 and a compatibility floor so the hardest targets stay
+reachable) · `TurnoutModel.cs` (§26's five-factor product, spans 0.30/0.20/0.15/0.15 — deliberately
+unequal so organisation outweighs charisma and §10's offices are worth building; no party-specific
+term, so §31 can one day say "you lost on turnout, not persuasion" and mean it) ·
+`RegionalAggregation.cs` (§27, with `Final = Expected + Noise` applied REGIONALLY at σ = 1.2 pp).
+`SimulationRandom.Stream` gained **`ElectionNoise = 7`, appended** per the enum's own rule — and
+the proof that followed confirmed **6/6 byte-identical baselines**, so no existing stream moved.
+
+**Harness: 20/20, and two results carry the day.** **§8 reverses both Phase-4 deviation
+signatures**: the empty-quadrant newcomer (which over-predicted BSW by +10.2 pp and TD by
++15.9 pp that morning) falls from **60.19 % to 12.27 %** as loyalty rises, while the large
+incumbent rises from **25.22 % to 53.86 %** — a measured defect, a named cause, a built fix, and a
+test that the fix moves the number the predicted way. And **regional noise partially cancels
+nationally** — 0.9482 pp regional σ against 0.3474 pp national over 400 replays of 8 regions,
+within a hair of 1/√8 — so national polling out-predicts constituency forecasting because of the
+model's structure, not because a constant was tuned to say so.
+
+**R-N2 held across six proof runs today.** Commits `b88cff5` (Phase 1) · `12662c6` (Phase 2).
+The Day-1 report's addendum carries the full record; RULINGS NEEDED #1 (paste the spec) is closed,
+the other four stand.

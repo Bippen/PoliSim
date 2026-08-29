@@ -140,12 +140,11 @@ path, no UI, no turn-loop or save hook — **and every part ends with the trajec
 byte-identical.** Held at six consecutive boundaries so far (two overnight, four on Day-1): the
 six baselines identical by SHA-256 every time, the eight checks green every time.
 
-**⚠ THE ERA'S ONE BLOCKER: `ELECTIONS_CAMPAIGN_SPEC.md` HAS NEVER ARRIVED.** It was to be pasted
-with the overnight queue and again with the Day-1 kickoff; both times the instruction came without
-it (Phase 0's content check: 0 sections). Everything §-shaped is therefore **parked, not guessed**:
-the 44-section gap table with R-EL7's N/A column, §7's types and compatibility core, §39's chain
-(§8 loyalty, §26 turnout, §27 aggregation), §§20–22 polling. **Re-pasting the spec — in pieces if
-it is large — unblocks all of it.**
+**The spec arrived on the third attempt (2026-08-29) and is installed verbatim at root** —
+`ELECTIONS_CAMPAIGN_SPEC.md`, 44 sections, verified by content (§42 the causal chain, §44 the
+last) before anything was built on it. The era's former blocker is closed; `ELECTIONS_GAP_TABLE.md`
+classifies all 44 sections (EXISTS 3 · EXTENDS 10 · NEW 22 · N/A 9, each N/A with its reason per
+R-EL7) and reconciles D0: **this spec IS item 10's political model.**
 
 **What is BUILT and PROVEN (E-1 through E-3's first rung):**
 
@@ -161,14 +160,22 @@ it is large — unblocks all of it.**
   a two-round system in 577 single-member constituencies has no national allocation to implement.
   The overhaul doc's Part 5 port-and-reproduce obligation is discharged in full.
 - **The vote rung — opened at 3–7 pp** with an explicitly declared placeholder instrument (four
-  parameters, no party-specific constants), and its errors name their own fixes.
+  parameters, no party-specific constants), and its errors named their own fixes.
+- **The spec's chain, first half built the same day** (all pure, all unwired): §7 compatibility
+  (`Compatibility.cs`, 9/9 assertions), §8 loyalty damping (`PreferenceModel.cs`), §26 turnout
+  (`TurnoutModel.cs`), §27 election-day aggregation with noise on the appended `ElectionNoise`
+  stream (`RegionalAggregation.cs`) — 20/20 assertions, and **§8 demonstrably reverses both
+  Phase-4 deviation signatures** (the empty-quadrant newcomer 60.2 % → 12.3 %, the incumbent
+  25.2 % → 53.9 %).
 
-**The E-phase plan, sized against those two tables:** E-0 unblocks the hour the spec lands · E-1 is
-done but for France's fetch · **E-2 is CLOSED** unless France is wanted · **E-3's next unit is §8
-loyalty damping — the single highest-value piece in the plan**, because both deviation signatures
-(empty-quadrant inflation, large-party under-prediction) ask for exactly it · E-4 is §27 regional
-structure (Germany's CSU +7.4 pp is its measurable target) · E-5 (campaigns, polling, momentum) is
-last and blocks nothing below it.
+**The E-phase plan, sized against those tables:** **E-0 CLOSED** (spec installed, gap table
+complete, §7 types built) · E-1 done but for France's fetch · **E-2 CLOSED** unless France is
+wanted · **E-3 half-built** — §8/§26/§27 landed; what remains of §39 is base support, candidate
+appeal (§16), campaign effects (§12), media (§13/§14), momentum (§22) and tactical voting (§23) ·
+E-4 is §24's regional objects (Germany's CSU +7.4 pp is its measurable target) · E-5 (the campaign
+layer proper, §9–§12/§15/§17/§32–§33) is last and blocks nothing below it. §19 needs no building,
+only a read — the macro simulation already IS government performance, and `PublicationSystem`
+already IS the perceived-vs-actual split.
 
 **The 13 September minimum, named:** Sweden votes 13 Sept 2026 (item 10's gate). Everything
 measurable for it already exists — the Swedish allocator is exact and proven, the 2022 seed data

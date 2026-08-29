@@ -244,3 +244,82 @@ not an oversight to fix quietly.
   election system is wired to anything.**
 - Commits: `cb17c85` (Phase 0 + Phase 4) · `bd34c8c` (Phase 3, both rulings) · the close.
 - Phases 1–2 remain parked on the spec, by Phase 0's own instruction — not attempted, not guessed.
+
+---
+
+# ADDENDUM — the spec arrived later the same day; Phases 0, 1 and 2 ran
+
+Everything above was written while `ELECTIONS_CAMPAIGN_SPEC.md` was missing, and is left standing
+as the record of what was decided under that condition. The spec then arrived. **Phase 0's
+content check PASSED** — 44 sections, §42 carrying the causal chain, ending at §44 "Design
+Philosophy" — and it is installed verbatim at root (26 278 bytes). RULINGS NEEDED #1 is
+**answered and closed**; the other four stand.
+
+## Phase 1 — the parked E-0 units, built
+
+**The gap table** (`ELECTIONS_GAP_TABLE.md`): all 44 sections classified — **EXISTS 3 ·
+EXTENDS 10 · NEW 22 · N/A 9**, every N/A carrying its one-line reason per R-EL7. Six of the nine
+are principles or illustrations rather than units (dropping them refuses to pretend a philosophy
+is a work item); §40 is the one N/A-by-ruling. Three findings the classification surfaced:
+
+- **§19's actual-vs-perceived split already exists** as `PublicationSystem`'s preliminary/revised
+  figures — the game's most under-used asset for this system.
+- **§31's "why you won" table is the approval attribution ledger** pointed at a vote share; the
+  idiom is built, audited and proven.
+- **§24's regional data is already sourced** for all six countries — building regions is
+  modelling, not research.
+
+**D0 reconciled:** this spec IS item 10's political model. `PartyArchetype`, `TotalSeats = 200`
+and `ElectionSystem`'s approval threshold retire; seat drift, bill scoring and the renderers
+survive untouched; `PublicationSystem` is **promoted**, not replaced. Wiring stays R-N2-forbidden.
+
+**§7 built** — `ElectionTypes.cs` (§41's field lists as plain value types) and `Compatibility.cs`
+(the five-term formula). Two design decisions worth their lines: **undefined is skipped, never
+centred** (the sourced CHES data fills three of eight axes; padding the rest with 50 would be
+inventing party positions — the exact failure R-N4 exists to prevent), and **the weight of a
+missing sub-score is redistributed**, so a sparse profile is penalised for nothing. The
+party-side scalars sum to only 0.30 by deliberate choice, so **campaigning cannot outrun
+positioning** — §44's design question as arithmetic. Harness: **all 9 assertions pass.**
+
+**§40's divergence, ruled not preferred:** the spec asks for ScriptableObjects and a 13-manager
+MonoBehaviour tree; **R-EL1** rules catalogs-in-code and **R-N2** forbids wiring. What is kept is
+§40's actual point — modularity — with one concern per pure static class. Recorded in the gap
+table and the architecture doc, revisitable only by striking R-EL1.
+
+## Phase 2 — the §39 chain's built half
+
+| unit | spec | what it does | AUTHORED-DRAFT constants (logged, strikeable) |
+|---|---|---|---|
+| `PreferenceModel.cs` | §8 | `preference = λ·prior + (1−λ)·persuaded`, λ = loyalty/100 | Sharpness 3.0; MinimumCompatibility 1.0 |
+| `TurnoutModel.cs` | §26 | base × four attribute multipliers | spans 0.30 / 0.20 / 0.15 / 0.15 |
+| `RegionalAggregation.cs` | §27 | pop × eligible × share × turnout × preference, then `Final = Expected + Noise` | regional σ = 1.2 pp |
+
+`SimulationRandom.Stream` gained **`ElectionNoise = 7`, appended** per the enum's own rule — and
+the R-N2 proof that followed confirmed **6/6 byte-identical baselines**, so no existing stream's
+seed offset moved. Nothing in the live game draws from it.
+
+**The chain harness: all 20 assertions pass**, including the two that justify the ordering:
+
+- **§8 corrects the deviation that named it.** The empty-quadrant newcomer — the shape that
+  over-predicted BSW by +10.2 pp and TD by +15.9 pp this morning — falls from **60.19 % at low
+  loyalty to 12.27 % at high**, while the large incumbent rises from **25.22 % to 53.86 %**.
+  Both Phase-4 signatures reverse under the layer the measurement asked for. That is the day's
+  strongest result: a measured defect, a named cause, a built fix, and a test that the fix moves
+  the number in the predicted direction.
+- **Regional noise partially cancels nationally** — 0.9482 pp regional σ against 0.3474 pp
+  national over 400 replays of 8 regions, within a hair of the 1/√8 = 0.335 theory. National
+  polling is more accurate than constituency forecasting *because of the model's structure*, not
+  because a constant was chosen to make it so.
+
+## State at close of the addendum
+
+Commits `b88cff5` (Phase 1) · `12662c6` (Phase 2), pushed. **R-N2 held at every part — six proof
+runs today**, the six baselines byte-identical each time, all eight checks green each time,
+including across the enum append. Still true and still deliberate: **nothing of the election
+system is reachable from any gameplay path.**
+
+**What is now built of §39's thirteen layers:** compatibility ✔, ideological match ✔, loyalty
+✔, turnout ✔, regional ✔, noise ✔, and the electoral systems below them ✔ (5 of 6 chambers
+exact). **What remains NEW:** base support, candidate appeal (§16), campaign effects (§12), media
+(§13/§14), momentum (§22), tactical voting (§23) — plus §24's regional objects and the campaign
+layer proper. Government performance (§19) needs no building, only a read.
