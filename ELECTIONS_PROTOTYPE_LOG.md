@@ -1188,3 +1188,91 @@ AI's deny-threshold 0.3 and its responses by personality · the staged scandal.
   and `Integrity` should bite.
 
 **R-N2 held at this boundary:** `traj_wb8_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `scandal_wb8_20260829.log`, `campaignai_wb8_20260829.log`.
+
+---
+
+## W-A4 — tactical voting, threshold form (§23): the belief from the published poll, lending where the race is in play, abandonment where it is hopeless (2026-08-29)
+
+Files: `Assets/Scripts/Elections/TacticalVoting.cs` (`TacticalSpec`, `TacticalFlow`,
+`TacticalResult`, `TacticalVoting.Apply/ApplyToRegions/NormalCdf`), `Assets/Editor/TacticalVotingHarness.cs`,
+`ElectionsData/sweden/psu_2018_2022.md` (SOURCED, new). Pure and unwired (R-N2); no stream
+appended.
+
+**Done-when.** *A party polling 3.5–4.5 % shows measurable support inflow* — on the 2022
+staging with L set to 3.5 / 3.75 / 4.0 / 4.25 / 4.5 % it gains +1.18 / +1.18 / +1.00 / +0.72 /
++0.43 pp net from its bloc; at 6 % nothing moves; at 1.5 % (§23's own example, no realistic
+chance) it LOSES 0.62 pp net to its bloc (0.72 out, 0.09 in). *The effect vanishes in the absence
+of a threshold* — threshold 0 returns the input to the bit with no flows; so does awareness 0;
+a party outside any bloc (SD in 2018) neither lends nor receives; mass is conserved to 1e-15;
+29 regions reading the one national poll shift exactly as the nation does. *2022's near-threshold
+behaviour reproduced no worse than without the layer* — SCB's May 2022 PSU as the poll and as the
+preference, Valmyndigheten's September count as the answer: the near-threshold error (KD, MP, L)
+falls 3.12 → 1.00 pp and the whole-vector L1 error 13.27 → 10.08 pp; L 3.47 → 4.63 (count 4.68),
+MP 3.37 → 4.46 (count 5.16); KD, polling clear, needs nothing and only lends (0.15 pp). 12 of 12.
+
+**The data.** `psu_2018_2022.md`: Statistics Sweden's Partisympatiundersökningen via the PxWeb
+API (`Vid10` "val idag" with ± at 95 %, and `Rostningssympati170`, vote intention against
+"best party") for May 2018 and May 2022 — the only official probability-sample pre-election
+figure. In each election year the party polling below 4 % in May finished above it in
+September (KD 2018 3.0 → 6.32; MP and L 2022 3.3 → 5.08 and 3.4 → 4.61), each time with the
+bloc's largest partner falling. The May cross-tab shows the lending still small then (M → L
+0.7 % of M's sympathisers, inside its own margin) — a lower bound on the final week's, which
+no PSU observes; a final-week poll of record is billed.
+
+### Decisions taken and logged (R-N1)
+
+- **The voter's belief is the poll, widened.** P(clear) = Φ((polled − T) / σ) with
+  σ² = (MoE / 1.96)² + `BeliefSigmaPp`² — §20's rule that polls miss by more than their
+  margin, so no sample size removes the doubt. `BeliefSigmaPp` = 1.0 pp was fixed BEFORE the
+  2022 run from the worklist's own window (3.5–4.5 % must show inflow, so the doubt spans at
+  least ±0.5 pp); it is [AUTHORED-DRAFT] and strikeable (calibration entry 13).
+- **Two behaviours, one variable.** Where the outcome is in play the bloc LENDS: each partner's
+  aware, willing voters (awareness × `MaxLendFraction` 0.15 × affinity) move to the threatened
+  party, up to what it NEEDS to stand one belief-sigma clear, weighted by 4P(1 − P) — the
+  pivotality of a vote. Where it is hopeless the party's OWN aware voters ABANDON it for the
+  bloc, weighted by ((1 − P)(1 − 2P))² below even odds and by nothing above. A party polling
+  clear needs nothing and loses nothing. The two forms were chosen with the PSU figures on the
+  table; the constants were not moved after the first run, and the record says so — the 2022
+  test is in-sample for the FORM (a 2026 May PSU against the 2026 count would be the first
+  out-of-sample test).
+- **Voter ideology as affinity:** 1 − |Δlrgen| / 10 within the bloc (CHES 2024, SOURCED), 0
+  outside — M lends to L more readily (0.92) than SD does (0.82); C to MP least on the left
+  (0.68).
+- **Blocs are the harness's staging, not a catalog:** 2022's two sides (M/KD/L/SD; S/V/C/MP)
+  and 2018's (the Alliance M/C/KD/L; S/V/MP; SD outside). A bloc catalog belongs to W-D4
+  (coalitions) or the Track H ask.
+- **Threshold form only.** §23's other forms — a district's two-horse race under FPTP, a
+  runoff — are not this item; the layer is the identity without a national threshold, asserted.
+- **Wiring:** the layer takes the last PUBLISHED poll (`Poll` shares and ±) and never the truth;
+  the seam is the count (`ElectionDay.Count` takes the shifted regional vectors). Not wired
+  (R-N2); W-G1 wires it between the final tracker and the count.
+
+### [AUTHORED-DRAFT] values, one line each (calibration entry 13)
+
+`BeliefSigmaPp` 1.0 pp · `MaxLendFraction` 0.15 · awareness 0.5 (the harness's staging; W-F4's
+groups would carry it per group) · the weights 4P(1 − P) and ((1 − P)(1 − 2P))² · the need
+target T + one belief-sigma · the blocs as staged.
+
+### Findings carried forward
+
+1. **The lending overshoots at even odds:** L at 4.0 % goes to 5.0 % (the full need at full
+   pivotality) — more than L at 3.75 % ends with. Whether a bloc lends to the target or to the
+   threshold is a play question; the target is strikeable.
+2. **2018's KD case is a quarter reproduced** (3.09 → 3.84 against 6.42): four months of
+   campaign and a May poll far from the day; the layer is not the whole of KD's 2018.
+3. **The lenders pay where the count says they gained:** SD 2022 lent 0.48 pp and finished
+   +3.5 pp above its May poll — the error on SD grows (3.51 → 3.94) even as the vector's
+   improves. The layer is not a forecast of the campaign; it is the last week's switch.
+
+### Riders
+
+- **W-G1** — wire between the final published tracker and the count; the AI's blind parties
+  see nothing (no poll → no belief → the layer must not run on truth).
+- **W-E1 / W-E5** — a "stödröst" reading on the polling screen: which partner is in danger,
+  as a range, never the layer's figure.
+- **W-F4** — awareness per voter group.
+- **Track H / DATA_BILL** — a final-week poll of record for 2018 and 2022 (the newspapers'
+  commissioned polls or the SVT/Valu exit poll) so the last week's switch can be measured
+  rather than bounded from May.
+
+**R-N2 held at this boundary:** `traj_wa4_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harness `tactical_wa4b_20260829.log` (12 of 12 — the bar's first run failed one mis-specified assertion, 3d, which asserted KD "receives nothing" when L's leavers bring it 0.02 pp; the assertion was corrected to what the design says and the harness re-run).

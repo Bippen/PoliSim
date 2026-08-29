@@ -4282,3 +4282,49 @@ about (W-F6) are what would make it a choice. Calibration entry 12 carries the t
 `ELECTIONS_GAP_TABLE.md` row 17; the `CLAUDE.md` dated section.
 
 **R-N2 at the boundary that appends the `Scandal` stream.** `traj_wb8_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0.
+
+## 66. W-A4 — tactical voting, threshold form (§23): the belief from the published poll, lending where the race is in play, abandonment where it is hopeless (2026-08-29)
+
+**What shipped.** `Assets/Scripts/Elections/TacticalVoting.cs` — pure and unwired (R-N2), no
+stream appended: `TacticalSpec` (§23's five factors in their threshold form — the system's
+threshold, the bloc a second choice lives in, a position per party for affinity, the share of
+aware voters; the poll is handed in per call, the truth never), `TacticalVoting.Apply` (the
+belief P(clear) = Φ((polled − T) / σ) with σ the poll's own error widened by `BeliefSigmaPp`;
+the bloc LENDS where the race is in play, up to what the party needs to stand one belief-sigma
+clear, weighted by the pivotality 4P(1 − P); a party's own aware voters ABANDON it where it is
+hopeless, weighted by ((1 − P)(1 − 2P))² below even odds; mass conserved to the bit; every flow
+on a ledger), `ApplyToRegions` (the one national poll over every region's vector).
+`Assets/Editor/TacticalVotingHarness.cs` — 12 of 12. `ElectionsData/sweden/psu_2018_2022.md` —
+SOURCED: Statistics Sweden's PSU for May 2018 and May 2022 via the PxWeb API, "if the election
+were held today" with ± at 95 % and the vote-intention-by-best-party cross-tab.
+
+**The done-when.** *Measurable inflow at 3.5–4.5 %:* L set to 3.5 / 3.75 / 4.0 / 4.25 / 4.5 %
+on the 2022 staging gains +1.18 / +1.18 / +1.00 / +0.72 / +0.43 pp net from its bloc; at 6 %
+nothing moves; at 1.5 % — §23's own example — it loses 0.62 pp net to the bloc. *Vanishes
+without a threshold:* threshold 0 is the identity to the bit with no flows; so is awareness 0; a
+party outside any bloc neither lends nor receives; 29 regions reading the national poll shift as
+the nation does. *2022 no worse than without the layer:* the May PSU as poll and preference
+against the September count — the near-threshold error (KD, MP, L) 3.12 → 1.00 pp, the whole
+vector 13.27 → 10.08 pp; L 3.47 → 4.63 (count 4.68), MP 3.37 → 4.46 (5.16); KD, polling clear,
+needs nothing and only lends 0.15 pp. The flows: S → MP 0.93, V → MP 0.21, C → MP 0.14;
+M → L 0.66, SD → L 0.48, KD → L 0.15; MP and L each lose a little to their bloc (P 0.27 and
+0.30 — below even odds). 2018 with 2018's blocs, measured not asserted: KD 3.09 → 3.84 against
+6.42 — a quarter of the KD case; the layer is not the whole of four months' campaign.
+
+**Honesty about the constants.** `BeliefSigmaPp` = 1.0 pp was fixed from the worklist's own
+window BEFORE the 2022 run; `MaxLendFraction` = 0.15 is a bound with the PSU's May lending
+(≈ 1 % of M's sympathisers) as its lower anchor; neither moved after the first run. The two
+forms were chosen with the PSU figures on the table, so the 2022 test is in-sample for the form
+and the record says so — the first out-of-sample test is a May PSU against a count the model
+has not seen.
+
+**Findings.** The lending overshoots at even odds (L at 4.0 % goes to 5.0 % — more than L at
+3.75 % ends with): the need target is strikeable. The lenders pay where the count says they
+gained (SD lent 0.48 pp and finished +3.5 above its May poll) — the layer is the last week's
+switch, not a forecast of the campaign. A final-week poll of record is billed.
+
+**Records.** `ELECTIONS_PROTOTYPE_LOG.md` W-A4; `ELECTIONS_PLAY_CALIBRATION.md` entry 13;
+`ELECTIONS_GAP_TABLE.md` row 23; `ElectionsData/DATA_BILL.md` (the final-week poll); the
+`CLAUDE.md` dated section.
+
+**R-N2 at the boundary (no stream appended).** `traj_wa4_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0.

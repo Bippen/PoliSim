@@ -83,3 +83,6 @@ stayed open, and the candidate source for the morning (or a later session).
   `WorldFactory`/the seed docs). The derivation is a DAY task with the spec's group definitions
   in hand — blocked-on-the-spec tonight (the spec defines the group axes), billed rather than
   invented (the queue's own hard rule: no authored demographics).
+
+## Polls (W-A4, 2026-08-29)
+- **Sweden — a final-week poll of record for 2018 and 2022** (the newspapers' commissioned polls, or the SVT/Valu exit poll's recalled vote): the tactical layer models the LAST WEEK's switch, and the only official pre-election figure on disk is SCB's May PSU (`sweden/psu_2018_2022.md`) — four months before the day. Billed, not approximated; the May figure is a lower bound on the lending, not its size.

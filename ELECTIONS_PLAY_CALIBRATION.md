@@ -291,3 +291,26 @@ which contradicts §17's sentence; it is recorded as the shape the spec demands,
 
 **What must NOT happen.** Any multiplier moved so `ScandalHarness` 2a's pairwise distinctness or
 2c's "denial widest" line passes, or so the C1 harness's staged scandal costs a rounder number.
+
+## 13. The tactical layer's doubt and the bloc's willingness (W-A4)
+
+**What is known.** [AUTHORED-DRAFT]: `BeliefSigmaPp` 1.0 pp (fixed from the worklist's own
+window before the 2022 run), `MaxLendFraction` 0.15, awareness 0.5 (staging), the need target
+T + one belief-sigma, the weights 4P(1 − P) for lending and ((1 − P)(1 − 2P))² for abandonment,
+the blocs as staged. SOURCED: the PSU May figures and ± (SCB), CHES `lrgen` for affinity.
+
+**What is measured.** On the 2022 staging L gains +1.18 pp at 3.5 %, +1.00 at 4.0 %, +0.43 at
+4.5 %, nothing at 6 %, loses 0.62 pp at 1.5 %. May 2022 → the count: near-threshold error
+3.12 → 1.00 pp, the whole vector 13.27 → 10.08. May 2018 → the count: KD 3.09 → 3.84 against
+6.42 (a quarter of the rise). The PSU's May cross-tab: M → L 0.7 ± 0.6 % of M's sympathisers,
+M → KD 1.0 ± 0.7 % — the lending before the final weeks.
+
+**What would settle it.** A final-week poll of record for 2018 and 2022 (billed) — the size of
+the last week's switch, which is what the layer models; the 2026 May PSU against the 2026 count
+as the first out-of-sample test of the form; play on W-E1's screen: does a bloc voter FEEL the
+threshold, and is lending to 5.0 % (the overshoot at even odds) what a player would do.
+
+**What must NOT happen.** `BeliefSigmaPp` or `MaxLendFraction` moved so 2018's KD reproduces
+better — the May → September Δ mixes tactical lending with four months of genuine movement, and
+fitting it would put the campaign inside the layer. The form was chosen with the 2022 figures on
+the table; the honest next test is one the model has not seen.
