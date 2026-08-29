@@ -42,6 +42,19 @@ namespace PoliSim.Elections
     /// <see cref="PedersenIndex"/> is included because it is the standard published measure of an
     /// election pair's total volatility, and reporting it beside the per-party figures lets a
     /// reader check the derivation against political-science literature rather than trusting it.
+    ///
+    /// ⚠ **A KNOWN LIMIT OF TWO-ELECTION VOLATILITY, recorded and NOT to be chased** (ruled
+    /// 2026-08-29). On Germany's 2021→2025 pair this derivation scored **worse than the uniform
+    /// constant of 60 it replaced** (Day-3 5.36 pp against Day-2's 4.66), while beating Day-1 and
+    /// while improving Sweden and Poland. Two elections are a small sample, and a party's last
+    /// swing is not always its next one.
+    ///
+    /// **The regression stands as reported.** A principled method that is occasionally worse than a
+    /// lucky constant is still the better method: the constant was right for Germany by accident
+    /// and catastrophically wrong for Italy, which is how it failed Day-2's gate. If a playable
+    /// Germany ever needs this closed, **the fix is a longer election window** (three or four
+    /// pairs, weighted toward the recent) — **never a re-introduced global constant**, and never a
+    /// per-country constant fitted until the number looks better.
     /// </summary>
     public static class LoyaltyModel
     {

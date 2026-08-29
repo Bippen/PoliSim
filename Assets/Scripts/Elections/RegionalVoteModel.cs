@@ -27,6 +27,21 @@ namespace PoliSim.Elections
     ///
     /// Aggregation is vote-weighted, never a mean of regional shares — the trap that lets a small
     /// region outvote a large one (asserted in the chain harness).
+    ///
+    /// ⚠ **THE SCOPE OF THIS LAYER IS DELIBERATE — DO NOT "IMPROVE" IT INTO GENERALITY** (ruled
+    /// 2026-08-29). Measured: §27's value is **concentrated in regionally-confined parties** — the
+    /// CSU standing in one Land of sixteen, the SSW in one, the Greens' rejected Saarland list.
+    /// With such a party in the field this layer is worth several points of MAD; with the field
+    /// restricted to nationally-uniform parties it is worth almost nothing, and Day-2/W-A3 measured
+    /// exactly that (Germany's nine-party set improves, the eight-party set barely moves).
+    ///
+    /// **That is the layer working, not a shortfall.** A regional layer that also moved
+    /// nationally-uniform parties would be adding noise dressed as signal: if a party stands
+    /// everywhere and the model has no non-circular source of regional preference variation, then
+    /// the honest regional prediction IS the national one. A later session that "generalises" this
+    /// by inventing per-region electorate shifts would be manufacturing precision it cannot source.
+    /// The `ElectorateOverride` hook exists for the day a NON-CIRCULAR source of regional variation
+    /// arrives (regional demographics from the model's own seeds) — and for no other day.
     /// </summary>
     public static class RegionalVoteModel
     {

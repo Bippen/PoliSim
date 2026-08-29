@@ -187,3 +187,63 @@ return per krona falling monotonically across all four bands (1.81E-6 → 2.29E-
 spend refused with the pool untouched; a negative pool impossible to construct; hours resetting
 daily while money and volunteers carry; and a worked campaign day where the fourth action is
 correctly refused for want of hours.
+
+---
+
+## Standing rulings from the W-A / W-B1–2 review (2026-08-29)
+
+- **Germany's Day-3 regression stands as reported, not chased.** Derived loyalty beat Day-1 and
+  lost to the uniform 60 on that one pair (5.36 vs 4.66). A principled method occasionally worse
+  than a lucky constant is still the better method — that constant was right for Germany by
+  accident and catastrophically wrong for Italy, which is how it failed Day-2's gate. Recorded in
+  `LoyaltyModel`'s doc as **a known limit of two-election volatility**: if a playable Germany ever
+  needs it closed, the fix is **a longer election window**, never a re-introduced constant.
+- **§27's regional value is correctly concentrated in regionally-confined parties.** That is the
+  layer working, not a shortfall: a regional layer that also moved nationally-uniform parties would
+  be adding noise dressed as signal. The scope is now written into `RegionalVoteModel`'s doc with
+  an explicit instruction not to "generalise" it, and the `ElectorateOverride` hook is reserved for
+  a **non-circular** source of regional variation and no other.
+- **Italy's FdI is the standing MISSING-MECHANISM TEST CASE.** ~19 pp under-predicted at any
+  loyalty, because 4.35 → 29.27 % is a surge no pre-2022 data contains. Registered as an **open
+  test against §13 media, §18 event salience and §22 momentum**: when W-B9, W-B10 and event
+  salience land, re-run Italy 2022 and report whether the surge becomes reachable. **Reachable =
+  the strongest validation this model can get; unreachable = a named ceiling, recorded as such.**
+  Do not tune toward it — the value of the test is destroyed the moment anything is fitted to pass it.
+
+## W-B3 — §12's eight actions through §42's chain · DONE
+
+`CampaignActions.cs` (pure, unwired). **The item's bar is met architecturally, not by convention:**
+`ChainTrace` has no share, preference or party member, so an action has **nowhere to put a vote
+delta**. Its only outputs are persuasion and enthusiasm *pressures*; `CampaignPressure` converts
+persuasion into a **compatibility bonus**, and the preference is then recomputed by the same
+`PreferenceModel` that runs with no campaign at all. The campaign moves the inputs; the output is
+always derived.
+
+The chain multiplies at every stage — reach × attention → exposure; salience × issue-match →
+relevance; × credibility × weight → persuasion — which is what makes "it travelled the chain"
+checkable rather than asserted.
+
+**Proven three ways** (one would have been too easy):
+- **structural** — reflection over `ChainTrace` finds no member that could hold a share;
+- **behavioural** — for all eight actions, zeroing any ONE of audience / salience / issue-match /
+  credibility drives persuasion to exactly zero (8 × 4 = 32 cases, 0 failures). A direct `+2 %`
+  would survive all four;
+- **end to end** — a week of campaigning moves party 0 from 36.550 % to 36.741 %, shares still sum
+  to 1, and **the decisive test**: the identical campaign with the chain severed (zero audience)
+  moves *nothing*.
+
+**[AUTHORED-DRAFT]** the eight actions' costs, hours and weights (hours follow §9's own figures
+where it gives them: rally 4, interview 2, policy announcement 3); `PersuasionPerCompatibilityPoint
+= 40 000`; `EnthusiasmPerTurnoutPoint = 60 000`.
+
+**Two calibration findings, recorded not smoothed:**
+1. **The magnitude is probably too small to be playable yet.** A hard week — three rallies, two
+   town halls, a national TV buy, daily door-knocking — moves the party **+0.19 pp**. Over a full
+   8-week campaign that compounds to roughly a point and a half. The mechanism is right and the
+   *scale* is a play-calibration question owned by `PersuasionPerCompatibilityPoint`; it should be
+   set once there is a full campaign loop to feel, **not** guessed at now.
+2. **Free actions get full reach, which makes the interview dominant per hour** (2 268 persuasion
+   for 2 hours and no money, against a TV buy's 1 124 for 500 k). Defensible — an interview's cost
+   is time and access, not money — but it means a player who only does interviews is currently
+   optimal, which §34 says the design should not reward. The fix is an availability/fatigue limit
+   on earned media (a §13 concern), noted for W-B9 rather than patched here.
