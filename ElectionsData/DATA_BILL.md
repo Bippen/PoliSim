@@ -22,9 +22,16 @@ stayed open, and the candidate source for the morning (or a later session).
 
 ## Still owed
 
-- **France — per-circonscription results, both rounds** (577 × 2). The ONLY way to model French
-  seats at all; nothing national exists to implement. Candidate: the Ministry's data.gouv
-  dataset family (the same publisher as the régions CSV already used).
+- ~~**France — per-circonscription results**~~ **NOT A BILL — R-EL10 (2026-08-29) rules France
+  STRUCTURALLY OUT OF SCOPE.** Two-round SMD needs a 577-constituency model with runoff behaviour;
+  that is a large sourced build serving one country, and nothing before 13 September needs it.
+  It is a named future item on the roadmap ("France constituency model", unsized, unstarted) —
+  **not a gap, not a placeholder, and not to be approximated.** The data (the Ministry's data.gouv
+  family) is where it always was if the item is ever taken.
+- **Italy — the sub-national stages** (R-EL11, 2026-08-29): source them to the Rosatellum statute
+  standard **before Italy is playable**, not before the model is trusted — the proportional stage
+  already reproduces exactly. Needs the per-circoscrizione and per-collegio *cifre elettorali*
+  (Eligendo Archivio, HTML only) plus the art. 84 cascade. Billed, deliberately not urgent.
 - **Italy — per-circoscrizione and per-collegio *cifre elettorali*** (27 circoscrizioni, 49
   collegi) for the sub-national stages (art. 83 lett. h/i, art. 83-bis) and the art. 84
   cascade. Available on Eligendo Archivio as HTML only (`…&tpe=C…`, `…&tpe=P…`). ⚠ The
@@ -54,9 +61,13 @@ stayed open, and the candidate source for the morning (or a later session).
 - **US positions vintage**: GPS-2019 is pre-2020 — flag any use with the vintage; re-source
   when CHES-USA lands. **Day-1 note:** this is now load-bearing — Phase 4's USA case runs on
   these coordinates.
-- **Nebraska's district method may be repealed** (LB3, 109th Legislature, `[UNCONFIRMED]`) —
-  a live-rule expiry, not a data gap, but it invalidates `usa/district_method_2024.md`'s rule
-  half if it passed. Verify when `nebraskalegislature.gov` is reachable.
+- ~~**Nebraska's district method may be repealed**~~ **RESOLVED 2026-08-29 (R-EL12): LB3 was NOT
+  ENACTED** — cloture failed 31–18 on 8 April 2025, indefinitely postponed at sine die
+  17 April 2026; LR24CA never floor-debated; the initiative route withdrawn June 2026. The
+  district method stands. Full finding, sources and its sourcing gap: `usa/district_method_2024.md`.
+  ⚠ **The finding has an expiry** — the 110th Legislature convenes January 2027 and the Governor
+  intends to keep pursuing winner-take-all before 2028. Re-check before modelling a post-2026
+  cycle; if it ever passes, R-EL12 requires a **dated rule variant**, never an edit.
 - **Italia Viva** (no CHES 2024 row), **KO as a coalition** (PO row stands in), **AVS**
   (components only). State the mapping wherever these feed a model.
 

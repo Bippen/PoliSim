@@ -92,11 +92,43 @@ as plurality WITHOUT error, but must not generalise that to future cycles.
 (§723-A(7) holds separate presidential-RCV procedures that operate only if the National Popular
 Vote Interstate Compact governs elector appointment — not operative in 2024.)
 
-## Live watch item
+## The LB3 question — RESOLVED 2026-08-29 (R-EL12)
 
-**[UNCONFIRMED] Nebraska may abolish the district method.** LB3 in the 109th Legislature is
-described as amending §32-1038 to make all five electors statewide (winner-take-all). The bill
-could not be fetched (same unreachable host) and its status is unverified; best secondary
-pointer seen: BillTrack50 https://www.billtrack50.com/billdetail/1771479. **Verify before
-modelling Nebraska as permanently district-method** — this is a live-rule expiry of exactly the
-kind rule 9 warns about for seed data.
+**VERDICT: NOT ENACTED. The district method stands.** Nebraska still allocates 5 electors as
+2 at-large + 1 per congressional district, and §32-1038's operative sentences are unchanged.
+
+**The bill's history, as far as it went:** LB3 (109th Legislature) was introduced 9 January 2025
+by Sen. Loren Lippincott at Governor Pillen's request, to amend §§32-710, 32-714 and 32-1038 so
+that all five electors follow the statewide winner. Hearing 30 January 2025 (75+ testifiers,
+majority opposed); advanced to General File; **cloture FAILED 31–18 on 8 April 2025** — two short
+of the 33 required, two Republicans voting against — and it was never rescheduled.
+**Indefinitely postponed 17 April 2026** at the biennium's sine die. The companion constitutional
+amendment **LR24CA** was never floor-debated and is **not** on the 2026 ballot; a citizen-initiative
+route launched in October 2025 was **withdrawn in June 2026** before the signature deadline. The
+Nebraska Secretary of State's 2026 elections page carries no notice of any change.
+
+**Sources** (accessed 2026-08-29): the Legislature's own Unicameral Update —
+https://update.legislature.ne.gov/?p=37216 (the hearing) and
+https://update.legislature.ne.gov/?p=39341 (session review: cloture "received only 31 votes — two
+short of the 33 needed"; LR24CA "remained in committee without advancement"); action history at
+https://www.billtrack50.com/billdetail/1771479 ("Indefinitely postponed (on 04/17/2026)");
+contemporaneous press (WOWT, Nebraska Examiner) for the roll call.
+
+⚠ **Sourcing gap, stated:** `nebraskalegislature.gov` / `leg.ne.gov` refused connections
+throughout (ECONNREFUSED on two IPs) and the Internet Archive is blocked at the tool level, so the
+official bill-history page and official statute text were **not** directly verified. Three
+independent lines — the Legislature's own news service, the aggregator's action history, and press
+— agree, which is why this is rated high-confidence rather than certain. §32-1038's text was
+re-read from a commercial reproduction (FindLaw, "current as of January 01, 2024"); since LB3 was
+the only vehicle to amend it and LB3 died, the text is unchanged.
+⚠ **One propagated error not to carry forward:** the aggregator's summary calls LB3 a bill about
+"seven electors". Nebraska has **five**.
+
+**The ruling's forward half still binds.** R-EL12 requires that if this ever changes it is
+implemented as a **dated rule variant** — the rule set carrying both forms, selected by election
+date — never an edit that erases the district method the 2024 backtest validates against.
+`ElectoralCollege.Jurisdiction` is already shaped for exactly that: winner-take-all and
+district-method are two constructors over one type, so a date-selected variant adds a selector,
+not a rewrite. **This finding has an expiry:** the 110th Legislature convenes January 2027 and the
+Governor has said he intends to keep pursuing winner-take-all before 2028. **Re-check before
+modelling any cycle after 2026.**
