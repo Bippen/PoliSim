@@ -4078,3 +4078,33 @@ draft-dial sheets, the Policy Web, Statistics), `ScreenEdgeCheck -edgepattern=pa
 named); the `CLAUDE.md` dated section; the check-suite doc says nine.
 
 **The film and the guard.** `pa_campaign_<w>_*` (13 frames at each of 1280 / 1600 / 1920 / 2560) and `pa_sweep_<w>_*` (77 at 1280 and at 2560), 0 overflows, 0 escapes, 0 ATTRIB; `ScreenEdgeCheck -edgepattern=pa_*.png` clean over 206 captures; `MetaTextCheck` 0 hits (`metatext_after2_20260829.log`).
+
+## 62. P-A2 — the "as published" graph block dies: a display cut, the mechanism untouched and proven so (2026-08-29)
+
+**The finding (Playtest 1, finding 2, Elias):** *the "as published" graphs at the bottom of
+Statistics are redundant.* The item: remove them; **the `PublicationSystem` mechanism is
+untouched** — it is load-bearing (the election model's §19 perceived-performance reads Published,
+never State) and its honesty conventions stay on the main graphs where they already live.
+
+**What was cut.** `GameController.Statistics.cs` — `DrawStatsPublishedBand`, its KEY
+(`DrawStatsPublishedKey`, `StatsPublishedKeyWidth`, the five key strings) and
+`PublishedSeriesFor`, and the call that closed `DrawDomesticStatisticsContent`; the three
+`GraphRenderer`s that existed only for it (`_gdpPublishedGraph`, `_unemploymentPublishedGraph`,
+`_inflationPublishedGraph`). The sheet now ends on the Society rows. `GraphRenderer.DrawPublished`
+and `PublishedFigure.Draw` stay (they are the instruments, not the block; the PRELIMINARY / FINAL
+chips and the revision frame on the main graphs are theirs).
+
+**What was NOT cut, and the proof.** `PublicationSystem`, every `Published` series, the release
+calendar, the revision mechanic — untouched. `PerceivedPerformanceHarness` gains line 5: the
+source of `PerceivedPerformance.Perceived` reads `country.Published` and never `country.State`,
+asserted on the method body itself so a future edit that quietly reads State fails the harness
+rather than passing unnoticed (`perceived_pa2_20260829.log`: 5 of 5). The four earlier lines
+(the lag exists, perception tracks the publication, the incumbent's share differs perceived vs
+actual, the divergence is reportable) still pass — the display cut changed nothing the election
+model reads, which is the claim the commit makes.
+
+**Filmed.** Statistics › Domestic at 1280 and 2560 in the `pa_sweep_<w>_02a_statistics_domestic*`
+frames — the sheet ending on the Society rows, the main graphs' PRELIMINARY chips where they were.
+
+**Records.** `MISSING_PREREQUISITES.md` §P (finding 2 answered, dated) and §V (the row's capture
+named); the `CLAUDE.md` dated section.

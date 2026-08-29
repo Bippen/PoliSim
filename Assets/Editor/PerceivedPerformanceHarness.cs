@@ -163,6 +163,20 @@ namespace PoliSim.EditorTools
 
                 failures += Assert(sb, "4. the divergence is reportable as a signed attribution line",
                     Math.Abs(divergence) >= 0.0, $"divergence {divergence:F4} index points at the final sample");
+
+                // 5. P-A2 (Playtest 1, finding 2 - 2026-08-29): the "as published" graph block on
+                //    Statistics was a DISPLAY cut. The election model's section-19 reading takes the
+                //    PUBLISHED series and never the live state - asserted on the source of
+                //    PerceivedPerformance.Perceived itself, so a future edit that quietly reads State
+                //    here fails this line rather than passing unnoticed.
+                string modelPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Scripts", "Elections", "PerceivedPerformance.cs"));
+                string modelSource = System.IO.File.ReadAllText(modelPath);
+                int perceivedStart = modelSource.IndexOf("public static Reading Perceived(", StringComparison.Ordinal);
+                int perceivedEnd = modelSource.IndexOf("public static Reading Actual(", StringComparison.Ordinal);
+                string perceivedBody = perceivedStart >= 0 && perceivedEnd > perceivedStart ? modelSource.Substring(perceivedStart, perceivedEnd - perceivedStart) : "";
+                failures += Assert(sb, "5. P-A2: PerceivedPerformance.Perceived reads country.Published and never country.State (the display cut changes nothing the election model reads)",
+                    perceivedBody.Contains(".Published") && !perceivedBody.Contains(".State."),
+                    $"Perceived's body: Published {(perceivedBody.Contains(".Published") ? "read" : "NOT read")}, State {(perceivedBody.Contains(".State.") ? "READ" : "not read")}");
             }
             finally
             {

@@ -469,8 +469,6 @@ namespace PoliSim.UI
         // own Y-axis, so instances are never shared across stats with different natural ranges.
         private readonly GraphRenderer _gdpGraph = new GraphRenderer();
 
-        /// <summary>Master Sequence step 9, Step B: the PUBLISHED GDP series, drawn directly beneath the live one so the reporting lag and any revision are legible by comparison rather than in isolation. GDP is the right stat to show this on - it is the only one with a real multi-stage revision cycle (BEA advance/second/third, Eurostat flash/regular), so it is where a revision can actually be watched happening.</summary>
-        private readonly GraphRenderer _gdpPublishedGraph = new GraphRenderer();
         private readonly GraphRenderer _unemploymentGraph = new GraphRenderer();
         private readonly GraphRenderer _approvalGraph = new GraphRenderer();
 
@@ -480,10 +478,6 @@ namespace PoliSim.UI
         private readonly GraphRenderer _inflationGraph = new GraphRenderer();
         private readonly GraphRenderer _povertyGraph = new GraphRenderer();
         private readonly GraphRenderer _debtGraph = new GraphRenderer();
-        private readonly GraphRenderer _unemploymentPublishedGraph = new GraphRenderer();
-
-        /// <summary>Inflation publishes monthly like Unemployment, so it gets the comparison graph treatment rather than the badged-figure one - see PublishedFigure for why cadence decides that.</summary>
-        private readonly GraphRenderer _inflationPublishedGraph = new GraphRenderer();
 
         // Phase 4's per-tab graph rollout - one GraphRenderer per newly-homed stat, same "never
         // shared across stats" reasoning as the three headline instances above.

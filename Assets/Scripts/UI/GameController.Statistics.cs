@@ -482,101 +482,16 @@ namespace PoliSim.UI
             }
         }
 
-        private const string PublishedKeyPreliminary = "PRELIMINARY";
-        private const string PublishedKeyFinal = "FINAL";
-        private const string PublishedKeyFirst = "= FIRST ESTIMATE · ";
-        private const string PublishedKeyRevised = "= REVISED LATER · ";
-        private const string PublishedKeySettled = "= SETTLED · LAG SHOWN PER GRAPH";
-
-        /// <summary>Board 2a: the published band - E19's sentence retired for a KEY on the rule (the badge chips and the dashed frame the graphs themselves draw, named once), the three monthly / quarterly series as graphs in the 3-column grid, and the annual poverty figure as its bulletin (E18) beneath the third: eleven points beside a daily series read as a broken graph, so an annual figure renders as this number, for this period, released on this date.</summary>
-        private void DrawStatsPublishedBand(float contentWidth)
-        {
-            GUIStyle keyStyle = DeskCaption(8f, PoliSimTheme.TextSecondary);
-            float keyWidth = StatsPublishedKeyWidth(keyStyle);
-            Rect row = DrawStatsSectionCaption("AS PUBLISHED — LAGGED, REVISED AS LATER ESTIMATES ARRIVE", keyWidth + StatsUnit(12f));
-            if (Event.current.type == EventType.Repaint)
-            {
-                DrawStatsPublishedKey(new Rect(row.xMax - keyWidth, row.y, keyWidth, row.height - 1f), keyStyle);
-            }
-
-            GUILayout.Space(StatsUnit(6f));
-            GUIStyle graphLabel = StatsGraphLabelStyle();
-            GUIStyle bulletinLabel = DeskBody(12f, PoliSimTheme.TextPrimary);
-            System.DateTime now = _simulationManager.CurrentDate;
-            DrawStatsGraphGrid(contentWidth, new List<System.Action>
-            {
-                () => _gdpPublishedGraph.DrawPublished("GDP as published", PublishedSeriesFor(PublishedStat.Gdp), graphLabel, higherIsBetter: true, now, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp)),
-                () => _unemploymentPublishedGraph.DrawPublished("Unemployment as published", PublishedSeriesFor(PublishedStat.Unemployment), graphLabel, higherIsBetter: false, now, moneyUnit: null),
-                () =>
-                {
-                    // Inflation joins the two graphs because it SHARES THEIR CADENCE - monthly, 143
-                    // releases over twelve years; the poverty rate does not (eleven), so it is a bulletin.
-                    _inflationPublishedGraph.DrawPublished("Inflation as published", PublishedSeriesFor(PublishedStat.Inflation), graphLabel, higherIsBetter: false, now, moneyUnit: null);
-                    GUILayout.Space(StatsUnit(6f));
-                    PublishedFigure.Draw("Poverty rate as published", PublishedSeriesFor(PublishedStat.PovertyRate), bulletinLabel, moneyUnit: null);
-                }
-            });
-        }
-
-        private PublishedSeries PublishedSeriesFor(PublishedStat stat)
-        {
-            return _playerCountry.Published.Series.TryGetValue(stat, out PublishedSeries series) ? series : null;
-        }
-
-        /// <summary>The key's measured width, so the section caption can leave it room on the rule.</summary>
-        private float StatsPublishedKeyWidth(GUIStyle style)
-        {
-            float chipPad = StatsUnit(5f);
-            float gap = StatsUnit(4f);
-            float width = 0f;
-            width += Mathf.Ceil(style.CalcSize(new GUIContent(PublishedKeyPreliminary)).x) + chipPad * 2f + gap;
-            width += Mathf.Ceil(style.CalcSize(new GUIContent(PublishedKeyFirst)).x);
-            width += StatsUnit(26f) + gap;
-            width += Mathf.Ceil(style.CalcSize(new GUIContent(PublishedKeyRevised)).x);
-            width += Mathf.Ceil(style.CalcSize(new GUIContent(PublishedKeyFinal)).x) + chipPad * 2f + gap;
-            width += Mathf.Ceil(style.CalcSize(new GUIContent(PublishedKeySettled)).x);
-            return width;
-        }
-
-        /// <summary>The KEY (E19 returned as an instrument): the PRELIMINARY chip in the caution ink, the dashed frame in the fill amber, the FINAL chip in the secondary ink - the same three marks the published graphs draw, in the same inks, so the key cannot drift from what it explains. Repaint-gated by its caller.</summary>
-        private void DrawStatsPublishedKey(Rect rect, GUIStyle style)
-        {
-            float chipPad = StatsUnit(5f);
-            float gap = StatsUnit(4f);
-            float chipHeight = Mathf.Min(rect.height, Mathf.Ceil(DeskCaptionHeight(style)) + StatsUnit(2f));
-            float cy = rect.y + (rect.height - chipHeight) * 0.5f;
-            float x = rect.x;
-
-            void Chip(string text, Color ink)
-            {
-                float w = Mathf.Ceil(style.CalcSize(new GUIContent(text)).x) + chipPad * 2f;
-                var chip = new Rect(x, cy, w, chipHeight);
-                PoliSimTheme.RoundedCard(chip, PoliSimTheme.Card, ink, 0f);
-                PoliSimWidgets.MeasuredLabel(chip, text, DeskCaption(8f, ink, false, TextAnchor.MiddleCenter));
-                x += w + gap;
-            }
-
-            void Text(string text)
-            {
-                float w = Mathf.Ceil(style.CalcSize(new GUIContent(text)).x);
-                PoliSimWidgets.MeasuredLabel(new Rect(x, rect.y, w, rect.height), text, style);
-                x += w;
-            }
-
-            Chip(PublishedKeyPreliminary, PoliSimTheme.Caution);
-            Text(PublishedKeyFirst);
-            var dashed = new Rect(x, cy + (chipHeight - StatsUnit(10f)) * 0.5f, StatsUnit(26f), StatsUnit(10f));
-            DeskDashedFrame(dashed, PoliSimTheme.Draft, 3f, 2f);
-            x += dashed.width + gap;
-            Text(PublishedKeyRevised);
-            Chip(PublishedKeyFinal, PoliSimTheme.TextSecondary);
-            Text(PublishedKeySettled);
-        }
+        // P-A2 (Playtest 1, finding 2 - 2026-08-29): the "as published" graph block that closed this
+        // sheet is gone. It was a DISPLAY cut: the PublicationSystem mechanism is untouched (the
+        // election model's section-19 reading takes Published, never State - PerceivedPerformanceHarness
+        // asserts it), and the PRELIMINARY / revision honesty conventions stay on the main graphs,
+        // which already carry them.
 
         /// <summary>
         /// Statistics › Domestic as board 2a draws it, top to bottom: the headline plates, the fiscal
-        /// position on one axis, the sector distribution, the six live graphs, the Society rows, the
-        /// published band. The "Domestic" header is gone - the sub-tab already says it (a (b)-class
+        /// position on one axis, the sector distribution, the six live graphs, the Society rows (the "as published" band that
+        /// followed them was cut at P-A2, 2026-08-29 - a display cut; the mechanism stands). The "Domestic" header is gone - the sub-tab already says it (a (b)-class
         /// duplicate, the census's own category). Next-year projections ride the three graphs that
         /// have them, from the same cached PreviewTurn the Desk's effects card reads (the dashed
         /// segment is a real feature and the section caption says what it is, once).
@@ -621,8 +536,6 @@ namespace PoliSim.UI
             });
             StatsSectionGap();
             DrawStatsSocietyRows(contentWidth);
-            StatsSectionGap();
-            DrawStatsPublishedBand(contentWidth);
         }
 
         /// <summary>
