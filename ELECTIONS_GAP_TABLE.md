@@ -44,8 +44,8 @@ standing rulings, each named.
 | 29 | Coalition Formation | **NEW** | Sourced coalition structures exist for Italy and Poland; the negotiation model does not. |
 | 30 | Election Results Screen | **NEW** | UI — blocked by R-N2 until wiring is ruled. Board 1h (election night) is already the Design-side placeholder. |
 | 31 | Post-Election Analysis | **EXTENDS** | ⚠ **The game already has exactly this idiom**: the approval attribution ledger decomposes a number into named contributions the boundary audit proves. §31's "why you won" table is that ledger pointed at a vote share. |
-| 32 | Campaign AI | **NEW** | Personalities over §12's action set. |
-| 33 | AI Decision-Making | **NEW** | Expected-value scoring; needs §12 and §20. |
+| 32 | Campaign AI | **NEW → BUILT W-C1 (2026-08-29)** | Personalities over §12's action set. `CampaignAi.cs`: the five as parameters over §33's terms; chaotic and populist measurably distinct, the rational three collapse onto the free interview — PENDING W-B9 / W-B4-B11, recorded not forced. |
+| 33 | AI Decision-Making | **NEW → BUILT W-C1 (2026-08-29)** | Expected-value scoring; needs §12 and §20. Built in ONE unit (compatibility points): §42's band on MEASURED inputs × affinity × probability of success − money at the action's own §35 efficiency, per hour, × risk on the band's relative width; no kronor-to-votes exchange rate authored; the attack verb of the spec's example left to W-B8. |
 | 34 | Campaign Mistakes | **N/A** | A property the action set must have (recoverable, non-dominant), not a separate unit. Becomes an acceptance test for §12. |
 | 35 | Diminishing Returns | **N/A** | A curve shape every spend path must obey, not a unit. Enforced inside §9/§12; noted as a rule so it cannot be forgotten. |
 | 36 | Hidden Variables | **N/A** | An information-architecture principle governing §20/§21/§25 — implemented as *what the UI is not allowed to show*, which is a rule about other sections. |

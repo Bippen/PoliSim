@@ -130,3 +130,43 @@ does with their hours, then the model question.
 Each entry is a **one-line change with a named owner in the code**. That is the point of having
 resisted tuning them: the day a human sits down to feel the game, they are not untangling six
 interacting fudges.
+
+---
+
+## Addendum to 1 (W-C1, 2026-08-29): the same constant, measured at the real audience
+
+**What is measured.** `CampaignAiHarness` runs an AI-only campaign over Sweden's real electorate
+(6.48 million valid votes 2018 as the national audience). Every rational personality delivers
+**+197 to +225 compatibility points** over the 56 days (persuasion / 40 000) — and `ElectionScales`
+clamps at 100, so every party saturates and the final shares are the clamp's arithmetic. W-B3's
++0.19 pp for a hard week was measured at a 100 000 audience; the chain is linear in audience and in
+repetition, so at 6.5 million the same week is 65× that.
+
+**What it means for this entry.** The constant's right value depends on how reach is BOUNDED —
+whether the same electorate can be "reached" six times a day by six interviews, whether a channel's
+audience is a viewership or the whole country. Those are mechanism questions (W-B9's media
+interest; a repeated-exposure decay; W-B4/B11's absolute ground-game reach), and this constant must
+not be raised or lowered to paper over them. Entry 1 therefore waits on those items as well as on
+play. **Still not tuned.**
+
+## 7. The campaign AI's personality parameters (W-C1)
+
+**What is known.** `PersonalityCatalog`'s five rows — affinities per action, temperature, risk
+aversion, optimism, cost weight, spend pace, enthusiasm value, polling cadence, focus, acts-blind,
+spend multipliers — are readings of §32's bullet lists as numbers (the full table is in
+`ELECTIONS_PROTOTYPE_LOG.md`, W-C1). `RiskScale = 0.25`, `PollingHours = 1`, the candidate bounds
+(4 regions, 2 issues) sit beside them. Every one is [AUTHORED-DRAFT].
+
+**What is measured.** In W-B3's placeholder environment the chaotic and populist mixes differ from
+every other's (L1 ≥ 0.50); the professional, establishment and grassroots mixes do NOT (L1 ≤ 0.024)
+because a free national interview dominates every other action for any expected-value chooser.
+That collapse is the environment's, and the harness records it as PENDING on W-B9 and W-B4/B11.
+
+**What would settle it.** Those two mechanisms first — then play, against opponents that feel
+different (§32's own bar: "genuinely different"). Whether a populist that spends its whole chest by
+week five is fun to beat or merely dead is a play question.
+
+**What must NOT happen.** An affinity raised so the grassroots party knocks doors in an environment
+where door-knocking is worthless — that is a number chosen to make a test pass. The `PEND` lines
+in `CampaignAiHarness` exist so nobody is tempted: they flip to assertions when the mechanism lands,
+with the affinities untouched.

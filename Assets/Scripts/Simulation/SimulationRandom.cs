@@ -60,7 +60,23 @@ namespace PoliSim.Simulation
             /// The name exists so that whatever eventually wires it cannot be tempted to borrow
             /// another consumer's stream.
             /// </summary>
-            ElectionNoise = 7
+            ElectionNoise = 7,
+
+            /// <summary>
+            /// The campaign AI's choice randomness (elections spec §32/§33: the softmax over
+            /// scored actions, the chaotic personality's "inconsistent strategy"), added
+            /// 2026-08-29 at W-C1. APPENDED after ElectionNoise, never inserted, so every
+            /// existing stream's seed offset is untouched; the trajectory suite is re-proven
+            /// byte-identical at the boundary that adds it (the ElectionNoise precedent).
+            ///
+            /// Its own stream so that an AI's decisions can be replayed under a seed without
+            /// re-running the economy, and so that adding an AI draw can never shift an event,
+            /// a cabinet decision or a poll's sampling.
+            ///
+            /// ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2). `CampaignAi` takes a
+            /// `System.Random` from its caller; today the only caller is `CampaignAiHarness`.
+            /// </summary>
+            CampaignAi = 8
         }
 
         private static int? _masterSeed;

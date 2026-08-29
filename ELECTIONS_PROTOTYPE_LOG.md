@@ -441,3 +441,114 @@ screen class's four-width film.
 `ELECTIONS_PLAY_CALIBRATION.md` created on the completion of W-E1/E3/E4, per the W-B3/W-B10 ruling.
 Six entries; `PersuasionPerCompatibilityPoint` first; the enthusiasm-vs-salience model question and
 earned-media dominance both carried there with their rulings attached.
+
+---
+
+## W-C1 — AI parties (§32) and expected-value decisions (§33) (2026-08-29)
+
+Files: `Assets/Scripts/Elections/CampaignAi.cs` (the personalities, the view, the scoring),
+`Assets/Scripts/Elections/CampaignRun.cs` (the AI-only campaign — the one place the truth lives),
+`Assets/Editor/CampaignAiHarness.cs` (the proof); `SimulationRandom.Stream.CampaignAi = 8`
+APPENDED (the ElectionNoise precedent; nothing live draws from it).
+
+**The done-when, clause by clause.** (1) *An AI-only campaign completes deterministically* — MET:
+seed 777 twice gives digest `d7670f735d1b8864` and bit-identical final shares, 56 of 56 campaign
+days, no money negative. (2) *The five personalities produce measurably different action mixes* —
+**MET for what the environment can distinguish, PENDING for the rest**: the chaotic and populist
+mixes differ from every other's (min L1 0.604 / 0.504), the grassroots party buys the least
+broadcast, the establishment party is the only one that saves up for the 500 000 kr television buy
+(3 of them), the professional buys the most polling (8) and never acts blind, the populist ends the
+campaign with 0 kr while the professional keeps 1.44 m, the chaotic mix varies most seed to seed
+(0.161 against ≤ 0.039). **Professional, establishment and grassroots are indistinguishable (L1
+0.013–0.024): all three interview all day.** That is the environment's fact, not the AI's — see the
+findings — and the harness prints it as `PEND`, with its measurement, never as a pass. (3) *No AI
+accesses hidden state the player cannot buy* — MET structurally (reflection over `AiView` finds no
+truth-shaped member; `Evaluate` takes the view, the personality, a pool and the reserve and
+nothing else) and behaviourally (no poll → every candidate estimate is BLIND; the never-polling
+chaotic party's 284 decisions were all blind).
+
+### Decisions taken and logged (R-N1)
+
+- **§33's score is in ONE unit — the model's own compatibility points — and there is no authored
+  kronor-to-votes exchange rate.** The first draft priced money as a fraction of a daily budget
+  against a normalised gain, and that made every money action unaffordable in score terms (a
+  500 000 kr buy against a 120 000 kr day never scored). Replaced: money is priced at the action's
+  OWN efficiency at its smallest outlay (§35 is concave, so a bigger outlay is always less
+  efficient, and `CostWeight` says how much less the personality tolerates); money is otherwise a
+  CONSTRAINT — a reserve the party's `SpendPace` releases over the days left, so a television buy is
+  saved for rather than priced against one day; hours are the binding daily resource, so candidates
+  rank by value per hour.
+- **The horse-race poll is on the view and NOT in the score.** "Targets swing voters" needs §25's
+  swing index (W-E2) and "reacts quickly to events" needs §18's events; neither is invented, so the
+  professional's personality today is polling discipline, risk aversion and pacing.
+- **No attack verb.** §33's worked example scores "Attack Opponent"; §12's eight have none and §11's
+  negative campaign is W-B8's. Not invented.
+- **A personality that will not act blind waits.** `ActsBlind` false (the professional) means no
+  estimate → no action, so it idles until its reserve affords the first poll (day 3 at even pacing)
+  — a visible, correct behaviour rather than a guess dressed as a decision.
+- **Blind means a flat prior, not a wide estimate:** salience and match at 0.5 ± 0.5, so the band
+  runs from nothing to everything and optimism / risk aversion decide whether to act on it.
+- **Public tracker every 7 days, free to every party; the commissioned poll measures issues too.**
+  `CampaignIntelligence.MeasureIssues` is the only new function that touches a truth and returns
+  measurements with the ± their sample size buys — the `PollingSystem.Conduct` idiom.
+- **Candidate bounds:** local actions evaluated in the 4 largest regions by public audience; the
+  general message plus the 2 most salient measured issues; the populist the top issue only.
+- **The staging's data classes, stated:** SOURCED — Sweden 2022 prior and 2018 shares
+  (Valmyndigheten), loyalty derived from them (W-A1), the 29 valkretsar's 2018 valid votes as
+  audiences, EB105 Spring 2026 salience (climate .26, crime .18, defence .17, education .16 — the
+  "% naming among the two most important" read as salience on 0–1; *"threats to democracy"* has no
+  §6 slot and is billed); DERIVED — compatibility at the fixed point where `PersuadedShares == prior`
+  (`c_i = 70 × (prior_i / max)^(1/3)`, so an idle campaign reproduces the 2022 result exactly —
+  asserted); `[AUTHORED-DRAFT]` — issue-match 0.5 flat (W-F2), credibility 0.6 flat (W-F6), war
+  chest 2 400 000 kr each and EQUAL by design so the mixes differ by personality alone (W-F5).
+- **The rational three's collapse is recorded as PENDING, not forced.** An affinity large enough
+  to make the grassroots party knock doors in this environment would be a number chosen to make a
+  test pass — the exact thing the calibration list forbids.
+- **Pre-campaign days are not simulated** (§3's preparation verbs have no price yet); **momentum
+  takes no shock** (nothing that shocks it exists yet) — the view shows zeros honestly.
+
+### [AUTHORED-DRAFT] values, one line each (all strikeable; the play-calibration list carries the block)
+
+- `PersonalityCatalog` — affinities in `TheEight`'s order (rally, town hall, door, TV, digital,
+  social, interview, policy) · temperature · risk aversion · optimism · cost weight · spend pace ·
+  enthusiasm value · poll every N days · focus on top salience · acts blind · spend multipliers:
+  - Professional: all 1.0 · 0 · 1.0 · 0.35 · 1.0 · 1.0 · 0.5 · 7 · no · **no** · {0.5, 1, 2}
+  - Populist: 1.8/0.8/0.8/0.9/1.1/1.8/1.2/0.6 · 0.15 · 0.3 · 0.7 · 0.4 · 1.6 · 1.0 · 14 · **yes** · yes · {1, 2, 3}
+  - Establishment: 0.8/1.0/0.6/1.8/1.0/0.6/1.6/1.4 · 0.05 · 1.2 · 0.5 · 0.7 · 1.0 · 0.4 · 14 · no · yes · {0.5, 1, 2}
+  - Grassroots: 1.0/1.5/2.2/0.2/0.5/1.2/1.0/0.8 · 0.10 · 0.8 · 0.5 · 1.0 · 0.7 · 1.6 · 21 · no · yes · {0.5, 1}
+  - Chaotic: all 1.0 · 1.0 · **−0.6** · 1.0 · 0.2 · 2.5 · 0.8 · **never** · no · yes · {0.5, 1, 3}
+- `CampaignAi.RiskScale = 0.25` · `PollingHours = 1` · `LocalCandidateRegions = 4` · `IssueCandidates = 2`.
+- Harness staging: `FlatIssueMatch 0.5` · `FlatCredibility 0.6` · `WarChest 2 400 000` ·
+  `CompatibilityCeiling 70` (the derived fixed point's level; its SHAPE is not authored).
+
+### Findings carried forward
+
+1. **The chain saturates at the real national audience.** Every rational party delivers +197 to
+   +225 compatibility points over the campaign (`persuasion / 40 000`), and `ElectionScales` clamps
+   every party at 100 — so the final-share column is the clamp's arithmetic, not the campaign's
+   difference. W-B3 measured +0.19 pp for a hard week at a 100 000 audience; at 6.5 million the same
+   chain is 65× that, because reach is linear in audience AND in repetition (the same electorate
+   "reached" six times a day). **A mechanism question before a calibration one** — bounded reach,
+   repeated-exposure decay, W-B9's media interest — and the play-calibration list's entry 1 gains
+   this measurement, not a new value.
+2. **Local reach is W-B3's placeholder, and it shows.** Door-to-door reaches 2 % of a REGION per
+   five hours (16 000 doors in Stockholms län), yet against a national channel's whole electorate no
+   local action is ever worth its hours. The right model is an ABSOLUTE count — volunteer-hours ×
+   doors per hour, §10's offices — which is **W-B4/B11's**; a rider on their done-when: the
+   harness's `PEND 2b/2c` flip to assertions and pass.
+3. **Interview dominance, measured a third way.** 99–100 % of every rational personality's actions.
+   Stays W-B9's as a MECHANISM (the standing ruling); rider on W-B9's done-when: `PEND 2a-iii/2e`
+   flip to assertions and pass.
+4. **"Threats to democracy"** — Sweden's joint-top EB105 issue has no §6 slot. Billed, not mapped.
+
+### Riders placed on later items (recorded here so they are not lost)
+
+- **W-B9** — done-when gains: `CampaignAiHarness` lines `2a-iii` (professional / establishment /
+  grassroots separate) and `2e` (establishment leads television + interview) become assertions
+  and pass with no affinity changed.
+- **W-B4 / W-B11** — done-when gains: lines `2b` (populist rallies) and `2c` (grassroots door-knocking)
+  become assertions and pass; door-to-door reach re-modelled as an absolute count.
+- **W-E2** — the professional's "targets swing voters" reads §25's swing index into the score.
+- **W-B8** — the attack verb, if §11's negative campaign brings one, is scored by the same §33 terms.
+
+**R-N2 held at this boundary:** `traj_wc1_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wc1.log`); harness `campaignai_wc1d_20260829.log`.
