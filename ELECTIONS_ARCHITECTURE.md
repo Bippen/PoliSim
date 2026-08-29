@@ -1,8 +1,9 @@
 # Elections architecture — E-0 (overnight 2026-08-28→29; spec-blind halves only)
 
-**Status:** drafted WITHOUT `ELECTIONS_CAMPAIGN_SPEC.md` (the queue arrived without it — the
-morning report's first call line). Every section the spec alone can settle is a marked stub;
-nothing here guesses spec content. The stranded branch (`stranded/politics-elections`,
+**Status — COMPLETED 2026-08-29 against the spec**, which arrived on Day-1's second attempt and
+passed Phase 0's content check (44 sections, §42 the causal chain, §44 the last) and is installed
+verbatim at root. The stubs this document carried while the spec was missing are now either built
+or classified in `ELECTIONS_GAP_TABLE.md`. The stranded branch (`stranded/politics-elections`,
 `ca6c510`) remains UNINSPECTED per D0 — its work is proposals to verify at item 10, and this
 document deliberately does not read it (R-EL5 cites the surviving verification DOC, not the
 branch).
@@ -62,9 +63,41 @@ compass/map renderers, `PublicationSystem` (the polling substrate), five `mark_p
 drawn by nothing, `FedChair` election-eve pause. The 44-section gap table is blocked-on-the-
 spec; this inventory is its EXISTS column, ready.
 
-## STUBS awaiting the spec (billed, not guessed)
+## The spec's own architecture (§40) vs this one — a ruled divergence, stated plainly
 
-§7 types + compatibility core · §8 loyalty-damped preference · §26 turnout model · §27 regional
-aggregation + noise placement · §§20–22 polling/momentum · the 44-section gap table (EXISTS /
-EXTENDS / NEW / N/A per R-EL7) · anything the spec's illustration numbers would have tempted
-(none ship as data regardless — R-N4).
+Spec §40 asks for **ScriptableObjects** and a thirteen-manager **MonoBehaviour** tree
+(`ElectionManager` over `CampaignManager`, `PollingManager`, `VoterSimulation`, …). Two standing
+rulings cut across it, and both win:
+
+- **R-EL1 — the PoliSim idiom wins: catalogs in code, not ScriptableObjects.** The game's own
+  precedent (`FederalReserveSystem.CandidatePool`, `WorldFactory`, `LawCatalog`) is static tables
+  a diff can review and a batch harness can read without a scene. `ElectionTypes.cs` follows §41's
+  field lists closely — `PartyData` → `PartyProfile`, `VoterGroupData` → `VoterGroupProfile`,
+  `RegionData` → `RegionProfile`, `CandidateData` → `CandidateProfile` — as plain value types.
+- **R-N2 — nothing is wired.** A MonoBehaviour tree IS wiring. Every unit is instead a pure static
+  class in `PoliSim.Elections`, callable from an editor harness and from nothing else.
+
+**What is kept from §40 is its actual point: modularity.** One concern per file, no god-object —
+`Compatibility`, `PreferenceModel`, `TurnoutModel`, `RegionalAggregation`, `SeatAllocation`,
+`Rosatellum`, `ElectoralCollege`. When wiring is ruled, those managers become thin drivers over
+these functions rather than containers of the logic. The gap table records §40 as N/A-by-ruling.
+
+**§42 is binding on everything above these layers.** No campaign action may ever be a flat vote
+delta; it must travel the chain (reach → salience → exposure → relevance → credibility →
+persuasion/enthusiasm → preference → turnout → regional vote → electoral system → seats). The
+units built so far occupy the second half of that chain, which is why the first half (§12's
+actions) cannot be shortcut later — the join is already the right shape.
+
+## Built as of 2026-08-29 (all pure, all unwired)
+
+`ElectionTypes.cs` (§41/§4/§5/§6 shapes) · `Compatibility.cs` (§7, five weighted terms) ·
+`PreferenceModel.cs` (§8 loyalty damping) · `TurnoutModel.cs` (§26's five-factor product) ·
+`RegionalAggregation.cs` (§27, with noise on its named stream) · `SeatAllocation.cs` /
+`Rosatellum.cs` / `ElectoralCollege.cs` (§28 — five real chambers reproduced exactly).
+
+## Still NEW, in the order the measurements say to build them
+
+§39's remaining terms — base support, candidate appeal (§16), campaign effects (§12), media
+(§13/§14), momentum (§22), tactical voting (§23) — then §24's regional objects, §20/§21's polling,
+and the campaign layer proper (§9–§12, §15, §17, §32–§33). The gap table carries the full
+classification and the reasons; the Day-1 report carries the sizing.
