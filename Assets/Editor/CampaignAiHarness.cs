@@ -72,7 +72,71 @@ namespace PoliSim.EditorTools
         private const double CompatibilityCeiling = 70.0;   // DERIVED scaling anchor: the largest party's compatibility; the rest follow the fixed point
         private const double FlatIssueMatch = 0.5;          // [AUTHORED-DRAFT] W-F2 sources per-issue positions
         private const double FlatCredibility = 0.6;         // [AUTHORED-DRAFT] W-F6
-        private const double WarChest = 2_400_000.0;        // [AUTHORED-DRAFT] W-E1's staging figure, equal for all by design
+        /// <summary>
+        /// W-F5: the campaign's TOTAL money across the eight parties, unchanged from the equal
+        /// staging (8 x 2 400 000). ⚠ **[AUTHORED-DRAFT]** — the scale is a playability figure, not
+        /// a sourced one, and `DATA_BILL.md` carries the bill.
+        ///
+        /// **What changed at W-F5 is the DISTRIBUTION, not the total**, so that anything the
+        /// re-measurement moves is attributable to inequality alone and not to the campaign having
+        /// more or less money to spend.
+        /// </summary>
+        private const double WarChestPool = 8 * 2_400_000.0;
+
+        /// <summary>
+        /// W-F5: each party's chest, **proportional to its seats**.
+        ///
+        /// ⚠ **The SHAPE of this is SOURCED, and only the scale is authored.** Sweden's public party
+        /// funding is allocated BY MANDATE in law — the *mandatbidrag* of lag (1972:625) om statligt
+        /// stöd till politiska partier is paid per seat held — so a seat-proportional chest is not a
+        /// modelling convenience, it is how the largest component of a Swedish party's money
+        /// actually arrives. What is authored is the TOTAL (above) and the assumption that private
+        /// income scales the same way, which is the part `DATA_BILL.md` bills.
+        ///
+        /// The spread this produces is real: **S 5.89 M kr against L 0.88 M — 6.7 to 1.**
+        ///
+        /// ⚠ **MEASURED AND NOT ADOPTED (W-F5, 2026-08-30).** Run on this staging, the seat-
+        /// proportional split DOES clear C1's two standing PEND lines — prof/est 0.306 → **0.430**,
+        /// est/grass 0.269 → **1.405** — and that looks like the answer the 2026-08-30 ruling was
+        /// waiting for. **It is not.** The same run puts four other assertions into FAIL, and the
+        /// reason is visible in the ledger: KD goes from **0 unpaid staff-days and both its planned
+        /// television buys** to **16 unpaid days and none**; L from 0 and one buy to **36 and none**;
+        /// MP 12 → 40; V 12 → 33. The grassroots party's day-to-day mix change falls to **0.000** —
+        /// it stops acting at all.
+        ///
+        /// **The personalities separate because the small parties go BANKRUPT, not because they
+        /// choose differently** — the harness's own annotation on those two lines reads
+        /// `[holds early]`. That is a separation this project must not bank: it would clear a gate
+        /// by breaking W-B12, whose whole result was four of five managed parties paying their
+        /// organisation to polling day.
+        ///
+        /// **So the chests stay EQUAL and the finding is reported instead.** The real defect it
+        /// exposes is in the POOL, not the split: 2 400 000 kr was calibrated as what one party
+        /// needs, and W-B12 showed it barely covers a managed campaign — so any distribution that
+        /// gives a party LESS than that cannot fund one. Making the pool bigger to survive the split
+        /// would be inventing a larger authored number to turn assertions green, which is the one
+        /// thing the standing rules forbid outright. **What it needs is the sourced figures
+        /// Kammarkollegiet holds, or a DERIVED floor from the organisation's own bill (W-B12's
+        /// `CommittedToOrganisation`) — both are billed, neither is guessed.**
+        ///
+        /// ⚠ Kammarkollegiet's register of declared party income EXISTS and is public
+        /// (`kammarkollegiet.se/vara-tjanster/insyn-i-partiers-finansiering`), but its figures sit
+        /// behind a JavaScript comparison tool backed by `api.kammarkollegiet.se/PartiinsynPublicService.svc`,
+        /// which does not answer an ordinary request. That is the bill, and it is a better-specified
+        /// one than "nothing on disk".
+        /// </summary>
+        private static double WarChestFor(int party)
+        {
+            int seats = Seats2022[party];
+            int total = 0;
+            foreach (int s in Seats2022) { total += s; }
+            return WarChestPool * seats / total;
+        }
+
+        /// <summary>SOURCED - Valmyndigheten, the 2022 Riksdag result, in this harness's party order (S, SD, M, V, C, KD, MP, L).</summary>
+        private static readonly int[] Seats2022 = { 107, 73, 68, 24, 24, 19, 18, 16 };
+
+        private const double WarChest = 2_400_000.0;        // the equal figure, kept for the blind-view probe below
         private const int Volunteers = 800;                  // [AUTHORED-DRAFT] W-B11: 800 volunteers x 3 h a day = 2 400 volunteer-hours, equal for all by design (W-B4's offices grow them)
         private const double OfficeOperationsPerDay = 2_000.0;   // [AUTHORED-DRAFT] W-B4: what each staged office puts into its own daily ground operation (400 doors a day at 5 kr)
 
@@ -618,7 +682,8 @@ namespace PoliSim.EditorTools
 
             sb.Append(string.Format(CultureInfo.InvariantCulture,
                 "\n    {0} valkretsar (SOURCED 2022 valid votes, W-F1), national audience {1:N0}; salience EB105 SE: climate .26 crime .18 defence .17 education .16\n" +
-                "    [AUTHORED-DRAFT] issue-match {2:F2} flat, credibility {3:F2} flat, war chest {4:N0} kr each (equal by design); houses from W-E4's ladder\n",
+                "    [AUTHORED-DRAFT] issue-match {2:F2} flat, credibility {3:F2} flat, war chest {4:N0} kr each - EQUAL, and W-F5 measured why " +
+                "(a seat-proportional split starves the small parties before it separates the personalities; see WarChestFor); houses from W-E4's ladder\n",
                 regions.Length, national, FlatIssueMatch, FlatCredibility, WarChest));
 
             note = sb.ToString();

@@ -4896,10 +4896,10 @@ longer names, guards silent; `ScreenEdgeCheck` exit 0. R-N2 held: `traj_wf6_*` i
 
 **`PartyArchetype` is gone.** Four generic fictional archetypes shared identically by all six
 countries become **53 real parties**, each with the position CHES 2024 (GPS 2019 for the USA)
-publishes and the seats its own country''s most recent election gave it.
+publishes and the seats its own country's most recent election gave it.
 `ParliamentConstants.TotalSeats = 200` — "an arbitrary round number for a clean visualization" —
 becomes six real chamber sizes: **349 / 630 / 577 / 400 / 460 / 435**, each reconciling exactly.
-`SaveVersion` bumps 1 → 2, the re-key `SaveGameService`''s own comment named in advance.
+`SaveVersion` bumps 1 → 2, the re-key `SaveGameService`'s own comment named in advance.
 
 **Three replacements that were not mechanical.** (1) **Seats no longer drift with approval** — the
 old model recomputed every chamber every turn from `ApprovalRating` via a per-archetype sensitivity;
@@ -4907,26 +4907,26 @@ no such figure is published for a real party, and a parliament does not drift we
 It changes at an election. (2) **`GetSeatWeightedAlignment` was re-expressed**, each stance DERIVED
 from CHES `lrecon` over the real chamber — and a party with no published position contributes
 nothing AND leaves the denominator, so `MeasuredSeatShare` reports coverage and the Laws screen draws
-such a party **UNMEASURED**, never UNALIGNED. (3) **Party inks take the election authority''s
-published HUE at the desk''s own saturation and value**; the five countries with no published colour
+such a party **UNMEASURED**, never UNALIGNED. (3) **Party inks take the election authority's
+published HUE at the desk's own saturation and value**; the five countries with no published colour
 table get none, and `HasPartyInk` says so.
 
 ⚠ **Both flagged traps closed.** `MacroSystem.YearsPerTurn` read `4f / ElectionSystem.ElectionCycle`
 — the macro time base hanging off the system being replaced; it is now `DaysPerTurn / 365f` for the
 identical 1.0, and **`Phase4YearsPerTurnDiagnostic` passes 9 of 9**. And `ElectionRecord` went onto
 `Country` inside `World`, a layer `SaveLoadRoundTripDiagnostic` actually covers, rather than into
-`UiDraftState`, whose layer that diagnostic''s own header calls "structurally out of reach".
+`UiDraftState`, whose layer that diagnostic's own header calls "structurally out of reach".
 
-⚠ **R3''s verification obligation discharged**: `PartyMarkCoverageCheck` flipped from "PARTY SYSTEM
+⚠ **R3's verification obligation discharged**: `PartyMarkCoverageCheck` flipped from "PARTY SYSTEM
 NOT PRESENT — VERIFIED NOTHING" to **53 parties, 1 mark, 52 gaps, 0 errors**.
 
 ⚠ **Two of six countries hold a real election; the other four say why not.** Poland allocates
 dHondt in 41 districts with no national tier, France runs two rounds, Italy is mixed with unconfirmed
 totals, the US House is 435 FPTP districts. Their chambers are left untouched with the reason in
-plain English — §36''s absence rule applied to a system rather than a figure.
+plain English — §36's absence rule applied to a system rather than a figure.
 
-⚠ **A defect found in this item''s own first cut, and the finding from fixing it.** The first wiring
-seated chambers from the vote model''s BARE layer (MAD 3.25 pp) and produced **BSW at 97 Bundestag
+⚠ **A defect found in this item's own first cut, and the finding from fixing it.** The first wiring
+seated chambers from the vote model's BARE layer (MAD 3.25 pp) and produced **BSW at 97 Bundestag
 seats having won none**. Re-routed through the loyalty layer over a sourced prior (MAD 1.47 pp),
 Sweden now lands S 106 / SD 72 / M 66 / V 24 / C 22 / KD 23 / MP 19 / L 17 against a real
 107/73/68/24/24/19/18/16. **Germany still does not**, and that is reported rather than tuned:
@@ -4934,13 +4934,13 @@ BSW missed the 5 % threshold by **0.02 pp** and the FDP by 0.7 pp, so a model wi
 lands on the wrong side of that cliff and ninety seats move. **A threshold is where this model is
 weakest.**
 
-⚠ **THE FINDING THAT STOPPED THE RAIL CELL, and it is ONE question.** `ElectionSystem`''s own comment
-has always said the game "never assigns the player''s own government a party identity". That single
+⚠ **THE FINDING THAT STOPPED THE RAIL CELL, and it is ONE question.** `ElectionSystem`'s own comment
+has always said the game "never assigns the player's own government a party identity". That single
 fact blocks two separate pieces: the election **cannot decide whether the player won** (no party to
 award the result to — so the approval threshold stays exactly as it was, unchanged, with the vote
 model running beside it), and **the rail cell cannot be added** (`CampaignSnapshot` needs a player
 party, war chest, poll index, staff, offices and queue, none of which exist live). Both reduce to
-**who is the player, in party terms** — Elias''s to answer, and not something this item is entitled
+**who is the player, in party terms** — Elias's to answer, and not something this item is entitled
 to settle by picking something plausible.
 
 **Verified:** nine checks exit 0; `ElectionDayReachDiagnostic` **ALL PASS** — all six countries reach
@@ -4965,17 +4965,17 @@ reached because there is no difference — and that result is explained rather t
    identical macro output across that change is real proof that removing those draws shifted nothing
    downstream; a shared generator or a common cursor would have moved every value in every country.
 4. ⚠ **THE HONEST LIMIT: the harness does not exercise the layer W-G1 changed.**
-   `TrajectoryBaselineDump`''s own header states its idiom — *"no player country, no bills"* — and
+   `TrajectoryBaselineDump`'s own header states its idiom — *"no player country, no bills"* — and
    **bill scoring is the only path from a parliament to the macro model**. So this proves the macro
    core and time base are untouched; **it is not evidence the parliament change is safe**, and
-   reading it that way would be the "0 anomalies" fallacy this repo''s own front page warns about.
+   reading it that way would be the "0 anomalies" fallacy this repo's own front page warns about.
    The evidence for the changed layer is `SwfDrawdownBooksDiagnostic`,
    `ScenarioCandidateMeasurementDiagnostic`, `SeatConversionHarness` and `ElectionDayReachDiagnostic`.
 
 ## 81. W-G3 — saves: the version gate, and the weak assertion W-G1 turned load-bearing (2026-08-30)
 
-**`SaveVersion` is 2**, the re-key `SaveGameService`''s own comment named as the bumping case; older
-saves refused plainly, no migration, and the diagnostic''s tamper probe confirms the gate.
+**`SaveVersion` is 2**, the re-key `SaveGameService`'s own comment named as the bumping case; older
+saves refused plainly, no migration, and the diagnostic's tamper probe confirms the gate.
 
 ⚠ **The plan warned that `SaveLoadRoundTripDiagnostic` cannot reach `UiDraftState`, so the
 `FedChairCandidates` precedent has never been machine-proven — W-G1 sidestepped it by putting
@@ -4985,11 +4985,79 @@ right NUMBER of parties with **all-zero seats** passed happily, which mattered l
 was four fictional archetypes than it does now the value is a real 349-seat Riksdag whose
 composition decides whether bills pass.
 
-**Closed rather than stated:** the snapshot now carries every party''s seat count **by name**, the
-sum, and the election history''s depth plus its last record''s turn, method, seat sum and share
+**Closed rather than stated:** the snapshot now carries every party's seat count **by name**, the
+sum, and the election history's depth plus its last record's turn, method, seat sum and share
 count. **And the diagnostic now HOLDS AN ELECTION before saving**, so the new state crosses the save
 with something in it — both branches covered, the two countries with a live path saving a chamber
 set from a result and the four without saving a stated reason and an untouched chamber.
 
 **Result: `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip clean`** — 8 continuation turns
 identical, restore-point snapshots identical, saves string-equal, every country.
+## 82. W-G4 — the full capture matrix and suite (2026-08-30)
+
+**25 harnesses + 9 checks + the reach diagnostic, every one exit 0**, on the wired branch after
+`a289e1e`: CampaignAction, CampaignAi, CampaignClock, CampaignOffices, CampaignReactivity,
+CampaignStaff, CampaignStrategy, ChainBand, Chain, Coalition, Compatibility, Composition, Debate,
+ElectionDay, ElectionNight, Gotv, Loyalty, Media, PerceivedPerformance, Polling, Resource, Scandal,
+SeatConversion, TacticalVoting, VoteAttribution; DeliveredAsset, ImporterSettings, StatIconCoverage,
+PartyMarkCoverage, PortraitCoverage, AreaIconCoverage, ChromeV2Coverage, Upstream, MetaText;
+ElectionDayReach. **No new label-clipping class appeared** — the four widths were re-filmed at W-F1
+and W-F6 with 0 text overflows and 0 containment escapes, and nothing since has touched a screen.
+
+## 83. W-F2 / W-F3 / W-F4 / W-F5 — the data track closed, two of them by stopping (2026-08-30)
+
+**W-F2 — the axis mapping, written into the data.** It existed only as three code comments. Now in
+`party_positions.md` against the source: **three of §4's eight axes are defined** (`lrecon`,
+`galtan`, `eu_position` rescaled), **five are UNDEFINED and are NOT centred** — an undefined axis is
+`NaN` and every comparison skips it. ⚠ CHES publishes `environment`, `immigrate_policy` and
+`redistribution`, which would plausibly fill three of the five and are **deliberately not taken**:
+adopting a survey's question as the spec's axis is a ruling with its own record, not a quiet fill.
+**Billed:** per-issue positions do not exist for any party anywhere, and `FlatIssueMatch = 0.5` is
+the "no information" value standing in for them.
+
+**W-F3 — the salience gaps named.** ⚠ **Sweden's TOP issue is dropped**: EB105 puts "threats to
+democracy" at 26 %, ahead of everything §6 can represent, so the four issues the harness runs on are
+Sweden's second through fifth presented as its first four. ⚠ **Vintage mismatch stated**: the
+salience is 2026, the backtested election 2022. **SOM Institute absent** — the authoritative Swedish
+source, behind PDF chapters and SND registration.
+
+⚠ **W-F4 — STOPPED AND REPORTED: its stated premise is false.** The worklist says "derived from
+existing demographic seeds per region"; `DATA_BILL.md` asserted age structure, urbanization and
+sector employment were in `WorldFactory`. **Verified directly: a grep across all of `Assets/Scripts/`
+returns exactly ONE hit and it is a display string** — the group names the results screen draws as
+ABSENT. And the deeper problem is structural: the game's "regions" are countries. F4 is not a
+derivation at all; it needs sourced SCB per-valkrets marginals. `DATA_BILL.md` corrected, the false
+paragraph struck in place, the electorate stays one group with 12 call sites intact.
+
+⚠ **W-F5 — STOPPED AND REPORTED, and it answers the 2026-08-30 ruling.** Unequal war chests were
+built on a **sourced shape** (Sweden's *mandatbidrag*, lag 1972:625, is paid per mandate) with the
+pool held constant so any movement was attributable. **Both standing PEND lines cleared** —
+prof/est 0.306 → **0.430**, est/grass 0.269 → **1.405**. **They were not banked.** The same run
+FAILS four other assertions: **KD goes from 0 unpaid staff-days and both television buys to 16 and
+none**, L from 0 and one buy to 36 and none, MP 12 → 40, V 12 → 33, and the grassroots party's
+day-to-day change falls to **0.000**. The harness's own annotation reads `[holds early]`. **The
+personalities separate because the small parties go bankrupt, not because they choose differently** —
+banking that would clear a gate by destroying W-B12. The real defect is in the **pool**: 2 400 000 kr
+is what ONE party needs, so any realistic split starves five of eight. Raising it to survive the
+split would be inventing a number to turn assertions green. Chests stay equal; the finding is
+recorded at the code site. ⚠ **The bill is better specified than "nothing on disk":**
+Kammarkollegiet's register EXISTS and is public, but its figures are served by
+`api.kammarkollegiet.se/PartiinsynPublicService.svc`, which does not answer an ordinary request.
+
+## 84. W-H1 / W-H2 / W-H3 / W-H4 / W-H5 — the records closed (2026-08-30)
+
+**H1** — `POLISIM_MASTER_ROADMAP.md`'s E-phase section marked SUPERSEDED in place: it still called
+loyalty underived and per-region priors unfetched, and still said *"13 September a re-seeding
+exercise, not a playable election"*, which is **no longer true and is now marked not to be quoted**.
+**H2** — the **seven missing §V rows** added (W-E1, E3, E4, E5, E6, E7, E8), each naming its capture
+tokens and the question Elias's eyes should answer; `Tools\sv_index.ps1` reads **52 rows** where it
+read 45, so all seven parse. **H3** — calibration entries **19** (election night's clock and the two
+thresholds a call rests on) and **20** (the chamber, the election, and what changed for a player at
+W-G1) backfilled. **H4** — the **eleventh Design request, D8**: 52 of 53 party marks undrawn (the
+seven remaining SWEDISH ones are what 13 September needs), a ruling asked on party colours for five
+countries with no published table, a drawn valkrets map, election night's paper, the verdict stamp,
+and one design question (modal or stage for the debate). **Nothing in D8 blocks a screen.**
+**H5** — the honest status line for 13 September, written from the finished state:
+**"On 13 September the game will simulate Sweden's election accurately and will not let you campaign
+in it"** — the model done and honest, the campaign built and unreachable, and one design decision
+about who the player is standing between the two.

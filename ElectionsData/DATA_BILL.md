@@ -77,12 +77,38 @@ stayed open, and the candidate source for the morning (or a later session).
   EB105 for a canonical URL.
 - **Gallup August 2026** (not yet released at fetch time); July's exact fieldwork dates.
 
-## Voter groups (Part 3.5 — deliberately not attempted as sourcing)
-- DERIVED-first per the queue: construct from the existing census/demographic seeds where the
-  model holds the marginals (age structure, urbanization, sector employment are in
-  `WorldFactory`/the seed docs). The derivation is a DAY task with the spec's group definitions
-  in hand — blocked-on-the-spec tonight (the spec defines the group axes), billed rather than
-  invented (the queue's own hard rule: no authored demographics).
+## Voter groups (Part 3.5) — ⚠ W-F4 STOPPED AND REPORTED 2026-08-30: THE PREMISE BELOW IS FALSE
+
+⚠ **CORRECTION (2026-08-30, W-F4).** The struck paragraph below claimed the marginals were already
+in the model. **They are not.** Verified directly rather than assumed: a grep for
+`Urbanization|MedianAge|Urban|AgeStructure|SectorEmployment` across all of `Assets/Scripts/` returns
+**exactly one hit**, and it is a **display string** — the list of group NAMES the results screen
+draws as ABSENT (`GameController.CampaignResults.cs:250`). `WorldFactory` seeds no age structure, no
+urbanization and no sector employment at any level.
+
+**And the deeper problem is structural, not missing data.** `ELECTIONS_GAP_TABLE.md` already records
+it: *"the game's 'regions' are countries; sub-national regions do not exist as model objects."*
+There is nothing for a per-region demographic marginal to attach TO.
+
+**So W-F4 is NOT a derivation and cannot be delivered as the worklist words it.** What it actually
+needs is **SOURCED per-valkrets marginals from SCB** (Statistiska centralbyrån) — age, urban/rural
+and income distribution per constituency — which is a different and much larger item. §0.4 forbids
+inventing them, so the electorate stays ONE GROUP with its **12 `W-F4` call sites intact** across
+8 files, each already written to expect a group layer that does not exist.
+
+**This is the honest outcome of the item, not a failure to deliver it** (worklist rule 0.8: an item
+whose stated premise is contradicted stops and reports rather than proceeding on a false basis).
+
+**Billed:** SCB per-valkrets marginals. Candidate source — SCB's statistical database
+(statistikdatabasen.scb.se), which publishes population by age and by region; **the join from
+municipality to valkrets is itself work**, since the 29 riksdagsvalkretsar are not identical to
+counties.
+
+> ~~DERIVED-first per the queue: construct from the existing census/demographic seeds where the
+> model holds the marginals (age structure, urbanization, sector employment are in
+> `WorldFactory`/the seed docs). The derivation is a DAY task with the spec's group definitions in
+> hand — blocked-on-the-spec tonight, billed rather than invented.~~ **— struck 2026-08-30: the
+> parenthesis was wrong, and everything after it followed from the parenthesis.**
 
 ## Polls (W-A4, 2026-08-29)
 - **Sweden — a final-week poll of record for 2018 and 2022** (the newspapers' commissioned polls, or the SVT/Valu exit poll's recalled vote): the tactical layer models the LAST WEEK's switch, and the only official pre-election figure on disk is SCB's May PSU (`sweden/psu_2018_2022.md`) — four months before the day. Billed, not approximated; the May figure is a lower bound on the lending, not its size.

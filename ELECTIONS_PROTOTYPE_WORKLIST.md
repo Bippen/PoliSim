@@ -239,11 +239,11 @@ least three outcome states.
 
 ## Track F — the data Sweden needs (sourced; blocks playability, not the build)
 
-**W-F1 — DONE 2026-08-30** (all 29 valkretsar x 8 parties in absolute counts + eligible + cast, from Valmyndigheten's per-constituency backend; eleven column sums exact; nine consumers repointed, two deliberately kept on 2018 as the backtest's PRIOR; W-D2's seat-for-seat claim now rests on the real chamber and KD's fixed seats moved 10 to 13). — 2022 returns by constituency (Valmyndigheten), all 29, per party. **W-F2** — party
-positions (CHES 2024, already on disk) mapped to the spec's axes, mapping stated. **W-F3** —
-issue salience (Eurobarometer / SOM Institute, vintage recorded). **W-F4** — voter groups derived
+**W-F1 — DONE 2026-08-30** (all 29 valkretsar x 8 parties in absolute counts + eligible + cast, from Valmyndigheten's per-constituency backend; eleven column sums exact; nine consumers repointed, two deliberately kept on 2018 as the backtest's PRIOR; W-D2's seat-for-seat claim now rests on the real chamber and KD's fixed seats moved 10 to 13). — 2022 returns by constituency (Valmyndigheten), all 29, per party. **W-F2 — DONE 2026-08-30** (the axis mapping written into party_positions.md: 3 of 8 axes defined, 5 UNDEFINED and not centred; per-issue positions billed). — party
+positions (CHES 2024, already on disk) mapped to the spec's axes, mapping stated. **W-F3 — DONE 2026-08-30** (gaps named: Sweden's TOP issue has no section-6 slot and is dropped; 2026 salience against a 2022 backtest; SOM absent) —
+issue salience (Eurobarometer / SOM Institute, vintage recorded). **W-F4 — STOPPED AND REPORTED 2026-08-30: THE PREMISE IS FALSE.** The demographic marginals are not in WorldFactory (verified: one grep hit, a display string) and the game's regions are countries; it needs sourced SCB per-valkrets marginals, not a derivation. DATA_BILL corrected. — voter groups derived
 from existing demographic seeds per region; only underivable marginals get sourced; nothing
-authored. **W-F5** — party funding and campaign spending (party accounts / Kammarkollegiet) or
+authored. **W-F5 — STOPPED AND REPORTED 2026-08-30.** Unequal chests on a SOURCED shape (mandatbidrag per seat) DO clear both PEND lines (0.430 / 1.405) but bankrupt the small parties doing it (KD 0 to 16 unpaid staff-days, both TV buys lost) and fail four other assertions. Not banked; the defect is the POOL, and raising it to pass would be tuning. — party funding and campaign spending (party accounts / Kammarkollegiet) or
 `[AUTHORED-DRAFT]` with the line. **W-F6 — DONE 2026-08-30** (eight leaders sourced to each party's own site via dated archive captures; attributes stay authored; MP's two sprakror billed as a finding). — candidates: real party leaders by name (public
 figures, factual), attributes `[AUTHORED-DRAFT]` and clearly labelled as game fiction. *Done when:*
 each has source, vintage, basis, and the remainder is billed.
@@ -265,7 +265,7 @@ and the game reaches election day from a new game without a crash.
 **W-G3 — DONE 2026-08-30** (SaveVersion 2; the diagnostic now snapshots every party's seats BY NAME rather than just the count, and holds a real election before saving; RT PASS 12 scenarios). — Saves. New state joins `SaveGame` the way `FedChairCandidates` did; pre-wiring saves
 still load with state absent → defaults. *Done when:* a round-trip harness proves both directions.
 
-**W-G4 — Full capture matrix and suite** on the wired code, four sizes, rule-15 diff (now exact,
+**W-G4 — DONE 2026-08-30** (25 harnesses + 9 checks + the reach diagnostic, every one exit 0; no new label-clipping class) — full capture matrix and suite on the wired code, four sizes, rule-15 diff (now exact,
 `det_*` family). *Done when:* green, with any new label-clipping instance treated as the known
 class.
 

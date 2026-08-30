@@ -1,6 +1,6 @@
 # Claude Design asset request — PoliSim
 
-**Status — ONE LIVE ASK (2026-08-28, late night): the TENTH request — D7, board 2b, "the
+**Status — ONE LIVE ASK (2026-08-30): the ELEVENTH request — D8, "the elections track, drawn" (§3 below): 52 party marks of 53 undrawn (the seven remaining SWEDISH ones are what 13 September needs), a ruling on party colours for five countries with no published table, a drawn valkrets map, election night's paper, the verdict stamp, and one design question (modal or stage for the debate). NOTHING IN IT BLOCKS A SCREEN — all eight elections screens are built, filmed at four widths with the guards silent, and every gap degrades gracefully and says so on the sheet. The TENTH request — D7, board 2b, "the
 Policy Web, drawn to be read" (§2 below, drawn against Annex G's measurements; it reaches you
 with the next §S paste).** The ninth request — UI v3.1, "one frame, denser, instruments" — was
 answered in full the evening it was sent (boards 1n-r2, 1m-r2 and 2a, the D4 density token table
@@ -24,7 +24,7 @@ Before trusting any number in this document, re-derive it: sprites with
 with `StatIconCoverageCheck`, portraits with `PortraitCoverageCheck`, deliveries with
 `DeliveredAssetCheck`, importer state with `ImporterSettingsCheck`, screen inventories from the enums
 (`StatNodeId`, `UiPalette.SystemArea`, `ConsolidatedTab`, `CabinetPortfolio` ×
-`CabinetSystem.CandidatePool`, `CountryId`, `PartyArchetype`). This document has been the failure that
+`CabinetSystem.CandidatePool`, `CountryId`, and `PartySystems.BuildParties()` - `PartyArchetype` was RETIRED at W-G1 2026-08-30 and replaced by 53 real parties). This document has been the failure that
 rule exists to catch at least four times.
 
 ---
@@ -663,3 +663,74 @@ tolerance). The 90-pair sweep found two source/shipped mismatches — both asks,
 
 Everything else in the 90-pair sweep sat inside budget; nine `Stats/` icons near the 2% line are
 ours to inspect (A5), not Design's.
+
+---
+
+## 3. The ELEVENTH request — D8: the elections track, drawn (2026-08-30)
+
+**Context.** Since the tenth request the elections prototype has built **eight screens** (Campaign
+HQ, the action ladder, polling, the campaign map, the debate, election night, results, the coalition
+sheet) and W-G1 has replaced four fictional party archetypes with **53 real parties across six real
+chambers**. Every one of those screens is structurally complete, filmed at 1280/1600/1920/2560 with
+the guards silent, and drawn entirely in the v3 idiom out of shapes we already have.
+
+**Nothing below blocks a screen.** Every gap here currently degrades gracefully and says so on the
+sheet — that is the §36 discipline, and it is working. These are the places where a drawing would
+replace an honest apology.
+
+### D8-1 — Party identity marks: 1 delivered, 52 asked for (the largest single gap)
+
+`PartyMarkCoverageCheck` now does REAL accounting rather than reporting "PARTY SYSTEM NOT PRESENT":
+
+```
+=== Party marks: 53 seeded part(ies), 1 with a resolving mark, 52 without one, 0 error(s) ===
+```
+
+`mark_party_se_s` is the one that exists. The other 52 draw a colour swatch alone in the hemicycle
+legend and on election night's results rows. **The eight SWEDISH parties are the ones that matter
+for 13 September** (S is done; SD, M, V, C, KD, MP, L are not) — the other 45 are a later ask and are
+listed only so the size is honest.
+
+**Rule 9a governs these and is unchanged:** a mark is ORIGINAL art recognisable by silhouette, in the
+party's real colour — **never the organisation's registered logo**. Authored in its own colours,
+128×128 RGBA32, white-on-alpha is NOT the convention here (marks are drawn untinted).
+
+### D8-2 — Party colours for five countries, or a ruling that they wait
+
+W-G1 takes each party's ink as **the election authority's published hue at the desk's own
+saturation and value** — Valmyndigheten publishes a `fargkod` per party, so Sweden's eight are
+sourced and re-seated into the sheet's palette (S 0.52, V 0.46, measured off the four archetype inks
+they replace). **The other five countries have no published colour table on disk, so they have NO
+ink**: `PoliSimTheme.HasPartyInk` returns false and the hemicycle draws them in the neutral.
+
+**The ask is a ruling, not art:** either point us at a citable colour source per country, or confirm
+the neutral is the intended state until one exists. **We will not pick 30 colours by eye** for real
+organisations.
+
+### D8-3 — A drawn valkrets map (the campaign map, W-E2)
+
+The campaign map reads all 29 Swedish constituencies at a bought sample and reports 13–16 as swing
+and 18–20 as too close to call. **It has no map.** The screen lays the constituencies out as a
+ledger, which is legible and honest but is not what §22 describes. An outline map of Sweden's 29
+riksdagsvalkretsar, in the v3 line weight, is the single asset that would most change what that
+screen is.
+
+### D8-4 — Election night's paper (deviation V-N1, board 1h)
+
+Election night is a Canvas board and was built with a **flat paper surface** — the desk's gradient
+and double shadow are an IMGUI construction the Canvas path does not have. It reads fine; it does not
+read like the rest of the game. Either a 9-sliced sprite carrying the gradient and both shadows, or a
+ruling that flat is correct for a full-bleed takeover.
+
+### D8-5 — The verdict stamp (the debate screen, W-E5)
+
+The debate's verdict state prints its result as text in a ruled box. A stamp — the one place in this
+game where a rubber-stamp idiom would be in period and in character — is drawn nowhere and is the
+obvious missing mark.
+
+### D8-6 — A question, not an asset: modal or stage? (deviation V-N2, W-E5)
+
+The debate screen is drawn as a STAGE inside the content sheet, with the exchange as a scrolling
+ledger. It could equally be a MODAL takeover like election night. **The two read very differently for
+a moment the game treats as a set piece**, and this is a design call we should not make by default.
+Prep / midway / verdict are all filmed at four widths if you want to look before answering.

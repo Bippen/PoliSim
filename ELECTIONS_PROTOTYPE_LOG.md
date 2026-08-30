@@ -2413,7 +2413,7 @@ and it does so in one isolated commit whose hash is the revert handle.
 ConservativeUnion, CentristCoalition, NationalistFront) shared identically by all six countries,
 because when they were written no party data was on disk. **53 real parties** replace them, each
 carrying the position CHES 2024 (or GPS 2019 for the USA) publishes for it and the seats its own
-country''s most recent election gave it.
+country's most recent election gave it.
 
 **`ParliamentConstants.TotalSeats = 200`** — its own comment called it "an arbitrary round number
 for a clean visualization" — is replaced by six real chamber sizes: **Sweden 349, Germany 630,
@@ -2422,43 +2422,43 @@ France 577, Italy 400, Poland 460, USA 435.** Every one reconciles to its seat t
 ⚠ **Italy took two extra units to reconcile, and they were not invented.** The per-list totals summed
 to 398 of 400. The missing two are named in the returns file itself and sit outside the Area Italia
 basis every other row uses: one MAIE deputy in the overseas constituency and one Union Valdotaine
-deputy in the Valle d''Aosta college. **Rounding 398 up by inflating a party would have been
+deputy in the Valle d'Aosta college. **Rounding 398 up by inflating a party would have been
 inventing seats to make a total come out.**
 
 ### The three replacements that were not mechanical
 
 **1. Seats no longer drift with approval — they change at elections.** `ParliamentSystem.UpdateSeats`
-recomputed every country''s chamber EVERY TURN from `ApprovalRating`, with a per-archetype
+recomputed every country's chamber EVERY TURN from `ApprovalRating`, with a per-archetype
 `ApprovalSensitivity` (+0.35 establishment, −0.90 protest) plus a bounded step and jitter. **No such
 figure is published for a real party by CHES, by GPS or by anyone**, and inventing 53 of them is what
-§0.4 forbids. It was also simply wrong: **a parliament''s composition does not drift week by week
-with the government''s approval.** `MaxSeatsChangePerTurn`, `MaxSeatJitter` and `MinTargetShare`
+§0.4 forbids. It was also simply wrong: **a parliament's composition does not drift week by week
+with the government's approval.** `MaxSeatsChangePerTurn`, `MaxSeatJitter` and `MinTargetShare`
 retire with it.
 
 **2. `GetSeatWeightedAlignment` was re-expressed, not left alone** — the plan flagged that "bill
 scoring stays" is not a no-op, and it was right. It summed four hand-set fiscal stances over a
-fictional 200-seat denominator. It now sums each party''s stance DERIVED from published CHES
-`lrecon` as `(5 − lrecon) / 5`, over that country''s real chamber. ⚠ **A unit with no published
+fictional 200-seat denominator. It now sums each party's stance DERIVED from published CHES
+`lrecon` as `(5 − lrecon) / 5`, over that country's real chamber. ⚠ **A unit with no published
 position contributes nothing AND is left out of the denominator**, so the alignment is over the
 MEASURED part of the chamber — and a new `MeasuredSeatShare` says how much that is, so a screen can
 state coverage instead of implying the whole house was weighed. The Laws screen draws such a party
 **UNMEASURED**, never UNALIGNED: the two look alike and mean opposite things.
 
-**3. Party inks: the hue is sourced, the saturation and value are the desk''s.** Valmyndigheten
+**3. Party inks: the hue is sourced, the saturation and value are the desk's.** Valmyndigheten
 publishes a `fargkod` per party in the same JSON backend W-F1 took the counts from (S #FF0000,
 MP #008000, and six more). Those are screen primaries and would tear a hole in a paper sheet whose
 palette sits at S 0.23–0.58, V 0.35–0.49 — measured off the four inks being replaced. **So the hue
-is kept exactly and the saturation and value are re-seated into the desk''s range**: a party stays
+is kept exactly and the saturation and value are re-seated into the desk's range**: a party stays
 recognisably itself while the sheet stays one object. ⚠ **The other five countries get NO ink and
 `HasPartyInk` returns false** — picking 30 colours by eye for real organisations would be both
 invention and probably wrong. A line for the W-H4 Design ask.
 ### The two traps the plan flagged, both closed
 
-⚠ **Trap 1 — the macro model''s time base hung off the election cycle.** `MacroSystem.YearsPerTurn`
+⚠ **Trap 1 — the macro model's time base hung off the election cycle.** `MacroSystem.YearsPerTurn`
 read `4f / ElectionSystem.ElectionCycle`, at the exact moment item 10 replaces the election system.
 Had that constant moved carelessly, **every macro trajectory in every country would have moved for a
-reason with nothing to do with elections**, and W-G2''s job of explaining each difference by layer
-would have been unanswerable. It is now `SimulationManager.DaysPerTurn / 365f` — the project''s OTHER
+reason with nothing to do with elections**, and W-G2's job of explaining each difference by layer
+would have been unanswerable. It is now `SimulationManager.DaysPerTurn / 365f` — the project's OTHER
 statement of turn length, the one every daily constant already uses — giving exactly the same 1.0.
 **`Phase4YearsPerTurnDiagnostic`: 9 of 9 passed**, including its own `DaysPerTurn/365 ==
 YearsPerTurn` assertion and its `ElectionCycle == 4`.
@@ -2470,25 +2470,25 @@ therefore went onto `Country`, inside `World`** — a layer the diagnostic alrea
 field across 6 countries and 2 seeds. Putting the record where the harness can see it was worth more
 than matching a precedent the harness cannot.
 
-**R3''s verification obligation is discharged.** `PartyMarkCoverageCheck` flipped from
+**R3's verification obligation is discharged.** `PartyMarkCoverageCheck` flipped from
 *"PARTY SYSTEM NOT PRESENT — VERIFIED NOTHING"* to real accounting: **53 seeded parties, 1 with a
 resolving mark, 52 without, 0 errors.** ⚠ `MarkName` is deliberately NOT derived from the
 abbreviation — a derived name would claim a mark for all 53, and the check treats a claimed-but-
-unresolvable mark as an ERROR. The 52 blanks are the Design ask''s real size.
+unresolvable mark as an ERROR. The 52 blanks are the Design ask's real size.
 
 **`SaveVersion` bumped 1 → 2**, exactly the "model SWAP that re-keys persisted state" that
-`SaveGameService`''s own comment named in advance. Older saves are refused plainly; no migration.
+`SaveGameService`'s own comment named in advance. Older saves are refused plainly; no migration.
 
 ### Elections: two of six run, and the other four say why not
 
 ⚠ **Running all six through a national PR allocator would have produced chambers their law does not
-produce.** Sweden and Germany have their real methods built (Sweden''s proven seat-for-seat at
+produce.** Sweden and Germany have their real methods built (Sweden's proven seat-for-seat at
 W-D2 / W-F1). The others do not, so the record carries the reason in plain English and **the chamber
 is left untouched**:
 
 - **Poland** allocates dHondt separately in **41 districts with no national compensatory tier**
-  (Kodeks wyborczy art. 232 §1). A national allocation shares a divisor with Poland''s system and is
-  not Poland''s system — it would systematically under-reward the large parties district magnitude
+  (Kodeks wyborczy art. 232 §1). A national allocation shares a divisor with Poland's system and is
+  not Poland's system — it would systematically under-reward the large parties district magnitude
   favours.
 - **France** elects 577 single-member seats in **two rounds**; this model holds no second round and
   no candidate-level contest to hold one in.
@@ -2497,26 +2497,26 @@ is left untouched**:
 - **USA**: 435 **single-member FPTP districts**; a proportional allocation of the national House vote
   is famously not what that produces.
 
-This is §36''s absence rule applied to a *system* rather than a figure.
+This is §36's absence rule applied to a *system* rather than a figure.
 ### ⚠ THE FINDING THAT STOPPED THE RAIL CELL — and it is ONE question, not two
 
 **The player has no party identity, and two separate pieces of W-G1 turn out to be blocked on that
 single fact.**
 
-`ElectionSystem`''s own class comment has said so all along: *"this game never assigns the player''s
+`ElectionSystem`'s own class comment has said so all along: *"this game never assigns the player's
 own government a party identity."* The player is a government with an approval rating.
 
 1. **The election cannot decide whether the player won.** There is no party for the vote model to
-   award the player''s fate to. So the approval threshold stays **exactly as it was, unchanged**, and
+   award the player's fate to. So the approval threshold stays **exactly as it was, unchanged**, and
    the vote model runs beside it producing a real chamber. It was tempting to say "the player is the
    largest party" or "the player is party X" — both are inventions with large consequences.
 2. **The rail cell cannot be added.** `CampaignSnapshot` requires a player **party**, a war chest, a
-   poll with the player''s index in it, staff, offices and a day''s queue. **None of that exists in
+   poll with the player's index in it, staff, offices and a day's queue. **None of that exists in
    the live game**, and a rail cell opening a screen with an invented party and an invented war chest
    would put fiction on a surface whose entire discipline is that its figures are real.
 
 **Both are the same question: WHO IS THE PLAYER, IN PARTY TERMS?** It is a design question, it is
-Elias''s to answer, and W-G1 is not entitled to answer it by picking something plausible. The eight
+Elias's to answer, and W-G1 is not entitled to answer it by picking something plausible. The eight
 Track E screens stay harness-reachable until it is answered — which is exactly where they already
 were, with the reason now named precisely instead of deferred vaguely.
 
@@ -2525,8 +2525,8 @@ were, with the reason now named precisely instead of deferred vaguely.
 - **`ElectionRecord` on `Country`, not `UiDraftState`** — trap 2 above. *Strikeable: the
   `FedChairCandidates` precedent is the alternative, and it is unproven by the very harness W-G3
   names.*
-- **The election''s vote input is the fitted backtest electorate per country**, moved from
-  `GateReRun`''s cases into `PartySystems.TryElectorate`. These are the project''s own fitted numbers
+- **The election's vote input is the fitted backtest electorate per country**, moved from
+  `GateReRun`'s cases into `PartySystems.TryElectorate`. These are the project's own fitted numbers
   with a reported fit (Sweden MAD 1.47 pp over eight parties), not new ones. Only the four backtested
   countries have one; France and the USA never had a fit because neither is proportional.
 - **The two out-of-basis Italian seats are carried rather than absorbed** (see above).
@@ -2537,14 +2537,14 @@ were, with the reason now named precisely instead of deferred vaguely.
 ### [AUTHORED-DRAFT] values
 
 **None.** Every seat count, chamber size, position and colour hue is sourced; the fiscal stance and
-the ink''s saturation and value are stated derivations over sourced inputs.
+the ink's saturation and value are stated derivations over sourced inputs.
 ### ⚠ The defect this item found in ITSELF, and the finding that came out of fixing it
 
-**The first wiring seated parliaments from the vote model''s BARE national layer, and the chambers
+**The first wiring seated parliaments from the vote model's BARE national layer, and the chambers
 were not fit to show anyone.** `CompositionHarness` had already measured that layer at **MAD 3.25 pp**
 on Sweden 2022 against **1.47 pp** with the loyalty layer over a prior — and at a seat cliff a
 3 pp error is not a rounding matter. It produced **BSW at 97 Bundestag seats having really won none**
-and Sweden''s M at 33 of its real 68.
+and Sweden's M at 33 of its real 68.
 
 Fixed by running the live path through `PreferenceModel.Preference` over the last election as the
 prior, with per-party loyalty derived from the two elections before it — the exact arrangement the
@@ -2602,7 +2602,7 @@ that way would be exactly the "0 anomalies" fallacy this repo's own front page s
 about.
 
 **What DOES cover the changed layer, and did:** `SwfDrawdownBooksDiagnostic` (a bill scored and
-passed against a real 349-seat chamber pinned to V, Sweden''s most expansionary party by published
+passed against a real 349-seat chamber pinned to V, Sweden's most expansionary party by published
 `lrecon`), `ScenarioCandidateMeasurementDiagnostic` (seat-weighted alignment across a full scenario
 run), `SeatConversionHarness` (**Sweden 2022 still reproduces seat-for-seat, 8 of 8, through the
 entire refactor**), and `ElectionDayReachDiagnostic` (all six countries reach an election turn from
@@ -2615,15 +2615,15 @@ reader does not assume a divergence exists that does not.
 ## W-G3 — saves: the version gate, and the weak assertion W-G1 turned into a load-bearing one (2026-08-30)
 
 **`SaveVersion` is 2.** W-G1 re-keyed `Country.ParliamentSeats` from `PartyArchetype` to real party
-abbreviations, which is exactly the "model SWAP that re-keys persisted state" `SaveGameService`''s
+abbreviations, which is exactly the "model SWAP that re-keys persisted state" `SaveGameService`'s
 own comment names as the bumping case. The loader refuses an older save plainly; there is no
-migration machinery pre-release and none was added. The diagnostic''s tamper probe exercises the
+migration machinery pre-release and none was added. The diagnostic's tamper probe exercises the
 gate and it refuses as ruled.
 
-⚠ **The gap the plan named was real, and it was NOT the one in the plan''s own words.** The plan
+⚠ **The gap the plan named was real, and it was NOT the one in the plan's own words.** The plan
 warned that `SaveLoadRoundTripDiagnostic` cannot reach `UiDraftState`, so the `FedChairCandidates`
 precedent W-G3 was told to follow has never been machine-proven. **W-G1 sidestepped that by putting
-`ElectionRecord` on `Country` inside `World`.** But checking the diagnostic''s own country snapshot
+`ElectionRecord` on `Country` inside `World`.** But checking the diagnostic's own country snapshot
 turned up a second, quieter problem: it recorded **`ParliamentSeats.Count` and nothing else**.
 
 **A count is not a chamber.** A load that restored the right NUMBER of parties with **all-zero
@@ -2631,8 +2631,8 @@ seats** passed that assertion happily — and it mattered far less when the valu
 archetypes than it does now that it is a real 349-seat Riksdag whose composition decides whether
 bills pass.
 
-**Closed, not stated.** The snapshot now carries **every party''s actual seat count BY NAME**, plus
-the sum, plus the election history''s depth and its last record''s turn, method, seat sum and share
+**Closed, not stated.** The snapshot now carries **every party's actual seat count BY NAME**, plus
+the sum, plus the election history's depth and its last record's turn, method, seat sum and share
 count. A re-keyed, truncated or zeroed chamber now fails by the party that broke it.
 
 **And the diagnostic now HOLDS AN ELECTION before saving**, so the new state crosses the save with
@@ -2642,3 +2642,159 @@ RESULT, and the four without save a record carrying a reason and an untouched ch
 
 **Result: `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip clean`** — 8 continuation
 turns identical, restore-point snapshots identical, saves string-equal, for every country.
+## W-F5 — party funding: the answer to the 2026-08-30 ruling, and why the gate it opens must not be banked (2026-08-30)
+
+**The standing ruling** (Elias, 2026-08-30) held C1's 2a-iv at 0.291 and sent it here: *"It waits on
+W-F5's unequal war chests… If W-F5 lands and it still reads 0.291, that is a finding about the
+model, not a rounding problem."*
+
+**It did not still read 0.291. It cleared — and the clearing is not real.**
+
+### What was tried
+
+⚠ **The SHAPE was better than authored.** Sweden's public party funding is allocated **by mandate in
+law** — the *mandatbidrag* of lag (1972:625) is paid per seat — so a seat-proportional chest is how
+the largest component of a Swedish party's money actually arrives, not a modelling convenience.
+The pool was held at 8 × 2 400 000 kr so the campaign's TOTAL money was unchanged and anything that
+moved was attributable to inequality alone. The spread: **S 5.89 M against L 0.88 M, 6.7 to 1.**
+
+### What it measured
+
+| C1 line | equal chests | unequal chests |
+|---|---|---|
+| 2a-iii `prof/est` | 0.306 | **0.430** |
+| 2a-iii `prof/grass` | 0.573 | **1.133** |
+| 2a-iv `est/grass` | **0.269** | **1.405** |
+
+**Both PEND lines clear the 0.30 line, one of them by five times.** Taken alone that is exactly the
+result the ruling predicted.
+
+### ⚠ Why it is NOT taken, and this is the finding
+
+**The same run puts four other assertions into FAIL, and the ledger says why.**
+
+| party | unpaid staff-days, equal → unequal | planned television buys made |
+|---|---|---|
+| **KD** | **0 → 16** | **2 of 2 → 0 of 2** |
+| **L** | **0 → 36** | 1 of 1 → **0 of 1** |
+| MP | 12 → 40 | — |
+| V | 12 → 33 | — |
+
+The grassroots party's day-to-day mix change falls to **0.000** — it stops acting at all. And the
+harness's own annotation on the two cleared lines reads **`[holds early]`**.
+
+**The personalities separate because the small parties go BANKRUPT, not because they choose
+differently.** Banking that would clear a gate by destroying W-B12, whose entire result was four of
+five managed parties paying their organisation to polling day. **A separation produced by starvation
+is not evidence that the model distinguishes strategies.**
+
+### What the finding actually is — and it is about the POOL, not the split
+
+**2 400 000 kr was calibrated as what ONE party needs**, and W-B12 measured that it barely covers a
+managed campaign — SD still ended with 6 unpaid staff-days at that figure. **So any distribution
+that gives a party LESS than 2.4 M cannot fund a campaign at all**, and a realistic Swedish
+distribution gives five of eight parties less.
+
+**The obvious fix is forbidden.** Raising the pool until the split survives would be inventing a
+larger authored number to turn assertions green — precisely the "never tune a constant to open a
+gate" rule. So **W-F5 stops and reports**, as W-F4 did, and the chests stay equal with the reason
+recorded at the code site.
+
+### The bill, better specified than "nothing on disk"
+
+⚠ **Kammarkollegiet's register of declared party income EXISTS and is public** —
+`kammarkollegiet.se/vara-tjanster/insyn-i-partiers-finansiering`, with a comparison tool over
+filings from 2018 onward. Its figures are served by
+`api.kammarkollegiet.se/PartiinsynPublicService.svc`, **which does not answer an ordinary request**;
+the page is a JavaScript client. That is the obstacle — not absence of data, and a session with a
+browser-capable fetch would likely close it.
+
+**A second route needs no fetch at all:** a DERIVED floor from the model's own
+`BudgetPlan.CommittedToOrganisation` — the minimum a party must hold to pay the organisation it has
+— which would let the split be tested against a pool that is sized rather than guessed.
+
+### [AUTHORED-DRAFT] values
+
+**None added; none changed.** The war chest stays at the existing `[AUTHORED-DRAFT]` 2 400 000 kr
+per party, and its bill in `DATA_BILL.md` stands.
+## W-H5 — the honest status line for 13 September 2026 (written 2026-08-30, 14 days out)
+
+**Sweden votes on 13 September 2026. This is what the game will and will not do that day, written
+from the finished state rather than predicted from a plan.**
+
+### What is playable
+
+**A new game seats a real parliament.** Sweden's Riksdag is 349 seats held by S, SD, M, V, C, KD,
+MP and L in their real 2022 proportions; Germany's Bundestag is 630, France's Assemblée 577,
+Italy's Camera 400, Poland's Sejm 460, the US House 435. Every chamber is sourced and reconciles
+exactly. Bills are scored against the real parties' published economic positions.
+
+**Sweden and Germany hold a real election** on their own electoral law, and a Swedish game's first
+election returns **S 106 / SD 72 / M 66 / V 24 / C 22 / KD 23 / MP 19 / L 17** against a real
+107/73/68/24/24/19/18/16 — within a seat or two everywhere. The result is recorded and persists
+across a save.
+
+**The seat conversion is exact.** Sweden 2022 reproduces **seat-for-seat, 8 of 8**, through the full
+two-tier procedure — 310 fixed constituency seats plus 39 adjustment seats, the 4 % threshold and
+the 12 % constituency rule — on the REAL per-constituency counts fetched at W-F1.
+
+### What is provisional, and how
+
+**Germany's first election is visibly wrong and the reason is known.** It seats BSW at 91 and the
+FDP at 47; **both really won zero**, having missed the 5 % threshold by 0.02 pp and 0.7 pp. A share
+model carrying ~1.5 pp of error cannot resolve a cliff inside its own error bar. **A threshold is
+where this model is weakest.** Sweden has no party that close to its line.
+
+**The same chamber every time.** The electorate does not yet move with the simulation (§8 couples it
+to the economy; nothing does that yet), so a second election in one game returns the first election's
+result. This is the single largest gap between "an election happens" and "an election is played".
+
+**Four countries hold no election at all** — Poland (d'Hondt in 41 districts with no national tier),
+France (two rounds), Italy (mixed, with unconfirmed per-party totals), the USA (435 FPTP districts).
+Their chambers stay as seeded and the game says why in plain English. **This is deliberate: running
+them through a proportional allocator would produce chambers their law does not produce.**
+
+### ⚠ What is NOT built, and it is the thing a player would notice first
+
+**The campaign is not reachable.** Eight campaign screens exist — HQ, the action ladder, polling, the
+map, the debate, election night, results, the coalition sheet — all built, all filmed at four widths
+with the guards silent. **None of them can be opened from the running game**, and no rail cell was
+added at W-G1.
+
+**One question blocks it, and the same question blocks the election deciding whether the player
+won:** the game **has never assigned the player's government a party identity**
+(`ElectionSystem`'s own comment has said so since long before this track began). `CampaignSnapshot`
+needs a player party, a war chest, a poll carrying the player's index, staff, offices and a day's
+queue. **A rail cell opening a screen with an invented party and an invented war chest would put
+fiction on the one surface whose whole discipline is that its figures are real.** So the approval
+threshold still decides elections for the player, unchanged, with the vote model running beside it.
+
+**This is the decision that most changes what 13 September looks like, and it is Elias's.**
+
+### What each figure rests on
+
+- **SOURCED**: every seat count, chamber size, vote total, eligible count, party position, party
+  leader name, and Sweden's party colours. Sweden's 2022 returns are Valmyndigheten's own
+  per-constituency backend, verified eleven column sums against an independent national file.
+- **DERIVED, with the derivation stated**: fiscal stance from CHES `lrecon`; party ink saturation
+  and value from the desk palette; loyalty from the previous two elections.
+- **`[AUTHORED-DRAFT]`, logged one line each**: the campaign's war chest and pace, the debate
+  candidates' nine attributes, election night's clock, and the campaign calendar.
+
+### Deferred, named rather than implied by silence
+
+- **W-F4 — voter groups.** Its premise was FALSE: the demographic marginals it was to derive from do
+  not exist in the model, and the game's "regions" are countries. Needs sourced SCB per-valkrets
+  marginals. The electorate stays ONE GROUP, with 12 call sites waiting.
+- **W-F5 — party funding.** Unequal war chests were built and measured: they clear both standing
+  gates and **do it by bankrupting the small parties**, so they were not adopted. Kammarkollegiet's
+  register exists but is behind an unresponsive API.
+- **§30's demographic block** on the results screen — drawn ABSENT with the reason, blocked on W-F4.
+- **Leader relationships** — asserted absent by reflection, and that assertion still stands.
+- **52 of 53 party marks undrawn**, and five countries have no party colours. Design ask D8.
+
+### The one-sentence version
+
+**On 13 September the game will simulate Sweden's election accurately and will not let you campaign
+in it** — the model is done and honest, the campaign is built and unreachable, and one design
+decision about who the player is stands between the two.

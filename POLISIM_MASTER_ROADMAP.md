@@ -190,6 +190,17 @@ rest of §39 (base support, candidate appeal §16, campaign effects §12, media 
 §19 needs no building, only a read — the macro simulation already IS government performance, and
 `PublicationSystem` already IS the perceived-vs-actual split.
 
+> ⚠ **SUPERSEDED 2026-08-30 — the paragraph below is Day-2's state and is kept for its reasoning,
+> not its conclusions.** Everything it calls open has since been built. The elections prototype ran
+> its own worklist (`ELECTIONS_PROTOTYPE_WORKLIST.md`, 46 items) to Track G: loyalty IS derived
+> rather than assumed (W-A1), per-region priors ARE fetched (W-A2), the gate passed with its scope
+> stated (W-A3), eight campaign screens are built and filmed, and **W-G1 wired it — `PartyArchetype`
+> retired for 53 real parties across six real chambers, an election held on each country's own law,
+> the record persisted, `SaveVersion` bumped.** The sentence *"13 September a re-seeding exercise,
+> not a playable election"* is **no longer true and should not be quoted**. What IS true on
+> 13 September is in `ELECTIONS_PROTOTYPE_LOG.md`'s W-H5 status line, which is written from the
+> finished state rather than predicted from this one.
+
 **The 13 September minimum, restated after Day-2's gate (2026-08-29):** Sweden votes 13 Sept 2026,
 15 days out. The SEAT side is ready and proven — the Swedish allocator reproduces 2022 exactly and
 the seed data is sourced with exact counts, so a re-seeding pass from the official result is all

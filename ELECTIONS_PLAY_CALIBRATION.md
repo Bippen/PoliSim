@@ -468,3 +468,48 @@ crossing 0.30 for the first time, on an item that touched no affinity and no wei
 that convergence to W-F5 expecting *unequal money* to separate the two rational planners. It was not
 money — **it was the plan itself**, a planner and a non-planner spending differently on equal chests.
 Meanwhile `est/grass` moved the WRONG way, 0.291 → 0.269. Both are reported, neither is tuned.
+
+## 19. Election night's clock, and the two thresholds a call rests on (W-E6, backfilled)
+
+**What a player will feel.** The results arrive over four hours, constituency by constituency, and
+the calls come when they are safe rather than when they are exciting. **They will feel late.** That
+is the design, and this entry exists so that when it feels wrong, the numbers to argue with are
+here.
+
+| figure | value | class | why this and not another |
+|---|---|---|---|
+| `NightMinutes` | 240 | ⚠ **[AUTHORED-DRAFT]** | Four hours from first declaration to last. Sweden's real count runs longer and the preliminary result lands sooner; four hours is a PLAYABLE evening, not a measured one. |
+| `FirstDeclarationMinute` | the schedule's floor | DERIVED | Monotone in electorate — small constituencies declare first, which is what actually happens and needs no constant. |
+| `ScheduleJitterMinutes` | seeded, bounded | ⚠ **[AUTHORED-DRAFT]** | So two nights on two seeds do not arrive in identical order. Bounded so the monotonicity above survives it. |
+| the call rule | safe at BOTH extremes of the outstanding eligible bound | DERIVED, **structural** | **Not tunable.** A call is made only when it holds whichever way every uncounted vote falls. 1834 call-instants over 8 seeds, **0 contradicted**. |
+
+**What to feel for.** The guarantee calls **L (the smallest party over the line) and the bloc
+majority only at 29 of 29** — the last constituency. If that reads as broken rather than careful,
+the fix is a SOURCED turnout ceiling that would narrow the outstanding bound, not a softer rule. That
+rider was deliberately not taken.
+
+## 20. The chamber, the election, and what changed for a player at W-G1 (backfilled)
+
+**What a player will feel.** Three things, and the third is the one to watch.
+
+1. **The parliament is real.** Sweden's Riksdag is 349 seats held by S, SD, M, V, C, KD, MP and L —
+   not 200 seats held by four invented parties. Every other country likewise.
+2. **The chamber stops twitching.** It used to drift a few seats every turn off the government's
+   approval. It now changes **only at an election**, which is what parliaments do.
+3. ⚠ **And therefore: between elections, nothing about the chamber moves at all.** If that reads as
+   dead rather than stable, the answer is by-elections, defections and splits — §29 territory — not
+   a return to drift.
+
+| figure | value | class | why |
+|---|---|---|---|
+| chamber sizes | 349 / 630 / 577 / 400 / 460 / 435 | **SOURCED** | Each country's own returns file; each reconciles exactly. |
+| seats at seed | that country's last real election | **SOURCED** | A new game starts in the chamber the country actually has. |
+| fiscal stance | `(5 − lrecon) / 5` | **DERIVED** | Replaces four hand-set placeholders. Linear and stated so it can be checked in one step. |
+| party ink | published hue, desk saturation 0.52 / value 0.46 | **hue SOURCED, S/V a stated derivation** | Measured off the four inks it replaces (0.23–0.58, 0.35–0.49). |
+
+⚠ **The one number to distrust.** A German game's first election seats **BSW at 91 and the FDP at
+47 — both really won zero.** Both missed the 5 % threshold by under a point (BSW by 0.02 pp), and the
+model carries ~1.5 pp of error, so it lands on the wrong side of that cliff about as often as the
+right one. **A threshold is where this model is weakest.** Sweden has no party that close to its 4 %
+line and lands within a seat or two everywhere. Nothing was tuned; this is the finding, not a bug to
+fix by moving a number.

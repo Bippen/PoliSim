@@ -75,3 +75,49 @@ Quoted from the CHES 2024 codebook (`CHES.2024.Codebook.pdf`):
 - A CHES 1999–2024 trend file exists (`1999-2024_CHES_dataset_meansV2.csv`) if longitudinal values are wanted; the 2024 cross-section is the most recent round.
 
 *(Filed verbatim from the research agent's return, 2026-08-28 night.)*
+
+---
+
+## THE AXIS MAPPING — W-F2 (2026-08-30): which of §4's eight axes this data actually defines
+
+**The mapping existed only as three code comments** (`ElectionTypes.cs`, `IdeologyAxis`). It is
+written here, against the source, so a reader of the DATA can see what the data does and does not
+say without reading the model.
+
+| §4 axis (`IdeologyAxis`) | source variable | scale | class |
+|---|---|---|---|
+| `EconomicLeftRight` (0) | CHES 2024 `lrecon` / GPS-2019 `V4_Scale` for the USA | 0 = left/more state … 10 = right/more market | **SOURCED** |
+| `SocialLiberalConservative` (1) | CHES 2024 `galtan` / GPS-2019 `V6_Scale` for the USA | 0 = libertarian/post-materialist … 10 = traditional/authoritarian | **SOURCED** |
+| `GlobalistNationalist` (2) | CHES 2024 `eu_position`, rescaled | published 1–7, rescaled to the 0–10 the other axes use | **SOURCED (EU parties only)** — GPS has no EU item, so **the two US parties are UNDEFINED on this axis, not centred** |
+| `EnvironmentalIndustrial` (3) | — | — | ⚠ **UNDEFINED** |
+| `CentralizationDecentralization` (4) | — | — | ⚠ **UNDEFINED** |
+| `TaxHighLow` (5) | — | — | ⚠ **UNDEFINED** |
+| `ImmigrationRestrictiveLiberal` (6) | — | — | ⚠ **UNDEFINED** |
+| `PublicPrivate` (7) | — | — | ⚠ **UNDEFINED** |
+
+**Three of eight are defined. The other five are UNDEFINED and are NOT centred**, which is a
+mechanism and not a convention: an undefined axis is `double.NaN` and **every comparison skips it**
+rather than scoring it as a 5. A party is never scored as "moderate on immigration" because nobody
+measured it.
+
+⚠ **CHES publishes variables that would plausibly fill three of the five, and they are deliberately
+NOT taken.** `environment`, `immigrate_policy` and `redistribution` exist in the 2024 file. Mapping
+them in would be a defensible modelling choice and an indefensible DATA claim: §4's axes are the
+spec's, the CHES variables are the survey's, and the two were not designed against each other.
+Adopting one as the other silently converts an expert survey's question into a different question.
+**If they are to be adopted, that is a ruling with its own record, not a quiet fill.**
+
+### ⚠ BILLED: per-issue positions do not exist, and `FlatIssueMatch = 0.5` is what stands in for them
+
+§6 wants a party's position **per ISSUE** (economy, healthcare, immigration, climate, crime,
+defence, education, housing). **No such data is on disk for any party in any country**, and CHES does
+not publish it in that shape.
+
+What the model does instead is stated rather than hidden: where an issue-level match is needed and
+none exists, a **flat 0.5** is used — a deliberate "no information" value, not a measured middling
+agreement. **Every issue is therefore currently a half-match for every party**, which is why the
+issue layer cannot yet separate two parties that differ on a single issue.
+
+**Candidate sources**, none yet fetched: CHES 2024's policy-specific items (the same caution as
+above applies), the Manifesto Project (CMP/MARPOR) coded manifesto categories, and each party's own
+2022/2025 manifesto. The first is cheap and questionable; the third is expensive and authoritative.
