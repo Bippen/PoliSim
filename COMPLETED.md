@@ -4588,3 +4588,56 @@ instrument across W-D1's and W-A4's stages, named as a rider.
 **R-N2 held:** `traj_wd4_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
 checks exit 0; the C1 harness still exits 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-D4, the
 `CLAUDE.md` dated section, `ELECTIONS_GAP_TABLE.md` row 31.
+
+## 72. W-E5 — the debate screen (§15 on §36's terms): three states, the model's own ceiling drawn, and an exchange that has not happened drawn as absent (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/DebateScreenSnapshot.cs` (the read model — stage, the two
+candidates and their §16 attributes, both preparations, the exchanges resolved SO FAR, the total the
+debate will have, and the finished result) and `Assets/Scripts/UI/GameController.CampaignDebate.cs`
+(the drawing) — the fifth Track E screen, same board, same columns, same primitives as its four
+siblings. ⚠ **HARNESS ONLY — R-N2 holds until W-G1.** The driver films it from one real debate.
+
+**The screen's ceiling is the model's.** `DebateResult` has no share, no preference, no party
+standing (by reflection since W-B7), so the verdict column reports the performance indices, the
+margin and the **two shocks** — coverage and momentum — and says in as many words that a debate
+moves those and no vote share directly. **An exchange that has not run is an em dash, never a zero**
+(1m-r2's convention), and the mid-debate figure is the **running mean labelled with its count**,
+because the performance index is a mean over all exchanges and quoting it early would quote a number
+the debate has not produced.
+
+**The done-when: filmed in three states.** `prep` (nothing said — the floor and all three verdict
+rows read as not-yet), `midway` (a genuine PREFIX: the debate is run ONCE through `Debates.Resolve`
+on the `Debate` stream at `FilmSeed` 777 and the midway film is its first 3 of 6 exchanges, so the
+states cannot disagree) and `verdict` (performance **65.3 / 52.9**, margin **12.4 pts**, coverage
+shock **1.24**, momentum shock **2.49 pp**). Filmed at **1280 / 1600 / 1920 / 2560** — twelve
+captures — all four widths exiting 0 with **0 text overflows and 0 containment escapes**, and
+`ScreenEdgeCheck -edgepattern=we5_debate_*.png` exit 0 over **76 captures**.
+
+⚠ **The guards were not silent first, and that is worth recording.** The first film exited 1 with
+**12 text overflows**: the three footnotes were drawn with `PoliSimWidgets.MeasuredLabel`, a
+single-line widget that shrinks to fit and trips the guard when it cannot. The sibling screens' idiom
+for a wrapped note is `GUI.Label` with the height measured by `CalcHeight` for the width, plus a
+`UiContainmentGuard.Check`; converted to it, the guards went silent. The guard caught a real defect
+on a new screen, which is what it is for.
+
+**Riders.** The worklist calls W-E5 a modal; it is drawn as a full stage like its four siblings,
+because a modal needs a scrim, a dismiss affordance and a return target no Track E screen has yet —
+if Design wants a modal, it is a re-skin of the same board (the R-E2 precedent). The exchange rows
+carry no ownership or clash column (both are in the model; eight columns do not fit at 1280 and the
+point figures already carry them). W-F6 sources the real leaders' names; the attributes stay
+`[AUTHORED-DRAFT]` game fiction and the screen says so.
+
+**R-N2 held:** `traj_we5_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0; the C1 harness still exits 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-E5, the
+`CLAUDE.md` dated section.
+
+**⚠ And a SECOND guard fired on the same screen.** `MetaTextCheck` — P-A1's ninth check — exited 1 on
+the finished screen: the podium column's head read "THE PODIUMS — SECTION 16 ATTRIBUTES", and an
+internal spec reference on a player surface is precisely the class P-A1 censused and armed against.
+Fixed — and the same class fixed where the token list does NOT reach: "ATTRIBUTES ARE GAME FICTION
+AND LABELLED SO — A MOVE'S BLEND OF THEM IS THE MODEL'S" and "THIS SCREEN WILL NOT CLAIM IT" both
+address a builder rather than a player, and were rewritten into player language. The guard is the
+floor, not the ceiling. Re-run after the fix: **MetaTextCheck exit 0**, all four widths exit 0 with
+0 overflows and 0 containment escapes, `ScreenEdgeCheck` exit 0 over 76 captures. Two guards fired
+on this screen and both were right — better evidence than a screen that passed first time, because
+it shows the guards bind on new work and not only on the work they were written for.

@@ -1830,3 +1830,94 @@ S   (largest loss)  30.80 % -> 29.91 %  (-0.90 pp)
   allocation stand between share and seats, and each is a stage this instrument does not cross.
 - **W-F4's voter groups** will make each line decomposable per group, which is what §31's "young
   voters / urban voters" lines actually ask for; today's electorate is one group (W-F4 retires it).
+
+## W-E5 — the debate screen (§15 on §36's terms): three states, the model's own ceiling drawn, and an exchange that has not happened drawn as absent (2026-08-30)
+
+**What it is.** `DebateScreenSnapshot.cs` (the screen's read model, pure data) and
+`GameController.CampaignDebate.cs` (the drawing) — the fifth of the Track E class, on the same
+1156 × 680 board, the same 440 / 250 / 440 columns and the same primitives as Campaign HQ, the
+action screen, the polling screen and the map. ⚠ **HARNESS ONLY — R-N2 holds until W-G1.**
+
+- **Left, THE PODIUMS:** each candidate's §16 attributes, side by side — the five a debate move
+  actually draws on. The note says attributes are game fiction and that the blend is the model's,
+  not an average the screen takes.
+- **Middle, PREPARATION:** hours, topics, and **§35's curve quoted as the multiplier it is**
+  (`×0.93` against `×0.85` in the filmed staging) — a player who buys hours should see what the
+  hours bought, not a bar with no units.
+- **Right, THE FLOOR and THE VERDICT:** every exchange with its topic, the two moves and the two
+  point figures; then the performance indices, the margin, and **the two shocks**.
+
+**The screen's ceiling is the model's ceiling.** `DebateResult` carries no share, no preference and
+no party standing (asserted by reflection since W-B7), so the verdict column reports the indices,
+the margin, the coverage shock and the momentum shock — and stops, saying in as many words that a
+debate moves coverage and momentum and no vote share directly. A screen that ended "+1.2 % in the
+polls" would invent the one number §15 refuses to produce and teach the player to read a debate as
+votes.
+
+**An exchange that has not happened is an em dash, never a zero** (the Desk's Year-0 convention,
+1m-r2): mid-debate the remaining rows are absent rather than scored, because a zero claims the
+candidates said nothing and that is a different statement. For the same reason the mid-debate figure
+is the **running mean, labelled with how many exchanges it is over** — the performance index is a
+mean over ALL exchanges, so quoting it early would quote a number the debate has not produced.
+
+### The done-when, filmed
+
+Three states, **filmed at 1280 / 1600 / 1920 / 2560**, twelve captures
+(`we5_debate_{width}_e5_campaign_debate_{prep,midway,verdict}.png`):
+
+- **prep** — nothing has been said: the floor reads "THE DEBATE HAS NOT BEGUN", and margin,
+  coverage shock and momentum shock each read "— NOT YET".
+- **midway** — a genuine PREFIX of the finished debate (3 of 6 exchanges), not a separately invented
+  picture: the debate is RUN once through `Debates.Resolve` on the `Debate` stream at `FilmSeed` 777
+  and the midway film is its first half, so the two states cannot disagree.
+- **verdict** — 6 exchanges, performance **65.3 / 52.9**, margin **12.4 pts** to Andersson, coverage
+  shock **1.24**, momentum shock **2.49 pp**.
+
+**Guards silent, and they were not silent TWICE over.** The first film exited 1 with **12 text
+overflows** — the three footnotes were drawn with `PoliSimWidgets.MeasuredLabel`, a SINGLE-LINE
+widget that shrinks to fit and trips the guard when it cannot; the wrapped-note idiom the sibling
+screens use is `GUI.Label` with the height measured by `CalcHeight` for the width, plus a
+`UiContainmentGuard.Check`. Converted to it, all four widths exit 0 with **0 text overflows and 0
+containment escapes**, and `ScreenEdgeCheck -edgepattern=we5_debate_*.png` exits 0 over **76
+captures**. The guard catching this is the guard working; it is recorded rather than quietly fixed.
+
+### Decisions taken and logged (R-N1)
+
+- **The debate is RUN, not mocked, for the film.** One `Debates.Resolve` at a fixed seed produces
+  all three states, so the midway film is provably the verdict's own prefix. *Strikeable: staging
+  three unrelated pictures would film faster and could disagree with itself.*
+- **The two candidates are deliberately UNEQUAL** (14 h against 6 h of preparation, different
+  ownership) so the verdict has a margin worth reading rather than a draw that shows nothing.
+  Attributes are `[AUTHORED-DRAFT]`, W-F6's to source; the names are placeholders, not real leaders.
+- **The middle column quotes the preparation MULTIPLIER, not the hours alone** — §35's curve is the
+  thing the player is buying, and an hours figure without it is a price with no product.
+
+### Riders
+
+- **W-E5 is a modal on the sheet in the worklist's words; it is drawn as a full stage here**, the
+  same as its four siblings, because the campaign screens are stages and a modal would need a
+  scrim, a dismiss affordance and a return target that no other Track E screen has yet. If Design
+  wants it as a modal, that is a re-skin of the same board (the R-E2 precedent).
+- **The exchange rows have no ownership or clash column** — both are in the model and neither is on
+  the screen, because eight columns do not fit at 1280 and the point figures already carry them.
+  A later pass may add a per-exchange detail line.
+- **W-F6** sources the real party leaders' names; the attributes stay game fiction and labelled.
+
+### And a second guard fired, on the same screen (W-E5, recorded 2026-08-30)
+
+**`MetaTextCheck` — P-A1's ninth check — exited 1 on the finished screen:** the podium column's
+ledger head read `"THE PODIUMS — SECTION 16 ATTRIBUTES"`, and an internal spec reference on a player
+surface is exactly the class P-A1 censused and armed a guard against. One hit, named with its file
+and line.
+
+Fixed, and the same class fixed where the token list does NOT reach: `"ATTRIBUTES ARE GAME FICTION
+AND LABELLED SO — A MOVE'S BLEND OF THEM IS THE MODEL'S…"` addresses a builder, not a player, and so
+does `"…AND THIS SCREEN WILL NOT CLAIM IT."` Both were rewritten into player language ("THESE
+RATINGS ARE THE GAME'S OWN INVENTION, NOT A MEASUREMENT OF ANYONE"; "WHATEVER THE POLLS DO IN THE
+DAYS AFTER IS THE MOMENTUM'S DOING"). The guard is the floor, not the ceiling — it catches the
+tokens it knows, and the intent behind it is what the other two violated.
+
+**Re-run after the fix: `MetaTextCheck` exit 0, all four widths exit 0 (0 overflows, 0 containment
+escapes), `ScreenEdgeCheck` exit 0 over 76 captures.** Two guards fired on this screen and both were
+right; that is a better outcome than a screen that passed first time, because it is evidence the
+guards bind on new work rather than only on the work they were written for.

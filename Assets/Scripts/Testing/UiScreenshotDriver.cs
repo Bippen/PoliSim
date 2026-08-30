@@ -2409,6 +2409,7 @@ namespace PoliSim.Testing
             yield return CaptureActionScreen(controller, perceived);
             yield return CapturePollingScreen(controller, perceived);
             yield return CaptureCampaignMap(controller, perceived);
+            yield return CaptureDebateScreen(controller, perceived);
 
             Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
                       $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
@@ -2450,6 +2451,66 @@ namespace PoliSim.Testing
         ///   greys out and the question answers itself.
         /// - **`nomomentum`** — §22's stock at rest, so the centre column's empty state is on film.
         /// </summary>
+        /// <summary>
+        /// W-E5's three states, from the SAME staged campaign day as its siblings so the strip
+        /// agrees about the money and the days left. The debate itself is RUN, not mocked - the
+        /// same `Debates.Hold` the model uses, on the `Debate` stream at a fixed seed - so the
+        /// film shows what the model produces and the mid-debate state is a genuine prefix of the
+        /// finished one rather than a separately invented picture.
+        /// </summary>
+        private IEnumerator CaptureDebateScreen(GameController controller, double perceived)
+        {
+            var day = new CampaignFilmState("debate", new DateTime(2026, 8, 21), 1_120_000.0, 12.0, 1_460, 4, 3, 2.2);
+            CampaignSnapshot campaign = BuildCampaignSnapshot(day, perceived);
+
+            // Two [AUTHORED-DRAFT] candidates (W-F6 sources the real leaders' names; the
+            // attributes stay game fiction and the screen says so). Deliberately UNEQUAL, so the
+            // verdict has a margin worth reading rather than a draw that shows nothing.
+            var a = new CandidateProfile("Andersson", 72, 78, 74, 70, 68, 76, 70, 66, 62);
+            var b = new CandidateProfile("Kristersson", 64, 66, 70, 72, 70, 71, 68, 61, 66);
+            var prepA = new DebatePreparation(14.0, new[] { IssueId.Economy, IssueId.Healthcare },
+                new[] { DebateMove.PresentStatistics, DebateMove.DefendPolicy, DebateMove.AttackOpponent, DebateMove.AppealEmotionally, DebateMove.Counterattack, DebateMove.DefendPolicy });
+            var prepB = new DebatePreparation(6.0, new[] { IssueId.Immigration },
+                new[] { DebateMove.AttackOpponent, DebateMove.ChangeSubject, DebateMove.IgnoreAttack, DebateMove.PresentStatistics, DebateMove.AttackOpponent, DebateMove.DefendPolicy });
+
+            SimulationRandom.Seed(FilmSeed);
+            DebateResult result = Debates.Resolve(a, prepA, issue => issue == IssueId.Economy ? 0.8 : 0.3,
+                b, prepB, issue => issue == IssueId.Immigration ? 0.85 : 0.25,
+                6, SimulationRandom.For(SimulationRandom.Stream.Debate));
+
+            var midway = new DebateExchange[result.Exchanges.Length / 2];
+            Array.Copy(result.Exchanges, midway, midway.Length);
+
+            var states = new[]
+            {
+                new DebateScreenSnapshot(campaign, DebateStage.Preparation, a.Name, b.Name, a, b, prepA, prepB,
+                    new DebateExchange[0], result.Exchanges.Length, default),
+                new DebateScreenSnapshot(campaign, DebateStage.InProgress, a.Name, b.Name, a, b, prepA, prepB,
+                    midway, result.Exchanges.Length, default),
+                new DebateScreenSnapshot(campaign, DebateStage.Verdict, a.Name, b.Name, a, b, prepA, prepB,
+                    result.Exchanges, result.Exchanges.Length, result),
+            };
+            var stems = new[] { "prep", "midway", "verdict" };
+
+            for (int i = 0; i < states.Length; i++)
+            {
+                controller.SetCampaignDebateScreen(states[i]);
+                yield return Settle();
+                yield return Capture("e5_campaign_debate_" + stems[i]);
+            }
+
+            controller.SetCampaignDebateScreen(null);
+            yield return Settle();
+
+            Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                "SHOT: W-E5 - {0} exchanges held on the Debate stream at FilmSeed {1}; performance {2:F1} / {3:F1}, "
+                + "margin {4:F1} pts, coverage shock {5:F2}, momentum shock {6:F2} pp. The midway film is a genuine "
+                + "PREFIX of the finished debate ({7} of {0} exchanges), not a separately invented picture; the "
+                + "unresolved rows are em dashes, never zeroes. Candidate attributes are [AUTHORED-DRAFT] (W-F6).",
+                result.Exchanges.Length, FilmSeed, result.PerformanceA, result.PerformanceB, result.Margin,
+                result.CoverageShock, result.MomentumShockPp, midway.Length));
+        }
+
         private IEnumerator CapturePollingScreen(GameController controller, double perceived)
         {
             var states = new[]
