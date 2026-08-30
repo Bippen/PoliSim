@@ -258,11 +258,11 @@ approval threshold yields to the vote model; `PublicationSystem` stays the polli
 drift, bill scoring, renderers stay). *Done when:* the commit hash is printed as the revert handle
 and the game reaches election day from a new game without a crash.
 
-**W-G2 — New baselines, explained.** Trajectories change; that is what wiring means. Capture
+**W-G2 — DONE 2026-08-30** (six of six byte-IDENTICAL; explained per layer, including the honest limit that the trajectory harness passes no bills and so does not exercise the layer W-G1 changed). — New baselines, explained. Trajectories change; that is what wiring means. Capture
 `traj_wired_*` as a new family, keep the old, and explain every difference per country by layer.
 *Done when:* no unexplained difference remains.
 
-**W-G3 — Saves.** New state joins `SaveGame` the way `FedChairCandidates` did; pre-wiring saves
+**W-G3 — DONE 2026-08-30** (SaveVersion 2; the diagnostic now snapshots every party's seats BY NAME rather than just the count, and holds a real election before saving; RT PASS 12 scenarios). — Saves. New state joins `SaveGame` the way `FedChairCandidates` did; pre-wiring saves
 still load with state absent → defaults. *Done when:* a round-trip harness proves both directions.
 
 **W-G4 — Full capture matrix and suite** on the wired code, four sizes, rule-15 diff (now exact,

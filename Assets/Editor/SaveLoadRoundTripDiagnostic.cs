@@ -136,6 +136,22 @@ namespace PoliSim.EditorTools
                 playerCountry.CabinetMinisters[CabinetPortfolio.Defense] =
                     CabinetSystem.GenerateCandidates(CabinetPortfolio.Defense)[0];
 
+                // W-G3: hold a real election BEFORE the save, so the new persisted state
+                // (Country.ElectionHistory, and a chamber set from a RESULT rather than the seed)
+                // actually crosses the save instead of round-tripping an empty list and proving
+                // nothing. Every country is exercised across this diagnostic's scenarios, so both
+                // branches are covered - the two with a live path and the four that record a reason
+                // and leave the chamber untouched.
+                Elections.ElectionRecord staged =
+                    Elections.NationalElection.TryPredictShares(player, out Dictionary<string, double> stagedShares)
+                        ? Elections.NationalElection.Run(player, 1, stagedShares)
+                        : Elections.NationalElection.Run(player, 1, null);
+                playerCountry.ElectionHistory.Add(staged);
+                if (staged.Method != Elections.ElectionMethod.NotImplemented)
+                {
+                    ParliamentSystem.SetSeatsFromElection(playerCountry, staged.Seats);
+                }
+
                 Dictionary<CountryId, PolicyDecision> decisionsA = BuildNoOpDecisions(world);
 
                 RunDays(simA, world, decisionsA, player, TurnsBeforeSave * SimulationManager.DaysPerTurn, null);
@@ -463,7 +479,36 @@ namespace PoliSim.EditorTools
                 snap[$"{p}.SpendingLines.Count"] = country.SpendingLines.Count;
                 snap[$"{p}.TradePartners.Count"] = country.TradePartners.Count;
                 snap[$"{p}.CabinetMinisters.Count"] = country.CabinetMinisters.Count;
+                // W-G3: the COUNT alone was a weak assertion and W-G1 made it a load-bearing one.
+                // A load that restored the right NUMBER of parties with all-zero seats passed this
+                // check happily. Now every party's actual seat count is snapshotted BY NAME, plus
+                // the sum - so a re-keyed, truncated or zeroed chamber fails here by the party that
+                // broke rather than surfacing later as a parliament that quietly lost its majority.
                 snap[$"{p}.ParliamentSeats.Count"] = country.ParliamentSeats.Count;
+                int seatSum = 0;
+                foreach (KeyValuePair<string, int> seat in country.ParliamentSeats)
+                {
+                    snap[$"{p}.ParliamentSeats.{seat.Key}"] = seat.Value;
+                    seatSum += seat.Value;
+                }
+
+                snap[$"{p}.ParliamentSeats.Sum"] = seatSum;
+
+                // W-G3: the election record is NEW persisted state (W-G1) and it lives on Country,
+                // inside World, precisely so this diagnostic can see it - see Country.ElectionHistory
+                // for why it is not in UiDraftState, the layer this file's own header records as
+                // structurally out of reach.
+                snap[$"{p}.ElectionHistory.Count"] = country.ElectionHistory.Count;
+                if (country.ElectionHistory.Count > 0)
+                {
+                    Elections.ElectionRecord last = country.ElectionHistory[country.ElectionHistory.Count - 1];
+                    snap[$"{p}.ElectionHistory.LastTurn"] = last.Turn;
+                    snap[$"{p}.ElectionHistory.LastMethod"] = (int)last.Method;
+                    int wonSum = 0;
+                    foreach (KeyValuePair<string, int> won in last.Seats) { wonSum += won.Value; }
+                    snap[$"{p}.ElectionHistory.LastSeatSum"] = wonSum;
+                    snap[$"{p}.ElectionHistory.LastShareCount"] = last.Shares.Count;
+                }
                 snap[$"{p}.Swf.Exists"] = country.SovereignWealthFund != null ? 1 : 0;
                 // R4 (maturity rate-lag): the mechanism's one piece of state, snapshotted so a
                 // save/load that dropped it would fail HERE rather than silently reverting a

@@ -2567,3 +2567,78 @@ against a real 16.
 where this model is weakest, and Germany 2025 is where that weakness is largest.** It also sharpens
 the standing gap below — an electorate that moved with the simulation would at least make the German
 chamber wrong in a way that changes, rather than wrong identically at every election.
+## W-G2 — new baselines, explained: six of six IDENTICAL, and why that is NOT a clean bill of health (2026-08-30)
+
+`traj_wired_*` captured after W-G1 (`a289e1e`), `traj_run_*` kept. **All six files are byte-identical
+by SHA-256** — both seeds, all three horizons. The stop condition (an UNEXPLAINED difference) is not
+reached because there is no difference at all.
+
+**That result needs explaining rather than celebrating, and the explanation has four layers.**
+
+**1. The time base did not move, by construction.** This was trap 1, and it was the likeliest source
+of an unexplained difference in the whole item: `MacroSystem.YearsPerTurn` read
+`4f / ElectionSystem.ElectionCycle`. Re-expressed as `DaysPerTurn / 365f` it is still exactly 1.0,
+and `Phase4YearsPerTurnDiagnostic` proves it 9 of 9 — including its own
+`DaysPerTurn/365 == YearsPerTurn` assertion. **Had this moved, all six files would have moved and
+every country would have needed a per-layer explanation for something with nothing to do with
+elections.**
+
+**2. The macro core was not touched at all.** No production function, no reversion rate, no dial.
+
+**3. ⚠ THE RNG RESULT, WHICH IS THE ONE GENUINELY LOAD-BEARING THING THIS RUN PROVES.** The old
+`ParliamentSystem.UpdateSeats` drew jitter from `SimulationRandom.Stream.Parliament` **once per party
+per country per turn** — roughly 24 draws a turn across the six countries, for a thousand turns. The
+new one **draws nothing at all**. Those two runs producing byte-identical macro trajectories is a
+real proof that **the streams are genuinely independent**: had `Parliament` shared a generator with
+any other stream, or advanced a common cursor, removing 24,000 draws would have shifted every
+downstream value in every country. It did not move a single byte.
+
+**4. ⚠ AND THE HONEST LIMIT: the harness does not exercise the layer W-G1 changed.**
+`TrajectoryBaselineDump`'s own header states its idiom — *"AdvanceTurn with all-None decisions, no
+player country, no bills - a pure simulation"*. **The only path from a parliament to the macro model
+is bill scoring**, and this run passes no bills. So the identity above says the macro core and the
+time base are untouched; **it is not evidence that the parliament change is safe**, and reading it
+that way would be exactly the "0 anomalies" fallacy this repo's own front page spends a page warning
+about.
+
+**What DOES cover the changed layer, and did:** `SwfDrawdownBooksDiagnostic` (a bill scored and
+passed against a real 349-seat chamber pinned to V, Sweden''s most expansionary party by published
+`lrecon`), `ScenarioCandidateMeasurementDiagnostic` (seat-weighted alignment across a full scenario
+run), `SeatConversionHarness` (**Sweden 2022 still reproduces seat-for-seat, 8 of 8, through the
+entire refactor**), and `ElectionDayReachDiagnostic` (all six countries reach an election turn from
+a new world with no exception). Those are the evidence for W-G1; this run is the evidence that
+nothing ELSE moved.
+
+**Kept:** `traj_run_*` stays on disk as the pre-wiring reference. `traj_wired_*` is the new family.
+Since they are identical, either can serve as the baseline for the next item — stated so a later
+reader does not assume a divergence exists that does not.
+## W-G3 — saves: the version gate, and the weak assertion W-G1 turned into a load-bearing one (2026-08-30)
+
+**`SaveVersion` is 2.** W-G1 re-keyed `Country.ParliamentSeats` from `PartyArchetype` to real party
+abbreviations, which is exactly the "model SWAP that re-keys persisted state" `SaveGameService`''s
+own comment names as the bumping case. The loader refuses an older save plainly; there is no
+migration machinery pre-release and none was added. The diagnostic''s tamper probe exercises the
+gate and it refuses as ruled.
+
+⚠ **The gap the plan named was real, and it was NOT the one in the plan''s own words.** The plan
+warned that `SaveLoadRoundTripDiagnostic` cannot reach `UiDraftState`, so the `FedChairCandidates`
+precedent W-G3 was told to follow has never been machine-proven. **W-G1 sidestepped that by putting
+`ElectionRecord` on `Country` inside `World`.** But checking the diagnostic''s own country snapshot
+turned up a second, quieter problem: it recorded **`ParliamentSeats.Count` and nothing else**.
+
+**A count is not a chamber.** A load that restored the right NUMBER of parties with **all-zero
+seats** passed that assertion happily — and it mattered far less when the value was four fictional
+archetypes than it does now that it is a real 349-seat Riksdag whose composition decides whether
+bills pass.
+
+**Closed, not stated.** The snapshot now carries **every party''s actual seat count BY NAME**, plus
+the sum, plus the election history''s depth and its last record''s turn, method, seat sum and share
+count. A re-keyed, truncated or zeroed chamber now fails by the party that broke it.
+
+**And the diagnostic now HOLDS AN ELECTION before saving**, so the new state crosses the save with
+something in it rather than round-tripping an empty list and proving nothing. Both branches are
+covered across the twelve scenarios: the two countries with a live path save a chamber set from a
+RESULT, and the four without save a record carrying a reason and an untouched chamber.
+
+**Result: `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip clean`** — 8 continuation
+turns identical, restore-point snapshots identical, saves string-equal, for every country.
