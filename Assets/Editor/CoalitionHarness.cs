@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using PoliSim.Elections;
+using PoliSim.Testing;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -76,61 +77,27 @@ namespace PoliSim.EditorTools
             return parts.Count == 0 ? "-" : string.Join("+", parts.ToArray());
         }
 
-        /// <summary>§29's compatibility, DERIVED: ideology from lrgen, policy from lrecon/galtan/eu.</summary>
-        private static double[,] BuildCompatibility()
+        /// <summary>The staging is `CoalitionFilm`'s, shared with the screen: the harness and the coalition board must read ONE compatibility matrix and ONE set of red lines, or a green harness would be proving something the screen never shows.</summary>
+        private static double[,] BuildCompatibility() => CoalitionFilm.Compatibility();
+
+        private static List<RedLine> BuildRedLines() => CoalitionFilm.AllLines();
+
+        /// <summary>Every red line except the DECLARED ones held by the named parties against SD - for measuring what each declaration is actually doing.</summary>
+        private static List<RedLine> WithoutDeclared(int[] holders)
         {
-            int n = Parties.Length;
-            var m = new double[n, n];
-            for (int a = 0; a < n; a++)
+            var kept = new List<RedLine>();
+            foreach (RedLine line in BuildRedLines())
             {
-                for (int b = 0; b < n; b++)
-                {
-                    if (a == b) { m[a, b] = 100.0; continue; }
-                    double ideological = CoalitionCompatibility.FromDistance(Lrgen[a] - Lrgen[b]);
-                    double policy = CoalitionCompatibility.OverAxes(
-                        new[] { Lrecon[a], Galtan[a], CoalitionCompatibility.RescaleEu(EuPosition[a]) },
-                        new[] { Lrecon[b], Galtan[b], CoalitionCompatibility.RescaleEu(EuPosition[b]) });
-                    m[a, b] = CoalitionCompatibility.WeightIdeological * ideological
-                        + CoalitionCompatibility.WeightPolicy * policy;
-                }
+                bool drop = false;
+                foreach (int h in holders) { if (line.Kind == RedLineKind.Declared && line.Covers(h, SD)) { drop = true; } }
+                if (!drop) { kept.Add(line); }
             }
 
-            return m;
+            return kept;
         }
 
-        /// <summary>
-        /// The derived lines, plus the DECLARED ones. A declared line is a dated fact about a
-        /// party's own public commitment and carries its citation; it is not an opinion about how
-        /// well two parties get on, which is what the derived lines already measure.
-        /// </summary>
-        private static List<RedLine> BuildRedLines()
-        {
-            List<RedLine> lines = DerivedRedLines.From(Lrgen, Galtan);
-
-            // DECLARED. The Centre Party refused to sit in, or support, a government dependent on
-            // the Sweden Democrats - which the derived rule cannot reach from position distance
-            // alone, since C stands 2.58 from SD on lrgen, CLOSER than S at 4.79. Basis: Annie
-            // Loof, SVT Agenda 14 May 2017, "Jag sager bestamt nej till att samtala eller
-            // forhandla med dig i regeringsstallning"; the position held through 2022, when C
-            // backed Magdalena Andersson (S) for prime minister rather than Ulf Kristersson (M)
-            // because he sought SD participation. Vintage 2017-2022 recorded honestly: the
-            // verified verbatim statement is 2017 and the 2022 conduct is the corroboration.
-            lines.Add(new RedLine(C, SD, RedLineKind.Declared, blocksSupport: true,
-                basis: "DECLARED: Centerpartiet will not sit in or support a government dependent on SD - Loof, SVT Agenda 2017-05-14, verbatim; conduct 2022 (backed Andersson over Kristersson). See ElectionsData/sweden/coalition_declarations_2022.md"));
-
-            // DECLARED, and the reason the Tido arrangement has the SHAPE it has: M, KD and L
-            // each promised during the 2022 campaign that they would not let SD SIT IN
-            // GOVERNMENT - while accepting its support in the chamber. That is a cabinet-blocking
-            // line that is NOT support-blocking, which is precisely the distinction RedLine draws.
-            // Basis: the Tido agreement of 2022-10-14 puts M, KD and L in cabinet and SD outside it
-            // with officials in the coordination office and no ministerial post; SVT, "Liberalerna:
-            // SD behovs inte i regeringen". See ElectionsData/sweden/coalition_declarations_2022.md
-            const string noSdMinisters = "DECLARED: promised in the 2022 campaign not to let SD sit in government, while accepting its support - Tidoavtalet 2022-10-14 (cabinet M+KD+L, SD outside with no ministerial post). See ElectionsData/sweden/coalition_declarations_2022.md";
-            lines.Add(new RedLine(M, SD, RedLineKind.Declared, blocksSupport: false, basis: noSdMinisters));
-            lines.Add(new RedLine(KD, SD, RedLineKind.Declared, blocksSupport: false, basis: noSdMinisters));
-            lines.Add(new RedLine(L, SD, RedLineKind.Declared, blocksSupport: false, basis: noSdMinisters));
-            return lines;
-        }
+        private static bool Same(CoalitionResult a, CoalitionResult b) =>
+            a.Outcome == b.Outcome && a.Government.Cabinet == b.Government.Cabinet && a.Government.Support == b.Government.Support;
 
         /// <summary>Structural: nothing here can be an authored coalition score, and §29's two unsourceable terms are DEFERRED rather than invented.</summary>
         private static int Structural(StringBuilder sb)
@@ -412,22 +379,5 @@ namespace PoliSim.EditorTools
             foreach (RedLine l in lines) { if (l.Covers(a, b)) { return true; } }
             return false;
         }
-
-        /// <summary>Every red line except the DECLARED ones held by the named parties against SD - for measuring what each declaration is actually doing.</summary>
-        private static List<RedLine> WithoutDeclared(int[] holders)
-        {
-            var kept = new List<RedLine>();
-            foreach (RedLine line in BuildRedLines())
-            {
-                bool drop = false;
-                foreach (int h in holders) { if (line.Kind == RedLineKind.Declared && line.Covers(h, SD)) { drop = true; } }
-                if (!drop) { kept.Add(line); }
-            }
-
-            return kept;
-        }
-
-        private static bool Same(CoalitionResult a, CoalitionResult b) =>
-            a.Outcome == b.Outcome && a.Government.Cabinet == b.Government.Cabinet && a.Government.Support == b.Government.Support;
     }
 }

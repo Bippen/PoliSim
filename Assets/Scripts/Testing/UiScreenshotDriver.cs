@@ -2474,6 +2474,7 @@ namespace PoliSim.Testing
             yield return CaptureCampaignMap(controller, perceived);
             yield return CaptureDebateScreen(controller, perceived);
             yield return CaptureResultsScreen(controller);
+            yield return CaptureCoalitionScreen(controller);
 
             Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
                       $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
@@ -2661,6 +2662,70 @@ namespace PoliSim.Testing
             var l = new double[parties];
             for (int p = 0; p < parties; p++) { l[p] = 50.0; }
             return l;
+        }
+
+        /// <summary>
+        /// W-E8 - the coalition screen in three outcome states, and all three FALL OUT OF THE MODEL
+        /// rather than being staged: the same `CoalitionFormation.Form` the harness proves, on the
+        /// same Sweden 2022 seats W-E6 counted and W-E7 tabulated.
+        ///
+        /// - `confidence_and_supply` - 2022 as it happened: M+KD+L in cabinet, SD carrying it.
+        /// - `new_election` - the 150/100/99 chamber where every pair refuses every other, which is
+        ///   the harness's own reachability proof drawn.
+        /// - `majority` - the same 2022 seats with the DECLARED lines dropped, which is the
+        ///   counterfactual that shows what those declarations are actually doing.
+        /// </summary>
+        private IEnumerator CaptureCoalitionScreen(GameController controller)
+        {
+            var stems = new[] { "confidence_and_supply", "new_election", "majority" };
+            for (int i = 0; i < stems.Length; i++)
+            {
+                CoalitionScreenSnapshot snapshot = BuildCoalitionState(i);
+                controller.SetCampaignCoalitionScreen(snapshot);
+                yield return Settle();
+                yield return Capture("e8_coalition_" + stems[i]);
+
+                Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                    "SHOT: W-E8 {0} - {1}; cabinet {2} ({3} seats), carried by {4}; {5} viable, {6} arithmetic majorities refused.",
+                    stems[i], snapshot.Result.Outcome, snapshot.Name(snapshot.Result.Government.Cabinet),
+                    snapshot.Result.Government.CabinetSeats, snapshot.Name(snapshot.Result.Government.Support),
+                    snapshot.Result.Viable.Count, snapshot.Result.BlockedByRedLine.Count));
+            }
+
+            controller.SetCampaignCoalitionScreen(null);
+            yield return Settle();
+        }
+
+        private static CoalitionScreenSnapshot BuildCoalitionState(int which)
+        {
+            if (which == 1)
+            {
+                // The reachability chamber: three blocs, none able to govern alone, each refusing
+                // both others. This is the harness's own proof that a new election is REACHABLE.
+                var seats = new[] { 150, 100, 99 };
+                var compat = new double[3, 3];
+                for (int a = 0; a < 3; a++) { for (int b = 0; b < 3; b++) { compat[a, b] = a == b ? 100.0 : 20.0; } }
+                var mutual = new System.Collections.Generic.List<RedLine>
+                {
+                    new RedLine(0, 1, RedLineKind.Declared, true, "DECLARED: a mutual refusal"),
+                    new RedLine(0, 2, RedLineKind.Declared, true, "DECLARED: a mutual refusal"),
+                    new RedLine(1, 2, RedLineKind.Declared, true, "DECLARED: a mutual refusal"),
+                };
+
+                CoalitionResult deadlocked = CoalitionFormation.Form(seats, compat, mutual);
+                return new CoalitionScreenSnapshot("A HUNG CHAMBER", new[] { "A", "B", "C" }, seats, 349,
+                    deadlocked.Majority, 0, deadlocked, mutual);
+            }
+
+            int[] real = ElectionNightFilm.Seats2022;
+            double[,] compatibility = CoalitionFilm.Compatibility();
+            System.Collections.Generic.List<RedLine> lines = which == 2
+                ? CoalitionFilm.DerivedOnly()      // the declarations dropped - the counterfactual
+                : CoalitionFilm.AllLines();
+
+            CoalitionResult result = CoalitionFormation.Form(real, compatibility, lines);
+            return new CoalitionScreenSnapshot("SWEDEN", ElectionNightFilm.Parties, real, 349,
+                result.Majority, 0, result, lines);
         }
 
         private IEnumerator CapturePollingScreen(GameController controller, double perceived)

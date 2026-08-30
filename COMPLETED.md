@@ -4732,3 +4732,39 @@ sourced input, or published.
 **R-N2 held:** `traj_we7_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
 checks exit 0; the C1 harness still exits 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-E7, the
 `CLAUDE.md` dated section, `ELECTIONS_GAP_TABLE.md` row 30.
+
+## 75. W-E8 — the coalition screen (§29 on §36's terms): the arithmetic, what it would have allowed, and the difference between a refusal someone uttered and a distance this model measured (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/CoalitionScreenSnapshot.cs`,
+`Assets/Scripts/UI/GameController.CampaignCoalition.cs`, and
+`Assets/Scripts/Testing/CoalitionFilm.cs` — the staging the screen and the HARNESS now SHARE, so the
+two cannot disagree about which coalitions are possible (the `ElectionNightFilm` precedent). **The
+seventh and last Track E screen.** ⚠ **HARNESS ONLY — R-N2 to W-G1.** All 16 coalition assertions
+still hold on the shared path.
+
+**The screen's one real decision, and §36 decides it.** A DECLARED red line is public — a party said
+it and the citation is on disk — so the screen states it flatly and names who holds it. A DERIVED
+line is this model reading a gap between two parties, which nobody has uttered, so it is drawn as
+the DISTANCE it is under a heading that says so. Showing a measured gap as a refusal would put words
+in a party's mouth. **And the middle column shows the 120 arithmetic majorities a red line refused**,
+each with the pair that refused it — because a screen showing only what CAN form teaches that the
+arithmetic is the whole story.
+
+**The done-when — three outcome states — met with three that fall out of the model rather than being
+staged.** `confidence_and_supply`: Sweden 2022 as it happened, **M+KD+L in cabinet (103), carried by
+SD**, 1 viable, 120 refused. `new_election`: the 150/100/99 chamber where every pair refuses every
+other — the harness's reachability proof, drawn — 0 viable. `majority`: **the same 2022 seats with
+the DECLARED lines dropped**, giving S+M+C+KD+L (234) and 14 viable, which is the counterfactual
+showing what those declarations do, and agrees exactly with W-D3's own measurement.
+
+**Filmed at 1280 / 1600 / 1920 / 2560** — twelve captures — all four widths exit 0 with **0 text
+overflows and 0 containment escapes**, `MetaTextCheck` exit 0, `ScreenEdgeCheck` exit 0.
+
+**No `[AUTHORED-DRAFT]` value is introduced:** seats counted, pivotality derived from the seats,
+compatibility derived from sourced CHES positions, red lines derived-or-cited.
+
+**Track E is complete — all eight screens built and filmed.**
+
+**R-N2 held:** `traj_we8_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-E8, the `CLAUDE.md` dated section,
+`ELECTIONS_GAP_TABLE.md` row 29.

@@ -2090,3 +2090,74 @@ is the whole of its done-when.
 - **W-F1** replaces the regional table's 2018-distributed counts with the real 2022 per-valkrets
   returns, and the shares stop being of the eight-party subtotal.
 - **W-E8** takes the coalition that forms from these seats.
+
+## W-E8 — the coalition screen (§29 on §36's terms): the arithmetic, what it would have allowed, and the difference between a refusal someone uttered and a distance this model measured (2026-08-30)
+
+**What it is.** `CoalitionScreenSnapshot.cs` (the read model), `GameController.CampaignCoalition.cs`
+(the drawing) and `CoalitionFilm.cs` (the staging the screen and the HARNESS now share) — **the
+seventh and last Track E screen**. ⚠ **HARNESS ONLY — R-N2 holds until W-G1.**
+
+- **Left, THE ARITHMETIC:** every party's seats, its Banzhaf pivotality, and its role in the
+  government that formed — in cabinet, supporting, or neither.
+- **Middle, MAJORITIES THE SEATS ALLOWED:** the combinations the arithmetic would have carried and
+  the line that refused each, smallest first.
+- **Right, RED LINES:** declared and measured, kept apart.
+
+### The screen's one real decision, and §36 decides it
+
+**A DECLARED line is public.** A party said it, the citation is on disk, and the screen states it
+flatly and names who holds it. **A DERIVED line is this model reading a gap** between two parties —
+nobody in the world has uttered it — so it is drawn as the DISTANCE it is, with the axis and the
+figure, under a heading that says so: *"MEASURED — A DISTANCE, NOT A REFUSAL ANYONE UTTERED"*.
+Showing a measured gap as a refusal would put words in a party's mouth and hand the player a
+certainty that does not exist. The two kinds sit in the same column, separated by a rule, because
+the difference between them is the thing worth teaching.
+
+**The middle column is the item's other argument.** A coalition screen that showed only what CAN
+form teaches the player that the arithmetic is the whole story. This one shows the **120 arithmetic
+majorities a red line refused** on Sweden 2022, each with the pair that refused it and whether that
+was declared or measured — which is what makes a red line legible as politics rather than as a
+missing option.
+
+### The done-when: three outcome states, and all three fall out of the model
+
+Nothing is staged; each is `CoalitionFormation.Form` on real inputs.
+
+| state | outcome | cabinet | viable | refused |
+|---|---|---|---|---|
+| `confidence_and_supply` | ConfidenceAndSupply | **M+KD+L, 103 seats, carried by SD** | 1 | 120 |
+| `new_election` | **NewElection** | — | 0 | 4 |
+| `majority` | MajorityCoalition | S+M+C+KD+L, 234 seats | 14 | 119 |
+
+The first is Sweden 2022 as it happened. The second is the 150/100/99 chamber where every pair
+refuses every other — the harness's own reachability proof, drawn. The third is **the same 2022
+seats with the DECLARED lines dropped**, which is the counterfactual that shows what those
+declarations are actually doing: without them SD is admissible in cabinet and the result is a
+five-party bloc nobody proposed. That agrees exactly with W-D3's own measurement.
+
+**Filmed at 1280 / 1600 / 1920 / 2560** — twelve captures — all four widths exit 0 with **0 text
+overflows and 0 containment escapes**, `MetaTextCheck` exit 0, and `ScreenEdgeCheck
+-edgepattern=we8_coalition_*.png` exit 0.
+
+### Decisions taken and logged (R-N1)
+
+- **The harness and the screen were pulled onto ONE staging** (`CoalitionFilm`): the same
+  compatibility matrix and the same red lines. Two surfaces disagreeing about which coalitions are
+  possible would be worse than either being wrong alone — the `ElectionNightFilm` precedent from
+  W-E6. All 16 coalition assertions still hold on the shared path.
+- **Declared and measured lines are drawn differently, and the screen says which is which.**
+  *Strikeable: one undifferentiated list would be shorter and would quietly promote a measurement
+  into a quotation.*
+- **The refused majorities are shown smallest first**, because the tightest refusals are the ones a
+  reader can hold in mind — a 234-seat refusal teaches less than a two-party one.
+
+### [AUTHORED-DRAFT] values
+
+**None.** Every figure is the formation's own: seats counted, pivotality derived from the seats,
+compatibility derived from sourced CHES positions, red lines derived-or-cited.
+
+### Riders
+
+- **W-E7** hands this screen its seats; **W-D3** is the model it draws.
+- **W-H4** — the coalition screen invents no sprite; if Design wants party marks in the arithmetic
+  column, that is a line in the ask, not art invented here.

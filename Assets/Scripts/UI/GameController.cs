@@ -1984,6 +1984,11 @@ namespace PoliSim.UI
                 // W-E2 (harness only), same contract as its three siblings below.
                 DrawCampaignMapStage(tabContentHeight, rightColumnWidth, _campaignMapScreen.Value);
             }
+            else if (_campaignCoalitionScreen.HasValue)
+            {
+                // W-E8 (harness only), same contract as its siblings below.
+                DrawCampaignCoalitionStage(tabContentHeight, rightColumnWidth, _campaignCoalitionScreen.Value);
+            }
             else if (_campaignResultsScreen.HasValue)
             {
                 // W-E7 (harness only), same contract as its siblings below.
