@@ -369,3 +369,37 @@ populist still go broke, which §32 might want? Should the field organizer make 
 establishment) or 2e (television + interview) passes — the first pends on equal money and a plan
 that does not react, the second on the media's own interest; neither is a staff bonus. The
 staged buys moved so 2e-ii looks less staged than it is.
+
+## 16. Reactivity's thresholds, tempo and weights (W-C2)
+
+**What is known.** All [AUTHORED-DRAFT]: `PublicActivity.HalfLifeDays` 7 (half a visible act's
+memory gone in a week); the record's weights — a rally 1.0, a town hall or a canvassing day 0.5;
+`DefenceThreshold` 1.0 and `AnswerThreshold` 1.0, each divided by the personality's reactivity, so a
+less reactive party needs proportionally more before it moves and reactivity 0 never moves;
+`OfficeUpkeepDaysReserved` 10 (a party opens an office in a contested region only if it can also keep
+it ten days); `DefenceCooldownDays` 3; `AnswerCooldownDays` 7; `PressuredRegions` 2 (how many
+contested regions enter the AI's own candidate list); and §32's reactivities — professional 1.0,
+establishment 0.7, grassroots 0.6, populist 0.5, chaotic 0.0.
+
+**What is measured.** Against a scripted player working one small valkrets for forty days: the
+professional puts 8 of its 9 local acts there (0 of 8 in the control) and opens an office there in
+seed 777; the establishment 4 of 8; the chaotic party 0 of 598. First act a mean 2.0 days after the
+script begins, in 8 of 10 seeds. Answers: the professional 6.9 → 7.0 a campaign — **at the weekly
+cooldown's ceiling in both arms**, so the count is tempo-bound and what the attack changes is whom it
+answers; the chaotic party 0.0 in both; the establishment never crosses its own threshold (0.4 → 0.0)
+because the negative campaign is aimed at the polled leader. Local acts a campaign: professional 0.9,
+establishment 0.8, chaotic 59.8.
+
+**What would settle it.** Play. Does a three-day defence cooldown feel like an opponent noticing you,
+or like an opponent shadowing you? Is a week the right silence before a party answers an attack —
+and should the answer be visible to the player as an answer, or only as a message? Is 10 days of
+upkeep the right caution before an AI plants an office in a region you are working, or should it
+need to believe it can hold the region to polling day? Should a *professional* break its flat-affinity
+tie on cost (the cheapest defence) rather than on §12's order (a rally)?
+
+**What must NOT happen.** A threshold, a cooldown, a reactivity or an affinity moved so C1's 2a-iv
+(est/grass 0.291) crosses 0.300 — the line pends on **unequal money and unequal paces (W-F5)**, which
+is what separates two parties that both react, and moving any of these to clear it would be tuning a
+constant to open a gate. The half-life or the act weights moved so a particular party reacts in a
+particular scenario. The public record given anything a party could not see — a share, a preference,
+a true salience, or the doors an office knocked.

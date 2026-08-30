@@ -355,3 +355,25 @@ becomes P-D1; verdicts 1 and 3 were not spoken to and stay open.
 executes as written unless struck · P-G3's recalibrations apply only on his strike-or-bless of each
 line · P-H1 and P-I1 spec-lets need his ruling before code · board 2b's paste (P-F2) remains his
 gesture.
+
+## 🟡 W-C2's re-homed rider — the campaign manager's plan over EVERY fixed cost (recorded 2026-08-30)
+
+**What it is.** W-B5 measured that **every party in the AI campaign goes broke before polling day** —
+offices, their operations and the payroll are fixed daily costs the spending pace does not see (of
+120 staff-days: SD 38 unpaid, V 12, S 10, M 6). W-B5's finding 2 named the fix and wrote it down
+against W-C2: *the campaign manager's `BudgetPlan` should cover every fixed cost — pay the
+organisation first, release the rest — which is what §9's "campaign manager" means in full.*
+
+**Why it is here and not done.** W-C2's done-when is opponent reactivity, and that is what W-C2
+shipped (`COMPLETED.md` §69). The plan still sets money aside for **television only**
+(`ManagerFundShare` 0.5 of the day's release). Nothing about the reactivity work touched it, and
+closing W-C2 on its own done-when would otherwise have left this rider pointing at a finished item —
+so it is recorded here rather than implied.
+
+**Where it goes.** **W-F5** (party funding and campaign spending) is the natural home: unequal war
+chests are the same conversation as what a party can afford to keep. It could also be its own item.
+Either way it needs a decision from Elias, not a default.
+
+**What it would change.** A managed party would stop starving its own staff; the pace would release
+what is left after the organisation is paid; and C1's 2a-iii (professional / establishment 0.061
+apart) may or may not separate as a result — that is the point of measuring it rather than assuming.

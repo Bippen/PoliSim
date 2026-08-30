@@ -1480,3 +1480,123 @@ hired 79 200 (12); C none; KD as M; MP as V; L as S.
 - **W-F5** — unequal war chests.
 
 **R-N2 held at this boundary:** `traj_wb5_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `staff_wb5b_20260830.log` (10 of 10), `campaignai_wb5c_20260830.log` (all assertions pass, 1i added, 2a-ii / 2d / 2e-ii cleared, 4 PEND); the HQ film `wb5_hq_{1280,1600,1920,2560}_e1_campaign_hq_*.png`, `ScreenEdgeCheck` 64 captures 0 clipped (`edge_wb5.log`).
+
+## W-C2 — opponent reactivity (§32/§33 on §36's terms): a contested region defended, an attack answered, and the personality deciding what a reaction is made of (2026-08-30)
+
+**What it is.** `CampaignReactivity.cs` — `PublicActivity`, the public record of what every party can
+SEE of every other: counts of visible local acts per region (a rally 1, a town hall or a canvassing
+day 0.5 — the press was there; never the doors knocked) and of attacks, by attacker on target,
+decayed on a `HalfLifeDays` 7 news half-life. **It can express no truth**: the harness asserts by
+reflection that no public member's name carries *truth / actual / preference / share / vote* — the
+same bar `AiView` is held to. A party reads three things off it: a region's PRESSURE (every other
+party's activity there), its PUSH (the largest single opponent's concentration there — one party
+working a region is a threat in a way that eight parties passing through is not), and the attacks
+aimed at itself, by attacker.
+
+**The rule decides WHERE and WHETHER; the personality decides WHAT.** §33's expected value cannot
+see a threatened region (a party holds no regional standing in its own books, and a small valkrets's
+audience is a fraction of an office region's), so reallocation is a RULE, as the manager's plan is
+(`CampaignAi.Reactions`). A party whose `Reactivity` is above 0 and that sees a PUSH past its
+threshold (`DefenceThreshold` 1.0 ÷ reactivity) into a region it has **no office in** defends it: an
+office there if it can afford to keep one (`OfficeUpkeepDaysReserved` 10 days of maintenance and
+operations), and meanwhile the local act **its own affinities prefer among those its pace can carry
+today**. A party attacked past its threshold answers with **the message its own affinities prefer**,
+on **the issue its own measurement makes most salient** — never the world's salience, which no party
+can see (§36). §32's reactivities: professional 1.0, establishment 0.7, grassroots 0.6, populist 0.5,
+chaotic 0.0 — the chaotic party never looks.
+
+**The done-when, asserted (`CampaignReactivityHarness`, 9 of 9).** The scenario: W-C1's eight-party
+Swedish staging with **L replaced by a scripted party** — the player's stand-in — which from day 5 to
+45 works **Blekinge län** every day (a town hall and a canvassing day) and announces policy against S
+every day; Blekinge is the region no AI would otherwise choose, so anything an AI does there is a
+reaction. The same ten seeds (777–786) run without the script are the control.
+
+- *The professional reallocates and the chaotic party does not:* over ten seeds S puts **8 of its 9
+  local acts** into Blekinge with the script and **0 of 8** without (0.0 % → 88.9 % pooled); C is
+  **0 of 598** against 0 of 595, on a campaign of hundreds. M (0.7) is 4 of 8 against 0 of 7.
+- *The reallocation is real money:* seed 777, S **opens an office in Blekinge** with the script and
+  never without, C opens none either way (S 1 office in reaction / 1 defence / 7 answers; M 1 / 1 / 0;
+  C 0 / 0 / 0). S acts in Blekinge in **8 of 10 seeds**, first act a mean **2.0 days** after the
+  script begins — the tempo, measured and not asserted.
+- *The attack is answered by the party that looks and never by the party that does not:* S answers at
+  its tempo in both arms (6.9 → 7.0); **C, reactivity 0, answers not once** in either.
+- *The reaction is on the public record and reproduces:* the scripted run's digest is
+  `9ca2e429d9d641e4` twice; the record carries pressure 3.18 on Blekinge as S sees it, 14.95 attacks
+  on S, L's own 3.17 there; the scripted party played its 120 actions and 3 600 000 kr through the
+  same seams as any AI's (paid, resolved, seen, logged).
+
+### Findings carried forward
+
+1. **The rational personalities scarcely campaign locally at all** — S makes **0.9 local acts a
+   campaign**, M 0.8, against C's 59.8. §33's expected value buys a national audience with the same
+   hours, so a professional party goes to a region only when a rule sends it: **the reaction is 8 of
+   S's 9 local acts over ten campaigns.** A percentage of that denominator is not a figure the
+   scenario can carry, so 2a counts acts and prints the denominator; the mean of per-seed shares is
+   reported beside the pooled one so the two can be read against each other.
+2. **Answers are tempo-bound, not attack-bound.** One answer a week is a ceiling near 8 in a 60-day
+   campaign, and the chaotic party's negative campaign already presses S against it in the CONTROL.
+   What an attack changes is **whom** a party answers, not how often — so the harness asserts the
+   reaction (S answers at its tempo, C never answers) rather than a rise that the ceiling forbids.
+3. **The establishment never crosses its own answer threshold in the C1 staging** (0.4 → 0.0
+   answers): negative campaigning is aimed at the POLLED LEADER, and M is not it.
+4. **A per-attacker cooldown makes five personalities into one.** The first form of the rule let a
+   party answer each attacker separately; with eight parties attacking, S made **15 answers in a
+   60-day campaign** and three C1 lines failed (2a-ii, 2a-iv, 2f). The fix is structural, not a moved
+   constant: **one answer at a time** on the party's own weekly cooldown, and **the reaction paid
+   from the day's pace** rather than out of the war chest. 2a-ii and 2f came back; 2a-iv did not.
+
+### C1's lines, re-measured with reactivity (the standing order)
+
+- **1h re-derived, not weakened:** the staged plan is no longer the whole network — a defence opens
+  an office, `PartyLedger.OfficesOpenedInReaction` counts it, and the assertion is now staged +
+  reacted, with the volunteers **bounded** rather than equated (an office opened late has not
+  recruited to capacity by polling day).
+- **⚠ 2a-iv: CLEARED at W-B4, back to PENDING at W-C2 — est/grass 0.291 against the 0.300 line**
+  (prof/grass 0.347). Reactivity puts the ESTABLISHMENT on the ground: a broadcast party that sees a
+  push into a region it has no office in defends it with a town hall, which it otherwise almost never
+  holds, and its mix moves toward the grassroots party's. **Nine thousandths, and not to be recovered
+  by moving a threshold, a cooldown or an affinity** — that is the whole point of the line. What
+  separates two parties that both react is what they can afford to react WITH: **W-F5** (unequal war
+  chests and unequal paces). Held as a PEND with its measurement, per this harness's own precedent
+  when W-B11 knocked the same line out.
+- Every other line holds. **PEND 4 → 5**; the harness's summary now names W-F5 and calibration entry
+  10 as what remains.
+
+### Decisions taken and logged (R-N1)
+
+- **The rule decides where and whether; the personality decides what.** A rule that answered every
+  attack with the same act would make every reactive personality the same campaign, which is what §32
+  exists to prevent. The populist rallies and posts, the establishment holds a town hall and
+  announces, the grassroots party knocks doors.
+- **A reaction is priority, not extra money:** the act is chosen among those **the day's pace** can
+  carry and is paid from the same reserve as anything else, and it simply goes first. The OFFICE is
+  capital and is not pace-bound, as the staged offices are not.
+- **One answer at a time**, on the party's own cooldown (`AnswerCooldownDays` 7), however many
+  parties are attacking.
+- **Ties in affinity go to §12's order** — the professional's affinities are flat, so it takes the
+  list as written (`DefenceActs` rally → town hall → door-to-door; `AnswerActs` announcement →
+  digital ad → social post). *Strikeable: a professional could instead break its ties on cost, which
+  is what "allocates money efficiently" might mean.*
+- **The answer's issue is the party's OWN most salient measurement**, and a party that has measured
+  nothing makes a general message — never `TrueSalience`, which no party can see.
+- **An office opened in reaction ends the defence cooldown for that region:** the office IS the
+  defence from then on, and the AI's own weighing now sees a full region there.
+
+### [AUTHORED-DRAFT] values, one line each (calibration entry 16)
+
+`HalfLifeDays` 7 · a rally on the record 1.0, a town hall or a canvassing day 0.5 ·
+`DefenceThreshold` 1.0 and `AnswerThreshold` 1.0, each ÷ reactivity · `OfficeUpkeepDaysReserved` 10 ·
+`DefenceCooldownDays` 3 · `AnswerCooldownDays` 7 · `PressuredRegions` 2 · reactivity
+1.0 / 0.7 / 0.6 / 0.5 / 0.0 by §32 personality.
+
+### Riders
+
+- **W-F5** — unequal war chests and unequal paces: what separates two parties that both react
+  (2a-iii and 2a-iv both wait there now).
+- **W-E1 / W-E5** — the player's own reading of `PublicActivity`: what its opponents are visibly
+  doing, which is the same public record and no more.
+- **NOT built here, and re-homed:** W-B5's finding 2 — *the campaign manager's plan over EVERY fixed
+  cost (offices, operations, payroll), so a party stops going broke before polling day* — was
+  written down against W-C2. W-C2's done-when is opponent reactivity and that is what shipped; the
+  budget plan still covers television only. It belongs with **W-F5** (money) or an item of its own,
+  and is recorded in `MISSING_PREREQUISITES.md` rather than left implied.

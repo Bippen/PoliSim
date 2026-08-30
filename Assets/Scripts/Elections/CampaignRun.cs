@@ -53,15 +53,19 @@ namespace PoliSim.Elections
             /// <summary>W-B5: the roles the party hires on day 0 (§9, [AUTHORED-DRAFT] staging per personality) and, if it hires a campaign manager, how many television buys the manager's budget plan sets money aside for.</summary>
             public readonly StaffRole[] Staff;
             public readonly int TelevisionBuys;
+            /// <summary>W-C2: a SCRIPTED party - the harness's stand-in for the player: given the campaign day, the decisions it makes that day, in order, resolved through the same seams as an AI's (paid, resolved, seen). Null = an AI party.</summary>
+            public readonly Func<int, AiDecision[]> Script;
 
             public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch, int volunteers = 0,
-                CandidateProfile? candidate = null, int[] offices = null, double officeOperationsPerDay = 0.0, StaffRole[] staff = null, int televisionBuys = 0)
+                CandidateProfile? candidate = null, int[] offices = null, double officeOperationsPerDay = 0.0, StaffRole[] staff = null, int televisionBuys = 0,
+                Func<int, AiDecision[]> script = null)
             {
                 Name = name; Personality = personality; Credibility = credibility; StartingMoney = startingMoney;
                 TrueIssueMatch = trueIssueMatch; Volunteers = volunteers;
                 Candidate = candidate ?? new CandidateProfile(name, 60, 60, 60, 60, 60, 60, 60, 60, 60);
                 Offices = offices ?? new int[0]; OfficeOperationsPerDay = officeOperationsPerDay;
                 Staff = staff ?? new StaffRole[0]; TelevisionBuys = televisionBuys;
+                Script = script;
             }
         }
 
@@ -160,6 +164,10 @@ namespace PoliSim.Elections
             public double StaffMoney;
             public int UnpaidStaffDays;
             public double TelevisionFundAtEnd;
+            /// <summary>W-C2: the party's reactions - offices opened in contested regions, town halls held there, announcements answering attacks.</summary>
+            public int OfficesOpenedInReaction;
+            public int Defences;
+            public int Answers;
             /// <summary>The campaign day on which the party had spent 80 % of its war chest (the total day count if it never did) - front-loading against pacing.</summary>
             public int DayEightyPercentSpent = -1;
             public double MoneyLeft;
@@ -211,6 +219,8 @@ namespace PoliSim.Elections
             public OfficeNetwork[] Offices;
             /// <summary>W-B5: every party's staff roster at the end.</summary>
             public StaffRoster[] Staff;
+            /// <summary>W-C2: the public record of visible acts at the end - what any party could see.</summary>
+            public PublicActivity Activity;
             /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks.</summary>
             public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
             /// <summary>W-B8: every scandal - day, party, the response chosen, the outcome.</summary>
@@ -265,6 +275,14 @@ namespace PoliSim.Elections
             var offices = new OfficeNetwork[partyCount];                       // W-B4: each party's §10 offices
             var officeHoursLeft = new double[partyCount][];                     // W-B4: each office's volunteer-hours still unspent today, per region
             var staff = new StaffRoster[partyCount];                            // W-B5: each party's §9 staff and, with a manager, its budget plan
+            var activity = new PublicActivity(partyCount, setup.Regions.Length);   // W-C2: the public record of everyone's visible acts
+            var lastDefence = new int[partyCount];                              // W-C2: the cooldowns on a party's reactions
+            var lastAnswer = new int[partyCount];   // W-C2: ONE answer at a time - a campaign answers the attack it is under, not each attacker separately
+            for (int p = 0; p < partyCount; p++)
+            {
+                lastDefence[p] = int.MinValue / 2;
+                lastAnswer[p] = int.MinValue / 2;
+            }
             var profiles = new PersonalityProfile[partyCount];
             for (int p = 0; p < partyCount; p++)
             {
@@ -393,7 +411,7 @@ namespace PoliSim.Elections
                     // The poll decision is taken on the view BEFORE today's measurement, and the
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
-                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p]);
+                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity);
                     if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
                     {
                         if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
@@ -412,17 +430,103 @@ namespace PoliSim.Elections
                         }
                     }
 
-                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p]);
+                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity);
 
                     // Actions: the AI's plan, applied one by one against the TRUE inputs - the
                     // world's response, which the AI estimated but did not see.
+                    AiDecision[] scripted = setup.Parties[p].Script?.Invoke(day);
+
+                    // W-C2: what the personality commits to first, on the public record it can see -
+                    // an office in a contested region (paid now, kept from tomorrow), the local act its
+                    // own affinities prefer there today, and one message answering the attack it is
+                    // under. The decisions then go through the same seams as any other and are paid
+                    // from the same day's pace; the AI's own weighing takes the hours that remain.
+                    var committed = new List<AiDecision>();
+                    if (scripted == null)
+                    {
+                        AiReaction reaction = CampaignAi.Reactions(view, profiles[p]);
+                        if (reaction.DefendRegion >= 0 && day - lastDefence[p] >= CampaignAi.DefenceCooldownDays)
+                        {
+                            int r = reaction.DefendRegion;
+                            bool opened = false;
+                            if (!offices[p].HasOffice(r) && pools[p].Money >= CampaignOffices.OpenCost + CampaignAi.OfficeUpkeepDaysReserved * (CampaignOffices.MaintenancePerDay + setup.Parties[p].OfficeOperationsPerDay))
+                            {
+                                double chest = pools[p].Money;
+                                if (offices[p].Open(r, day, setup.Parties[p].OfficeOperationsPerDay, ref chest))
+                                {
+                                    opened = true;
+                                    ledger.OfficesOpened++;
+                                    ledger.OfficesOpenedInReaction++;
+                                    ledger.OfficeMoney += pools[p].Money - chest;
+                                    pools[p] = pools[p].WithMoney(chest);
+                                    reserve[p] = Math.Min(reserve[p], pools[p].Money);
+                                    Append(digest, day, p, CampaignActionKind.EstablishOffice, setup.Regions[r].Name, CampaignOffices.OpenCost);
+                                }
+                            }
+
+                            // The office is bought first, so the act is committed only if the party
+                            // can still pay for it out of today's PACE - a reaction is priority, not
+                            // extra money, and a commitment it cannot honour would break the whole
+                            // day's plan at the first TrySpend. The counters count what was made.
+                            CampaignActions.ActionSpec defence = CampaignActions.Spec(reaction.DefendWith);
+                            bool acts = defence.MoneyCost <= Math.Min(pools[p].Money, reserve[p]) && defence.Hours <= pools[p].Hours;
+                            if (acts)
+                            {
+                                committed.Add(new AiDecision(reaction.DefendWith, new CampaignActions.ActionTarget(r, -1, null), setup.Regions[r].Name,
+                                    defence.MoneyCost, defence.Hours, 0.0, false));
+                            }
+
+                            if (acts || opened)
+                            {
+                                ledger.Defences++;
+                                lastDefence[p] = day;
+                                if (opened) { lastDefence[p] = int.MaxValue / 2; }   // the office is the defence from here; the AI's own weighing sees a full region now
+                            }
+                        }
+
+                        // ONE answer at a time, on the party's own cooldown: a campaign under attack
+                        // from six directions makes its own case once a week, it does not spend the
+                        // campaign replying. A per-attacker cooldown made every attacked party answer
+                        // almost every day, which turned five personalities into one.
+                        if (reaction.AnswerTo.Length > 0 && day - lastAnswer[p] >= CampaignAi.AnswerCooldownDays)
+                        {
+                            CampaignActions.ActionSpec message = CampaignActions.Spec(reaction.AnswerWith);
+                            if (message.MoneyCost <= Math.Min(pools[p].Money, reserve[p]) && message.Hours <= pools[p].Hours)
+                            {
+                                committed.Add(new AiDecision(reaction.AnswerWith, CampaignActions.ActionTarget.National(reaction.AnswerIssue), "national",
+                                    message.MoneyCost, message.Hours, 0.0, false));
+                                ledger.Answers++;
+                                lastAnswer[p] = day;
+                            }
+                        }
+
+                        if (committed.Count > 0)
+                        {
+                            view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity);
+                        }
+                    }
+
                     for (int guard = 0; guard < 64; guard++)
                     {
-                        List<ScoredCandidate> candidates = CampaignAi.Evaluate(view, profiles[p], pools[p], reserve[p]);
-                        ScoredCandidate? chosen = CampaignAi.Choose(candidates, profiles[p].Temperature, random);
-                        if (chosen == null) { break; }
+                        AiDecision d;
+                        if (scripted != null)
+                        {
+                            // W-C2: a scripted party (the player's stand-in) plays its day as written.
+                            if (guard >= scripted.Length) { break; }
+                            d = scripted[guard];
+                        }
+                        else if (guard < committed.Count)
+                        {
+                            d = committed[guard];
+                        }
+                        else
+                        {
+                            List<ScoredCandidate> candidates = CampaignAi.Evaluate(view, profiles[p], pools[p], reserve[p]);
+                            ScoredCandidate? chosen = CampaignAi.Choose(candidates, profiles[p].Temperature, random);
+                            if (chosen == null) { break; }
+                            d = chosen.Value.Decision;
+                        }
 
-                        AiDecision d = chosen.Value.Decision;
                         if (!pools[p].TrySpend(d.Spend, d.Hours, out ResourcePool after)) { break; }
                         pools[p] = after;
                         reserve[p] -= d.Spend;
@@ -473,7 +577,20 @@ namespace PoliSim.Elections
                         if (modifiers.OpponentShare > 0.0)
                         {
                             int target = view.PolledLeaderOtherThanSelf;   // chosen from the Poll, not the truth
-                            if (target >= 0) { pressure.AddAgainst(target, trace.Persuasion * modifiers.OpponentShare); }
+                            if (target >= 0) { pressure.AddAgainst(target, trace.Persuasion * modifiers.OpponentShare); activity.ObserveAttack(p, target, modifiers.OpponentShare); }
+                        }
+
+                        // W-C2: a scripted attack lands as a negative campaign's would, and is seen.
+                        if (d.AgainstParty >= 0 && d.AgainstParty != p)
+                        {
+                            pressure.AddAgainst(d.AgainstParty, trace.Persuasion * CampaignStrategyModel.NegativeOpponentShare);
+                            activity.ObserveAttack(p, d.AgainstParty, 1.0);
+                        }
+
+                        // W-C2: a local act is public - the press was there; a rally counts one, the rest half.
+                        if (spec.IsLocal && d.Target.RegionIndex >= 0)
+                        {
+                            activity.ObserveLocal(p, d.Target.RegionIndex, d.Kind == CampaignActionKind.Rally ? 1.0 : 0.5);
                         }
 
                         // W-B9: every action makes (some) news; the strategy's media attention scales it.
@@ -489,7 +606,7 @@ namespace PoliSim.Elections
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
 
-                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p]);
+                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity);
                     }
                 }
 
@@ -555,6 +672,7 @@ namespace PoliSim.Elections
 
                 // W-B9 -> §22: the day's coverage GAIN (saturated, so bounded) is the momentum shock;
                 // then §22's own decay. Coverage is the only thing that shocks momentum today.
+                activity.Decay();   // W-C2: the public record fades on its half-life
                 double[] gains = coverage.CloseDay();
                 for (int p = 0; p < partyCount; p++) { momentum.AddShock(p, MediaSystem.MomentumPpPerCoverage * gains[p]); }
                 momentum.Advance(1.0);
@@ -587,6 +705,7 @@ namespace PoliSim.Elections
                 Gotv = gotv,
                 Offices = offices,
                 Staff = staff,
+                Activity = activity,
                 RegionNames = names,
                 Debates = debates,
                 Scandals = scandals,
@@ -599,7 +718,7 @@ namespace PoliSim.Elections
         private static AiView BuildView(Setup setup, int party, CampaignPhase phase, DateTime today, ResourcePool pool,
             double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay,
             List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday, double[] credibility,
-            OfficeNetwork offices = null, double[] officeHoursLeft = null, StaffRoster staff = null)
+            OfficeNetwork offices = null, double[] officeHoursLeft = null, StaffRoster staff = null, PublicActivity activity = null)
         {
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
 
@@ -613,7 +732,8 @@ namespace PoliSim.Elections
                 {
                     regions[r] = new RegionAudience(setup.Regions[r].Name,
                         CampaignOffices.LocalAudience(setup.Regions[r].Audience, offices.Influence(r)),
-                        officeHoursLeft != null ? officeHoursLeft[r] : offices.VolunteerHours(r));
+                        officeHoursLeft != null ? officeHoursLeft[r] : offices.VolunteerHours(r),
+                        offices.HasOffice(r));
                 }
             }
 
@@ -622,7 +742,8 @@ namespace PoliSim.Elections
                 credibility[party], setup.NationalAudience, regions, since,
                 PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
                 bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday,
-                staff?.ActivePlan?.Fund ?? 0.0);
+                staff?.ActivePlan?.Fund ?? 0.0,
+                activity?.PressureSeenBy(party), activity?.PushSeenBy(party), activity?.AttackersOf(party));
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>

@@ -110,10 +110,12 @@ namespace PoliSim.Elections
         public readonly double Audience;
         /// <summary>W-B4: the volunteer-hours the party's own office in this region still has today (0 without an office) - added to the ceiling on doors a door-to-door action can knock there.</summary>
         public readonly double VolunteerHours;
+        /// <summary>W-C2: whether the party has its own office here (its own books).</summary>
+        public readonly bool HasOffice;
 
-        public RegionAudience(string name, double audience, double volunteerHours = 0.0)
+        public RegionAudience(string name, double audience, double volunteerHours = 0.0, bool hasOffice = false)
         {
-            Name = name; Audience = audience; VolunteerHours = volunteerHours;
+            Name = name; Audience = audience; VolunteerHours = volunteerHours; HasOffice = hasOffice;
         }
     }
 
@@ -160,15 +162,28 @@ namespace PoliSim.Elections
         public readonly double VolunteerHoursToday;
         /// <summary>W-B5: what the campaign manager's budget plan has set aside for television (its own books) - spendable on a television buy and on nothing else; 0 without a manager.</summary>
         public readonly double TelevisionFund;
+        /// <summary>W-C2: what this party can SEE of its opponents' local campaigning per region - the public record of their rallies, town halls and canvassing days there, decayed on a news half-life (never their doors, never their standing). Null = nothing seen.</summary>
+        public readonly double[] RegionPressure;
+        /// <summary>W-C2: a region's PUSH as this party sees it - the largest visible activity any one opponent has concentrated there (most of that opponent's ground campaign in the one region); 0 where nobody has. Null = nothing seen.</summary>
+        public readonly double[] RegionPush;
+        /// <summary>W-C2: the decayed attacks aimed at this party, by attacker - which it can see, being the one attacked. Null = none.</summary>
+        public readonly double[] AttackersOnMe;
+
+        public double AttacksOnMe
+        {
+            get { double s = 0.0; if (AttackersOnMe != null) { foreach (double a in AttackersOnMe) { s += a; } } return s; }
+        }
 
         public AiView(int partyIndex, CampaignPhase phase, int daysUntilElection, ResourcePool resources,
             double spendingReserve, bool hasPoll, Poll latestPoll, double[] momentumPp, IssueMeasurement[] issues,
             double ownCredibility, double nationalAudience, RegionAudience[] regions, int daysSinceOwnPoll,
             CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0,
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
-            double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0)
+            double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
+            double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null)
         {
             NationalAudienceByKind = nationalAudienceByKind; VolunteerHoursToday = volunteerHoursToday; TelevisionFund = televisionFund;
+            RegionPressure = regionPressure; RegionPush = regionPush; AttackersOnMe = attackersOnMe;
             PartyIndex = partyIndex; Phase = phase; DaysUntilElection = daysUntilElection; Resources = resources;
             SpendingReserve = spendingReserve; HasPoll = hasPoll; LatestPoll = latestPoll; MomentumPp = momentumPp;
             Issues = issues; OwnCredibility = ownCredibility; NationalAudience = nationalAudience; Regions = regions;
@@ -237,13 +252,15 @@ namespace PoliSim.Elections
         public readonly double[] SpendMultipliers;
         /// <summary>§11's strategy this personality runs (W-B6) — the modifiers over the whole chain that its own estimates and the world's response both apply.</summary>
         public readonly CampaignStrategy Strategy;
+        /// <summary>W-C2: how much this personality weighs what it can SEE of its opponents - a contested region defended, an attack answered - 0 = never looks (the chaotic party), 1 = the professional.</summary>
+        public readonly double Reactivity;
 
         public PersonalityProfile(AiPersonality kind, string name, double[] affinity, double temperature,
             double riskAversion, double optimism, double costWeight, double spendPace, double enthusiasmValue,
             int pollEveryDays, bool focusOnTopSalience, bool actsBlind, double[] spendMultipliers,
-            CampaignStrategy strategy = CampaignStrategy.None)
+            CampaignStrategy strategy = CampaignStrategy.None, double reactivity = 0.0)
         {
-            Strategy = strategy;
+            Strategy = strategy; Reactivity = reactivity;
             if (affinity == null || affinity.Length != CampaignActions.TheEight.Length)
             {
                 throw new ArgumentException("one affinity per §12 action, in TheEight's order");
@@ -302,7 +319,7 @@ namespace PoliSim.Elections
                         temperature: 0.0, riskAversion: 1.0, optimism: 0.35, costWeight: 1.0,
                         spendPace: 1.0, enthusiasmValue: 0.5, pollEveryDays: 7,
                         focusOnTopSalience: false, actsBlind: false, spendMultipliers: new[] { 0.5, 1.0, 2.0 },
-                        strategy: CampaignStrategy.SwingVoter);
+                        strategy: CampaignStrategy.SwingVoter, reactivity: 1.0);
 
                 case AiPersonality.Populist:
                     // "High-salience issues, large rallies, social media heavy, aggressive": rallies and
@@ -313,7 +330,7 @@ namespace PoliSim.Elections
                         temperature: 0.15, riskAversion: 0.3, optimism: 0.7, costWeight: 0.4,
                         spendPace: 1.6, enthusiasmValue: 1.0, pollEveryDays: 14,
                         focusOnTopSalience: true, actsBlind: true, spendMultipliers: new[] { 1.0, 2.0, 3.0 },
-                        strategy: CampaignStrategy.Populist);
+                        strategy: CampaignStrategy.Populist, reactivity: 0.5);
 
                 case AiPersonality.Establishment:
                     // "Strong traditional media, broad messaging, moderate policies": television,
@@ -324,7 +341,7 @@ namespace PoliSim.Elections
                         temperature: 0.05, riskAversion: 1.2, optimism: 0.5, costWeight: 0.7,
                         spendPace: 1.0, enthusiasmValue: 0.4, pollEveryDays: 14,
                         focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0, 2.0 },
-                        strategy: CampaignStrategy.BroadAppeal);
+                        strategy: CampaignStrategy.BroadAppeal, reactivity: 0.7);
 
                 case AiPersonality.Grassroots:
                     // "Low advertising budget, strong volunteers, door-to-door, high turnout":
@@ -335,7 +352,7 @@ namespace PoliSim.Elections
                         temperature: 0.10, riskAversion: 0.8, optimism: 0.5, costWeight: 1.0,
                         spendPace: 0.7, enthusiasmValue: 1.6, pollEveryDays: 21,
                         focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0 },
-                        strategy: CampaignStrategy.BaseMobilization);
+                        strategy: CampaignStrategy.BaseMobilization, reactivity: 0.6);
 
                 case AiPersonality.Chaotic:
                     // "Inconsistent strategy, high-risk decisions, unpredictable messaging": a hot
@@ -346,7 +363,7 @@ namespace PoliSim.Elections
                         temperature: 1.0, riskAversion: -0.6, optimism: 1.0, costWeight: 0.2,
                         spendPace: 2.5, enthusiasmValue: 0.8, pollEveryDays: 0,
                         focusOnTopSalience: false, actsBlind: true, spendMultipliers: new[] { 0.5, 1.0, 3.0 },
-                        strategy: CampaignStrategy.NegativeCampaign);
+                        strategy: CampaignStrategy.NegativeCampaign, reactivity: 0.0);
 
                 default:
                     throw new ArgumentException($"{kind} is not one of §32's five personalities");
@@ -365,13 +382,46 @@ namespace PoliSim.Elections
         public readonly double Score;
         /// <summary>True when the estimate behind the score was a blind flat prior rather than a measurement.</summary>
         public readonly bool Blind;
+        /// <summary>W-C2: a party this message is aimed AGAINST (a scripted attack; -1 = none). The AI's own attacks come through its strategy's opponent share, not through this.</summary>
+        public readonly int AgainstParty;
 
         public AiDecision(CampaignActionKind kind, CampaignActions.ActionTarget target, string targetLabel,
-            double spend, double hours, double score, bool blind)
+            double spend, double hours, double score, bool blind, int againstParty = -1)
         {
             Kind = kind; Target = target; TargetLabel = targetLabel; Spend = spend; Hours = hours;
-            Score = score; Blind = blind;
+            Score = score; Blind = blind; AgainstParty = againstParty;
         }
+    }
+
+    /// <summary>
+    /// W-C2: what a personality commits to before weighing the day. The RULE decides where and
+    /// whether - a region to defend (an office if affordable, a local act there today; -1 = none)
+    /// and which attackers to answer. The PERSONALITY decides WHAT: <see cref="DefendWith"/> is the
+    /// local act its affinities prefer among those it can afford today (the populist a rally, the
+    /// grassroots party a door-to-door day, the establishment a town hall), <see cref="AnswerWith"/>
+    /// the message it prefers (the populist a social post, the establishment a policy announcement),
+    /// on <see cref="AnswerIssue"/> - the issue its OWN measurement makes most salient, never the
+    /// world's (§36). A rule that answered every attack with the same act would make every reactive
+    /// personality the same campaign, which is what §32 exists to prevent.
+    /// </summary>
+    public readonly struct AiReaction
+    {
+        public readonly int DefendRegion;
+        public readonly CampaignActionKind DefendWith;
+        /// <summary>The attackers whose attacks have crossed the personality's threshold - to be answered, subject to the caller's per-attacker cooldown.</summary>
+        public readonly int[] AnswerTo;
+        public readonly CampaignActionKind AnswerWith;
+        /// <summary>The issue the answer is made on - the party's own most salient MEASUREMENT, null when it has measured nothing (a general message).</summary>
+        public readonly IssueId? AnswerIssue;
+
+        public AiReaction(int defendRegion, CampaignActionKind defendWith, int[] answerTo, CampaignActionKind answerWith, IssueId? answerIssue)
+        {
+            DefendRegion = defendRegion; DefendWith = defendWith;
+            AnswerTo = answerTo ?? new int[0]; AnswerWith = answerWith; AnswerIssue = answerIssue;
+        }
+
+        public static AiReaction None => new AiReaction(-1, CampaignActionKind.TownHall, null, CampaignActionKind.PolicyAnnouncement, null);
+        public bool Any => DefendRegion >= 0 || AnswerTo.Length > 0;
     }
 
     /// <summary>A scored candidate — every term §33 names, kept so the harness can print them. Points are compatibility points.</summary>
@@ -493,8 +543,16 @@ namespace PoliSim.Elections
                 for (int i = 0; i < issueOrder.Count && i < IssueCandidates; i++) { issueChoices.Add((IssueId)issueOrder[i]); }
             }
 
-            // Region candidates for local actions: the largest few, by public audience.
+            // Region candidates for local actions: the largest few, by public audience - and, for a
+            // personality that looks (W-C2), the regions its opponents are visibly working.
             List<int> regionChoices = LargestRegions(view, LocalCandidateRegions);
+            if (profile.Reactivity > 0.0 && view.RegionPressure != null)
+            {
+                foreach (int region in MostPressuredRegions(view, PressuredRegions))
+                {
+                    if (!regionChoices.Contains(region)) { regionChoices.Add(region); }
+                }
+            }
 
             foreach (CampaignActionKind kind in CampaignActions.TheEight)
             {
@@ -729,6 +787,122 @@ namespace PoliSim.Elections
             if (view.Issues == null) { return order; }
             for (int i = 0; i < view.Issues.Length; i++) { if (view.Issues[i].Measured) { order.Add(i); } }
             order.Sort((a, b) => view.Issues[b].Salience.CompareTo(view.Issues[a].Salience));
+            return order;
+        }
+
+        /// <summary>
+        /// W-C2 [AUTHORED-DRAFT]: the public pressure on a region (about one rally's worth still in
+        /// the news) at which a FULLY reactive party defends it, and the count of attacks at which it
+        /// answers; a less reactive personality needs proportionally more (threshold / reactivity),
+        /// and reactivity 0 never reacts. <see cref="OfficeUpkeepDaysReserved"/>: a party opens an
+        /// office in a contested region only if it can also keep it for that many days.
+        /// </summary>
+        public const double DefenceThreshold = 1.0;
+        public const double AnswerThreshold = 1.0;
+        public const int OfficeUpkeepDaysReserved = 10;
+        /// <summary>[AUTHORED-DRAFT] a local act in a contested region it has no office in at most every three days; ONE answer at a time, at most once a week however many parties are attacking.</summary>
+        public const int DefenceCooldownDays = 3;
+        public const int AnswerCooldownDays = 7;
+        public const int PressuredRegions = 2;
+
+        /// <summary>
+        /// W-C2 — what a personality COMMITS to before it weighs the day: §33's expected value does
+        /// not see a threatened region (the AI has no regional standing to lose in its books, and a
+        /// small region's audience is a fraction of an office region's), so reallocation is a RULE,
+        /// as the manager's plan is. A reactive party that sees an opponent's concentrated PUSH into a
+        /// region it has no office in (past its threshold) defends it - an office there if it can
+        /// afford to keep one, and the local act its own affinities prefer there meanwhile; a party
+        /// an attacker has worked past its threshold answers that attacker with the message its own
+        /// affinities prefer, on the issue its own measurement makes most salient. The rule decides
+        /// WHERE and WHETHER; the personality decides WHAT, or the reactive personalities would all
+        /// run the same campaign. The caller keeps the cooldowns
+        /// (a defence every <see cref="DefenceCooldownDays"/>, an answer per attacker every
+        /// <see cref="AnswerCooldownDays"/>) and resolves the decisions through the same seams as any
+        /// other (paid, resolved, seen) - the rule only puts them first. Chaotic (reactivity 0) never
+        /// looks; a less reactive personality needs proportionally more before it does.
+        /// </summary>
+        public static AiReaction Reactions(AiView view, PersonalityProfile profile)
+        {
+            if (profile.Reactivity <= 0.0) { return AiReaction.None; }
+            double defendAt = DefenceThreshold / profile.Reactivity;
+            double answerAt = AnswerThreshold / profile.Reactivity;
+
+            // WHAT the party would defend with and answer with: its own affinities over the acts
+            // available to it today, at the day's prices. A defence it cannot pay for is not a
+            // defence, so affordability is part of the choice rather than a refusal downstream.
+            bool canDefend = Preferred(view, profile, DefenceActs, out CampaignActionKind defendWith);
+            bool canAnswer = Preferred(view, profile, AnswerActs, out CampaignActionKind answerWith);
+
+            int region = -1;
+            if (canDefend && view.RegionPush != null && view.Regions != null)
+            {
+                double most = 0.0;
+                for (int r = 0; r < view.RegionPush.Length && r < view.Regions.Length; r++)
+                {
+                    if (view.Regions[r].HasOffice) { continue; }
+                    if (view.RegionPush[r] >= defendAt && view.RegionPush[r] > most) { most = view.RegionPush[r]; region = r; }
+                }
+            }
+
+            var answer = new List<int>();
+            if (canAnswer && view.AttackersOnMe != null)
+            {
+                for (int q = 0; q < view.AttackersOnMe.Length; q++) { if (q != view.PartyIndex && view.AttackersOnMe[q] >= answerAt) { answer.Add(q); } }
+            }
+
+            // The answer is made on the party's OWN most salient measurement - never the world's
+            // salience, which no party can see (§36). Nothing measured: a general message.
+            List<int> measured = MeasuredIssuesBySalience(view);
+            IssueId? issue = measured.Count > 0 ? (IssueId)measured[0] : (IssueId?)null;
+
+            return new AiReaction(region, defendWith, answer.ToArray(), answerWith, issue);
+        }
+
+        /// <summary>
+        /// The act this personality prefers among <paramref name="among"/>: the highest affinity of
+        /// those that are legal in the phase and that the party can pay for out of today's PACE and
+        /// hours (the spending reserve, not the whole war chest). A tie goes to the earlier act in §12's order — the professional's affinities are
+        /// flat, so it takes the list as written (a decision, logged: R-N1). False when it can
+        /// afford none of them.
+        /// </summary>
+        private static bool Preferred(AiView view, PersonalityProfile profile, CampaignActionKind[] among, out CampaignActionKind chosen)
+        {
+            chosen = among[0];
+            double best = double.NegativeInfinity;
+            bool found = false;
+            foreach (CampaignActionKind kind in among)
+            {
+                if (!CampaignLegality.IsLegal(kind, view.Phase)) { continue; }
+                CampaignActions.ActionSpec spec = CampaignActions.Spec(kind);
+                // Within the PACE, not merely within the war chest: a reaction is priority over the
+                // day's other spending, not licence to spend beyond it. A party whose pace cannot
+                // carry a rally today defends with what it can carry.
+                if (spec.MoneyCost > Math.Min(view.Resources.Money, view.SpendingReserve) || spec.Hours > view.Resources.Hours) { continue; }
+                double affinity = profile.Affinity(kind);
+                if (affinity > best) { best = affinity; chosen = kind; found = true; }
+            }
+
+            return found;
+        }
+
+        /// <summary>[AUTHORED-DRAFT] W-C2: a defence is made of §12's local acts and an answer of its messages that a party can make at will (an interview needs a booking), each in §12's order so a tie is resolved the same way every time.</summary>
+        private static readonly CampaignActionKind[] DefenceActs =
+        {
+            CampaignActionKind.Rally, CampaignActionKind.TownHall, CampaignActionKind.DoorToDoor,
+        };
+
+        private static readonly CampaignActionKind[] AnswerActs =
+        {
+            CampaignActionKind.PolicyAnnouncement, CampaignActionKind.DigitalAd, CampaignActionKind.SocialPost,
+        };
+
+
+        private static List<int> MostPressuredRegions(AiView view, int count)
+        {
+            var order = new List<int>();
+            for (int i = 0; i < view.RegionPressure.Length; i++) { if (view.RegionPressure[i] > 0.0) { order.Add(i); } }
+            order.Sort((a, b) => view.RegionPressure[b].CompareTo(view.RegionPressure[a]));
+            if (order.Count > count) { order.RemoveRange(count, order.Count - count); }
             return order;
         }
 

@@ -4428,3 +4428,59 @@ the two rational personalities the same campaign.
 `ELECTIONS_GAP_TABLE.md` rows 9 and 37; the `CLAUDE.md` dated section.
 
 **R-N2 at the boundary (no stream appended).** `traj_wb5_*` ≡ `traj_run_*` six of six by SHA-256, zero ATTRIB; the nine checks exit 0; the HQ film edge-checked at four widths, 0 clipped.
+
+## 69. W-C2 — opponent reactivity (§32/§33 on §36's terms): a contested region defended, an attack answered, and the personality deciding what a reaction is made of (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/CampaignReactivity.cs` — `PublicActivity`, the public
+record of what every party can SEE of every other: decayed counts of visible local acts per region
+(a rally 1, a town hall or a canvassing day 0.5 — the press was there; never the doors knocked) and
+of attacks by attacker on target, on a `HalfLifeDays` 7 news half-life, read as a region's PRESSURE,
+its PUSH (the largest single opponent's concentration there) and the attacks aimed at oneself.
+**Nothing in it can express a truth** — asserted by reflection, the bar `AiView` is held to.
+`CampaignAi.Reactions` + `AiReaction` — the reaction rule; `PersonalityProfile.Reactivity` (1.0
+professional / 0.7 establishment / 0.6 grassroots / 0.5 populist / 0.0 chaotic);
+`AiDecision.AgainstParty`, `RegionAudience.HasOffice`, `AiView.RegionPressure/RegionPush/AttackersOnMe`;
+in `CampaignRun`, the committed prefix (an office, a local act, one answer) resolved through the same
+seams as any other decision, `PartySetup.Script` for a scripted party, `PartyLedger.OfficesOpenedInReaction
+/ Defences / Answers`, `Result.Activity`. `Assets/Editor/CampaignReactivityHarness.cs` — 9 of 9.
+
+**The done-when.** W-C1's eight-party Swedish staging with **L replaced by a scripted party** (the
+player's stand-in) that from day 5 to 45 works **Blekinge län** every day and announces policy
+against S every day; the same ten seeds without the script are the control. *A professional AI
+reallocates to a threatened region and a chaotic one does not:* S puts **8 of its 9 local acts** into
+Blekinge with the script and **0 of 8** without (0.0 % → 88.9 % pooled), C is **0 of 598** against
+0 of 595; M (0.7) 4 of 8 against 0 of 7. *It is real money:* seed 777, S opens an office in Blekinge
+with the script and never without, C opens none either way; S acts there in **8 of 10 seeds**, first
+act a mean **2.0 days** after the script begins. *The attack is answered by the party that looks and
+never by the party that does not:* S answers at its tempo in both arms (6.9 → 7.0), C answers not
+once. *On the record and reproducible:* digest `9ca2e429d9d641e4` twice; 120 scripted actions and
+3 600 000 kr through the ordinary seams.
+
+**Findings.** The rational personalities scarcely campaign locally at all — **S 0.9 local acts a
+campaign against C's 59.8**, so the reaction is 8 of S's 9 and a percentage of that denominator is
+not a figure the scenario can carry (the assertion counts acts and prints the denominator).
+**Answers are tempo-bound, not attack-bound:** one a week is a ceiling near 8 in a 60-day campaign
+and the chaotic party's negative campaign already presses S against it in the control, so what an
+attack changes is *whom* a party answers. The establishment never crosses its own answer threshold
+in this staging — negative campaigning is aimed at the polled leader. ⚠ **A per-attacker cooldown
+made five personalities into one** (S answered 15 times in 60 days; 2a-ii, 2a-iv and 2f all failed);
+the fix was structural — one answer at a time, and the reaction paid from the day's pace rather than
+the war chest — not a moved constant.
+
+**C1 re-measured (the standing order).** 1h re-derived for offices opened in reaction (staged +
+reacted, volunteers bounded rather than equated — an office opened late has not recruited to
+capacity). ⚠ **2a-iv: cleared at W-B4, back to PENDING at W-C2 — est/grass 0.291 against the 0.300
+line** (prof/grass 0.347), because reactivity puts the broadcast party on the ground in a contested
+region; **nine thousandths, and not to be recovered by moving a threshold, a cooldown or an
+affinity.** It waits on **W-F5** — what separates two parties that both react is what they can
+afford to react with. Every other line holds; **PEND 4 → 5**; the harness exits 0.
+
+**Not built here, re-homed.** W-B5's finding 2 (the manager's plan over *every* fixed cost, so a
+party stops going broke before polling day) was written down against W-C2. W-C2's done-when is
+opponent reactivity and that is what shipped; the plan still covers television only. It goes to
+**W-F5** or an item of its own, recorded rather than implied.
+
+**R-N2 held:** `traj_wc2_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-C2, the `CLAUDE.md` dated section,
+`ELECTIONS_PLAY_CALIBRATION.md` entry 16, `ELECTIONS_GAP_TABLE.md` rows 32–33,
+`MISSING_PREREQUISITES.md`.
