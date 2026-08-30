@@ -1279,6 +1279,12 @@ possibly never merged. **These constraints hold regardless of whether that code 
 they are properties of the real electoral systems rather than of one implementation. Leaving them on a
 branch nobody is required to read would mean rediscovering them at seed-design time.
 
+⚠ **Re-derived 2026-08-31 (C-0.3): the branch was inspected once and DISPOSED, and this paragraph's
+judgement was vindicated on both halves.** Its code never landed and never will — superseded by
+`Assets/Scripts/Elections/` and W-G1 — while the constraints extracted from it here **did** hold, and
+three of the four have since been re-derived independently on `main` by code that owes the branch
+nothing. Row-by-row status in the provenance table below; full disposal record in `COMPLETED.md` §86.
+
 All were produced by porting the allocator to a standalone script and running it against real published
 results **before** the engine was depended on — no Unity, no compile. Two of three countries disagreed
 with the plan, and both disagreements surfaced in minutes.
@@ -1289,10 +1295,10 @@ this section originally read as though they were.** Audited 2026-08-11 by readin
 
 | Claim | Backing artifact | Status |
 |---|---|---|
-| Sweden 2022 exact | `seat_allocation_check.py` — on `stranded/politics-elections` only (NOT on `main`; `git ls-tree` confirms, 2026-08-27), readable | **Reported by an unverified script**: read, never run |
-| Sweden 2014, 6 seats of error | same script | **Reported by an unverified script**: read, never run |
-| Germany 2025, off by 1 | **none — throwaway script, discarded** | ⚠ **UNVERIFIABLE.** No artifact survives |
-| Poland 2023, off by 70 | **none — throwaway script, discarded** | ⚠ **UNVERIFIABLE.** No artifact survives |
+| Sweden 2022 exact | `seat_allocation_check.py` — on `stranded/politics-elections` only (NOT on `main`; `git ls-tree` confirms, 2026-08-27), readable | ✅ **SUPERSEDED — independently re-derived on `main`, 2026-08-31 (C-0.3).** `SeatConversionHarness` reproduces Sweden 2022 **8 of 8** through the full two-tier procedure on the REAL per-constituency counts fetched at W-F1. The branch claim was right; it is no longer what the repo rests on |
+| Sweden 2014, 6 seats of error | same script | ⚠ **STILL NOT re-derived on `main` (2026-08-31, C-0.3), and it is the most useful thing the branch said.** Sweden 2014 does NOT reproduce through the same allocator — 6 seats absolute error, byte-identical at divisor 1.4 and 1.2 — which narrows every "reproduces exactly" claim to *2022*. Resolving it needs all 29 constituencies 2014 data, never fetched. Register row S-6 |
+| Germany 2025, off by 1 | **none — throwaway script, discarded** | ✅ **SUPERSEDED — `SeatAllocationBacktest` on `main` runs Germany 2025 at 630 seats, Sainte-Laguë/Schepers, 5 % with the SSW exemption, and reports the expected off-by-~1 at share precision.** The branch finding (seed data must carry exact vote COUNTS, never published percentages) was correct and is now the standing rule |
+| Poland 2023, off by 70 | **none — throwaway script, discarded** | ✅ **SUPERSEDED — `SeatAllocationBacktest` on `main` carries the deliberate national-Poland signature at exactly 70** and also runs the real system, d Hondt in 41 districts, with the 5 %/8 % party-vs-coalition bar computed at the CALLER and MN exempt. The branch finding (national d Hondt is a different system) was correct |
 
 **`seat_allocation_check.py` does not test Germany or Poland**, and says so in its own *"WHAT IT DOES NOT
 TEST"* section. It covers Sweden plus three synthetic cases — including one built so the first divisor is

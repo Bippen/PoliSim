@@ -403,9 +403,12 @@ capital stock), so if one ever ships, two fire together.
   GUARD** — a GUILayout-aware check needs IMGUI internals; the pixel check is cheaper, exists, and asks
   the question the player experiences. Any reflective guard must be justified against `COMPLETED.md`
   §32's paragraph.
-- **`stranded/politics-elections` stays as-is until item 10 is scheduled, and its layout work is not
-  extracted** without a failing measurement to justify it (rulings 2026-08-11; `COMPLETED.md` §32;
-  the branch's contents inventoried in `MISSING_PREREQUISITES.md` §D).
+- ~~**`stranded/politics-elections` stays as-is until item 10 is scheduled**~~ ⚠ **RETIRED as an
+  obligation 2026-08-31 (C-0.3).** The constraint existed because merging ~3,500 lines of unreviewed
+  simulation code was the risk it guarded against; that code is superseded by `Assets/Scripts/Elections/`
+  and W-G1, so there is nothing left to merge and nothing left to guard. **The ref is kept** (it is
+  pushed and costs nothing); the four pieces of its roadmap document that main never reproduced are
+  migrated to `COMPLETED.md` §86 as history. No document treats the branch as pending work.
 
 ---
 

@@ -5183,3 +5183,115 @@ carried "the row retires with the next re-derivation", and this is that re-deriv
 "unreachable from any gameplay path", "VERIFIED NOTHING", "no party seeds exist on main", "UNINSPECTED" —
 returns only historical text, in `COMPLETED.md` and `CLAUDE.md`, plus this section's own quotations. No
 code touched; no check or harness affected.
+
+## 86. C-0.3 — `stranded/politics-elections` inspected once and disposed: what survived it, and the one thing it said that is still unanswered (2026-08-31)
+
+**Why the branch existed.** Ruled 2026-08-11: a closed session's politics/elections work was pushed
+UNINSPECTED because *merging ~3,500 lines of unreviewed simulation code into `main` is what the branch
+exists to prevent*. That was the right call and it held for nineteen days. **The risk it guarded against
+no longer exists** — main built the same territory independently and much further — so the obligation
+retires. **The ref is kept; only the obligation is retired.**
+
+**What it is, measured.** One commit, `ca6c510` (2026-08-11), forked at `b8eca1c`, never merged: 30
+files, +3482 / −70. Six new data-model files, four new simulation files, four Python scripts, edits to
+`SimulationManager`, `GameController`, `IconLibrary`, `PoliSimWidgets` and `CLAUDE.md`, and one new
+document, `POLISIM_POLITICS_ELECTIONS_ROADMAP.md` (+398).
+
+**What is superseded — all of the code.** `Data/{Chamber, ElectoralFormula, ElectorateCohort,
+PoliticalParty, ThresholdRule, UnitedStatesSeed}.cs` and `Simulation/{NationalVoteModel, SeatAllocation,
+UnitedStatesElectionCycle, UnitedStatesElections}.cs` are an earlier, weaker version of what
+`Assets/Scripts/Elections/` now holds — 40 files, 25 harnesses, a sourced `ElectionsData/` tree, and W-G1's
+53 real parties across six real chambers. The Python scripts have main-side descendants
+(`ScreenEdgeCheck`, `SeatAllocationBacktest`) and Python is not installed on this machine. **Nothing on
+the branch is newer than main on any file.**
+
+### The four things main never reproduced, migrated here
+
+**1. The rule-9 reversal, with its reasoning and its cost.** Main's practice matches this exactly and no
+document carried the argument:
+
+> **PARTIES — reversed.** Real party names, real vote shares, real seat counts, real thresholds. The
+> Riksdag holds Socialdemokraterna and Sverigedemokraterna, not Progressive Alliance.
+> **PEOPLE — UNCHANGED, and this half is not negotiable.** Cabinet ministers, party leaders,
+> legislators, Fed Chairs and heads of state remain original and fictional. **A real party is an
+> institution; a real politician is a person**, and only the first is being reversed.
+
+⚠ **And the cost, stated plainly so nobody rediscovers it:** real party data goes stale. **Seed data is
+now a cached value with an expiry**, and every seeded figure carries its retrieval date for exactly that
+reason. This is the argument behind the 13 September calendar row (K-1) and behind W-F6's discipline of
+sourcing leader names while refusing to author their characters.
+
+**2. The `ElectionCycle` landmine — named in advance, and it very nearly fired.**
+
+> `MacroSystem.YearsPerTurn` is derived as `4f / ElectionSystem.ElectionCycle`. `ElectionCycle` is
+> therefore **a statement about how long a turn is**, not about how long a term is, and it only looks
+> like the latter because a US presidential term happens to be 4 years. Per-country terms **must never**
+> be expressed by changing it.
+
+⚠ **W-G1 hit exactly this trap and closed it by construction.** The macro model's entire time base hung
+off the system item 10 replaces, so a careless move would have shifted **every macro trajectory in every
+country for a reason with nothing to do with elections** — and would have made W-G2's baseline
+comparison unanswerable. It is now `SimulationManager.DaysPerTurn / 365f`, the project's other statement
+of turn length, giving the identical 1.0, with `Phase4YearsPerTurnDiagnostic` passing 9 of 9. **A
+nineteen-day-old note on an uninspected branch predicted the single most dangerous line in the wiring
+commit.** That is the argument for reading a preserved branch once before retiring it.
+
+**3. The Sweden-2014 negative control — the one finding still unanswered, and the reason claims are
+scoped.** Sweden 2014 (349 seats, the pre-2018 law, first divisor 1.4) does **NOT** reproduce through
+the same pipeline: **6 seats of absolute error** (S −1, M +1, SD −2, FP +1, KD +1), and the error is
+**byte-identical whether the divisor is 1.4 or 1.2**. Votes and real seats were each cross-checked
+against three independent sources before the code was doubted.
+
+> **This narrows "a national allocation reproduces the real chamber exactly" to "confirmed for 2022, not
+> established in general."**
+
+⚠ **This is the same epistemic lesson main re-learned independently at W-F1** — where "Sweden 2022
+reproduces seat-for-seat" turned out to have been measured on a synthetic chamber — except the branch
+stated it for a year main has never tested. The leading explanation is not a bug: the 2014 error pattern
+is small, offsetting and totals exactly 349, the same shape as Poland's national-vs-41-constituency gap,
+and Sweden's 39-seat levelling pool absorbs most of it. Resolving it needs all 29 constituencies' 2014
+vote data, which was never fetched. **Recorded as register row S-6**, and it is the standing reason every
+"reproduces" claim in this repo is scoped to *2022* rather than stated in general.
+
+Two riders on the same finding: **the first divisor was never proven decisive by real Swedish data** —
+neither 2022 nor 2014 has a party marginal enough, because the first divisor only ever decides a party's
+OWN first seat and no such contest was close; it was proven only by a constructed case (900 vs 125 votes
+over 5 seats: 1.4 gives [5, 0], 1.2 gives [4, 1]). And **`ThresholdRule.CoalitionShare` (Poland 8 %,
+Italy 10 %) was never read in `ApplyThreshold`**, which had no parameter for coalition membership at all —
+a missing signature, not a one-liner. ✅ **That one is superseded, and resolved in the shape §10.5 itself
+recommended:** `ThresholdRule` does not exist on main; Italy's 10 % is `Rosatellum.CoalitionThreshold` and
+is used, and Poland's 5 %/8 % party-vs-coalition bar is **computed at the caller** in
+`SeatAllocationBacktest` with MN exempt under art. 197 § 1.
+
+**4. Two open questions — and the branch's recommendation is what Elias ruled, nineteen days later.**
+
+> 1. **Does the player have a party?** … Real parties make that untenable — **you cannot campaign for
+>    nobody**. **Recommendation: the player picks a party at country selection**, and approval splits
+>    into personal approval and party support.
+> 2. **What is losing?** Today it is game over below 35 % approval. With coalitions, losing your majority
+>    but staying in government, or governing as a minority, are ordinary outcomes. **Recommendation:
+>    game over only on leaving office**, with opposition as a survivable state.
+
+⚠ **These are the two halves of the question that stopped W-G1** — the election could not decide whether
+the player won, and the rail cell could not be added, both because the game assigns the player no party
+identity. **RULED 2026-08-30 as R-CL1, and the ruling is the branch's recommendation, taken whole.**
+Recorded here because the provenance matters: the answer was written down on 2026-08-11 by a session that
+was then closed, and the question was rediscovered from first principles on 2026-08-30 by a session that
+had never read it. **The two arrived at the same place independently**, which is the strongest evidence
+either could have that it is right.
+
+*(Question 3, "how do real parties stay current" — recommendation: seed data in one file with retrieval
+dates so a refresh is a data edit and never a code change — is what `ElectionsData/` became. Question 4,
+trademark exposure on emblems — recommendation: original abstract marks in the house style in each
+party's real colour — is rule 9a and is D8-1's governing constraint.)*
+
+**Disposition.** The branch is retired by name in the records. `POLISIM_MASTER_ROADMAP.md`'s standing
+constraint is struck with its reason, `MISSING_PREREQUISITES.md` §D0's rider is gone,
+`ELECTIONS_ARCHITECTURE.md`'s "remains UNINSPECTED" is corrected, and
+`POLISIM_SEED_DATA_MACRO_OVERHAUL.md`'s provenance table — which honestly marked all four branch-side
+allocator claims as unverified or unverifiable — now records that **three of the four have been
+independently re-derived on `main`** (Sweden 2022 by `SeatConversionHarness` 8 of 8 on real
+per-constituency counts; Germany 2025 and Poland 2023 by `SeatAllocationBacktest`) **and that the fourth,
+Sweden 2014, has not.** No live document treats the branch as pending work.
+
+No code touched; no check or harness affected.
