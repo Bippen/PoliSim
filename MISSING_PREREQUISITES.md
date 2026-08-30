@@ -379,3 +379,30 @@ finding's provenance.
 **What it would change.** A managed party would stop starving its own staff; the pace would release
 what is left after the organisation is paid; and C1's 2a-iii (professional / establishment 0.061
 apart) may or may not separate as a result — that is the point of measuring it rather than assuming.
+
+## 🟡 W-F6's finding — the Green Party has TWO leaders and the model has room for one
+
+**What was found while sourcing the leaders (W-F1/W-F6, 2026-08-30).** Miljöpartiet is led by two
+**språkrör** (spokespeople), by the party's own statutes one of each gender, and at the 2022 election
+they were **Märta Stenevi and Per Bolund** — both named as *"Språkrör"* on the party's own site
+(`mp.se`, Internet Archive capture 2022-09-11). This is not a quirk of one party: it is how MP has
+been led since 1984.
+
+**What the model assumes.** One leader per party, everywhere. `CandidateProfile` is a single person;
+§15's debate seats one candidate per party; §29's leader compatibility (deferred, but specified)
+compares one leader to another. **There is no representation of a shared leadership anywhere.**
+
+**Why it is billed rather than fixed.** Taking "the first one" would silently drop Per Bolund, and
+the resulting screen would state something false about a real party with a real name on it — which
+is exactly what §0.4 exists to prevent. The fix is a **design question, not an implementation
+detail**: does the player face one of the two, both together, or an aggregate — and if the debate
+seats one, which one, and on what basis? That question belongs to §15 and §29, not to a data item
+whose done-when is "source the names".
+
+**What is true today.** `ElectionsData/sweden/party_leaders_2022.md` names **both**, with the
+party's own citation for each, and says plainly that the model carries one. No screen currently
+shows MP's leader, so nothing false is displayed — but the first screen that does will need this
+answered.
+
+**Where it goes.** A line in the W-H4 Design ask, and a question for §15/§29 when leaders become
+player-facing beyond the debate staging.

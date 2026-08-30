@@ -2528,11 +2528,16 @@ namespace PoliSim.Testing
             var day = new CampaignFilmState("debate", new DateTime(2026, 8, 21), 1_120_000.0, 12.0, 1_460, 4, 3, 2.2);
             CampaignSnapshot campaign = BuildCampaignSnapshot(day, perceived);
 
-            // Two [AUTHORED-DRAFT] candidates (W-F6 sources the real leaders' names; the
-            // attributes stay game fiction and the screen says so). Deliberately UNEQUAL, so the
-            // verdict has a margin worth reading rather than a draw that shows nothing.
-            var a = new CandidateProfile("Andersson", 72, 78, 74, 70, 68, 76, 70, 66, 62);
-            var b = new CandidateProfile("Kristersson", 64, 66, 70, 72, 70, 71, 68, 61, 66);
+            // W-F6: the NAMES are SOURCED - Magdalena Andersson (S) and Ulf Kristersson (M) led
+            // their parties at the 2022 election, each cited to that party's OWN website as it
+            // stood that week (ElectionsData/sweden/party_leaders_2022.md).
+            //
+            // THE NINE ATTRIBUTES BESIDE THEM ARE STILL [AUTHORED-DRAFT] GAME FICTION, and the
+            // screen says so. Sourcing a real person's NAME does not license inventing their
+            // CHARACTER; the ban on invented data is not suspended because someone is famous.
+            // Deliberately UNEQUAL, so the verdict has a margin worth reading, not a draw.
+            var a = new CandidateProfile("Magdalena Andersson", 72, 78, 74, 70, 68, 76, 70, 66, 62);
+            var b = new CandidateProfile("Ulf Kristersson", 64, 66, 70, 72, 70, 71, 68, 61, 66);
             var prepA = new DebatePreparation(14.0, new[] { IssueId.Economy, IssueId.Healthcare },
                 new[] { DebateMove.PresentStatistics, DebateMove.DefendPolicy, DebateMove.AttackOpponent, DebateMove.AppealEmotionally, DebateMove.Counterattack, DebateMove.DefendPolicy });
             var prepB = new DebatePreparation(6.0, new[] { IssueId.Immigration },

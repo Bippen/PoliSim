@@ -2333,3 +2333,70 @@ the backtest was not contaminated.
 ### [AUTHORED-DRAFT] values
 
 **None.** W-F1 retires a derivation and introduces no authored figure.
+
+## W-F6 — the party leaders: the names are sourced, the characters are not (2026-08-30)
+
+**What was on disk.** Nothing. Two placeholder surnames lived in the screenshot driver
+(`"Andersson"`, `"Kristersson"`) with a comment saying W-F6 would source them.
+
+**What was fetched, and why this source and not an encyclopaedia.** Each of the eight leaders is
+taken from **that party's own website as it stood within days of the election**, retrieved through
+the Internet Archive so every citation carries an exact capture timestamp. **A party is the
+authority on who leads it**, and an archived capture is the only way to ask that question of
+September 2022 rather than of today — five of the eight have changed leader since.
+
+| party | leader at 2022-09-11 | the party's own words |
+|---|---|---|
+| S | Magdalena Andersson | *"partiordförande och Sveriges statsminister"* (capture 2022-08-10) |
+| SD | Jimmie Åkesson | the page's own title: *…sverigedemokraternas-partiledare* (2022-09-30) |
+| M | Ulf Kristersson | named five times on the front page, election night (2022-09-12) |
+| V | Nooshi Dadgostar | *"är Vänsterpartiets partiledare sedan den 31 oktober 2020"* (2022-09-05) |
+| C | Annie Lööf | named five times on the front page, election night (2022-09-12) |
+| KD | Ebba Busch | ⚠ **the weakest citation, stated as such** (below) |
+| L | Johan Pehrson | named three times on the front page, election night (2022-09-11) |
+| MP | Märta Stenevi **and** Per Bolund | *"Språkrör och riksdagsledamot"* (2022-09-11) |
+
+⚠ **KD's citation is weaker than the other seven and this is written down rather than smoothed
+over.** KD's own site is JavaScript-rendered, so its archived captures carry **no static role text**
+at all. What the party's own site does give is a representatives page at
+`/om-oss/foretradare/ebba/` and a news archive publishing her speeches as the party's voice in the
+Riksdag. The **office** is carried instead by the **Tidö agreement** — a primary document already
+SOURCED on disk (`coalition_declarations_2022.md`) and signed by the four party leaders. Seven
+citations are the party saying it in its own words; one is an inference from two primary documents,
+and the file says which is which.
+
+### The line this item does NOT cross
+
+**What is sourced is the NAME and the OFFICE. Nothing else.** The nine `CandidateProfile` attributes
+beside each name — charisma, competence, authenticity and the rest — **remain `[AUTHORED-DRAFT]`
+game fiction and the debate screen keeps saying so.** Sourcing a real person's *name* does not
+license inventing their *character*, and §0.4's ban on invented data is not suspended because a
+public figure is famous. The comment at the staging site now says exactly that, so the next reader
+cannot mistake a sourced label for a sourced number.
+
+⚠ **Leader RELATIONS stay deferred and stay asserted ABSENT.** `CoalitionHarness.cs` proves by
+reflection that no leader-relationship field exists anywhere in the coalition instrument. W-F6 does
+not weaken that assertion — it was tempting to add a relations matrix now that the names are real,
+and that is precisely the temptation §36 exists to refuse: a relationship nobody has measured is not
+data.
+
+### ⚠ The finding: MP has two leaders and the model has room for one
+
+Miljöpartiet is led by **two språkrör** and has been since 1984. `CandidateProfile` is one person;
+§15's debate seats one candidate; §29's leader compatibility compares one to one. **Taking "the
+first one" would silently drop Per Bolund and print something false about a real party.** The file
+names both, says the model carries one, and the gap is billed in `MISSING_PREREQUISITES.md` as a
+design question for §15/§29 rather than resolved by a data item whose done-when is to source names.
+
+### Decisions taken and logged (R-N1)
+
+- **The vintage is 2022-09-11, not today.** Five leaders have changed since. A "current leaders"
+  file is a different item; this one exists to name the people who fought the election the model
+  replays. *Strikeable: a current file would be wrong for every screen in this prototype.*
+- **The debate staging keeps its deliberately UNEQUAL attributes**, so the verdict has a margin
+  worth reading. Only the labels changed.
+
+### [AUTHORED-DRAFT] values
+
+**None added.** The nine attributes per candidate were already `[AUTHORED-DRAFT]` and remain so;
+W-F6 changes two labels from placeholder surnames to sourced full names.

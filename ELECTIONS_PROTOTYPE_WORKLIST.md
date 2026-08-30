@@ -244,7 +244,7 @@ positions (CHES 2024, already on disk) mapped to the spec's axes, mapping stated
 issue salience (Eurobarometer / SOM Institute, vintage recorded). **W-F4** — voter groups derived
 from existing demographic seeds per region; only underivable marginals get sourced; nothing
 authored. **W-F5** — party funding and campaign spending (party accounts / Kammarkollegiet) or
-`[AUTHORED-DRAFT]` with the line. **W-F6** — candidates: real party leaders by name (public
+`[AUTHORED-DRAFT]` with the line. **W-F6 — DONE 2026-08-30** (eight leaders sourced to each party's own site via dated archive captures; attributes stay authored; MP's two sprakror billed as a finding). — candidates: real party leaders by name (public
 figures, factual), attributes `[AUTHORED-DRAFT]` and clearly labelled as game fiction. *Done when:*
 each has source, vintage, basis, and the remainder is billed.
 

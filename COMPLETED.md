@@ -4852,3 +4852,40 @@ contradicted; election day counts 6 564 111 of 7 775 390; a full office's Stockh
 checks exit 0; eight films (campaign family + board 1h at 1280/1600/1920/2560) exit 0 with **0 text
 overflows and 0 containment escapes**; both `ScreenEdgeCheck` patterns exit 0. R-N2 held:
 `traj_wf1_*` identical to `traj_run_*` six of six, zero `ATTRIB`.
+
+## 78. W-F6 — the party leaders: the names are sourced, the characters are not (2026-08-30)
+
+**What shipped.** `ElectionsData/sweden/party_leaders_2022.md` — the eight Riksdag parties' leaders
+at the 2022 election, **each cited to that party's OWN website as it stood within days of the poll**,
+retrieved through the Internet Archive so every citation carries an exact capture timestamp. A party
+is the authority on who leads it, and an archived capture is the only way to ask that question of
+September 2022 rather than of today — **five of the eight have changed leader since**. The driver's
+two placeholder surnames become Magdalena Andersson (S) and Ulf Kristersson (M).
+
+**The line this item does not cross.** What is sourced is the **NAME and the OFFICE, nothing else**.
+The nine `CandidateProfile` attributes — charisma, competence, authenticity and the rest — remain
+**`[AUTHORED-DRAFT]` game fiction and the debate screen keeps saying so**. Sourcing a real person's
+name does not license inventing their character, and §0.4 is not suspended because someone is
+famous. The comment at the staging site now says exactly that.
+
+⚠ **KD's citation is weaker than the other seven, and the file says so rather than smoothing it
+over.** KD's own site is JavaScript-rendered, so its archived captures carry no static role text.
+The party's own site gives a representatives page and its news archive publishes her speeches as the
+party's Riksdag voice; the OFFICE is carried instead by the **Tidö agreement**, a primary document
+already SOURCED on disk and signed by the four party leaders. Seven citations are the party saying
+it in its own words; one is an inference from two primary documents, and the file marks which.
+
+⚠ **The finding: MP has TWO leaders and the model has room for one.** Miljöpartiet is led by two
+*språkrör* (Märta Stenevi and Per Bolund in 2022) and has been since 1984. `CandidateProfile` is one
+person, §15's debate seats one candidate, §29's compatibility compares one to one. **Taking "the
+first one" would silently drop Bolund and print something false about a real party**, so the file
+names both, states that the model carries one, and the gap is billed in `MISSING_PREREQUISITES.md`
+as a design question for §15/§29 — not resolved by a data item whose done-when is to source names.
+
+⚠ **Leader RELATIONS stay deferred and stay asserted ABSENT.** `CoalitionHarness.cs` proves by
+reflection that no leader-relationship field exists in the coalition instrument. Real names made it
+tempting to add a relations matrix; that is exactly the temptation §36 exists to refuse.
+
+**Verified:** nine checks exit 0; the campaign family re-filmed at 1280/1600/1920/2560 with the
+longer names, guards silent; `ScreenEdgeCheck` exit 0. R-N2 held: `traj_wf6_*` identical to
+`traj_run_*` six of six, zero `ATTRIB`.
