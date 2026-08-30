@@ -125,7 +125,7 @@ derived function of campaign activity, events and performance; momentum with **d
 returns** so it cannot spiral. *Done when:* a coverage spike decays on the measured curve and the
 same message measurably performs differently by outlet audience.
 
-**W-B12 — The campaign manager's FULL cost plan (§9; opened by ruling 2026-08-30 from the
+**W-B12 — DONE 2026-08-30 (four of five managed parties at zero unpaid staff-days; SD keeps 6 of 38, stated, not tuned). The campaign manager's FULL cost plan (§9; opened by ruling 2026-08-30 from the
 W-C2 review).** W-B5 built the manager's `BudgetPlan` over television alone, and W-B5's finding 2
 measured the consequence: offices, their operations and the payroll are fixed daily costs the
 spending pace does not see, so **every party in the AI campaign goes broke before polling day** (of

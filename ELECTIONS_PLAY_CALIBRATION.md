@@ -438,3 +438,33 @@ a pair of parties by hand: §29's whole discipline is that compatibility, red li
 power come from party data, and a hand-set pair value is the authored coalition score the item
 exists to avoid. Leader compatibility or personal relationships filled in with game fiction to
 "complete" §29 — they are deferred for want of a source, and the harness asserts the absence.
+
+## 18. The organisation's bill, and what a plan is allowed to hold back (W-B12)
+
+**What a player will feel.** Hire a manager and the campaign stops running out of money in the last
+fortnight. That is the whole felt difference, and it is deliberately the ONLY difference — the
+manager does not spend better, does not pick better actions and does not raise more. **The manager
+keeps the organisation's bill back before the pace is allowed to release anything.** A party without
+one still goes broke, and should.
+
+**The numbers, and what each rests on.**
+
+| figure | value | class | why this and not another |
+|---|---|---|---|
+| `DailyFixedCost` | payroll + every office's maintenance and operation | **DERIVED** | Summed from `SalaryPerDay` and `MaintenancePerDay`, which W-B4/W-B5 already set and logged. **W-B12 introduces no new constant** — deliberately, so it could not be accused of buying its own done-when. |
+| recomputed | **every morning** | DERIVED | A party that hires today has a different bill tomorrow. Setting it once would let a mid-campaign hire go unfunded, which is precisely the defect being fixed. |
+| horizon | `daysLeft` to polling day | DERIVED | §9's plan is a plan to an end date. Any shorter horizon reintroduces the bug at the tail; any longer is money the campaign will never need. |
+| capital | **NOT in the daily bill** | ⚠ a judgement, logged | An office's 100 000 kr opening and a planned television buy are one-off commitments. Folding them into a per-day figure would misstate both — and **this is the choice SD's residual six days sit on.** Named here so it can be reversed knowingly. |
+
+**What to feel for, and the honest doubt.** Play the populist. SD is the one managed party that
+still ends with unpaid staff-days (6, from 38), because `spendPace` 1.6 is the most front-loaded of
+the five and four offices' opening capital lands early. **The question for the seat is whether that
+feels like a populist overreaching — which is characterful — or like the game failing to warn you.**
+If it is the second, the fix is a *warning*, not a bigger reserve: a manager who silently prevents
+every mistake removes the decision §9 exists to pose.
+
+**And one number moved that nobody predicted.** C1's `prof/est` separation went **0.061 → 0.306**,
+crossing 0.30 for the first time, on an item that touched no affinity and no weight. W-B5 had sent
+that convergence to W-F5 expecting *unequal money* to separate the two rational planners. It was not
+money — **it was the plan itself**, a planner and a non-planner spending differently on equal chests.
+Meanwhile `est/grass` moved the WRONG way, 0.291 → 0.269. Both are reported, neither is tuned.

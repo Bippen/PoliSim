@@ -2161,3 +2161,79 @@ compatibility derived from sourced CHES positions, red lines derived-or-cited.
 - **W-E7** hands this screen its seats; **W-D3** is the model it draws.
 - **W-H4** — the coalition screen invents no sprite; if Design wants party marks in the arithmetic
   column, that is a line in the ask, not art invented here.
+
+## W-B12 — the campaign manager's full cost plan (§9): pay the organisation first, release the rest (2026-08-30)
+
+**What it is.** W-B5 built the manager's `BudgetPlan` over television alone and measured what that
+left out: **every party in the AI campaign went broke before polling day** — of 120 staff-days,
+SD 38 unpaid, V 12, S 10, M 6. The cause was structural, not a shortage: **the spending pace
+released money for ACTIONS against the whole war chest, while the payroll and the offices were
+charged from the same chest afterwards, so the two claims on the money never met until the money
+ran out.**
+
+`BudgetPlan` now carries `DailyFixedCost` — the payroll (`StaffRoster.DailySalaryBill`) plus every
+office's maintenance and daily operation (`OfficeNetwork.DailyCost`) — set each morning, because a
+party that hires or opens an office today has a different bill tomorrow. `CommittedToOrganisation
+(daysLeft)` is what must still be kept back to reach polling day, and the pace's release is capped
+by `money − committed` instead of by `money`. **A party without a manager has no plan and no such
+discipline, which is exactly the difference §9 says a campaign manager makes.**
+
+### Measured, on the staging that found the defect (seed 777, 60 days, 120 staff-days each)
+
+| party | manager? | unpaid staff-days BEFORE | AFTER |
+|---|---|---|---|
+| S (professional) | yes | 10 | **0** |
+| M (establishment) | yes | 6 | **0** |
+| KD (establishment) | yes | — | **0** |
+| L (professional) | yes | — | **0** |
+| SD (populist) | yes | 38 | **6** |
+| V (grassroots) | **no** | 12 | 12 |
+| MP (grassroots) | **no** | — | 12 |
+| C (chaotic) | no staff | 0 | 0 |
+
+**Four of the five managed parties now pay their organisation in full to polling day.** The two
+unmanaged parties are unchanged at 12, which is the intended shape: the plan is the manager's
+effect, and a party that hired no manager gets no discipline.
+
+⚠ **The done-when is not fully met, and this is stated rather than rounded up.** SD retains **6
+unpaid staff-days**. It is **not** a reaction office — the 1h line shows SD at *4 staged + 0 in
+reaction*, so W-C2 is not the cause. What is left is the populist's pace: `spendPace` 1.6 is the
+most front-loaded of the five, and its 4 offices at 100 000 kr of opening capital plus a planned
+television buy leave the tightest margin of any managed party. The remaining six days are a
+**residual to be measured, not a constant to be moved** — the plan protects against the bill it can
+see each morning, and capital commitments (an office opened, a buy planned) are not in that bill.
+
+### C1's PEND lines, re-measured (the standing order, and the 2026-08-30 ruling)
+
+- **⚠ `prof/est` CROSSED 0.30 FOR THE FIRST TIME: 0.061 → 0.306.** W-B5 recorded the two rational
+  planners converging on the same schedule with equal money; the ruling sent that to W-C2/W-F5.
+  **What actually separated them was the manager's plan** — a planner and a non-planner spend
+  differently even on equal money, which is a better answer than "unequal war chests would separate
+  them" and was not the one predicted.
+- **2a-iii still PENDs**, because it needs all three pairs and `est/grass` is 0.269.
+- **⚠ `est/grass` moved AWAY from the line: 0.291 → 0.269.** The ruling of 2026-08-30 anticipated
+  exactly this shape — *"if W-F5 lands and it still reads 0.291, that is a finding about the model"*
+  — and here it was W-B12, not W-F5, that moved it, and in the wrong direction. **Nothing was tuned.**
+  The line stays a PEND with its measurement, and the finding is that giving the establishment
+  budget discipline moved its action mix TOWARD the grassroots party's rather than away.
+- The harness reads **ALL ASSERTIONS PASS; 5 PENDING**.
+
+### Decisions taken and logged (R-N1)
+
+- **The cap is on the RESERVE, not on the actions.** The pace still decides how fast money is
+  released; the plan only decides how much there is to release. *Strikeable: capping each action
+  instead would make the manager a censor rather than a treasurer.*
+- **`DailyFixedCost` is set every morning**, not once, because offices and hires change it.
+- **Capital is deliberately NOT in the daily bill** — an office's 100 000 kr opening and a planned
+  television buy are one-off commitments, and folding them into a per-day figure would misstate both.
+  That choice is what SD's residual six days sit on, and it is named here rather than hidden.
+
+### [AUTHORED-DRAFT] values
+
+**None.** `DailyFixedCost` is summed from figures that already exist (`SalaryPerDay`,
+`MaintenancePerDay`, the staged operations rate); the item introduces no new constant.
+
+### Riders
+
+- **SD's six days** — measure whether capital commitments belong in the plan's horizon.
+- **W-F5** — unequal war chests; `est/grass` and 2a-iii still wait there.

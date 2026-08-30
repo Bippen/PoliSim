@@ -4768,3 +4768,42 @@ compatibility derived from sourced CHES positions, red lines derived-or-cited.
 **R-N2 held:** `traj_we8_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
 checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-E8, the `CLAUDE.md` dated section,
 `ELECTIONS_GAP_TABLE.md` row 29.
+
+## 76. W-B12 — the campaign manager's full cost plan (§9): pay the organisation first, release the rest (2026-08-30)
+
+**What shipped.** `BudgetPlan.DailyFixedCost` and `CommittedToOrganisation(daysLeft)` in
+`CampaignStaff.cs`, `StaffRoster.DailySalaryBill()`, and the release cap in `CampaignRun`: the pace
+now releases against **`money − the organisation's bill to polling day`** instead of against the
+whole war chest. `DailyFixedCost` is set each morning from the payroll plus every office's
+maintenance and operation, because a party that hires or opens an office today has a different bill
+tomorrow.
+
+**The defect it closes, which W-B5 measured but could not fix.** Every party went broke before
+polling day — of 120 staff-days, SD 38 unpaid, V 12, S 10, M 6 — and the cause was structural: the
+pace released money for ACTIONS against the whole chest while the payroll and offices were charged
+from that same chest afterwards, so the two claims never met until the money ran out.
+
+**Measured on the staging that found it:** **four of the five managed parties now reach ZERO unpaid
+staff-days** (S 10 → 0, M 6 → 0, KD 0, L 0). The two unmanaged parties are unchanged at 12, which is
+the intended shape — the plan is the manager's effect, and §9's difference is exactly that a party
+without one gets no discipline.
+
+⚠ **The done-when is not fully met, and that is stated rather than rounded up.** SD retains **6
+unpaid staff-days** (down from 38). It is **not** a reaction office — 1h shows SD at *4 staged + 0 in
+reaction*. What remains is the populist's front-loaded pace against four offices' opening capital
+and a planned buy. Recorded as a residual to measure, not a constant to move.
+
+⚠ **C1 re-measured, and one line moved that nobody predicted.** **`prof/est` crossed 0.30 for the
+first time: 0.061 → 0.306.** W-B5 sent that convergence to W-C2/W-F5 expecting unequal money to
+separate the two rational planners; **what actually separated them was the manager's plan** — a
+planner and a non-planner spend differently even on equal money. **And `est/grass` moved AWAY from
+the line, 0.291 → 0.269**, which is precisely the shape the 2026-08-30 ruling anticipated for that
+pair. Nothing was tuned; 2a-iii and 2a-iv stay PEND with their measurements. The harness reads ALL
+ASSERTIONS PASS; 5 PENDING.
+
+**No `[AUTHORED-DRAFT]` value is introduced** — `DailyFixedCost` is summed from constants that
+already exist.
+
+**R-N2 held:** `traj_wb12_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-B12, the `CLAUDE.md` dated section,
+`ELECTIONS_PROTOTYPE_WORKLIST.md` (the item opened by ruling), `ELECTIONS_GAP_TABLE.md` row 9.

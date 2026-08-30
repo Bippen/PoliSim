@@ -379,9 +379,33 @@ namespace PoliSim.Elections
                     pools[p] = pools[p].StartDay();
                     PartyLedger ledger = ledgers[p];
 
-                    // The pace releases today's money into the reserve (capped at what the party has).
+                    // W-B12: the manager's plan is told what the organisation costs TODAY - the
+                    // payroll plus every office's maintenance and operation - before the pace
+                    // releases anything, because the release is capped by what the organisation
+                    // still needs. A party without a manager has no plan and no such discipline,
+                    // which is the difference §9 says a campaign manager makes.
+                    {
+                        BudgetPlan planning = staff[p].ActivePlan;
+                        if (planning != null)
+                        {
+                            planning.DailyFixedCost = staff[p].DailySalaryBill() + offices[p].DailyCost;
+                        }
+                    }
+
+                    // The pace releases today's money into the reserve - capped at what the party
+                    // has, and for a managed party ALSO at what is left after the organisation's
+                    // bill to polling day. Pay the organisation first, release the rest (W-B12).
                     double release = CampaignAi.DailyRelease(profiles[p], pools[p].Money, totalDays - day);
-                    reserve[p] = Math.Min(pools[p].Money, reserve[p] + release);
+                    double spendable = pools[p].Money;
+                    {
+                        BudgetPlan planning = staff[p].ActivePlan;
+                        if (planning != null)
+                        {
+                            spendable = Math.Max(0.0, spendable - planning.CommittedToOrganisation(totalDays - day));
+                        }
+                    }
+
+                    reserve[p] = Math.Min(spendable, reserve[p] + release);
                     volunteerHoursLeft[p] = CampaignEconomy.VolunteerHours(pools[p].Volunteers);
 
                     // W-B4: the offices' day - maintenance paid (or the office starves), volunteers recruited,

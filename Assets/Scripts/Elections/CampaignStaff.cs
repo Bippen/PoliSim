@@ -47,6 +47,26 @@ namespace PoliSim.Elections
         /// <summary>Money set aside so far and not yet spent.</summary>
         public double Fund;
 
+        /// <summary>
+        /// W-B12: what the ORGANISATION costs the party every day - the payroll, every office's
+        /// maintenance and its daily operation. Set by the caller each morning, because a party
+        /// that opens an office or hires today has a different bill tomorrow.
+        ///
+        /// This is the number W-B5's plan did not have, and its absence is what sent every party
+        /// broke before polling day: the spending pace released money for ACTIONS against the
+        /// whole war chest, while the fixed costs were charged from the same chest afterwards,
+        /// so the two claims on the money never met until the money ran out.
+        /// </summary>
+        public double DailyFixedCost;
+
+        /// <summary>
+        /// W-B12: what must still be kept back to pay the organisation to polling day. The
+        /// campaign manager's actual job, in one line: **pay the organisation first, release the
+        /// rest.** A party without a manager has no plan and therefore no such discipline, which
+        /// is exactly the difference §9 says a manager makes.
+        /// </summary>
+        public double CommittedToOrganisation(int daysLeft) => DailyFixedCost * Math.Max(0, daysLeft);
+
         public BudgetPlan(int televisionBuys, double televisionCost)
         {
             TelevisionBuys = Math.Max(0, televisionBuys); TelevisionCost = Math.Max(0.0, televisionCost);
@@ -157,6 +177,14 @@ namespace PoliSim.Elections
             _members.Add(m);
             if (role == StaffRole.CampaignManager) { Plan = plan ?? new BudgetPlan(0, 0.0); }
             return m;
+        }
+
+        /// <summary>W-B12: what the roster costs for one day if everyone is paid - the payroll half of the organisation's daily bill, which the manager's plan must hold back.</summary>
+        public double DailySalaryBill()
+        {
+            double bill = 0.0;
+            foreach (CampaignStaffMember m in Members) { bill += m.SalaryPerDay; }
+            return bill;
         }
 
         /// <summary>Pay today's salaries from <paramref name="money"/>, member by member; one the party cannot pay is unpaid today. Returns what was paid.</summary>
