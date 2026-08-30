@@ -3,10 +3,15 @@
 **Status — COMPLETED 2026-08-29 against the spec**, which arrived on Day-1's second attempt and
 passed Phase 0's content check (44 sections, §42 the causal chain, §44 the last) and is installed
 verbatim at root. The stubs this document carried while the spec was missing are now either built
-or classified in `ELECTIONS_GAP_TABLE.md`. The stranded branch (`stranded/politics-elections`,
-`ca6c510`) remains UNINSPECTED per D0 — its work is proposals to verify at item 10, and this
-document deliberately does not read it (R-EL5 cites the surviving verification DOC, not the
-branch).
+or classified in `ELECTIONS_GAP_TABLE.md`. This document deliberately did not read the stranded branch
+(R-EL5 cites the surviving verification DOC, not the branch), which was the right discipline while the
+branch was an open obligation.
+
+⚠ **Re-derived 2026-08-31 (C-0.2).** This section said the stranded branch (`stranded/politics-elections`,
+`ca6c510`) *"remains UNINSPECTED per D0 — its work is proposals to verify at item 10"*. It was inspected
+once and **DISPOSED at C-0.3**: the ref is kept, the obligation retired, its C# superseded by
+`Assets/Scripts/Elections/` and W-G1, and the four pieces of its roadmap doc that were NOT superseded
+migrated to `COMPLETED.md` as history.
 
 ## R-EL1 — the PoliSim idiom mapping (at the queue's own level)
 
@@ -54,14 +59,25 @@ stream later without changing a formula.
    vote model; `PublicationSystem` stays as the polling substrate; seat drift, bill scoring and
    the renderers stay.
 
-## What exists on main today (R-EL6, measured — the inventory the gap table builds on)
+⚠ **Point 4 EXECUTED on 2026-08-30 (W-G1, `a289e1e`), and one clause of it did not survive contact
+(re-derived 2026-08-31, C-0.2).** `PartyArchetype` retired for 53 real parties; `TotalSeats = 200` yielded
+to six real chamber sizes; `PublicationSystem` stayed; the renderers stayed; bill scoring stayed but was
+**re-expressed** over the measured chamber rather than left alone. **Seat drift did NOT stay — it retired
+too**, because a parliament's composition does not drift week by week with the government's approval, and
+the per-archetype sensitivity figures it drifted on are published for no real party by anyone.
+**`ElectionSystem`'s approval threshold did NOT yield** — it was left exactly as it was, because the game
+assigned the player no party identity for the vote model to award a fate to; that question was ruled
+2026-08-30 as R-CL1 and the replacement is register row C-R4 in `POLISIM_BACKLOG.md`.
+
+## What existed on main before the wiring (R-EL6, measured — the inventory the gap table built on)
 
 *(filled by the overnight inventory — see the morning report's Part 2 section for the measured
 line numbers; summary:)* `ElectionSystem` (fixed cycle + approval threshold + transient
 result), `PartyArchetype` (four archetypes), `TotalSeats = 200`, seat drift, the hemicycle/
 compass/map renderers, `PublicationSystem` (the polling substrate), five `mark_party_*` sprites
-drawn by nothing, `FedChair` election-eve pause. The 44-section gap table is blocked-on-the-
-spec; this inventory is its EXISTS column, ready.
+drawn by nothing, `FedChair` election-eve pause. ⚠ **This is a 2026-08-29 inventory kept as the gap
+table's EXISTS column, not a description of HEAD** — four of its entries no longer exist and the sprites
+are drawn now. What is on main today is `COMPLETED.md` §§79–84.
 
 ## The spec's own architecture (§40) vs this one — a ruled divergence, stated plainly
 

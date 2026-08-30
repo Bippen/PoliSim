@@ -135,10 +135,14 @@ below.
 
 ## The ELECTIONS era (opened overnight 2026-08-28→29; Day-1 2026-08-29)
 
-**The standing invariant (R-N2): the election system is UNWIRED** — reachable from no gameplay
-path, no UI, no turn-loop or save hook — **and every part ends with the trajectory suite
-byte-identical.** Held at six consecutive boundaries so far (two overnight, four on Day-1): the
-six baselines identical by SHA-256 every time, the eight checks green every time.
+⚠ **R-N2 IS RETIRED (W-G1, `a289e1e`, 2026-08-30).** The invariant that governed this era — *the
+election system is UNWIRED, reachable from no gameplay path, and every part ends with the trajectory
+suite byte-identical* — did its whole job and was retired in one isolated commit that is its own
+revert handle. It held at **every** boundary it was asked to hold at, the six baselines identical by
+SHA-256 each time. **Trajectory changes are now possible**, which is why the standing term that
+replaces it is stricter: every one must be **explained per country against a named baseline family**,
+never merely observed. The era's text below is kept for its reasoning; where it describes the
+unwired state as current, read `POLISIM_BACKLOG.md` and `COMPLETED.md` §§79–84 instead.
 
 **The spec arrived on the third attempt (2026-08-29) and is installed verbatim at root** —
 `ELECTIONS_CAMPAIGN_SPEC.md`, 44 sections, verified by content (§42 the causal chain, §44 the
@@ -174,45 +178,38 @@ R-EL7) and reconciles D0: **this spec IS item 10's political model.**
   Phase-4 deviation signatures** (the empty-quadrant newcomer 60.2 % → 12.3 %, the incumbent
   25.2 % → 53.9 %).
 
-**The E-phase plan, re-sized against Day-2's measurements (2026-08-29):** **E-0 CLOSED** (spec
-installed, gap table complete, §7 types built) · E-1 done; France is out by ruling, Italy's
-sub-national stages billed as before-playable · **E-2 CLOSED** — five chambers exact, unchanged
-through Day-2 · **E-3 measured, and its next unit is now known**: §8 loyalty improves three
-countries sharply (Sweden 3.25 → 1.75, Poland 6.99 → 3.84, Germany 5.78 → 4.66) and §27 corrects
-the CSU deviation from candidacy facts alone (+7.36 → −3.68), **but a UNIFORM loyalty constant
-regresses Italy (5.61 → 6.69), so the gate failed and nothing wired.** The next unit is therefore
-**deriving loyalty rather than assuming it** — per-country volatility from the previous two
-elections is sourced and cheap; per-group loyalty as §5/§8 actually specify is the fuller answer
-and needs the voter-group layer. Second: **per-region priors**, without which §27 and §8 do not
-compose (Germany's both-layers run is worse than §8 alone for exactly that reason) · E-4 is the
-rest of §39 (base support, candidate appeal §16, campaign effects §12, media §13/§14, momentum
-§22, tactical voting §23) · E-5 (the campaign layer proper) is last and blocks nothing below it.
-§19 needs no building, only a read — the macro simulation already IS government performance, and
-`PublicationSystem` already IS the perceived-vs-actual split.
+**The E-phase plan is CLOSED (2026-08-30).** Day-2's re-sizing and its "the gate failed and nothing
+wired" conclusion are Day-2's state and have moved, in full and with their reasoning, to
+`COMPLETED.md` §85 — they are not quoted from here. What replaced them: the prototype ran its own
+worklist (`ELECTIONS_PROTOTYPE_WORKLIST.md`, 46 items) end to end. Loyalty IS derived rather than
+assumed (W-A1), per-region priors ARE fetched so §27 and §8 compose (W-A2), the gate re-ran and
+**passed with its scope stated** (W-A3 — the two high-coverage countries improved; Italy's regression
+stands, its cause named and its constant deliberately not re-fitted). E-4 and E-5 were not the next
+phases in the end: the whole campaign layer, all eight screens, opponents, election night, results
+and coalition formation were built, and **W-G1 wired the lot**. §19 still needs no building.
 
-> ⚠ **SUPERSEDED 2026-08-30 — the paragraph below is Day-2's state and is kept for its reasoning,
-> not its conclusions.** Everything it calls open has since been built. The elections prototype ran
-> its own worklist (`ELECTIONS_PROTOTYPE_WORKLIST.md`, 46 items) to Track G: loyalty IS derived
-> rather than assumed (W-A1), per-region priors ARE fetched (W-A2), the gate passed with its scope
-> stated (W-A3), eight campaign screens are built and filmed, and **W-G1 wired it — `PartyArchetype`
-> retired for 53 real parties across six real chambers, an election held on each country's own law,
-> the record persisted, `SaveVersion` bumped.** The sentence *"13 September a re-seeding exercise,
-> not a playable election"* is **no longer true and should not be quoted**. What IS true on
-> 13 September is in `ELECTIONS_PROTOTYPE_LOG.md`'s W-H5 status line, which is written from the
-> finished state rather than predicted from this one.
+**The 13 September minimum, re-derived from the finished state (2026-08-30).** The one-sentence
+version, and the only one to quote: **on 13 September the game will simulate Sweden's election
+accurately and will not let you campaign in it.** In full:
 
-**The 13 September minimum, restated after Day-2's gate (2026-08-29):** Sweden votes 13 Sept 2026,
-15 days out. The SEAT side is ready and proven — the Swedish allocator reproduces 2022 exactly and
-the seed data is sourced with exact counts, so a re-seeding pass from the official result is all
-that side needs. **The VOTE side did not clear its gate:** R-EL13 required no country to regress
-and Italy did (5.61 → 6.69 pp), so nothing was wired and the election system remains unreachable
-from any gameplay path. **Honestly stated, that makes 13 September a re-seeding exercise, not a
-playable election** — and the gate is the reason, not the calendar. What would change it is
-R-EL13's own list: derive loyalty rather than assume it (the recommendation is per-country
-volatility from the previous two elections — sourced, not fitted), fetch per-region priors so §27
-and §8 compose, then re-run the gate. Records: `COMPLETED.md` §§46–49 and the two reports
-(`OVERNIGHT_2026-08-28_MORNING_REPORT.md`, `ELECTIONS_DAY1_REPORT_2026-08-29.md`), each carrying
-its full strikeable call log.
+- **Playable.** A new game seats a real parliament in all six countries — Sweden's 349, Germany's
+  630, France's 577, Italy's 400, Poland's 460, the US House's 435, each sourced and reconciling
+  exactly — and bills are scored against the real parties' published economic positions. **Sweden
+  and Germany hold a real election on their own electoral law**; a Swedish game's first election
+  returns S 106 / SD 72 / M 66 / V 24 / C 22 / KD 23 / MP 19 / L 17 against a real
+  107/73/68/24/24/19/18/16. The result is recorded and persists across a save.
+- **Provisional, and how.** ⚠ Germany's first election seats BSW at 91 and the FDP at 47 and **both
+  really won zero** — they missed the 5 % threshold by 0.02 and 0.7 pp, and a share model carrying
+  ~1.5 pp of error cannot resolve a cliff inside its own error bar. ⚠ **The same chamber every
+  time**: the electorate does not yet move with the simulation, so a second election in one game
+  returns the first's result — the single largest gap between *an election happens* and *an election
+  is played*. ⚠ **Four countries hold no election at all** and the game says why in plain English;
+  running them through a proportional allocator would produce chambers their own law does not.
+- **The calendar item itself.** The seed refresh from Sweden's real result is a **scheduled** item,
+  not a blocked one — register row K-1 in `POLISIM_BACKLOG.md`.
+
+The full status line, written from the finished state rather than predicted from a plan, is W-H5 in
+`ELECTIONS_PROTOTYPE_LOG.md`. Records: `COMPLETED.md` §§79–84.
 
 ---
 
@@ -290,13 +287,19 @@ four sizes (`cont_p1b_*`), the two text guards silent, `ScreenEdgeCheck` 0 clipp
 not reopen; the one width-dependent behaviour it added is stated in the code (the category token steps
 out only where the fixed cells' floors cannot carry the widest visible name at the guard floor).
 
-### 2. Nothing else is startable today
+### 2. Everything else that is startable lives in `POLISIM_BACKLOG.md`
 
-Every other line of the 2026-08-27 board shipped in the omnibus pass, its continuation or the clear-out,
-or moved to a named party's queue in `MISSING_PREREQUISITES.md`. Nothing waits on a ruling; the machine
-side is idle and the remote holds the tree through the clear-out's Phase 1. Elias's side, each one
-gesture: paste the send package's two artifacts · sit once through `sv_index.html` · load three saves
-and play · answer §E5 when Design does · 13 September. There is no sixth thing.
+⚠ **Re-derived 2026-08-31 (C-0.2).** This section used to read *"nothing else is startable today"* with
+five gestures on Elias's side and *"there is no sixth thing"*. Both halves went stale on the same day:
+**§E5's gesture is spent** (closed end-to-end 2026-08-28, both sides), and W-G1 surfaced a genuine sixth
+thing — *who is the player, in party terms* — which stopped the rail cell and the win/lose rule and was
+**ruled on 2026-08-30 as R-CL1** (the player picks a party at country selection; personal and party
+approval are separate stocks; losing office is not game over).
+
+The live list is no longer kept here. `POLISIM_BACKLOG.md` is the single ordered register: §1 the
+startable work, §2 Elias's rows, §3 Design's, §4 the calendar, §5 the triggers, §6 the deferrals, §7 the
+standing guards. This file keeps what it is chartered for — the trigger shelf and the standing
+constraints — and the register keeps the queue.
 
 ## Queued at named triggers — not startable, and no named party owes anything
 
@@ -408,7 +411,18 @@ capital stock), so if one ever ships, two fire together.
 
 ## Open Questions — a record of decisions, not a queue (rule 4)
 
-**No open question at HEAD (2026-08-28).** Every entry this section held was ruled, closed or migrated:
+⚠ **Re-derived 2026-08-31 (C-0.2). One question opened and closed on 2026-08-30, recorded here because it
+was load-bearing:** W-G1 could seat real chambers and hold real elections, but could not decide **whether
+the player won** or add **the rail cell**, because `ElectionSystem`'s own class comment has always recorded
+that *"this game never assigns the player's own government a party identity"*. Both reduce to one
+question — **who is the player, in party terms?** — which W-G1 was not entitled to settle by picking
+something plausible. **RULED 2026-08-30 as R-CL1** (Elias): the player picks one of the country's real
+seeded parties at country selection; personal approval and party approval are separate stocks; losing
+office is not game over. Executed as Track R of the clearance list; that list's four rulings are tabled at
+the head of `POLISIM_BACKLOG.md`. ⚠ **Not the same as the R-C1…R-C3 named below** — those are the
+2026-08-28 continuation kickoff's, which is why the clearance list's carry the `R-CL` prefix.
+
+**No other open question at HEAD.** Every entry this section held was ruled, closed or migrated:
 decisions live in `COMPLETED.md` §§11/23/32/36; questions waiting on a named party live in
 `MISSING_PREREQUISITES.md` §A — the omnibus pass's three `RULINGS NEEDED` (A4 the ledger row's one-line
 type, A5 the raster check's budget, A6 the anchored form with real seeds in) were ruled by the continuation

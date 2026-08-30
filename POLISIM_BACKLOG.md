@@ -27,10 +27,10 @@ These four changed what the pass builds. Recorded here so no row below reads as 
 
 | ruling | what was ruled | what it unblocks |
 |---|---|---|
-| **R-C1** | **The player has a party.** The player picks one of the country's real seeded parties at country selection; personal approval and party approval are separate stocks; losing office is not game over. | the rail cell, the win/lose rule, C-B5's gate, and the play-calibration list's whole premise. Executed as Track R. |
-| **R-C2** | **`eu_position` is ruled in as the openness axis** for the Trade bill's vote, recorded as a named ruling with its stretch stated — EU integration standing in for trade openness is an approximation and is tagged as one. | C-B3 |
-| **R-C3** | **§38 carry-over is BUILT**, `SaveVersion` 2 → 3, with the standing electorate gap stated rather than papered over. | C-D4 |
-| **R-C4** | **The two `StatNodeId` members go in now**, and a missing icon becomes a reported GAP rather than a check failure, on `PartyMarkCoverageCheck`'s own precedent. | §E4, C-F1 |
+| **R-CL1** | **The player has a party.** The player picks one of the country's real seeded parties at country selection; personal approval and party approval are separate stocks; losing office is not game over. | the rail cell, the win/lose rule, C-B5's gate, and the play-calibration list's whole premise. Executed as Track R. |
+| **R-CL2** | **`eu_position` is ruled in as the openness axis** for the Trade bill's vote, recorded as a named ruling with its stretch stated — EU integration standing in for trade openness is an approximation and is tagged as one. | C-B3 |
+| **R-CL3** | **§38 carry-over is BUILT**, `SaveVersion` 2 → 3, with the standing electorate gap stated rather than papered over. | C-D4 |
+| **R-CL4** | **The two `StatNodeId` members go in now**, and a missing icon becomes a reported GAP rather than a check failure, on `PartyMarkCoverageCheck`'s own precedent. | §E4, C-F1 |
 
 ---
 
@@ -62,9 +62,9 @@ Execution order: Phase 0 → A → B → C → D → R → E → F → G. One co
 |---|---|---|---|---|---|
 | C-B1 | §E2's mark accounting, recorded (the code half shipped at `a289e1e`) | §E2 states the real accounting; the 52 feed D8-1's count | CODE | SAFE | — |
 | C-B2 | The R5 hex exchange — Sweden's eight inks, 45 named uncoloured | the exchange is a line in the Design ask, not a gate in the prerequisites file. Nothing picked by eye | CODE | SAFE | C-B1 |
-| C-B3 | The trade axis for the Trade bill's vote, on R-C2 | the vote reads a trade position or documents why it cannot, **per country** (the USA has no `eu_position` and keeps the fiscal axis with the reason stated) | CODE | SAFE ⚠ vote-side evidence, not trajectory | R-C2 |
+| C-B3 | The trade axis for the Trade bill's vote, on R-CL2 | the vote reads a trade position or documents why it cannot, **per country** (the USA has no `eu_position` and keeps the fiscal axis with the reason stated) | CODE | SAFE ⚠ vote-side evidence, not trajectory | R-CL2 |
 | C-B4 | Riksbank-B merged into P-D1 | one item, not two, with felt verdict 2 attached | CODE | SAFE | — |
-| C-B5 | Step 6 (story mode) re-gated — scope the gate, not the work | the entry says whether it opens now or what remains | CODE | SAFE | R-C1 |
+| C-B5 | Step 6 (story mode) re-gated — scope the gate, not the work | the entry says whether it opens now or what remains | CODE | SAFE | R-CL1 |
 
 ### Track C — the Playtest-1 remainder
 
@@ -93,15 +93,15 @@ Execution order: Phase 0 → A → B → C → D → R → E → F → G. One co
 | C-D1 | W-F4's real path — source SCB per-valkrets marginals and build the voter groups, or bill it precisely and close as billed | the groups are sourced-and-built, or the bill names the exact series. **No derivation from data that does not exist** | CODE | SAFE | — |
 | C-D2 | W-F5's pool question — size a playable pool, propose, apply nothing | the finding is a design question with numbers, on record | CODE | RULING-BLOCKED (the resolution is Elias's) | — |
 | C-D3 | MP's two språkrör — answer §15/§29, record the ruling, implement it | no screen can state something false about a real party | CODE / ELIAS | RULING-BLOCKED if he wants the call | — |
-| C-D4 | §38 long-term political capital, **BUILT** (R-C3) — persisted party reputation and organisational strength, `SaveVersion` 2 → 3; donor networks specified ABSENT, not invented | the carry-over crosses a save round-trip by party name, and the record states plainly that the electorate does not yet move, so two elections still return the same chamber | CODE | SAFE ⚠ save-layer | R-C3 |
+| C-D4 | §38 long-term political capital, **BUILT** (R-CL3) — persisted party reputation and organisational strength, `SaveVersion` 2 → 3; donor networks specified ABSENT, not invented | the carry-over crosses a save round-trip by party name, and the record states plainly that the electorate does not yet move, so two elections still return the same chamber | CODE | SAFE ⚠ save-layer | R-CL3 |
 | C-D5 | V-N3 — the swing column, against the last real result | filmed with two elections behind it | CODE | SAFE | C-D4 |
 | C-D6 | The deferral register — one home per deferral | each deferral has exactly one home | CODE | SAFE | — |
 
-### Track R — the ruling executed (R-C1)
+### Track R — the ruling executed (R-CL1)
 
 | ID | what | done-when | owner | class | depends on |
 |---|---|---|---|---|---|
-| C-R1 | The ruling recorded and its reach stated — only Sweden and Germany have a modelled election; in the other four a party is an identity, not yet a contest | the record says so and the screens say so | CODE | SAFE | R-C1 |
+| C-R1 | The ruling recorded and its reach stated — only Sweden and Germany have a modelled election; in the other four a party is an identity, not yet a contest | the record says so and the screens say so | CODE | SAFE | R-CL1 |
 | C-R2 | Party selection at country selection, persisted as world state | a new game picks a party and the choice survives a save | CODE | SAFE | C-R1 |
 | C-R3 | The approval split — personal keeps the existing `ApprovalRating` and every consumer; party approval is a NEW additive stock | the trajectory dump runs and the result is explained, not assumed | CODE | SAFE if additive, **BASELINE** if not | C-R2 |
 | C-R4 | The rail cell and the win/lose rule | the eight Track E screens are reachable from the running game, or the one remaining reason they are not is named | CODE | SAFE | C-R3, C-D2 (the war chest) |
@@ -112,7 +112,7 @@ Execution order: Phase 0 → A → B → C → D → R → E → F → G. One co
 |---|---|---|---|---|---|
 | C-E1 | The trigger shelf re-read — FIRED rows become live, NOT FIRED rows keep their restated trigger | the shelf holds only genuinely unfired triggers | CODE | SAFE | C-B3 |
 | C-E2 | The two watch items made standing guards (P4 label-clipping, `MetaTextCheck`) | no watch item sits in a work list | CODE | WATCH | — |
-| C-F1 | The Design ask consolidated to ONE paste (D7 + D8 + C-B1's count + C-B2's hexes + §E4's promotion + the §A.14 chip finding + C-C8's gaps + C-D3's question if it needs Design's eye + P-F2's answer) | one ask, one annex set, one regenerated `SEND_PACKAGE` with rows numbered *n of N* and fresh digests; the stale package deleted. **Sending stays Elias's** | CODE | SAFE | C-B1, C-B2, C-C8, C-D3, R-C4 |
+| C-F1 | The Design ask consolidated to ONE paste (D7 + D8 + C-B1's count + C-B2's hexes + §E4's promotion + the §A.14 chip finding + C-C8's gaps + C-D3's question if it needs Design's eye + P-F2's answer) | one ask, one annex set, one regenerated `SEND_PACKAGE` with rows numbered *n of N* and fresh digests; the stale package deleted. **Sending stays Elias's** | CODE | SAFE | C-B1, C-B2, C-C8, C-D3, R-CL4 |
 | C-G1 | The document retirement — migrate, delete, and rewrite the document-set table | `ls *.md` matches the table with no orphans and no dangling reference, source comments included | CODE | SAFE | every row above |
 
 ---
@@ -145,7 +145,7 @@ Execution order: Phase 0 → A → B → C → D → R → E → F → G. One co
 | D-8.4 | Election night's paper (V-N1) — a 9-sliced sprite, or a ruling that flat is correct | |
 | D-8.5 | The verdict stamp (W-E5) | |
 | D-8.6 | Modal or stage for the debate (V-N2) — **a question, not an asset** | |
-| D-E4 | The two Society-row icons (youth unemployment, life expectancy) | the two `StatNodeId` members are ours and land under R-C4; the icons are Design's |
+| D-E4 | The two Society-row icons (youth unemployment, life expectancy) | the two `StatNodeId` members are ours and land under R-CL4; the icons are Design's |
 
 ## 4. Owner CALENDAR
 
@@ -185,7 +185,7 @@ and C-B4 disposes of it.
 | F-5 | The gap table's nine N/A sections | principle and illustration sections |
 | F-6 | P-I2 — the cohort substrate build | builds only after C-C13 is ruled |
 
-*§38 has LEFT this list — R-C3 rules it built, at C-D4.*
+*§38 has LEFT this list — R-CL3 rules it built, at C-D4.*
 
 ## 7. WATCH — standing guards, never tasks
 

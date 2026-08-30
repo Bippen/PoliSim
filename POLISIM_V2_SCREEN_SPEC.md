@@ -150,6 +150,14 @@ sage), and keyed to the **real** `PartyArchetype` members. **A party may never p
 or in semantic good/bad.** Hemicycle arcs, legend swatches and swing figures all key this set, and the
 legend swatch is the arc's own ink (B9).
 
+⚠ **Re-derived 2026-08-31 (C-0.2): `PartyArchetype` is RETIRED** (W-G1, `a289e1e`). The four archetype
+inks tabled below are this spec's history, not the live keying. **The rule they express is unchanged and
+still binding** — a party never prints in an area accent or in semantic good/bad — but the live source of
+a party's ink is `PoliSimTheme`: Sweden's eight parties take Valmyndigheten's published `fargkod` at the
+desk's own saturation (0.52) and value (0.46), and the other five countries have **no ink at all**
+(`HasPartyInk` returns false), because picking 30 colours by eye for real organisations would be
+invention. The colour ruling for those five is row D-8.2 in `POLISIM_BACKLOG.md`.
+
 | `PartyArchetype` | ink | lifted |
 |---|---|---|
 | ProgressiveAlliance | `#7E3557` | `#A2607F` |
@@ -175,7 +183,7 @@ ink**. Verified against the actual series lengths:
 | `SectorType` (employment pie) | **8** | at the cap — stays hue-keyed |
 | `TaxType` (revenue pie) | 13 | converts to ranked bar ledger, Fiscal ink |
 | `SpendingCategory` (spending pie) | 29 at pass 3 — **46 at HEAD**, same treatment | converts to ranked bar ledger, Fiscal ink |
-| `PartyArchetype` (hemicycle) | 4 | keys `parties.*`, never this set |
+| ~~`PartyArchetype`~~ → real parties (hemicycle) | 4 → **53 seeded, 8 in a Swedish chamber** | keys `parties.*`, never this set. ⚠ Re-derived 2026-08-31: the enum retired at W-G1; the cap question is now real (a 349-seat chamber draws 8 arcs, a 630-seat one draws more) |
 
 The ranked bar ledger satisfies B9 trivially — one ink, and every row carries its own inline label, so
 there is no legend to disagree with the chart. The implementation consequence (the palette must FAIL

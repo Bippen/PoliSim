@@ -5061,3 +5061,125 @@ and one design question (modal or stage for the debate). **Nothing in D8 blocks 
 **"On 13 September the game will simulate Sweden's election accurately and will not let you campaign
 in it"** — the model done and honest, the campaign built and unreachable, and one design decision
 about who the player is standing between the two.
+## 85. C-0.2 — the post-wiring re-derivation: five documents that still described the world before `a289e1e` (2026-08-31)
+
+**What this is.** W-G1 changed the premises of a dozen recorded entries in one commit. This item corrects
+every live document that still asserted a pre-wiring premise as current, and preserves the replaced text
+here rather than editing it forward — the roadmap's own consolidation rule, applied to itself.
+
+**The rule that decided each edit:** a document may describe what was true then; it may not assert it as
+true now. Where reasoning was worth keeping, it is kept and marked; where a conclusion was falsified, the
+conclusion goes and the falsification is named.
+
+### What was corrected, and what was wrong with it
+
+**1. `POLISIM_MASTER_ROADMAP.md` — the R-N2 invariant, stated as standing.** The ELECTIONS era section
+opened with *"The standing invariant (R-N2): the election system is UNWIRED — reachable from no gameplay
+path… and every part ends with the trajectory suite byte-identical."* R-N2 retired at W-G1, in an isolated
+commit that is its own revert handle. Replaced with the retirement and the **stricter** term that succeeds
+it: trajectory changes are now possible, and every one must be explained per country against a named
+baseline family, never merely observed.
+
+**2. The E-phase plan, and its conclusion that nothing wired.** Preserved in full here:
+
+> **The E-phase plan, re-sized against Day-2's measurements (2026-08-29):** **E-0 CLOSED** (spec
+> installed, gap table complete, §7 types built) · E-1 done; France is out by ruling, Italy's
+> sub-national stages billed as before-playable · **E-2 CLOSED** — five chambers exact, unchanged
+> through Day-2 · **E-3 measured, and its next unit is now known**: §8 loyalty improves three
+> countries sharply (Sweden 3.25 → 1.75, Poland 6.99 → 3.84, Germany 5.78 → 4.66) and §27 corrects
+> the CSU deviation from candidacy facts alone (+7.36 → −3.68), **but a UNIFORM loyalty constant
+> regresses Italy (5.61 → 6.69), so the gate failed and nothing wired.** The next unit is therefore
+> **deriving loyalty rather than assuming it** — per-country volatility from the previous two
+> elections is sourced and cheap; per-group loyalty as §5/§8 actually specify is the fuller answer
+> and needs the voter-group layer. Second: **per-region priors**, without which §27 and §8 do not
+> compose (Germany's both-layers run is worse than §8 alone for exactly that reason) · E-4 is the
+> rest of §39 (base support, candidate appeal §16, campaign effects §12, media §13/§14, momentum
+> §22, tactical voting §23) · E-5 (the campaign layer proper) is last and blocks nothing below it.
+> §19 needs no building, only a read — the macro simulation already IS government performance, and
+> `PublicationSystem` already IS the perceived-vs-actual split.
+
+⚠ **The reasoning survives; the phase plan did not describe what happened.** E-4 and E-5 were never run as
+phases — the prototype ran a 46-item worklist instead, and the campaign layer that E-5 called "last" was
+built in the middle of it. The named next units were both correct and both done: loyalty derived (W-A1),
+per-region priors fetched (W-A2), the gate re-run and passed with its scope stated (W-A3).
+
+**3. The 13 September minimum.** Preserved in full here:
+
+> **The 13 September minimum, restated after Day-2's gate (2026-08-29):** Sweden votes 13 Sept 2026,
+> 15 days out. The SEAT side is ready and proven — the Swedish allocator reproduces 2022 exactly and
+> the seed data is sourced with exact counts, so a re-seeding pass from the official result is all
+> that side needs. **The VOTE side did not clear its gate:** R-EL13 required no country to regress
+> and Italy did (5.61 → 6.69 pp), so nothing was wired and the election system remains unreachable
+> from any gameplay path. **Honestly stated, that makes 13 September a re-seeding exercise, not a
+> playable election** — and the gate is the reason, not the calendar.
+
+⚠ **A superseded-warning had been placed above this paragraph on 2026-08-30 and the job was left half
+done** — the warning said the sentence "should not be quoted", and the paragraph asserting it stayed
+where it was, four lines below. That is the failure mode the roadmap's own rule names: *a document can
+assert two states of one task at once*. The replacement is written from W-H5's finished-state status
+line, and its one-sentence form is the only one to quote: **on 13 September the game will simulate
+Sweden's election accurately and will not let you campaign in it.**
+
+**4. "There is no sixth thing."** The roadmap listed five gestures on Elias's side and asserted there was
+no sixth. Two halves went stale on the same day: **§E5's gesture is spent** (closed end-to-end
+2026-08-28, both sides), and W-G1 surfaced a genuine sixth — *who is the player, in party terms* — which
+stopped the rail cell and the win/lose rule. ⚠ **It is recorded in the Open Questions section rather than
+quietly dropped**, because that section said *"No open question at HEAD"* while the largest question in
+the repo was open. Both are corrected; the question was **ruled 2026-08-30 as R-CL1**.
+
+⚠ **A naming collision caught in this item.** The clearance list's four rulings were drafted as R-C1…R-C4,
+which are already taken by the 2026-08-28 continuation kickoff's rulings. Renamed **R-CL1…R-CL4** before
+anything referenced them, and the roadmap's Open Questions section now names the distinction so a later
+reader cannot conflate the two sets.
+
+**5. `MISSING_PREREQUISITES.md` §D0 — the anchor four entries rode.** Preserved in full here:
+
+> ## 🔴 D0. Item 10 — REALISTIC POLITICS AND ELECTIONS (gate: Sweden votes 13 September 2026; priced after)
+>
+> **The one remaining spine item, and the anchor every entry below rides.** Item 10 IS the work specified
+> in `POLISIM_POLITICS_ELECTIONS_ROADMAP.md` on `stranded/politics-elections` (commit `ca6c510`,
+> preserved UNINSPECTED): real parties and institutions under the split rule 9 (institutions may be real;
+> people never are), per-country chambers and electoral formulas, the hybrid national-swing vote model,
+> USA as the first vertical slice. **Gate, per Elias 2026-08-12: priced after Sweden votes 13 September
+> 2026** — the branch's own seed data carries retrieval dates for exactly this expiry (rule 9's recorded
+> cost: seed data is now a cached value with an expiry). The branch doc's §1 maps what item 10 replaces on
+> `main` (`PartyArchetype`, `TotalSeats = 200`, `ElectionSystem`'s approval threshold) and what it keeps
+> (seat drift, bill scoring, the renderers, `PublicationSystem` for polling) — main's documents describe
+> the four-archetype system as current because it IS current; the disposition of the collision is item
+> 10's own work.
+
+⚠ **Four claims in that entry were false at HEAD**, and the last sentence of the quoted paragraph is the
+one that mattered: *"main's documents describe the four-archetype system as current because it IS
+current"* — an instruction to every future reader to trust the stale description. The other three: the
+stranded branch *"preserved UNINSPECTED"*; the five `mark_party_*` sprites *"drawn by NOTHING on main"*;
+and `PartyMarkCoverageCheck` reporting *"PARTY SYSTEM NOT PRESENT"*. The re-derived entry says what
+remains rather than what was planned — three named rows (the seed refresh, the unmoving electorate,
+Germany's threshold cliff) — and disposes the four riders it carried: Step 6 re-gated at C-B5,
+Riksbank-B **merged** into P-D1 at C-C7 rather than inherited, the stranded branch disposed at C-0.3, the
+trade axis fired and ruled at C-B3.
+
+**6. §E2 — three false claims in one entry.** It said the check reports *"PARTY SYSTEM NOT PRESENT… VERIFIED
+NOTHING"*, that no party seeds exist on main, and that the mark count was unknown until the seeds land.
+The real accounting is **53 seeded, 1 resolving, 52 gaps, 0 errors**, and ⚠ `MarkName` is deliberately not
+derived from the abbreviation — a derived name would claim a mark for all 53, and the check treats
+claimed-but-unresolvable as an ERROR rather than a gap. Ruling R3's verification obligation (*verified
+then, not trusted now*) is **DISCHARGED**. The R5 hex exchange is likewise ungated: Sweden's eight inks
+are sourced from Valmyndigheten's `fargkod`, and the other five countries have none because picking 30
+colours by eye for real organisations would be invention.
+
+**7. `ELECTIONS_GAP_TABLE.md` — a class column that overstated what was left by an order of magnitude.**
+Five rows still read NEW or EXTENDS after the work shipped (§3 at W-B1, §12 at W-B3, §17 at W-B8, §21 and
+§22 at W-B10), and §25's prose said built while its class column did not. Each corrected in place with its
+commit. ⚠ **The §5 row was worse than stale — it was falsified.** It instructed that voter groups be
+DERIVED-first *"from the demographic seeds the model already holds"*; W-F4 verified by grep that those
+seeds do not exist (one hit, a display string) and that the game's regions are countries. The row now says
+what §5 actually needs: sourced SCB per-valkrets marginals. **The honest count is two genuinely-unbuilt
+NEW sections of 22** — §5 and §37 — where the uncorrected column implied eight.
+
+**Two documents also gained a retirement they had been promised since 2026-08-28:** §E5 and §E6 both
+carried "the row retires with the next re-derivation", and this is that re-derivation.
+
+**Verified:** the grep bar this item set for itself — `PartyArchetype`, `TotalSeats = 200`, "not wired",
+"unreachable from any gameplay path", "VERIFIED NOTHING", "no party seeds exist on main", "UNINSPECTED" —
+returns only historical text, in `COMPLETED.md` and `CLAUDE.md`, plus this section's own quotations. No
+code touched; no check or harness affected.

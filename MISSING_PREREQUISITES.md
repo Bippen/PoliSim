@@ -15,15 +15,19 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 
 | entry | waiting on | gate |
 |---|---|---|
-| §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`, regenerated for v3.1 Phase A and superseding every earlier package: the request doc through the ninth request — v3.1's six asks with Annexes A–F — and the 1i–1n courtesy note unchanged; the two sitting screenshots go in beside Annex D from Elias's own machine). **The Phase C package was pasted 2026-08-28** — Design's `uploads/` holds the 1i–1n note (read back: our text) and the request doc as `CLAUDE_DESIGN_ASSET_REQUEST-b545233b.md` (the app names duplicates by the content digest's first eight hex; ours was `b545233b…`) — SENT, with that evidence. **The v3.1 package was pasted the same day too** — `uploads/` holds `CLAUDE_DESIGN_ASSET_REQUEST-9a98b00e.md` (the Phase A paste's digest) and the two sitting screenshots — **and Design answered the ninth request in full** (1n-r2, 1m-r2, 2a, D4, D6 on the live screens file; the hatch re-cut #3 with it). **The package was REGENERATED at the Policy Web micro-pass close (2026-08-28 late night) and now carries ONE LIVE ASK — the tenth request, D7/board 2b, with Annex G** (rows n of N, digest `85690abf…`; the courtesy note unchanged) — NOT yet pasted | the E2 convention: sending is Elias's |
-| ~~§E6 — the v3.0 Phase A boards~~ **LANDED 2026-08-28** — boards 1m ("Screen 0 — The Desk, folded", 1280×720) and 1n ("the rail") on the live screens file, no gap costed | — | built the same day (v3.0 Phase B, `COMPLETED.md` §41); the row retires with the next re-derivation |
-| §A — the coupling queue Q6–Q10; F2 | **Elias — a decision**, each at its own named trigger | no trigger has fired; nothing else waits on a ruling |
-| §D — item 10, the political game, and everything riding it (**+ the political-model fact Phase 3 measured**) | **Sweden's vote, 13 Sept 2026, then Elias's pricing decision** | the one remaining spine item |
-| §E2 — mark accounting + the R5 hexes | **item 10** | 13 Sept 2026 |
-| §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch** (nothing queues ahead of it since D1 landed 2026-08-27) | two `StatNodeId` members first — ours, before the ask |
-| ~~§E5 — the hatch tile's SVG source~~ **CLOSED end-to-end 2026-08-28, both sides** — Design's half (three cuts, the slider strip sourceless-by-design) and Elias's bar ruling the same night: the pair named **"diagonal-tile, viewed not counted"** (the three text stamps' treatment) | — | executed in `StripCutDiffCheck.ViewedNotCountedPairs` with the measurement on record; the deferral retired (R-D3's table empty) — the suite reads green with 4 viewed-not-counted and zero deferred; the pair's eye-diff is a §V row; records `COMPLETED.md` §46; the row retires with the next re-derivation |
-| §V — built, not seen (every surface on film, its capture named; `../PoliSim-captures/sv_index.html` is the one sitting) | **Elias — a visual review** | rule 3's third layer |
-| §P — three felt verdicts, each a staged save (`playtest_1_trade_bill_costs`, `playtest_2_riksbank_rate_decision`, `playtest_3_dense_midgame`) — **and, from 2026-08-29, Playtest 1's eleven findings** (Elias's Sweden session; his list `PLAYTEST_1_WORKLIST.md` at root is what answers them) | **Elias — load, play, judge**; the eleven: Claude, in the list's order and sequencing | no measurement can answer the verdicts; the findings close item by item |
+| §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`, regenerated for v3.1 Phase A and superseding every earlier package: the request doc through the ninth request — v3.1's six asks with Annexes A–F — and the 1i–1n courtesy note unchanged; the two sitting screenshots go in beside Annex D from Elias's own machine). **The Phase C package was pasted 2026-08-28** — Design's `uploads/` holds the 1i–1n note (read back: our text) and the request doc as `CLAUDE_DESIGN_ASSET_REQUEST-b545233b.md` (the app names duplicates by the content digest's first eight hex; ours was `b545233b…`) — SENT, with that evidence. **The v3.1 package was pasted the same day too** — `uploads/` holds `CLAUDE_DESIGN_ASSET_REQUEST-9a98b00e.md` (the Phase A paste's digest) and the two sitting screenshots — **and Design answered the ninth request in full** (1n-r2, 1m-r2, 2a, D4, D6 on the live screens file; the hatch re-cut #3 with it). **The package was REGENERATED at the Policy Web micro-pass close (2026-08-28 late night) and now carries ONE LIVE ASK — the tenth request, D7/board 2b, with Annex G** (rows n of N, digest `85690abf…`; the courtesy note unchanged) — NOT yet pasted. ⚠ **STALE AS RECORDED (found 2026-08-31, C-0.2):** the package states the request doc at 65 004 bytes / digest `85690abf…`, but D8 (the eleventh request) was appended to it on 2026-08-30 and the file on disk is **69 753 bytes** — so the readback hash the package's own procedure prescribes would FAIL. **The package must be regenerated before it is pasted**; C-F1 does that and deletes the stale file | the E2 convention: sending is Elias's (register row E-1) |
+| §A — the coupling queue Q6–Q10; F2 | **Elias — a decision**, each at its own named trigger | no trigger has fired (register rows T-7 / T-1…T-6) |
+| §D0 — item 10 | **nobody — the core SHIPPED** at `a289e1e`, 2026-08-30 | what remains is three named rows: K-1 the seed refresh (CALENDAR, 13 Sept), S-1 the unmoving electorate, S-2 Germany's threshold cliff |
+| §E2 — mark accounting + the R5 hexes | **nobody on our side — DONE** (53 seeded, 1 resolving, 52 gaps, 0 errors; Sweden's eight inks sourced) | the residual is Design's, as rows D-8.1 and D-8.2 |
+| §E4 — the icon promotion for R4-1's two Society rows | **Claude Design — the next batch** (nothing queues ahead of it since D1 landed 2026-08-27) | the two `StatNodeId` members are ours and land under **R-CL4** at C-F1, with a missing icon reported as a GAP rather than a check failure |
+| §V — built, not seen (every surface on film, its capture named; `../PoliSim-captures/sv_index.html` is the one sitting) | **Elias — a visual review**, 52 rows | rule 3's third layer (register row E-2) |
+| §P — three felt verdicts, each a staged save (`playtest_1_trade_bill_costs`, `playtest_2_riksbank_rate_decision`, `playtest_3_dense_midgame`) — **and, from 2026-08-29, Playtest 1's eleven findings** | **Elias — load, play, judge** (verdicts 1 and 3; verdict 2 became P-D1 and is discharged by C-C7). The findings' own queue is `POLISIM_BACKLOG.md` §1 Track C, not this file | no measurement can answer a verdict |
+
+⚠ **Retired at this re-derivation (2026-08-31, C-0.2), both having said "retires with the next
+re-derivation" since 2026-08-28:** ~~§E5, the hatch tile's SVG source~~ — CLOSED end-to-end, both sides,
+the pair ruled "diagonal-tile, viewed not counted" and executed in `StripCutDiffCheck.ViewedNotCountedPairs`
+(`COMPLETED.md` §46); ~~§E6, the v3.0 Phase A boards~~ — LANDED 2026-08-28, boards 1m and 1n on the live
+screens file with no gap costed (`COMPLETED.md` §41). Neither is a gesture Elias still owes.
 
 ---
 
@@ -68,102 +72,92 @@ FULL to `COMPLETED.md` §23 so none is reopened as an unanswered question later.
 
 # D. Waiting on another task
 
-## 🔴 D0. Item 10 — REALISTIC POLITICS AND ELECTIONS (gate: Sweden votes 13 September 2026; priced after)
+## 🟢 D0. Item 10 — REALISTIC POLITICS AND ELECTIONS: the core SHIPPED (re-derived 2026-08-31, C-0.2)
 
-**The one remaining spine item, and the anchor every entry below rides.** Item 10 IS the work specified
-in `POLISIM_POLITICS_ELECTIONS_ROADMAP.md` on `stranded/politics-elections` (commit `ca6c510`,
-preserved UNINSPECTED): real parties and institutions under the split rule 9 (institutions may be real;
-people never are), per-country chambers and electoral formulas, the hybrid national-swing vote model,
-USA as the first vertical slice. **Gate, per Elias 2026-08-12: priced after Sweden votes 13 September
-2026** — the branch's own seed data carries retrieval dates for exactly this expiry (rule 9's recorded
-cost: seed data is now a cached value with an expiry). The branch doc's §1 maps what item 10 replaces on
-`main` (`PartyArchetype`, `TotalSeats = 200`, `ElectionSystem`'s approval threshold) and what it keeps
-(seat drift, bill scoring, the renderers, `PublicationSystem` for polling) — main's documents describe
-the four-archetype system as current because it IS current; the disposition of the collision is item
-10's own work.
+⚠ **This entry described item 10 as the unbuilt spine and was the anchor four other entries rode. It is
+false at HEAD and is corrected here, not edited forward; its full former text is preserved at
+`COMPLETED.md` §85.** Four of its claims went untrue on 2026-08-30: that the stranded branch is
+*"preserved UNINSPECTED"*; that *"main's documents describe the four-archetype system as current because
+it IS current"*; that the five `mark_party_*` sprites are *"drawn by NOTHING on `main`"*; and that
+`PartyMarkCoverageCheck` reports *"PARTY SYSTEM NOT PRESENT"*.
 
-**Opens as ONE package:** the seed-data refresh from the real result; the Italy allocator pricing
-(constituency D'Hondt — the 70-seat error's fix) with the Sweden 2014 six-seat error explained in the
-same pass (branch-side claims, VERIFIED AT STEP 4 — the stranded branch's work is proposals to verify,
-never merged as-is; the four allocator findings and their provenance are
-`POLISIM_SEED_DATA_MACRO_OVERHAUL.md` Part 5, none independently confirmed, `seat_allocation_check.py`
-existing only on the branch); the collision-map disposition executed (`PartyArchetype` retires,
-`emblem_*` → `mark_*`, renderers re-key, `PartyMarkCoverageCheck`'s "PARTY SYSTEM NOT PRESENT"
-honest-nothing flips to real accounting — **ruling R3's verification obligation: the check's reflection
-over `BuildParties()` should survive the model swap, to be VERIFIED then, not trusted now**); the
-`ElectionRecord` designed against the real model (elections leave only a transient result today —
-scoped in CLAUDE.md "Election-night scoping", not built; ruling R2); **election night, Canvas screen 1h — BUILT at W-E6 (2026-08-30), harness-only under R-N2; the persisted `ElectionRecord` the scoping note asks for is still what WIRING will need, and is unchanged by this**
-(3 of 3 — the spec is `POLISIM_V2_SCREEN_SPEC.md` §A.14, the sole item-10-gated content there; its asset
-cost: one mark per seated party, count unknown until the seeds land, five `mark_party_*` on disk; the
-verdict stamp is the generic §A.11 treatment unless Design asks for baked art at the 1h board); **the R5
-hex exchange and §E2's accounting** (below); **the five `mark_party_*` sprites** (`us_rep`, `us_dem`,
-`us_lib`, `se_s`, `se_v` — imported, RGBA32, guarded, and drawn by NOTHING on `main`: no `PoliticalParty`,
-no `IconLibrary.GetPartyMark`; the `menu_pattern_tile` shape, an asset ahead of its consumer, recorded up
-front). **Standing constraint until then (Elias, 2026-08-12, R3): no main-side changes.**
+**What shipped (W-G1, `a289e1e`, 2026-08-30; `COMPLETED.md` §79).** `PartyArchetype` retired for **53
+real parties** across six real chambers (Sweden 349, Germany 630, France 577, Italy 400, Poland 460, USA
+435), each carrying the position CHES 2024 (GPS 2019 for the USA) publishes and the seats its own
+country's most recent election gave it. `ParliamentConstants.TotalSeats = 200` is gone. The collision map
+executed in full: seat drift retired with it (**a parliament's composition does not drift week by week
+with the government's approval — it changes at an election**), `GetSeatWeightedAlignment` re-expressed
+over the measured chamber, `PublicationSystem` kept as the polling substrate, the renderers re-keyed.
+`ElectionRecord` is persisted on `Country` inside `World` and `SaveVersion` bumped 1 → 2. **Two of six
+countries hold a real election and the other four state why not.** Ruling R3's verification obligation is
+DISCHARGED (§E2 above). The R-N2 invariant retired in the same commit, which is its own revert handle.
 
-**A political-model fact measured by the omnibus pass, filed here because the re-seeding is what changes
-it (2026-08-28, Phase 3, `11c28a2`):** under `PartyArchetypeData` the Progressive and Conservative seat
-targets are identical at every approval level (base share 0.32 / 0.32, approval sensitivity 0.35 / 0.35),
-so the expected expansionary alignment is −0.0015 × Nationalist seats — negative everywhere (−0.036 at
-seed, −0.006 at approval 100, −0.09 at approval 30) — and **no expansionary bill passes on any drift path
-except by ±1-seat jitter** (`MaxSeatJitter`). Every tax-raising, spending-raising and welfare-implementing
-bill fails in the pre-item-10 game; every cut passes. It killed The Unequal Recovery (the transfer
-programs are the only levers strong enough to move Gini, and all of them are expansionary); it is also the
-standing state every playtest since step 4 has been played in. Not tuned around (R-K2); the scenario's
-return trigger is the real parties.
+**What remains of item 10, exactly.** Three things, and each has exactly one row in
+`POLISIM_BACKLOG.md` — this entry queues none of them:
 
-**Riding the same gate:**
+- **The seed refresh from Sweden's real result** — row **K-1**, owner CALENDAR, 13 September 2026.
+  Scheduled, not blocked.
+- **The electorate does not move with the simulation** — row **S-1**. §8 couples it to the economy and
+  nothing does that yet, so a second election in one game returns the first's result. Named rather than
+  papered over with a jitter that would look like change without being it.
+- **Germany's threshold cliff** — row **S-2**. BSW missed 5 % by 0.02 pp; a model with ~1.5 pp of error
+  lands on the wrong side and ninety seats move. Reported, never tuned.
 
-- **Step 6 — Story mode** (gate: item 10 shipped). Scoped fresh on the political layer: authored
-  multi-beat arcs with memory on the minister/interrupt/ceremony skeleton. Nothing pre-scoped beyond
-  the gate.
-- **Riksbank-B — independence with appointment influence, the DESTINATION** (playtest-2 item 5, ruled
-  2026-08-25: C now, B the destination). The Fed Chair mechanism is the generalization point
-  (`Country.CurrentFedChair` non-null is the entire gate; seeding Sweden a governor enables it
-  mechanically today). Gate 1 — the output-gap distortion — ✅ CLEARED 2026-08-26 by pass 4 (the rule
-  reads the unemployment gap; the USA's suggestion left the floor; the chairs differentiate). **Gate 2
-  — this item's appointment machinery — is B's only gate:** appointment is political-game material
-  (candidates, a cadence, the reveal), so it ships with item 10, not before. Option C stands as the ruled
-  present state (the player-set rate named as a deliberate choice in the slider's own text). ⚠ **Playtest
-  pressure recorded (2026-08-26, Elias's Editor session): C's naming does not satisfy in play — the felt
-  verdict was "still not independent."** B rises in priority when item 10 opens.
-- **`stranded/politics-elections` STAYS AS-IS until item 10 is scheduled** (ruled 2026-08-11): pushed,
-  safe off-machine; merging ~3,500 lines of unreviewed simulation code into `main` is what the branch
-  exists to prevent; its remaining layout work is not extracted without a failing measurement. **Full
-  contents, so nobody has to check it out** (commit `ca6c510`, 30 files):
+**The four riders this entry carried, disposed:**
 
-  | Group | Files |
-  |---|---|
-  | **New data model** (6) | `Chamber`, `ElectoralFormula`, `ElectorateCohort`, `PoliticalParty`, `ThresholdRule`, `UnitedStatesSeed` |
-  | **New simulation** (4) | `NationalVoteModel`, `SeatAllocation`, `UnitedStatesElectionCycle`, `UnitedStatesElections` |
-  | **Modified, layout half now on `main`** (3) | `GameController`, `PoliSimWidgets`, `IconLibrary` |
-  | **Modified, not extracted** (1) | `SimulationManager` |
-  | **Python** (4) | `seat_allocation_check`, `usa_election_check`, `ledger_geometry_check`, `screenshot_edge_check` — the last two superseded on `main` (`ScreenEdgeCheck`; the 1440p capture ruling); Python is not installed here |
-  | **Docs** (6) | `POLISIM_POLITICS_ELECTIONS_ROADMAP` (new), plus branch-side edits to `CLAUDE`, `CLAUDE_DESIGN_ASSET_REQUEST`, `MISSING_PREREQUISITES`, `POLISIM_MASTER_ROADMAP`, `POLISIM_SEED_DATA_MACRO_OVERHAUL` |
-  | **Editor, since superseded on `main`** (6) | `CheckSuite`, `DeliveredAssetCheck`, `ImporterSettingsCheck`, `PartyMarkCoverageCheck`, `ScreenEdgeCheck`, `StatIconCoverageCheck`, `UiScreenshotCapture` — differ only because `main` moved on; **nothing on the branch is newer** |
+- **Step 6, story mode** — its gate was "item 10 shipped", which has happened; its remaining gate was the
+  player-party question, **ruled 2026-08-30 as R-CL1**. Re-gated at clearance item **C-B5**.
+- **Riksbank-B** — its only gate was "the appointment machinery ships with item 10". ⚠ **Merged, not
+  inherited:** Playtest-1's finding 7 (P-D1) specifies the same subject — declared reaction functions plus
+  appointment influence **is** Riksbank-B — so the two are ONE item at **C-C7**, carrying the felt verdict
+  *"still not independent"* (2026-08-26) with it. Gate 1 (the output-gap distortion) was cleared
+  2026-08-26 by pass 4.
+- **`stranded/politics-elections`** — inspected once and **disposed at C-0.3**; the ref is kept, the
+  obligation retired. Its C# is superseded by `Assets/Scripts/Elections/` and W-G1; the four pieces of its
+  roadmap doc that were NOT superseded are migrated to `COMPLETED.md` as history.
+- **A trade axis for the Trade bill's vote** — the trigger ("where real parties land") has fired.
+  **Ruled 2026-08-30 as R-CL2**: `eu_position` stands in as the openness axis, tagged as the
+  approximation it is. Executed at **C-B3**.
 
-- **A trade axis for the Trade bill's vote** (pass 6's deferred set): the direction reads the fiscal
-  axis by Elias's ruling until real parties give trade its own.
+**A political-model fact this entry recorded, now HISTORICAL and worth keeping for its lesson
+(2026-08-28, Phase 3, `11c28a2`).** Under `PartyArchetypeData` the Progressive and Conservative seat
+targets were identical at every approval level (base share 0.32 / 0.32, sensitivity 0.35 / 0.35), so the
+expected expansionary alignment was −0.0015 × Nationalist seats — negative everywhere — and **no
+expansionary bill passed on any drift path except by ±1-seat jitter**. Every tax-raising, spending-raising
+and welfare-implementing bill failed; every cut passed. It killed The Unequal Recovery, and it is the
+state every playtest through 2026-08-30 was played in. ⚠ **It was not tuned around (R-K2) and it did not
+need to be: the archetypes and the drift are gone.** The measurement now runs over the real chamber's
+published `lrecon`, and re-measuring it against the seeded chambers is what the scenario's return trigger
+always was.
 
 ---
 
 # E. Waiting on Claude Design
 
-## 🟡 E2. `mark_party_us_lib` — delivered and imported 2026-08-17; the branch-side accounting is the residual (gate: item 10, 13 Sept 2026)
+## 🟢 E2. The mark accounting — GATE FIRED, the accounting DONE, the residual is Design's (re-derived 2026-08-31, C-0.2)
 
-The sprite-side conditions are met: imported to `Emblems/` (meta from the MARK family, fresh GUID,
-`ImporterSettingsCheck` green — the WoA classification read from pixels, not the label). ⚠ This entry's
-close condition was "PartyMarkCoverageCheck reports it resolving at RGBA32" — and on MAIN that check
-honestly reports **"PARTY SYSTEM NOT PRESENT on this branch... VERIFIED NOTHING"**: the party seeds live
-on `stranded/politics-elections`, item-10-gated. The accounting half runs when the branch does —
-orphan-by-sequencing, the same recorded status as the other four marks (§D0). Delivery story:
-`COMPLETED.md` §24 (the §1G record) and CLAUDE.md's 2026-08-17 import entry.
+⚠ **This entry's three load-bearing claims were all false at HEAD and are corrected here rather than
+edited forward.** It said the check reports *"PARTY SYSTEM NOT PRESENT… VERIFIED NOTHING"*; that **no
+party seeds exist on main**; and that the mark count was **unknown until the seeds land**. W-G1
+(`a289e1e`, 2026-08-30) made all three untrue on the same day.
 
-**Riding the same gate: the R5 hex exchange.** Design's flag ("LP gold needs an ink-safe darkened
-`DisplayColor` — pass it with Sweden's set") is GATED BY NAME on item 10 — no party seeds exist on main,
-so no hexes exist to send. The exchange fires when the gate opens; Design is waiting on a calendar, not
-on us. **Election night's legend will need one mark per seated party** — count unknown until the seeds
-land, five on disk — named here so it does not arrive as a surprise batch the week the gate opens.
+**What is true.** The sprite-side conditions were always met (imported to `Emblems/`, meta from the MARK
+family, fresh GUID, `ImporterSettingsCheck` green — the WoA classification read from pixels, not the
+label; `COMPLETED.md` §24 and CLAUDE.md's 2026-08-17 import entry). The accounting half now runs for
+real: **`PartyMarkCoverageCheck` reports 53 seeded parties, 1 with a resolving mark, 52 without, 0
+errors.** ⚠ `MarkName` is deliberately **not** derived from the abbreviation — a derived name would claim
+a mark for all 53, and the check treats claimed-but-unresolvable as an ERROR rather than a gap. That is
+ruling R3's verification obligation (*the reflection was to be verified then, not trusted now*)
+**DISCHARGED**.
+
+**The R5 hex exchange, likewise ungated.** Sweden's eight parties carry Valmyndigheten's published
+`fargkod` through `PoliSimTheme` at the desk's own saturation and value; the other five countries have no
+ink and `HasPartyInk` returns false, because picking 30 colours by eye for real organisations would be
+invention. So the exchange is **Sweden's eight hexes, plus 45 parties named as uncoloured** — not a gate.
+
+**Nothing here is waiting on us any more.** The residual is two rows of the Design ask (D8-1, the 52
+undrawn marks; D8-2, the colour ruling for five countries) and it lives, once, as rows **D-8.1** and
+**D-8.2** in `POLISIM_BACKLOG.md` §3. This section retires with the next re-derivation.
 
 ⚠ **Zone.Identifier check CLOSED (2026-08-26, Windows-side):** all five `mark_party_*.png` carry only the
 `:$DATA` stream — no mark-of-the-web ADS exists on any of them. The outstanding item the request doc's

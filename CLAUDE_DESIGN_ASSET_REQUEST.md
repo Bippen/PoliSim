@@ -425,13 +425,13 @@ clock frames).** Rest: `pweb_1280_06d_policylaws_policyweb.png`, `pweb_2560_06d_
 | `PortraitCoverageCheck` | **25 of 25 resolve** (18 ministers across six portfolios + 7 Fed chairs; the sitting chair reported, not counted) | every `CabinetSystem.CandidatePool` and `FederalReserveSystem.CandidatePool` member through `IconLibrary`'s accessors |
 | `ChromeV2CoverageCheck` | **50 of 50 both directions** | `ChromeManifest.txt` against `Chrome/` |
 | `ImporterSettingsCheck` | **148 sprites, 0 errors, 0 warnings** (112 white-on-alpha tinted, 35 full-colour, 1 tiling) | every `*.png` under `Assets/Resources/Art/UI/`, asserted against the imported texture |
-| `PartyMarkCoverageCheck` | **PARTY SYSTEM NOT PRESENT — VERIFIED NOTHING** (honest; item 10's gate) | seeded parties' marks — none exist on `main` |
+| `PartyMarkCoverageCheck` | ⚠ **re-derived 2026-08-31: 53 seeded, 1 resolving, 52 gaps, 0 errors.** The row read "PARTY SYSTEM NOT PRESENT — VERIFIED NOTHING" until W-G1 (`a289e1e`) put 53 real parties on `main` | every `PartySystems.BuildParties()` member; a missing mark is a GAP, a claimed-but-unresolvable one an ERROR |
 
 **On disk (148 PNGs):** Chrome 50 · Emblems 9 (4 `emblem_party_*` + 5 `mark_party_*`) · Flags 6 · Icons
 14 (4 `icon_nav_*` + 10 `icon_area_*`) · **Portraits 25** · Stats 43 · Textures 1.
 
 **Coverage by display enum — complete, nothing to ask:** `StatNodeId` 18/18 · `ConsolidatedTab` 6 of 6
-tabs draw an icon · `PartyArchetype` emblems 4/4 · `CountryId` flags 6/6 · **`CabinetSystem.CandidatePool`
+tabs draw an icon · ⚠ `PartyArchetype` emblems 4/4 — **the enum is RETIRED; the four `emblem_party_*` sprites are orphaned by W-G1 and their disposition is D8-1's** · `CountryId` flags 6/6 · **`CabinetSystem.CandidatePool`
 18/18** · Fed chair pool 7/7 · `menu_pattern_tile` 1/1 · the chrome pack 50 = 50.
 
 **Delivered and held — DO NOT RE-REQUEST, the wiring is ours:** 25 of the 43 `Stats/` sprites have no
@@ -586,7 +586,7 @@ nothing.
 | `icon_nav_<tab>` | `ConsolidatedTab`, lowercased — four of six; Budget and Politics reuse area icons by design | `icon_nav_policylaws` |
 | `portrait_cabinet_<portfolio>_<name_slug>` | `CabinetPortfolio` + `IconLibrary.Slug(name)` | `portrait_cabinet_foreignaffairs_zofia_nakamura` |
 | `portrait_fedchair_<name_slug>` | `Slug(name)` | `portrait_fedchair_priya_anand` |
-| `emblem_party_<archetype>` | `PartyArchetype`, lowercased | `emblem_party_centristcoalition` |
+| ~~`emblem_party_<archetype>`~~ | ⚠ `PartyArchetype` is RETIRED (W-G1); the four sprites are orphaned and their disposition is D8-1's | `emblem_party_centristcoalition` |
 | `mark_party_<country>_<party>` | the party seed's mark name | `mark_party_us_lib` |
 | `flag_country_<countryid>` | `CountryId`, lowercased | `flag_country_poland` |
 | `ui_<control>_<state>` | control + state, one sprite per state | `ui_btn_brass_canvas_hover` |
