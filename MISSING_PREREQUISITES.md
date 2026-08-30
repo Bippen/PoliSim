@@ -356,7 +356,7 @@ executes as written unless struck · P-G3's recalibrations apply only on his str
 line · P-H1 and P-I1 spec-lets need his ruling before code · board 2b's paste (P-F2) remains his
 gesture.
 
-## 🟡 W-C2's re-homed rider — the campaign manager's plan over EVERY fixed cost (recorded 2026-08-30)
+## ✅ W-C2's re-homed rider — OPENED AS ITS OWN ITEM **W-B12** by ruling 2026-08-30
 
 **What it is.** W-B5 measured that **every party in the AI campaign goes broke before polling day** —
 offices, their operations and the payroll are fixed daily costs the spending pace does not see (of
@@ -370,9 +370,11 @@ shipped (`COMPLETED.md` §69). The plan still sets money aside for **television 
 closing W-C2 on its own done-when would otherwise have left this rider pointing at a finished item —
 so it is recorded here rather than implied.
 
-**Where it goes.** **W-F5** (party funding and campaign spending) is the natural home: unequal war
-chests are the same conversation as what a party can afford to keep. It could also be its own item.
-Either way it needs a decision from Elias, not a default.
+**Where it went. RULED 2026-08-30 (Elias): its own item, `W-B12`, NOT a rider on W-F5** — because
+it is a **playability requirement and must not inherit W-F5's data dependency**: it needs no sourced
+funding figures, only a rule over costs the model already charges. Slotted after W-E8 and before
+Track F in `ELECTIONS_PROTOTYPE_WORKLIST.md`, where its done-when lives. This section stays as the
+finding's provenance.
 
 **What it would change.** A managed party would stop starving its own staff; the pace would release
 what is left after the organisation is paid; and C1's 2a-iii (professional / establishment 0.061

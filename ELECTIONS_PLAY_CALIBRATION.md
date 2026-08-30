@@ -400,6 +400,9 @@ tie on cost (the cheapest defence) rather than on §12's order (a rally)?
 **What must NOT happen.** A threshold, a cooldown, a reactivity or an affinity moved so C1's 2a-iv
 (est/grass 0.291) crosses 0.300 — the line pends on **unequal money and unequal paces (W-F5)**, which
 is what separates two parties that both react, and moving any of these to clear it would be tuning a
-constant to open a gate. The half-life or the act weights moved so a particular party reacts in a
+constant to open a gate. **RULED 2026-08-30 (Elias): the line stays at 0.291. Nine thousandths is
+precisely the distance at which a threshold move stops being calibration and becomes making the
+test pass. If W-F5 lands and it still reads 0.291, that is a FINDING ABOUT THE MODEL to report and
+explain, not a rounding problem to close.** The half-life or the act weights moved so a particular party reacts in a
 particular scenario. The public record given anything a party could not see — a share, a preference,
 a true salience, or the doors an office knocked.

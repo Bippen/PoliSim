@@ -125,6 +125,20 @@ derived function of campaign activity, events and performance; momentum with **d
 returns** so it cannot spiral. *Done when:* a coverage spike decays on the measured curve and the
 same message measurably performs differently by outlet audience.
 
+**W-B12 — The campaign manager's FULL cost plan (§9; opened by ruling 2026-08-30 from the
+W-C2 review).** W-B5 built the manager's `BudgetPlan` over television alone, and W-B5's finding 2
+measured the consequence: offices, their operations and the payroll are fixed daily costs the
+spending pace does not see, so **every party in the AI campaign goes broke before polling day** (of
+120 staff-days: SD 38 unpaid, V 12, S 10, M 6). The plan must cover **every fixed cost — staff,
+offices, maintenance, travel — not television alone: pay the organisation first, release the rest.**
+This is a **playability requirement and must NOT inherit W-F5's data dependency** — it needs no
+sourced funding figures, only a rule over costs the model already charges. *Done when:* a managed
+party pays its organisation to polling day with zero unpaid staff-days in the C1 staging, the pace
+releases only what remains, and C1's 2a-iii (professional / establishment) is re-measured and
+reported either way — never tuned to separate.
+*Order:* **after W-E8 and BEFORE Track F** — the remaining run is D3 → D4 → E5–E8 →
+**B12** → F (as data arrives) → G1–G4 → H.
+
 **W-B10 — Polling (§20–22).** Public polls with sample, MoE, field date and house effects;
 purchasable internal polling at better precision; momentum as a moving average with decay. *Done
 when:* polls never exactly equal the underlying truth, the MoE is honest (coverage tested over
@@ -134,6 +148,19 @@ replays), and the poll object is what the UI reads — the UI never sees the tru
 phone banking, door knocking, transport and election-day operations. *Done when:* mobilisation
 spending measurably moves turnout in targeted regions only, and the national turnout stays inside
 historically plausible bounds.
+
+> **STANDING DESIGN QUESTION against W-B4 / W-B11 (opened by ruling 2026-08-30, W-C2's
+> measurement; NOT a closed finding, and nothing to be pre-emptively adjusted).** W-C2 measured that
+> the rational personalities scarcely campaign locally at all: over ten 60-day campaigns the
+> professional made **0.9 local acts a campaign** and the establishment **0.8**, against the chaotic
+> party's **59.8** — and 8 of the professional's 9 were the reaction RULE sending it, not its own
+> weighing. Now that local reach exists as an absolute count (W-B4's organisation, W-B11's
+> volunteer-bound doors), **re-check whether professional and establishment AIs still avoid the
+> ground game, and report WHICH of the two causes it is, with the measurement:** either the MODEL
+> underpowers local action (a region's audience against a national one's for the same hours) or the
+> AI's EXPECTED-VALUE function undervalues local reach (§33's weighting). §34 says the design must
+> not reward a single dominant approach, so this decides whether a **mechanism** or a **weighting**
+> needs work. Do not adjust either before the measurement says which.
 
 ---
 

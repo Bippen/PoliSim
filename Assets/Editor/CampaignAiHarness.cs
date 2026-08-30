@@ -308,6 +308,14 @@ namespace PoliSim.EditorTools
             // (the whole point of the line). What separates two parties that both react is what
             // they can afford to react WITH: unequal war chests and unequal paces (W-F5). Held as a
             // PEND with its measurement so the day it clears is visible.
+            //
+            // RULED 2026-08-30 (Elias, on the W-C2 review): the line STAYS at 0.291 and the
+            // threshold is not to be nudged. Nine thousandths is precisely the distance at
+            // which a threshold move stops being calibration and becomes making the test
+            // pass. It waits on W-F5's unequal war chests, following this line's own
+            // precedent from W-B11. AND: if W-F5 lands and this still reads 0.291, that is a
+            // FINDING ABOUT THE MODEL - two parties that both react converging is something
+            // to report and explain - not a rounding problem to be closed.
             pending += Pending(sb, "2a-iv. the grassroots personality's mix differs from both media personalities' (L1 >= 0.30) - CLEARED at W-B4, back to PENDING W-F5 at W-C2: reactivity puts the establishment on the ground in a contested region and closes est/grass to within 0.01 of the line",
                 string.Format(CultureInfo.InvariantCulture, "prof/grass {0:F3}, est/grass {1:F3}", pairwise[0, 3], pairwise[2, 3]),
                 pairwise[0, 3] >= 0.30 && pairwise[2, 3] >= 0.30);
