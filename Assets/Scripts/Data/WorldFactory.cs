@@ -944,12 +944,13 @@ namespace PoliSim.Data
             world.Countries.AddRange(new[] { usa, sweden, germany, france, italy, poland });
             world.TradeBlocs.Add(europeanUnion);
 
-            // Political Systems Overhaul Part B (Parliament), Master Sequence step 4: every country
-            // starts at ApprovalRating 50, so PartyArchetypeData.GetInitialSeats() (which assumes
-            // exactly that) is a correct seed for all six, not just a convenient shortcut for one.
+            // W-G1: every country is seeded from ITS OWN most recent real election
+            // (PartySystems.InitialSeats), not from a shared archetype table. The old seed gave all
+            // six the SAME four fictional parties in the same proportions, on the assumption that
+            // every country starts at ApprovalRating 50. The six now start as the six real chambers.
             foreach (Country country in world.Countries)
             {
-                country.ParliamentSeats = PartyArchetypeData.GetInitialSeats();
+                country.ParliamentSeats = PartySystems.InitialSeats(country.Id);
             }
 
             return world;

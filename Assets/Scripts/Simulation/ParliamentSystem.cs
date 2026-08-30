@@ -6,8 +6,8 @@ namespace PoliSim.Simulation
 {
     /// <summary>
     /// Political Systems Overhaul Part B, full rollout. Two independent pieces: seat composition
-    /// (recomputed every turn for every country from ApprovalRating, per PartyArchetypeData's own doc
-    /// comment) and the gated-legislation flow, now covering all three bill tiers - the omnibus Annual
+    /// (W-G1: seeded from each country's own most recent real election and changed ONLY by an
+    /// election - it was recomputed every turn from ApprovalRating while parties were fictional) and the gated-legislation flow, now covering all three bill tiers - the omnibus Annual
     /// Budget bill (BudgetBill), standalone program add/remove bills (TaxProgramBill/
     /// WelfareProgramBill), and standalone non-budget policy bills (LaborPolicyBill/
     /// CrimeJusticePolicyBill/SectorPolicyBill/TradePolicyBill) - each introduce -&gt; wait
@@ -22,14 +22,10 @@ namespace PoliSim.Simulation
         /// <summary>Real in-game days a bill spends "in Parliament" before resolving - stands in for the roadmap's introduction/committee/debate stages without modeling them separately, a deliberately simple first pass. A placeholder like Phase 0's own GameSpeed pacing, not tuned against playtesting.</summary>
         public const int BillDurationDays = 21;
 
-        /// <summary>Bounded inertia: actual seats move toward the ApprovalRating-derived target by at most this many seats per turn - never snapping instantly, the same "gap-based target + reversion rate, clamped" idiom this codebase already uses for ApprovalRating/CrimeIndex/PovertyRate.</summary>
-        private const int MaxSeatsChangePerTurn = 6;
-
-        /// <summary>Small bounded per-party random walk applied alongside the inertia step, per the roadmap's own "plus bounded inertia/randomness" instruction - ordinary political volatility, not a swing election every turn.</summary>
-        private const int MaxSeatJitter = 1;
-
-        /// <summary>Floor so no archetype's TARGET share is ever computed as exactly 0 (a party can still shrink toward 0 actual seats via inertia over many turns, but the formula itself never assigns it a literal-zero target).</summary>
-        private const float MinTargetShare = 0.02f;
+        // W-G1 RETIRED: MaxSeatsChangePerTurn, MaxSeatJitter and MinTargetShare governed the
+        // per-turn drift of seats toward an ApprovalRating-derived target. Seats now change only at
+        // an election, so a per-turn step, its jitter and a floor on a target share have nothing
+        // left to govern. The Parliament random stream is untouched and stays declared.
 
         /// <summary>Flat ApprovalRating cost when a bill fails - a smaller, "not really the player's fault" magnitude than Cabinet's own 2-point ReshuffleApprovalCost, since failure here is Parliament's decision, not a player misstep.</summary>
         public const float BillFailedApprovalCost = 1.5f;
@@ -37,83 +33,54 @@ namespace PoliSim.Simulation
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Parliament);
 
         /// <summary>
-        /// Recomputes this country's target seat shares from its current ApprovalRating
-        /// (PartyArchetypeData's own doc comment explains each archetype's ApprovalSensitivity), then
-        /// moves actual seats toward that target by a bounded step plus small jitter - never snapping.
-        /// Called once per turn, for every country, from SimulationManager.AdvanceTurn.
+        /// W-G1: seats are seeded from the country's OWN most recent real election
+        /// (`PartySystems.InitialSeats`) and then **do not move between elections**.
+        ///
+        /// **What this replaced, and why.** Until W-G1 this method recomputed every country's seat
+        /// shares EVERY TURN from `ApprovalRating`, using a per-archetype `ApprovalSensitivity`
+        /// (+0.35 for the three "establishment" archetypes, −0.90 for the "protest" one) plus a
+        /// bounded step and jitter. That existed because there were four generic fictional
+        /// archetypes and no real parties, so a seat composition had to come from somewhere.
+        ///
+        /// **It cannot survive real parties, and should not.** `ApprovalSensitivity` per real party
+        /// is not published by CHES, by GPS, or by anyone else — inventing eight of them for Sweden
+        /// and nine for Germany is exactly what §0.4 forbids. And the behaviour it produced was
+        /// wrong anyway: **a parliament's composition does not drift week by week with the
+        /// government's approval. It changes at an election.** That is what item 10 builds, and this
+        /// is the placeholder it replaces.
+        ///
+        /// Called once per turn for every country from `SimulationManager.AdvanceTurn`; seeding is
+        /// idempotent, so the call stays where it was and simply has nothing to do once seeded.
         /// </summary>
         public static void UpdateSeats(Country country)
         {
             if (country.ParliamentSeats == null || country.ParliamentSeats.Count == 0)
             {
-                country.ParliamentSeats = PartyArchetypeData.GetInitialSeats();
-                return;
+                country.ParliamentSeats = PartySystems.InitialSeats(country.Id);
             }
-
-            var targetShares = new Dictionary<PartyArchetype, float>();
-            float totalShare = 0f;
-            foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
-            {
-                float share = PartyArchetypeData.GetBaseSupportShare(archetype)
-                    + PartyArchetypeData.GetApprovalSensitivity(archetype) * (country.State.ApprovalRating - 50f) / 100f;
-                share = Mathf.Max(MinTargetShare, share);
-                targetShares[archetype] = share;
-                totalShare += share;
-            }
-
-            var targetSeats = new Dictionary<PartyArchetype, int>();
-            foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
-            {
-                targetSeats[archetype] = Mathf.RoundToInt(targetShares[archetype] / totalShare * ParliamentConstants.TotalSeats);
-            }
-            ReconcileToTotal(targetSeats);
-
-            var newSeats = new Dictionary<PartyArchetype, int>();
-            foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
-            {
-                int current = country.ParliamentSeats.TryGetValue(archetype, out int c) ? c : 0;
-                int step = Mathf.Clamp(targetSeats[archetype] - current, -MaxSeatsChangePerTurn, MaxSeatsChangePerTurn);
-                int jitter = RandomSource.Next(-MaxSeatJitter, MaxSeatJitter + 1);
-                newSeats[archetype] = Mathf.Max(0, current + step + jitter);
-            }
-            ReconcileToTotal(newSeats);
-
-            country.ParliamentSeats = newSeats;
         }
 
-        /// <summary>Rounding/jitter can drift the sum away from TotalSeats by a couple of seats either way - reconciled deterministically onto whichever party currently holds the most seats, simplest possible fix-up rather than a proportional redistribution.</summary>
-        private static void ReconcileToTotal(Dictionary<PartyArchetype, int> seats)
+        /// <summary>
+        /// W-G1: the ONLY thing that changes a chamber — an election result, keyed by the same
+        /// abbreviations `PartySystems` uses. Seats not named by the result are set to zero rather
+        /// than left at their old value, because a party that won nothing holds nothing.
+        /// </summary>
+        public static void SetSeatsFromElection(Country country, IReadOnlyDictionary<string, int> wonSeats)
         {
-            int sum = 0;
-            foreach (KeyValuePair<PartyArchetype, int> kvp in seats)
+            var seats = new Dictionary<string, int>();
+            foreach (PoliticalParty p in PartySystems.For(country.Id))
             {
-                sum += kvp.Value;
+                seats[p.Abbrev] = wonSeats != null && wonSeats.TryGetValue(p.Abbrev, out int w) ? w : 0;
             }
 
-            int diff = ParliamentConstants.TotalSeats - sum;
-            if (diff == 0)
-            {
-                return;
-            }
-
-            PartyArchetype largest = PartyArchetype.ProgressiveAlliance;
-            int largestSeats = -1;
-            foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
-            {
-                if (seats[archetype] > largestSeats)
-                {
-                    largestSeats = seats[archetype];
-                    largest = archetype;
-                }
-            }
-
-            seats[largest] = Mathf.Max(0, seats[largest] + diff);
+            country.ParliamentSeats = seats;
         }
 
         /// <summary>
         /// Bill's net fiscal direction: positive = net expansionary (more tax revenue and/or more
         /// spending), negative = net contractionary, 0 = neutral/mixed - the SAME "big government vs.
-        /// small government" axis PartyArchetypeData.FiscalStance already scores against, generalized
+        /// small government" axis `PartySystems.FiscalStance` scores against (W-G1: DERIVED from CHES
+        /// `lrecon`, replacing four hand-set placeholder constants), generalized
         /// from Master Sequence step 4's Tax-only version (which compared bill-requested vs. standing
         /// rate per TaxType) to also sum Spending's requested percentage changes and Welfare's
         /// requested generosity deltas. Master Sequence step 5d moved implement/remove OUT of this
@@ -193,18 +160,56 @@ namespace PoliSim.Simulation
         /// "N of 200 seats, needs 101" would be asserting something the simulation does not do - see
         /// GameController.DrawPendingLegislation for the diverging-lean bar used instead.
         /// </summary>
+        /// <summary>
+        /// W-G1: **re-expressed on real parties, not left alone.** The old version summed over four
+        /// fictional archetypes with hand-set fiscal stances, normalised by a fictional 200-seat
+        /// chamber. It now sums over the country's real seat-holders, with each stance DERIVED from
+        /// that party's published CHES `lrecon` (`PartySystems.FiscalStance`) and normalised by that
+        /// country's real chamber size.
+        ///
+        /// ⚠ **A unit with no published position contributes NOTHING and is not counted in the
+        /// denominator either** — France's `UG` bloc, Poland's `TD` committee, Italy's minor lists.
+        /// The alignment is therefore over the MEASURED part of the chamber, and
+        /// `MeasuredSeatShare` says how much of it that is, so a caller can state the coverage
+        /// instead of implying the whole chamber was weighed. §36: what is unmeasured is reported
+        /// as unmeasured, never folded in at zero and never at the centre.
+        /// </summary>
         public static float GetSeatWeightedAlignment(Country country, float direction)
         {
             float billSign = Mathf.Sign(direction);
             float weightedAlignment = 0f;
-            foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
+            float measuredSeats = 0f;
+            foreach (PoliticalParty party in PartySystems.For(country.Id))
             {
-                int seats = country.ParliamentSeats.TryGetValue(archetype, out int s) ? s : 0;
-                float seatShare = (float)seats / ParliamentConstants.TotalSeats;
-                weightedAlignment += seatShare * PartyArchetypeData.GetFiscalStance(archetype) * billSign;
+                if (!party.HasPosition) { continue; }
+                int seats = country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+                measuredSeats += seats;
+                weightedAlignment += seats * PartySystems.FiscalStance(party) * billSign;
             }
 
-            return weightedAlignment;
+            return measuredSeats > 0f ? weightedAlignment / measuredSeats : 0f;
+        }
+
+        /// <summary>
+        /// W-G1: the fraction of this country's chamber whose fiscal position is actually published,
+        /// so a screen can say "weighed over 83 % of the chamber" rather than implying all of it.
+        /// Sweden, Germany (bar SSW's 1 seat) and the USA are near-complete; **France is the low
+        /// one**, because the Ministry's nuance grid reports 178 seats for a joint left candidacy
+        /// that no position survey scores as one party.
+        /// </summary>
+        public static float MeasuredSeatShare(Country country)
+        {
+            int chamber = PartySystems.ChamberSeats(country.Id);
+            if (chamber <= 0) { return 0f; }
+
+            int measured = 0;
+            foreach (PoliticalParty party in PartySystems.For(country.Id))
+            {
+                if (!party.HasPosition) { continue; }
+                measured += country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+            }
+
+            return (float)measured / chamber;
         }
 
         public static bool WouldBillPass(Country country, float direction)

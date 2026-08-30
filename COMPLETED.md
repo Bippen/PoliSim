@@ -4889,3 +4889,64 @@ tempting to add a relations matrix; that is exactly the temptation §36 exists t
 **Verified:** nine checks exit 0; the campaign family re-filmed at 1280/1600/1920/2560 with the
 longer names, guards silent; `ScreenEdgeCheck` exit 0. R-N2 held: `traj_wf6_*` identical to
 `traj_run_*` six of six, zero `ATTRIB`.
+
+## 79. W-G1 — the wiring: real parties, real chambers, a real election, and the question that stopped the rail cell (2026-08-30)
+
+**R-N2 retires here**, in one isolated commit that is its own revert handle.
+
+**`PartyArchetype` is gone.** Four generic fictional archetypes shared identically by all six
+countries become **53 real parties**, each with the position CHES 2024 (GPS 2019 for the USA)
+publishes and the seats its own country''s most recent election gave it.
+`ParliamentConstants.TotalSeats = 200` — "an arbitrary round number for a clean visualization" —
+becomes six real chamber sizes: **349 / 630 / 577 / 400 / 460 / 435**, each reconciling exactly.
+`SaveVersion` bumps 1 → 2, the re-key `SaveGameService`''s own comment named in advance.
+
+**Three replacements that were not mechanical.** (1) **Seats no longer drift with approval** — the
+old model recomputed every chamber every turn from `ApprovalRating` via a per-archetype sensitivity;
+no such figure is published for a real party, and a parliament does not drift week by week anyway.
+It changes at an election. (2) **`GetSeatWeightedAlignment` was re-expressed**, each stance DERIVED
+from CHES `lrecon` over the real chamber — and a party with no published position contributes
+nothing AND leaves the denominator, so `MeasuredSeatShare` reports coverage and the Laws screen draws
+such a party **UNMEASURED**, never UNALIGNED. (3) **Party inks take the election authority''s
+published HUE at the desk''s own saturation and value**; the five countries with no published colour
+table get none, and `HasPartyInk` says so.
+
+⚠ **Both flagged traps closed.** `MacroSystem.YearsPerTurn` read `4f / ElectionSystem.ElectionCycle`
+— the macro time base hanging off the system being replaced; it is now `DaysPerTurn / 365f` for the
+identical 1.0, and **`Phase4YearsPerTurnDiagnostic` passes 9 of 9**. And `ElectionRecord` went onto
+`Country` inside `World`, a layer `SaveLoadRoundTripDiagnostic` actually covers, rather than into
+`UiDraftState`, whose layer that diagnostic''s own header calls "structurally out of reach".
+
+⚠ **R3''s verification obligation discharged**: `PartyMarkCoverageCheck` flipped from "PARTY SYSTEM
+NOT PRESENT — VERIFIED NOTHING" to **53 parties, 1 mark, 52 gaps, 0 errors**.
+
+⚠ **Two of six countries hold a real election; the other four say why not.** Poland allocates
+dHondt in 41 districts with no national tier, France runs two rounds, Italy is mixed with unconfirmed
+totals, the US House is 435 FPTP districts. Their chambers are left untouched with the reason in
+plain English — §36''s absence rule applied to a system rather than a figure.
+
+⚠ **A defect found in this item''s own first cut, and the finding from fixing it.** The first wiring
+seated chambers from the vote model''s BARE layer (MAD 3.25 pp) and produced **BSW at 97 Bundestag
+seats having won none**. Re-routed through the loyalty layer over a sourced prior (MAD 1.47 pp),
+Sweden now lands S 106 / SD 72 / M 66 / V 24 / C 22 / KD 23 / MP 19 / L 17 against a real
+107/73/68/24/24/19/18/16. **Germany still does not**, and that is reported rather than tuned:
+BSW missed the 5 % threshold by **0.02 pp** and the FDP by 0.7 pp, so a model with ~1.5 pp of error
+lands on the wrong side of that cliff and ninety seats move. **A threshold is where this model is
+weakest.**
+
+⚠ **THE FINDING THAT STOPPED THE RAIL CELL, and it is ONE question.** `ElectionSystem`''s own comment
+has always said the game "never assigns the player''s own government a party identity". That single
+fact blocks two separate pieces: the election **cannot decide whether the player won** (no party to
+award the result to — so the approval threshold stays exactly as it was, unchanged, with the vote
+model running beside it), and **the rail cell cannot be added** (`CampaignSnapshot` needs a player
+party, war chest, poll index, staff, offices and queue, none of which exist live). Both reduce to
+**who is the player, in party terms** — Elias''s to answer, and not something this item is entitled
+to settle by picking something plausible.
+
+**Verified:** nine checks exit 0; `ElectionDayReachDiagnostic` **ALL PASS** — all six countries reach
+an election turn from a new world with no exception, correct chamber sizes, four with reasons stated;
+`SaveLoadRoundTripDiagnostic`, `Phase4YearsPerTurnDiagnostic`, `SwfDrawdownBooksDiagnostic`,
+`ScenarioCandidateMeasurementDiagnostic`, `SeatConversionHarness` (**Sweden 2022 still seat-for-seat,
+8 of 8, through the whole refactor**), `CampaignAiHarness` and `CoalitionHarness` all exit 0.
+
+**No `[AUTHORED-DRAFT]` value is introduced.**

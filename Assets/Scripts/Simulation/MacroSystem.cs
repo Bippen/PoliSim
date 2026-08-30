@@ -1336,7 +1336,22 @@ namespace PoliSim.Simulation
         /// exactly once. *(This comment previously still narrated the 121-day derivation as current -
         /// corrected 2026-08-16, the Phase 4 pass's stale-comment catch.)*
         /// </summary>
-        private const float YearsPerTurn = 4f / ElectionSystem.ElectionCycle;
+        /// <remarks>
+        /// ⚠ **W-G1 RE-EXPRESSED THIS, and the value is unchanged at exactly 1.0.** It read
+        /// `4f / ElectionSystem.ElectionCycle` — the macro model's entire time base hanging off the
+        /// election cycle, at the moment item 10 replaces the election system wholesale. If that
+        /// constant had moved or vanished carelessly, **every macro trajectory in every country
+        /// would have moved for a reason with nothing to do with elections**, and W-G2's job of
+        /// explaining each difference by layer would have been unanswerable.
+        ///
+        /// It is now derived from `SimulationManager.DaysPerTurn / 365f`, which is the project's
+        /// OTHER statement of how long a turn is and the one every daily constant already uses.
+        /// 365/365 = 1.0, exactly the value `4/4` gave, so the trajectories do not move — and the
+        /// time base no longer depends on a political constant at all.
+        /// `Phase4YearsPerTurnDiagnostic` asserts `DaysPerTurn/365 == YearsPerTurn` and would catch
+        /// a slip in either direction.
+        /// </remarks>
+        private const float YearsPerTurn = SimulationManager.DaysPerTurn / 365f;
 
         /// <summary>
         /// Population evolves by PopulationGrowthRate/1000 x YearsPerTurn x Population each turn -

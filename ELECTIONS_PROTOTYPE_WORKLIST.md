@@ -252,7 +252,7 @@ each has source, vintage, basis, and the remainder is billed.
 
 ## Track G — wiring (the invariant retires here, once)
 
-**W-G1 — Wire, isolated.** One commit behind a single entry point; the D0 collision map executes
+**W-G1 — DONE 2026-08-30** (PartyArchetype retired for 53 real parties across six real chambers; ElectionRecord persisted in the World layer; two of six countries hold a real election and four state why not; ElectionDayReachDiagnostic ALL PASS. ⚠ THE RAIL CELL IS NOT ADDED and the election does not decide whether the player won - BOTH are blocked on one design question, "who is the player in party terms", which W-G1 is not entitled to answer. See COMPLETED.md 79.) — Wire, isolated. One commit behind a single entry point; the D0 collision map executes
 (`PartyArchetype` retires, `TotalSeats = 200` yields to real chamber sizes, `ElectionSystem`'s
 approval threshold yields to the vote model; `PublicationSystem` stays the polling substrate; seat
 drift, bill scoring, renderers stay). *Done when:* the commit hash is printed as the revert handle

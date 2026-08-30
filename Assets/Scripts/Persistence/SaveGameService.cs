@@ -30,7 +30,11 @@ namespace PoliSim.Persistence
         /// ParliamentSeats is keyed by PartyArchetype, which it retires) BUMPS this, and the loader
         /// refuses the older save with a plain message. No migration machinery pre-release.
         /// </summary>
-        public const int CurrentSaveVersion = 1;
+        // W-G1 (2026-08-30) bumped this 1 -> 2: `Country.ParliamentSeats` was re-keyed from
+        // PartyArchetype (four shared fictional archetypes) to the real parties of each country.
+        // This is precisely the "model SWAP that re-keys persisted state" the paragraph above names,
+        // and older saves are refused with a plain message rather than migrated.
+        public const int CurrentSaveVersion = 2;
 
         /// <summary>
         /// One settings object, built fresh per call (JsonSerializerSettings is mutable; sharing a

@@ -189,15 +189,12 @@ namespace PoliSim.EditorTools
                 float seedBaselineGini = c.BaselineGini;
                 c.BaselineGini += 6f;
                 c.State.Gini = c.BaselineGini;
-                c.ParliamentSeats = new Dictionary<PartyArchetype, int>
-                {
-                    { PartyArchetype.ProgressiveAlliance, 52 },
-                    { PartyArchetype.ConservativeUnion, 60 },
-                    { PartyArchetype.CentristCoalition, 52 },
-                    { PartyArchetype.NationalistFront, 36 },
-                };
+                // W-G1: the staged chamber is Sweden's real one, because the country under test IS
+                // Sweden. The four archetype counts this replaces (P52/C60/Ce52/N36) summed to a
+                // fictional 200-seat house; these sum to the Riksdag's 349.
+                c.ParliamentSeats = PartySystems.InitialSeats(c.Id);
                 Debug.Log($"SCENMEASURE[Unequal | {label}]: deltas applied - Gini {seedBaselineGini:F1} -> {c.State.Gini:F1} (baseline moved with it); " +
-                          $"seats P52/C60/Ce52/N36, expansionary alignment {ParliamentSystem.GetSeatWeightedAlignment(c, 1f):+0.000;-0.000} " +
+                          $"seats: Sweden 2022 (349), expansionary alignment {ParliamentSystem.GetSeatWeightedAlignment(c, 1f):+0.000;-0.000} " +
                           $"(passes: {ParliamentSystem.WouldBillPass(c, 1f)})");
 
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
@@ -220,9 +217,12 @@ namespace PoliSim.EditorTools
                     if (firstPassTurn < 0 && alignment > 0f) { firstPassTurn = turn; }
                     if (turn <= 6 || turn % 5 == 0)
                     {
-                        int p = c.ParliamentSeats[PartyArchetype.ProgressiveAlliance], co = c.ParliamentSeats[PartyArchetype.ConservativeUnion],
-                            ce = c.ParliamentSeats[PartyArchetype.CentristCoalition], n = c.ParliamentSeats[PartyArchetype.NationalistFront];
-                        rows.Add($"t{turn}: Gini {s.Gini:F2} (target <= {seedBaselineGini:F1}), approval {s.ApprovalRating:F1}, seats P{p}/C{co}/Ce{ce}/N{n}, expansionary alignment {alignment:+0.000;-0.000}, debt/GDP {s.DebtToGdpRatio:F1}");
+                        var seatParts = new List<string>();
+                        foreach (PoliticalParty party in PartySystems.For(c.Id))
+                        {
+                            if (c.ParliamentSeats.TryGetValue(party.Abbrev, out int held) && held > 0) { seatParts.Add($"{party.Abbrev}{held}"); }
+                        }
+                        rows.Add($"t{turn}: Gini {s.Gini:F2} (target <= {seedBaselineGini:F1}), approval {s.ApprovalRating:F1}, seats {string.Join("/", seatParts)}, expansionary alignment {alignment:+0.000;-0.000}, debt/GDP {s.DebtToGdpRatio:F1}");
                     }
                 }
 

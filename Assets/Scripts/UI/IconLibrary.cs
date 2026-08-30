@@ -165,11 +165,13 @@ namespace PoliSim.UI
             return Load(FlagResourcesPath + "flag_country_" + countryId.ToString().ToLowerInvariant());
         }
 
-        /// <summary>A party archetype's emblem, by <see cref="PoliSim.Data.PartyArchetype"/>. Same derivation, same delivered-but-unreachable history, and same "already coloured, do not tint" caveat as <see cref="GetFlag"/>.</summary>
-        public static Texture2D GetPartyEmblem(PoliSim.Data.PartyArchetype archetype)
-        {
-            return Load(EmblemResourcesPath + "emblem_party_" + archetype.ToString().ToLowerInvariant());
-        }
+        /// <summary>
+        /// W-G1 RETIRED `GetPartyEmblem`. It loaded `emblem_party_&lt;archetype&gt;` for the four generic
+        /// fictional archetypes, and those archetypes no longer exist - every seat-holder is now a real
+        /// party and takes <see cref="GetPartyMark"/>. The four delivered emblem files stay on disk
+        /// rather than being deleted: they are Design's work, and the D0 collision map's `emblem_* -&gt;
+        /// mark_*` clause is a rename of the SUBJECT, not a licence to throw away art.
+        /// </summary>
 
         /// <summary>
         /// A REAL party's identity mark, by its full mark name — the file stem, e.g.
@@ -182,8 +184,8 @@ namespace PoliSim.UI
         /// check's own comment promises rather than a second naming convention beside it. When the
         /// party system's seeds land, their mark names feed straight in with no translation.
         ///
-        /// Distinct from <see cref="GetPartyEmblem"/> in both subject and rule: an emblem belongs to
-        /// a fictional <see cref="PoliSim.Data.PartyArchetype"/>, a mark to a real party. Rule 9a
+        /// W-G1: this is now the ONLY party art accessor - `GetPartyEmblem` and the fictional archetypes
+        /// it served are retired. Rule 9a
         /// governs the art — a mark is ORIGINAL art recognisable by silhouette and real colour,
         /// never the organisation's registered logo. Like flags and emblems it is authored in its
         /// own colours: **do not tint it.** Returns null when the file is missing, the same contract

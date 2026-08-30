@@ -47,10 +47,14 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
-            // SELF-TEST FIRST: if a known-good emblem does not load, every "missing" below is a broken
+            // SELF-TEST FIRST: if a known-good mark does not load, every "missing" below is a broken
             // probe rather than a real gap.
-            Texture2D reference = IconLibrary.GetPartyEmblem(PoliSim.Data.PartyArchetype.ProgressiveAlliance);
-            Debug.Log($"SELFTEST emblem_party_progressivealliance -> " +
+            //
+            // W-G1 moved the probe from a retired archetype EMBLEM to a delivered real MARK. Its job
+            // is unchanged; `mark_party_se_s` is the one mark that exists, which makes it the only
+            // honest probe available.
+            Texture2D reference = Resources.Load<Texture2D>(MarkResourcePath + "mark_party_se_s");
+            Debug.Log($"SELFTEST mark_party_se_s -> " +
                       $"{(reference != null ? "OK" : "NULL - BROKEN, results below are void")}");
 
             List<(string party, string mark)> parties = CollectSeededParties();

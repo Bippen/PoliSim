@@ -24,7 +24,7 @@ namespace PoliSim.Data
     /// fell to a DIFFERENT root cause, in the political model: the transfer programs are the only
     /// levers strong enough (3–4 Gini points each at full generosity, against 0.08/pt for income
     /// tax and 0.02/pt for the wage floor), every one of them is an expansionary bill, and under
-    /// `PartyArchetypeData` the Progressive and Conservative seat targets are identical at every
+    /// the retired `PartyArchetypeData` the Progressive and Conservative seat targets were identical at every
     /// approval level (equal base shares, equal sensitivities), so the expected expansionary
     /// alignment is −0.0015 × Nationalist seats - negative everywhere (−0.036 at seed, −0.006 at
     /// approval 100, −0.09 at approval 30) - and an expansionary bill passes only by ±1-seat jitter

@@ -692,15 +692,39 @@ namespace PoliSim.Data
         public Dictionary<CabinetPortfolio, CabinetMinister> CabinetMinisters = new Dictionary<CabinetPortfolio, CabinetMinister>();
 
         /// <summary>
-        /// Political Systems Overhaul Part B (Parliament), Master Sequence step 4: this country's
-        /// hemicycle seat count per PartyArchetype, summing to ParliamentConstants.TotalSeats. Seeded
-        /// at construction from PartyArchetypeData.GetInitialSeats() (WorldFactory), then updated once
-        /// per turn by ParliamentSystem.UpdateSeats for EVERY country (not player-gated like
-        /// CabinetMinisters - seat composition is derived purely from each country's own
-        /// ApprovalRating, not a player action, so there's no "doesn't exist until acted on" reason to
-        /// leave NPC countries empty the way Cabinet appointments do).
+        /// This country's chamber, seats per REAL party, keyed by the abbreviation that country's own
+        /// election authority uses ("S", "SD", "CDU", "PiS", "UG", "REP"...) and summing to
+        /// `PartySystems.ChamberSeats(Id)` - 349 Sweden, 630 Germany, 577 France, 400 Italy, 460
+        /// Poland, 435 USA.
+        ///
+        /// W-G1 RE-KEYED THIS FIELD, from a dictionary over four generic fictional archetypes shared
+        /// by all six countries, to real parties per country. That is the named save-breaking swap in
+        /// `SaveGameService.CurrentSaveVersion`'s own doc comment, and it is why that constant bumped.
+        ///
+        /// Seeded from `PartySystems.InitialSeats(Id)` - each country's most recent real election -
+        /// and CHANGED ONLY BY AN ELECTION, not by a per-turn drift off ApprovalRating. See
+        /// `ParliamentSystem.UpdateSeats` for what that replaced and why it could not survive real
+        /// parties.
         /// </summary>
-        public Dictionary<PartyArchetype, int> ParliamentSeats = new Dictionary<PartyArchetype, int>();
+        public Dictionary<string, int> ParliamentSeats = new Dictionary<string, int>();
+
+        /// <summary>
+        /// W-G1: every election this country has held, oldest first.
+        ///
+        /// ⚠ **IT LIVES ON `Country`, INSIDE `World`, AND THAT IS A DELIBERATE CHOICE ABOUT WHICH
+        /// SAVE LAYER IT LANDS IN.** The obvious home was `UiDraftState`, following the
+        /// `FedChairCandidates` precedent — but `SaveLoadRoundTripDiagnostic` records in its own
+        /// header that "Layer 3 (UI drafts) is structurally out of reach (no OnGUI in batch)", so
+        /// that precedent has itself never been machine-proven. The World graph is a layer the
+        /// diagnostic already round-trips field by field across 6 countries and 2 seeds. Putting an
+        /// election record where the harness can actually see it was worth more than matching a
+        /// precedent the harness cannot.
+        ///
+        /// Before W-G1 an election left only a transient `_pendingElectionResult`, cleared the moment
+        /// the player dismissed the reveal — which is why the Docket's calendar marks no past
+        /// election. There was nothing to mark.
+        /// </summary>
+        public List<Elections.ElectionRecord> ElectionHistory = new List<Elections.ElectionRecord>();
 
         /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see

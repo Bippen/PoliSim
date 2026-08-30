@@ -58,18 +58,38 @@ namespace PoliSim.EditorTools
                     Debug.Log("DRAWDOWN: Sweden had no fund at seed - a diagnostic fund of 20% of GDP was created.");
                 }
 
-                // Pin the house so the vote is not the variable under test.
-                PartyArchetype mostExpansionary = PartyArchetypeData.AllArchetypes[0];
-                foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
+                // Pin the house so the vote is not the variable under test. W-G1: the most
+                // expansionary REAL party of Sweden's eight (lowest CHES lrecon - V, at 1.89) takes
+                // the whole 349-seat Riksdag, where this used to hand a fictional archetype a
+                // fictional 200. A party with no published position cannot be "the most
+                // expansionary" of anything and is skipped.
+                PoliticalParty mostExpansionary = default;
+                bool found = false;
+                foreach (PoliticalParty party in PartySystems.For(sweden.Id))
                 {
-                    if (PartyArchetypeData.GetFiscalStance(archetype) > PartyArchetypeData.GetFiscalStance(mostExpansionary)) { mostExpansionary = archetype; }
+                    if (!party.HasPosition) { continue; }
+                    if (!found || PartySystems.FiscalStance(party) > PartySystems.FiscalStance(mostExpansionary))
+                    {
+                        mostExpansionary = party;
+                        found = true;
+                    }
                 }
-                foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes) { sweden.ParliamentSeats[archetype] = 0; }
-                sweden.ParliamentSeats[mostExpansionary] = ParliamentConstants.TotalSeats;
+
+                if (!found)
+                {
+                    Debug.LogError("DRAWDOWN: no Swedish party carries a published economic position - VERIFIED NOTHING.");
+                    CheckExit.Finish(1);
+                    return;
+                }
+
+                int chamber = PartySystems.ChamberSeats(sweden.Id);
+                sweden.ParliamentSeats = new Dictionary<string, int>();
+                foreach (PoliticalParty party in PartySystems.For(sweden.Id)) { sweden.ParliamentSeats[party.Abbrev] = 0; }
+                sweden.ParliamentSeats[mostExpansionary.Abbrev] = chamber;
 
                 var bill = new SwfDrawdownBill { WithdrawalPercentOfGdp = WithdrawalPercentOfGdp };
                 bool wouldPass = ParliamentSystem.WouldBillPass(sweden, ParliamentSystem.GetSwfDrawdownBillDirection(sweden, bill));
-                Debug.Log($"DRAWDOWN: house pinned to {mostExpansionary} ({ParliamentConstants.TotalSeats} seats); a {WithdrawalPercentOfGdp:F1}%-of-GDP drawdown would pass: {wouldPass}");
+                Debug.Log($"DRAWDOWN: house pinned to {mostExpansionary.Abbrev} ({chamber} seats); a {WithdrawalPercentOfGdp:F1}%-of-GDP drawdown would pass: {wouldPass}");
                 ok &= wouldPass;
 
                 float fundBefore = sweden.SovereignWealthFund.TotalAssets;

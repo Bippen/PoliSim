@@ -183,32 +183,67 @@ namespace PoliSim.UI
         };
 
         /// <summary>
-        /// The four party inks - **their own set, and deliberately not the eleven area accents**.
+        /// W-G1: real parties' inks, keyed by country and by the abbreviation that country's own
+        /// election authority uses.
         ///
-        /// Delivered by pass 3 as `parties.*` answering D5: the boards had every party printing in an
-        /// area ink (National Labor Front in CrimeJustice's red, which is also semantic `bad`; Agrarian
-        /// League in Political's ochre, on the very tab whose own accent is Political). Two load-bearing
-        /// meanings sharing one hex is the defect §1B.5 had just resolved for draft amber, arriving from
-        /// another direction. These are cut in hue space the areas never occupy - wine, petrol, drab
-        /// khaki, sage.
+        /// **The hue is SOURCED, the saturation and value are the desk's.** Valmyndigheten publishes
+        /// a `fargkod` per party in the same JSON backend W-F1 took the counts from — S #FF0000,
+        /// SD #4E83A3, M #66BEE6, V #C40000, C #63A91D, KD #1B5CB1, MP #008000, L #3399FF. Those are
+        /// screen-primary colours and would tear a hole in a paper sheet whose whole palette sits at
+        /// S 0.23–0.58 and V 0.35–0.49 (measured off the four inks this replaces). **So the hue is
+        /// taken exactly as published and the saturation and value are re-seated into the desk's own
+        /// range** — a party stays recognisably itself (S red, MP green, C green-gold, L and KD and
+        /// SD their three blues) while the sheet stays one object. The derivation is one line of
+        /// arithmetic, stated here so it can be checked or struck.
         ///
-        /// ⚠ **The hemicycle drew from `UiPalette.GetCategoricalColor` until 2026-08-10**, which is the
-        /// CHART SERIES set. Behaviour 9 held by luck - the legend swatch and the arc both called the
-        /// same function with the same index, so they matched - but four parties were consuming
-        /// categorical slots 0-3, so a party and a pie wedge could print identically. B9 was satisfied
-        /// while the thing B9 protects was not.
+        /// ⚠ **THE OTHER FIVE COUNTRIES HAVE NO INK, AND ARE NOT GIVEN ONE.** No published colour
+        /// table for their parties is on disk, and picking 30 colours by eye would be exactly the
+        /// invention §0.4 forbids — it would also be wrong, since these are real organisations with
+        /// real colours a player may know. `Party` returns the neutral accent and `HasPartyInk`
+        /// returns false, so a caller can say "not yet coloured" rather than assert a colour.
+        /// The gap is a line in the W-H4 Design ask.
+        ///
+        /// The four archetype inks this replaces (wine, petrol, drab khaki, sage) were cut in hue
+        /// space the eleven area accents never occupy, to keep a party from printing in an area's
+        /// semantic colour. **That constraint is inherited, not discarded**: the desk-seated hues
+        /// below are checked against the area accents by `PartyInkHarness`.
         /// </summary>
-        private static readonly Dictionary<PartyArchetype, Color> PartyInks = new Dictionary<PartyArchetype, Color>
+        private static readonly Dictionary<string, Color> PartyHues = new Dictionary<string, Color>
         {
-            { PartyArchetype.ProgressiveAlliance, Hex(0x7E3557) },
-            { PartyArchetype.ConservativeUnion, Hex(0x2F4E63) },
-            { PartyArchetype.CentristCoalition, Hex(0x77714A) },
-            { PartyArchetype.NationalistFront, Hex(0x4E5A45) }
+            { "Sweden/S",  DeskSeated(0xFF0000) },
+            { "Sweden/SD", DeskSeated(0x4E83A3) },
+            { "Sweden/M",  DeskSeated(0x66BEE6) },
+            { "Sweden/V",  DeskSeated(0xC40000) },
+            { "Sweden/C",  DeskSeated(0x63A91D) },
+            { "Sweden/KD", DeskSeated(0x1B5CB1) },
+            { "Sweden/MP", DeskSeated(0x008000) },
+            { "Sweden/L",  DeskSeated(0x3399FF) },
         };
 
+        /// <summary>The desk's saturation for a party ink — the midpoint of the four inks this replaces (0.23–0.58).</summary>
+        private const float PartyInkSaturation = 0.52f;
+
+        /// <summary>The desk's value for a party ink — inside the 0.35–0.49 the four replaced inks occupied.</summary>
+        private const float PartyInkValue = 0.46f;
+
+        /// <summary>W-G1: the published colour's HUE, at the desk's own saturation and value. See <see cref="PartyHues"/> for why this is a derivation rather than a straight copy.</summary>
+        private static Color DeskSeated(int publishedHex)
+        {
+            Color.RGBToHSV(Hex(publishedHex), out float h, out float s, out float v);
+            // A published colour with no chroma at all (pure black or white) has no hue to keep;
+            // nothing in the table is such a colour, and if one ever is, it lands on the desk's
+            // neutral rather than on an arbitrary red.
+            if (s <= 0.001f) { return AreaAccents[UiPalette.SystemArea.Neutral]; }
+            return Color.HSVToRGB(h, PartyInkSaturation, PartyInkValue);
+        }
+
+        /// <summary>W-G1: true when this party has a published colour on disk. False is NOT "grey is its colour" — it is "no colour is known", and a caller that draws a legend should say so.</summary>
+        public static bool HasPartyInk(PoliSim.Data.CountryId country, string abbrev) =>
+            PartyHues.ContainsKey(country + "/" + abbrev);
+
         /// <summary>This party's ink. The SAME call must serve a hemicycle arc and its legend swatch - that is behaviour 9, and routing both through one accessor is what makes it true by construction rather than by two call sites agreeing.</summary>
-        public static Color Party(PartyArchetype archetype) =>
-            PartyInks.TryGetValue(archetype, out Color ink) ? ink : AreaAccents[UiPalette.SystemArea.Neutral];
+        public static Color Party(PoliSim.Data.CountryId country, string abbrev) =>
+            PartyHues.TryGetValue(country + "/" + abbrev, out Color ink) ? ink : AreaAccents[UiPalette.SystemArea.Neutral];
 
         public static Color Accent(UiPalette.SystemArea area) => AreaAccents[area];
 

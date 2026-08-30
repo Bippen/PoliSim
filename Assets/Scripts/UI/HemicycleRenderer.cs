@@ -13,7 +13,8 @@ namespace PoliSim.UI
     /// Seats-per-row is a simple radius-proportional approximation (more seats fit at a larger radius,
     /// same arc-length reasoning any real hemicycle packing uses), not a rigorous packing algorithm -
     /// good enough for a clearly-legible generic visualization, not a claim of exact real-world seating
-    /// geometry. Archetypes are laid out left-to-right by descending FiscalStance (PartyArchetypeData),
+    /// geometry. Parties are laid out left-to-right by descending fiscal stance (W-G1: DERIVED from
+    /// each party's published CHES `lrecon`, replacing four hand-set archetype constants),
     /// matching the real-world convention of high-tax/left on the left, low-tax/right on the right.
     /// </summary>
     public class HemicycleRenderer
@@ -25,23 +26,40 @@ namespace PoliSim.UI
         private const float RowSpacing = 20f;
         private const float DotDiameter = 10f;
 
-        private static readonly PartyArchetype[] LeftToRightOrder =
-        {
-            PartyArchetype.ProgressiveAlliance,
-            PartyArchetype.CentristCoalition,
-            PartyArchetype.NationalistFront,
-            PartyArchetype.ConservativeUnion
-        };
-
         private Texture2D _dotTexture;
 
-        public void Draw(string title, IReadOnlyDictionary<PartyArchetype, int> seats, GUIStyle labelStyle)
+        /// <summary>
+        /// W-G1: the chamber's seat-holders, left to right by DESCENDING fiscal stance - which is
+        /// ASCENDING CHES `lrecon` - so high-tax/left sits on the left and low-tax/right on the
+        /// right, the convention the class comment already claimed while ordering four fictional
+        /// archetypes by four hand-set constants.
+        ///
+        /// A party with no published position has no place on that axis, so it is placed at the
+        /// right-hand END rather than in the middle. Putting an unmeasured party at the centre would
+        /// draw it as centrist, which is a claim; putting it last draws it as "outside the measured
+        /// order", which is what it is. France's UG bloc is 178 of 577 seats, so this is not a
+        /// corner case there.
+        /// </summary>
+        private static List<PoliticalParty> LeftToRight(CountryId country)
+        {
+            var ordered = new List<PoliticalParty>(PartySystems.For(country));
+            ordered.Sort((a, b) =>
+            {
+                if (a.HasPosition != b.HasPosition) { return a.HasPosition ? -1 : 1; }
+                if (!a.HasPosition) { return string.CompareOrdinal(a.Abbrev, b.Abbrev); }
+                int byPosition = a.LrEcon.CompareTo(b.LrEcon);
+                return byPosition != 0 ? byPosition : string.CompareOrdinal(a.Abbrev, b.Abbrev);
+            });
+            return ordered;
+        }
+
+        public void Draw(string title, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle labelStyle)
         {
             EnsureTexture();
             GUILayout.Label(title, labelStyle);
 
             int totalSeats = 0;
-            foreach (KeyValuePair<PartyArchetype, int> kvp in seats)
+            foreach (KeyValuePair<string, int> kvp in seats)
             {
                 totalSeats += kvp.Value;
             }
@@ -52,13 +70,14 @@ namespace PoliSim.UI
                 return;
             }
 
-            // Flatten into one ordered list of colors, one entry per seat, in LeftToRightOrder.
+            // Flatten into one ordered list of colors, one entry per seat, left to right.
+            List<PoliticalParty> order = LeftToRight(country);
             var seatColors = new List<Color>(totalSeats);
-            for (int i = 0; i < LeftToRightOrder.Length; i++)
+            for (int i = 0; i < order.Count; i++)
             {
-                PartyArchetype archetype = LeftToRightOrder[i];
-                int count = seats.TryGetValue(archetype, out int s) ? s : 0;
-                Color color = PoliSimTheme.Party(archetype);
+                PoliticalParty party = order[i];
+                int count = seats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+                Color color = PoliSimTheme.Party(country, party.Abbrev);
                 for (int j = 0; j < count; j++)
                 {
                     seatColors.Add(color);
@@ -103,10 +122,10 @@ namespace PoliSim.UI
             GUI.color = previousColor;
 
             GUILayout.Space(4f);
-            for (int i = 0; i < LeftToRightOrder.Length; i++)
+            for (int i = 0; i < order.Count; i++)
             {
-                PartyArchetype archetype = LeftToRightOrder[i];
-                int count = seats.TryGetValue(archetype, out int s) ? s : 0;
+                PoliticalParty party = order[i];
+                int count = seats.TryGetValue(party.Abbrev, out int s) ? s : 0;
                 float percent = totalSeats > 0 ? count / (float)totalSeats * 100f : 0f;
 
                 GUILayout.BeginHorizontal();
@@ -145,11 +164,14 @@ namespace PoliSim.UI
                 //
                 // Untinted (the emblems are already coloured) and null-safe: a missing file simply leaves
                 // the swatch, which is what this legend has always drawn.
-                GUI.color = PoliSimTheme.Party(archetype);
+                GUI.color = PoliSimTheme.Party(country, party.Abbrev);
                 GUI.DrawTexture(swatchRect, Texture2D.whiteTexture);
                 GUI.color = previousColor;
 
-                Texture2D emblem = IconLibrary.GetPartyEmblem(archetype);
+                // W-G1: a real party's MARK, not a fictional archetype's emblem. Null for 52 of the
+                // 53 today - the legend falls back to the swatch, exactly as it always did for a
+                // missing file, and `PartyMarkCoverageCheck` counts the gap rather than the folder.
+                Texture2D emblem = IconLibrary.GetPartyMark(party.MarkName);
                 if (emblem != null)
                 {
                     Rect emblemLane = GUILayoutUtility.GetRect(markerSize, rowHeight, GUILayout.ExpandWidth(false));
@@ -175,11 +197,11 @@ namespace PoliSim.UI
                 Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(labelStyle), GUILayout.ExpandWidth(true));
                 LedgerRow.DrawReadOnly(
                     rowRect,
-                    PartyArchetypeData.GetDisplayName(archetype),
+                    party.Name,
                     totalSeats > 0 ? count / (float)totalSeats : -1f,
                     count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " seats",
                     percent.ToString("F0", System.Globalization.CultureInfo.InvariantCulture) + "%",
-                    PoliSimTheme.Party(archetype),
+                    PoliSimTheme.Party(country, party.Abbrev),
                     labelStyle,
                     labelStyle);
                 GUILayout.EndHorizontal();

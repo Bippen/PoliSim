@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using PoliSim.Elections;
 using PoliSim.Data;
 using PoliSim.Persistence;
 using PoliSim.Simulation;
@@ -4665,7 +4666,7 @@ namespace PoliSim.UI
                         // the instrument).
                         Rect r = cursor.Place(640f, 330f, captionHeight);
                         GUILayout.BeginArea(r);
-                        _hemicycleRenderer.Draw(string.Empty, _playerCountry.ParliamentSeats, _labelStyle);
+                        _hemicycleRenderer.Draw(string.Empty, PlayerCountryId, _playerCountry.ParliamentSeats, _labelStyle);
                         GUILayout.EndArea();
                         LadderCaption(r, "fixed 340x190 by its constants - no size parameter", captionHeight);
                     }
@@ -5177,6 +5178,48 @@ namespace PoliSim.UI
 
             _pendingElectionResult = ElectionSystem.RunElection(_playerCountry.State);
             _pendingElectionTurn = _simulationManager.CurrentTurn;
+
+            // W-G1: the election now also produces a REAL CHAMBER through the country's own
+            // procedure, and records it. What it does NOT yet do is decide whether the player won.
+            //
+            // That is not an oversight, it is a design question this item is not entitled to answer:
+            // ElectionSystem's own class comment records that "this game never assigns the player's
+            // own government a party identity", so there is no party for the vote model to award the
+            // player's fate to. Until the player IS one of these parties, the win/lose rule stays
+            // exactly the approval threshold it has always been, unchanged, and the vote model runs
+            // beside it rather than pretending to replace it. Named in W-G1's records as the first
+            // question for the item after this one.
+            RunNationalElection();
+        }
+
+        /// <summary>
+        /// W-G1: hold the player country's election on its own electoral system, set the chamber
+        /// from the result, and keep the record.
+        ///
+        /// Two of the six countries have a live path (`NationalElection`); for the other four the
+        /// record carries the reason in plain English and **the chamber is left exactly as it was**,
+        /// which is the honest outcome rather than a plausible-looking one.
+        /// </summary>
+        private void RunNationalElection()
+        {
+            if (!NationalElection.TryPredictShares(PlayerCountryId, out Dictionary<string, double> shareByParty))
+            {
+                _playerCountry.ElectionHistory.Add(new ElectionRecord
+                {
+                    Turn = _simulationManager.CurrentTurn,
+                    CountryId = PlayerCountryId.ToString(),
+                    Method = ElectionMethod.NotImplemented,
+                    NotHeldReason = NationalElection.NotHeldReason(PlayerCountryId),
+                });
+                return;
+            }
+
+            ElectionRecord record = NationalElection.Run(PlayerCountryId, _simulationManager.CurrentTurn, shareByParty);
+            _playerCountry.ElectionHistory.Add(record);
+            if (record.Method != ElectionMethod.NotImplemented)
+            {
+                ParliamentSystem.SetSeatsFromElection(_playerCountry, record.Seats);
+            }
         }
 
         /// <summary>Called when the player dismisses the election reveal screen - only NOW does a loss actually set the game-over state (a win just returns to the dashboard).</summary>
@@ -5714,7 +5757,7 @@ namespace PoliSim.UI
             {
                 case PoliticsCategory.Parliament:
                     int seats = 0;
-                    foreach (KeyValuePair<PartyArchetype, int> kvp in _playerCountry.ParliamentSeats) { seats += kvp.Value; }
+                    foreach (KeyValuePair<string, int> kvp in _playerCountry.ParliamentSeats) { seats += kvp.Value; }
                     return $"THE NATIONAL ASSEMBLY — {seats} SEATS";
                 case PoliticsCategory.Compass: return "THE POLITICAL COMPASS — SIX COUNTRIES, LIVE";
                 case PoliticsCategory.Cabinet: return "THE CABINET — THREE PORTFOLIOS, LIVE";
@@ -7476,26 +7519,41 @@ namespace PoliSim.UI
             }
 
             float billSign = Mathf.Sign(direction);
-            foreach (PartyArchetype archetype in PartyArchetypeData.AllArchetypes)
+            foreach (PoliticalParty party in PartySystems.For(PlayerCountryId))
             {
-                int seats = _playerCountry.ParliamentSeats.TryGetValue(archetype, out int s) ? s : 0;
+                int seats = _playerCountry.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
                 if (seats <= 0)
                 {
                     continue;
                 }
 
-                float stance = PartyArchetypeData.GetFiscalStance(archetype) * billSign;
+                // W-G1: a party whose economic position nobody publishes is drawn UNMEASURED, not
+                // UNALIGNED. The two look similar and mean opposite things - "we know where it
+                // stands and it is in the middle" versus "we do not know where it stands" - and
+                // France's UG bloc and Poland's TD committee are the second.
+                if (!party.HasPosition)
+                {
+                    DrawLawPartyStanceRow(party.Name, seats, "UNMEASURED", contentWidth);
+                    continue;
+                }
+
+                float stance = PartySystems.FiscalStance(party) * billSign;
                 string side = stance > 0f ? "FOR" : stance < 0f ? "AGAINST" : "UNALIGNED";
-                // Explicit width - see DrawLawDialMovementGrid's comment: an expanding rect inside
-                // the pane's scroll view tracks content width, not the viewport, and the first
-                // capture clipped these rows' right cells at the pane edge.
-                Rect rowRect = GUILayoutUtility.GetRect(contentWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(contentWidth));
-                float sideWidth = Mathf.Max(0f, rowRect.width * 0.28f);
-                LedgerRow.Cell(new Rect(rowRect.x, rowRect.y, rowRect.width - sideWidth, rowRect.height),
-                    $"{DisplayName.Spaced(archetype.ToString())} - {seats} seats", _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
-                LedgerRow.Cell(new Rect(rowRect.x + rowRect.width - sideWidth, rowRect.y, sideWidth, rowRect.height),
-                    side, _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+                DrawLawPartyStanceRow(party.Name, seats, side, contentWidth);
             }
+        }
+
+        /// <summary>One party's row in the stance list. Explicit width - see DrawLawDialMovementGrid's
+        /// comment: an expanding rect inside the pane's scroll view tracks content width, not the
+        /// viewport, and the first capture clipped these rows' right cells at the pane edge.</summary>
+        private void DrawLawPartyStanceRow(string name, int seats, string side, float contentWidth)
+        {
+            Rect rowRect = GUILayoutUtility.GetRect(contentWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(contentWidth));
+            float sideWidth = Mathf.Max(0f, rowRect.width * 0.28f);
+            LedgerRow.Cell(new Rect(rowRect.x, rowRect.y, rowRect.width - sideWidth, rowRect.height),
+                $"{name} - {seats} seats", _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            LedgerRow.Cell(new Rect(rowRect.x + rowRect.width - sideWidth, rowRect.y, sideWidth, rowRect.height),
+                side, _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
         }
 
         /// <summary>The statute-book search slot (board 1j): the label plus the paper-idiom field
@@ -8028,7 +8086,7 @@ namespace PoliSim.UI
             GUILayout.Label("Seats shift gradually with your ApprovalRating. The annual budget bill and any standalone bills are gated by Parliament - see the Budget Process tab to introduce one.", _labelStyle);
             GUILayout.Space(6f);
 
-            _hemicycleRenderer.Draw($"{_playerCountry.Name} - {ParliamentConstants.TotalSeats} seats", _playerCountry.ParliamentSeats, _labelStyle);
+            _hemicycleRenderer.Draw($"{_playerCountry.Name} - {PartySystems.ChamberSeats(PlayerCountryId)} seats", PlayerCountryId, _playerCountry.ParliamentSeats, _labelStyle);
 
             GUILayout.Space(10f);
             DrawPendingLegislation();

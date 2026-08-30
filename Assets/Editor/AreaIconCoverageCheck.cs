@@ -13,8 +13,8 @@ namespace PoliSim.EditorTools
     /// <para><b>WHAT THIS ENUMERATES</b> (rule 6 / the old rule 14): the ten members of
     /// <see cref="UiPalette.SystemArea"/> other than <c>Neutral</c> (which has no icon by design),
     /// each through <see cref="IconLibrary.GetAreaIcon"/> — the ONE accessor the sub-tab rows read
-    /// since 2026-08-28 — and every member of <see cref="PartyArchetype"/> through
-    /// <see cref="IconLibrary.GetPartyEmblem"/>. Both are the DISPLAY enums, not the folders: an
+    /// since 2026-08-28. W-G1 removed the archetype-emblem half: see the note at the old loop. Through
+    /// `IconLibrary.GetPartyMark` (W-G1). Both are the DISPLAY enums, not the folders: an
     /// area added to the enum with no icon shows up here as MISSING the day it lands, which a folder
     /// count could never say (the `PartyMarkCoverageCheck` lesson). It does NOT enumerate the
     /// `mark_party_*` ballot marks (that is `PartyMarkCoverageCheck`'s enumeration), the nav icons,
@@ -24,7 +24,7 @@ namespace PoliSim.EditorTools
     /// not exist": until then the area icons' and emblems' coverage was asserted from the filesystem
     /// alone. The area icons are white-on-alpha and tinted at draw time, so block compression is the
     /// documented damage vector - their format is asserted, not just the handle. The emblems are
-    /// FULL-COLOUR art (IconLibrary.GetPartyEmblem: "authored in their own real colours … callers
+    /// FULL-COLOUR art (IconLibrary's party art: "authored in their own real colours … callers
     /// must NOT tint them"), the class the 2026-08-11 importer ruling allows block compression for
     /// after the flags' visual check - so for them only resolution is asserted. ⚠ The first run of
     /// this check asserted RGBA32 on the emblems too and reported all four DXT5 as DAMAGED; that was
@@ -78,31 +78,22 @@ namespace PoliSim.EditorTools
                 Debug.Log($"  ok        {area,-16} icon_area_{area.ToString().ToLowerInvariant()} {icon.width}x{icon.height} {icon.format}");
             }
 
-            foreach (PartyArchetype archetype in Enum.GetValues(typeof(PartyArchetype)))
-            {
-                total++;
-                Texture2D emblem = IconLibrary.GetPartyEmblem(archetype);
-                if (emblem == null)
-                {
-                    Debug.LogError($"  MISSING   emblem for {archetype} does not resolve through IconLibrary.GetPartyEmblem");
-                    missing++;
-                    continue;
-                }
-
-                // Full-colour art: resolution only (block compression is ruled acceptable for this
-                // class - see the class doc). The format is printed so a future ruling can read it.
-                Debug.Log($"  ok        {archetype,-20} emblem {emblem.width}x{emblem.height} {emblem.format} (full-colour, format not asserted)");
-            }
+            // W-G1: the archetype-emblem half of this check RETIRED with the archetypes. It looped
+            // `Enum.GetValues(typeof(PartyArchetype))` and asserted an emblem for each; there is no
+            // such enum now, and real parties' art is `PartyMarkCoverageCheck`'s subject - which
+            // enumerates the PARTIES (53 today) rather than the folder, and so reports the 52 gaps
+            // this check could never have seen. Nothing is lost by dropping it here; the four
+            // delivered emblem files stay on disk as Design's work.
 
             if (total == 0)
             {
-                Debug.LogError("  EMPTY ENUMERATION - no areas and no archetypes; VERIFIED NOTHING.");
+                Debug.LogError("  EMPTY ENUMERATION - no areas; VERIFIED NOTHING.");
                 CheckExit.Finish(1);
                 return;
             }
 
-            Debug.Log($"=== Area icons + emblems: {total - missing - damaged} of {total} resolve " +
-                      $"(10 SystemArea members as RGBA32 + {Enum.GetValues(typeof(PartyArchetype)).Length} archetype emblems, full-colour), {missing} missing, {damaged} damaged ===");
+            Debug.Log($"=== Area icons: {total - missing - damaged} of {total} resolve " +
+                      $"(SystemArea members as RGBA32), {missing} missing, {damaged} damaged ===");
             CheckExit.Finish(missing == 0 && damaged == 0 ? 0 : 1);
         }
     }
