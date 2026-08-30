@@ -239,7 +239,7 @@ least three outcome states.
 
 ## Track F — the data Sweden needs (sourced; blocks playability, not the build)
 
-**W-F1** — 2022 returns by constituency (Valmyndigheten), all 29, per party. **W-F2** — party
+**W-F1 — DONE 2026-08-30** (all 29 valkretsar x 8 parties in absolute counts + eligible + cast, from Valmyndigheten's per-constituency backend; eleven column sums exact; nine consumers repointed, two deliberately kept on 2018 as the backtest's PRIOR; W-D2's seat-for-seat claim now rests on the real chamber and KD's fixed seats moved 10 to 13). — 2022 returns by constituency (Valmyndigheten), all 29, per party. **W-F2** — party
 positions (CHES 2024, already on disk) mapped to the spec's axes, mapping stated. **W-F3** —
 issue salience (Eurobarometer / SOM Institute, vintage recorded). **W-F4** — voter groups derived
 from existing demographic seeds per region; only underivable marginals get sourced; nothing

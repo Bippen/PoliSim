@@ -14,8 +14,8 @@ namespace PoliSim.EditorTools
     /// W-D2's harness — §28's vote-to-seat conversion on the LIVE path.
     ///
     /// The done-when, asserted: **Sweden's 2022 returns reproduce seat-for-seat through the live
-    /// path** — the exact 2022 national counts regionalised over the 29 valkretsar by the 2018
-    /// per-valkrets distribution (DERIVED; national sums exact to the vote), fed as an
+    /// path** — the REAL 2022 per-valkrets counts (SOURCED, W-F1; they sum to the published
+    /// national counts party by party), fed as an
     /// `ElectionDay.Result` (σ = 0) into `SeatConversion.Sweden`: 107 / 73 / 68 / 24 / 24 / 19 / 18 /
     /// 16, 310 fixed + 39 adjustment = 349 — not the backtest's national shortcut, the full
     /// procedure. Plus: the 12 % rule on a synthetic (a party at 3 % nationally and 15 % in one
@@ -30,7 +30,7 @@ namespace PoliSim.EditorTools
         // 2022 exact national counts (returns_2022.md) and the real seats.
         private static readonly long[] Votes2022 = { 1964474, 1330325, 1237428, 437050, 434945, 345712, 329242, 298542 };
         private static readonly int[] Seats2022 = { 107, 73, 68, 24, 24, 19, 18, 16 };
-        private const double Turnout2018 = 0.8718;
+        // W-F1: Turnout2018 retired - eligible is now SOURCED per valkrets (valkrets_votes_2022.csv column 11).
 
         public static void Run()
         {
@@ -39,37 +39,15 @@ namespace PoliSim.EditorTools
             var sb = new StringBuilder();
             sb.Append("=== W-D2: vote-to-seat on the live path (§28), Sweden's own procedure ===\n");
 
-            long[][] votes2018 = ReadValkrets(out string[] names, out double[] eligible);
+            // W-F1: the REAL 2022 per-valkrets counts, from Valmyndigheten's own per-constituency
+            // backend. Until W-F1 this harness regionalised the 2022 NATIONAL counts by 2018's
+            // per-valkrets distribution, so "reproduces seat-for-seat" was a claim about a
+            // synthetic chamber that happened to sum right. It is now a claim about the election
+            // that actually happened, and the 12 % rule and the adjustment placement are being
+            // asked a real question rather than a smoothed one.
+            long[][] region2022 = ReadValkrets(out string[] names, out double[] eligible);
             int regions = names.Length;
             int parties = Parties.Length;
-
-            // Regionalise 2022's exact counts by 2018's per-valkrets distribution; largest-remainder
-            // rounding so every party's national sum is exact to the vote.
-            var region2022 = new long[regions][];
-            for (int r = 0; r < regions; r++) { region2022[r] = new long[parties]; }
-            for (int p = 0; p < parties; p++)
-            {
-                long total2018 = 0;
-                for (int r = 0; r < regions; r++) { total2018 += votes2018[r][p]; }
-                var fraction = new double[regions];
-                long given = 0;
-                for (int r = 0; r < regions; r++)
-                {
-                    double share = (double)Votes2022[p] * votes2018[r][p] / total2018;
-                    region2022[r][p] = (long)Math.Floor(share);
-                    fraction[r] = share - region2022[r][p];
-                    given += region2022[r][p];
-                }
-
-                while (given < Votes2022[p])
-                {
-                    int best = 0;
-                    for (int r = 1; r < regions; r++) { if (fraction[r] > fraction[best]) { best = r; } }
-                    region2022[best][p]++;
-                    fraction[best] = -1.0;
-                    given++;
-                }
-            }
 
             bool sumsExact = true;
             for (int p = 0; p < parties; p++)
@@ -79,7 +57,7 @@ namespace PoliSim.EditorTools
                 if (s != Votes2022[p]) { sumsExact = false; }
             }
 
-            failures += Assert(sb, "0. the regionalised 2022 counts sum to the exact national counts, party by party", sumsExact, "8 of 8 to the vote");
+            failures += Assert(sb, "0. the per-valkrets 2022 file sums to the published national counts, party by party", sumsExact, "8 of 8 to the vote");
 
             // ---------- the live path: an ElectionDay.Result (sigma 0) in, seats out ----------
             var regionResults = new RegionalAggregation.RegionResult[regions];
@@ -187,7 +165,7 @@ namespace PoliSim.EditorTools
 
         private static long[][] ReadValkrets(out string[] names, out double[] eligible)
         {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
             var rows = new List<long[]>();
             var nameList = new List<string>();
             var eligibleList = new List<double>();
@@ -199,7 +177,7 @@ namespace PoliSim.EditorTools
                 if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("valkrets;")) { continue; }
                 string[] cells = line.Split(';');
                 nameList.Add(cells[0]);
-                eligibleList.Add(double.Parse(cells[1], CultureInfo.InvariantCulture) / Turnout2018);
+                eligibleList.Add(double.Parse(cells[10], CultureInfo.InvariantCulture));   // W-F1: SOURCED antalRostberattigade
                 var row = new long[8];
                 for (int p = 0; p < 8; p++) { row[p] = long.Parse(cells[map[p]], CultureInfo.InvariantCulture); }
                 rows.Add(row);

@@ -2335,7 +2335,7 @@ namespace PoliSim.Testing
 
         /// <summary>
         /// Four of Sweden's 29 valkretsar, spelled as Valmyndigheten spells them
-        /// (ElectionsData/sweden/valkrets_votes_2018.csv). Real constituency names, so the office
+        /// (ElectionsData/sweden/valkrets_votes_2022.csv). Real constituency names, so the office
         /// ledger names places that exist; the volunteer and upkeep figures beside them are
         /// [AUTHORED-DRAFT] staging and are logged as such by the pass below.
         /// </summary>
@@ -2887,9 +2887,10 @@ namespace PoliSim.Testing
         /// §36's gate, the uncertainty it lifts, and the sharpening the bigger sample buys.
         ///
         /// The truth polled is SOURCED: each valkrets's 2018 Riksdag result
-        /// (`ElectionsData/sweden/valkrets_votes_2018.csv`, Valmyndigheten's absolute counts, all
-        /// eight parties) as that valkrets's preference vector — the only per-valkrets vector on disk
-        /// for all eight (the 2022 table carries five; W-F1 bills the rest). Each bought valkrets is
+        /// (`ElectionsData/sweden/valkrets_votes_2022.csv`, Valmyndigheten's absolute counts, all
+        /// eight parties) as that valkrets's preference vector — W-F1 sourced it from the official
+        /// per-constituency backend, so the map now polls the 2022 election rather than the 2018
+        /// one. Each bought valkrets is
         /// polled by `PollingSystem.Conduct` at the offer's per-valkrets sample (the national n
         /// divided over 29 — what a "regional breakdown" of that size actually affords), seeded per
         /// valkrets so the film is byte-stable. The offer line's ± figures are `MarginOfErrorPp` at
@@ -2956,11 +2957,11 @@ namespace PoliSim.Testing
             yield return Settle();
         }
 
-        /// <summary>The 2018 per-valkrets result as a preference vector per valkrets, in the driver's party order (S, SD, M, V, C, KD, MP, L), with each valkrets's share of the national valid vote as its weight.</summary>
+        /// <summary>The 2022 per-valkrets result (W-F1, SOURCED) as a preference vector per valkrets, in the driver's party order (S, SD, M, V, C, KD, MP, L), with each valkrets's share of the national valid vote as its weight.</summary>
         private static double[][] ReadValkretsVectors(out string[] names, out double[] weights)
         {
             names = null; weights = null;
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
             if (!File.Exists(path)) { return null; }
 
             // csv order: valkrets;valid;S;M;SD;C;V;KD;L;MP -> S, SD, M, V, C, KD, MP, L

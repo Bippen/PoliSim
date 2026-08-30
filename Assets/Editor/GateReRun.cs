@@ -259,6 +259,7 @@ namespace PoliSim.EditorTools
                     new[] { 28.26, 17.53, 19.84, 8.00, 8.61, 6.32, 4.41, 5.49 },
                     new[] { 31.01, 12.86, 23.33, 5.72, 6.11, 4.57, 6.89, 5.42 },
                     new VoteModel.Electorate(3.25, 6.25, 3.00, 0.50), 0.15, 3.25, 1.75, 99.0,
+                    // W-F1: stays 2018 ON PURPOSE - this is the 2022 backtest and 2018 is its PRIOR.
                     "ElectionsData/sweden/valkrets_votes_2018.csv",
                     new[] { 2, 4, 3, 6, 5, 7, 9, 8 }),        // S,SD,M,V,C,KD,MP,L from S;M;SD;C;V;KD;L;MP
 

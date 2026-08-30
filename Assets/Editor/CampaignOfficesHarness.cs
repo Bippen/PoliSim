@@ -28,7 +28,8 @@ namespace PoliSim.EditorTools
     ///    party cannot pay for starves (no recruits, no operation, influence down) and nothing is
     ///    spent that the party does not have.
     ///
-    /// Staging: the 29 valkretsar's 2018 valid votes as eligible (SOURCED, `valkrets_votes_2018.csv`),
+    /// Staging: the 29 valkretsar's SOURCED 2022 eligible counts (`valkrets_votes_2022.csv` column 11,
+    /// Valmyndigheten's antalRostberattigade - W-F1 retired the valid-over-a-national-turnout derivation),
     /// a uniform 30 % preference for the party under test, §26's four attributes at the neutral 50,
     /// a 60-day campaign, door-knocking as the operation. All office figures [AUTHORED-DRAFT].
     /// </summary>
@@ -188,7 +189,7 @@ namespace PoliSim.EditorTools
 
         private static double[] ReadEligible(out string[] names)
         {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
             var eligible = new List<double>();
             var nameList = new List<string>();
             foreach (string raw in File.ReadAllLines(path))
@@ -197,7 +198,7 @@ namespace PoliSim.EditorTools
                 if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("valkrets;")) { continue; }
                 string[] cells = line.Split(';');
                 nameList.Add(cells[0]);
-                eligible.Add(double.Parse(cells[1], CultureInfo.InvariantCulture) / BaseTurnout);
+                eligible.Add(double.Parse(cells[10], CultureInfo.InvariantCulture));   // W-F1: SOURCED antalRostberattigade, no longer valid / a national turnout
             }
 
             names = nameList.ToArray();

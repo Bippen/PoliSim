@@ -26,15 +26,16 @@ namespace PoliSim.EditorTools
     ///    the first 10 000 doors are worth more than the next 10 000.
     ///
     /// Staging: base turnout SOURCED (2022: 84.21 %), applied uniformly per valkrets because per-
-    /// valkrets eligible counts are not on disk (eligible per region DERIVED as 2018 valid votes ÷
-    /// the 2018 national turnout 87.18 % — billed); preference the 2022 result; engagement,
+    /// valkrets eligible counts ARE on disk as of W-F1 (SOURCED antalRostberattigade per valkrets,
+    /// `valkrets_votes_2022.csv` column 11 - the DERIVED "2018 valid ÷ 87.18 %" is retired);
+    /// preference the 2022 result; engagement,
     /// enthusiasm and salience at `TurnoutModel`'s neutral 50 so the only thing moving is GOTV.
     /// </summary>
     public static class GotvHarness
     {
         private static readonly double[] Shares2022 = { 0.3033, 0.2054, 0.1910, 0.0675, 0.0671, 0.0534, 0.0508, 0.0461 };
         private const double BaseTurnout2022 = 0.8421;   // SOURCED: Valmyndigheten, 6,547,801 of 7,775,390
-        private const double Turnout2018 = 0.8718;       // SOURCED: Valmyndigheten (priors/previous_elections.md)
+        // W-F1: Turnout2018 retired as an eligible-derivation - eligible is now SOURCED per valkrets.
         private const double HistoricLow = 0.8011;       // 2002, the lowest of 2002-2022 (turnout_history.md)
         private const double HistoricHigh = 0.8718;      // 2018, the highest
         private const double Widening = 0.02;
@@ -52,7 +53,7 @@ namespace PoliSim.EditorTools
             double nationalEligible = 0.0;
             foreach (double e in eligible) { nationalEligible += e; }
             sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "  staging: {0} valkretsar, eligible DERIVED as 2018 valid votes / 87.18 % = {1:N0} nationally (2022 actual 7,775,390); base turnout 84.21 % (2022)\n",
+                "  staging: {0} valkretsar, eligible SOURCED per valkrets (W-F1) = {1:N0} nationally (published 7,775,390); base turnout 84.21 % (2022)\n",
                 eligible.Length, nationalEligible));
 
             const double neutral = 50.0;
@@ -158,7 +159,7 @@ namespace PoliSim.EditorTools
 
         private static double[] ReadEligible(out string[] names)
         {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
             var eligible = new List<double>();
             var nameList = new List<string>();
             foreach (string raw in File.ReadAllLines(path))
@@ -167,7 +168,7 @@ namespace PoliSim.EditorTools
                 if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("valkrets;")) { continue; }
                 string[] cells = line.Split(';');
                 nameList.Add(cells[0]);
-                eligible.Add(double.Parse(cells[1], CultureInfo.InvariantCulture) / Turnout2018);
+                eligible.Add(double.Parse(cells[10], CultureInfo.InvariantCulture));   // W-F1: SOURCED antalRostberattigade, no longer valid / a national turnout
             }
 
             names = nameList.ToArray();
@@ -177,7 +178,7 @@ namespace PoliSim.EditorTools
         private static int IndexOf(string[] names, string name)
         {
             int i = Array.IndexOf(names, name);
-            if (i < 0) { throw new InvalidDataException($"valkrets '{name}' not in the 2018 file"); }
+            if (i < 0) { throw new InvalidDataException($"valkrets '{name}' not in the 2022 file"); }
             return i;
         }
 

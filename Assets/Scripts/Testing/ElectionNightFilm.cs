@@ -30,7 +30,6 @@ namespace PoliSim.Testing
         /// than a mapping with a bias to declare.
         /// </summary>
         public static readonly long[] Votes2018 = { 1830386, 1135627, 1284698, 518454, 557500, 409478, 285899, 355546 };
-        private const double Turnout2018 = 0.8721;
 
         /// <summary>
         /// SOURCED - Valmyndigheten via `ElectionsData/sweden/returns_2022.md:49`: 6 547 801
@@ -80,45 +79,26 @@ namespace PoliSim.Testing
             return ElectionNight.NightMinutes;
         }
 
+        /// <summary>
+        /// W-F1: the REAL 2022 per-valkrets counts. Until W-F1 this method spread the 2022 NATIONAL
+        /// counts over the 29 valkretsar by 2018's per-valkrets distribution, because no 2022
+        /// per-constituency file for all eight parties existed on disk. One does now
+        /// (`ElectionsData/sweden/valkrets_votes_2022.csv`, Valmyndigheten's own per-constituency
+        /// backend), so election night counts the election that happened rather than a synthesis of
+        /// it — and `eligible` is the SOURCED antalRostberattigade per valkrets, not valid votes
+        /// divided by a national turnout applied uniformly to 29 constituencies that ranged 74–88 %.
+        ///
+        /// The NAME is kept so the harness and the film keep sharing one entry point; nothing is
+        /// regionalised any more, which is the point.
+        /// </summary>
         public static long[][] Regionalise(out string[] names, out long[] eligible)
         {
-            long[][] votes2018 = ReadValkrets(out names, out eligible);
-            int regions = votes2018.Length;
-            int parties = Parties.Length;
-            var region = new long[regions][];
-            for (int r = 0; r < regions; r++) { region[r] = new long[parties]; }
-
-            for (int p = 0; p < parties; p++)
-            {
-                long total2018 = 0;
-                for (int r = 0; r < regions; r++) { total2018 += votes2018[r][p]; }
-
-                var fraction = new double[regions];
-                long given = 0;
-                for (int r = 0; r < regions; r++)
-                {
-                    double share = (double)Votes2022[p] * votes2018[r][p] / total2018;
-                    region[r][p] = (long)Math.Floor(share);
-                    fraction[r] = share - region[r][p];
-                    given += region[r][p];
-                }
-
-                while (given < Votes2022[p])
-                {
-                    int best = 0;
-                    for (int r = 1; r < regions; r++) { if (fraction[r] > fraction[best]) { best = r; } }
-                    region[best][p]++;
-                    fraction[best] = -1.0;
-                    given++;
-                }
-            }
-
-            return region;
+            return ReadValkrets(out names, out eligible);
         }
 
         private static long[][] ReadValkrets(out string[] names, out long[] eligible)
         {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
             var rows = new List<long[]>();
             var nameList = new List<string>();
             var eligibleList = new List<long>();
@@ -129,7 +109,7 @@ namespace PoliSim.Testing
                 if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("valkrets;")) { continue; }
                 string[] cells = line.Split(';');
                 nameList.Add(cells[0]);
-                eligibleList.Add((long)Math.Round(double.Parse(cells[1], CultureInfo.InvariantCulture) / Turnout2018));
+                eligibleList.Add(long.Parse(cells[10], CultureInfo.InvariantCulture));   // W-F1: SOURCED antalRostberattigade
                 var row = new long[Parties.Length];
                 for (int p = 0; p < Parties.Length; p++) { row[p] = long.Parse(cells[map[p]], CultureInfo.InvariantCulture); }
                 rows.Add(row);

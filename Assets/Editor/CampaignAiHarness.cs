@@ -41,7 +41,7 @@ namespace PoliSim.EditorTools
     ///
     /// **The staging, and its data classes.** Parties, prior and loyalty are SOURCED (Sweden 2022
     /// and 2018, Valmyndigheten, W-A1's derivation); regions' audiences are SOURCED (the 29
-    /// valkretsar's valid votes 2018); salience is SOURCED (EB105 Spring 2026, Sweden's top five,
+    /// valkretsar's valid votes, 2022 - W-F1); salience is SOURCED (EB105 Spring 2026, Sweden's top five,
     /// the four that map onto §6's list: climate 26, crime 18, defence 17, education 16 — "threats
     /// to democracy" has no §6 issue and is billed); compatibility is DERIVED as the fixed point at
     /// which the persuaded shares equal the prior, so the run starts at rest on the real result.
@@ -595,7 +595,7 @@ namespace PoliSim.EditorTools
             salience[(int)IssueId.Defense] = 0.17;
             salience[(int)IssueId.Education] = 0.16;
 
-            // SOURCED regions: the 29 valkretsar's valid votes, 2018.
+            // SOURCED regions: the 29 valkretsar's valid votes, 2022 (W-F1).
             RegionAudience[] regions = ReadValkretsar(out double national);
 
             var parties = new CampaignRun.PartySetup[Parties.Length];
@@ -617,7 +617,7 @@ namespace PoliSim.EditorTools
             }
 
             sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "\n    {0} valkretsar (SOURCED 2018 valid votes), national audience {1:N0}; salience EB105 SE: climate .26 crime .18 defence .17 education .16\n" +
+                "\n    {0} valkretsar (SOURCED 2022 valid votes, W-F1), national audience {1:N0}; salience EB105 SE: climate .26 crime .18 defence .17 education .16\n" +
                 "    [AUTHORED-DRAFT] issue-match {2:F2} flat, credibility {3:F2} flat, war chest {4:N0} kr each (equal by design); houses from W-E4's ladder\n",
                 regions.Length, national, FlatIssueMatch, FlatCredibility, WarChest));
 
@@ -640,7 +640,7 @@ namespace PoliSim.EditorTools
 
         private static RegionAudience[] ReadValkretsar(out double national)
         {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
             var regions = new List<RegionAudience>();
             national = 0.0;
             foreach (string raw in File.ReadAllLines(path))

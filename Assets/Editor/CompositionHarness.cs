@@ -143,6 +143,12 @@ namespace PoliSim.EditorTools
 
             // Per-valkrets 2018. CSV order after 'valid': S;M;SD;C;V;KD;L;MP
             // Party order here is S,SD,M,V,C,KD,MP,L -> indices 2,4,3,6,5,7,9,8.
+            //
+            // W-F1 DELIBERATELY DID NOT REPOINT THIS ONE. The 2022 per-valkrets file now exists,
+            // but this is a BACKTEST OF 2022: the 2018 result is its PRIOR, exactly as Germany's
+            // 2021 Land votes are the prior for the 2025 case above. Pointing it at 2022 would let
+            // the model see the answer it is being scored against, and the MAD it reports would
+            // stop meaning anything.
             List<string[]> rows = ReadCsv("ElectionsData/sweden/valkrets_votes_2018.csv", 10);
             if (rows == null)
             {

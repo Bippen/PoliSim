@@ -4807,3 +4807,48 @@ already exist.
 **R-N2 held:** `traj_wb12_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
 checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-B12, the `CLAUDE.md` dated section,
 `ELECTIONS_PROTOTYPE_WORKLIST.md` (the item opened by ruling), `ELECTIONS_GAP_TABLE.md` row 9.
+
+## 77. W-F1 — Sweden's 2022 returns by constituency: the model now counts the election that happened (2026-08-30)
+
+**What shipped.** `ElectionsData/sweden/valkrets_votes_2022.csv` — all 29 valkretsar, all 8 parties,
+ABSOLUTE counts, plus **eligible voters and ballots cast per constituency**, from Valmyndigheten's
+own per-constituency backend (`resultat.val.se/data/resultat/val2022/RD_{01..29}_S.json`, final
+count). Nine code paths repointed; two deliberately not.
+
+**Verification, in one pass.** The 29 per-constituency files and the national file are independent
+downloads. Aggregated and compared, **eleven column sums match exactly** — valid 6 477 970, eligible
+7 775 390, cast 6 547 801, and all eight party totals. That validates parse, aggregation and
+completeness together. Code 30 returns 404, which is itself the check that Sweden has 29
+constituencies.
+
+⚠ **The headline: W-D2's central claim was resting on a synthetic chamber.** "Sweden 2022 reproduces
+seat-for-seat" was previously measured on the 2022 NATIONAL counts spread over 29 constituencies by
+2018's distribution — so the totals were right **by construction** and the 29-constituency procedure
+was being asked a smoothed question. **On the real counts it still reproduces 8 of 8 exactly**, but
+the fixed/adjustment split moved for four parties: **KD's fixed seats were understated by three**
+(10 → 13, adjustment 9 → 6), S 105 → 104, V 17 → 16, MP 11 → 10. Stockholms län's fixed seats went
+39 → 40. **The seat table was right; the account of how Sweden produces it was not.**
+
+⚠ **A 4.5 % error in the electorate retired.** Eligible per valkrets was DERIVED as 2018 valid votes
+÷ a national turnout, putting the electorate at **7 429 141 against the published 7 775 390 —
+346 249 voters short** — because one national turnout was applied to constituencies whose real
+turnout ran **77.22 % to 87.56 %**. Now SOURCED. `turnout_history.md`'s bill is marked PAID.
+
+⚠ **Two "consumers" were reading 2018 CORRECTLY and were NOT repointed.** `CompositionHarness` and
+`GateReRun` use it as the **PRIOR for a backtest of 2022**. Repointing them would have let the model
+see its own answer. Both keep 2018 with the reason at the site; SWEDEN 2022's MAD is unmoved
+(1.47 pp), which proves the backtest stayed clean.
+
+**Every moved figure reported** (plan risk 4): the campaign map now reads 13/16 swing constituencies
+(was 11/12) and 20/18 too close to call (was 19/13) — real 2022 is MORE contested than 2018's shape
+implied; election night calls S from 8 of 29 (was 6) and C from 25 (was 23), 0 of 1834 call-instants
+contradicted; election day counts 6 564 111 of 7 775 390; a full office's Stockholm audience
+1 006 456 (was 934 883). ⚠ **C1's PEND lines did not move at all** (prof/est 0.306, est/grass 0.269)
+— which rules out the data vintage and leaves the separation question on W-F5, where the ruling put it.
+
+**No `[AUTHORED-DRAFT]` value is introduced** — the item retires a derivation and adds no constant.
+
+**Verified:** all seven affected harnesses ALL ASSERTIONS PASS (C1 unchanged at 5 PENDING); nine
+checks exit 0; eight films (campaign family + board 1h at 1280/1600/1920/2560) exit 0 with **0 text
+overflows and 0 containment escapes**; both `ScreenEdgeCheck` patterns exit 0. R-N2 held:
+`traj_wf1_*` identical to `traj_run_*` six of six, zero `ATTRIB`.

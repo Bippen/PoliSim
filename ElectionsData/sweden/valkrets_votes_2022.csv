@@ -1,0 +1,53 @@
+# Sweden Riksdag 2022 - per-valkrets results, ABSOLUTE counts [SOURCED]
+# source: Valmyndigheten, https://resultat.val.se/data/resultat/val2022/RD_{NN}_S.json for NN = 01..29
+#   (the official machine-readable backend of the result presentation at
+#   https://resultat.val.se/val2022/RD?r=S), rakningstillfalle "slutlig" [final count],
+#   last updated 19 October 2022 13:51; the 29 files fetched 2026-08-30. Code 30 returns 404,
+#   which is itself the completeness check: Sweden has exactly 29 riksdagsvalkretsar.
+# ALL ELEVEN COLUMN SUMS VERIFIED against the published national figures in returns_2022.md:
+#   valid 6,477,970; eligible 7,775,390; cast 6,547,801; S 1,964,474; M 1,237,428; SD 1,330,325;
+#   C 434,945; V 437,050; KD 345,712; L 298,542; MP 329,242 - ALL ELEVEN MATCH EXACTLY.
+#   The per-constituency files and the national file are independent downloads, so the agreement
+#   validates the aggregation, the parse and this file's completeness in one pass.
+# ROW ORDER IS THE 2018 FILE'S, DELIBERATELY (W-F1, R-N1). The JSON backend orders the three city
+#   constituencies differently (Stockholms kommun first). Every consumer reads this file row by row
+#   and keys regions by INDEX, so keeping 2018's order means the repoint changes the NUMBERS and
+#   nothing else - which is what makes every moved figure attributable to the vintage change.
+# COLUMNS 1-10 ARE THE 2018 FILE'S SHAPE EXACTLY, so a consumer repoints by changing the filename.
+#   Columns 11-12 are NEW and SOURCED, and retire a derivation: 'eligible' (antalRostberattigade)
+#   was previously DERIVED as 2018 valid / 0.8718 (ElectionDayHarness.cs, turnout_history.md:24),
+#   a national turnout applied uniformly to 29 constituencies whose real turnout ranges 74-88%.
+# 'valid' is ROSTER SOM PAVERKAR MANDATFORDELNINGEN (rosterPaverkaMandat.antalRoster) - the count
+#   the seat allocation runs on. It excludes blank and invalid ballots, so 'cast' minus 'valid' is
+#   those; and the party columns do not sum to 'valid' either, because parties below the threshold
+#   and the two OVR buckets make up the remainder.
+valkrets;valid;S;M;SD;C;V;KD;L;MP;eligible;cast
+Stockholms län;822512;223056;197466;144315;60776;51623;40207;48949;42284;1006456;830207
+Stockholms kommun;606754;170308;115706;64730;51437;71171;19227;41663;60791;728089;611908
+Uppsala län;248891;72499;45457;45237;18040;19543;14766;12465;16750;292255;251301
+Södermanlands län;184883;60891;35513;42547;10989;9605;8772;6643;7409;223767;186884
+Östergötlands län;300600;91837;59623;63733;19479;16884;17943;13271;13917;356210;303906
+Jönköpings län;229125;66568;42913;53338;17078;9069;21326;8480;7377;271666;231669
+Kronobergs län;124992;38712;24390;29516;7559;6281;8451;3897;4338;147910;126385
+Kalmar län;161267;51179;28672;39516;10523;7484;11226;5126;5427;189781;163223
+Gotlands län;41459;14361;6969;6504;4858;2642;1645;1169;2683;48274;42047
+Blekinge län;103580;32255;18500;29556;5014;4600;5735;3637;3015;121789;104846
+Skåne läns västra;191683;52402;37982;55104;9524;8832;9055;8592;6779;236712;193865
+Skåne läns södra;259372;65747;57216;60573;17171;12857;12341;15949;14386;299809;261820
+Skåne läns norra och östra;202971;51154;39595;65345;10040;7987;12480;7625;6006;244489;205249
+Malmö kommun;192045;56789;34313;31433;10546;23986;5753;8706;14386;251172;193960
+Hallands län;221675;62666;49810;50046;15590;8963;13328;10739;7963;258794;224183
+Västra Götalands läns västra;247863;69468;50707;52558;15881;14089;15571;13467;12846;285927;250361
+Västra Götalands läns norra;173655;54311;30443;44165;9938;8953;10711;6311;6318;208144;175703
+Västra Götalands läns södra;141906;41350;26846;33477;10063;7583;9871;5445;5053;170107;143643
+Västra Götalands läns östra;176526;55421;32790;42572;11667;7856;12289;5919;5748;207560;178790
+Göteborgs kommun;347103;95980;64157;50889;20343;44602;15170;20317;27485;434273;350516
+Värmlands län;182237;63034;31068;41555;11557;9126;10590;6766;6635;216666;184607
+Örebro län;194190;64565;32508;42904;12159;11873;10368;8828;7866;232024;196504
+Västmanlands län;170749;54645;32671;40415;9224;10475;8554;7100;5465;208376;172842
+Dalarnas län;186599;59080;30664;47931;12131;9937;11231;5786;7087;221344;188980
+Gävleborgs län;182587;63415;29661;43994;11405;10783;9303;5462;6308;221395;184770
+Västernorrlands län;158723;62562;22176;32829;11822;9123;8591;4348;5437;188542;160560
+Jämtlands län;85024;30666;12574;17097;7771;4749;4574;2244;4269;101363;86118
+Västerbottens län;177543;72318;25121;25666;13827;15097;8368;5544;9653;209485;179712
+Norrbottens län;161456;67235;21917;32780;8533;11277;8266;4094;5561;193011;163242

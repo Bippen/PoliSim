@@ -2237,3 +2237,99 @@ see each morning, and capital commitments (an office opened, a buy planned) are 
 
 - **SD's six days** — measure whether capital commitments belong in the plan's horizon.
 - **W-F5** — unequal war chests; `est/grass` and 2a-iii still wait there.
+
+## W-F1 — Sweden's 2022 returns by constituency: the election the model counts is now the election that happened (2026-08-30)
+
+**What was wrong.** `ElectionsData/sweden/returns_2022.md` carried all 29 valkretsar but only **five
+party columns, and only as shares**. The only per-constituency ABSOLUTE counts on disk for all eight
+parties were **2018's**, and **nine code paths read that 2018 file as if it were the electorate** —
+the seat conversion, election day, GOTV, the offices, the AI campaign's region audiences, election
+night, and the campaign map on screen. Two more read it as a PRIOR, which is correct and was left
+alone (below).
+
+**What was fetched.** Valmyndigheten's own per-constituency backend,
+`https://resultat.val.se/data/resultat/val2022/RD_{NN}_S.json` for NN = 01…29, final count
+(`rakningstillfalle: "slutlig"`), 29 files. **Code 30 returns 404 — that is the completeness check**:
+Sweden has exactly 29 riksdagsvalkretsar and the source agrees.
+
+**How it was checked, and this is the strongest part.** The 29 per-constituency files and the
+national `RD_S.json` are **independent downloads**. Aggregating the 29 and comparing against the
+national file and against `returns_2022.md` gives **eleven column sums, all eleven exact**: valid
+6 477 970 · eligible 7 775 390 · cast 6 547 801 · S 1 964 474 · M 1 237 428 · SD 1 330 325 ·
+C 434 945 · V 437 050 · KD 345 712 · L 298 542 · MP 329 242. One pass validates the parse, the
+aggregation and the file's completeness together.
+
+### The headline: W-D2's claim got much stronger, and its internals were wrong
+
+W-D2 asserts *"Sweden 2022 reproduces seat-for-seat through the live path"*. Until today it did that
+on a **synthetic** chamber — the 2022 NATIONAL counts spread over 29 constituencies by 2018's
+distribution. The totals were right **by construction**: the national counts were exact, so the
+national totalfördelning could hardly miss. **The 29-constituency procedure — the fixed seats, the
+12 % rule, where the 39 adjustment seats land — was being asked a smoothed question.**
+
+On the real counts it **still reproduces 107/73/68/24/24/19/18/16, 8 of 8 exact**. But the fixed /
+adjustment split moved for four parties:
+
+| party | fixed before → after | adjustment before → after |
+|---|---|---|
+| **KD** | 10 → **13** | 9 → **6** |
+| **S** | 105 → **104** | 2 → **3** |
+| **V** | 17 → **16** | 7 → **8** |
+| **MP** | 11 → **10** | 7 → **8** |
+| SD / M / C / L | unchanged | unchanged |
+
+**KD's fixed seats were understated by three.** And Stockholms län's fixed seats went **39 → 40**,
+because the constituency's seat entitlement is computed from ELIGIBLE voters and eligible was
+derived, not sourced. The seat table was right; the account of HOW Sweden produces it was not.
+
+### The second retirement: eligible voters
+
+Per-valkrets eligible counts were **DERIVED as 2018 valid votes ÷ a national turnout**. That put the
+national electorate at **7 429 141 against the published 7 775 390 — 346 249 voters, 4.5 % low** —
+because one national turnout was applied uniformly to constituencies whose real turnout ran from
+**77.22 % (Malmö kommun) to 87.56 % (Västra Götalands läns västra), a 10.3 pp spread**, so the error
+did not cancel. Column 11 is now Valmyndigheten's own `antalRostberattigade`. `Turnout2018` is
+retired as an eligible-derivation at all four sites that used it, and `DATA_BILL.md`'s bill in
+`turnout_history.md` is marked **PAID**.
+
+### ⚠ Two of the "ten consumers" were reading 2018 CORRECTLY, and were NOT repointed
+
+`CompositionHarness` and `GateReRun` read the 2018 file as **the PRIOR for a backtest of 2022** —
+exactly as Germany's 2021 Land votes are the prior for its 2025 case. **Repointing them would have
+let the model see the answer it is scored against**, and the MAD it reports would have stopped
+meaning anything. Both keep the 2018 file, with a comment at each site saying why. Verified after
+the change: SWEDEN 2022's MAD is unmoved (both-layers 1.47 pp, §8-only 1.47 pp), which is the proof
+the backtest was not contaminated.
+
+### Everything that moved on a player-facing screen, reported (risk 4 of the plan)
+
+- **The campaign map** (W-E2) now reads **13 swing constituencies at the regional buy and 16 at the
+  full programme** (was 11 and 12), and **20 / 18 too close to call** (was 19 / 13). Sweden's real
+  2022 regional variation is **more contested** than 2018's pattern implied.
+- **Election night** calls S's threshold clearance from **8 of 29** (was 6) and C's from **25**
+  (was 23) — the real distribution is less smooth than the synthesis, so the guarantee is slightly
+  slower. 0 of 1834 call-instants contradicted, unchanged.
+- **Election day** counts **6 564 111 of 7 775 390** (was 6 272 383 of 7 429 141); turnout 84.42 %
+  either way, because the derivation was self-consistent even while being wrong.
+- **The offices**: a full office's local audience in Stockholms län is **1 006 456** (was 934 883).
+- **The AI campaign**: national audience 6 477 970 (was 6 476 725); every decision digest changed
+  (`0c98e88d…` → `817143c1…`) as the inputs did.
+- ⚠ **C1's PEND lines did NOT move**: prof/est 0.306, est/grass 0.269, identical to W-B12's reading.
+  **That is worth stating** — it rules out the data vintage as the explanation and leaves the
+  separation question exactly where the standing ruling put it, on W-F5 and on behaviour.
+
+### Decisions taken and logged (R-N1)
+
+- **The 2022 file keeps the 2018 file's ROW ORDER**, not the JSON backend's (which puts Stockholms
+  kommun first). Every consumer keys regions by index, so this makes the repoint change the NUMBERS
+  and nothing else. *Strikeable: adopting the source's order would have silently reordered 29
+  regions and made every moved figure unattributable.*
+- **Columns 1–10 are the 2018 file's shape exactly**, so a consumer repoints by changing a filename;
+  eligible and cast are appended as 11 and 12. The shared `ReadCsv` takes a MINIMUM column count, so
+  appending is safe.
+- **Capital-C `valid` is `rosterPaverkaMandat`** — the count the seat allocation actually runs on —
+  not ballots cast. The file's header says so, and says the party columns do not sum to it.
+
+### [AUTHORED-DRAFT] values
+
+**None.** W-F1 retires a derivation and introduces no authored figure.

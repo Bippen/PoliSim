@@ -32,7 +32,7 @@ namespace PoliSim.EditorTools
         private static readonly string[] Parties = { "S", "SD", "M", "V", "C", "KD", "MP", "L" };
         private static readonly double[] Shares2022 = { 0.3033, 0.2054, 0.1910, 0.0675, 0.0671, 0.0534, 0.0508, 0.0461 };
         private const double BaseTurnout2022 = 0.8421;
-        private const double Turnout2018 = 0.8718;
+        // W-F1: Turnout2018 retired - eligible is now SOURCED per valkrets (valkrets_votes_2022.csv column 11).
 
         public static void Run()
         {
@@ -171,7 +171,7 @@ namespace PoliSim.EditorTools
 
         private static double[] ReadEligible(out string[] names)
         {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2018.csv"));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
             var eligible = new List<double>();
             var nameList = new List<string>();
             foreach (string raw in File.ReadAllLines(path))
@@ -180,7 +180,7 @@ namespace PoliSim.EditorTools
                 if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("valkrets;")) { continue; }
                 string[] cells = line.Split(';');
                 nameList.Add(cells[0]);
-                eligible.Add(double.Parse(cells[1], CultureInfo.InvariantCulture) / Turnout2018);
+                eligible.Add(double.Parse(cells[10], CultureInfo.InvariantCulture));   // W-F1: SOURCED antalRostberattigade, no longer valid / a national turnout
             }
 
             names = nameList.ToArray();
