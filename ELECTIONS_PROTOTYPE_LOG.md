@@ -1728,3 +1728,105 @@ circularity.**
 - **Not built, and named:** government COLLAPSE (§29's fifth outcome) is defined in the enum and
   never produced — nothing in the prototype yet advances time inside a mandate for a government to
   fall. It belongs with a governing-phase item, not here.
+
+## W-D4 — post-election attribution (§31): the approval ledger pointed at vote share, and an identity rather than a tolerance (2026-08-30)
+
+**What it is.** `VoteAttribution.cs` — §31's "why you won / why you lost" as a LEDGER, built in the
+`ApprovalAttribution` idiom: contributions **recorded where they land, never recomputed**, and lines
+that sum to the movement they explain. `VoteAttributionSource` names the ten sources a party's share
+can be moved by — its own eight §12 actions, the attacks aimed at it, and everything every other
+party did as one bloc. `CampaignRun` records them at the write sites (`PartyLedger.PersuasionByAction`
+per action kind, `PersuasionAgainstMe`, `Result.PersuasionPerParty`).
+
+**The identity is exact, and that is the design.** The share a party ends with is NOT linear in the
+pressures — compatibility is, but `PreferenceModel` normalises across parties — so leaving one
+source out at a time would not sum to the total and would need a residual line to hide the gap. The
+decomposition is therefore **Shapley over the ten sources**: its efficiency axiom makes
+`Σ lines == close − baseline` an identity, and its symmetry axiom means the order sources are
+considered in cannot change the answer, which a sequential decomposition cannot say. The cost is
+2^10 = 1 024 preference evaluations per party, which is why the opponents are one bloc rather than
+sixty-four separate sources — an aggregation that is honest about what it does not know ("your
+rivals' campaigning moved your share by this much") instead of pretending to name which rally did it.
+
+### The done-when, asserted (`VoteAttributionHarness`, 8 of 8)
+
+- **THE FIRST CLAUSE — the lines sum to the deviation from baseline.** Largest residual across all
+  eight parties: **1.77 × 10⁻¹⁶** of a share, against a stated tolerance of 1 × 10⁻¹². That is
+  floating-point noise, not modelling slack, and the harness prints the worst case rather than
+  asserting a bound nobody can check.
+- **The ledger opens and closes on the campaign's own numbers**, not on figures of its own: largest
+  difference from `Result.BaselineShares` and `Result.FinalShares` 5.55 × 10⁻¹⁷.
+- **THE SECOND CLAUSE — no line is authored prose.** Asserted structurally: the instrument carries
+  **no string field or property at all** (by reflection), so a label can only be a
+  `VoteAttributionSource` enum name — a mechanism the model applies. Every declared source is swept,
+  so no line can read zero merely because it was forgotten.
+- **A source the party never used contributes exactly nothing.** SD never held a rally, a town hall,
+  a door-to-door day, a digital ad or a policy announcement, and all five lines are exactly 0 — the
+  ledger cannot attribute movement to something that did not happen.
+- **It is a reading of the run, not of the reader:** the same seed returns the same lines.
+
+### The ledger, printed (seed 777, the C1 staging)
+
+```
+SD  (largest gain)  20.86 % -> 22.31 %  (+1.45 pp)
+    Interview            +2.744 pp
+    OpponentCampaigns    -1.425 pp
+    SocialPost           +0.086 pp
+    TelevisionAd         +0.041 pp
+    TOTAL                +1.446 pp   (residual 1.77e-16)
+
+S   (largest loss)  30.80 % -> 29.91 %  (-0.90 pp)
+    OpponentCampaigns    -1.342 pp
+    Interview            +0.627 pp
+    AttacksReceived      -0.288 pp
+    PolicyAnnouncement   +0.077 pp
+    SocialPost           +0.019 pp
+    TelevisionAd         +0.009 pp
+    TOTAL                -0.899 pp   (residual 6.94e-18)
+```
+
+### Findings carried forward
+
+1. **The free interview dominates the ledger, in a third instrument.** SD's interviews are +2.744 pp
+   of a **+1.45 pp** net movement — the single largest line either party has, and larger than the
+   result itself. W-B3 and W-E3 recorded this as a mechanism question (bounded reach,
+   repeated-exposure decay) and C1's PEND lines rest on it; §31's ledger now says the same thing
+   from the other end, and a player reading this screen would conclude that campaigning is
+   interviews. Recorded, not adjusted.
+2. **The attribution corroborates the standing design question** opened against W-B4/W-B11 from
+   W-C2: SD's ledger has **five of its eight action lines at exactly zero**, all of them the local
+   and paid ones. That is the second independent measurement of the same thing, and it belongs in
+   evidence when that question is answered — the ruling of 2026-08-30 stands: measure which of the
+   two causes it is before adjusting either.
+3. **A party's own campaigning is not the biggest thing that happens to it.** `OpponentCampaigns` is
+   the largest line in S's ledger (−1.342 pp) and the second largest in SD's. §31's example gives
+   the player only their own doings; the model says the rivals' campaign is comparable in size, and
+   a screen that hides it would be misattributing the result to the player.
+
+### Decisions taken and logged (R-N1)
+
+- **Shapley, not leave-one-out or a sequential pass.** Leave-one-out does not sum and would need a
+  residual line; a sequential pass sums but is order-dependent and would quietly privilege whichever
+  source was applied first. *Strikeable: Shapley costs 2^n, which is what caps the source list at
+  ten.*
+- **The opponents are ONE source.** Sixty-four separate sources would be exact and unaffordable
+  (2^72); naming them individually without the sweep would be a guess. *Strikeable: a second
+  aggregate — "the party I was attacked by most" — would cost one more bit.*
+- **Momentum, coverage, debates and scandals have NO line, and that is correct here.** The true
+  preference is moved only by persuasion pressure; debates and scandals move coverage and momentum,
+  which move the POLL and hence what the campaign chose to do. Their effect is already inside the
+  action lines, and giving them a line of their own would double-count. Recorded because it is the
+  first thing a reader will ask.
+- **Turnout and tactical voting are a later stage and have no line here** — this ledger explains the
+  PREFERENCE share. W-D1's election day applies turnout and W-A4's tactical layer on top of it;
+  attributing the seat result rather than the share is a second instrument, named as a rider.
+
+### Riders
+
+- **A Track E screen** draws this ledger directly — the rows are already computed, signed and
+  ordered, and §36 does not bite (a party's own campaign and the published aggregate of others' are
+  both things it may know).
+- **A second ledger for the SEAT result** — turnout (W-B11), tactical voting (W-A4) and the seat
+  allocation stand between share and seats, and each is a stage this instrument does not cross.
+- **W-F4's voter groups** will make each line decomposable per group, which is what §31's "young
+  voters / urban voters" lines actually ask for; today's electorate is one group (W-F4 retires it).

@@ -164,6 +164,10 @@ namespace PoliSim.Elections
             public double StaffMoney;
             public int UnpaidStaffDays;
             public double TelevisionFundAtEnd;
+            /// <summary>W-D4: the persuasion pressure this party's own actions delivered, per §12 action kind - RECORDED where it lands, never recomputed (the ApprovalAttribution principle), so §31's ledger sums to the movement it explains.</summary>
+            public double[] PersuasionByAction = new double[CampaignActions.TheEight.Length];
+            /// <summary>W-D4: persuasion pressure aimed AGAINST this party by others' negative campaigning, as a positive magnitude.</summary>
+            public double PersuasionAgainstMe;
             /// <summary>W-C2: the party's reactions - offices opened in contested regions, town halls held there, announcements answering attacks.</summary>
             public int OfficesOpenedInReaction;
             public int Defences;
@@ -221,6 +225,8 @@ namespace PoliSim.Elections
             public StaffRoster[] Staff;
             /// <summary>W-C2: the public record of visible acts at the end - what any party could see.</summary>
             public PublicActivity Activity;
+            /// <summary>W-D4: every party's total persuasion pressure at the close - §31's ledger needs the opponents' bloc as well as the party's own lines.</summary>
+            public double[] PersuasionPerParty;
             /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks.</summary>
             public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
             /// <summary>W-B8: every scandal - day, party, the response chosen, the outcome.</summary>
@@ -577,7 +583,12 @@ namespace PoliSim.Elections
                         if (modifiers.OpponentShare > 0.0)
                         {
                             int target = view.PolledLeaderOtherThanSelf;   // chosen from the Poll, not the truth
-                            if (target >= 0) { pressure.AddAgainst(target, trace.Persuasion * modifiers.OpponentShare); activity.ObserveAttack(p, target, modifiers.OpponentShare); }
+                            if (target >= 0)
+                            {
+                                pressure.AddAgainst(target, trace.Persuasion * modifiers.OpponentShare);
+                                activity.ObserveAttack(p, target, modifiers.OpponentShare);
+                                ledgers[target].PersuasionAgainstMe += trace.Persuasion * modifiers.OpponentShare;   // W-D4
+                            }
                         }
 
                         // W-C2: a scripted attack lands as a negative campaign's would, and is seen.
@@ -585,6 +596,7 @@ namespace PoliSim.Elections
                         {
                             pressure.AddAgainst(d.AgainstParty, trace.Persuasion * CampaignStrategyModel.NegativeOpponentShare);
                             activity.ObserveAttack(p, d.AgainstParty, 1.0);
+                            ledgers[d.AgainstParty].PersuasionAgainstMe += trace.Persuasion * CampaignStrategyModel.NegativeOpponentShare;   // W-D4
                         }
 
                         // W-C2: a local act is public - the press was there; a rally counts one, the rest half.
@@ -602,6 +614,7 @@ namespace PoliSim.Elections
                         ledger.MoneyByAction[slot] += d.Spend;
                         if (d.Blind) { ledger.BlindDecisions++; }
                         ledger.PersuasionDelivered += trace.Persuasion;
+                        ledger.PersuasionByAction[slot] += trace.Persuasion;   // W-D4: recorded where it lands
                         ledger.EnthusiasmDelivered += trace.Enthusiasm;
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
@@ -706,6 +719,7 @@ namespace PoliSim.Elections
                 Offices = offices,
                 Staff = staff,
                 Activity = activity,
+                PersuasionPerParty = FinalPersuasion(pressure, partyCount),
                 RegionNames = names,
                 Debates = debates,
                 Scandals = scandals,
@@ -815,6 +829,14 @@ namespace PoliSim.Elections
         }
 
         // ---------- the truth ----------
+
+        /// <summary>W-D4: each party's accumulated persuasion at the close, read off the pressure the campaign actually applied.</summary>
+        private static double[] FinalPersuasion(CampaignPressure pressure, int partyCount)
+        {
+            var p = new double[partyCount];
+            for (int i = 0; i < partyCount; i++) { p[i] = pressure.Persuasion(i); }
+            return p;
+        }
 
         private static double[] CurrentPreference(Setup setup, double[] prior, CampaignPressure pressure)
         {

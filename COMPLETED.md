@@ -4541,3 +4541,50 @@ item.
 checks exit 0; the C1 harness still exits 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-D3, the
 `CLAUDE.md` dated section, `ELECTIONS_PLAY_CALIBRATION.md` entry 17, `ELECTIONS_GAP_TABLE.md` row
 29, `ElectionsData/sweden/coalition_declarations_2022.md`.
+
+## 71. W-D4 — post-election attribution (§31): the approval ledger pointed at vote share, and an identity rather than a tolerance (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/VoteAttribution.cs` — `VoteAttributionSource` (the ten
+mechanisms a party's share can be moved by: its own eight §12 actions, the attacks aimed at it, and
+every other party's campaigning as one bloc), `VoteAttribution.Inputs` / `Ledger` / `Explain`.
+`CampaignRun` records the contributions **where they land, never recomputing them** — the
+`ApprovalAttribution` principle — via `PartyLedger.PersuasionByAction` per action kind,
+`PersuasionAgainstMe`, and `Result.PersuasionPerParty`.
+`Assets/Editor/VoteAttributionHarness.cs` — **8 of 8**.
+
+**Why Shapley.** A party's final share is not linear in the pressures (compatibility is, but
+`PreferenceModel` normalises across parties), so leave-one-out would not sum to the total and would
+need a residual line to hide the gap. Shapley's **efficiency** axiom makes `Σ lines == close −
+baseline` an identity; its **symmetry** axiom means no source is privileged by being considered
+first. The cost is 2¹⁰ = 1 024 preference evaluations per party, which is exactly why the opponents
+are one bloc rather than sixty-four sources — an aggregation honest about what it does not know.
+
+**The done-when.** *The lines sum to the deviation:* largest residual across all eight parties
+**1.77 × 10⁻¹⁶** of a share against a stated tolerance of 1 × 10⁻¹² — floating-point noise, not
+modelling slack, and the worst case is printed rather than a bound asserted. The ledger opens and
+closes on the campaign's own `BaselineShares` / `FinalShares` (5.55 × 10⁻¹⁷). *No line is authored
+prose:* the instrument carries **no string field or property at all**, asserted by reflection, so a
+label can only be an enum name; every declared source is swept; a source the party never used
+contributes **exactly** zero; the same seed returns the same lines.
+
+**Findings.** ⚠ **The free interview dominates the ledger in a third instrument** — SD's interviews
+are **+2.744 pp of a +1.45 pp net movement**, larger than the result itself; W-B3 and W-E3 recorded
+this as a mechanism question and C1's PEND lines rest on it, and §31's ledger now says the same
+thing from the other end. **The attribution corroborates the standing design question** opened
+against W-B4/W-B11 from W-C2: five of SD's eight action lines are exactly zero, all of them the
+local and paid ones — a second independent measurement, to be weighed when that question is
+answered, with nothing adjusted meanwhile. ⚠ **A party's own campaigning is not the biggest thing
+that happens to it**: `OpponentCampaigns` is the largest line in S's ledger (−1.342 pp); §31's
+example shows the player only their own doings, and a screen that hid the rivals' would misattribute
+the result to the player.
+
+**Deliberately without a line, and recorded because it is the first question a reader asks.**
+Momentum, coverage, debates and scandals: the true preference is moved only by persuasion pressure,
+and those move coverage and momentum, which move the POLL and hence what the campaign chose to do —
+their effect is already inside the action lines and a line of their own would double-count. Turnout
+and tactical voting: this ledger explains the PREFERENCE share; the seat result needs a second
+instrument across W-D1's and W-A4's stages, named as a rider.
+
+**R-N2 held:** `traj_wd4_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0; the C1 harness still exits 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-D4, the
+`CLAUDE.md` dated section, `ELECTIONS_GAP_TABLE.md` row 31.
