@@ -239,9 +239,51 @@ namespace PoliSim.EditorTools
                 : $"CHECKS: {failed.Count} of {simulation.Length} FAILED — {string.Join(", ", failed)}.");
         }
 
-        private static void RunAll(bool announceClean)
+        /// <summary>
+        /// The whole suite under ONE `-executeMethod`, for batch and CI:
+        /// <code>
+        /// Unity.exe -batchmode -nographics -projectPath &lt;path&gt; \
+        ///   -executeMethod PoliSim.EditorTools.CheckSuite.RunAllBatch -logFile &lt;path&gt;
+        /// </code>
+        ///
+        /// ⚠ **Why this did not exist until 2026-08-31 (C-0.4), and what it cost.** Every check ends in
+        /// <see cref="CheckExit.Finish"/>, which calls <c>EditorApplication.Exit</c> outside a
+        /// <see cref="CheckExit.Collect"/> — so the suite could only ever be driven from the Editor, and
+        /// <see cref="ScheduleOnEditorOpen"/> early-returns under <c>Application.isBatchMode</c>.
+        /// Batch runs therefore invoked the nine checks as **nine separate Unity launches**, each paying
+        /// the ~40 s domain warm-up, and **two spurious exit-1s in this project's history were traced to
+        /// invoking the wrong entry point** — a failure mode that exists only because the caller has to
+        /// remember nine names. Remembering is what this repo has already recorded twice as a failing
+        /// mechanism.
+        ///
+        /// <para><b>The enumeration is printed before the run, not just after</b> (the enumeration rule):
+        /// a suite that silently ran eight of nine would otherwise read exactly like a clean run of nine.
+        /// The exit code is the WORST any check wanted, so a green summary line cannot outrank a red
+        /// check.</para>
+        ///
+        /// <para>⚠ It deliberately carries no <c>[MenuItem]</c>: it ends in
+        /// <c>EditorApplication.Exit</c>, so the first person to click it would quit the Editor. The
+        /// menu equivalent is <b>PoliSim/Run Asset Checks</b>, which runs the identical suite and
+        /// returns. The three simulation checks are NOT in it, for the cost reason recorded on
+        /// <see cref="RunSimulationChecksFromMenu"/>.</para>
+        /// </summary>
+        public static void RunAllBatch()
+        {
+            var names = new string[Suite.Length];
+            for (int i = 0; i < Suite.Length; i++) { names[i] = Suite[i].Name; }
+            Debug.Log($"CHECKS: running all {Suite.Length} in one pass — {string.Join(", ", names)}.");
+
+            int worst = RunAll(announceClean: true);
+            Debug.Log($"CHECKS: suite exiting {worst}.");
+            EditorApplication.Exit(worst);
+        }
+
+        /// <summary>Runs the nine and returns the WORST code any of them wanted (0 = all clean). A check
+        /// that throws counts as 1 — an exception is not a pass.</summary>
+        private static int RunAll(bool announceClean)
         {
             var failed = new List<string>();
+            int worst = 0;
 
             foreach ((string name, Action run) in Suite)
             {
@@ -256,6 +298,7 @@ namespace PoliSim.EditorTools
                     // exception here would read exactly like a clean run.
                     Debug.LogError($"CHECKS: {name} THREW {e.GetType().Name}: {e.Message}");
                     failed.Add(name);
+                    worst = Mathf.Max(worst, 1);
                     continue;
                 }
 
@@ -263,6 +306,8 @@ namespace PoliSim.EditorTools
                 {
                     failed.Add(name);
                 }
+
+                worst = Mathf.Max(worst, code);
             }
 
             if (failed.Count > 0)
@@ -274,6 +319,8 @@ namespace PoliSim.EditorTools
             {
                 Debug.Log($"CHECKS: {Suite.Length} of {Suite.Length} clean.");
             }
+
+            return worst;
         }
     }
 }
