@@ -4484,3 +4484,60 @@ opponent reactivity and that is what shipped; the plan still covers television o
 checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-C2, the `CLAUDE.md` dated section,
 `ELECTIONS_PLAY_CALIBRATION.md` entry 16, `ELECTIONS_GAP_TABLE.md` rows 32–33,
 `MISSING_PREREQUISITES.md`.
+
+## 70. W-D3 — coalition formation (§29): compatibility and negotiating power derived, red lines derived AND declared, and the chamber's own investiture rule doing the work (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/CoalitionFormation.cs` — `RedLine` (two KINDS, derived
+and declared; two STRENGTHS, will-not-sit and will-not-depend; **a basis is mandatory, the
+constructor refuses an empty one**), `CoalitionCompatibility` (party-to-party compatibility DERIVED
+from CHES 2024 `lrgen` / `lrecon` / `galtan` / `eu_position`, the EU scale rescaled, NaN axes
+skipped not centred), `CoalitionMath` (seat strength, and **Banzhaf pivotality** as §29's
+negotiating power — computed from the seat distribution alone), `DerivedRedLines`,
+`CoalitionFormation.Form` (the negotiation), `GovernmentOption` / `CoalitionResult`.
+`Assets/Editor/CoalitionHarness.cs` — **16 of 16**.
+`ElectionsData/sweden/coalition_declarations_2022.md` — the declared lines and the government that
+formed, SOURCED with citations and vintages.
+
+**The mechanism is Sweden's own rule.** NEGATIVE PARLIAMENTARISM: elected unless an absolute
+majority votes against, so a minority cabinet governs on the votes it does not provoke — with
+ABSTENTION as a real third answer, without which the rule would be arithmetic in disguise. Two
+further derived rules were needed: **support is a comparison** (a party supports a cabinet only if
+no party left out of it suits it better — no constant, so nothing can be tuned to make a government
+form), with supporter conflicts resolved by negotiating power; and **a government must be one
+nobody walks out of** (payoff = office share × cabinet agreement, zero outside the cabinet;
+iterated to a fixed point).
+
+**The done-when.** *The second clause, which is the item's point:* **S 107 + SD 73 = 180 of 349 is
+an absolute majority and the formation refuses it** — `DERIVED: CHES lrgen gap 4.79 > 4.50` — one
+of **120** arithmetic majorities refused, each printed with its line and that line's basis; and
+**remove the red lines, change nothing else, and S+SD becomes viable in the same chamber**. *The
+first clause:* the 2022 distribution returns **cabinet M+KD+L, 103 seats, carried from outside by
+SD's 73 = 176 of 349** — the Tidö arrangement of 14 October 2022, as `ConfidenceAndSupply`, falling
+out of sourced positions, sourced seats, sourced declarations and the investiture rule rather than
+being stored. Adding C to that cabinet costs SD's support and the larger cabinet cannot govern —
+the 2022 impasse reproduced. *A new election is reachable and not designed out:* a 150/100/99
+chamber where every pair refuses every other returns `NewElection` with zero viable options, and
+**the same seats without the red lines form a government**.
+
+**Findings.** ⚠ **Negotiating power is not seat count** — SD (73 seats) and M (68) have *identical*
+Banzhaf pivotality at 23.6 %, and V, C, KD, MP and L are 3.6 % each across a 16-to-24 seat range;
+worth knowing before a screen puts pivotality next to a seat count. **The sourced positions carry
+Sweden's cordon on ONE axis, with slack**: a single `lrgen` threshold anywhere in **[1.79, 2.58)**,
+a window 0.79 wide, separates exactly the four parties that refused SD from exactly the three that
+governed with it — the shipped two-axis thresholds remain a fit chosen knowing the answer, and the
+harness says so. **Only one declaration is load-bearing, measured one at a time:** C ↔ SD is
+CORROBORATED (the derived galtan rule already reaches it, 6.05 > 5.00, outcome unchanged); M, KD,
+L ↔ SD — *no SD ministers* — is LOAD-BEARING (drop it and the outcome is a five-party grand
+coalition). ⚠ **Without the defection rule the formation returned arithmetic, not politics**:
+S+M+C+KD+L, 234 seats, a bloc nobody proposed.
+
+**Deferred, with the reason.** §29's **Leader Compatibility** and **Personal Relationships** have no
+source; inventing them is the authored coalition score §29 must not have, and the harness asserts by
+reflection that no member carries them. §29's fifth outcome, **government collapse**, is in the enum
+and never produced — nothing yet advances time inside a mandate; it belongs with a governing-phase
+item.
+
+**R-N2 held:** `traj_wd3_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0; the C1 harness still exits 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-D3, the
+`CLAUDE.md` dated section, `ELECTIONS_PLAY_CALIBRATION.md` entry 17, `ELECTIONS_GAP_TABLE.md` row
+29, `ElectionsData/sweden/coalition_declarations_2022.md`.

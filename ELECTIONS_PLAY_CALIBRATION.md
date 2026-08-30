@@ -406,3 +406,35 @@ test pass. If W-F5 lands and it still reads 0.291, that is a FINDING ABOUT THE M
 explain, not a rounding problem to close.** The half-life or the act weights moved so a particular party reacts in a
 particular scenario. The public record given anything a party could not see — a share, a preference,
 a true salience, or the doors an office knocked.
+
+## 17. Coalition compatibility, the red-line gaps, and what a party is holding out for (W-D3)
+
+**What is known.** All [AUTHORED-DRAFT]: `CoalitionCompatibility.WeightIdeological` 0.55 /
+`WeightPolicy` 0.45; `DerivedRedLines.IdeologicalGap` 4.5 on CHES `lrgen` and `SocialGap` 5.0 on
+`galtan`; the formation's ranking weights `WeightCohesion` 0.5 / `WeightSeatStrength` 0.3 /
+`WeightPower` 0.2; `DefectionMargin` 0.01. **The two gaps were chosen knowing Sweden 2022's answer.
+They are a calibration on that case, not a prediction of it, and the log says so.**
+
+**What is measured.** The 2022 chamber returns the government that actually formed: cabinet M+KD+L
+(103), carried from outside by SD (73) = 176 of 349, cohesion 88.9, as confidence-and-supply. 120
+arithmetic majorities are refused by red lines, S+SD (180) among them. Banzhaf pivotality: S 34.5 %,
+SD 23.6 %, M 23.6 %, and V/C/KD/MP/L 3.6 % each. A single `lrgen` threshold in **[1.79, 2.58)** —
+window 0.79 — separates the four parties that refused SD from the three that governed with it.
+Dropped one at a time, the C ↔ SD declaration changes nothing (the galtan rule already reaches C at
+6.05 > 5.00) and the no-SD-ministers declaration changes everything.
+
+**What would settle it.** Play, and a second country. Does a coalition negotiation the player
+watches feel like arithmetic or like politics — and does the player understand WHY a government they
+wanted was refused? Is 0.55/0.45 the right split between "where a party stands" and "what it wants
+this year", or should policy lead in a campaign and ideology between them? Should the ranking weigh
+cohesion at all once defection has removed the unstable governments, or is defection doing the whole
+job? And the real test of the derived gaps: **do 4.5 / 5.0 produce sane refusals in Germany, Italy or
+Poland**, whose CHES rows are already on disk — because a gap fitted on Sweden and applied unchanged
+elsewhere is the first place this will break.
+
+**What must NOT happen.** Either gap moved so a particular coalition forms or fails in Sweden —
+that is fitting a known answer twice over. A per-pair compatibility table, or any number attached to
+a pair of parties by hand: §29's whole discipline is that compatibility, red lines and negotiating
+power come from party data, and a hand-set pair value is the authored coalition score the item
+exists to avoid. Leader compatibility or personal relationships filled in with game fiction to
+"complete" §29 — they are deferred for want of a source, and the harness asserts the absence.

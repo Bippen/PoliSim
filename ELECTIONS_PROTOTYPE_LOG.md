@@ -1600,3 +1600,131 @@ reaction. The same ten seeds (777–786) run without the script are the control.
   written down against W-C2. W-C2's done-when is opponent reactivity and that is what shipped; the
   budget plan still covers television only. It belongs with **W-F5** (money) or an item of its own,
   and is recorded in `MISSING_PREREQUISITES.md` rather than left implied.
+
+## W-D3 — coalition formation (§29): compatibility and negotiating power derived, red lines derived AND declared, and the chamber's own investiture rule doing the work (2026-08-30)
+
+**What it is.** `CoalitionFormation.cs` — §29's seven inputs, each from data or from a stated
+derivation, and **no authored coalition score anywhere**:
+
+- **Compatibility** (`CoalitionCompatibility`) — DERIVED from CHES 2024: ideological from `lrgen`,
+  policy from `lrecon` / `galtan` / `eu_position` (the 1–7 EU scale rescaled to 0–10 so a gap means
+  the same on every axis). An axis either party leaves NaN is SKIPPED, never centred — `Compatibility`'s
+  own rule for §7, for the same reason.
+- **Seat strength and negotiating power** (`CoalitionMath`) — DERIVED from the seat distribution
+  alone: a party's share of the chamber, and its **Banzhaf pivotality** — the share of subsets of
+  the others it turns from losing to winning.
+- **Red lines** (`RedLine`) — in TWO kinds and TWO strengths. Kinds: DERIVED (a position distance)
+  and DECLARED (a party's own dated public commitment, with its citation). Strengths: *will not sit
+  in cabinet with you* and *will not sit in or support a government that depends on you*. **A red
+  line cannot be constructed without a basis** — the constructor refuses an empty one, which is
+  what keeps §29 off an authored score.
+- **Leader compatibility and personal relationships** — **DEFERRED, with the reason recorded:**
+  there is no source, candidate attributes are already [AUTHORED-DRAFT] game fiction (W-B7), and
+  inventing a leaders'-relations matrix is exactly the authored score §29 must not have. The
+  harness asserts by reflection that no member carries them, so they cannot be filled in by accident.
+
+**The mechanism is the chamber's own rule, not a preference of ours.** Sweden runs NEGATIVE
+PARLIAMENTARISM: a prime-ministerial candidate is elected unless an absolute majority votes
+against. So a minority cabinet governs on the votes it does not provoke — which is why Swedish
+minority government is the norm rather than a branch the model has to arrange. Parties that neither
+support nor oppose ABSTAIN; without abstention the negative rule would be arithmetic in disguise.
+
+**Two further rules, both derived, both needed.** *Support is negotiated, not assumed:* absence of
+a red line is not support, or every party in a Western chamber would prop up every government. A
+party supports a cabinet only if that cabinet suits it at least as well as any party left out of it
+does — a comparison, so no constant is chosen and none can be tuned — and where two would-be
+supporters red-line each other, the one with the greater **negotiating power** stays. *And a
+government must be one nobody walks out of:* a party's payoff is its share of the cabinet's seats
+(portfolios follow seat share — Gamson's law, an empirical regularity) scaled by the cabinet's own
+agreement, zero for a party outside the cabinet; any government some member or supporter would beat
+elsewhere is struck, iterated to a fixed point.
+
+### The done-when, asserted (`CoalitionHarness`, 16 of 16)
+
+- **THE SECOND CLAUSE, which carries the item: a red line blocks a coalition seat arithmetic alone
+  would permit.** S 107 + SD 73 = **180 of 349**, a comfortable absolute majority, and the
+  formation refuses it — `DERIVED: CHES lrgen gap 4.79 > 4.50`. **120** such arithmetic majorities
+  are refused in total, each printed with the line that refused it and that line's basis. And the
+  counterfactual makes it a demonstration rather than an assertion: **remove the red lines, change
+  nothing else, and S+SD becomes a viable majority cabinet in the same chamber.**
+- **The 2022 distribution produces a plausible government set — the one that actually formed.**
+  Cabinet **M+KD+L, 103 seats, carried from outside by SD's 73 = 176 of 349**, cohesion 88.9:
+  the Tidö arrangement of 14 October 2022, seat for seat, as `ConfidenceAndSupply`. Nothing about
+  it is stored; it falls out of sourced positions, sourced seats, sourced declarations and the
+  investiture rule.
+- **The deadlock is reproduced, not stored:** adding C to that cabinet COSTS SD's support (C will
+  not be in a government SD carries), so the larger cabinet cannot govern at all — the 2022
+  impasse in one line.
+- **A new election is REACHABLE and not designed out.** A test chamber of 150/100/99 in which every
+  pair refuses every other returns `NewElection` with zero viable options; **the same seats with
+  the red lines removed form a government** (7 viable options). It is a consequence of refusals and
+  arithmetic, never a branch taken for its own sake.
+
+### Findings carried forward
+
+1. **Negotiating power is not seat count.** Banzhaf pivotality for 2022: S 34.5 %, **SD 23.6 % and
+   M 23.6 % — identical**, though SD holds 73 seats and M 68; and V, C, KD, MP and L are **3.6 %
+   each**, though they range from 16 to 24 seats. Five parties spanning a 50 % seat difference are
+   interchangeable in majority arithmetic, and SD's five extra seats over M buy no extra leverage.
+   This is the measure working, not failing — but it is worth knowing before any UI shows a player
+   "negotiating power" next to a seat count and invites them to read one off the other.
+2. **The sourced positions really do carry Sweden's cordon — on ONE axis, with slack.** A single
+   `lrgen` threshold anywhere in **[1.79, 2.58)** — a window **0.79 wide** — separates exactly the
+   four parties that refused the Sweden Democrats (C, S, MP, V) from exactly the three that governed
+   with them (L, M, KD). The shipped two-axis thresholds are still a fit chosen knowing the answer,
+   and the harness says so; the window is what can be measured without circularity.
+3. **Only one of the two declarations is load-bearing, and the harness measures which.** Dropped one
+   at a time: **C ↔ SD is CORROBORATED, not load-bearing** — the derived galtan rule already
+   separates C from SD (6.05 > 5.00) and the outcome is unchanged. **M, KD, L ↔ SD (no SD ministers)
+   is LOAD-BEARING** — drop it and SD becomes admissible in cabinet and the outcome is a five-party
+   grand coalition, the Tidö shape gone. A declaration that changes nothing here still earns its
+   place: it is the only mechanism that can express the Liberals' reversal between 2018 and 2022,
+   which **no position distance moved**.
+4. **Without the defection rule the formation returns arithmetic, not politics.** Its first form
+   ranked on cohesion, seats and pivotality and returned **S+M+C+KD+L, 234 seats** — a five-party
+   bloc spanning left and right that no one proposed. Seats dominate any such ranking; what removes
+   it is that M does far better in a 103-seat cabinet it leads (payoff 0.588) than as one of five
+   in a 234-seat one (0.235), and walks.
+
+### Decisions taken and logged (R-N1)
+
+- **A red line has two KINDS and two STRENGTHS.** Kinds because a derived line generalises to any
+  country with sourced positions while a declared one is a dated fact that can be withdrawn;
+  strengths because Sweden 2022 turns on the difference between "I will not sit with you" and "I
+  will not depend on you". *Strikeable: a single strength would be simpler and would lose the Tidö
+  arrangement entirely.*
+- **Support is a comparison, not a threshold** — a party supports a cabinet if none of the parties
+  left out of it suits it better. No constant, so nothing here can be tuned to make a government
+  form.
+- **Supporter conflicts resolve by negotiating power** (§29's own term), which keeps SD and drops C
+  in 2022 from the arithmetic rather than from a stored answer. *Strikeable: resolving by seats
+  instead gives the same result here and a different one in a chamber where pivotality and size
+  diverge — which, per finding 1, is most chambers.*
+- **A party's payoff is office share × cabinet agreement, and zero outside the cabinet.** Portfolios
+  following seat share is Gamson's law, an empirical regularity rather than our preference; the
+  zero is what makes being IN a government beat propping one up, and is why the small right parties
+  sit and SD — which has no admissible cabinet of its own to hold out for — does not.
+- **`DefectionMargin` 0.01 [AUTHORED-DRAFT]:** below it two governments are the same offer and
+  nobody moves.
+- **The deferred §29 terms are asserted absent**, not merely left out.
+
+### [AUTHORED-DRAFT] values, one line each (calibration entry 17)
+
+`WeightIdeological` 0.55 / `WeightPolicy` 0.45 · `DerivedRedLines.IdeologicalGap` 4.5 (lrgen) ·
+`SocialGap` 5.0 (galtan) · `WeightCohesion` 0.5 / `WeightSeatStrength` 0.3 / `WeightPower` 0.2 ·
+`DefectionMargin` 0.01. **The two gaps were chosen knowing Sweden 2022's answer and are a
+calibration, not a prediction — finding 2 states the slack that can be measured without
+circularity.**
+
+### Riders
+
+- **W-D4** — post-election attribution reads this: which coalitions were arithmetically open and
+  which a red line closed is half of "why you are not in government".
+- **A later screen (Track E)** — the formation's ranking, its refusals and their bases are already
+  a list a screen can draw; §36's gate applies, since a player should see the DECLARED lines (they
+  are public) and not the model's derived distances.
+- **W-F5 / W-F6** — the declared lines are Sweden-specific data; a second playable country needs
+  its own, and the derived rule is what carries the rest.
+- **Not built, and named:** government COLLAPSE (§29's fifth outcome) is defined in the enum and
+  never produced — nothing in the prototype yet advances time inside a mandate for a government to
+  fall. It belongs with a governing-phase item, not here.
