@@ -260,6 +260,12 @@ namespace PoliSim.Testing
             }
 
             // W-E1: Campaign HQ instead of the sweep - the run ends here.
+            if (ElectionNightBoard)
+            {
+                yield return CaptureElectionNight();
+                yield break;
+            }
+
             if (CampaignHq)
             {
                 yield return CaptureCampaignHq(controller);
@@ -2306,6 +2312,9 @@ namespace PoliSim.Testing
         /// command line; R-N2 holds, so this is the ONLY path that reaches the screen.</summary>
         public bool CampaignHq;
 
+        /// <summary>W-E6: film board 1h, election night, in its four states.</summary>
+        public bool ElectionNightBoard;
+
         /// <summary>
         /// Sweden's 2022 Riksdag result — the SOURCED vector every polled figure on the campaign
         /// screen descends from (ElectionsData/sweden/returns_2022.md; Valmyndigheten's RD_S.json
@@ -2357,7 +2366,61 @@ namespace PoliSim.Testing
         /// </summary>
         private const int CampaignFilmSeed = 20260913;
 
+        /// <summary>
+        /// W-E6 — board 1h in its four states. The night is RUN, not staged: one seeded schedule
+        /// over Sweden 2022's own regionalised returns, sampled at four moments of it, so the four
+        /// films are four instants of ONE night and cannot disagree with each other. The states are
+        /// chosen by how much has DECLARED rather than by clock time, because that is what the
+        /// screen is about.
+        /// </summary>
+        private IEnumerator CaptureElectionNight()
+        {
+            ElectionNightFilm.Stage(out string[] names, out long[][] votes, out long[] valid,
+                out long[] eligible, out int[] arrivals, out string[] parties, out var blocs);
+
+            // Four instants of one night, picked by declared count: the first returns, the middle
+            // of the count, the moment the last threshold call lands, and the completed night.
+            int[] wanted = { 4, 16, 28, 29 };
+            var stems = new[] { "early", "partial", "called", "final" };
+
+            for (int i = 0; i < wanted.Length; i++)
+            {
+                int minute = ElectionNightFilm.MinuteFor(wanted[i], arrivals);
+                NightState state = ElectionNight.At(minute, names, votes, valid, eligible, arrivals,
+                    349, 0.04, parties, null, blocs);
+
+                ElectionNightScreen screen = ElectionNightScreen.Build(state, parties, "SWEDEN",
+                    new DateTime(2026, 9, 13, 20, 0, 0), 349);
+                if (screen == null)
+                {
+                    Debug.LogError("SHOT: W-E6 - the board did not build (furniture missing); nothing filmed.");
+                    yield break;
+                }
+
+                yield return Settle();
+                yield return Capture("e6_election_night_" + stems[i]);
+
+                Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                    "SHOT: W-E6 {0} - minute {1}, {2} of {3} declared, {4:N0} votes counted, {5} call(s) safe.",
+                    stems[i], minute, state.DeclaredCount, state.TotalConstituencies, state.CountedValid, state.Calls.Count));
+
+                // Destroy, not DestroyImmediate: this runs in PLAY mode, where the immediate form tears a
+                // Canvas child out mid-frame and the run ends without reaching its own exit.
+                if (screen.Root != null) { UnityEngine.Object.Destroy(screen.Root); }
+                yield return Settle();
+            }
+
+            // The run ends HERE, and it must end through Finish - a `yield break` alone leaves
+            // the driver's own exit unreached and the process is forced out with a 1 (which is
+            // what the first film of this board did, four widths over).
+            Debug.Log($"SHOT: election night done, {_captured} captured, {_failed} failed.");
+            Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
+            Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
+            Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
         private IEnumerator CaptureCampaignHq(GameController controller)
+
         {
             if (_countryId != CountryId.Sweden)
             {

@@ -61,7 +61,7 @@ purely because the board had nothing else in view to measure it against.
 | 1e | The hand-off envelope | swap | 5-panel storyboard + timeline |
 | 1f | Country selector | Canvas | six folder cards, hover state |
 | 1g | Bill vote → budget signing | Canvas | the consequential document |
-| 1h | Election night returns | Canvas | the returns bulletin — **NOT BUILT, item-10-gated** |
+| 1h | Election night returns | Canvas | the returns bulletin — **BUILT W-E6 (2026-08-30), harness-only under R-N2**; deviations V-N1–V-N3 |
 | 1i / 1j | Law browser; law browser at 50 | IMGUI | `LAW_BROWSER_BOARD_RULINGS.md`; both built |
 
 Mockups run mid-game (Turn 9, May 2026) so drafts, deltas and a time-hold are all visible at once.

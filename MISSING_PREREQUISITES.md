@@ -92,7 +92,7 @@ existing only on the branch); the collision-map disposition executed (`PartyArch
 honest-nothing flips to real accounting — **ruling R3's verification obligation: the check's reflection
 over `BuildParties()` should survive the model swap, to be VERIFIED then, not trusted now**); the
 `ElectionRecord` designed against the real model (elections leave only a transient result today —
-scoped in CLAUDE.md "Election-night scoping", not built; ruling R2); **election night, Canvas screen 1h**
+scoped in CLAUDE.md "Election-night scoping", not built; ruling R2); **election night, Canvas screen 1h — BUILT at W-E6 (2026-08-30), harness-only under R-N2; the persisted `ElectionRecord` the scoping note asks for is still what WIRING will need, and is unchanged by this**
 (3 of 3 — the spec is `POLISIM_V2_SCREEN_SPEC.md` §A.14, the sole item-10-gated content there; its asset
 cost: one mark per seated party, count unknown until the seeds land, five `mark_party_*` on disk; the
 verdict stamp is the generic §A.11 treatment unless Design asks for baked art at the 1h board); **the R5

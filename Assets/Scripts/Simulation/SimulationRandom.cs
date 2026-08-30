@@ -93,7 +93,24 @@ namespace PoliSim.Simulation
             /// after Debate, never inserted; the trajectory suite is re-proven byte-identical at the
             /// boundary that adds it. ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2).
             /// </summary>
-            Scandal = 10
+            Scandal = 10,
+
+            /// <summary>
+            /// The order the constituencies DECLARE on election night (elections spec §30,
+            /// W-E6), added 2026-08-30. APPENDED after Scandal, never inserted, so every
+            /// existing stream's seed offset is untouched and no baseline moves; the trajectory
+            /// suite is re-proven byte-identical at the boundary that adds it (the ElectionNoise
+            /// and CampaignAi precedents).
+            ///
+            /// Its OWN stream because the night is a separate act from the count: an election
+            /// already counted must be re-playable as a night, in a different declaration order,
+            /// without moving a single vote. Borrowing ElectionNoise would make the arrival order
+            /// and the result share one draw sequence, so changing how the night is staged would
+            /// silently change who won — which is exactly the coupling this class exists to refuse.
+            ///
+            /// ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2: the election system is unwired).
+            /// </summary>
+            ElectionNight = 11
         }
 
         private static int? _masterSeed;

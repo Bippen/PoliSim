@@ -1921,3 +1921,98 @@ tokens it knows, and the intent behind it is what the other two violated.
 escapes), `ScreenEdgeCheck` exit 0 over 76 captures.** Two guards fired on this screen and both were
 right; that is a better outcome than a screen that passed first time, because it is evidence the
 guards bind on new work rather than only on the work they were written for.
+
+## W-E6 — election night (board 1h, §30): the count arriving by constituency, a gate that makes a premature result impossible, and calls that cannot be contradicted (2026-08-30)
+
+**What it is.** `ElectionNight.cs` (the model), `ElectionNightScreen.cs` (**board 1h — the last
+unbuilt board of §A.14, the Canvas slot reserved for it since v2**), `ElectionNightFilm.cs` (the
+staging both the harness and the film read, so the two count ONE election),
+`ElectionNightHarness.cs` (**11 of 11**), and `SimulationRandom.Stream.ElectionNight = 11`
+(APPENDED, never inserted — the ElectionNoise and CampaignAi precedent, re-proven byte-identical).
+
+**Two rules govern the item, and both are STRUCTURAL rather than conventions to be remembered.**
+
+**1 — No result exists before its constituency declares.** The running tally is not a number
+revealed gradually; it is COMPUTED, at every instant, from the declared constituencies and nothing
+else. An undeclared constituency carries `null` votes and no valid count, so a screen cannot draw a
+figure that has not happened — not because the screen is careful but because the number does not
+exist. *Asserted by independent re-derivation:* the harness sums the declared set itself and
+compares vote for vote, over **392 states across 8 seeds — 0 early appearances, absence never zero,
+every tally agreeing**. A scripted reveal would pass a screenshot review and fail this.
+
+**2 — A call, once made, cannot be contradicted.** Not "is unlikely to be" — cannot. Each
+undeclared constituency is bounded by its own ELIGIBLE electorate (published before the night, and a
+hard cap since turnout cannot exceed 100 %), and a call is made only when the claim holds at BOTH
+extremes: every outstanding vote to the claim's enemy, and none of them anywhere. The seats at those
+extremes come from **`SeatAllocation` — the allocation the backtest reproduces Sweden 2022 with
+seat-for-seat** — so the call cannot rest on arithmetic the final tally does not use. *Asserted:*
+**1 849 call-instants across 8 seeds, 0 contradicted.** And the harness re-proves the allocation on
+the same page: S 107/107, SD 73/73, M 68/68, V 24/24, C 24/24, KD 19/19, MP 18/18, L 16/16.
+
+### The night the model produces (seed 777, Sweden 2022's own returns)
+
+| state | minute | declared | counted | calls safe |
+|---|---|---|---|---|
+| early | 30 | 4 of 29 | 515 869 | 0 |
+| partial | 59 | 16 of 29 | 2 510 364 | 3 |
+| called | 151 | 28 of 29 | 5 583 801 | 7 |
+| final | 240 | 29 of 29 | 6 377 718 | 11 |
+
+When each call becomes safe, over the seeds: **S from 6 of 29**, SD from 8, M from 11, C from 23,
+V from 25, KD from 27, MP from 28 — and **L's clearance, the largest party and the bloc majority
+only at 29 of 29.** That is the 2022 chamber telling the truth about itself: a 176–173 result turning
+on L's 4.61 % cannot be called until L is in.
+
+**Filmed in four states at 1280 / 1600 / 1920 / 2560** — sixteen captures,
+`we6_night_{width}_e6_election_night_{early,partial,called,final}.png`; all four widths exit 0 with
+**0 text overflows and 0 containment escapes**, `MetaTextCheck` exit 0, and `ScreenEdgeCheck
+-edgepattern=we6_night_*.png` exit 0 over **32 captures**. The four states are four instants of ONE
+seeded night, so they cannot disagree with each other.
+
+### Findings carried forward
+
+1. **A guarantee calls later than a projection would, and that is the trade the item bought.** A
+   network calls on a model and is sometimes wrong; this calls on a bound and is never wrong. The
+   cost is visible above: the marquee calls land with the last constituency. **Tightening it would
+   need a SOURCED turnout ceiling** ("no Swedish valkrets has exceeded X % since 2002") — which is
+   empirical, not certain, and would weaken "cannot" to "has never". Recorded as a rider, not taken.
+2. **The threshold calls carry the drama instead, and they carry it well.** Seven of eleven calls
+   land before the end, spread from 6 of 29 to 28 of 29, so the night has a shape without any of it
+   being scripted: each one is a bound crossing a line, at the minute the arithmetic crosses it.
+3. **The chip's spec wording did not survive contact with the system.** §A.14 specifies a
+   "348 OF 350 SEATS DECLARED" chip; seats in this system are allocated NATIONALLY and are not
+   declared one at a time, so the chip reads **constituencies** declared. The mock-up's wording
+   implied a different electoral system than the one the game models.
+
+### Decisions taken and logged (R-N1)
+
+- **Its own random stream.** The night is a separate act from the count: an election already counted
+  must be re-playable as a night, in a different declaration order, without moving a single vote.
+  Borrowing `ElectionNoise` would make the arrival order and the result share one draw sequence, so
+  restaging the night would silently change who won.
+- **The schedule is monotone in the electorate plus a seeded jitter** — small constituencies count
+  faster, which is a fact about counting rather than a dramatic choice — and the LAST arrival is
+  pinned to the final minute so "final" is a state the night reaches rather than approaches.
+- **The four filmed states are chosen by DECLARED COUNT, not by clock time**, because that is what
+  the screen is about. *Strikeable: fixed minutes would be simpler and would film a different night
+  under a different seed.*
+- **The bound concentrates the whole outstanding electorate on ONE party** (the strongest opponent
+  for a worst case, the strongest member for a best case). Concentrating it is what makes the bound
+  extreme, and an extreme bound is what makes the call safe.
+
+### Declared deviations from §A.14's board (V-N series)
+
+- **V-N1** — flat paper and a single dark plate for the shadow: the CSS gradient and double shadow
+  have no delivered sprite (1g's V-S1, the same absence, and the absence guard is honoured).
+- **V-N2** — the declaration-wave, count-up and stamp-thunk BEATS are not animated. The board is
+  filmed in four states, and an animation no capture can check is a claim no reviewer can test; the
+  states are the honest subset and the beats stay in the spec for the wiring item.
+- **V-N3** — the swing column is OMITTED: a swing needs the previous election's per-constituency
+  result beside this one's, and the night's model carries one election. Named rather than faked.
+
+### Riders
+
+- **W-E7** draws §30's full breakdown and W-D4's ledger; this board is the arrival, not the analysis.
+- **A sourced turnout ceiling** would tighten the bound and let the marquee calls land earlier —
+  finding 1, and a Track F data item if it is wanted.
+- **The beats (V-N2)** belong to the wiring item, where a clock exists to play them against.

@@ -4641,3 +4641,56 @@ floor, not the ceiling. Re-run after the fix: **MetaTextCheck exit 0**, all four
 0 overflows and 0 containment escapes, `ScreenEdgeCheck` exit 0 over 76 captures. Two guards fired
 on this screen and both were right — better evidence than a screen that passed first time, because
 it shows the guards bind on new work and not only on the work they were written for.
+
+## 73. W-E6 — election night (board 1h, §30): the count arriving by constituency, a gate that makes a premature result impossible, and calls that cannot be contradicted (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/ElectionNight.cs` (the model: the declaration schedule,
+the gated tally, the call rule), `Assets/Scripts/UI/ElectionNightScreen.cs` — **board 1h, the last
+unbuilt board of §A.14 and the Canvas slot reserved for it since v2** — `Assets/Scripts/Testing/
+ElectionNightFilm.cs` (the staging the harness and the film SHARE, so the two count one election),
+`Assets/Editor/ElectionNightHarness.cs` (**11 of 11**), and `SimulationRandom.Stream.ElectionNight
+= 11`, APPENDED and never inserted. ⚠ **HARNESS ONLY — R-N2 holds until W-G1.**
+
+**Rule 1 — no result exists before its constituency declares.** The tally is not revealed; it is
+COMPUTED at every instant from the declared set and nothing else, and an undeclared constituency
+carries `null` votes, so a screen cannot draw a figure that has not happened. Asserted by
+**independent re-derivation**: 392 states across 8 seeds, **0 early appearances**, absence never
+zero, every tally agreeing vote for vote.
+
+**Rule 2 — a call cannot be contradicted.** Each undeclared constituency is bounded by its own
+eligible electorate (published before the night; a hard cap since turnout cannot exceed 100 %), and
+a call is made only when it holds at BOTH extremes, with the seats at those extremes coming from
+**`SeatAllocation` — the allocation the backtest reproduces 2022 with seat-for-seat**, re-proven on
+the same page (S 107/107 … L 16/16). Asserted: **1 849 call-instants across 8 seeds, 0
+contradicted**.
+
+**The night, and the film.** Four states of ONE seeded night — early (minute 30, 4 of 29, 0 calls),
+partial (59, 16 of 29, 3), called (151, 28 of 29, 7), final (240, 29 of 29, 11) — **filmed at 1280 /
+1600 / 1920 / 2560**, sixteen captures, all four widths exit 0 with **0 text overflows and 0
+containment escapes**, `MetaTextCheck` exit 0, `ScreenEdgeCheck` exit 0 over 32 captures. Calls
+become safe progressively: S from 6 of 29, SD 8, M 11, C 23, V 25, KD 27, MP 28 — and **L, the
+largest party and the bloc majority only at 29 of 29**, which is the 2022 chamber telling the truth
+about itself.
+
+**Findings.** ⚠ **A guarantee calls later than a projection would** — that is the trade the item
+bought, and the marquee calls land with the last constituency; tightening it needs a SOURCED turnout
+ceiling, which is empirical rather than certain and would weaken "cannot" to "has never". The
+threshold calls carry the drama instead, seven of eleven landing before the end. ⚠ **§A.14's chip
+wording did not survive contact with the system**: it specifies "348 OF 350 SEATS DECLARED", but
+seats here are allocated NATIONALLY and are not declared one at a time, so the chip reads
+constituencies — the mock-up implied a different electoral system than the game models.
+
+**Declared deviations (V-N series):** V-N1 flat paper and a single shadow plate (no delivered
+sprite — 1g's V-S1, same absence); V-N2 the wave/count-up/stamp BEATS are not animated (an animation
+no capture can check is a claim no reviewer can test; the states are the honest subset and the beats
+stay in the spec for the wiring item); V-N3 the swing column omitted (a swing needs the previous
+election beside this one, and the night's model carries one) — named rather than faked.
+
+**Two defects found and fixed en route, both recorded:** `DestroyImmediate` tore a Canvas child out
+mid-frame in play mode, and the capture path ended on a bare `yield break` without reaching the
+driver's own `Finish` — the first film exited 1 at all four widths with every capture written and
+every guard silent, which is exactly how that failure looks.
+
+**R-N2 held:** `traj_we6_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-E6, the `CLAUDE.md` dated section,
+`POLISIM_V2_SCREEN_SPEC.md`'s 1h status, `MISSING_PREREQUISITES.md`.
