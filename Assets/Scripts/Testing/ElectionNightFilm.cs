@@ -21,7 +21,30 @@ namespace PoliSim.Testing
         /// <summary>SOURCED - Valmyndigheten final 2022 national counts (ElectionsData/sweden/returns_2022.md).</summary>
         public static readonly long[] Votes2022 = { 1964474, 1330325, 1237428, 437050, 434945, 345712, 329242, 298542 };
         public static readonly int[] Seats2022 = { 107, 73, 68, 24, 24, 19, 18, 16 };
+        /// <summary>
+        /// SOURCED - Valmyndigheten, Riksdag 2018-09-09 slutligt valresultat, via
+        /// `ElectionsData/priors/previous_elections.md`. In the driver's party order.
+        /// Sweden is the one clean party-for-party join between the two elections: all eight
+        /// 2022 parties contested 2018 as the same entities - no coalition lists, no splits,
+        /// no renames - which is why a swing column against it is honest arithmetic rather
+        /// than a mapping with a bias to declare.
+        /// </summary>
+        public static readonly long[] Votes2018 = { 1830386, 1135627, 1284698, 518454, 557500, 409478, 285899, 355546 };
         private const double Turnout2018 = 0.8721;
+
+        /// <summary>
+        /// SOURCED - Valmyndigheten via `ElectionsData/sweden/returns_2022.md:49`: 6 547 801
+        /// ballots cast of 7 775 390 eligible = 84.21 %. The turnout basis is val.se's own
+        /// (all ballots cast, blank and invalid included, over eligible voters).
+        ///
+        /// A results screen must quote THIS, not a turnout re-derived from the eight parties'
+        /// own votes over a derived electorate: that arithmetic reads 85.88 %, which is not
+        /// what Sweden's turnout was, and a screen is where a derived figure would be mistaken
+        /// for the published one.
+        /// </summary>
+        public const long Eligible2022 = 7_775_390;
+        public const long BallotsCast2022 = 6_547_801;
+        public const double Turnout2022 = 0.8421187;
 
         /// <summary>The film's seed, so a capture family is reproducible (the FilmSeed discipline).</summary>
         public const int NightSeed = 777;

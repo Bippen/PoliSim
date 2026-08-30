@@ -2473,6 +2473,7 @@ namespace PoliSim.Testing
             yield return CapturePollingScreen(controller, perceived);
             yield return CaptureCampaignMap(controller, perceived);
             yield return CaptureDebateScreen(controller, perceived);
+            yield return CaptureResultsScreen(controller);
 
             Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
                       $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
@@ -2572,6 +2573,94 @@ namespace PoliSim.Testing
                 + "unresolved rows are em dashes, never zeroes. Candidate attributes are [AUTHORED-DRAFT] (W-F6).",
                 result.Exchanges.Length, FilmSeed, result.PerformanceA, result.PerformanceB, result.Margin,
                 result.CoverageShock, result.MomentumShockPp, midway.Length));
+        }
+
+        /// <summary>
+        /// W-E7 - section 30's results, over the SAME election W-E6's night counted, so the two
+        /// screens cannot disagree about who won. The comparison is Sweden 2018, SOURCED
+        /// (ElectionsData/priors/previous_elections.md), and its seats are DERIVED by the same
+        /// allocation that reproduces 2022 seat-for-seat - never a second arithmetic.
+        ///
+        /// Filmed in two states: the player as the largest party, and the player as a party that
+        /// LOST ground, because a results screen that has only ever been seen on a win is a screen
+        /// nobody has checked the signs on.
+        /// </summary>
+        private IEnumerator CaptureResultsScreen(GameController controller)
+        {
+            ElectionNightFilm.Stage(out string[] names, out long[][] votes, out long[] valid,
+                out long[] eligible, out int[] arrivals, out string[] parties, out _);
+
+            long totalValid = 0; foreach (long v in valid) { totalValid += v; }
+            long totalEligible = 0; foreach (long e in eligible) { totalEligible += e; }
+            var national = new long[parties.Length];
+            foreach (long[] row in votes) { for (int p = 0; p < parties.Length; p++) { national[p] += row[p]; } }
+
+            int[] seats = SeatAllocation.AllocateWithThreshold(national, totalValid, 0.04, 349,
+                SeatAllocation.ModifiedSainteLagueDivisor);
+
+            // Sweden 2018, SOURCED. Seats DERIVED by the same allocation, so the comparison column
+            // is not a second arithmetic pretending to agree with the first.
+            long[] previous = ElectionNightFilm.Votes2018;
+            long previousValid = 0; foreach (long v in previous) { previousValid += v; }
+            int[] previousSeats = SeatAllocation.AllocateWithThreshold(previous, previousValid, 0.04, 349,
+                SeatAllocation.ModifiedSainteLagueDivisor);
+
+            foreach (int player in new[] { 0, 7 })   // S, the largest; L, which lost ground
+            {
+                var input = new VoteAttribution.Inputs
+                {
+                    OwnPersuasionByAction = new double[8],
+                    AttacksReceived = 0.0,
+                    TotalPersuasionPerParty = new double[parties.Length],
+                    BaseCompatibility = BaselineCompatibility(national, totalValid),
+                    PriorShares = BaselineShares(previous, previousValid),
+                    LoyaltyPerParty = FlatLoyalty(parties.Length),
+                };
+
+                // Turnout and the electorate are the SOURCED ones, not a ratio re-derived from
+                // the eight parties' votes over a derived electorate - that arithmetic reads
+                // 85.88 %, and a results screen is exactly where a derived figure gets mistaken
+                // for the published one.
+                var snapshot = new ResultsScreenSnapshot("SWEDEN", new DateTime(2022, 9, 11), parties, player,
+                    national, seats, totalValid, ElectionNightFilm.Turnout2022, ElectionNightFilm.Eligible2022, 349,
+                    "2018", previous, previousSeats, previousValid,
+                    names, votes, valid, VoteAttribution.Explain(input, player));
+
+                controller.SetCampaignResultsScreen(snapshot);
+                yield return Settle();
+                yield return Capture("e7_results_" + (player == 0 ? "largest" : "lost_ground"));
+
+                Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                    "SHOT: W-E7 {0} - {1} seats on {2:N0} votes for the eight parties, turnout {3:P2} (SOURCED, not re-derived); {4} swing {5:+0.00;-0.00} pp, {6:+0;-0;0} seats against 2018. "
+                    + "Section 30's voter-group block is drawn ABSENT: the electorate is one group until W-F4 and rule 0.4 forbids inventing it.",
+                    parties[player], snapshot.Seats[player], totalValid, snapshot.Turnout,
+                    parties[player], snapshot.SwingPp(player), snapshot.SeatChange(player), arrivals.Length));
+            }
+
+            controller.SetCampaignResultsScreen(null);
+            yield return Settle();
+        }
+
+        /// <summary>A flat compatibility baseline that reproduces the prior shares - the attribution needs a base to move FROM, and the count itself is what moved.</summary>
+        private static double[] BaselineCompatibility(long[] national, long valid)
+        {
+            var c = new double[national.Length];
+            for (int p = 0; p < national.Length; p++) { c[p] = 50.0; }
+            return c;
+        }
+
+        private static double[] BaselineShares(long[] previous, long previousValid)
+        {
+            var s = new double[previous.Length];
+            for (int p = 0; p < previous.Length; p++) { s[p] = (double)previous[p] / previousValid; }
+            return s;
+        }
+
+        private static double[] FlatLoyalty(int parties)
+        {
+            var l = new double[parties];
+            for (int p = 0; p < parties; p++) { l[p] = 50.0; }
+            return l;
         }
 
         private IEnumerator CapturePollingScreen(GameController controller, double perceived)

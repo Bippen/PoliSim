@@ -4694,3 +4694,41 @@ every guard silent, which is exactly how that failure looks.
 **R-N2 held:** `traj_we6_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
 checks exit 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-E6, the `CLAUDE.md` dated section,
 `POLISIM_V2_SCREEN_SPEC.md`'s 1h status, `MISSING_PREREQUISITES.md`.
+
+## 74. W-E7 — results and attribution (§30 + W-D4's ledger): every figure counted, derived or published, and the one §30 asks for that this screen refuses to invent (2026-08-30)
+
+**What shipped.** `Assets/Scripts/Elections/ResultsScreenSnapshot.cs` (the read model — the count,
+the seats, the named comparison election carried whole, the regional table, W-D4's ledger, and a
+`DemographicsAvailable` flag that is false) and `Assets/Scripts/UI/GameController.CampaignResults.cs`
+(the drawing) — the sixth Track E screen and the last IMGUI one. ⚠ **HARNESS ONLY — R-N2 to W-G1.**
+
+**The done-when — every figure traces — met by keeping three classes apart.** COUNTED: votes, seats
+(`SeatAllocation`, the allocation that reproduces 2022 seat-for-seat), the regional table. DERIVED
+**and proven against a sourced answer**: 2018's seats are computed by that same allocation rather
+than typed in, and the comparison validates itself — **S shows +7 (100 → 107), L shows −4 (20 → 16),
+the real 2018→2022 changes**. PUBLISHED: turnout **84.21 %** of **7 775 390** eligible,
+Valmyndigheten's basis.
+
+⚠ **Two figures were wrong on the first film, and are recorded rather than quietly fixed.** Turnout
+read **85.88 %** — the eight parties' votes over a *derived* electorate — and 6 377 718 was labelled
+"VALID VOTES" when the official valid total is 6 477 970 (minor parties this model does not carry).
+Neither touched a seat, but a results screen is exactly where a derived figure gets mistaken for a
+published one, so turnout now quotes the source and the total says what it is: the votes these
+parties took, with shares stated as being of that total.
+
+**§30's demographic block is drawn ABSENT.** Young / older / urban / rural / income voters have no
+answer while the electorate is one group — `ElectionDay.cs:28`, `CampaignRun.cs:91`,
+`TacticalVoting.cs:19` and four more name W-F4 as where that retires — and §0.4 forbids inventing
+demographics. Five em-dash rows under a stated reason, the W-E6 V-N3 and W-E2 §36 convention.
+
+**Filmed** in two states — `largest` (S) and `lost_ground` (L, four seats down) — at 1280 / 1600 /
+1920 / 2560, eight captures, all four widths exit 0 with **0 text overflows and 0 containment
+escapes**, `MetaTextCheck` exit 0, `ScreenEdgeCheck` exit 0 over 84 captures. A results screen only
+ever seen on a win is one where nobody has checked the signs.
+
+**No `[AUTHORED-DRAFT]` value is introduced by this item** — every figure is counted, derived from a
+sourced input, or published.
+
+**R-N2 held:** `traj_we7_*` identical to `traj_run_*` six of six by SHA-256, zero `ATTRIB`; the nine
+checks exit 0; the C1 harness still exits 0. Records: `ELECTIONS_PROTOTYPE_LOG.md` W-E7, the
+`CLAUDE.md` dated section, `ELECTIONS_GAP_TABLE.md` row 30.

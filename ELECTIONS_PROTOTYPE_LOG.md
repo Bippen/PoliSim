@@ -2016,3 +2016,77 @@ seeded night, so they cannot disagree with each other.
 - **A sourced turnout ceiling** would tighten the bound and let the marquee calls land earlier —
   finding 1, and a Track F data item if it is wanted.
 - **The beats (V-N2)** belong to the wiring item, where a clock exists to play them against.
+
+## W-E7 — results and attribution (§30 + W-D4's ledger): every figure counted, derived or published, and the one §30 asks for that this screen refuses to invent (2026-08-30)
+
+**What it is.** `ResultsScreenSnapshot.cs` (the read model) and
+`GameController.CampaignResults.cs` (the drawing) — the sixth Track E screen and the last IMGUI one,
+on the same 1156×680 board and the same 440 / 250 / 440 columns as its five siblings. ⚠ **HARNESS
+ONLY — R-N2 holds until W-G1.**
+
+- **Left, THE COUNT:** every party's votes, share, seats, and the movement against a NAMED prior
+  election — `+2.10 pp / +7` for S, `−0.89 pp / −4` for L.
+- **Middle, THE CONSTITUENCIES:** §30's regional results, largest first, each with its leader.
+- **Right, WHY:** W-D4's ledger unaltered — every line a mechanism, the labels enum names, and the
+  lines summing to the movement as an identity. The screen adds no interpretation; if it did, the
+  sum would stop being a proof and become a story.
+
+### The done-when: every figure traces, and the three classes are kept apart
+
+- **COUNTED** — the votes, the seats (`SeatAllocation`, the allocation that reproduces 2022
+  seat-for-seat), the regional table.
+- **DERIVED, and proven against a sourced answer** — 2018's seats are computed by that same
+  allocation rather than typed in, and the comparison column validates itself: **S shows +7 (100 →
+  107) and L shows −4 (20 → 16), which are the real 2018→2022 changes.** A second arithmetic that
+  merely agreed would have been worth much less.
+- **PUBLISHED** — turnout **84.21 %** of **7 775 390** eligible, Valmyndigheten's own basis.
+
+⚠ **Two figures were wrong on the first film and are recorded rather than quietly fixed.** The
+screen read turnout **85.88 %** — the eight parties' votes over a *derived* electorate — and
+labelled 6 377 718 as "VALID VOTES" when the official valid total is 6 477 970 (the difference is
+minor parties this model does not carry). Neither error touched a seat, but **a results screen is
+precisely where a derived figure gets mistaken for a published one**, so turnout now quotes the
+source and the total says what it is: *the votes these parties took*, with the footer stating that
+shares are of that total and not of all ballots cast.
+
+### §30's demographic block is drawn ABSENT, and that is the item's most deliberate line
+
+§30 asks for young / older / urban / rural / income voters. **The electorate is ONE GROUP** —
+`ElectionDay.cs:28`, `CampaignRun.cs:91`, `TacticalVoting.cs:19` and four more sites all name W-F4
+as where that retires. Five plausible rows split out of one group would be invented demographics,
+which §0.4 forbids outright. So the five rows are drawn as em dashes under a stated reason, the
+same convention as W-E6's V-N3 and W-E2's §36 gate: absence is a fact, and a zero is a different
+claim.
+
+### Filmed
+
+Two states — **`largest`** (the player as S, the largest party) and **`lost_ground`** (the player as
+L, which lost four seats) — **at 1280 / 1600 / 1920 / 2560**, eight captures. *A results screen only
+ever seen on a win is one where nobody has checked the signs.* All four widths exit 0 with **0 text
+overflows and 0 containment escapes**, `MetaTextCheck` exit 0, and `ScreenEdgeCheck
+-edgepattern=we7_results_*.png` exit 0 over **84 captures**. The W-E5 lesson carried: wrapped notes
+use `GUI.Label` with `CalcHeight`, never the single-line `MeasuredLabel`, and the guards were silent
+first time.
+
+### Decisions taken and logged (R-N1)
+
+- **The comparison election is carried WHOLE, not as pre-computed deltas**, so the screen names what
+  it compares against instead of showing a bare arrow. *Strikeable: deltas alone would be smaller
+  and would let a reader assume the wrong baseline.*
+- **2018's seats are DERIVED by the same allocation**, never typed from the record — so the column
+  cannot silently disagree with the one beside it, and when it matches the real distribution that is
+  evidence rather than coincidence.
+- **Turnout and the electorate are the PUBLISHED figures**, not this model's own ratio.
+- **Two filmed states, one of them a loss.**
+
+### [AUTHORED-DRAFT] values
+
+**None.** Every figure on this screen is counted, derived from a sourced input, or published — which
+is the whole of its done-when.
+
+### Riders
+
+- **W-F4** fills the voter-group block; the five em-dash rows are its acceptance test.
+- **W-F1** replaces the regional table's 2018-distributed counts with the real 2022 per-valkrets
+  returns, and the shares stop being of the eight-party subtotal.
+- **W-E8** takes the coalition that forms from these seats.
