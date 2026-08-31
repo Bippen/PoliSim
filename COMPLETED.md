@@ -5655,3 +5655,93 @@ ink the game draws, so the Design ask can never quote a colour the sheet does no
 **Verified:** `PartyInkHarness` ALL ASSERTIONS PASS, 8 inked / 45 uninked, **7 PENDING** printed with
 their measurements against the derived 8.7° floor; the nine checks 9 of 9 clean in one pass. No colour
 was changed, no floor was moved, no ink was invented.
+
+## 92. C-B3 — the Trade bill gets its own axis (R-CL2): one country's chamber changes its mind, and the USA is told why it cannot (2026-08-31)
+
+**The deferral, discharged.** Pass 6 gave the Trade bill's vote the FISCAL axis and recorded that as
+Elias's ruling *"until real parties give trade its own"* — a stated stand-in with a named trigger. The
+parties landed at W-G1. **R-CL2 (2026-08-30) ruled CHES `eu_position` in as the openness axis**, and this
+item executes it.
+
+### ⚠ What the ruling asserts, stated at the type rather than buried
+
+CHES publishes **no trade or protectionism item**. Nothing on disk measures trade directly, so the axis
+is not "found", it is *chosen*: `eu_position` is the nearest published thing, and adopting it **asserts
+that a party's stance on European integration stands in for its stance on trade openness.** That is a
+real approximation — a party can be europhile and protectionist, or eurosceptic and free-trading — and it
+is adopted **by a ruling with its own record**, which is W-F2's precedent exactly: that item refused to
+fill three other §4 axes from CHES questions *without* such a ruling. The statement lives on
+`PoliticalParty.EuPosition` and on `PartySystems.TradeStance`, where anyone reading the code meets it.
+
+### What shipped
+
+- **`PoliticalParty.EuPosition`** (CHES 1–7, `NaN` where unpublished) with `HasEuPosition`. Added as a
+  **named optional** constructor argument, so not one of the 53 existing positional call sites moved and
+  an unspecified party is `NaN` — which is the correct default, not a silent zero.
+- **31 sourced values**, transcribed against `ElectionsData/positions/party_positions.md`: Sweden 8,
+  Germany 8, Poland 4, France 5, Italy 6. ⚠ **Each was matched to its party by that party's EXISTING
+  `lrecon`/`galtan` pair rather than by name**, so the join is checkable rather than trusted — the file's
+  names ("S (SAP)", "PO (leads KO)", "Azione", "LFI (file: FI)") are not the abbreviations the code uses.
+- ⚠ **Italy's AVS stays `NaN`.** The positions file carries SI and EV as two separate components, and the
+  code already refuses to mean them for `lrecon`/`galtan`. Meaning them for `eu_position` would have
+  invented a position for a unit the source does not score as one. The same refusal covers France's UG
+  bloc, Poland's TD committee and every minor list.
+- **`PartySystems.TradeStance`** — `(5 − rescaled) / 5`, in exactly `FiscalStance`'s form, over
+  `CoalitionCompatibility.RescaleEu` (**the function §29 already uses — not a second copy**), because
+  `eu_position` runs 1–7 where the other axes run 0–10.
+- **`BillAxis` { Fiscal, Trade }**, and axis-taking overloads of `GetSeatWeightedAlignment` and
+  `WouldBillPass`. Every other bill keeps `Fiscal` by default and is untouched.
+- **Three call sites** now name `Trade`: the live vote (`SimulationManager`), the pending-bill card and
+  the draft's live estimate. ⚠ The card **derives** its axis from the bill's own `SystemArea.Trade`
+  rather than being handed it, so the screen and the chamber cannot drift into disagreeing about which
+  axis produced a verdict.
+
+### The measurement — `TradeAxisDiagnostic`, per country, sign only
+
+| country | axis | RISE fiscal → trade | CUT fiscal → trade | verdict |
+|---|---|---|---|---|
+| USA | **NO — falls back** | −0.201 → −0.201 | +0.201 → +0.201 | — |
+| Sweden | yes | −0.110 → **−0.322** | +0.110 → **+0.322** | — |
+| Germany | yes | −0.058 → **−0.342** | +0.058 → **+0.342** | — |
+| France | yes | −0.256 → −0.178 | +0.256 → +0.178 | — |
+| Italy | yes | −0.078 → −0.063 | +0.078 → +0.063 | — |
+| **Poland** | yes | **+0.150 → −0.227** | **−0.150 → +0.227** | ⚠ **MOVED** |
+
+⚠ **Poland is the one chamber that changes its mind, and the reason is exactly why the fiscal axis was
+the wrong one for a tariff.** On `lrecon`, Poland's chamber leans toward a tariff rise because PiS (194
+seats) is economically statist. On openness it leans against one — PiS is only mildly eurosceptic
+(`eu_position` 3.10 → stance +0.30) while KO (157 seats, 6.63 → **−0.88**) and Nowa Lewica (26, 6.90 →
+−0.97) are strongly pro-integration, so the seat-weighted mean is negative. **A tariff bill was being
+scored by how much a party likes state spending; it is now scored by how much it likes open borders for
+goods.** Sweden's and Germany's alignments roughly **triple** in magnitude without flipping — the
+openness axis is simply more decisive about tariffs than the fiscal one, which is the point.
+
+**Coverage, per country:** Sweden 349/349 (100 %), Germany 629/630 (99.8 %), Italy 372/400 (93 %), Poland
+395/460 (85.9 %), **France 317/577 (54.9 %)** — France is the low one for the same reason it is low on
+the fiscal axis, the Interior Ministry's UG bloc being 178 seats no survey scores as one party. **USA
+0/435.**
+
+### ⚠ The USA carve-out, and why it falls back rather than reporting zero
+
+GPS 2019 carries **no EU item at all**, so no US party has an openness position and the trade axis
+measures **zero seats** of the House. Returning 0 would be read by `WouldBillPass` as *"fails"* — making
+**every US tariff bill fail for want of DATA rather than for want of votes.** So the axis falls back to
+fiscal, and `ParliamentSystem.TradeAxisAvailable` returns false so a screen can say which axis produced
+the verdict. **The fallback is asserted, not merely described:** the diagnostic requires the trade
+alignment to equal the fiscal one *exactly* wherever the axis is unavailable, or the fallback is not a
+fallback.
+
+### ⚠ What the evidence is, and what it is not
+
+`TrajectoryBaselineDump` **passes no bills** — its own header states the idiom, *"no player country, no
+bills"* — so the no-policy trajectories were **predicted** byte-identical before the run and are:
+**6 of 6 identical by SHA-256** (`traj_cb3_*` against `traj_run_*`, both seeds, all three horizons).
+**That diff is CONTAINMENT evidence and nothing more.** Reading it as proof that a vote-scoring change is
+safe is precisely the fallacy W-G2 recorded against itself (*"it is not evidence the parliament change is
+safe"*), and the diagnostic prints that caveat in its own output so the next reader cannot make it
+either. **The load-bearing evidence is the per-country table above.**
+
+**Verified:** `TradeAxisDiagnostic` ALL ASSERTIONS PASS; trajectories 6 of 6 byte-identical; the nine
+checks 9 of 9 clean; `TariffCostsDiagnostic`, `SaveLoadRoundTripDiagnostic` (RT PASS, 12 scenarios),
+`CoalitionHarness`, `SeatConversionHarness` and `ElectionDayReachDiagnostic` all exit 0. No
+`[AUTHORED-DRAFT]` value introduced — every figure is CHES 2024 as published.

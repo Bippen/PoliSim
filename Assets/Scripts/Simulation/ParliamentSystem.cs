@@ -5,6 +5,22 @@ using UnityEngine;
 namespace PoliSim.Simulation
 {
     /// <summary>
+    /// C-B3 / R-CL2: which published axis a bill is scored against.
+    ///
+    /// Until 2026-08-31 there was one axis and it was implicit — every bill, tariffs included, was
+    /// weighed on CHES `lrecon`. Pass 6 deferred the Trade bill's own axis to "where real parties
+    /// land" and recorded that reading the fiscal axis for it was Elias's ruling **until then**.
+    /// </summary>
+    public enum BillAxis
+    {
+        /// <summary>CHES `lrecon` through `PartySystems.FiscalStance` — every bill but the tariff one.</summary>
+        Fiscal = 0,
+
+        /// <summary>CHES `eu_position` through `PartySystems.TradeStance` — the Trade bill only.</summary>
+        Trade = 1,
+    }
+
+    /// <summary>
     /// Political Systems Overhaul Part B, full rollout. Two independent pieces: seat composition
     /// (W-G1: seeded from each country's own most recent real election and changed ONLY by an
     /// election - it was recomputed every turn from ApprovalRating while parties were fictional) and the gated-legislation flow, now covering all three bill tiers - the omnibus Annual
@@ -175,19 +191,66 @@ namespace PoliSim.Simulation
         /// as unmeasured, never folded in at zero and never at the centre.
         /// </summary>
         public static float GetSeatWeightedAlignment(Country country, float direction)
+            => GetSeatWeightedAlignment(country, direction, BillAxis.Fiscal);
+
+        /// <summary>
+        /// C-B3 / R-CL2: the same seat-weighted sum, over a NAMED axis.
+        ///
+        /// Pass 6 deferred the Trade bill's own axis to "where real parties land"; they have landed,
+        /// and <see cref="BillAxis.Trade"/> scores a tariff bill against each party's OPENNESS
+        /// (`PartySystems.TradeStance`, derived from CHES `eu_position`) instead of its fiscal
+        /// position. Every other bill keeps <see cref="BillAxis.Fiscal"/> and is untouched.
+        ///
+        /// ⚠ **THE FALLBACK IS EXPLICIT AND ITS REASON TRAVELS WITH IT.** GPS 2019 carries no EU item,
+        /// so no US party has an openness position and the trade axis measures **zero seats** of the
+        /// House. Returning 0 there would be read by <see cref="WouldBillPass"/> as "fails", making
+        /// every US tariff bill fail for want of DATA rather than for want of votes — so the axis
+        /// falls back to fiscal, and <see cref="TradeAxisAvailable"/> lets a caller say which axis
+        /// produced the verdict. Falling back is a stated approximation; silently scoring a chamber
+        /// at zero would be a lie.
+        /// </summary>
+        public static float GetSeatWeightedAlignment(Country country, float direction, BillAxis axis)
         {
             float billSign = Mathf.Sign(direction);
             float weightedAlignment = 0f;
             float measuredSeats = 0f;
             foreach (PoliticalParty party in PartySystems.For(country.Id))
             {
-                if (!party.HasPosition) { continue; }
+                bool measured = axis == BillAxis.Trade ? party.HasEuPosition : party.HasPosition;
+                if (!measured) { continue; }
+
                 int seats = country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
                 measuredSeats += seats;
-                weightedAlignment += seats * PartySystems.FiscalStance(party) * billSign;
+                float stance = axis == BillAxis.Trade
+                    ? PartySystems.TradeStance(party)
+                    : PartySystems.FiscalStance(party);
+                weightedAlignment += seats * stance * billSign;
             }
 
-            return measuredSeats > 0f ? weightedAlignment / measuredSeats : 0f;
+            if (measuredSeats > 0f) { return weightedAlignment / measuredSeats; }
+
+            // No seat in this chamber carries a position on this axis. For Trade that is the USA, by
+            // construction; fall back rather than report a chamber that opposes everything.
+            return axis == BillAxis.Trade
+                ? GetSeatWeightedAlignment(country, direction, BillAxis.Fiscal)
+                : 0f;
+        }
+
+        /// <summary>
+        /// True when at least one SEATED unit in this chamber carries a published EU position — i.e.
+        /// when a Trade bill is scored on the openness axis R-CL2 ruled in, rather than falling back
+        /// to the fiscal one. **False for the USA**, whose GPS-2019 source has no EU item at all. A
+        /// screen printing a trade verdict should say which axis produced it.
+        /// </summary>
+        public static bool TradeAxisAvailable(Country country)
+        {
+            foreach (PoliticalParty party in PartySystems.For(country.Id))
+            {
+                if (!party.HasEuPosition) { continue; }
+                if (country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) && s > 0) { return true; }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -213,13 +276,19 @@ namespace PoliSim.Simulation
         }
 
         public static bool WouldBillPass(Country country, float direction)
+            => WouldBillPass(country, direction, BillAxis.Fiscal);
+
+        /// <summary>C-B3 / R-CL2: the same verdict, scored against a named axis. A zero-direction bill
+        /// still passes unconditionally on either — a draft introduced unchanged asks the chamber for
+        /// nothing.</summary>
+        public static bool WouldBillPass(Country country, float direction, BillAxis axis)
         {
             if (Mathf.Approximately(direction, 0f))
             {
                 return true;
             }
 
-            return GetSeatWeightedAlignment(country, direction) > 0f;
+            return GetSeatWeightedAlignment(country, direction, axis) > 0f;
         }
 
         /// <summary>Convenience overload - computes BudgetBill's own direction, then scores it via the shared WouldBillPass(Country, float) core.</summary>

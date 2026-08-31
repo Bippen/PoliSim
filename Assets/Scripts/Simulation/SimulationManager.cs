@@ -1732,7 +1732,10 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             float direction = ParliamentSystem.GetTradeBillDirection(country, bill, _world);
-            bool passed = ParliamentSystem.WouldBillPass(country, direction);
+            // C-B3 / R-CL2: the tariff bill is scored on the OPENNESS axis (CHES eu_position), not the
+            // fiscal one. The USA has no EU position on any seat and falls back to fiscal inside
+            // GetSeatWeightedAlignment, with ParliamentSystem.TradeAxisAvailable saying so.
+            bool passed = ParliamentSystem.WouldBillPass(country, direction, BillAxis.Trade);
             ParliamentSystem.RecordDivision(country, "Trade bill", direction, passed, CurrentDate);
             float approvalBeforeTradeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);

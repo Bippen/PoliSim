@@ -3509,14 +3509,14 @@ namespace PoliSim.UI
         /// currently sits. Deliberately not the design pack's SupportBar widget (deleted 2026-08-27) - this
         /// model has no seats-based majority for it to draw (see DrawPendingBillCard's own comment).
         /// </summary>
-        private void DrawBillLiveEstimate(float direction, float wrapWidth = 0f, bool terse = false)
+        private void DrawBillLiveEstimate(float direction, float wrapWidth = 0f, bool terse = false, BillAxis axis = BillAxis.Fiscal)
         {
             // Unity's Mathf.Sign(0f) returns 1, not 0, so an unchanged draft would otherwise be scored as
             // parliament's raw net stance - negative in the documented tied-parties case - and contradict
             // the WOULD PASS verdict printed directly above it. WouldBillPass short-circuits on exactly
             // this condition, so the bar must too.
             bool contested = !Mathf.Approximately(direction, 0f);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
+            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction, axis);
 
             // Free-aspect pass (2026-08-26): callers inside a width-bounded pane pass wrapWidth so
             // these labels WRAP there instead of requesting natural width and stretching the pane's
@@ -8297,7 +8297,11 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawPendingBillCard(string label, float direction, UiPalette.SystemArea area)
         {
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
+            // C-B3 / R-CL2: the tariff bill is the one bill weighed on the OPENNESS axis, and the Trade
+            // area marks exactly that bill in this list - so the card's verdict is DERIVED from the same
+            // fact the vote uses rather than passed alongside it, and the two cannot drift apart.
+            BillAxis axis = area == UiPalette.SystemArea.Trade ? BillAxis.Trade : BillAxis.Fiscal;
+            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction, axis);
 
             // A zero-direction bill (drafts introduced unchanged) passes unconditionally - WouldBillPass
             // short-circuits before scoring it. The bar has to short-circuit on the SAME condition:
@@ -8773,7 +8777,10 @@ namespace PoliSim.UI
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern. Since pass 6 (2026-08-27) the estimate reads the change in the import-weighted average tariff the draft would charge, overrides included (see ParliamentSystem.GetTradeBillDirection).</summary>
         private void DrawTradeLiveEstimate()
         {
-            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillDirection(_playerCountry, BuildTradeBillFromDrafts(), _world));
+            // C-B3 / R-CL2: the tariff draft is weighed on the OPENNESS axis, so this estimate and the
+            // chamber that will actually vote on it cannot disagree about which axis was used.
+            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillDirection(_playerCountry, BuildTradeBillFromDrafts(), _world),
+                axis: BillAxis.Trade);
         }
 
         /// <summary>

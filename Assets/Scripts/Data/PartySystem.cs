@@ -51,7 +51,29 @@ namespace PoliSim.Data
         /// </summary>
         public readonly string MarkName;
 
-        public PoliticalParty(string abbrev, string name, float lrEcon, float galtan, int seedSeats, string markName = null)
+        /// <summary>
+        /// CHES 2024 `eu_position`, **1–7** (1 = strongly opposed to European integration, 7 = strongly
+        /// in favour) — note the scale, which is not the 0–10 the other two axes use.
+        /// `float.NaN` where no position is published.
+        ///
+        /// ⚠ **RULED IN AS THE OPENNESS AXIS FOR THE TRADE BILL'S VOTE (R-CL2, 2026-08-30), with the
+        /// stretch stated rather than hidden.** §4 asks for a trade axis; CHES publishes no trade or
+        /// protectionism item, so nothing on disk measures trade directly. `eu_position` is the
+        /// nearest published thing and the ruling adopts it — **which asserts that a party's stance on
+        /// European integration stands in for its stance on trade openness.** That is an
+        /// approximation, and a real one: a party can be europhile and protectionist, or eurosceptic
+        /// and free-trading. It is adopted by a ruling with its own record rather than quietly, which
+        /// is W-F2's precedent — that item refused to fill three other axes from CHES questions
+        /// without exactly such a ruling.
+        ///
+        /// ⚠ **The USA has NO value and is not given one:** GPS 2019 carries no EU item at all, so
+        /// every US party is `NaN` here and the Trade bill falls back to the fiscal axis with that
+        /// reason stated at the call site.
+        /// </summary>
+        public readonly float EuPosition;
+
+        public PoliticalParty(string abbrev, string name, float lrEcon, float galtan, int seedSeats,
+            string markName = null, float euPosition = float.NaN)
         {
             Abbrev = abbrev;
             Name = name;
@@ -59,10 +81,16 @@ namespace PoliSim.Data
             Galtan = galtan;
             SeedSeats = seedSeats;
             MarkName = markName;
+            EuPosition = euPosition;
         }
 
         /// <summary>Read by `PartyMarkCoverageCheck` through reflection, which is why the name is its and not ours.</summary>
         public string EnglishName => Name;
+
+        /// <summary>True when CHES publishes an EU position for this unit — the openness axis R-CL2
+        /// ruled in for the Trade bill. False for every US party (GPS 2019 has no EU item) and for
+        /// every unit CHES does not score. A false is "not measured", never "neutral on Europe".</summary>
+        public bool HasEuPosition => !float.IsNaN(EuPosition);
 
         /// <summary>True when CHES/GPS publishes an economic position for this unit. §36: a unit without one is drawn as unmeasured, never as centre.</summary>
         public bool HasPosition => !float.IsNaN(LrEcon);
@@ -105,14 +133,14 @@ namespace PoliSim.Data
         // ---- Sweden: Riksdag 2022. Units are PARTIES; every one has a CHES position. Sums to 349.
         private static readonly PoliticalParty[] SwedenParties =
         {
-            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s"),
-            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73),
-            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68),
-            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24),
-            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24),
-            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19),
-            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18),
-            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16),
+            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f),
+            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, euPosition: 2.68f),
+            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, euPosition: 5.74f),
+            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, euPosition: 3.32f),
+            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, euPosition: 6.11f),
+            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, euPosition: 5.35f),
+            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, euPosition: 5.32f),
+            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, euPosition: 6.84f),
         };
 
         // ---- Germany: Bundestag 2025. Units are PARTIES; every one has a CHES position. Sums to 630.
@@ -121,15 +149,15 @@ namespace PoliSim.Data
         // is looking at, and dropping it would hide the closest thing to a threshold story there is.
         private static readonly PoliticalParty[] GermanyParties =
         {
-            new PoliticalParty("CDU",   "Christlich Demokratische Union",   6.58f, 6.56f, 164),
-            new PoliticalParty("AfD",   "Alternative fur Deutschland",      7.63f, 9.39f, 152),
-            new PoliticalParty("SPD",   "Sozialdemokratische Partei",       3.47f, 3.61f, 120),
-            new PoliticalParty("Grune", "Bundnis 90/Die Grunen",            3.37f, 1.61f,  85),
-            new PoliticalParty("Linke", "Die Linke",                        1.37f, 2.29f,  64),
-            new PoliticalParty("CSU",   "Christlich-Soziale Union",         6.77f, 7.54f,  44),
+            new PoliticalParty("CDU",   "Christlich Demokratische Union",   6.58f, 6.56f, 164, euPosition: 6.42f),
+            new PoliticalParty("AfD",   "Alternative fur Deutschland",      7.63f, 9.39f, 152, euPosition: 1.89f),
+            new PoliticalParty("SPD",   "Sozialdemokratische Partei",       3.47f, 3.61f, 120, euPosition: 6.37f),
+            new PoliticalParty("Grune", "Bundnis 90/Die Grunen",            3.37f, 1.61f,  85, euPosition: 6.79f),
+            new PoliticalParty("Linke", "Die Linke",                        1.37f, 2.29f,  64, euPosition: 3.72f),
+            new PoliticalParty("CSU",   "Christlich-Soziale Union",         6.77f, 7.54f,  44, euPosition: 5.50f),
             new PoliticalParty("SSW",   "Sudschleswigscher Wahlerverband",  float.NaN, float.NaN, 1),
-            new PoliticalParty("BSW",   "Bundnis Sahra Wagenknecht",        2.78f, 7.06f,   0),
-            new PoliticalParty("FDP",   "Freie Demokratische Partei",       7.58f, 3.22f,   0),
+            new PoliticalParty("BSW",   "Bundnis Sahra Wagenknecht",        2.78f, 7.06f,   0, euPosition: 2.42f),
+            new PoliticalParty("FDP",   "Freie Demokratische Partei",       7.58f, 3.22f,   0, euPosition: 5.84f),
         };
 
         // ---- Poland: Sejm 2023. Units are the ELECTORAL COMMITTEES the PKW reports. Sums to 460.
@@ -138,11 +166,11 @@ namespace PoliSim.Data
         // parties that ran together but are not one party.
         private static readonly PoliticalParty[] PolandParties =
         {
-            new PoliticalParty("PiS",  "Prawo i Sprawiedliwosc",   2.52f, 8.45f, 194),
-            new PoliticalParty("KO",   "Koalicja Obywatelska",     6.17f, 3.66f, 157),
+            new PoliticalParty("PiS",  "Prawo i Sprawiedliwosc",   2.52f, 8.45f, 194, euPosition: 3.10f),
+            new PoliticalParty("KO",   "Koalicja Obywatelska",     6.17f, 3.66f, 157, euPosition: 6.63f),
             new PoliticalParty("TD",   "Trzecia Droga",            float.NaN, float.NaN, 65),
-            new PoliticalParty("NL",   "Nowa Lewica",              2.32f, 1.75f,  26),
-            new PoliticalParty("Konf", "Konfederacja",             8.96f, 8.41f,  18),
+            new PoliticalParty("NL",   "Nowa Lewica",              2.32f, 1.75f,  26, euPosition: 6.90f),
+            new PoliticalParty("Konf", "Konfederacja",             8.96f, 8.41f,  18, euPosition: 1.52f),
         };
 
         // ---- France: Assemblee nationale 2024. UNITS ARE THE INTERIOR MINISTRY'S NUANCES, not parties,
@@ -154,9 +182,9 @@ namespace PoliSim.Data
         private static readonly PoliticalParty[] FranceParties =
         {
             new PoliticalParty("UG",  "Union de la gauche (NFP joint candidacies)", float.NaN, float.NaN, 178),
-            new PoliticalParty("ENS", "Ensemble (majorite presidentielle)",          6.18f, 4.09f, 150),
-            new PoliticalParty("RN",  "Rassemblement National",                      6.00f, 8.36f, 125),
-            new PoliticalParty("LR",  "Les Republicains",                            7.82f, 7.18f,  39),
+            new PoliticalParty("ENS", "Ensemble (majorite presidentielle)",          6.18f, 4.09f, 150, euPosition: 6.27f),
+            new PoliticalParty("RN",  "Rassemblement National",                      6.00f, 8.36f, 125, euPosition: 2.18f),
+            new PoliticalParty("LR",  "Les Republicains",                            7.82f, 7.18f,  39, euPosition: 5.27f),
             new PoliticalParty("DVD", "Divers droite",                               float.NaN, float.NaN, 27),
             new PoliticalParty("UXD", "Union de l'extreme droite (RN-Ciotti)",       float.NaN, float.NaN, 17),
             new PoliticalParty("DVG", "Divers gauche",                               float.NaN, float.NaN, 12),
@@ -164,8 +192,8 @@ namespace PoliSim.Data
             new PoliticalParty("HOR", "Horizons",                                    float.NaN, float.NaN,  6),
             new PoliticalParty("DVC", "Divers centre",                               float.NaN, float.NaN,  6),
             new PoliticalParty("UDI", "Union des democrates et independants",        float.NaN, float.NaN,  3),
-            new PoliticalParty("SOC", "Parti socialiste (outside the UG banner)",    3.36f, 2.73f,   2),
-            new PoliticalParty("ECO", "Ecologistes",                                 2.30f, 1.70f,   1),
+            new PoliticalParty("SOC", "Parti socialiste (outside the UG banner)",    3.36f, 2.73f,   2, euPosition: 6.27f),
+            new PoliticalParty("ECO", "Ecologistes",                                 2.30f, 1.70f,   1, euPosition: 6.20f),
             new PoliticalParty("DIV", "Divers",                                      float.NaN, float.NaN,  1),
             new PoliticalParty("EXD", "Extreme droite",                              float.NaN, float.NaN,  1),
         };
@@ -177,12 +205,12 @@ namespace PoliSim.Data
         // the project has not confirmed against a primary total.
         private static readonly PoliticalParty[] ItalyParties =
         {
-            new PoliticalParty("FdI",   "Fratelli d'Italia",              6.40f, 9.13f, 119),
-            new PoliticalParty("PD",    "Partito Democratico",             2.93f, 2.33f,  69),
-            new PoliticalParty("Lega",  "Lega per Salvini Premier",        6.80f, 8.87f,  66),
-            new PoliticalParty("M5S",   "Movimento 5 Stelle",              2.87f, 3.27f,  52),
-            new PoliticalParty("FI",    "Forza Italia",                    7.40f, 6.07f,  45),
-            new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21),
+            new PoliticalParty("FdI",   "Fratelli d'Italia",              6.40f, 9.13f, 119, euPosition: 3.27f),
+            new PoliticalParty("PD",    "Partito Democratico",             2.93f, 2.33f,  69, euPosition: 6.80f),
+            new PoliticalParty("Lega",  "Lega per Salvini Premier",        6.80f, 8.87f,  66, euPosition: 1.60f),
+            new PoliticalParty("M5S",   "Movimento 5 Stelle",              2.87f, 3.27f,  52, euPosition: 4.07f),
+            new PoliticalParty("FI",    "Forza Italia",                    7.40f, 6.07f,  45, euPosition: 5.33f),
+            new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21, euPosition: 6.79f),
             new PoliticalParty("AVS",   "Alleanza Verdi e Sinistra",       float.NaN, float.NaN, 12),
             new PoliticalParty("NM",    "Noi Moderati",                    float.NaN, float.NaN,  7),
             new PoliticalParty("SVP",   "Sudtiroler Volkspartei - PATT",   float.NaN, float.NaN,  3),
@@ -326,6 +354,34 @@ namespace PoliSim.Data
         public static float FiscalStance(in PoliticalParty party)
         {
             return party.HasPosition ? (5f - party.LrEcon) / 5f : 0f;
+        }
+
+        /// <summary>
+        /// C-B3 / R-CL2 — the OPENNESS axis, in exactly the form <see cref="FiscalStance"/> takes and
+        /// for the same reason: −1 (favours open trade, so opposes a tariff rise) to +1 (favours
+        /// protection, so supports one).
+        ///
+        /// **The derivation, stated so it can be checked in one step.** CHES `eu_position` runs **1–7**
+        /// where the other axes run 0–10, so it is first put on the common scale by
+        /// `CoalitionCompatibility.RescaleEu` — **the same function §29's compatibility already uses,
+        /// not a second copy of it** — and then read as `(5 − rescaled) / 5`. A strongly
+        /// pro-integration party (7 → rescaled 10) gives −1; a strongly eurosceptic one (1 → 0) gives
+        /// +1; the midpoint gives 0.
+        ///
+        /// ⚠ **What this asserts, adopted by ruling rather than quietly:** that a party's stance on
+        /// European integration stands in for its stance on trade openness. CHES publishes no trade or
+        /// protectionism item, so nothing on disk measures trade directly. See
+        /// <see cref="PoliticalParty.EuPosition"/> for the full statement of the stretch.
+        ///
+        /// ⚠ **A unit with no published EU position returns 0 AND `HasEuPosition` is false** — the same
+        /// contract `FiscalStance` has, so a caller must decide what an unmeasured unit does rather
+        /// than be handed a centrist. **Every US party is such a unit.**
+        /// </summary>
+        public static float TradeStance(in PoliticalParty party)
+        {
+            if (!party.HasEuPosition) { return 0f; }
+            double rescaled = CoalitionCompatibility.RescaleEu(party.EuPosition);
+            return (float)((5.0 - rescaled) / 5.0);
         }
 
         /// <summary>
