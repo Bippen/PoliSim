@@ -6930,3 +6930,60 @@ Nine checks exit 0 · films Sweden 1280 and 2560, **81 captured, 0 failed, 0 tex
 `ScreenEdgeCheck` exit 0 over both · trajectories **6 of 6 byte-identical to `traj_cc7_*`** (display-layer
 only, and the dump proves it rather than the reasoning being trusted). The 1280 film shows the Desk's
 Estimated Effects block with no `±` anywhere on it.
+
+## 110. TRACK C CLOSED — the Playtest-1 remainder, fourteen items (2026-08-31)
+
+Every C-C row is closed or billed. The track's own close bar was run on the final tree.
+
+| item | what it was | how it closed |
+|---|---|---|
+| C-C1 | P-B1 yearly budget impact on drafts | built; §93–94 |
+| C-C2 | P-B2 first-year budget window | built, with the byte-identity assertion the item actually was; §95 |
+| C-C3 | P-F1 Policy Web focus mode | built inside R-W2's fence; §96 |
+| C-C4 | P-G4 enactment markers | built; §97 |
+| C-C5 | P-C1 national currency display | ⚠ **BILLED** — needs a sourced vintage-dated FX rate per country and none is on disk |
+| C-C6 | P-C2 the seed basis | measured and documented; §98 |
+| C-C7 | P-D1 central bank independence + Riksbank-B | built; the first BASELINE family, explained per country; §100 |
+| C-C8 | P-E1 international browser | built, absence drawn as loudly as presence; §102 |
+| C-C9 | P-G1 shadow baseline | premise measured, gate passed, then wired; §§103–105 |
+| C-C10 | P-G2 impact ledger | built with the interaction as its own line; §106 |
+| C-C11 | P-G3 responsiveness audit | measured and proposed, **nothing applied**; §107 |
+| C-C12 | P-H1 tax spec-let | written; §108 |
+| C-C13 | P-I1 cohort spec-let | written; §108 |
+| C-C14 | the authored ±5–10 % margin | removed; §109 |
+
+### The close bar
+
+- **The four-width matrix**, Sweden, on the final tree: **1280×720 · 1600×950 · 1920×1080 · 2560×1440**
+  (view heights 699 / 929 / 1059 / 1419). **81 captured, 0 failed, 0 text overflows at every one of the
+  four.** `ScreenEdgeCheck` exit 0 over all four sets, 324 captures, guards silent.
+- **The trajectory suite**: `traj_cc14_*` at seeds 777 / 424242 and horizons 100 / 500 / 1000, **6 of 6
+  byte-identical to the `traj_cc7_*` family** — the family C-C7 established as the first BASELINE change
+  of this pass. Every item after C-C7 left it untouched, and the dump proves it rather than the reasoning
+  being trusted.
+- **The rule-15 byte diff**: two Sweden films of this same tree at the same geometry compare **78 of 81
+  byte-identical**, differing on exactly the three wall-clock frames the `det_*` record already names —
+  `01a_selector_yielding`, `89d_signing_entrance`, `92_saves_menu`. The seeded harness's determinism
+  property holds on the Track C tree.
+- ⚠ **`det_a_*` is NOT a like-for-like reference and was not used as one.** It is a **USA** family; a
+  Sweden film differs from it on 78 of 79 frames for that reason alone. Recorded because the count looks
+  alarming and means nothing — the code-diff question is answered by each item's own before/after film,
+  not by a cross-country comparison.
+
+### What Track C leaves behind
+
+Open, with owners named:
+
+- **C-C5** — billed on a sourced FX rate. ELIAS.
+- **C-C11's five recommendations** (R-C11a…e) — ELIAS, per line. ⚠ Two of them are BASELINE and must not
+  land in the same pass.
+- **C-C12 and C-C13** — ELIAS, per line, before any code. The tax build is downstream of the cohort one.
+- **S-15** (the central-bank candidate pool's USA-specific prose), **S-16** (`MetaTextCheck` and
+  backticks), **S-17** (the film geometry and the two silent capture defaults), **S-18** (the dead rate
+  lever's live-looking field), **S-19** (the zero tax multiplier — now also C-C11's headline).
+
+⚠ **Three dead levers are on the record after this track** — the interest rate (S-18), the tax dials
+(§107), and the two demographic levers if the cohort substrate lands without its second hop re-pointed
+(§108). **That is a pattern worth naming before the fourth**: this codebase can lose a player-facing lever
+without anything failing, because nothing asserts that a lever moves the model. **A guard that does is
+worth an item** — it is the same shape as C-E3's phantom-guard check, and the two belong together.
