@@ -351,7 +351,7 @@ that context when item 10 changes it; none is re-opened by it.
 
 ## Playtest 1 — Elias's Sweden session (2026-08-29): the eleven findings, §P's first real output
 
-Recorded before any item on his list runs (the list's own rule). Source: `PLAYTEST_1_WORKLIST.md`
+Recorded before any item on his list runs (the list's own rule). Source: the Playtest-1 work list (retired at C-G1, 2026-08-31; every row points at its `COMPLETED.md` section)
 at root — Elias's document, verbatim; each finding below is his words in substance, dated
 2026-08-29, with the item that answers it and where that item sits in the sequencing (the
 elections list keeps priority to its playable milestone; P-A/P-B ride session tails; P-C/P-D/P-E/P-G1–3
@@ -405,7 +405,7 @@ so it is recorded here rather than implied.
 **Where it went. RULED 2026-08-30 (Elias): its own item, `W-B12`, NOT a rider on W-F5** — because
 it is a **playability requirement and must not inherit W-F5's data dependency**: it needs no sourced
 funding figures, only a rule over costs the model already charges. Slotted after W-E8 and before
-Track F in `ELECTIONS_PROTOTYPE_WORKLIST.md`, where its done-when lives. This section stays as the
+Track F in the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `ELECTIONS_PROTOTYPE_LOG.md`), where its done-when lives. This section stays as the
 finding's provenance.
 
 **What it would change.** A managed party would stop starving its own staff; the pace would release

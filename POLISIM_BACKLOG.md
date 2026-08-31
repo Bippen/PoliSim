@@ -1,8 +1,8 @@
 # PoliSim — the backlog register
 
 **What this is.** THE single ordered register of open work. Built 2026-08-31 (C-0.1 of the clearance
-list) from every source that held a backlog: the clearance list, `ELECTIONS_PROTOTYPE_WORKLIST.md`,
-`PLAYTEST_1_WORKLIST.md`, `MISSING_PREREQUISITES.md`, `POLISIM_MASTER_ROADMAP.md`'s live-work section and
+list) from every source that held a backlog: the clearance list, the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `ELECTIONS_PROTOTYPE_LOG.md`),
+the Playtest-1 work list (retired at C-G1, 2026-08-31; every row points at its `COMPLETED.md` section), `MISSING_PREREQUISITES.md`, `POLISIM_MASTER_ROADMAP.md`'s live-work section and
 trigger shelf, `ELECTIONS_PLAY_CALIBRATION.md`, `CLAUDE_DESIGN_ASSET_REQUEST.md`, `ELECTIONS_GAP_TABLE.md`,
 and the riders recorded this week that no item owned.
 
@@ -157,7 +157,7 @@ four items away and the first of them is Elias's to rule**, not a fetch anyone c
 | **C-CAP** | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §101): the two capture traps armed as guards, each proven both ways.** (a) The capture REFUSES to run under `-batchmode` — exit 2 in seconds, naming the flag and the correct invocation — instead of hanging for ten minutes. (b) Every capture asserts the width it got against the width asked for: negative control 81 captured / 0 failed at 1280, **positive control 0 captured / 81 failed at an unobtainable 6000** where before it would have written 81 files at 4000 px and called it a 6000-wide pass | CODE | WATCH | — |
 | **C-E3** | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §120). `PhantomGuardCheck` is the TENTH check.** Enumeration: **254 `.cs` files under `Assets/`, comment text only, every identifier ending in Check / Harness / Diagnostic — 143 names**, each required to resolve to a real type. ⚠ **It found a phantom on its first run**: `CountingRandom.cs` cited `SaveLoadDiagnostic` twice; the type is `SaveLoadRoundTripDiagnostic`. Corrected → **143 resolved, 0 missing.** It deliberately does NOT judge whether the named guard covers what the comment claims (no regex can), and a name marked as PAST is reported as history rather than failed. ⚠ **S-16 done in the same pass, as the pre-ruling directed** — `MetaTextCheck` gained a twentieth pattern, the **backtick**: C-C8 shipped a backticked type name to a player surface and the check passed it. 79 files, 2 517 literals, 0 hits. ~~**The phantom-guard sweep, armed as a check of its own.** ⚠ Opened by C-B2: `PoliSimTheme`'s doc comment stated *"the desk-seated hues below are checked against the area accents by `PartyInkHarness`"* and **no such file existed** — a constraint the code asserted was enforced, enforced by nothing. C-0.3 found the same shape on the stranded branch (`ThresholdRule.CoalitionShare`, named in `ApplyThreshold`'s contract, read nowhere). Twice in one pass is a class, not a coincidence. **Sweep every doc comment and code comment that names a `*Check` / `*Harness` / `*Diagnostic` and assert each resolves to a type that exists**, then arm it so the class cannot return — a comment that names a guard is a promise the build should keep | every named guard resolves to a real type, the sweep's enumeration is stated in its own header (rule 6), and it runs in the suite. A comment naming a guard that does not exist FAILS | CODE | WATCH | — |
 | C-F1 | The Design ask consolidated to ONE paste | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §121). ONE LIVE ASK — D9, eleven rows numbered *n of N*** — folding D7/board 2b and D8's six with everything the pass added: C-B1's measured **52 of 53** marks, C-B2's hex exchange (⚠ **Sweden's eight are DELIVERED INK, not a request**; the other 45 have none and none is invented), **S-7** and **S-8**, §E4's two icons, the §A.14 chip finding, ⚠ **C-D3's språkrör question that no code ruling can answer**, and C-C8's absence finding for information. **§E4 BUILT FIRST (R-CL4)**: both `StatNodeId` members appended and named, `StatIconCoverageCheck` reports a missing icon as a **GAP not a failure** (19 of 21 resolve, 2 gaps, suite green) — **R-N1 fork logged: a check's severity changed.** `SEND_PACKAGE.md` regenerated with fresh digests, **the stale dated file DELETED and every reference repointed with no dangler**. ⚠ **P-F2 ANSWERED: no receipt exists** — `85690abf…` appears only in sending-side records, so the honest reading is the paste was never made. **Sending stays Elias's** | **ELIAS (the paste)** | SAFE | — |
-| C-G1 | The document retirement — migrate, delete, and rewrite the document-set table | `ls *.md` matches the table with no orphans and no dangling reference, source comments included | CODE | SAFE | every row above |
+| C-G1 | The document retirement | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §122).** **Five files migrated then deleted** — the elections work list (46 rows all closed; ⚠ **W-F4 and W-F5 re-homed as C-D1/C-D2 BEFORE deletion**, and both are now closed on the record), the Playtest-1 list (17 rows each pointing at its section; the two unclosed are register rows, not lost text), the Day-1 and Day-2 reports, the overnight morning report — plus `SEND_PACKAGE_2026-08-28.md` at C-F1. ⚠ **A report is not a second home for a finding.** The document-set table **re-derived**: it listed **eleven** files against a root holding **twenty-four** and charted **none** of the elections-era documents; it now charts all nineteen with a disposition each, the two new spec-lets and the register included. ✅ **`ls *.md` matches the table EXACTLY — proven by diff, not by eye — and grep shows no dangling reference anywhere, `Assets/**/*.cs` comments included** | CODE | SAFE | — |
 
 ### Track N — sized from this pass's own findings
 
@@ -184,7 +184,7 @@ found them. Each is sized here as its own item rather than left as a paragraph i
 | E-3 | **Felt verdict 1** — decision density | a staged save, loaded and played | §P |
 | E-4 | **Felt verdict 3** — the Trade bill's costs | a staged save, loaded and played | §P |
 | E-5..E-24 | **The 20 play-calibration entries** | every one is a number awaiting a loop to judge it against; Track R is what makes that loop exist, the judging is still his. **Nothing here is tuned to make a gate pass** | `ELECTIONS_PLAY_CALIBRATION.md` |
-| E-25 | C-C6's basis ruling — **executes as written unless struck** | — | `PLAYTEST_1_WORKLIST.md` |
+| E-25 | C-C6's basis ruling — **executes as written unless struck** | — | the Playtest-1 work list (retired at C-G1, 2026-08-31; every row points at its `COMPLETED.md` section) |
 | E-26 | C-C11's recalibration recommendations — strike or bless, per line | — | idem |
 | E-27 | C-C12 and C-C13's spec-lets — ruled before any code | — | idem |
 | E-28 | C-D2's pool resolution | a design question, not a measurement | `COMPLETED.md` §83 |
@@ -256,7 +256,7 @@ that reads as open work.
 *§38 has LEFT this list — R-CL3 ruled it built, and it was, at C-D4 (`COMPLETED.md` §115).*
 
 ⚠ **Three documents still carry duplicate QUEUE rows for F-1, F-2 and F-4** —
-`ELECTIONS_PROTOTYPE_WORKLIST.md` and the two day reports. They are **not edited here on purpose**: all
+the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `ELECTIONS_PROTOTYPE_LOG.md`) and the two day reports. They are **not edited here on purpose**: all
 three are scheduled *migrate → delete* at C-G1, and editing a row out of a file that is about to be
 deleted is work done twice. **C-G1's grep is what proves the "exactly one home" rule holds**, and this
 row is the note that it must.

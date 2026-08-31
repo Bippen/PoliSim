@@ -7771,3 +7771,38 @@ stale sentence in it was corrected: it called §E5 an open ask, and §E5 closed 
 Ten checks 10 of 10 clean (2 reported GAPs, 0 errors) · `PolicyWebCensus` exit 0 at 75 nodes · films
 Sweden 1280 and 2560: **81 captured, 0 failed, 0 text overflows, and the capture-identity trap green on
 all 81** at each.
+
+## 122. C-G1 — the document retirement: five files migrated and deleted, the set re-derived (2026-08-31)
+
+**The rule this ran under, from the roadmap's own consolidation rules:** *delete nothing that is not first
+migrated; repoint every reference before deleting and grep afterwards to prove nothing dangles, source
+comments included; if removing finished items empties a document, delete it.* And the pass's own addition:
+**where a document's rows are partly open, the open rows move to the register and the document still goes.**
+
+### The five retired, and where each one's content now lives
+
+| file | what it held | where it went |
+|---|---|---|
+| **`ELECTIONS_PROTOTYPE_WORKLIST.md`** (23 322 b) | the elections track's 46 items in execution order, each with a done-when | ⚠ **All 46 verified against `git log` at C-0.1** and closed; the two that closed by **STOPPING** were re-homed as live rows — **W-F4 → C-D1** (closed as billed, §112) and **W-F5 → C-D2** (measured and proposed, §113). The narrative record is `ELECTIONS_PROTOTYPE_LOG.md`, which survives |
+| **`PLAYTEST_1_WORKLIST.md`** (12 046 b) | Playtest-1's 17 rows (P-A1…P-I2) | every row points at its `COMPLETED.md` section: P-B1 §93–94 · P-B2 §95 · P-F1 §96 · P-G4 §97 · P-C2 §98 · P-D1 §100 · P-E1 §102 · P-G1 §§103–105 · P-G2 §106 · P-G3 §107 · P-H1/P-I1 §108. ⚠ **The two that did NOT close are register rows, not lost text: P-C1 (C-C5) is BILLED on a sourced FX rate, and P-I2 is deferral F-6** |
+| **`ELECTIONS_DAY1_REPORT_2026-08-29.md`** (23 431 b) | the Day-1 call log and its measurements | the measurements are in `COMPLETED.md` and `ELECTIONS_PROTOTYPE_LOG.md`; ⚠ **a report is not a second home for a finding** |
+| **`ELECTIONS_DAY2_REPORT_2026-08-29.md`** (9 276 b) | the four verdicts, the re-backtest, R-EL13's **FAIL** | the gate's failure and its consequence are in the log and in `ELECTIONS_GAP_TABLE.md`; the FAIL is not softened by the move |
+| **`OVERNIGHT_2026-08-28_MORNING_REPORT.md`** (23 374 b) | the overnight queue's morning report, R-N1 calls one line each | `COMPLETED.md` §§46–48 carry the work; the R-N1 calls are recorded where they were made |
+
+⚠ **Nothing was deleted to make a count come out.** Each file was checked for an open row that lived
+**only** there; the two that existed (W-F4, W-F5) were re-homed as C-D1 and C-D2 **before** this pass
+reached G1, and both are now closed on the record.
+
+### The document-set table, re-derived
+
+The roadmap's table listed **eleven** files against a root holding **twenty-four**, and charted **none** of
+the elections-era documents. It now lists what is actually there, with a disposition for each — the two
+new spec-lets and the register included, and `SEND_PACKAGE.md` in place of the deleted dated file.
+
+**`ls *.md` matches the table exactly. No orphans.** Grep proves no reference dangles to any deleted file,
+`Assets/**/*.cs` comments included.
+
+### The bar
+
+Ten checks 10 of 10 clean · `PhantomGuardCheck` green (it reads comments, and a comment citing a deleted
+document is exactly the class it guards) · no `Assets/Scripts` file touched by the retirement itself.

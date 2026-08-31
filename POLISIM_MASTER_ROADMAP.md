@@ -205,7 +205,7 @@ R-EL7) and reconciles D0: **this spec IS item 10's political model.**
 **The E-phase plan is CLOSED (2026-08-30).** Day-2's re-sizing and its "the gate failed and nothing
 wired" conclusion are Day-2's state and have moved, in full and with their reasoning, to
 `COMPLETED.md` §85 — they are not quoted from here. What replaced them: the prototype ran its own
-worklist (`ELECTIONS_PROTOTYPE_WORKLIST.md`, 46 items) end to end. Loyalty IS derived rather than
+worklist (the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `ELECTIONS_PROTOTYPE_LOG.md`), 46 items) end to end. Loyalty IS derived rather than
 assumed (W-A1), per-region priors ARE fetched so §27 and §8 compose (W-A2), the gate re-ran and
 **passed with its scope stated** (W-A3 — the two high-coverage countries improved; Italy's regression
 stands, its cause named and its constant deliberately not re-fitted). E-4 and E-5 were not the next
@@ -488,28 +488,50 @@ happen.
 
 **Established 2026-08-02 in the first consolidation pass; run again 2026-08-26 and 2026-08-27. This is
 the standing pattern — run it whenever the live documents start describing finished work.**
-
-Eleven files at the repo root (re-derived 2026-08-28: `ls *.md`), each with one job. If a fact belongs in two of them, it belongs in the one
-further down the charter table; the four scoped documents below it are not a second home for anything.
+~~Eleven files at the repo root (re-derived 2026-08-28: `ls *.md`), each with one job.~~
+**⚠ RE-DERIVED 2026-08-31 AT C-G1, and the old table was badly wrong: it listed ELEVEN files against a
+root holding TWENTY-FOUR, and charted NONE of the elections-era documents.** Five were retired in the same
+pass — each migrated to `COMPLETED.md` §122 first, every reference repointed, and grep run afterwards to
+prove nothing dangles, source comments included. **`ls *.md` now matches this table exactly: nineteen
+files, no orphans.**
 
 | Document | Holds | Grows or shrinks |
 |---|---|---|
-| `POLISIM_MASTER_ROADMAP.md` | **Live work only** — startable today, plus the trigger shelf and the standing constraints | Shrinks |
-| `MISSING_PREREQUISITES.md` | Blocked work, by supplier — including built-but-unconfirmed work waiting on Elias's eyes (§V), the home the deleted `VISUAL_REVIEW_BACKLOG.md` used to be | Shrinks as blockers clear |
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | The single standing asset request, derived from the codebase | Appended to, then emptied on delivery |
-| `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | The Round-4 macro stats' real-world figures and the release schedules, with seven marker kinds (`[VERIFIED]`, `[ESTIMATED]`, `[GAP]`, `[PARTIAL]`, `[PROVISIONAL]`, `[BOUNDED]`, `[DERIVE]`) and the sourcing rules that govern any re-sourcing | Reference; stable |
-| `COMPLETED.md` | Finished work + lasting decisions and lessons | Grows |
+| `POLISIM_BACKLOG.md` | ⚠ **THE single ordered register of open work** (built 2026-08-31 at C-0.1). A source document may DESCRIBE an item; it may not also QUEUE it | Shrinks as rows close |
+| `POLISIM_MASTER_ROADMAP.md` | **Live work only** — plus the trigger shelf, the standing constraints and this table | Shrinks |
+| `MISSING_PREREQUISITES.md` | Blocked work by supplier, including §V's built-but-unseen rows | Shrinks |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | The single standing asset request — **one live ask, D9** | Appended, then emptied on delivery |
+| `SEND_PACKAGE.md` | The current paste-and-glance package. ⚠ **Undated on purpose**: the dated `…_2026-08-28.md` went stale in place and its own readback glance would have failed | Regenerated, never accumulated |
+| `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | The macro seed figures and release schedules | Grows slowly |
+| `COMPLETED.md` | Finished work, lasting decisions, lessons | Grows |
 | `CLAUDE.md` | The detailed technical record. **Never superseded** | Grows |
 
-**Scoped documents (not roadmap material, kept while they are load-bearing):**
+**Scoped documents — kept while load-bearing:**
 
 | Document | Job | Retires when |
 |---|---|---|
-| `POLISIM_V2_SCREEN_SPEC.md` | The v2.0 visual conventions the code cites by section (`LedgerRow.cs`, `GameController.cs`), and the spec of the one unbuilt screen (1h) | never as a whole — a spec is a reference; its finished history moved to `COMPLETED.md` §24 |
-| `POLISIM_UI_V3_DIRECTION.md` | The v3.0 founding document (2026-08-28) — the thesis V3-R1, the three pillars (the fold V3-R2, The Desk V3-R3, the cut), what v3.0 is not, the sequence against 13 September, validation continuity V3-R4 | never as a whole — a direction is a reference; its finished phases move to `COMPLETED.md` |
-| `LAW_BROWSER_BOARD_RULINGS.md` | Design's Screen 1i rulings, the build target two `GameController.cs` comments cite | the `board1jc*` eye review closes and the comments are repointed |
-| `CLAUDE_DESIGN_BOARD_1I_NOTE.md` | An outbound courtesy note — attachment of the §S send package | the package is sent |
-| ~~`POLISIM_R4_4_PREREPORT.md`~~ | The R4-4 ruling package — **consumed to `COMPLETED.md` §19 and deleted 2026-08-27** when D1's portraits landed, per §22's ruling | — |
+| `POLISIM_V2_SCREEN_SPEC.md` | the v2.0 visual conventions the code cites by section | the code stops citing it |
+| `POLISIM_UI_V3_DIRECTION.md` | the v3.0 founding document | v3 lands in full |
+| `LAW_BROWSER_BOARD_RULINGS.md` | Design's Screen 1i rulings | the `board1jc*` eye review closes and the two `GameController.cs` comments repoint |
+| `CLAUDE_DESIGN_BOARD_1I_NOTE.md` | the outbound courtesy note | the package is sent |
+| `POLISIM_TAX_SPECLET.md` | ⚠ **NEW (C-C12)** — the tax instruments and the sourcing bill | Elias rules it and P-H2 builds |
+| `POLISIM_COHORT_SPECLET.md` | ⚠ **NEW (C-C13)** — 5-year cohorts, the collision map, "one demography, two consumers" | Elias rules it and P-I2 builds |
+
+**The elections era's documents, charted for the first time:**
+
+| Document | Job | Retires when |
+|---|---|---|
+| `ELECTIONS_ARCHITECTURE.md` | the era's charter | the era closes |
+| `ELECTIONS_CAMPAIGN_SPEC.md` | ⚠ **44 sections that every elections item cites by § number** — it was uncharted while being load-bearing | the spec is fully built or superseded |
+| `ELECTIONS_PROTOTYPE_LOG.md` | the era's detailed record, CLAUDE.md's sibling | never |
+| `ELECTIONS_GAP_TABLE.md` | the gap register, class column re-derived at C-0.2 | its 3 genuinely-unbuilt rows are built or deferred |
+| `ELECTIONS_PLAY_CALIBRATION.md` | ⚠ **Elias's instrument, not a backlog** — all 20 entries open by construction | there is a loop to feel and he has felt it |
+
+**Retired at C-G1 (2026-08-31), migrated to `COMPLETED.md` §122 first:** the elections work list (46 rows,
+all closed; W-F4/W-F5 re-homed as C-D1/C-D2 **before** deletion), the Playtest-1 work list (17 rows, each
+pointing at its section; the two unclosed are register rows), the Day-1 and Day-2 reports, the overnight
+morning report, and `SEND_PACKAGE_2026-08-28.md`. ⚠ **A report is not a second home for a finding.**
+
 
 Deleted under this rule: `VISUAL_REVIEW_BACKLOG.md` (2026-08-02), `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`
 (2026-08-26), the three scoping packages and the derivation reports (2026-08-26, `COMPLETED.md` §§21/22).

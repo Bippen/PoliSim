@@ -83,7 +83,7 @@ per-region voter-group composition and per-region priors. §8 and §27 were **me
 reality** rather than merely built: both correct the deviations they were named for, but a uniform
 loyalty constant regresses Italy, so R-EL13's wiring gate FAILED and nothing was wired. The next
 unit the measurements name is **deriving loyalty per country (or per group, as §5/§8 specify)
-rather than assuming one constant** — see `ELECTIONS_DAY2_REPORT_2026-08-29.md`.
+rather than assuming one constant** — see the Day-2 report (retired at C-G1, 2026-08-31; R-EL13's FAIL is carried in the elections log and the gap table).
 
 ## D0 reconciled — what this system replaces
 
