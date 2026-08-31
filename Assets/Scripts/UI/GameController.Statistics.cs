@@ -601,7 +601,129 @@ namespace PoliSim.UI
         {
             DrawWorldMapContent();
             GUILayout.Space(StatsUnit(10f));
+            DrawCountryPageContent();
+            GUILayout.Space(StatsUnit(10f));
             DrawTradeStatsContent();
+        }
+
+        /// <summary>
+        /// C-C8 (P-E1): **the browsable country page** — each of the other five in relation to the
+        /// player's country, one at a time, prev/next.
+        ///
+        /// <para>⚠ <b>ONLY WHAT THE MODEL HOLDS, and the absence is drawn as loudly as the presence.</b>
+        /// The pre-ruling is explicit: no relations score, no derived affinity presented as a fact. That
+        /// is not a stylistic preference here — <b>this model holds no bilateral relations state at
+        /// all.</b> `Country` has no relations field; `ForeignPolicyMeeting` is an event with options,
+        /// not a standing relationship. Any "relations: warm/cool" reading on this page would be
+        /// invented whole, and the page says so in its own words instead.</para>
+        ///
+        /// <para>What it CAN say, every line of it derived: both sides' headline readings; the pair's
+        /// trade in both directions from the map's own `TradePartner` links; the tariff each charges the
+        /// other, through the same `GetTariffRate` the simulation charges; whether they share a trade
+        /// bloc and whether they share a currency; and both compass positions as the compass itself
+        /// draws them.</para>
+        /// </summary>
+        private void DrawCountryPageContent()
+        {
+            var others = new List<Country>();
+            foreach (Country c in _world.Countries)
+            {
+                if (c.Id != PlayerCountryId) { others.Add(c); }
+            }
+
+            if (others.Count == 0) { return; }
+
+            _internationalPageIndex = ((_internationalPageIndex % others.Count) + others.Count) % others.Count;
+            Country them = others[_internationalPageIndex];
+
+            DrawStatsSectionCaption($"{_playerCountry.Name.ToUpperInvariant()} AND {them.Name.ToUpperInvariant()} — {_internationalPageIndex + 1} OF {others.Count}");
+            GUILayout.Space(StatsUnit(4f));
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("< Previous", _buttonStyle, GUILayout.Width(StatsUnit(110f)))) { _internationalPageIndex--; }
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(them.Name, _headerStyle);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Next >", _buttonStyle, GUILayout.Width(StatsUnit(110f)))) { _internationalPageIndex++; }
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(StatsUnit(6f));
+
+            // Side by side, the player first - every figure each country's own state.
+            DrawPairRow("GDP", UiFormat.Money(_playerCountry.State.GDP, MoneyUnit.Billions), UiFormat.Money(them.State.GDP, MoneyUnit.Billions));
+            DrawPairRow("Unemployment", $"{_playerCountry.State.Unemployment:F2}%", $"{them.State.Unemployment:F2}%");
+            DrawPairRow("Inflation", $"{_playerCountry.State.Inflation:F2}%", $"{them.State.Inflation:F2}%");
+            DrawPairRow("Debt-to-GDP", $"{_playerCountry.State.DebtToGdpRatio:F1}%", $"{them.State.DebtToGdpRatio:F1}%");
+            DrawPairRow("Approval", $"{_playerCountry.State.ApprovalRating:F1}", $"{them.State.ApprovalRating:F1}");
+
+            GUILayout.Space(StatsUnit(6f));
+            GUILayout.Label("Between the two", _headerStyle);
+
+            TradePartner link = _playerCountry.TradePartners.Find(p => p.PartnerId == them.Id);
+            if (link != null)
+            {
+                DrawPairRow("Trade (exports / imports)",
+                    $"{UiFormat.Money(link.ExportVolume, MoneyUnit.Billions)} out",
+                    $"{UiFormat.Money(link.ImportVolume, MoneyUnit.Billions)} in");
+                DrawPairRow("Tariff charged",
+                    $"{TradeSystem.GetTariffRate(_playerCountry, them, _world.TradeBlocs):F2}%",
+                    $"{TradeSystem.GetTariffRate(them, _playerCountry, _world.TradeBlocs):F2}%");
+            }
+            else
+            {
+                // ⚠ Absence, drawn. Not every pair trades in this model, and a zero would read as
+                // "they trade nothing" rather than "this model holds no link between them".
+                GUILayout.Label("No bilateral trade link exists between these two in this model - which is not the same as trade of zero.", _labelStyle);
+            }
+
+            bool sameBloc = false;
+            foreach (TradeBloc bloc in _world.TradeBlocs)
+            {
+                if (bloc.IsMember(PlayerCountryId) && bloc.IsMember(them.Id)) { sameBloc = true; }
+            }
+
+            GUILayout.Label(sameBloc ? "Both are members of the same trade bloc." : "They share no trade bloc.", _labelStyle);
+            GUILayout.Label(_playerCountry.CurrencyZone == them.CurrencyZone
+                ? "They share a currency, so neither sets a policy rate against the other."
+                : "They use different currencies.", _labelStyle);
+
+            GUILayout.Space(StatsUnit(6f));
+            DrawPairRow("Compass — fiscal size",
+                $"{PoliticalCompassRenderer.GetFiscalSizeAxisValue(_playerCountry):F1}",
+                $"{PoliticalCompassRenderer.GetFiscalSizeAxisValue(them):F1}");
+            DrawPairRow("Compass — regulation / welfare",
+                $"{PoliticalCompassRenderer.GetRegulationWelfareAxisValue(_playerCountry):F1}",
+                $"{PoliticalCompassRenderer.GetRegulationWelfareAxisValue(them):F1}");
+
+            GUILayout.Space(StatsUnit(6f));
+
+            // ⚠ THE ABSENCE BLOCK. Every gap here is a line in the Design ask (C-F1), and stating them
+            // is the point of the page rather than an apology for it: a player who cannot see what the
+            // model does NOT know will read the four facts above as a complete picture of a relationship.
+            GUILayout.Label("What this model does not hold about this pair", _headerStyle);
+            // ⚠ PLAYER-FACING PROSE, and the first cut was not. It named the type - "Country carries no
+            // bilateral relations field" - with the identifier in backticks, which rendered literally on
+            // screen: developer-facing text on a player surface, the exact class P-A1 cut 131 strings of.
+            // The 1280 film is what showed it. This says the same true thing in the player's own terms.
+            GUILayout.Label(
+                "No relations score, no alliance or treaty standing, no diplomatic history, and no record of "
+                + "past dealings between these two countries. This simulation does not model a relationship "
+                + "between governments at all - a summit is a passing event, not a bond that lasts - so a "
+                + "\"warm\" or \"cool\" reading here would be made up rather than measured. What you see above "
+                + "is everything the simulation knows about this pair.",
+                _labelStyle);
+        }
+
+        /// <summary>C-C8: one comparison row — the label, the player's figure, then theirs. Deliberately
+        /// plain: neither side is coloured good or bad, because "their unemployment is higher" is not a
+        /// thing this model has an opinion about.</summary>
+        private void DrawPairRow(string label, string mine, string theirs)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(label, _labelStyle, GUILayout.Width(StatsUnit(200f)));
+            GUILayout.Label(mine, _labelStyle, GUILayout.Width(StatsUnit(140f)));
+            GUILayout.Label(theirs, _labelStyle, GUILayout.Width(StatsUnit(140f)));
+            GUILayout.EndHorizontal();
         }
     }
 }

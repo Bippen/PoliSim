@@ -325,6 +325,9 @@ namespace PoliSim.UI
         // removing a tax bypasses this cache entirely (see DrawTaxLineRow) since that's an immediate
         // action, not a draft value tracked here.
         private bool _hasCachedPreview;
+        /// <summary>C-C8: which of the other five country pages the International tab is showing. Wraps.</summary>
+        private int _internationalPageIndex;
+
         private int _cachedPreviewTurn = -1;
         private readonly Dictionary<TaxType, float> _cachedTaxRateInputs = new Dictionary<TaxType, float>();
         private readonly Dictionary<WelfareProgramType, float> _cachedWelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();

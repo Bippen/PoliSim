@@ -6350,3 +6350,54 @@ and reported them as a successful 6000-wide pass.
 
 **Verified:** both controls above; the nine checks 9 of 9 clean; the control runs' captures deleted so no
 staged junk enters the capture set. No simulation code touched.
+
+## 102. C-C8 (P-E1) — the international browser: what the model holds about a pair, and the larger thing it does not (2026-08-31)
+
+**Playtest-1 finding 8:** *"The International tab is empty."* It held a world map and a trade block and
+nothing about any particular relationship.
+
+### The page, and the ruling it runs under
+
+Browsable per-country pages with prev/next over the other five, wrapping — three minimum, five delivered.
+Every line derived: both sides' headline readings side by side (GDP, unemployment, inflation, debt-to-GDP,
+approval); the pair's trade in both directions from **the map's own `TradePartner` links**; the tariff
+each charges the other through **the same `GetTariffRate` the simulation charges**; shared trade bloc and
+shared currency; and both compass positions **as the compass itself computes them**
+(`GetFiscalSizeAxisValue` / `GetRegulationWelfareAxisValue`), never a second derivation.
+
+⚠ **Neither side's figure is coloured good or bad.** "Their unemployment is higher than yours" is not a
+thing this model has an opinion about, and a green/red pair would manufacture one.
+
+### ⚠ The absence is the page's most important content
+
+The pre-ruling forbids a relations score or a derived affinity presented as a fact. That is not a
+stylistic preference here — **this model holds no bilateral relations state whatsoever.** `Country` has no
+relations field; a foreign-policy meeting is a one-off event with options, not a standing relationship.
+Any "warm / cool" reading would be **invented whole**.
+
+So the page ends with *"What this model does not hold about this pair"* and says it plainly: no relations
+score, no alliance or treaty standing, no diplomatic history, no record of past dealings — and that what
+is shown above is everything the simulation knows. **A player who cannot see what the model does not know
+will read four facts as a complete picture of a relationship.** Every one of those gaps is a C-F1 line.
+
+Where a pair has no trade link at all, the page says **"No bilateral trade link exists between these two
+in this model — which is not the same as trade of zero"**, rather than printing a 0 that would read as a
+measured quantity.
+
+### ⚠ The film caught developer-facing text on a player surface
+
+The first cut of the absence block named the type — *"`Country` carries no bilateral relations field"* —
+with the identifier in backticks, which renders **literally, on screen, to a player**. That is exactly the
+class P-A1 cut 131 strings of, and `MetaTextCheck` did not catch it because backticks are not in its
+banned-token list. **The 1280 film is what showed it.** Rewritten to say the same true thing in the
+player's own terms: *"This simulation does not model a relationship between governments at all — a summit
+is a passing event, not a bond that lasts."*
+
+⚠ **Filed as a widening candidate for `MetaTextCheck`, not done inside this item:** a backtick in a
+player-facing string is a reliable tell for a leaked identifier, and the check's enumeration could carry
+it. Register row **S-16**.
+
+**Verified:** filmed at **1280 and 2560** (the restored Discipline v2 per-item rule), 81 captured, 0
+failed, **0 text overflows, 0 containment escapes** at both; `ScreenEdgeCheck` exit 0 over 162 captures;
+the nine checks 9 of 9 clean. No simulation code touched, so no trajectory family is involved. Capture
+family `cc8b_<width>_*`.
