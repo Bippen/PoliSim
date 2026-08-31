@@ -116,7 +116,7 @@ namespace PoliSim.UI
         /// added with the same silence. Prefer passing <c>PolicyWebRenderer.GetStatUnit(stat)</c> where
         /// the call site has a StatNodeId, so the answer comes from the stat's own metadata.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null)
+        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null)
         {
             EnsureOverlayStylesInitialized(labelStyle);
             _moneyUnit = moneyUnit;
@@ -177,7 +177,52 @@ namespace PoliSim.UI
                 {
                     DrawThresholdLabelOverlay(rect, thresholdValue.Value, thresholdLabel);
                 }
+
+                DrawEnactmentMarkers(rect, enactmentPositions);
             }
+        }
+
+        /// <summary>
+        /// C-C4 (P-G4): a tick at the TOP of the plot for each law this government enacted, so
+        /// *"what did I do and when"* is visible on every series the player reads.
+        ///
+        /// <para><b>The release-tick idiom, reused rather than restated:</b> same brass ink, same
+        /// weight-derived width (`HistoryWeight + 2`), same overlay-not-texture drawing so it costs no
+        /// regeneration. ⚠ **Drawn at the TOP where the release markers sit at the bottom** — two tick
+        /// classes on one axis have to be distinguishable, and the distinction is position rather than
+        /// a new colour, which would need a costed case under the palette rules.</para>
+        ///
+        /// <para>⚠ <b>Positions arrive pre-computed, and that is deliberate.</b> Mapping a date onto
+        /// this index-based axis needs the series' own append anchor and cadence
+        /// (`MultiResolutionSeries.LastQuarterlyDate` / `QuarterlyPeriodDays`); doing it here would
+        /// mean this renderer guessing at a series it is only handed the values of. The caller owns the
+        /// mapping and this draws what it is given — anything outside [0,1] is DROPPED rather than
+        /// clamped, because a marker clamped to the edge would assert an enactment on a date the
+        /// window does not cover.</para>
+        /// </summary>
+        private void DrawEnactmentMarkers(Rect rect, IReadOnlyList<float> positions)
+        {
+            if (Event.current.type != EventType.Repaint || positions == null || positions.Count == 0)
+            {
+                return;
+            }
+
+            float markerHeight = Mathf.Max(3f, rect.height * 0.10f);
+            float markerWidth = HistoryWeight + 2f;
+            Color previous = GUI.color;
+            GUI.color = ReleaseMarkerColor;
+
+            for (int i = 0; i < positions.Count; i++)
+            {
+                float t = positions[i];
+                if (float.IsNaN(t) || t < 0f || t > 1f) { continue; }
+
+                float x = rect.x + t * rect.width;
+                GUI.DrawTexture(new Rect(x - markerWidth * 0.5f, rect.y, markerWidth, markerHeight),
+                    Texture2D.whiteTexture);
+            }
+
+            GUI.color = previous;
         }
 
         /// <summary>Selectable window for a published-series graph. "All" keeps the existing paging behaviour; the two bounded ranges filter by real elapsed calendar time rather than by entry count, since publication cadences differ per stat (monthly unemployment against quarterly GDP) and a fixed entry count would cover very different spans for each.</summary>

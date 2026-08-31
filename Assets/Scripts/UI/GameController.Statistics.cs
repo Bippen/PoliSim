@@ -102,6 +102,52 @@ namespace PoliSim.UI
             return Mathf.Max(1f, PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - scrollbar - 4f);
         }
 
+        /// <summary>
+        /// C-C4 (P-G4): each law this government ENACTED, as a 0–1 position on the quarterly axis the
+        /// six live graphs share — *"what did I do and when"*, on every series the player reads.
+        ///
+        /// <para><b>The markers derive from the enactment record and nothing else.</b> The source is
+        /// `Country.Divisions`, the same log the Parliament screen's DIVISION RECORDS panel prints, and
+        /// only entries with <c>Passed</c> — a bill that failed changed nothing, so a tick for it would
+        /// mark a date on which nothing happened.</para>
+        ///
+        /// <para>⚠ <b>The mapping is anchored on the series' OWN append date, not on today.</b>
+        /// `MultiResolutionSeries` appends a quarterly point every
+        /// <see cref="MultiResolutionSeries.QuarterlyPeriodDays"/> days, so the last point is
+        /// `LastQuarterlyDate` — which is up to 90 days in the past. Anchoring on `CurrentDate` instead
+        /// would be right on exactly one day per quarter and drift the markers along the axis for the
+        /// other ninety.</para>
+        ///
+        /// <para>⚠ <b>An enactment older than the window is DROPPED, never clamped.</b> The series keeps
+        /// a bounded number of points; a marker pinned to the left edge would assert that a law was
+        /// enacted at the start of the visible window when it was really enacted before it.</para>
+        /// </summary>
+        private List<float> BuildEnactmentPositions(MultiResolutionSeries series)
+        {
+            var positions = new List<float>();
+            if (series == null || _playerCountry?.Divisions?.Entries == null) { return positions; }
+
+            int points = series.Quarterly.Count;
+            if (points < 2 || !series.LastQuarterlyDate.HasValue) { return positions; }
+
+            System.DateTime last = series.LastQuarterlyDate.Value;
+            float span = (points - 1) * (float)MultiResolutionSeries.QuarterlyPeriodDays;
+            System.DateTime first = last.AddDays(-span);
+
+            foreach (DivisionRecord division in _playerCountry.Divisions.Entries)
+            {
+                if (!division.Passed) { continue; }
+
+                float daysFromStart = (float)(division.Date - first).TotalDays;
+                float t = daysFromStart / span;
+                if (t < 0f || t > 1f) { continue; }
+
+                positions.Add(t);
+            }
+
+            return positions;
+        }
+
         /// <summary>The graphs' label style on this sheet: the board's 12 px bold title. The renderer derives its axis, change and pager styles from the first style it is handed, once; every graph on this sheet is handed this one.</summary>
         private GUIStyle StatsGraphLabelStyle()
         {
@@ -518,21 +564,27 @@ namespace PoliSim.UI
 
             StatHistory history = _playerCountry.History;
             GUIStyle graphLabel = StatsGraphLabelStyle();
-            DrawStatsSectionCaption("THE LIVE SERIES — DASHED = NEXT-YEAR ESTIMATE WHERE ONE EXISTS");
+
+            // C-C4 (P-G4): where this government's enacted laws fall on the axis every series shares.
+            // Computed ONCE for the whole grid - the six graphs plot the same quarterly cadence, so six
+            // separate mappings would be six chances to disagree with each other.
+            List<float> enactments = BuildEnactmentPositions(history.Gdp);
+
+            DrawStatsSectionCaption("THE LIVE SERIES — DASHED = NEXT-YEAR ESTIMATE WHERE ONE EXISTS · TICKS ABOVE = LAWS ENACTED");
             GUILayout.Space(StatsUnit(6f));
             // The unit comes from the stat's own metadata rather than a MoneyUnit literal here: a
             // literal would be a second place that knows GDP is in billions, which is how the P2 unit
             // bug spread across 21 sites in the first place.
             DrawStatsGraphGrid(contentWidth, new List<System.Action>
             {
-                () => _gdpGraph.Draw("GDP", history.Gdp.Quarterly, projectedGdp, graphLabel, higherIsBetter: true, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp)),
+                () => _gdpGraph.Draw("GDP", history.Gdp.Quarterly, projectedGdp, graphLabel, higherIsBetter: true, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), enactmentPositions: enactments),
                 () => _unemploymentGraph.Draw("Unemployment", history.Unemployment.Quarterly, projectedUnemployment, graphLabel, higherIsBetter: false, moneyUnit: null,
-                    thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU"),
-                () => _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null),
-                () => _approvalGraph.Draw("Approval rating", history.ApprovalRating.Quarterly, projectedApproval, graphLabel, higherIsBetter: true, moneyUnit: null),
-                () => _povertyGraph.Draw("Poverty rate", history.PovertyRate.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null),
+                    thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU", enactmentPositions: enactments),
+                () => _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments),
+                () => _approvalGraph.Draw("Approval rating", history.ApprovalRating.Quarterly, projectedApproval, graphLabel, higherIsBetter: true, moneyUnit: null, enactmentPositions: enactments),
+                () => _povertyGraph.Draw("Poverty rate", history.PovertyRate.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments),
                 () => _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null,
-                    thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable")
+                    thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable", enactmentPositions: enactments)
             });
             StatsSectionGap();
             DrawStatsSocietyRows(contentWidth);

@@ -6021,3 +6021,63 @@ clean. No simulation code touched, so no trajectory family is involved.
 on one point, so their arrowheads stack at that node's rim. Direction is honest there and suppressing it
 would be deciding the diagram reads better without the model's own direction — a comprehension judgement
 that is Design's (register row S-13).
+
+## 97. C-C4 (P-G4) — enactment markers: "what did I do and when", on every series the player reads (2026-08-31)
+
+**Playtest-1 finding 9's cheapest half.** Enactment markers on the Statistics graphs, in the release-tick
+idiom, deriving from the enactment record.
+
+### The record already existed; the graphs could not see it
+
+`Country.Divisions` is the enactment record — the same `DivisionLog` the Parliament screen's DIVISION
+RECORDS panel prints, carrying title, date, seat-weighted alignment and verdict. Only entries with
+`Passed` draw: **a bill that failed changed nothing, so a tick for it would mark a date on which nothing
+happened.**
+
+⚠ **`GraphRenderer.DrawReleaseMarkers` is publication marking, not enactment** — it ticks when a *figure
+arrived*, not when a *law passed*. The idiom is reused (same brass ink, same weight-derived width
+`HistoryWeight + 2`, same overlay-not-texture drawing so it costs no regeneration) and the new class is
+distinguished **by position — enactments at the top, releases at the bottom** — rather than by a new
+colour, which would need a costed case under the palette rules.
+
+⚠ **`DrawPublished` turned out to have no callers at all** — P-A2's cut of the "as published" graph block
+orphaned it — so the markers went onto `Draw`, the method the six live graphs actually use.
+
+### ⚠ The mapping is the item, and it is anchored on the series rather than the clock
+
+The live graphs are **index-based**: `Draw` receives `IReadOnlyList<float>` and knows no dates. Placing a
+dated event on that axis needs the series' own append anchor, so `MultiResolutionSeries` now exposes
+**`LastQuarterlyDate`** and **`QuarterlyPeriodDays`**.
+
+**Anchoring on `CurrentDate` instead would have been wrong on 90 days out of 91.** The series appends a
+quarterly point every 91 days, so its last point is up to 90 days behind today; a mapping anchored on
+today would be correct on exactly the day a point was appended and would drift the markers along the axis
+for the rest of the quarter. The cadence is read from the class rather than hard-coded at the call site,
+so it cannot silently diverge if the class changes it.
+
+**An enactment older than the window is DROPPED, never clamped** — at both ends. A marker pinned to the
+left edge would assert that a law was enacted at the start of the visible window when it was really
+enacted before it, and `DrawEnactmentMarkers` drops anything outside `[0,1]` for the same reason rather
+than clamping it to the plot's edge.
+
+The positions are computed **once for the whole grid** and handed to all six graphs: the six plot the
+same quarterly cadence, so six separate mappings would be six chances to disagree with each other.
+
+### Verified
+
+⚠ **A film can show the ticks exist; it cannot show they are in the right place** — a marker half a
+quarter out looks exactly like a correct one. So `EnactmentMarkerDiagnostic` asserts the mapping against
+dates it computes the answer for independently, calling the controller's **own** private method by
+reflection rather than a copy of it (a reimplementation would only assert the diagnostic agrees with
+itself). From five records — one at the first point, one at the last, one at the midpoint, one FAILED at
+the midpoint, one passed *before* the window — it draws exactly **three**, at **0.0000, 0.5000, 1.0000**,
+and two calls with the same series agree exactly, which is the anchor assertion. **ALL ASSERTIONS PASS.**
+
+Filmed at 1280 / 1600 / 1920 / 2560: 79 captured, 0 failed, **0 text overflows, 0 containment escapes**
+at every width; `ScreenEdgeCheck` exit 0 over 316 captures; the nine checks 9 of 9 clean. Capture family
+`cc4_<width>_*`, and the section caption now reads *"TICKS ABOVE = LAWS ENACTED"*.
+
+⚠ **The films show the caption and NO ticks, and that is correct rather than a gap:** the capture stages a
+new Swedish game on 31 January, where no bill has yet been introduced, so the enactment record is empty.
+A tick there would be the invention. The diagnostic is what carries the evidence that populated records
+draw correctly.

@@ -37,6 +37,21 @@ namespace PoliSim.Data
         [Newtonsoft.Json.JsonProperty] private DateTime? _lastMonthlyDate;
         [Newtonsoft.Json.JsonProperty] private DateTime? _lastQuarterlyDate;
 
+        /// <summary>
+        /// C-C4 (P-G4): the date the LAST quarterly point was appended on — the anchor a caller needs to
+        /// place a dated event onto this series, the cadence being fixed at 91 days by `Append` below.
+        ///
+        /// ⚠ **Exposed rather than left to be re-derived.** A caller guessing the anchor from
+        /// `currentDate` would be right only on the exact day a point was appended and progressively
+        /// wrong for the other 90, so an enactment marker would drift along the axis as the quarter
+        /// advanced. <see cref="QuarterlyPeriodDays"/> goes with it so no caller hard-codes a cadence
+        /// this class could later change.
+        /// </summary>
+        public DateTime? LastQuarterlyDate => _lastQuarterlyDate;
+
+        /// <summary>C-C4: the quarterly cadence, so no caller hard-codes it. See <see cref="LastQuarterlyDate"/>.</summary>
+        public const int QuarterlyPeriodDays = 91;
+
         /// <summary>Offers this turn's value to all four resolutions - each one only actually accepts it (and evicts its own oldest entry past StatHistory.MaxEntries) if at least that resolution's own period has elapsed since its last accepted point.</summary>
         public void Append(DateTime date, float value)
         {
