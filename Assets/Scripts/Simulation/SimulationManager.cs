@@ -809,6 +809,34 @@ namespace PoliSim.Simulation
         private readonly HashSet<CountryId> _pendingBudgetProcessByCountry = new HashSet<CountryId>();
 
         /// <summary>
+        /// C-C2: which countries have already had their INCOMING GOVERNMENT'S budget window — the one
+        /// that opens on arrival rather than on the calendar (Playtest-1 finding 4). Presence means
+        /// "already granted", so the arrival window fires once and the annual fiscal-year cycle governs
+        /// everything after it.
+        ///
+        /// ⚠ **It is a PERMISSION and nothing else.** Every reader of `_pendingBudgetProcessByCountry`
+        /// is `GameController` or `UiScreenshotDriver` — no simulation code reads it, and the only
+        /// simulation-side writer is `IntroduceBudgetBill` removing it. That is why opening the window
+        /// earlier cannot move a trajectory, and `BudgetWindowDiagnostic` asserts it directly rather
+        /// than leaving it to a trajectory diff that would never exercise this code at all.
+        /// </summary>
+        private readonly HashSet<CountryId> _incomingBudgetWindowUsed = new HashSet<CountryId>();
+
+        /// <summary>C-C2: true while the currently-open process IS the arrival window rather than the
+        /// annual cycle - so a screen can name which one it is. Not persisted: it is derivable from the
+        /// two sets that are, and a save mid-arrival-window restores the process as open either way.</summary>
+        private readonly HashSet<CountryId> _incomingBudgetWindowOpenNow = new HashSet<CountryId>();
+
+        /// <summary>C-C2: true when the open budget process is the INCOMING GOVERNMENT'S arrival window
+        /// (Playtest-1 finding 4) rather than the country's annual fiscal-year cycle. False when no
+        /// process is open. A screen that says "only on your fiscal-year date" is wrong during this one.</summary>
+        public bool IsIncomingGovernmentBudgetWindow(CountryId countryId)
+        {
+            return _pendingBudgetProcessByCountry.Contains(countryId)
+                   && _incomingBudgetWindowOpenNow.Contains(countryId);
+        }
+
+        /// <summary>
         /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): at most one
         /// pending omnibus BudgetBill per country, mirroring _pendingForeignPolicyMeetingByCountry's
         /// own single-slot pattern - Phase 2 of the annual cycle (see _pendingBudgetProcessByCountry's
@@ -995,6 +1023,7 @@ namespace PoliSim.Simulation
             bill.DaysRemaining = ParliamentSystem.BillDurationDays;
             _pendingBudgetBillByCountry[countryId] = bill;
             _pendingBudgetProcessByCountry.Remove(countryId);
+            _incomingBudgetWindowOpenNow.Remove(countryId);   // C-C2: the arrival window is spent the moment a bill is introduced.
             return true;
         }
 
@@ -1839,6 +1868,30 @@ namespace PoliSim.Simulation
                 return;
             }
 
+            // C-C2 (Playtest-1 finding 4): the INCOMING GOVERNMENT'S window. A government that has
+            // just taken office lays a budget on arrival rather than waiting for the calendar - which
+            // is real practice rather than a convenience: an incoming Swedish government presents an
+            // amending budget (ändringsbudget) instead of governing a year on its predecessor's.
+            //
+            // ⚠ IT ALSO FIXES AN OFF-BY-ONE THAT COST FIVE COUNTRIES A WHOLE YEAR, measured before
+            // this line was written (BudgetWindowDiagnostic): the epoch is 1 January and five of six
+            // countries budget on the calendar year, but the day tick runs AFTER AdvanceDay has moved
+            // the date to the 2nd - so 1 January 2026 was never seen by this check and the window did
+            // not open until 1 JANUARY 2027, 365 ticks in. The USA, whose year starts 1 October,
+            // waited 273. The finding called this "waiting for the calendar's next cycle"; it was
+            // worse than that, and the measurement is in the record.
+            //
+            // ⚠ ONE WINDOW ONLY, and the flag is what makes it once: a government gets its arrival
+            // budget, not a permanently open process. It rides the save (see CaptureSaveState), or a
+            // load would hand a mid-term government a fresh arrival window every time.
+            if (!_incomingBudgetWindowUsed.Contains(countryId))
+            {
+                _incomingBudgetWindowUsed.Add(countryId);
+                _incomingBudgetWindowOpenNow.Add(countryId);
+                _pendingBudgetProcessByCountry.Add(countryId);
+                return;
+            }
+
             if (IsFiscalYearStart(countryId, date))
             {
                 _pendingBudgetProcessByCountry.Add(countryId);
@@ -1866,6 +1919,7 @@ namespace PoliSim.Simulation
             {
                 FiscalPeriods = new Dictionary<CountryId, FiscalPeriod>(_fiscalPeriods),
                 PendingBudgetProcess = new List<CountryId>(_pendingBudgetProcessByCountry),
+                IncomingBudgetWindowUsed = new List<CountryId>(_incomingBudgetWindowUsed),
                 PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
                 PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>(_pendingLaborBillByCountry),
                 PendingCrimeJusticeBills = new Dictionary<CountryId, CrimeJusticePolicyBill>(_pendingCrimeJusticeBillByCountry),
@@ -1938,6 +1992,8 @@ namespace PoliSim.Simulation
 
             _fiscalPeriods.Clear();
             _pendingBudgetProcessByCountry.Clear();
+            _incomingBudgetWindowUsed.Clear();
+            _incomingBudgetWindowOpenNow.Clear();
             _pendingBudgetBillByCountry.Clear();
             _pendingTaxProgramBillsByCountry.Clear();
             _pendingWelfareProgramBillsByCountry.Clear();
@@ -1963,6 +2019,17 @@ namespace PoliSim.Simulation
                 foreach (CountryId id in state.PendingBudgetProcess)
                 {
                     _pendingBudgetProcessByCountry.Add(id);
+                }
+            }
+
+            // C-C2: ⚠ null on every save written before this field existed, and an empty set grants a
+            // mid-term government one arrival window. That is RIGHT for a pre-C-C2 save - it never had
+            // the window, so it is owed one - and is why this is additive rather than a version bump.
+            if (state.IncomingBudgetWindowUsed != null)
+            {
+                foreach (CountryId id in state.IncomingBudgetWindowUsed)
+                {
+                    _incomingBudgetWindowUsed.Add(id);
                 }
             }
 

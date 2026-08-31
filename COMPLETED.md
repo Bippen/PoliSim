@@ -5873,3 +5873,82 @@ frame to capture without a graphics device, and `WaitForEndOfFrame` never resume
 it hung. The second run omitted `-shotwidth` for 1280 and silently filmed at the 1600 default, so the
 tightest width — the one this project's own record says is where an over-long caption appears — was never
 filmed until the third run. Both were caught by reading the run's output rather than by the run failing.
+
+## 95. C-C2 (P-B2) — the incoming government's budget window, and the off-by-one that cost five countries a year (2026-08-31)
+
+**Playtest-1 finding 4:** *"Entering office should open the budget process immediately for the first
+fiscal year — the player lays a budget on arrival instead of waiting for the calendar's next cycle."*
+
+**Classification: SAFE, and established rather than assumed.** The window's existence does not move the
+no-policy trajectory by one byte — see the verification section, which explains why the usual evidence
+would have been worthless here.
+
+### ⚠ The premise was measured first, and it was worse than the finding said
+
+`BudgetWindowDiagnostic` was written before the fix, to put a number on the wait the item exists to
+remove. Day ticks from the epoch, driven exactly as `GameController.Update` drives them:
+
+| country | fiscal year starts | window opened after | on |
+|---|---|---:|---|
+| USA | 10-01 | **273 ticks** | 2026-10-01 |
+| Sweden, Germany, France, Italy, Poland | 01-01 | **365 ticks** | **2027-01-01** |
+
+⚠ **Five of six countries were missing their own fiscal-year start by one day and waiting a full extra
+year.** The epoch is 1 January 2026 and those five budget on the calendar year — but the day tick runs
+*after* `AdvanceDay` has moved the date to the 2nd, so **1 January 2026 was never seen by the check at
+all.** The finding called this "waiting for the calendar's next cycle"; it was a year worse than that,
+and it was invisible because nobody had counted the days.
+
+**After the change, every country's window opens after 1 day tick, on 2026-01-02** — and the Sweden film
+shows it open and introducible on **31 January**, which is the done-when's "month one".
+
+### What shipped
+
+`TryOpenBudgetProcess` gains an arrival branch ahead of the calendar one, governed by
+`_incomingBudgetWindowUsed`: a government gets its arrival budget **once**, and the annual fiscal-year
+cycle governs everything after. Real practice rather than a convenience — an incoming Swedish government
+presents an amending budget (*ändringsbudget*) instead of governing a year on its predecessor's.
+
+The set **rides the save**, or a load would hand a mid-term government a fresh arrival window every time.
+⚠ **Additive, and no `SaveVersion` bump**: an older save restores the list empty, which grants that
+government one arrival window — the *correct* behaviour for a pre-C-C2 save, which never had the window
+and is therefore owed one.
+
+⚠ **Two screens were asserting a rule that the change made false**, and both are corrected: the Budget
+tab's *"One can only be introduced on your country's own fiscal-year date"* and the pause banner's
+*"the annual budget bill"*. Both now name **which** window is open (`IsIncomingGovernmentBudgetWindow`).
+A status line stating the wrong rule is worse than one stating no rule.
+
+### ⚠ Why the byte-identity assertion could not be a trajectory diff
+
+**`TryOpenBudgetProcess` is reached only through `AdvanceCountryDayTick`, whose only callers are
+`GameController.Update` and `UiScreenshotDriver` — never `SimulationManager.AdvanceDay`.**
+`TrajectoryBaselineDump` drives `AdvanceDay`/`AdvanceTurn` with no controller, so **it never calls the
+method this item changes.** A byte-identical trajectory diff here would have passed whether or not the
+design were right: it is the "0 anomalies" fallacy this repo's own front page warns about, and the exact
+shape W-G2 recorded against itself.
+
+So the identity is asserted **where the change lives**: two worlds, three turns of day ticks over all six
+countries, one with the window forced open on every tick and one never opened, **neither introducing a
+bill**, compared on every public `float` field of every country's `EconomyState`. **IDENTICAL.** The
+window is a permission; opening it earlier changes nothing the simulation computes. That is what makes
+P-B2 a player affordance rather than a simulation change, and it is a measurement rather than a
+reading of the code.
+
+The trajectory family was captured anyway and is **6 of 6 byte-identical** to `traj_run_*` — reported as
+**containment only**, with the reason it is weak here stated in the diagnostic's own header so the next
+reader cannot mistake it for the load-bearing evidence.
+
+### Verified
+
+`BudgetWindowDiagnostic` **ALL ASSERTIONS PASS** — three sections: the wait per country (1 tick, six of
+six); the state identity above; and **the arrival window is a one-off** — after it is spent by introducing
+a bill, the next opening is each country's own fiscal-year start (USA tick 273 on 2026-10-01, the other
+five tick 365 on 2027-01-01), asserted against `FiscalYearData`, not eyeballed. ⚠ The one-off test closes
+the window **the way the game does** — `IntroduceBudgetBill` is what resolves the process — rather than
+through a test-only hook, which the first draft of the diagnostic had reached for.
+
+Trajectories 6 of 6 byte-identical; `SaveLoadRoundTripDiagnostic` **RT: PASS — 12 scenarios**; the nine
+checks **9 of 9 clean**; `BudgetDraftEstimateDiagnostic` still ALL PASS; films at 1280 / 1600 / 1920 /
+2560 with 77 captured, 0 failed, **0 text overflows, 0 containment escapes** at every width;
+`ScreenEdgeCheck` exit 0 over 308 captures. Capture family `cc2_<width>_*`.

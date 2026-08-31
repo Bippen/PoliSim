@@ -4836,7 +4836,9 @@ namespace PoliSim.UI
 
             if (includeBudgetProcess && _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
-                blocking.Add("the annual budget bill (Budget tab)");
+                blocking.Add(_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)
+                    ? "your incoming government's first budget (Budget tab)"
+                    : "the annual budget bill (Budget tab)");
             }
 
             return blocking.Count == 0
@@ -9147,9 +9149,19 @@ namespace PoliSim.UI
                 return $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).";
             }
 
+            // C-C2: ⚠ "only on your country's own fiscal-year date" was TRUE until the incoming
+            // government's arrival window existed, and is FALSE during it - the first budget of a term
+            // is laid on arrival. Both branches now name WHICH window is open, because a status line
+            // stating the wrong rule is worse than one stating no rule at all.
+            if (_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId))
+            {
+                return "Your incoming government's first budget is open - introduce your current draft as a bill below. "
+                       + "After this one, the annual process opens on your country's own fiscal-year date.";
+            }
+
             return _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
                 ? "The annual budget process is open - introduce your current draft as a bill below to continue."
-                : "No budget bill currently before Parliament. One can only be introduced on your country's own fiscal-year date.";
+                : "No budget bill currently before Parliament. The annual process opens on your country's own fiscal-year date.";
         }
 
         /// <summary>

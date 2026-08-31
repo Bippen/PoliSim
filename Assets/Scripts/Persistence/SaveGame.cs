@@ -71,6 +71,12 @@ namespace PoliSim.Persistence
     {
         public Dictionary<CountryId, SimulationManager.FiscalPeriod> FiscalPeriods = new Dictionary<CountryId, SimulationManager.FiscalPeriod>();
         public List<CountryId> PendingBudgetProcess = new List<CountryId>();
+
+        /// <summary>C-C2: which countries have already spent their incoming-government budget window.
+        /// ⚠ ADDITIVE - an older save restores it EMPTY, which grants a mid-term government one arrival
+        /// window it did not have. That is the correct behaviour for a pre-C-C2 save (it never had the
+        /// window at all, so it is owed one) and is why this needs no SaveVersion bump.</summary>
+        public List<CountryId> IncomingBudgetWindowUsed = new List<CountryId>();
         public Dictionary<CountryId, BudgetBill> PendingBudgetBills = new Dictionary<CountryId, BudgetBill>();
         public Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>> PendingTaxProgramBills = new Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>>();
         public Dictionary<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>> PendingWelfareProgramBills = new Dictionary<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>>();
