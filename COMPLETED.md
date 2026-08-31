@@ -8582,3 +8582,63 @@ the item is one edit away whichever way it goes.**
 
 ⚠ **Nothing was kept as dead code.** `CountryTaxBaseShares` was deleted rather than left wired to nothing
 — the table above is its complete content, and the derivation is one division per cell.
+
+## 134. D-1 (c) EXECUTED — the office plan scaled to what a party can KEEP, and two wrong reserves caught by measuring (2026-08-31)
+
+**Ruled (c): scale a party's office plan to what it can afford.** The defect is exact and was in
+`OfficeNetwork.Open` all along: **it only ever checked the OPENING cost.** A party bought every office it
+could pay 100 000 kr to open on day 0 and then **starved** them — no recruiting, no operation, influence
+bleeding at 0.10/day — for money already spent. ⚠ **An office a party cannot keep is worse than one it
+never opened.**
+
+### ⚠ TWO WRONG RESERVES, BOTH CAUGHT BY MEASURING RATHER THAN BY READING
+
+**First try — `CampaignAi.OfficeUpkeepDaysReserved` (10 days), reused from the reactive path.** It
+looked right: day 0 and day 12 would finally share one affordability rule. Measured at the mandate split:
+**it dropped ZERO of 27 planned offices.** Ten days of upkeep is small beside a 100 000 kr opening cost.
+Ten days is the correct horizon for a **tactical** office opened to answer an attack; it is the wrong
+horizon for a **plan**, which is a commitment to election day. Replaced by `Calendar.TotalCampaignDays`
+(**56**) — derived from the calendar the party is planning for, not typed in.
+
+**Second try — 56 days, one office at a time.** Still **ZERO of 27**. The reserve was being checked for a
+*single* office each pass, so six individual checks all passed while the network as a whole was
+unaffordable. ⚠ **Reserving one office's upkeep six times over is the same arithmetic error as reserving
+none** — and it is precisely the shape of the starvation being fixed. The reserve is now for the
+**network the party would then hold**.
+
+⚠ **A ruling verified only where it cannot bite is not verified.** The AI harness reported "no change"
+for all three attempts, because its parties run on equal chests large enough that no reserve binds. Two
+wrong implementations passed that harness cleanly.
+
+### What it does, measured where it bites
+
+| party | seats | mandate chest | planned | affordable | dropped |
+|---|---|---|---|---|---|
+| S | 107 | 5 886 533 | 3 | 3 | 0 |
+| SD | 73 | 4 016 046 | 4 | 4 | 0 |
+| M | 68 | 3 740 974 | 2 | 2 | 0 |
+| **V** | 24 | 1 320 344 | 6 | 4 | **2** |
+| C | 24 | 1 320 344 | 1 | 1 | 0 |
+| KD | 19 | 1 045 272 | 2 | 2 | 0 |
+| **MP** | 18 | 990 258 | 6 | 3 | **3** |
+| **L** | 16 | 880 229 | 3 | 2 | **1** |
+
+**27 planned, 21 affordable, 6 dropped.** ⚠ **It lands exactly on the parties C-D2 named** — V and MP,
+the two spending 1.91 M kr on offices against 0.10 M on payroll, plus L. The five whose plans match their
+seats are untouched. That is the 8.4× tension being absorbed at its source rather than by raising the
+pool.
+
+⚠ **NO NEW FIGURE ENTERS THE MODEL.** The campaign's length was already in the calendar. This is why (c)
+was recommended over (a), the only option that authors a number.
+
+### ⚠ What it does NOT do, stated plainly
+
+**2a-iv is unmoved at est/grass 0.269**, re-measured as the sheet required. The AI harness splits its pool
+**equally**, which is today's game (option (b)'s state), and no reserve binds on an equal split. **So the
+ruling changes nothing in play today**: it is a correctness fix that arms the mandate split for whenever
+one lands, and 2a-iv's dependency on the pool question stands unresolved by it. Reported as
+`PartyLedger.OfficesUnaffordable` rather than dropped silently — a plan quietly shrinking is the kind of
+change that looks like a bug in a later measurement.
+
+**Bar:** fourteen checks green, six simulation checks green, and the campaign/election set — actions,
+clock, offices, staff, reactivity, strategy, AI, election day, election night, reach — all exit 0.

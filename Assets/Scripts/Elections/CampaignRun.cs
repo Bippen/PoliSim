@@ -156,6 +156,11 @@ namespace PoliSim.Elections
             public int ScandalsSurvived;
             /// <summary>W-B4: the party's offices - how many opened, what they cost over the campaign (opening, maintenance, operations), the doors their own operations knocked, their volunteers at the end.</summary>
             public int OfficesOpened;
+
+            /// <summary>D-1 (c): offices the party PLANNED and could not afford to keep, so did not open.
+            /// Reported rather than silently dropped - a plan quietly shrinking is the kind of change that
+            /// looks like a bug in a later measurement, and this is the number that explains it.</summary>
+            public int OfficesUnaffordable;
             public double OfficeMoney;
             public double OfficeContacts;
             public int OfficeVolunteersAtEnd;
@@ -301,8 +306,39 @@ namespace PoliSim.Elections
                 offices[p] = new OfficeNetwork(setup.Regions.Length);
                 officeHoursLeft[p] = new double[setup.Regions.Length];
                 double chest = pools[p].Money;
+                // D-1 (c), RULED 2026-08-31: **the office plan is scaled to what the party can afford
+                // to KEEP, not merely to open.** W-F5 measured a mandate-proportional pool bankrupting
+                // five of eight parties, and C-D2 found the driver: V and MP plan 1.91 M kr of offices
+                // against 0.10 M of payroll, a personality choice uncorrelated with seats. `Open` only
+                // ever checked the OPENING cost, so a party bought every office it could afford on day 0
+                // and then STARVED them - no recruiting, no operation, influence bleeding away, for money
+                // already spent. An office it cannot keep is worse than an office it never opened.
+                //
+                // The reserve is the CAMPAIGN'S OWN LENGTH, `setup.Calendar.TotalCampaignDays` - derived
+                // from the calendar the party is planning for, not a figure typed in. ⚠ It was first
+                // written as `CampaignAi.OfficeUpkeepDaysReserved` (10 days), reusing the reactive path's
+                // constant, and MEASURED: at the mandate split it dropped ZERO of 27 planned offices,
+                // because ten days of upkeep is small beside the 100,000 kr opening cost. **A ruling
+                // verified only where it cannot bite is not verified.** Ten days is the right horizon for
+                // a TACTICAL office opened mid-campaign to answer an attack; it is the wrong horizon for
+                // a PLAN, which is a commitment to election day. ⚠ **D-1 (c) invents no money, and this
+                // keeps that promise** - the campaign's length is already in the model.
+                // ⚠ The reserve is for the NETWORK, not for one office. A party planning six offices must
+                // keep six of them standing, and reserving one office's upkeep six times over is the same
+                // arithmetic error as reserving none - measured, again: at one-office-at-a-time it dropped
+                // ZERO of 27 even at 56 days, because each individual check passed while the network as a
+                // whole was unaffordable. That is precisely the shape of the starvation being fixed.
+                double perOfficeUpkeep = setup.Calendar.TotalCampaignDays
+                    * (CampaignOffices.MaintenancePerDay + setup.Parties[p].OfficeOperationsPerDay);
                 foreach (int region in setup.Parties[p].Offices)
                 {
+                    int wouldHold = offices[p].Count + 1;
+                    if (chest - CampaignOffices.OpenCost < wouldHold * perOfficeUpkeep)
+                    {
+                        ledgers[p].OfficesUnaffordable++;
+                        continue;
+                    }
+
                     if (offices[p].Open(region, 0, setup.Parties[p].OfficeOperationsPerDay, ref chest)) { ledgers[p].OfficesOpened++; }
                 }
 

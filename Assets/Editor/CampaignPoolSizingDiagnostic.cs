@@ -170,6 +170,53 @@ namespace PoliSim.EditorTools
             sb.Append("    the campaign's bill is driven by the party's OFFICE NETWORK, which is a personality choice. The two are\n");
             sb.Append("    uncorrelated, so ANY mandate-proportional split is set by whichever small party builds the most.\n");
 
+
+            // ⚠ D-1 (c) — WHAT THE RULING ACTUALLY DOES, measured at the pool the game really has, on the
+            // mandate split that produced the finding. The AI harness's parties run on EQUAL chests large
+            // enough that the reserve never binds, so it reported no change at all; a ruling verified only
+            // where it cannot bite is not verified. This is where it bites.
+            sb.Append("\n    ⚠ D-1 (c) RULED: THE OFFICE PLAN IS SCALED TO WHAT A PARTY CAN AFFORD TO KEEP\n");
+            sb.Append("    An office costs 100,000 kr to open and 2,000 kr/day to maintain plus its operation. `Open` only ever\n");
+            sb.Append(F("    checked the OPENING cost, so a party bought every office it could and then STARVED them. The reserve\n"));
+            sb.Append(F("    is the CAMPAIGN'S OWN LENGTH ({0} days), derived from the calendar rather than typed. It was FIRST\n",
+                setup.Calendar.TotalCampaignDays));
+            sb.Append("    written as CampaignAi.OfficeUpkeepDaysReserved (10 days) and measured: it dropped ZERO of 27 offices,\n");
+            sb.Append("    because ten days of upkeep is small beside a 100,000 kr opening cost. Ten days is the right horizon\n");
+            sb.Append("    for a TACTICAL office answering an attack; a PLAN is a commitment to election day.\n\n");
+            sb.Append("    party   seats   mandate chest kr   offices planned   affordable   dropped\n");
+            sb.Append("    ------------------------------------------------------------------------\n");
+
+            int totalPlanned = 0, totalAffordable = 0;
+            for (int p = 0; p < setup.Parties.Length; p++)
+            {
+                double share = seats[p] / (double)totalSeats;
+                double chest = today * share;
+                double reserve = setup.Calendar.TotalCampaignDays
+                    * (CampaignOffices.MaintenancePerDay + setup.Parties[p].OfficeOperationsPerDay);
+
+                int planned = setup.Parties[p].Offices.Length;
+                int affordable = 0;
+                double left = chest;
+                for (int o = 0; o < planned; o++)
+                {
+                    // The reserve is for the NETWORK the party would then hold, not for one office.
+                    if (left - CampaignOffices.OpenCost < (affordable + 1) * reserve) { break; }
+                    left -= CampaignOffices.OpenCost;
+                    affordable++;
+                }
+
+                totalPlanned += planned;
+                totalAffordable += affordable;
+                sb.Append(F("    {0,-6} {1,5} {2,17:N0} {3,17} {4,12} {5,9}\n",
+                    setup.Parties[p].Name, seats[p], chest, planned, affordable, planned - affordable));
+            }
+
+            sb.Append(F("\n    {0} offices planned across the eight, {1} affordable, {2} DROPPED rather than opened and starved.\n",
+                totalPlanned, totalAffordable, totalPlanned - totalAffordable));
+            sb.Append("    ⚠ An office a party cannot keep is WORSE than one it never opened: the opening cost is spent, and the\n");
+            sb.Append("    office then recruits nothing, runs no operation, and bleeds influence every unpaid day. Dropping it\n");
+            sb.Append("    returns that money to the campaign. ⚠ NO NEW FIGURE ENTERS THE MODEL - which is why (c) was the\n");
+            sb.Append("    recommendation over (a), the only option that authors one.\n");
             sb.Append(F("\n    AGAINST TODAY'S POOL of {0:N0} kr (8 x 2 400 000, equal, [AUTHORED-DRAFT]):\n", today));
             sb.Append(F("        the MEASURED pay-the-organisation floor is x{0:F2}\n", measured / today));
             sb.Append(F("        the ANALYTIC floor (bill / share) is       x{0:F2}, i.e. the arithmetic UNDERSTATES the need by x{1:F2}\n",
