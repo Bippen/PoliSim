@@ -17,15 +17,19 @@ namespace PoliSim.Simulation
         // --- National accounts identity: GDP = Consumption + Investment + Government + NetExports ---
 
         /// <summary>Baseline consumption as a share of the prior turn's GDP (the marginal propensity to consume).</summary>
+        /// <remarks>[AUTHORED-DRAFT], in the real range and UNIFORM ACROSS SIX COUNTRIES - household consumption really is around 50-70% of GDP in these economies, but their actual shares differ and this single value does not distinguish them. Not to be confused with MarginalPropensityToConsume, which is sourced and does a different job.</remarks>
         private const float BaseConsumptionRate = 0.60f;
 
         /// <summary>Baseline investment as a share of the prior turn's GDP.</summary>
+        /// <remarks>[AUTHORED-DRAFT], in the real range and UNIFORM ACROSS SIX COUNTRIES - gross fixed capital formation really does sit near a fifth of GDP in these economies, but their actual shares differ and this single value does not distinguish them.</remarks>
         private const float BaseInvestmentRate = 0.20f;
 
         /// <summary>Fraction of consumption removed per percentage point of interest rate.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - higher rates reduce consumption; the size of the fraction is a game figure.</remarks>
         private const float ConsumptionInterestSensitivity = 0.5f;
 
         /// <summary>Fraction of investment removed per percentage point of interest rate - investment is more rate-sensitive than consumption.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - investment being more rate-sensitive than consumption is standard; three times as sensitive is a game figure.</remarks>
         private const float InvestmentInterestSensitivity = 1.5f;
 
         /// <summary>
@@ -36,6 +40,7 @@ namespace PoliSim.Simulation
         /// already treat the gap between actual and potential/natural values as the thing that
         /// drives change, not something that free-accumulates.
         /// </summary>
+        /// <remarks>CONVENTION - a reversion speed, as the summary above already argues at length.</remarks>
         private const float OutputGapReversionSpeed = 0.5f;
 
         /// <summary>Smallest GDP a country can fall to - keeps a shrinking economy able to recover instead of locking at exactly 0 (0 * anything is still 0). Public so EventSystem's GDP shocks share the same floor.</summary>
@@ -205,15 +210,18 @@ namespace PoliSim.Simulation
         // --- Okun's Law: unemployment moves with the growth gap ---
 
         /// <summary>How many points unemployment moves per percentage point that actual growth falls short of potential growth.</summary>
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED BRACKET - and the bracket was checked, not assumed. C-N5 measured this model's IMPLIED landing-year Okun at -0.498, inside Ball, Leigh and Loungani's -0.23 to -0.54 (IMF WP 13/10, 2013), so the constant sits in the published band even though no study fixes it at 0.5.</remarks>
         private const float OkunCoefficient = 0.5f;
 
         /// <summary>Fraction of the gap versus NAIRU that closes each turn on its own, absent a growth shock - unemployment drifts home to its structural rate rather than accumulating a growth-gap delta forever.</summary>
+        /// <remarks>CONVENTION - a reversion speed toward NAIRU, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float UnemploymentReversionSpeed = 0.7f;
 
         /// <summary>Gameplay ceiling for unemployment - a bug elsewhere in the feedback chain should never be able to push this past a sane bound.</summary>
         private const float MaxUnemploymentPercent = 30f;
 
         /// <summary>UBI's small, debated labor-supply effect: SLOWS unemployment's reversion toward NAIRU at full generosity - kept subtle deliberately, since the real-world effect is itself debated, not settled.</summary>
+        /// <remarks>[AUTHORED-DRAFT] - the doc calls the real-world effect small and debated, and the number takes that shape without any study fixing it.</remarks>
         private const float UbiUnemploymentReversionPenalty = 0.05f;
 
         /// <summary>ChildcareSubsidies' labor-force-participation effect (particularly documented for parents): SPEEDS unemployment's reversion toward NAIRU at full generosity.</summary>

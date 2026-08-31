@@ -121,8 +121,11 @@ namespace PoliSim.Simulation
         /// +-15 to 22..."), now also as the actual constants GameController.LawMagnitudeTier reads -
         /// previously that method hardcoded 6f/14f/22f independently, a second, silent copy of the
         /// same three numbers this doc comment already commits to.</summary>
+        /// <remarks>CONVENTION - a taxonomy boundary, not a measurement. The tiers exist so a law's size can be named on screen; the cut points are this project's own and are stated twice on purpose (see the summary above).</remarks>
         public const float MinorMagnitudeMax = 6f;
+        /// <remarks>CONVENTION - a taxonomy boundary, not a measurement. The tiers exist so a law's size can be named on screen; the cut points are this project's own and are stated twice on purpose (see the summary above).</remarks>
         public const float ModerateMagnitudeMax = 14f;
+        /// <remarks>CONVENTION - a taxonomy boundary, not a measurement. The tiers exist so a law's size can be named on screen; the cut points are this project's own and are stated twice on purpose (see the summary above).</remarks>
         public const float MajorMagnitudeMax = 22f;
 
         /// <summary>Per-dial normalization scales for the magnitude grid (pass 3 ruling,
