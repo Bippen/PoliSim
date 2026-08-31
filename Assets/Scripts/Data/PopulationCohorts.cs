@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using UnityEngine;
 
 namespace PoliSim.Data
 {
@@ -142,13 +143,27 @@ namespace PoliSim.Data
         /// the same year as everything else. **A hard-coded 0.5 would be an invented figure**, and it
         /// would be wrong in the direction that matters: the share is not 0.5 in any of the six.</para>
         ///
-        /// <para>⚠ <b>What this step does NOT do, deliberately.</b> It does not touch `EconomyState`, and
-        /// nothing in the turn loop calls it yet. Wiring it is the retirement stage's job, where the
-        /// eight demographic scalars stop being stepped by their own rules — running both would advance
-        /// population twice by different arithmetic, which is the spec-let's collision §4.1 and the one
-        /// that would look like a plausible number while being wrong.</para>
+        /// <para>⚠ <b>THE TWO PLAYER LEVERS REACH THE MODEL THROUGH THIS METHOD AND NOWHERE ELSE.</b>
+        /// The cohort spec-let's §4.4 predicted that a substrate landing without them re-pointed would
+        /// leave both demographic levers as no-ops — *"three dead levers would be a pattern, not an
+        /// accident"*, after S-18's interest rate and C-C11's tax dials. `fertilityMultiplier` scales the
+        /// general fertility rate (the family lever); `netMigrationMillions` adds or removes people
+        /// across the bands by the country's own sourced immigration age profile (the immigration lever).
+        /// **Both default to no-ops**, so a caller that forgets them gets the unforced trajectory rather
+        /// than a silent zero.</para>
+        ///
+        /// <para>⚠ <b>The migration term is ADDITIVE and cannot be anything else.</b> D-6 made `Survival`
+        /// deaths and net migration together, so there is nothing inside it to scale. That is the decision's
+        /// stated cost, paid here.</para>
         /// </summary>
-        public void StepOneYear(CohortStepRates rates)
+        /// <param name="rates">The country's own derived step rates.</param>
+        /// <param name="fertilityMultiplier">1 = the observed rate. The family policy lever.</param>
+        /// <param name="netMigrationMillions">Millions added (or removed, if negative) across the bands
+        /// by <paramref name="immigrationProfile"/>. The immigration policy lever.</param>
+        /// <param name="immigrationProfile">Band shares summing to 1. Required only when
+        /// <paramref name="netMigrationMillions"/> is non-zero.</param>
+        public void StepOneYear(CohortStepRates rates, float fertilityMultiplier = 1f,
+            float netMigrationMillions = 0f, float[] immigrationProfile = null)
         {
             if (rates == null) { return; }
 
@@ -156,7 +171,7 @@ namespace PoliSim.Data
             // this year is born to the women who were here at its start, not to the survivors of the
             // step. Computed now, added last.
             float childbearing = InAgeRange(15, 49) * rates.FemaleShareOfChildbearingAge;
-            float births = childbearing * rates.GeneralFertilityRate;
+            float births = childbearing * rates.GeneralFertilityRate * fertilityMultiplier;
 
             var next = new float[CohortCount];
             for (int k = 0; k < CohortCount; k++)
@@ -176,6 +191,18 @@ namespace PoliSim.Data
             }
 
             next[0] += births;
+
+            if (netMigrationMillions != 0f && immigrationProfile != null)
+            {
+                for (int k = 0; k < CohortCount; k++)
+                {
+                    // A band can be emptied by an outflow but never driven negative: a negative cohort is
+                    // not a small population, it is a broken model, and the lever must not be able to
+                    // produce one at any setting.
+                    next[k] = Mathf.Max(0f, next[k] + netMigrationMillions * immigrationProfile[k]);
+                }
+            }
+
             Counts = next;
         }
 

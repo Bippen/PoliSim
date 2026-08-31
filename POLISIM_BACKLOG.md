@@ -213,6 +213,41 @@ have no such test available for the USA.
 > **To strike it, write:** `D-6 STRUCK: (b)` *(or c / d)* — the survival arrays are re-derivable from
 > data already fetched, so a strike costs one item and no re-fetch.
 
+---
+
+### D-7 · The immigration lever's age profile ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**The question.** D-6 made the survival ratio deaths and net migration *together*, so the immigration
+lever has nothing inside the step to scale and must add people **on top** of it — across which age bands?
+
+⚠ **Measured before deciding.** `migr_imm8` under `agedef=COMPLET` gives single-year detail for Sweden,
+Germany, Italy and Poland and **a total with no detail for France** — so the obvious fetch would have left
+four countries sourced and two on a stand-in. Under **`agedef=REACH`** all five reconcile to their own
+published totals exactly. For the USA there is no equivalent series at all: the Census PEP `alldata`
+files are stock only, and the API needs a key.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Sourced for the EU five; the USA on DHS LPR new arrivals as a named proxy** | one fetch and one XLSX parse; done | ⚠ the US figure is a **subset** of immigration — it excludes temporary and unauthorized entry — so it is a proxy for the SHAPE and says nothing about the level |
+| **b. Sourced for the EU five; the USA uniform across 15–64, marked interim** | less | ⚠ *"migrants are young"* is the spec-let's own warning, and a uniform split **quietly ages the population wrongly** — the USA would drift differently from the other five for a reason no player could see |
+| **c. Sourced for the EU five; the USA borrows the EU five's mean profile** | none | ⚠ it reads as sourced and is not: it is another continent's migration attributed to the USA |
+| **d. Bill it; the immigration lever stays dead** | nothing | ⚠ **a third dead lever**, after S-18's interest rate and C-C11's tax dials — and this one the spec-let predicted in writing |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (a).** Basis: the profile is used **as a shape only**,
+and a real US age distribution of real arrivals is a better shape than a flat line (b) or another
+continent's (c) — **and unlike both, its limitation is checkable by anyone who opens the source.** DHS
+Table 8 New Arrivals FY2024 gives 581 290 arrivals by age band; the two allocations needed above 65
+(where DHS publishes wider bands) govern **9.7 %** of the profile and are made in proportion to the USA's
+own population.
+
+⚠ **Both levers were then PROVEN live before being wired** — C-N3's method applied before the fact rather
+than after. A +0.1 M migration setting delivers 0.1 M in all six (23–47 % of it into ages 0–24, which is
+the shape doing its job), and fertility ×1.5 raises births by exactly half. **The fertility assertion was
+proven able to fire**: set to ×1.0 it goes red in every country.
+
+> **To strike it, write:** `D-7 STRUCK: (b)` *(or c / d)* — the EU five are sourced either way; only the
+> USA's 21 numbers change.
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.

@@ -51,6 +51,19 @@ namespace PoliSim.EditorTools
         /// shows, short enough that derived one-year rates are not being asked to be a forecast.</summary>
         private const int LongRunYears = 25;
 
+        /// <summary>CONVENTION: the migration lever probe, in millions. Small against every country's
+        /// population and large against float noise.</summary>
+        private const float MigrationProbeMillions = 0.1f;
+
+        /// <summary>CONVENTION: the fertility lever probe. Half again is far outside any policy this
+        /// game would apply, which is what a liveness probe wants - it asks whether the lever is
+        /// CONNECTED, not whether its calibration is right.</summary>
+        private const float FertilityProbeMultiplier = 1.5f;
+
+        /// <summary>CONVENTION: how close a set of shares must sum to 1, and how closely the migration
+        /// lever must deliver the number it was given. 21 floats summing to 1 cannot drift this far.</summary>
+        private const float ProfileSumTolerance = 0.0005f;
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -159,6 +172,76 @@ namespace PoliSim.EditorTools
                     Debug.LogError($"AGING: {country.Name}'s population moved by a factor of {ratio:F3} over {LongRunYears} years. "
                                    + "The bound is a CONVENTION, not a demographic claim - it is wide enough that no plausible "
                                    + "trajectory trips it, so tripping it means a sign error or a runaway.");
+                }
+            }
+
+            sb.Append("\n    --- (5) THE TWO LEVERS ARE LIVE, and the profile is a profile ---\n");
+            sb.Append("    C-N3's method applied before the lever is wired rather than after: a lever that cannot move the\n");
+            sb.Append("    substrate in a HARNESS will not move it in the game either, and spec-let §4.4 predicted exactly\n");
+            sb.Append("    this failure for both of them.\n");
+            sb.Append("    country       profile sum   +0.1M migration     of which 0-24   fertility x1.5 births\n");
+            foreach (Country country in world.Countries)
+            {
+                CohortStepRates rates = CohortStepRateTable.For(country.Id);
+                float[] profile = CohortStepRateTable.ImmigrationProfile(country.Id);
+                if (rates == null || country.Cohorts == null) { continue; }
+
+                if (profile == null)
+                {
+                    failures.Add($"{country.Name}: no immigration profile");
+                    Debug.LogError($"AGING: {country.Name} has no immigration age profile, so the immigration lever has nowhere "
+                                   + "to put people. Under D-6 the survival ratio cannot be scaled, so an absent profile is a "
+                                   + "DEAD LEVER, not a missing refinement.");
+                    continue;
+                }
+
+                float profileSum = 0f;
+                float youngShare = 0f;
+                for (int k = 0; k < PopulationCohorts.CohortCount; k++)
+                {
+                    profileSum += profile[k];
+                    if (k <= 4) { youngShare += profile[k]; }
+                }
+
+                var plain = country.Cohorts.Clone();
+                plain.StepOneYear(rates);
+
+                var migrated = country.Cohorts.Clone();
+                migrated.StepOneYear(rates, netMigrationMillions: MigrationProbeMillions, immigrationProfile: profile);
+
+                var fertile = country.Cohorts.Clone();
+                fertile.StepOneYear(rates, fertilityMultiplier: FertilityProbeMultiplier);
+
+                float migrationEffect = migrated.Total - plain.Total;
+                float birthEffect = fertile.Counts[0] - plain.Counts[0];
+
+                sb.Append(string.Format(CultureInfo.InvariantCulture,
+                    "    {0,-12} {1,11:F6} {2,17:F6} {3,15:P2} {4,21:F6}\n",
+                    country.Name, profileSum, migrationEffect, youngShare, birthEffect));
+
+                if (Mathf.Abs(profileSum - 1f) > ProfileSumTolerance)
+                {
+                    failures.Add($"{country.Name} profile sum {profileSum:F6}");
+                    Debug.LogError($"AGING: {country.Name}'s immigration age profile sums to {profileSum:F6}, not 1. It is a set "
+                                   + "of SHARES; a sum that is not 1 means the lever moves a different number of people than it "
+                                   + "was asked for, quietly.");
+                }
+
+                if (Mathf.Abs(migrationEffect - MigrationProbeMillions) > ProfileSumTolerance)
+                {
+                    failures.Add($"{country.Name} migration lever");
+                    Debug.LogError($"AGING: {country.Name}'s migration lever added {migrationEffect:F6} M when asked for "
+                                   + $"{MigrationProbeMillions:F6} M. The lever must deliver the number it is given, or the "
+                                   + "player's setting means something other than what it says.");
+                }
+
+                if (birthEffect <= 0f)
+                {
+                    failures.Add($"{country.Name} fertility lever");
+                    Debug.LogError($"AGING: {country.Name}'s fertility lever at x{FertilityProbeMultiplier} moved the 0-4 band by "
+                                   + $"{birthEffect:F6} M. A lever that does not move the model is a dead lever - the class S-18 "
+                                   + "found for the interest rate and C-C11 for the tax dials, and the third instance the "
+                                   + "spec-let warned this build would create.");
                 }
             }
 

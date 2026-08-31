@@ -8449,3 +8449,60 @@ it alongside the eight scalars' own rules would advance population twice by diff
 closing note. All seven billed sources have now been **opened**, which is the only way a bill is
 discharged: two seeded, two superseded by a method that needs less than they offer, one now the single
 blocker on the immigration lever, and **two genuinely untouched and still saying BILLED**.
+
+## 132. P-I2 — THE TWO LEVERS GET SOMEWHERE TO GO, and are proven live before being wired (2026-08-31)
+
+D-6's stated cost came due. Its survival ratio is deaths and net migration **together**, so the player's
+immigration lever has nothing inside the step to scale — **the exact dead-lever failure the cohort
+spec-let's §4.4 predicted in writing**, and the third instance of a class this pass has already met twice
+(S-18's interest rate, C-C11's tax dials). This item pays it.
+
+### D-7, decided and taken as a strikeable R-N1 call
+
+⚠ **`agedef` was measured, not guessed, and it decided the item.** Under `migr_imm8`'s `COMPLET`
+definition, **France publishes a total and no single-year detail** — the obvious fetch would have left
+four countries sourced and two on a stand-in. Under **`REACH`** all five reconcile to their own published
+totals exactly. For the USA there is no equivalent series: the Census PEP `alldata` files are stock only
+and the API needs a key.
+
+**Ruled (a): sourced for the EU five; the USA on a NAMED PROXY.** DHS Office of Homeland Security
+Statistics, *Yearbook of Immigration Statistics* Table 8 **New Arrivals**, FY2024 — 581 290 persons
+obtaining lawful permanent resident status, by age band. ⚠ **It is a SUBSET of US immigration**, excluding
+temporary and unauthorized entry, so it is a proxy for the **shape** and says nothing about the level.
+That is exactly what the lever needs, and the limitation is written where the array is declared so nobody
+reads it as a migration count.
+
+The alternatives were worse in ways the sources make visible: a uniform 15–64 split contradicts the
+spec-let's own *"migrants are young"* warning and would age the USA differently from the other five for a
+reason no player could see; borrowing the EU five's mean profile **reads as sourced and is not**.
+
+⚠ **Two allocations inside the US profile, named.** DHS publishes *65–74* and *75 and over*; those are
+split across the six bands above 65 **in proportion to the USA's own population**. Together they govern
+**9.7 %** of the profile — and any reasonable alternative moves the lever by less than the rounding DHS
+itself applies (its components sum to 581 310 against a stated 581 290; the publisher rounds to tens).
+
+### ⚠ BOTH LEVERS PROVEN LIVE BEFORE BEING WIRED — C-N3's method applied in advance
+
+| country | profile sum | +0.1 M migration delivers | of which ages 0–24 | fertility ×1.5 adds |
+|---|---|---|---|---|
+| USA | 1.000001 | 0.099976 | 35.05 % | 1.832821 |
+| Sweden | 0.999999 | 0.100000 | 35.60 % | 0.050458 |
+| Germany | 1.000000 | 0.099998 | 39.28 % | 0.348427 |
+| France | 1.000001 | 0.100006 | 46.66 % | 0.315783 |
+| Italy | 0.999999 | 0.099995 | 33.49 % | 0.188775 |
+| Poland | 1.000000 | 0.100006 | 23.48 % | 0.132512 |
+
+**A lever that cannot move the substrate in a harness will not move it in the game**, so it is asked here
+rather than after the wiring. The migration lever delivers the number it is given; the age spread is the
+profile doing its work — France 46.66 % into ages 0–24 against Poland 23.48 % is a real difference between
+two real migration patterns. Fertility ×1.5 raises the 0–4 band by exactly half a year's births.
+
+⚠ **The fertility assertion was proven able to fire**: set to ×1.0 it goes red in every country, naming
+the dead-lever class. A liveness check that has never failed is a liveness check nobody has tested.
+
+### The bar
+
+Both defaults are **no-ops**, so a caller that forgets them gets the unforced trajectory rather than a
+silent zero. The migration term clamps at zero per band — **a lever must not be able to produce a negative
+cohort at any setting.** `StepOneYear` still has no caller under `Assets/Scripts`; the simulation group is
+green at six, fourteen checks green, both ratchets held.

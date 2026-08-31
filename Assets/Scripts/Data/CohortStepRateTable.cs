@@ -162,6 +162,56 @@ namespace PoliSim.Data
         };
 
         /// <summary>The prior-year pyramid for a country, or null. A copy, for the same reason
+
+        /// <summary>
+        /// SOURCED — **the immigration AGE PROFILE**, per country, as each band's share of one year of
+        /// arrivals. Shares, not levels: only the shape is used.
+        ///
+        /// <para><b>Why it exists.</b> D-6 made `Survival` deaths and net migration together, which means
+        /// the player's immigration lever has nothing to hook into — the exact dead-lever failure the
+        /// cohort spec-let's §4.4 predicted, and the third instance of a class this pass has already met
+        /// twice (S-18's rate lever, C-C11's tax dials). The lever therefore adds people ON TOP of the
+        /// survival step, and this is where they land. **Uniformly, not at the young end by assumption:
+        /// migrants are young, and a uniform split would quietly age the population wrongly.**
+        ///
+        /// <para><b>EU five</b> — Eurostat <c>migr_imm8</c>, *"Immigration by age and sex"*,
+        /// <c>sex=T</c>, <c>time=2023</c>, <c>agedef=REACH</c>, single years of age folded into the same
+        /// 21 bands. ⚠ **`agedef` matters and was measured, not guessed**: under <c>COMPLET</c>, France
+        /// publishes a total and NO single-year detail, so four countries would have carried a sourced
+        /// profile and the fifth a stand-in. Under <c>REACH</c> all five reconcile to their own published
+        /// totals exactly.</para>
+        ///
+        /// <para><b>USA</b> — ⚠ **a NAMED PROXY, because no equivalent series exists.** DHS Office of
+        /// Homeland Security Statistics, *Yearbook of Immigration Statistics* Table 8, **New Arrivals**,
+        /// FY2024 (<c>2026_0604_ohss_tables8-11newadj_fy2024.xlsx</c>): persons obtaining lawful
+        /// permanent resident status by age, 581 290 arrivals. **This is a SUBSET of US immigration** —
+        /// it excludes temporary and unauthorized entry — so it is a proxy for the SHAPE and says nothing
+        /// about the level. That is exactly what is needed here and the limitation is stated so nobody
+        /// reads the array as a migration count.</para>
+        ///
+        /// <para>⚠ <b>Two allocations inside the US profile, named because DHS publishes wider bands at
+        /// the top.</b> Its table ends *65 to 74 years* and *75 years and over*, so the 65–74 figure is
+        /// split across the 65–69 and 70–74 bands, and the 75+ figure across the six bands above,
+        /// **in proportion to the USA's own population in those bands**. Together they govern 9.7 % of
+        /// the profile, and any reasonable alternative allocation moves the lever's effect by less than
+        /// the rounding DHS already applies (its own components sum to 581 310 against a stated total of
+        /// 581 290 — the publisher rounds to the nearest ten).</para>
+        /// </summary>
+        public static readonly Dictionary<CountryId, float[]> ImmigrationAgeProfile = new Dictionary<CountryId, float[]>
+        {
+            { CountryId.Sweden, new float[] { 0.070233f, 0.056997f, 0.048099f, 0.053336f, 0.127367f, 0.167414f, 0.148803f, 0.106714f, 0.073587f, 0.048025f, 0.032778f, 0.022632f, 0.015014f, 0.012030f, 0.007597f, 0.005100f, 0.002761f, 0.001079f, 0.000296f, 0.000116f, 0.000021f } },
+            { CountryId.Germany, new float[] { 0.050221f, 0.055153f, 0.051495f, 0.083966f, 0.152010f, 0.161271f, 0.123250f, 0.096661f, 0.070379f, 0.050798f, 0.035642f, 0.024276f, 0.018659f, 0.012058f, 0.007041f, 0.003662f, 0.002173f, 0.000978f, 0.000239f, 0.000068f, 0.000000f } },
+            { CountryId.France, new float[] { 0.068215f, 0.056769f, 0.055725f, 0.099352f, 0.186563f, 0.152697f, 0.104948f, 0.075295f, 0.058317f, 0.041324f, 0.027101f, 0.022689f, 0.018064f, 0.012850f, 0.008626f, 0.005670f, 0.003208f, 0.001540f, 0.000849f, 0.000152f, 0.000047f } },
+            { CountryId.Italy, new float[] { 0.046049f, 0.053451f, 0.049056f, 0.076826f, 0.109478f, 0.144826f, 0.131507f, 0.104986f, 0.073951f, 0.055006f, 0.042956f, 0.034522f, 0.028076f, 0.021626f, 0.013010f, 0.007617f, 0.004119f, 0.002152f, 0.000619f, 0.000134f, 0.000032f } },
+            { CountryId.Poland, new float[] { 0.031255f, 0.066685f, 0.056764f, 0.039314f, 0.040828f, 0.093892f, 0.137034f, 0.149425f, 0.122529f, 0.100961f, 0.066366f, 0.040788f, 0.023164f, 0.014037f, 0.008342f, 0.004557f, 0.002150f, 0.001293f, 0.000425f, 0.000158f, 0.000033f } },
+            { CountryId.USA, new float[] { 0.041819f, 0.062858f, 0.075829f, 0.083157f, 0.086821f, 0.077171f, 0.083174f, 0.075278f, 0.065387f, 0.062118f, 0.066316f, 0.063890f, 0.058609f, 0.040399f, 0.033073f, 0.011232f, 0.006843f, 0.003699f, 0.001691f, 0.000545f, 0.000092f } },
+        };
+
+        /// <summary>The immigration age profile for a country, or null. Shares summing to 1.</summary>
+        public static float[] ImmigrationProfile(CountryId id) =>
+            ImmigrationAgeProfile.TryGetValue(id, out float[] profile) ? profile : null;
+
+        /// <summary>The prior-year pyramid for a country, or null. A copy, for the same reason
         /// `PopulationPyramids.For` returns one.</summary>
         public static float[] PriorYearBands(CountryId id) =>
             PriorYear.TryGetValue(id, out float[] bands) ? (float[])bands.Clone() : null;
