@@ -6158,3 +6158,56 @@ is paid for out of anything the macro model holds, one of the two is wrong by a 
 `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` as its new PART 0, which is the item's done-when ("the basis is
 documented in the seed doc, whichever branch ran"). **No seed re-based, no FX rate authored, no display
 changed** — C-C5 now runs on top of this.
+
+## 99. C-C5 (P-C1) — STOPPED AND BILLED: the currency display needs a number that means what the symbol says (2026-08-31)
+
+**Playtest-1 finding 5:** *"Every domestic figure should render in its country's currency — kr (SEK), €,
+zł, $ — symbol, placement and formatting per locale."*
+
+**Stopped at the item, not the list, and billed precisely. Nothing was built, and nothing was faked.**
+
+### Why it stops
+
+C-C6 measured the basis: **every money seed is USD billions, for all six countries.** There are exactly
+two ways to put "kr" in front of a Swedish figure:
+
+1. **Re-base the seeds** to national units, or
+2. **Convert at display time.**
+
+**Both need a sourced, vintage-dated FX rate, and none is on disk.** The third option — print "kr" against
+the dollar-denominated 620 — is the one thing this project forbids: it would state Sweden's GDP as
+620 billion kronor when the real figure is ~6 500 billion, an error of ~10.5× on the most-read number on
+the Desk.
+
+⚠ **This is a DATA blocker, not a sequencing one.** The re-ordering at §98 (C-C6 before C-C5) was
+necessary but not sufficient: running the basis item first is what revealed that the display item cannot
+proceed at all until a rate exists.
+
+### The bill, exact
+
+**What is needed:** `USD/SEK`, `USD/PLN` and `USD/EUR` at **one stated vintage**, from a citable
+authority.
+
+**A route that exists:** the ECB publishes euro foreign-exchange reference rates daily, including SEK, PLN
+and USD — so all three cross-rates come from **one fetch and one stated derivation** (EUR-based rates
+inverted and crossed), which is the same shape as the derivations this project already documents rather
+than hides. ⚠ **Not fetched here, and no rate is authored** — a figure invented to unblock a display item
+is exactly the class §0.4 exists to prevent, and a 10.5 typed from memory is not a source.
+
+**The bar once it is sourced:** re-basing is a **seed change under the full sim-math bar with per-country
+diffs explained**. §98 already did the hard half of that explanation in advance — the diffs will be
+**float-path divergence, not a change in what the model believes**, because at an exactly-representable
+scale the model is invariant to zero.
+
+**What is left after that** is genuinely a session's work and carries no open question: per-country
+symbol, placement and format; `MoneyUnit` extended rather than replaced; `InvariantCulture` parsing
+preserved (the sv-SE non-breaking-space defect is on record as the reason); a unit test per country's
+format; films across the money surfaces for Sweden and one euro country.
+
+⚠ **One design point the bill should carry forward, found while scoping:** `MapRenderer` and the
+International tab draw **other countries'** money. Once figures are national, a cross-country view is
+comparing kronor with złoty — which is precisely why the ruling says *cross-country views convert at a
+sourced vintage-dated rate*. The conversion is not an optional extra for those two surfaces; it is what
+makes them mean anything.
+
+**No code touched. No seed re-based. No rate authored. No display changed.**
