@@ -161,6 +161,19 @@ historically plausible bounds.
 > AI's EXPECTED-VALUE function undervalues local reach (§33's weighting). §34 says the design must
 > not reward a single dominant approach, so this decides whether a **mechanism** or a **weighting**
 > needs work. Do not adjust either before the measurement says which.
+>
+> ✅ **ANSWERED 2026-08-31 (C-A2): it is the MECHANISM, not the weighting.** The staged campaign's
+> action mix, all eight parties: **rally 0 for every party**, door-to-door 0 for every party except
+> the chaotic one (35), town hall 1 / 0 / 1 / 0 / 32 / 24 / 3 / 1 — the mixes are social posts and
+> interviews. ⚠ **The measurement that decides it: the grassroots personality carries door affinity
+> 2.2 and `EnthusiasmValue` 1.6 — a ~3.5× thumb on the scale, the strongest pro-local weighting in
+> the roster — and still knocks ZERO doors.** §33 is not blind to local value; it sees it, and local
+> action still loses. **The only personality that campaigns locally is the one that is not
+> optimising** (chaotic: temperature 1.0, risk aversion −0.6). The magnitudes say why: local actions
+> carry the set's **largest hour costs** (rally 4 h, door 5 h, town 3 h) against its **smallest
+> channel reach** (0.06 / 0.02 / 0.01), while §33 scores **per hour** — against a free interview
+> (0 kr, 2 h, reach 0.20) and a 5 000 kr social post (1 h, reach 0.12). A 3.5× affinity cannot close
+> a gap of that order. **No adjustment made — the finding sizes its own fix.** `COMPLETED.md` §88.
 
 ---
 

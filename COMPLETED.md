@@ -5376,3 +5376,84 @@ fails.
 `VoteShareBacktest` exit 0; the nine checks exit 0 in one pass via C-0.4's runner. No constant moved, no
 model code touched — the only edit outside the new diagnostic is widening `GateReRun`'s case builder from
 `private` to `internal` so its data has exactly one home.
+
+## 88. C-A2 — the local-campaigning question answered: the MECHANISM, not the weighting, and the proof is the personality that tries hardest (2026-08-31)
+
+**The question, as registered** (standing design question against W-B4/W-B11, opened by ruling
+2026-08-30, explicitly *"NOT a closed finding, and nothing to be pre-emptively adjusted"*). W-C2 measured
+that the rational personalities scarcely campaign locally: over ten 60-day campaigns the professional
+made **0.9 local acts a campaign** and the establishment **0.8**, against the chaotic party's **59.8** —
+and 8 of the professional's 9 were the reaction rule sending it, not its own weighing. Now that local
+reach is an absolute count (W-B4's organisation, W-B11's volunteer-bound doors), re-check it and report
+**which of two causes** it is: the MODEL underpowering local action, or §33's EXPECTED-VALUE function
+undervaluing local reach. §34 forbids a single dominant approach, so this decides whether a *mechanism*
+or a *weighting* needs work.
+
+**Answer: the MECHANISM. No adjustment made — the finding sizes its own fix.**
+
+### The measurement
+
+The staged campaign's action mix, all eight parties, at the standing seed:
+
+| party | personality | rally | town | door | tv | digi | social | interview | policy |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| S | Professional | **0** | 1 | **0** | 1 | 0 | 62 | 58 | 7 |
+| SD | Populist | **0** | 0 | **0** | 1 | 0 | 45 | 91 | 0 |
+| M | Establishment | **0** | 1 | **0** | 2 | 0 | 143 | 76 | 4 |
+| V | Grassroots | **0** | 0 | **0** | 0 | 0 | 178 | 54 | 0 |
+| C | Chaotic | **0** | 32 | **35** | 0 | 3 | 56 | 47 | 10 |
+| KD | Establishment | **0** | 24 | **0** | 2 | 0 | 49 | 41 | 3 |
+| MP | Grassroots | **0** | 3 | **0** | 0 | 0 | 166 | 50 | 0 |
+| L | Professional | **0** | 1 | **0** | 1 | 0 | 74 | 49 | 7 |
+
+**Not one rally, by any party, in the whole campaign.** Door-to-door is zero for seven of eight; the
+eighth is the chaotic party. The mixes are social posts and interviews.
+
+### ⚠ The measurement that decides between the two causes
+
+§33's expected value is `score = (value − costPts) × riskFactor / max(0.25, hours)`, where
+`value = expectedPts × importance × probabilityOfSuccess` and `expectedPts` folds **both** persuasion
+**and enthusiasm**, the latter weighted by the personality's own `EnthusiasmValue`. So the EV function is
+not blind to what a ground game is for.
+
+**The grassroots personality carries door-to-door affinity 2.2 and `EnthusiasmValue` 1.6 — about a 3.5×
+thumb on the scale, the strongest pro-local weighting anywhere in the roster — and it knocked ZERO
+doors.** Both grassroots parties (V, MP) ran zero. If the cause were §33's weighting, the personality
+built to weight local action would be the one doing it.
+
+**And the only personality that campaigns locally is the one that is not optimising:** the chaotic
+profile carries `temperature: 1.0` and `riskAversion: −0.6`, i.e. it acts near-randomly. Local action in
+this model is what a campaign does when it has stopped choosing.
+
+### Why the mechanism loses, in its own magnitudes
+
+| action | money | hours | channel reach |
+|---|---:|---:|---:|
+| rally | 300 000 kr | **4.0** | **0.06** |
+| town hall | 25 000 kr | **3.0** | **0.01** |
+| door-to-door | 15 000 kr | **5.0** | **0.02** |
+| social post | 5 000 kr | 1.0 | 0.12 |
+| interview | **0 kr** | 2.0 | 0.20 |
+| television | 500 000 kr | 1.0 | 0.55 |
+
+**The three local actions hold the three largest hour costs in the set and the three smallest channel
+reaches, and §33 divides by hours.** Against a free interview and a 5 000 kr social post, a 3.5×
+affinity cannot close a gap of that order. §33 is choosing correctly on the magnitudes it is given; the
+magnitudes are what make local action a bad bet.
+
+⚠ **A second finding, and it is the useful half.** The ground game is not missing from the model — it is
+just not in the *action mix*. W-B4's offices knock doors through **their own daily operations**, outside
+the eight actions and outside the AI's choice, and the harness confirms every party opened, paid for and
+staffed offices whose operations knocked doors. So the door-to-door ACTION is largely **redundant with a
+mechanism that already runs for free**, while costing 5 hours and 15 000 kr that the office operation
+does not. That is why this reads as a mechanism problem rather than a magnitude to be nudged: the
+question a fix has to answer is *what is the door-to-door action FOR, given the offices already knock*,
+and that is a design question about §12's verb set, not a constant.
+
+**Explicitly not done here:** no affinity, no `EnthusiasmValue`, no hour cost, no reach and no price was
+touched. §34's "no single dominant approach" bar is not met today — the free interview's dominance is
+already a recorded finding (W-B3, W-E3) and calibration entry 3 — and this item adds the local half of
+the same picture rather than tuning either.
+
+**Verified:** `CampaignAiHarness` ALL ASSERTIONS PASS (5 PENDING, unchanged, printed with their
+measurements); the nine checks 9 of 9 clean in one pass. No code touched.
