@@ -6450,3 +6450,61 @@ The draw-count wrapper and its assertion · the shadow's own history so the grap
 overlay on the six live series · and the two done-when proofs: that the shadow equals the recorded
 no-policy baseline for an untouched game, and that the divergence after a known dial change equals the
 batch-diff for the same change.
+
+## 104. C-C9 (P-G1) part 2 — the shadow's draw-count wrapper, and the proof gate it had to pass first (2026-08-31)
+
+**The instruction was explicit: no shadow computation lands before the proof that a shadow turn consumes
+zero real draws.** This is that proof and the wrapper it protects. Nothing reaches a screen yet.
+
+### The wrapper
+
+`ShadowBaseline` holds a second `World` and `SimulationManager`, seeded from the same `WorldFactory` at
+the same master seed and advanced with `PolicyDecision.None()` for every country — the trajectory the game
+would have had if the player had done nothing.
+
+`AdvanceTurn()` saves the real generator's seed and every stream's draw count, **swaps in the shadow's own
+position**, advances a full period plus the boundary, saves the shadow's new position, and **restores the
+real state in a `finally`**. From the real game's side the whole operation consumes **zero** draws.
+
+⚠ **The shadow keeps its own stream position between turns**, which is why its run is continuous even
+though the real state is swapped in and out around it. Without that the shadow would restart its
+randomness every turn and stop being a coherent trajectory.
+
+### The gate — four assertions, and the two that matter are not the obvious one
+
+| | |
+|---|---|
+| **1. counters** | the master seed and every stream's draw count unchanged across a shadow turn |
+| **2. ⚠ the one that binds** | **two real games from the same seed, eight turns each — one with a shadow advancing beside it every turn, one with no shadow at all — end BYTE-IDENTICAL on every public field of every country's `EconomyState`** |
+| **3. the baseline** | a shadow advanced eight turns matches a plain no-policy world from the same seed, which is what lets it be called a baseline at all |
+| **4. the `finally`** | a shadow turn that **threw** left the real seed and every draw count untouched |
+
+**Assertion 2 is the item's real evidence and assertion 1 cannot substitute for it** (C-C2's precedent).
+A counter comparison checks a counter, not a consequence: a restore that rewound a stream to the *wrong*
+position would leave the counts right and every value wrong. Two real games ending byte-identical is the
+property the feature actually has to have.
+
+⚠ **Assertion 4 caught itself being untested and said so.** The first forcing mechanism disposed the
+shadow's host and relied on the next advance throwing — and Unity's destroyed-object semantics meant it
+**did not throw**, so the guard was never exercised. The diagnostic reported *"the guard is untested this
+run, and says so rather than claiming a pass"* instead of printing OK. It now nulls the private manager by
+reflection, which throws for certain — reflection against a private member being this project's
+established diagnostic idiom rather than a test-only hook bolted onto production code. **A safety property
+that is never exercised is not a tested safety property**, and the honest failure message is what made
+that visible.
+
+### Cost: shipped as measured, not optimised
+
+Real turn ~50 ms, shadow turn ~97 ms, **the pair ~148 ms** — accepted as ruled, with nothing optimised on
+a guess. ⚠ **The named fallback is recorded in the class itself so nobody invents a different one under
+pressure: LAZY COMPUTATION — advance the shadow only when a screen actually reads it, rather than every
+turn.** It is not built, and is not to be built until play says the cost bites.
+
+⚠ **One cost note the wrapper carries and the next session should weigh:** `RestoreState` re-seeds and
+**fast-forwards by the recorded draw count**, so its cost grows with the length of the game. At eight
+turns that is invisible; at turn 500 it will not be. The lazy fallback also answers this, and it is the
+reason the fallback is named rather than left to be reinvented.
+
+**Verified:** `ShadowBaselineDiagnostic` **ALL ASSERTIONS PASS**; the nine checks 9 of 9 clean. No screen
+reads the shadow yet, so no film and no trajectory family — the remaining work is the shadow's history,
+the overlay on the six live series, and the divergence-equals-batch-diff proof.
