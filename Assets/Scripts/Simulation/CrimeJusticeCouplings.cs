@@ -93,25 +93,25 @@ namespace PoliSim.Simulation
         /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. OrganizedCrimeIndex points reduced per point Country.BorderEnforcementLevel sits above its neutral 50 (and increased per point below) - stricter border enforcement disrupts cross-border smuggling/trafficking, organized crime's real, well-documented core activity. The primary lever for this stat.</summary>
         public const float BorderEnforcementOrganizedCrimeSensitivity = 0.12f;
 
-        /// <summary>OrganizedCrimeIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - better-funded prosecution capacity disrupts organized-crime networks, a real secondary contributor alongside BorderEnforcementLevel's more direct effect.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. OrganizedCrimeIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - better-funded prosecution capacity disrupts organized-crime networks, a real secondary contributor alongside BorderEnforcementLevel's more direct effect.</summary>
         public const float JudicialFundingOrganizedCrimeSensitivity = 0.06f;
 
-        /// <summary>CorruptionIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - an independent, well-funded judiciary is a canonical real-world anti-corruption mechanism. The sole lever for this stat in this pass.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. CorruptionIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - an independent, well-funded judiciary is a canonical real-world anti-corruption mechanism. The sole lever for this stat in this pass.</summary>
         public const float JudicialFundingCorruptionSensitivity = 0.14f;
 
-        /// <summary>PrisonPopulationRate points reduced per point Country.BailReformLevel sits above its neutral 50 (and added per point below) - bail reform's primary real-world goal is reducing pretrial detention, a direct and substantial real effect (pretrial detainees are a significant share of incarcerated populations, especially in the US).</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. PrisonPopulationRate points reduced per point Country.BailReformLevel sits above its neutral 50 (and added per point below) - bail reform's primary real-world goal is reducing pretrial detention, a direct and substantial real effect (pretrial detainees are a significant share of incarcerated populations, especially in the US).</summary>
         public const float BailReformPrisonPopulationSensitivity = 2.0f;
 
-        /// <summary>PrisonPopulationRate points added per point Country.DrugPolicyLevel sits above its neutral 50 (and reduced per point below) - the well-documented real link between strict drug enforcement and mass incarceration (the US "war on drugs" being the clearest real-world example).</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. PrisonPopulationRate points added per point Country.DrugPolicyLevel sits above its neutral 50 (and reduced per point below) - the well-documented real link between strict drug enforcement and mass incarceration (the US "war on drugs" being the clearest real-world example).</summary>
         public const float DrugPolicyPrisonPopulationSensitivity = 1.6f;
 
-        /// <summary>Round 3 item 3: PrisonPopulationRate points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and added per point below) - a real, well-documented indirect effect: well-funded courts process cases faster, reducing the pretrial-detention backlog that swells incarceration in underfunded systems. Deliberately smaller than BailReformPrisonPopulationSensitivity's direct mechanical effect, since this is a secondary, capacity-driven channel, not bail policy's own primary lever.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. Round 3 item 3: PrisonPopulationRate points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and added per point below) - a real, well-documented indirect effect: well-funded courts process cases faster, reducing the pretrial-detention backlog that swells incarceration in underfunded systems. Deliberately smaller than BailReformPrisonPopulationSensitivity's direct mechanical effect, since this is a secondary, capacity-driven channel, not bail policy's own primary lever.</summary>
         public const float JudicialFundingPrisonPopulationSensitivity = 0.8f;
 
-        /// <summary>Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
         public const float DrugPolicyApprovalSensitivity = 0.02f;
 
-        /// <summary>The shared neutral every sensitivity above measures its gap against - the same
+        /// <summary>CONVENTION - a dial's midpoint, not a measurement. The shared neutral every sensitivity above measures its gap against - the same
         /// 50 MacroSystem's own private NeutralPolicyDialLevel and PolicyWebRenderer's local carry
         /// (three statements of one fact predate this pass; unifying them is a refactor this pass
         /// deliberately does not do - this public const exists so NEW consumers stop adding a
@@ -119,6 +119,10 @@ namespace PoliSim.Simulation
         public const float NeutralDialLevel = 50f;
 
         /// <summary>
+        /// [AUTHORED-DRAFT] MAGNITUDE, DERIVED PARITY, SOURCED REASONING - the value is set equal to
+        /// <see cref="DrugPolicyPrisonPopulationSensitivity"/> because the NRC assessment cited below
+        /// puts the two channels at the same order, so the parity is derived while the level the pair
+        /// sits at is authored.
         /// THE COUPLINGS PASS (terminal ruling 2026-08-26): PrisonPopulationRate target points
         /// added per point Country.SentencingSeverity sits above its neutral 50 (and removed per
         /// point below) - the edge the pane's gap list made visible first (a Truth in Sentencing
@@ -142,6 +146,8 @@ namespace PoliSim.Simulation
         /// Sweden: Justice/UO4 + Migration/UO8; the four generics: PublicServices), so the cost
         /// flows into the national-accounts G term through the existing discretionary-line sum -
         /// no money invented outside the line structure the recalibration just made honest.
+        /// [AUTHORED-DRAFT] SIZE, SOURCED BRACKET - the doc calls it "JUDGMENT WITH ANCHORS" and that is
+        /// exactly the class: the band is real spending, the point inside it is a choice.
         /// NEUTRAL-ANCHORED: at dial 50 the cost is zero, because the baseline enforcement
         /// apparatus is already inside the recalibrated seed totals; the coupling prices the
         /// DELTA from the status quo. Sizes are JUDGMENT WITH ANCHORS, banded +-50% (ruled): full
@@ -150,9 +156,9 @@ namespace PoliSim.Simulation
         /// judiciary ~0.03%) and Sweden's general-government justice line (~1.6% of GDP, UO4).
         /// </summary>
         public const float PoliceFundingBudgetCostPercentOfGdpPerPoint = 0.006f;
-        /// <summary>See <see cref="PoliceFundingBudgetCostPercentOfGdpPerPoint"/> - the judicial share (0.15% of GDP at full +50 swing).</summary>
+        /// <summary>[AUTHORED-DRAFT], on the same sourced bracket as <see cref="PoliceFundingBudgetCostPercentOfGdpPerPoint"/> - the judicial share (0.15% of GDP at full +50 swing).</summary>
         public const float JudicialFundingBudgetCostPercentOfGdpPerPoint = 0.003f;
-        /// <summary>See <see cref="PoliceFundingBudgetCostPercentOfGdpPerPoint"/> - the border share (0.15% of GDP at full +50 swing).</summary>
+        /// <summary>[AUTHORED-DRAFT], on the same sourced bracket as <see cref="PoliceFundingBudgetCostPercentOfGdpPerPoint"/> - the border share (0.15% of GDP at full +50 swing).</summary>
         public const float BorderEnforcementBudgetCostPercentOfGdpPerPoint = 0.003f;
 
         /// <summary>
