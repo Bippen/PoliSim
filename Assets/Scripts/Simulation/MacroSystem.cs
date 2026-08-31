@@ -225,6 +225,7 @@ namespace PoliSim.Simulation
         private const float UbiUnemploymentReversionPenalty = 0.05f;
 
         /// <summary>ChildcareSubsidies' labor-force-participation effect (particularly documented for parents): SPEEDS unemployment's reversion toward NAIRU at full generosity.</summary>
+        /// <remarks>[AUTHORED-DRAFT] - childcare subsidies raising labour-force participation for parents is well documented in direction; the size is a game figure.</remarks>
         private const float ChildcareUnemploymentReversionBonus = 0.03f;
 
         /// <summary>Floor on the welfare-adjusted reversion speed - UBI's penalty (see above) should never be able to stall or reverse Okun's Law's own mean-reversion, only slow it somewhat.</summary>
@@ -354,6 +355,7 @@ namespace PoliSim.Simulation
         // --- Expectations-augmented Phillips Curve: inflation moves with the unemployment gap ---
 
         /// <summary>How many inflation points move per percentage point of unemployment gap versus NAIRU.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the expectations-augmented Phillips curve is the standard shape; its slope is famously unstable across periods and countries, so no single published figure could be transplanted here.</remarks>
         private const float PhillipsCurveSlope = 0.3f;
 
         /// <summary>Gameplay ceiling for inflation - a bug elsewhere in the feedback chain should never be able to push this past a sane bound. Public so EventSystem's inflation shocks share the same ceiling.</summary>
@@ -396,6 +398,7 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>How quickly inflation expectations adapt toward realized inflation each turn (0-1).</summary>
+        /// <remarks>CONVENTION - a reversion/adaptation speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float ExpectationsAdaptationSpeed = 0.5f;
 
         /// <summary>Adaptive expectations: next turn's expected inflation moves partway toward this turn's realized inflation. Phase 5: the speed converts through PerDayReversion in the daily wrapper below - the adaptation is a plain reversion, Phase 2's mechanical shape.
@@ -510,21 +513,29 @@ namespace PoliSim.Simulation
         // --- Poverty Rate: mean-reverts toward a baseline driven by the same unemployment/inflation gaps that already drive Approval's misery index ---
 
         /// <summary>Fraction of the gap versus this turn's baseline that closes each turn on its own - moderate-slow, since real poverty rates don't swing wildly turn to turn the way unemployment/inflation can.</summary>
+        /// <remarks>CONVENTION - a reversion/adaptation speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float PovertyReversionSpeed = 0.15f;
 
         /// <summary>Poverty-baseline points added per percentage point unemployment sits above NAIRU - unemployment is the more direct driver of poverty (lost income), so this is the larger of the two sensitivities.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and the relative order; the number is a game figure.</remarks>
         private const float PovertyUnemploymentSensitivity = 0.8f;
 
         /// <summary>Poverty-baseline points added per percentage point inflation sits away from target (either direction, like Approval's own misery index) - inflation erodes real income too, but less directly than unemployment.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and the relative order; the number is a game figure.</remarks>
         private const float PovertyInflationSensitivity = 0.3f;
 
         /// <summary>Gameplay ceiling/floor - a percentage, like Unemployment/Inflation, not a raw 0-1 fraction.</summary>
         private const float MaxPovertyRatePercent = 100f;
 
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented RANKING - GetPovertyReductionSensitivity's summary below argues the ORDER of these five from the real efficiency-of-targeting debate, and that argument is the basis. The points themselves are game figures; no study fixes any of them.</remarks>
         private const float UbiPovertyReductionSensitivity = 8f;
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented RANKING - GetPovertyReductionSensitivity's summary below argues the ORDER of these five from the real efficiency-of-targeting debate, and that argument is the basis. The points themselves are game figures; no study fixes any of them.</remarks>
         private const float NegativeIncomeTaxPovertyReductionSensitivity = 7f;
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented RANKING - GetPovertyReductionSensitivity's summary below argues the ORDER of these five from the real efficiency-of-targeting debate, and that argument is the basis. The points themselves are game figures; no study fixes any of them.</remarks>
         private const float MeansTestedWelfarePovertyReductionSensitivity = 7.5f;
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented RANKING - GetPovertyReductionSensitivity's summary below argues the ORDER of these five from the real efficiency-of-targeting debate, and that argument is the basis. The points themselves are game figures; no study fixes any of them.</remarks>
         private const float UniversalHealthcarePovertyReductionSensitivity = 4f;
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented RANKING - GetPovertyReductionSensitivity's summary below argues the ORDER of these five from the real efficiency-of-targeting debate, and that argument is the basis. The points themselves are game figures; no study fixes any of them.</remarks>
         private const float HousingAssistancePovertyReductionSensitivity = 3f;
         private const float ChildcareSubsidiesPovertyReductionSensitivity = 3f;
 
