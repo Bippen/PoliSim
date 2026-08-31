@@ -8098,3 +8098,67 @@ and it now guards the channel from the other side (Consumption **and** GDP must 
 that severs the transmission fails here). `ResponsivenessAuditHarness` exit 0 · ten checks 10 of 10 ·
 four simulation checks 0 · RT PASS 12 · `BudgetDraftEstimateDiagnostic` exit 0 · trajectories **6 of 6
 byte-identical** · films 81/0/0 at 1280 and 2560 with the identity trap green · film diff **78/0/3**.
+
+## 127. The government-consumption block — MEASURED, and STOPPED (2026-08-31)
+
+The shelf entry C-N5's trigger fired. Elias's instruction: **measure first; build only if the measurement
+says it is buildable within the pass; not in the same pass as C-N4's landing.** C-N4 landed in this pass,
+so this item **reports and stops** — which is its disposition, not a shortfall in it.
+
+⚠ **Measured after 100 settled no-policy turns, not at turn 0** — the first draft measured the seed and
+reported a C+I share of 0.0 % for every country (consumption is not computed until a turn runs) and gaps of
+0.00 % for five of six (potential is seeded *equal* to GDP). Neither is the quantity the shelf entry is
+about: its gaps are the **equilibrium the identity settles into**, which is the entry's whole point.
+
+### 1. What the identity's G actually is
+
+| country | GDP | G (discretionary) | G/GDP | mandatory/GDP | C+I share |
+|---|---|---|---|---|---|
+| USA | 201 743 | 12 685 | **6.3 %** | 14.4 % | 78.4 % |
+| Sweden | 2 651 | 580 | 21.9 % | 21.2 % | 78.8 % |
+| Germany | 10 216 | 2 190 | 21.4 % | 21.3 % | 77.5 % |
+| France | 7 081 | 1 704 | 24.1 % | 22.6 % | 77.4 % |
+| Italy | 4 873 | 970 | 19.9 % | 22.4 % | 77.4 % |
+| Poland | 24 029 | 4 716 | 19.6 % | 26.0 % | 78.2 % |
+
+⚠ **What is missing is not the mandatory lines.** Those are transfers — payments to individuals, correctly
+excluded from a purchases term, and the model is right about that. **What is missing is general government
+consumption**: the state buying goods and services, which national accounts put in G and this identity has
+nowhere at all.
+
+### 2. The level output gap, and an independent confirmation
+
+| country | GDP | PotentialGDP | gap |
+|---|---|---|---|
+| **USA** | 201 743 | 240 825 | **−16.23 %** |
+| Poland | 24 029 | 26 239 | −8.42 % |
+| Italy | 4 873 | 5 100 | −4.45 % |
+| Sweden | 2 651 | 2 720 | −2.53 % |
+| Germany | 10 216 | 10 421 | −1.96 % |
+| France | 7 081 | 7 095 | −0.20 % |
+
+⚠ **These independently reproduce the shelf's recorded pattern** (USA −14.5, Poland −7, Italy −4.5,
+Germany −2.7, Sweden −0.8, France −0.5): same ordering, same order of magnitude, USA an outlier by a wide
+margin. **The entry was right, and right for the reason it gave** — this is a no-policy run, so nobody
+opened the gap; it is where the arithmetic puts each country when C+I+G+NX is solved against a potential
+the seeds set independently.
+
+### 3. The verdict: ⚠ NOT BUILDABLE WITHIN THIS PASS, for structural reasons
+
+- **a. It is a seed change on all six countries.** Six sourced G figures, six re-solved potentials, and
+  the sim-math bar with every difference explained per country by layer — **the largest BASELINE family
+  this project has attempted.**
+- **b. ⚠ It moves Okun's own anchor.** Okun reads the growth gap against `PotentialGrowthRate`, and
+  re-solved potentials change what that means on every day of every run. **C-N5 wants the block in order
+  to re-specify Okun; the block changes Okun before C-N5 touches it.** They need a fixed order and a
+  family each, and neither may be measured against a moving other.
+- **c. The sourcing is not done.** Six general-government final-consumption figures on one vintage and one
+  basis (Eurostat `nama_10_gdp` P3_S13 for the five EU members, BEA for the USA) are a session's work on
+  their own, and inventing them is what §0.4 forbids.
+- **d. Elias's own instruction** forbids it landing beside C-N4, which landed here.
+
+⚠ **One illustrative figure is labelled as such and is not proposed:** a 20 %-of-GDP term is used only to
+show the *order* of the discontinuity, which is the question the measurement was asked.
+
+**So: measured, reported, stopped — with the three answers as the next session's starting point rather
+than its first day of work.**
