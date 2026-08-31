@@ -134,7 +134,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>SOURCED - Valmyndigheten, the 2022 Riksdag result, in this harness's party order (S, SD, M, V, C, KD, MP, L).</summary>
-        private static readonly int[] Seats2022 = { 107, 73, 68, 24, 24, 19, 18, 16 };
+        internal static readonly int[] Seats2022 = { 107, 73, 68, 24, 24, 19, 18, 16 };
 
         private const double WarChest = 2_400_000.0;        // the equal figure, kept for the blind-view probe below
         private const int Volunteers = 800;                  // [AUTHORED-DRAFT] W-B11: 800 volunteers x 3 h a day = 2 400 volunteer-hours, equal for all by design (W-B4's offices grow them)

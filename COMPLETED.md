@@ -7137,3 +7137,85 @@ unreachable, and per-group loyalty now waits on the substrate rather than on a d
 
 Records only; no `Assets/` file touched. `ElectionsData/DATA_BILL.md`'s voter-groups section carries the
 exact bill.
+
+## 113. C-D2 (W-F5's pool question) — the pool measured two ways, the tension quantified, nothing applied (2026-08-31)
+
+W-F5 refused to raise the war-chest pool to survive a mandate-proportional split, because *"inventing a
+larger authored number to turn assertions green is the one thing the standing rules forbid outright"* —
+and left the number open. **C-D2 fills it by DERIVATION, on the route the bill itself named: a floor from
+the organisation's own bill (`BudgetPlan.CommittedToOrganisation`, W-B12).** A party is playable when it
+can pay its organisation to polling day. That is not an authored threshold; it is the definition W-B12
+built the campaign around, and W-F5's bankruptcies are measured failures of exactly it.
+
+⚠ **Nothing was applied.** `CampaignAiHarness.WarChestPool` is untouched and the chests stay equal.
+
+### The organisation's own bill, measured with money not binding
+
+| party | seats | share | staff kr | offices kr | bill kr | bill ÷ share |
+|---|---|---|---|---|---|---|
+| S | 107 | 30.66 % | 201 600 | 1 253 200 | 1 454 800 | 4 745 095 |
+| SD | 73 | 20.92 % | 201 600 | 1 273 200 | 1 474 800 | 7 050 756 |
+| M | 68 | 19.48 % | 201 600 | 934 900 | 1 136 500 | 5 832 919 |
+| V | 24 | 6.88 % | 100 800 | 1 909 800 | 2 010 600 | 29 237 475 |
+| C | 24 | 6.88 % | 0 | 318 300 | 318 300 | 4 628 613 |
+| KD | 19 | 5.44 % | 201 600 | 946 900 | 1 148 500 | 21 096 132 |
+| MP | 18 | 5.16 % | 100 800 | 1 909 800 | 2 010 600 | **38 983 300** |
+| L | 16 | 4.58 % | 201 600 | 1 257 200 | 1 458 800 | 31 820 075 |
+
+The control is asserted, not assumed: every party finished the unbounded run with **zero** unpaid
+staff-days, so the bill above is the organisation's and not the budget's.
+
+### Two floors, and the gap between them is a finding
+
+- **ANALYTIC — 38 983 300 kr** (×2.03 today's pool), set by MP: `max(bill ÷ seat-share)`.
+- **MEASURED — 88 182 607 kr** (×4.59 today's pool), bisected in 24 steps on the criterion the failure
+  itself used: **all eight finish with zero unpaid staff-days.**
+
+⚠ **The arithmetic understates the need by ×2.26.** The analytic floor assumes a party's organisational
+bill is independent of how much money it has; it is not. Given money, a party spends on actions, and the
+payroll competes with that spending in a way no closed-form division can see. **Reporting only the
+analytic figure would have understated the answer by more than half** — which is the reason two methods
+were run rather than one.
+
+### ⚠ The tension, quantified rather than asserted
+
+The pool a party needs to cover its own organisation out of its mandate share spans
+**4 628 613 kr (C) to 38 983 300 kr (MP) — a factor of 8.4.**
+
+**Public funding is allocated by SEATS** (the *mandatbidrag* of lag 1972:625, and that shape is sourced).
+**The campaign's bill is driven by the party's OFFICE NETWORK**, which is a personality choice: V and MP
+each spend 1 909 800 kr on offices against 100 800 on payroll, while C spends 318 300 in total. Seats and
+office-building are **uncorrelated**, so *any* mandate-proportional split is set by whichever small party
+builds the most — and the more a grassroots party plays to type, the more it starves.
+
+**W-F5's refusal was right by a wider margin than it knew.** The raise needed to survive the split is not
+a tweak: it is **×4.59**.
+
+### The proposal — four lines, each strikeable, none applied
+
+- **P-D2a. Raise the pool to the measured floor (88.2 M kr) and split by mandate.** ⚠ Honest about what it
+  is: a number *derived from the model's own costs*, not sourced from Sweden's. It scales one
+  `[AUTHORED-DRAFT]` figure by another. It buys the sourced funding SHAPE at the price of a bigger authored
+  scale.
+- **P-D2b. Keep the chests equal and treat *mandatbidrag* as a shape the game does not yet fund.** Today's
+  state, now with a number attached to why. Costs nothing, invents nothing, and leaves W-B12 intact.
+- ⚠ **P-D2c. Attack the DRIVER instead of the pool.** The cost is the office network, and offices are
+  staged per personality with no relation to the party's means. Letting a party's office plan scale with
+  what it can afford — a campaign manager's actual job — would dissolve the tension at its source **without
+  inventing any money at all**. This is a change to W-B4's staging, not to funding, and it is the only line
+  here that makes the model more realistic rather than merely more solvent. **Recommended if any is taken.**
+- **P-D2d. Source the real figures and stop scaling authored numbers.** Kammarkollegiet's register of
+  declared party income exists and is public, but its figures sit behind
+  `api.kammarkollegiet.se/PartiinsynPublicService.svc`, which does not answer an ordinary request. The
+  standing bill, unchanged.
+
+⚠ **A note on any of these that raises the pool:** it changes what every party can do and therefore what
+`CampaignAiHarness` measures, so it re-opens 2a-iv and the two PEND lines. The pool is not a dial that can
+be moved quietly.
+
+### The bar
+
+`CampaignPoolSizingDiagnostic` exit 0 (it fails loudly if the unbounded control is itself money-bound, or
+if the bisection has no upper bound — half a measurement reported as a whole one is the failure mode it
+guards). One widening: `CampaignAiHarness.Seats2022` private → internal, so the sourced seat table is read
+rather than copied, on C-A1's own precedent with `GateReRun.BuildCases`. No `Assets/Scripts` file touched.
