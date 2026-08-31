@@ -150,6 +150,19 @@ namespace PoliSim.EditorTools
                 if (staged.Method != Elections.ElectionMethod.NotImplemented)
                 {
                     ParliamentSystem.SetSeatsFromElection(playerCountry, staged.Seats);
+                    Elections.PartyCapital.CarryOver(playerCountry.PartyCapital, staged.Seats);
+                }
+
+                // C-D4: ⚠ MOVE THE CAPITAL OFF ITS SEEDED VALUE BEFORE SAVING. The carry-over above is
+                // provably INERT today - the electorate does not move, so the staged election returns the
+                // seeded chamber and every ratio is exactly 1.0 - which means round-tripping the capital
+                // as the carry-over leaves it would compare 50.0 against 50.0 and prove nothing about
+                // persistence. One record is therefore moved by hand here, on W-G3's own precedent of
+                // staging a real election rather than round-tripping an empty list.
+                if (playerCountry.PartyCapital.Count > 0)
+                {
+                    playerCountry.PartyCapital[0].Reputation = 63.5;
+                    playerCountry.PartyCapital[0].OrganizationalStrength = 41.25;
                 }
 
                 Dictionary<CountryId, PolicyDecision> decisionsA = BuildNoOpDecisions(world);
@@ -509,6 +522,20 @@ namespace PoliSim.EditorTools
                     snap[$"{p}.ElectionHistory.LastSeatSum"] = wonSum;
                     snap[$"{p}.ElectionHistory.LastShareCount"] = last.Shares.Count;
                 }
+                // C-D4: the party capital, snapshotted BY PARTY NAME rather than by count. ⚠ A count
+                // matches while every value is wrong, and it matches while the records come back in a
+                // different order attached to the wrong parties - which is the failure a per-party stock
+                // is most likely to have. Keying on the abbreviation makes the comparison say WHICH party
+                // moved.
+                snap[$"{p}.PartyCapital.Count"] = country.PartyCapital.Count;
+                foreach (Elections.PartyCampaignCapital capital in country.PartyCapital)
+                {
+                    if (capital?.PartyAbbrev == null) { continue; }
+                    snap[$"{p}.PartyCapital.{capital.PartyAbbrev}.Reputation"] = capital.Reputation;
+                    snap[$"{p}.PartyCapital.{capital.PartyAbbrev}.Organization"] = capital.OrganizationalStrength;
+                    snap[$"{p}.PartyCapital.{capital.PartyAbbrev}.SeatsAtLastUpdate"] = capital.SeatsAtLastUpdate;
+                }
+
                 snap[$"{p}.Swf.Exists"] = country.SovereignWealthFund != null ? 1 : 0;
                 // R4 (maturity rate-lag): the mechanism's one piece of state, snapshotted so a
                 // save/load that dropped it would fail HERE rather than silently reverting a

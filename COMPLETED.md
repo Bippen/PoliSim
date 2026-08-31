@@ -7278,3 +7278,84 @@ statute.**
 `traj_cc7_*`** — leaders are seed data on the party system and reach no simulation path, and the dump
 proves it rather than the reasoning being trusted. No screen shows a leader today, so nothing was filmed;
 what the item buys is that **the first screen that does cannot be wrong about MP**.
+
+## 115. C-D4 (§38, R-CL3) — long-term political capital, built, persisted, and honestly sized (2026-08-31)
+
+**Why it needed building.** `PartyProfile` carried `Reputation`, `LeaderAppeal`, `CampaignEffectiveness`,
+`Funding` and `Organization` as **per-run constructor defaults**, and **no campaign state was persisted at
+all** — zero `Campaign` hits across `Assets/Scripts/Persistence`. Every game began with every party
+identical and ended carrying nothing, which makes "long-term political capital" a phrase rather than a
+mechanic.
+
+### What was built
+
+- **`PartyCampaignCapital`** — per party: `PartyAbbrev` (the same key `ElectionRecord.Seats` uses, so the
+  two join without a second name table), `Reputation`, `OrganizationalStrength`, `SeatsAtLastUpdate`.
+- **`Country.PartyCapital`, beside `ElectionHistory`** — W-G1's own precedent and for its recorded reason:
+  the `World` graph is the layer `SaveLoadRoundTripDiagnostic` round-trips field by field, so persistence
+  here can be **proven**. `UiDraftState` cannot be.
+- **Seeded for all 53 parties** at their own seeded mandate. ⚠ The two opening levels are `PartyProfile`'s
+  **own** constructor defaults (50 / 50) — **reused, not re-authored.** This item introduces no new number;
+  what it introduces is that the numbers persist and move with the mandate.
+- **`SaveVersion` 2 → 3.** ⚠ Strictly the field is additive and an older save would load with an empty list
+  rather than fail — the same shape as C-C2's window flag, which deliberately did **not** bump. It bumps
+  anyway because an empty list is not a harmless default here: it would silently mean *"no party holds any
+  political capital"*, a different game state from *"every party opens at 50"*, and the next carry-over
+  would read it as such. Older saves are refused plainly; no migration.
+
+### ⚠ The carry-over rule has NO invented constant in it, and that is the design
+
+`OrganizationalStrength *= newSeats / seatsAtLastUpdate`. A party that doubles its mandate doubles its
+machine; one that halves it halves it. **The ratio is the election's own number**, not a coefficient chosen
+to feel right — and the SHAPE is the sourced one this project has already adopted twice: Sweden's public
+party funding is paid **per mandate** (the *mandatbidrag* of lag 1972:625), so "a party's organisation
+follows its seats" is how the largest component of its money actually arrives.
+
+- ⚠ **Zero seats holds still** rather than multiplying to nothing. Deleting the machine of a party that
+  missed the threshold by a tenth of a point is not supported by anything, so the record and its seat
+  baseline both hold.
+- ⚠ **Reputation does not move, and the asymmetry is asserted.** An election observes seats and shares; it
+  observes **nothing** about a party's reputation. Any rule moving it needs a coefficient nothing on disk
+  sources. So reputation *persists* — which is itself the change, since it used to reset every run — and its
+  dynamics are a named future item.
+- ⚠ **Donor and grassroots networks are specified ABSENT, not invented.** §38 names them; no `Donor` concept
+  exists anywhere in this codebase and nothing sizes one (Kammarkollegiet is C-D2's standing bill).
+
+### ⚠ What it is worth in play today, measured rather than mentioned
+
+The plan said to state plainly that the electorate does not move. The diagnostic **measures** it, and the
+first draft got the statement wrong in an instructive way: run two elections and the capital *moves*, which
+read as "the electorate moves" would have been the wrong conclusion. Three elections separate the two
+readings:
+
+> **S's organisation went 50.00 → 49.53 on the first election, then held at 49.53 through two more.**
+
+**The chamber changes exactly once, at the seam** — the seeded 2022 mandate handing over to the one the
+model's own predicted shares produce — and never again, because the electorate does not move. **§38 is
+BUILT AND PERSISTED; it is not yet a mechanic a player can feel**, and reading "§38 is built" as "a party's
+machine now grows and shrinks in play" would be wrong. It is built now so the capital is already persisted
+the day the electorate does move, rather than a save-format change landing on top of a live mechanic.
+
+### The gate
+
+`PartyCapitalDiagnostic` — **ALL ASSERTIONS PASS**: seeded for all 53 at their own mandate · ⚠ moves
+exactly once at the seam, then inert across three elections · doubled → ×2 · halved → ×½ · ×4 → **clamped**
+at 100 · zero seats holds still · reputation unchanged by every case.
+
+`SaveLoadRoundTripDiagnostic` extended the way W-G3 extended it: the capital is snapshotted **BY PARTY
+NAME**, not by count — ⚠ *a count matches while every value is wrong, and it matches while the records come
+back attached to the wrong parties*, which is the failure a per-party stock is most likely to have. And
+because the carry-over is inert, a round trip of the capital as the election leaves it would compare 50.0
+with 50.0 and prove nothing — so one record is **moved off its seeded value by hand before saving**, on
+W-G3's own precedent of staging a real election rather than round-tripping an empty list.
+**RT PASS, 12 scenarios.**
+
+### The bar
+
+`PartyCapitalDiagnostic` ALL PASS · `SaveLoadRoundTripDiagnostic` RT PASS 12 · `ElectionDayReachDiagnostic`
+and `PartyLeadershipDiagnostic` exit 0 · trajectories **6 of 6 byte-identical to `traj_cc7_*`** — capital
+is election-layer state and reaches no economic path.
+
+⚠ **`UpstreamCheck` went red on this run, and it is not a code failure**: 11 commits ahead of `origin/main`,
+above its 10 threshold — *"that work exists on one disk."* The guard is correct and its remedy is R-SP1,
+run at §116.

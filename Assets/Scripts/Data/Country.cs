@@ -727,6 +727,20 @@ namespace PoliSim.Data
         public List<Elections.ElectionRecord> ElectionHistory = new List<Elections.ElectionRecord>();
 
         /// <summary>
+        /// C-D4 (§38, R-CL3): **each party's long-term political capital — what survives an election.**
+        ///
+        /// <para>Put HERE, beside <see cref="ElectionHistory"/>, for that field's own recorded reason:
+        /// the World graph is the layer `SaveLoadRoundTripDiagnostic` round-trips field by field across
+        /// six countries and two seeds, so persistence here can be PROVEN. `UiDraftState` cannot be, and
+        /// matching a precedent the harness cannot see was worth less than being checkable.</para>
+        ///
+        /// <para>⚠ Donor and grassroots networks are **specified ABSENT** on
+        /// <see cref="Elections.PartyCampaignCapital"/> rather than invented — §38 names them, nothing on
+        /// disk sizes them, and a fabricated donor stock is what §0.4 forbids.</para>
+        /// </summary>
+        public List<Elections.PartyCampaignCapital> PartyCapital = new List<Elections.PartyCampaignCapital>();
+
+        /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see
         /// StatHistory.cs. Appended once per turn by SimulationManager.AdvanceTurn, kept entirely
         /// separate from the existing turn-activity text log (shown under Statistics -> International since 2026-08-01).

@@ -5292,6 +5292,15 @@ namespace PoliSim.UI
             if (record.Method != ElectionMethod.NotImplemented)
             {
                 ParliamentSystem.SetSeatsFromElection(_playerCountry, record.Seats);
+
+                // C-D4 (§38): the result carries into each party's long-term capital. ⚠ Its rule holds no
+                // invented constant - organisational strength moves by the ratio of the party's new seat
+                // count to its own previous one, which is the election's own number. ⚠ And it is worth
+                // NOTHING in play today: the electorate does not move with the simulation, so two
+                // elections in one game return the same chamber and every ratio is exactly 1.0. It is
+                // built and proven now so the capital is already persisted the day that changes, rather
+                // than a save-format change landing on top of a live mechanic.
+                PartyCapital.CarryOver(_playerCountry.PartyCapital, record.Seats);
             }
         }
 

@@ -986,6 +986,23 @@ namespace PoliSim.Data
             foreach (Country country in world.Countries)
             {
                 country.ParliamentSeats = PartySystems.InitialSeats(country.Id);
+
+                // C-D4 (§38): each party's long-term capital, opened at the seeded election's mandate.
+                // ⚠ The two starting levels are `PartyProfile`'s OWN constructor defaults (reputation 50,
+                // organization 50) - REUSED, not re-authored. This item introduces no new number; what it
+                // introduces is that they now PERSIST and move with the mandate instead of being rebuilt
+                // from scratch every run.
+                country.PartyCapital.Clear();
+                foreach (PoliticalParty party in PartySystems.For(country.Id))
+                {
+                    country.PartyCapital.Add(new Elections.PartyCampaignCapital
+                    {
+                        PartyAbbrev = party.Abbrev,
+                        Reputation = 50.0,
+                        OrganizationalStrength = 50.0,
+                        SeatsAtLastUpdate = party.SeedSeats,
+                    });
+                }
             }
 
             return world;

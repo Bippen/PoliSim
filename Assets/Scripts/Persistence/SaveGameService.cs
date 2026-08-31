@@ -34,7 +34,16 @@ namespace PoliSim.Persistence
         // PartyArchetype (four shared fictional archetypes) to the real parties of each country.
         // This is precisely the "model SWAP that re-keys persisted state" the paragraph above names,
         // and older saves are refused with a plain message rather than migrated.
-        public const int CurrentSaveVersion = 2;
+        //
+        // C-D4 (2026-08-31) bumps this 2 -> 3: `Country.PartyCapital` adds a per-party long-term
+        // political-capital record (§38, R-CL3) to the persisted World graph. ⚠ Strictly the field is
+        // ADDITIVE and an older save would load with an empty list rather than fail - the same shape as
+        // C-C2's incoming-budget-window flag, which deliberately did NOT bump. It bumps anyway, and the
+        // reason is that an empty list is not a harmless default here: it would silently mean "no party
+        // holds any political capital", which is a DIFFERENT game state from "every party opens at 50",
+        // and the next election's carry-over would read it as such. R-CL3 ruled the bump in for exactly
+        // that reason. Older saves are refused with a plain message; no migration machinery pre-release.
+        public const int CurrentSaveVersion = 3;
 
         /// <summary>
         /// One settings object, built fresh per call (JsonSerializerSettings is mutable; sharing a
