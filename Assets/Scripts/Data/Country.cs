@@ -741,6 +741,38 @@ namespace PoliSim.Data
         public List<Elections.PartyCampaignCapital> PartyCapital = new List<Elections.PartyCampaignCapital>();
 
         /// <summary>
+        /// C-R1/C-R2 (R-CL1, "the player has a party"): **which of this country's real seeded parties the
+        /// player leads.** Null where none has been chosen.
+        ///
+        /// <para>⚠ **INTERIM RULE, and it is DERIVED rather than invented.** The ruling says the player
+        /// picks at country selection, and the picker is a Canvas-screen build that is BILLED, not done
+        /// (see `COMPLETED.md` §119). Until it exists, selection seats **the largest party in that
+        /// country's own seeded chamber** — you are the government, and which party that is comes from the
+        /// real returns on disk, not from a choice this code made up. It is an interim DEFAULT, marked as
+        /// one, and the first thing the picker replaces.</para>
+        ///
+        /// <para>World state, so it rides `SaveGame.World` beside `ElectionHistory` and `PartyCapital` —
+        /// the layer `SaveLoadRoundTripDiagnostic` can prove, which `UiDraftState` cannot.</para>
+        /// </summary>
+        public string PlayerPartyAbbrev;
+
+        /// <summary>
+        /// C-R3: **the player's PARTY approval, a NEW ADDITIVE STOCK.**
+        ///
+        /// <para>⚠ The design constraint that keeps this SAFE rather than BASELINE, and it is the whole
+        /// point of the row: **personal approval keeps `EconomyState.ApprovalRating`, its name and every
+        /// one of its consumers, untouched.** Party approval is added beside it and nothing reads it into
+        /// the simulation, so the no-policy trajectory is predicted byte-identical — and the dump is run
+        /// to prove that rather than assert it.</para>
+        ///
+        /// <para>⚠ **Nothing moves it yet, for C-D4's reason and stated the same way.** A rule coupling
+        /// party approval to events would need a coefficient nothing on disk sources, and inventing one to
+        /// make a stock look alive is what the standing rules forbid. It opens at the personal rating and
+        /// PERSISTS - which is itself the change, since before this there was no such stock at all.</para>
+        /// </summary>
+        public float PartyApprovalRating = 50f;
+
+        /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see
         /// StatHistory.cs. Appended once per turn by SimulationManager.AdvanceTurn, kept entirely
         /// separate from the existing turn-activity text log (shown under Statistics -> International since 2026-08-01).

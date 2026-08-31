@@ -7562,3 +7562,79 @@ to rule** — not a fetch anyone can do tonight.
 
 Nine checks exit 0 · trajectories 6 of 6 byte-identical to `traj_cc7_*` · the full sweep films 81/0 with
 0 text overflows and the identity trap green on all 81.
+
+## 119. TRACK R (R-CL1) — the player has a party: model, persistence, the split proven SAFE, and one reason named (2026-08-31)
+
+### C-R1 — the ruling recorded, and its reach stated honestly
+
+**R-CL1:** the player picks one of the country's real seeded parties at country selection; personal
+approval and party approval are separate stocks; losing office is not game over.
+
+⚠ **The asymmetry, stated rather than glossed:** only **Sweden and Germany** have a modelled election
+(`NationalElection.Run`). The other four return `Method = NotImplemented` with a `NotHeldReason` —
+Poland allocates d'Hondt separately in 41 districts, France elects 577 seats in two rounds, Italy is
+mixed, the USA is 435 single-member districts. **In those four a party is an IDENTITY, not yet a
+contest**, and no screen may imply otherwise.
+
+### C-R2 — the party, on the model and in the save
+
+- **`Country.PlayerPartyAbbrev`** — world state, riding `SaveGame.World` beside `ElectionHistory` and
+  `PartyCapital`, for that field's own recorded reason: it is the layer the round-trip harness can
+  **prove**.
+- ⚠ **The PICKER is BILLED, not built.** It is a Canvas-screen build on `CountrySelectorScreen`, whose
+  cards take a bare `Action<CountryId>`; a party choice means a second selection stage, its own films and
+  its own §V row. **Until it exists, selection seats the largest party in that country's own seeded
+  chamber** — you are the government, and *which* party that is comes from the real returns on disk
+  rather than from a default this code invented. It is marked as an interim rule at the call site and is
+  the first thing the picker replaces. A loaded save keeps the party it was played with.
+- **`SaveVersion` 3 → 4**, on the 2→3 precedent: an absent party is not a harmless default, it is a
+  different game state — *"this save was played without a party"* — and selection would silently seat one
+  on load.
+
+### C-R3 — the approval split, and it is SAFE with the proof rather than the intention
+
+**`Country.PartyApprovalRating`, a new additive stock.** ⚠ The design constraint that decides the row's
+class: **personal approval keeps `EconomyState.ApprovalRating`, its name and every consumer, untouched.**
+Party approval sits beside it and nothing in the simulation reads it.
+
+> **Trajectories: 6 of 6 byte-identical to `traj_cc7_*`** at seeds 777/424242 and horizons 100/500/1000.
+> The row was written as *"SAFE if additive, BASELINE if not"* — **it is SAFE, and the dump says so
+> rather than the design claiming it.**
+
+⚠ **Nothing moves party approval yet**, for C-D4's reason and stated the same way: a coupling rule needs a
+coefficient nothing on disk sources, and inventing one to make a stock look alive is what the standing
+rules forbid. It opens at the personal rating and **persists** — which is itself the change, since before
+this there was no such stock.
+
+Both new fields cross the save **by name, not by presence**: the party is snapshotted as its **index into
+the country's own roster**, and the staged save deliberately seats the **second**-largest party — because
+the interim rule seats the largest, so a save that came back with the largest would look identical whether
+it round-tripped or was silently re-derived on load. **RT PASS, 12 scenarios.**
+
+### C-R4 — stopped and reported, with the one reason named exactly
+
+The row's done-when is *"the eight Track E screens are reachable from the running game, **or the one
+remaining reason they are not is named**"*. It is named, and it is verifiable in one line — the code says
+it about itself:
+
+> `GameController.cs:2090` — **"No player path sets `_campaignScreen`."**
+
+Every Track E screen draws from a `CampaignSnapshot`, and **the only thing in this codebase that builds
+one is `UiScreenshotDriver`**. The campaign layer is reachable by the harness and by nothing else.
+
+Two further blockers, both real and both belonging to someone else:
+
+- ⚠ **The war chest is UNRULED.** C-R4's cell needs a figure, and C-D2 measured the pool and **proposed
+  four options without applying any** — Elias's call. The original plan anticipated exactly this: *if C-D2
+  lands as a question rather than a number, the cell stays absent and says why.* It does.
+- ⚠ **The win/lose rule is a ruling, not a refactor.** "Game over only on leaving office" changes what
+  `ScenarioEvaluator` means, and the pre-ruling for this track is explicit: **anything that would move a
+  baseline stops and reports instead of landing.** It stops here.
+
+**So Track R delivers the ruling's model reach and stops at its playable reach**, which is the honest
+division: the party exists, persists and survives a save; the campaign it would fight is still harness-only.
+
+### The bar
+
+`SaveLoadRoundTripDiagnostic` RT PASS 12 (extended for both new fields, by name) · trajectories 6 of 6
+byte-identical · nine checks exit 0 · four simulation checks exit 0.

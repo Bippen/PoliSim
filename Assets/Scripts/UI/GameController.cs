@@ -1616,6 +1616,24 @@ namespace PoliSim.UI
             _selectedPlayerCountryId = countryId;
             _playerCountry = _world.GetCountry(countryId);
             _prevGdp = _playerCountry.State.GDP;
+
+            // C-R2 (R-CL1): the player has a party. ⚠ The PICKER is billed, not built (`COMPLETED.md`
+            // §119), so until it exists selection seats the LARGEST PARTY IN THIS COUNTRY'S OWN SEEDED
+            // CHAMBER - you are the government, and which party that is comes from the real returns on
+            // disk rather than from a default this code invented. Only when none is stored: a loaded save
+            // keeps the party it was played with.
+            if (string.IsNullOrEmpty(_playerCountry.PlayerPartyAbbrev))
+            {
+                PoliticalParty largest = default;
+                foreach (PoliticalParty party in PartySystems.For(countryId))
+                {
+                    if (largest.Abbrev == null || party.SeedSeats > largest.SeedSeats) { largest = party; }
+                }
+
+                _playerCountry.PlayerPartyAbbrev = largest.Abbrev;
+                _playerCountry.PartyApprovalRating = _playerCountry.State.ApprovalRating;
+            }
+
             // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.
             _onDesk = true;
 

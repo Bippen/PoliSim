@@ -43,7 +43,13 @@ namespace PoliSim.Persistence
         // holds any political capital", which is a DIFFERENT game state from "every party opens at 50",
         // and the next election's carry-over would read it as such. R-CL3 ruled the bump in for exactly
         // that reason. Older saves are refused with a plain message; no migration machinery pre-release.
-        public const int CurrentSaveVersion = 3;
+        //
+        // C-R2/C-R3 (2026-08-31) bump this 3 -> 4: `Country.PlayerPartyAbbrev` and
+        // `Country.PartyApprovalRating` add the player's PARTY and its own approval stock to the
+        // persisted World graph (R-CL1). Same reasoning as the 2 -> 3 bump: an absent party is not a
+        // harmless default, it is a DIFFERENT game state - "this save was played without a party" -
+        // and selection would silently seat one on load. Older saves refused plainly; no migration.
+        public const int CurrentSaveVersion = 4;
 
         /// <summary>
         /// One settings object, built fresh per call (JsonSerializerSettings is mutable; sharing a

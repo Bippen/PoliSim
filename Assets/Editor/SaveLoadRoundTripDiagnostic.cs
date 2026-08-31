@@ -109,6 +109,22 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
 
+        /// <summary>C-R2: the player party as a stable INDEX into the country's own party system, so the
+        /// snapshot compares WHICH party rather than merely whether one is set. -1 = none.</summary>
+        private static double PartyIndex(Country country)
+        {
+            if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return -1; }
+
+            int i = 0;
+            foreach (PoliticalParty party in PartySystems.For(country.Id))
+            {
+                if (party.Abbrev == country.PlayerPartyAbbrev) { return i; }
+                i++;
+            }
+
+            return -2;
+        }
+
         private static bool RunScenario(int seed, CountryId player, bool exerciseFileIoAndVersionGate)
         {
             SimulationRandom.Seed(seed);
@@ -164,6 +180,20 @@ namespace PoliSim.EditorTools
                     playerCountry.PartyCapital[0].Reputation = 63.5;
                     playerCountry.PartyCapital[0].OrganizationalStrength = 41.25;
                 }
+
+                // C-R2/C-R3: seat a party and move its approval off the default before saving, for the
+                // same reason - state that never differs from its default proves nothing about persistence.
+                // ⚠ The party is the country's SECOND-largest, deliberately not the first: the interim
+                // selection rule seats the largest, so a save that came back with the largest would look
+                // identical whether it round-tripped or was re-derived on load.
+                var roster = new List<PoliticalParty>(PartySystems.For(player));
+                if (roster.Count > 1)
+                {
+                    roster.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
+                    playerCountry.PlayerPartyAbbrev = roster[1].Abbrev;
+                }
+
+                playerCountry.PartyApprovalRating = 57.25f;
 
                 Dictionary<CountryId, PolicyDecision> decisionsA = BuildNoOpDecisions(world);
 
@@ -527,6 +557,10 @@ namespace PoliSim.EditorTools
                 // different order attached to the wrong parties - which is the failure a per-party stock
                 // is most likely to have. Keying on the abbreviation makes the comparison say WHICH party
                 // moved.
+                // C-R2/C-R3: the player's party and its approval stock, by NAME not by presence.
+                snap[$"{p}.PlayerParty"] = PartyIndex(country);
+                snap[$"{p}.PartyApproval"] = country.PartyApprovalRating;
+
                 snap[$"{p}.PartyCapital.Count"] = country.PartyCapital.Count;
                 foreach (Elections.PartyCampaignCapital capital in country.PartyCapital)
                 {
