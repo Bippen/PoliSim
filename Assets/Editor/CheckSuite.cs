@@ -257,6 +257,15 @@ namespace PoliSim.EditorTools
                 // as retired. It belongs HERE rather than in the nine for this group's own stated reason -
                 // COST: it builds and advances a World per PolicyDecision field, and there are 37.
                 ("LeverLivenessCheck", LeverLivenessCheck.Run),
+
+                // P-I2 (2026-08-31): the cohort substrate. Both belong to this group and not to the nine
+                // for the same cost reason - each builds a World, and the aging step then runs 25 years of
+                // it per country. CohortSubstrateDiagnostic asserts the 21 bands reconcile against their
+                // own publishers' separately-transcribed totals; CohortAgingStepDiagnostic HINDCASTS the
+                // step against a published year it was not fitted to, which is the assertion that caught a
+                // ~50% double-count in the open 100+ band on its first run.
+                ("CohortSubstrateDiagnostic", CohortSubstrateDiagnostic.Run),
+                ("CohortAgingStepDiagnostic", CohortAgingStepDiagnostic.Run),
             };
 
             var names = new string[simulation.Length];

@@ -36,7 +36,24 @@ written to be ruled together.
 - **At the YEAR boundary, not the day tick.** `DaysPerTurn` is 365, so one turn is one year and the
   boundary already exists. A day-tick aging step would need fractional cohort movement, which is
   arithmetic nobody can check on screen.
-- The step, in order, per country: (1) deaths applied per cohort from sourced age-specific mortality;
+- ⚠ **The step as BUILT at P-I2 stage 2 differs from the four clauses below in three ways, each because
+  the data said so.** They are corrected here rather than left to be discovered in the code.
+  **(1) Deaths** are not applied separately: the survival ratio is **deaths and net migration together**,
+  as the published stock reports them — the fork is D-6, decided and strikeable, and its cost is that the
+  immigration lever needs an additive age-profiled term rather than a hook into the survival array.
+  **(2) The 1/5 uniform flow is REPLACED by an OBSERVED crossing fraction.** This document called it
+  *"the standard, and standardly wrong, approximation"* and was right; since the single-year data that
+  would justify 1/5 had to be fetched anyway to fold the pyramids, using it costs nothing and removes the
+  assumption. The observed fractions sit near 0.20 in the young bands and fall to **0.076–0.199** in the
+  old ones, where the pyramid is steepest and the dependency ratio is decided.
+  **(3) Births** come from a **general** fertility rate (births per woman aged 15–49), not age-specific
+  rates, because the substrate is sex-blind; the female share of 15–49 is carried as its own sourced
+  figure per country, since a hard-coded 0.5 would be invented and none of the six is 0.5 (0.4849 Sweden
+  to 0.5023 France).
+  ⚠ **One assumption remains and is named**: the open 100+ band's inflow is unobservable in a stock
+  series, so the age-99 cohort is assumed to survive at its own band's rate. It governs under 0.03 % of
+  every population — and getting it wrong the first time is what the hindcast caught.
+- The step as originally specified, in order, per country: (1) deaths applied per cohort from sourced age-specific mortality;
   (2) survivors shifted up one cohort, with a 1/5 flow per year if cohorts are five years wide — ⚠ **this
   is the standard, and standardly wrong, approximation**: it assumes a uniform distribution inside the
   cohort. It is acceptable here and **must be stated in the class's own doc comment** rather than
@@ -129,15 +146,18 @@ C-D1 is billed and closed as billed, this spec-let inherits the bill rather than
 |---|---|---|
 | population by age and sex, all five EU countries | **Eurostat `demo_pjan`** (DOI 10.2908/demo_pjan), `sex=T`, `time=2024`, 1 January 2024 | ✅ **FETCHED at P-I2 stage 1** — single years folded into fives; all five reconcile to the person against the dataset's own TOTAL |
 | the same for the USA | **US Census Bureau PEP, vintage 2024, `nc-est2024-agesex-res.csv`**, `POPESTIMATE2024`, `SEX=0` | ✅ **IDENTIFIED AND FETCHED at P-I2 stage 1**, discharging this bill. ⚠ Reference date **1 July 2024**, not 1 January — no 1 January US series exists to match Eurostat, and the offset is stated rather than hidden |
-| age-specific fertility | Eurostat `demo_frate` family / national statistical offices | ⚠ **BILLED** — dataset code **not verified**, so it is named as a family, not asserted as an id |
-| age-specific mortality / life tables | Eurostat life tables; Human Mortality Database | ⚠ **BILLED** |
-| migration by age | Eurostat immigration-by-age series | ⚠ **BILLED** |
+| age-specific fertility | Eurostat `demo_frate` family / national statistical offices | ⚠ **SUPERSEDED at P-I2 stage 2, not discharged.** `demo_frate` was fetched and answers for the EU five; it is not used, because the step takes a **general** fertility rate the substrate can actually apply (see §2). Age-specific rates become buildable the day the substrate carries sex |
+| age-specific mortality / life tables | Eurostat `demo_mlifetable` (`PROBSURV` by single year) — ⚠ **and NOTHING equivalent for the USA** | ⚠ **SUPERSEDED at P-I2 stage 2 by D-6.** Fetched and confirmed for the EU five. For the USA: SSA's actuarial table returns **HTTP 403**, the Census PEP API needs a key, the CDC portal has life expectancy and state tables but no national q(x) by age, and the `nc-est2024-alldata-*` files are stock only. One uniform derived method was chosen over the best data for five and something else for the sixth |
+| migration by age | Eurostat `migr_imm8` / `migr_emi2` | ⚠ **STILL BILLED, and it is now the ONE thing blocking the immigration lever.** Both fetched and both answer for the EU five; the USA has no equivalent. Needed as an age PROFILE for the additive inflow term, since D-6's survival ratio cannot be split |
 | labour-force participation by age | Eurostat LFS; SCB for Sweden | ⚠ **BILLED** |
 | turnout by age (Sweden) | SCB's *valdeltagandeundersökning* | ⚠ **BILLED** |
 
-⚠ **One dataset id is asserted and six are billed, and that asymmetry is deliberate.** `demo_pjan` was
-checked at C-C13; the others were not, and a dataset code recalled rather than checked is an invented
-figure wearing a technical costume.
+⚠ **Written at C-C13 as *"one dataset id asserted, six billed"* — and every one of the seven has now been
+OPENED, which is the only way a bill is discharged.** Two are seeded (`demo_pjan`, the Census PEP file),
+two are superseded by a method that needs less than they offer (`demo_frate`, `demo_mlifetable`), one is
+now the single blocker on the immigration lever (`migr_imm8`/`migr_emi2`), and two remain genuinely
+untouched (participation by age, turnout by age). ⚠ **A dataset code recalled rather than checked is an
+invented figure wearing a technical costume**, and that is why the two that are still billed say BILLED.
 
 ---
 

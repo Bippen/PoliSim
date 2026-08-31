@@ -8357,3 +8357,95 @@ disagrees with its seed for France (+1.94), Italy (−1.64) and Poland (+3.80); 
 is above the pyramid's own sum, Poland by **0.88 M**. Failing on either would push toward re-seeding a
 **sourced** pyramid to match an **authored** scalar — tuning a figure to pass a gate. A scalar may move in
 the retirement stage, with its family explained per country.
+
+## 131. P-I2 STAGE 2 — the aging step, and the assertion that caught it wrong (2026-08-31)
+
+The substrate can now age. **The step's own guard failed on its first run, by ~50 % in all six countries,
+and that is the item's best evidence** — the assertion was designed to be capable of failing, and it was.
+
+### D-6, decided and taken as a strikeable R-N1 call
+
+**The fork, measured before deciding.** `demo_frate`, `demo_magec`, `demo_mlifetable`, `migr_imm8` and
+`migr_emi2` were all fetched and all answer for the EU five. For the **USA**: SSA's actuarial life table
+returns **HTTP 403**, the Census PEP API needs a key, the CDC data portal carries life expectancy and
+state tables but **no national q(x) by single year of age**, and the `nc-est2024-alldata-*` files are
+stock by age/race/sex with **no components of change**.
+
+⚠ **Ruled (a): ONE uniform method for six countries** — cohort-change ratios derived from each country's
+own two consecutive published stocks. The project's idiom permits an asymmetry **only when the
+alternative is inventing data** (C-B3's USA fiscal fallback had no second option); here a uniform option
+exists. **Its cost is written at the call site**: `Survival` is deaths and net migration *together*, so
+the immigration lever cannot hook through it and needs an additive age-profiled term — which makes
+`migr_imm8` **the one thing now blocking that lever**. Reversible: if a US life table becomes readable,
+the array splits without changing the step's shape.
+
+### The three derivations — each a ratio of two published counts and nothing else
+
+| | derivation |
+|---|---|
+| **Survival**, band k | Σ(ages 5k+1…5k+5 in t+1) / Σ(ages 5k…5k+4 in t) |
+| **Crossing**, band k | (age 5k+5 in t+1) / Σ(ages 5k+1…5k+5 in t+1) |
+| **General fertility rate** | (age 0 in t+1) / Σ(women 15–49 in t) |
+
+⚠ **`Crossing` REPLACES the spec-let's uniform 1/5**, which §2 itself called *"the standard, and
+standardly wrong, approximation"*. The single-year data that would justify 1/5 had to be fetched anyway,
+so using it costs nothing and removes an assumption. Observed: ~0.20 in the young bands, falling to
+**0.076–0.199** in the old ones — where the pyramid is steepest and the dependency ratio is decided.
+
+⚠ **The female share of 15–49 is SOURCED per country, not assumed.** The substrate is sex-blind, so it
+cannot supply the fertility denominator. **A hard-coded 0.5 would be an invented figure and none of the
+six is 0.5** — the range is 0.4849 (Sweden) to 0.5023 (France).
+
+### ⚠ THE HINDCAST FAILED FIRST, AND THAT IS THE POINT
+
+The rates come from 2023 and 2024, so stepping the 2023 pyramid must reproduce the **published** 2024
+one, band by band. First run:
+
+| country | worst band | rel. error |
+|---|---|---|
+| USA | 100+ | **52.50 %** |
+| Sweden | 100+ | **49.36 %** |
+| Germany | 100+ | **49.00 %** |
+| France | 100+ | **51.13 %** |
+| Italy | 100+ | **49.58 %** |
+| Poland | 100+ | **54.38 %** |
+
+**Every other band passed at 0.05 %.** A double count: band 19's "crossing" numerator was the *whole*
+100+ stock rather than the newcomers, while the open band's survival separately retained its own
+residents. Re-derived so band 19 and the open band share **one** named assumption — the age-99 cohort
+survives at its own band's rate — which makes the two reconcile by construction:
+s₁₉ = A / (B − p₉₉), and the open band takes what is left.
+
+After the fix, the worst band in **all six** is **0.0001–0.0002 %** — float noise. ⚠ **No long-run
+plausibility check would have found this.** The 25-year run looked entirely reasonable *while the step
+was wrong*, which is why the assertion is a hindcast against a year the step was not fitted to and not a
+sanity band on the future.
+
+### The long run — and what it is not
+
+| country | pop now | +25y | ratio | old-age dep now | +25y |
+|---|---|---|---|---|---|
+| USA | 340.111 | 417.899 | 1.229 | 27.91 | 31.28 |
+| Sweden | 10.552 | 10.758 | 1.020 | 33.08 | 39.48 |
+| Germany | 83.456 | 92.864 | 1.113 | 35.23 | 35.96 |
+| France | 68.669 | 74.330 | 1.082 | 34.94 | 45.62 |
+| Italy | 58.971 | 54.222 | 0.919 | 38.36 | 55.44 |
+| Poland | 36.621 | 30.315 | 0.828 | 31.80 | 47.10 |
+
+⚠ **This is NOT a forecast and the harness says so in its own output.** The rates are **one observed
+year held constant for twenty-five**, and that year was not an ordinary one for two of the six — the USA
+and Germany both saw exceptional net immigration in the young bands, which is why the USA reads ×1.23 and
+Germany's dependency ratio barely moves. The column exists to show the arithmetic neither explodes nor
+collapses. A projection needs a rate *series*, which is billed.
+
+### The bar
+
+`StepOneYear` has **no caller under `Assets/Scripts`** — wiring it is the retirement stage, since running
+it alongside the eight scalars' own rules would advance population twice by different arithmetic
+(spec-let §4.1). **Trajectories 6 of 6 byte-identical to `traj_cc7_*`.** The simulation group goes
+**four → six**; fourteen checks green; both ratchets held at 39 and 212.
+
+⚠ **The spec-let is corrected in three more places** — the step's four clauses, the sourcing bill, and its
+closing note. All seven billed sources have now been **opened**, which is the only way a bill is
+discharged: two seeded, two superseded by a method that needs less than they offer, one now the single
+blocker on the immigration lever, and **two genuinely untouched and still saying BILLED**.

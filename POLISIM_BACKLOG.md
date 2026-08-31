@@ -176,6 +176,43 @@ not merely tidier. The model half of R-CL1 is already done: the party exists, pe
 
 ---
 
+---
+
+### D-6 · The aging step's rate sources ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**The question.** Eurostat publishes life tables, fertility and migration by age for the EU five and
+**nothing for the USA** — so does the aging step take the best data for five countries and something else
+for the sixth, or one uniform method derived from each country's own published stock?
+
+⚠ **Measured before deciding, not assumed.** `demo_frate`, `demo_magec`, `demo_mlifetable`, `migr_imm8`
+and `migr_emi2` were all fetched and all answer for the EU five. For the USA: SSA's actuarial life table
+refuses an ordinary request (**HTTP 403**), the Census PEP API needs a key, the CDC data portal carries
+life expectancy and state tables but **no national q(x) by single year of age**, and the Census
+`nc-est2024-alldata-*` files are stock by age/race/sex with **no components of change by age**.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. One uniform method — cohort-change ratios from each country's own two consecutive published stocks** | nothing beyond the fetch; already done | ⚠ **mortality and net migration are not separable**, so the immigration lever cannot hook through the survival array and needs an additive age-profiled term |
+| **b. Eurostat life tables for the EU five; the USA on cohort change** | one item | ⚠ two demographic models wearing one name — the USA's levers would behave differently from the other five for a reason no player could see |
+| **c. Keep hunting for a US life table (HMD registration, NCHS PDF extraction, UN WPP token)** | unknown; three dead ends already | nothing, but it blocks the whole chain D-4 opened on an administrative errand |
+| **d. Bill the rates and stop stage 2** | nothing | ⚠ the substrate that cannot age is a table, not a model, and four items wait behind it |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (a).** Basis: the project's own idiom permits an
+asymmetry **only when the alternative is inventing data** — C-B3 gave the USA the fiscal axis because
+GPS 2019 has no EU item, and there was no second option. Here there *is* a uniform option, and it is
+derived from each country's own publisher with no third-party recall. ⚠ **Its cost is real and is
+written at the call site**: `Survival` is deaths and net migration together, so re-pointing the
+immigration lever is a separate stage with its own hook. **Reversible** — if a US life table becomes
+readable, the survival array splits into mortality and migration without changing the step's shape.
+
+⚠ **The decision paid for itself immediately.** Under (a) the step can be **hindcast against a published
+year it was not fitted to**, and that assertion caught a real double-count in the open 100+ band —
+~50 % in all six countries — that no long-run plausibility check would have shown. Options (b) and (c)
+have no such test available for the USA.
+
+> **To strike it, write:** `D-6 STRUCK: (b)` *(or c / d)* — the survival arrays are re-derivable from
+> data already fetched, so a strike costs one item and no re-fetch.
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.

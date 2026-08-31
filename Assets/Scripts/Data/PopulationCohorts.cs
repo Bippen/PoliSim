@@ -124,6 +124,61 @@ namespace PoliSim.Data
             get { float total = Total; return total <= 0f ? 0f : 100f * InAgeRange(0, 19) / total; }
         }
 
+
+        /// <summary>
+        /// P-I2 stage 2 — **one year of aging, in place.** Spec-let §2's order, with §2's own uniform-1/5
+        /// approximation replaced by the observed crossing fraction.
+        ///
+        /// <para>The step, per band, in this order and no other: (1) apply the band's survival ratio,
+        /// which is deaths and net migration together as the data itself reports them; (2) split each
+        /// band's survivors into those who stay and those who cross into the band above, by the observed
+        /// crossing fraction; (3) the 100+ band accumulates rather than emptying, because there is no
+        /// band above it; (4) births enter band 0–4 from the general fertility rate applied to the female
+        /// share of the 15–49 bands.</para>
+        ///
+        /// <para>⚠ <b>WHY THE FEMALE SHARE IS A PARAMETER AND NOT A CONSTANT.</b> The substrate is
+        /// sex-blind — 21 bands, both sexes — so the fertility denominator cannot be read out of it. The
+        /// caller passes the country's own observed female share of 15–49, from the same publisher and
+        /// the same year as everything else. **A hard-coded 0.5 would be an invented figure**, and it
+        /// would be wrong in the direction that matters: the share is not 0.5 in any of the six.</para>
+        ///
+        /// <para>⚠ <b>What this step does NOT do, deliberately.</b> It does not touch `EconomyState`, and
+        /// nothing in the turn loop calls it yet. Wiring it is the retirement stage's job, where the
+        /// eight demographic scalars stop being stepped by their own rules — running both would advance
+        /// population twice by different arithmetic, which is the spec-let's collision §4.1 and the one
+        /// that would look like a plausible number while being wrong.</para>
+        /// </summary>
+        public void StepOneYear(CohortStepRates rates)
+        {
+            if (rates == null) { return; }
+
+            // Births first, from the population as it stands BEFORE the survivors move - a child born
+            // this year is born to the women who were here at its start, not to the survivors of the
+            // step. Computed now, added last.
+            float childbearing = InAgeRange(15, 49) * rates.FemaleShareOfChildbearingAge;
+            float births = childbearing * rates.GeneralFertilityRate;
+
+            var next = new float[CohortCount];
+            for (int k = 0; k < CohortCount; k++)
+            {
+                float survivors = Counts[k] * rates.Survival[k];
+                if (k == OpenBandIndex)
+                {
+                    // Nothing above 100+, so its survivors stay where they are and are joined by the
+                    // band below. It ACCUMULATES; it does not empty.
+                    next[k] += survivors;
+                    continue;
+                }
+
+                float crossing = survivors * rates.Crossing[k];
+                next[k] += survivors - crossing;
+                next[k + 1] += crossing;
+            }
+
+            next[0] += births;
+            Counts = next;
+        }
+
         /// <summary>The band's human label, so a screen or a log never prints a bare index.</summary>
         public static string Label(int index) =>
             index == OpenBandIndex
