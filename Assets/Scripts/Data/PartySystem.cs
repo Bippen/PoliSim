@@ -26,6 +26,36 @@ namespace PoliSim.Data
     /// dropped.</description></item>
     /// </list>
     /// </summary>
+    /// <summary>
+    /// C-D3: one real, named person who leads a party, with the office as **the party itself names it** —
+    /// `partiledare`, `partiordförande`, `språkrör`. Sweden's eight use three different words for the job
+    /// and the model keeps all three rather than flattening them to "leader".
+    /// </summary>
+    public readonly struct PartyLeader
+    {
+        public readonly string Name;
+        /// <summary>The office in the party's own word, unfranslated - the file it comes from cites each one to the party's own page.</summary>
+        public readonly string Office;
+
+        public PartyLeader(string name, string office)
+        {
+            Name = name;
+            Office = office;
+        }
+    }
+
+    /// <summary>C-D3: the three outcomes of asking who a party sends to a leaders' debate. ⚠ The two
+    /// absences are NOT the same absence and must never be drawn as one.</summary>
+    public enum DebateSeat
+    {
+        /// <summary>One leader, seated.</summary>
+        Resolved,
+        /// <summary>The party has more than one equal leader and nothing designates one. Both are known and both are named.</summary>
+        AbsentByDesign,
+        /// <summary>No leader is sourced for this party. The model does not know - it is not claiming nobody leads it.</summary>
+        NotSourced
+    }
+
     public readonly struct PoliticalParty
     {
         /// <summary>The abbreviation the country's own authority uses. The persisted key.</summary>
@@ -72,8 +102,24 @@ namespace PoliSim.Data
         /// </summary>
         public readonly float EuPosition;
 
+        /// <summary>
+        /// C-D3 (ruled by Elias 2026-08-31): **the party's leaders — ALL of them, with the office as the
+        /// party itself names it.** Empty where no leader is sourced, which is every party outside Sweden.
+        ///
+        /// <para>⚠ <b>The ruling is that the model carries BOTH where there are two.</b> The Green Party is
+        /// led by two <i>språkrör</i>, and the alternative — storing "the leader" and taking the first —
+        /// would silently drop a real named person, which the ruling forbids outright. So this is an array
+        /// rather than a field, for one party's sake, and that is the right trade.</para>
+        ///
+        /// <para><b>Name and office only.</b> `party_leaders_2022.md` states the rule this follows:
+        /// sourcing a real person's NAME does not license inventing their CHARACTER. No attributes, no
+        /// biography, no relationships live here; `CandidateProfile`'s numbers stay `[AUTHORED-DRAFT]` and
+        /// every screen that shows them says so.</para>
+        /// </summary>
+        public readonly PartyLeader[] Leaders;
+
         public PoliticalParty(string abbrev, string name, float lrEcon, float galtan, int seedSeats,
-            string markName = null, float euPosition = float.NaN)
+            string markName = null, float euPosition = float.NaN, PartyLeader[] leaders = null)
         {
             Abbrev = abbrev;
             Name = name;
@@ -82,6 +128,50 @@ namespace PoliSim.Data
             SeedSeats = seedSeats;
             MarkName = markName;
             EuPosition = euPosition;
+            Leaders = leaders ?? System.Array.Empty<PartyLeader>();
+        }
+
+        /// <summary>
+        /// C-D3: **who this party puts in a leaders' debate — or the stated reason nobody can be seated.**
+        ///
+        /// <para>The ruling, in order: the party's own statutes or its published campaign materials decide;
+        /// <b>if neither resolves it, seat NEITHER and state the absence.</b> Never silently drop a real
+        /// named person.</para>
+        ///
+        /// <para>⚠ <b>The two absences are different and are reported differently</b> — C-C8's precedent,
+        /// where "no bilateral trade link" had to read differently from "trade of zero".
+        /// <see cref="DebateSeat.NotSourced"/> means the model does not know who leads this party;
+        /// <see cref="DebateSeat.AbsentByDesign"/> means it knows exactly who leads it, knows there are two
+        /// of them, and knows their own statutes make them equal. A screen collapsing those into "no
+        /// leader" would state something false about a real party.</para>
+        /// </summary>
+        public DebateSeat ResolveDebateSeat(out PartyLeader leader, out string reason)
+        {
+            leader = default;
+
+            if (Leaders == null || Leaders.Length == 0)
+            {
+                reason = $"No leader is sourced for {Name}. The model does not know who leads this party - "
+                         + "which is not a claim that nobody does.";
+                return DebateSeat.NotSourced;
+            }
+
+            if (Leaders.Length == 1)
+            {
+                leader = Leaders[0];
+                reason = null;
+                return DebateSeat.Resolved;
+            }
+
+            var named = new string[Leaders.Length];
+            for (int i = 0; i < Leaders.Length; i++) { named[i] = $"{Leaders[i].Name} ({Leaders[i].Office})"; }
+
+            reason = $"{Name} has {Leaders.Length} equal leaders - {string.Join(" and ", named)} - and neither its "
+                     + "statutes nor its published campaign materials put one of them forward for a debate. "
+                     + "Its stadgar elect two equal sprakror of different genders (11.1-11.2) whose task is to "
+                     + "represent the party (11.4), with no clause designating one for any particular setting. "
+                     + "So neither is seated, and both are named.";
+            return DebateSeat.AbsentByDesign;
         }
 
         /// <summary>Read by `PartyMarkCoverageCheck` through reflection, which is why the name is its and not ours.</summary>
@@ -130,17 +220,44 @@ namespace PoliSim.Data
             }
         }
 
+        /// <summary>
+        /// C-D3: the leaders each party had **on 2022-09-11**, the election this prototype replays.
+        ///
+        /// <para><b>SOURCED</b> — every name and office is `ElectionsData/sweden/party_leaders_2022.md`,
+        /// which takes each from the party's OWN website as it stood within days of the election, through
+        /// the Internet Archive so the citation carries an exact capture timestamp. **A party is the
+        /// authority on who leads it.**</para>
+        ///
+        /// <para>⚠ <b>The vintage is 2022 and is deliberately not current.</b> C, L, S, MP and V have all
+        /// changed leader since. A "current leaders" set is a different item with a different vintage, and
+        /// mixing the two would be exactly the basis-mixing the cross-check gate forbids.</para>
+        ///
+        /// <para>⚠ <b>MP carries TWO, and that is the whole point of the item.</b> Both are named; neither
+        /// is seated in a debate. See <see cref="PoliticalParty.ResolveDebateSeat"/>.</para>
+        /// </summary>
+        private static PartyLeader[] One(string name, string office) => new[] { new PartyLeader(name, office) };
+
         // ---- Sweden: Riksdag 2022. Units are PARTIES; every one has a CHES position. Sums to 349.
         private static readonly PoliticalParty[] SwedenParties =
         {
-            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f),
-            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, euPosition: 2.68f),
-            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, euPosition: 5.74f),
-            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, euPosition: 3.32f),
-            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, euPosition: 6.11f),
-            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, euPosition: 5.35f),
-            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, euPosition: 5.32f),
-            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, euPosition: 6.84f),
+            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f,
+                leaders: One("Magdalena Andersson", "partiordforande")),
+            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, euPosition: 2.68f,
+                leaders: One("Jimmie Akesson", "partiledare")),
+            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, euPosition: 5.74f,
+                leaders: One("Ulf Kristersson", "partiledare")),
+            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, euPosition: 3.32f,
+                leaders: One("Nooshi Dadgostar", "partiledare")),
+            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, euPosition: 6.11f,
+                leaders: One("Annie Loof", "partiledare")),
+            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, euPosition: 5.35f,
+                leaders: One("Ebba Busch", "partiledare")),
+            // ⚠ TWO leaders, carried as two. Taking "the first" would drop Per Bolund, a real named
+            // person, which the ruling forbids outright.
+            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, euPosition: 5.32f,
+                leaders: new[] { new PartyLeader("Marta Stenevi", "sprakror"), new PartyLeader("Per Bolund", "sprakror") }),
+            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, euPosition: 6.84f,
+                leaders: One("Johan Pehrson", "partiledare")),
         };
 
         // ---- Germany: Bundestag 2025. Units are PARTIES; every one has a CHES position. Sums to 630.

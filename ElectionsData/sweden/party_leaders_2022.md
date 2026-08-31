@@ -35,11 +35,29 @@ The Green Party is led by **two spokespeople** (*språkrör*), by its own statut
 and in 2022 they were Märta Stenevi and Per Bolund. **Nothing in the model represents this.** A
 debate slot, a leader's attributes and a leader-level relationship all assume one person per party.
 
-This is recorded as a **finding, not fixed here**: the fix is a design question (does the player
+~~This is recorded as a **finding, not fixed here**: the fix is a design question (does the player
 face one of the two, both, or an aggregate?), it touches §15's debate and §29's leader
 compatibility, and W-F6's done-when is to source the names. **It is billed in
 `MISSING_PREREQUISITES.md` rather than resolved by quietly dropping Bolund**, which is what taking
-"the first one" would amount to.
+"the first one" would amount to.~~
+
+✅ **RULED AND BUILT at C-D3, 2026-08-31** (`COMPLETED.md` §114). Elias's ruling: *the model carries
+BOTH; the debate seats the one the party's own statutes or its published campaign materials put
+forward; if neither resolves it, seat neither and state the absence. **Never silently drop a real
+named person.*** `PoliticalParty.Leaders` is now an ARRAY, for this one party's sake, and every name
+in the table above is in the model — asserted by NAME, not by count.
+
+⚠ **MP's statutes were read rather than assumed.** Its *stadgar* elect **två jämställda språkrör**
+(§ 11.1) who must be of different genders (§ 11.2) and whose task is *"att företräda partiet"*
+(§ 11.4), and they contain **no clause designating one of them for a debate or for any other
+setting** (source: `mp.se/om/stadgar/`, read 2026-08-31). So the ruling's fallback applies exactly:
+`ResolveDebateSeat` returns **ABSENT BY DESIGN** for MP, with both språkrör named in the reason it
+gives.
+
+⚠ **Two absences, kept distinct** (C-C8's precedent): `NotSourced` — the model does not know who
+leads this party, which is every party outside Sweden — is a different statement from
+`AbsentByDesign`, and a screen that drew them the same would be stating something false about a real
+party.
 
 ## What this file deliberately does NOT carry
 

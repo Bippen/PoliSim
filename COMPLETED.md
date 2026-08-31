@@ -7219,3 +7219,62 @@ be moved quietly.
 if the bisection has no upper bound — half a measurement reported as a whole one is the failure mode it
 guards). One widening: `CampaignAiHarness.Seats2022` private → internal, so the sourced seat table is read
 rather than copied, on C-A1's own precedent with `GateReRun.BuildCases`. No `Assets/Scripts` file touched.
+
+## 114. C-D3 — MP's two språkrör: both carried, neither seated, and the statute quoted (2026-08-31)
+
+**The ruling** (Elias, 2026-08-31): *the model carries BOTH; the debate seats the one the party's own
+statutes or its published campaign materials put forward; if neither resolves it, seat neither and state
+the absence. **Never silently drop a real named person.***
+
+### The statutes were read, not assumed
+
+Miljöpartiet's *stadgar* elect **två jämställda språkrör** (§ 11.1), who **must be of different genders**
+(§ 11.2), for two years and at most twelve in a row (§ 11.7), and whose task is *"att företräda partiet
+och föra ut dess åsikter"* (§ 11.4). ⚠ **They contain no clause designating one of them for a debate, or
+for any other setting.** Source: `mp.se/om/stadgar/`, read at C-D3.
+
+So the ruling's fallback applies exactly, and it applies **because of what the statute says** rather than
+because nobody could decide: **neither språkrör is seated, both are named, and the reason quotes the
+statute.**
+
+### What was built
+
+- **`PartyLeader`** — one real, named person, with the office **as the party itself names it**. Sweden's
+  eight use three different words for the job (*partiordförande*, *partiledare*, *språkrör*) and the model
+  keeps all three rather than flattening them to "leader".
+- **`PoliticalParty.Leaders` is an ARRAY, not a field.** ⚠ For one party's sake — and that is the right
+  trade, because the alternative is storing "the leader" and taking the first, which is exactly the
+  silent dropping of Per Bolund the ruling forbids. Additive, defaulting to empty, so all 53 existing seed
+  rows compile unchanged.
+- **`ResolveDebateSeat`** returns one of three outcomes, and ⚠ **the two absences are deliberately
+  different** (C-C8's precedent, where "no bilateral trade link" had to read differently from "trade of
+  zero"): `Resolved` · `AbsentByDesign` (the model knows exactly who leads this party, knows there are
+  two, and knows their own statutes make them equal) · `NotSourced` (the model does not know who leads
+  this party — **which is not a claim that nobody does**).
+- **Sweden's eight leaders seeded** from `party_leaders_2022.md`, vintage **2022-09-11**, each taken from
+  the party's own website through an archived capture. ⚠ **Name and office only** — the file's own rule
+  holds: *sourcing a real person's NAME does not license inventing their CHARACTER*, so no attributes, no
+  biography, no relationships. `CandidateProfile`'s numbers stay `[AUTHORED-DRAFT]`.
+- ⚠ **The vintage is 2022 and deliberately not current.** C, L, S, MP and V have all changed leader since;
+  a current set is a different item with a different vintage, and mixing them is the basis-mixing the
+  cross-check gate forbids.
+
+### The gate (`PartyLeadershipDiagnostic`) — ALL ASSERTIONS PASS
+
+1. **Nobody is dropped — checked BY NAME**, against a roster duplicated into the diagnostic on purpose. A
+   diagnostic that read the same array it is checking would assert nothing, and a count matches while the
+   wrong person is stored.
+2. **MP carries two and its debate seat is ABSENT BY DESIGN**, with **both** språkrör named in the reason
+   — asserted, because reporting the absence without naming who was not seated is the second way this item
+   goes wrong.
+3. **The other seven resolve** to their one leader: 7 resolved, 1 absent by design.
+4. ⚠ **The two absences stay distinct** — all **9** German parties report `NotSourced` and **none** reports
+   `AbsentByDesign`.
+
+### The bar
+
+`PartyLeadershipDiagnostic` ALL PASS · nine checks exit 0 · `SaveLoadRoundTripDiagnostic` exit 0 ·
+`ElectionDayReachDiagnostic` and `CompositionHarness` exit 0 · trajectories **6 of 6 byte-identical to
+`traj_cc7_*`** — leaders are seed data on the party system and reach no simulation path, and the dump
+proves it rather than the reasoning being trusted. No screen shows a leader today, so nothing was filmed;
+what the item buys is that **the first screen that does cannot be wrong about MP**.
