@@ -786,10 +786,12 @@ namespace PoliSim.Simulation
         /// twice as hard as headline through a cycle (directionally grounded, not precisely fitted,
         /// like every sensitivity in this file). This is the ONE channel every existing lever reaches
         /// the stat through.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its relative size; the number itself is a game figure no cited study fixes.</remarks>
         private const float YouthUnemploymentCyclicalSensitivity = 2f;
 
         /// <summary>Faster than the structural drifts, slower than headline's own reversion - youth
         /// labour markets churn quickly, but the stat still follows the cycle rather than snapping.</summary>
+        /// <remarks>CONVENTION - a reversion speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float YouthUnemploymentReversionSpeed = 0.3f;
 
         /// <summary>Generous gameplay ceiling - southern-Europe crisis peaks reached the high 50s
@@ -819,18 +821,23 @@ namespace PoliSim.Simulation
         /// <summary>Years of life expectancy lost per point PovertyRate sits above the country's own
         /// baseline - the poverty-mortality link is among the best-documented social gradients; the
         /// scale here is modest (5 points of excess poverty costs 0.4 years).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its relative size; the number itself is a game figure no cited study fixes.</remarks>
         private const float LifeExpectancyPovertySensitivity = 0.08f;
 
         /// <summary>Years added at FULL generosity of an implemented UniversalHealthcare program -
         /// universal-coverage literature puts the effect at one to two years; 1.5 sits mid-range,
         /// scaled by GenerosityLevel like every welfare effect.</summary>
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED BRACKET - the summary above states the bracket it sits in (the universal-coverage literature puts the effect at one to two years) and says plainly that 1.5 is chosen mid-range rather than measured.</remarks>
         private const float LifeExpectancyHealthcareSensitivity = 1.5f;
 
         /// <summary>Generational reversion - the same "slowest-moving quantities in the model" reasoning
         /// PopulationGrowthReversionSpeed documents; life expectancy moves over decades, not quarters.</summary>
+        /// <remarks>CONVENTION - a reversion speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float LifeExpectancyReversionSpeed = 0.05f;
 
+        /// <remarks>CONVENTION - a state-space clamp on years of life expectancy. Both ends sit outside the range any of the six occupies, so the pair is defence-in-depth against a feedback bug, not a prediction.</remarks>
         private const float MinLifeExpectancyYears = 60f;
+        /// <remarks>CONVENTION - a state-space clamp on years of life expectancy. Both ends sit outside the range any of the six occupies, so the pair is defence-in-depth against a feedback bug, not a prediction.</remarks>
         private const float MaxLifeExpectancyYears = 95f;
 
         /// <summary>Reverts EconomyState.LifeExpectancy toward the structural baseline, dragged by
@@ -861,7 +868,9 @@ namespace PoliSim.Simulation
                 MinLifeExpectancyYears, MaxLifeExpectancyYears);
         }
 
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place. The Phase 1 discipline this file has followed since.</remarks>
         private static readonly float YouthUnemploymentReversionSpeedPerDay = PerDayReversion(YouthUnemploymentReversionSpeed);
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place. The Phase 1 discipline this file has followed since.</remarks>
         private static readonly float LifeExpectancyReversionSpeedPerDay = PerDayReversion(LifeExpectancyReversionSpeed);
 
         public static void ApplyYouthUnemploymentDaily(Country country) => ApplyYouthUnemployment(country, YouthUnemploymentReversionSpeedPerDay);
@@ -877,6 +886,7 @@ namespace PoliSim.Simulation
         /// <summary>Gini points added per point Unemployment sits above NAIRU - recessions raise
         /// measured inequality modestly (job loss concentrates at the bottom of the distribution);
         /// directionally grounded, deliberately small against the policy pulls below.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its relative size; the number itself is a game figure no cited study fixes.</remarks>
         private const float GiniUnemploymentSensitivity = 0.4f;
 
         /// <summary>Gini points removed per point of income-tax rate above the country's own seeded
@@ -884,6 +894,7 @@ namespace PoliSim.Simulation
         /// Modest by design: marginal-rate changes move measured Gini slowly, and the strong
         /// redistribution levers are the transfer programs, matching the real pre/post-transfer
         /// decomposition where transfers do most of the work.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its relative size; the number itself is a game figure no cited study fixes.</remarks>
         private const float GiniIncomeTaxSensitivity = 0.08f;
 
         // GiniMinimumWageSensitivity moved VERBATIM to LaborCouplings (pass 3's declared labor
