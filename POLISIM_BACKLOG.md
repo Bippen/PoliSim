@@ -34,6 +34,36 @@ These four changed what the pass builds. Recorded here so no row below reads as 
 
 ---
 
+## 0b. Pre-rulings for the rest of the list (Elias, 2026-08-31)
+
+**Each is strikeable; all are binding unless struck.** They exist so no session stalls mid-track waiting
+on a ruling — the process correction of the same date moved review to **track** boundaries, and these are
+what make that safe.
+
+| row | the ruling |
+|---|---|
+| **C-C8** | If the model holds no fact about a pair, the page **shows the absence explicitly** and the gap becomes a C-F1 line. Trade volume comes from the map's own data; compass positions compare as drawn. **No relations score, no derived affinity presented as a fact.** Prev/next browsing; three country pages minimum. |
+| **C-C9** | Compute incrementally at the turn boundary, same seed, player-independent events shared. ⚠ **If the per-turn cost exceeds a stated budget, report the cost and ship behind a flag rather than optimising blind — a MEASURED cost is the deliverable, not a fast one.** |
+| **C-C10** | If the divergence cannot be attributed to enacted changes within tolerance, **report the residual as a named finding rather than forcing the sum. An honest residual beats a false identity.** |
+| **C-C11** | **No constant moves.** Where the literature disagrees, report the range. Where the model sits outside every sourced estimate, **say so plainly — that is the finding.** |
+| **C-C12 / C-C13** | **Documents only.** C-C13 recommends **5-year cohorts** unless the sourcing says otherwise, and carries the collision map plus the "one demography, two consumers" join. |
+| **C-C14** | Remove the authored ±5–10 %; **do not re-roll, do not stabilise.** The point with its scope stated, matching C-C1. |
+| **C-D1** | Source SCB per-valkrets marginals **if reachable under the cross-check gate**; otherwise bill the exact series and close as billed. **Never derive from data that does not exist.** |
+| **C-D2** | Measure the pool a playable eight-party field needs; **propose, do not apply.** |
+| **C-D3** | ⚠ **RULED: the model carries BOTH språkrör.** The debate seats the one the party's own statutes or its published campaign materials put forward; **if neither resolves it, seat neither and state the absence. Never silently drop a real named person.** |
+| **C-D4** | Build the §38 carry-over **if the persisted `ElectionRecord` supports it cheaply**; otherwise defer by name with its trigger. |
+| **C-D5** | Implement the swing column now that a record persists. |
+| **C-C5** | Stays blocked on its bill. **If ECB reference rates are reachable under the cross-check gate, take them** — one vintage, one stated derivation, all three pairs — and unblock it; otherwise leave it billed and continue. |
+| **S-14** | ⚠ **RULED, ruling-first row: campaign money is a SEPARATE PURSE in national units, and the two never transact unless Elias rules otherwise. Do NOT build the join.** |
+| **S-15** | Content item, filed; **not improvised inside another item.** |
+
+**Unchanged and explicitly not to be sped up:** measure the premise before fixing it · evidence must bind
+where the change lives (C-C2's precedent) · BASELINE trajectory changes explained per country with their
+causation **demonstrated, not asserted** (C-C7's precedent) · never tune to pass a gate · never invent a
+figure · C-G1 deletes nothing that is not first migrated.
+
+---
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G. One commit per item; stop at item boundaries.
@@ -266,5 +296,5 @@ for the intended one.
 | ID | what | rides | ruled |
 |---|---|---|---|
 | **RIDE-1** | **Delete `GraphRenderer.DrawPublished`.** ⚠ **It has NO CALLERS** — P-A2's cut of the "as published" graph block (2026-08-29) removed the last one and left the method behind, so **the published-graph path is NOT live and must not be treated as such.** Anything reasoning about how the game draws a published series should read `Draw` and `DrawPublished`'s own overlay helpers instead. Found at C-C4 | the next item that touches `GraphRenderer.cs` | 2026-08-31 (Elias): rides the next item, **no separate commit** |
-| S-14 | ⚠ **The game already holds TWO currencies with no conversion.** The campaign layer prices in **kronor** (war chest 2 400 000 kr, a television buy 500 000, a social post 5 000); the macro layer is in **USD billions**. They never meet today because a campaign is staged rather than funded from the state's budget — **the day a campaign is paid for out of anything the macro model holds, one of the two is wrong by a factor of ~10 500 000 000**. Invisible until it is expensive | CODE | `COMPLETED.md` §98 |
+| S-14 | ✅ **RULED 2026-08-31: campaign money is a SEPARATE PURSE in national units, and the two never transact unless Elias rules otherwise. DO NOT BUILD THE JOIN.** ⚠ **The game already holds TWO currencies with no conversion.** The campaign layer prices in **kronor** (war chest 2 400 000 kr, a television buy 500 000, a social post 5 000); the macro layer is in **USD billions**. They never meet today because a campaign is staged rather than funded from the state's budget — **the day a campaign is paid for out of anything the macro model holds, one of the two is wrong by a factor of ~10 500 000 000**. Invisible until it is expensive | CODE | `COMPLETED.md` §98 |
 | S-15 | ⚠ **The central-bank candidate pool's prose is USA-specific and is now shown to every country.** `FederalReserveSystem.CandidatePool`'s authored descriptions name the institution — *"believes **the Fed** waited too long to act last cycle"* — so since C-C7 a Swedish player is offered Riksbank governors who talk about the Fed. Fixing it means authoring per-country fictional descriptions for the whole pool: a CONTENT item, not a display fix, and not to be improvised. The three structural strings (banner, lean row, appointment sentence) were fixed at C-C7 | CODE (content) | `COMPLETED.md` §100 |

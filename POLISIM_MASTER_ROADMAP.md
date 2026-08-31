@@ -20,6 +20,23 @@ record, only from the standing text.
    full trajectory suite and the rule-15 old-beside-new diff run ONCE, at pass end, as the closing
    gate — not per item.** (Amends rule 0's per-item practice; the per-item bar is the touched-screen
    bar.)
+   ⚠ **RESTORED 2026-08-31 (Elias, the clearance list's process correction) — this rule had drifted and
+   the drift is named so it does not return.** The clearance pass had been filming **all four widths per
+   screen item**, which is rule 0's per-item practice that this rule replaced. The v2 rule stands as
+   written: **per screen item, 1280 and 2560 only** — the extremes catch nearly everything — with the
+   guards and `ScreenEdgeCheck` silent; **the full four-width matrix runs ONCE at the close of a track**,
+   with the trajectory suite and the rule-15 diff. This is a restoration, not a relaxation: the matrix
+   still runs, and it runs where the rule always said it should.
+
+   ⚠ **Review at TRACK boundaries, not item boundaries** (same correction). A session works across items
+   without stopping for instruction and reports at the close of a track — Track C, Track D, the R-rows,
+   Track E, F1, G1 — or when budget runs low, whichever comes first. Pre-rulings exist precisely so no
+   session stalls mid-track; they are recorded at the head of `POLISIM_BACKLOG.md`.
+
+   ⚠ **Records-only work batches.** Rows that touch no code (deferral sweeps, trigger-shelf re-reads,
+   watch-item moves, riders, document migrations) run as ONE records-sweep commit per accumulated batch.
+   **One commit per item remains the rule for anything touching `Assets/`.**
+
 2. **Never invent a figure.** Every real-world number carries source, vintage and basis (the
    variant-axis rule); tags `[VERIFIED]`/`[PROVISIONAL]`/`[ESTIMATED]`/`[PLACEHOLDER]` stay in
    force; the API cross-check gate applies to anything sourced.
