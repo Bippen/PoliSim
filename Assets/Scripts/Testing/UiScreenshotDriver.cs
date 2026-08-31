@@ -278,6 +278,13 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // C-C10 (P-G2): the impact ledger instead of the sweep - the run ends here.
+            if (ImpactLedger)
+            {
+                yield return CaptureImpactLedger(controller);
+                yield break;
+            }
+
             DivergeSwfWeights(controller);
             DraftSpendingLines(controller);
             yield return Settle();
@@ -2362,6 +2369,18 @@ namespace PoliSim.Testing
         public bool ElectionNightBoard;
 
         /// <summary>
+        /// C-C10 (P-G2): `-shotledger` films the impact ledger instead of the tab sweep.
+        ///
+        /// <para>⚠ <b>It needs its own flag because the sweep is deliberately a NO-POLICY warm-up</b> —
+        /// *"anything else would bake one playthrough's choices into what is meant to be a picture of the
+        /// UI"* — and a ledger with no policy behind it correctly has nothing to attribute. Filming its
+        /// populated state therefore requires a game where the player actually moved dials, which is a
+        /// different run, not a stricter one. Both states end up on film: the sweep carries the empty
+        /// one, this carries the populated one.</para>
+        /// </summary>
+        public bool ImpactLedger;
+
+        /// <summary>
         /// Sweden's 2022 Riksdag result — the SOURCED vector every polled figure on the campaign
         /// screen descends from (ElectionsData/sweden/returns_2022.md; Valmyndigheten's RD_S.json
         /// final count, 6 477 970 valid votes). It is used here as the campaign's TRUE preference,
@@ -3173,6 +3192,99 @@ namespace PoliSim.Testing
             "map", "compass", "web", "sparkline", "chipstrip", "tile", "graph", "trace", "sheet", "chip",
             "stamp", "stampchip", "steps", "hemicycle", "pie", "flag", "icon", "row", "bars", "dot"
         };
+
+        /// <summary>
+        /// C-C10 (P-G2): a game where the player actually governed, so the impact ledger has something
+        /// to attribute and the Statistics sheet can be filmed with it populated.
+        ///
+        /// <para>Three families are held down for the whole run — taxes, spending and crime-and-justice —
+        /// chosen because they are the three that the feasibility harness measured as having live,
+        /// separable effects. ⚠ <b>The dials are read off the country's own seeded values</b> (its income
+        /// tax rate, its police funding level) rather than set to authored numbers, so nothing on this
+        /// film is a figure this harness invented.</para>
+        ///
+        /// <para>⚠ The shadow and the ledger are advanced by reflection through the controller's own
+        /// fields rather than through a hook added to `GameController` for the harness's benefit — the
+        /// discipline this file states at the top and the reason it reaches private state everywhere
+        /// else. Advancing the ledger BEFORE the real turn is not incidental: a family first touched on a
+        /// turn forks from that turn's opening state, which is what makes the fork exact.</para>
+        /// </summary>
+        private IEnumerator CaptureImpactLedger(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo worldField = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo shadowField = controller.GetType().GetField("_shadowBaseline", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo ledgerField = controller.GetType().GetField("_impactLedger", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            var sim = simField?.GetValue(controller) as SimulationManager;
+            var world = worldField?.GetValue(controller) as World;
+            var shadow = shadowField?.GetValue(controller) as ShadowBaseline;
+            var ledger = ledgerField?.GetValue(controller) as PolicyImpactLedger;
+
+            if (sim == null || world == null || shadow == null || ledger == null)
+            {
+                Debug.LogError("SHOT: could not reach the simulation, the shadow baseline or the impact ledger - "
+                               + "the ledger film would show the EMPTY state while claiming to show the populated one.");
+                Finish(1);
+                yield break;
+            }
+
+            var player = controller.GetType()
+                .GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(controller) as Country;
+
+            if (player == null)
+            {
+                Debug.LogError("SHOT: could not reach the player country - the ledger film would have no dials to move.");
+                Finish(1);
+                yield break;
+            }
+
+            for (int turn = 0; turn < LedgerTurns; turn++)
+            {
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country c in world.Countries) { decisions[c.Id] = PolicyDecision.None(); }
+
+                var acting = new PolicyDecision();
+                foreach (TaxLine line in player.TaxLines)
+                {
+                    if (line.Type == TaxType.IncomeTax && line.IsImplemented)
+                    {
+                        acting.TaxRateOverrides[TaxType.IncomeTax] = line.Rate + 8f;
+                    }
+                }
+
+                acting.SpendingLineChanges[SpendingCategory.Defense] = 6f;
+                acting.PoliceFundingOverride = Mathf.Min(100f, player.PoliceFundingLevel + 20f);
+                decisions[player.Id] = acting;
+
+                ledger.AdvanceTurn(sim, world, player.Id, decisions);
+                for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
+                sim.AdvanceTurn(decisions);
+                shadow.AdvanceTurn();
+            }
+
+            // ⚠ Leave the Desk first. A tab set by field alone while `_onDesk` is true films the DESK
+            // under the tab's name - the sweep's own note, and the first ledger film hit exactly that.
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Statistics");
+            SetEnumField(controller, "_statisticsCategory", "Domestic");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("c10_ledger_top");
+
+            SetScrolls(controller, 900f);
+            yield return Settle();
+            yield return Capture("c10_ledger_scrolled");
+
+            ReportOverflows();
+            Debug.Log($"SHOT: impact ledger done, {_captured} captured, {_failed} failed.");
+            Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>Enough turns for the divergence to be visible rather than a rounding difference, and
+        /// few enough that the film run stays short.</summary>
+        private const int LedgerTurns = 10;
 
         private IEnumerator CaptureInstrumentLadder(GameController controller)
         {

@@ -169,6 +169,10 @@ namespace PoliSim.EditorTools
             // W-E6 (2026-08-30): film board 1h, election night, instead of the sweep. Stages the
             // SOURCED Swedish 2022 returns like -shotcampaign, and demands the same country.
             driver.ElectionNightBoard = Environment.GetCommandLineArgs().Contains("-shotelectionnight");
+            // C-C10 (2026-08-31): film the impact ledger POPULATED instead of the sweep. The sweep's
+            // warm-up is deliberately no-policy, so it films the ledger's empty state and only this
+            // films the state where there is a divergence to attribute.
+            driver.ImpactLedger = Environment.GetCommandLineArgs().Contains("-shotledger");
             driver.Locale = Arg("-shotlocale=", "");
             // Trap 2: hand the driver the width we asked for so every capture can assert it got it.
             driver.ExpectedWidth = Mathf.RoundToInt(ViewWidth);

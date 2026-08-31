@@ -592,7 +592,87 @@ namespace PoliSim.UI
                     thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable", enactmentPositions: enactments, shadowHistory: shadowHistory?.Gdp.Quarterly)
             });
             StatsSectionGap();
+            DrawImpactLedgerContent();
+            StatsSectionGap();
             DrawStatsSocietyRows(contentWidth);
+        }
+
+        /// <summary>
+        /// C-C10 (P-G2): **the impact ledger — the gap between the live series and the counterfactual,
+        /// attributed to the families of dials that opened it.**
+        ///
+        /// <para>⚠ <b>The interaction line is not a rounding term and is never hidden.</b> Measured
+        /// before this was built (`COMPLETED.md` §106): over twelve turns of four dials the part of the
+        /// divergence that belongs to no single family reaches <b>17.4 % on government debt</b>. A tax
+        /// rise and a spending rise meet in the same GDP, so lines that appeared to sum exactly would be
+        /// a false identity. Elias's ruling for this item is the wording of the last line here: an
+        /// honest residual beats a false identity.</para>
+        ///
+        /// <para>Nothing is shown until the player has actually moved something — before that there is
+        /// no divergence to explain, and the panel says that in a sentence rather than printing six rows
+        /// of zero.</para>
+        /// </summary>
+        private void DrawImpactLedgerContent()
+        {
+            if (_impactLedger == null) { return; }
+
+            DrawStatsSectionCaption("YOUR POLICIES — THE GAP FROM THE NO-POLICY COUNTERFACTUAL, AND WHAT OPENED IT");
+            GUILayout.Space(StatsUnit(6f));
+
+            if (!_impactLedger.HasAnything)
+            {
+                GUILayout.Label("You have not moved a dial yet, so the live series and the counterfactual are the same run. "
+                                + "The moment you do, the gap appears here with the reason beside it.", _labelStyle);
+                return;
+            }
+
+            DrawImpactRow("GDP", "GDP", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
+            DrawImpactRow("Unemployment", "Unemployment", null);
+            DrawImpactRow("Inflation", "Inflation", null);
+            DrawImpactRow("Approval rating", "ApprovalRating", null);
+            DrawImpactRow("Poverty rate", "PovertyRate", null);
+            // Debt is carried in the same money as GDP, so it takes GDP's declared unit rather than a
+            // MoneyUnit literal here - a literal would be a second place that knows what the seed's
+            // money is, which is how the P2 unit bug spread across 21 sites.
+            DrawImpactRow("Government debt", "GovernmentDebt", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
+        }
+
+        /// <summary>One stat's line: the divergence, then each family's share of it largest first, then
+        /// the interaction. ⚠ A family whose share rounds away is dropped from the sentence rather than
+        /// printed as a zero it is not - but the interaction is printed whatever its size, because its
+        /// smallness is the reader's business as much as its largeness.</summary>
+        private void DrawImpactRow(string label, string statField, MoneyUnit? unit)
+        {
+            List<ImpactLine> lines = _impactLedger.LinesFor(_playerCountry, statField, out float divergence);
+
+            string headline = FormatImpact(divergence, unit);
+            var reasons = new System.Text.StringBuilder();
+            for (int i = 0; i < lines.Count; i++)
+            {
+                bool isInteraction = i == lines.Count - 1;
+                if (!isInteraction && Mathf.Abs(lines[i].Contribution) < ImpactRoundsAway(unit)) { continue; }
+
+                if (reasons.Length > 0) { reasons.Append("  ·  "); }
+                reasons.Append(lines[i].Family).Append(' ').Append(FormatImpact(lines[i].Contribution, unit));
+            }
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(label, _labelStyle, GUILayout.Width(StatsUnit(140f)));
+            GUILayout.Label(headline, _labelStyle, GUILayout.Width(StatsUnit(120f)));
+            GUILayout.Label(reasons.ToString(), _labelStyle);
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary>The threshold below which a contribution would print as a zero it is not. Money is
+        /// carried in the seed's own billions, so a tenth of one is genuinely nothing; a rate's tenth of
+        /// a point is not.</summary>
+        private static float ImpactRoundsAway(MoneyUnit? unit) => unit.HasValue ? 0.1f : 0.005f;
+
+        private static string FormatImpact(float value, MoneyUnit? unit)
+        {
+            if (unit.HasValue) { return UiFormat.Money(value, unit.Value, explicitPlus: true); }
+
+            return value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " pts";
         }
 
         /// <summary>

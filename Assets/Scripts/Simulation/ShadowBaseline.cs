@@ -38,7 +38,7 @@ namespace PoliSim.Simulation
     {
         private readonly GameObject _host;
         private SimulationManager _sim;
-        private readonly World _world;
+        private World _world;
         private readonly Dictionary<CountryId, PolicyDecision> _noDecisions = new Dictionary<CountryId, PolicyDecision>();
 
         /// <summary>The shadow's own generator position, kept between turns so its run is continuous even
@@ -70,14 +70,63 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// Advances the counterfactual by one turn — a full period of days, then the boundary — with no
-        /// player decision anywhere.
+        /// C-C10 (P-G2): fork a counterfactual **from a game already in progress**, exact as of this
+        /// moment, rather than from the seed.
+        ///
+        /// <para>⚠ <b>Why the impact ledger needs this.</b> Attributing a divergence to the dial that
+        /// caused it is leave-one-out: a world running everything the player did EXCEPT one family of
+        /// dials. A family the player has never touched has an except-world that is IDENTICAL to the real
+        /// game, so it costs nothing to not have one — and the moment they first touch it, the correct
+        /// starting state is the real game's state right then. Forking on first touch is therefore not an
+        /// approximation of the from-the-seed world; it is exactly equal to it, at a fraction of the cost
+        /// and with no per-family cost at all until a family is used.</para>
+        ///
+        /// <para><b>The copy is a save/load round trip</b> — `CreateSaveGame` → `Serialize` →
+        /// `Deserialize` → `RestoreInto` — rather than a hand-written deep clone. That path is the one
+        /// `SaveLoadRoundTripDiagnostic` proves clean over 12 scenarios every run, and R4-1's clone-escape
+        /// class is the standing reason not to write a second copier that a new field can silently fall
+        /// out of.</para>
+        ///
+        /// <para>⚠ `RestoreInto` restores the GLOBAL generator, so the whole fork sits inside the same
+        /// save/swap/restore-in-a-`finally` discipline as <see cref="AdvanceTurn"/>.</para>
+        /// </summary>
+        public ShadowBaseline(SimulationManager realSim, World realWorld, CountryId playerCountryId)
+        {
+            _host = new GameObject("ShadowBaseline (forked)") { hideFlags = HideFlags.HideAndDontSave };
+            _sim = _host.AddComponent<SimulationManager>();
+
+            Persistence.SaveGame snapshot = Persistence.SaveGameService.CreateSaveGame(realSim, realWorld, playerCountryId, null);
+            string json = Persistence.SaveGameService.Serialize(snapshot);
+
+            int realSeed = SimulationRandom.MasterSeed;
+            Dictionary<SimulationRandom.Stream, int> realCounts = SimulationRandom.CaptureDrawCounts();
+            try
+            {
+                Persistence.SaveGame copy = Persistence.SaveGameService.Deserialize(json);
+                Persistence.SaveGameService.RestoreInto(_sim, copy);
+                _world = _sim.World;
+
+                _masterSeed = SimulationRandom.MasterSeed;
+                _drawCounts = SimulationRandom.CaptureDrawCounts();
+            }
+            finally
+            {
+                SimulationRandom.RestoreState(realSeed, realCounts);
+            }
+
+            foreach (Country c in _world.Countries) { _noDecisions[c.Id] = PolicyDecision.None(); }
+        }
+
+        /// <summary>
+        /// Advances the counterfactual by one turn — a full period of days, then the boundary.
+        /// <paramref name="decisions"/> defaults to no player decision anywhere, which is the no-policy
+        /// baseline; C-C10 passes the player's real decisions minus one family of dials.
         ///
         /// ⚠ **The real generator is saved, swapped away, and restored in a `finally`.** That is the
         /// whole safety property of this class: from the real game's side, this call consumes zero draws
         /// and leaves the master seed unchanged, whatever happens inside it.
         /// </summary>
-        public void AdvanceTurn()
+        public void AdvanceTurn(Dictionary<CountryId, PolicyDecision> decisions = null)
         {
             int realSeed = SimulationRandom.MasterSeed;
             Dictionary<SimulationRandom.Stream, int> realCounts = SimulationRandom.CaptureDrawCounts();
@@ -87,7 +136,7 @@ namespace PoliSim.Simulation
                 SimulationRandom.RestoreState(_masterSeed, _drawCounts);
 
                 for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { _sim.AdvanceDay(); }
-                _sim.AdvanceTurn(_noDecisions);
+                _sim.AdvanceTurn(decisions ?? _noDecisions);
 
                 _masterSeed = SimulationRandom.MasterSeed;
                 _drawCounts = SimulationRandom.CaptureDrawCounts();

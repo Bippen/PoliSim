@@ -325,10 +325,14 @@ namespace PoliSim.UI
         // removing a tax bypasses this cache entirely (see DrawTaxLineRow) since that's an immediate
         // action, not a draft value tracked here.
         private bool _hasCachedPreview;
-        /// <summary>C-C8: which of the other five country pages the International tab is showing. Wraps.</summary>
         /// <summary>C-C9 (P-G1): the no-policy counterfactual advancing beside the real game.</summary>
         private ShadowBaseline _shadowBaseline;
 
+        /// <summary>C-C10 (P-G2): the divergence from that counterfactual, attributed to the families of
+        /// dials that caused it, with the interaction between them carried as its own line.</summary>
+        private PolicyImpactLedger _impactLedger;
+
+        /// <summary>C-C8: which of the other five country pages the International tab is showing. Wraps.</summary>
         private int _internationalPageIndex;
 
         private int _cachedPreviewTurn = -1;
@@ -748,6 +752,11 @@ namespace PoliSim.UI
             // wrapper (see AdvanceTurn), which is what keeps it from touching the real game's
             // randomness - the measured leak was 41 draws a turn.
             _shadowBaseline = new ShadowBaseline(SimulationRandom.MasterSeed);
+
+            // C-C10 (P-G2): the ledger that explains the gap between the two. It costs nothing until the
+            // player actually moves a dial - a family's counterfactual world is forked on FIRST TOUCH, and
+            // that fork is proven byte-exact against the same world run from the seed.
+            _impactLedger = new PolicyImpactLedger(_shadowBaseline);
         }
 
         /// <summary>
@@ -4931,6 +4940,12 @@ namespace PoliSim.UI
             {
                 decisions[country.Id] = country.Id == PlayerCountryId ? BuildPlayerDecision() : PolicyDecision.None();
             }
+
+            // C-C10 (P-G2): ⚠ BEFORE the real advance, and that ordering is load-bearing. A family the
+            // player touches for the first time this turn forks its counterfactual from the state at the
+            // turn's START, which is exactly the state it would have been in had it existed all along -
+            // the identity `PolicyImpactLedgerDiagnostic` asserts byte-for-byte.
+            _impactLedger?.AdvanceTurn(_simulationManager, _world, PlayerCountryId, decisions);
 
             _simulationManager.AdvanceTurn(decisions);
 

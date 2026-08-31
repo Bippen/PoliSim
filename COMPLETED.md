@@ -6595,3 +6595,102 @@ USA alike. Two things follow, both recorded as findings rather than fixed here:
 
 A second, smaller thing was confirmed the same way: `-shotcountry` **defaults to USA**, so a film that
 omits it is not the Sweden film it may be mistaken for. The USA at the standard geometry is also clean.
+
+## 106. C-C10 (P-G2) — the impact ledger: the divergence attributed, and the part that belongs to nobody (2026-08-31)
+
+**The premise was measured before a line of ledger code existed**, because P-G2's done-when ("attribution
+lines sum to the actual divergence within stated tolerance") and Elias's pre-ruling ("report the residual
+as a named finding rather than forcing the sum") describe two different items, and which one this is was a
+measurable property of the model rather than a matter of taste.
+
+### The measurement (`ImpactLedgerFeasibilityDiagnostic`)
+
+Six whole games from seed 777, 12 turns, USA, four dials held down: the full game, the no-policy baseline,
+and one "everything except this dial" world per dial. Then `attribution(d) = full − except(d)` and
+`residual = divergence − Σ attribution(d)`.
+
+| stat | divergence | tax | welfare | spending | crime | residual | share |
+|---|---|---|---|---|---|---|---|
+| GDP | 900.2227 | 0.0000 | 0.0000 | 686.6523 | 216.0742 | −2.5039 | 0.3 % |
+| Inflation | 0.2939 | 0.0000 | 0.0000 | 0.2233 | 0.0701 | 0.0004 | 0.2 % |
+| Unemployment | −0.2210 | 0.0000 | 0.0000 | −0.1655 | −0.0548 | −0.0006 | 0.3 % |
+| Approval rating | −0.5965 | −6.6397 | 2.1363 | 0.4782 | 3.4465 | −0.0177 | 3.0 % |
+| Budget | −1780.9820 | 3093.9040 | −1225.3200 | −3089.8930 | −335.5957 | −224.0781 | **12.6 %** |
+| Government debt | 1081.4690 | −2582.0120 | 1017.9020 | 2313.0590 | 144.2461 | 188.2734 | **17.4 %** |
+
+⚠ **VERDICT: THE DIALS ARE NOT ADDITIVE.** Lines that appeared to sum would be a false identity. So the
+ledger carries the interaction as **its own named line** — the pre-ruling's own words, adopted verbatim as
+the design: *an honest residual beats a false identity.*
+
+⚠ **A second finding the table produced, unlooked-for and larger than the first: INCOME TAX AND WELFARE
+GENEROSITY MOVE GDP, INFLATION AND UNEMPLOYMENT BY EXACTLY ZERO.** Not "by a little" — 0.0000 on all three,
+over twelve turns, while the same dials move the Budget by 3 094 and 1 225 and approval by 6.6 and 2.1
+points. The revenue side of fiscal policy has **no output channel at all** in this model; only spending and
+the crime dial reach real output. That is a structural fact about the simulation, not a bug in the ledger,
+and it is **C-C11's headline before C-C11 has started** — a model whose tax multiplier is identically zero
+sits outside every sourced estimate in the literature by construction. Filed as **S-19**.
+
+### What was built
+
+- **`ShadowBaseline` gained a fork constructor** — `ShadowBaseline(realSim, realWorld, playerCountryId)` —
+  copying a game in progress through **`CreateSaveGame` → `Serialize` → `Deserialize` → `RestoreInto`**
+  rather than a hand-written deep clone, because that path is the one `SaveLoadRoundTripDiagnostic` proves
+  clean every run and R4-1's clone-escape class is the standing reason not to write a second copier.
+  `RestoreInto` restores the *global* generator, so the fork sits inside the same save/swap/restore-in-a-
+  `finally` discipline as the advance. `AdvanceTurn` now takes optional decisions (defaulting to none).
+- **`PolicyImpactLedger`** — the no-policy shadow plus one except-world per **family** of dials the player
+  has touched. ⚠ **The families PARTITION `PolicyDecision`'s fields and the partition is CHECKED at
+  construction**: a field in no family would be a dial the ledger silently never attributes, and a name in
+  the table that is not a field would be a family that quietly attributes nothing. Both throw, naming the
+  offender. Grouping dials into families is a judgement; that the grouping is *complete* is not, and is not
+  left to one.
+- **The lazy fork.** A family the player has never touched has an except-world **identical** to the real
+  game, so the fork happens on **first touch** — and that is exact, not an approximation. A game where the
+  player only ever moves taxes pays for two counterfactual worlds, not eleven.
+- **The screen.** A "YOUR POLICIES — THE GAP FROM THE NO-POLICY COUNTERFACTUAL, AND WHAT OPENED IT" block
+  under the Statistics graphs: six rows, each the divergence then the families largest-first then the
+  interaction. A family whose share rounds away is dropped rather than printed as a zero it is not; **the
+  interaction is printed whatever its size**, because its smallness is the reader's business as much as its
+  largeness. Before the player has moved anything the block says so in a sentence rather than printing six
+  rows of zero.
+
+### The gate (`PolicyImpactLedgerDiagnostic`) — ALL FIVE ASSERTIONS PASS
+
+1. **the partition** — every `PolicyDecision` field belongs to exactly one family.
+2. ⚠ **the one that binds** — a real game with the ledger's worlds running beside it is **identical** over
+   10 turns, every public `EconomyState` field of every country, to the same game with none.
+3. **the identity** — lines + interaction == divergence on all six graphed stats, **worst break 0**.
+4. ⚠ **the lazy fork is EXACT** — a Taxes world forked at the turn the player first touches taxes is
+   **byte-identical** to the same world run from the seed with taxes stripped throughout. This is the claim
+   the whole cost model rests on, so it is measured rather than argued.
+5. **the cost, measured and stated** — real turn **47.0 ms**; the explanation layer **204.7 ms** on top
+   (three except-worlds plus the no-policy shadow). Per C-C9's precedent: shipped as measured, not
+   optimised on a guess.
+
+### ⚠ A real bug the film caught, which no assertion would have
+
+The first populated film showed the panel's **empty** state. Cause: `GameController.Start` constructs the
+ledger, and **`Start` runs before the player picks a country**, so a player id captured there is the default
+one — every attribution would have been read off the wrong country. The id now **travels with the call**
+instead of being bound at construction. The gate could not have caught this: it runs as the USA, which is
+the default. A film could, and did.
+
+### Filmed
+
+The sweep's warm-up is deliberately no-policy (*"anything else would bake one playthrough's choices into
+what is meant to be a picture of the UI"*), so it films the ledger's **empty** state and can never film the
+populated one. A populated ledger needs a game where the player actually governed, which is a different run
+rather than a stricter one — so it gets its own flag, **`-shotledger`**, on the established precedent of
+`-shotladder`, `-shotcampaign` and `-shotelectionnight`. Its dials are read off the country's own seeded
+values (its income tax rate, its police funding level), so no figure on the film is invented.
+
+Both states are on film at 1280 and 2560, guards silent. ⚠ The first ledger film captured the **Desk** under
+the Statistics name — a tab set by field alone while `_onDesk` is true films the stage, which is the sweep's
+own recorded note and now this path's too.
+
+### The bar
+
+`PolicyImpactLedgerDiagnostic` ALL PASS · `ShadowBaselineDiagnostic` ALL PASS (C-C9's gate re-run, since
+`ShadowBaseline` changed) · nine checks exit 0 · RT PASS 12 scenarios · trajectories **6 of 6
+byte-identical to `traj_cc7_*`** · films: the sweep 81/0/0 at 1280 and 2560, the ledger 6/0 at each,
+`ScreenEdgeCheck` exit 0 over all four sets.
