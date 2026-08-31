@@ -7421,3 +7421,63 @@ was drawn**; nothing checks that the thing under test is the thing on screen. Fi
 Election night filmed at all four geometries — **8 captured, 0 failed, 0 text overflows, 0 containment
 escapes at each** — with the board actually visible for the first time. Nine checks exit 0;
 `ElectionNightHarness` exit 0. No simulation path touched.
+
+## 117. C-D6 — the deferral register, with triggers instead of dates; TRACK D CLOSED (2026-08-31)
+
+### C-D6
+
+`POLISIM_BACKLOG.md` §6 held six rows whose third column was mostly a **date** — *"deferred 2026-08-30 at
+W-B5"*. ⚠ **A date says when somebody stopped. A trigger says what would make it start, and only the
+second is re-readable a month later.** Every row now carries a trigger:
+
+| row | the trigger |
+|---|---|
+| **F-1** §37 staff progression | a campaign the player actually runs — progression over a run nobody plays is invisible by construction |
+| **F-2** §2's other election types | a ruling that the game is about more than a parliamentary term |
+| **F-3** France's constituency model (R-EL10) | a decision that France must be **playable**, not merely simulated. ⚠ Unsized, unstarted, **no placeholder** |
+| **F-4** Italy's sub-national stages | **Italy becoming playable** — explicitly *before playable, not before trusted*; the proportional stage already reproduces exactly |
+| **F-5** the gap table's nine N/A sections | **nothing** — they are principle and illustration sections, listed so a future reader counting "unbuilt sections" does not mistake them for a backlog |
+| **F-6** P-I2, the cohort substrate | `POLISIM_COHORT_SPECLET.md` being **ruled**. ⚠ It now also gates **C-D1** |
+| **F-7** *(new)* the tax instruments build | `POLISIM_TAX_SPECLET.md` being ruled — ⚠ downstream of **F-6** *and* of **C-N4** |
+
+⚠ **The rule the section rests on, now stated in it:** *a source document may DESCRIBE a deferred thing;
+it may not also QUEUE it.* Description is what `ELECTIONS_GAP_TABLE.md` and `ELECTIONS_CAMPAIGN_SPEC.md`
+are **for**, and none of it is touched; each row names where it is legitimately described.
+
+⚠ **Three files still carry duplicate QUEUE rows** (`ELECTIONS_PROTOTYPE_WORKLIST.md` and the two day
+reports) and are **deliberately not edited**: all three are *migrate → delete* at C-G1, and editing a row
+out of a file about to be deleted is work done twice. **C-G1's grep is what proves "exactly one home"**,
+and the section now says so rather than leaving the gap looking like an oversight.
+
+*§38 has left the list — R-CL3 ruled it built, and it was, at C-D4.*
+
+---
+
+## TRACK D CLOSED — the elections remainder, six items
+
+| item | how it closed |
+|---|---|
+| **C-D1** W-F4's real path | **billed, exactly** — and the real finding is that the blocker is now the **order**, not the data: voter groups must be a view over the cohort substrate, so C-D1 is downstream of P-I2 (§112) |
+| **C-D2** W-F5's pool question | **measured two ways and proposed, nothing applied** — analytic 38.98 M, measured **88.18 M** (×4.59 today's pool); the tension quantified at **8.4×** (§113) |
+| **C-D3** MP's two språkrör | **built** — both carried, neither seated, the statute quoted (§114) |
+| **C-D4** §38 political capital | **built and persisted**, `SaveVersion` 2→3, carry-over with **no invented constant**; honestly sized as **inert in play** (§115) |
+| **C-D5** V-N3 the swing column | **built** on the complete count, **withheld** on a partial one — and it found that **board 1h had never been on film** (§116) |
+| **C-D6** the deferral register | **triggers, not dates** (this section) |
+
+### What Track D leaves behind
+
+- **C-D2's four proposals** — ELIAS, per line. **P-D2c recommended** (scale a party's office plan to what
+  it can afford: dissolves the funding tension at its source and invents no money).
+- **C-D1** — waits on P-I2, which waits on Elias ruling the cohort spec-let.
+- **S-20** — ⚠ *a capture that writes is not a capture of what you meant*, and nothing in the film bar
+  checks the difference. A class, not an instance.
+- Two register rows sharpened by this track: **F-6** now gates C-D1, and **F-7** is new.
+
+### The bar at the close
+
+Nine checks exit 0 · four simulation checks exit 0 · `SaveLoadRoundTripDiagnostic` RT PASS 12 (extended
+for the new persisted state, **by party name**) · `ElectionDayReachDiagnostic`, `ElectionNightHarness`,
+`CompositionHarness`, `CampaignAiHarness`, `PartyLeadershipDiagnostic`, `PartyCapitalDiagnostic`,
+`CampaignPoolSizingDiagnostic` all exit 0 · trajectories **6 of 6 byte-identical to `traj_cc7_*`** on every
+item that touched `Assets/Scripts` · election night filmed at four geometries, 8/0/0/0 each, **with the
+board visible for the first time** · R-SP1 run mid-track at a guard's demand, `origin/main == HEAD`.

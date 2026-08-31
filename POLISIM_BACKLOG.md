@@ -126,7 +126,7 @@ Execution order: Phase 0 → A → B → C → D → R → E → F → G. One co
 | C-D3 | MP's two språkrör — answer §15/§29, record the ruling, implement it | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §114), on Elias's pre-ruling.** ⚠ **MP's statutes were READ, not assumed**: its *stadgar* elect *två jämställda språkrör* (§ 11.1) of different genders (§ 11.2) whose task is to represent the party (§ 11.4), with **no clause designating one for a debate or any other setting** (`mp.se/om/stadgar/`). So the fallback applies **because of what the statute says**: neither is seated, both are named, and the reason quotes the statute. Built: `PartyLeader` (name + the office **in the party's own word** — Sweden uses three), `PoliticalParty.Leaders` as an **ARRAY** for one party's sake (the alternative drops Per Bolund), and `ResolveDebateSeat` returning ⚠ **two DISTINCT absences** — `AbsentByDesign` (two known equals) vs `NotSourced` (the model does not know, which is not a claim that nobody leads it). Sweden's eight seeded at vintage 2022-09-11, **name and office only** — sourcing a name does not license inventing a character. Gate: nobody dropped **checked by NAME** · MP absent-by-design with both named · 7 resolved · all 9 German parties `NotSourced`, none absent-by-design. Trajectories 6 of 6 identical | CODE | SAFE | — |
 | C-D4 | §38 long-term political capital, **BUILT** (R-CL3) | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §115).** `PartyCampaignCapital` on `Country` beside `ElectionHistory` (the layer the round-trip harness can PROVE), seeded for all 53 parties at their own mandate from `PartyProfile`'s **own** defaults — **no new number authored**. `SaveVersion` **2 → 3**: additive and technically loadable, but an empty list would silently mean *"no party holds any capital"*, a different state from *"every party opens at 50"*. ⚠ **The carry-over rule holds NO invented constant** — organisation moves by `newSeats / seatsAtLastUpdate`, the election's own number, on the sourced *mandatbidrag* shape; zero seats **holds still** rather than deleting the machine; **reputation does not move and the asymmetry is ASSERTED** (an election observes no reputation). Donor and grassroots networks **specified ABSENT**. ⚠ **What it is worth in play, measured not mentioned: S 50.00 → 49.53 on the first election, then held through two more** — the chamber changes **once, at the seam** between the seeded 2022 mandate and the model's predicted one, and never again. §38 is built and persisted; **it is not yet a mechanic a player can feel.** RT extended to snapshot **by party NAME** with one record moved off its seed first (an inert carry-over would round-trip 50.0 vs 50.0 and prove nothing) | CODE | SAFE ⚠ save-layer | R-CL3 |
 | C-D5 | V-N3 — the swing column, against the last real result | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §116).** Built on the **completed** count against a named, sourced prior (Sweden 2018, the same `Votes2018` the results screen uses, so the two cannot disagree): S +2.10 · SD +3.05 · M −0.74 · V −1.28 · C −1.92 · KD −1.00 · MP +0.68 · L −0.89 pp. ⚠ **WITHHELD while the count is partial, with the reason on screen** — at 4 of 29 S reads 33.12 % against a final 30.80 %, so a swing computed there says +4.9 pp for a party that moved +2.10. V-N3's deviation **restated, not just struck**: the per-constituency blocker is real for a RUNNING swing and was never a blocker for the complete-count one. ⚠ **The item found that board 1h had NEVER been on film** — every `-shotelectionnight` capture showed the Desk, W-E6's own included, because an overlay Canvas draws under IMGUI; fixed via the controller's `_canvasLive` takeover. Filmed at four geometries, 8/0/0/0 each | CODE | SAFE | C-D4 |
-| C-D6 | The deferral register — one home per deferral | each deferral has exactly one home | CODE | SAFE | — |
+| C-D6 | The deferral register — one home per deferral | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §117).** §6 rebuilt: ⚠ **every row now carries a TRIGGER rather than a date** — a date says when somebody stopped, a trigger says what would make it start, and only the second is re-readable a month later. Seven rows (F-7 added: the tax build, downstream of F-6 **and** of C-N4). ⚠ The rule made explicit: **a source document may DESCRIBE a deferred thing; it may not also QUEUE it** — so each row names where it is legitimately described, and the three files that still carry duplicate QUEUE rows are **deliberately not edited**, because all three are *migrate → delete* at C-G1 and editing a row out of a file about to be deleted is work done twice. **C-G1's grep is what proves the rule holds** | CODE | SAFE | ⚠ its proof is C-G1's grep |
 
 ### Track R — the ruling executed (R-CL1)
 
@@ -225,14 +225,30 @@ and C-B4 disposes of it.
 
 | ID | what | trigger or reason |
 |---|---|---|
-| F-1 | §37 staff progression | deferred 2026-08-30 at W-B5 |
-| F-2 | §2's other election types — referendum, leadership contests | beyond national parliamentary |
-| F-3 | France's constituency model (R-EL10) | UNSIZED, UNSTARTED. **No placeholder and no approximation is to be built** |
-| F-4 | Italy's sub-national stages | billed as before-playable, not before-trusted |
-| F-5 | The gap table's nine N/A sections | principle and illustration sections |
-| F-6 | P-I2 — the cohort substrate build | builds only after C-C13 is ruled |
+**C-D6 (2026-08-31) gave every row a TRIGGER rather than a date.** A deferral with a date says when
+somebody stopped; a deferral with a trigger says what would make it start, and only the second is
+re-readable a month later. ⚠ **The distinction this section rests on: a source document may DESCRIBE a
+deferred thing; it may not also QUEUE it.** Description is what `ELECTIONS_GAP_TABLE.md` and
+`ELECTIONS_CAMPAIGN_SPEC.md` are for and none of it is touched here; what may not exist twice is a row
+that reads as open work.
 
-*§38 has LEFT this list — R-CL3 rules it built, at C-D4.*
+| ID | what | ⚠ the TRIGGER that would start it | described (not queued) in |
+|---|---|---|---|
+| F-1 | §37 staff progression — staff who get better at the job | a campaign the player actually runs, so a staffer's improvement is something they can feel. Today the campaign layer is harness-only, and progression over a run nobody plays is invisible by construction | `ELECTIONS_CAMPAIGN_SPEC.md` §37; the gap table |
+| F-2 | §2's other election types — referendum, leadership contests | a ruling that the game is about more than a parliamentary term. Both are real mechanics with real Swedish precedent, and neither is reachable from the loop the game has | spec §2; the gap table |
+| F-3 | France's constituency model (R-EL10) | a decision that France must be PLAYABLE, not merely simulated. ⚠ **UNSIZED, UNSTARTED, and no placeholder or approximation is to be built** — two-round SMD needs a 577-constituency model with runoff behaviour, a large sourced build serving one country. The data (the Ministry's data.gouv family) is where it always was | `POLISIM_MASTER_ROADMAP.md`; `ElectionsData/DATA_BILL.md` carries the *data* bill, which is a different thing from this *build* deferral |
+| F-4 | Italy's sub-national stages | **Italy becoming playable** — explicitly *before playable, not before trusted*: the proportional stage already reproduces exactly, so the model is trustworthy without them. Needs the per-*circoscrizione* and per-*collegio cifre elettorali* plus the art. 84 cascade | `ElectionsData/DATA_BILL.md` (the data), `italy/rosatellum_allocation.md` (the statute) |
+| F-5 | The gap table's nine N/A sections | nothing — ⚠ **these are principle and illustration sections, not work.** They are listed here so that a future reader counting "unbuilt sections" does not mistake them for a backlog | `ELECTIONS_GAP_TABLE.md` |
+| F-6 | P-I2 — the cohort substrate build | **`POLISIM_COHORT_SPECLET.md` being RULED by Elias.** Sized there at ~11–13 sessions. ⚠ It now also gates **C-D1**: voter groups must be a view over this substrate, so sourcing per-valkrets marginals before it exists would build the second population the spec-let forbids | `POLISIM_COHORT_SPECLET.md` |
+| F-7 | The tax instruments build (C-C12's §S1–S7) | **`POLISIM_TAX_SPECLET.md` being RULED**, ⚠ **and it is downstream of F-6** — a bracket schedule applied to a single average income is arithmetically a flat rate — **and of C-N4**, since detailed instruments behind a lever with a zero output channel are detail without consequence | `POLISIM_TAX_SPECLET.md` |
+
+*§38 has LEFT this list — R-CL3 ruled it built, and it was, at C-D4 (`COMPLETED.md` §115).*
+
+⚠ **Three documents still carry duplicate QUEUE rows for F-1, F-2 and F-4** —
+`ELECTIONS_PROTOTYPE_WORKLIST.md` and the two day reports. They are **not edited here on purpose**: all
+three are scheduled *migrate → delete* at C-G1, and editing a row out of a file that is about to be
+deleted is work done twice. **C-G1's grep is what proves the "exactly one home" rule holds**, and this
+row is the note that it must.
 
 ## 7. WATCH — standing guards, never tasks
 
