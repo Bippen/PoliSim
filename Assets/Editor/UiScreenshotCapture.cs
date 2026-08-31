@@ -78,6 +78,27 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
+            // ⚠ TRAP 1, ARMED 2026-08-31 (the clearance list's process correction). This file's own doc
+            // has said "NO -batchmode AND NO -nographics, both deliberately" since it was written, and
+            // that documentation cost a full run this week: a capture pass launched with both flags did
+            // not fail - it HUNG, logging "canvas seam never settled" until a ten-minute timeout killed
+            // it, because WaitForEndOfFrame never resumes under -batchmode and there is no frame to
+            // capture without a graphics device.
+            //
+            // A comment cannot stop that; this can. The refusal names the flag and the reason, so the
+            // next person reaching for the idiom every OTHER entry point in this project uses gets a
+            // sentence instead of a hang.
+            if (Application.isBatchMode)
+            {
+                Debug.LogError("SHOT: REFUSING TO RUN under -batchmode. There is no frame to capture without a graphics "
+                               + "device, and WaitForEndOfFrame never resumes under -batchmode, so this would HANG rather "
+                               + "than fail. Every OTHER -executeMethod in this project takes -batchmode -nographics; this "
+                               + "one is the exception. Re-run as: Unity.exe -projectPath <path> -executeMethod "
+                               + "PoliSim.EditorTools.UiScreenshotCapture.Run -shotlabel=<label> -shotwidth=<w> -shotheight=<h>");
+                EditorApplication.Exit(2);
+                return;
+            }
+
             EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
             ResizeGameView();
             SessionState.SetBool(ActiveKey, true);
@@ -149,6 +170,8 @@ namespace PoliSim.EditorTools
             // SOURCED Swedish 2022 returns like -shotcampaign, and demands the same country.
             driver.ElectionNightBoard = Environment.GetCommandLineArgs().Contains("-shotelectionnight");
             driver.Locale = Arg("-shotlocale=", "");
+            // Trap 2: hand the driver the width we asked for so every capture can assert it got it.
+            driver.ExpectedWidth = Mathf.RoundToInt(ViewWidth);
             Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 

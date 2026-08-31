@@ -6304,3 +6304,49 @@ countries byte-identical, two intended, one through a named channel. `SaveLoadRo
 
 **Felt verdict 2 is now answerable by playing** — which is the point of merging it here rather than
 leaving it in a register of verdicts nobody was answering. It remains Elias's to judge.
+
+## 101. C-CAP — the two capture traps armed as guards, each proven both ways (2026-08-31)
+
+**Both cost a full run this week, and both were only documentation.** A comment cannot stop a mistake it
+describes; these can.
+
+### Trap 1 — the capture refuses to run under `-batchmode`
+
+`UiScreenshotCapture`'s own doc has said *"NO `-batchmode` AND NO `-nographics`, both deliberately"*
+since it was written, with the reason: `WaitForEndOfFrame` never resumes under `-batchmode` and there is
+no frame to capture without a graphics device. ⚠ **It did not stop me.** A capture pass launched with both
+flags **hung** — logging *"canvas seam never settled"* until a ten-minute timeout killed it — because the
+failure mode is a hang, not an error.
+
+`Run()` now refuses at entry, names the flag and the reason, prints the correct invocation, and exits 2.
+
+**Proven both ways:** invoked with `-batchmode -nographics` it exits **2 in seconds** with
+*"REFUSING TO RUN under -batchmode…"* instead of hanging for ten minutes; invoked correctly it runs
+normally.
+
+### Trap 2 — the width asked for must be the width captured
+
+⚠ **This one is worse than a hang, because it produces evidence.** A four-width pass omitted `-shotwidth`
+for its 1280 case; the Game View silently fell back to the **1600 default**; and the run reported
+**"77 captured, 0 failed"** for a set containing 1600 twice and **no 1280 at all** — the tightest width,
+and the one this project's own record names as where an over-long caption appears. Every guard stayed
+green. A capture that is silently the wrong size is worse than a missing one, because it is
+indistinguishable from evidence.
+
+`UiScreenshotCapture` now hands the driver the width it asked for (`ExpectedWidth`), and every capture
+asserts `shot.width` against it before writing. A mismatch **fails the capture loudly** rather than
+writing a file that looks correct. `ExpectedWidth = 0` — no size requested — checks nothing and claims
+nothing.
+
+**Proven both ways, which is the point of a guard:**
+
+| control | result |
+|---|---|
+| negative — `-shotwidth=1280` on a display that can give it | **81 captured, 0 failed**, no mismatch |
+| positive — `-shotwidth=6000`, more than the display can give | **0 captured, 81 failed**, exit 1, each naming *"asked for 6000, captured 4000"* |
+
+The positive control is the one that matters: before this, that run would have written 81 files at 4000 px
+and reported them as a successful 6000-wide pass.
+
+**Verified:** both controls above; the nine checks 9 of 9 clean; the control runs' captures deleted so no
+staged junk enters the capture set. No simulation code touched.

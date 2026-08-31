@@ -66,6 +66,12 @@ namespace PoliSim.Testing
         /// <summary>Set by `-shotlocale=` (e.g. "en-US"): overrides the thread culture before anything draws, so number/date formatting can be captured in a locale other than the OS's. Empty = OS culture, which is what every set before 2026-08-12 rendered in (sv-SE on this machine — the decimal-comma set).</summary>
         public string Locale = "";
 
+        /// <summary>C-C7 follow-up / trap 2: the width the caller ASKED for, so every capture can assert
+        /// it got it. Zero means no size was requested and nothing is checked - see the mismatch guard in
+        /// Capture, and the run it was armed for (a 1280 pass that silently filmed at the 1600 default
+        /// and reported 77 captured, 0 failed).</summary>
+        public int ExpectedWidth;
+
         /// <summary>Frames to let IMGUI settle before a capture. IMGUI lays out on the frame it draws, so a screen switched to on frame N is not fully measured until N+1; four is cheap insurance rather than a measured minimum.</summary>
         private const int SettleFrames = 4;
 
@@ -976,6 +982,27 @@ namespace PoliSim.Testing
             {
                 Debug.LogError($"SHOT: capture returned null for {name}.");
                 _failed++;
+                yield break;
+            }
+
+            // ⚠ TRAP 2, ARMED 2026-08-31. THE WIDTH ASKED FOR MUST BE THE WIDTH CAPTURED. This cost a
+            // full run this week: a four-width pass omitted `-shotwidth` for its 1280 case, the Game
+            // View silently fell back to the 1600 default, and the run reported "77 captured, 0 failed"
+            // for a set that contained 1600 twice and no 1280 at all - the tightest width, and the one
+            // this project's own record says is where an over-long caption appears, went unfilmed while
+            // every guard stayed green. A capture that is silently the wrong size is worse than a
+            // missing one, because it is indistinguishable from evidence.
+            //
+            // ExpectedWidth is 0 when the caller did not ask for a size, in which case there is nothing
+            // to check and nothing is claimed.
+            if (ExpectedWidth > 0 && shot.width != ExpectedWidth)
+            {
+                Debug.LogError($"SHOT: WIDTH MISMATCH on {name} - asked for {ExpectedWidth}, captured {shot.width}. "
+                               + "The Game View did not take the requested size (a missing or ignored -shotwidth=), so "
+                               + "this capture is not evidence for the width it is named after. Failing loudly rather "
+                               + "than writing a file that looks correct.");
+                _failed++;
+                Destroy(shot);
                 yield break;
             }
 
