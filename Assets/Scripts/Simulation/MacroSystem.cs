@@ -1373,6 +1373,7 @@ namespace PoliSim.Simulation
 
         /// <summary>Generous gameplay safety bounds on NetMigrationRate - wide enough for Part B's Immigration Policy lever to swing meaningfully in either direction (open vs. restrictive) without an artificial mid-range ceiling getting in the way first.</summary>
         private const float MinNetMigrationRate = -15f;
+        /// <remarks>CONVENTION - a state-space clamp, generous enough that the policy lever can swing meaningfully inside it, and there to stop a feedback bug rather than to predict a reachable rate.</remarks>
         private const float MaxNetMigrationRate = 15f;
 
         // ImmigrationPolicyNetMigrationSensitivity moved VERBATIM to LaborCouplings (pass 3's
@@ -1452,6 +1453,7 @@ namespace PoliSim.Simulation
         // Derived, never typed in - the Phase 1 discipline that made the 121->365 turn change a
         // one-line edit applies here from birth.
         private const float DemographicSliceFractionPerDay = 1f / SimulationManager.DaysPerTurn;
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float PopulationGrowthReversionSpeedPerDay = PerDayReversion(PopulationGrowthReversionSpeed);
 
         /// <summary>Phase 4 daily wrapper - the four drift flows at their per-day slice; sensitivities
@@ -1476,6 +1478,7 @@ namespace PoliSim.Simulation
         /// extreme indefinitely, the exact failure this constant was added to fix, while still giving
         /// Part B's future Family/Immigration Policy levers (which act through BirthRate/
         /// NetMigrationRate) real, felt, but bounded influence.
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         /// </summary>
         private const float PopulationGrowthRateSensitivity = 0.4f;
 
@@ -1606,6 +1609,7 @@ namespace PoliSim.Simulation
         // BailReformCrimeIndexSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25) -
         // its "honestly contested" doc and flag carried with it.
 
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         /// <summary>Round 3 item 3: CrimeIndex points added per point OrganizedCrimeIndex sits above Country.BaselineOrganizedCrimeIndex (and reduced per point below) - organized crime activity is a real, direct contributor to overall crime levels in most criminological frameworks. Deliberately modest so overall CrimeIndex isn't dominated by this one secondary contributor.</summary>
         private const float OrganizedCrimeIndexSensitivity = 0.1f;
 
@@ -1639,9 +1643,11 @@ namespace PoliSim.Simulation
             state.CrimeIndex = Mathf.Clamp(state.CrimeIndex + reversionSpeed * (target - state.CrimeIndex), 0f, MaxCrimeIndexPercent);
         }
 
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         /// <summary>BusinessConfidence points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - higher-than-baseline crime deters investment, a real and well-documented effect, kept small since Confidence directly multiplies Investment.</summary>
         private const float CrimeBusinessConfidenceSensitivity = 0.0015f;
 
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         /// <summary>Round 3 item 3: BusinessConfidence points lost per point OrganizedCrimeIndex sits above Country.BaselineOrganizedCrimeIndex (and gained per point below) - organized crime (extortion, market corruption) deters legitimate investment, a real and well-documented effect. Same magnitude as CrimeBusinessConfidenceSensitivity.</summary>
         private const float OrganizedCrimeBusinessConfidenceSensitivity = 0.0015f;
 
@@ -1671,6 +1677,7 @@ namespace PoliSim.Simulation
 
         // --- Prison Population Rate: a real, per-100k tracked stat, mean-reverting toward its own baseline (Round 2's "Deeper Crime & Justice") ---
 
+        /// <remarks>CONVENTION - a reversion speed, and one that matches the other moderate-slow reverting stats rather than being chosen separately, so one pace is stated once.</remarks>
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
         private const float PrisonPopulationReversionSpeed = 0.15f;
 
@@ -1703,6 +1710,7 @@ namespace PoliSim.Simulation
 
         // --- Economic Sectors: descriptive tracked breakdowns, isolated from the core GDP/unemployment/inflation loop (see CLAUDE.md's "Economic Sectors") ---
 
+        /// <remarks>CONVENTION - a reversion speed, and one that matches the other moderate-slow reverting stats rather than being chosen separately, so one pace is stated once.</remarks>
         /// <summary>Fraction of the gap versus each sector stat's target that closes each turn on its own - matches PovertyRate/CrimeIndex's own moderate-slow reversion speed.</summary>
         private const float SectorReversionSpeed = 0.15f;
 
@@ -1740,11 +1748,17 @@ namespace PoliSim.Simulation
         }
 
         // --- Continuous Time Phase 2: Labor Market and Crime & Justice daily speeds ---
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float PovertyReversionSpeedPerDay = PerDayReversion(PovertyReversionSpeed);
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float LaborForceParticipationReversionSpeedPerDay = PerDayReversion(LaborForceParticipationReversionSpeed);
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float CrimeIndexReversionSpeedPerDay = PerDayReversion(CrimeIndexReversionSpeed);
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float OrganizedCrimeReversionSpeedPerDay = PerDayReversion(OrganizedCrimeReversionSpeed);
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float CorruptionReversionSpeedPerDay = PerDayReversion(CorruptionReversionSpeed);
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float PrisonPopulationReversionSpeedPerDay = PerDayReversion(PrisonPopulationReversionSpeed);
 
         /// <summary>
