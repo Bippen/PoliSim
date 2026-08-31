@@ -2,6 +2,26 @@
 
 **Status: DOCUMENT ONLY. No tax code is built from this until Elias rules on it.** Every line below is
 meant to be struck, amended or approved on its own.
+**Status: RULED 2026-08-31 (Elias, D-3): (c) NOW, (b) WHEN IT RUNS.** Neither branch is built yet, and
+the branch that will be built when it runs is **(b) pluggable schedules** — not (a)'s bracket table.
+
+⚠ **Why (c) is not a deferral in disguise.** The item is **blocked on D-4 whichever branch is chosen**:
+**a bracket schedule applied to a single average income is arithmetically identical to a flat rate**, so
+until the cohort substrate can carry an income distribution there is nothing for brackets to bracket.
+Buying (a)'s speed would therefore cost three misrepresented countries **for no time gained** — Germany's
+tariff is a *formula* (§32a EStG), France's is a *quotient familial*, Italy's is three layers, and no
+bracket table represents any of them.
+
+⚠ **The trigger, so this row is re-readable a month from now:** P-I2 reaches the point where the cohort
+substrate carries an income dimension. Not a date. **P-I2 stages 1 and 2 have landed** (the pyramids and
+the aging step); the substrate is currently **sex-blind and income-blind**, so the trigger has NOT fired.
+
+⚠ **One thing this ruling does NOT foreclose, and one it does.** It does not foreclose sourcing: §3's
+five billed countries can be sourced at any time, and that work is not wasted whichever branch runs. It
+does foreclose writing bracket tables into `TaxLine` as data, which is (a), and which would have to be
+unpicked by (b).
+
+---
 
 Written 2026-08-31 at C-C12. The item's own instruction is *"one document before any code"*, and the
 pre-ruling adds: documents only.

@@ -248,6 +248,101 @@ proven able to fire**: set to ×1.0 it goes red in every country.
 > **To strike it, write:** `D-7 STRUCK: (b)` *(or c / d)* — the EU five are sourced either way; only the
 > USA's 21 numbers change.
 
+---
+
+### D-8 · The MPC, after sourcing it ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**The question.** D-2 (b) ruled *"source the MPC"* on the grounds that it is the one foreign number in
+C-N4's term. It has been sourced. **Does the model move to the European figure?**
+
+⚠ **D-2's own named source is the wrong paper.** It cited *"Riksbank WP 365"*. WP 365 is **"The
+Interaction Between Fiscal and Monetary Policies: Evidence from Sweden"** — not a consumption study, and
+it carries no MPC. A citation recalled rather than opened is an invented figure in a technical costume,
+and this one was recalled by this register.
+
+**What the Swedish evidence actually says**, read not recalled: *Identifying the MPC-Liquidity Gradient in
+High-Quality Data* (arXiv 2607.07055, July 2026), Swedish administrative tax registers — annual MPC falls
+from **0.7 in the lowest cash-on-hand decile to 0.3 in the top**; **Households-sample average annual
+total-expenditure MPC bounded at 0.54–0.66** (nondurable 0.36–0.44). Total expenditure is the right
+comparison: national-accounts consumption includes durables. ⚠ It is a **preprint, v1, not peer-reviewed**.
+
+**Measured at three values before choosing** (audit harness, Sweden, seed 777):
+
+| MPC | tax multiplier L / L+1 / L+4 | spending multiplier |
+|---|---|---|
+| **0.67** (US, Johnson/Parker/Souleles, AER 2006) | 0.485 / 0.682 / 0.760 | 0.603 / 0.850 / 0.959–0.966 |
+| 0.60 (Swedish bracket midpoint) | 0.428 / 0.602 / 0.671 | **identical, to the digit** |
+| 0.54 (Swedish bracket floor) | 0.380 / 0.535 / 0.596 | **identical, to the digit** |
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Hold 0.67, record the bracket** | none | nothing — the choice is measurably free and revisitable |
+| **b. Move to 0.60** | one edit | ⚠ widens the tax-multiplier gap to Romer & Romer, which the model already undershoots threefold |
+| **c. Move to 0.54** | one edit | idem, more so |
+
+**Recommendation, TAKEN: (a).** Basis, all measured: **the spending multiplier is invariant to this
+constant to the digit**, so the hard constraint is not in play and the two channels are separable — the
+choice can be revisited at any time at no cost. The peer-reviewed source outweighs the preprint. And ⚠
+**against the intuition that a European figure would improve the model, every lower value moves the tax
+multiplier further from Romer & Romer** — the weak channel is the tax channel, and lowering the MPC
+weakens it. **The Swedish paper itself cites JPS's two-thirds and calls its own estimates "on the lower
+end compared to the literature on tax rebates"**, so the disagreement is methodological and known;
+C-C11's standing ruling for that case is *report the range*, which is now what the constant does.
+
+> **To strike it, write:** `D-8 STRUCK: (b)` *(or c)* — one constant, one line, and the measurement above
+> already tells you what it will do.
+
+---
+
+### D-9 · Per-country tax base shares ⚠ BUILT, MEASURED, AND REJECTED BY THE HARD CONSTRAINT
+
+**The question.** D-2 (c) ruled *"per-country base share"* to fix C-N4's finding that **a +10-point tax
+rise moves consumption by −2.68 % of GDP in all six countries identically**. It was built and sourced.
+**The hard constraint rejects it. Does the constraint hold, or does it bend?**
+
+**It was fully built, not sketched.** OECD Revenue Statistics
+(`OECD.CTP.TPS,DSD_REV_COMP_OECD@DF_RSOECD`, general government, % of GDP, 2022) for income `T_1110`,
+corporate `T_1210`, VAT `T_5111` and payroll `T_2000+T_3000`; ⚠ **Poland from Eurostat `gov_10a_taxag`
+D51A/D51B**, because the OECD flow reports **no income rows for Poland in any of 2020–2023** — checked
+across four years. Base = (revenue % of GDP) / (seeded rate %):
+
+| | income | corporate | VAT | payroll |
+|---|---|---|---|---|
+| USA | 0.3077 | 0.0955 | — | 0.3929 |
+| Germany | 0.2317 | 0.0772 | 0.3860 | 0.3673 |
+| France | 0.2154 | 0.1139 | 0.3745 | 0.2469 |
+| Italy | 0.2491 | 0.1106 | 0.3151 | 0.4257 |
+| Poland | 0.1406 | 0.1474 | 0.3132 | 0.3775 |
+| Sweden | 0.1998 | 0.1675 | 0.3798 | 0.4488 |
+
+*(against uniform authored 0.4 / 0.15 / 0.5 / 0.4)*
+
+⚠ **THE MEASUREMENT THAT REJECTED IT.** With the table wired in, the spending multiplier moved
+**0.603 / 0.850 / 0.966 → 0.593 / 0.838 / 0.951**. **0.593 is below Ramey's 0.6.** The standing rule is
+pre-committed and unambiguous — *"any proposed fix that moves it out of Ramey's 0.6–1.0 band is rejected
+by that fact alone"* — so it was reverted, and the revert restored 0.603 / 0.850 / 0.959–0.966 exactly.
+
+⚠ **The argument FOR bending, stated fairly rather than suppressed:** the model's **GDP response did not
+change at all** (1.37 / 1.93 / 2.17 before and after). Only the measured *impulse* grew, 2.27 → 2.30,
+because a different revenue path shifts the GDP that 2 % of G is taken from. **What moved is the
+denominator, not the behaviour.** That is a real argument that the constraint is policing a measurement
+artifact at the third digit — **and it is not mine to act on.** A pre-committed rule that yields to the
+first change that trips it is not a rule.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Constraint holds; leave it rejected** | the −2.68 % identical-across-six finding stands | nothing — the table is recorded in full above and rebuildable in one item |
+| **b. Constraint holds at L+1/L+4 only; accept 0.593 at impact** | one item to re-land | ⚠ narrows the rule to two of three horizons, permanently |
+| **c. Re-state the constraint as "the GDP response must not move"** | one item, plus re-stating the rule | ⚠ a weaker rule than the one that has held this pass three times |
+| **d. Take it and re-anchor the spending channel too** | a BASELINE item on top of a BASELINE item | ⚠ two families landing together cannot be explained apart |
+
+**Recommendation: (a) for now, (c) as the right long-run shape** — but ⚠ **no option is taken here.**
+This is the one item in this run where I have deliberately *not* self-ruled: every other fork was
+reversible and mine to log, and this one asks whether **Elias's own pre-committed constraint** bends.
+That is his, and the run continued past it rather than waiting.
+
+> **To rule it, write:** `D-9 RULED: (a)` *(or b / c / d)*
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.

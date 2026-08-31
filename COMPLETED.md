@@ -8506,3 +8506,79 @@ Both defaults are **no-ops**, so a caller that forgets them gets the unforced tr
 silent zero. The migration term clamps at zero per band — **a lever must not be able to produce a negative
 cohort at any setting.** `StepOneYear` still has no caller under `Assets/Scripts`; the simulation group is
 green at six, fourteen checks green, both ratchets held.
+
+## 133. D-3 AND D-2 EXECUTED — a wrong citation caught, an MPC bracketed, and a build the constraint rejected (2026-08-31)
+
+### D-3 (c) now, (b) when it runs — recorded, nothing built
+
+The tax spec-let's status flips to RULED. ⚠ **Why (c) is not a deferral in disguise: the item is blocked
+on D-4 whichever branch is chosen** — a bracket schedule applied to a single average income is
+arithmetically identical to a flat rate, so until the substrate carries an income distribution there is
+nothing for brackets to bracket. Buying (a)'s speed would cost three misrepresented countries **for no
+time gained**. The trigger is written as a trigger and not a date: P-I2 reaches an income dimension.
+Stages 1 and 2 have landed and the substrate is **sex-blind and income-blind**, so it has **not fired**.
+
+### D-2 (b) — the MPC sourced, and D-2's own citation found wrong
+
+⚠ **The register cited "Riksbank WP 365". WP 365 is "The Interaction Between Fiscal and Monetary
+Policies: Evidence from Sweden" — not a consumption study, and it carries no MPC.** This project's rule
+that a code recalled rather than opened is an invented figure was broken by the project's own register,
+and the only reason it surfaced is that the paper was actually fetched.
+
+**The real Swedish evidence, read:** arXiv 2607.07055 (July 2026), Swedish administrative tax registers.
+Annual MPC **0.7 in the lowest cash-on-hand decile to 0.3 in the top**; **Households-sample average
+annual total-expenditure MPC bounded 0.54–0.66** (nondurable 0.36–0.44). Total expenditure is the right
+comparison — national-accounts consumption includes durables. ⚠ It is a **preprint**, which is why it
+brackets the parameter rather than replacing it.
+
+**Measured at three values before choosing:**
+
+| MPC | tax multiplier L / L+1 / L+4 | spending multiplier |
+|---|---|---|
+| **0.67** held | 0.485 / 0.682 / 0.760 | 0.603 / 0.850 / 0.959–0.966 |
+| 0.60 | 0.428 / 0.602 / 0.671 | **identical to the digit** |
+| 0.54 | 0.380 / 0.535 / 0.596 | **identical to the digit** |
+
+⚠ **Two things the measurement settled.** The **spending multiplier is invariant to this constant**, so
+the hard constraint is not in play, the channels are separable, and the choice is free to revisit. And
+**against the intuition that a European figure would improve the model, every lower value moves the tax
+multiplier further from Romer & Romer**, which the model already undershoots threefold. **Held at 0.67
+(D-8), with the bracket now on the record so the next session argues with a range rather than
+re-deriving a number.** The Swedish paper itself cites JPS's two-thirds and calls its own estimates *"on
+the lower end compared to the literature on tax rebates"* — the disagreement is methodological, and
+C-C11's standing ruling for that case is *report the range*.
+
+### D-2 (c) — BUILT, SOURCED, MEASURED, AND REJECTED BY THE HARD CONSTRAINT
+
+Fully built, not sketched. OECD Revenue Statistics (general government, % of GDP, 2022) for income,
+corporate, VAT and payroll; ⚠ **Poland from Eurostat `gov_10a_taxag` D51A/D51B, because the OECD flow
+reports no income rows for Poland in any of 2020–2023** — checked across four years, not inferred from
+one. Base = (revenue % of GDP) / (seeded rate %):
+
+| | income | corporate | VAT | payroll |
+|---|---|---|---|---|
+| USA | 0.3077 | 0.0955 | — | 0.3929 |
+| Germany | 0.2317 | 0.0772 | 0.3860 | 0.3673 |
+| France | 0.2154 | 0.1139 | 0.3745 | 0.2469 |
+| Italy | 0.2491 | 0.1106 | 0.3151 | 0.4257 |
+| Poland | 0.1406 | 0.1474 | 0.3132 | 0.3775 |
+| Sweden | 0.1998 | 0.1675 | 0.3798 | 0.4488 |
+
+*(against the uniform authored 0.4 / 0.15 / 0.5 / 0.4 — which the source file itself calls "rough
+illustrative weights … flat, uniform stand-ins")*
+
+⚠ **Wired in, the spending multiplier moved 0.603/0.850/0.966 → 0.593/0.838/0.951. 0.593 is below
+Ramey's 0.6.** The standing rule is pre-committed — *"any proposed fix that moves it out of Ramey's
+0.6–1.0 band is rejected by that fact alone"* — **so it was reverted**, and the revert restored
+0.603/0.850/0.959–0.966 exactly, with trajectories 6 of 6 byte-identical.
+
+⚠ **The argument for bending, stated rather than suppressed: the GDP response did not change at all**
+(1.37 / 1.93 / 2.17 before and after). Only the measured *impulse* grew, 2.27 → 2.30, because a different
+revenue path shifts the GDP that 2 % of G is taken from. **What moved is the denominator, not the
+behaviour** — a real argument that the constraint is policing a measurement artifact at the third digit.
+**It is not mine to act on.** A pre-committed rule that yields to the first change that trips it is not a
+rule, and this is the one fork in the run left genuinely open: **D-9, with the whole table recorded so
+the item is one edit away whichever way it goes.**
+
+⚠ **Nothing was kept as dead code.** `CountryTaxBaseShares` was deleted rather than left wired to nothing
+— the table above is its complete content, and the derivation is one division per cell.

@@ -75,6 +75,50 @@ namespace PoliSim.Simulation
         /// This takes the cumulative one because the period matches; the range is on the record above so
         /// a later pass can argue with the choice rather than rediscover it.</description></item>
         /// </list>
+        /// <para>⚠ <b>D-2 (b) DISCHARGED 2026-08-31: the figure is no longer one foreign number. It is
+        /// the top of a bracket with a sourced estimate on each side of the Atlantic, and the choice
+        /// between them was MEASURED before it was made.</b></para>
+        ///
+        /// <para><b>The register's own named source was checked and is the wrong paper.</b> D-2 cited
+        /// *"Riksbank WP 365 / KI 2021:25"*. Riksbank Working Paper 365 is **"The Interaction Between
+        /// Fiscal and Monetary Policies: Evidence from Sweden"** — not a consumption-response study, and
+        /// it carries no MPC. ⚠ A citation recalled rather than opened is an invented figure wearing a
+        /// technical costume, and this one was recalled by this project's own register.</para>
+        ///
+        /// <para><b>The Swedish evidence, read rather than recalled.</b> *Identifying the MPC-Liquidity
+        /// Gradient in High-Quality Data* (arXiv 2607.07055, July 2026), on **Swedish administrative tax
+        /// registers**: the annual MPC falls from **0.7 in the lowest cash-on-hand decile to 0.3 in the
+        /// top**, and the **Households-sample average annual total-expenditure MPC is bounded at 0.54 to
+        /// 0.66** (nondurable 0.36–0.44). ⚠ **Total expenditure is the right comparison and nondurable is
+        /// not** — national-accounts consumption includes durables, and this term feeds exactly that.
+        /// ⚠ **It is a PREPRINT, v1, not peer-reviewed**, which is why it brackets the parameter rather
+        /// than replacing it.</para>
+        ///
+        /// <para>⚠ <b>The two sources genuinely disagree, and the Swedish paper says so itself</b> — it
+        /// cites Johnson/Parker/Souleles' two-thirds by name and calls its own estimates *"on the lower
+        /// end compared to the literature on tax rebates"*. The disagreement is methodological, not an
+        /// error in either. **C-C11's standing ruling for exactly this case is: report the range.**</para>
+        ///
+        /// <para><b>MEASURED, at three values, before choosing (the audit harness, Sweden, seed 777):</b>
+        /// <code>
+        /// MPC    tax multiplier L / L+1 / L+4     spending multiplier
+        /// 0.67   0.485 / 0.682 / 0.760            0.603 / 0.850 / 0.959-0.966
+        /// 0.60   0.428 / 0.602 / 0.671            0.603 / 0.850 / 0.959-0.966
+        /// 0.54   0.380 / 0.535 / 0.596            0.603 / 0.850 / 0.959-0.966
+        /// </code>
+        /// ⚠ <b>TWO THINGS THE MEASUREMENT SETTLED.</b> First, <b>the spending multiplier is INVARIANT to
+        /// this constant, to the digit</b> — the hard constraint is not in play, the two channels are
+        /// separable, and the choice can therefore be revisited at any time at no cost. Second, and
+        /// against the intuition that sourcing it European would improve the model: <b>every lower value
+        /// moves the tax multiplier FURTHER from Romer &amp; Romer's -2 to -3</b>, which the model already
+        /// undershoots by a factor of three. The weak channel is the tax channel, and lowering the MPC
+        /// makes it weaker.</para>
+        ///
+        /// <para><b>Held at 0.67 (D-8, decided and logged, strikeable).</b> The peer-reviewed source is
+        /// preferred over the preprint on evidentiary weight; the value sits 0.01 above the Swedish
+        /// bracket's top rather than outside its magnitude class; and the alternative widens the one gap
+        /// the model already has. **The bracket is now on the record so the next session argues with a
+        /// range instead of re-deriving a number.**</para>
         /// </summary>
         private const float MarginalPropensityToConsume = 0.67f;
 
