@@ -12,8 +12,9 @@ namespace PoliSim.Simulation
     /// positive one - the same way a real diversified fund has real down years (Norway's GPFG, this
     /// model's own anchor - see CLAUDE.md's "Sovereign Wealth Fund" - had negative nominal years in
     /// 2018 and 2022). One shared `System.Random`, isolated from `EventSystem`'s, `UnityEngine.Random`,
-    /// and `GameController`'s `_previewRandom` (mirrors `FederalReserveSystem.GenerateCandidates`'s own
-    /// isolation precedent) - a single stream drawn from sequentially per asset class, not a separate
+    /// (mirrors `FederalReserveSystem.GenerateCandidates`'s own isolation precedent; it also named
+    /// `GameController`'s `_previewRandom` until C-C14 deleted that field with the rolled display margin
+    /// it existed for) - a single stream drawn from sequentially per asset class, not a separate
     /// instance per class (nothing here depends on the four classes' draws being independently seeded).
     /// </summary>
     public static class SovereignWealthFundSystem

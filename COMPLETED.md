@@ -6884,3 +6884,49 @@ BASELINE families landing together cannot be explained apart.
 
 Records only; no `Assets/` file touched by either item, so no harness, film or trajectory evidence
 applies. The nine checks were run anyway on the tree that carries them and exit 0.
+
+## 109. C-C14 — the authored ±5–10 % margin removed, not re-rolled and not stabilised (2026-08-31)
+
+**Elias's ruling on S-12, 2026-08-31, executed as written:** *remove it — do not re-roll it, do not
+stabilise it. `PreviewTurn` is deterministic, so the honest form is the point with its scope stated,
+matching C-C1's resolution on the Budget surface.*
+
+### What it was
+
+`FormatEstimate` and `FormatMoneyEstimate` appended `± (|value| × p)` where **p was freshly rolled from
+`_previewRandom` between 5 and 10 on every call**. The consequence, in a sentence: **the figure moved when
+nothing about the model had**, and two reads of the same unchanged draft disagreed with each other. Found
+at C-C1, which removed it from its own three rows and filed the rest rather than silently re-cutting a
+long-standing convention across four macro rows it did not own.
+
+### What was removed
+
+- `MinPreviewMarginPercent` / `MaxPreviewMarginPercent` — deleted, with a comment where they were saying
+  they are not to come back **in any form**, including a fixed percentage.
+- **`_previewRandom` — deleted.** It existed for exactly one purpose. ⚠ Its *isolation* is worth keeping in
+  the record and is kept there: it was deliberately separate from `UnityEngine.Random` and `EventSystem`'s
+  `System.Random` so that merely drawing the preview could never perturb the event roll. Any future
+  display-only randomness must be isolated the same way — **and should first answer why a deterministic
+  projection needs randomness at all.**
+- ⚠ **Two doc comments in OTHER files named `_previewRandom`** as a third isolated stream
+  (`FederalReserveSystem`, `SovereignWealthFundSystem`). Both were re-pointed in the same commit rather
+  than left naming a field that no longer exists — **S-11's phantom-guard class, avoided by hand because
+  the check that would catch it is C-E3 and is not built yet.**
+
+### What replaced it — the scope, in three places
+
+- The Estimated Effects caption: *"…not a simulated sub-year value. **No margin: the projection is
+  deterministic. Excludes events, which a projection never rolls.**"*
+- The Desk's margin line, in the same slot at the same height so nothing below it moves:
+  **"NO MARGIN — THE PROJECTION IS DETERMINISTIC"**. A reader who has learned to look there for "how much
+  should I trust this" still finds an answer, and now it is a true one.
+- The Desk's no-draft caption: `± 5–10% MARGIN` → `NO MARGIN: THE PROJECTION IS DETERMINISTIC`.
+
+Without the scope a margin is a decoration; with the scope no margin is needed.
+
+### The bar
+
+Nine checks exit 0 · films Sweden 1280 and 2560, **81 captured, 0 failed, 0 text overflows** at each,
+`ScreenEdgeCheck` exit 0 over both · trajectories **6 of 6 byte-identical to `traj_cc7_*`** (display-layer
+only, and the dump proves it rather than the reasoning being trusted). The 1280 film shows the Desk's
+Estimated Effects block with no `±` anywhere on it.

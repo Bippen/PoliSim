@@ -150,10 +150,12 @@ namespace PoliSim.UI
         private const float PartnerTariffOverrideMin = 0f;
         private const float PartnerTariffOverrideMax = 50f;
 
-        // Cosmetic-only margin of error applied to the live policy preview - display layer, never
-        // touches the actual PolicyPreview figures the preview math produces.
-        private const float MinPreviewMarginPercent = 5f;
-        private const float MaxPreviewMarginPercent = 10f;
+        // ⚠ C-C14 (2026-08-31, Elias's ruling on S-12): the cosmetic +-5-10% margin that used to live
+        // here is GONE, and is not to come back in any form - not re-rolled, not stabilised at a fixed
+        // percentage. It was a random number generated for display and printed beside a measurement.
+        // `PreviewTurn` is deterministic, so the projection has no spread; the honest form is the point
+        // with its scope stated, which is what the captions now carry (C-C1's resolution on the Budget
+        // surface, applied to the rest).
 
         // Layout is expressed as fractions of Screen.width/height, not fixed pixel values, so it
         // scales at any window size instead of sitting in a small fixed-size corner box.
@@ -312,11 +314,13 @@ namespace PoliSim.UI
         private List<FedChair> _fedChairCandidates;
         private int _fedChairCandidatesForTurn = -1;
 
-        // Isolated from UnityEngine.Random and from EventSystem's own System.Random - this instance
-        // exists purely to jitter the preview's displayed margin of error, so drawing the preview
-        // (or dragging sliders to recompute it) can never perturb the event roll or any other RNG
-        // consumer's sequence.
-        private System.Random _previewRandom;
+        // ⚠ C-C14: `_previewRandom` IS GONE. It existed for one purpose - jittering the preview's
+        // displayed margin of error - and that margin was removed as a random number printed beside a
+        // measurement. The ISOLATION it provided is still worth knowing about: it was deliberately
+        // separate from UnityEngine.Random and from EventSystem's own System.Random so that merely
+        // drawing the preview could never perturb the event roll. Any future display-only randomness
+        // must be isolated the same way - and should first answer why a deterministic projection needs
+        // randomness at all.
 
         // Cached preview text plus the slider/turn snapshot it was computed from - PreviewTurn and
         // the margin roll only re-run when the draft PolicyDecision or the turn number actually
@@ -745,7 +749,6 @@ namespace PoliSim.UI
             _world = WorldFactory.CreateDefault();
             _simulationManager = gameObject.AddComponent<SimulationManager>();
             _simulationManager.SetWorld(_world);
-            _previewRandom = new System.Random();
 
             // C-C9 (P-G1): the no-policy counterfactual, built beside the real world at the same master
             // seed so the two runs are comparable from turn one. It advances only through its own
@@ -3703,9 +3706,8 @@ namespace PoliSim.UI
         /// <summary>
         /// Live estimate of this turn's effect under the sliders' current values, via
         /// SimulationManager.PreviewTurn (reuses the real MacroSystem/SimulationManager formulas
-        /// against a throwaway clone rather than a separate hand-rolled estimate) plus a cosmetic
-        /// +-5-10% margin of error. Checked every OnGUI call but only actually recomputed (and the
-        /// margin re-rolled) when the draft OR the selected horizon has changed since last frame -
+        /// against a throwaway clone rather than a separate hand-rolled estimate). Checked every OnGUI call
+        /// but only actually recomputed when the draft OR the selected horizon has changed since last frame -
         /// see PolicyInputsChangedSinceLastPreview - so it reads as one stable forecast rather than a
         /// flickering number, while still updating live as the player drags a slider or switches
         /// horizon.
@@ -3745,8 +3747,11 @@ namespace PoliSim.UI
             DrawHorizonButton(PreviewHorizon.FullTurn);
             GUILayout.EndHorizontal();
             // v3.0 Phase A census (2026-08-28): "Projection only, not a guarantee." was a third hedge on a
-            // figure already headed "Estimated" with its margin stated in the same sentence - pure (c), cut.
-            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} (±5-10% margin of error) - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-year value.", _labelStyle);
+            // figure already headed "Estimated" - pure (c), cut.
+            // C-C14 (2026-08-31): the rolled margin is cut too, and THE SCOPE TAKES ITS PLACE. Without the
+            // scope a margin is a decoration; with the scope no margin is needed, because the projection
+            // is deterministic and rolls no event.
+            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-year value. No margin: the projection is deterministic. Excludes events, which a projection never rolls.", _labelStyle);
 
             // Each line's color follows UiPalette's single green-good/red-bad convention, honoring
             // which direction is actually good for that specific stat (e.g. Unemployment/Inflation/
@@ -3935,17 +3940,25 @@ namespace PoliSim.UI
             _hasCachedPreview = true;
         }
 
-        /// <summary>Formats one estimated figure as "value +- margin", where margin is value's magnitude times a freshly-rolled 5-10% - a range reading, not a precise number, same as any real economic forecast.</summary>
+        /// <summary>
+        /// One estimated figure, as the point the model actually produced.
+        ///
+        /// ⚠ **C-C14: this used to append "± margin", where the margin was `|value|` times a percentage
+        /// FRESHLY ROLLED from `_previewRandom` between 5 and 10 on every call.** It was a random number
+        /// generated for display and printed beside a measurement — the figure moved when nothing about
+        /// the model had, and two reads of the same unchanged draft disagreed. `PreviewTurn` is
+        /// deterministic and rolls no event, so the projection has no spread to report. Ruled by Elias
+        /// 2026-08-31: **remove it — do not re-roll it, do not stabilise it.** The scope lives in the
+        /// captions instead, because without the scope a margin is a decoration.
+        /// </summary>
         private string FormatEstimate(float value, string unitSuffix)
         {
-            float marginPercent = MinPreviewMarginPercent + (float)_previewRandom.NextDouble() * (MaxPreviewMarginPercent - MinPreviewMarginPercent);
-            float marginAmount = Mathf.Abs(value) * marginPercent / 100f;
-            return $"{value:+0.00;-0.00;0}{unitSuffix} (±{marginAmount:0.00}{unitSuffix})";
+            return $"{value:+0.00;-0.00;0}{unitSuffix}";
         }
 
         /// <summary>
-        /// <see cref="FormatEstimate"/> for a currency figure. Same margin roll, same "value ± margin"
-        /// shape, but both numbers render through <see cref="UiFormat.Money"/>.
+        /// <see cref="FormatEstimate"/> for a currency figure — the same point, rendered through
+        /// <see cref="UiFormat.MoneyDelta"/> so the unit is stated.
         ///
         /// The three call sites for this previously passed the literal suffix " units" - the clearest
         /// single example of the P2 finding that this game states its units nowhere. A player reading
@@ -3953,9 +3966,7 @@ namespace PoliSim.UI
         /// </summary>
         private string FormatMoneyEstimate(float value, MoneyUnit unit)
         {
-            float marginPercent = MinPreviewMarginPercent + (float)_previewRandom.NextDouble() * (MaxPreviewMarginPercent - MinPreviewMarginPercent);
-            float marginAmount = Mathf.Abs(value) * marginPercent / 100f;
-            return $"{UiFormat.MoneyDelta(value, unit)} (±{UiFormat.Money(marginAmount, unit)})";
+            return UiFormat.MoneyDelta(value, unit);
         }
 
         /// <summary>

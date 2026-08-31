@@ -561,7 +561,9 @@ namespace PoliSim.UI
                 // board: the preview reads the rate dial as drafted (the one input it still reads)
                 // and every bill as it passes - a drafted bill does not move it (R-B4's discipline).
                 GUIStyle note = DeskCaptionWrapped(8f, PoliSimTheme.TextMuted);
-                const string noteText = "NO DRAFT PENDING — ESTIMATES FOLLOW THE RATE DIAL AS DRAFTED AND EVERY BILL AS IT PASSES · ±5–10% MARGIN · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE";
+                // C-C14 (2026-08-31): "±5–10% MARGIN" is gone from this caption. It was a rolled number,
+                // and the scope it sat beside is the part that was doing the work.
+                const string noteText = "NO DRAFT PENDING — ESTIMATES FOLLOW THE RATE DIAL AS DRAFTED AND EVERY BILL AS IT PASSES · NO MARGIN: THE PROJECTION IS DETERMINISTIC · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE";
                 float notePadX = Mathf.Round(7f * ux);
                 float notePadY = Mathf.Round(5f * uy);
                 float noteWidth = Mathf.Max(1f, r.width - notePadX * 2f);
@@ -576,9 +578,12 @@ namespace PoliSim.UI
                 return;
             }
 
+            // C-C14: the margin line becomes the scope line. The board's slot stays - a reader who has
+            // learned to look here for "how much should I trust this" still finds an answer, and now it
+            // is a true one. Same style, same height, same position, so no layout below it moves.
             GUIStyle margin = DeskCaption(8f, PoliSimTheme.TextSecondary);
             float marginHeight = DeskCaptionHeight(margin);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, marginHeight), "±5–10% MARGIN OF ERROR", margin);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, marginHeight), "NO MARGIN — THE PROJECTION IS DETERMINISTIC", margin);
             y += marginHeight + Mathf.Round(2f * uy);
 
             GUIStyle method = DeskCaptionWrapped(8f, PoliSimTheme.TextMuted);

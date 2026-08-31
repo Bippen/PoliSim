@@ -36,9 +36,10 @@ namespace PoliSim.Simulation
         /// </summary>
         public const float RateAdjustmentSpeed = 0.15f;
 
-        // Isolated from EventSystem's own System.Random, UnityEngine.Random, and GameController's
-        // _previewRandom - drawing candidates at an election boundary must never perturb any other
-        // RNG consumer's sequence.
+        // Isolated from EventSystem's own System.Random and UnityEngine.Random - drawing candidates at
+        // an election boundary must never perturb any other RNG consumer's sequence. (It named
+        // GameController's _previewRandom as a third isolated stream until C-C14 deleted that field with
+        // the rolled display margin it existed for.)
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.FederalReserve);
 
         private static readonly List<FedChair> CandidatePool = new List<FedChair>
