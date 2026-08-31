@@ -144,6 +144,15 @@ namespace PoliSim.Testing
         private IEnumerator Start()
         {
             Application.logMessageReceived += OnRunLog;
+
+            // S-20: arm the capture-identity token for the whole run, and PRINT THE ENUMERATION - a trap
+            // that silently knew fewer surfaces than it claims reads exactly like a clean run.
+            CaptureIdentity.Armed = true;
+            CaptureIdentity.Expected = "imgui";
+            Debug.Log("SHOT: capture-identity armed. Surfaces the token palette knows - "
+                      + string.Join(", ", CaptureIdentity.Surfaces)
+                      + ". Every capture claims one, and the written frame must carry its token.");
+
             // COUNTRY-LEAK FIX: `controller` is declared here, outside the try, so the `finally` below
             // can reach it. Everything from here through the method's normal end is now wrapped in
             // try/finally - see the finally block's own comment for why.
@@ -198,6 +207,7 @@ namespace PoliSim.Testing
             // the right capture.
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
+            Claim("selector");
             yield return Capture("01_country_selector");
             RecordCanvasTextAssert("01_country_selector", controller);
 
@@ -224,6 +234,8 @@ namespace PoliSim.Testing
             // results filed under 01a_selector_yielding and 01b_running_strip are the Desk's, not the
             // selector's or the strip's. Attribute a text overflow or containment escape read under
             // these names to the Desk on first reading (the Desk's own frames are 01c-01f).
+            // S-20: still the SELECTOR - IMGUI is veiling it with a scrim, not replacing it.
+            Claim("selector");
             yield return Capture("01a_selector_yielding");
 
             yield return WaitForCanvasSettle(controller, wantActive: false);
@@ -400,6 +412,7 @@ namespace PoliSim.Testing
                 yield return CaptureStatePins(controller);
             }
 
+            Debug.Log($"SHOT: capture-identity - {_identityAsserts} capture(s) proved they show the surface they claim.");
             Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
 
             int overflows = ReportOverflows();
@@ -600,11 +613,15 @@ namespace PoliSim.Testing
             }
             yield return null;
             yield return null;
+            // S-20: the entrance is mid-envelope, but the surface being photographed is still the SIGNING
+            // board - IMGUI is veiling it with a scrim, not replacing it.
+            Claim("signing");
             yield return Capture("89d_signing_entrance");
             RecordCanvasTextAssert("89d_signing_entrance", controller);
 
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
+            Claim("signing");
             yield return Capture("89e_signing_settled");
             RecordCanvasTextAssert("89e_signing_settled", controller);
 
@@ -947,6 +964,59 @@ namespace PoliSim.Testing
         private int _captured;
         private int _failed;
 
+        /// <summary>
+        /// S-20's trap: does the written frame carry the token of the surface this capture CLAIMS?
+        ///
+        /// <para>The token is a 4×4 block in the top-left corner. ⚠ Unity textures are bottom-left
+        /// origin and GUI is top-left, so the pixel read is `(1, height - 2)` — one in from each edge, so
+        /// a filtering artefact on the very boundary cannot decide the assertion.</para>
+        ///
+        /// <para>⚠ <b>An UNKNOWN claim is not a pass.</b> If nothing set an expectation for this capture,
+        /// the assertion is skipped and SAID to be skipped, rather than counting as evidence — C-C9's
+        /// assertion 4 is the precedent for reporting an untested thing as untested.</para>
+        /// </summary>
+        private bool AssertCaptureIdentity(string name, Texture2D shot)
+        {
+            if (!CaptureIdentity.Armed || string.IsNullOrEmpty(CaptureIdentity.Expected)) { return true; }
+
+            if (!CaptureIdentity.TryColorFor(CaptureIdentity.Expected, out Color32 want))
+            {
+                Debug.LogError($"SHOT: IDENTITY - '{CaptureIdentity.Expected}' is not a known surface, so {name} claims a "
+                               + "screen the token palette cannot express. Add it to CaptureIdentity.Palette rather than "
+                               + "letting the capture pass unchecked.");
+                return false;
+            }
+
+            Color32 found = shot.GetPixel(1, shot.height - 2);
+            const int Tolerance = 40;
+            bool match = Mathf.Abs(found.r - want.r) <= Tolerance
+                         && Mathf.Abs(found.g - want.g) <= Tolerance
+                         && Mathf.Abs(found.b - want.b) <= Tolerance;
+
+            if (match) { _identityAsserts++; return true; }
+
+            string blamed = "no known surface";
+            foreach (string surface in CaptureIdentity.Surfaces)
+            {
+                if (!CaptureIdentity.TryColorFor(surface, out Color32 candidate)) { continue; }
+                if (Mathf.Abs(found.r - candidate.r) <= Tolerance
+                    && Mathf.Abs(found.g - candidate.g) <= Tolerance
+                    && Mathf.Abs(found.b - candidate.b) <= Tolerance)
+                {
+                    blamed = surface;
+                    break;
+                }
+            }
+
+            Debug.LogError($"SHOT: IDENTITY MISMATCH on {name} - it claims '{CaptureIdentity.Expected}' and the written "
+                           + $"frame carries the token of '{blamed}' (rgb {found.r},{found.g},{found.b}). This is S-20's "
+                           + "defect: the capture wrote, the guards were silent, and the screen under test is not the "
+                           + "screen in the file. Failing loudly rather than filing a picture of something else.");
+            return false;
+        }
+
+        private int _identityAsserts;
+
         private IEnumerator Capture(string name)
         {
             // ⚠ THIS IS WHY THE RUNNER CANNOT USE -batchmode.
@@ -1002,6 +1072,27 @@ namespace PoliSim.Testing
             //
             // ExpectedWidth is 0 when the caller did not ask for a size, in which case there is nothing
             // to check and nothing is claimed.
+            // ⚠ TRAP 3, ARMED 2026-08-31 (S-20). THE SCREEN CLAIMED MUST BE THE SCREEN WRITTEN.
+            //
+            // C-D5 found that every `-shotelectionnight` film ever taken had photographed the DESK under
+            // board 1h's name - W-E6's own films included - because an overlay Canvas draws before IMGUI.
+            // Through all of it: 8 captured, 0 failed, 0 overflows, 0 escapes, exit 0. Traps 1 and 2 guard
+            // HOW a capture was taken; every other guard measures WITHIN whatever was drawn. Nothing asked
+            // whether the thing under test was the thing on screen.
+            //
+            // The surface that ends up on top stamps a 4x4 token in the corner (`CaptureIdentity`), and
+            // this reads it out of the texture just written. Claimed vs found, in the pixels.
+            if (!AssertCaptureIdentity(name, shot))
+            {
+                _failed++;
+                UnityEngine.Object.Destroy(shot);
+                // ⚠ The claim resets even on the FAILURE path. The first run of this trap did not, and one
+                // mismatched capture made every later shot in the run inherit the same claim and fail with
+                // it - a cascade that hides which capture was actually wrong.
+                CaptureIdentity.Expected = "imgui";
+                yield break;
+            }
+
             if (ExpectedWidth > 0 && shot.width != ExpectedWidth)
             {
                 Debug.LogError($"SHOT: WIDTH MISMATCH on {name} - asked for {ExpectedWidth}, captured {shot.width}. "
@@ -1018,6 +1109,17 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: wrote {path} at {shot.width}x{shot.height}");
             _captured++;
             Destroy(shot);
+
+            // S-20: the claim resets to IMGUI after every shot, so a Canvas claim can never leak onto the
+            // next capture and quietly pass it. A caller that means a board says so, once, each time.
+            CaptureIdentity.Expected = "imgui";
+        }
+
+        /// <summary>S-20: the next capture claims this surface. Resets to `imgui` the moment the shot is
+        /// written, so the claim is per-capture and never sticky.</summary>
+        private static void Claim(string surface)
+        {
+            CaptureIdentity.Expected = surface;
         }
 
         /// <summary>Prints every overflow the guard recorded and returns the count. Already deduped by the guard itself - see the note there on why that has to happen at record time.</summary>
@@ -2473,6 +2575,7 @@ namespace PoliSim.Testing
                 // C-D5 (V-N3): the comparison is Sweden 2018, SOURCED - the same
                 // `ElectionNightFilm.Votes2018` the results screen already compares against, so the two
                 // screens cannot disagree about the swing any more than they can about who won.
+                PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 ElectionNightScreen screen = ElectionNightScreen.Build(state, parties, "SWEDEN",
                     new DateTime(2026, 9, 13, 20, 0, 0), 349,
                     previousVotes: ElectionNightFilm.Votes2018, previousLabel: "SWEDEN 2018");
@@ -2483,6 +2586,7 @@ namespace PoliSim.Testing
                 }
 
                 yield return Settle();
+                Claim("electionnight");
                 yield return Capture("e6_election_night_" + stems[i]);
 
                 Debug.Log(string.Format(CultureInfo.InvariantCulture,
@@ -2498,6 +2602,7 @@ namespace PoliSim.Testing
             // The run ends HERE, and it must end through Finish - a `yield break` alone leaves
             // the driver's own exit unreached and the process is forced out with a 1 (which is
             // what the first film of this board did, four widths over).
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
             SetPrivateField(controller, "_canvasLive", false);
             yield return Settle();
 

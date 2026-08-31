@@ -213,6 +213,29 @@ not landed by the 13 September gate: it builds in the OPEN state and moves to th
 
 # V. Waiting on Elias — a visual review (built, not seen; rule 3's third layer)
 
+> ⚠ **THE CANVAS-CAPTURE AUDIT, 2026-08-31 (S-20). READ THIS BEFORE THE SITTING.**
+>
+> C-D5 found that **every `-shotelectionnight` film ever taken photographed the DESK** under board 1h's
+> name — an overlay Canvas draws before IMGUI, so the desk painted over it, at *8 captured, 0 failed, 0
+> text overflows, 0 containment escapes, exit 0*. **Nothing in the film bar checked that the screen under
+> test was the screen on screen.**
+>
+> **Every Canvas surface in this project was then re-filmed and checked one at a time:**
+>
+> | surface | verdict |
+> |---|---|
+> | **the country selector** (`01_country_selector`) | ✅ **confirmed** — its films always showed the selector |
+> | **the signing ceremony** (`89d_signing_entrance`, `89e_signing_settled`) | ✅ **confirmed** — this board is entered through the game's own takeover, so IMGUI was already suppressed |
+> | **election night** (`e6_election_night_*`) | ⚠ **VOID and RE-FILMED.** The only board the *harness* built by hand, with no takeover to put the desk away. Its row below is corrected |
+>
+> **A capture-identity trap is now armed** (`CaptureIdentity`): whichever surface owns the frame stamps a
+> token in the corner, and the driver reads it back out of the PNG it just wrote — a capture that claims
+> one screen and shows another **fails loudly**. Proven both ways: **81 of 81 captures pass** with the fix,
+> and re-introducing the defect makes every election-night frame fail by name.
+>
+> **Nothing else in this section is affected** — every other row rests on IMGUI captures, which were never
+> exposed to this.
+
 **The review package of the omnibus pass and its continuation (2026-08-28) — the final review checklist.**
 Everything visual the two passes shipped, each row ON FILM with its capture named — the omnibus closing
 matrix `omni_final_<size>_<screen>.png` at 1280×720, 1600×900, 1920×1080 and 2560×1440 (USA); the
@@ -283,7 +306,7 @@ closed by their rulings; their surfaces are re-listed here as built.
 | **W-E3 — the action ladder** (the second Track E screen, 2026-08-29) | `COMPLETED.md` §55 | `pa_campaign_<w>_e3_campaign_action_*` at all four widths, plus the `poor` and `nomomentum` states | Fourteen actions on one sheet. Does the ladder read as a CHOICE (cost against reach) or as a menu? When the chest is nearly gone and most rows grey out, does the sheet say why, or does it just look broken? |
 | **W-E4 — polling** (the third Track E screen, 2026-08-29) | `COMPLETED.md` §56 | `pa_campaign_<w>_e4_campaign_polling_*` at all four widths | §20-22's honesty is the whole subject: the MoE, the field date, the house effect. Does a player reading this sheet understand the poll can be WRONG, or does the number still read as the answer? |
 | **W-E5 — the debate** (the fifth Track E screen, 2026-08-30) | `COMPLETED.md` §72 | `we5_debate_<w>_*` in three states — prep, midway, verdict — at 1280 / 1600 / 1920 / 2560 | Two questions, one of them a live Design ask (D8-6). (1) Is the exchange legible as an EXCHANGE, or does the ledger flatten it into rows? (2) Should this be a STAGE inside the sheet, as built, or a MODAL takeover like election night — the game treats the debate as a set piece and the two read very differently. The verdict box has no stamp (D8-5). |
-| **W-E6 — election night** (board 1h, the sixth Track E screen, 2026-08-30) | `COMPLETED.md` §74 | `wf1n_<w>_*` (the W-F1 re-film, on the REAL 2022 per-constituency counts) at all four widths | The one board that is a full-bleed Canvas takeover. (1) Does an undeclared constituency read as UNDECLARED — it carries null votes by construction, never zero — or as an empty row? (2) The paper is FLAT here (deviation V-N1, ask D8-4): does the missing gradient and double shadow show against the rest of the game? (3) Calls arrive late by design; does the sheet make the guarantee visible or just feel slow? |
+| **W-E6 — election night** (board 1h, the sixth Track E screen, 2026-08-30) | `COMPLETED.md` §74 | ⚠ **EVIDENCE VOID, RE-FILMED 2026-08-31 (S-20).** ~~`wf1n_<w>_*` at all four widths~~ — **every election-night film ever taken photographed the DESK**, this row's included: the board is an overlay Canvas and IMGUI drew over it, at 0 failed and exit 0. **Use `cd5b_<w>_e6_election_night_*` (four widths, 2026-08-31), the first films in which board 1h is actually visible** — and they also carry C-D5's new swing column | The one board that is a full-bleed Canvas takeover. (1) Does an undeclared constituency read as UNDECLARED — it carries null votes by construction, never zero — or as an empty row? (2) The paper is FLAT here (deviation V-N1, ask D8-4): does the missing gradient and double shadow show against the rest of the game? (3) Calls arrive late by design; does the sheet make the guarantee visible or just feel slow? |
 | **W-E7 — results and attribution** (the seventh Track E screen, 2026-08-30) | `COMPLETED.md` §73 | `wf1_<w>_*` (the W-F1 re-film) at all four widths | (1) The turnout is the PUBLISHED 84.21 %, not the 85.88 % the eight parties' own votes would imply — does the footer make clear which basis is on the sheet? (2) §30 asks for a demographic block and it is drawn ABSENT with the reason (blocked on W-F4, whose premise is falsified): does the absence read as deliberate? (3) The "why" column is Shapley over ten sources and sums to the deviation as an identity — is that legible as an explanation or as arithmetic? |
 | **W-E8 — the coalition sheet** (the eighth and last Track E screen, 2026-08-30) | `COMPLETED.md` §75 | `wf1_<w>_*` (the W-F1 re-film) in three outcome states — confidence-and-supply (Sweden 2022 as it happened), new election, majority | THE distinction this sheet exists to make: a DECLARED red line is something a party said, with a citation; a DERIVED one is a distance this model measured and nobody uttered. Do the two read as different KINDS of thing, or does the derived column look like a claim about what a party would do? Also: the middle column shows the 120 arithmetic majorities a red line refused — does that land as "arithmetic is not the whole story", which is its point? |
 | **Playtest 1, finding 5 — money in the wrong currency** (Elias, 2026-08-29) | the finding's record; **P-C1** answers it, **P-C2** rules the basis | every money surface on the current family (the Desk's masthead, Budget, Trade); the P-C1 film for Sweden and one euro country | Elias, verbatim in substance: *every domestic figure should render in its country's currency — kr, €, zł, $ — and the Desk shows Sweden's GDP as $620B.* Display first (P-C1); the seed basis surfaced and ruled, not smuggled (P-C2); both after W-G1 |

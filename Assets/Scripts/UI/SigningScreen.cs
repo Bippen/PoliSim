@@ -244,6 +244,8 @@ namespace PoliSim.UI
             screen._entrance = document.AddComponent<DocumentEntrance>();
             screen._entrance.Controls = controls;
 
+            // S-20: the capture-identity token, so a film of this board proves it is this board.
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "signing";
             return screen;
         }
 

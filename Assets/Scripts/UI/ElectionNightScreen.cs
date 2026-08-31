@@ -117,6 +117,10 @@ namespace PoliSim.UI
 
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
             BuildBody(content.transform, state, partyNames, totalSeats, previousVotes, previousLabel);
+
+            // S-20: the board stamps its own capture-identity token, so a film that shows the desk over it
+            // fails on the pixels rather than passing on a clean exit code.
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
             return screen;
         }
         private const float DocumentWidth = 1240f;

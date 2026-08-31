@@ -1854,7 +1854,24 @@ namespace PoliSim.UI
             camera.backgroundColor = PoliSimTheme.Desk;
         }
 
+        // S-20: the capture-identity token must be stamped by whichever surface actually PRESENTED the
+        // frame, and `DrawImguiFrame` has six early returns (the election reveal, the scenario verdict,
+        // the saves menu, the instrument ladder, and two seam branches). Stamping at the end of the body
+        // missed every one of them - the first run of the trap caught `92_saves_menu` unmarked. So the
+        // body is wrapped and the token is stamped HERE, on every path out of it.
         private void OnGUI()
+        {
+            _imguiSurface = "imgui";
+            DrawImguiFrame();
+            PoliSim.Testing.CaptureIdentity.DrawMarker(_imguiSurface);
+        }
+
+        // S-20: which surface this frame belongs to - "imgui" normally, "seam" while the Canvas takeover
+        // envelope owns the screen and IMGUI is drawing only a scrim over it. A seam frame belongs to
+        // NEITHER surface, and saying so is more honest than crediting it to one of them.
+        private string _imguiSurface = "imgui";
+
+        private void DrawImguiFrame()
         {
             InitializeStylesIfNeeded();
             RescaleStylesToScreen();
@@ -1877,6 +1894,13 @@ namespace PoliSim.UI
             // drawing it here would wash the Canvas from above.
             if (CanvasSeamSuppressesImgui())
             {
+                // ⚠ S-20: IMGUI STAMPS NOTHING HERE. The token answers "which surface owns these pixels",
+                // and during a takeover the Canvas board owns them - IMGUI is only veiling it with a
+                // scrim. Stamping "imgui" (or a seam token) would paint over the board's own token and
+                // make every Canvas capture fail, which is what the second run of this trap did: IMGUI
+                // draws last, so whatever it stamps always wins, and it must therefore stamp only when it
+                // is genuinely the surface being photographed.
+                _imguiSurface = PoliSim.Testing.CaptureIdentity.SurfaceForTakeover();
                 DrawCanvasSeamOverlay();
                 return;
             }
@@ -2090,6 +2114,7 @@ namespace PoliSim.UI
             // No such state can co-occur with the SELECTOR's exit; re-audit when Canvas screen #2
             // can fire mid-game.
             DrawCanvasRestoreScrim();
+
         }
 
         private void InitializeStylesIfNeeded()

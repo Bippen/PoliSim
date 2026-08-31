@@ -125,6 +125,8 @@ namespace PoliSim.UI
                 BuildFolderCard(grid.transform, country, folder, onSelect);
             }
 
+            // S-20: the capture-identity token, so a film of this board proves it is this board.
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "selector";
             return screen;
         }
 

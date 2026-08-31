@@ -66,7 +66,18 @@ figure · C-G1 deletes nothing that is not first migrated.
 
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
-Execution order: Phase 0 → A → B → C → D → R → E → F → G. One commit per item; stop at item boundaries.
+Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.
+
+⚠ **ONE DEPENDENCY CHAIN GOVERNS THE ELECTIONS SIDE AND IS STATED HERE ONCE, so the FdI ceiling reads as
+a plan rather than a surprise** (forced by C-D1, 2026-08-31):
+
+> **C-C13's ruling → P-I2 (the cohort substrate) → C-D1 (per-valkrets voter groups) → C-A1's per-group
+> loyalty → the Italy FdI surge.**
+
+Every link is a real blocker, not a preference. Voter groups must be a **view** over the cohort substrate
+with computed shares (`POLISIM_COHORT_SPECLET.md` §5) — sourcing per-valkrets marginals onto a separate
+group layer would build the second population that spec-let exists to forbid. So **C-A1's named ceiling is
+four items away and the first of them is Elias's to rule**, not a fetch anyone can do tonight.
 
 ### Phase 0 — the reconciliation
 

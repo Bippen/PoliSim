@@ -7481,3 +7481,84 @@ for the new persisted state, **by party name**) · `ElectionDayReachDiagnostic`,
 `CampaignPoolSizingDiagnostic` all exit 0 · trajectories **6 of 6 byte-identical to `traj_cc7_*`** on every
 item that touched `Assets/Scripts` · election night filmed at four geometries, 8/0/0/0 each, **with the
 board visible for the first time** · R-SP1 run mid-track at a guard's demand, `origin/main == HEAD`.
+
+## 118. The S-20 sweep — every Canvas capture audited, and a trap that proves a frame shows its subject (2026-08-31)
+
+**Correction 1 of the streamlined finish**, and the audit found the defect was contained while the class
+was not.
+
+### The audit: every Canvas surface, checked one at a time
+
+Three screens in this project are Canvas-based (`CanvasChrome.EnsureHost`): the country selector, the
+signing ceremony, and election night.
+
+| surface | verdict |
+|---|---|
+| **country selector** | ✅ **confirmed** — always showed the selector |
+| **signing ceremony** | ✅ **confirmed** — entered through the game's OWN takeover, so IMGUI was already suppressed |
+| **election night** | ⚠ **VOID** — the only board the *harness* built by hand, with nothing to put the desk away |
+
+⚠ **So the instance was one board, and the reason it was one board is luck, not design**: the two safe
+ones happen to be entered through `GameController`'s takeover seam. Any future board a harness stages
+directly inherits the same defect.
+
+### The trap, and the four designs it took to get right
+
+`CaptureIdentity`: whichever surface owns the frame stamps a 4×4 token in the top-left corner; the driver
+reads that pixel out of the PNG it just wrote and compares it with the surface the capture **claims**.
+Trap 3, beside C-CAP's two.
+
+⚠ **The route there is worth more than the result, because three plausible designs failed silently:**
+
+1. **Stamp at the end of `OnGUI`.** Missed six early-return paths — the election reveal, the scenario
+   verdict, the saves menu, the instrument ladder. `92_saves_menu` came back unmarked. Fixed by wrapping
+   the body: `OnGUI` now calls `DrawImguiFrame` and stamps on **every** path out of it.
+2. **Let the Canvas board stamp its own token.** ⚠ **A UI `Image` with a null sprite renders NOTHING.** The
+   marker was invisible on every board through four runs while the IMGUI token worked perfectly — which
+   read as *"the boards are never on screen"* and was really *"the token was never drawn"*. **A guard that
+   fails silently is the thing this guard exists to prevent**, and it did it to itself.
+3. **Anchor the marker inside each board's own root.** Its placement then depended on that board's layout
+   and entrance animation, and it landed off-screen mid-envelope. ⚠ **A marker whose placement depends on
+   the thing it is auditing is not an audit.**
+4. ✅ **IMGUI stamps for everyone.** IMGUI draws last and unconditionally, so it is the one place a token
+   is certain to reach the frame — and it stamps the CANVAS board's name only on the branch where a board
+   genuinely owns the screen. The C-D5 defect takes the other branch and stamps `imgui`, which is exactly
+   the mismatch that must fail.
+
+Also fixed: the claim now resets on the **failure** path too. The first run cascaded — one mismatch made
+every later capture inherit the claim and fail with it, hiding which capture was actually wrong.
+
+### ⚠ Proven both ways (C-CAP's precedent)
+
+- **With the fix: 81 of 81 captures proved they show the surface they claim.** Exit 0.
+- **With the defect re-introduced** (the `_canvasLive` suppression removed for one probe run): **every
+  election-night frame failed by name** — *"it claims 'electionnight' and the written frame carries the
+  token of 'imgui'"*. The probe was reverted immediately.
+
+### §V corrected, so the sitting is not spent on films that never showed their subject
+
+`MISSING_PREREQUISITES.md` §V opens with the audit table, and **W-E6's row is marked EVIDENCE VOID** with
+its captures repointed to `cd5b_<w>_e6_election_night_*` — the first films in which board 1h is actually
+visible, and which also carry C-D5's new swing column. Every other §V row rests on IMGUI captures and was
+never exposed.
+
+### ⚠ Declared artefact
+
+While armed, films carry a 4×4 px block in the extreme top-left corner. It is outside `ScreenEdgeCheck`'s
+margin line (verified: the edge check stays clean), it is armed only by the capture harness, and it never
+appears in play. That is the price of the assertion, recorded rather than hidden.
+
+### Correction 2 — the chain C-D1 forced, stated once
+
+`POLISIM_BACKLOG.md`'s order block now carries it in one line:
+
+> **C-C13's ruling → P-I2 (the cohort substrate) → C-D1 (per-valkrets voter groups) → C-A1's per-group
+> loyalty → the Italy FdI surge.**
+
+Every link is a real blocker. **C-A1's named ceiling is four items away and the first of them is Elias's
+to rule** — not a fetch anyone can do tonight.
+
+### The bar
+
+Nine checks exit 0 · trajectories 6 of 6 byte-identical to `traj_cc7_*` · the full sweep films 81/0 with
+0 text overflows and the identity trap green on all 81.
