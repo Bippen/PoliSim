@@ -6798,3 +6798,89 @@ harness so they are not repeated:
 `ResponsivenessAuditHarness` exit 0 (it fails loudly if a dial produces no impulse — a table with an
 unpulled lever in it would be measuring the wrong model). Nine checks exit 0. No `Assets/Scripts` file was
 touched, so no trajectory, film or save-layer evidence applies: the item adds a harness and a record.
+
+## 108. C-C12 and C-C13 (P-H1, P-I1) — the two spec-lets, written to be struck (2026-08-31)
+
+Both items are **document only** by their own done-when (*"the spec-let is at root"*) and by Elias's
+pre-ruling. Neither builds anything. Two new root documents:
+
+- **`POLISIM_TAX_SPECLET.md`** — the tax spec-let and sourcing bill.
+- **`POLISIM_COHORT_SPECLET.md`** — the cohort spec-let, with the collision map and the join.
+
+Both are charted in C-G1's document-set table rather than left as orphans.
+
+### C-C12: what the tax spec-let actually found
+
+Sweden's real instruments are **sourced**, each with its vintage, from Skatteverket's *Belopp och procent
+2026* and SCB's *Kommunalskatterna 2026*: kommunal average **32.38 %** (Österåker 28.93 lowest, Dorotea
+35.65 highest), statlig **20 %** above a brytpunkt of **660 400 kr** (760 500 for 66+, skiktgräns
+643 000), arbetsgivaravgifter **31.42 %**, egenavgifter **28.97 %**, moms **25 / 12 / 6 %**, särskild
+löneskatt **24.26 %**, prisbasbelopp **59 200 kr**.
+
+⚠ **Two rows are left deliberately unfilled** — bolagsskatt (secondary sources only) and
+kapitalinkomstskatt (not verified at all). A rate everybody knows is still a rate somebody has to check,
+and the standing rule does not have a "well-known" exemption.
+
+⚠ **The headline finding is structural, not numeric: THREE OF THE SIX COUNTRIES DO NOT FIT A BRACKET
+TABLE.** Germany's *Einkommensteuertarif* is a formula (§32a EStG), France has the *quotient familial*
+dividing by household size, Italy stacks regional and municipal *addizionali* on IRPEF. A design that
+assumes "brackets as data" fits Sweden, Poland and the USA and **misrepresents the other three** — so the
+first thing to rule is whether those three get a stated approximation or `TaxLine` gets pluggable
+schedules.
+
+Two dependencies are recorded so the build cannot start in the wrong order:
+
+- ⚠ **The tax spec-let is DOWNSTREAM of the cohort spec-let.** A bracket schedule applied to a single
+  average income is arithmetically identical to a flat rate at the average's bracket — building brackets
+  without an income distribution buys nothing at all.
+- ⚠ **And downstream of C-C11's R-C11a.** The tax multiplier is exactly zero (§107); detailed instruments
+  behind a lever with no output channel are detail without consequence.
+
+Also named for the record: Sweden's seeded `IncomeTax 52` is already a *blend* of kommunal and statlig at
+the top, so the dial the player moves today is **the top marginal rate applied to all income** — neither
+of the two real instruments, and irreconcilable with either without brackets.
+
+### C-C13: what the cohort spec-let actually found
+
+**Five-year cohorts are recommended and the sourcing agrees** rather than merely permitting it. Eurostat
+`demo_pjan` publishes single-year ages, so the choice is about fitness: the four consumers (participation
+by age, pension weight, education weight, voter groups) all move on five-year scales, 21 cohorts × 6
+countries is 126 numbers a year against 606, and single-year cohorts invite single-year *rates*, which is
+a demography build rather than a game substrate.
+
+⚠ **The collision map is the document's real content**, because it is the list of ways the build goes
+wrong quietly:
+
+1. **Double-stepping** — eight `EconomyState` scalars are stepped today by their own rules; the build must
+   **delete** them, not run both and reconcile.
+2. ⚠ **`NaturalBirthRate` / `NaturalNetMigrationRate` are ANCHORS.** Each field's own doc calls it the
+   policy-independent trajectory, and the design is deliberate: a held slider is a **constant offset from
+   the natural trend, not a compounding one**. Lose the anchor and every demographic policy effect loses
+   its zero *and starts compounding*.
+3. **The trajectory dump reflects `EconomyState`'s public fields**, so turning eight of them from stepped
+   to derived is the largest BASELINE change this project has attempted; every country will move.
+4. ⚠ **The player's two demographic levers reach the rates through TWO hops** —
+   `ApplyDemographicPolicyChanges` writes the dial levels, `MacroSystem.ApplyDemographicRates` offsets the
+   rates off their natural trajectories. Re-point only the first and the levers go dead. That would be the
+   third dead lever in this codebase after the tax dials (§107) and the interest rate (S-18) — **three is a
+   pattern, not an accident**, and worth saying out loud before the fourth.
+5. **`DependencyRatio` becomes exactly computable**, so today's seeded value is about to be graded.
+
+**One demography, two consumers** is stated so it cannot be built as two populations by accident: a voter
+group is a predicate over cohorts plus a non-demographic axis, its `PopulationShare` is **computed** and
+never seeded, ⚠ **the eligible population is not the population** (voting age, citizenship, residence all
+cut it, and getting this wrong inflates every young group), and the join is asserted — Σ shares == 1, and
+the covered cohorts == the eligible population — the way the approval ledger asserts its own identity.
+
+⚠ **One dataset id is asserted (`demo_pjan`, DOI 10.2908/demo_pjan) and six are BILLED**, and the
+asymmetry is deliberate: a dataset code recalled rather than checked is an invented figure wearing a
+technical costume.
+
+Sized: the tax build ~8 sessions (~11 on the pluggable branch), the cohort build ~11–13, of which
+retiring the eight scalars is the half that can go wrong silently. ⚠ **Not in the same pass** — two
+BASELINE families landing together cannot be explained apart.
+
+### The bar
+
+Records only; no `Assets/` file touched by either item, so no harness, film or trajectory evidence
+applies. The nine checks were run anyway on the tree that carries them and exit 0.
