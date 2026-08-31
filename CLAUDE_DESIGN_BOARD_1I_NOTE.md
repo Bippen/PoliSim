@@ -151,6 +151,8 @@ From `../PoliSim-captures/` (USA, at 1280×720, 1600×900, 1920×1080 and 2560×
   order (1l).
 
 These are reference material, out of tree beside the other captures — no import on your side,
-nothing to reconcile. (The one open pipeline item from our half of the rasterization diff — the hatch
-tile's source, one re-cut away — is a separate, small ask, filed in the request doc as §E5 — not part
-of this note.)
+nothing to reconcile. (⚠ CORRECTED 2026-08-31 at C-F1: the rasterization diff's open pipeline item — the hatch tile's
+source — is NOT open. §E5 CLOSED END-TO-END on 2026-08-28, both sides, after Elias's same-night ruling;
+the sentence below said otherwise for three days and is struck. ~~The one open pipeline item from our half
+of the rasterization diff — the hatch tile's source, one re-cut away — is a separate, small ask, filed in
+the request doc as §E5 — not part of this note.~~)

@@ -141,7 +141,7 @@ share re-measured after D4 says the reclaim has nowhere to go on content-short s
 re-composed the way 2a re-composed Domestic — filed for Design's next look in the request doc's Annex C.
 **The era's live edge:** ONE ask is out for installing — the tenth request (D7, board 2b, "the Policy
 Web, drawn to be read"; the sitting's third finding, its scale half already built and live as the
-Policy Web micro-pass, `COMPLETED.md` §48) — riding the §S paste (`SEND_PACKAGE_2026-08-28.md`,
+Policy Web micro-pass, `COMPLETED.md` §48) — riding the §S paste (`SEND_PACKAGE.md`,
 regenerated late night, rows n of N); §P (the three felt verdicts) is Elias's (the hatch pair's bar
 ruling landed 2026-08-28 — "diagonal-tile, viewed not counted", executed, `COMPLETED.md` §46);
 13 September (item 10, election night born on the v3 shell). Beyond the paste, nothing of v3.x is
@@ -275,7 +275,7 @@ forward):**
   compass's honest footprint, containment-asserted; R-SP5 the map's names on §A.9a's ladder with the
   harness's 4 px separation assert. Records: `COMPLETED.md` §40.
 - **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`, live-only since the clear-out: **§S** one paste
-  (`SEND_PACKAGE_2026-08-28.md`); **§A** the coupling queue Q6–Q10 at their triggers — nothing else;
+  (`SEND_PACKAGE.md`); **§A** the coupling queue Q6–Q10 at their triggers — nothing else;
   **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
   ⚠ **re-derived 2026-08-31: item 10's core SHIPPED at `a289e1e`** — Step 6 is re-gated at C-B5, Riksbank-B is merged into C-C7, the stranded branch is disposed at C-0.3, the party marks are D-8.1, and the political-model fact is historical (no expansionary
   bill passes on any drift path before the re-seeding); **§E** Design: §E6's boards LANDED and were built
@@ -472,7 +472,7 @@ happen.
 - Read **The board** above, then the live list — both re-derived, never edited forward. If the board
   disagrees with `git log`, the log is right and the board is stale.
 - Five gestures, no sixth (the push is a session's since R-SP1, 2026-08-28 — fast-forward only, at pass
-  end; force stays Elias's): paste `SEND_PACKAGE_2026-08-28.md` (§S — the v3.1 Phase A package, the one
+  end; force stays Elias's): paste `SEND_PACKAGE.md` (§S — the v3.1 Phase A package, the one
   current paste: the request doc through the ninth request with its six annexes, the note unchanged, the
   two sitting screenshots and the four rail crops from Elias's side; it supersedes the Phase C paste,
   which landed — the dated `…-28d` paths are R-PC4a's hygiene); sit once through `../PoliSim-captures/sv_index.html`

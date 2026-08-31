@@ -769,3 +769,55 @@ The debate screen is drawn as a STAGE inside the content sheet, with the exchang
 ledger. It could equally be a MODAL takeover like election night. **The two read very differently for
 a moment the game treats as a set piece**, and this is a design call we should not make by default.
 Prep / midway / verdict are all filmed at four widths if you want to look before answering.
+---
+
+## ⭐ THE ONE LIVE ASK — D9, the consolidated request (2026-08-31, C-F1)
+
+⚠ **THIS SUPERSEDES §2 (D7) AND §3 (D8) AS SEPARATE ASKS.** Both stay below as the record of how each
+row arrived; **nothing in them is withdrawn and nothing is asked for twice.** What changed is that they
+were two unsent asks with two annex sets, and an unsent ask that keeps growing is a paste nobody makes.
+**One ask, one annex set, one package.** Rows are numbered *n of N* so a partial paste is visible.
+
+**Sending is Elias's.** Nothing here is sent by writing it.
+
+### The rows — 11 of 11
+
+| n of N | row | what it is | evidence on disk |
+|---|---|---|---|
+| **1 of 11** | **Board 2b — the Policy Web, drawn to be read** (was D7) | the comprehension board. R-W2's fence binds: derived-only, DERIVED/DECLARED visible, neutral effect ink; a legend, weights and arrowheads MAY; invented edges, valence colour and groupings MAY NOT | Annex G; the census below |
+| **2 of 11** | **52 of 53 party marks are undrawn** (was D8-1) | ⚠ **The count is C-B1's, measured not estimated: 53 seeded, 1 resolving, 52 gaps, 0 errors.** The seven remaining SWEDISH marks are what 13 September needs; the other 45 are not urgent | `PartyMarkCoverageCheck` |
+| **3 of 11** | **Party colour for five countries** (was D8-2, in its grown-up form from C-B2) | ⚠ **Sweden's eight are DELIVERED INK, not a request**: Valmyndigheten's published `fargkod`, carried through `PoliSimTheme` at the desk's own saturation/value. **The other 45 parties have no ink and none is invented** — picking 30 colours by eye for real organisations is exactly what §0.4 forbids. The ask is a RULING on how to colour them, not a palette request | C-B2's harness |
+| **4 of 11** | ⚠ **`#753838` is drawn for TWO parties — Sweden's S and V** (S-7) | their published `fargkod` values differ only in darkness, and the desk seating keeps hue while replacing saturation and value — so a 106-seat party and a 24-seat party render identically in a hemicycle arc, a legend swatch and an election-night row | C-B2, `COMPLETED.md` §91 |
+| **5 of 11** | ⚠ **Six of Sweden's eight inks sit INSIDE the derived legibility floor** (S-8) | closer to an area accent (8.7°) than two area accents are to each other: KD 0.9° from Fiscal, SD 2.8° and L 4.6° from Global. Only C and MP clear it. **The constraint the four replaced archetype inks were designed around does not hold for the sourced hues** | C-B2 |
+| **6 of 11** | **A drawn valkrets map** (was D8-3) | 29 constituencies; election night and the results sheet both want one | — |
+| **7 of 11** | **Election night's paper and the verdict stamp** (was D8-4, D8-5) | V-N1's declared deviation: the paper is a flat fill and the shadow a single plate, because the CSS gradient and double shadow have no delivered sprite | ⚠ **the films are NEW — see the note below** |
+| **8 of 11** | **One design question: modal or stage for the debate** (was D8-6) | unchanged | — |
+| **9 of 11** | ⚠ **§E4's two stat icons — `icon_stat_youthunemployment`, `icon_stat_lifeexpectancy`** | **BUILT THIS PASS (R-CL4):** both `StatNodeId` members are promoted and named, so the web draws the rows and the check reports the missing art as a **GAP, not a failure** — 19 of 21 resolve, 2 reported gaps. **The two names are the ask's own evidence** | `StatIconCoverageCheck` |
+| **10 of 11** | **The §A.14 chip finding** | the board specified seats declared one at a time; **Sweden allocates nationally.** A drawing decision, not a bug | — |
+| **11 of 11** | ⚠ **MP has TWO språkrör and the debate seats NEITHER** (C-D3) | the model now carries both — Märta Stenevi and Per Bolund — and MP's *stadgar* (§§ 11.1, 11.2, 11.4) designate neither for a debate. **How does a debate stage draw a party that sends two equals?** A composition question no code ruling can answer | `COMPLETED.md` §114 |
+
+### ⚠ Two things a reviewer must know before looking at the films
+
+1. **BOARD 1H'S EVIDENCE WAS VOID AND IS RE-FILMED.** Every `-shotelectionnight` film ever taken
+   photographed **the Desk** under the board's name — an overlay Canvas draws before IMGUI, so the desk
+   painted over it, at *0 failed, exit 0*. **Rows 7 and 10 rest on the NEW films, `cd5b_<w>_e6_election_night_*`,
+   which are the first in which board 1h is actually visible.** A capture-identity trap now makes the
+   failure impossible to repeat.
+2. **The election-night board gained a swing column since the old films** (C-D5): swings against a named,
+   sourced prior on the completed count, **withheld on a partial count with the reason on screen**.
+
+### What C-C8's international pages surfaced, for Design's information rather than as a request
+
+⚠ **This model holds NO bilateral relations state at all.** `Country` has no relations field;
+`ForeignPolicyMeeting` is an event with options, not a standing relationship. The page therefore says so
+in its own words instead of drawing a warm/cool reading, and *"no trade link exists between these two"* is
+drawn as a different fact from *"trade of zero"*. **Nothing is asked for here** — it is named so a board
+for that page is never drawn around a number that does not exist.
+
+### P-F2 — was the D7 ask ever received?
+
+⚠ **NO RECEIPT EXISTS, and saying so is the answer.** Digest `85690abf…` appears in this repo's own
+records (`COMPLETED.md` §48, the overnight report, §S) — **all of them written on the sending side.**
+There is no readback, no `uploads/` listing and no acknowledgement anywhere in the repo. **P-F2 asked
+whether Design ever received it; the honest answer is that this repo cannot tell, and the reason it
+cannot is that the paste was never made.** §S remains unsent, which is consistent with every other trace.

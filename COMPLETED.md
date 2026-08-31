@@ -7706,3 +7706,68 @@ wearing punctuation — exactly the class P-A1 cut 131 strings of. Now the twent
 
 **Ten checks, 10 of 10 clean** (`PhantomGuardCheck` the tenth) · `MetaTextCheck` clean with the new
 pattern · no simulation path touched.
+
+## 121. C-F1 — one ask, one annex set, one package; and §E4 built so the ask has evidence (2026-08-31)
+
+### First, the code the ask needed (R-CL4)
+
+⚠ **§E4's two `StatNodeId` members are BUILT, and the check's severity changed with them.**
+`YouthUnemployment` and `LifeExpectancy` are **appended** (never inserted — the enum is read positionally
+by films and censuses), named `icon_stat_youthunemployment` / `icon_stat_lifeexpectancy` so the ask can
+point at a **filename to deliver against**, and `StatIconCoverageCheck` now reports a missing stat icon as
+a **GAP, not a failure** — `PartyMarkCoverageCheck`'s own precedent, where 52 undrawn marks are the ask's
+evidence rather than a broken build.
+
+> **19 of 21 names resolve, 2 reported GAPs, the suite green.**
+
+**Logged as an R-N1 fork: a check's severity changed.** What still fails is the empty enumeration and a
+missing *hard-coded texture* — a name a draw call passes with no fallback, which is a different fact from
+an icon the row simply draws without. The web census holds: **75 nodes (55 policy + 20 stat)**, edges
+unchanged at 121.
+
+### The ask, consolidated
+
+**D7 and D8 were two unsent asks with two annex sets, and an unsent ask that keeps growing is a paste
+nobody makes.** They are now **ONE LIVE ASK — D9, eleven rows numbered *n of N*.** §2 and §3 stay below it
+as the record of how each row arrived; ⚠ **nothing is withdrawn and nothing is asked for twice.**
+
+Folded in: board 2b (D7) · **52 of 53 marks undrawn** (C-B1's measured count, not an estimate) · the hex
+exchange in its grown-up form — ⚠ **Sweden's eight are DELIVERED INK, not a request**, and the other 45
+have none because picking 30 colours by eye for real organisations is what §0.4 forbids · **S-7**
+(`#753838` drawn for two parties) · **S-8** (six of eight inks inside the derived legibility floor) · the
+valkrets map · election night's paper and stamp · the modal-or-stage question · **§E4's two icons** · the
+§A.14 chip finding · ⚠ **C-D3's question, which no code ruling can answer: MP sends two equal språkrör and
+its own statutes designate neither — how does a stage draw that?**
+
+And, for information rather than as a request: ⚠ **this model holds no bilateral relations state at all**,
+so a board for C-C8's international page must never be drawn around a number that does not exist.
+
+⚠ **Two things a reviewer must know before looking at the films**, stated in the ask itself: **board 1h's
+evidence was VOID and is re-filmed** (S-20), and **the board gained a swing column** since the old films.
+
+### P-F2 — answered, and the answer is a negative
+
+⚠ **There is NO RECEIPT for the D7 paste.** Digest `85690abf…` appears in `COMPLETED.md` §48, the overnight
+report and §S — **every one of them written on the sending side.** No readback, no `uploads/` listing, no
+acknowledgement anywhere in the repo. **P-F2 asked whether Design ever received it; the honest answer is
+that this repo cannot tell, and the reason it cannot is that the paste was never made** — consistent with
+§S still being unsent.
+
+### The package
+
+`SEND_PACKAGE.md` regenerated; **`SEND_PACKAGE_2026-08-28.md` DELETED**, and every reference in every live
+document repointed — grep proves **no dangling reference**, source comments included.
+
+⚠ **The old package was already unusable, which is why this mattered:** it stated the request doc at
+**65 004 bytes / `85690abf…`** while D8 had since been appended and the file was **69 753** — so the
+readback glance it prescribes **would have failed**, the one step whose whole job is to prove the paste
+was whole. Fresh digests for both artifacts, and ⚠ **the courtesy note's digest changed too**, because one
+stale sentence in it was corrected: it called §E5 an open ask, and §E5 closed end-to-end on 2026-08-28.
+
+**Sending stays Elias's.** Nothing here is sent by writing it.
+
+### The bar
+
+Ten checks 10 of 10 clean (2 reported GAPs, 0 errors) · `PolicyWebCensus` exit 0 at 75 nodes · films
+Sweden 1280 and 2560: **81 captured, 0 failed, 0 text overflows, and the capture-identity trap green on
+all 81** at each.

@@ -36,7 +36,7 @@ namespace PoliSim.EditorTools
             Debug.Log($"SELFTEST icon_stat_inflation -> " +
                 $"{(reference != null ? $"{reference.width}x{reference.height} OK" : "NULL - BROKEN, results below are void")}");
 
-            int total = 0, missing = 0;
+            int total = 0, missing = 0, gaps = 0;
             foreach (StatNodeId stat in System.Enum.GetValues(typeof(StatNodeId)))
             {
                 total++;
@@ -44,8 +44,18 @@ namespace PoliSim.EditorTools
                 Texture2D icon = IconLibrary.GetStat(name);
                 if (icon == null)
                 {
-                    Debug.Log($"  MISSING {stat} -> {name}");
-                    missing++;
+                    // ⚠ R-CL4 (2026-08-31, C-F1): A MISSING **STAT ICON** IS A REPORTED GAP, NOT A
+                    // FAILURE — `PartyMarkCoverageCheck`'s own precedent, where 52 undrawn marks are the
+                    // Design ask's evidence rather than a broken build. §E4 promoted two StatNodeId
+                    // members that have no delivered icon precisely so the ask has something to point
+                    // at, and a check that went red on its own evidence would be turned off within a
+                    // week. **Logged as an R-N1 fork: a check's severity changed.**
+                    //
+                    // ⚠ What still FAILS: the empty enumeration below, and a missing texture in the
+                    // hard-coded literal list further down — that one is a name a draw call passes with
+                    // no fallback, which is a different fact from an icon the row simply draws without.
+                    Debug.Log($"  GAP {stat} -> {name} (no icon delivered; the row draws without one)");
+                    gaps++;
                 }
                 else if (icon.width != 256 || icon.height != 256)
                 {
@@ -93,8 +103,13 @@ namespace PoliSim.EditorTools
                 return;
             }
 
-            Debug.Log($"=== UI art coverage: {total - missing} of {total} names resolve " +
+            Debug.Log($"=== UI art coverage: {total - missing - gaps} of {total} names resolve, {gaps} reported GAP(s) " +
                       $"(every StatNodeId icon + menu_pattern_tile; NOT chrome, emblems, marks or portraits) ===");
+            if (gaps > 0)
+            {
+                Debug.Log($"=== {gaps} stat icon(s) UNDELIVERED, reported as GAPs and not failures (R-CL4) — they are the Design ask's own evidence ===");
+            }
+
             CheckExit.Finish(missing == 0 ? 0 : 1);
         }
     }

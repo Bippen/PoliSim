@@ -15,7 +15,7 @@ merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* li
 
 | entry | waiting on | gate |
 |---|---|---|
-| §S — the send package | **Elias — one paste** (`SEND_PACKAGE_2026-08-28.md`, regenerated for v3.1 Phase A and superseding every earlier package: the request doc through the ninth request — v3.1's six asks with Annexes A–F — and the 1i–1n courtesy note unchanged; the two sitting screenshots go in beside Annex D from Elias's own machine). **The Phase C package was pasted 2026-08-28** — Design's `uploads/` holds the 1i–1n note (read back: our text) and the request doc as `CLAUDE_DESIGN_ASSET_REQUEST-b545233b.md` (the app names duplicates by the content digest's first eight hex; ours was `b545233b…`) — SENT, with that evidence. **The v3.1 package was pasted the same day too** — `uploads/` holds `CLAUDE_DESIGN_ASSET_REQUEST-9a98b00e.md` (the Phase A paste's digest) and the two sitting screenshots — **and Design answered the ninth request in full** (1n-r2, 1m-r2, 2a, D4, D6 on the live screens file; the hatch re-cut #3 with it). **The package was REGENERATED at the Policy Web micro-pass close (2026-08-28 late night) and now carries ONE LIVE ASK — the tenth request, D7/board 2b, with Annex G** (rows n of N, digest `85690abf…`; the courtesy note unchanged) — NOT yet pasted. ⚠ **STALE AS RECORDED (found 2026-08-31, C-0.2):** the package states the request doc at 65 004 bytes / digest `85690abf…`, but D8 (the eleventh request) was appended to it on 2026-08-30 and the file on disk is **69 753 bytes** — so the readback hash the package's own procedure prescribes would FAIL. **The package must be regenerated before it is pasted**; C-F1 does that and deletes the stale file | the E2 convention: sending is Elias's (register row E-1) |
+| §S — the send package | **Elias — ONE PASTE** (`SEND_PACKAGE.md`, regenerated 2026-08-31 at C-F1; the dated 2026-08-28 file is DELETED). ⚠ **The old package was already unusable**: it stated the request doc at 65 004 bytes / digest `85690abf…` while D8 had since been appended and the file was 69 753 — so **the readback glance it prescribes would have FAILED**, the one step whose whole job is to prove the paste was whole. The new package carries **ONE LIVE ASK, D9 — eleven rows numbered *n of N*** — folding D7/board 2b and D8's six together with everything the clearance pass added, with fresh digests for both artifacts. ⚠ **P-F2 ANSWERED: there is NO RECEIPT for the earlier D7 paste** — `85690abf…` appears only in records written on the sending side, with no readback, no `uploads/` listing and no acknowledgement anywhere in this repo; the honest reading is that **the paste was never made**, consistent with §S still being unsent | the E2 convention: sending is Elias's (register row E-1) |
 | §A — the coupling queue Q6–Q10; F2 | **Elias — a decision**, each at its own named trigger | no trigger has fired (register rows T-7 / T-1…T-6) |
 | §D0 — item 10 | **nobody — the core SHIPPED** at `a289e1e`, 2026-08-30 | what remains is three named rows: K-1 the seed refresh (CALENDAR, 13 Sept), S-1 the unmoving electorate, S-2 Germany's threshold cliff |
 | §E2 — mark accounting + the R5 hexes | **nobody on our side — DONE** (53 seeded, 1 resolving, 52 gaps, 0 errors; Sweden's eight inks sourced) | the residual is Design's, as rows D-8.1 and D-8.2 |
@@ -31,7 +31,7 @@ screens file with no gap costed (`COMPLETED.md` §41). Neither is a gesture Elia
 
 ---
 
-# S. The send — one paste (`SEND_PACKAGE_2026-08-28.md`)
+# S. The send — one paste (`SEND_PACKAGE.md`, regenerated 2026-08-31 at C-F1)
 
 **The asset request went to Claude Design's project on 2026-08-27, on Elias's instruction, by Claude
 Code through `DesignSync`** (project `PoliSim v2 Design Progress`, `b3dec27b-620b-452a-9783-e8317cbec4d9`).
@@ -46,7 +46,7 @@ local file's digests exactly — `9a464915…24eec` (CRLF, as uploaded, 29,571 b
 §2 the calendar panel board request, §3 the graph-weight ruling, with §0/§4/§5 for context.
 
 **Still unsent — Elias's, now one gesture (regenerated 2026-08-28 for UI v3.0 Phase A):**
-`SEND_PACKAGE_2026-08-28.md` at the repo root names the artifacts — the courtesy note (unchanged from its
+`SEND_PACKAGE.md` at the repo root names the artifacts — the courtesy note (unchanged from its
 recorded hash), the request doc through §1 (the v3.0 boards, with Annex A the census and Annex B the
 inventory) and §E5, and the Annex C captures (the landing screen in both shell states, the rail as built,
 the ladder films) — each with its SHA-256 as on disk and its destination path; the glance after the paste

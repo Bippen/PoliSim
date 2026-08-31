@@ -343,6 +343,11 @@ namespace PoliSim.UI
                 case StatNodeId.DependencyRatio: return "icon_stat_dependencyratio";
                 case StatNodeId.ConsumerConfidence: return "icon_stat_consumerconfidence";
                 case StatNodeId.BusinessConfidence: return "icon_stat_businessconfidence";
+                // §E4 (R-CL4, C-F1): named so the Design ask can point at a FILENAME to deliver against.
+                // ⚠ Neither file exists yet, and `StatIconCoverageCheck` reports that as a GAP rather than
+                // a failure — the two names ARE the ask's evidence.
+                case StatNodeId.YouthUnemployment: return "icon_stat_youthunemployment";
+                case StatNodeId.LifeExpectancy: return "icon_stat_lifeexpectancy";
                 default: return null;
             }
         }

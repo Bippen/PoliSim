@@ -25,7 +25,13 @@ namespace PoliSim.UI
     {
         Gdp, Unemployment, Inflation, Approval, DebtToGdp, Poverty, InterestRate, TradeBalance,
         Lfpr, Crime, PrisonPopulation, OrganizedCrime, Corruption,
-        PotentialGrowth, PopulationGrowthRate, DependencyRatio, ConsumerConfidence, BusinessConfidence
+        PotentialGrowth, PopulationGrowthRate, DependencyRatio, ConsumerConfidence, BusinessConfidence,
+        // §E4, promoted by R-CL4 at C-F1 (2026-08-31): R4-1's two Society rows join the web. APPENDED,
+        // never inserted - the enum is persisted nowhere but it is read positionally by films and
+        // censuses, and this project's stream enum carries the same rule for the same reason. ⚠ Neither
+        // has a delivered icon, and that is the POINT: they are the Design ask's own evidence, and
+        // `StatIconCoverageCheck` now reports a missing icon as a GAP rather than failing on it.
+        YouthUnemployment, LifeExpectancy
     }
 
     /// <summary>One real effect relationship: <see cref="Source"/> policy node to <see cref="Target"/> stat node. <see cref="Increases"/> is the SIGN of the real formula (does raising the policy dial/rate raise or lower the target) - combined with the target's own HigherIsBetter framing (see StatNodeInfo) to pick green/red, the same judgment GraphRenderer's own title-row delta already makes elsewhere in this UI. <see cref="RelativeStrength"/> is 0-1 and ONLY meaningfully comparable against other edges from the SAME small documented group (e.g. the six welfare programs' own poverty-reduction sensitivities) - 1f (uniform) everywhere a real cross-comparable ratio isn't available, per this task's own "uniform otherwise" instruction.</summary>
