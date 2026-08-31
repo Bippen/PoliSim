@@ -157,12 +157,19 @@ R-EL7) and reconciles D0: **this spec IS item 10's political model.**
   salience, every file with its source register and vintage, everything `[PROVISIONAL]` until
   re-verified. `DATA_BILL.md` names what is still owed (France's 577 × 2 constituency results;
   Italy's per-circoscrizione *cifre*; the US positions' pre-2020 vintage; Nebraska's LB3 status).
-- **The seat rung — FIVE OF SIX EXACT.** Sweden (modified Sainte-Laguë 1.2), Germany
-  (Sainte-Laguë/Schepers on exact counts), Poland (d'Hondt in each of the 41 okręgi — the real
-  system, seat-for-seat), Italy (Rosatellum's floored Hare ×2, R-EL9), USA (the Electoral College
-  with Maine's and Nebraska's district method, R-EL8). **France is structurally out**, not missing:
-  a two-round system in 577 single-member constituencies has no national allocation to implement.
-  The overhaul doc's Part 5 port-and-reproduce obligation is discharged in full.
+- **The seat rung — FOUR CHAMBERS EXACT, ONE STAGE EXACT, ONE UNCOVERED** (⚠ scoped 2026-08-31,
+  C-A4; this read "FIVE OF SIX EXACT", which counted a stage as a chamber). Each figure is for **one
+  named election**, measured by `SeatAllocationBacktest` as total absolute seat deviation: Sweden 2022
+  by modified Sainte-Laguë 1.2 — **0**; Germany 2025 by Sainte-Laguë/Schepers on `kerg2.csv`'s exact
+  counts — **0**; Poland 2023 by d'Hondt in each of the 41 okręgi, the real system — **0** (the
+  national-d'Hondt run's **70** is a deliberate signature of the wrong system, not an error); the USA's
+  2024 Electoral College with Maine's and Nebraska's district method, R-EL8 — **exact, 312/226**.
+  ⚠ **Italy 2022 (Rosatellum's floored Hare ×2, R-EL9) reproduces its NATIONAL PROPORTIONAL STAGE —
+  245 seats of the Camera's 400 — and its sub-national stages are NOT RUN.** **France is structurally
+  out**, not missing: a two-round system in 577 single-member constituencies has no national allocation
+  to implement. The overhaul doc's Part 5 port-and-reproduce obligation is discharged in full.
+  ⚠ **"Exact" is per election and never general — Sweden 2014 does NOT reproduce through the same
+  allocator** (6 seats absolute error; register row S-6).
 - **Named future item (R-EL10, 2026-08-29): "France constituency model" — UNSIZED, UNSTARTED.**
   Modelling French seats needs all 577 constituencies across two rounds with runoff behaviour
   (qualification at 12.5 % of registered voters, withdrawals, second-round transfers). It serves

@@ -884,7 +884,7 @@ percent. 10 of 10.
 ### Riders
 
 - **W-D2** — `SeatAllocation` on `ElectionDay.Result` through the LIVE path (per-valkrets fixed
-  seats, the adjustment seats, the thresholds), Sweden 2022 still seat-for-seat.
+  seats, the adjustment seats, the thresholds), Sweden 2022 still seat-for-seat — that one election, 8 of 8 (C-A4).
 - **W-E6** — election night draws `Result.Regions` arriving in a seeded order.
 - **W-A2 / W-F4** — per-region preference vectors replace the repeated national one.
 
@@ -893,6 +893,17 @@ percent. 10 of 10.
 ---
 
 ## W-D2 — vote-to-seat on the live path (§28): Sweden's own procedure, 2022 seat-for-seat (2026-08-29)
+
+⚠ **SCOPED 2026-08-31 (C-A4).** Every "seat-for-seat" in this section was written before W-F1 and means
+exactly this: **Sweden's 2022 Riksdag, 8 parties of 8, through `SeatConversion.Sweden`.** It is not a
+claim about the allocator in general, and two later measurements say why it must not be read as one.
+**W-F1** found this claim had been measured on a SYNTHETIC chamber — 2022's national counts spread over
+29 valkretsar by 2018's distribution, so the totals were right by construction — and re-ran it on the
+REAL per-constituency counts: **the seat table held, 8 of 8, but the fixed/adjustment split moved for
+four parties** (KD's fixed seats 10 → 13, S 105 → 104, V 17 → 16, MP 11 → 10). *The seat table was right;
+the account of how Sweden produces it was not.* And the **Sweden 2014** control (`COMPLETED.md` §86,
+register row S-6) does NOT reproduce through the same allocator — 6 seats of absolute error — so
+"reproduces exactly" is a statement about **one election**, never about the procedure in general.
 
 Files: `Assets/Scripts/Elections/SeatConversion.cs`, `Assets/Editor/SeatConversionHarness.cs`.
 `SeatAllocation` (the divisor arithmetic, exact for five chambers since the overnight) is what it
@@ -1957,7 +1968,7 @@ undeclared constituency is bounded by its own ELIGIBLE electorate (published bef
 hard cap since turnout cannot exceed 100 %), and a call is made only when the claim holds at BOTH
 extremes: every outstanding vote to the claim's enemy, and none of them anywhere. The seats at those
 extremes come from **`SeatAllocation` — the allocation the backtest reproduces Sweden 2022 with
-seat-for-seat** — so the call cannot rest on arithmetic the final tally does not use. *Asserted:*
+seat-for-seat for SWEDEN 2022** — so the call cannot rest on arithmetic the final tally does not use. *Asserted:*
 **1 849 call-instants across 8 seeds, 0 contradicted.** And the harness re-proves the allocation on
 the same page: S 107/107, SD 73/73, M 68/68, V 24/24, C 24/24, KD 19/19, MP 18/18, L 16/16.
 
@@ -2046,7 +2057,7 @@ ONLY — R-N2 holds until W-G1.**
 ### The done-when: every figure traces, and the three classes are kept apart
 
 - **COUNTED** — the votes, the seats (`SeatAllocation`, the allocation that reproduces 2022
-  seat-for-seat), the regional table.
+  reproduces SWEDEN 2022, 8 of 8 — one election; C-A4), the regional table.
 - **DERIVED, and proven against a sourced answer** — 2018's seats are computed by that same
   allocation rather than typed in, and the comparison column validates itself: **S shows +7 (100 →
   107) and L shows −4 (20 → 16), which are the real 2018→2022 changes.** A second arithmetic that

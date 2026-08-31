@@ -3967,6 +3967,17 @@ Day-1's declared `RegionalNoiseSigmaPp`, recorded beside calibration entry 1.
 
 ## 60. W-D2 — vote-to-seat on the live path (§28): Sweden's own procedure end to end, 2022 seat-for-seat, the return branch made to fire (2026-08-29)
 
+⚠ **SCOPED 2026-08-31 (C-A4).** Every "seat-for-seat" in this section was written before W-F1 and means
+exactly this: **Sweden's 2022 Riksdag, 8 parties of 8, through `SeatConversion.Sweden`.** It is not a
+claim about the allocator in general, and two later measurements say why it must not be read as one.
+**W-F1** found this claim had been measured on a SYNTHETIC chamber — 2022's national counts spread over
+29 valkretsar by 2018's distribution, so the totals were right by construction — and re-ran it on the
+REAL per-constituency counts: **the seat table held, 8 of 8, but the fixed/adjustment split moved for
+four parties** (KD's fixed seats 10 → 13, S 105 → 104, V 17 → 16, MP 11 → 10). *The seat table was right;
+the account of how Sweden produces it was not.* And the **Sweden 2014** control (`COMPLETED.md` §86,
+register row S-6) does NOT reproduce through the same allocator — 6 seats of absolute error — so
+"reproduces exactly" is a statement about **one election**, never about the procedure in general.
+
 **What shipped.** `Assets/Scripts/Elections/SeatConversion.cs` — vallagen 14 kap. as a procedure
 over `SeatAllocation`'s exact divisor arithmetic: eligibility (4 % nationally or 12 % in a
 valkrets for that valkrets's fixed seats), the statute's distribution of the 310 fixed seats among
@@ -4660,7 +4671,7 @@ zero, every tally agreeing vote for vote.
 **Rule 2 — a call cannot be contradicted.** Each undeclared constituency is bounded by its own
 eligible electorate (published before the night; a hard cap since turnout cannot exceed 100 %), and
 a call is made only when it holds at BOTH extremes, with the seats at those extremes coming from
-**`SeatAllocation` — the allocation the backtest reproduces 2022 with seat-for-seat**, re-proven on
+**`SeatAllocation` — the allocation the backtest reproduces SWEDEN 2022 with, 8 of 8 (one election; C-A4)**, re-proven on
 the same page (S 107/107 … L 16/16). Asserted: **1 849 call-instants across 8 seeds, 0
 contradicted**.
 
@@ -4703,7 +4714,7 @@ the seats, the named comparison election carried whole, the regional table, W-D4
 (the drawing) — the sixth Track E screen and the last IMGUI one. ⚠ **HARNESS ONLY — R-N2 to W-G1.**
 
 **The done-when — every figure traces — met by keeping three classes apart.** COUNTED: votes, seats
-(`SeatAllocation`, the allocation that reproduces 2022 seat-for-seat), the regional table. DERIVED
+(`SeatAllocation`, the allocation that reproduces SWEDEN 2022, 8 of 8 — one election; C-A4), the regional table. DERIVED
 **and proven against a sourced answer**: 2018's seats are computed by that same allocation rather
 than typed in, and the comparison validates itself — **S shows +7 (100 → 107), L shows −4 (20 → 16),
 the real 2018→2022 changes**. PUBLISHED: turnout **84.21 %** of **7 775 390** eligible,
@@ -5499,3 +5510,66 @@ comments and to the two strings that named a stopped item.
 
 **Verified:** `CampaignAiHarness` exit 0, ALL ASSERTIONS PASS, 5 PENDING — identical verdict before and
 after the edit; the nine checks 9 of 9 clean in one pass.
+
+## 90. C-A4 — the claim sweep: what "reproduces exactly" is actually a claim about, and the one that counted a stage as a chamber (2026-08-31)
+
+**The item.** W-F1 falsified the phrasing of an earlier headline — *"Sweden 2022 reproduces seat-for-seat"*
+was measured on a synthetic chamber. Sweep every report, record and document for that claim and any other
+whose evidence has since been superseded; re-word to what was actually shown.
+
+**The rule applied, and it is one sentence:** a reproduction claim names **one election, one procedure,
+one measured deviation.** Never a procedure in general, never a country in general.
+
+### ⚠ The finding: the broadest claim in the repo counted a stage as a chamber
+
+`ELECTIONS_GAP_TABLE.md` row 28 and `POLISIM_MASTER_ROADMAP.md`'s seat rung both read **"five of six real
+chambers reproduce EXACTLY from official counts."** Re-measured against `SeatAllocationBacktest`'s own
+output, that is **four chambers, plus one stage**:
+
+| what | measured | total absolute seat deviation |
+|---|---|---|
+| Sweden 2022 | modified Sainte-Laguë 1.2, 349 seats, 4 % threshold | **0** |
+| Germany 2025 | Sainte-Laguë/Schepers on `kerg2.csv`'s exact counts | **0** |
+| Poland 2023 | d'Hondt per okręg, the real 41-district system | **0** |
+| USA 2024 | Electoral College, ME/NE by district | **exact, 312 / 226** |
+| **Italy 2022** | **Rosatellum's NATIONAL PROPORTIONAL STAGE only — 245 seats of the Camera's 400** | 0 **for that stage** |
+| France | — | **uncovered** |
+
+⚠ **Italy's sub-national stages are NOT RUN, and the backtest says so in its own output** (lett. h/i into
+the 28 circoscrizioni, art. 83-bis into the 49 collegi, the art. 84 incapienza cascade — they need
+per-circoscrizione data that is not on disk). Calling that "a chamber reproduced exactly" overstates it by
+155 seats. Both documents now say four-plus-a-stage, with the deviations quoted.
+
+The related figure that is NOT an error and reads like one: Poland's **70**. That is the deliberate
+signature of running the *wrong* system — national d'Hondt against a chamber elected in 41 districts —
+kept as a control. The real-system run is 0.
+
+### The pre-W-F1 wordings, scoped at their two origins
+
+Every unqualified "seat-for-seat" traces to W-D2's section in two documents. Rather than rewrite a dozen
+sentences of a historical record — which would erase what was believed at the time — **one scoping note
+now heads each origin section** (`COMPLETED.md` §60, `ELECTIONS_PROTOTYPE_LOG.md`'s W-D2), stating that
+every such phrase in it means *Sweden's 2022 Riksdag, 8 parties of 8, through `SeatConversion.Sweden`*,
+and naming the two measurements that forbid reading it more broadly:
+
+- **W-F1**: the claim had been measured on 2022's national counts spread over 29 valkretsar by 2018's
+  distribution, so the totals were right **by construction**. On the real per-constituency counts the seat
+  table held, 8 of 8, **but the fixed/adjustment split moved for four parties** (KD's fixed seats 10 → 13,
+  S 105 → 104, V 17 → 16, MP 11 → 10). *The seat table was right; the account of how Sweden produces it
+  was not.*
+- **Sweden 2014**: does NOT reproduce through the same allocator — 6 seats of absolute error, byte-identical
+  at divisor 1.4 and 1.2 (`COMPLETED.md` §86, register row S-6). This is the standing reason a
+  reproduction claim is scoped to a year.
+
+Four downstream sites that described the allocation without scope now name the election
+(`COMPLETED.md` §§73/74, `ELECTIONS_PROTOTYPE_LOG.md`'s W-E6/W-E7 and its W-D1 line).
+
+**Deliberately NOT touched.** ⚠ `ELECTIONS_PROTOTYPE_LOG.md:1675` — *"the Tidö arrangement of 14 October
+2022, seat for seat"* — is a different sense entirely: it describes a **coalition's composition**, not an
+allocator's output, and re-wording it would have been a false positive from matching on a phrase rather
+than on a claim. And the post-W-F1 statements that already say *"on the REAL per-constituency counts"*
+stand as written; the exposure was never the phrase, it was the unqualified ones.
+
+**Verified:** no live document now asserts a reproduction claim without its election, its procedure and
+its measured deviation; `SeatAllocationBacktest` exit 0 (synthetic ALL PASS, the country tables reported
+as findings rather than asserted); the nine checks 9 of 9 clean. No code touched.
