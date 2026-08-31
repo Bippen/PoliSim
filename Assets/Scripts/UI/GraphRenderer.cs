@@ -296,35 +296,8 @@ namespace PoliSim.UI
             GUI.color = previous;
         }
 
-        /// <summary>Selectable window for a published-series graph. "All" keeps the existing paging behaviour; the two bounded ranges filter by real elapsed calendar time rather than by entry count, since publication cadences differ per stat (monthly unemployment against quarterly GDP) and a fixed entry count would cover very different spans for each.</summary>
-        public enum TimeRange
-        {
-            OneYear,
-            FiveYears,
-            All
-        }
-
-        private TimeRange _timeRange = TimeRange.All;
-
         /// <summary>A release marker on the timeline - furniture rather than data, so it takes the brass the pack uses for furniture instead of the screen yellow it was.</summary>
         private static readonly Color ReleaseMarkerColor = PoliSimTheme.Brass;
-
-        /// <summary>Range selector. Bounded ranges filter on real elapsed time, so a monthly stat and a quarterly one both show the same calendar span rather than the same number of points.</summary>
-        private void DrawTimeRangeRow()
-        {
-            GUILayout.BeginHorizontal();
-            foreach (TimeRange range in new[] { TimeRange.OneYear, TimeRange.FiveYears, TimeRange.All })
-            {
-                bool selected = _timeRange == range;
-                GUIStyle style = UiPalette.BuildButtonStyle(_pageButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
-                string label = range == TimeRange.OneYear ? "1yr" : range == TimeRange.FiveYears ? "5yr" : "All";
-                if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true)))
-                {
-                    _timeRange = range;
-                }
-            }
-            GUILayout.EndHorizontal();
-        }
 
 
 

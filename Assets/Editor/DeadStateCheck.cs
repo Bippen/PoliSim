@@ -45,10 +45,10 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class DeadStateCheck
     {
-        /// <summary>⚠ The ceiling. Built at **39 on 2026-08-31**; **lowered to 29, 19 and 9 on 2026-09-01** as the first three
-        /// ratchet batches deleted thirty. It may be lowered, never
+        /// <summary>⚠ The ceiling. Built at **39 on 2026-08-31**; **lowered to 29, 19, 9 and 0 on 2026-09-01** as four
+        /// ratchet batches cleared the backlog ENTIRELY. It may be lowered, never
         /// raised.** A new unreached declaration pushes the count over it and fails.</summary>
-        private const int UnreachedCeiling = 9;
+        private const int UnreachedCeiling = 0;
 
         private static readonly Regex PrivateField = new Regex(
             @"^\s*private\s+(?:static\s+)?(?:readonly\s+)?[A-Za-z_][A-Za-z0-9_<>,\.\[\]\?]*\s+(_?[A-Za-z][A-Za-z0-9_]*)\s*(?:=|;)");

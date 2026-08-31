@@ -102,7 +102,6 @@ namespace PoliSim.UI
         private CountryId? _selectedPlayerCountryId;
         private CountryId PlayerCountryId => _selectedPlayerCountryId ?? CountryId.USA;
 
-        private const int MaxLogEntries = 10;
 
         /// <summary>This-turn PERCENTAGE-change slider range for a Discretionary SpendingLine - the same range for every category, but a percentage of that line's OWN Amount, so a $1B SBA line and an $850B Defense line move by proportionally (not identically) different dollar amounts. Must match SimulationManager.DiscretionaryPercentChangeRange.</summary>
         private const float DiscretionaryPercentChangeRange = 30f;
@@ -340,35 +339,7 @@ namespace PoliSim.UI
         private int _internationalPageIndex;
 
         private int _cachedPreviewTurn = -1;
-        private readonly Dictionary<TaxType, float> _cachedTaxRateInputs = new Dictionary<TaxType, float>();
-        private readonly Dictionary<WelfareProgramType, float> _cachedWelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
-        private readonly Dictionary<SectorType, float> _cachedSectorSubsidyInputs = new Dictionary<SectorType, float>();
-        private readonly Dictionary<SectorType, float> _cachedSectorRegulationInputs = new Dictionary<SectorType, float>();
-        private readonly Dictionary<SectorType, float> _cachedSectorTaxCreditInputs = new Dictionary<SectorType, float>();
-        private readonly Dictionary<SectorType, float> _cachedSectorResearchGrantsInputs = new Dictionary<SectorType, float>();
-        private readonly Dictionary<SectorType, float> _cachedSectorDeregulationInputs = new Dictionary<SectorType, float>();
-        private float? _cachedSwfContributionRateInput;
-        private float? _cachedSwfDomesticAllocationInput;
-        private float? _cachedSwfEquitiesWeightInput;
-        private float? _cachedSwfBondsWeightInput;
-        private float? _cachedSwfInfrastructureWeightInput;
-        private float? _cachedSwfRealEstateWeightInput;
-        private readonly Dictionary<SpendingCategory, float> _cachedSpendingLineInputs = new Dictionary<SpendingCategory, float>();
-        private readonly Dictionary<CountryId, float> _cachedPartnerTariffInputs = new Dictionary<CountryId, float>();
         private float _cachedInterestRateChangeInput;
-        private float? _cachedTariffRateInput;
-        private float? _cachedMinimumWageInput;
-        private float? _cachedPaidFamilyLeaveWeeksInput;
-        private float? _cachedOvertimeRegulationInput;
-        private float? _cachedRetrainingProgramInput;
-        private float? _cachedPoliceFundingInput;
-        private float? _cachedSentencingSeverityInput;
-        private float? _cachedBailReformInput;
-        private float? _cachedDrugPolicyInput;
-        private float? _cachedJudicialFundingInput;
-        private float? _cachedBorderEnforcementInput;
-        private float? _cachedFamilyPolicyInput;
-        private float? _cachedImmigrationPolicyInput;
 
         // Raw (unformatted, no cosmetic margin) numeric counterparts of every preview figure -
         // FormatEstimate's margin is a display-only flourish that has no business perturbing what a
@@ -540,8 +511,6 @@ namespace PoliSim.UI
         private string _cachedSwfContributionText;
         private string _cachedSwfReturnsText;
 
-        private readonly List<string> _turnLog = new List<string>();
-        private Vector2 _logScrollPosition;
 
         private ConsolidatedTab _consolidatedTab = ConsolidatedTab.Statistics;
         private StatisticsCategory _statisticsCategory = StatisticsCategory.Domestic;
@@ -3903,79 +3872,6 @@ namespace PoliSim.UI
             _cachedPreviewHorizonDays = horizonDays;
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
-            _cachedTariffRateInput = _tariffRateInput;
-            _cachedMinimumWageInput = _minimumWageInput;
-            _cachedPoliceFundingInput = _policeFundingInput;
-            _cachedSentencingSeverityInput = _sentencingSeverityInput;
-            _cachedBailReformInput = _bailReformInput;
-            _cachedDrugPolicyInput = _drugPolicyInput;
-            _cachedJudicialFundingInput = _judicialFundingInput;
-            _cachedBorderEnforcementInput = _borderEnforcementInput;
-            _cachedFamilyPolicyInput = _familyPolicyInput;
-            _cachedImmigrationPolicyInput = _immigrationPolicyInput;
-            _cachedPaidFamilyLeaveWeeksInput = _paidFamilyLeaveWeeksInput;
-            _cachedOvertimeRegulationInput = _overtimeRegulationInput;
-            _cachedRetrainingProgramInput = _retrainingProgramInput;
-            _cachedSwfContributionRateInput = _swfContributionRateInput;
-            _cachedSwfDomesticAllocationInput = _swfDomesticAllocationInput;
-            _cachedSwfEquitiesWeightInput = _swfEquitiesWeightInput;
-            _cachedSwfBondsWeightInput = _swfBondsWeightInput;
-            _cachedSwfInfrastructureWeightInput = _swfInfrastructureWeightInput;
-            _cachedSwfRealEstateWeightInput = _swfRealEstateWeightInput;
-
-            _cachedSectorSubsidyInputs.Clear();
-            foreach (KeyValuePair<SectorType, float> kvp in _sectorSubsidyInputs)
-            {
-                _cachedSectorSubsidyInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedSectorRegulationInputs.Clear();
-            foreach (KeyValuePair<SectorType, float> kvp in _sectorRegulationInputs)
-            {
-                _cachedSectorRegulationInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedSectorTaxCreditInputs.Clear();
-            foreach (KeyValuePair<SectorType, float> kvp in _sectorTaxCreditInputs)
-            {
-                _cachedSectorTaxCreditInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedSectorResearchGrantsInputs.Clear();
-            foreach (KeyValuePair<SectorType, float> kvp in _sectorResearchGrantsInputs)
-            {
-                _cachedSectorResearchGrantsInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedSectorDeregulationInputs.Clear();
-            foreach (KeyValuePair<SectorType, float> kvp in _sectorDeregulationInputs)
-            {
-                _cachedSectorDeregulationInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedTaxRateInputs.Clear();
-            foreach (KeyValuePair<TaxType, float> kvp in _taxRateInputs)
-            {
-                _cachedTaxRateInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedSpendingLineInputs.Clear();
-            foreach (KeyValuePair<SpendingCategory, float> kvp in _spendingLineInputs)
-            {
-                _cachedSpendingLineInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedPartnerTariffInputs.Clear();
-            foreach (KeyValuePair<CountryId, float> kvp in _partnerTariffInputs)
-            {
-                _cachedPartnerTariffInputs[kvp.Key] = kvp.Value;
-            }
-
-            _cachedWelfareGenerosityInputs.Clear();
-            foreach (KeyValuePair<WelfareProgramType, float> kvp in _welfareGenerosityInputs)
-            {
-                _cachedWelfareGenerosityInputs[kvp.Key] = kvp.Value;
-            }
 
             _cachedPreviewTurn = _simulationManager.CurrentTurn;
             _hasCachedPreview = true;
@@ -5013,7 +4909,6 @@ namespace PoliSim.UI
             _lastGrowthPercent = (state.GDP - _prevGdp) / Mathf.Max(_prevGdp, 1f) * 100f;
             _prevGdp = state.GDP;
 
-            AppendLogEntry(state);
             RecordMapEventMarkers();
             ResetPolicyInputs();
             CheckElection();
@@ -5130,23 +5025,14 @@ namespace PoliSim.UI
         private float GetSwfContributionRateInput(float fallbackLevel) => _swfContributionRateInput ?? fallbackLevel;
         private float GetSwfDomesticAllocationInput(float fallbackLevel) => _swfDomesticAllocationInput ?? fallbackLevel;
         private float GetSwfEquitiesWeightInput(float fallbackLevel) => _swfEquitiesWeightInput ?? fallbackLevel;
-        private float GetCachedSwfEquitiesWeightInput(float fallbackLevel) => _cachedSwfEquitiesWeightInput ?? fallbackLevel;
         private float GetSwfBondsWeightInput(float fallbackLevel) => _swfBondsWeightInput ?? fallbackLevel;
-        private float GetCachedSwfBondsWeightInput(float fallbackLevel) => _cachedSwfBondsWeightInput ?? fallbackLevel;
         private float GetSwfInfrastructureWeightInput(float fallbackLevel) => _swfInfrastructureWeightInput ?? fallbackLevel;
-        private float GetCachedSwfInfrastructureWeightInput(float fallbackLevel) => _cachedSwfInfrastructureWeightInput ?? fallbackLevel;
         private float GetSwfRealEstateWeightInput(float fallbackLevel) => _swfRealEstateWeightInput ?? fallbackLevel;
-        private float GetCachedSwfRealEstateWeightInput(float fallbackLevel) => _cachedSwfRealEstateWeightInput ?? fallbackLevel;
 
         /// <summary>The Welfare Policy tab's draft absolute GenerosityLevel for a WelfareProgramType, or <paramref name="fallbackGenerosity"/> (the WelfareProgram's actual persisted GenerosityLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
         {
             return _welfareGenerosityInputs.TryGetValue(type, out float value) ? value : fallbackGenerosity;
-        }
-
-        private float GetCachedWelfareGenerosityInput(WelfareProgramType type, float fallbackGenerosity)
-        {
-            return _cachedWelfareGenerosityInputs.TryGetValue(type, out float value) ? value : fallbackGenerosity;
         }
 
         /// <summary>The Trade tab's draft absolute override rate for a partner, or <paramref name="fallbackRate"/> (the TradePartner's actual persisted PlayerTariffOverride) if the player hasn't touched that slider this turn.</summary>
@@ -5155,20 +5041,10 @@ namespace PoliSim.UI
             return _partnerTariffInputs.TryGetValue(partnerId, out float value) ? value : fallbackRate;
         }
 
-        private float GetCachedPartnerTariffInput(CountryId partnerId, float fallbackRate)
-        {
-            return _cachedPartnerTariffInputs.TryGetValue(partnerId, out float value) ? value : fallbackRate;
-        }
-
         /// <summary>The Spending Policy tab's draft PERCENTAGE change for a SpendingCategory this turn (Mandatory or Discretionary), or 0 if the player hasn't touched that slider.</summary>
         private float GetSpendingLineInput(SpendingCategory category)
         {
             return _spendingLineInputs.TryGetValue(category, out float value) ? value : 0f;
-        }
-
-        private float GetCachedSpendingLineInput(SpendingCategory category)
-        {
-            return _cachedSpendingLineInputs.TryGetValue(category, out float value) ? value : 0f;
         }
 
         private PolicyDecision BuildPlayerDecision()
@@ -5600,17 +5476,6 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
             GUILayout.EndArea();
-        }
-
-        private void AppendLogEntry(EconomyState state)
-        {
-            _turnLog.Add($"Year {_simulationManager.CurrentTurn}: GDP={UiFormat.Money(state.GDP, MoneyUnit.Billions)} ({_lastGrowthPercent:+0.00;-0.00;0}%), " +
-                $"Unemp={state.Unemployment:F2}%, Infl={state.Inflation:F2}%, Approval={state.ApprovalRating:F1}, Debt/GDP={state.DebtToGdpRatio:F1}%");
-
-            while (_turnLog.Count > MaxLogEntries)
-            {
-                _turnLog.RemoveAt(0);
-            }
         }
 
         /// <summary>
@@ -7721,22 +7586,6 @@ namespace PoliSim.UI
                     GUI.enabled = true;
                     break;
             }
-            GUILayout.EndVertical();
-        }
-
-        private void DrawTurnLog(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _logScrollPosition = GUILayout.BeginScrollView(_logScrollPosition, GUILayout.Height(scrollHeight));
-            foreach (string entry in _turnLog)
-            {
-                GUILayout.Label(entry, _labelStyle);
-                GUILayout.Space(4f);
-            }
-            GUILayout.EndScrollView();
-
             GUILayout.EndVertical();
         }
 
