@@ -7638,3 +7638,71 @@ division: the party exists, persists and survives a save; the campaign it would 
 
 `SaveLoadRoundTripDiagnostic` RT PASS 12 (extended for both new fields, by name) · trajectories 6 of 6
 byte-identical · nine checks exit 0 · four simulation checks exit 0.
+
+## 120. TRACK E — the shelf re-read against the repo, the guards made standing, and the phantom check armed (2026-08-31)
+
+One sweep commit for the track.
+
+### C-E1 — the trigger shelf, re-read on the pre-ruling's test
+
+**"A trigger has fired if the condition it names is now true IN THE REPO, not if it merely looks close."**
+Applied literally, and it overturned one verdict this pass had been carrying.
+
+| entry | verdict |
+|---|---|
+| **the trade axis** (entry 5's deferred set) | ✅ **FIRED** — R-CL2 ruled `eu_position` in and **C-B3 built it**: `PoliticalParty.EuPosition`, a `BillAxis.Trade` overload, Poland the one chamber whose verdict moves. Struck from the shelf |
+| **the Compass Y implemented-average** | ⚠ **NOT FIRED — and an earlier plan asserted it had.** Its trigger has two clauses and **neither is satisfied**: §F confirmation is not on record, and **Playtest 1 produced eleven findings, none about the compass**. Its §V row is still open, waiting on Elias's eyes. **Restated on the shelf, not promoted** |
+| per-scenario term accumulation | NOT FIRED — trigger restated |
+| investment deepening (R-Q5e) | NOT FIRED — trigger restated |
+| the identity's government-consumption block | NOT FIRED — trigger restated, with its measured gaps (USA −14.5 %, Poland −7, Italy −4.5, Germany −2.7, Sweden −0.8, France −0.5) |
+| pass 6's deferred set | NOT FIRED — trigger restated |
+| **Riksbank-B** | not on the shelf at all; §D held it, and **C-B4 disposed of it** |
+
+⚠ **The correction is the item's real output.** "The first play that reads the compass" is a specific
+event, and *a play happened* is not that event. Promoting it would have opened a live row on a trigger
+that never fired — which is the exact failure the pre-ruling was written to prevent.
+
+### C-E2 — the two watch items, confirmed armed and green
+
+- **G-1, the label-clipping class (P4).** A watch under rule 3: nothing is startable until a capture
+  shows another instance. ⚠ **This pass produced one** — S-17: the layout has no slack at other aspect
+  ratios (13 overflows the moment a 1280 film's height moves 80 px). Recorded there; the watch stays a
+  watch.
+- **G-2, `MetaTextCheck`.** Armed as the ninth check, green, and **widened at C-E3 below**. Its
+  enumeration is stated as it really is: `Assets/Scripts/UI`, `Assets/Scripts/Simulation/LawCatalog.cs`
+  and `Assets/Scripts/Data` (top level only) — so a future screen outside those roots would not be
+  covered, and the header says so.
+
+Both are standing guards, never tasks, and both are green on this tree.
+
+### C-E3 — the phantom-guard check, plus S-16 in the same pass
+
+**Both are check-integrity work**, so the pre-ruling put them together.
+
+**`PhantomGuardCheck`, armed as the TENTH check.** ⚠ *A doc comment that names a guard must name a guard
+that exists.* It happened twice in one pass: `PoliSimTheme` cited a `PartyInkHarness` that did not exist
+(C-B2 then had to build it), and the stranded branch's `ApplyThreshold` named a `CoalitionShare` rule it
+never read (C-0.3). **A comment naming a check reads as evidence — the reader believes the thing is
+covered and nobody looks again.**
+
+*The enumeration:* every `.cs` file under `Assets/` (**254**), comment text only, every identifier ending
+in **Check / Harness / Diagnostic** — **143 names**, each required to resolve to a real type.
+
+⚠ **It found a phantom on its first run:** `CountingRandom.cs` cited **`SaveLoadDiagnostic`** twice; the
+type is `SaveLoadRoundTripDiagnostic`. Corrected. **143 resolved, 0 historical, 0 missing.**
+
+What it deliberately does **not** do: check that the named guard covers what the comment claims — no regex
+can make that judgement, and a check that overreached would produce false alarms nobody keeps green. And
+a name in a sentence that marks it as **past** ("…until C-C14 deleted that field") is reported as history,
+not failed: this project keeps its history on purpose.
+
+**S-16 — `MetaTextCheck` widened for backticks.** ⚠ C-C8's first cut shipped *"`Country` carries no
+bilateral relations field"* to a player surface, backticks rendering literally, and **this check passed
+it** because a backtick was in none of its nineteen patterns. Markdown on a game screen is developer text
+wearing punctuation — exactly the class P-A1 cut 131 strings of. Now the twentieth pattern. **79 files,
+2 517 literals, 0 hits.**
+
+### The bar
+
+**Ten checks, 10 of 10 clean** (`PhantomGuardCheck` the tenth) · `MetaTextCheck` clean with the new
+pattern · no simulation path touched.

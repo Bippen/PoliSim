@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (nine since `MetaTextCheck` joined 2026-08-29 — P-A1's guard; eight since
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (TEN since `PhantomGuardCheck` joined 2026-08-31 — C-E3/S-11's guard; nine since `MetaTextCheck` joined 2026-08-29; eight since
     /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
@@ -161,6 +161,9 @@ namespace PoliSim.EditorTools
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),
             ("UpstreamCheck", UpstreamCheck.Run),
             ("MetaTextCheck", MetaTextCheck.Run),   // P-A1 (2026-08-29): no developer-facing text on a player surface - the ninth
+            // C-E3 (2026-08-31, S-11): a doc comment naming a guard must name one that EXISTS. Cheap - it
+            // reads text and reflects over loaded types, builds no World - so it belongs in the nine.
+            ("PhantomGuardCheck", PhantomGuardCheck.Run),
         };
 
         [InitializeOnLoadMethod]

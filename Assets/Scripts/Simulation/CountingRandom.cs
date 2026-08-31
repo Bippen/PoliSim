@@ -21,7 +21,7 @@ namespace PoliSim.Simulation
     /// one draw sequence moves. A wrapper class would have required touching all of them.
     ///
     /// **The fast-forward's correctness rests on one property**, verified empirically rather than assumed
-    /// (see `SaveLoadDiagnostic`): in this runtime's `System.Random`, every public draw method consumes
+    /// (see `SaveLoadRoundTripDiagnostic`): in this runtime's `System.Random`, every public draw method consumes
     /// exactly ONE internal sample. That makes replaying N calls of any single method equivalent to
     /// replaying the original mix of N calls. `NextBytes` is the documented exception - it consumes one
     /// per byte - and it is not used anywhere in this project; the override below throws rather than
@@ -64,7 +64,7 @@ namespace PoliSim.Simulation
         /// replays the wrong sequence, which is the exact failure this class exists to prevent. Nothing in
         /// this project calls it; if something starts to, this throws immediately instead of corrupting
         /// restores silently. Fix by counting `buffer.Length` draws here and re-verifying the equivalence
-        /// property in `SaveLoadDiagnostic`.
+        /// property in `SaveLoadRoundTripDiagnostic`.
         /// </summary>
         public override void NextBytes(byte[] buffer)
         {

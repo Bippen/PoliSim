@@ -378,8 +378,12 @@ capital stock), so if one ever ships, two fire together.
   `COMPLETED.md` §36.
 - **The Compass Y formula's implemented-average** (flagged by §F, 2026-08-27; live with real seeds since
   `915c800`): Y averages generosity over IMPLEMENTED programs, so a country with one generous program
-  outranks a broad welfare state. Trigger: Elias's §F confirmation, or the first play that reads the
-  compass against the six seeded portfolios.
+  outranks a broad welfare state. ⚠ **TRIGGER RE-READ AT C-E1 (2026-08-31) AND IT HAS NOT FIRED** — an
+  earlier plan asserted that it had, and the repo says otherwise. **Neither clause is satisfied:** §F
+  confirmation is not on record, and Playtest 1 (2026-08-29) produced **eleven findings, none of them
+  about the compass**; its §V row is still open, waiting on Elias's eyes. **The trigger stands, restated:
+  Elias's §F confirmation, or the first play that actually reads the compass against the six seeded
+  portfolios.**
 - ~~**Riksbank-B** is NOT on this shelf: it waits on item 10's appointment machinery, a named task.~~
   ⚠ **Its gate FIRED and the item is MERGED, 2026-08-31 (C-B4).** Item 10's appointment machinery
   shipped, and Playtest-1's finding 7 (P-D1) specifies the same subject — declared central-bank reaction

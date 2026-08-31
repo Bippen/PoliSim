@@ -67,6 +67,12 @@ namespace PoliSim.EditorTools
             ("PROVISIONAL / UNCONFIRMED", new Regex(@"\b(PROVISIONAL|UNCONFIRMED)\b")),
             ("[DERIVED] / IS DERIVED / SOURCED tag", new Regex(@"\[DERIVED\]|\bIS DERIVED\b|\[SOURCED\]|\bSOURCED\b")),
             ("citation status prefix", new Regex(@"^(CONFIRMED|GENRE-IDIOM)\b")),
+            // ⚠ S-16, ARMED AT C-E3 (2026-08-31). A BACKTICK IN A PLAYER-FACING STRING is a reliable tell
+            // for a leaked identifier: C-C8's first cut shipped "`Country` carries no bilateral relations
+            // field" to a screen, where the backticks rendered literally — and this check PASSED it,
+            // because a backtick was in none of the nineteen patterns above. Markdown on a game screen is
+            // developer text wearing punctuation, and it is exactly the class P-A1 cut 131 strings of.
+            ("backtick (a leaked identifier)", new Regex("`")),
         };
 
         /// <summary>(file suffix, literal substring) pairs that are player-facing despite the word — enumerated in the class doc.</summary>
