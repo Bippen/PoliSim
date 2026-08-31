@@ -90,6 +90,47 @@ namespace PoliSim.Simulation
         public float CrimeIndexChange;
         public float SwfContributionEstimate;
         public float SwfReturnsEstimate;
+
+        /// <summary>
+        /// C-C1: the boundary's own revenue and total spending on the previewed clone, for one full
+        /// turn — **and a full turn is a year** (`MacroSystem.YearsPerTurn` is `DaysPerTurn / 365f`
+        /// = 1.0, the identity W-G1's trap-closing re-derived and `Phase4YearsPerTurnDiagnostic`
+        /// proves 9 of 9). So these ARE the annual figures §P's finding 3 asks for; nothing is scaled
+        /// to reach them.
+        ///
+        /// ⚠ **They are LEVELS, not deltas.** A draft's impact is the difference between two of them —
+        /// see <see cref="SimulationManager.EstimateBudgetBill"/>, which runs one clone standing and
+        /// one with the bill applied. Reading a single preview's level as an "impact" would report the
+        /// whole budget as though the draft had caused it.
+        /// </summary>
+        public float RevenueEstimate;
+        public float SpendingEstimate;
+    }
+
+    /// <summary>
+    /// C-C1: what a Budget bill DRAFT would do to the year's fiscal position — three figures the
+    /// Budget and Tax/Welfare surfaces print before enactment (Playtest-1 finding 3).
+    ///
+    /// Every figure is a DELTA between two runs of the model's own boundary — one clone standing, one
+    /// with the draft applied — never a hand sum beside the model. That is pass 5's recorded lesson on
+    /// the Budget "Net" line, and `EstimateTradeBill`'s established pattern.
+    /// </summary>
+    public struct BudgetBillEstimate
+    {
+        /// <summary>Revenue the year would raise with the draft, minus revenue without it.</summary>
+        public float RevenueDelta;
+
+        /// <summary>Total spending with the draft, minus total spending without it.</summary>
+        public float SpendingDelta;
+
+        /// <summary>
+        /// The year's budget balance with the draft, minus without. ⚠ **NOT computed as
+        /// `RevenueDelta − SpendingDelta`** — it is read from the model's own `Budget` movement on each
+        /// clone, so any term the balance carries that those two legs do not is inside it rather than
+        /// silently dropped. `BudgetDraftEstimateDiagnostic` asserts the two agree, which is what turns
+        /// "the legs add up" from an assumption into a measurement.
+        /// </summary>
+        public float NetDelta;
     }
 
     /// <summary>
@@ -2295,8 +2336,20 @@ namespace PoliSim.Simulation
         /// budget on a turn the player might not even commit to.
         /// </summary>
         public PolicyPreview PreviewTurn(CountryId countryId, PolicyDecision decision)
+            => PreviewTurnOnClone(ClonePreviewCountry(_world.GetCountry(countryId)), countryId, decision);
+
+        /// <summary>
+        /// C-C1: `PreviewTurn`'s body, taking a clone the caller has already made — so a caller can
+        /// modify that clone FIRST (apply a draft bill to it) and preview the result. `PreviewTurn`
+        /// itself is unchanged in behaviour: it makes the clone and calls this.
+        ///
+        /// ⚠ **The clone must come from `ClonePreviewCountry` and nothing else.** That method's
+        /// hand-list is what keeps a preview from writing into the real game, and its own doc records
+        /// three separate escapes (the R4-1 class, `BaselineGini`, the fiscal ledger) caught the hard
+        /// way. A caller passing anything else is outside every guarantee this method has.
+        /// </summary>
+        private PolicyPreview PreviewTurnOnClone(Country previewCountry, CountryId countryId, PolicyDecision decision)
         {
-            Country previewCountry = ClonePreviewCountry(_world.GetCountry(countryId));
             EconomyState state = previewCountry.State;
 
             float gdpBeforeThisTurn = state.GDP;
@@ -2369,7 +2422,12 @@ namespace PoliSim.Simulation
                 previewCountry.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, previewTariffRevenue, out _, out _);
+            // C-C1: the two legs the Budget surfaces need are already produced here - the method
+            // RETURNS revenue and OUTS total spending - and were being discarded into `out _`.
+            // Capturing them adds no arithmetic and no second estimate: the figures a draft's
+            // fiscal impact is built from are the boundary's own, which is pass 5's lesson on the
+            // Budget "Net" line (never a hand sum beside the model).
+            float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, previewTariffRevenue, out float previewSpending, out _);
 
             float previewedInterestRate;
             if (previewCountry.CurrentFedChair != null)
@@ -2420,11 +2478,75 @@ namespace PoliSim.Simulation
                 InflationChange = state.Inflation - inflationBefore,
                 ApprovalChange = state.ApprovalRating - approvalBefore,
                 NetBudgetImpact = state.Budget - budgetBefore,
+                RevenueEstimate = previewRevenue,
+                SpendingEstimate = previewSpending,
                 PovertyRateChange = state.PovertyRate - povertyBefore,
                 LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore,
                 CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
                 SwfContributionEstimate = swfContribution,
                 SwfReturnsEstimate = swfReturns
+            };
+        }
+
+        /// <summary>
+        /// C-C1 (Playtest-1 finding 3): **what a Budget bill DRAFT would do to the year's fiscal
+        /// position, before it is enacted.**
+        ///
+        /// <para><b>Why this had to exist at all.</b> The Estimated Effects panel does not see a
+        /// tax or spending draft and never has: `PolicyInputsChangedSinceLastPreview`'s own comment
+        /// records that since step 5c/5d those drafts *"no longer change what the preview would show
+        /// at all — they only ever reach the simulation via a passed bill"*. So the one screen a
+        /// player reads before enacting was structurally blind to the change being drafted. This is
+        /// the same hole `EstimateTradeBill` was built to fill for tariffs, and it is filled the same
+        /// way.</para>
+        ///
+        /// <para><b>How the figures are produced.</b> Two throwaway clones, both from
+        /// `ClonePreviewCountry`: one left standing, one with the draft applied through
+        /// `ParliamentSystem.ApplyBillResult` — <b>the same delegate a PASSED bill uses</b>, so the
+        /// estimate cannot drift from enactment by construction. Each is run through
+        /// `PreviewTurnOnClone`, the model's own boundary. The deltas are the difference. **No
+        /// figure here is a hand sum** (pass 5's lesson on the Budget "Net" line).</para>
+        ///
+        /// <para>⚠ <b>Applying a bill to a clone is only safe because `ClonePreviewCountry`'s
+        /// hand-list already covers everything a bill mutates</b> — `TaxLines` (deep-cloned because
+        /// `ApplyTaxRateChanges` writes `TaxLine.Rate`), `SpendingLines`, `WelfarePrograms` and
+        /// `SovereignWealthFund?.Clone()`. That was verified field by field against
+        /// `ApplyBillResult` and `ApplyBudgetBillSpendingAndSwf` before this method was written, and
+        /// `BudgetDraftEstimateDiagnostic` asserts the real country is unchanged across an estimate
+        /// rather than leaving it to the reading. A shared reference here would let a player's
+        /// *draft* silently edit the running game.</para>
+        ///
+        /// <para>⚠ <b>The estimate is a POINT and carries no margin, and that is the honest form.</b>
+        /// `PreviewTurn`'s own contract is that it *"never rolls an EventSystem event"* and is
+        /// deterministic, so two runs of it have no spread to report: a ± here would be authored
+        /// rather than measured, which is exactly what W-E3 ruled against when it printed a
+        /// zero-width band as a point with its reason instead of as `x – x`. What the figure
+        /// EXCLUDES is stated on the surface instead — event shocks, and `PreviewTurn`'s two recorded
+        /// simplifications (the previewed interest rate is threaded as a local rather than written to
+        /// a possibly-shared `CurrencyZone`; this turn's `CurrencyStrength` is used as-is).</para>
+        ///
+        /// <para>A full turn IS a year (`YearsPerTurn` = 1.0), so these are annual figures with no
+        /// scaling applied — unlike the Estimated Effects panel, whose non-full-turn horizons are an
+        /// explicitly linear/compounding DISPLAY re-scaling.</para>
+        ///
+        /// Side-effect-free: clones only, the real World untouched.
+        /// </summary>
+        public BudgetBillEstimate EstimateBudgetBill(CountryId countryId, BudgetBill bill)
+        {
+            Country real = _world.GetCountry(countryId);
+            PolicyDecision decision = new PolicyDecision();
+
+            PolicyPreview standing = PreviewTurnOnClone(ClonePreviewCountry(real), countryId, decision);
+
+            Country proposed = ClonePreviewCountry(real);
+            ParliamentSystem.ApplyBillResult(proposed, bill, passed: true, ApplyBudgetBillSpendingAndSwf);
+            PolicyPreview withBill = PreviewTurnOnClone(proposed, countryId, decision);
+
+            return new BudgetBillEstimate
+            {
+                RevenueDelta = withBill.RevenueEstimate - standing.RevenueEstimate,
+                SpendingDelta = withBill.SpendingEstimate - standing.SpendingEstimate,
+                NetDelta = withBill.NetBudgetImpact - standing.NetBudgetImpact
             };
         }
 

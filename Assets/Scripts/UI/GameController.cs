@@ -369,6 +369,13 @@ namespace PoliSim.UI
         private float _cachedLaborForceParticipationRateChangeRaw;
         private float _cachedCrimeIndexChangeRaw;
         private float _cachedNetBudgetImpactRaw;
+
+        // C-C1: the Budget draft's own fiscal estimate, cached on the draft's signature and the turn.
+        // Two PreviewTurn runs over two clones is not a per-frame cost - see DrawBudgetDraftFiscalImpact.
+        private BudgetBillEstimate _cachedBudgetImpact;
+        private string _cachedBudgetImpactSignature;
+        private int _cachedBudgetImpactTurn = -1;
+        private bool _hasCachedBudgetImpact;
         private float _cachedSwfReturnsEstimateRaw;
 
         /// <summary>
@@ -9164,8 +9171,97 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawLegislativeSupportEstimate()
         {
+            BudgetBill draft = BuildBudgetBillFromDrafts();
+
             GUILayout.Label("Legislative Support (current draft)", _headerStyle);
-            DrawBillLiveEstimate(ParliamentSystem.GetBillDirection(_playerCountry, BuildBudgetBillFromDrafts()));
+            DrawBillLiveEstimate(ParliamentSystem.GetBillDirection(_playerCountry, draft));
+
+            DrawBudgetDraftFiscalImpact(draft);
+        }
+
+        /// <summary>
+        /// C-C1 (Playtest-1 finding 3): **what this draft would do to the year's budget, before it is
+        /// enacted** — revenue, spending and the net, from `SimulationManager.EstimateBudgetBill`.
+        ///
+        /// <para><b>Why it is here.</b> The Estimated Effects panel does not see a tax or spending
+        /// draft and never has — `PolicyInputsChangedSinceLastPreview`'s own comment records that those
+        /// drafts *"no longer change what the preview would show at all"* since step 5c/5d. So this
+        /// screen was showing whether a draft would PASS while showing nothing about what it would
+        /// COST. The two now sit together, from the same `BuildBudgetBillFromDrafts()` snapshot, so the
+        /// verdict and the price can never describe different drafts.</para>
+        ///
+        /// <para>⚠ <b>CACHED, unlike the support estimate above it.</b> That estimate's own doc calls
+        /// itself cheap — "no cloning, unlike PreviewTurn/RecomputePolicyPreview's own caching, which
+        /// exists specifically because THAT computation is comparatively expensive". This one runs
+        /// PreviewTurn TWICE over two clones, so recomputing it every OnGUI frame would put exactly the
+        /// cost that comment warns about onto the most-used screen in the game. It recomputes when the
+        /// draft's own signature changes or the turn advances, and not otherwise.</para>
+        ///
+        /// <para>⚠ <b>No margin is printed, and that is deliberate.</b> `PreviewTurn` never rolls an
+        /// event and is deterministic by contract, so two runs of it have no spread: a ± here would be
+        /// authored rather than measured. W-E3 ruled on this exact shape — a zero-width band prints as
+        /// a point with its reason, never as `x – x`. What the figure EXCLUDES is stated beneath it
+        /// instead, which is the poll's own idiom (its ± carries "SAMPLING ERROR ONLY" for the same
+        /// reason: without the scope, a margin is a decoration).</para>
+        /// </summary>
+        private void DrawBudgetDraftFiscalImpact(BudgetBill draft)
+        {
+            string signature = BudgetDraftSignature(draft);
+            if (!_hasCachedBudgetImpact
+                || _simulationManager.CurrentTurn != _cachedBudgetImpactTurn
+                || !string.Equals(signature, _cachedBudgetImpactSignature, System.StringComparison.Ordinal))
+            {
+                _cachedBudgetImpact = _simulationManager.EstimateBudgetBill(PlayerCountryId, draft);
+                _cachedBudgetImpactSignature = signature;
+                _cachedBudgetImpactTurn = _simulationManager.CurrentTurn;
+                _hasCachedBudgetImpact = true;
+            }
+
+            GUILayout.Label("Estimated impact on the year's budget", _headerStyle);
+
+            // Revenue and spending rising are not the same KIND of good, so neither takes a
+            // semantic colour: only the NET carries one, on the same higher-is-better convention
+            // the rest of the screen uses for a balance.
+            GUILayout.Label($"Revenue: {UiFormat.MoneyDelta(_cachedBudgetImpact.RevenueDelta, MoneyUnit.Billions)}", _labelStyle);
+            GUILayout.Label($"Spending: {UiFormat.MoneyDelta(_cachedBudgetImpact.SpendingDelta, MoneyUnit.Billions)}", _labelStyle);
+            DrawColoredLabel($"Net: {UiFormat.MoneyDelta(_cachedBudgetImpact.NetDelta, MoneyUnit.Billions)}",
+                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, higherIsBetter: true));
+
+            GUILayout.Label("A full year, from the model's own boundary run twice - once with this draft, once without. "
+                            + "No margin: the projection is deterministic. Excludes events, which a projection never rolls.",
+                _labelStyle);
+        }
+
+        /// <summary>Everything about a draft that could move its estimate, as one string — so the
+        /// expensive estimate recomputes when the draft changes and never merely because a frame did.
+        /// ⚠ A hand-list over `BudgetBill`'s own fields, deliberately: the moment a field is added to
+        /// that class and not to this, the estimate silently stops updating for it.</summary>
+        private static string BudgetDraftSignature(BudgetBill draft)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (KeyValuePair<TaxType, float> line in draft.TaxLines)
+            {
+                sb.Append((int)line.Key).Append(':').Append(line.Value.ToString("R", CultureInfo.InvariantCulture)).Append('|');
+            }
+
+            foreach (KeyValuePair<SpendingCategory, float> line in draft.SpendingPercentChanges)
+            {
+                sb.Append((int)line.Key).Append(':').Append(line.Value.ToString("R", CultureInfo.InvariantCulture)).Append('|');
+            }
+
+            foreach (KeyValuePair<WelfareProgramType, float> program in draft.WelfarePrograms)
+            {
+                sb.Append((int)program.Key).Append(':').Append(program.Value.ToString("R", CultureInfo.InvariantCulture)).Append('|');
+            }
+
+            sb.Append(draft.SwfShouldExist).Append(':')
+              .Append(draft.SwfContributionRatePercent.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+              .Append(draft.SwfDomesticAllocationPercent.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+              .Append(draft.SwfEquitiesWeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+              .Append(draft.SwfBondsWeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+              .Append(draft.SwfInfrastructureWeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+              .Append(draft.SwfRealEstateWeight.ToString("R", CultureInfo.InvariantCulture));
+            return sb.ToString();
         }
 
         /// <summary>

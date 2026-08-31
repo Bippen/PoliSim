@@ -5785,3 +5785,91 @@ discipline: an entry that scopes a gate and then quietly scopes the work behind 
 into a plan nobody ruled on.
 
 No code touched; no check or harness affected.
+
+## 94. C-C1 (P-B1) — a draft's yearly budget impact, and the screen that showed whether a bill would PASS while showing nothing about what it would COST (2026-08-31)
+
+**Playtest-1 finding 3, in Elias's words:** *"Every tax/spending draft change should show its estimated
+annual fiscal impact before enactment — revenue delta, spending delta, net — as a range, never false
+precision."*
+
+### ⚠ Why nothing was showing: the preview is structurally blind to drafts
+
+`PolicyInputsChangedSinceLastPreview`'s own comment has recorded it since step 5c/5d: draft
+Tax/Spending/Welfare/SWF *"no longer change what the preview would show at all — they only ever reach the
+simulation via a passed bill"*. `BuildPlayerDecision` carries no draft terms, so the Estimated Effects
+panel cannot see a budget draft and never could. **The Budget Process screen was telling the player
+whether a draft would PASS while telling them nothing about what it would COST.** That is the same hole
+`EstimateTradeBill` was built to fill for tariffs, and it is filled the same way.
+
+### What shipped
+
+`SimulationManager.EstimateBudgetBill(countryId, bill)` → `BudgetBillEstimate` (revenue, spending, net).
+**Two throwaway clones, one left standing and one with the draft applied through
+`ParliamentSystem.ApplyBillResult` — the same delegate a PASSED bill uses, so the estimate cannot drift
+from enactment by construction** — each run through the model's own boundary. No figure is a hand sum
+(pass 5's lesson on the Budget "Net" line). `PreviewTurn` gained a clone-taking core so a caller can
+modify the clone first; its public signature and behaviour are unchanged.
+
+**A full turn IS a year** (`YearsPerTurn` = `DaysPerTurn / 365f` = 1.0, the identity W-G1's trap-closing
+re-derived and `Phase4YearsPerTurnDiagnostic` proves 9 of 9), so these are annual figures with **no
+scaling applied** — unlike the Estimated Effects panel, whose non-full-turn horizons are an explicitly
+linear/compounding DISPLAY re-scaling.
+
+⚠ **Applying a bill to a clone is only safe because `ClonePreviewCountry`'s hand-list already covers
+everything a bill mutates** — `TaxLines` (deep-cloned precisely because `ApplyTaxRateChanges` writes
+`TaxLine.Rate`), `SpendingLines`, `WelfarePrograms`, `SovereignWealthFund?.Clone()`. That was checked
+field by field against `ApplyBillResult` and `ApplyBudgetBillSpendingAndSwf` **before** the method was
+written, not assumed — this project has caught the clone-escape class three times (the R4-1 escape,
+`BaselineGini`, the fiscal ledger), every one on a field somebody believed was covered. A shared
+reference here would let a player's *draft* silently edit the running game.
+
+### ⚠ The range question, answered by refusing to invent one
+
+The finding asks for "a range, never false precision". **The honest range here is a point.**
+`PreviewTurn`'s own contract is that it *"never rolls an EventSystem event"* and is deterministic, so two
+runs of it have **no spread to report**. A ± would be authored, not measured — and W-E3 already ruled on
+this exact shape when it printed a zero-width band as a point with its reason rather than as `x – x`.
+What the figure EXCLUDES is stated on the surface instead, which is the poll's own idiom (its ± carries
+"SAMPLING ERROR ONLY" because, as its code comment says, *without it a ± is a decoration*).
+
+⚠ **AND THE FILM CAUGHT ME DOING THE OPPOSITE.** The first cut formatted the three figures with
+`FormatMoneyEstimate`, the established money-estimate helper — which **rolls a random margin** between
+`MinPreviewMarginPercent` and `MaxPreviewMarginPercent` and appends it. The 1280 capture showed
+`Spending: +$4.41B (±$383M)` sitting directly above my own caption reading *"No margin: the projection is
+deterministic"* — a self-contradiction on one screen, and a randomly generated number presented as a
+measurement. Corrected to `UiFormat.MoneyDelta`. **The four-width film is what found it**; the guards
+were silent because nothing was clipped, and nothing about it was wrong except the truth of it.
+
+### ⚠ A pre-existing finding this uncovered, filed rather than silently fixed
+
+`FormatMoneyEstimate` and the Estimated Effects caption's **"±5-10% margin of error"** are an **authored**
+margin, re-rolled from `_previewRandom` on every recompute — a random number generated for display and
+attached to the model's own figure. It is exactly the false precision this finding names, it predates
+this item, and it applies to four macro rows that are not this item's. **Filed as register row S-12
+rather than changed here**, because quietly re-cutting a long-standing display convention inside an
+unrelated item is how a pass stops being reviewable.
+
+### Verified
+
+`BudgetDraftEstimateDiagnostic` **ALL ASSERTIONS PASS** across all six countries — and it asserts the
+four things the surface depends on, no magnitudes:
+
+| assertion | result |
+|---|---|
+| no clone escape (hand-list fingerprint of the real country before/after) | identical, 6 of 6, on both a flat and a hiking draft |
+| an untouched draft estimates to **exactly zero** | rev 0.00 / spend 0.00 / net 0.00, 6 of 6 |
+| the legs reconcile with the balance (`NetDelta` is read from `Budget`, not computed) | agreement to **0.0000**, 6 of 6 |
+| direction: a +1 pp rise on every implemented line raises revenue | USA +269.73, Germany +59.04, France +35.90, Italy +32.51, Poland +11.23, Sweden +7.80 |
+
+`PreviewParityDiagnostic` **7 of 7 asserted terms match for all 6 countries — no clone escape in the
+covered set** (the refactor is behaviour-preserving); trajectories **6 of 6 byte-identical** to
+`traj_run_*`; the nine checks **9 of 9 clean**; films at **1280 / 1600 / 1920 / 2560** with **77 captured,
+0 failed, 0 text overflows, 0 containment escapes** at every width; `ScreenEdgeCheck` exit 0 over 308
+captures. Capture family `cc1b_<width>_*`.
+
+⚠ **A capture-discipline slip, recorded because it nearly cost the item its evidence:** the first film run
+passed `-batchmode -nographics`, which `UiScreenshotCapture`'s own doc forbids in bold (*"there is no
+frame to capture without a graphics device, and `WaitForEndOfFrame` never resumes under `-batchmode`"*) —
+it hung. The second run omitted `-shotwidth` for 1280 and silently filmed at the 1600 default, so the
+tightest width — the one this project's own record says is where an over-long caption appears — was never
+filmed until the third run. Both were caught by reading the run's output rather than by the run failing.
