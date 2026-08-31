@@ -213,30 +213,70 @@ namespace PoliSim.EditorTools
         [MenuItem("PoliSim/Run Simulation Checks (slower — builds Worlds)")]
         private static void RunSimulationChecksFromMenu()
         {
+            RunSimulation();
+        }
+
+        /// <summary>
+        /// C-N3 (2026-08-31): **a batchmode entry for the simulation group, so it can actually be part of
+        /// the bar.**
+        ///
+        /// <para>⚠ The group had a menu item and nothing else, which means a check in it could not be run
+        /// by a session or by CI — it was armed for a human who remembered to click it. That is the same
+        /// failure mode <see cref="RunAllBatch"/> fixed for the nine, and adding `LeverLivenessCheck` to a
+        /// menu-only group would have been arming a guard that never fires. The two entries stay
+        /// separate: `RunAllBatch` is the cheap once-per-session suite, this one is paid for on
+        /// purpose.</para>
+        /// </summary>
+        public static void RunSimulationBatch()
+        {
+            int worst = RunSimulation();
+            Debug.Log($"CHECKS: simulation group exiting {worst}.");
+            EditorApplication.Exit(worst);
+        }
+
+        /// <summary>The simulation group, run once, returning the WORST code any of them wanted. A check
+        /// that throws counts as 1 — an exception is not a pass. The enumeration is printed BEFORE the run
+        /// (the enumeration rule): a group that silently ran three of four would read like a clean run.</summary>
+        private static int RunSimulation()
+        {
             var simulation = new (string Name, Action Run)[]
             {
                 ("AggregationEquivalenceCheck", AggregationEquivalenceCheck.Run),
                 ("CreditRatingAnchorCheck", CreditRatingAnchorCheck.Run),
                 ("PublicationCadenceCheck", PublicationCadenceCheck.Run),
+                // C-N3 (2026-08-31): every player-facing lever must measurably move the model, or be named
+                // as retired. It belongs HERE rather than in the nine for this group's own stated reason -
+                // COST: it builds and advances a World per PolicyDecision field, and there are 37.
+                ("LeverLivenessCheck", LeverLivenessCheck.Run),
             };
 
+            var names = new string[simulation.Length];
+            for (int i = 0; i < simulation.Length; i++) { names[i] = simulation[i].Name; }
+            Debug.Log($"CHECKS: running the {simulation.Length} simulation checks — {string.Join(", ", names)}.");
+
             var failed = new List<string>();
+            int worstCode = 0;
             foreach ((string name, Action run) in simulation)
             {
                 try
                 {
-                    if (CheckExit.Collect(run) != 0) { failed.Add(name); }
+                    int code = CheckExit.Collect(run);
+                    if (code != 0) { failed.Add(name); }
+                    if (code > worstCode) { worstCode = code; }
                 }
                 catch (Exception e)
                 {
                     Debug.LogError($"CHECKS: {name} THREW {e.GetType().Name}: {e.Message}");
                     failed.Add(name);
+                    worstCode = Mathf.Max(worstCode, 1);
                 }
             }
 
             Debug.Log(failed.Count == 0
                 ? $"CHECKS: {simulation.Length} of {simulation.Length} simulation checks clean."
                 : $"CHECKS: {failed.Count} of {simulation.Length} FAILED — {string.Join(", ", failed)}.");
+
+            return worstCode;
         }
 
         /// <summary>

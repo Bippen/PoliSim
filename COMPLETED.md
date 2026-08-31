@@ -6987,3 +6987,99 @@ Open, with owners named:
 (§108). **That is a pattern worth naming before the fourth**: this codebase can lose a player-facing lever
 without anything failing, because nothing asserts that a lever moves the model. **A guard that does is
 worth an item** — it is the same shape as C-E3's phantom-guard check, and the two belong together.
+
+## 111. C-N3 — the lever-liveness guard, armed; and the two things it found on its first run (2026-08-31)
+
+**Every player-facing lever must measurably move the model, or be named as retired.** Built on C-C10's
+leave-one-out machinery, reused rather than reinvented: for each field of `PolicyDecision` in turn, step it
+from the country's **own seeded value**, run a world with that one field set against an otherwise identical
+world without, and compare **every public float of every country's `EconomyState`**. Leave-one-out with a
+set of one, and trustworthy for the same reason the ledger's contributions are: it compares consequences,
+not call sites.
+
+### The enumeration and the verdicts
+
+**37 `PolicyDecision` fields**, each tried against **every country in turn** until one moves — so a lever
+live in only one country counts as live, and a lever reported dead was tried everywhere it could be
+applied. `AssertEveryFieldHasAStepper` fails the check if a field has no stepper any country can apply, so
+a field added later cannot slip in untested.
+
+| verdict | meaning | severity |
+|---|---|---|
+| **LIVE** | the model moved | pass |
+| **RETIRED** | dead **by design**, listed with the mechanism that superseded it | reported, non-fatal |
+| **GAP** | dead, a defect, listed with the item that owns the fix | reported, non-fatal (`PartyMarkCoverageCheck`'s precedent) |
+| ⚠ **DEAD AND UNLISTED** | dead and in neither table | **FAIL** — the case the guard exists for |
+| ⚠ **STALE RECORD** | listed as retired or as a gap, but it moves | **FAIL** — a stale retirement lies about what the player can do |
+| ⚠ **NOT EXERCISED** | no country could apply it | **FAIL** — untested is not passed (C-C9 assertion 4's precedent) |
+
+**First run: 28 LIVE · 8 RETIRED · 1 GAP · 0 dead-and-unlisted · 0 not-exercised · 0 stale.** Exit 0.
+
+**The eight RETIRED** are the legacy discretionary spending fields (`HealthcareSpendingChange` …
+`HousingSpendingChange`) — **superseded by a mechanism, which is the legitimate way for a lever to die.**
+`SpendingLineChanges` is the player's real input and `ResolveSpendingForTurn` →
+`BuildEffectiveDecisionForDetailedSpending` derives these eight from it, overwriting whatever the caller
+set. What makes them *retired* rather than merely conditional is a fact about the seed, checked rather than
+assumed: **all six seeded countries now have a `SpendingLines` portfolio**, so the branch that would read a
+player-set value has no country left to run on. ⚠ **And they are not drawable** — nothing in
+`Assets/Scripts/UI` writes any of them.
+
+### ⚠ What it found #1: S-18 was WRONG, and the error was mine
+
+S-18 said the player's interest-rate lever was dead **"in every country"**. The guard found it **LIVE in
+Germany**. It is dead only where `CurrentFedChair != null` — USA, Sweden, Poland. **The eurozone trio have
+no chair**, so `ApplyInterestRateChanges` falls them through to `EurozoneRateSystem.ApplyEurozoneRate`,
+which reads the decision and gives each member a bounded push on the shared rate.
+
+The original claim came from C-C9's assertion 4, which set `InterestRateChange` on **the USA** and observed
+nothing move — and I generalised one country to six. **That is precisely the error the per-country retry
+was built to prevent, and it caught it on the run it was built.** S-18 is corrected in the register.
+
+What remains true and still needs doing: the lever is dead for the three chair countries while
+`PolicyDecision.InterestRateChange`'s doc comment still describes a live player lever everywhere; and
+`GameController`'s independent-currency rate branch — including its *"this game deliberately hands you the
+central bank"* paragraph and a live slider — is now **unreachable**, since it needs a country with no chair
+and an independent currency and there is none. Retiring that branch stays on S-18 rather than being done
+inside this item.
+
+### ⚠ What it found #2: a genuinely dead lever, C-N6
+
+**`SwfDomesticAllocationOverride` reaches nothing.** The value is applied — `ApplySwfPolicyChanges` clamps
+it and writes `SovereignWealthFund.DomesticAllocationPercent`, which is cloned, seeded per country
+(Sweden 35, France 50) and carried on a `BudgetBill` — **but nothing reads it.**
+`SovereignWealthFundSystem` never mentions it; the four asset-class weights drive the fund's returns alone.
+A player can set a domestic-allocation share, watch it persist, and change nothing.
+
+Opened as **C-N6**, ruling-first: either give it an effect (a domestic tilt trading return for domestic
+investment is a real mechanic and needs a sourced basis) or retire the dial and stop drawing it. ⚠ **Not
+option (a) with an invented coefficient.**
+
+### ⚠ What the guard does NOT answer, stated because its first run forced the distinction
+
+A lever is LIVE here when it moves **any** `EconomyState` float. That is deliberately the weakest useful
+question — *is this field read at all* — and it is **not** "does this lever do the right thing".
+
+`TaxRateOverrides` is the worked example. It was listed as a known gap on the strength of §107, and the
+guard **called that record wrong**: the tax dial is LIVE (it moves revenue, the budget balance, debt and
+approval) while its **output** multiplier is exactly 0.000. **C-N4's gap is narrower than lever-death and
+this check cannot see it.** A guard for "the right thing moves" is a different and harder instrument;
+pretending this one is that instrument would have been the more dangerous error, so the distinction is
+written into the class rather than left to be inferred.
+
+### Where it is armed
+
+As the **fourth simulation check**, not the tenth of the nine — the simulation group's own stated reason is
+**cost**, and this builds and advances a World per field. ⚠ **That group had a menu item and nothing else**,
+so a check in it could never fire in CI: it was armed for a human who remembered to click it — the same
+failure mode `RunAllBatch` fixed for the nine, and adding this guard to a menu-only group would have been
+arming something that never fires. So the group gained `CheckSuite.RunSimulationBatch`, with its
+enumeration printed before the run and the worst exit code returned.
+
+`CHECKS: running the 4 simulation checks — AggregationEquivalenceCheck, CreditRatingAnchorCheck,
+PublicationCadenceCheck, LeverLivenessCheck.` → **4 of 4 clean, exit 0.**
+
+### The bar
+
+The four simulation checks exit 0 · the nine asset checks exit 0 · no `Assets/Scripts` file changed
+(the guard and the suite entry are both `Assets/Editor`), so no trajectory, film or save-layer evidence
+applies — and the trajectory dump was run anyway and is **6 of 6 byte-identical to `traj_cc7_*`**.
