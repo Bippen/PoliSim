@@ -537,6 +537,7 @@ namespace PoliSim.Simulation
         private const float UniversalHealthcarePovertyReductionSensitivity = 4f;
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented RANKING - GetPovertyReductionSensitivity's summary below argues the ORDER of these five from the real efficiency-of-targeting debate, and that argument is the basis. The points themselves are game figures; no study fixes any of them.</remarks>
         private const float HousingAssistancePovertyReductionSensitivity = 3f;
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented RANKING - see GetPovertyReductionSensitivity below, which argues the ORDER of these five from the real efficiency-of-targeting debate. The points are game figures.</remarks>
         private const float ChildcareSubsidiesPovertyReductionSensitivity = 3f;
 
         // MinimumWagePovertyReductionSensitivity moved VERBATIM to LaborCouplings (pass 3's
@@ -611,6 +612,7 @@ namespace PoliSim.Simulation
         // --- Labor Force Participation Rate: a tracked stat, mean-reverting toward its own baseline ---
 
         /// <summary>Fraction of the gap versus the baseline that closes each turn on its own - moderate-slow, matching PovertyRate's own reversion speed (real participation rates don't swing wildly turn to turn either).</summary>
+        /// <remarks>CONVENTION - a reversion speed, and DERIVED in the sense the summary states: it matches the other moderate-slow reverting stats rather than being chosen separately, so one pace is stated once.</remarks>
         private const float LaborForceParticipationReversionSpeed = 0.15f;
 
         /// <summary>
@@ -620,6 +622,7 @@ namespace PoliSim.Simulation
         /// drives ApplyApprovalRating's misery index and ApplyPovertyRate's baseline rather than
         /// inventing a new driver.
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the relative order; the number itself is a game figure no cited study fixes.</remarks>
         private const float DiscouragedWorkerSensitivity = 0.3f;
 
         /// <summary>Gameplay bound - a percentage, like Unemployment/PovertyRate, not a raw 0-1 fraction.</summary>
@@ -643,9 +646,11 @@ namespace PoliSim.Simulation
         // the formula below reads the table's qualified names.
 
         /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points reduced per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented effect: an aging population structurally shrinks the working-age share, lowering participation even with no change in any individual's own behavior.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the relative order; the number itself is a game figure no cited study fixes.</remarks>
         internal const float DependencyRatioParticipationSensitivity = 0.02f;
 
         /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points added per point NetMigrationRate sits above its own Country.BaselineNetMigrationRate - a real, well-documented effect: immigrants skew disproportionately working-age, so higher net migration than a country's own starting norm raises participation.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the relative order; the number itself is a game figure no cited study fixes.</remarks>
         internal const float NetMigrationParticipationSensitivity = 0.03f;
 
         /// <summary>
@@ -702,9 +707,11 @@ namespace PoliSim.Simulation
         // --- Crime & Justice: a stylized CrimeIndex, mean-reverting toward its own baseline ---
 
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches PovertyRate/LaborForceParticipationRate's own moderate-slow reversion speed.</summary>
+        /// <remarks>CONVENTION - a reversion speed, and DERIVED in the sense the summary states: it matches the other moderate-slow reverting stats rather than being chosen separately, so one pace is stated once.</remarks>
         private const float CrimeIndexReversionSpeed = 0.15f;
 
         /// <summary>CrimeIndex points added per point Unemployment sits above NaturalUnemploymentRate - reuses an already-proven driver (the same gap PovertyRate/ApplyApprovalRating already use) rather than inventing a new one; property crime's real-world link to joblessness is well documented, though modest relative to policy's own effect below.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the relative order; the number itself is a game figure no cited study fixes.</remarks>
         private const float CrimeUnemploymentSensitivity = 0.3f;
 
         // PoliceFundingSensitivity / SentencingSensitivity moved to CrimeJusticeCouplings (item 6,
@@ -712,8 +719,10 @@ namespace PoliSim.Simulation
         // comments carried verbatim.
 
         /// <summary>Neutral reference point for both policy dials - both start here for every country (a uniform placeholder, unlike CrimeIndex's own per-country baseline), so a gap versus this constant (not a country-specific anchor) is the correct comparison.</summary>
+        /// <remarks>CONVENTION - a dial midpoint, and the summary above already calls it a uniform placeholder. CrimeJusticeCouplings.NeutralDialLevel is the same fact stated elsewhere; unifying the three statements is a refactor the couplings pass deliberately deferred.</remarks>
         private const float NeutralPolicyDialLevel = 50f;
 
+        /// <remarks>CONVENTION - a gameplay ceiling on a percentage, defence-in-depth against a feedback bug rather than a claim any country could reach it.</remarks>
         private const float MaxCrimeIndexPercent = 100f;
 
         // --- Round 3 item 3: Organized Crime and Corruption, two more stylized 0-100 tracked stats ---
@@ -723,6 +732,7 @@ namespace PoliSim.Simulation
         // condition-drag already established - see SimulationManager's call ordering.
 
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
+        /// <remarks>CONVENTION - a reversion speed, and DERIVED in the sense the summary states: it matches the other moderate-slow reverting stats rather than being chosen separately, so one pace is stated once.</remarks>
         private const float OrganizedCrimeReversionSpeed = 0.15f;
 
         // The three organized-crime dial sensitivities moved to CrimeJusticeCouplings (item 6,
@@ -746,6 +756,7 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Fraction of the gap versus the target that closes each turn on its own - matches CrimeIndex/PovertyRate's own moderate-slow reversion speed.</summary>
+        /// <remarks>CONVENTION - a reversion speed, and DERIVED in the sense the summary states: it matches the other moderate-slow reverting stats rather than being chosen separately, so one pace is stated once.</remarks>
         private const float CorruptionReversionSpeed = 0.15f;
 
         // JudicialFundingCorruptionSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25).
