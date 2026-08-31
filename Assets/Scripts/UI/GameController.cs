@@ -5093,22 +5093,14 @@ namespace PoliSim.UI
         private float GetOvertimeRegulationInput(float fallbackLevel) => _overtimeRegulationInput ?? fallbackLevel;
         private float GetRetrainingProgramInput(float fallbackLevel) => _retrainingProgramInput ?? fallbackLevel;
 
-        private float GetCachedBorderEnforcementInput(float fallbackLevel) => _cachedBorderEnforcementInput ?? fallbackLevel;
 
         private float GetFamilyPolicyInput(float fallbackLevel) => _familyPolicyInput ?? fallbackLevel;
-        private float GetCachedFamilyPolicyInput(float fallbackLevel) => _cachedFamilyPolicyInput ?? fallbackLevel;
         private float GetImmigrationPolicyInput(float fallbackLevel) => _immigrationPolicyInput ?? fallbackLevel;
-        private float GetCachedImmigrationPolicyInput(float fallbackLevel) => _cachedImmigrationPolicyInput ?? fallbackLevel;
 
         /// <summary>The Economic Sectors tab's draft absolute Subsidy level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted SubsidyLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetSectorSubsidyInput(SectorType type, float fallbackLevel)
         {
             return _sectorSubsidyInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
-        }
-
-        private float GetCachedSectorSubsidyInput(SectorType type, float fallbackLevel)
-        {
-            return _cachedSectorSubsidyInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
         }
 
         /// <summary>The Economic Sectors tab's draft absolute Regulation level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted RegulationLevel) if the player hasn't touched that slider this turn.</summary>
@@ -5117,20 +5109,10 @@ namespace PoliSim.UI
             return _sectorRegulationInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
         }
 
-        private float GetCachedSectorRegulationInput(SectorType type, float fallbackLevel)
-        {
-            return _cachedSectorRegulationInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
-        }
-
         /// <summary>Round 3 item 2: the Economic Sectors tab's draft absolute Tax Credit level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted TaxCreditLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetSectorTaxCreditInput(SectorType type, float fallbackLevel)
         {
             return _sectorTaxCreditInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
-        }
-
-        private float GetCachedSectorTaxCreditInput(SectorType type, float fallbackLevel)
-        {
-            return _cachedSectorTaxCreditInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
         }
 
         /// <summary>Round 3 item 2: the Economic Sectors tab's draft absolute Research Grants level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted ResearchGrantsLevel) if the player hasn't touched that slider this turn.</summary>
@@ -5139,26 +5121,14 @@ namespace PoliSim.UI
             return _sectorResearchGrantsInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
         }
 
-        private float GetCachedSectorResearchGrantsInput(SectorType type, float fallbackLevel)
-        {
-            return _cachedSectorResearchGrantsInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
-        }
-
         /// <summary>Round 3 item 2: the Economic Sectors tab's draft absolute Deregulation/Nationalization level for a SectorType, or <paramref name="fallbackLevel"/> (the Sector's actual persisted DeregulationNationalizationLevel) if the player hasn't touched that slider this turn.</summary>
         private float GetSectorDeregulationInput(SectorType type, float fallbackLevel)
         {
             return _sectorDeregulationInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
         }
 
-        private float GetCachedSectorDeregulationInput(SectorType type, float fallbackLevel)
-        {
-            return _cachedSectorDeregulationInputs.TryGetValue(type, out float value) ? value : fallbackLevel;
-        }
-
         private float GetSwfContributionRateInput(float fallbackLevel) => _swfContributionRateInput ?? fallbackLevel;
-        private float GetCachedSwfContributionRateInput(float fallbackLevel) => _cachedSwfContributionRateInput ?? fallbackLevel;
         private float GetSwfDomesticAllocationInput(float fallbackLevel) => _swfDomesticAllocationInput ?? fallbackLevel;
-        private float GetCachedSwfDomesticAllocationInput(float fallbackLevel) => _cachedSwfDomesticAllocationInput ?? fallbackLevel;
         private float GetSwfEquitiesWeightInput(float fallbackLevel) => _swfEquitiesWeightInput ?? fallbackLevel;
         private float GetCachedSwfEquitiesWeightInput(float fallbackLevel) => _cachedSwfEquitiesWeightInput ?? fallbackLevel;
         private float GetSwfBondsWeightInput(float fallbackLevel) => _swfBondsWeightInput ?? fallbackLevel;
