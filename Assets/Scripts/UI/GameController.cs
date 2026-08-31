@@ -326,6 +326,9 @@ namespace PoliSim.UI
         // action, not a draft value tracked here.
         private bool _hasCachedPreview;
         /// <summary>C-C8: which of the other five country pages the International tab is showing. Wraps.</summary>
+        /// <summary>C-C9 (P-G1): the no-policy counterfactual advancing beside the real game.</summary>
+        private ShadowBaseline _shadowBaseline;
+
         private int _internationalPageIndex;
 
         private int _cachedPreviewTurn = -1;
@@ -739,6 +742,12 @@ namespace PoliSim.UI
             _simulationManager = gameObject.AddComponent<SimulationManager>();
             _simulationManager.SetWorld(_world);
             _previewRandom = new System.Random();
+
+            // C-C9 (P-G1): the no-policy counterfactual, built beside the real world at the same master
+            // seed so the two runs are comparable from turn one. It advances only through its own
+            // wrapper (see AdvanceTurn), which is what keeps it from touching the real game's
+            // randomness - the measured leak was 41 draws a turn.
+            _shadowBaseline = new ShadowBaseline(SimulationRandom.MasterSeed);
         }
 
         /// <summary>
@@ -4924,6 +4933,14 @@ namespace PoliSim.UI
             }
 
             _simulationManager.AdvanceTurn(decisions);
+
+            // C-C9 (P-G1): the counterfactual advances in lockstep, one turn for one turn, so the two
+            // series always cover the same span. ⚠ It goes through `ShadowBaseline.AdvanceTurn`, which
+            // saves the real generator state and restores it in a `finally` - proven by
+            // `ShadowBaselineDiagnostic` to leave two real games byte-identical over eight turns whether
+            // a shadow ran beside them or not. Calling the shadow's own manager directly from here would
+            // reintroduce exactly the 41-draw leak the wrapper exists to prevent.
+            _shadowBaseline?.AdvanceTurn();
 
             EconomyState state = _playerCountry.State;
             _lastGrowthPercent = (state.GDP - _prevGdp) / Mathf.Max(_prevGdp, 1f) * 100f;

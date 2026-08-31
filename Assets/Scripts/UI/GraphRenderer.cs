@@ -116,7 +116,7 @@ namespace PoliSim.UI
         /// added with the same silence. Prefer passing <c>PolicyWebRenderer.GetStatUnit(stat)</c> where
         /// the call site has a StatNodeId, so the answer comes from the stat's own metadata.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null)
+        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null, IReadOnlyList<float> shadowHistory = null)
         {
             EnsureOverlayStylesInitialized(labelStyle);
             _moneyUnit = moneyUnit;
@@ -178,8 +178,79 @@ namespace PoliSim.UI
                     DrawThresholdLabelOverlay(rect, thresholdValue.Value, thresholdLabel);
                 }
 
+                DrawShadowSeries(rect, shadowHistory, history);
                 DrawEnactmentMarkers(rect, enactmentPositions);
             }
+        }
+
+        /// <summary>
+        /// C-C9 (P-G1): the no-policy counterfactual drawn against the live series — *"with your
+        /// policies"* against *"without"*.
+        ///
+        /// <para><b>An OVERLAY on the live plot's own scale, deliberately.</b> It reuses `_lastMin` /
+        /// `_lastMax`, the range `Regenerate` computed for the real series, so the two lines are read
+        /// against one axis. ⚠ Rescaling to fit both would make the counterfactual look like a different
+        /// quantity and, worse, would move the real line every time the shadow diverged — the player's
+        /// own series must not shift because of something they did not do.</para>
+        ///
+        /// <para>⚠ <b>The shadow is drawn to the LIVE series' length, never past it.</b> If the two are
+        /// different lengths the shorter governs: a counterfactual extending beyond the history it is
+        /// being compared with would be drawing a claim about turns that have not happened.</para>
+        ///
+        /// <para>Dashed, at the projection ink — the sheet's existing idiom for "not the measured line"
+        /// — so no new hue enters the palette for it.</para>
+        /// </summary>
+        private void DrawShadowSeries(Rect rect, IReadOnlyList<float> shadowHistory, IReadOnlyList<float> history)
+        {
+            if (Event.current.type != EventType.Repaint || shadowHistory == null || history == null) { return; }
+
+            int points = Mathf.Min(shadowHistory.Count, history.Count);
+            if (points < 2 || _lastMax <= _lastMin) { return; }
+
+            // The live series is drawn from its most recent `points` entries; the shadow is aligned to
+            // the same window from its own tail, so turn N is compared with turn N.
+            int shadowStart = shadowHistory.Count - points;
+
+            Vector2 previous = Vector2.zero;
+            for (int i = 0; i < points; i++)
+            {
+                float value = shadowHistory[shadowStart + i];
+                float t = i / (float)(points - 1);
+                float y = 1f - Mathf.InverseLerp(_lastMin, _lastMax, value);
+                var here = new Vector2(rect.x + t * rect.width, rect.y + Mathf.Clamp01(y) * rect.height);
+
+                if (i > 0) { DrawDashedOverlaySegment(previous, here, ProjectedLineColor); }
+
+                previous = here;
+            }
+        }
+
+        /// <summary>A dashed segment drawn as an overlay rather than into the plot texture, so the
+        /// counterfactual costs no regeneration — the same technique the release and enactment markers
+        /// use.</summary>
+        private static void DrawDashedOverlaySegment(Vector2 from, Vector2 to, Color color)
+        {
+            const float Dash = 4f;
+            const float Gap = 3f;
+            Vector2 delta = to - from;
+            float length = delta.magnitude;
+            if (length < 0.01f) { return; }
+
+            Vector2 dir = delta / length;
+            Color previous = GUI.color;
+            GUI.color = color;
+
+            for (float start = 0f; start < length; start += Dash + Gap)
+            {
+                float run = Mathf.Min(Dash, length - start);
+                Vector2 a = from + dir * start;
+                Vector2 b = from + dir * (start + run);
+                var segment = new Rect(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y),
+                    Mathf.Max(1f, Mathf.Abs(b.x - a.x)), Mathf.Max(1f, Mathf.Abs(b.y - a.y)));
+                GUI.DrawTexture(segment, Texture2D.whiteTexture);
+            }
+
+            GUI.color = previous;
         }
 
         /// <summary>
@@ -237,149 +308,6 @@ namespace PoliSim.UI
 
         /// <summary>A release marker on the timeline - furniture rather than data, so it takes the brass the pack uses for furniture instead of the screen yellow it was.</summary>
         private static readonly Color ReleaseMarkerColor = PoliSimTheme.Brass;
-        /// <summary>The aged draft/caution amber, not the screen orange it was - a preliminary release is the published-data cousin of a draft, and they should read as the same idea.</summary>
-        private static readonly Color PreliminaryLineColor = PoliSimTheme.Draft;   // a fill (D6's split, 2026-08-28)
-
-        /// <summary>
-        /// Master Sequence step 9, Step B: draws a PUBLISHED series - lagged, revisable figures as the
-        /// player actually saw them - with a calendar date axis, release-point markers, and preliminary
-        /// values visually distinguished from settled ones.
-        ///
-        /// A separate overload rather than a change to the float-list signature, and the reason is
-        /// SEMANTIC rather than structural. A float-list graph shows live simulation values with no
-        /// release timing at all; this shows data that arrived on a schedule and may later be revised.
-        /// Only 6 of the ~29 tracked stats have real release schedules (see PublishedStat) - the other 23
-        /// legitimately keep reading live, and reshaping their call sites to carry publication semantics
-        /// that do not apply to them would make every one of those graphs express something untrue.
-        /// Every existing call site is therefore untouched.
-        ///
-        /// The plotted value for a reference period is its LATEST entry, so a revised figure supersedes
-        /// the preliminary one on the line itself - matching what a player looking at the chart today
-        /// would see - while the preliminary remains in the series and is what the marker colour reports.
-        /// </summary>
-        public void DrawPublished(string title, PublishedSeries series, GUIStyle labelStyle, bool? higherIsBetter, System.DateTime currentDate, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null)
-        {
-            EnsureOverlayStylesInitialized(labelStyle);
-            _moneyUnit = moneyUnit;
-
-            if (series == null || series.Entries.Count == 0)
-            {
-                DrawTitleRow(title, null, higherIsBetter, labelStyle);
-                GUILayout.Label("Not yet published - the first release is still ahead.", labelStyle);
-                return;
-            }
-
-            // One point per REFERENCE PERIOD, not per entry: a revised figure replaces its preliminary on
-            // the line rather than appearing as a second point at the same date, which would read as
-            // volatility that never happened.
-            var periods = new List<System.DateTime>();
-            var latestForPeriod = new Dictionary<System.DateTime, PublishedEntry>();
-            foreach (PublishedEntry entry in series.Entries)
-            {
-                if (!latestForPeriod.TryGetValue(entry.ReferencePeriodStart, out PublishedEntry existing))
-                {
-                    periods.Add(entry.ReferencePeriodStart);
-                    latestForPeriod[entry.ReferencePeriodStart] = entry;
-                }
-                else if (entry.PublicationDate > existing.PublicationDate)
-                {
-                    latestForPeriod[entry.ReferencePeriodStart] = entry;
-                }
-            }
-
-            periods.Sort();
-
-            System.DateTime cutoff = _timeRange == TimeRange.OneYear ? currentDate.AddYears(-1)
-                : _timeRange == TimeRange.FiveYears ? currentDate.AddYears(-5)
-                : System.DateTime.MinValue;
-
-            var values = new List<float>();
-            var visiblePeriods = new List<System.DateTime>();
-            bool anyPreliminary = false;
-            foreach (System.DateTime period in periods)
-            {
-                if (period < cutoff)
-                {
-                    continue;
-                }
-
-                PublishedEntry entry = latestForPeriod[period];
-                values.Add(entry.Value);
-                visiblePeriods.Add(period);
-                anyPreliminary |= entry.Status == RevisionStatus.Preliminary;
-            }
-
-            DrawTitleRow(title, values, higherIsBetter, labelStyle);
-            DrawTimeRangeRow();
-
-            if (values.Count == 0)
-            {
-                GUILayout.Label($"No releases in the selected range - {periods.Count} older entries exist.", labelStyle);
-                return;
-            }
-
-            // A single point is the NORMAL early-game state, not an edge case: a new government starts
-            // with one inherited quarter and waits until roughly day 120 for its own first release. A
-            // one-point line has no slope to plot and would render as a degenerate full-width segment, so
-            // it is reported as a value instead - which is also more honest, since one figure is not yet
-            // a trend.
-            if (values.Count == 1)
-            {
-                PublishedEntry only = latestForPeriod[visiblePeriods[0]];
-                GUILayout.Label($"{FormatValue(only.Value)} for {only.ReferencePeriodStart:MMM yyyy} - {only.ReferencePeriodEnd:MMM yyyy} ({only.Status}). Next release builds the trend.", labelStyle);
-                return;
-            }
-
-            if (NeedsRedraw(values, null, thresholdValue))
-            {
-                Regenerate(values, null, thresholdValue);
-            }
-
-            float displayHeight = Mathf.Clamp(Screen.height * 0.085f, 56f, 110f);   // D4 (2026-08-28): clamp(0.075h, 50, 90) → clamp(0.085h, 56, 110); the 300×90 buffer stands (R-G5) and stretches
-            Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
-            if (_texture == null)
-            {
-                return;
-            }
-
-            GUI.DrawTexture(rect, _texture, ScaleMode.StretchToFill);
-            DrawAxisLabelOverlay(rect);
-            if (thresholdValue.HasValue && !string.IsNullOrEmpty(thresholdLabel))
-            {
-                DrawThresholdLabelOverlay(rect, thresholdValue.Value, thresholdLabel);
-            }
-
-            DrawReleaseMarkers(rect, visiblePeriods, latestForPeriod);
-            DrawPublishedPointOverlay(rect, visiblePeriods, latestForPeriod, series);
-            DrawDateAxisOverlay(rect, visiblePeriods);
-
-            PublishedEntry newest = latestForPeriod[visiblePeriods[visiblePeriods.Count - 1]];
-            string lag = $"{(newest.PublicationDate - newest.ReferencePeriodEnd).Days}d lag";
-            // ⚠ BEHAVIOUR 6, AS AMENDED BY D8 - TWO INDEPENDENT CHANNELS, drawn here for the first time.
-            //
-            // The old §1C.2 rule collapsed them into one ("published = solid + badge; live = dashed,
-            // unbadged"), which made the commonest state in this game inexpressible: a PRELIMINARY
-            // PUBLISHED figure is published AND provisional at once. D8 struck that sentence. The rule
-            // now is:
-            //
-            //   badge chip + reference period + publication date  ->  PUBLISHED-NESS
-            //   frame style: dashed = provisional, solid = final  ->  REVISION STATUS
-            //
-            // So a preliminary release reads badged, dated AND dashed simultaneously, and a revised one
-            // keeps its badge and date while its frame goes solid. Two facts, two carriers, neither
-            // inferable from the other.
-            bool preliminary = newest.Status == RevisionStatus.Preliminary;
-            string status = preliminary ? "PRELIMINARY" : newest.Status.ToString().ToUpperInvariant();
-
-            // Channel 2 first, so the frame sits under the badge rather than over it.
-            DrawRevisionFrame(rect, preliminary);
-
-            // Channel 1: the badge carries the status; the line beneath carries the reference period and
-            // publication date, which are what make it a PUBLICATION rather than a desk reading.
-            DrawPublicationBadge(rect, status, preliminary);
-            DrawColoredOverlayLabel(rect, $"latest: {FormatValue(newest.Value)} ({lag})",
-                PoliSimTheme.TextPrimary, anyPreliminary);
-        }
 
         /// <summary>Range selector. Bounded ranges filter on real elapsed time, so a monthly stat and a quarterly one both show the same calendar span rather than the same number of points.</summary>
         private void DrawTimeRangeRow()
@@ -398,221 +326,12 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>
-        /// A tick under each release point, coloured by revision status - amber for a figure still
-        /// preliminary, pale for one that has settled. This is the payoff of Step A's revision mechanic:
-        /// the player can see WHEN a number arrived, and whether the one they are looking at might still
-        /// move. Drawn as an overlay rather than into the plot texture so it costs no regeneration.
-        /// </summary>
-        private void DrawReleaseMarkers(Rect rect, List<System.DateTime> periods, Dictionary<System.DateTime, PublishedEntry> latestForPeriod)
-        {
-            if (Event.current.type != EventType.Repaint || periods.Count < 2)
-            {
-                return;
-            }
 
-            float markerHeight = Mathf.Max(3f, rect.height * 0.10f);
-            // Board 1l (2026-08-28): release-point markers scale to weight + 2 so they stay proud of
-            // the heavier history line - a 5px tick at the 3px history weight.
-            float markerWidth = HistoryWeight + 2f;
-            for (int i = 0; i < periods.Count; i++)
-            {
-                float t = i / (float)(periods.Count - 1);
-                float x = rect.x + t * rect.width;
-                bool preliminary = latestForPeriod[periods[i]].Status == RevisionStatus.Preliminary;
-                var marker = new Rect(x - markerWidth * 0.5f, rect.yMax - markerHeight, markerWidth, markerHeight);
-                Color previousMarkerColor = GUI.color;
-                GUI.color = preliminary ? PreliminaryLineColor : ReleaseMarkerColor;
-                GUI.DrawTexture(marker, Texture2D.whiteTexture);
-                GUI.color = previousMarkerColor;
-            }
-        }
 
-        /// <summary>
-        /// Per-point provenance overlay - the part that makes a published series readable AS published
-        /// rather than as just another line.
-        ///
-        /// Designed rather than iterated, because two earlier attempts failed for reasons more width
-        /// alone could not fix. Four distinct signals, none of which requires reading text:
-        ///
-        /// 1. **Every release is a filled marker.** A published series is a sequence of discrete events,
-        ///    not a continuous measurement, and the markers say so - the line between them is
-        ///    interpolation the player should not read as data.
-        /// 2. **Preliminary points are HOLLOW, settled points FILLED.** Shape rather than colour alone,
-        ///    so it survives being tinted and does not depend on hue discrimination. A hollow marker
-        ///    reads as "not yet solid", which is what preliminary means.
-        /// 3. **A revised point shows its ghost.** Where a figure was revised, the superseded value is
-        ///    drawn as a faint marker at its old height with a connector to the new one, so the
-        ///    correction is visible as a movement rather than inferred from a number that silently
-        ///    changed. This is the payoff of Step A's revision mechanic and the thing no amount of extra
-        ///    width was ever going to convey on its own.
-        /// 4. **Larger markers than the plot line is thick**, so they read as deliberate marks rather
-        ///    than as rendering artifacts - the failure mode of the previous attempt's 2px ticks.
-        /// </summary>
-        private void DrawPublishedPointOverlay(Rect rect, List<System.DateTime> periods, Dictionary<System.DateTime, PublishedEntry> latestForPeriod, PublishedSeries series)
-        {
-            if (Event.current.type != EventType.Repaint || periods.Count < 2)
-            {
-                return;
-            }
 
-            float range = Mathf.Max(0.0001f, _lastMax - _lastMin);
-            float markerSize = Mathf.Clamp(rect.height * 0.09f, 5f, 9f);
 
-            for (int i = 0; i < periods.Count; i++)
-            {
-                PublishedEntry entry = latestForPeriod[periods[i]];
-                float x = rect.x + (i / (float)(periods.Count - 1)) * rect.width;
-                float y = rect.yMax - ((entry.Value - _lastMin) / range) * rect.height;
 
-                // A superseded value for this same period, if one exists - the ghost.
-                PublishedEntry superseded = null;
-                foreach (PublishedEntry candidate in series.Entries)
-                {
-                    if (candidate.ReferencePeriodStart == entry.ReferencePeriodStart
-                        && candidate.PublicationDate < entry.PublicationDate
-                        && (superseded == null || candidate.PublicationDate > superseded.PublicationDate))
-                    {
-                        superseded = candidate;
-                    }
-                }
 
-                if (superseded != null && !Mathf.Approximately(superseded.Value, entry.Value))
-                {
-                    float ghostY = rect.yMax - ((superseded.Value - _lastMin) / range) * rect.height;
-                    DrawMarker(new Vector2(x, ghostY), markerSize * 0.8f, new Color(PreliminaryLineColor.r, PreliminaryLineColor.g, PreliminaryLineColor.b, 0.35f), hollow: true);
-                    DrawConnector(x, ghostY, y, new Color(PreliminaryLineColor.r, PreliminaryLineColor.g, PreliminaryLineColor.b, 0.5f));
-                }
-
-                bool preliminary = entry.Status == RevisionStatus.Preliminary;
-                DrawMarker(new Vector2(x, y), markerSize, preliminary ? PreliminaryLineColor : ReleaseMarkerColor, hollow: preliminary);
-            }
-        }
-
-        /// <summary>Filled or hollow square marker. Hollow is drawn as four edges rather than a ring because IMGUI has no primitive circle, and a hollow SQUARE still reads unambiguously as "not filled" at 5-9px.</summary>
-        private static void DrawMarker(Vector2 centre, float size, Color color, bool hollow)
-        {
-            Color previous = GUI.color;
-            GUI.color = color;
-            float half = size * 0.5f;
-
-            if (!hollow)
-            {
-                GUI.DrawTexture(new Rect(centre.x - half, centre.y - half, size, size), Texture2D.whiteTexture);
-            }
-            else
-            {
-                const float edge = 1.5f;
-                GUI.DrawTexture(new Rect(centre.x - half, centre.y - half, size, edge), Texture2D.whiteTexture);
-                GUI.DrawTexture(new Rect(centre.x - half, centre.y + half - edge, size, edge), Texture2D.whiteTexture);
-                GUI.DrawTexture(new Rect(centre.x - half, centre.y - half, edge, size), Texture2D.whiteTexture);
-                GUI.DrawTexture(new Rect(centre.x + half - edge, centre.y - half, edge, size), Texture2D.whiteTexture);
-            }
-
-            GUI.color = previous;
-        }
-
-        /// <summary>Vertical connector from a superseded value to its revision - the visible "this number moved" cue.</summary>
-        private static void DrawConnector(float x, float fromY, float toY, Color color)
-        {
-            Color previous = GUI.color;
-            GUI.color = color;
-            float top = Mathf.Min(fromY, toY);
-            GUI.DrawTexture(new Rect(x - 0.75f, top, 1.5f, Mathf.Abs(toY - fromY)), Texture2D.whiteTexture);
-            GUI.color = previous;
-        }
-
-        /// <summary>Calendar dates at each end of the plotted span, replacing the turn-number framing entirely - the reference PERIOD each figure describes, not when it was published.</summary>
-        private void DrawDateAxisOverlay(Rect rect, List<System.DateTime> periods)
-        {
-            if (periods.Count == 0)
-            {
-                return;
-            }
-
-            float labelHeight = _axisLabelStyle.fontSize + 4f;
-            var left = new Rect(rect.x + 2f, rect.yMax - labelHeight, rect.width * 0.5f, labelHeight);
-            var right = new Rect(rect.x + rect.width * 0.5f - 2f, rect.yMax - labelHeight, rect.width * 0.5f, labelHeight);
-
-            GUI.Label(left, periods[0].ToString("MMM yyyy"), _axisLabelStyle);
-            var rightStyle = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.UpperRight };
-            GUI.Label(right, periods[periods.Count - 1].ToString("MMM yyyy"), rightStyle);
-        }
-
-        /// <summary>
-        /// Behaviour 6, channel 2: REVISION STATUS as frame style. Dashed while a figure is still
-        /// provisional, solid once revised - a hairline rule drawn as dashes along the plate's own edge,
-        /// so the "this may still move" fact is carried by the frame rather than by a word someone has
-        /// to read.
-        /// </summary>
-        private static void DrawRevisionFrame(Rect rect, bool preliminary)
-        {
-            if (Event.current.type != EventType.Repaint)
-            {
-                return;
-            }
-
-            Color previous = GUI.color;
-            GUI.color = preliminary ? PoliSimTheme.Draft : PoliSimTheme.HairlineStrong;   // the frame is a rule, not text (D6's split)
-
-            const float thickness = 1f;
-            if (!preliminary)
-            {
-                GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width, thickness), Texture2D.whiteTexture);
-                GUI.DrawTexture(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), Texture2D.whiteTexture);
-            }
-            else
-            {
-                // Dashes rather than a tinted solid: a dashed rule reads as provisional at any size,
-                // where a colour alone would be one more hue competing with the eleven that key areas.
-                const float dash = 6f;
-                const float gap = 4f;
-                for (float x = rect.x; x < rect.xMax; x += dash + gap)
-                {
-                    float w = Mathf.Min(dash, rect.xMax - x);
-                    GUI.DrawTexture(new Rect(x, rect.y, w, thickness), Texture2D.whiteTexture);
-                    GUI.DrawTexture(new Rect(x, rect.yMax - thickness, w, thickness), Texture2D.whiteTexture);
-                }
-            }
-
-            GUI.color = previous;
-        }
-
-        /// <summary>Behaviour 6, channel 1: a printed chip saying what KIND of figure this is. `ui_chip_outline` is the pack's outlined chip, specified in §1C.5 for exactly this - PRELIMINARY and ACTION REQUIRED - with `ui_chip` reserved for solid ones.</summary>
-        private void DrawPublicationBadge(Rect rect, string status, bool preliminary)
-        {
-            if (Event.current.type != EventType.Repaint)
-            {
-                return;
-            }
-
-            var style = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.MiddleCenter, fontSize = Mathf.Max(9, _axisLabelStyle.fontSize - 1) };
-            float width = PoliSimWidgets.MeasuredWidth(status, style, style.fontSize * 1.6f);
-            float height = style.fontSize + 6f;
-            var badge = new Rect(rect.x + 4f, rect.y + 4f, width, height);
-
-            Color ink = preliminary ? PoliSimTheme.Caution : PoliSimTheme.TextSecondary;
-            Texture2D chip = IconLibrary.GetChrome("ui_chip_outline");
-            Color previous = GUI.color;
-            GUI.color = ink;
-            if (chip != null)
-            {
-                GUI.DrawTexture(badge, chip, ScaleMode.StretchToFill);
-            }
-            GUI.color = previous;
-
-            style.normal.textColor = ink;
-            GUI.Label(badge, status, style);
-        }
-
-        private void DrawColoredOverlayLabel(Rect rect, string text, Color color, bool anyPreliminary)
-        {
-            var style = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.UpperRight };
-            Color previous = GUI.color;
-            GUI.color = color;
-            GUI.Label(new Rect(rect.x, rect.y, rect.width - 4f, _axisLabelStyle.fontSize + 4f), text, style);
-            GUI.color = previous;
-        }
 
         /// <summary>Convenience wrapper for a stat with no clear "good direction" - see Draw's higherIsBetter remarks. <paramref name="moneyUnit"/> stays required here too: "no clear good direction" says nothing about whether the series is money, and the one caller that draws an arbitrary StatNodeId through this overload can genuinely be handed GDP or Trade Balance.</summary>
         public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null)

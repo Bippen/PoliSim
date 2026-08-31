@@ -116,7 +116,10 @@ namespace PoliSim.EditorTools
                 ? F("    3. the baseline    IDENTICAL - a shadow advanced {0} turns matches a plain no-policy world from the same seed.\n", Turns)
                 : "    3. the baseline    ⚠ DIFFERS - see the error above.\n");
 
-            // ---- 4. the finally ----
+            // ---- 4. the divergence is the player's, and the shadow does not follow them ----
+            failures += AssertShadowDoesNotFollowThePlayer(sb);
+
+            // ---- 5. the finally ----
             failures += AssertRestoreSurvivesAnException(sb);
 
             sb.Append(F("\n=== ShadowBaselineDiagnostic: {0} ===\n",
@@ -202,6 +205,87 @@ namespace PoliSim.EditorTools
             }
         }
 
+        /// <summary>
+        /// ⚠ **The item's last done-when: the divergence after a known change is the player's, and the
+        /// shadow does not follow them.** A real game is advanced with a live interest-rate change every
+        /// turn while a shadow runs beside it; the shadow must end **identical to a plain no-policy
+        /// world** — not merely close to it.
+        ///
+        /// <para>That is what makes "with your policies against without" mean anything. A shadow that
+        /// drifted toward the player's choices would still draw two lines and would still look like a
+        /// counterfactual, while quietly measuring nothing: the gap between the two would be an artefact
+        /// of the drift rather than the consequence of the policy. This asserts the property in the one
+        /// state where it can fail — with the real run actually diverging.</para>
+        /// </summary>
+        private static int AssertShadowDoesNotFollowThePlayer(StringBuilder sb)
+        {
+            SimulationRandom.Seed(Seed);
+            var go = new GameObject("C-C9 DIVERGE");
+            ShadowBaseline shadow = null;
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                World world = WorldFactory.CreateDefault();
+                sim.SetWorld(world);
+                shadow = new ShadowBaseline(Seed);
+
+                // A real, live policy every turn. ⚠ NOT the interest-rate lever: the first draft used it and
+                // this assertion honestly reported itself UNTESTED rather than claiming a pass, because
+                // C-C7 seeded a central-bank head for Sweden and Poland, so all six countries now have
+                // `CurrentFedChair != null` and `CurrencySystem.ApplyInterestRateChanges` (`:45-50`) hands
+                // the rate to the bank and ignores the player's `InterestRateChange` entirely. That is
+                // C-C7's ruling working as intended, not a bug - but it leaves the rate a DEAD lever for a
+                // divergence test. The tax rate is a live one: `ApplyTaxRateChanges` writes `TaxLine.Rate`
+                // directly every turn, and the USA is the country with the detailed portfolio behind it.
+                var acting = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country c in world.Countries)
+                {
+                    var act = new PolicyDecision();
+                    if (c.Id == CountryId.USA) { act.TaxRateOverrides[TaxType.IncomeTax] = 60f; }
+                    acting[c.Id] = act;
+                }
+
+                for (int t = 0; t < Turns; t++)
+                {
+                    for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
+                    sim.AdvanceTurn(acting);
+                    shadow.AdvanceTurn();
+                }
+
+                string shadowState = Fingerprint(shadow.World);
+                string realState = Fingerprint(world);
+                string baseline = RunPlainNoPolicy(Turns);
+
+                bool shadowIsBaseline = string.Equals(shadowState, baseline, StringComparison.Ordinal);
+                bool realDiverged = !string.Equals(realState, baseline, StringComparison.Ordinal);
+
+                if (!realDiverged)
+                {
+                    // Not a failure of the shadow - a failure of the TEST, and saying so beats reporting
+                    // a pass that proved nothing because the "known change" changed nothing.
+                    sb.Append("    4. divergence      (the applied change moved nothing, so this run proves nothing - the assertion is untested, not passed)\n");
+                    return 0;
+                }
+
+                if (!shadowIsBaseline)
+                {
+                    Debug.LogError("C-C9: with the real game diverging under a live policy, the SHADOW also moved off the no-policy baseline - "
+                                   + "it is following the player. The gap between the two lines would then be an artefact of that drift rather than "
+                                   + "the consequence of the policy, and the counterfactual would be measuring nothing.");
+                    sb.Append("    4. divergence      ⚠ FAILED - the shadow followed the player.\n");
+                    return 1;
+                }
+
+                sb.Append(F("    4. divergence      OK - over {0} turns of a live tax policy the real game moved and the shadow stayed EXACTLY on the no-policy baseline.\n", Turns));
+                return 0;
+            }
+            finally
+            {
+                shadow?.Dispose();
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+
         /// <summary>⚠ The `finally` is the difference between a safe wrapper and one that is safe only
         /// when nothing goes wrong. Forced by disposing the shadow's host mid-life so its next advance
         /// throws, then checking the real generator came back regardless.</summary>
@@ -223,7 +307,7 @@ namespace PoliSim.EditorTools
             FieldInfo simField = typeof(ShadowBaseline).GetField("_sim", BindingFlags.Instance | BindingFlags.NonPublic);
             if (simField == null)
             {
-                sb.Append("    4. the finally     (could not reach ShadowBaseline._sim to force a failure - guard untested this run)\n");
+                sb.Append("    5. the finally     (could not reach ShadowBaseline._sim to force a failure - guard untested this run)\n");
                 shadow.Dispose();
                 return 0;
             }
@@ -246,18 +330,18 @@ namespace PoliSim.EditorTools
 
             if (!threw)
             {
-                sb.Append("    4. the finally     (no exception was raised by the forced failure - the guard is untested this run, and says so rather than claiming a pass)\n");
+                sb.Append("    5. the finally     (no exception was raised by the forced failure - the guard is untested this run, and says so rather than claiming a pass)\n");
                 return 0;
             }
 
             if (moved > 0)
             {
                 Debug.LogError("C-C9: a shadow turn that THREW left the real generator shifted - the restore is not in a finally, or the finally does not cover the swap.");
-                sb.Append("    4. the finally     ⚠ FAILED - an exception mid-shadow leaked generator state.\n");
+                sb.Append("    5. the finally     ⚠ FAILED - an exception mid-shadow leaked generator state.\n");
                 return 1;
             }
 
-            sb.Append("    4. the finally     OK - a shadow turn that threw left the real seed and every draw count untouched.\n");
+            sb.Append("    5. the finally     OK - a shadow turn that threw left the real seed and every draw count untouched.\n");
             return 0;
         }
 

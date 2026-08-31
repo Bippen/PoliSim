@@ -570,6 +570,11 @@ namespace PoliSim.UI
             // separate mappings would be six chances to disagree with each other.
             List<float> enactments = BuildEnactmentPositions(history.Gdp);
 
+            // C-C9 (P-G1): the counterfactual's own history, read from the shadow world's matching
+            // country. Null until a shadow exists or before it has two points, and each graph draws
+            // nothing extra in that case rather than a flat line at zero.
+            StatHistory shadowHistory = _shadowBaseline?.CountryFor(PlayerCountryId)?.History;
+
             DrawStatsSectionCaption("THE LIVE SERIES — DASHED = NEXT-YEAR ESTIMATE WHERE ONE EXISTS · TICKS ABOVE = LAWS ENACTED");
             GUILayout.Space(StatsUnit(6f));
             // The unit comes from the stat's own metadata rather than a MoneyUnit literal here: a
@@ -577,14 +582,14 @@ namespace PoliSim.UI
             // bug spread across 21 sites in the first place.
             DrawStatsGraphGrid(contentWidth, new List<System.Action>
             {
-                () => _gdpGraph.Draw("GDP", history.Gdp.Quarterly, projectedGdp, graphLabel, higherIsBetter: true, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), enactmentPositions: enactments),
+                () => _gdpGraph.Draw("GDP", history.Gdp.Quarterly, projectedGdp, graphLabel, higherIsBetter: true, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), enactmentPositions: enactments, shadowHistory: shadowHistory?.Gdp.Quarterly),
                 () => _unemploymentGraph.Draw("Unemployment", history.Unemployment.Quarterly, projectedUnemployment, graphLabel, higherIsBetter: false, moneyUnit: null,
-                    thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU", enactmentPositions: enactments),
-                () => _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments),
-                () => _approvalGraph.Draw("Approval rating", history.ApprovalRating.Quarterly, projectedApproval, graphLabel, higherIsBetter: true, moneyUnit: null, enactmentPositions: enactments),
-                () => _povertyGraph.Draw("Poverty rate", history.PovertyRate.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments),
+                    thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU", enactmentPositions: enactments, shadowHistory: shadowHistory?.Unemployment.Quarterly),
+                () => _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.Inflation.Quarterly),
+                () => _approvalGraph.Draw("Approval rating", history.ApprovalRating.Quarterly, projectedApproval, graphLabel, higherIsBetter: true, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.ApprovalRating.Quarterly),
+                () => _povertyGraph.Draw("Poverty rate", history.PovertyRate.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.PovertyRate.Quarterly),
                 () => _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null,
-                    thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable", enactmentPositions: enactments)
+                    thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable", enactmentPositions: enactments, shadowHistory: shadowHistory?.Gdp.Quarterly)
             });
             StatsSectionGap();
             DrawStatsSocietyRows(contentWidth);

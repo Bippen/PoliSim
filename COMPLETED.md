@@ -6508,3 +6508,90 @@ reason the fallback is named rather than left to be reinvented.
 **Verified:** `ShadowBaselineDiagnostic` **ALL ASSERTIONS PASS**; the nine checks 9 of 9 clean. No screen
 reads the shadow yet, so no film and no trajectory family — the remaining work is the shadow's history,
 the overlay on the six live series, and the divergence-equals-batch-diff proof.
+
+## 105. C-C9 (P-G1) part 3 — the counterfactual on the screen, and RIDE-1's dead path deleted (2026-08-31)
+
+**The item closes.** §103 measured the premise (a shadow turn consumes **41 real draws**), §104 built the
+save/swap/restore wrapper and the proof gate it had to pass before any shadow computation was allowed near
+a screen. This part wires it: the player's six economic graphs now carry a **dashed "without your
+policies" line** beside the real one.
+
+### What was built
+
+- `GameController` holds one `ShadowBaseline`, constructed at the same master seed as the real game
+  (`_shadowBaseline = new ShadowBaseline(SimulationRandom.MasterSeed);`) and advanced with
+  `_shadowBaseline?.AdvanceTurn();` immediately after `_simulationManager.AdvanceTurn(decisions)` — one
+  shadow turn per real turn, never more, and always through the wrapper that protects the generator.
+- `GraphRenderer.Draw` gained a trailing optional `IReadOnlyList<float> shadowHistory = null`, so **every
+  existing call site is untouched** — the same reason `DrawPublished` was once a separate overload rather
+  than a signature change.
+- `DrawShadowSeries` draws the counterfactual against the **real series' own scale** (`_lastMin`/`_lastMax`,
+  already computed for the live line) and only to the shorter of the two lengths, so a shadow that is one
+  point behind cannot stretch or rescale the graph the player is reading. It is **dashed** and takes
+  `ProjectedLineColor`: the pack's existing "this is not measured history" ink, not a new one.
+- `GameController.Statistics` reads `_shadowBaseline?.CountryFor(PlayerCountryId)?.History` and passes the
+  matching `Quarterly` series to all six graphs. Null-safe throughout: before the first turn, and in any
+  path with no shadow, the graphs draw exactly as they did.
+
+### The gate, with the assertion that was untested made to bind
+
+`ShadowBaselineDiagnostic` now runs **five** assertions, all passing:
+
+1. **counters** — master seed and every stream's draw count unchanged across a shadow turn.
+2. ⚠ **the one that binds** — two real games from seed 777, one with a shadow advancing beside it every
+   turn and one with no shadow at all, **byte-identical over 8 turns on every public `EconomyState` field
+   of every country**. A counter check cannot establish this (C-C2's precedent).
+3. **the shadow IS the baseline** — a shadow advanced 8 turns equals a plain no-policy world from the
+   same seed.
+4. **the shadow does not follow the player** — under a live policy every turn, the real game moves off the
+   no-policy baseline and the shadow stays **exactly** on it.
+5. **the `finally`** — a shadow turn forced to throw left the real seed and every draw count untouched.
+
+⚠ **Assertion 4 reported itself UNTESTED on its first run, and that is recorded rather than tidied away.**
+It was written with the interest-rate lever as the "known change", and the real game did not move — so the
+diagnostic printed *"the applied change moved nothing, so this run proves nothing — the assertion is
+untested, not passed"* instead of claiming a pass. **The cause is C-C7 working exactly as ruled:** seeding
+a central-bank head for Sweden and Poland means all six countries now have `CurrentFedChair != null`, and
+`CurrencySystem.ApplyInterestRateChanges` (`:45-50`) hands the rate to the bank and ignores the player's
+`InterestRateChange` entirely. The player's rate lever is **dead by design**, and this is the first
+independent confirmation of it from outside C-C7's own evidence. The assertion was re-armed on a lever that
+is live — `TaxRateOverrides[TaxType.IncomeTax] = 60f` on the USA, which `ApplyTaxRateChanges` writes to
+`TaxLine.Rate` every turn — and now genuinely binds.
+
+### RIDE-1, discharged (Elias's ruling, 2026-08-31: rides the next item touching the file, no separate commit)
+
+`GraphRenderer.DrawPublished` and **every helper exclusive to it** are deleted: `DrawReleaseMarkers`,
+`DrawPublishedPointOverlay`, `DrawMarker`, `DrawConnector`, `DrawDateAxisOverlay`, `DrawRevisionFrame`,
+`DrawPublicationBadge`, `DrawColoredOverlayLabel`, and the now-unreferenced `PreliminaryLineColor`.
+`GraphRenderer.cs` goes **1188 → 837 lines**. `ReleaseMarkerColor` **stays** — C-C4's enactment markers
+took the same brass and are live. Nothing outside the file referenced any of it; a grep for `Published`,
+`RevisionStatus`, and each helper name returns **nothing** in the file afterwards. The published-series
+*model* (`PublishedSeries`, the `PublicationRevision` stream) is untouched — what is gone is the renderer
+path that had no callers.
+
+### The bar
+
+- `ShadowBaselineDiagnostic` — **ALL FIVE ASSERTIONS PASS**.
+- `CheckSuite.RunAllBatch` — exit 0, the nine named and run in one pass.
+- `SaveLoadRoundTripDiagnostic` — RT PASS, 12 scenarios.
+- Trajectories — the `traj_cc9f_*` family dumped on the final tree and compared file-by-file: **6 of 6 BYTE-IDENTICAL to the `traj_cc7_*` family** at seeds 777/424242, horizons
+  100/500/1000. The shadow is play-mode wiring and the deletion is dead render code; neither is on the
+  simulation path, and the dump proves it rather than the reasoning being trusted.
+- Films, Sweden, **1280 and 2560** (the restored Discipline v2 rule): 81 captured, 0 failed, **0 text
+  overflows** at each; `ScreenEdgeCheck` exit 0 over both sets, guards silent.
+
+### ⚠ A finding the re-films produced: THE FILM GEOMETRY IS LOAD-BEARING
+
+Re-running the films after RIDE-1, I passed `-shotheight=800` at 1280 instead of the established **720**,
+and the run reported **13 text overflows**. Bisecting — reverting RIDE-1, then filming clean `HEAD` — 
+reproduced them on an untouched tree, so **the deletion was not the cause**. At the established geometry
+(`1280x699` view, i.e. `-shotwidth=1280 -shotheight=720`) the same tree films **0 overflows**, Sweden and
+USA alike. Two things follow, both recorded as findings rather than fixed here:
+
+- **The four-width matrix is four *geometries*, not four widths.** A film at an off-standard height is not
+  a stricter run of the same test; it is a different one, and its verdict is not comparable.
+- **The layout has no slack at other aspect ratios** — 13 overflows appear the moment the height moves
+  80px. That is the P4 label-clipping watch class, and it is registered as such.
+
+A second, smaller thing was confirmed the same way: `-shotcountry` **defaults to USA**, so a film that
+omits it is not the Sweden film it may be mistaken for. The USA at the standard geometry is also clean.
