@@ -30,9 +30,10 @@ namespace PoliSim.Simulation
         /// governor's real but limited sway over a currency-union-wide rate, unlike USA's own
         /// unilateral Fed.
         /// </summary>
+        /// <summary>[AUTHORED-DRAFT] - see the paragraph above for the reasoning it rests on. A member governor's sway over a currency-union rate is real and bounded; how many percentage points it is worth is not a published quantity, so 0.75 is a game figure carrying the right shape.</summary>
         public const float MemberRatePushRange = 0.75f;
 
-        /// <summary>Fraction of the gap between the zone's current rate and this turn's blended target that closes each turn - matches FederalReserveSystem.RateAdjustmentSpeed's value and role (a real central bank moves gradually, not straight to its own textbook target every meeting).</summary>
+        /// <summary>CONVENTION - a reversion speed, and DERIVED rather than separately chosen. Fraction of the gap between the zone's current rate and this turn's blended target that closes each turn - matches FederalReserveSystem.RateAdjustmentSpeed's value and role (a real central bank moves gradually, not straight to its own textbook target every meeting).</summary>
         private const float RateAdjustmentSpeed = 0.15f;
 
         /// <summary>

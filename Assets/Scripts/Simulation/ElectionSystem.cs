@@ -32,7 +32,12 @@ namespace PoliSim.Simulation
         /// </summary>
         public const int ElectionCycle = 4;
 
-        /// <summary>Approval rating below this at an election turn loses the election.</summary>
+        /// <summary>[AUTHORED-DRAFT]: approval rating below this at an election turn loses the election.
+        /// ⚠ **Narrowed at D-5 (a), 2026-09-01**: this rule now decides only the four countries whose vote
+        /// model returns `NotImplemented`. Where a chamber can be formed, office is decided by whether the
+        /// player's party sits in the cabinet (`GovernmentFormation`), which is a mechanism rather than a
+        /// threshold. Nothing measures "the approval at which a real government falls" - it is not a
+        /// quantity real politics has - so the figure was authored and stays authored.</summary>
         public const float LosingThreshold = 35f;
 
         /// <summary>True on turn numbers that are a multiple of ElectionCycle (and not turn 0, before any turn has run).</summary>

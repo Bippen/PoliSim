@@ -11,20 +11,24 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class CurrencySystem
     {
-        /// <summary>Sane bounds for any CurrencyZone's interest rate. Public so GameController's policy preview can clamp its own estimated rate the same way.</summary>
+        /// <summary>CONVENTION - bounds, not a forecast. Sane clamps for any CurrencyZone's interest rate; public so GameController's policy preview can clamp its own estimated rate the same way. 15% is above any policy rate the six have set in the modern era and is a guard against a runaway, not a claim that a rate could reach it.</summary>
         public const float MinInterestRate = 0f;
         public const float MaxInterestRate = 15f;
 
-        /// <summary>Currency strength index value representing a country neither strong nor weak relative to its peers.</summary>
+        /// <summary>CONVENTION - an index origin. 100 represents a country neither strong nor weak relative to its peers; the index has no unit and the number is a scale choice, not a measurement.</summary>
+        /// <remarks>CONVENTION.</remarks>
         public const float NeutralCurrencyStrength = 100f;
 
+        /// <summary>CONVENTION - a floor on the strength index (half the neutral 100), a state-space clamp rather than an economic claim.</summary>
         private const float MinCurrencyStrength = 50f;
+
+        /// <summary>CONVENTION - a ceiling on the strength index (twice the neutral 100), the symmetric partner of the floor above.</summary>
         private const float MaxCurrencyStrength = 200f;
 
-        /// <summary>How much a 1 percentage point interest rate gap versus trade partners shifts the currency strength target.</summary>
+        /// <summary>[AUTHORED-DRAFT] scale factor: how much a 1 percentage point interest rate gap versus trade partners shifts the currency strength target. The DIRECTION is uncontroversial (higher relative rates attract capital and strengthen a currency); the 5 index points per point is a game figure on an index that has no unit, so no real estimate could be transplanted onto it.</summary>
         private const float InterestRateDifferentialScale = 5f;
 
-        /// <summary>How quickly currency strength moves toward its target each turn (0-1).</summary>
+        /// <summary>CONVENTION - a reversion speed on a unitless index, 0-1. How quickly currency strength moves toward its target each turn.</summary>
         private const float CurrencyStrengthDamping = 0.15f;
 
         /// <summary>

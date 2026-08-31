@@ -40,6 +40,7 @@ namespace PoliSim.Simulation
         /// unrecorded writer (an interrupt impact is ±hundreds, a scenario seed thousands) is far
         /// above it. Floored so a near-zero stock still has a real gate.</summary>
         private const float RelativeTolerance = 2e-4f;
+        /// <summary>CONVENTION - the absolute floor under the relative tolerance above, so a near-zero debt stock still has a real gate rather than an unreachable one.</summary>
         private const float MinimumTolerance = 0.01f;
 
         /// <summary>Opens the accruing ledger at <paramref name="openingDebt"/> if none exists.

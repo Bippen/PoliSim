@@ -29,7 +29,7 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class EventSystem
     {
-        /// <summary>Chance per country per turn that an event fires - small, so events read as notable, not background noise.</summary>
+        /// <summary>[AUTHORED-DRAFT] pacing figure: chance per country per turn that an event fires - small, so events read as notable rather than background noise. **A game's tempo, not a measurement of how often anything happens in the world.** `CabinetSystem.DecisionChancePerTurn` is derived from it so the two streams fire at one rate.</summary>
         private const float EventChancePerTurn = 0.12f;
 
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Event);
