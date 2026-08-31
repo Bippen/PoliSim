@@ -8162,3 +8162,90 @@ show the *order* of the discontinuity, which is the question the measurement was
 
 **So: measured, reported, stopped — with the three answers as the next session's starting point rather
 than its first day of work.**
+
+## 128. THE COHERENCE AUDIT — four sweeps, four armed checks (2026-08-31)
+
+**Each sweep's output is a check in the suite, not a list.** The suite goes from ten to **fourteen**, and
+**14 of 14 are clean**.
+
+### (a) `CommentClaimCheck` — a comment naming code must name code that exists
+
+`PhantomGuardCheck` widened past guard names to **any backticked `Type.Member` reference in a comment**.
+⚠ **Backticks are the whole reason it is usable:** a bare dotted-name regex matches prose, paths and
+sentence ends. The convention is already enforced from the other side — `MetaTextCheck` now bans backticks
+in *player-facing* strings — so the two guards agree that a backtick means "this is code".
+
+**242 claims · 211 resolved · 3 history · 0 missing.** ⚠ **Getting there took three false-positive classes
+out**, and each is recorded at the call site because each would have made the check unusable:
+1. **Namespace-qualified types** — `System.Random` read as a member of a type called `System`: 12 of the
+   first run's 49.
+2. **Homonyms** — `Country.State` reported missing because another assembly also defines a `Country` and a
+   dictionary keyed on the simple name kept whichever loaded last. ⚠ *A guard that fails on the wrong
+   homonym is a guard nobody keeps.*
+3. **Filenames** — `EconomyState.cs` is a file, and this codebase backticks files too.
+
+And a fourth, subtler one: **a doc comment is a paragraph, not a line.** The historical-marker test read
+only the citing line and failed `PoliSimWidgets.StandingDraftPair`, whose sentence says the widget *"was
+rejected"* two lines further down. ⚠ *A guard that cannot read a sentence to its end reports history as a
+defect.*
+
+**Two real stale citations fixed:** `Debates.Hold` → `Debates.Resolve`, and
+`GameController.DrawActiveFolderTongue` → `GameController.FolderTongueJoinOverlap` (the tongue re-paint has
+no named method; the constant that governs it does exist).
+
+### (b) `DeadStateCheck` — state and code nothing reaches
+
+C-N3's method applied past levers: every private field and private method, occurrences counted across the
+whole corpus. ⚠ **Including string literals, deliberately** — this project's harnesses reach private state
+by reflection (`SetPrivateField(controller, "_canvasLive", …)`), and a check that ignored strings would
+report the entire capture driver's surface as dead.
+
+**1 403 reached · 39 unreached**, armed as a **ratchet at 39**. ⚠ Two blind spots excluded by name rather
+than guessed at: **an attribute on the line above** (`[MenuItem]`, `[InitializeOnLoadMethod]` — the engine
+calls it) and **Unity messages** (`OnGUI`, `OnRectTransformDimensionsChange`). The first run reported both
+classes as dead, which would have been wrong twice.
+
+### (c) `ArtifactIdentityCheck` — an artifact contains what its name claims
+
+S-20 guarded the capture side with a token in the frame. ⚠ **The other artifact family had no guard at
+all: the trajectory CSVs carry NO identity** — the filename is the entire claim and nothing inside
+verifies it. **This project asserts "6 of 6 byte-identical" against those files constantly, and a
+mislabelled dump would compare cleanly against the wrong twin and read as proof.**
+
+Without changing the format: row count must equal `horizon × 6 countries × fields`, the turn column must
+run 1…horizon, and the country count must be six. **780 artifacts, 780 checked, 0 failed.**
+
+⚠ **One false-positive class removed:** the first run demanded an alphanumeric label and called **354
+correctly-named files "unnameable"** — labels contain underscores (`clear_p1`, `omni_final`). *A check
+inventing a contract the project never had is worse than no check.*
+
+⚠ **Next step, recorded not done:** an identity header inside each file is strictly stronger. It changes
+every CSV's bytes, and the reference family every comparison measures against is exactly those bytes — so
+it must be made deliberately, with the family re-dumped in the same commit, **not as a side effect of
+adding a check.**
+
+### (d) `ConstantProvenanceCheck` — a simulation constant must say where it came from
+
+Every `const`/`static readonly` number under `Assets/Scripts/Simulation` must carry **SOURCED**,
+**[AUTHORED-DRAFT]**, **DERIVED** or **CONVENTION** in its own comment block.
+
+**285 constants · 73 marked · 212 unmarked**, armed as a **ratchet at 212**. ⚠ **The backlog is reported,
+not failed** — `PartyMarkCoverageCheck`'s precedent, and the practical reason that *a check which goes red
+on a backlog is a check somebody disables.* **What fails is growth**, and the ceiling **may only be
+lowered**: raising it is how a ratchet becomes a rubber stamp.
+
+### ⚠ Proven in both directions, per the standing lesson
+
+The capture-identity trap's own false positive is why this is not optional:
+
+| sweep | green | red |
+|---|---|---|
+| (a) | 0 missing on the tree | it reported 49, of which 46 were its own defects — each fixed and recorded |
+| (b) | 39 at a ceiling of 39 | 41 before the engine-caller exclusions |
+| (c) | 780/780 | a file copied to claim `t500` while holding `t100`'s rows: **exit 1**, naming rows, turns and countries |
+| (d) | 212 at a ceiling of 212 | one unmarked constant added by probe: **213, exit 1** — reverted |
+
+### The bar
+
+**14 of 14 checks clean.** No simulation path touched by the audit itself; the only production edits are
+the two corrected comment citations.

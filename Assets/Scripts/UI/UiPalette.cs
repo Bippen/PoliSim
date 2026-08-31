@@ -534,7 +534,7 @@ namespace PoliSim.UI
         /// `margin.bottom` is zeroed because the tongues sit ON the content sheet (§A.7: overlapping the
         /// panel, closed by nothing) - the caller removes the bar-to-panel gap in the same pass, and the
         /// active tongue is re-painted over the sheet's top keyline after the sheet draws (see
-        /// `GameController.DrawActiveFolderTongue`).
+        /// `GameController.FolderTongueJoinOverlap`, the constant that governs how far it overlaps).
         /// </summary>
         public static GUIStyle BuildFolderTabStyle(GUIStyle baseStyle, bool selected)
         {

@@ -2712,7 +2712,7 @@ namespace PoliSim.Testing
         /// <summary>
         /// W-E5's three states, from the SAME staged campaign day as its siblings so the strip
         /// agrees about the money and the days left. The debate itself is RUN, not mocked - the
-        /// same `Debates.Hold` the model uses, on the `Debate` stream at a fixed seed - so the
+        /// same `Debates.Resolve` the model uses, on the `Debate` stream at a fixed seed - so the
         /// film shows what the model produces and the mid-debate state is a genuine prefix of the
         /// finished one rather than a separately invented picture.
         /// </summary>

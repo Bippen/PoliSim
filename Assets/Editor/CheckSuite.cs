@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (TEN since `PhantomGuardCheck` joined 2026-08-31 — C-E3/S-11's guard; nine since `MetaTextCheck` joined 2026-08-29; eight since
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (FOURTEEN since the coherence audit's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
     /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
@@ -164,6 +164,12 @@ namespace PoliSim.EditorTools
             // C-E3 (2026-08-31, S-11): a doc comment naming a guard must name one that EXISTS. Cheap - it
             // reads text and reflects over loaded types, builds no World - so it belongs in the nine.
             ("PhantomGuardCheck", PhantomGuardCheck.Run),
+            // The coherence audit (2026-08-31), four sweeps that each end in a check rather than a list.
+            // All four read text or artifacts and build no World, so they belong in the cheap nine.
+            ("CommentClaimCheck", CommentClaimCheck.Run),                 // (a) a comment naming code names code that exists
+            ("DeadStateCheck", DeadStateCheck.Run),                       // (b) state and code nothing reaches - a ratchet at 39
+            ("ArtifactIdentityCheck", ArtifactIdentityCheck.Run),         // (c) an artifact contains what its name claims
+            ("ConstantProvenanceCheck", ConstantProvenanceCheck.Run),     // (d) a simulation constant says where it came from - a ratchet at 212
         };
 
         [InitializeOnLoadMethod]
