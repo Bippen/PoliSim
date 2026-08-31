@@ -64,6 +64,118 @@ figure · C-G1 deletes nothing that is not first migrated.
 
 ---
 
+## D. DECISIONS — five questions, one sitting (prepared 2026-08-31)
+
+**Every one of these is prepared to the edge and stopped there. No option below has been taken.** Each
+sheet is: the question in one sentence · the options with what each costs and forecloses · the
+recommendation and its basis · **the one line to write to rule it.** Writing that line into this file *is*
+the ruling.
+
+---
+
+### D-1 · The campaign pool
+
+**The question.** A mandate-proportional split of the campaign pool bankrupts five of eight parties — do we
+raise the pool, keep chests equal, change what a campaign costs, or wait for real figures?
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Raise the pool to the measured floor, 88.2 M kr (×4.59)** | one item; ⚠ re-opens 2a-iv and both PEND lines, because every party's affordable set changes | nothing permanently — but it scales one `[AUTHORED-DRAFT]` figure by another, and makes the next sourcing job harder to justify |
+| **b. Keep chests equal; treat *mandatbidrag* as a shape the game does not yet fund** | nothing — today's state | the sourced funding SHAPE stays unused; the campaign keeps a known-wrong equality |
+| **c. Scale a party's OFFICE PLAN to what it can afford** | one item, inside W-B4's staging | nothing; it can be undone. ⚠ Changes AI behaviour, so 2a-iv is re-measured |
+| **d. Source Kammarkollegiet and stop scaling authored numbers** | unknown — the register is public but its API does not answer an ordinary request | nothing; it is the standing bill either way |
+
+**Recommendation: (c).** Basis, measured at C-D2: the tension is **8.4×** between the pool a party needs on
+its mandate share (C 4.63 M, MP 38.98 M), and the driver is the **office network** — V and MP spend
+1.91 M kr on offices against 0.10 M on payroll — which is a *personality choice uncorrelated with seats*.
+⚠ **(c) removes the tension at its source and invents no money.** (a) is the only option that authors a new
+number, and it authors a big one.
+
+> **To rule it, write:** `D-1 RULED: (c) — scale the office plan to what a party can afford.` *(or a / b / d)*
+
+---
+
+### D-2 · The tax channel's remaining calls
+
+**The question.** C-N4's disposable-income term is built on a **US** MPC and reaches households only — do we
+source a Swedish anchor, give corporate tax a channel, and give the tax base a per-country share?
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Take all three** | three items: a Swedish/euro-area MPC · a corporate-tax channel · per-country `BaseShareOfGdp`. All three BASELINE | nothing; each is separable |
+| **b. Source the MPC only** | one sourcing item (Riksbank WP 365 / KI 2021:25) | leaves corporate tax at a 0.000 multiplier and the tax base uniform across six countries |
+| **c. Per-country base share only** | one sourcing item, six figures | leaves the MPC American |
+| **d. Nothing yet — the channel works and its limits are recorded** | nothing | nothing; every limit is already written at its call site |
+
+**Recommendation: (b), then (c), then the remainder of (a).** Basis: ⚠ **the MPC is the one number in the
+term that is foreign**, and the term's whole defence is that it is sourced. The per-country base share is
+the next-largest honesty gap — **a +10-point rise moves consumption by −2.68 % of GDP in all six countries
+identically**, because `BaseShareOfGdp` is per-tax-type. Corporate tax comes last because it is a
+*different channel* (firms, not households), not a refinement of this one.
+
+> **To rule it, write:** `D-2 RULED: (b) first, then (c). Corporate tax is a separate item.` *(or a / c / d)*
+
+---
+
+### D-3 · The tax spec-let
+
+**The question.** Three of the six countries do not fit a bracket table — do they get a stated
+approximation, or does `TaxLine` get pluggable schedules?
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Brackets as data; DE / FR / IT approximated, said so on screen** | ~8 sessions | ⚠ the three are misrepresented for as long as it stands, with an `[AUTHORED-DRAFT]` note as the only defence |
+| **b. Pluggable schedules — formula, quotient familial, three layers** | ~11 sessions | nothing; it is the correct shape |
+| **c. Neither yet** | nothing | nothing — ⚠ and note the spec-let is **downstream of D-4 anyway** |
+
+**Recommendation: (c) now, (b) when it runs.** Basis: ⚠ **a bracket schedule applied to a single average
+income is arithmetically identical to a flat rate**, so the whole item is blocked on the cohort substrate
+whichever branch is chosen — and given that wait, buying (a)'s speed costs three misrepresented countries
+for no time gained. Germany's tariff is a *formula* (§32a EStG); no bracket table represents it.
+
+> **To rule it, write:** `D-3 RULED: (b) pluggable schedules, when D-4 unblocks it.` *(or a / c)*
+
+---
+
+### D-4 · The cohort spec-let
+
+**The question.** Do we build the five-year cohort substrate — which unblocks the tax spec-let, the voter
+groups, C-D1 and the Italy FdI ceiling — or leave the electorate a single group?
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Build it (P-I2)** | ~11–13 sessions, ⚠ of which retiring eight `EconomyState` scalars is the half that can go wrong quietly. **The largest BASELINE family attempted** | nothing. It is the unlock for four other items |
+| **b. Build it with single-year cohorts** | +2–3 sessions; 606 numbers a year instead of 126 | nothing, but it invites single-year *rates*, which is a demography build rather than a game substrate |
+| **c. Not yet** | nothing | ⚠ **C-D1, the voter groups, per-group loyalty and the FdI ceiling all stay blocked** — that is one chain, and this is its first link |
+
+**Recommendation: (a).** Basis: it is the single highest-leverage item on the register — **four items
+downstream of one ruling** — and five-year is what the sourcing fits (`demo_pjan` publishes single-year
+ages, so the choice is fitness rather than availability; none of the four consumers can tell 42 from 43).
+
+> **To rule it, write:** `D-4 RULED: (a) build the 5-year cohort substrate as specced.` *(or b / c)*
+
+---
+
+### D-5 · The player's campaign: war chest and win/lose
+
+**The question.** The eight Track E screens are unreachable because nothing in the game builds a
+`CampaignSnapshot` — do we wire the campaign to the game loop, and is losing office game over?
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Wire the campaign; game over ONLY on leaving office** | one large item; ⚠ needs D-1's war-chest figure, and re-reads `ScenarioEvaluator` for collisions | nothing; it is R-CL1's own destination |
+| **b. Wire the campaign; keep today's approval-threshold game over** | slightly less | ⚠ contradicts R-CL1, which already ruled that losing office is not game over |
+| **c. Rail cell only; campaign still harness-only** | small | the eight screens stay unreachable — the cell would point at nothing |
+| **d. Not yet** | nothing | Track E's eight screens stay built-and-unreachable, which is where they have been since W-G1 |
+
+**Recommendation: (a), after D-1.** Basis: ⚠ **R-CL1 already ruled that losing office is not game over**, so
+(b) reopens a settled question. (a) needs a war-chest number, which is D-1 — **so D-1 is genuinely first**,
+not merely tidier. The model half of R-CL1 is already done: the party exists, persists and survives a save.
+
+> **To rule it, write:** `D-5 RULED: (a), sequenced after D-1.` *(or b / c / d)*
+
+---
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.

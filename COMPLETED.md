@@ -8249,3 +8249,44 @@ The capture-identity trap's own false positive is why this is not optional:
 
 **14 of 14 checks clean.** No simulation path touched by the audit itself; the only production edits are
 the two corrected comment citations.
+
+## 129. THE FIVE DECISION SHEETS — prepared to the edge, none taken (2026-08-31)
+
+`POLISIM_BACKLOG.md` gained a **§D DECISIONS** section at its head, before the live work, so the five
+questions are the first thing the register shows. Each sheet is the question in **one sentence**, the
+options with **what each costs and what each forecloses**, the recommendation **with its basis**, and
+**the one line to write to rule it** — writing that line into the file *is* the ruling.
+
+⚠ **No option has been taken, and none is pre-empted by anything this pass built.**
+
+| sheet | the question, in one line | recommended |
+|---|---|---|
+| **D-1** the campaign pool | a mandate split bankrupts five of eight — raise the pool, keep chests equal, change what a campaign costs, or wait for real figures? | **(c)** scale the office plan to what a party can afford |
+| **D-2** the tax channel's remaining calls | source a Swedish MPC, give corporate tax a channel, give the tax base a per-country share? | **(b) then (c)** — the MPC first |
+| **D-3** the tax spec-let | approximate three countries, or give `TaxLine` pluggable schedules? | **(c) now, (b) when it runs** |
+| **D-4** the cohort spec-let | build the 5-year substrate, or leave the electorate one group? | **(a)** build it |
+| **D-5** the player's campaign | wire the campaign; is losing office game over? | **(a), after D-1** |
+
+### What makes these answerable in one sitting rather than five
+
+Each recommendation rests on something **measured in this pass**, not on preference:
+
+- **D-1** — the tension is **8.4×** and its driver is the office network, a personality choice
+  *uncorrelated with seats*. ⚠ Only option (a) authors a new number, and it authors a big one.
+- **D-2** — ⚠ **the MPC is the one number in C-N4's term that is foreign**, and the term's whole defence is
+  that it is sourced. The next-largest gap is that a tax point moves consumption by **−2.68 % of GDP in
+  all six countries identically**.
+- **D-3** — ⚠ **a bracket schedule over a single average income is arithmetically a flat rate**, so the item
+  is blocked on D-4 whichever branch is picked; buying (a)'s speed costs three misrepresented countries
+  **for no time gained**.
+- **D-4** — **four items sit downstream of this one ruling**, and it is the first link of the chain that
+  ends at the FdI ceiling.
+- **D-5** — ⚠ **R-CL1 already ruled that losing office is not game over**, so option (b) reopens a settled
+  question; and (a) needs D-1's figure, so **D-1 is genuinely first rather than merely tidier**.
+
+### Two dependencies the sheets make visible
+
+- **D-4 → D-3**, and **D-4 → C-D1 → C-A1's per-group loyalty → the Italy FdI surge.** One ruling unblocks
+  a chain of four.
+- **D-1 → D-5.** The rail cell cannot be built without a war-chest figure, and C-D2 deliberately proposed
+  four options rather than picking one.
