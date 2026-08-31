@@ -85,8 +85,37 @@ namespace PoliSim.EditorTools
             }
 
             Debug.Log($"WEBCENSUS: stat->stat edges (causal graph, all derived) = {statEdges}");
+
+            // C-C3 (P-F1): R-W2's fence, ASSERTED rather than described. Focus mode encodes weight as
+            // line thickness, so the fence's demand that "every encoded weight traces to the coupling
+            // table" becomes a testable property: every edge's RelativeStrength must be a real number
+            // in [0,1]. A NaN, a negative or an out-of-range weight would still DRAW - Mathf.Clamp01
+            // swallows it silently - and the line would then assert a magnitude the table never gave.
+            int badWeights = 0;
+            foreach (PolicyWebEdge edge in PolicyWebRenderer.GetAllEdges())
+            {
+                if (float.IsNaN(edge.RelativeStrength) || edge.RelativeStrength < 0f || edge.RelativeStrength > 1f)
+                {
+                    badWeights++;
+                    Debug.LogError($"WEBCENSUS: {edge.Source} -> {edge.Target} carries RelativeStrength {edge.RelativeStrength}, not a coupling-table weight in [0,1]. Clamp01 would hide it and the line would draw a magnitude the model never stated.");
+                }
+            }
+
+            foreach (StatWebEdge edge in PolicyWebRenderer.GetAllStatEdges())
+            {
+                if (float.IsNaN(edge.RelativeStrength) || edge.RelativeStrength < 0f || edge.RelativeStrength > 1f)
+                {
+                    badWeights++;
+                    Debug.LogError($"WEBCENSUS: {edge.Source} -> {edge.Target} carries RelativeStrength {edge.RelativeStrength}, outside [0,1].");
+                }
+            }
+
+            Debug.Log(badWeights == 0
+                ? "WEBCENSUS: every edge weight is a real number in [0,1] - thickness encodes the coupling table's own magnitude and nothing else (R-W2)."
+                : $"WEBCENSUS: {badWeights} edge weight(s) outside [0,1].");
+
             Debug.Log("=== PolicyWebCensus: done ===");
-            CheckExit.Finish(0);
+            CheckExit.Finish(badWeights == 0 ? 0 : 1);
         }
 
         private static void CountEdges(Country country, string label)

@@ -5952,3 +5952,72 @@ Trajectories 6 of 6 byte-identical; `SaveLoadRoundTripDiagnostic` **RT: PASS —
 checks **9 of 9 clean**; `BudgetDraftEstimateDiagnostic` still ALL PASS; films at 1280 / 1600 / 1920 /
 2560 with 77 captured, 0 failed, **0 text overflows, 0 containment escapes** at every width;
 `ScreenEdgeCheck` exit 0 over 308 captures. Capture family `cc2_<width>_*`.
+
+## 96. C-C3 (P-F1) — the Policy Web's focus mode, inside R-W2's fence (2026-08-31)
+
+**The finding (first sitting, finding 3):** *the Policy Web should be bigger, more understandable, and use
+the page's dead space.* R-W1 took the scale half; this is the comprehension half that is **ours** —
+board 2b remains Design's.
+
+### What was already there, and what was not
+
+Reading before building saved half the item. **Weight-scaled thickness already existed**
+(`Mathf.Lerp(MinLineThickness, MaxLineThickness, RelativeStrength)`) and so did the **DERIVED/DECLARED**
+distinction (solid at full ink vs dashed at `DeclaredEdgeAlpha`). The web also already *hid* every edge
+not touching the active node.
+
+Genuinely missing, and built here:
+
+- **Node dimming.** Unconnected nodes now sit back at `UnfocusedNodeAlpha` instead of staying at full
+  ink. ⚠ **Dimmed, never removed** — the ring's shape is what makes a wedge readable, so deleting the
+  unconnected nodes would destroy the structure the focus exists to explain.
+- **Direction arrowheads**, absent entirely. An edge now reads as *"this moves that"* rather than as an
+  undirected association.
+- **The restore gesture.** Clicking the focused node again releases it, and a click on empty space
+  inside the web does the same — the finding's own words, *"a second click or empty-space click
+  restores"*. Without it a player who focused a node had to find some **other** node to click to get
+  the whole web back, which is the opposite of a restore.
+
+### R-W2's fence, kept and checked
+
+**No edge invented, no hue introduced, no grouping added, no legend** (board 2b's). Two specifics:
+
+- **Dimming reuses `PoliSimTheme.Tint`** — the very call the DECLARED edge already uses to sit back from
+  a DERIVED one — so no new colour enters the sheet and the good/bad convention is untouched.
+  `UnfocusedNodeAlpha` sits *below* `DeclaredEdgeAlpha` so a dimmed node cannot be mistaken for a
+  declared edge's ink.
+- ⚠ **Provenance survives the arrow.** A DECLARED edge's head takes the same reduced ink as its dashed
+  line; a dashed line finished with a full-ink head would read as more certain than the line it sits on.
+- ⚠ **The head is sized FROM the line's thickness**, not set independently, so the arrow cannot
+  contradict the weight the line already encodes from the coupling table.
+
+**"Every encoded weight traces to the coupling table" is now asserted, not described.** `PolicyWebCensus`
+checks every `RelativeStrength` on both edge kinds is a real number in `[0,1]`: a NaN, a negative or an
+out-of-range weight would still *draw*, because `Mathf.Clamp01` swallows it silently, and the line would
+then assert a magnitude the model never stated. **Every edge passes**, and the census now exits non-zero
+if one does not.
+
+### ⚠ The film caught the arrowheads being invisible
+
+The first cut placed each head at `to` — the target node's **centre**. Edges are drawn **before** nodes,
+so every head was painted over by the node circle it pointed at: the feature was in the code, passed
+every guard, and could not be seen. The 1280 capture is what showed it. The tip now sits on the target
+node's **rim**, and the 2560 policy-focus capture shows both of Income Tax's edges terminating in a clear
+head.
+
+### Verified
+
+Filmed at **1280 and 2560** in all three states the finding names, each under its own capture name —
+`06j_policylaws_policyweb_rest`, `06k`/`06l` focused (policy node and stat node), and
+`06m_policylaws_policyweb_restored`. ⚠ **`rest` and `restored` are byte-identical at both widths**
+(SHA-256), which is the actual claim "restores" makes: the release returns the sheet to the state it was
+in before the focus, not merely to something similar.
+
+79 captured, 0 failed, **0 text overflows, 0 containment escapes** at both widths; `ScreenEdgeCheck`
+exit 0 over 158 captures; `PolicyWebCensus` clean with the new weight assertion; the nine checks 9 of 9
+clean. No simulation code touched, so no trajectory family is involved.
+
+**Recorded for board 2b rather than solved here:** on a focused STAT node the ~40 incoming edges converge
+on one point, so their arrowheads stack at that node's rim. Direction is honest there and suppressing it
+would be deciding the diagram reads better without the model's own direction — a comprehension judgement
+that is Design's (register row S-13).

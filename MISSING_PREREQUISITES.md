@@ -351,7 +351,7 @@ same no-expansionary-passage regime R-C7 names above.
 
 **Not counted among the eleven — the Policy Web (P-F1/P-F2).** The list's Track P-F continues the
 first live sitting's finding 3 (its §V row above: *bigger, more understandable, use the dead
-space*): P-F1 ships the structural half of comprehension inside R-W2's fence (focus mode, direction
+space*): ✅ **P-F1 DONE 2026-08-31 (C-C3, `COMPLETED.md` §96)** — the structural half of comprehension inside R-W2's fence (focus mode, direction
 arrowheads, weight-scaled thickness from the coupling table, DERIVED/DECLARED preserved, no legend,
 no invented edge), P-F2 reports whether Design ever received the D7 ask (`85690abf`) — the paste
 stays Elias's. *That reading — eleven findings plus one continuation — is the recorder's; strike it

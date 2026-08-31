@@ -7827,17 +7827,30 @@ namespace PoliSim.UI
             Rect webRect = GUILayoutUtility.GetRect(10f, diagramHeight, GUILayout.ExpandWidth(true));
             // R-K1 (2026-08-28): the web reads the PLAYER COUNTRY's edge set - the policy rate's
             // issuance edge draws for the five and not for the USA (Country.BaseDebtInterestRateOverride).
-            _policyWebRenderer.Draw(webRect, _labelStyle, _playerCountry, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat);
+            _policyWebRenderer.Draw(webRect, _labelStyle, _playerCountry, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat, out bool clickedEmptySpace);
 
+            // C-C3 (P-F1): clicking the FOCUSED node again releases it, and a click on empty space
+            // inside the web does the same - "a second click or empty-space click restores", the
+            // finding's own words. Without the toggle a player who focused a node would have to find
+            // some other node to click to get the whole web back, which is the opposite of a restore.
             if (clickedPolicy.HasValue)
             {
-                _selectedPolicyWebPolicyNode = clickedPolicy;
+                bool sameNode = _selectedPolicyWebPolicyNode.HasValue
+                                && _selectedPolicyWebPolicyNode.Value == clickedPolicy.Value;
+                _selectedPolicyWebPolicyNode = sameNode ? (PolicyNodeId?)null : clickedPolicy;
                 _selectedPolicyWebStatNode = null;
             }
             else if (clickedStat.HasValue)
             {
-                _selectedPolicyWebStatNode = clickedStat;
+                bool sameNode = _selectedPolicyWebStatNode.HasValue
+                                && _selectedPolicyWebStatNode.Value == clickedStat.Value;
+                _selectedPolicyWebStatNode = sameNode ? (StatNodeId?)null : clickedStat;
                 _selectedPolicyWebPolicyNode = null;
+            }
+            else if (clickedEmptySpace)
+            {
+                _selectedPolicyWebPolicyNode = null;
+                _selectedPolicyWebStatNode = null;
             }
 
             GUILayout.Space(10f);

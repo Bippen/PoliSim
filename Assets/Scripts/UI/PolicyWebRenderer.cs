@@ -531,6 +531,14 @@ namespace PoliSim.UI
         }
 
         /// <summary>The stat → stat edges touching a stat, either end, for the panel's "moved by" / "feeds" lists.</summary>
+        /// <summary>C-C3: every edge, for a census that has to check a property of ALL of them (R-W2's
+        /// "every encoded weight traces to the coupling table"). A copy, so a caller cannot edit the
+        /// model's own table through it.</summary>
+        public static List<PolicyWebEdge> GetAllEdges() => new List<PolicyWebEdge>(Edges);
+
+        /// <summary>C-C3: the stat→stat half, on the same terms.</summary>
+        public static List<StatWebEdge> GetAllStatEdges() => new List<StatWebEdge>(StatEdges);
+
         public static List<StatWebEdge> GetStatEdgesFor(StatNodeId id)
         {
             var result = new List<StatWebEdge>();
@@ -730,9 +738,18 @@ namespace PoliSim.UI
         /// (see IsLiveFor) - the five draw the policy rate's issuance edge, the USA does not.</summary>
         public void Draw(Rect rect, GUIStyle labelStyle, Country country, PolicyNodeId? pinnedPolicy, StatNodeId? pinnedStat, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat)
         {
+            Draw(rect, labelStyle, country, pinnedPolicy, pinnedStat, out clickedPolicy, out clickedStat, out _);
+        }
+
+        /// <summary>C-C3 (P-F1): the form that also reports a click on EMPTY SPACE inside the web, which
+        /// is how focus is released without hunting for the focused node again. A caller that ignores it
+        /// keeps the old behaviour exactly.</summary>
+        public void Draw(Rect rect, GUIStyle labelStyle, Country country, PolicyNodeId? pinnedPolicy, StatNodeId? pinnedStat, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat, out bool clickedEmptySpace)
+        {
             EnsureTexturesInitialized();
             clickedPolicy = null;
             clickedStat = null;
+            clickedEmptySpace = false;
 
             GUI.DrawTexture(rect, _backgroundTexture, ScaleMode.StretchToFill);
 
@@ -811,6 +828,14 @@ namespace PoliSim.UI
                 }
             }
 
+            // C-C3 (P-F1): a click that landed on NO node, inside the web, is the restore gesture.
+            // Decided here, after every node has had its hit test, so it cannot fire on a click that
+            // actually hit something.
+            if (isClick && rect.Contains(mousePosition) && !clickedPolicy.HasValue && !clickedStat.HasValue)
+            {
+                clickedEmptySpace = true;
+            }
+
             // Hover always wins over the pin while it's active; falls back to whichever node is
             // currently pinned (if any) once the mouse moves off every node. This single active node
             // drives both which edges draw AND which node's own label shows - intentionally the same
@@ -849,10 +874,16 @@ namespace PoliSim.UI
                     if (edge.Provenance == EdgeProvenance.Derived)
                     {
                         DrawLineSegment(from, to, thickness, lineColor);
+                        DrawArrowHead(from, to, thickness, lineColor, GetNodeDiameter(StatDegree[edge.Target]) * 0.5f);
                     }
                     else
                     {
-                        DrawDashedLineSegment(from, to, thickness, PoliSimTheme.Tint(lineColor, DeclaredEdgeAlpha));
+                        // C-C3: the head takes the DECLARED edge's own reduced ink, so PROVENANCE
+                        // SURVIVES THE ARROW - a dashed line finished with a full-ink head would read
+                        // as more certain than the line it sits on.
+                        Color declaredInk = PoliSimTheme.Tint(lineColor, DeclaredEdgeAlpha);
+                        DrawDashedLineSegment(from, to, thickness, declaredInk);
+                        DrawArrowHead(from, to, thickness, declaredInk, GetNodeDiameter(StatDegree[edge.Target]) * 0.5f);
                     }
                 }
 
@@ -877,22 +908,45 @@ namespace PoliSim.UI
                             : UiPalette.NeutralChangeColor;
                         float thickness = Mathf.Lerp(MinLineThickness, MaxLineThickness, Mathf.Clamp01(edge.RelativeStrength));
                         DrawLineSegment(from, to, thickness, lineColor);
+
+                        // C-C3: a stat→stat chord is DIRECTED - "unemployment moves poverty" is not the
+                        // same statement as its reverse - and these are always DERIVED, so full ink.
+                        DrawArrowHead(from, to, thickness, lineColor, GetNodeDiameter(StatDegree[edge.Target]) * 0.5f);
                     }
                 }
             }
+
+            // C-C3 (P-F1): FOCUS MODE. With a node active, everything not connected to it DIMS rather
+            // than vanishing - the ring's shape is what makes a wedge readable, so removing the
+            // unconnected nodes would destroy the structure the focus exists to explain. The connected
+            // set is read from the SAME edge lists the lines are drawn from, so the dimming and the
+            // drawing cannot disagree about what "connected" means.
+            //
+            // ⚠ R-W2: this adds no edge, no hue and no grouping. Dimming is the EXISTING ink at a lower
+            // alpha - PoliSimTheme.Tint, the same call the DECLARED edge already uses to sit back from
+            // a DERIVED one - so no new colour enters the sheet and the good/bad convention is untouched.
+            bool focusing = activePolicy.HasValue || activeStat.HasValue;
+            HashSet<PolicyNodeId> litPolicy = null;
+            HashSet<StatNodeId> litStat = null;
+            if (focusing) { BuildConnectedSet(activePolicy, activeStat, country, out litPolicy, out litStat); }
 
             foreach (KeyValuePair<PolicyNodeId, Vector2> kv in _policyPixels)
             {
                 float diameter = GetNodeDiameter(PolicyDegree[kv.Key]);
                 var nodeRect = new Rect(kv.Value.x - diameter * 0.5f, kv.Value.y - diameter * 0.5f, diameter, diameter);
-                DrawCircle(nodeRect, UiPalette.GetAreaColor(PolicyInfo[kv.Key].Area));
+                Color policyInk = UiPalette.GetAreaColor(PolicyInfo[kv.Key].Area);
+                if (focusing && !litPolicy.Contains(kv.Key)) { policyInk = PoliSimTheme.Tint(policyInk, UnfocusedNodeAlpha); }
+                DrawCircle(nodeRect, policyInk);
             }
 
             foreach (KeyValuePair<StatNodeId, Vector2> kv in _statPixels)
             {
                 float diameter = GetNodeDiameter(StatDegree[kv.Key]);
                 var nodeRect = new Rect(kv.Value.x - diameter * 0.5f, kv.Value.y - diameter * 0.5f, diameter, diameter);
-                DrawCircle(nodeRect, StatNodeColor);
+                Color statInk = focusing && !litStat.Contains(kv.Key)
+                    ? PoliSimTheme.Tint(StatNodeColor, UnfocusedNodeAlpha)
+                    : StatNodeColor;
+                DrawCircle(nodeRect, statInk);
             }
 
             // The active node's own label - exactly one node's worth of text at any moment (hover
@@ -910,6 +964,84 @@ namespace PoliSim.UI
                 float diameter = GetNodeDiameter(StatDegree[activeStat.Value]);
                 float angle = Mathf.Atan2(activeStatPos.y - center.y, activeStatPos.x - center.x) * Mathf.Rad2Deg;
                 DrawRadialLabel(activeStatPos, diameter * 0.5f + LabelPad, angle, StatInfo[activeStat.Value].Name, labelStyle, rect);
+            }
+        }
+
+        /// <summary>
+        /// C-C3: every node the active node actually touches, read from the SAME edge lists the focused
+        /// lines are drawn from — so a node can never be lit while its edge is not drawn, or dimmed
+        /// while its edge is.
+        ///
+        /// ⚠ **Liveness is respected exactly as the drawing respects it** (`IsLiveFor`): an edge whose
+        /// policy is not implemented in this country is not drawn, so the node at its far end is not
+        /// lit either. Lighting a node whose edge is absent would assert a relationship the sheet is
+        /// deliberately not showing.
+        /// </summary>
+        private static void BuildConnectedSet(PolicyNodeId? activePolicy, StatNodeId? activeStat, Country country,
+            out HashSet<PolicyNodeId> litPolicy, out HashSet<StatNodeId> litStat)
+        {
+            litPolicy = new HashSet<PolicyNodeId>();
+            litStat = new HashSet<StatNodeId>();
+
+            if (activePolicy.HasValue) { litPolicy.Add(activePolicy.Value); }
+            if (activeStat.HasValue) { litStat.Add(activeStat.Value); }
+
+            foreach (PolicyWebEdge edge in Edges)
+            {
+                bool matches = (activePolicy.HasValue && edge.Source == activePolicy.Value)
+                    || (activeStat.HasValue && edge.Target == activeStat.Value);
+                if (!matches || !IsLiveFor(edge, country)) { continue; }
+
+                litPolicy.Add(edge.Source);
+                litStat.Add(edge.Target);
+            }
+
+            if (!activeStat.HasValue) { return; }
+
+            // The stat→stat half of the graph, on the same terms.
+            foreach (StatWebEdge edge in StatEdges)
+            {
+                if (edge.Source != activeStat.Value && edge.Target != activeStat.Value) { continue; }
+                litStat.Add(edge.Source);
+                litStat.Add(edge.Target);
+            }
+        }
+
+        /// <summary>
+        /// C-C3 (P-F1): the direction arrowhead — a filled triangle at the TARGET end, so an edge reads
+        /// as "this moves that" rather than as an undirected association.
+        ///
+        /// ⚠ **It carries the line's own colour and thickness and nothing else.** The head's size is
+        /// derived from the line's thickness rather than set independently, so a weak edge gets a small
+        /// head and a strong one a large head — the arrow cannot contradict the weight the line is
+        /// already encoding from the coupling table.
+        /// </summary>
+        private void DrawArrowHead(Vector2 from, Vector2 to, float thickness, Color color, float targetRadius)
+        {
+            Vector2 direction = to - from;
+            if (direction.sqrMagnitude < 0.01f) { return; }
+
+            direction.Normalize();
+            Vector2 normal = new Vector2(-direction.y, direction.x);
+
+            // ⚠ THE TIP SITS ON THE TARGET NODE'S RIM, NOT ITS CENTRE. Edges are drawn before nodes, so
+            // a head placed at the centre is painted over by the node circle and is invisible - which
+            // is exactly what the first cut did, and what the 1280 film showed.
+            to -= direction * targetRadius;
+
+            float length = thickness * ArrowHeadLengthPerThickness;
+            float halfWidth = thickness * ArrowHeadHalfWidthPerThickness;
+
+            // IMGUI has no filled-triangle primitive, so the head is drawn as a short stack of
+            // segments narrowing to the tip - the same "build it from the one primitive we have"
+            // technique DrawCircle and DrawDashedLineSegment already use in this file.
+            const int Steps = 5;
+            for (int i = 0; i < Steps; i++)
+            {
+                float t = (i + 0.5f) / Steps;
+                Vector2 mid = to - direction * (length * t);
+                float halfSpan = halfWidth * t;
+                DrawLineSegment(mid - normal * halfSpan, mid + normal * halfSpan, length / Steps + 0.6f, color);
             }
         }
 
@@ -1320,6 +1452,16 @@ namespace PoliSim.UI
 
         /// <summary>The declared idiom's ink: a formula-asserted edge at 55% - visibly the lighter class beside a solid ledger-backed one, still readable on paper.</summary>
         private const float DeclaredEdgeAlpha = 0.55f;
+
+        /// <summary>C-C3: how far back an UNCONNECTED node sits when a node is focused. Dim, never gone -
+        /// the ring shape is what makes a wedge readable. Below DeclaredEdgeAlpha so a dimmed node cannot
+        /// be mistaken for a DECLARED edge sitting back from a DERIVED one.</summary>
+        private const float UnfocusedNodeAlpha = 0.22f;
+
+        /// <summary>C-C3: the arrowhead is sized FROM the line thickness, so it cannot contradict the
+        /// weight the line already encodes from the coupling table.</summary>
+        private const float ArrowHeadLengthPerThickness = 3.2f;
+        private const float ArrowHeadHalfWidthPerThickness = 1.6f;
         private const float DeclaredDashOn = 7f;
         private const float DeclaredDashOff = 5f;
 

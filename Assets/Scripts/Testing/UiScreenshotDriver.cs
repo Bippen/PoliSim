@@ -506,6 +506,17 @@ namespace PoliSim.Testing
             else
             {
                 SetEnumField(controller, "_policyLawsCategory", "PolicyWeb");
+
+                // C-C3 (P-F1): the finding names THREE states - rest, focused, restored - so all three
+                // are filmed under their own names. Rest and restored reach the same code path two
+                // different ways (never focused / focused then released), and filming both is the
+                // point: a focus mode that cannot get back is not a focus mode.
+                policyNodeField.SetValue(controller, null);
+                statNodeField.SetValue(controller, null);
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture("06j_policylaws_policyweb_rest");
+
                 // Each node state twice: the diagram with the pinned node's chords, then scrolled past it
                 // to the readout the click pins below - the derived / declared idiom and the ledger-term
                 // chords in text, which is what the first capture of this state left below the fold.
@@ -527,7 +538,15 @@ namespace PoliSim.Testing
                 yield return Settle();
                 yield return Capture("06l_policylaws_policyweb_node_stat_rows");
 
+                // C-C3: RESTORED - focus released, the whole web back at full ink. Filmed from the
+                // focused state above rather than from a fresh screen, because "it looks like rest
+                // again" is the claim being tested.
                 statNodeField.SetValue(controller, null);
+                policyNodeField.SetValue(controller, null);
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Capture("06m_policylaws_policyweb_restored");
+
                 SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
                 ResetScrolls(controller);
                 yield return Settle();
