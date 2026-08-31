@@ -34,7 +34,7 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class GateReRun
     {
-        private readonly struct Case
+        internal readonly struct Case
         {
             public readonly string Name;
             public readonly string[] PartyNames;
@@ -211,7 +211,7 @@ namespace PoliSim.EditorTools
             return regions;
         }
 
-        private static Case[] BuildCases()
+        internal static Case[] BuildCases()
         {
             return new[]
             {
@@ -299,7 +299,7 @@ namespace PoliSim.EditorTools
             };
         }
 
-        private static double[] ToCompatScale(double[] shares)
+        internal static double[] ToCompatScale(double[] shares)
         {
             double max = 0.0;
             foreach (double s in shares) { if (s > max) { max = s; } }
@@ -312,7 +312,7 @@ namespace PoliSim.EditorTools
             return scaled;
         }
 
-        private static double[] Normalise(double[] pct)
+        internal static double[] Normalise(double[] pct)
         {
             double sum = 0.0;
             foreach (double p in pct) { sum += p; }

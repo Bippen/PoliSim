@@ -209,6 +209,18 @@ correctly refused for want of hours.
   salience land, re-run Italy 2022 and report whether the surge becomes reachable. **Reachable =
   the strongest validation this model can get; unreachable = a named ceiling, recorded as such.**
   Do not tune toward it — the value of the test is destroyed the moment anything is fitted to pass it.
+  ✅ **CLOSED 2026-08-31 (C-A1): UNREACHABLE, and the ceiling is named — PER-GROUP LOYALTY.**
+  Measured on both paths that exist: the blended path predicts **10.31 %** (dev −18.96 pp, derived
+  loyalty 45.1) and the spatial layer alone **17.82 %** (dev −11.44 pp); the gate's Italy MAD is
+  **7.14 pp**, still REGRESSED at 53 % coverage. ⚠ **Two of the three systems the test named cannot
+  move a vote at all, by construction** — `MomentumTracker.Apply` has exactly two call sites and both
+  are the argument to `PollingSystem.Conduct`, so media → coverage → momentum terminates in the POLL
+  and election day counts `truePreference`. Salience is the one that does reach persuasion. ⚠ **And
+  the shortfall it would have to close is SOLVED, not estimated: FdI needs a persuaded share of
+  58.58 % against the 17.82 % the model produces — ×3.29** — while λ = 0.451 anchors that fraction of
+  its result to its own 2018 prior by construction. Closing it is per-group loyalty (§5/§8), i.e.
+  register row C-D1, not a constant. **Nothing was tuned.** `ItalySurgeCeilingDiagnostic`;
+  `COMPLETED.md` §87.
 
 ## W-B3 — §12's eight actions through §42's chain · DONE
 

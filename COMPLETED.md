@@ -5295,3 +5295,84 @@ per-constituency counts; Germany 2025 and Poland 2023 by `SeatAllocationBacktest
 Sweden 2014, has not.** No live document treats the branch as pending work.
 
 No code touched; no check or harness affected.
+
+## 87. C-A1 — the Italy FdI standing test, answered: UNREACHABLE, and the ceiling solved rather than estimated (2026-08-31)
+
+**The test, as registered.** Fratelli d'Italia went **4.35 % → 29.27 %** between 2018 and 2022, a factor
+of 6.7, and the model under-predicted it by ~19 pp at any loyalty. It was registered as an open test
+against §13 media, §18 event salience and §22 momentum: *when W-B9, W-B10 and salience land, re-run Italy
+2022 and report whether the surge becomes reachable — reachable is the strongest validation this model can
+get; unreachable is a named ceiling. Do not tune toward it.* All three landed. This is the re-run.
+
+**Verdict: NOT REACHABLE. The ceiling is PER-GROUP LOYALTY, and it is register row C-D1.**
+
+### The measurement, on both paths that exist
+
+| path | FdI | deviation | what it is |
+|---|---|---|---|
+| blended (§8, what the model predicts) | **10.31 %** | **−18.96 pp** | spatial compatibility damped toward the 2018 prior at derived loyalty 45.1 |
+| spatial layer alone (no prior) | **17.82 %** | **−11.44 pp** | `VoteShareBacktest`, calibrated |
+| real 2022 | 29.27 % | — | Eligendo, list vote |
+
+Italy's gate MAD is **7.14 pp** and still REGRESSED (Day-1 5.61 → Day-2 6.69 → Day-3 7.14) at **53 %
+coverage**, which the gate itself flags LOW CONFIDENCE. Sweden and Germany, the high-coverage countries,
+both improved; the gate's PASS WITH STATED SCOPE is unchanged by this item.
+
+### ⚠ Two of the three systems the test named cannot move a vote at all
+
+This was not assumed from the systems' descriptions — it was established by enumerating the call sites.
+**`MomentumTracker.Apply` has exactly two call sites in the repo, `CampaignRun.cs:341` and `:451`, and
+both are the argument to `PollingSystem.Conduct`.** Election day counts `truePreference`, which is
+`CurrentPreference` → `PreferenceModel.Preference` and never sees momentum. So the chain **media →
+coverage → momentum → poll terminates before the ballot**, exactly as momentum's own doc comment says it
+does: *"shifts where a race APPEARS to be without changing the underlying preference that produced it."*
+
+That is a **structural** answer, not a calibration one: no magnitude of media or momentum could ever have
+made this surge reachable, and the standing test's premise — that W-B9 and W-B10 landing might change the
+answer — was half wrong at the moment it was written. **Salience is the one credited system that does
+reach persuasion**, through `CampaignActions` into the compatibility bonus.
+
+### ⚠ The shortfall salience would have to close, SOLVED
+
+`ItalySurgeCeilingDiagnostic` reuses `GateReRun.BuildCases()` rather than restating Italy's seed data —
+one copy, so this run cannot silently disagree with the gate — and bisects on FdI's persuaded share for
+the value at which §8's blend lands on the real result:
+
+- persuaded share **required** to land 29.27 % — **58.58 %**
+- persuaded share the model **produces** — **17.82 %**
+- **the campaign layer would have to multiply FdI's persuaded share by 3.29×**, against six other parties,
+  in one electorate
+
+Meanwhile **λ = 0.451 anchors that fraction of FdI's result to its own 2018 prior by construction.** A
+party whose 2018 voters largely were not its 2022 voters cannot be represented by one λ — which is
+precisely what §5/§8 say, and precisely what does not exist, because **W-F4 stopped**: there are no voter
+groups, so loyalty is one number per party over one undifferentiated electorate.
+
+**The ceiling is therefore per-group loyalty, and closing it is a DATA item (register row C-D1 — sourced
+per-constituency marginals, or the bill), not a constant.** Nothing was tuned; the loyalty constant was
+not re-fitted; the diagnostic writes nothing back.
+
+### Two things the diagnostic does to earn the number
+
+⚠ **It re-evaluates §8's identity, so it PROVES the evaluation is the model's.** Solving for a required
+persuaded share means evaluating `result_i = λ_i · prior_i + (1 − λ_i) · persuaded_i` (renormalised)
+outside `PreferenceModel` — which would be a second implementation of a model, the thing this repo
+forbids, unless it is checked. `SelfTest` reproduces `PreferenceModel.Preference` element by element at
+the measured inputs before any solve is trusted, and the run fails if it does not: **worst element
+0.000E+000, 0 elements over 1e-12.** The persuaded vector is likewise obtained through the public API
+rather than by copying `PersuadedShares` — calling `Preference` with every loyalty at zero makes every λ
+zero, so the model's own arithmetic returns its own persuaded distribution.
+
+⚠ **A guard that nearly passed for the wrong reason, caught by reading the run's own output.** The first
+version asserted the case still carried the published 4.35 % prior — against the *renormalised* vector,
+where FdI's prior is **4.81 %** because the seven modelled parties cover 88.8 % of the 2018 vote. That is
+0.46 pp from the published figure and sat just inside a 0.5 pp tolerance: the guard would have gone on
+passing while comparing two different quantities, and would have fired spuriously on any re-sourcing that
+changed the coverage. It now compares the **raw seed value**, at 0.05 pp, and the report prints both
+numbers with the distinction named. A tolerance that passes for the wrong reason is worse than one that
+fails.
+
+**Verified:** `ItalySurgeCeilingDiagnostic` exit 0 with its self-test exact; `GateReRun` exit 0;
+`VoteShareBacktest` exit 0; the nine checks exit 0 in one pass via C-0.4's runner. No constant moved, no
+model code touched — the only edit outside the new diagnostic is widening `GateReRun`'s case builder from
+`private` to `internal` so its data has exactly one home.

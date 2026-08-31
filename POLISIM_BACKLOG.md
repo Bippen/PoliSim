@@ -51,7 +51,7 @@ Execution order: Phase 0 → A → B → C → D → R → E → F → G. One co
 
 | ID | what | done-when | owner | class | depends on |
 |---|---|---|---|---|---|
-| C-A1 | The Italy FdI standing test re-run (4.35 → 29.27 %) | the measurement is on record either way, **the path it ran on is named**, and the standing test is closed. No tuning; the loyalty constant is not re-fitted | CODE | SAFE | — |
+| C-A1 | The Italy FdI standing test re-run (4.35 → 29.27 %) | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §87): UNREACHABLE.** Blended 10.31 % (dev −18.96 pp), spatial alone 17.82 % (dev −11.44 pp), gate MAD 7.14 pp REGRESSED at 53 % coverage. Momentum and media cannot move a vote at all (two call sites, both polls); the persuaded share required is 58.58 % against 17.82 % produced, ×3.29. **Ceiling: per-group loyalty → C-D1.** Original done-when: the measurement is on record either way, **the path it ran on is named**, and the standing test is closed. No tuning; the loyalty constant is not re-fitted | CODE | SAFE | — |
 | C-A2 | The local-campaigning question (the worklist's standing design question, until now unowned) | the measurement names the cause — the model underpowers local action, or §33's EV function undervalues local reach. **No adjustment in this item** | CODE | SAFE | — |
 | C-A3 | 2a-iv re-measured after W-B12 | the line carries a current number. The 0.30 threshold does not move | CODE | SAFE | — |
 | C-A4 | The claim sweep — re-word every claim whose evidence has since been superseded | no record overstates its own evidence | CODE | SAFE | C-0.3 |
