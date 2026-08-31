@@ -8780,3 +8780,63 @@ than 1, coverage reads **8.38 M against 10.55 M**, and the weighted turnout fall
 85.8. Reverted.
 
 **Bar:** simulation group **seven → eight**; fourteen checks green; trajectories 6 of 6 byte-identical.
+
+## 137. PER-GROUP LOYALTY — the ceiling CONFIRMED by measurement, and blocked by non-circularity rather than by data (2026-09-01)
+
+The chain D-4 opened ends here: **C-C13's ruling → P-I2 → C-D1 → per-group loyalty → the FdI re-test.**
+The first three landed. This is the fourth, and it does not land — but for a reason worth far more than
+the assertion it replaces.
+
+### ⚠ THE CEILING IS REAL, AND NOW IT IS MEASURED RATHER THAN NAMED
+
+C-A1 named per-group loyalty as the ceiling on the Italy FdI surge and could not test it. **ITANES 2022 —
+the Italian National Election Study, `doi:10.13130/RD_UNIMI/JV77WR`, post-election wave, UNRESTRICTED and
+fetched 2026-09-01 — tests it.** FdI's vote share by age band, weighted (`wdempol22`):
+
+| age | weighted n | **FdI %** | PD % | M5S % | Lega % |
+|---|---|---|---|---|---|
+| 18–24 | 278 | **18.22** | 19.99 | 12.02 | 8.55 |
+| 25–34 | 395 | **17.83** | 17.50 | 15.68 | 4.45 |
+| 35–44 | 505 | **21.90** | 17.85 | 21.44 | 12.86 |
+| 45–54 | 640 | **32.04** | 14.29 | 16.49 | 7.20 |
+| 55–64 | 591 | **28.15** | 14.25 | 17.11 | 10.92 |
+| 65+ | 985 | **28.18** | 25.91 | 11.41 | 8.16 |
+| **ALL** | 3393 | **25.95** | 19.03 | 15.40 | 8.76 |
+
+⚠ **THE EXTRACTION VALIDATES ITSELF.** The weighted national shares — FdI 25.95, PD 19.03, M5S 15.40,
+Lega 8.76 — reproduce the real 2022 Camera result (26.0 / 19.1 / 15.4 / 8.8) to within a tenth of a point.
+The codes were read from the file's own DDI value labels, not guessed.
+
+⚠ **And the gradient is not an artefact of the weights**: unweighted, FdI runs 10.8 % (18–24) to 27.6 %
+(45–54), the same shape more steeply.
+
+**FdI's support spans 13.8 points across age bands — nearly twice as high in 45–54 as in 18–24 — while PD
+runs 25.91 % among the over-65s and 14.25 % among 55–64.** A single national loyalty asserts that every
+age group is equally habitual. **The electorate that produced this is not that electorate**, and C-A1's
+named ceiling is confirmed as a mechanism rather than a hypothesis.
+
+### ⚠ WHY IT STILL CANNOT BE BUILT — and it is NOT "no data"
+
+`LoyaltyModel` holds non-circularity as **an invariant of the type**: loyalty for a 2022 backtest must come
+from **2013 and 2018**, never from 2022, because deriving loyalty from how much a party changed *at* T and
+then using it to predict T reads the answer off the answer sheet — *"worthless as validation even when it
+looks excellent, especially then."*
+
+**Only the 2022 wave is on the open Dataverse.** The earlier waves live on the ITANES portal and are not
+there. So: ⚠ **the one wave that IS available is the one wave non-circularity forbids using.** That is a
+much sharper statement than C-D1's *"survey data no source publishes"* — the data exists, it is open, and
+it is the wrong year by construction.
+
+**The bill, exact:** ITANES **2013** and **2018** post-election waves, weighted cross-tabs of vote by the
+same six age bands, to feed `LoyaltyModel.PartyLoyalties` per group. Nothing else is missing — the
+substrate, the group view and the sourced shares are all built.
+
+⚠ **Using the 2022 wave to test whether the ceiling is REAL is not circular; using it to derive loyalty
+would be.** The distinction is the whole reason this item measured rather than built.
+
+### The FdI test, re-run to close the chain
+
+Unchanged, as it must be: **FdI 29.27 % target, 10.31 % produced, deviation −18.96 pp.** Nothing in this
+pass moved it, and nothing should have — per-group loyalty is the link that would, and it is blocked.
+**The chain is complete except for its last link, and that link now has a two-item bill instead of an
+open question.**
