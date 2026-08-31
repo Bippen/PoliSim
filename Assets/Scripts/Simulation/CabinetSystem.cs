@@ -45,10 +45,10 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class CabinetSystem
     {
-        /// <summary>Chance PER APPOINTED MINISTER per turn that a decision fires - matches EventSystem.EventChancePerTurn, the same "~12%/period baseline" the Master Roadmap's own Part A spec calls for.</summary>
+        /// <summary>[AUTHORED-DRAFT], and DERIVED rather than separately chosen: chance per appointed minister per turn that a decision fires. It matches `EventSystem.EventChancePerTurn` exactly - the same "~12%/period baseline" the Master Roadmap Part A spec calls for - so the two event streams fire at one rate rather than two. A pacing figure for the game, not a measurement of how often real cabinets decide things.</summary>
         private const float DecisionChancePerTurn = 0.12f;
 
-        /// <summary>Modest one-time ApprovalRating cost for reshuffling a minister anytime - same small magnitude class as EventSystem's own ApprovalEffect range (-2 to -5), not a separately invented scale.</summary>
+        /// <summary>[AUTHORED-DRAFT]: a modest one-time ApprovalRating cost for reshuffling a minister at any time. Its magnitude class is borrowed, not invented - EventSystem's own ApprovalEffect range is -2 to -5 - so a reshuffle costs about what a small event does. **Nothing measures what a real reshuffle costs a real government**, and this does not claim to.</summary>
         public const float ReshuffleApprovalCost = 2f;
 
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Cabinet);

@@ -34,7 +34,7 @@ namespace PoliSim.Simulation
         public readonly CrimeJusticeDial Dial;
         public readonly CrimeJusticeEffectStat Stat;
         public readonly float SignedSensitivity;
-        /// <summary>True where the underlying research is honestly disputed (today: bail reform's
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. True where the underlying research is honestly disputed (today: bail reform's
         /// crime effect - see the constant's own doc comment) - surfaced as "(contested)" wherever
         /// the edge is rendered, the same flag PolicyWebRenderer's dial lines already carry.</summary>
         public readonly bool Contested;
@@ -78,19 +78,19 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class CrimeJusticeCouplings
     {
-        /// <summary>CrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - a real, well-documented deterrence/response-capacity effect. The larger of the two policy sensitivities - see SentencingSensitivity.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. CrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - a real, well-documented deterrence/response-capacity effect. The larger of the two policy sensitivities - see SentencingSensitivity.</summary>
         public const float PoliceFundingSensitivity = 0.16f;
 
-        /// <summary>CrimeIndex points reduced per point Country.SentencingSeverity sits above its neutral 50 - deliberately HALF of PoliceFundingSensitivity, reflecting the well-established criminology finding (Nagin and others) that the CERTAINTY of enforcement deters crime more reliably than the SEVERITY of punishment, which has a smaller, more debated effect.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. CrimeIndex points reduced per point Country.SentencingSeverity sits above its neutral 50 - deliberately HALF of PoliceFundingSensitivity, reflecting the well-established criminology finding (Nagin and others) that the CERTAINTY of enforcement deters crime more reliably than the SEVERITY of punishment, which has a smaller, more debated effect.</summary>
         public const float SentencingSensitivity = 0.08f;
 
-        /// <summary>CrimeIndex points added per point Country.BailReformLevel sits above its neutral 50 (Round 2's "Deeper Crime &amp; Justice") - small and HONESTLY CONTESTED, the same "flag the real debate, don't pretend it's settled" treatment OvertimeRegulationLevel's own Unemployment effect already got: bail reform's real effect on crime is genuinely disputed in criminology research, not a settled empirical fact.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. CrimeIndex points added per point Country.BailReformLevel sits above its neutral 50 (Round 2's "Deeper Crime &amp; Justice") - small and HONESTLY CONTESTED, the same "flag the real debate, don't pretend it's settled" treatment OvertimeRegulationLevel's own Unemployment effect already got: bail reform's real effect on crime is genuinely disputed in criminology research, not a settled empirical fact.</summary>
         public const float BailReformCrimeIndexSensitivity = 0.02f;
 
-        /// <summary>OrganizedCrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - policing already fights organized crime in reality, reusing this existing lever rather than requiring a brand-new one for this specific link. Smaller than its own primary levers - a secondary contributor.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. OrganizedCrimeIndex points reduced per point Country.PoliceFundingLevel sits above its neutral 50 (and increased per point below) - policing already fights organized crime in reality, reusing this existing lever rather than requiring a brand-new one for this specific link. Smaller than its own primary levers - a secondary contributor.</summary>
         public const float PoliceFundingOrganizedCrimeSensitivity = 0.06f;
 
-        /// <summary>OrganizedCrimeIndex points reduced per point Country.BorderEnforcementLevel sits above its neutral 50 (and increased per point below) - stricter border enforcement disrupts cross-border smuggling/trafficking, organized crime's real, well-documented core activity. The primary lever for this stat.</summary>
+        /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. OrganizedCrimeIndex points reduced per point Country.BorderEnforcementLevel sits above its neutral 50 (and increased per point below) - stricter border enforcement disrupts cross-border smuggling/trafficking, organized crime's real, well-documented core activity. The primary lever for this stat.</summary>
         public const float BorderEnforcementOrganizedCrimeSensitivity = 0.12f;
 
         /// <summary>OrganizedCrimeIndex points reduced per point Country.JudicialFundingLevel sits above its neutral 50 (and increased per point below) - better-funded prosecution capacity disrupts organized-crime networks, a real secondary contributor alongside BorderEnforcementLevel's more direct effect.</summary>

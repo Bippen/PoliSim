@@ -19,9 +19,11 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class ApprovalLedgerRecorder
     {
-        /// <summary>Audit tolerance in approval points - float addition noise across ~15 terms
-        /// is orders of magnitude below this; a real attribution miss (an unrecorded writer)
-        /// is orders of magnitude above it.</summary>
+        /// <summary>CONVENTION - a tolerance, not a claim about the world. Audit tolerance in approval
+        /// points: float addition noise across ~15 terms is orders of magnitude below this; a real
+        /// attribution miss (an unrecorded writer) is orders of magnitude above it. **The gap between
+        /// those two magnitudes is what makes the value uncritical** - anything between roughly 1e-5 and
+        /// 1e-1 would separate the same two cases.</summary>
         private const float AuditTolerance = 0.001f;
 
         /// <summary>Opens the accruing ledger at <paramref name="openingApproval"/> if none exists.

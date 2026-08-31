@@ -20,13 +20,17 @@ namespace PoliSim.Simulation
     public static class CreditRatingSystem
     {
         /// <summary>
-        /// The debt-to-GDP level above which extra borrowing starts costing a country its rating. 60%
-        /// is the real Maastricht reference value, not a tuned number - and using a real anchor matters
-        /// because this constant is what the reserve-currency discount is measured against.
+        /// SOURCED, and verified at the text rather than recalled: the reference value in **Protocol
+        /// No. 12 on the excessive deficit procedure, Article 1**, annexed to the TEU and TFEU -
+        /// *"60 % for the ratio of government debt to gross domestic product at market prices"*
+        /// (EUR-Lex CELEX 12016E/PRO/12, read 2026-09-01).
+        /// <para>The debt-to-GDP level above which extra borrowing starts costing a country its rating.
+        /// Using a real anchor matters because this constant is what the reserve-currency discount is
+        /// measured against.</para>
         /// </summary>
         private const float DebtReferencePercent = 60f;
 
-        /// <summary>Maastricht's deficit reference, again real rather than tuned.</summary>
+        /// <summary>SOURCED, from the same article as `DebtReferencePercent`: Protocol No. 12, Article 1 - *"3 % for the ratio of the planned or actual government deficit to gross domestic product at market prices"*. Real rather than tuned.</summary>
         private const float DeficitReferencePercent = 3f;
 
         /// <summary>
