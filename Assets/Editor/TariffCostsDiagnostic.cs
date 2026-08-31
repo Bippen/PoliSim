@@ -49,7 +49,6 @@ namespace PoliSim.EditorTools
         private const float ExpectationsAdaptationSpeed = 0.5f; // MacroSystem's, private there
         private const float Tolerance = 1e-3f;
         private static readonly float[] PassThroughScales = { 1f, 0.5f };
-        private static readonly int[] DebtWaypoints = { 10, 20, 30 };
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         private sealed class TurnSnapshot

@@ -533,7 +533,6 @@ namespace PoliSim.UI
         private readonly RankedBarLedgerRenderer _taxRevenueLedger = new RankedBarLedgerRenderer();
         private readonly PieChartRenderer _populationPieChart = new PieChartRenderer();
         private readonly HemicycleRenderer _hemicycleRenderer = new HemicycleRenderer();
-        private Vector2 _compassAndDemographicsScrollPosition;
 
         private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
         private CountryId? _selectedMapCountry;
@@ -606,7 +605,6 @@ namespace PoliSim.UI
         private float _lawNameNeedFull;
         private float _lawNameNeedCompact;
         private Vector2 _politicsContentScrollPosition;
-        private Vector2 _worldMapScrollPosition;
         private Vector2 _policyWebScrollPosition;
         private PolicyNodeId? _selectedPolicyWebPolicyNode;
         private StatNodeId? _selectedPolicyWebStatNode;
@@ -5082,38 +5080,18 @@ namespace PoliSim.UI
             return _swfExistsDraft ?? fallbackExists;
         }
 
-        private float GetCachedTaxRateInput(TaxType type, float fallbackRate)
-        {
-            return _cachedTaxRateInputs.TryGetValue(type, out float value) ? value : fallbackRate;
-        }
-
         /// <summary>The Minimum Wage slider's draft absolute level, or <paramref name="fallbackLevel"/> (the country's actual persisted MinimumWagePercentOfMedian) if the player hasn't touched it this turn.</summary>
         private float GetMinimumWageInput(float fallbackLevel)
         {
             return _minimumWageInput ?? fallbackLevel;
         }
 
-        private float GetCachedMinimumWageInput(float fallbackLevel)
-        {
-            return _cachedMinimumWageInput ?? fallbackLevel;
-        }
-
         /// <summary>The Trade tab's General Base Tariff Rate draft (an absolute target, matching TaxLine.Rate - see _tariffRateInput's own doc comment), or <paramref name="fallbackRate"/> (Country.BaseTariffRate) if the player hasn't touched it.</summary>
         private float GetTariffRateInput(float fallbackRate) => _tariffRateInput ?? fallbackRate;
-        private float GetCachedTariffRateInput(float fallbackRate) => _cachedTariffRateInput ?? fallbackRate;
 
         private float GetPaidFamilyLeaveWeeksInput(float fallbackLevel) => _paidFamilyLeaveWeeksInput ?? fallbackLevel;
-        private float GetCachedPaidFamilyLeaveWeeksInput(float fallbackLevel) => _cachedPaidFamilyLeaveWeeksInput ?? fallbackLevel;
         private float GetOvertimeRegulationInput(float fallbackLevel) => _overtimeRegulationInput ?? fallbackLevel;
-        private float GetCachedOvertimeRegulationInput(float fallbackLevel) => _cachedOvertimeRegulationInput ?? fallbackLevel;
         private float GetRetrainingProgramInput(float fallbackLevel) => _retrainingProgramInput ?? fallbackLevel;
-        private float GetCachedRetrainingProgramInput(float fallbackLevel) => _cachedRetrainingProgramInput ?? fallbackLevel;
-
-        /// <summary>The Police Funding slider's draft absolute level, or <paramref name="fallbackLevel"/> (the country's actual persisted PoliceFundingLevel) if the player hasn't touched it this turn.</summary>
-        private float GetPoliceFundingInput(float fallbackLevel)
-        {
-            return _policeFundingInput ?? fallbackLevel;
-        }
 
         private float GetCachedPoliceFundingInput(float fallbackLevel)
         {

@@ -30,15 +30,25 @@ namespace PoliSim.EditorTools
     /// "_canvasLive", …)` — so a field named only inside a string is genuinely reached, and a check that
     /// ignored strings would report the whole capture driver's surface as dead.</para>
     ///
+    ///
+    /// <para>⚠ <b>ONE CLASS IT CLAIMS AND DOES NOT CATCH, corrected here rather than left as a false
+    /// claim (2026-09-01).</b> The paragraph above says *"a field written and never read"* is caught. It
+    /// is NOT: the detector counts a name's occurrences across the corpus, so a field with a declaration
+    /// AND a write occurs twice and passes, whatever reads it. The worked example is in this repository —
+    /// the ~31 `_cached*Input` fields `RecomputePolicyPreview` snapshots every preview, whose only
+    /// readers were the `GetCached*Input` accessors this check DID catch. **Deleting the accessors left
+    /// the fields invisible to it.** Distinguishing a read from a write needs more than a regex, so the
+    /// limitation is named rather than half-fixed, and the write-only family is cleared by hand.</para>
     /// <para>⚠ <b>A ratchet, not a verdict.</b> Findings are GAPs against a recorded ceiling; what fails
     /// is GROWTH. The first run of a sweep like this finds a backlog, and a check that goes red on a
     /// backlog is a check somebody disables.</para>
     /// </summary>
     public static class DeadStateCheck
     {
-        /// <summary>⚠ The ceiling, measured when this check was built - **39, on 2026-08-31.** It may be lowered, never
+        /// <summary>⚠ The ceiling. Built at **39 on 2026-08-31**; **lowered to 29 on 2026-09-01** when the first
+        /// ratchet batch deleted ten. It may be lowered, never
         /// raised.** A new unreached declaration pushes the count over it and fails.</summary>
-        private const int UnreachedCeiling = 39;
+        private const int UnreachedCeiling = 29;
 
         private static readonly Regex PrivateField = new Regex(
             @"^\s*private\s+(?:static\s+)?(?:readonly\s+)?[A-Za-z_][A-Za-z0-9_<>,\.\[\]\?]*\s+(_?[A-Za-z][A-Za-z0-9_]*)\s*(?:=|;)");
