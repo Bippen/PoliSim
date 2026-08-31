@@ -5745,3 +5745,43 @@ either. **The load-bearing evidence is the per-country table above.**
 checks 9 of 9 clean; `TariffCostsDiagnostic`, `SaveLoadRoundTripDiagnostic` (RT PASS, 12 scenarios),
 `CoalitionHarness`, `SeatConversionHarness` and `ElectionDayReachDiagnostic` all exit 0. No
 `[AUTHORED-DRAFT]` value introduced — every figure is CHES 2024 as published.
+
+## 93. C-B4 / C-B5 — Riksbank-B merged rather than inherited, and story mode's gate scoped without scoping the work (2026-08-31)
+
+### C-B4 — Riksbank-B is not a second item
+
+**Its only gate was "the appointment machinery ships with item 10", and item 10's core shipped.** The
+listed instruction was to reconcile it with **P-D1** — Playtest-1's finding 7, the same subject — and it
+is the right reading: **P-D1's declared central-bank reaction functions plus appointment influence IS
+Riksbank-B.** Two entries, one item.
+
+⚠ **Merged, not inherited.** The distinction matters because Riksbank-B carried a *felt verdict* and P-D1
+carries a *build*: verdict 2 from the 2026-08-26 Editor session — **"still not independent"** — was
+recorded against option C's naming, and Playtest-1's finding 7 re-confirmed it independently. The merged
+row **C-C7** carries that verdict with it, so the thing that has to satisfy a human is attached to the
+thing that will be built rather than left in a register of verdicts nobody is answering any more.
+
+Three documents said Riksbank-B was waiting and now say where it went: §D0's rider, §P's verdict 2 (which
+said *"the next play says whether it holds until item 10"* — it no longer does; **it is a build item**),
+and the roadmap's trigger shelf, which carried a line explaining why Riksbank-B was *not* on the shelf.
+That line is struck: the thing it was explaining the absence of no longer exists as a separate item.
+
+### C-B5 — story mode's gate, re-derived; the work deliberately not scoped
+
+The item's own instruction: **scope the gate, not the work.**
+
+**Both old gates have fired.** "Item 10 shipped" happened at `a289e1e`; the player-party question that
+stopped the rail cell was ruled **R-CL1** on 2026-08-30.
+
+⚠ **And re-deriving it honestly turns up that what remains is not a ruling at all — it is two builds Step
+6 does not own.** Authored multi-beat arcs *with memory* need a protagonist whose party identity persists
+across an election. That is register row **C-R2** (the party choice, persisted as world state) and row
+**C-D4** (§38's cross-election carry-over — reputation and organisational strength that survive a chamber
+change). Until both land, an arc can remember what the **government** did but not what the **party** is —
+and the second is the half story mode exists for.
+
+**Nothing about story mode's content, beats or scope is written here**, which is the item's whole
+discipline: an entry that scopes a gate and then quietly scopes the work behind it is how a deferral turns
+into a plan nobody ruled on.
+
+No code touched; no check or harness affected.

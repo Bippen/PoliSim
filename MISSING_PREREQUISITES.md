@@ -105,8 +105,16 @@ DISCHARGED (§E2 above). The R-N2 invariant retired in the same commit, which is
 
 **The four riders this entry carried, disposed:**
 
-- **Step 6, story mode** — its gate was "item 10 shipped", which has happened; its remaining gate was the
-  player-party question, **ruled 2026-08-30 as R-CL1**. Re-gated at clearance item **C-B5**.
+- **Step 6, story mode — RE-GATED 2026-08-31 (C-B5). The gate is scoped here; the work is not.**
+  Both of its old gates have fired: "item 10 shipped" happened at `a289e1e`, and the player-party
+  question was ruled R-CL1. ⚠ **What it now waits on is not a ruling but a BUILD it does not own:**
+  authored multi-beat arcs with memory need a protagonist whose party identity persists across an
+  election, and that is register row **C-R2** (the party choice, persisted as world state) plus
+  **C-D4** (§38's cross-election carry-over — reputation and organisational strength that survive a
+  chamber change). Until those land, an arc can remember what the *government* did but not what the
+  *party* is, which is the half story mode is actually for. **Neither is scoped here** — this entry
+  records the gate and nothing else, per the item's own instruction to scope the gate rather than
+  the work.
 - **Riksbank-B** — its only gate was "the appointment machinery ships with item 10". ⚠ **Merged, not
   inherited:** Playtest-1's finding 7 (P-D1) specifies the same subject — declared reaction functions plus
   appointment influence **is** Riksbank-B — so the two are ONE item at **C-C7**, carrying the felt verdict
@@ -301,7 +309,7 @@ so either way:
    closed is a playtester's question, not a constant's. The felt-pacing question (R-S3e's residue,
    superseded by ruling C5) rides here too.
 2. **Riksbank-B's felt verdict** — option C's naming did not satisfy in the 2026-08-26 Editor session
-   ("still not independent"); the next play says whether it holds until item 10.
+   ("still not independent"). ⚠ **RE-CONFIRMED by Playtest-1's finding 7 and CLOSED as a waiting verdict 2026-08-31 (C-B4): it is no longer "the next play says whether it holds" — it is a BUILD ITEM.** Riksbank-B and P-D1 specify the same thing (declared reaction functions plus appointment influence), item 10's appointment gate has fired, and the two are ONE item at register row **C-C7**, which carries this verdict with it.
 3. **The Trade bill's costs felt** (pass 6) — the bill card's cost line, the partner row's retaliation,
    the inflation year, and a hike that now fails at the seed composition.
 
@@ -309,7 +317,7 @@ so either way:
 (`…\saves\`, listed by the Saves menu) — `playtest_1_trade_bill_costs` (USA; open Policy/Laws › Trade:
 a partner override drafted, the bill card's cost rows on screen — verdict 3), `playtest_2_riksbank_rate_decision`
 (Sweden; a rate decision drafted on the Riksbank tab — option C's naming is the verdict; no appointment can
-be pending on `main`, Riksbank-B's machinery ships with item 10 — verdict 2),
+be pending on `main`; ⚠ since 2026-08-31 (C-B4) Riksbank-B's machinery is register row C-C7, not a gate — verdict 2),
 `playtest_3_dense_midgame` (USA; the budget-process pause, pending cabinet decisions and a meeting, one
 bill of every type, twelve laws in force — verdict 1). Each save's proof capture at 1600: `clear_p5_usa_p1_trade_bill_costs`, `clear_p5_sweden_p2_riksbank_rate_decision`, `clear_p5_usa_p3_dense_midgame`.
 

@@ -260,7 +260,7 @@ forward):**
 - **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`, live-only since the clear-out: **§S** one paste
   (`SEND_PACKAGE_2026-08-28.md`); **§A** the coupling queue Q6–Q10 at their triggers — nothing else;
   **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
-  Step 6, Riksbank-B, the stranded branch, the party marks, and the political-model fact (no expansionary
+  ⚠ **re-derived 2026-08-31: item 10's core SHIPPED at `a289e1e`** — Step 6 is re-gated at C-B5, Riksbank-B is merged into C-C7, the stranded branch is disposed at C-0.3, the party marks are D-8.1, and the political-model fact is historical (no expansionary
   bill passes on any drift path before the re-seeding); **§E** Design: §E6's boards LANDED and were built
   2026-08-28 (the row retires at the next re-derivation), §E5 CLOSED end-to-end 2026-08-28 (the hatch
   cut three times, 7.42 % after the third; Elias ruled it "diagonal-tile, viewed not counted" the same
@@ -363,8 +363,12 @@ capital stock), so if one ever ships, two fire together.
   `915c800`): Y averages generosity over IMPLEMENTED programs, so a country with one generous program
   outranks a broad welfare state. Trigger: Elias's §F confirmation, or the first play that reads the
   compass against the six seeded portfolios.
-- **Riksbank-B** is NOT on this shelf: it waits on item 10's appointment machinery, a named task —
-  `MISSING_PREREQUISITES.md` §D.
+- ~~**Riksbank-B** is NOT on this shelf: it waits on item 10's appointment machinery, a named task.~~
+  ⚠ **Its gate FIRED and the item is MERGED, 2026-08-31 (C-B4).** Item 10's appointment machinery
+  shipped, and Playtest-1's finding 7 (P-D1) specifies the same subject — declared central-bank reaction
+  functions plus appointment influence **is** Riksbank-B. They are ONE item at register row **C-C7**,
+  carrying felt verdict 2 (*"still not independent"*, 2026-08-26, re-confirmed by finding 7) with it. It
+  is no longer a thing this shelf needs to explain its absence from.
 
 ---
 
