@@ -7083,3 +7083,57 @@ PublicationCadenceCheck, LeverLivenessCheck.` → **4 of 4 clean, exit 0.**
 The four simulation checks exit 0 · the nine asset checks exit 0 · no `Assets/Scripts` file changed
 (the guard and the suite entry are both `Assets/Editor`), so no trajectory, film or save-layer evidence
 applies — and the trajectory dump was run anyway and is **6 of 6 byte-identical to `traj_cc7_*`**.
+
+## 112. C-D1 (W-F4's real path) — closed as billed, with the bill made exact and the real blocker found (2026-08-31)
+
+The pre-ruling: *source SCB per-valkrets marginals **if reachable under the cross-check gate**; otherwise
+**bill the exact series** and close as billed. Never derive from data that does not exist.*
+
+**Reachability was tested, not assumed.**
+
+### What is now located precisely
+
+| piece | where | state |
+|---|---|---|
+| the 29 constituencies by name | already on disk (`sweden/valkrets_votes_2022.csv`, Valmyndigheten) | ✅ have it |
+| **kommun → valkrets membership** | **Vallagen (2005:837) 4 kap. 2 §** — the statute enumerates the split constituencies municipality by municipality (Skåne läns västra = *"Bjuvs, Eslövs, Helsingborgs, Höganäs, Hörby, Höörs, Landskrona och Svalövs kommuner"*) | ✅ located to the paragraph |
+| population by age and sex per municipality | SCB PxWeb `START/BE/BE0101/BE0101A/BefolkningNy` — ⚠ **the metadata endpoint was fetched**: variables `Region · Civilstand · Alder · Kon · ContentsCode · Tid`, municipality-level `Region` values confirmed present | ✅ confirmed with the right dimensions |
+| education level per municipality | `START__UF__UF0506__UF0506B/Utbildning` — *Befolkning 16–74 år efter region, utbildningsnivå, ålder och kön*, 1985– | ✅ named |
+| income per municipality | SCB area **HE0110** (*Inkomster och skatter*) | ⚠ area named; **the exact table is NOT asserted**, because it was not opened |
+| turnout by age | SCB's *valdeltagandeundersökning* | ⚠ billed |
+
+### ⚠ Two constraints found while testing, both worth more than the links
+
+1. **PxWeb serves DATA by POST, not GET.** The metadata endpoint answers a plain fetch — which is how the
+   dimensions above were confirmed — but an extraction needs a POSTed JSON query. **A session whose only
+   tool is a GET fetch can confirm a series and cannot pull it.** That is the actual blocker on the data
+   half, and it is a *tooling* fact, not a data one. Saying so precisely is what stops the next session
+   re-discovering it.
+2. **The kommun→valkrets mapping has a VINTAGE.** Constituency boundaries are set by law and amended
+   between elections, so a mapping fetched today and used a year later is silently wrong. It must be
+   fetched **with its vintage stated, at build time** — a reason not to bank it now, and the same
+   discipline the FX bill on C-C5 and the seed-basis work already run on.
+
+### ⚠ The real finding: the blocker is no longer the data, it is the ORDER
+
+W-F4 stopped in August because the marginals were not in the model and the game had no sub-national region
+to attach them to. Both are still true — but a third and more binding reason has appeared **since**, and
+it came from this pass's own work:
+
+`POLISIM_COHORT_SPECLET.md` §5 rules that voter groups are a **view over the cohort substrate**, with each
+group's `PopulationShare` **computed and never seeded**, precisely so the game never carries two
+populations. That substrate does not exist yet — C-C13 is written, P-I2 is unbuilt. **Sourcing per-valkrets
+marginals now and hanging them on a new group layer would build the second population that spec-let exists
+to forbid**, and it would have to be unpicked by the very item that follows it.
+
+**So C-D1 is downstream of P-I2**, and that ordering is the item's deliverable. The electorate stays one
+group with its 12 `W-F4` call sites intact — unchanged in fact, but for a different and better-founded
+reason than when W-F4 stopped.
+
+This also re-dates C-A1's ceiling: per-group loyalty was named as the reason Italy's FdI surge is
+unreachable, and per-group loyalty now waits on the substrate rather than on a data fetch.
+
+### The bar
+
+Records only; no `Assets/` file touched. `ElectionsData/DATA_BILL.md`'s voter-groups section carries the
+exact bill.

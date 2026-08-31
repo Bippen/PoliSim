@@ -104,6 +104,43 @@ whose stated premise is contradicted stops and reports rather than proceeding on
 municipality to valkrets is itself work**, since the 29 riksdagsvalkretsar are not identical to
 counties.
 
+### ⚠ C-D1 (2026-08-31): THE BILL, MADE EXACT — and closed as billed
+
+The pre-ruling was *source it if reachable under the cross-check gate; otherwise **bill the exact
+series** and close as billed.* Reachability was tested rather than assumed, and the bill below names
+what a session should fetch instead of leaving the next reader to find it again.
+
+**What is now located precisely:**
+
+| piece | where it is | state |
+|---|---|---|
+| the 29 constituencies, by name | already on disk — `sweden/valkrets_votes_2022.csv`, Valmyndigheten | ✅ have it |
+| **kommun → valkrets membership** | **Vallagen (2005:837) 4 kap. 2 §** — the statute enumerates them municipality by municipality (e.g. Skåne läns västra = *"Bjuvs, Eslövs, Helsingborgs, Höganäs, Hörby, Höörs, Landskrona och Svalövs kommuner"*). riksdagen.se / lagen.nu | ✅ located to the paragraph, ⚠ **not fetched — see the vintage note** |
+| population by age and sex, per municipality | SCB PxWeb `START/BE/BE0101/BE0101A/BefolkningNy`. ⚠ **Metadata endpoint fetched and confirmed at C-D1**: variables `Region · Civilstand · Alder · Kon · ContentsCode · Tid`, with municipality-level `Region` values present | ✅ confirmed to exist with the right dimensions |
+| education level, per municipality | SCB PxWeb `START__UF__UF0506__UF0506B/Utbildning` — *"Befolkning 16–74 år efter region, utbildningsnivå, ålder och kön"*, 1985– | ✅ series named |
+| income, per municipality | SCB subject area **HE0110** (*Inkomster och skatter*), `START__HE__HE0110` — municipality-level extractions available. ⚠ The exact table within it is **not asserted here**, because it was not opened | ⚠ area named, table billed |
+| turnout by age (for `TurnoutBase`) | SCB's *valdeltagandeundersökning* | ⚠ billed |
+
+**Two constraints found while testing reachability, both worth more than the links:**
+
+1. ⚠ **PxWeb serves DATA by POST, not GET.** The metadata endpoint answers a plain fetch — which is how
+   the dimensions above were confirmed — but an extraction needs a POSTed JSON query. A session whose
+   only tool is a GET fetch can **confirm the series and cannot pull it**. That is the actual blocker on
+   the data half, and it is a tooling fact, not a data one.
+2. ⚠ **The kommun→valkrets mapping has a VINTAGE.** Constituency boundaries are set by law and amended
+   between elections, so a mapping fetched today and used a year later is silently wrong. It must be
+   fetched **with its vintage stated, at the time of the build** — which is a reason not to bank it now.
+
+**Why the item closes as billed rather than proceeding.** ⚠ **The blocker is no longer the data — it is
+the ORDER.** `POLISIM_COHORT_SPECLET.md` §5 rules that voter groups are a **view over the cohort
+substrate**, with `PopulationShare` computed and never seeded, precisely so the game never carries two
+populations. That substrate does not exist yet (C-C13 is written, P-I2 unbuilt). Sourcing per-valkrets
+marginals now and attaching them to a new group layer would build **the second population that spec-let
+exists to forbid** — and it would have to be unpicked by the very item that follows it. **C-D1 is
+downstream of P-I2**, and that dependency is the item's real finding.
+
+The electorate therefore stays ONE GROUP with its 12 `W-F4` call sites intact.
+
 > ~~DERIVED-first per the queue: construct from the existing census/demographic seeds where the
 > model holds the marginals (age structure, urbanization, sector employment are in
 > `WorldFactory`/the seed docs). The derivation is a DAY task with the spec's group definitions in
