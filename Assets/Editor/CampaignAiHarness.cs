@@ -380,7 +380,26 @@ namespace PoliSim.EditorTools
             // precedent from W-B11. AND: if W-F5 lands and this still reads 0.291, that is a
             // FINDING ABOUT THE MODEL - two parties that both react converging is something
             // to report and explain - not a rounding problem to be closed.
-            pending += Pending(sb, "2a-iv. the grassroots personality's mix differs from both media personalities' (L1 >= 0.30) - CLEARED at W-B4, back to PENDING W-F5 at W-C2: reactivity puts the establishment on the ground in a contested region and closes est/grass to within 0.01 of the line",
+            //
+            // ⚠ RE-MEASURED 2026-08-31 (C-A3), AND TWO THINGS AROUND THAT RULING HAVE MOVED.
+            // (1) THE FIGURE IS NOT 0.291, AND HAS NOT BEEN SINCE W-F1. Re-sourcing Sweden's 2022
+            //     returns to the REAL per-constituency counts moved est/grass to 0.269 - the W-C2
+            //     reading of 0.291 was taken on the 2018-shaped chamber. The gap to the line is
+            //     THIRTY-ONE thousandths, not nine, and every document quoting "0.291" (the
+            //     clearance list included) was quoting a superseded measurement. The ruling's
+            //     SUBSTANCE is untouched: the threshold does not move, and at 0.269 it moves even
+            //     less than it would have at 0.291.
+            // (2) W-B12 WAS THE INTERVENING CHANGE AND IT MOVED THIS LINE BY NOTHING AT ALL. The
+            //     campaign manager's full cost plan changed how every managed party spends, taking
+            //     four of five to zero unpaid staff-days - and est/grass reads 0.269 before it and
+            //     0.269 after. That is evidence about WHERE the convergence lives: not in what the
+            //     two parties can AFFORD, but in what they CHOOSE.
+            // ⚠ AND THE PEND'S DEPENDENCY HAS CHANGED. W-F5 was STOPPED, not banked: its sourced
+            //     split does clear this line (est/grass 1.405) but bankrupts five of eight parties
+            //     doing it, so banking it would clear a gate by destroying W-B12. This line no
+            //     longer waits on W-F5 - it waits on the POOL question, register row C-D2, whose
+            //     resolution is Elias's. Stated here so the PEND stops naming a stopped item.
+            pending += Pending(sb, "2a-iv. the grassroots personality's mix differs from both media personalities' (L1 >= 0.30) - CLEARED at W-B4, back to PENDING at W-C2, and PENDING ON THE POOL QUESTION (C-D2) since W-F5 STOPPED: reactivity puts the establishment on the ground in a contested region and closes est/grass toward the line - re-measured 2026-08-31 at 0.269, unmoved by W-B12",
                 string.Format(CultureInfo.InvariantCulture, "prof/grass {0:F3}, est/grass {1:F3}", pairwise[0, 3], pairwise[2, 3]),
                 pairwise[0, 3] >= 0.30 && pairwise[2, 3] >= 0.30);
 
@@ -551,7 +570,7 @@ namespace PoliSim.EditorTools
                       "       question (bounded reach, repeated-exposure decay; W-B9's media interest) before it is a calibration one.\n");
 
             sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "\n=== CampaignAiHarness: {0}; {1} PENDING on W-F5 (unequal war chests and unequal paces - W-C2 gave every personality a reaction, and what now separates two parties that both react is what they can afford to react WITH) and calibration entry 10 (persuasion per personal contact) - printed with their measurements, not counted as passes ===\n",
+                "\n=== CampaignAiHarness: {0}; {1} PENDING on THE POOL QUESTION (register row C-D2; W-F5 was STOPPED 2026-08-30, not banked - its sourced split clears two of these lines by bankrupting five of eight parties) and calibration entry 10 (persuasion per personal contact) - printed with their measurements, not counted as passes ===\n",
                 failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED", pending));
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);

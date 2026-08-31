@@ -5457,3 +5457,45 @@ the same picture rather than tuning either.
 
 **Verified:** `CampaignAiHarness` ALL ASSERTIONS PASS (5 PENDING, unchanged, printed with their
 measurements); the nine checks 9 of 9 clean in one pass. No code touched.
+
+## 89. C-A3 — 2a-iv re-measured after W-B12: the figure was never 0.291, and W-B12 moved it by nothing (2026-08-31)
+
+**The item, as listed.** 2a-iv PENDed "at 0.291" waiting on W-F5's unequal chests; W-F5 was stopped and
+not banked, but **W-B12 changed the money's behaviour**. Re-measure on the current code; if it clears,
+close it with the measurement; if not, it stays PEND with its new figure. **The threshold does not move.**
+
+**Result: PEND, at `est/grass` 0.269 and `prof/grass` 0.573.** The binding pair is est/grass, **0.031
+below the 0.300 line.** `CampaignAiHarness` ALL ASSERTIONS PASS, 23 ok, 5 PENDING printed with their
+measurements.
+
+### ⚠ Two corrections the re-measurement forces
+
+**1. The figure has not been 0.291 since W-F1, and the clearance list inherited a superseded number.**
+The 0.291 reading was taken at W-C2 on the 2018-shaped chamber. **W-F1 re-sourced Sweden's 2022 returns
+to the real per-constituency counts and est/grass became 0.269** — which W-F1's own record states
+plainly ("C1's PEND lines did not move at all — prof/est 0.306, est/grass 0.269"). So the gap to the line
+is **thirty-one thousandths, not nine**. The ruling's substance is untouched and if anything stronger:
+the 2026-08-30 ruling refused to nudge a threshold nine thousandths away, and it is three times that.
+The stale figure is corrected in `CampaignAiHarness`'s own comment, with the W-C2 history kept beside it
+rather than overwritten.
+
+**2. W-B12 moved this line by exactly nothing, and that is the item's real finding.** The campaign
+manager's full cost plan changed how every managed party spends — four of five managed parties went to
+zero unpaid staff-days, S 10 → 0, M 6 → 0 — and **est/grass reads 0.269 before it and 0.269 after.**
+That is evidence about *where* the convergence between the establishment and grassroots mixes lives: not
+in what the two parties can **afford**, but in what they **choose**. A change that fixed the affording
+side comprehensively left the separation untouched.
+
+### The PEND's dependency has changed, and the harness now says so
+
+The line said it waits on W-F5. **W-F5 was STOPPED, not banked**: its sourced *mandatbidrag* split does
+clear this line (est/grass 0.269 → 1.405) but bankrupts five of eight parties doing it, so banking it
+would clear a gate by destroying W-B12. A PEND that goes on naming a stopped item is a dangling
+dependency, so the line, its comment and the harness's summary now name **the pool question — register
+row C-D2** — whose resolution is Elias's. Nothing else about the assertion changed.
+
+⚠ **The threshold was not moved, no affinity was touched, and nothing was tuned.** The only edits are to
+comments and to the two strings that named a stopped item.
+
+**Verified:** `CampaignAiHarness` exit 0, ALL ASSERTIONS PASS, 5 PENDING — identical verdict before and
+after the edit; the nine checks 9 of 9 clean in one pass.
