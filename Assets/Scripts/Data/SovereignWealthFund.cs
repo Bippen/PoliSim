@@ -28,7 +28,30 @@ namespace PoliSim.Data
         /// </summary>
         public float ContributionRatePercent = 1f;
 
-        /// <summary>Percent of the fund invested domestically (the rest, 100 minus this, is international) - tracked and displayed, but this pass does NOT model different domestic-vs-international returns (see CLAUDE.md); both draw from the same asset-class return model.</summary>
+        /// <summary>
+        /// Percent of the fund invested domestically (the rest, 100 minus this, is international) —
+        /// tracked and displayed, but this pass does NOT model different domestic-vs-international returns
+        /// (see CLAUDE.md); both draw from the same asset-class return model.
+        ///
+        /// ⚠ **C-N6, DECIDED AND LOGGED 2026-08-31 (Elias's decide-and-log ruling): THE FIELD STAYS AND
+        /// ITS CONSUMER IS BILLED.** `LeverLivenessCheck` found on its first run that
+        /// `PolicyDecision.SwfDomesticAllocationOverride` moves nothing at all — the value is clamped,
+        /// written here, cloned, seeded per country and carried on a `BudgetBill`, and **nothing reads
+        /// it.** The ruling's fork: if a consumer was ever intended, bill it and leave a recorded gap
+        /// note; if not, delete the field and its whole plumbing.
+        ///
+        /// **A consumer WAS intended.** CLAUDE.md's own Round-3 record calls this *"a deliberate scope
+        /// simplification, honestly disclosed, not a gap"*, and names the intended consumer: **differing
+        /// domestic-vs-international returns.** Deferred on purpose, not forgotten — so the field stays
+        /// and the consumer is billed.
+        ///
+        /// ⚠ **What the bill needs, and why it cannot be guessed:** a sourced spread between a fund's
+        /// domestic and international returns, per country. Norway's GPFG — this model's own anchor —
+        /// invests almost entirely ABROAD by mandate and so cannot supply a domestic leg; a Swedish
+        /// AP-fund basis would be a different institution on a different mandate. **Until that spread is
+        /// sourced this dial is honest scenery, and no player-facing surface may imply it does
+        /// anything.** Register row **C-N6**.
+        /// </summary>
         public float DomesticAllocationPercent = 50f;
 
         public float EquitiesWeight = 40f;

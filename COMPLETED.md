@@ -7806,3 +7806,99 @@ new spec-lets and the register included, and `SEND_PACKAGE.md` in place of the d
 
 Ten checks 10 of 10 clean · `PhantomGuardCheck` green (it reads comments, and a comment citing a deleted
 document is exactly the class it guards) · no `Assets/Scripts` file touched by the retirement itself.
+
+## 123. TRACK N — C-N6 decided, C-N4 and C-N5 measured; and C-C11's Okun headline CORRECTED (2026-08-31)
+
+⚠ **NOTHING IN THIS SECTION APPLIES ANYTHING.** Three harnesses, none of which writes a constant.
+
+### C-N6 — decided and logged: the field stays, its consumer is billed
+
+`LeverLivenessCheck` found `SwfDomesticAllocationOverride` reaching nothing. Elias's fork: **if a consumer
+was ever intended, bill it and leave a recorded gap note; if not, delete the field and its whole
+plumbing.** History answers it — CLAUDE.md's Round-3 record calls the dial *"tracked/displayed but this
+pass does NOT model differing domestic-vs-international returns — a deliberate scope simplification,
+honestly disclosed, not a gap"*, and **names the intended consumer.** Deferred on purpose, not forgotten.
+
+**So the field stays and the consumer is billed**, with the gap note at the field itself. ⚠ **Why the bill
+cannot be guessed:** it needs a sourced spread between a fund's domestic and international returns, per
+country — and **Norway's GPFG, this model's own anchor, invests almost entirely ABROAD by mandate**, so it
+cannot supply a domestic leg; a Swedish AP-fund basis is a different institution on a different mandate.
+Until that spread is sourced the dial is honest scenery, **and no player-facing surface may imply
+otherwise.**
+
+### C-N4 — the tax impulse, followed field by field
+
+Sweden, a +10-point income tax rise, every public float of `EconomyState` sorted into MOVED and UNMOVED.
+
+**MOVED — four:** `ApprovalRating` 48.45 → 36.89 · `Budget` −42.16 → −10.75 · `GovernmentDebt` 240.37 →
+210.50 · `Gini` 27.74 → 27.41.
+
+**UNMOVED — thirty-two**, including `GDP`, `Consumption`, `Investment`, `ConsumerConfidence`,
+`RealWageIndex`, `Unemployment`, `Inflation`.
+
+> **THE LOSS POINT IS CONSUMPTION.** `MacroSystem.ApplyNationalAccounts` computes
+> `Consumption = priorGdp × BaseConsumptionRate × consumptionInterestFactor × effectiveConsumerConfidence`.
+> ⚠ **There is no disposable-income term.** Consumption is a fixed share of PRIOR GDP adjusted by the
+> interest rate and by confidence — and by nothing else. A tax rise takes money from households and the C
+> term never learns of it. **Government spending enters the same identity directly, as its own G term,
+> which is exactly why the spending multiplier works and the tax one is identically zero.**
+
+The revenue reaches `Budget` and `GovernmentDebt`; the rise reaches `ApprovalRating` through
+`TaxHikeApprovalSensitivity`; the rate reaches `Gini` through the redistribution anchor. All three are
+real. None of them is output. **The assertion binds where the change would live:** the diagnostic FAILS if
+`Consumption` ever moves, so the finding retires itself rather than waiting to be remembered.
+
+**Proposal (strikeable, applied: nothing).** P-N4a give the C term a disposable-income input — the one
+structurally honest channel, because it is how the money actually moves · **P-N4b the magnitude stays
+BILLED**: Romer & Romer's −2 to −3 is a US narrative-shock estimate and the largest in the literature, and
+⚠ **it is not transplanted to Sweden** · P-N4c the spending band is a hard constraint, and since C and G
+share one identity a change to C moves the measured G multiplier too, so `ResponsivenessAuditHarness` is
+the acceptance test · P-N4d BASELINE, and not in the same pass as C-N5.
+
+### ⚠ C-N5 — and this CORRECTS C-C11's own headline
+
+C-C11 reported an implied Okun coefficient of **−0.007** against a sourced −0.23…−0.54 and called it
+*"33 to 77 times too small"*. **Read as a magnitude that says "multiply the constant". It is wrong to read
+it that way, and the measurement now says so.**
+
+`MacroSystem.OkunCoefficient` is **0.5 — inside the sourced range.** A one-off permanent +10 % step to
+Sweden's discretionary spending:
+
+| year | ΔGDP | ΔGDP % | ΔUnemployment | implied Okun |
+|---|---|---|---|---|
+| 2 (landing) | 6.83 | 1.091 % | −0.5429 | **−0.498** |
+| 3 | 9.65 | 1.541 % | −0.3875 | −0.251 |
+| 4 | 10.60 | 1.676 % | −0.1827 | −0.109 |
+| 5 | 10.86 | 1.694 % | −0.0628 | −0.037 |
+| 6 | 10.95 | 1.682 % | −0.0117 | −0.007 |
+| 8 | 11.13 | 1.659 % | +0.0065 | +0.004 |
+
+> ⚠ **At the landing year the implied coefficient is −0.498 — INSIDE Ball, Leigh & Loungani's −0.23…−0.54.
+> The model's Okun response is CORRECT ON IMPACT.** C-C11's −0.007 was the same quantity measured five
+> years later, after it had decayed.
+
+**The defect is a SPECIFICATION mismatch, not a magnitude error.** The model applies the coefficient to a
+**growth gap** and then mean-reverts unemployment to NAIRU every period; the literature applies it to an
+**output gap** — a level. So the level gain persists (11.13 at year 8) while the unemployment gain decays
+to nothing: **a country ends permanently richer with unemployment exactly where it started.**
+
+⚠ **And the fix is blocked by something already on the shelf — the more useful half of this finding.** A
+gap-form Okun needs a level output gap that means something, and the roadmap's trigger shelf already
+records that this model has none: the identity's G is discretionary lines only, general-government
+consumption is nowhere, and every country's level gap is a share-determined fixed point no seed can close
+(USA −14.5 %, Poland −7, Italy −4.5, Germany −2.7, Sweden −0.8, France −0.5). That entry's stated trigger
+is *"the first mechanic that needs the level output gap to mean something."* **C-N5 is that mechanic. The
+trigger has FIRED.**
+
+**Proposal (strikeable, applied: nothing).** ⚠ **P-N5a: do NOT scale `OkunCoefficient`** — it is inside
+the sourced range, and multiplying a right constant to compensate for a wrong specification is tuning to
+pass a gate · P-N5b re-specify on the output gap, **after** the government-consumption block, which is the
+prerequisite rather than the sequel · P-N5c the spending band bites hardest here, because a
+government-consumption term moves G directly · P-N5d the literature gives a **range**, reported as one ·
+P-N5e after C-N4, never in the same pass.
+
+### The bar
+
+`TaxTransmissionDiagnostic` and `OkunSpecificationDiagnostic` exit 0, each with an assertion that fails if
+its own finding goes stale · ten checks 10 of 10 clean · **no constant moved, no `Assets/Scripts`
+simulation file changed** — the only production edit in this section is C-N6's doc comment.
