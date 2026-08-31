@@ -7902,3 +7902,54 @@ P-N5e after C-N4, never in the same pass.
 `TaxTransmissionDiagnostic` and `OkunSpecificationDiagnostic` exit 0, each with an assertion that fails if
 its own finding goes stale · ten checks 10 of 10 clean · **no constant moved, no `Assets/Scripts`
 simulation file changed** — the only production edit in this section is C-N6's doc comment.
+
+## 124. THE CLOSING GATE — the four-width matrix, the trajectory suite, and the rule-15 diff (2026-08-31)
+
+Run once, at the end, over everything the sweep touched — the streamlined finish's own instruction.
+
+### The four-width matrix
+
+**1280×720 · 1600×950 · 1920×1080 · 2560×1440**, Sweden:
+
+> **81 captured, 0 failed, 0 text overflows at every one of the four — and the S-20 capture-identity trap
+> green on all 81 at each width: `81 capture(s) proved they show the surface they claim`.**
+
+`ScreenEdgeCheck` exit 0 over all four sets (324 captures). Election night filmed at both extremes,
+**8 captured, 0 failed** each, with the board actually visible.
+
+### The trajectory suite
+
+`traj_final_*` at seeds 777 / 424242, horizons 100 / 500 / 1000: **6 of 6 byte-identical to the
+`traj_cc7_*` family.** ⚠ **Every item since C-C7 — Tracks C, D, R, E, F, G and N, thirty-odd rows
+including two `SaveVersion` bumps and two new persisted stocks — left the no-policy trajectory untouched,
+and the dump proves it rather than the reasoning being trusted.** `SaveLoadRoundTripDiagnostic` RT PASS.
+
+### The rule-15 diff, and what it can and cannot say
+
+⚠ **Against the Track C close set: all 81 differ, and that is expected and meaningless.** Every frame now
+carries S-20's identity token in its corner, which changes every PNG's bytes. **A byte diff cannot cross
+the token boundary**, and reporting "81 changed" as though it were a finding would be the sort of alarming
+non-fact this pass has spent its time removing.
+
+**On a like-for-like pair (both post-token): 76 of 81 identical, 5 differ.**
+
+- **Three are the wall-clock frames the `det_*` record already names** — `01a_selector_yielding`,
+  `89d_signing_entrance`, `92_saves_menu`.
+- ⚠ **Two are NOT on that list, and this run did not establish why:** `02a_statistics_domestic` and
+  `06d_policylaws_policyweb_rows`. Compared across three post-token film sets they **alternate rather than
+  progress** — `02a` reads A, B, A; `06d` reads A, A, B — while a control frame (`01c_desk`) is identical
+  in all three. **That is instability, not change.** No commit between those runs touched either screen.
+
+**Filed as S-21.** The `det_*` record's named-three list is incomplete: at least two more frames are not
+byte-stable, and they were masked until now because comparisons spanned code changes and the difference
+was attributed to the code. ⚠ **It is not a defect in either screen** — both are correct in every film —
+**but it is a defect in the evidence**, because a byte diff that cannot distinguish a change from a flicker
+cannot do the job rule 15 gives it. Sized as its own item: identify each frame's non-determinism (a settle
+frame, a shadow series one point short, a scroll position) and either pin it or name it, the way the three
+known frames are named.
+
+### The bar, whole
+
+Ten asset checks **10 of 10 clean** (2 reported GAPs, 0 errors) · four simulation checks exit 0 ·
+`SaveLoadRoundTripDiagnostic` RT PASS 12 · trajectories **6 of 6 byte-identical** · the four-width matrix
+at 81/0/0 with the identity trap green throughout · `ScreenEdgeCheck` silent over 324 captures.
