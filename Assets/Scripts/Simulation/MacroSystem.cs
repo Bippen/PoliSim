@@ -1120,7 +1120,9 @@ namespace PoliSim.Simulation
 
         /// <summary>Germany's real 41.0 is the low structural outlier and Poland's 86.8 the high -
         /// [10, 95] leaves honest room beyond both without being reachable in practice.</summary>
+        /// <remarks>CONVENTION - a state-space clamp. The summary above states the real range it brackets; the bound sits outside it so the pair is defence-in-depth against a feedback bug rather than a reachable prediction.</remarks>
         private const float MinHomeownershipPercent = 10f;
+        /// <remarks>CONVENTION - a state-space clamp. The summary above states the real range it brackets; the bound sits outside it so the pair is defence-in-depth against a feedback bug rather than a reachable prediction.</remarks>
         private const float MaxHomeownershipPercent = 95f;
 
         /// <summary>Reverts EconomyState.HousingOverburden toward the structural baseline plus the
@@ -1161,16 +1163,19 @@ namespace PoliSim.Simulation
         /// <summary>House-price growth tracks trend growth one-for-one long-run (the same
         /// income-tracking argument RealWageIndex documents - and the same reason the index needs
         /// no per-country growth seed).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float HpiTrendPassThrough = 1f;
 
         /// <summary>Per-turn growth points per point the policy rate sits BELOW the epoch anchor -
         /// cheap credit inflates house prices, the best-documented rate channel of the three.
         /// Signed: tightening above the anchor drags prices by the same coefficient.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float HpiRateSensitivity = 0.5f;
 
         /// <summary>Same safety clamp shape as the real wage index: growth clamps, the level never
         /// does (unbounded by construction, display furniture per the R4-2 convention).</summary>
         private const float MaxHpiGrowthPerTurnPercent = 10f;
+        /// <remarks>CONVENTION - a state-space clamp. The summary above states the real range it brackets; the bound sits outside it so the pair is defence-in-depth against a feedback bug rather than a reachable prediction.</remarks>
         private const float MinHousePriceIndex = 1f;
 
         /// <summary>Compounds EconomyState.HousePriceIndex - the R4-2 compounding-index kit
@@ -1234,7 +1239,9 @@ namespace PoliSim.Simulation
             return WelfareEffectDelta(country, program => program.Type == type ? program.GenerosityLevel / 100f : 0f);
         }
 
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float HousingOverburdenReversionSpeedPerDay = PerDayReversion(HousingOverburdenReversionSpeed);
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float HomeownershipReversionSpeedPerDay = PerDayReversion(HomeownershipReversionSpeed);
 
         public static void ApplyHousingOverburdenDaily(Country country) => ApplyHousingOverburden(country, HousingOverburdenReversionSpeedPerDay);
@@ -1259,11 +1266,13 @@ namespace PoliSim.Simulation
         /// <summary>Productivity growth tracks trend growth one-for-one - see the section header;
         /// the same argument RealWageIndex/HousePriceIndex document, applied to the quantity the
         /// other two borrow it from.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float ProductivityTrendPassThrough = 1f;
 
         /// <summary>Same safety-clamp shape as the other compounding members: growth clamps, the
         /// level never does (a real USD-PPP-per-hour level, unbounded; §A.9b display).</summary>
         private const float MaxProductivityGrowthPerTurnPercent = 10f;
+        /// <remarks>CONVENTION - a state-space clamp. The summary above states the real range it brackets; the bound sits outside it so the pair is defence-in-depth against a feedback bug rather than a reachable prediction.</remarks>
         private const float MinProductivityLevel = 1f;
 
         /// <summary>
@@ -1281,6 +1290,7 @@ namespace PoliSim.Simulation
         /// raw-level form Q1 disqualified. The unemployment gap measures mean −0.04 pp with sd
         /// 0.19 and transients that decay within ~5 turns: centred on zero, live, self-limiting.</para>
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float ProductivityHoardingSensitivity = 0.4f;
 
         /// <summary>
@@ -1331,6 +1341,7 @@ namespace PoliSim.Simulation
         // --- Demographics: Population, birth/death/migration rates, and a single dependency-ratio aging proxy (Round 3 item 5, Part A) ---
 
         /// <summary>Points BirthRate declines per turn on its own - a real, well-documented, near-universal secular fertility decline across developed nations, not a country-specific policy response. Deliberately small (over a 500-turn run this alone would move BirthRate by 5 points, well before which the lower-starting countries hit MinBirthRate and stop).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float BirthRateSecularDeclineRate = 0.01f;
 
         /// <summary>Realistic low-fertility floor, informed by the real world's own lowest-ever recorded national crude birth rates (some East Asian countries have fallen to roughly this range in recent years) - not literally zero, since no country's birth rate has realistically approached that.</summary>
@@ -1350,12 +1361,14 @@ namespace PoliSim.Simulation
         // below reads the table's qualified name.
 
         /// <summary>Points DeathRate rises per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented mechanical effect: an aging population structurally raises the crude death rate even with no change in age-specific mortality, since a larger share of the population is simply older.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float DeathRateAgingDriftSensitivity = 0.003f;
 
         /// <summary>Generous gameplay safety bound on DeathRate - comfortably above any real-world crude death rate this model's own DependencyRatio ceiling could mechanically produce.</summary>
         private const float MaxDeathRate = 25f;
 
         /// <summary>Points NetMigrationRate rises per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, discussed phenomenon: aging developed economies lean more on immigration over time to offset a shrinking working-age population. Deliberately a SEPARATE driver from BirthRate's own independent secular-decline drift - fertility decline isn't itself "caused" by a country's current dependency ratio the way this migration-reliance trend plausibly is.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float MigrationAgingDriftSensitivity = 0.002f;
 
         /// <summary>Generous gameplay safety bounds on NetMigrationRate - wide enough for Part B's Immigration Policy lever to swing meaningfully in either direction (open vs. restrictive) without an artificial mid-range ceiling getting in the way first.</summary>
