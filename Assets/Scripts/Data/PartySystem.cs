@@ -118,8 +118,33 @@ namespace PoliSim.Data
         /// </summary>
         public readonly PartyLeader[] Leaders;
 
+        /// <summary>
+        /// CHES 2024 `lrgen` — the party's OVERALL ideological position, 0 = extreme left, 10 = extreme
+        /// right. `float.NaN` where no position is published.
+        ///
+        /// <para>⚠ <b>It is a DIFFERENT axis from `LrEcon` and the difference is the point.</b> `lrecon`
+        /// is economic left-right alone; `lrgen` is the summary position an expert would give the party
+        /// overall. §29's coalition compatibility weights the two differently — the general axis carries
+        /// the ideological term, the economic/social/EU triple carries the policy term — so collapsing
+        /// them would make two parties that agree on economics but on nothing else read as natural
+        /// partners.</para>
+        ///
+        /// <para>⚠ <b>The USA has NO value and is not given one.</b> GPS 2019 carries no general
+        /// left-right item at all — the positions file records both US rows as
+        /// *"[UNCONFIRMED — no lrgen item in GPS]"* — so both US parties are `NaN` here. The USA also has
+        /// no coalition formation, so nothing downstream needs it; a centred stand-in would be an
+        /// invented figure bought for nothing.</para>
+        ///
+        /// <para>Added at D-5 (a): the office test asks whether the player's party is in the cabinet, and
+        /// that needs the same compatibility matrix `CoalitionFilm` proved for Sweden — which reads this
+        /// axis. Sourced from `ElectionsData/positions/party_positions.md` for all 31 scored EU units.</para>
+        /// </summary>
+        public readonly float LrGen;
+
+
         public PoliticalParty(string abbrev, string name, float lrEcon, float galtan, int seedSeats,
-            string markName = null, float euPosition = float.NaN, PartyLeader[] leaders = null)
+            string markName = null, float euPosition = float.NaN, PartyLeader[] leaders = null,
+            float lrGen = float.NaN)
         {
             Abbrev = abbrev;
             Name = name;
@@ -128,6 +153,7 @@ namespace PoliSim.Data
             SeedSeats = seedSeats;
             MarkName = markName;
             EuPosition = euPosition;
+            LrGen = lrGen;
             Leaders = leaders ?? System.Array.Empty<PartyLeader>();
         }
 
@@ -240,23 +266,23 @@ namespace PoliSim.Data
         // ---- Sweden: Riksdag 2022. Units are PARTIES; every one has a CHES position. Sums to 349.
         private static readonly PoliticalParty[] SwedenParties =
         {
-            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f,
+            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f, lrGen: 3.74f,
                 leaders: One("Magdalena Andersson", "partiordforande")),
-            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, euPosition: 2.68f,
+            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, euPosition: 2.68f, lrGen: 8.53f,
                 leaders: One("Jimmie Akesson", "partiledare")),
-            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, euPosition: 5.74f,
+            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, euPosition: 5.74f, lrGen: 7.58f,
                 leaders: One("Ulf Kristersson", "partiledare")),
-            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, euPosition: 3.32f,
+            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, euPosition: 3.32f, lrGen: 1.58f,
                 leaders: One("Nooshi Dadgostar", "partiledare")),
-            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, euPosition: 6.11f,
+            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, euPosition: 6.11f, lrGen: 5.95f,
                 leaders: One("Annie Loof", "partiledare")),
-            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, euPosition: 5.35f,
+            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, euPosition: 5.35f, lrGen: 8.00f,
                 leaders: One("Ebba Busch", "partiledare")),
             // ⚠ TWO leaders, carried as two. Taking "the first" would drop Per Bolund, a real named
             // person, which the ruling forbids outright.
-            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, euPosition: 5.32f,
+            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, euPosition: 5.32f, lrGen: 2.74f,
                 leaders: new[] { new PartyLeader("Marta Stenevi", "sprakror"), new PartyLeader("Per Bolund", "sprakror") }),
-            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, euPosition: 6.84f,
+            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, euPosition: 6.84f, lrGen: 6.74f,
                 leaders: One("Johan Pehrson", "partiledare")),
         };
 
@@ -266,15 +292,15 @@ namespace PoliSim.Data
         // is looking at, and dropping it would hide the closest thing to a threshold story there is.
         private static readonly PoliticalParty[] GermanyParties =
         {
-            new PoliticalParty("CDU",   "Christlich Demokratische Union",   6.58f, 6.56f, 164, euPosition: 6.42f),
-            new PoliticalParty("AfD",   "Alternative fur Deutschland",      7.63f, 9.39f, 152, euPosition: 1.89f),
-            new PoliticalParty("SPD",   "Sozialdemokratische Partei",       3.47f, 3.61f, 120, euPosition: 6.37f),
-            new PoliticalParty("Grune", "Bundnis 90/Die Grunen",            3.37f, 1.61f,  85, euPosition: 6.79f),
-            new PoliticalParty("Linke", "Die Linke",                        1.37f, 2.29f,  64, euPosition: 3.72f),
-            new PoliticalParty("CSU",   "Christlich-Soziale Union",         6.77f, 7.54f,  44, euPosition: 5.50f),
+            new PoliticalParty("CDU",   "Christlich Demokratische Union",   6.58f, 6.56f, 164, euPosition: 6.42f, lrGen: 6.58f),
+            new PoliticalParty("AfD",   "Alternative fur Deutschland",      7.63f, 9.39f, 152, euPosition: 1.89f, lrGen: 9.26f),
+            new PoliticalParty("SPD",   "Sozialdemokratische Partei",       3.47f, 3.61f, 120, euPosition: 6.37f, lrGen: 3.47f),
+            new PoliticalParty("Grune", "Bundnis 90/Die Grunen",            3.37f, 1.61f,  85, euPosition: 6.79f, lrGen: 3.06f),
+            new PoliticalParty("Linke", "Die Linke",                        1.37f, 2.29f,  64, euPosition: 3.72f, lrGen: 1.42f),
+            new PoliticalParty("CSU",   "Christlich-Soziale Union",         6.77f, 7.54f,  44, euPosition: 5.50f, lrGen: 7.57f),
             new PoliticalParty("SSW",   "Sudschleswigscher Wahlerverband",  float.NaN, float.NaN, 1),
-            new PoliticalParty("BSW",   "Bundnis Sahra Wagenknecht",        2.78f, 7.06f,   0, euPosition: 2.42f),
-            new PoliticalParty("FDP",   "Freie Demokratische Partei",       7.58f, 3.22f,   0, euPosition: 5.84f),
+            new PoliticalParty("BSW",   "Bundnis Sahra Wagenknecht",        2.78f, 7.06f,   0, euPosition: 2.42f, lrGen: 3.63f),
+            new PoliticalParty("FDP",   "Freie Demokratische Partei",       7.58f, 3.22f,   0, euPosition: 5.84f, lrGen: 6.06f),
         };
 
         // ---- Poland: Sejm 2023. Units are the ELECTORAL COMMITTEES the PKW reports. Sums to 460.
@@ -283,11 +309,11 @@ namespace PoliSim.Data
         // parties that ran together but are not one party.
         private static readonly PoliticalParty[] PolandParties =
         {
-            new PoliticalParty("PiS",  "Prawo i Sprawiedliwosc",   2.52f, 8.45f, 194, euPosition: 3.10f),
-            new PoliticalParty("KO",   "Koalicja Obywatelska",     6.17f, 3.66f, 157, euPosition: 6.63f),
+            new PoliticalParty("PiS",  "Prawo i Sprawiedliwosc",   2.52f, 8.45f, 194, euPosition: 3.10f, lrGen: 7.64f),
+            new PoliticalParty("KO",   "Koalicja Obywatelska",     6.17f, 3.66f, 157, euPosition: 6.63f, lrGen: 4.93f),
             new PoliticalParty("TD",   "Trzecia Droga",            float.NaN, float.NaN, 65),
-            new PoliticalParty("NL",   "Nowa Lewica",              2.32f, 1.75f,  26, euPosition: 6.90f),
-            new PoliticalParty("Konf", "Konfederacja",             8.96f, 8.41f,  18, euPosition: 1.52f),
+            new PoliticalParty("NL",   "Nowa Lewica",              2.32f, 1.75f,  26, euPosition: 6.90f, lrGen: 2.41f),
+            new PoliticalParty("Konf", "Konfederacja",             8.96f, 8.41f,  18, euPosition: 1.52f, lrGen: 9.39f),
         };
 
         // ---- France: Assemblee nationale 2024. UNITS ARE THE INTERIOR MINISTRY'S NUANCES, not parties,
@@ -299,9 +325,9 @@ namespace PoliSim.Data
         private static readonly PoliticalParty[] FranceParties =
         {
             new PoliticalParty("UG",  "Union de la gauche (NFP joint candidacies)", float.NaN, float.NaN, 178),
-            new PoliticalParty("ENS", "Ensemble (majorite presidentielle)",          6.18f, 4.09f, 150, euPosition: 6.27f),
-            new PoliticalParty("RN",  "Rassemblement National",                      6.00f, 8.36f, 125, euPosition: 2.18f),
-            new PoliticalParty("LR",  "Les Republicains",                            7.82f, 7.18f,  39, euPosition: 5.27f),
+            new PoliticalParty("ENS", "Ensemble (majorite presidentielle)",          6.18f, 4.09f, 150, euPosition: 6.27f, lrGen: 6.27f),
+            new PoliticalParty("RN",  "Rassemblement National",                      6.00f, 8.36f, 125, euPosition: 2.18f, lrGen: 8.82f),
+            new PoliticalParty("LR",  "Les Republicains",                            7.82f, 7.18f,  39, euPosition: 5.27f, lrGen: 7.73f),
             new PoliticalParty("DVD", "Divers droite",                               float.NaN, float.NaN, 27),
             new PoliticalParty("UXD", "Union de l'extreme droite (RN-Ciotti)",       float.NaN, float.NaN, 17),
             new PoliticalParty("DVG", "Divers gauche",                               float.NaN, float.NaN, 12),
@@ -309,8 +335,8 @@ namespace PoliSim.Data
             new PoliticalParty("HOR", "Horizons",                                    float.NaN, float.NaN,  6),
             new PoliticalParty("DVC", "Divers centre",                               float.NaN, float.NaN,  6),
             new PoliticalParty("UDI", "Union des democrates et independants",        float.NaN, float.NaN,  3),
-            new PoliticalParty("SOC", "Parti socialiste (outside the UG banner)",    3.36f, 2.73f,   2, euPosition: 6.27f),
-            new PoliticalParty("ECO", "Ecologistes",                                 2.30f, 1.70f,   1, euPosition: 6.20f),
+            new PoliticalParty("SOC", "Parti socialiste (outside the UG banner)",    3.36f, 2.73f,   2, euPosition: 6.27f, lrGen: 3.45f),
+            new PoliticalParty("ECO", "Ecologistes",                                 2.30f, 1.70f,   1, euPosition: 6.20f, lrGen: 2.30f),
             new PoliticalParty("DIV", "Divers",                                      float.NaN, float.NaN,  1),
             new PoliticalParty("EXD", "Extreme droite",                              float.NaN, float.NaN,  1),
         };
@@ -322,12 +348,12 @@ namespace PoliSim.Data
         // the project has not confirmed against a primary total.
         private static readonly PoliticalParty[] ItalyParties =
         {
-            new PoliticalParty("FdI",   "Fratelli d'Italia",              6.40f, 9.13f, 119, euPosition: 3.27f),
-            new PoliticalParty("PD",    "Partito Democratico",             2.93f, 2.33f,  69, euPosition: 6.80f),
-            new PoliticalParty("Lega",  "Lega per Salvini Premier",        6.80f, 8.87f,  66, euPosition: 1.60f),
-            new PoliticalParty("M5S",   "Movimento 5 Stelle",              2.87f, 3.27f,  52, euPosition: 4.07f),
-            new PoliticalParty("FI",    "Forza Italia",                    7.40f, 6.07f,  45, euPosition: 5.33f),
-            new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21, euPosition: 6.79f),
+            new PoliticalParty("FdI",   "Fratelli d'Italia",              6.40f, 9.13f, 119, euPosition: 3.27f, lrGen: 8.47f),
+            new PoliticalParty("PD",    "Partito Democratico",             2.93f, 2.33f,  69, euPosition: 6.80f, lrGen: 2.93f),
+            new PoliticalParty("Lega",  "Lega per Salvini Premier",        6.80f, 8.87f,  66, euPosition: 1.60f, lrGen: 8.67f),
+            new PoliticalParty("M5S",   "Movimento 5 Stelle",              2.87f, 3.27f,  52, euPosition: 4.07f, lrGen: 3.33f),
+            new PoliticalParty("FI",    "Forza Italia",                    7.40f, 6.07f,  45, euPosition: 5.33f, lrGen: 6.73f),
+            new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21, euPosition: 6.79f, lrGen: 4.43f),
             new PoliticalParty("AVS",   "Alleanza Verdi e Sinistra",       float.NaN, float.NaN, 12),
             new PoliticalParty("NM",    "Noi Moderati",                    float.NaN, float.NaN,  7),
             new PoliticalParty("SVP",   "Sudtiroler Volkspartei - PATT",   float.NaN, float.NaN,  3),

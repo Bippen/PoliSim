@@ -8642,3 +8642,77 @@ change that looks like a bug in a later measurement.
 
 **Bar:** fourteen checks green, six simulation checks green, and the campaign/election set — actions,
 clock, offices, staff, reactivity, strategy, AI, election day, election night, reach — all exit 0.
+
+## 135. D-5 (a), THE RULING HALF — game over only on leaving office, and Sweden 2022 seats the government Sweden seated (2026-08-31)
+
+**Ruled (a): wire the campaign; game over ONLY on leaving office.** This is the half that needed the
+ruling. W-G1 wrote down exactly why it could not be built: *"there is no party for the vote model to
+award the player's fate to. Until the player IS one of these parties, the win/lose rule stays exactly the
+approval threshold it has always been."* C-R2 gave the player a party. This closes it.
+
+### Office is CABINET MEMBERSHIP — and the model already knew the difference
+
+`GovernmentOption` has always distinguished `Cabinet` from `Support`, and **the Tidö arrangement is the
+worked example**: SD supported the 2022 government from outside and held no ministry. Counting support as
+office would let a player govern from opposition. **A party can gain seats and leave office, or lose seats
+and stay** — which is why this is not a seat comparison.
+
+### ⚠ THREE STATES, AND ONLY ONE ENDS THE GAME
+
+In cabinet → play continues. Out of cabinet → **office lost, game over.** ⚠ **No government could be
+formed at all** — a hung chamber, or a country whose office test cannot run → **play continues and says
+so.** "Nobody could form a government" is not "you were thrown out", and ending a game on a modelling gap
+would be the worst kind of invented verdict. The approval threshold **survives, narrowed and named**: the
+four countries whose vote model returns `NotImplemented` produce no chamber, so there the old rule still
+decides and the reason text says which rule ended the game. Replacing it with nothing would have made
+those four **unlosable**, a larger change than the ruling asked for.
+
+### What it took: one sourced axis, and one definition of the declarations
+
+- **`PoliticalParty.LrGen`** — CHES 2024 `lrgen`, the party's OVERALL ideological position, seeded for all
+  **31** scored EU units from `ElectionsData/positions/party_positions.md`. ⚠ It is a **different axis
+  from `LrEcon`** and the difference matters: §29 weights the general axis for the ideological term and
+  the economic/social/EU triple for the policy term, so collapsing them would make two parties who agree
+  on economics and nothing else read as natural partners. ⚠ **The USA has none and is not given one** —
+  GPS 2019 has no general left-right item, and the file records both US rows as `[UNCONFIRMED]`.
+- **`DeclaredRedLines`** is now the ONE definition. `CoalitionFilm` delegates to it rather than keeping a
+  second copy — that type's own stated reason for existing is that two surfaces must not disagree about
+  which coalitions are possible, and a second copy would have been exactly that.
+- **`ChamberRules`** carries negative parliamentarism, SOURCED per constitution (Regeringsformen 6 kap.
+  4 § for Sweden; Grundgesetz Art. 63 requires a positive majority in Germany). ⚠ The default is the
+  **strict** rule: it makes governments harder to form, never easier, so where the model is unsure it errs
+  toward "no government" rather than toward inventing one.
+
+### ⚠ THE ASSERTION WHOSE ANSWER IS PUBLIC RECORD
+
+| country | declared lines | cabinet formed | in office / out |
+|---|---|---|---|
+| United States | derived only | REP | 1 / 1 |
+| **Sweden** | **SOURCED** | **M+KD+L** | 3 / 5 |
+| Germany | derived only | CDU+AfD+CSU | 3 / 6 |
+| France | derived only | ENS+RN+LR | 3 / 12 |
+| Italy | derived only | FdI+Lega | 2 / 12 |
+| Poland | derived only | PiS | 1 / 4 |
+
+**Sweden 2022 forms M+KD+L, with SD supporting from outside and S out of office — the government Sweden
+actually formed**, from sourced positions and sourced declarations, with nothing fitted to the answer.
+
+⚠ **And the table shows exactly what the missing declarations cost.** Germany forms **CDU+AfD+CSU** — a
+government the *Brandmauer* makes impossible, and the Brandmauer is a declared fact that is not on disk.
+The column says `derived only` rather than hiding it behind a green result. **Inventing Germany's
+declarations would be inventing the central political fact of its party system.**
+
+⚠ **Proven in both directions.** With Sweden's declared lines removed, the check goes red and names the
+failure: the chamber then seats Socialdemokraterna, a party that lost office in 2022. That is the
+declarations doing their work, shown rather than asserted.
+
+**A test that discriminates nowhere is a constant wearing a function's name** — so the suite asserts that
+some country puts some parties in office and others out, and that a country with no player party returns
+a *reason* rather than a verdict.
+
+**Bar:** simulation group **six → seven**; fourteen checks green; trajectories 6 of 6 byte-identical;
+films 81/0/0 with 81 capture-identity proofs; the rule-15 diff 78/0/3; save/load round trip green.
+
+⚠ **What remains of D-5 (a): the rail cell and a live `CampaignSnapshot`.** `GameController.cs` still says
+*"No player path sets `_campaignScreen`"*, and the eight Track E screens are still reachable only from the
+capture driver. The ruling half is done; the UI half is its own item.

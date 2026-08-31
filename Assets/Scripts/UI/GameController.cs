@@ -5347,17 +5347,68 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Called when the player dismisses the election reveal screen - only NOW does a loss actually set the game-over state (a win just returns to the dashboard).</summary>
+        /// <summary>Called when the player dismisses the election reveal screen - only NOW does a loss actually set the game-over state (a win just returns to the dashboard).
+        ///
+        /// <para>⚠ <b>D-5 (a), RULED 2026-08-31: GAME OVER ONLY ON LEAVING OFFICE.</b> R-CL1 ruled it and
+        /// W-G1 recorded why it could not be built — *"there is no party for the vote model to award the
+        /// player's fate to"*. C-R2 gave the player a party; `GovernmentFormation` answers the question.
+        /// The chamber the election produced forms a government, and the game ends only if the player's
+        /// party is **not in its cabinet**.</para>
+        ///
+        /// <para>⚠ <b>Three states, not two, and only one of them ends the game.</b> In cabinet: the game
+        /// continues. Out of cabinet: office lost, game over. **No government could be formed at all**
+        /// (a hung chamber, or a country whose office test cannot run): the game continues and says so —
+        /// "nobody could form a government" is not "you were thrown out", and ending a game on a
+        /// modelling gap would be the worst kind of invented verdict.</para>
+        ///
+        /// <para>⚠ <b>The approval threshold survives, narrowed and named.</b> Four of the six countries
+        /// return `NotImplemented` from the vote model, so no chamber is produced and no office test can
+        /// run; there the old `ElectionSystem.LosingThreshold` rule still decides, exactly as before, and
+        /// the reason text says which rule ended the game. **Replacing it with nothing would make those
+        /// four unlosable**, which is a larger change than this ruling asked for.</para>
+        /// </summary>
         private void DismissElectionResult()
         {
-            if (_pendingElectionResult != null && !_pendingElectionResult.Won)
+            if (_pendingElectionResult == null) { return; }
+
+            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry);
+            if (government.HasGovernment)
+            {
+                if (!government.PlayerInCabinet)
+                {
+                    _isGameOver = true;
+                    string standing = government.PlayerSupports
+                        ? "supporting it from outside"      // Tidö's own distinction: support is not office.
+                        : "in opposition";
+                    _gameOverReason = $"Out of office at year {_pendingElectionTurn}: the chamber formed a "
+                        + $"{government.CabinetDescription} government with {_playerCountry.PlayerPartyAbbrev} {standing}."
+                        + (government.DeclarationsSourced
+                            ? string.Empty
+                            : " (Formed on DERIVED red lines only - this country's declared refusals are not sourced.)");
+                }
+
+                _pendingElectionResult = null;
+                return;
+            }
+
+            // No office test was possible. Either no government could be formed from this chamber, or the
+            // country has no live vote model at all - and those are different things from losing office.
+            if (_pendingElectionResult != null && !_pendingElectionResult.Won && !HasLiveVoteModel())
             {
                 _isGameOver = true;
-                _gameOverReason = $"Lost re-election at year {_pendingElectionTurn} with {_pendingElectionResult.ApprovalAtElection:F1} approval " +
-                    $"(needed at least {ElectionSystem.LosingThreshold:F0}).";
+                _gameOverReason = $"Lost re-election at year {_pendingElectionTurn} with {_pendingElectionResult.ApprovalAtElection:F1} approval "
+                    + $"(needed at least {ElectionSystem.LosingThreshold:F0}). This country has no modelled vote, "
+                    + "so the approval threshold decided it.";
             }
+
             _pendingElectionResult = null;
         }
+
+        /// <summary>Whether this country's election runs through the vote model rather than returning
+        /// `NotImplemented`. ⚠ Asked of the model rather than hard-coded to two country names, so a third
+        /// country gaining a live path does not leave a stale list behind it.</summary>
+        private bool HasLiveVoteModel() =>
+            NationalElection.TryPredictShares(PlayerCountryId, out _);
 
         /// <summary>
         /// STEP 3's VERDICT SCREEN (R-S3c/R-S3d): pass/fail per objective with its MEASURED MARGIN,

@@ -266,6 +266,12 @@ namespace PoliSim.EditorTools
                 // ~50% double-count in the open 100+ band on its first run.
                 ("CohortSubstrateDiagnostic", CohortSubstrateDiagnostic.Run),
                 ("CohortAgingStepDiagnostic", CohortAgingStepDiagnostic.Run),
+
+                // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for
+                // every party of every country as the player's, so it belongs to this group on the same
+                // cost argument as the rest. ⚠ Its Sweden 2022 assertion is the one in the suite whose
+                // answer is PUBLIC RECORD rather than the model's own opinion.
+                ("OfficeTestDiagnostic", OfficeTestDiagnostic.Run),
             };
 
             var names = new string[simulation.Length];

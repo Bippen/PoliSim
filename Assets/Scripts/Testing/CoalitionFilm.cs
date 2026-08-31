@@ -47,18 +47,11 @@ namespace PoliSim.Testing
         /// <summary>The DERIVED lines alone - the counterfactual that shows what the declarations are doing.</summary>
         public static List<RedLine> DerivedOnly() => DerivedRedLines.From(Lrgen, Galtan);
 
-        /// <summary>Derived plus the DECLARED lines, each carrying its citation.</summary>
-        public static List<RedLine> AllLines()
-        {
-            List<RedLine> lines = DerivedOnly();
-            lines.Add(new RedLine(C, SD, RedLineKind.Declared, blocksSupport: true,
-                basis: "DECLARED: Centerpartiet will not sit in or support a government dependent on SD - Loof, SVT Agenda 2017-05-14, verbatim; conduct 2022 (backed Andersson over Kristersson). See ElectionsData/sweden/coalition_declarations_2022.md"));
-
-            const string noSdMinisters = "DECLARED: promised in the 2022 campaign not to let SD sit in government, while accepting its support - Tidoavtalet 2022-10-14 (cabinet M+KD+L, SD outside with no ministerial post). See ElectionsData/sweden/coalition_declarations_2022.md";
-            lines.Add(new RedLine(M, SD, RedLineKind.Declared, blocksSupport: false, basis: noSdMinisters));
-            lines.Add(new RedLine(KD, SD, RedLineKind.Declared, blocksSupport: false, basis: noSdMinisters));
-            lines.Add(new RedLine(L, SD, RedLineKind.Declared, blocksSupport: false, basis: noSdMinisters));
-            return lines;
-        }
+        /// <summary>Derived plus the DECLARED lines, each carrying its citation.
+        /// D-5 (a): delegated to `DeclaredRedLines`, which is now the ONE definition - this type's own
+        /// argument for existing is that two surfaces must not disagree about which coalitions are
+        /// possible, and keeping a second copy here would have been exactly that.</summary>
+        public static List<RedLine> AllLines() =>
+            DeclaredRedLines.For(PoliSim.Data.CountryId.Sweden, PoliSim.Data.PartySystems.For(PoliSim.Data.CountryId.Sweden));
     }
 }
