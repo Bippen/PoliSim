@@ -41,6 +41,85 @@ namespace PoliSim.Simulation
         /// <summary>Smallest GDP a country can fall to - keeps a shrinking economy able to recover instead of locking at exactly 0 (0 * anything is still 0). Public so EventSystem's GDP shocks share the same floor.</summary>
         public const float MinGdp = 1f;
 
+
+        // --- C-N4: the disposable-income term ------------------------------------------------------
+        //
+        // ⚠ WHY THIS EXISTS. C-N4 measured a +10-point income-tax rise moving FOUR EconomyState fields -
+        // ApprovalRating, Budget, GovernmentDebt, Gini - and leaving THIRTY-TWO unmoved, GDP and
+        // Consumption among them. The C term was a fixed share of prior GDP adjusted by the interest rate
+        // and confidence and by nothing else, so a tax rise took money from households and consumption
+        // never learned of it, while government spending entered the same identity directly as G. That is
+        // a STRUCTURAL ASYMMETRY, not a calibration gap: the revenue side of fiscal policy had no output
+        // channel at all, and C-C11 measured its multiplier as exactly 0.000 at every horizon.
+
+        /// <summary>
+        /// ⚠ **SOURCED, with its vintage, its basis and its stretch stated — not authored.**
+        ///
+        /// <para>**Johnson, Parker &amp; Souleles, "Household Expenditure and the Income Tax Rebates of
+        /// 2001", American Economic Review 96(5), December 2006, pp. 1589–1610.** Households spent
+        /// **20–40 % of their rebates on nondurable goods in the quarter the rebate arrived**, and
+        /// **roughly two-thirds cumulatively** across that quarter and the next. A turn here is a YEAR
+        /// (`DaysPerTurn` = 365), so the cumulative six-month figure is the one that matches the model's
+        /// period; the impact quarter's 20–40 % would understate a year.</para>
+        ///
+        /// <para>⚠ **Three limits, stated rather than buried** — the R-CL2 idiom, where a ruled-in proxy
+        /// carries its stretch out loud:</para>
+        /// <list type="number">
+        /// <item><description>It is a **US** estimate. **No Swedish or euro-area anchor was readable**, and
+        /// one is BILLED rather than guessed.</description></item>
+        /// <item><description>It measures a **transitory rebate**. A permanent rate change plausibly has a
+        /// HIGHER propensity by permanent-income logic, so this figure is if anything **conservative** for
+        /// the use it is put to here — and understating a channel is the safer error than overstating
+        /// one.</description></item>
+        /// <item><description>The source gives a **range and a cumulative figure**, not a point estimate.
+        /// This takes the cumulative one because the period matches; the range is on the record above so
+        /// a later pass can argue with the choice rather than rediscover it.</description></item>
+        /// </list>
+        /// </summary>
+        private const float MarginalPropensityToConsume = 0.67f;
+
+        /// <summary>
+        /// The household tax burden as a share of GDP, from a set of rates.
+        ///
+        /// <para>⚠ **Corporate tax and tariffs are excluded, and that is a judgement stated at the site.**
+        /// Neither is levied on households, so neither belongs in a household disposable-income term.
+        /// `GetTotalTaxRevenue` already excludes tariffs for its own reason; corporate tax is excluded
+        /// here and not there because the two answer different questions — what the state collects, and
+        /// what households give up.</para>
+        /// </summary>
+        private static float HouseholdTaxBurdenShare(Country country, bool atBaseline)
+        {
+            float share = 0f;
+            foreach (TaxLine line in country.TaxLines)
+            {
+                if (!line.IsImplemented) { continue; }
+                if (line.Type == TaxType.CorporateTax || line.Type == TaxType.Tariffs) { continue; }
+
+                float rate = line.Rate;
+                if (atBaseline && !country.BaselineTaxRates.TryGetValue(line.Type, out rate)) { rate = line.Rate; }
+
+                share += rate / 100f * line.BaseShareOfGdp;
+            }
+
+            return share;
+        }
+
+        /// <summary>
+        /// C-N4: how much this turn's consumption is reduced by the player having raised the household tax
+        /// burden above the country's seeded position — or raised by having cut it.
+        ///
+        /// <para>`Δconsumption = −MPC × Δ(household tax burden as a share of GDP) × prior GDP`. The money
+        /// leaves households and the C term now learns of it, which is the channel the model was missing.</para>
+        ///
+        /// <para>⚠ **Exactly zero at the seeded rates**, so the no-policy trajectory cannot move. That is
+        /// the whole reason the anchor is `Country.BaselineTaxRates` rather than a bare zero.</para>
+        /// </summary>
+        private static float DisposableIncomeConsumptionDelta(Country country, float priorGdp)
+        {
+            float burdenNow = HouseholdTaxBurdenShare(country, atBaseline: false);
+            float burdenSeeded = HouseholdTaxBurdenShare(country, atBaseline: true);
+            return -MarginalPropensityToConsume * (burdenNow - burdenSeeded) * priorGdp;
+        }
         /// <summary>
         /// Computes this turn's Consumption and Investment from prior GDP, the interest rate, and
         /// confidence, then sets GDP to their sum plus government spending and net exports
@@ -61,7 +140,8 @@ namespace PoliSim.Simulation
             // Q2: the single book - the identity reads EFFECTIVE consumer confidence (base × the
             // wage-sentiment factor), never the stored policy-drift base directly.
             float effectiveConsumerConfidence = EffectiveConsumerConfidence(country);
-            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence;
+            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence
+                                + DisposableIncomeConsumptionDelta(country, priorGdp);
             state.Investment = priorGdp * BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
 
             float gdpFromIdentity = state.Consumption + state.Investment + governmentSpending + state.TradeBalance;
@@ -350,13 +430,24 @@ namespace PoliSim.Simulation
             // is the PERIOD-OPEN anchor (the fifth fixed reference), not the live gap - see the
             // anchored overload's comment for the measured @8%shock divergence of the live form.
             float effectiveConsumerConfidence = EffectiveConsumerConfidence(country, wageGrowthGapAtPeriodOpen);
-            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence;
+            state.Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence
+                                + DisposableIncomeConsumptionDelta(country, priorGdp);
             state.Investment = priorGdp * BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
 
             float share = BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence
                 + BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
             float contraction = Mathf.Clamp((1f - OutputGapReversionSpeed) * share, 0f, 0.99f);
-            float attractorTerm = (1f - OutputGapReversionSpeed) * (governmentSpending + state.TradeBalance)
+            // ⚠ C-N4, AND THE SECOND LOSS POINT THIS ITEM FOUND BY MEASURING ITS OWN FIRST BUILD.
+            // The daily path does NOT build GDP from `state.Consumption`. It solves an analytic fixed
+            // point in which C and I enter as SHARE COEFFICIENTS (`share`) and only G, NX and potential
+            // enter as LEVELS (`attractorTerm`). So writing the disposable-income delta into
+            // `state.Consumption` alone moved the reported STAT and left GDP untouched — a cosmetic fix,
+            // which the first run of this build produced and the diagnostic caught. The delta is a LEVEL
+            // shift to autonomous demand, exactly like G and NX, so it belongs here beside them.
+            // ⚠ This is also why the SPENDING multiplier always worked and the tax one never did: G was
+            // already a level in this line, and nothing else households did ever reached it.
+            float disposableIncomeDelta = DisposableIncomeConsumptionDelta(country, priorGdp);
+            float attractorTerm = (1f - OutputGapReversionSpeed) * (governmentSpending + state.TradeBalance + disposableIncomeDelta)
                 + OutputGapReversionSpeed * potentialGdpAtPeriodOpen;
 
             float contractionPerDay = Mathf.Pow(contraction, MacroSliceFractionPerDay);

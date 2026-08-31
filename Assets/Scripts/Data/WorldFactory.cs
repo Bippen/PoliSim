@@ -1049,6 +1049,8 @@ namespace PoliSim.Data
             // place the seeded income-tax rate exists - so the anchor and the TaxLine cannot drift.
             country.BaselineIncomeTaxRate = incomeTax;
 
+            // C-N4: the disposable-income term measures a player's change from the country's OWN seeded
+            // rates, so the seeded position contributes exactly zero - `BaselineWelfarePrograms`' idiom.
             country.TaxLines.AddRange(new[]
             {
                 new TaxLine(TaxType.IncomeTax, incomeTax, isImplemented: true),
@@ -1064,6 +1066,9 @@ namespace PoliSim.Data
                 new TaxLine(TaxType.CarbonTax, carbonTax, carbonTaxImplemented),
                 new TaxLine(TaxType.StampDuty, ModestStampDutyRate, isImplemented: false),
             });
+
+            country.BaselineTaxRates.Clear();
+            foreach (TaxLine line in country.TaxLines) { country.BaselineTaxRates[line.Type] = line.Rate; }
         }
 
         /// <summary>Every WelfareProgram's default starting GenerosityLevel if/when a player later implements it - a plausible mid-range starting point, not a researched figure, mirroring the "modest/inactive" tax lines' own placeholder-rate idiom.</summary>

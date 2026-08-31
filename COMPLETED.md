@@ -8008,3 +8008,93 @@ that.
 
 `FilmDiffCheck` exit 0 on the clean pair and on the changed pair, exit 1 on the mismatch. No simulation
 path touched.
+
+## 126. C-N4 BUILT — the disposable-income term, two loss points, and a clone escape the diff caught (2026-08-31)
+
+**Elias ruled the build.** *A tax rise moving four fields while spending enters the identity directly as G
+is a structural asymmetry, not a calibration gap.*
+
+### The magnitude — SOURCED, with its stretch stated
+
+**Johnson, Parker & Souleles, "Household Expenditure and the Income Tax Rebates of 2001", American
+Economic Review 96(5), December 2006, pp. 1589–1610.** Households spent **20–40 % of the rebates on
+nondurables in the quarter of arrival**, and **roughly two-thirds cumulatively** across that quarter and
+the next. A turn here is a **year**, so the cumulative figure is the one whose period matches:
+**MPC = 0.67.**
+
+⚠ **Three limits, on the record rather than buried** (the R-CL2 idiom):
+1. It is a **US** estimate; **no Swedish or euro-area anchor was readable** and one is **BILLED**.
+2. It measures a **transitory rebate**; a permanent rate change plausibly has a *higher* propensity, so
+   this is if anything **conservative** — and understating a channel is the safer error.
+3. The source gives a **range**, recorded so a later pass can argue with the choice rather than
+   rediscover it.
+
+⚠ **Romer & Romer's −2 to −3 is not a target and is not transplanted.** It is a US estimate of an
+*outcome*; this item sourced an *input* and reports whatever outcome follows.
+
+### Two loss points — and the second was found only because the first fix was measured
+
+1. **`ApplyNationalAccounts` had no disposable-income term.** Consumption was a fixed share of prior GDP
+   times interest and confidence, and nothing else.
+2. ⚠ **The DAILY path does not build GDP from `state.Consumption` at all.** It solves an analytic fixed
+   point where C and I enter as **share coefficients** and only G, NX and potential enter as **levels**.
+   The first build wrote the delta into `state.Consumption` — **the reported stat moved and GDP did not.**
+   A cosmetic fix, caught by re-running the diagnostic instead of trusting the edit. The delta is a level
+   shift to autonomous demand and belongs in `attractorTerm`, beside G and NX. ⚠ **That is also why the
+   spending multiplier always worked and the tax one never did: G was already a level in that line.**
+
+### ⚠ It is SAFE, not BASELINE — and the reason is the anchor
+
+The term measures the household burden against **`Country.BaselineTaxRates`**, a snapshot of each
+country's own seeded rates — `BaselineWelfarePrograms`' idiom, adopted for its own recorded reason. A
+country at its seeded rates contributes **exactly zero**.
+
+> **Trajectories: 6 of 6 byte-identical to `traj_cc7_*`.** The ruling anticipated a new family; **there is
+> none, and the dump says so rather than the design claiming it.**
+
+### The acceptance test — the hard constraint HOLDS
+
+| dial | mult L | L+1 | L+4 |
+|---|---|---|---|
+| **Spending +2 % / +10 % / −10 %** | **0.603** | **0.850 / 0.852** | **0.959 / 0.966** |
+| Income tax ±1pt, ±5pt | 0.485 | 0.680–0.685 | 0.757–0.766 |
+| VAT +1pt, +5pt | 0.485 | 0.680–0.682 | 0.756–0.760 |
+| ⚠ Corporate +5pt | **0.000** | 0.000 | 0.000 |
+
+**The spending multiplier is unchanged to the digit and still inside Ramey's 0.6–1.0 at every horizon.**
+The tax multiplier is now **0.485 → 0.76**, sitting just below the spending multiplier — the textbook
+ordering for an MPC below one, which is a sanity signal the build did not aim at.
+
+⚠ **Corporate tax is still 0.000, by design and stated:** it is excluded from the *household* burden
+because it is not levied on households. **That is a separate channel and a separate item** — named here,
+not smuggled in.
+
+### ⚠ The clone escape the film diff caught, on its first productive use
+
+The rule-15 diff reported **two frames changed** — `05e_budget_swf`, `90_interrupt_held`. Not noise: the
+three-run stability test had already shown both stable. The cause was the **R4-1 clone-escape class, for
+the third recorded time**: `ClonePreviewCountry`'s hand-list did not carry `BaselineTaxRates`, so a
+preview clone fell back to the live rate for every line, its delta was always zero, **and the preview
+would have shown a tax change as having no effect on output while the real turn showed one.** A preview
+that disagrees with the turn it previews is the one thing `EstimateBudgetBill` exists to prevent.
+
+Added to the hand-list → **the diff went to 78 identical, 0 differ.** ⚠ **Both new tools proved themselves
+here:** the film diff found a real bug rather than reporting noise, and the fix made it go silent.
+
+### Per country, and an unflattering finding
+
+A +10-point income-tax rise moves consumption by **−2.68 % of GDP in all six countries — identically.**
+⚠ That is a finding, not a tidy result: `TaxLine.BaseShareOfGdp` is a **per-tax-type** constant, not a
+per-country one. What differs per country is the **level** of the household burden — 26.2 % for the USA,
+which has no VAT, against 56.7 % for France — and not the response to a change in it. **Real income-tax
+bases differ substantially across these six, so a per-country base share is a real and separate sourcing
+item.** This term is exactly as country-specific as the tax bases it inherits, and no more.
+
+### The bar
+
+`TaxTransmissionDiagnostic` exit 0 — ⚠ **its assertion FLIPPED when the channel was built**, which is the
+self-retiring design working: it required `Consumption` to be UNMOVED, the build made it move, it fired,
+and it now guards the channel from the other side (Consumption **and** GDP must both move, so a regression
+that severs the transmission fails here). `ResponsivenessAuditHarness` exit 0 · ten checks 10 of 10 ·
+four simulation checks 0 · RT PASS 12 · `BudgetDraftEstimateDiagnostic` exit 0 · trajectories **6 of 6
+byte-identical** · films 81/0/0 at 1280 and 2560 with the identity trap green · film diff **78/0/3**.

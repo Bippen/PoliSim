@@ -64,40 +64,95 @@ namespace PoliSim.EditorTools
             // stops, and the way to bind it is to require Consumption to be in the UNMOVED list. If a
             // later change gives tax a consumption channel, THIS fails, and the finding is retired by the
             // guard rather than by someone remembering to.
-            bool consumptionUnmoved = unmoved.Contains("Consumption");
+            // ⚠ THE ASSERTION FLIPPED WHEN THE CHANNEL WAS BUILT, WHICH IS THE DESIGN WORKING.
+            // Before C-N4's build this required Consumption to be UNMOVED - the finding it was reporting.
+            // The build made it move, the assertion fired, and it was rewritten to guard the channel from
+            // the other side: Consumption AND GDP must BOTH move, so a regression that severs the
+            // transmission fails here instead of quietly restoring a zero tax multiplier.
             int failures = 0;
-            if (!consumptionUnmoved)
+            bool consumptionMoved = !unmoved.Contains("Consumption");
+            bool gdpMoved = !unmoved.Contains("GDP");
+
+            if (!consumptionMoved)
             {
                 failures++;
-                Debug.LogError("C-N4: Consumption MOVED under a tax rise. That is the channel this item exists to report as "
-                               + "missing - if it now exists, the finding is stale and the proposal below must be re-derived "
-                               + "rather than carried forward.");
+                Debug.LogError("C-N4: Consumption did NOT move under a tax rise. The disposable-income term is severed - "
+                               + "the money leaves households and the C term does not learn of it, which is the exact defect "
+                               + "this item was opened to fix.");
             }
 
-            sb.Append(F("\n    THE LOSS POINT: {0}\n", consumptionUnmoved ? "CONSUMPTION" : "⚠ NOT WHERE THIS ITEM SAYS - see the error above"));
-            sb.Append("    `MacroSystem.ApplyNationalAccounts` computes\n");
-            sb.Append("        Consumption = priorGdp * BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence\n");
-            sb.Append("    ⚠ There is NO DISPOSABLE-INCOME TERM. Consumption is a fixed share of PRIOR GDP, adjusted by the\n");
-            sb.Append("    interest rate and by confidence - and by nothing else. A tax rise takes money from households and\n");
-            sb.Append("    the C term never learns of it. Government spending enters the same identity DIRECTLY, as its own\n");
-            sb.Append("    G term, which is exactly why the spending multiplier works and the tax one is identically zero.\n");
-            sb.Append("    The revenue reaches Budget and GovernmentDebt, and the rise reaches ApprovalRating through\n");
-            sb.Append("    `TaxHikeApprovalSensitivity`. Both are real. Neither is output.\n");
+            if (!gdpMoved)
+            {
+                failures++;
+                Debug.LogError("C-N4: Consumption moved and GDP did NOT. ⚠ That is the SECOND loss point this item found: "
+                               + "the daily path builds GDP from an analytic fixed point where C enters as a share COEFFICIENT "
+                               + "and only G, NX and potential enter as LEVELS, so a delta written into state.Consumption alone "
+                               + "is cosmetic. The delta must sit in `attractorTerm` beside G and NX.");
+            }
 
-            sb.Append("\n    THE PROPOSAL - strikeable, and NOTHING IS APPLIED\n");
-            sb.Append("    P-N4a. Give the C term a disposable-income input, so a tax change reaches output through the\n");
-            sb.Append("           household budget rather than through a coefficient bolted onto GDP. It is the one channel\n");
-            sb.Append("           that is structurally honest: it is how the money actually moves.\n");
-            sb.Append("    P-N4b. ⚠ THE MAGNITUDE STAYS BILLED. Romer & Romer (AER 100(3), 2010) measure -2 to -3 for the\n");
-            sb.Append("           United States from narrative shocks, and it is the LARGEST estimate in the literature.\n");
-            sb.Append("           It is NOT transplanted to Sweden. A Swedish anchor needs Riksbank WP 365 (2019) or KI\n");
-            sb.Append("           Occasional Paper 2021:25, neither readable from here.\n");
-            sb.Append("    P-N4c. ⚠ HARD CONSTRAINT: the spending multiplier is 0.603 / 0.850 / 0.966, inside Ramey (JEP\n");
-            sb.Append("           33(2), 2019) 0.6-1.0 at every horizon. ANY fix that moves it out of that band is REJECTED\n");
-            sb.Append("           by that fact alone. Since C and G share the same identity, a change to C moves the\n");
-            sb.Append("           measured G multiplier too - so `ResponsivenessAuditHarness` is the acceptance test, not a\n");
-            sb.Append("           formality.\n");
-            sb.Append("    P-N4d. BASELINE when it lands, and NOT in the same pass as C-N5.\n");
+
+            // ⚠ "EXPLAINED PER COUNTRY" - and it can be arithmetic rather than six more simulation runs,
+            // because the term is a closed form: -MPC x (household burden share change) x GDP. Six rows of
+            // what a +10-point income-tax rise does to each country's C term, from that country's OWN
+            // seeded portfolio, so the differences are the seeds' and not the formula's.
+            sb.Append("\n    THE TERM, PER COUNTRY - a +10-point income-tax rise, from each country's own seeded portfolio\n");
+            sb.Append("    country   income tax   household burden   d burden      GDP        dC        dC as % of GDP\n");
+            sb.Append("    ------------------------------------------------------------------------------------------\n");
+
+            SimulationRandom.Seed(Seed);
+            World probe = WorldFactory.CreateDefault();
+            foreach (Country c in probe.Countries)
+            {
+                float gdp = c.State.GDP;
+                float burden = 0f, incomeRate = 0f, incomeShare = 0f;
+                foreach (TaxLine line in c.TaxLines)
+                {
+                    if (!line.IsImplemented) { continue; }
+                    if (line.Type == TaxType.CorporateTax || line.Type == TaxType.Tariffs) { continue; }
+                    burden += line.Rate / 100f * line.BaseShareOfGdp;
+                    if (line.Type == TaxType.IncomeTax) { incomeRate = line.Rate; incomeShare = line.BaseShareOfGdp; }
+                }
+
+                float dBurden = 0.10f * incomeShare;
+                float dC = -0.67f * dBurden * gdp;
+                sb.Append(F("    {0,-9} {1,10:F1} {2,17:P2} {3,10:P2} {4,9:F0} {5,9:F2} {6,15:P2}\n",
+                    c.Id, incomeRate, burden, dBurden, gdp, dC, gdp > 0 ? dC / gdp : 0));
+            }
+
+            sb.Append("    ⚠ READ THE LAST COLUMN TWICE: it is IDENTICAL for all six, and that is a FINDING rather than a\n");
+            sb.Append("    tidy result. `TaxLine.BaseShareOfGdp` is a per-TAX-TYPE constant, not a per-country one, so an\n");
+            sb.Append("    income-tax POINT moves every country's consumption by the same share of its own GDP. What differs\n");
+            sb.Append("    per country is the LEVEL of the household burden - 26.2% for the USA, which has no VAT, against\n");
+            sb.Append("    56.7% for France - and not the response to a change in it.\n");
+            sb.Append("    ⚠ Real income-tax bases differ substantially across these six, so a PER-COUNTRY base share is a\n");
+            sb.Append("    real and separate sourcing item. It is NAMED here rather than invented: this term is exactly as\n");
+            sb.Append("    country-specific as the tax bases it inherits, and no more.\n");
+            sb.Append(F("\n    THE CHANNEL: {0}\n", consumptionMoved && gdpMoved
+                ? "LIVE. The tax rise reaches Consumption AND GDP. Built at C-N4; this harness now guards it."
+                : "⚠ SEVERED - see the errors above."));
+            sb.Append("    ⚠ TWO loss points were found, and the second only because the first fix was measured rather than\n");
+            sb.Append("    trusted:\n");
+            sb.Append("      1. `ApplyNationalAccounts` had NO DISPOSABLE-INCOME TERM - consumption was a fixed share of prior\n");
+            sb.Append("         GDP times interest and confidence, so a tax rise took money from households and the C term\n");
+            sb.Append("         never learned of it, while G entered the identity directly.\n");
+            sb.Append("      2. ⚠ The DAILY path does not build GDP from `state.Consumption` at all. It solves an analytic\n");
+            sb.Append("         fixed point where C and I enter as SHARE COEFFICIENTS and only G, NX and potential enter as\n");
+            sb.Append("         LEVELS. Writing the delta into `state.Consumption` alone moved the reported stat and left GDP\n");
+            sb.Append("         untouched - a cosmetic fix. The delta belongs in `attractorTerm`, beside G and NX.\n");
+            sb.Append("    That second point is also the reason the SPENDING multiplier always worked: G was already a level\n");
+            sb.Append("    in that line, and nothing households did ever reached it.\n");
+
+            sb.Append("\n    THE MAGNITUDE - SOURCED, with its stretch stated\n");
+            sb.Append("    Johnson, Parker & Souleles, American Economic Review 96(5), December 2006, pp. 1589-1610:\n");
+            sb.Append("    households spent 20-40% of the 2001 rebates on nondurables in the quarter of arrival and ROUGHLY\n");
+            sb.Append("    TWO-THIRDS cumulatively over that quarter and the next. A turn here is a YEAR, so the cumulative\n");
+            sb.Append("    figure is the one that matches the period; 0.67 is the model's MPC.\n");
+            sb.Append("    ⚠ Three limits, on the record rather than buried: it is a US estimate and NO Swedish or euro-area\n");
+            sb.Append("    anchor was readable (that one is BILLED); it measures a TRANSITORY rebate, where a permanent rate\n");
+            sb.Append("    change plausibly has a HIGHER propensity, so this is if anything conservative; and the source gives\n");
+            sb.Append("    a RANGE, which is recorded so a later pass can argue with the choice rather than rediscover it.\n");
+            sb.Append("    ⚠ Romer & Romer's -2 to -3 is NOT a target and is NOT transplanted. It is a US narrative-shock\n");
+            sb.Append("    estimate of an OUTCOME; this item sourced an INPUT and reports the outcome that follows.\n");
 
             if (failures == 0) { Debug.Log(sb.ToString()); CheckExit.Finish(0); }
             else { Debug.LogError(sb.ToString()); CheckExit.Finish(1); }

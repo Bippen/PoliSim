@@ -310,6 +310,20 @@ namespace PoliSim.Data
         /// minimum-wage gap.</summary>
         public float BaselineIncomeTaxRate = 30f;
 
+        /// <summary>
+        /// C-N4 (2026-08-31): **every tax line's rate AS SEEDED**, snapshotted by `SeedTaxLines` and never
+        /// mutated — the anchor the disposable-income term measures a player's change from.
+        ///
+        /// <para>⚠ **This is what makes C-N4 SAFE rather than BASELINE, and it is not an accident.** It is
+        /// `BaselineWelfarePrograms`' own idiom, adopted for the same reason that field records: the
+        /// sourced seeds already contain each country's real tax position, so a country sitting at its
+        /// seeded rates must contribute **exactly zero** to the new term, and a player's change is booked
+        /// from the country's own real position rather than from an arbitrary zero. The consequence is
+        /// that the no-policy trajectory cannot move — and the dump is run to prove that rather than the
+        /// reasoning being trusted.</para>
+        /// </summary>
+        public Dictionary<TaxType, float> BaselineTaxRates = new Dictionary<TaxType, float>();
+
         /// <summary>ROUND 4 BATCH 3 (C1): whether housing cost overburden is a tracked stat for
         /// this country - TRUE for the EU five ([VERIFIED] Eurostat whole-population figures),
         /// FALSE for the USA, whose sources measure a different threshold on a different income

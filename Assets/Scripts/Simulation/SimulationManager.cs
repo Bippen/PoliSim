@@ -2705,6 +2705,14 @@ namespace PoliSim.Simulation
                 // R4-1 Clone-escape class) - without it the clone's WelfareEffectDelta would measure
                 // every seeded program as a fresh implementation.
                 BaselineWelfarePrograms = ClonePreviewWelfarePrograms(country.BaselineWelfarePrograms),
+                // ⚠ C-N4 (2026-08-31): the TAX anchor rides the hand-list for exactly the same reason, and
+                // it is the R4-1 clone-escape class caught a third time. `MacroSystem`'s disposable-income
+                // term measures the household burden against these seeded rates; a clone without them
+                // falls back to the LIVE rate for every line, so the clone's delta is always zero and the
+                // PREVIEW would silently show a tax change as having no effect on output while the real
+                // turn showed one. A preview that disagrees with the turn it previews is the one thing
+                // `EstimateBudgetBill` exists to prevent.
+                BaselineTaxRates = new Dictionary<TaxType, float>(country.BaselineTaxRates),
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,
