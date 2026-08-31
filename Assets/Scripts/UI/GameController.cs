@@ -5093,29 +5093,6 @@ namespace PoliSim.UI
         private float GetOvertimeRegulationInput(float fallbackLevel) => _overtimeRegulationInput ?? fallbackLevel;
         private float GetRetrainingProgramInput(float fallbackLevel) => _retrainingProgramInput ?? fallbackLevel;
 
-        private float GetCachedPoliceFundingInput(float fallbackLevel)
-        {
-            return _cachedPoliceFundingInput ?? fallbackLevel;
-        }
-
-        /// <summary>The Sentencing Severity slider's draft absolute level, or <paramref name="fallbackLevel"/> (the country's actual persisted SentencingSeverity) if the player hasn't touched it this turn.</summary>
-        private float GetSentencingSeverityInput(float fallbackLevel)
-        {
-            return _sentencingSeverityInput ?? fallbackLevel;
-        }
-
-        private float GetCachedSentencingSeverityInput(float fallbackLevel)
-        {
-            return _cachedSentencingSeverityInput ?? fallbackLevel;
-        }
-
-        private float GetBailReformInput(float fallbackLevel) => _bailReformInput ?? fallbackLevel;
-        private float GetCachedBailReformInput(float fallbackLevel) => _cachedBailReformInput ?? fallbackLevel;
-        private float GetDrugPolicyInput(float fallbackLevel) => _drugPolicyInput ?? fallbackLevel;
-        private float GetCachedDrugPolicyInput(float fallbackLevel) => _cachedDrugPolicyInput ?? fallbackLevel;
-        private float GetJudicialFundingInput(float fallbackLevel) => _judicialFundingInput ?? fallbackLevel;
-        private float GetCachedJudicialFundingInput(float fallbackLevel) => _cachedJudicialFundingInput ?? fallbackLevel;
-        private float GetBorderEnforcementInput(float fallbackLevel) => _borderEnforcementInput ?? fallbackLevel;
         private float GetCachedBorderEnforcementInput(float fallbackLevel) => _cachedBorderEnforcementInput ?? fallbackLevel;
 
         private float GetFamilyPolicyInput(float fallbackLevel) => _familyPolicyInput ?? fallbackLevel;
