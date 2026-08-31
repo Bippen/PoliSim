@@ -903,12 +903,14 @@ namespace PoliSim.Simulation
 
         /// <summary>Slower than PovertyRate's 0.15 - inequality is a structural distribution, and
         /// real national Ginis move by tenths of a point per year outside genuine upheavals.</summary>
+        /// <remarks>CONVENTION - a reversion speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float GiniReversionSpeed = 0.1f;
 
         /// <summary>Historical extremes as honest gameplay bounds: no national equivalised-income
         /// Gini sits below ~20 (the Nordics' floor era) or above ~65 (South Africa ~63, the recorded
         /// world maximum).</summary>
         private const float MinGiniPercent = 15f;
+        /// <remarks>CONVENTION - a state-space clamp, defence-in-depth against a feedback bug rather than a prediction that the bound is reachable.</remarks>
         private const float MaxGiniPercent = 65f;
 
         /// <summary>Gini-points-per-100%-GenerosityLevel each program removes from the baseline -
@@ -971,6 +973,7 @@ namespace PoliSim.Simulation
         /// <summary>Real wage growth tracks trend productivity one-for-one at equilibrium - the
         /// textbook long-run relation, and the reason the index needs NO per-country growth seed:
         /// PotentialGrowthRate already differentiates the six countries.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float RealWageProductivityPassThrough = 1f;
 
         /// <summary>
@@ -1003,11 +1006,13 @@ namespace PoliSim.Simulation
         /// real wages until they catch up. SIGNED deliberately: disinflation surprise boosts real
         /// wages by the same channel, which is exactly the seed doc's own Poland 2024 story
         /// ("strong nominal growth plus rapidly falling inflation").</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float RealWageInflationErosionSensitivity = 0.3f;
 
         /// <summary>Safety clamp on the per-turn growth rate, not on the index level - the index is
         /// unbounded by construction (display furniture per the ruling); clamps never scale.</summary>
         private const float MaxRealWageGrowthPerTurnPercent = 10f;
+        /// <remarks>CONVENTION - a state-space clamp, defence-in-depth against a feedback bug rather than a prediction that the bound is reachable.</remarks>
         private const float MinRealWageIndex = 1f;
 
         /// <summary>Compounds EconomyState.RealWageIndex by the period's real wage growth: trend
@@ -1054,6 +1059,7 @@ namespace PoliSim.Simulation
                 -MaxRealWageGrowthPerTurnPercent, MaxRealWageGrowthPerTurnPercent);
         }
 
+        /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place.</remarks>
         private static readonly float GiniReversionSpeedPerDay = PerDayReversion(GiniReversionSpeed);
 
         public static void ApplyGiniDaily(Country country) => ApplyGini(country, GiniReversionSpeedPerDay);
@@ -1079,15 +1085,18 @@ namespace PoliSim.Simulation
         /// anchor - mortgage and rent costs track rates with force; this is the strongest of the
         /// three rate sensitivities because the >40%-of-income threshold is exactly where rate
         /// pass-through bites (directionally grounded like every sensitivity here).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float OverburdenRateSensitivity = 1.5f;
 
         /// <summary>Overburden points removed per 100% GenerosityLevel of an implemented
         /// HousingAssistance program - the program's own dedicated stat, stronger than its poverty
         /// side-effect (3) because housing support reaches the housing-cost margin directly.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float OverburdenHousingAssistanceSensitivity = 4f;
 
         /// <summary>Moderate-slow, the PovertyRate class - housing stress follows rate moves within
         /// quarters (mortgage resets, rent renewals), faster than tenure change, slower than markets.</summary>
+        /// <remarks>CONVENTION - a reversion speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float HousingOverburdenReversionSpeed = 0.15f;
 
         /// <summary>Greece 28.9 is the recorded EU maximum - 50 is the honest generous ceiling.</summary>
@@ -1096,14 +1105,17 @@ namespace PoliSim.Simulation
         /// <summary>Homeownership points lost per point of rate above the epoch anchor - higher
         /// rates price buyers out; smaller than overburden's sensitivity and much slower to arrive
         /// (see the reversion speed), because tenure is a stock that turns over in years.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float HomeownershipRateSensitivity = 0.5f;
 
         /// <summary>Homeownership points added per 100% GenerosityLevel of an implemented
         /// HousingAssistance program - deposit/purchase support at the margin, modest.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float HomeownershipHousingAssistanceSensitivity = 2f;
 
         /// <summary>Generational, the LifeExpectancy class - a housing stock's tenure mix moves
         /// over decades.</summary>
+        /// <remarks>CONVENTION - a reversion speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float HomeownershipReversionSpeed = 0.05f;
 
         /// <summary>Germany's real 41.0 is the low structural outlier and Poland's 86.8 the high -
