@@ -6694,3 +6694,107 @@ own recorded note and now this path's too.
 `ShadowBaseline` changed) · nine checks exit 0 · RT PASS 12 scenarios · trajectories **6 of 6
 byte-identical to `traj_cc7_*`** · films: the sweep 81/0/0 at 1280 and 2560, the ledger 6/0 at each,
 `ScreenEdgeCheck` exit 0 over all four sets.
+
+## 107. C-C11 (P-G3) — the responsiveness audit: two constants that should move, one that should not, and nothing moved (2026-08-31)
+
+⚠ **NOTHING WAS APPLIED. `ResponsivenessAuditHarness` has no code path that writes a constant.** Elias's
+pre-ruling is the item: *no constant moves; where the literature disagrees, report the range; where the
+model sits outside every sourced estimate, say so plainly — that is the finding.* All three cases occurred.
+
+### The experiment
+
+Sweden, seed 777, one turn = one year (`DaysPerTurn` 365). Each fiscal dial is **set once as a permanent
+level shift** and the trajectory compared with an otherwise identical no-policy run.
+`multiplier(t) = ΔGDP(t) / impulse`, the impulse being the landing-year budget-balance move the dial
+caused, signed so a positive multiplier always means "output moved the way a stimulus would move it".
+Tax targets are read off the country's own seeded rates and stepped, so no rate in the table is authored.
+
+⚠ **Two experimental errors were made and corrected before any number was published**, both recorded in the
+harness so they are not repeated:
+
+- **Reading at a fixed "year 1" measured the model before the lever moved.** A decision handed to
+  `AdvanceTurn` reaches the state the turn *after*, so year 1 is always identical to the baseline; the
+  first run reported an impulse of 0.00 for every dial and no multiplier at all. Horizons now run from the
+  **landing year** L.
+- ⚠ **Holding a spending dial every year is not a sustained impulse — it COMPOUNDS.** `SpendingLineChanges`
+  is a percentage of the line's own current amount, so re-sending +10 % annually raises the level by 10 %
+  *again* each year while the harness divides by the landing year's impulse. Held that way the table showed
+  spending multipliers climbing **0.603 → 1.5 → 5.3**, which would have been published as the model's
+  dynamics when it was the harness's own compounding. Set once, both kinds of dial are the same
+  experiment — one permanent level shift — and the numbers below are the model's.
+
+### The table
+
+| dial | impulse (L) | ΔGDP L | ΔGDP L+1 | ΔGDP L+4 | mult L | mult L+1 | mult L+4 | ΔUnemp L+4 | ΔInfl L+4 | implied Okun |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Income tax +1pt | −1.98 | 0.00 | 0.00 | 0.00 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | — |
+| Income tax +5pt | −9.92 | 0.00 | 0.00 | 0.00 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | — |
+| Income tax −5pt | +9.92 | 0.00 | 0.00 | 0.00 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | — |
+| VAT +1pt | −2.48 | 0.00 | 0.00 | 0.00 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | — |
+| VAT +5pt | −12.40 | 0.00 | 0.00 | 0.00 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | — |
+| Corporate +5pt | −3.72 | 0.00 | 0.00 | 0.00 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | — |
+| Spending +2 % | +2.27 | 1.37 | 1.93 | 2.17 | **0.603** | 0.850 | 0.959 | −0.002 | +0.036 | −0.006 |
+| Spending +10 % | +11.33 | 6.83 | 9.65 | 10.95 | **0.603** | 0.852 | 0.966 | −0.012 | +0.180 | −0.007 |
+| Spending −10 % | −11.34 | −6.83 | −9.63 | −10.87 | **0.603** | 0.850 | 0.959 | +0.011 | −0.181 | −0.007 |
+
+### The sourced comparison
+
+- **Spending multiplier** — Ramey, *Journal of Economic Perspectives* 33(2), Spring 2019, pp. 89–114
+  ("Ten Years after the Financial Crisis"): the bulk of estimates for average spending multipliers lie in a
+  narrow range of **0.6 to 1.0**.
+- **Tax** — Romer & Romer, *American Economic Review* 100(3), June 2010, pp. 763–801: an exogenous tax
+  increase of 1 % of GDP lowers real GDP by roughly **2 to 3 percent** — a tax multiplier of about −2 to −3.
+- **Crisis-period spending** — Blanchard & Leigh, *AER Papers & Proceedings* 103(3), May 2013 / IMF WP 13/1:
+  multipliers were **substantially higher** than the ~0.5 forecasters assumed. ⚠ The often-quoted 0.9–1.7
+  range **could not be read out of the source document from here, so it is not quoted as a number** — only
+  the direction the paper actually establishes.
+- **Okun coefficient** — Ball, Leigh & Loungani, IMF Working Paper 13/10, 2013, *Okun's Law: Fit at 50?*:
+  country coefficients on the output gap mostly spread between **−0.23 and −0.54**; the US 2009–2011 gap
+  ratio was −0.41.
+- ⚠ **Named but NOT quoted:** IMF TNM/14/04 (Batini, Eyraud, Forni & Weber, October 2014) for
+  country-specific multiplier bucketing, and Riksbank WP 365 (2019) for a Swedish estimate. Neither
+  document could be read from here, so **no number from either is used as an anchor**. Both are named so
+  the next session fetches them rather than re-deriving. A range nobody can check is an invented figure
+  with a footnote.
+
+### The three findings
+
+1. ⚠ **THE TAX MULTIPLIER IS EXACTLY ZERO — outside every sourced estimate by the largest margin
+   arithmetically available.** Three tax types, three step sizes, both directions, three horizons: every
+   one is **0.000**, while each produces a real revenue impulse (income tax +1pt moves the balance by
+   −1.98 bn). Against Romer & Romer's −2 to −3, the model's revenue side has **no output channel at all**.
+   This is not a calibration that is somewhat off; it is a missing transmission mechanism. (Independently
+   found at C-C10 on the USA by leave-one-out — S-19 — and this reproduces it on a second country with
+   three taxes.)
+2. ⚠ **THE IMPLIED OKUN COEFFICIENT IS −0.007, against a sourced range of −0.23 to −0.54 — between 33 and
+   77 times too small.** A 1.68 % rise in output moves unemployment by 0.012 points. Unemployment is
+   effectively decoupled from output in this model. The spending dial reaches output; output does not
+   reach the labour market.
+3. ✅ **THE SPENDING MULTIPLIER IS RIGHT, AND SHOULD NOT BE TOUCHED.** 0.603 on impact, 0.85 at +1, 0.96 at
+   +4 — **inside Ramey's 0.6–1.0 at every horizon**, exactly linear across step sizes (0.603 at both +2 %
+   and +10 %) and symmetric in sign (−10 % gives 0.603 too). This is the item's most useful result and the
+   easiest one to damage: any recalibration aimed at findings 1 and 2 must leave this where it is.
+
+### The recommendation list — each line strikeable, none applied
+
+- **R-C11a. Give the tax dials an output channel.** Basis: Romer & Romer 2010. The cheapest structurally
+  honest route is the one spending already uses — route the revenue change through disposable income into
+  `Consumption` — rather than a new coefficient bolted onto GDP. ⚠ **BASELINE**: it moves every trajectory
+  and takes the full sim-math bar with the family explained per country.
+- **R-C11b. Do NOT adopt −2 to −3 as the target.** Romer & Romer's is a US narrative-shock estimate and is
+  the largest in the literature; a Swedish target needs a Swedish source, and the two candidates (Riksbank
+  WP 365, KI Occasional Paper 2021:25) could not be read from here. **The magnitude is BILLED, not
+  proposed.** Implementing R-C11a with an invented coefficient would replace one wrong number with another.
+- **R-C11c. Re-couple unemployment to output.** Basis: Ball, Leigh & Loungani 2013's −0.23 to −0.54 range.
+  ⚠ **BASELINE**, and it interacts with R-C11a: doing both at once makes the resulting family impossible to
+  explain per country, so they are separate items in a fixed order if both are ruled in.
+- **R-C11d. Leave the spending multiplier alone.** It is inside the sourced range at all three horizons.
+  Recorded as a recommendation precisely so a later pass does not "improve" it while fixing its neighbours.
+- **R-C11e. Keep this harness as the regression.** Every one of the above changes a number this table
+  prints; re-running it is how the change gets checked against the literature rather than against a feel.
+
+### The bar
+
+`ResponsivenessAuditHarness` exit 0 (it fails loudly if a dial produces no impulse — a table with an
+unpulled lever in it would be measuring the wrong model). Nine checks exit 0. No `Assets/Scripts` file was
+touched, so no trajectory, film or save-layer evidence applies: the item adds a harness and a record.
