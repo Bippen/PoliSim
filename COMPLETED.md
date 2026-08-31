@@ -7953,3 +7953,58 @@ known frames are named.
 Ten asset checks **10 of 10 clean** (2 reported GAPs, 0 errors) · four simulation checks exit 0 ·
 `SaveLoadRoundTripDiagnostic` RT PASS 12 · trajectories **6 of 6 byte-identical** · the four-width matrix
 at 81/0/0 with the identity trap green throughout · `ScreenEdgeCheck` silent over 324 captures.
+
+## 125. S-21 — the claim RETRACTED, and the real defect built as a tool (2026-08-31)
+
+### ⚠ First, the retraction
+
+§124 reported that two frames beyond the `det_*` record's named three were not byte-stable —
+`02a_statistics_domestic` and `06d_policylaws_policyweb_rows`, "alternating rather than progressing".
+**That claim was wrong.**
+
+**Three controlled back-to-back film runs on one unchanged tree:**
+
+| frame | run A | run B | run C |
+|---|---|---|---|
+| `02a_statistics_domestic` | `5f59ef6ac8` | `5f59ef6ac8` | `5f59ef6ac8` |
+| `06d_policylaws_policyweb_rows` | `4fc78fd674` | `4fc78fd674` | `4fc78fd674` |
+| `01c_desk` (control) | `da7eb47203` | `da7eb47203` | `da7eb47203` |
+| `01a_selector_yielding` | `80b769d9e5` | `80b769d9e5` | **`890a10cc68`** |
+| `89d_signing_entrance` | `6e6ceb923e` | **`72153c904c`** | **`c411bb32c3`** |
+| `92_saves_menu` | `7148970a6d` | **`b32967a920`** | **`2f420c2291`** |
+
+**Both frames are byte-identical every time. Exactly the three already-named frames vary, and nothing
+else.** The earlier variation was **code-driven** — the `StatNodeId` enum gained two members mid-window at
+C-F1, which is precisely a change to the policy-web rows — and it was misread as instability **because the
+comparison spanned a code change.** ⚠ *That is the same mistake, in the opposite direction, that this pass
+caught twice already: C-D5's first film blamed RIDE-1 for a defect that predated it, and C-N5 found C-C11
+had read a decayed value as a wrong constant.* **Comparing across a change and attributing the difference
+to the wrong cause is this project's most repeated error, and it now has three instances.**
+
+### The real defect, which was never those two frames
+
+**The rule-15 diff had no tool.** It was re-typed as a shell loop at each pass end, with **no named
+exclusion list**, so noise and change looked identical and every reading depended on whoever ran it
+remembering which frames flicker. ⚠ **An evidence tool that reports noise as difference is worse than no
+tool — and one that exists only as a habit is not a tool at all.**
+
+**`FilmDiffCheck`** now does it: match every `<a>_*` frame to its `<b>_*` twin, compare by SHA-256, and
+**exclude three frames BY NAME with the reason each cannot be compared** — the scrim's time-based alpha,
+the document mid-rise, and the saves sheet printing the real save minute.
+
+⚠ **What fails, and what merely reports.** A difference is the tool's OUTPUT, not a verdict. What fails is
+the tool being unable to do its job: a missing set, or a **roster mismatch** — a frame in one set and not
+the other is a capture that silently did not happen, and this project has already lost a run to exactly
+that.
+
+### Proven in three directions (the capture-identity trap's own lesson: prove a guard both ways)
+
+- **A clean pair** (two runs, one tree): **78 identical, 0 differ, 3 excluded.**
+- **A real change** (across the S-20 token boundary): **78 differ** — and it says so plainly instead of
+  being mistaken for noise.
+- **A roster mismatch** (a sweep set against an election-night set): **exit 1**, naming each missing frame.
+
+### The bar
+
+`FilmDiffCheck` exit 0 on the clean pair and on the changed pair, exit 1 on the mismatch. No simulation
+path touched.
