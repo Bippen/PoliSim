@@ -1770,24 +1770,31 @@ namespace PoliSim.Simulation
         /// so the sum is over a slightly varying gap instead of a fixed one. Second-order, and far inside
         /// the ±3–5% aggregation bar.
         /// </summary>
+        /// <remarks>DERIVED, never typed - 1 over DaysPerTurn, so the daily slice follows the turn length rather than restating it.</remarks>
         private const float CrimeEffectsDailyScale = 1f / SimulationManager.DaysPerTurn;
 
         /// <summary>Points added per point a sector's SubsidyLevel sits above its neutral 50 (and removed per point below) - applied uniformly to Output/Employment/SectorMetric in this first pass, deliberately not wired to the budget (see CLAUDE.md).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         internal const float SectorSubsidySensitivity = 0.04f;
 
         /// <summary>Points removed per point a sector's RegulationLevel sits above its neutral 50 (and added per point below) - a compliance-cost tradeoff, deliberately smaller than nothing else competes with it in this isolated pass.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         internal const float SectorRegulationSensitivity = 0.04f;
 
         /// <summary>Round 3 item 2: points added per point a sector's TaxCreditLevel sits above its neutral 50 - same magnitude and uniform-across-stats shape as SectorSubsidySensitivity, since a tax credit and a direct subsidy have a similar practical effect in this stylized model.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         internal const float SectorTaxCreditSensitivity = 0.04f;
 
         /// <summary>Round 3 item 2: points added to Output/SectorMetric per point a sector's ResearchGrantsLevel sits above its neutral 50 - same magnitude as SectorSubsidySensitivity, since R&D funding most directly targets output/innovation.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         internal const float SectorResearchGrantsSensitivity = 0.04f;
 
         /// <summary>Round 3 item 2: points added to Employment per point a sector's ResearchGrantsLevel sits above its neutral 50 - HALF SectorResearchGrantsSensitivity, deliberately smaller: grants fund research projects and output, not broad hiring, unlike a direct Subsidy.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         internal const float SectorResearchGrantsEmploymentSensitivity = 0.02f;
 
         /// <summary>Round 3 item 2: points added to Output/SectorMetric (and REMOVED from Employment - see ApplySectorEffects) per point a sector's DeregulationNationalizationLevel sits above its neutral 50 - the real, well-documented state-owned-enterprise tradeoff (privatization/deregulation gains efficiency by shedding excess labor; nationalization preserves jobs at an efficiency cost).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         internal const float SectorDeregulationSensitivity = 0.04f;
 
         /// <summary>
@@ -1872,6 +1879,7 @@ namespace PoliSim.Simulation
         private const float InfrastructureDecayRatePerDay = InfrastructureDecayRatePerTurn / SimulationManager.DaysPerTurn;
 
         /// <summary>ConditionIndex points gained per percentage-point-of-GDP this turn's Infrastructure spending change represents - reuses the exact same PercentOfGdp(decision.InfrastructureSpendingChange, GDP) signal ApplyCategorySpendingEffects already computes for its PotentialGrowthRate nudge, per the task's explicit "connect to the existing category, don't invent a parallel system" instruction.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float InfrastructureInvestmentSensitivity = 6f;
 
         /// <summary>
@@ -1944,12 +1952,15 @@ namespace PoliSim.Simulation
         private const float InfrastructureConditionGrowthThreshold = 50f;
 
         /// <summary>PotentialGrowthRate points lost per point the average ConditionIndex sits below InfrastructureConditionGrowthThreshold - a LIVE, recomputed-every-turn penalty, not an accumulator: unlike the spending-driven boost below, this eases automatically (and can disappear entirely) if condition later recovers back above the threshold.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float InfrastructureConditionDragSensitivity = 0.02f;
 
         /// <summary>Cap on the condition-drag component alone (always non-positive), before combining with the spending boost.</summary>
+        /// <remarks>CONVENTION - a cap on one component before it is combined with the others, so no single channel can dominate the sum. A bound on the model's own arithmetic, not a claim about the world.</remarks>
         private const float MaxInfrastructureConditionDrag = 0.5f;
 
         /// <summary>Cap on the spending-boost accumulator alone (Country.InfrastructureSpendingGrowthAdjustment, always non-negative) - see ApplyCategorySpendingEffects, which increments it.</summary>
+        /// <remarks>CONVENTION - a cap on one component before it is combined with the others, so no single channel can dominate the sum. A bound on the model's own arithmetic, not a claim about the world.</remarks>
         private const float MaxInfrastructureSpendingBoost = 1f;
 
         /// <summary>
@@ -2001,9 +2012,11 @@ namespace PoliSim.Simulation
         // --- Sector Integration: Output/Employment performance nudge PotentialGrowthRate/Unemployment, combined with Infrastructure under one all-sources ceiling (resolves the Round 2 brief's Open Questions #1 - "Resolved by Elias: INTEGRATE"; COMPLETED.md §§1/11) ---
 
         /// <summary>PotentialGrowthRate points gained per percentage-point-of-GDP the aggregate Sector Output (summed gap vs. each sector's own BaselineOutputShareOfGdp, across all four sectors) sits above its own trend - strong sector performance nudges trend growth up, weak performance drags it down.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float SectorGrowthSensitivity = 0.05f;
 
         /// <summary>Cap on the sector-performance growth adjustment alone, before combining with Infrastructure's own contribution.</summary>
+        /// <remarks>CONVENTION - a cap on one component before it is combined with the others, so no single channel can dominate the sum. A bound on the model's own arithmetic, not a claim about the world.</remarks>
         private const float MaxSectorGrowthAdjustment = 0.5f;
 
         /// <summary>
@@ -2070,6 +2083,7 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Unemployment points removed per point the aggregate Sector Employment (summed gap vs. each sector's own BaselineEmploymentShare) sits above its own trend - sector employment growth nudges economy-wide Unemployment down, contraction nudges it up. Mirrors GetMinimumWageUnemploymentAdjustment/GetOvertimeUnemploymentAdjustment's own "small, additive term inside ApplyOkunsLaw" pattern exactly.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the couplings around it; the number itself is a game figure no cited study fixes.</remarks>
         private const float SectorUnemploymentSensitivity = 0.03f;
 
         /// <summary>Cap on the sector-employment unemployment adjustment.</summary>
