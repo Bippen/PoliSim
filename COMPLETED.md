@@ -7359,3 +7359,65 @@ is election-layer state and reaches no economic path.
 ⚠ **`UpstreamCheck` went red on this run, and it is not a code failure**: 11 commits ahead of `origin/main`,
 above its 10 threshold — *"that work exists on one disk."* The guard is correct and its remedy is R-SP1,
 run at §116.
+
+## 116. R-SP1 and C-D5 — the push, and the swing column that found the board had never been filmed (2026-08-31)
+
+### R-SP1, run because a guard demanded it
+
+`UpstreamCheck` went red at C-D4 for a non-code reason: **11 commits ahead of `origin/main`, above its 10
+threshold — "that work exists on one disk."** The guard is right and its remedy is the standing procedure.
+
+Run exactly as R-SP1 words it: fetch · assert `origin/main` is an ancestor of `HEAD` (**yes**, a clean
+fast-forward) · `git push origin main`, **never forced** · re-fetch · assert equality.
+
+**`65384e1..f650836`, 12 commits. `origin/main == HEAD` verified after the re-fetch, and the nine checks
+went green again** (`UPSTREAM: 0 commit(s) ahead`).
+
+### C-D5 (V-N3) — the swing column
+
+**Built at the level the data honestly supports.** The completed count now carries each party's swing in
+percentage points against a **named, sourced** previous election — Sweden 2018, `ElectionNightFilm.Votes2018`,
+the same figures the results screen already compares against, so the two screens cannot disagree about the
+swing any more than they can about who won.
+
+⚠ **It is WITHHELD while the count is partial, and the screen says why.** Early in the night
+`CountedShare` is the share of *four declared constituencies*; setting that beside a full previous national
+result prints a number that looks like a swing and is an artefact of which places declared first. The film
+shows it plainly: at 4 of 29, S reads **33.12 %** against a final **30.80 %** — a "swing" computed there
+would have been +4.9 pp for a party that actually moved +2.10. On the night it matters most, that is the
+most misleading thing this screen could show, so the partial state reads *"held back until every
+constituency is in — a swing on a partial count compares different places."*
+
+The final board, filmed: **S +2.10 · SD +3.05 · M −0.74 · V −1.28 · C −1.92 · KD −1.00 · MP +0.68 ·
+L −0.89 pp**, under `SWING — against SWEDEN 2018`.
+
+⚠ **V-N3's original deviation was too broad and is restated, not just struck.** It said *"the swing column
+is OMITTED; a swing needs the previous election's per-constituency result."* That is the blocker for a
+**running** swing on a like-for-like basis, and it still stands — but it is not a blocker for the swing on
+a **complete** count, which needs only national figures. The deviation now names the half that is real.
+
+### ⚠ What the item found: board 1h had never actually been on film
+
+The first C-D5 film came back showing **the Desk** under the board's name. It was not caused by anything
+C-D5 changed: `we6_night_1280_e6_election_night_final.png`, taken at W-E6 itself, **shows the same desk** —
+it still carries the ±5–10 % margin text C-C14 removed, so it is unmistakably the old film.
+
+**The cause:** the board is a `ScreenSpaceOverlay` Canvas, and `GameController.OnGUI` draws *after* overlay
+canvases in the built-in pipeline, so the desk paints straight over it. The board built, the captures
+wrote, the run exited 0, the guards were silent — **and nobody was looking at board 1h.** Every
+`-shotelectionnight` film ever taken was a film of the desk.
+
+Fixed by setting the controller's own `_canvasLive` takeover flag around the captures (with it set, IMGUI
+draws only its hold banner), by reflection, the way this driver reaches every other piece of private state,
+and restored afterwards.
+
+⚠ **The general lesson, and it is bigger than this board:** *a capture that writes is not a capture of what
+you meant.* Zero failures, zero overflows and a clean exit all held while the wrong screen was
+photographed four times at four widths. The guards check containment and text fitting **within whatever
+was drawn**; nothing checks that the thing under test is the thing on screen. Filed as **S-20**.
+
+### The bar
+
+Election night filmed at all four geometries — **8 captured, 0 failed, 0 text overflows, 0 containment
+escapes at each** — with the board actually visible for the first time. Nine checks exit 0;
+`ElectionNightHarness` exit 0. No simulation path touched.

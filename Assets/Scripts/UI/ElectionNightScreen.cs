@@ -35,9 +35,16 @@ namespace PoliSim.UI
     /// - V-N2: the declaration-wave, count-up and stamp-thunk BEATS are not animated. The screen is
     ///   filmed in four states, and an animation the film cannot show is a claim no capture can
     ///   check; the states are the honest subset. The beats stay in the spec for the wiring item.
-    /// - V-N3: the swing column is OMITTED. A swing needs the previous election's per-constituency
-    ///   result beside this one's, and the night's model carries one election. Named rather than
-    ///   faked with a zero.
+    /// - V-N3: ✅ **BUILT at C-D5 (2026-08-31), at the level the data honestly supports, and the
+    ///   original deviation was too broad.** The swing against a NAMED previous election is shown on
+    ///   the completed count — Sweden 2018 in the film, sourced. ⚠ **It is withheld while the count is
+    ///   partial, and the screen says why**: early in the night `CountedShare` is the share of four
+    ///   declared constituencies, and setting that beside a full previous national result prints a
+    ///   number that looks like a swing and is an artefact of which places declared first — the most
+    ///   misleading thing this screen could show, on the night it matters most. ⚠ A RUNNING swing on a
+    ///   like-for-like basis needs the previous election's PER-CONSTITUENCY votes so the comparison can
+    ///   be restricted to what is actually in; that is V-N3's real blocker, still standing, now stated
+    ///   at the level it applies to rather than against the whole column.
     /// </summary>
     public class ElectionNightScreen
     {
@@ -50,7 +57,7 @@ namespace PoliSim.UI
         /// furniture is missing — the absence guard the two pilots set, never an invented sprite.
         /// </summary>
         public static ElectionNightScreen Build(NightState state, string[] partyNames, string countryName,
-            DateTime pollsClosed, int totalSeats)
+            DateTime pollsClosed, int totalSeats, long[] previousVotes = null, string previousLabel = null)
         {
             Sprite frame = CanvasChrome.Sliced("ui_frame_ornate", 64f, 64f, 64f, 64f);
             Texture2D scrimTexture = IconLibrary.GetChrome("ui_scrim_takeover");
@@ -109,7 +116,7 @@ namespace PoliSim.UI
             column.spacing = 10f;
 
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
-            BuildBody(content.transform, state, partyNames, totalSeats);
+            BuildBody(content.transform, state, partyNames, totalSeats, previousVotes, previousLabel);
             return screen;
         }
         private const float DocumentWidth = 1240f;
@@ -171,7 +178,8 @@ namespace PoliSim.UI
         }
 
         /// <summary>§A.14's body grid, 1.25fr | 1fr: the national tally left, the constituencies and the calls right.</summary>
-        private static void BuildBody(Transform parent, NightState state, string[] partyNames, int totalSeats)
+        private static void BuildBody(Transform parent, NightState state, string[] partyNames, int totalSeats,
+            long[] previousVotes, string previousLabel)
         {
             var body = new GameObject("Body");
             body.transform.SetParent(parent, false);
@@ -191,7 +199,7 @@ namespace PoliSim.UI
             tallyColumn.childControlHeight = true;
             tallyColumn.childForceExpandHeight = false;
             tallyColumn.spacing = 2f;
-            BuildTally(tally.transform, state, partyNames, totalSeats);
+            BuildTally(tally.transform, state, partyNames, totalSeats, previousVotes, previousLabel);
 
             var side = new GameObject("Side");
             side.transform.SetParent(body.transform, false);
@@ -236,7 +244,8 @@ namespace PoliSim.UI
         /// until the last constituency is in, and the heading says so in those words rather than
         /// letting a reader assume a final number.
         /// </summary>
-        private static void BuildTally(Transform parent, NightState state, string[] partyNames, int totalSeats)
+        private static void BuildTally(Transform parent, NightState state, string[] partyNames, int totalSeats,
+            long[] previousVotes, string previousLabel)
         {
             Heading(parent, state.Complete
                 ? "THE COUNT — COMPLETE"
@@ -253,16 +262,60 @@ namespace PoliSim.UI
             for (int p = 0; p < partyNames.Length; p++) { order.Add(p); }
             order.Sort((a, b) => state.CountedVotes[b].CompareTo(state.CountedVotes[a]));
 
+            // C-D5 (V-N3): the swing column, and ⚠ ONLY ON A COMPLETE COUNT.
+            //
+            // A swing is a comparison, and a comparison is only honest on a like-for-like basis. Early in
+            // the night `CountedShare` is the share of FOUR declared constituencies; setting that beside a
+            // full previous national result would print a number that looks like a swing and is an
+            // artefact of which constituencies happen to have declared first - the single most misleading
+            // thing this screen could show, on the night it matters most. So while the count is partial the
+            // screen SAYS the swing is withheld and why, which is the same discipline as the seat
+            // projection it already labels as a projection.
+            //
+            // ⚠ A RUNNING swing on a like-for-like basis is buildable and is NOT built here: it needs the
+            // previous election's PER-CONSTITUENCY votes so the comparison can be restricted to the
+            // constituencies actually in. That is V-N3's original blocker, still standing, now stated at
+            // the level it really applies to rather than to the whole column.
+            long previousValid = 0;
+            if (previousVotes != null && previousVotes.Length == partyNames.Length)
+            {
+                foreach (long v in previousVotes) { previousValid += v; }
+            }
+
+            bool swingShown = state.Complete && previousValid > 0;
+
             int seatsShown = 0;
             foreach (int p in order)
             {
                 seatsShown += state.SeatsOnCounted[p];
-                Row(parent, partyNames[p], string.Format(CultureInfo.InvariantCulture, "{0:N0}    {1:P2}    {2} seats",
-                    state.CountedVotes[p], state.CountedShare(p), state.SeatsOnCounted[p]), 13, PoliSimTheme.TextPrimary);
+                string figure = string.Format(CultureInfo.InvariantCulture, "{0:N0}    {1:P2}    {2} seats",
+                    state.CountedVotes[p], state.CountedShare(p), state.SeatsOnCounted[p]);
+
+                if (swingShown)
+                {
+                    double swing = (state.CountedShare(p) - previousVotes[p] / (double)previousValid) * 100.0;
+                    figure += string.Format(CultureInfo.InvariantCulture, "    {0:+0.00;-0.00;0.00} pp", swing);
+                }
+
+                Row(parent, partyNames[p], figure, 13, PoliSimTheme.TextPrimary);
             }
 
             Row(parent, "COUNTED", string.Format(CultureInfo.InvariantCulture, "{0:N0} votes    {1} of {2} seats",
                 state.CountedValid, seatsShown, totalSeats), 12, PoliSimTheme.TextSecondary, bold: true);
+
+            if (swingShown)
+            {
+                Row(parent, "SWING", "against " + (previousLabel ?? "the previous election"), 12, PoliSimTheme.TextSecondary);
+            }
+            else if (previousValid > 0)
+            {
+                Row(parent, "SWING", "held back until every constituency is in - a swing on a partial count compares different places",
+                    12, PoliSimTheme.TextMuted);
+            }
+            else
+            {
+                Row(parent, "SWING", "no previous election is on hand to compare against", 12, PoliSimTheme.TextMuted);
+            }
         }
 
         /// <summary>

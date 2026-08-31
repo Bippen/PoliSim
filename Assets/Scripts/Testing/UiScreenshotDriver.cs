@@ -268,7 +268,7 @@ namespace PoliSim.Testing
             // W-E1: Campaign HQ instead of the sweep - the run ends here.
             if (ElectionNightBoard)
             {
-                yield return CaptureElectionNight();
+                yield return CaptureElectionNight(controller);
                 yield break;
             }
 
@@ -2438,8 +2438,24 @@ namespace PoliSim.Testing
         /// chosen by how much has DECLARED rather than by clock time, because that is what the
         /// screen is about.
         /// </summary>
-        private IEnumerator CaptureElectionNight()
+        private IEnumerator CaptureElectionNight(GameController controller)
         {
+            // ⚠ C-D5 (2026-08-31): PUT THE DESK AWAY FIRST — a defect this item found in W-E6's own film
+            // path, not one C-D5 introduced.
+            //
+            // The board is a ScreenSpaceOverlay Canvas, and `GameController.OnGUI` draws AFTER overlay
+            // canvases in the built-in pipeline, so the desk paints straight over it. **Every
+            // `-shotelectionnight` film ever taken shows the DESK under the board's name** — checked
+            // against `we6_night_1280_e6_election_night_final.png` from W-E6 itself, which shows the desk
+            // exactly as this item's first run did. The board built, the captures wrote, the run exited 0,
+            // and nobody was looking at board 1h.
+            //
+            // `_canvasLive` is the controller's own takeover flag: with it set, IMGUI draws only its hold
+            // banner and the Canvas is what a capture sees. Set by reflection, the way this file reaches
+            // every other piece of private state, and restored at the end.
+            SetPrivateField(controller, "_canvasLive", true);
+            yield return Settle();
+
             ElectionNightFilm.Stage(out string[] names, out long[][] votes, out long[] valid,
                 out long[] eligible, out int[] arrivals, out string[] parties, out var blocs);
 
@@ -2454,8 +2470,12 @@ namespace PoliSim.Testing
                 NightState state = ElectionNight.At(minute, names, votes, valid, eligible, arrivals,
                     349, 0.04, parties, null, blocs);
 
+                // C-D5 (V-N3): the comparison is Sweden 2018, SOURCED - the same
+                // `ElectionNightFilm.Votes2018` the results screen already compares against, so the two
+                // screens cannot disagree about the swing any more than they can about who won.
                 ElectionNightScreen screen = ElectionNightScreen.Build(state, parties, "SWEDEN",
-                    new DateTime(2026, 9, 13, 20, 0, 0), 349);
+                    new DateTime(2026, 9, 13, 20, 0, 0), 349,
+                    previousVotes: ElectionNightFilm.Votes2018, previousLabel: "SWEDEN 2018");
                 if (screen == null)
                 {
                     Debug.LogError("SHOT: W-E6 - the board did not build (furniture missing); nothing filmed.");
@@ -2478,6 +2498,9 @@ namespace PoliSim.Testing
             // The run ends HERE, and it must end through Finish - a `yield break` alone leaves
             // the driver's own exit unreached and the process is forced out with a 1 (which is
             // what the first film of this board did, four widths over).
+            SetPrivateField(controller, "_canvasLive", false);
+            yield return Settle();
+
             Debug.Log($"SHOT: election night done, {_captured} captured, {_failed} failed.");
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
