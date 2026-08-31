@@ -6081,3 +6081,80 @@ at every width; `ScreenEdgeCheck` exit 0 over 316 captures; the nine checks 9 of
 new Swedish game on 31 January, where no bill has yet been introduced, so the enactment record is empty.
 A tick there would be the invention. The diagnostic is what carries the evidence that populated records
 draw correctly.
+
+## 98. C-C6 (P-C2) — the seeds' basis measured, and why "unit-agnostic" does not mean "free" (2026-08-31)
+
+**Playtest-1 finding 6:** *"The Desk shows Sweden's GDP as $620B — a USD basis."* The ruling to execute:
+figures store and display in national units, cross-country views converting at a sourced vintage-dated
+rate — **unless the model proves unit-agnostic, in which case say so and close cheap.**
+
+### ⚠ It reordered the track, and that is logged rather than done quietly
+
+C-C5 (P-C1, national currency display) was next in the stated order. **It cannot be done first.** Sweden's
+seed is `620` and `WorldFactory`'s own comment reads *"against Sweden's real GDP (~$620B)"*; Sweden's real
+GDP is ~6 500 **billion SEK**. Printing "620 miljarder kr" against a dollar-denominated number would be
+false by a factor of ~10.5 — the exact class of error §0.4 exists to prevent. **The display half depends
+on the basis half**, which is why P-C2 surfaced the basis question in the first place. Reversible
+sequencing fork, decided and logged under R-N1: **C-C6 runs before C-C5.**
+
+### The basis, measured from the seed rather than inferred
+
+**Every money seed is in USD BILLIONS, for all six countries including the five that do not use dollars** —
+USA 29 000 · Germany 4 700 · France 3 200 · Italy 2 300 · Poland 840 · **Sweden 620**. The finding read
+it correctly.
+
+### ⚠ Two findings that point opposite ways, and both are stated
+
+| scale | turns | worst ratio difference | worst level difference |
+|---|---:|---|---|
+| ×2 | 1 | **0.000E+000** | **0.000E+000** |
+| ×2 | 12 | **0.000E+000** | **0.000E+000** |
+| ×10 | 1 | 4.165E−005 | 1.567E−004 |
+| ×10 | 12 | 9.212E−001 | 1.975E+000 |
+
+**(a) The model does not care what the unit is.** At ×2 — exactly representable in binary floating
+point — every ratio and every level is invariant **to zero** at both horizons. No constant anywhere on
+the macro path carries an absolute money scale; the stored unit is a **convention**, not a modelling
+choice.
+
+**(b) But a real re-basing is not a power of two.** SEK/USD is ~10.5, and at ×10 the float path
+diverges — small after one turn, order-unity after twelve. **That is rounding, not economics**, and it
+means a re-based seed set *would* produce different trajectories.
+
+**So the ruling's cheap branch is NOT available.** Re-basing is a seed change under the full sim-math bar
+with per-country diffs explained — and the honest explanation of those diffs is **float-path divergence,
+not a change in what the model believes.** ⚠ Saying *"the model is unit-agnostic, so re-basing is free"*
+would be **true about the model and false about the build**, and that sentence is exactly what this item
+existed to prevent someone writing.
+
+**Billed, not invented:** the re-basing needs a **sourced, vintage-dated FX rate per country** — the
+ruling's own requirement. None is on disk, and none is authored here.
+
+### ⚠ The measurement caught its own bug first, twice
+
+The first run reported *"NOT unit-agnostic"* — a headline finding that would have been **wrong**.
+
+1. **Under-scaling.** `TradeSystem.ApplyTradeEffects` recomputes `TradeBalance` from each link's
+   `ImportVolume`/`ExportVolume` every turn, so scaling the state's balance while leaving the volumes
+   alone had the model overwrite the scaled value with an unscaled one. **A test that under-scales
+   reports the model's innocence as guilt.**
+2. **One scale factor is not a test.** Even after that, ×10 still diverged — and it took running ×2 to
+   see why. **The pair is the finding**: without the exactly-representable control there is no way to
+   separate a modelling dependence on absolute scale from float rounding, and the diagnostic now asserts
+   only on ×2 for that reason, reporting ×10 as the float-sensitivity measurement it is.
+
+The check that nearly went the other way is the reason the assertion is where it is: at ×2 **any**
+difference is real and fails; at ×10 a difference is expected and is reported, not failed on.
+
+### ⚠ A second currency is already in the game, with no conversion
+
+The campaign layer prices in **kronor** (war chest 2 400 000 kr, a television buy 500 000, a social post
+5 000) while the macro layer is in **USD billions**. They never meet today — a campaign is staged rather
+than funded from the state's budget — so nothing converts and nothing is wrong yet. **The day a campaign
+is paid for out of anything the macro model holds, one of the two is wrong by a factor of
+~10 500 000 000.** Register row S-14.
+
+**Verified:** `MoneyBasisDiagnostic` ALL ASSERTIONS PASS; the basis is documented in
+`POLISIM_SEED_DATA_MACRO_OVERHAUL.md` as its new PART 0, which is the item's done-when ("the basis is
+documented in the seed doc, whichever branch ran"). **No seed re-based, no FX rate authored, no display
+changed** — C-C5 now runs on top of this.

@@ -21,6 +21,50 @@ sessions pulled most of the figures live; what it remains is the seed authority 
 
 ---
 
+## PART 0 — THE BASIS: what unit every money seed in this document is in (C-C6, 2026-08-31)
+
+**Every money seed in this file, and in `WorldFactory`, is in USD BILLIONS — for all six countries,
+including the five that do not use dollars.** Measured from the seed itself rather than inferred: USA
+29 000 · Germany 4 700 · France 3 200 · Italy 2 300 · Poland 840 · **Sweden 620**, against
+`WorldFactory`'s own comment *"Sweden's real GDP (~$620B)"*. Sweden's real GDP is ~6 500 **billion SEK**,
+so the stored 620 is dollars — Playtest-1's finding 6 (*"the Desk shows Sweden's GDP as $620B"*) was
+reading the basis correctly.
+
+**⚠ The model does not care what the unit is, and a re-basing is still a seed change. Both are true and
+`MoneyBasisDiagnostic` measures both.**
+
+| scale | turns | worst ratio difference | worst level difference |
+|---|---:|---|---|
+| ×2 | 1 | **0.000E+000** | **0.000E+000** |
+| ×2 | 12 | **0.000E+000** | **0.000E+000** |
+| ×10 | 1 | 4.165E−005 | 1.567E−004 |
+| ×10 | 12 | 9.212E−001 | 1.975E+000 |
+
+**(a) Unit-agnostic.** At ×2 — exactly representable in binary floating point — every ratio and every
+level is invariant to **zero** at both horizons. **No constant anywhere on the macro path carries an
+absolute money scale**, so the stored unit is a *convention*, not a modelling choice.
+
+**(b) But a real re-basing is not a power of two.** SEK/USD is ~10.5, and at ×10 the float path diverges —
+small after one turn, order-unity after twelve. **That is rounding, not economics** — but it means a
+re-based seed set *would* produce different trajectories.
+
+**So the ruling's cheap branch is not available.** Re-basing to national units is a **seed change under
+the full sim-math bar with per-country diffs explained**, and the honest explanation of those diffs is
+**float-path divergence, not a change in what the model believes.** ⚠ *"The model is unit-agnostic, so
+re-basing is free"* would be true about the model and false about the build.
+
+**Billed, not invented:** re-basing needs a **sourced, vintage-dated FX rate per country** (the ruling's
+own words). None is on disk. No rate is authored here.
+
+⚠ **A SECOND CURRENCY IS ALREADY IN THE GAME WITH NO CONVERSION.** The campaign layer prices in
+**kronor** — the war chest is 2 400 000 kr, a television buy 500 000, a social post 5 000 — while the
+macro layer is in **USD billions**. The two never meet today, because a campaign is staged rather than
+funded from the state's budget, so nothing converts and nothing is wrong yet. **The day a campaign is
+paid for out of anything the macro model holds, one of the two is wrong by a factor of ~10 500 000 000.**
+Recorded because it is invisible until it is expensive.
+
+---
+
 ## PART 1 — Release schedules (rule-based, implement as rules, not fixed dates)
 
 ### United States [VERIFIED]
