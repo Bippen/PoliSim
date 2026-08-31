@@ -3061,6 +3061,21 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>C-C7: what this country calls the person who heads its central bank. The type is
+        /// `FedChair` for historical reasons and Sweden does not have a Fed chair - the screens carry the
+        /// real title so a player is never told their Riksbank has a "Chair", which is the kind of small
+        /// falsehood a sheet of real institutions cannot afford.</summary>
+        private static string GetCentralBankHeadTitle(CountryId countryId)
+        {
+            switch (countryId)
+            {
+                case CountryId.USA: return "Chair";
+                case CountryId.Sweden: return "Governor";
+                case CountryId.Poland: return "President";
+                default: return "President";
+            }
+        }
+
         /// <summary>A short real flavor line for the two countries whose central bank has a notable, concrete real-world fact worth surfacing - null for USA/Eurozone, which already have their own descriptive text below this point.</summary>
         private static string GetCentralBankFlavorText(CountryId countryId)
         {
@@ -3109,7 +3124,7 @@ namespace PoliSim.UI
                 // 2026-08-28, R-K6): the turn-0 chair (Harriet Ellsworth) sits outside the candidate
                 // pool and has no portrait by decision - no new Design ask - so the row names the
                 // chair and their philosophy in type, and the candidate cards below keep the portraits.
-                GUILayout.Label($"Chair: {chair.Name} ({chair.Philosophy})", _labelStyle);
+                GUILayout.Label($"{GetCentralBankHeadTitle(PlayerCountryId)}: {chair.Name} ({chair.Philosophy})", _labelStyle);
                 GUILayout.Label(chair.Description, _labelStyle);
                 // Pass 4 (2026-08-26) put the rule's reading and the chair's target on screen as one
                 // sentence; omnibus 2026-08-28 (roadmap item 4's "concatenated labels") re-measured the
@@ -3121,7 +3136,7 @@ namespace PoliSim.UI
                 float chairTarget = Mathf.Clamp(suggested + chair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
                 DrawDerivedStatRow("Rule reading", -1f, $"{suggested:F2}%",
                     $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
-                DrawDerivedStatRow("Chair's lean", -1f, $"{chair.RateBias:+0.00;-0.00;0.00} pts", null, politicalInk);
+                DrawDerivedStatRow($"{GetCentralBankHeadTitle(PlayerCountryId)}'s lean", -1f, $"{chair.RateBias:+0.00;-0.00;0.00} pts", null, politicalInk);
                 // Trailing text kept short: the omni_h1280 capture measured the first wording ("held
                 // within 0-15%; the rate moves 15% of the way each year") at 210px against a 195px
                 // trailing cell at the 8px floor - the width-less-label class's trailing-cell cousin.
@@ -3303,7 +3318,10 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(8f);
-            GUILayout.Label("A new presidential term begins next year - choose the next Fed chair:", _labelStyle);
+            // C-C7: the cadence and the title are the player country's, not the USA's - a Swedish player
+            // has no presidential term and no Fed chair, and being told they do is the small falsehood a
+            // sheet of real institutions cannot afford.
+            GUILayout.Label($"A new term begins next year - choose the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
             foreach (FedChair candidate in _fedChairCandidates)
             {
                 DrawFedChairCandidateButton(candidate);
@@ -4821,7 +4839,7 @@ namespace PoliSim.UI
             var blocking = new List<string>();
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
-                blocking.Add("a Fed Chair appointment (Federal Reserve tab)");
+                blocking.Add($"a {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()} appointment (Politics tab)");
             }
 
             if (_simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0)

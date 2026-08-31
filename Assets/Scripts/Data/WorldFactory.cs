@@ -926,6 +926,41 @@ namespace PoliSim.Data
                 "The sitting chair at the start of the game - tracks the Taylor Rule's suggested rate closely, with no strong lean in either direction.",
                 0f);
 
+            // C-C7 (P-D1 + Riksbank-B, merged): SWEDEN'S AND POLAND'S CENTRAL BANKS BECOME INDEPENDENT.
+            //
+            // Before this, four of six countries already had a rule-driven rate - the USA through the
+            // chair path above, Germany/France/Italy through EurozoneRateSystem's blend - while SWEDEN
+            // AND POLAND were set directly by the player, one slider drag at a time. That is the felt
+            // verdict of the 2026-08-26 Editor session ("still not independent") and Playtest-1's
+            // finding 7, and it was never a modelling choice: TaylorRule's own doc records the state as
+            // "Sweden and Poland set their own rate; for them the reading is advisory until Riksbank-B".
+            //
+            // ⚠ THE MECHANISM IS THE ONE THAT ALREADY EXISTS, generalised rather than rebuilt - exactly
+            // as P-D1 asks ("the Fed-chair machinery is the template - generalise it") and as the
+            // Riksbank-B entry itself predicted: "a non-null CurrentFedChair is the entire gate; seeding
+            // Sweden a governor enables it mechanically today". The reaction function is TaylorRule -
+            // ALREADY DECLARED, documented term by term, and already the rule four countries run on -
+            // and PolicyDecision.InterestRateChange is bypassed for these two the moment this is set.
+            //
+            // ⚠ THE TYPE IS NAMED FedChair AND THESE ARE NOT FED CHAIRS. Renaming the type, its system
+            // and its references would be a large diff that changes no behaviour, so the type keeps its
+            // historical name and the SCREENS carry the real title (Riksbank governor, NBP president).
+            // Recorded here rather than left for a reader to trip over.
+            //
+            // Both are ORIGINAL FICTIONAL PEOPLE under working-discipline rule 9 - real institutions,
+            // never real officeholders - and both are seeded at bias 0, the same Moderate placeholder
+            // the USA gets, so the first turn's rate comes from the rule alone and nothing about these
+            // two countries' paths is an authored lean.
+            sweden.CurrentFedChair = new FedChair(
+                "Ingrid Hallstrom", FedChairPhilosophy.Moderate,
+                "The sitting Riksbank governor at the start of the game - tracks the rule's suggested rate closely, with no strong lean in either direction.",
+                0f);
+
+            poland.CurrentFedChair = new FedChair(
+                "Marek Zawadzki", FedChairPhilosophy.Moderate,
+                "The sitting NBP president at the start of the game - tracks the rule's suggested rate closely, with no strong lean in either direction.",
+                0f);
+
             var euMembers = new List<CountryId> { germany.Id, france.Id, italy.Id, sweden.Id, poland.Id };
             var europeanUnion = new TradeBloc("European Union", euMembers, externalTariffRate: 3f, internalTariffRate: 0.1f);
 

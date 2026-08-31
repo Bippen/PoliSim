@@ -6211,3 +6211,96 @@ sourced vintage-dated rate*. The conversion is not an optional extra for those t
 makes them mean anything.
 
 **No code touched. No seed re-based. No rate authored. No display changed.**
+
+## 100. C-C7 (P-D1 + Riksbank-B, merged) — Sweden's and Poland's central banks become independent, and an independence change in Stockholm reaches Washington (2026-08-31)
+
+**The first BASELINE item of the clearance list, and the merge C-B4 recorded:** Playtest-1's finding 7
+and Riksbank-B are one item, carrying felt verdict 2 — *"still not independent"*, 2026-08-26 — with it.
+
+### What was actually wrong, and it was smaller than it looked
+
+**Four of six countries already had a rule-driven rate.** The USA runs `TaylorRule` plus its chair's bias,
+damped, through `FederalReserveSystem`; Germany, France and Italy run `EurozoneRateSystem`'s blend. Only
+**Sweden and Poland** were set by the player, one slider drag at a time — and that was never a modelling
+choice. `TaylorRule`'s own doc records it: *"Sweden and Poland set their own rate; for them the reading is
+advisory until Riksbank-B."*
+
+### The mechanism is the one that already existed
+
+P-D1 says *"the Fed-chair machinery is the template — generalise it"*, and the Riksbank-B entry had
+already worked out how: *"a non-null `CurrentFedChair` is the entire gate; seeding Sweden a governor
+enables it mechanically today."* That is exactly what shipped — Sweden gets a Riksbank governor and Poland
+an NBP president, both **original fictional people** under rule 9 (real institutions, never real
+officeholders), both seeded at **bias 0** so the first turn's rate comes from the rule alone and nothing
+about their paths is an authored lean.
+
+**The reaction function is `TaylorRule` — already declared, already documented term by term, already the
+rule four countries run on.** No new constant was introduced, which is why this item authors no
+`[AUTHORED-DRAFT]` value at all.
+
+⚠ **No player-reachable control sets a rate, by construction rather than by deletion.** The Fed tab
+branches on `CurrentFedChair != null`; setting the field moves Sweden and Poland to the chair branch, and
+the rate slider — which lives only in the `else` — is gone. `CurrencySystem.ApplyInterestRateChanges`
+likewise routes them to the chair path, bypassing `PolicyDecision.InterestRateChange` entirely.
+
+⚠ **Pressure mechanics are recorded as future, not built** — P-D1's own instruction. Appointments are the
+only remaining lever, and they are the machinery that already exists.
+
+### ⚠ The BASELINE change, explained per country
+
+`traj_cc7_*` against `traj_run_*`: **all six files differ.** Per country, by comparing each country's own
+rows across the whole trajectory:
+
+| country | result | why |
+|---|---|---|
+| **Germany, France, Italy** | **BYTE-IDENTICAL** | they share the euro, so `ApplyCurrencyStrength` skips them outright and their rate comes from the ECB blend, which Sweden and Poland never entered |
+| **Sweden, Poland** | changed — **the intended effect** | their rate now follows `TaylorRule` + governor bias, damped at `RateAdjustmentSpeed` 0.15, instead of sitting wherever the player left it |
+| **USA** | **changed — and NOT by its own rate** | see below |
+
+⚠ **The USA's change was not predicted, and it is not a defect — it is a real coupling, confirmed in code
+rather than guessed.** `CurrencySystem.ApplyCurrencyStrength` targets on
+`own rate − average rate among its TRADE PARTNERS`, and `WorldFactory` gives the USA bilateral trade with
+both Sweden and Poland. So the moment their rates move, the USA's average partner rate moves, its rate
+differential moves, its currency strength moves, and `TradeSystem`'s currency factor carries that into its
+trade balance — after which NX moves GDP and everything follows.
+
+**The trajectory's own timing confirms the direction of causation:** on the USA, `TradeBalance` and
+`CurrencyStrength` differ from **turn 1** (100 rows of 100) while every other USA field differs only from
+**turn 2** (99 rows). The change enters through the exchange-rate channel and propagates; it does not
+originate in the USA's own rate, which is untouched.
+
+**That is the whole explanation, and it is per country as the bar requires:** three countries unchanged
+because they are inside a shared currency, two changed because that is the item, and one changed through
+a named channel because it trades with the two.
+
+### ⚠ The film caught four USA-flavoured strings on a Swedish sheet
+
+The type is `FedChair` for historical reasons, and the screens leaked that. Filmed at 1280, the Riksbank
+tab read *"waiting on a **Fed Chair** appointment (**Federal Reserve tab**)"*, *"**Chair's** lean"*, and
+*"A new **presidential term** begins next year — choose the next **Fed chair**"* — for a country with no
+Fed, no chair and no presidential term. **Three are fixed** via a `GetCentralBankHeadTitle` helper beside
+the existing `GetCentralBankName`, so the banner now reads *"a Sveriges Riksbank governor appointment
+(Politics tab)"* and the row reads *"Governor's lean"*.
+
+⚠ **The fourth is recorded, not invented:** the shared `FederalReserveSystem.CandidatePool`'s authored
+descriptions name the institution in prose — *"believes **the Fed** waited too long to act last cycle"* —
+so a Swedish player is offered candidates who talk about the Fed. Fixing it means authoring per-country
+fictional descriptions for the whole pool, which is a content item and not a display fix, and writing
+three countries' worth of central-banker fiction at the end of a long item is exactly how invented
+material gets in. **Register row S-15.**
+
+⚠ **The type keeps its name.** Renaming `FedChair`, `FederalReserveSystem` and their references would be a
+large diff that changes no behaviour; the type stays historical and the *screens* carry the real titles.
+Stated at the seed site rather than left for a reader to trip over.
+
+### Verified
+
+Trajectories: **new family `traj_cc7_*`, all six files, with the per-country explanation above** — three
+countries byte-identical, two intended, one through a named channel. `SaveLoadRoundTripDiagnostic`
+**RT: PASS — 12 scenarios**; `FedChairDifferentiationDiagnostic` exit 0; `PreviewParityDiagnostic`
+**7 of 7 asserted terms match for all 6 countries**; the nine checks **9 of 9 clean**; films at 1280 /
+1600 / 1920 / 2560 with 81 captured, 0 failed, **0 text overflows, 0 containment escapes**;
+`ScreenEdgeCheck` exit 0 over 162 captures. Capture family `cc7b_<width>_*`.
+
+**Felt verdict 2 is now answerable by playing** — which is the point of merging it here rather than
+leaving it in a register of verdicts nobody was answering. It remains Elias's to judge.
