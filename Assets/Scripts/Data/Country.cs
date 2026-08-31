@@ -195,7 +195,7 @@ namespace PoliSim.Data
         /// PotentialGrowthRate reads productivity at 1:1 through the pipe
         /// (MacroSystem.ApplySectorGrowthEffect writes both, same sum, same clamps - a pure
         /// re-rooting, byte-identical by construction and by bar).
-        /// ⚠ -1 is a SENTINEL (the R4-3 pattern): pre-Q3 saves and any read before the
+        /// â  -1 is a SENTINEL (the R4-3 pattern): pre-Q3 saves and any read before the
         /// finalizer's first write fall back to PotentialGrowthRate via
         /// <see cref="ProductivityTrendGrowth"/> - bit-for-bit the value the old readers read,
         /// in every ordering. Readers use the property, never the raw field.</summary>
@@ -211,7 +211,7 @@ namespace PoliSim.Data
         /// shape"; the accruing one rides along so a mid-period save does not silently drop
         /// recorded events (the exact silent-gap class R-S2e's no-case predicted). Null on old
         /// saves and at seed - every reader guards, and the recorder lazily creates the accruing
-        /// ledger at first touch. ⚠ NEVER EconomyState fields: the trajectory dump reflects
+        /// ledger at first touch. â  NEVER EconomyState fields: the trajectory dump reflects
         /// EconomyState's public fields, and recording is OBSERVATION - it must not change the
         /// dump.
         /// </summary>
@@ -224,7 +224,7 @@ namespace PoliSim.Data
         /// under the same rules - both persisted per R-S2e, null on old saves and at seed, every
         /// reader guards, the recorder opens the accruing one at the PRE-write stock on first
         /// touch. Terms accrue by observation one daily slice at a time (the stock moves daily),
-        /// close where the FiscalTurnReport closes. ⚠ NEVER EconomyState fields - same reason.
+        /// close where the FiscalTurnReport closes. â  NEVER EconomyState fields - same reason.
         /// </summary>
         public DebtAttribution FiscalLedgerLastPeriod;
         public DebtAttribution FiscalLedgerAccruing;
@@ -243,7 +243,7 @@ namespace PoliSim.Data
         /// <summary>THE MATURITY RATE-LAG's one piece of state: the blended rate this country's
         /// existing debt stock currently pays, in percent - reverting toward
         /// SimulationManager.GetDebtIssuanceRate at 1/AverageDebtMaturityYears per year.
-        /// ⚠ -1 is a SENTINEL (the R4-3 HousingRateAnchor pattern): a pre-mechanism save
+        /// â  -1 is a SENTINEL (the R4-3 HousingRateAnchor pattern): a pre-mechanism save
         /// deserializes with this initializer and every reader falls back to the CURRENT issuance
         /// rate - exactly what the old code charged - so old saves behave identically until the
         /// lag has something to lag. AdvanceEffectiveDebtRate initializes it on first advance;
@@ -312,17 +312,31 @@ namespace PoliSim.Data
 
         /// <summary>
         /// C-N4 (2026-08-31): **every tax line's rate AS SEEDED**, snapshotted by `SeedTaxLines` and never
-        /// mutated — the anchor the disposable-income term measures a player's change from.
+        /// mutated â the anchor the disposable-income term measures a player's change from.
         ///
-        /// <para>⚠ **This is what makes C-N4 SAFE rather than BASELINE, and it is not an accident.** It is
+        /// <para>â  **This is what makes C-N4 SAFE rather than BASELINE, and it is not an accident.** It is
         /// `BaselineWelfarePrograms`' own idiom, adopted for the same reason that field records: the
         /// sourced seeds already contain each country's real tax position, so a country sitting at its
         /// seeded rates must contribute **exactly zero** to the new term, and a player's change is booked
         /// from the country's own real position rather than from an arbitrary zero. The consequence is
-        /// that the no-policy trajectory cannot move — and the dump is run to prove that rather than the
+        /// that the no-policy trajectory cannot move â and the dump is run to prove that rather than the
         /// reasoning being trusted.</para>
         /// </summary>
         public Dictionary<TaxType, float> BaselineTaxRates = new Dictionary<TaxType, float>();
+
+        /// <summary>P-I2 stage 1: the country's FIVE-YEAR AGE PYRAMID, 21 bands in millions of persons,
+        /// seeded from `PopulationPyramids` (Eurostat demo_pjan 1 Jan 2024 for the EU five, US Census PEP
+        /// vintage 2024 for the USA).
+        /// <para>⚠ <b>Read-only in this stage, and that is the whole point of landing it alone.</b> Nothing
+        /// ages it and nothing in `EconomyState` derives from it yet, so the no-policy trajectory cannot
+        /// move — which the dump is run to PROVE rather than the reasoning being trusted. The spec-let's
+        /// five collisions (`POLISIM_COHORT_SPECLET.md` §4) all live in the stage that retires the eight
+        /// demographic scalars, and that stage carries its own explained baseline family.</para>
+        /// <para>⚠ Not persisted yet, deliberately: it is re-seeded from the sourced table on load, exactly
+        /// as `BaselineTaxRates` is. The save-layer bump belongs to the stage that makes it mutable, where
+        /// an absent pyramid would mean a different game state rather than a harmless default.</para>
+        /// </summary>
+        public PopulationCohorts Cohorts;
 
         /// <summary>ROUND 4 BATCH 3 (C1): whether housing cost overburden is a tracked stat for
         /// this country - TRUE for the EU five ([VERIFIED] Eurostat whole-population figures),
@@ -725,9 +739,9 @@ namespace PoliSim.Data
         /// <summary>
         /// W-G1: every election this country has held, oldest first.
         ///
-        /// ⚠ **IT LIVES ON `Country`, INSIDE `World`, AND THAT IS A DELIBERATE CHOICE ABOUT WHICH
+        /// â  **IT LIVES ON `Country`, INSIDE `World`, AND THAT IS A DELIBERATE CHOICE ABOUT WHICH
         /// SAVE LAYER IT LANDS IN.** The obvious home was `UiDraftState`, following the
-        /// `FedChairCandidates` precedent — but `SaveLoadRoundTripDiagnostic` records in its own
+        /// `FedChairCandidates` precedent â but `SaveLoadRoundTripDiagnostic` records in its own
         /// header that "Layer 3 (UI drafts) is structurally out of reach (no OnGUI in batch)", so
         /// that precedent has itself never been machine-proven. The World graph is a layer the
         /// diagnostic already round-trips field by field across 6 countries and 2 seeds. Putting an
@@ -735,22 +749,22 @@ namespace PoliSim.Data
         /// precedent the harness cannot.
         ///
         /// Before W-G1 an election left only a transient `_pendingElectionResult`, cleared the moment
-        /// the player dismissed the reveal — which is why the Docket's calendar marks no past
+        /// the player dismissed the reveal â which is why the Docket's calendar marks no past
         /// election. There was nothing to mark.
         /// </summary>
         public List<Elections.ElectionRecord> ElectionHistory = new List<Elections.ElectionRecord>();
 
         /// <summary>
-        /// C-D4 (§38, R-CL3): **each party's long-term political capital — what survives an election.**
+        /// C-D4 (Â§38, R-CL3): **each party's long-term political capital â what survives an election.**
         ///
         /// <para>Put HERE, beside <see cref="ElectionHistory"/>, for that field's own recorded reason:
         /// the World graph is the layer `SaveLoadRoundTripDiagnostic` round-trips field by field across
         /// six countries and two seeds, so persistence here can be PROVEN. `UiDraftState` cannot be, and
         /// matching a precedent the harness cannot see was worth less than being checkable.</para>
         ///
-        /// <para>⚠ Donor and grassroots networks are **specified ABSENT** on
-        /// <see cref="Elections.PartyCampaignCapital"/> rather than invented — §38 names them, nothing on
-        /// disk sizes them, and a fabricated donor stock is what §0.4 forbids.</para>
+        /// <para>â  Donor and grassroots networks are **specified ABSENT** on
+        /// <see cref="Elections.PartyCampaignCapital"/> rather than invented â Â§38 names them, nothing on
+        /// disk sizes them, and a fabricated donor stock is what Â§0.4 forbids.</para>
         /// </summary>
         public List<Elections.PartyCampaignCapital> PartyCapital = new List<Elections.PartyCampaignCapital>();
 
@@ -758,14 +772,14 @@ namespace PoliSim.Data
         /// C-R1/C-R2 (R-CL1, "the player has a party"): **which of this country's real seeded parties the
         /// player leads.** Null where none has been chosen.
         ///
-        /// <para>⚠ **INTERIM RULE, and it is DERIVED rather than invented.** The ruling says the player
+        /// <para>â  **INTERIM RULE, and it is DERIVED rather than invented.** The ruling says the player
         /// picks at country selection, and the picker is a Canvas-screen build that is BILLED, not done
-        /// (see `COMPLETED.md` §119). Until it exists, selection seats **the largest party in that
-        /// country's own seeded chamber** — you are the government, and which party that is comes from the
+        /// (see `COMPLETED.md` Â§119). Until it exists, selection seats **the largest party in that
+        /// country's own seeded chamber** â you are the government, and which party that is comes from the
         /// real returns on disk, not from a choice this code made up. It is an interim DEFAULT, marked as
         /// one, and the first thing the picker replaces.</para>
         ///
-        /// <para>World state, so it rides `SaveGame.World` beside `ElectionHistory` and `PartyCapital` —
+        /// <para>World state, so it rides `SaveGame.World` beside `ElectionHistory` and `PartyCapital` â
         /// the layer `SaveLoadRoundTripDiagnostic` can prove, which `UiDraftState` cannot.</para>
         /// </summary>
         public string PlayerPartyAbbrev;
@@ -773,13 +787,13 @@ namespace PoliSim.Data
         /// <summary>
         /// C-R3: **the player's PARTY approval, a NEW ADDITIVE STOCK.**
         ///
-        /// <para>⚠ The design constraint that keeps this SAFE rather than BASELINE, and it is the whole
+        /// <para>â  The design constraint that keeps this SAFE rather than BASELINE, and it is the whole
         /// point of the row: **personal approval keeps `EconomyState.ApprovalRating`, its name and every
         /// one of its consumers, untouched.** Party approval is added beside it and nothing reads it into
-        /// the simulation, so the no-policy trajectory is predicted byte-identical — and the dump is run
+        /// the simulation, so the no-policy trajectory is predicted byte-identical â and the dump is run
         /// to prove that rather than assert it.</para>
         ///
-        /// <para>⚠ **Nothing moves it yet, for C-D4's reason and stated the same way.** A rule coupling
+        /// <para>â  **Nothing moves it yet, for C-D4's reason and stated the same way.** A rule coupling
         /// party approval to events would need a coefficient nothing on disk sources, and inventing one to
         /// make a stock look alive is what the standing rules forbid. It opens at the personal rating and
         /// PERSISTS - which is itself the change, since before this there was no such stock at all.</para>

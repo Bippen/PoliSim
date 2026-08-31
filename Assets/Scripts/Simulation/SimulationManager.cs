@@ -2713,6 +2713,12 @@ namespace PoliSim.Simulation
                 // turn showed one. A preview that disagrees with the turn it previews is the one thing
                 // `EstimateBudgetBill` exists to prevent.
                 BaselineTaxRates = new Dictionary<TaxType, float>(country.BaselineTaxRates),
+
+                // P-I2 stage 1: the pyramid, CLONED. Nothing reads it on the preview path yet, so this line
+                // buys nothing today - it is here because the clone-escape class has now cost this pass twice
+                // (BaselineTaxRates at C-N4, found only because two film frames differed), and a field added
+                // to Country and not to this hand-list is a defect waiting for its first reader.
+                Cohorts = country.Cohorts?.Clone(),
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,

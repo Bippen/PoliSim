@@ -1,6 +1,8 @@
 # The cohort spec-let (C-C13 / P-I1)
 
-**Status: DOCUMENT ONLY. Ruled before built.** P-I2 (the build) is sized here and is not in this pass.
+**Status: RULED 2026-08-31 (Elias, D-4 (a)): BUILD THE FIVE-YEAR COHORT SUBSTRATE AS SPECCED.** P-I2 is
+now live and lands in stages, each with its own commit and its own evidence. ⚠ **Stage 1 corrected this
+document where it was wrong** — see the dependency-ratio row in §3.
 
 Written 2026-08-31 at C-C13. Elias's pre-ruling: **recommend 5-year cohorts unless the sourcing says
 otherwise, and carry the collision map plus the "one demography, two consumers" join.**
@@ -49,7 +51,7 @@ written to be ruled together.
 | consumer | today | after |
 |---|---|---|
 | `LaborForceParticipationRate` | a standalone scalar on `EconomyState` | **derived**: Σ(cohort × sourced participation rate for that cohort) / working-age population |
-| `DependencyRatio` | a standalone scalar | **derived**: (0–14 + 65+) / 15–64, the standard definition, computable exactly |
+| `DependencyRatio` | a standalone scalar | **derived**: ⚠ **CORRECTED at P-I2 stage 1 — 65+ / 15–64, the OLD-AGE ratio, NOT the total.** This line originally read *"(0–14 + 65+) / 15–64, the standard definition"*, which is a standard definition but not this model's. Measured: Sweden 33.08 computed vs 33.0 seeded, Germany 35.23 vs 35.0, USA 27.91 vs 28.0 — while the total ratio gives 60.52, 57.14, 55.14. **Building on the original wording would have doubled every country's ratio silently.** |
 | `PopulationGrowthRate` | a standalone scalar | **derived**: the aging step's own net result |
 | `Population` | a scalar stepped by a rate | **derived**: Σ cohorts |
 | pension cost weight | not modelled as such | 65+ share × a sourced per-head cost |
@@ -125,8 +127,8 @@ C-D1 is billed and closed as billed, this spec-let inherits the bill rather than
 
 | what | source | state |
 |---|---|---|
-| population by age and sex, all five EU countries | **Eurostat `demo_pjan`** (DOI 10.2908/demo_pjan) | ✅ identified; not yet fetched |
-| the same for the USA | US Census Bureau population estimates by single year of age | ⚠ **BILLED** — not identified precisely at C-C13 |
+| population by age and sex, all five EU countries | **Eurostat `demo_pjan`** (DOI 10.2908/demo_pjan), `sex=T`, `time=2024`, 1 January 2024 | ✅ **FETCHED at P-I2 stage 1** — single years folded into fives; all five reconcile to the person against the dataset's own TOTAL |
+| the same for the USA | **US Census Bureau PEP, vintage 2024, `nc-est2024-agesex-res.csv`**, `POPESTIMATE2024`, `SEX=0` | ✅ **IDENTIFIED AND FETCHED at P-I2 stage 1**, discharging this bill. ⚠ Reference date **1 July 2024**, not 1 January — no 1 January US series exists to match Eurostat, and the offset is stated rather than hidden |
 | age-specific fertility | Eurostat `demo_frate` family / national statistical offices | ⚠ **BILLED** — dataset code **not verified**, so it is named as a family, not asserted as an id |
 | age-specific mortality / life tables | Eurostat life tables; Human Mortality Database | ⚠ **BILLED** |
 | migration by age | Eurostat immigration-by-age series | ⚠ **BILLED** |

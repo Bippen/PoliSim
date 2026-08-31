@@ -987,6 +987,11 @@ namespace PoliSim.Data
             {
                 country.ParliamentSeats = PartySystems.InitialSeats(country.Id);
 
+                // P-I2 stage 1: the sourced five-year age pyramid. A COPY per country, never a reference
+                // into the static table - the substrate becomes mutable the moment the aging step lands,
+                // and a shared array would age every other game with this one.
+                country.Cohorts = PopulationPyramids.For(country.Id);
+
                 // C-D4 (§38): each party's long-term capital, opened at the seeded election's mandate.
                 // ⚠ The two starting levels are `PartyProfile`'s OWN constructor defaults (reputation 50,
                 // organization 50) - REUSED, not re-authored. This item introduces no new number; what it

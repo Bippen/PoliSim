@@ -8290,3 +8290,70 @@ Each recommendation rests on something **measured in this pass**, not on prefere
   a chain of four.
 - **D-1 → D-5.** The rail cell cannot be built without a war-chest figure, and C-D2 deliberately proposed
   four options rather than picking one.
+
+## 130. D-4 RULED (a), AND P-I2 STAGE 1 — the cohort substrate, with a spec-let correction it found itself (2026-08-31)
+
+**Elias ruled D-4 (a): build the five-year cohort substrate as specced.** The spec-let's status flips from
+DOCUMENT ONLY to RULED, and P-I2 lands **in stages**, because §4's collision map puts every one of the five
+dangers in the step that *retires the eight demographic scalars* — not in the step that seeds the pyramids.
+
+### Stage 1: the numbers, the arithmetic, and a proof that nothing moved
+
+| country | 21 bands sum | publisher's own total | gap | old-age dep. | seeded | pyramid | seeded pop |
+|---|---|---|---|---|---|---|---|
+| United States | 340.1110 | 340.1110 | **0.0000** | 27.91 | 28.0 | 340.111 | 341.8 |
+| Sweden | 10.5517 | 10.5517 | **0.0000** | 33.08 | 33.0 | 10.552 | 10.6 |
+| Germany | 83.4561 | 83.4561 | **0.0000** | 35.23 | 35.0 | 83.456 | 83.6 |
+| France | 68.6693 | 68.6693 | **0.0000** | 34.94 | 33.0 | 68.669 | 69.1 |
+| Italy | 58.9712 | 58.9712 | **0.0000** | 38.36 | 40.0 | 58.971 | 58.9 |
+| Poland | 36.6210 | 36.6210 | **0.0000** | 31.80 | 28.0 | 36.621 | 37.5 |
+
+**Sourced, per country, because they are not one source and do not share a reference date.** Eurostat
+`demo_pjan` (DOI 10.2908/demo_pjan), `sex=T`, `time=2024`, **1 January 2024**, for the EU five — single
+years of age, folded into fives, which is a **sum and not an estimate**. The USA from **US Census Bureau
+PEP vintage 2024, `nc-est2024-agesex-res.csv`, `POPESTIMATE2024`, `SEX=0`** — ⚠ **reference date 1 JULY
+2024**, because no 1 January US series exists to match Eurostat. The offset is stated, not hidden.
+
+⚠ **Two of the spec-let's seven billed sources are discharged**, and the US one is discharged the only way
+it could be: §6 marked it *"not identified precisely"*, and naming a file that had not been opened would
+have been an invented figure in a technical costume. **It was opened.**
+
+### ⚠ THE FINDING: THE SPEC-LET WAS WRONG ABOUT THE DEFINITION
+
+§3 specified `DependencyRatio`'s replacement as *"(0–14 + 65+) / 15–64, **the standard definition**"*. That
+is *a* standard definition. **It is not this model's.** The seeded field has always been the **old-age**
+ratio, 65+ / 15–64 — Sweden **33.08 computed against 33.0 seeded**, Germany **35.23 against 35.0**, the USA
+**27.91 against 28.0**, while the total ratio reads **60.52, 57.14 and 55.14** for those same three.
+
+**Building the derivation on the spec-let's own words would have roughly DOUBLED every country's dependency
+ratio, silently** — precisely the class of quiet breakage §4's collision map exists to catch, arriving from
+the one direction the map did not look: its own §3. `PopulationCohorts` now names **both** ratios
+explicitly, which is the only way the confusion cannot recur, and **the spec-let is corrected rather than
+the code being written to match a wrong spec.**
+
+### Why the reconciliation check is a check and not a tautology
+
+`PublishedTotal` is each source's **own** total — Eurostat's `TOTAL` age class, the Census file's `AGE=999`
+row — transcribed **independently of the 21 bands**, not summed from them. A slip in any one of **126**
+transcribed figures breaks the sum against a number that came from a different field. ⚠ **Proven in both
+directions before commit**: Italy's first band moved by 0.01 M, the check went red naming Italy and the
+gap (58.981230 against 58.971230), and the perturbation was reverted.
+
+### What stage 1 deliberately does not do
+
+Nothing ages, and **nothing in `EconomyState` derives from the bands**. The pyramid is not persisted — it
+re-seeds from the sourced table on load exactly as `BaselineTaxRates` does, and the save-layer bump belongs
+to the stage that makes it mutable, where an absent pyramid would mean a *different game state* rather than
+a harmless default. It is in `ClonePreviewCountry`'s hand-list already, though nothing reads it there yet:
+**the clone-escape class has cost this pass twice**, and a field added to `Country` and not to that list is
+a defect waiting for its first reader.
+
+**Evidence: trajectories 6 of 6 byte-identical to `traj_cc7_*`** — run to *prove* the no-policy family did
+not move, not to confirm the reasoning. Fourteen checks green, the simulation group green, both ratchets
+held at 39 and 212.
+
+**Two findings carried to the retirement stage, as findings and not failures:** the dependency ratio now
+disagrees with its seed for France (+1.94), Italy (−1.64) and Poland (+3.80); and every seeded `Population`
+is above the pyramid's own sum, Poland by **0.88 M**. Failing on either would push toward re-seeding a
+**sourced** pyramid to match an **authored** scalar — tuning a figure to pass a gate. A scalar may move in
+the retirement stage, with its family explained per country.
