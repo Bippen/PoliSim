@@ -707,6 +707,41 @@ ink**: `PoliSimTheme.HasPartyInk` returns false and the hemicycle draws them in 
 the neutral is the intended state until one exists. **We will not pick 30 colours by eye** for real
 organisations.
 
+**The R5 hex exchange, delivered (2026-08-31, C-B2).** You asked for the ink-safe darkened
+`DisplayColor` values, passed with Sweden's set. Here is that set as the game actually renders it —
+published hue in, desk-seated hex out — printed by `PartyInkHarness` rather than hand-copied, and
+re-derived on every run so it cannot drift from what the sheet draws:
+
+| party | published `fargkod` | desk-seated ink | hue° | nearest area accent | gap° |
+|---|---|---|---:|---|---:|
+| S | `#FF0000` | **`#753838`** | 0.0 | CrimeJustice | 6.0 |
+| SD | `#4E83A3` | **`#385E75`** | 202.6 | Global | 2.8 |
+| M | `#66BEE6` | **`#386275`** | 198.8 | Global | 6.6 |
+| V | `#C40000` | **`#753838`** | 0.0 | CrimeJustice | 6.0 |
+| C | `#63A91D` | **`#577538`** | 90.0 | Political | 47.7 |
+| KD | `#1B5CB1` | **`#385375`** | 214.0 | Fiscal | 0.9 |
+| MP | `#008000` | **`#387538`** | 120.0 | Trade | 53.3 |
+| L | `#3399FF` | **`#385775`** | 210.0 | Global | 4.6 |
+
+⚠ **Building that harness turned up two findings, and we are NOT fixing either by picking a colour —
+picking one is the ruling this section asks you for.**
+
+**(1) `#753838` is drawn for TWO parties — Socialdemokraterna and Vänsterpartiet.** Their published
+colours (`#FF0000` and `#C40000`) differ only in darkness, and the seating keeps the hue while
+replacing saturation and value, so they collapse onto one ink. A hemicycle arc, a legend swatch and an
+election-night row would draw a 106-seat party and a 24-seat party **identically**.
+
+**(2) Six of the eight sit closer to an area accent than two area accents sit to each other.** The four
+archetype inks these replaced were cut deliberately in hue space the eleven areas do not occupy, so a
+party could never print in an area's semantic colour; the sourced hues inherit no such guarantee. The
+floor is derived rather than authored — the closest two chromatic area accents are **8.7°** apart
+(Political / SovereignWealth) — and KD sits **0.9°** from Fiscal, SD 2.8° and L 4.6° from Global.
+**Only C and MP clear it.**
+
+Both are your call, and each has the same two exits: keep the authority's hue and accept the
+collision, or re-seat within a rule you give us. **We will not choose between a real party's real
+colour and a legible sheet on our own.**
+
 ### D8-3 — A drawn valkrets map (the campaign map, W-E2)
 
 The campaign map reads all 29 Swedish constituencies at a bought sample and reports 13–16 as swing

@@ -206,7 +206,13 @@ namespace PoliSim.UI
         /// The four archetype inks this replaces (wine, petrol, drab khaki, sage) were cut in hue
         /// space the eleven area accents never occupy, to keep a party from printing in an area's
         /// semantic colour. **That constraint is inherited, not discarded**: the desk-seated hues
-        /// below are checked against the area accents by `PartyInkHarness`.
+        /// below are checked against the area accents by `PartyInkHarness`. ⚠ **That harness did not exist
+        /// until 2026-08-31 (C-B2) - this comment named a check nothing performed.** It exists now, and it
+        /// found the constraint BROKEN: six of the eight sit closer to an area accent than two area
+        /// accents sit to each other, and **S and V collapse onto one ink** (#753838), their published
+        /// colours differing only in darkness while the seating keeps hue and replaces saturation and
+        /// value. Reported as PEND, not fixed: any fix stops using the authority own hue or picks a
+        /// replacement by eye, and that ruling is Design (asset request D8-2).
         /// </summary>
         private static readonly Dictionary<string, Color> PartyHues = new Dictionary<string, Color>
         {

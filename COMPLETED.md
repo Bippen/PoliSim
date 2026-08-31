@@ -5573,3 +5573,85 @@ stand as written; the exposure was never the phrase, it was the unqualified ones
 **Verified:** no live document now asserts a reproduction claim without its election, its procedure and
 its measured deviation; `SeatAllocationBacktest` exit 0 (synthetic ALL PASS, the country tables reported
 as findings rather than asserted); the nine checks 9 of 9 clean. No code touched.
+
+## 91. C-B1 / C-B2 — the mark accounting closed, and the hex exchange delivered with two findings nobody was checking for (2026-08-31)
+
+### C-B1 — §E2's mark accounting
+
+**Closed with no new work, and that is the honest report.** The item asked for the check to be pointed
+at `BuildParties()` and made to do real accounting (ruling R3's verification obligation: *verified then,
+not trusted now*). W-G1 had already done it, and the two remaining halves landed earlier in this pass:
+
+- The measurement, taken at C-0.4 on the real Editor: **53 seeded parties, 1 with a resolving mark, 52
+  without one, 0 errors.**
+- ⚠ `MarkName` is deliberately **not** derived from the abbreviation. A derived name would claim a mark
+  for all 53 and the check treats claimed-but-unresolvable as an **ERROR** rather than a gap — so the
+  honest 52 is a design decision in the check, not an omission.
+- §E2's entry was re-derived at C-0.2; the asset request's D8-1 already quotes the check's own output
+  verbatim, so the gap "feeds D8-1's count" was satisfied before the item was written.
+
+**Ruling R3's verification obligation is DISCHARGED**, and §E2 now waits on nobody on our side.
+
+### C-B2 — the R5 hex exchange, and the harness the code claimed already existed
+
+**The item as listed** was to produce the hex set for every seated party with a colour and name the ones
+without. Doing it turned up something first.
+
+⚠ **`PoliSimTheme.PartyHues`' own doc comment ended: *"the desk-seated hues below are checked against the
+area accents by `PartyInkHarness`."* No such file existed.** The constraint it names is real and
+inherited — the four archetype inks W-G1 replaced were cut deliberately in hue space the eleven area
+accents do not occupy, so **a party can never print in an area's semantic colour** — and nothing was
+enforcing it on the eight sourced hues that replaced them. This is the second time this pass that a
+comment has described a check nothing performed (C-0.3 found the same shape on the stranded branch's
+`ThresholdRule.CoalitionShare`), and the roadmap's own rule names it: *check callers before believing a
+feature exists.*
+
+**The harness now exists, and its bar is DERIVED rather than authored.** Inventing a "minimum separation"
+constant would be picking a number until the test passes. The floor is instead **the closest two
+chromatic area accents already sit to each other — measured at run time, 8.7° (Political /
+SovereignWealth)**: if two areas are mutually legible at that distance, a party ink at least that far
+from every area is at least as legible. It moves when the palette moves and cannot be quietly relaxed.
+Neutral (`#6D7480`, saturation 0.15) is compared on **saturation** instead, because hue is numerically
+unstable and perceptually meaningless that close to grey, and a party ink is seated at saturation 0.52 by
+construction.
+
+**The exchange, delivered into D8-2** — published hue in, desk-seated hex out, printed by the harness
+rather than hand-copied:
+
+| party | published | seated | party | published | seated |
+|---|---|---|---|---|---|
+| S | `#FF0000` | `#753838` | C | `#63A91D` | `#577538` |
+| SD | `#4E83A3` | `#385E75` | KD | `#1B5CB1` | `#385375` |
+| M | `#66BEE6` | `#386275` | MP | `#008000` | `#387538` |
+| V | `#C40000` | `#753838` | L | `#3399FF` | `#385775` |
+
+**45 of 53 parties carry no ink at all** — USA 2, Germany 9, France 15, Italy 14, Poland 5 — and are not
+given one. Picking 30 colours by eye for real organisations would be invention and would probably be
+wrong; `HasPartyInk` returns false so a caller says *"not yet coloured"* rather than asserting a colour.
+
+### ⚠ Two findings, reported and NOT fixed
+
+**(1) `#753838` is drawn for TWO parties — Socialdemokraterna and Vänsterpartiet.** Their published
+colours (`#FF0000`, `#C40000`) differ only in darkness; the seating keeps the **hue** and replaces
+saturation and value, so they collapse onto one ink. **A hemicycle arc, a legend swatch and an
+election-night row would draw a 106-seat party and a 24-seat party identically.** That is a defect a
+reader sees immediately, and it was invisible because nothing compared the rendered inks to each other.
+
+**(2) Six of the eight sit inside the derived floor** — KD **0.9°** from Fiscal, SD 2.8° and L 4.6° from
+Global, S and V 6.0° from CrimeJustice, M 6.6° from Global. **Only C (47.7°) and MP (53.3°) clear it.**
+The constraint the replaced inks were designed around does not hold for the sourced ones.
+
+**Neither is fixed here, and the reason is the item's own discipline:** every fix either stops using the
+election authority's published hue — at which point the ink is no longer the party's colour — or picks a
+replacement by eye, which is precisely the invention D8-2 exists to prevent. Both are Design's ruling,
+and both are now in the ask with their measurements.
+
+⚠ **The harness reports them as PEND rather than failing.** It follows `SeatAllocationBacktest`'s idiom —
+*the country tables are FINDINGS, deviations reported and not asserted* — so the bar stays meaningful for
+regressions that ARE ours. What it does assert, and will go red for, is the one thing that is: the
+exported hex must re-derive from the published value through the theme's own arithmetic and equal the
+ink the game draws, so the Design ask can never quote a colour the sheet does not use.
+
+**Verified:** `PartyInkHarness` ALL ASSERTIONS PASS, 8 inked / 45 uninked, **7 PENDING** printed with
+their measurements against the derived 8.7° floor; the nine checks 9 of 9 clean in one pass. No colour
+was changed, no floor was moved, no ink was invented.

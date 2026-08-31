@@ -60,8 +60,8 @@ Execution order: Phase 0 → A → B → C → D → R → E → F → G. One co
 
 | ID | what | done-when | owner | class | depends on |
 |---|---|---|---|---|---|
-| C-B1 | §E2's mark accounting, recorded (the code half shipped at `a289e1e`) | §E2 states the real accounting; the 52 feed D8-1's count | CODE | SAFE | — |
-| C-B2 | The R5 hex exchange — Sweden's eight inks, 45 named uncoloured | the exchange is a line in the Design ask, not a gate in the prerequisites file. Nothing picked by eye | CODE | SAFE | C-B1 |
+| C-B1 | §E2's mark accounting, recorded (the code half shipped at `a289e1e`) | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §91) with no new work, honestly reported**: W-G1 did the code half, C-0.2 re-derived §E2, C-0.4 measured 53/1/52/0, and D8-1 already quoted the check verbatim. R3 DISCHARGED. Original done-when: §E2 states the real accounting; the 52 feed D8-1's count | CODE | SAFE | — |
+| C-B2 | The R5 hex exchange — Sweden's eight inks, 45 named uncoloured | ✅ **CLOSED 2026-08-31 (`COMPLETED.md` §91).** Sweden's eight seated hexes delivered into D8-2, 45 named uncoloured. ⚠ **Built `PartyInkHarness`, which `PoliSimTheme` already claimed was checking this and did not exist** — and it found the constraint BROKEN: **S and V collapse onto one ink `#753838`** (a 106-seat and a 24-seat party drawn identically), and six of eight sit inside the derived 8.7° floor. Reported as PEND, not fixed; both are D8-2's ruling. Original done-when: the exchange is a line in the Design ask, not a gate in the prerequisites file. Nothing picked by eye | CODE | SAFE | C-B1 |
 | C-B3 | The trade axis for the Trade bill's vote, on R-CL2 | the vote reads a trade position or documents why it cannot, **per country** (the USA has no `eu_position` and keeps the fiscal axis with the reason stated) | CODE | SAFE ⚠ vote-side evidence, not trajectory | R-CL2 |
 | C-B4 | Riksbank-B merged into P-D1 | one item, not two, with felt verdict 2 attached | CODE | SAFE | — |
 | C-B5 | Step 6 (story mode) re-gated — scope the gate, not the work | the entry says whether it opens now or what remains | CODE | SAFE | R-CL1 |
@@ -228,3 +228,13 @@ The repo outranks the document. These are recorded, not re-worked.
 | the gap table's class column: §3, §12, §17, §21, §22 read unbuilt | built at W-B1, W-B3, W-B8, W-B10, W-B10. The honest count is **3 truly unbuilt of 44** — §5, §37, §38 (§38 now built at C-D4) | C-0.2 re-derives |
 | `SEND_PACKAGE_2026-08-28.md` states the request doc at 65 004 bytes, digest `85690abf…` | the file on disk is 69 753 bytes — D8 was appended after; **the readback glance it prescribes would fail** | C-F1 regenerates |
 | W-F4 and W-F5 are closed items | closed **by STOPPING**, and their real work is live here as C-D1 and C-D2 | `cc95e03` |
+
+---
+
+## 10. Findings opened by this pass
+
+| ID | what | owner | where |
+|---|---|---|---|
+| S-7 | **`#753838` is drawn for two parties — Sweden's S and V.** Their published `fargkod` values differ only in darkness and the desk seating keeps hue while replacing saturation and value, so a 106-seat party and a 24-seat party render identically in a hemicycle arc, a legend swatch and an election-night row | DESIGN (D8-2) | `COMPLETED.md` §91 |
+| S-8 | **Six of Sweden's eight party inks sit inside the derived legibility floor** — closer to an area accent (8.7°, Political/SovereignWealth) than two area accents sit to each other. KD 0.9° from Fiscal, SD 2.8° and L 4.6° from Global. Only C and MP clear it. The constraint the four replaced archetype inks were designed around does not hold for the sourced hues | DESIGN (D8-2) | `COMPLETED.md` §91 |
+| S-9 | **Local campaigning is a bad bet by construction** — the three local actions hold the largest hour costs and smallest channel reaches in the set while §33 scores per hour, so only the non-optimising personality does any. The door-to-door ACTION is also largely redundant with the offices' own daily operations. A fix must answer what the action is FOR, which is a §12 verb-set question | ELIAS / CODE | `COMPLETED.md` §88 |
