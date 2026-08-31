@@ -272,6 +272,12 @@ namespace PoliSim.EditorTools
                 // cost argument as the rest. ⚠ Its Sweden 2022 assertion is the one in the suite whose
                 // answer is PUBLIC RECORD rather than the model's own opinion.
                 ("OfficeTestDiagnostic", OfficeTestDiagnostic.Run),
+
+                // C-D1 (2026-08-31): the voter groups as a view over the cohort substrate. ⚠ Its Sweden
+                // clause weights the 2024 pyramid by SCB's 2014 band rates and checks the result against
+                // SCB's separately-published all-ages figure - two independently sourced things agreeing,
+                // which is the strongest form of check this suite has.
+                ("VoterGroupViewDiagnostic", VoterGroupViewDiagnostic.Run),
             };
 
             var names = new string[simulation.Length];

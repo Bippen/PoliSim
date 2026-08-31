@@ -8716,3 +8716,67 @@ films 81/0/0 with 81 capture-identity proofs; the rule-15 diff 78/0/3; save/load
 ⚠ **What remains of D-5 (a): the rail cell and a live `CampaignSnapshot`.** `GameController.cs` still says
 *"No player path sets `_campaignScreen`"*, and the eight Track E screens are still reachable only from the
 capture driver. The ruling half is done; the UI half is its own item.
+
+## 136. C-D1 BUILT — the voter groups as a view over the cohorts, and two sourced things that agree (2026-09-01)
+
+C-D1 closed as billed on 2026-08-31 with a finding: **the blocker was not the data, it was the order.**
+The cohort spec-let §5 rules voter groups a view with computed shares *"precisely so the game never
+carries two populations"*, so sourcing marginals onto a new group layer would have built the second
+population that spec-let forbids. **P-I2's substrate landed, so the view is built on it instead.**
+
+### The join, exactly as §5 states it
+
+| country | groups | Σ shares | eligible (M) | of population | turnout |
+|---|---|---|---|---|---|
+| United States | 14 | 1.000000000 | 266.99 | 78.50 % | not published |
+| **Sweden** | 13 | 1.000000000 | 8.38 | 79.42 % | **SOURCED** |
+| Germany | 14 | 1.000000000 | 69.45 | 83.22 % | not published |
+| France | 14 | 1.000000000 | 54.53 | 79.41 % | not published |
+| Italy | 14 | 1.000000000 | 50.03 | 84.84 % | not published |
+| Poland | 14 | 1.000000000 | 29.99 | 81.89 % | not published |
+
+⚠ **The eligible population is not the population**, which is §5's own named failure mode — a share taken
+of the country inflates every young group. The eligible total is computed **independently of the groups**
+and then compared, so the two can disagree.
+
+### ⚠ THE CROSS-CHECK: two independently sourced things agreeing
+
+**Sweden's 2024 cohort shares, weighted by SCB's 2014 per-band turnout rates, give 85.67 % against SCB's
+separately-published all-ages figure of 85.8 % — a difference of 0.13 points across a decade of ageing.**
+
+That is the strongest form of check in this suite: the thirteen band rates and the all-ages total are
+transcribed from different rows of the source, and the weights come from a *different publisher in a
+different year*. Nothing was fitted. ⚠ The tolerance is deliberately wide (2 points) because an exact
+match would mean the check was comparing a number with itself.
+
+**Turnout, SOURCED**: SCB *Valdeltagandeundersökningen*, Riksdag election, voting rates among all entitled
+to vote, both sexes — table `ME/ME0105/ME0105C/ME0105T01`, fetched by **POST** (PxWeb serves data by POST
+and metadata by GET, the constraint C-D1 recorded). ⚠ **Vintage 2014, and that is the end of the series,
+not a choice**: the table's own range is 2002–2014 and no later wave exists.
+
+⚠ **Every other country carries NaN, and the check FAILS if one carries a number.** A Swedish rate worn by
+another electorate would be the worst kind of invented figure: real, checkable, and about the wrong
+country.
+
+### What this deliberately does not do
+
+⚠ **No per-group LOYALTY.** That is C-A1's named FdI ceiling, and it needs vote shares **by age group** —
+survey data, per country, per election, which no source consulted publishes for Italy 2022. **The
+substrate it would hang on now exists**, and the figure is billed rather than invented: a per-group
+loyalty guessed from a national one would reproduce the uniform 60 this entire chain exists to replace.
+
+⚠ **One approximation, named**: the 15–19 cohort is apportioned two fifths (ages 18 and 19), which assumes
+an even spread inside a five-year band — the same assumption the aging step **replaced** with observed
+data, and which cannot be replaced here because no source publishes the electorate by single year.
+
+⚠ **Voting age is enumerated per country rather than assumed universal.** It is 18 in all six, and it is a
+constitutional fact (RF 3 kap. 4 §, GG Art. 38(2), Amendment XXVI, and Italy's 2021 constitutional law
+lowering the Senate's electorate) — so the day one of them changes, there is one place it changes.
+
+### Proven in both directions
+
+With the voting age set to 0, all three assertions fire at once: Sweden's shares sum to **0.794** rather
+than 1, coverage reads **8.38 M against 10.55 M**, and the weighted turnout falls to **68.04 %** against
+85.8. Reverted.
+
+**Bar:** simulation group **seven → eight**; fourteen checks green; trajectories 6 of 6 byte-identical.
