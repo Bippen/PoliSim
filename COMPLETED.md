@@ -6401,3 +6401,52 @@ it. Register row **S-16**.
 failed, **0 text overflows, 0 containment escapes** at both; `ScreenEdgeCheck` exit 0 over 162 captures;
 the nine checks 9 of 9 clean. No simulation code touched, so no trajectory family is involved. Capture
 family `cc8b_<width>_*`.
+
+## 103. C-C9 (P-G1) — the shadow baseline's premise, measured before anything was built (IN PROGRESS, 2026-08-31)
+
+**Not a closed item.** The measurement that decides the architecture is done and recorded; the build is
+not. Recorded now because the next session needs the answer and because measuring the premise before
+fixing it is the standing rule.
+
+### ⚠ A naive shadow would be a determinism break shipped as a display feature
+
+`SimulationRandom` is a global static with one counting generator per stream, and the save layer persists
+those draw counts precisely because the position is load-bearing. **A shadow turn consumes 41 draws:**
+
+| stream | draws per shadow turn |
+|---|---:|
+| `PublicationRevision` | 18 |
+| `SovereignWealth` | 16 |
+| `Event` | 7 |
+
+So a shadow advanced naively in-process would shift the real game's streams — **merely LOOKING at the
+counterfactual would change the future of the game being played.** That is exactly the class W-G2
+measured and the save system guards, and it would have arrived inside a feature whose whole purpose is to
+be a passive read.
+
+**What this settles:** the shadow must run inside a `CaptureDrawCounts` / `RestoreState` wrapper — the
+pair the save layer already relies on — and **that wrapper is the first thing to build and the first
+thing to assert.** An assertion that the real game's draw counts are byte-identical across a shadow turn
+is the C-C2-shaped evidence this item needs: it binds where the change lives, rather than resting on a
+trajectory diff that would never exercise it.
+
+### The cost, stated rather than assumed
+
+| | per turn |
+|---|---:|
+| a real turn | **50.4 ms** |
+| a shadow turn | **97.4 ms** |
+| the pair | **~148 ms** |
+
+⚠ **The shadow is nearly twice the real turn, not equal to it**, so running one is closer to tripling the
+per-turn cost than doubling it. The pre-ruling governs what happens next: *if the per-turn cost exceeds a
+stated budget, report the cost and ship it behind a flag rather than optimising blind — a measured cost is
+the deliverable, not a fast one.* **The figure is now stated; no budget has been set against it, and
+nothing was optimised on a guess.**
+
+### What remains for the build
+
+The draw-count wrapper and its assertion · the shadow's own history so the graphs can read it · the
+overlay on the six live series · and the two done-when proofs: that the shadow equals the recorded
+no-policy baseline for an untouched game, and that the divergence after a known dial change equals the
+batch-diff for the same change.
