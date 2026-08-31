@@ -29,6 +29,10 @@ namespace PoliSim.Simulation
         /// ~3.65/turn is the INTENDED pacing or an inherited one is flagged for playtesting in the
         /// R4-4 record, deliberately not tuned here.
         /// </summary>
+        /// <summary>[AUTHORED-DRAFT] pacing figure, and ⚠ **flagged as unresolved by its own record**: the
+        /// R4-4 note above says whether ~3.65 meetings a turn is the INTENDED pacing or an inherited one
+        /// is a question for playtesting, and it was deliberately not tuned. The mark records the class;
+        /// the open question stays open.</summary>
         private const float MeetingChancePerDay = 0.01f;
 
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.ForeignPolicy);

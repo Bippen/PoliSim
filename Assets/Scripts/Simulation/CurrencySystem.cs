@@ -13,6 +13,8 @@ namespace PoliSim.Simulation
     {
         /// <summary>CONVENTION - bounds, not a forecast. Sane clamps for any CurrencyZone's interest rate; public so GameController's policy preview can clamp its own estimated rate the same way. 15% is above any policy rate the six have set in the modern era and is a guard against a runaway, not a claim that a rate could reach it.</summary>
         public const float MinInterestRate = 0f;
+
+        /// <summary>CONVENTION - the upper clamp of the pair documented on `MinInterestRate`. It carries its own comment because the provenance sweep reads the block immediately above each declaration, and a shared summary leaves the second constant unaccounted for.</summary>
         public const float MaxInterestRate = 15f;
 
         /// <summary>CONVENTION - an index origin. 100 represents a country neither strong nor weak relative to its peers; the index has no unit and the number is a scale choice, not a measurement.</summary>

@@ -109,6 +109,7 @@ namespace PoliSim.Simulation
         /// growth gap is. NOTE THE /100: the formula applies this per 100 Kaitz points of gap, so the
         /// per-point edge in <see cref="All"/> divides by 100.
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
         public const float MinimumWageEmploymentSensitivity = 1.5f;
 
         /// <summary>
@@ -121,6 +122,7 @@ namespace PoliSim.Simulation
         /// reaches low-wage workers, not the whole poor population the way a direct transfer does.
         /// Applied per 100 Kaitz points of gap, like the employment effect.
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
         public const float MinimumWagePovertyReductionSensitivity = 5f;
 
         /// <summary>Gini points removed per 100 points of MinimumWagePercentOfMedian above the
@@ -138,12 +140,14 @@ namespace PoliSim.Simulation
         /// 35-hour week didn't meaningfully reduce French unemployment as intended - so this is
         /// deliberately small, representing one side of that debate, not a confident modeling choice.
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
         public const float OvertimeUnemploymentSensitivity = 0.008f;
 
         /// <summary>Unemployment points removed per point Country.RetrainingProgramLevel sits above
         /// its neutral 50 (added per point below) - the well-established real economic rationale that
         /// retraining eases job transitions, smaller than the overtime effect since it's a more
         /// indirect mechanism.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
         public const float RetrainingUnemploymentSensitivity = 0.006f;
 
         /// <summary>LaborForceParticipationRate points added per week Country.PaidFamilyLeaveWeeks
@@ -162,6 +166,7 @@ namespace PoliSim.Simulation
         /// <summary>Approval points gained per week Country.PaidFamilyLeaveWeeks sits above its own
         /// seeded BaselinePaidFamilyLeaveWeeks (and lost per week below) - a small, real political
         /// effect (paid-leave policy tends to be popular).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
         public const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
 
         /// <summary>
@@ -174,6 +179,7 @@ namespace PoliSim.Simulation
         /// same (YearsPerTurn-scaled, capped/reverting) ApplyPopulationGrowth pipeline every other
         /// BirthRate driver already uses.
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
         public const float FamilyPolicyBirthRateSensitivity = 0.03f;
 
         /// <summary>

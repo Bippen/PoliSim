@@ -17,10 +17,14 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class FederalReserveSystem
     {
+        /// <summary>CONVENTION - how many candidates a chair shortlist offers, at least. A presentation choice about how much of a decision the screen shows, not a claim about real appointment practice.</summary>
         private const int MinCandidateCount = 2;
+
+        /// <summary>CONVENTION - the upper end of the same shortlist size.</summary>
         private const int MaxCandidateCount = 3;
 
         /// <summary>
+        /// CONVENTION - a reversion speed, and the one the eurozone system derives its own from.
         /// Fraction of the gap between USA's current rate and this turn's target (TaylorRule's
         /// suggestion plus the chair's RateBias) that closes each turn (0-1) - matches
         /// CurrencySystem.CurrencyStrengthDamping's value and role (a real central bank moves
