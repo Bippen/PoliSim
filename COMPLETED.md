@@ -11124,3 +11124,47 @@ earned it, `RatchetSlackCheck` demanding both.
 ⚠ **What remains of F1: the film.** The board is reachable and the count is real; a capture pass at
 1280/2560 with `MetaTextCheck` and the edge guards silent is the last proof, and it is a wall-clock run
 rather than a question.
+
+## 180. F1 COMPLETE — a player can reach election night and watch the model''s own count declare (2026-09-01)
+
+**Done when:** *a player can start a Sweden game, reach election night from the game itself, and watch
+constituencies declare from the model''s own count.* **Met.**
+
+### ⚠ The film needed one more thing than "a film"
+
+Both standard passes came back clean — 81 captured, 0 failed, 0 overflows, 0 clipped, at 1280×720 and
+2560×1440 — and **that would not have proved F1.** The standard pass contains no election-night frame at
+all, and **every election-night film this project has ever taken was of `ElectionNightFilm`''s staged
+fixture.**
+
+⚠ **A fixture exercises the SCREEN and says nothing about the MODEL.** It would render identically if the
+simulation produced nothing — which, for board 1h, was the literal situation for weeks. Reporting "filmed
+at 1280/2560, guards silent" on the standard pass would have been true in every word and false as a claim
+about F1.
+
+**So the driver gains a fifth frame that predicts through the live path and builds through
+`ElectionNightFromModel` — the same two calls `GameController.ShowElectionNight` makes.** A missing frame
+fails the run; a fixture standing in for it would not have been noticed.
+
+| geometry | frame | result |
+|---|---|---|
+| **1280×720** | `f1n_e6_election_night_model.png` | **29 constituencies declared of 29**, 0 overflows, 0 clipped |
+| **2560×1440** | `f1m_e6_election_night_model.png` | **29 of 29**, 0 overflows, 0 clipped |
+
+### F1, end to end
+
+1. **The catalog moved** into the runtime assembly on the condition it wrote for itself — its consumer
+   arrived, so the runtime-readability claim is exercised rather than asserted.
+2. **`RegionalVoteModel` is on the live path**, and `UnwiredSubsystemCheck.UNREACHABLE` fell for it.
+3. **The count is real and it varies**: SD spans 21.42 points, 10.75 % in inner Stockholm to 32.17 % in
+   north-east Skåne, and the regional total reproduces the national shares to **0.0109 %**. ⚠ The map is
+   Sweden''s actual political geography and **nothing was fitted to make it so.**
+4. **Board 1h has a door.** `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` **1 → 0**, the ratchet written
+   for this exact screen reading zero for the first time.
+
+⚠ **Two guards caught defects introduced by this work, hours after being built**: `DeadStateCheck`''s
+write-only classifier found the dismissal I had not written (§168, built the same day), and
+`RatchetSlackCheck` demanded three ceilings come down in the runs that earned them. **That is what a guard
+paying for itself looks like** — and it is the evidence R-N5 asks for before a check is written at all.
+
+**Bar 25 of 25, 9 of 9 simulation.**

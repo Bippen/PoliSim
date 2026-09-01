@@ -2593,6 +2593,63 @@ namespace PoliSim.Testing
         /// chosen by how much has DECLARED rather than by clock time, because that is what the
         /// screen is about.
         /// </summary>
+        /// <summary>
+        /// **F1's last proof: board 1h drawn from the MODEL'S OWN COUNT, filmed.**
+        ///
+        /// <para>⚠ Every election-night film before this one was of `ElectionNightFilm`'s staged fixture.
+        /// A fixture exercises the SCREEN and says nothing about the model - it would render identically
+        /// if the simulation produced nothing at all, which for board 1h was the literal situation.</para>
+        ///
+        /// <para>It predicts through the live path and builds through `ElectionNightFromModel`, the same
+        /// two calls `GameController.ShowElectionNight` makes, so the frame is of the thing a player
+        /// reaches rather than of a rehearsal of it.</para>
+        /// </summary>
+        private IEnumerator CaptureElectionNightFromModel()
+        {
+            if (!NationalElection.TryPredictShares(CountryId.Sweden, out _))
+            {
+                Debug.LogError("SHOT: F1 - Sweden could not be predicted, so the model frame is NOT filmed. A missing frame is reported; a fixture standing in for it would not be.");
+                _failed++;
+                yield break;
+            }
+
+            var keys = new List<string>();
+            foreach (PoliticalParty party in PartySystems.For(CountryId.Sweden))
+            {
+                if (party.HasPosition) { keys.Add(party.Abbrev); }
+            }
+
+            NightState modelState = ElectionNightFromModel.At(
+                ElectionNightFromModel.FinalMinute, CountryId.Sweden, keys, 349, 0.04);
+            if (modelState == null)
+            {
+                Debug.LogError("SHOT: F1 - the model produced no night state; the frame is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+            ElectionNightScreen modelScreen = ElectionNightScreen.Build(
+                modelState, keys.ToArray(), "SWEDEN", new DateTime(2026, 9, 13, 20, 0, 0), 349);
+            if (modelScreen == null)
+            {
+                Debug.LogError("SHOT: F1 - the board did not build for the model frame; nothing filmed.");
+                _failed++;
+                yield break;
+            }
+
+            yield return Settle();
+            Claim("electionnight");
+            yield return Capture("e6_election_night_model");
+
+            Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                "SHOT: F1 - board 1h filmed from the MODEL, {0} constituencies declared of {1}.",
+                modelState.DeclaredCount, modelState.TotalConstituencies));
+
+            if (modelScreen.Root != null) { UnityEngine.Object.Destroy(modelScreen.Root); }
+            yield return null;
+        }
+
         private IEnumerator CaptureElectionNight(GameController controller)
         {
             // ⚠ C-D5 (2026-08-31): PUT THE DESK AWAY FIRST — a defect this item found in W-E6's own film
@@ -2616,6 +2673,14 @@ namespace PoliSim.Testing
 
             // Four instants of one night, picked by declared count: the first returns, the middle
             // of the count, the moment the last threshold call lands, and the completed night.
+            // ⚠ F1 (2026-09-01): THE FIFTH FRAME IS THE MODEL'S OWN COUNT, not the staged fixture.
+            // The four below are `ElectionNightFilm`'s staged night - a fixture, chosen to exercise the
+            // board at four instants. **A fixture proves the SCREEN and says nothing about the MODEL**,
+            // and every election-night film ever taken was of a fixture. This one predicts Sweden's
+            // election through the live path and films what the model actually produced, so "board 1h
+            // filmed" stops being a claim about furniture.
+            yield return CaptureElectionNightFromModel();
+
             int[] wanted = { 4, 16, 28, 29 };
             var stems = new[] { "early", "partial", "called", "final" };
 

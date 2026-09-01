@@ -45,7 +45,16 @@ attention for as long as the project lives.
 
 ---
 
-# F1 — The runtime data layer, and everything it unblocks
+# F1 — ✅ COMPLETE 2026-09-01 (`COMPLETED.md` §§178–180)
+
+⚠ **A player can start a Sweden game, reach election night from the game itself, and watch 29 of 29
+constituencies declare from the model's own count.** Filmed at 1280×720 and 2560×1440 **from the model,
+not from the staged fixture** — every prior election-night film was of a fixture, which exercises the
+screen and says nothing about the model. `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` reads **0**.
+
+*The original text is kept below, because the ORDER it prescribed is what made the result honest.*
+
+# F1 (as written) — The runtime data layer, and everything it unblocks
 
 **The largest correctness gap in the game: board 1h is built, filmed, delivered, and unreachable.** The
 root is that `ElectionsData/` lives outside `Assets/`, so only editor code can read it — which makes
