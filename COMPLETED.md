@@ -10652,3 +10652,52 @@ not.
 
 **Bar: 23 of 24; residue 23. `DeadStateCheck.WRITE_ONLY` is a MEASURED zero, enrolled as a standing watch
 rather than as work, because a ratchet at zero is nothing to start.**
+
+## 169. C-0.3 CLOSED — the stranded branch disposed, and "four unsuperseded pieces" was never derived (2026-09-01)
+
+`stranded/politics-elections` holds **one commit**, another session's uninspected politics/elections work,
+committed to stop it being lost and deliberately kept off `main`. It is **1 ahead of `main` and 439
+behind**. The obligation was to migrate its *"four unsuperseded pieces"*, retire it, and keep the ref.
+
+⚠ **"Four" appears in exactly two places — the register row and the master-list row that copied it — and
+nothing derives it.** It is a count nobody measured, which is this project's own catalogued defect wearing
+the costume of a plan. So the disposal begins by counting.
+
+### The enumeration — fifteen artifacts, each against what main has
+
+| stranded artifact | superseded by | verdict |
+|---|---|---|
+| `SeatAllocation.cs` | `Elections/SeatAllocation.cs`, with `SeatAllocationBacktest` behind it | superseded |
+| `ThresholdRule.cs` | `SeatAllocation.ApplyNationalThreshold`, with **sourced** thresholds (SE 4 %, DE 5 %, PL 5/8 %) | superseded |
+| `ElectoralFormula.cs` | `ElectionTypes`, `Rosatellum`, `SeatConversion` | superseded |
+| `NationalVoteModel.cs` | `VoteModel`, `NationalElection`, `RegionalVoteModel`, with `VoteShareBacktest` | superseded |
+| `PoliticalParty.cs` | `PartySystem` and the seeded parties | superseded |
+| `UnitedStatesSeed.cs` | `WorldFactory`'s seeds | superseded |
+| `UnitedStatesElections.cs`, `UnitedStatesElectionCycle.cs` | `ElectoralCollege` — **with statutory citations** (Neb. Rev. Stat. §32-710) where the stranded version had none | superseded |
+| `ElectorateCohort.cs` — *data half* | the sourced cohort substrate (P-I2, `CohortSubstrateDiagnostic`) | superseded |
+| `POLISIM_POLITICS_ELECTIONS_ROADMAP.md` | `ELECTIONS_ARCHITECTURE.md` and the elections track's 46 closed items | superseded |
+| `seat_allocation_check.py`, `usa_election_check.py` | the C# backtests, which run in the bar | superseded |
+| `screenshot_edge_check.py` | `ScreenEdgeCheck.cs` — whose own doc says *"carried over from the Python original"* | superseded |
+| `ledger_geometry_check.py` | ⚠ it ported `LedgerRow.Columns()` to answer a question **at a resolution no capture reached**. There are now **6 584 captures at 2560** on disk and 2560×1440 is one of S-17's four standard geometries | superseded — **by measurement, not by argument** |
+
+### ⚠ TWO pieces are unsuperseded, and neither is code — they are model ideas main has not built
+
+- **`Chamber.ChamberRenewal`** — how much of a chamber faces the voters at once: `Whole`,
+  `StaggeredThirds` (**US Senate**), `StaggeredHalves` (French Sénat), `FollowsAnotherBody` (German
+  Bundesrat, whose composition moves with Land governments). ⚠ **Nothing on `main` models chamber renewal
+  or staggering at all** — `StaggeredThirds` and `FollowsAnotherBody` appear nowhere in the tree. The
+  stranded doc's own argument is the point: staggering *"stops any one election from handing a president
+  the whole chamber"*.
+- **`ElectorateCohort`'s per-ELECTION-TYPE turnout** — turnout falls by roughly a third from a
+  presidential year to a midterm and **does not fall evenly**, the youngest cohort dropping furthest, which
+  mechanically ages the midterm electorate. ⚠ `TurnoutModel` on `main` has no election-type term at all.
+  The claim is that this differential, not an arbitrary anti-incumbent bonus, should produce the midterm's
+  historical bias.
+
+**Both are recorded as PRESERVED IDEAS, not as work**, and they are nobody's CODE row: they are features to
+plan, not defects to fix. The branch stays as a recorded ref and is the citation for both. ⚠ **Deleting the
+remote branch is outward-facing and is not done here** — nor is it asked for; the obligation was to keep
+the ref.
+
+**The obligation retires. `main` treats the branch as history, and the count it carried is corrected from
+four to two, with the other thirteen shown against what replaced them.**
