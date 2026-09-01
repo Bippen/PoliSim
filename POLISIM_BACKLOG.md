@@ -893,7 +893,7 @@ four items away and the first of them is Elias's to rule**, not a fetch anyone c
 | C-0.1 | This file: the single ordered register | every open item appears exactly once; every closed row cites its commit; a grep proves no open item sits in a source document without a row here | CODE | SAFE | — |
 | C-0.2 | The post-wiring re-derivation — correct every document that still asserts a pre-wiring premise | no live document asserts a pre-wiring premise (grep: `PartyArchetype`, `TotalSeats = 200`, "not wired", "unreachable from any gameplay path", "VERIFIED NOTHING", "no party seeds exist on main", "UNINSPECTED") | CODE | SAFE | C-0.1 |
 | C-0.3 | The stranded branch disposed — migrate its four unsuperseded pieces to `COMPLETED.md`, retire the obligation, keep the ref | no live document treats `stranded/politics-elections` as pending work | CODE | SAFE | — |
-| C-0.4 | A batchmode entry for the check suite (`RunAllBatch`) — the nine currently run as nine invocations | one invocation reproduces the nine's current verdicts exactly; the per-check invocations still work unchanged | CODE | SAFE | — |
+| C-0.4 | ✅ **CLOSED at `9489d97`** — the check suite's batchmode entry (`RunAllBatch`) exists and every bar run since has used it; the per-check invocations still work unchanged. ⚠ **The register read OPEN until 2026-09-01, when the master-list sweep put it against the code and the code won** — a row can be done for weeks and the document not know it, which is why the sweep is by repo and never by list | closed; cited above | CODE | SAFE | — |
 
 ### Track A — the verifications whose blockers have landed
 

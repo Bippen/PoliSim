@@ -1,5 +1,3 @@
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -37,20 +35,20 @@ namespace PoliSim.EditorTools
     /// audited nothing looks exactly like one that found no slack. That is the enumeration rule applied to
     /// a check whose input is other checks.</para>
     ///
-    /// <para>⚠ <b>WHAT IT CANNOT SEE.</b> A ratchet that does not report is invisible to it, so the
-    /// coverage is printed rather than implied: the ledger names what it holds, and anything absent is
-    /// unguarded. **A ratchet added without a `Report` call is exactly the hole this check would have
-    /// caught in someone else's code**, and there is no way to make it self-detecting short of the
-    /// mutation probe the sixth sweep already billed.</para>
+    /// <para>⚠ <b>WHAT IT CAN SEE, AND HOW THAT GREW TWICE.</b> It began by SAYING an unreporting ratchet
+    /// was invisible to it; §161 made that a failing condition instead. ⚠ **And on 2026-09-01 the
+    /// enrolment's own honesty was found to be the next hiding place**: it asked whether a
+    /// `RatchetLedger.Report` call was WRITTEN, printed `0 unreported`, and two ratchets — one of them a
+    /// FLOOR — were reporting into the simulation batch's ledger, which no audit read. **A written call
+    /// is not an executed one.** <see cref="RatchetResidency"/> now supplies which batch registers each
+    /// declaring check, this audit runs at the end of BOTH batches, and four states are separated:
+    /// UNREPORTED, UNREGISTERED, SILENT (registered here, in source, absent from the ledger) and DEFERRED
+    /// (named, with the batch that audits it). The coverage is printed rather than implied, and the one
+    /// remaining soft spot is stated on <see cref="RatchetResidency"/>: a bound not named `*Ceiling` or
+    /// `*Ratchet` escapes the enrolment entirely.</para>
     /// </summary>
     public static class RatchetSlackCheck
     {
-        /// <summary>An `int` constant whose name ends in Ceiling or Ratchet — this repo's own naming for
-        /// a backlog bound. ⚠ It is a NAMING convention doing structural work, which is stated because it
-        /// is the enrolment's one soft spot: a bound called something else escapes.</summary>
-        private static readonly Regex DeclaresRatchet = new Regex(
-            @"const\s+int\s+[A-Za-z0-9_]*(Ceiling|Ratchet)\b");
-
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -73,20 +71,55 @@ namespace PoliSim.EditorTools
             // ninth sweep had the same shape - two instances make a class. So: every check file declaring
             // a ceiling or ratchet constant must call `RatchetLedger.Report`, and one that does not FAILS
             // rather than sitting outside the audit in silence.
+            // ⚠ AND THE HOLE THAT ENROLMENT LEFT, CLOSED 2026-09-01. The scan above used to ask one
+            // question - does this file's source contain a RatchetLedger.Report call? - and report "0
+            // unreported" on the strength of it. **A written call is not an executed one.**
+            // CohortAgingStepDiagnostic and PublicationCadenceCheck both passed that question while
+            // reporting into the SIMULATION batch's ledger, which no audit ever read: two ratchets, one of
+            // them a FLOOR, sitting outside the audit with the audit printing green. That is §161's own
+            // class one level up, and the honest-looking number is what hid it.
+            //
+            // So the enrolment now asks THREE questions of every declaring file, via RatchetResidency,
+            // which reads the registration TABLES rather than scanning for them:
+            //   1. does it report at all?                        -> UNREPORTED (the original clause)
+            //   2. is it registered in any batch?                -> UNREGISTERED - armed for nobody
+            //   3. is it in the RUNNING batch and yet absent
+            //      from this run's ledger?                       -> SILENT - the call did not execute
+            // A declaring check registered in the OTHER batch is neither a pass nor a fault: it is named
+            // as DEFERRED, with the batch that audits it, so the coverage below stops reading as complete
+            // when it is not.
             var unreported = new List<string>();
+            var unregistered = new List<string>();
+            var silent = new List<string>();
+            var deferred = new List<string>();
             int ratchetFiles = 0;
-            string editorDir = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Editor");
-            if (Directory.Exists(editorDir))
-            {
-                foreach (string path in Directory.GetFiles(editorDir, "*.cs", SearchOption.TopDirectoryOnly))
-                {
-                    string text = SourceText.WithoutComments(File.ReadAllText(path));
-                    if (!text.Contains("public static void Run")) { continue; }
-                    if (!DeclaresRatchet.IsMatch(text)) { continue; }
 
-                    ratchetFiles++;
-                    if (!text.Contains("RatchetLedger.Report")) { unreported.Add(Path.GetFileNameWithoutExtension(path)); }
+            var reportedNames = new HashSet<string>();
+            foreach (RatchetLedger.Entry e in entries)
+            {
+                int dot = e.Name.IndexOf('.');
+                reportedNames.Add(dot > 0 ? e.Name.Substring(0, dot) : e.Name);
+            }
+
+            foreach (RatchetResidency.Entry r in RatchetResidency.Enumerate())
+            {
+                ratchetFiles++;
+
+                if (!r.HasReportCall) { unreported.Add(r.Check); continue; }
+
+                if (r.Registers == RatchetResidency.Group.None)
+                {
+                    unregistered.Add(r.Check);
+                    continue;
                 }
+
+                if (r.Registers != RatchetResidency.ActiveGroup)
+                {
+                    deferred.Add(F("{0} - audited in the {1} batch", r.Check, r.Registers));
+                    continue;
+                }
+
+                if (!reportedNames.Contains(r.Check)) { silent.Add(r.Check); }
             }
 
             var slack = new List<string>();
@@ -130,13 +163,42 @@ namespace PoliSim.EditorTools
             sb.Append("    worse by the size of the gap while the check keeps printing green - a guard whose evidence has\n");
             sb.Append("    stopped discriminating, which is the class this sweep exists for. Every ratchet's own doc already\n");
             sb.Append("    says to lower it as the backlog clears; until now nothing but memory enforced that.\n");
-            sb.Append(F("\n    THE ENROLMENT: {0} check file(s) declare a ceiling or ratchet constant; {1} do not report to the\n"
-                        + "    ledger. ⚠ An unreported ratchet used to be an invisible hole and is a FAILING one now.\n",
-                ratchetFiles, unreported.Count));
-            foreach (string u in unreported) { sb.Append("    ⚠ UNREPORTED  ").Append(u).Append('\n'); }
+            sb.Append(F("\n    THE ENROLMENT: {0} check file(s) declare a ceiling or ratchet constant. Of those: {1} never call\n"
+                        + "    Report, {2} are registered in NO batch, {3} are registered in the {4} batch and stayed SILENT\n"
+                        + "    this run, and {5} are DEFERRED to the other batch, which audits them there.\n"
+                        + "    ⚠ A ratchet whose Report call is WRITTEN but never EXECUTED reads exactly like one that reported.\n",
+                ratchetFiles, unreported.Count, unregistered.Count, silent.Count,
+                RatchetResidency.ActiveGroup, deferred.Count));
+            foreach (string u in unreported) { sb.Append("    ⚠ UNREPORTED   ").Append(u).Append('\n'); }
+            foreach (string u in unregistered) { sb.Append("    ⚠ UNREGISTERED ").Append(u).Append('\n'); }
+            foreach (string u in silent) { sb.Append("    ⚠ SILENT       ").Append(u).Append('\n'); }
+            foreach (string d in deferred) { sb.Append("      deferred     ").Append(d).Append('\n'); }
 
             sb.Append("    THE FIX IS ALWAYS THE SAME: lower the ceiling to what was measured. NEVER raise a measurement to\n");
             sb.Append("    meet a ceiling, and never widen a ceiling to silence this.\n");
+
+            if (unregistered.Count > 0)
+            {
+                Debug.LogError("SLACK: " + unregistered.Count + " check(s) declare a ratchet and are registered in NO batch - "
+                               + string.Join(", ", unregistered.ToArray())
+                               + ". ⚠ A ratchet armed for a group that never runs is armed for nobody: it can neither fail "
+                               + "nor be audited, and its ceiling is a number in a file. Register the check in a batch or "
+                               + "delete the bound.");
+                Debug.LogError(sb.ToString());
+                CheckExit.Finish(1);
+                return;
+            }
+
+            if (silent.Count > 0)
+            {
+                Debug.LogError("SLACK: " + silent.Count + " check(s) are registered in the running batch, have a Report call "
+                               + "in source, and did not appear in this run's ledger - " + string.Join(", ", silent.ToArray())
+                               + ". ⚠ THE CALL WAS WRITTEN AND DID NOT EXECUTE, which is the difference between a source scan "
+                               + "and a measurement - and until 2026-09-01 this audit could not tell them apart.");
+                Debug.LogError(sb.ToString());
+                CheckExit.Finish(1);
+                return;
+            }
 
             if (unreported.Count > 0)
             {

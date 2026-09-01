@@ -219,6 +219,11 @@ namespace PoliSim.EditorTools
             // reported to `RatchetLedger` in THIS process, so it must run after them. Run alone it finds an
             // empty ledger and FAILS, because a slack audit that audited nothing looks exactly like one
             // that found no slack.
+            // THE TERMINATION CONDITION (2026-09-01): the residue, counted rather than asserted. Registered
+            // second-to-last so the ledger already holds every ratchet it enrols, and before RatchetSlackCheck
+            // so its own residue ratchet is in the ledger when the slack audit reads it.
+            ("InstructionResidueCheck", InstructionResidueCheck.Run),
+
             ("RatchetSlackCheck", RatchetSlackCheck.Run),
         };
 
@@ -293,13 +298,13 @@ namespace PoliSim.EditorTools
             EditorApplication.Exit(worst);
         }
 
-        /// <summary>The simulation group, run once, returning the WORST code any of them wanted. A check
-        /// that throws counts as 1 — an exception is not a pass. The enumeration is printed BEFORE the run
-        /// (the enumeration rule): a group that silently ran three of four would read like a clean run.</summary>
-        private static int RunSimulation()
+        /// <summary>The simulation group's registration table, hoisted to a field so
+        /// <see cref="RatchetResidency"/> can ask WHICH BATCH registers a ratchet-declaring check rather
+        /// than scanning for the answer. ⚠ It ends with RatchetSlackCheck for the same order-dependent
+        /// reason the cheap suite does: this group owns two ratchets of its own, and until 2026-09-01 they
+        /// reported into a ledger that was built and then discarded at exit, unaudited.</summary>
+        private static readonly (string Name, Action Run)[] Simulation = new (string Name, Action Run)[]
         {
-            var simulation = new (string Name, Action Run)[]
-            {
                 ("AggregationEquivalenceCheck", AggregationEquivalenceCheck.Run),
                 ("CreditRatingAnchorCheck", CreditRatingAnchorCheck.Run),
                 ("PublicationCadenceCheck", PublicationCadenceCheck.Run),
@@ -328,7 +333,39 @@ namespace PoliSim.EditorTools
                 // SCB's separately-published all-ages figure - two independently sourced things agreeing,
                 // which is the strongest form of check this suite has.
                 ("VoterGroupViewDiagnostic", VoterGroupViewDiagnostic.Run),
-            };
+
+                // ⚠ REGISTERED LAST HERE TOO, 2026-09-01, and it closes a hole rather than adding cover.
+                // This group owns two ratchets - CohortAgingStepDiagnostic's runaway count and
+                // PublicationCadenceCheck's reachable-preliminary FLOOR - and the slack audit ran only in
+                // the cheap suite. Both reported into a per-process ledger that was built and discarded at
+                // exit, so NOTHING compared either bound with its measurement, while the cheap suite's
+                // enrolment printed "0 unreported" because it asked whether the Report call was WRITTEN.
+                // A written call is not an executed one. See RatchetResidency.
+                ("RatchetSlackCheck", RatchetSlackCheck.Run),
+        };
+
+        /// <summary>The cheap suite's registered names. Exposed for <see cref="RatchetResidency"/>, which
+        /// asks the registration table itself which batch audits a ratchet.</summary>
+        public static IEnumerable<string> CheapGroup
+        {
+            get { foreach ((string name, Action _) in Suite) { yield return name; } }
+        }
+
+        /// <summary>The simulation group's registered names. Same reason as <see cref="CheapGroup"/>.</summary>
+        public static IEnumerable<string> SimulationGroup
+        {
+            get { foreach ((string name, Action _) in Simulation) { yield return name; } }
+        }
+
+        /// <summary>The simulation group, run once, returning the WORST code any of them wanted. A check
+        /// that throws counts as 1 — an exception is not a pass. The enumeration is printed BEFORE the run
+        /// (the enumeration rule): a group that silently ran three of four would read like a clean run.</summary>
+        private static int RunSimulation()
+        {
+            // Which table is running is not inferable from the ledger's contents - an empty group and a
+            // group whose checks all failed early look identical - so it is STATED by the caller.
+            RatchetResidency.ActiveGroup = RatchetResidency.Group.Simulation;
+            var simulation = Simulation;
 
             var names = new string[simulation.Length];
             for (int i = 0; i < simulation.Length; i++) { names[i] = simulation[i].Name; }
@@ -402,6 +439,8 @@ namespace PoliSim.EditorTools
         /// that throws counts as 1 — an exception is not a pass.</summary>
         private static int RunAll(bool announceClean)
         {
+            RatchetResidency.ActiveGroup = RatchetResidency.Group.Cheap;
+
             var failed = new List<string>();
             int worst = 0;
 

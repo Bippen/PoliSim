@@ -38,7 +38,7 @@ namespace PoliSim.EditorTools
     /// zero. A "check" whose only exit is `Finish(0)` reports clean **by construction**, and every run of
     /// the bar has been counting it.</para>
     ///
-    /// <para>⚠ **Its first run found one**: `PublicationCadenceCheck`, one of the eight simulation checks,
+    /// <para>⚠ **Its first run found one**: `PublicationCadenceCheck`, one of the simulation checks,
     /// whose sole exit was `CheckExit.Finish(0)` — its own doc calls it a measurement. *"8 of 8 simulation
     /// checks clean"* had been counting a tool that could not say anything else. It was given the
     /// assertion its own documentation already named, rather than being quietly renamed.</para>

@@ -40,7 +40,15 @@ namespace PoliSim.EditorTools
         private static readonly string[] MustStrip =
         {
             "UnwiredSubsystemCheck", "PlayerReachabilityCheck", "EvidenceDiscriminationCheck",
-            "DocumentClaimCheck", "DeadStateCheck", "CommentImmunityCheck", "RatchetSlackCheck",
+            "DocumentClaimCheck", "DeadStateCheck", "CommentImmunityCheck",
+
+            // ⚠ RatchetResidency is NOT a check - it has no Run - and that is exactly why it is here.
+            // The enrolment below used to require `public static void Run`, so a source-reading INSTRUMENT
+            // that several checks consume was invisible to the census while every one of its consumers was
+            // enrolled. The gate is gone (2026-09-01). ⚠ `RatchetSlackCheck` came OFF this list in the same
+            // commit: it no longer reads source at all, and leaving its name here would have been a list
+            // asserting something about it that stopped being true.
+            "RatchetResidency",
         };
 
         /// <summary>
@@ -53,6 +61,7 @@ namespace PoliSim.EditorTools
             ("PhantomGuardCheck", "its SUBJECT is the comment - it exists to check what comments claim"),
             ("ConstantProvenanceCheck", "the provenance MARK it looks for lives in a comment by design"),
             ("MetaTextCheck", "it scans STRING LITERALS only, so a comment cannot reach its verdict"),
+            ("InstructionResidueCheck", "its SUBJECT is the comment - an unfinished-work marker is unfinished work PRECISELY as a comment, so stripping would blind it to the very markers it counts"),
         };
 
         /// <summary>A check that reads C# source: it reads files and names the `*.cs` pattern.</summary>
@@ -127,7 +136,11 @@ namespace PoliSim.EditorTools
             foreach (string path in Directory.GetFiles(editor, "*.cs", SearchOption.TopDirectoryOnly))
             {
                 string text = SourceText.WithoutComments(File.ReadAllText(path));   // a commented-out reader is not a reader
-                if (!text.Contains("public static void Run")) { continue; }
+
+                // ⚠ NO `public static void Run` GATE (2026-09-01). It restricted the census to CHECKS, and
+                // a source-reading helper that checks consume is exposed to the identical defect - a
+                // comment making a name look used - while being read by more than one of them. The census
+                // is over source READERS, and whether a reader is also a check is beside its point.
                 if (!ReadsSource.IsMatch(text) || !text.Contains("\"*.cs\"")) { continue; }
 
                 sourceReaders++;

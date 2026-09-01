@@ -10333,3 +10333,80 @@ week's record does not identify one uniquely. The candidates are listed and the 
 itself, because its whole point is that a reader can tell coverage from assumption.
 
 **Bar: 21 checks green, 8 simulation checks green, ratchets tight, 0 unenrolled, 0 unreported.**
+
+## 162. THE MASTER LIST, AND THE TERMINATION CONDITION ARMED — which then found the enrolment's own hiding place (2026-09-01)
+
+The consolidation brief asked for two things: a master work list **derived by sweeping the repo, never by
+reading a list**, and a termination condition that is **measured rather than asserted**.
+
+### `POLISIM_MASTER_LIST.md` — 73 open items, 31 of them OWNER=CODE
+
+Swept from `POLISIM_BACKLOG.md` by section, the code's own markers, the ratchets, and `git log`.
+⚠ **Three rows were found already DONE while the register read them open** — chiefly `C-0.4`, whose
+`CheckSuite.RunAllBatch` has existed since `9489d97` and every bar run since has used it. **Where a
+document and the code disagreed the code won**, and the register is corrected rather than the finding
+absorbed.
+
+The longest dependency chain is five deep — `M-D1` runtime data layer → `M-B4` `RegionalVoteModel` →
+`M-B5` a live regional count → `M-S7` board 1h's route → `M-R6` its ratchet at zero. ⚠ **Two of the three
+chains terminate in something no session can do**: `M-D3` needs Elias to register an account. Estimate
+**eleven to sixteen sessions**, stated plainly as *more than a week*, because six BASELINE items land one
+at a time by rule and cannot be parallelised.
+
+### `InstructionResidueCheck` — the residue, counted
+
+`residue = startable OWNER=CODE rows + open-work markers`. ⚠ **The ratchets are ENROLLED, not added** —
+each non-zero one must be NAMED in an `M-R` row — so the same backlog is never counted twice.
+`[AUTHORED-DRAFT]` is **censused, never counted** (254 marks): counting the provenance mark
+`ConstantProvenanceCheck` requires would make zero reachable only by deleting honesty marks.
+
+**Opening number: 31, ceiling 31, tight.** ⚠ **A zero means "no CODE row is startable", never "the work is
+finished"**, and the check prints that sentence itself every run.
+
+Proved **three** directions: a planted `TODO` in a game file failed at 32 and named the file; a planted
+`OWNER = CODE` row failed at 32; and ⚠ **an exclusion naming a CODE row failed and did NOT lower the
+count** — the anti-swallowing clause the brief singled out, which refuses the exclusion rather than
+honouring it.
+
+### ⚠ AND ARMING IT FOUND §161'S CLASS ONE LEVEL UP — TWICE
+
+**Finding 1 — a written call is not an executed one.** `RatchetSlackCheck`'s enrolment asked whether a
+file's source *contained* a `RatchetLedger.Report` call, answered **"10 declare, 0 unreported"**, and
+printed its ledger table as the complete coverage. ⚠ **Two of those ten report into the SIMULATION
+batch's ledger, which no audit ever read** — `CohortAgingStepDiagnostic.RUNAWAY` and
+`PublicationCadenceCheck`'s FLOOR were built into a per-process ledger and discarded at exit. §161 closed
+*"a ratchet that does not report"* and left open *"a ratchet that reports into a ledger nobody audits"* —
+**and the honest-looking `0 unreported` is precisely what hid it.**
+
+**Finding 2 — a guard that cannot tell its subjects apart.** The residue check's own ratchet enrolment
+asked whether **any** row id began `M-R`. ⚠ **One `M-R` row anywhere marked EVERY ratchet listed**, so a
+ratchet with no row of its own would have been reported enrolled. That is the eighth sweep's own class —
+evidence that has stopped discriminating — **committed by the check that enrols it**, and it was found by
+reading the block rather than its output.
+
+### The fix: `RatchetResidency`, and the audit at the end of BOTH batches
+
+A new instrument answers *which batch registers this ratchet-declaring check*, **from the registration
+tables themselves** rather than a scan or a hand-written list beside them — a hand table would be a second
+thing to keep true, and a check registered in neither group would sit in it looking registered.
+`RatchetSlackCheck` now runs last in the simulation group too, and separates four states:
+**UNREPORTED · UNREGISTERED (armed for nobody) · SILENT (registered here, written, absent from the
+ledger) · DEFERRED (named, with the batch that audits it)**. The residue check matches each ratchet by
+**its own ledger name**, and holds a **deferred** ratchet to a row too — reading the name out of the
+check's own `Report` literal, since it cannot measure it. ⚠ **S-37 is carried through**: the direction
+comes out of the source with the name, so a FLOOR is never asked for a backlog row.
+
+⚠ **And the comment census had the same shape of gate.** It enumerated source readers with
+`public static void Run`, which is a filter for **checks** — so `RatchetResidency`, a source-reading
+instrument that two checks consume, would have been invisible to it while every consumer was enrolled.
+**The gate is gone**; the census is over source *readers*, and whether one is also a check is beside its
+point. `RatchetSlackCheck` came OFF `MustStrip` in the same commit — it no longer reads source, and
+leaving its name on a list that says it does is S-36's habit inverted.
+
+**Proved both directions with one throwaway**, in two shapes: registered in no batch → **UNREGISTERED**;
+registered in the running batch with its `Report` in an uncalled method → **SILENT**. And by unnaming
+`CohortAgingStepDiagnostic.RUNAWAY` in `M-R5`'s row → **UNLISTED (deferred)**, which is the clause
+catching a ratchet the process cannot even measure. All three reverted.
+
+**Bar: 22 checks green, 9 simulation checks green (the slack audit joined that group), ratchets tight,
+0 unenrolled, 0 unreported, 0 unregistered, 0 silent, 0 unlisted. Residue 31 of 31.**
