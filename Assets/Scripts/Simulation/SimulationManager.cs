@@ -2709,7 +2709,7 @@ namespace PoliSim.Simulation
         /// USA) whose real risk-premium sensitivity is near zero, misjudge GetFiscalReactionMultiplier
         /// for every country whose real comfort anchor isn't the 60f default, and misjudge
         /// ApplyPovertyRate's baseline for every country whose real baseline isn't the 10f default.
-        /// BaselineLaborForceParticipationRate, MinimumWageImplemented, MinimumWagePercentOfMedian, and
+        /// BaselineLaborForceParticipationRate (retired at F2 step 5), MinimumWageImplemented, MinimumWagePercentOfMedian, and
         /// BaselineMinimumWagePercentOfMedian are copied for the same reason - none is a constructor
         /// parameter, and ApplyMinimumWageChange mutates MinimumWagePercentOfMedian directly.
         /// SovereignWealthFund is deep-cloned (via SovereignWealthFund.Clone(), null-safe) for the
@@ -2797,7 +2797,6 @@ namespace PoliSim.Simulation
                 ProductivityTrendGrowthRate = country.ProductivityTrendGrowthRate,
                 ComfortableDebtToGdpPercent = country.ComfortableDebtToGdpPercent,
                 BaselinePovertyRate = country.BaselinePovertyRate,
-                BaselineLaborForceParticipationRate = country.BaselineLaborForceParticipationRate,
                 MinimumWageImplemented = country.MinimumWageImplemented,
                 MinimumWagePercentOfMedian = country.MinimumWagePercentOfMedian,
                 BaselineMinimumWagePercentOfMedian = country.BaselineMinimumWagePercentOfMedian,

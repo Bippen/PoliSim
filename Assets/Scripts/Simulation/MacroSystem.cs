@@ -636,7 +636,7 @@ namespace PoliSim.Simulation
         private const float MaxLaborForceParticipationPercent = 100f;
 
         /// <summary>
-        /// LaborForceParticipationRate mean-reverts toward Country.BaselineLaborForceParticipationRate
+        /// LaborForceParticipationRate mean-reverts toward the retired BaselineLaborForceParticipationRate (F2 step 5: ParticipationRateTable's structural anchor)
         /// (the country's own structural, real-World-Bank/OECD-sourced "steady-state" rate), adjusted
         /// by the same Unemployment-versus-NAIRU gap already used elsewhere (a proven, ALREADY-
         /// established driver - see ApplyPovertyRate/ApplyApprovalRating - kept OUTSIDE the combined
@@ -651,19 +651,16 @@ namespace PoliSim.Simulation
         // VERBATIM to LaborCouplings (pass 3's declared labor coupling table, 2026-08-26): values
         // carried unchanged; the doc comment above still governs the combined-ceiling audit, and
         // the formula below reads the table's qualified names.
-
-        /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points reduced per point DependencyRatio sits above its own Country.BaselineDependencyRatio - a real, well-documented effect: an aging population structurally shrinks the working-age share, lowering participation even with no change in any individual's own behavior.</summary>
-        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the relative order; the number itself is a game figure no cited study fixes.</remarks>
-        internal const float DependencyRatioParticipationSensitivity = 0.02f;
-
-        /// <summary>Round 3 item 5, Part A: LaborForceParticipationRate points added per point NetMigrationRate sits above its own Country.BaselineNetMigrationRate - a real, well-documented effect: immigrants skew disproportionately working-age, so higher net migration than a country's own starting norm raises participation.</summary>
-        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the relative order; the number itself is a game figure no cited study fixes.</remarks>
-        internal const float NetMigrationParticipationSensitivity = 0.03f;
+        // DependencyRatioParticipationSensitivity and NetMigrationParticipationSensitivity - the two authored
+        // demographic proxies on participation - were RETIRED at F2 step 5 (2026-09-02): the pyramid and the
+        // sourced rates by age (ParticipationRateTable) carry aging and immigration into participation now.
 
         /// <summary>
         /// Round 3 item 5, Part A: combined ceiling on the SUM of every term that writes to
-        /// LaborForceParticipationRate's target DIRECTLY - paid leave, retraining, and the two new
-        /// demographic terms (dependency ratio, net migration). Verified by direct audit (not assumed)
+        /// LaborForceParticipationRate's target DIRECTLY - paid leave and retraining (the two demographic
+        /// proxy terms this ceiling also covered, a dependency-ratio gap and a net-migration gap, were
+        /// retired at F2 step 5, 2026-09-02: the pyramid carries both effects now, through
+        /// ParticipationRateTable's structural anchor). Verified by direct audit (not assumed)
         /// that this is the COMPLETE set of direct writers: minimum wage, overtime regulation, and
         /// childcare subsidies do NOT write to this variable at all, direct or otherwise - all three
         /// only affect Unemployment (GetMinimumWageUnemploymentAdjustment/GetOvertimeUnemploymentAdjustment/
@@ -694,16 +691,23 @@ namespace PoliSim.Simulation
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
             float paidLeaveGap = country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks;
             float retrainingGap = country.RetrainingProgramLevel - NeutralPolicyDialLevel;
-            float dependencyGap = state.DependencyRatio - country.BaselineDependencyRatio;
-            float netMigrationGap = state.NetMigrationRate - country.BaselineNetMigrationRate;
 
+            // F2 step 5 (2026-09-02): the two demographic proxy terms (a dependency-ratio gap, a net-
+            // migration gap) are gone. Aging and immigration reach participation through the pyramid
+            // itself now - the structural anchor below is Σ(band × sourced rate by age) over the 15+
+            // population, so an older pyramid participates less and young migrants more, at the rates
+            // the publishers measured rather than at two authored sensitivities. Only the policy terms
+            // remain under the combined ceiling.
             float combinedAdjustment = LaborCouplings.PaidFamilyLeaveParticipationSensitivity * paidLeaveGap
-                + LaborCouplings.RetrainingParticipationSensitivity * retrainingGap
-                - DependencyRatioParticipationSensitivity * dependencyGap
-                + NetMigrationParticipationSensitivity * netMigrationGap;
+                + LaborCouplings.RetrainingParticipationSensitivity * retrainingGap;
             combinedAdjustment = Mathf.Clamp(combinedAdjustment, -MaxLaborForceParticipationAdjustment, MaxLaborForceParticipationAdjustment);
 
-            float target = country.BaselineLaborForceParticipationRate
+            // The anchor: the participation the country's pyramid implies at its sourced rates by age
+            // (ParticipationRateTable). A country without a table or a pyramid keeps its current rate
+            // as its own anchor rather than being handed a typed one.
+            float structural = country.Cohorts != null ? ParticipationRateTable.StructuralRate(country.Id, country.Cohorts.Counts) : float.NaN;
+            float anchor = float.IsNaN(structural) ? state.LaborForceParticipationRate : structural;
+            float target = anchor
                 - DiscouragedWorkerSensitivity * unemploymentGap
                 + combinedAdjustment;
             state.LaborForceParticipationRate = Mathf.Clamp(

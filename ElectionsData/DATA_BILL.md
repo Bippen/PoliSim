@@ -149,3 +149,5 @@ The electorate therefore stays ONE GROUP with its 12 `W-F4` call sites intact.
 
 ## Polls (W-A4, 2026-08-29)
 - **Sweden — a final-week poll of record for 2018 and 2022** (the newspapers' commissioned polls, or the SVT/Valu exit poll's recalled vote): the tactical layer models the LAST WEEK's switch, and the only official pre-election figure on disk is SCB's May PSU (`sweden/psu_2018_2022.md`) — four months before the day. Billed, not approximated; the May figure is a lower bound on the lending, not its size.
+
+| labour-force participation by age, six countries | `ElectionsData/participation/` — Eurostat `lfsa_argan` 2024 (SE DE FR IT PL), BLS CPS LNU series 2024 annual (USA), ids verified against their title pages | ✅ fetched 2026-09-02 (F2 step 5) |

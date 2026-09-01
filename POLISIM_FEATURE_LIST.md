@@ -220,9 +220,14 @@ levers measurably move the model, and the family is explained per country.
 
 > **2026-09-02 — step 4 landed (`COMPLETED.md` §195):** population, the crude rates and the dependency
 > ratio are readings of the substrate; the two levers are LIVE (`LeverLivenessCheck`) at their old
-> magnitudes with anchor semantics kept; the `f2s4` family is explained per country. **Open:** participation
-> by age — the one clause of the done-when that needs a dataset nobody has fetched (spec-let §6: Eurostat
-> LFS / SCB, and nothing equivalent identified for the USA). Billed, not built.
+> magnitudes with anchor semantics kept; the `f2s4` family is explained per country.
+>
+> **2026-09-02 — step 5 landed (`COMPLETED.md` §199):** participation by age fetched (Eurostat
+> `lfsa_argan` 2024 for the five, BLS CPS LNU series 2024 for the USA, every id verified against its title
+> page) and `LaborForceParticipationRate` anchored on the participation the pyramid implies
+> (`ParticipationRateTable.StructuralRate`); the two authored demographic proxies on participation and the
+> typed baseline are retired; the `f2s5` family explained per country. **The done-when is met.** What F2
+> still carries is the voter-group view (F3's), not a clause of its own.
 
 *Carries: `M-B2` (D-15 stage 3) · `M-B3` (the substrate wired) · `M-D2` (the two projections) · and
 `CohortAgingStepDiagnostic.RUNAWAY` falls out of the rebuilt step.*

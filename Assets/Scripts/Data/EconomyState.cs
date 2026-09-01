@@ -82,11 +82,12 @@ namespace PoliSim.Data
         /// <summary>
         /// Share of the working-age population that is either employed or actively looking for work,
         /// as a percentage (e.g. 62 means 62%, matching how Unemployment/PovertyRate are stored).
-        /// Seeded per country from real World Bank/OECD data (see WorldFactory); mean-reverts each
-        /// turn toward Country.BaselineLaborForceParticipationRate, adjusted by the same
-        /// unemployment gap already used elsewhere (a discouraged/encouraged-worker effect - see
-        /// MacroSystem.ApplyLaborForceParticipationRate). A tracked stat only - nothing currently
-        /// targets it directly with a policy lever.
+        /// Since F2 step 5 (2026-09-02) it opens at, and mean-reverts toward, the participation the
+        /// country's own pyramid implies at sourced rates by age (ParticipationRateTable.StructuralRate -
+        /// the typed World Bank/OECD "ages 15+" baseline is retired), adjusted by the unemployment gap (a
+        /// discouraged/encouraged-worker effect) and the paid-leave and retraining levers - see
+        /// MacroSystem.ApplyLaborForceParticipationRate. Aging and immigration reach it through the
+        /// pyramid, not through a coupling.
         /// </summary>
         public float LaborForceParticipationRate;
 

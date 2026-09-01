@@ -20531,3 +20531,59 @@ answered.
 player-facing beyond the debate staging.
 
 Retired 2026-09-02 under the same rule: §197 the register of findings and rulings (`POLISIM_BACKLOG.md`), §198 the prerequisites queues (`MISSING_PREREQUISITES.md`). The open rows are indexed by pointer in `POLISIM_FEATURE_LIST.md`; the governing document is now the only live list.
+
+## 199. F2 STEP 5 BUILT — participation by age fetched and derived from the pyramid; F2's done-when is met (2026-09-02)
+
+**The last clause.** F2's done-when read *"population, dependency ratio and participation are derived
+from cohorts"*; step 4 (§195) did the first two and left participation billed. The bill is discharged
+the only way a bill is: by opening the sources.
+
+**The data (`ElectionsData/participation/`, README there).** EU five: Eurostat `lfsa_argan` (labour
+force participation rates by citizenship), `sex=T`, `citizen=TOTAL`, `unit=PC`, `time=2024`, the twelve
+five-year classes 15–19 … 70–74, fetched through the dissemination API — the LFS frame ends at 74, so
+the bands from 75 carry 0 and say so. USA: BLS Current Population Survey LNU series (not seasonally
+adjusted), 2024 annual averages (period `M13`) through the public API v1 — 16–19, 20–24, 25–34, 35–44,
+45–54, 55–59, 60–64, 65+. ⚠ **Every BLS id was verified against its own series-title page before use,
+and the first recall was wrong**: `LNS11324887`, recalled as "55–64", is "16–24". The `cpsaat03` table
+download is bot-gated, so the series route is the one on record.
+
+**What was built.** `ParticipationRateTable` (Data): one rate per band, sourced per country, and
+`StructuralRate(id, counts)` = Σ(band × rate) over the population aged 15 and over — the participation
+a pyramid IMPLIES. `MacroSystem.ApplyLaborForceParticipationRate` reverts toward that anchor instead of
+the typed `BaselineLaborForceParticipationRate` (deleted, with its six seeds); the two authored
+demographic proxies on participation — `DependencyRatioParticipationSensitivity` (0.02) and
+`NetMigrationParticipationSensitivity` (0.03) — are deleted, because aging and immigration reach
+participation through the pyramid now (an older pyramid participates less at the rates the publishers
+measured; migrants enter by the sourced age profile and participate at their band's rate). The
+paid-leave and retraining levers and the discouraged-worker term are unchanged. `WorldFactory` opens
+participation at the structural rate of the walked pyramid, so the labour market opens at its own zero
+gap. The immigration node's Policy Web line no longer quotes a coupling constant.
+
+### The family `f2s5`, against `f2s4`, seed 777 — one field moves, and it explains itself
+Only `LaborForceParticipationRate` differs between the families, at both horizons; every other field is
+byte-identical (participation is a tracked stat that nothing downstream reads — the doc has always said
+so, and the diff proves it). Per country, typed seed → the pyramid's structural rate at t1, then the
+rate at 2063 (t37) and 2100 (t74):
+
+| | seed (typed, "ages 15+") | t1 structural | t37 | t74 |
+|---|---|---|---|---|
+| USA | 62.5 | **61.9** | 59.7 | 56.8 |
+| Germany | 61.7 | **60.8** | 56.3 | 53.6 |
+| France | 56.0 | **55.7** | 51.4 | 48.4 |
+| Italy | 49.8 | **48.8** | 43.4 | 41.5 |
+| Poland | 58.4 | **57.1** | 47.7 | 46.4 |
+| Sweden | 72.6 | **65.3** | 61.9 | 57.5 |
+
+⚠ **Five of the six land within 1.3 points of their typed seeds** — the derivation and the seeds'
+"total population ages 15+" definition agree, which is the check that the table is on the right base.
+**Sweden does not: 72.6 typed against 65.3 derived.** Sweden's 15+ participation is in the mid-sixties
+in every OECD/ILO series; 72.6 is a figure on a different base (it is close to Sweden's 15–74 rate), so
+the typed seed was on a definition its neighbours were not, and the derivation is the correction. The
+retired scalar path held every country within a point of its seed for a century; the substrate lowers
+participation by 5 (USA) to 11 (Poland) points by 2100 — the publishers' aging arriving in the labour
+market through the pyramid, at measured rates rather than through a 0.02-per-point proxy.
+
+**Bars:** simulation 9 of 9; cheap bar 25 of 25 (the first pass caught a developer tag — "F2 step 5" —
+in a player-facing Policy Web string, `MetaTextCheck`'s exact remit; removed).
+
+**F2's done-when is met.** The voter-group view over the substrate is F3's opening clause, not F2's.

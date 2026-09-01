@@ -65,7 +65,7 @@ namespace PoliSim.Data
     /// informal economy/evasion, not a researched figure itself) corrects the DEFAULT portfolio back
     /// down to each country's real tax-to-GDP target without changing any seeded rate.
     ///
-    /// LaborForceParticipationRate/BaselineLaborForceParticipationRate use real World Bank/OECD
+    /// LaborForceParticipationRate (its typed baseline retired at F2 step 5) use real World Bank/OECD
     /// "total population ages 15+" figures per country; MinimumWagePercentOfMedian uses each
     /// country's real approximate Kaitz index (minimum wage as a percent of median wage) for the
     /// four countries that have a statutory minimum wage (USA/Germany/France/Poland) - Sweden and
@@ -242,16 +242,11 @@ namespace PoliSim.Data
             poland.BaselinePovertyRate = 10f;
             sweden.BaselinePovertyRate = 9f;
 
-            // MacroSystem.ApplyLaborForceParticipationRate's per-country structural anchor - the SAME
-            // real World Bank/OECD "total population ages 15+" figures EconomyState.
-            // LaborForceParticipationRate was just seeded to above, so a new game opens already at (or
-            // very near) its own baseline (see "Labor Market Basics" in CLAUDE.md).
-            usa.BaselineLaborForceParticipationRate = 62.5f;
-            germany.BaselineLaborForceParticipationRate = 61.7f;
-            france.BaselineLaborForceParticipationRate = 56.0f;
-            italy.BaselineLaborForceParticipationRate = 49.8f;
-            poland.BaselineLaborForceParticipationRate = 58.5f;
-            sweden.BaselineLaborForceParticipationRate = 72.6f;
+            // The typed per-country BaselineLaborForceParticipationRate (the same World Bank/OECD "ages 15+"
+            // figures the constructor seeds LaborForceParticipationRate to) was RETIRED at F2 step 5
+            // (2026-09-02): the anchor MacroSystem.ApplyLaborForceParticipationRate reverts toward is the
+            // participation the country's own pyramid implies at sourced rates by age
+            // (ParticipationRateTable.StructuralRate), and the opening rate is seeded from it below.
 
             // ROUND 4 BATCH 1 (C3): youth unemployment, RULED SEED = the Feb 2026 cross-section, one
             // period, all six (Elias, 2026-08-02; seed doc §3). ALL RATES (% of the youth labour
@@ -975,6 +970,12 @@ namespace PoliSim.Data
                 {
                     country.BaselineDependencyRatio = country.State.DependencyRatio;
                 }
+                // F2 step 5: participation opens at the rate the walked pyramid implies at the sourced rates
+                // by age - the anchor it will revert toward - so the labour market opens at its own zero gap.
+                // The constructor's typed "ages 15+" figure is the retired seed, kept as the record of it.
+                float structuralParticipation = country.Cohorts != null
+                    ? ParticipationRateTable.StructuralRate(country.Id, country.Cohorts.Counts) : float.NaN;
+                if (!float.IsNaN(structuralParticipation)) { country.State.LaborForceParticipationRate = structuralParticipation; }
 
                 // C-D4 (§38): each party's long-term capital, opened at the seeded election's mandate.
                 // ⚠ The two starting levels are `PartyProfile`'s OWN constructor defaults (reputation 50,

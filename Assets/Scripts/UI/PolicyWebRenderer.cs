@@ -1224,7 +1224,7 @@ namespace PoliSim.UI
                 case PolicyNodeId.ImmigrationPolicy:
                     lines.Add($"Current level: {country.ImmigrationPolicyLevel:F0}/100");
                     lines.Add($"NetMigrationRate offset: {LaborCouplings.ImmigrationPolicyNetMigrationSensitivity * (country.ImmigrationPolicyLevel - neutral):+0.00;-0.00} per 1,000/yr");
-                    lines.Add($"LFPR pull (before combined ceiling): {MacroSystem.NetMigrationParticipationSensitivity * (country.State.NetMigrationRate - country.BaselineNetMigrationRate):+0.00;-0.00} pts");
+                    lines.Add("Participation: migrants enter the pyramid by their sourced age profile and participate at their age band's rate");
                     break;
                 // Item 6 (2026-08-25): the eleven crime-and-justice sensitivities below now read
                 // from CrimeJusticeCouplings - the declared table the Apply* formulas themselves

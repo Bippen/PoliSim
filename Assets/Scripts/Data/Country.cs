@@ -273,18 +273,6 @@ namespace PoliSim.Data
         /// </summary>
         public float BaselinePovertyRate = 10f;
 
-        /// <summary>
-        /// This country's structural "steady-state" labor force participation rate - the target
-        /// MacroSystem.ApplyLaborForceParticipationRate's mean-reversion moves EconomyState.
-        /// LaborForceParticipationRate toward when Unemployment sits exactly at NaturalUnemploymentRate
-        /// (i.e. the discouraged/encouraged-worker gap is zero). Seeded per country from real World
-        /// Bank/OECD data (see WorldFactory) - the same figure EconomyState.LaborForceParticipationRate
-        /// is seeded to, so a new game opens already at (or very near) its own baseline rather than an
-        /// artificial turn-1 jump, the same "avoid a one-time shock" lesson "Turn-1 GDP Consistency"
-        /// established for PovertyRate/BaselinePovertyRate.
-        /// </summary>
-        public float BaselineLaborForceParticipationRate = 62f;
-
         /// <summary>ROUND 4 BATCH 1 (C3): the structural youth-unemployment anchor - the target of
         /// ApplyYouthUnemployment's reversion when headline Unemployment sits exactly at NAIRU. Seeded
         /// to the same real Feb 2026 figure EconomyState.YouthUnemployment opens at (the standing
@@ -459,7 +447,7 @@ namespace PoliSim.Data
         /// This country's structural "steady-state" CrimeIndex - the target MacroSystem.
         /// ApplyCrimeIndex's mean-reversion moves EconomyState.CrimeIndex toward absent any policy
         /// input (the same "avoid a turn-1 shock" anchor idiom BaselinePovertyRate/
-        /// BaselineLaborForceParticipationRate already use). Seeded per country from a STYLIZED 0-100
+        /// BaselineLaborForceParticipationRate - retired at F2 step 5 - used). Seeded per country from a STYLIZED 0-100
         /// scale informed by real relative homicide-rate rankings (see WorldFactory) - not a literal
         /// transformation of any single real indicator, since "crime" as a broad concept has no single
         /// clean cross-country comparable metric the way poverty/labor-participation rates do.
